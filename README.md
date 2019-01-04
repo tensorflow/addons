@@ -18,7 +18,15 @@ The tensorflow/addons repository, will contain additional functionality fitting 
 
 ---
 
-<br><br>
-<div align="center">
-    <img src ="https://cdn.pixabay.com/photo/2017/06/16/07/26/under-construction-2408062_640.png" />
-</div>
+# Developing
+
+## Docker
+```
+```
+
+## Packaging
+```
+./configure.sh
+bazel build build_pip_pkg
+bazel-bin/build_pip_pkg artifacts
+```
