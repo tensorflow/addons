@@ -19,6 +19,3 @@ A module containing optimization routines.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-
-# Lazy Adam Optimizer
-from tensorflow_addons.opt.python.opt.lazy_adam_optimizer import LazyAdamOptimizer

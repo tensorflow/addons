@@ -16,12 +16,11 @@ The tensorflow/addons repository, will contain additional functionality fitting 
 * The addon is useful for a large number of users (e.g., an implementation used in widely cited paper, or a utility with broad applicability)
 
 
----
-
 # Developing
 
 ## Docker
 ```
+docker run --rm -it -v ${PWD}:/working_dir -w /working_dir seanpmorgan/addons:tf2-preview
 ```
 
 ## Packaging
