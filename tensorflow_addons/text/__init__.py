@@ -20,5 +20,5 @@ from __future__ import division
 from __future__ import print_function
 
 # Skip Gram Sample
-from tensorflow_addons.text.python.ops.skip_gram_ops import skip_gram_sample
-from tensorflow_addons.text.python.ops.skip_gram_ops import skip_gram_sample_with_text_vocab
+from tensorflow_addons.text.python.skip_gram_ops import skip_gram_sample
+from tensorflow_addons.text.python.skip_gram_ops import skip_gram_sample_with_text_vocab

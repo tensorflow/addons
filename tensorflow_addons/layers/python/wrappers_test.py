@@ -18,8 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-
-from tensorflow_addons.layers.python.layers import wrappers
+from tensorflow_addons.layers.python import wrappers
 
 from tensorflow.python.ops import random_ops
 from tensorflow.python.platform import test
@@ -46,21 +45,20 @@ class WeightNormTest(test.TestCase):
             batch_size=10)
         self.assertTrue(hasattr(model.layers[0].layer, 'g'))
 
-    # @tf_test_util.run_all_in_graph_and_eager_modes
-    # def test_weightnorm_conv2d(self):
-    #     with self.test_session():
-    #         model = keras.models.Sequential()
-    #         model.add(wrappers.WeightNorm(
-    #             keras.layers.Conv2D(5, (2, 2), padding='same'),
-    #             input_shape=(4, 4, 3)))
-    #
-    #         model.add(keras.layers.Activation('relu'))
-    #         model.compile(optimizer='rmsprop', loss='mse')
-    #         model.train_on_batch(
-    #             np.random.random((2, 4, 4, 3)),
-    #             np.random.random((2, 4, 4, 8)))
-    #
-    #         self.assertTrue(hasattr(model.layers[0].layer, 'g'))
+    @tf_test_util.run_all_in_graph_and_eager_modes
+    def test_weightnorm_conv2d(self):
+        model = keras.models.Sequential()
+        model.add(wrappers.WeightNorm(
+            keras.layers.Conv2D(5, (2, 2), padding='same'),
+            input_shape=(4, 4, 3)))
+
+        model.add(keras.layers.Activation('relu'))
+        model.compile(optimizer=RMSPropOptimizer(0.01), loss='mse')
+        model.train_on_batch(
+            np.random.random((2, 4, 4, 3)),
+            np.random.random((2, 4, 4, 5)))
+
+        self.assertTrue(hasattr(model.layers[0].layer, 'g'))
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_weight_norm_tflayers(self):

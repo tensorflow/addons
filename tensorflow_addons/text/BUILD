@@ -4,7 +4,7 @@ package(default_visibility = ["//visibility:public"])
 
 
 cc_binary(
-    name = 'python/ops/_skip_gram_ops.so',
+    name = 'python/_skip_gram_ops.so',
     srcs = [
         "cc/kernels/skip_gram_kernels.cc",
         "cc/ops/skip_gram_ops.cc",
@@ -21,35 +21,37 @@ cc_binary(
 py_library(
     name = "text_ops_py",
     srcs = ([
-        "python/ops/skip_gram_ops.py",
+        "python/skip_gram_ops.py",
     ]),
     data = [
-        ":python/ops/_skip_gram_ops.so"
+        ":python/_skip_gram_ops.so"
     ],
     srcs_version = "PY2AND3",
 )
 
-py_test(
-    name = "text_ops_py_test",
-    srcs = [
-        "python/ops/skip_gram_ops_test.py"
-    ],
-    main = "python/ops/skip_gram_ops_test.py",
-    deps = [
-        ":text_ops_py",
-    ],
-    srcs_version = "PY2AND3",
-)
 
 py_library(
     name = "text_py",
     srcs = ([
         "__init__.py",
         "python/__init__.py",
-        "python/ops/__init__.py",
     ]),
     deps = [
         ":text_ops_py"
     ],
     srcs_version = "PY2AND3",
 )
+
+
+py_test(
+    name = "text_ops_py_test",
+    srcs = [
+        "python/skip_gram_ops_test.py"
+    ],
+    main = "python/skip_gram_ops_test.py",
+    deps = [
+        ":text_py",
+    ],
+    srcs_version = "PY2AND3",
+)
+
