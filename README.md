@@ -19,6 +19,8 @@ The tensorflow/addons repository, will contain additional functionality fitting 
 # Developing
 
 ## Docker
+**Note:** This docker container is just temporary until we can pull a
+tensorflow/tensorflow:custom-op container that reflects nightly changes.
 ```
 docker run --rm -it -v ${PWD}:/working_dir -w /working_dir seanpmorgan/addons:tf2-preview
 ```
