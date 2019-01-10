@@ -31,6 +31,9 @@ bazel build build_pip_pkg
 bazel-bin/build_pip_pkg artifacts
 ```
 
+A package file artifacts/tensorflow_addons-*.whl will be generated after a build is successful.
+
+
 ## Testing
 ```
 # In docker
