@@ -38,7 +38,7 @@ class WeightNorm(Wrapper):
       net = WeightNorm(tf.keras.layers.Conv2D(2, 2, activation='relu'),
              input_shape=(32, 32, 3), data_init=True)(x)
       net = WeightNorm(tf.keras.layers.Conv2D(16, 5, activation='relu'),
-                       data_init=True)
+                       data_init=True)(net)
       net = WeightNorm(tf.keras.layers.Dense(120, activation='relu'),
                        data_init=True)(net)
       net = WeightNorm(tf.keras.layers.Dense(n_classes),
@@ -72,7 +72,7 @@ class WeightNorm(Wrapper):
 
     def _compute_weights(self):
         """Generate weights by combining the direction of weight vector
-         with it's norm """
+         with its norm """
         with name_scope('compute_weights'):
             self.layer.kernel = nn_impl.l2_normalize(
                 self.layer.v, axis=self.norm_axes) * self.layer.g
