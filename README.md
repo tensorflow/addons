@@ -16,9 +16,27 @@ The tensorflow/addons repository, will contain additional functionality fitting 
 * The addon is useful for a large number of users (e.g., an implementation used in widely cited paper, or a utility with broad applicability)
 
 
----
+# Developing
 
-<br><br>
-<div align="center">
-    <img src ="https://cdn.pixabay.com/photo/2017/06/16/07/26/under-construction-2408062_640.png" />
-</div>
+## Docker
+```
+docker run --rm -it -v ${PWD}:/working_dir -w /working_dir tensorflow/tensorflow:nightly-custom-op /bin/bash
+```
+
+## Packaging
+```
+# In docker
+./configure.sh
+bazel build build_pip_pkg
+bazel-bin/build_pip_pkg artifacts
+```
+
+A package file artifacts/tensorflow_addons-*.whl will be generated after a build is successful.
+
+
+## Testing
+```
+# In docker
+./configure.sh
+bazel test //tensorflow_addons/...
+```
