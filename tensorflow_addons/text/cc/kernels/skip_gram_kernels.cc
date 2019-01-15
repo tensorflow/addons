@@ -48,8 +48,9 @@ class SkipGramGenerateCandidatesOp : public OpKernel {
     const int max_skips = *(max_skips_tensor->scalar<int>().data());
 
     const Tensor& input_check = context->input(0);
-    OP_REQUIRES(context, TensorShapeUtils::IsVector(input_check.shape()),
-                errors::InvalidArgument("input_tensor must be of rank 1"));
+    OP_REQUIRES(
+        context, TensorShapeUtils::IsVector(input_check.shape()),
+        errors::InvalidArgument("input_tensor must be of rank 1"));
 
     OP_REQUIRES(
         context, min_skips >= 0 && max_skips >= 0,
