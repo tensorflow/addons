@@ -60,7 +60,9 @@ def get_beta_accumulators(opt, dtype):
     return (beta_1_power, beta_2_power)
 
 
-class AdamOptimizerTest(test.TestCase):
+class LazyAdamOptimizerTest(test.TestCase):
+
+    # TODO: remove v1 tests (keep pace with adam_test.py in keras).
     @test_util.run_deprecated_v1
     def testSparse(self):
         for dtype in [dtypes.half, dtypes.float32, dtypes.float64]:
@@ -138,9 +140,11 @@ class AdamOptimizerTest(test.TestCase):
                 aggregated_update_var = variables.Variable([[1.0], [2.0]],
                                                            dtype=dtype)
                 grad_repeated_index = ops.IndexedSlices(
-                    constant_op.constant([0.1, 0.1], shape=[2, 1],
+                    constant_op.constant([0.1, 0.1],
+                                         shape=[2, 1],
                                          dtype=dtype),
-                    constant_op.constant([1, 1]), constant_op.constant([2, 1]))
+                    constant_op.constant([1, 1]),
+                    constant_op.constant([2, 1]))
                 grad_aggregated = ops.IndexedSlices(
                     constant_op.constant([0.2], shape=[1, 1], dtype=dtype),
                     constant_op.constant([1]), constant_op.constant([2, 1]))

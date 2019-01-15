@@ -29,12 +29,10 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import resource_variable_ops
-from tensorflow.python.ops import state_ops
 
 
 class LazyAdamOptimizer(adam.Adam):
-    """Variant of the Adam optimizer that handles sparse updates more
-    efficiently.
+    """Variant of the Adam optimizer that handles sparse updates more efficiently.
 
     The original Adam algorithm maintains two moving-average accumulators for
     each trainable variable; the accumulators are updated at every step.
