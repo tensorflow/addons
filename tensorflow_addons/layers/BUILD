@@ -8,6 +8,7 @@ py_library(
         "__init__.py",
         "python/__init__.py",
         "python/wrappers.py",
+        "python/normalizations.py"
     ]),
     srcs_version = "PY2AND3",
 )
@@ -18,6 +19,18 @@ py_test(
         "python/wrappers_test.py",
     ],
     main = "python/wrappers_test.py",
+    deps = [
+            ":layers_py",
+        ],
+    srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "layers_normalizations_py_test",
+    srcs = [
+        "python/normalizations_test.py",
+    ],
+    main = "python/normalizations_test.py",
     deps = [
             ":layers_py",
         ],
