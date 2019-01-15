@@ -265,15 +265,11 @@ class SkipGramOpsTest(test.TestCase):
                 text.skip_gram_sample(input_tensor, min_skips=min_skips,
                                       max_skips=max_skips)
 
-        #########################################
-
-        # FIXME: Why is this not failing?
-        # with self.assertRaises(ValueError):
-        #     invalid_tensor = constant_op.constant([[b"the"], [b"quick"],
-        #                                            [b"brown"]])
-        #     text.skip_gram_sample(invalid_tensor)
-
-        #########################################
+        # Eager tensor must be rank 1
+        with self.assertRaises(errors.InvalidArgumentError):
+            invalid_tensor = constant_op.constant([[b"the"], [b"quick"],
+                                                   [b"brown"]])
+            text.skip_gram_sample(invalid_tensor)
 
         # vocab_freq_table must be provided if vocab_min_count,
         # vocab_subsampling, or corpus_size is specified.
