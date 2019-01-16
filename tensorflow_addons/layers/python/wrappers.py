@@ -26,22 +26,22 @@ from tensorflow.python.keras.layers import Wrapper
 from tensorflow.python.ops import variables as tf_variables
 
 
-class WeightNorm(Wrapper):
+class WeightNormalization(Wrapper):
     """ This wrapper reparameterizes a layer by decoupling the weight's
     magnitude and direction. This speeds up convergence by improving the
     conditioning of the optimization problem.
     Weight Normalization: A Simple Reparameterization to Accelerate
     Training of Deep Neural Networks: https://arxiv.org/abs/1602.07868
     Tim Salimans, Diederik P. Kingma (2016)
-    WeightNorm wrapper works for keras and tf layers.
+    WeightNormalization wrapper works for keras and tf layers.
     ```python
-      net = WeightNorm(tf.keras.layers.Conv2D(2, 2, activation='relu'),
+      net = WeightNormalization(tf.keras.layers.Conv2D(2, 2, activation='relu'),
              input_shape=(32, 32, 3), data_init=True)(x)
-      net = WeightNorm(tf.keras.layers.Conv2D(16, 5, activation='relu'),
+      net = WeightNormalization(tf.keras.layers.Conv2D(16, 5, activation='relu'),
                        data_init=True)(net)
-      net = WeightNorm(tf.keras.layers.Dense(120, activation='relu'),
+      net = WeightNormalization(tf.keras.layers.Dense(120, activation='relu'),
                        data_init=True)(net)
-      net = WeightNorm(tf.keras.layers.Dense(n_classes),
+      net = WeightNormalization(tf.keras.layers.Dense(n_classes),
                        data_init=True)(net)
     ```
     Arguments:
@@ -55,7 +55,7 @@ class WeightNorm(Wrapper):
     def __init__(self, layer, data_init=False, **kwargs):
         if not isinstance(layer, Layer):
             raise ValueError(
-                'Please initialize `WeightNorm` layer with a '
+                'Please initialize `WeightNormalization` layer with a '
                 '`Layer` instance. You passed: {input}'.format(input=layer))
 
         if not context.executing_eagerly() and data_init:
@@ -67,7 +67,7 @@ class WeightNorm(Wrapper):
         if data_init:
             self.initialized = False
 
-        super(WeightNorm, self).__init__(layer, **kwargs)
+        super(WeightNormalization, self).__init__(layer, **kwargs)
         self._track_checkpointable(layer, name='layer')
 
     def _compute_weights(self):
@@ -114,7 +114,7 @@ class WeightNorm(Wrapper):
 
             if not hasattr(self.layer, 'kernel'):
                 raise ValueError(
-                    '`WeightNorm` must wrap a layer that'
+                    '`WeightNormalization` must wrap a layer that'
                     ' contains a `kernel` for weights'
                 )
 
@@ -137,7 +137,7 @@ class WeightNorm(Wrapper):
 
             self.layer.built = True
 
-        super(WeightNorm, self).build()
+        super(WeightNormalization, self).build()
         self.built = True
 
     def call(self, inputs):
