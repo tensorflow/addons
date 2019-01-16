@@ -29,12 +29,12 @@ from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow.python import keras
 
 
-class WeightNormTest(test.TestCase):
+class WeightNormalizationTest(test.TestCase):
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_weightnorm_dense_train(self):
         model = keras.models.Sequential()
-        model.add(wrappers.WeightNorm(
+        model.add(wrappers.WeightNormalization(
             keras.layers.Dense(2), input_shape=(3, 4)))
 
         model.compile(optimizer=RMSPropOptimizer(0.01), loss='mse')
@@ -48,7 +48,7 @@ class WeightNormTest(test.TestCase):
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_weightnorm_conv2d(self):
         model = keras.models.Sequential()
-        model.add(wrappers.WeightNorm(
+        model.add(wrappers.WeightNormalization(
             keras.layers.Conv2D(5, (2, 2), padding='same'),
             input_shape=(4, 4, 3)))
 
@@ -63,7 +63,7 @@ class WeightNormTest(test.TestCase):
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_weight_norm_tflayers(self):
         images = random_ops.random_uniform((2, 4, 4, 3))
-        wn_wrapper = wrappers.WeightNorm(layers.Conv2D(32, [2, 2]),
+        wn_wrapper = wrappers.WeightNormalization(layers.Conv2D(32, [2, 2]),
                                          input_shape=(4, 4, 3))
         wn_wrapper.apply(images)
         self.assertTrue(hasattr(wn_wrapper.layer, 'g'))
@@ -72,12 +72,12 @@ class WeightNormTest(test.TestCase):
     def test_weight_norm_nonlayer(self):
         images = random_ops.random_uniform((2, 4, 43))
         with self.assertRaises(ValueError):
-            wrappers.WeightNorm(images)
+            wrappers.WeightNormalization(images)
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_weight_norm_nokernel(self):
         with self.assertRaises(ValueError):
-            wrappers.WeightNorm(layers.MaxPooling2D(2, 2)).build((2, 2))
+            wrappers.WeightNormalization(layers.MaxPooling2D(2, 2)).build((2, 2))
 
 
 if __name__ == "__main__":
