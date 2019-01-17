@@ -35,11 +35,11 @@ class Maxout(Layer):
     also be used after Dense layers to reduce number of features.
 
     Arguments:
-      num_units: Specifies how many features will remain after maxout
-        in the `axis` dimension (usually channel).
-        This must be a factor of number of features.
-      axis: The dimension where max pooling will be performed. Default is the
-        last dimension.
+        num_units: Specifies how many features will remain after maxout
+            in the `axis` dimension (usually channel).
+            This must be a factor of number of features.
+        axis: The dimension where max pooling will be performed. Default is the
+            last dimension.
 
     Input shape:
         nD tensor with shape: `(batch_size, ..., axis_dim, ...)`.
