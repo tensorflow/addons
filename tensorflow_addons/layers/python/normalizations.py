@@ -18,10 +18,9 @@
 from tensorflow.keras.layers import Layer, InputSpec
 from tensorflow.keras import initializers, regularizers, constraints
 from tensorflow.keras import backend as K
-from tensorflow.keras.utils import get_custom_objects
 from tensorflow.python.ops import nn
 
-class GroupNorm(Layer):
+class GroupNormalization(Layer):
     """Group normalization layer.
     Group Normalization divides the channels into groups and computes
     within each group
@@ -83,7 +82,7 @@ class GroupNorm(Layer):
                  beta_constraint=None,
                  gamma_constraint=None,
                  **kwargs):
-        super(GroupNorm, self).__init__(layer,**kwargs)
+        super(GroupNormalization, self).__init__(layer,**kwargs)
         self.supports_masking = True
         self.groups = groups
         self.axis = axis
@@ -140,7 +139,7 @@ class GroupNorm(Layer):
             self.beta = None
         self.built = True
 
-    def call(self, inputs, **kwargs):
+    def call(self, inputs):
         input_shape = K.int_shape(inputs)
         tensor_input_shape = K.shape(inputs)
 
@@ -205,7 +204,7 @@ class GroupNorm(Layer):
     def compute_output_shape(self, input_shape):
         return input_shape
 
-class LayerNorm(GroupNorm):
+class LayerNormalization(GroupNormalization):
     """Layer normalization layer.
     Layer Normalization is an specific case of ```GroupNormalization```since it
     normalizes all features of a layer. The Groupsize is 1.
@@ -242,9 +241,9 @@ class LayerNorm(GroupNorm):
     """
     def __init__(self,**kwargs):
         kwargs["groups"]=1
-        super(LayerNorm,self).__init__(**kwargs)
+        super(LayerNormalization,self).__init__(**kwargs)
 
-class InstanceNorm(GroupNorm):
+class InstanceNormalization(GroupNormalization):
     """Instance normalization layer.
     Instance Normalization is an specific case of ```GroupNormalization```since it
     normalizes all features of one channel. The Groupsize is equal to the channel size.
@@ -281,4 +280,4 @@ class InstanceNorm(GroupNorm):
     """
     def __init__(self,**kwargs):
         kwargs["groups"]=-1
-        super(InstanceNorm,self).__init__(**kwargs)
+        super(InstanceNormalization,self).__init__(**kwargs)
