@@ -7,6 +7,7 @@ py_library(
     srcs = ([
         "__init__.py",
         "python/__init__.py",
+        "python/maxout.py",
         "python/wrappers.py",
     ]),
     srcs_version = "PY2AND3",
@@ -23,3 +24,17 @@ py_test(
         ],
     srcs_version = "PY2AND3",
 )
+
+py_test(
+    name = "maxout_py_test",
+    size = "small",
+    srcs = [
+        "python/maxout_test.py",
+    ],
+    main = "python/maxout_test.py",
+    deps = [
+            ":layers_py",
+        ],
+    srcs_version = "PY2AND3",
+)
+
