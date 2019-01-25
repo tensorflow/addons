@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorflow.python.framework import ops
+from tensorflow.python.keras.utils import generic_utils
 from tensorflow.python.keras.engine.base_layer import Layer
 from tensorflow.python.ops import math_ops
 
@@ -70,3 +71,7 @@ class PoincareNormalize(Layer):
         config = {'axis': self.axis, 'epsilon': self.epsilon}
         base_config = super(PoincareNormalize, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+
+generic_utils._GLOBAL_CUSTOM_OBJECTS['PoincareNormalize'] = PoincareNormalize
+    
