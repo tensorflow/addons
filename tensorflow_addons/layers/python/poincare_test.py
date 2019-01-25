@@ -21,7 +21,6 @@ from __future__ import print_function
 import numpy as np
 
 from tensorflow.python.keras import testing_utils
-from tensorflow.python.keras.utils import generic_utils
 from tensorflow.python.platform import test
 from tensorflow_addons.layers.python.poincare import PoincareNormalize
 
@@ -49,21 +48,17 @@ class PoincareNormalizeTest(test.TestCase):
         for dim in range(len(x_shape)):
             outputs_expected = self._PoincareNormalize(inputs, dim, epsilon)
 
-            with generic_utils.custom_object_scope({
-                    'PoincareNormalize':
-                    PoincareNormalize
-            }):
-                outputs = testing_utils.layer_test(
-                    PoincareNormalize,
-                    kwargs={
-                        'axis': dim,
-                        'epsilon': epsilon
-                    },
-                    input_data=inputs,
-                    expected_output=outputs_expected)
-                for y in outputs_expected, outputs:
-                    norm = np.linalg.norm(y, axis=dim)
-                    self.assertLessEqual(norm.max(), 1. - epsilon + tol)
+            outputs = testing_utils.layer_test(
+                PoincareNormalize,
+                kwargs={
+                    'axis': dim,
+                    'epsilon': epsilon
+                },
+                input_data=inputs,
+                expected_output=outputs_expected)
+            for y in outputs_expected, outputs:
+                norm = np.linalg.norm(y, axis=dim)
+                self.assertLessEqual(norm.max(), 1. - epsilon + tol)
 
     def testPoincareNormalizeDimArray(self):
         x_shape = [20, 7, 3]
@@ -75,21 +70,17 @@ class PoincareNormalizeTest(test.TestCase):
 
         outputs_expected = self._PoincareNormalize(inputs, dim, epsilon)
 
-        with generic_utils.custom_object_scope({
-                'PoincareNormalize':
-                PoincareNormalize
-        }):
-            outputs = testing_utils.layer_test(
-                PoincareNormalize,
-                kwargs={
-                    'axis': dim,
-                    'epsilon': epsilon
-                },
-                input_data=inputs,
-                expected_output=outputs_expected)
-            for y in outputs_expected, outputs:
-                norm = np.linalg.norm(y, axis=tuple(dim))
-                self.assertLessEqual(norm.max(), 1. - epsilon + tol)
+        outputs = testing_utils.layer_test(
+            PoincareNormalize,
+            kwargs={
+                'axis': dim,
+                'epsilon': epsilon
+            },
+            input_data=inputs,
+            expected_output=outputs_expected)
+        for y in outputs_expected, outputs:
+            norm = np.linalg.norm(y, axis=tuple(dim))
+            self.assertLessEqual(norm.max(), 1. - epsilon + tol)
 
 
 if __name__ == '__main__':
