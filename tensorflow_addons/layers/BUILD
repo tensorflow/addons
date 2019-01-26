@@ -8,6 +8,7 @@ py_library(
         "__init__.py",
         "python/__init__.py",
         "python/maxout.py",
+        "python/poincare.py",
         "python/wrappers.py",
     ],
     srcs_version = "PY2AND3",
@@ -33,8 +34,20 @@ py_test(
     ],
     main = "python/maxout_test.py",
     deps = [
+            ":layers_py",
+        ],
+        srcs_version = "PY2AND3",
+    )
+  
+  py_test(
+    name = "poincare_py_test",
+    size = "small",
+    srcs = [
+        "python/poincare_test.py",
+    ],
+    main = "python/poincare_test.py",
+    deps = [
         ":layers_py",
     ],
     srcs_version = "PY2AND3",
 )
-
