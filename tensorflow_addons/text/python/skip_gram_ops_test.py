@@ -475,7 +475,7 @@ class SkipGramOpsTest(test.TestCase):
             vocab_freq_file=vocab_freq_file,
             vocab_token_index=0,
             vocab_freq_index=1,
-            vocab_freq_dtype=vocab_freq_dtype,
+            vocab_freq_dtype=dtypes.float64,
             vocab_min_count=vocab_min_count,
             vocab_subsampling=0.05,
             corpus_size=corpus_size,
