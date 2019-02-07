@@ -31,7 +31,8 @@ def pairwise_distance_np(feature, squared=False):
     Args:
       feature: 2-D numpy array of size [number of data, feature dimension]
       squared: Boolean. If true, output is the pairwise squared euclidean
-        distance matrix; else, output is the pairwise euclidean distance matrix.
+        distance matrix; else, output is the pairwise euclidean distance
+        matrix.
 
     Returns:
       pairwise_distances: 2-D numpy array of size
@@ -63,10 +64,11 @@ class TripletSemiHardLossTest(test.TestCase):
         embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
         labels = np.random.randint(0,
                                    num_classes,
-                                   size=(num_data)).astype(np.float32)
+                                   size=(num_data))
 
         # Reshape labels to compute adjacency matrix.
-        labels_reshaped = np.reshape(labels, (labels.shape[0], 1))
+        labels_reshaped = np.reshape(labels.astype(np.float32),
+                                     (labels.shape[0], 1))
         # Compute the loss in NP.
         adjacency = np.equal(labels_reshaped, labels_reshaped.T)
 
