@@ -20,13 +20,13 @@ from __future__ import print_function
 import numpy as np
 from tensorflow_addons.layers.python import wrappers
 
-from tensorflow.python.ops import random_ops
-from tensorflow.python.platform import test
-from tensorflow.python.layers import layers
-from tensorflow.python.training.rmsprop import RMSPropOptimizer
-
-from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow.python import keras
+from tensorflow.python.ops import random_ops
+from tensorflow.python.keras.optimizer_v2.rmsprop import RMSprop
+
+from tensorflow.python.platform import test
+from tensorflow.python.framework import test_util as tf_test_util
+from tensorflow.python.keras import testing_utils
 
 
 class WeightNormalizationTest(test.TestCase):
@@ -37,11 +37,25 @@ class WeightNormalizationTest(test.TestCase):
         model.add(wrappers.WeightNormalization(
             keras.layers.Dense(2), input_shape=(3, 4)))
 
-        model.compile(optimizer=RMSPropOptimizer(0.01), loss='mse')
+        model.compile(optimizer=RMSprop(learning_rate=0.001), loss='mse')
         model.fit(
             np.random.random((10, 3, 4)),
             np.random.random((10, 3, 2)),
-            epochs=1,
+            epochs=3,
+            batch_size=10)
+        self.assertTrue(hasattr(model.layers[0].layer, 'g'))
+
+    @tf_test_util.run_all_in_graph_and_eager_modes
+    def test_weightnorm_dense_train_notinit(self):
+        model = keras.models.Sequential()
+        model.add(wrappers.WeightNormalization(
+            keras.layers.Dense(2), input_shape=(3, 4), data_init=False))
+
+        model.compile(optimizer=RMSprop(learning_rate=0.001), loss='mse')
+        model.fit(
+            np.random.random((10, 3, 4)),
+            np.random.random((10, 3, 2)),
+            epochs=3,
             batch_size=10)
         self.assertTrue(hasattr(model.layers[0].layer, 'g'))
 
@@ -53,31 +67,45 @@ class WeightNormalizationTest(test.TestCase):
             input_shape=(4, 4, 3)))
 
         model.add(keras.layers.Activation('relu'))
-        model.compile(optimizer=RMSPropOptimizer(0.01), loss='mse')
-        model.train_on_batch(
+        model.compile(optimizer=RMSprop(learning_rate=0.001), loss='mse')
+        model.fit(
             np.random.random((2, 4, 4, 3)),
-            np.random.random((2, 4, 4, 5)))
+            np.random.random((2, 4, 4, 5)),
+            epochs=3,
+            batch_size=10)
 
         self.assertTrue(hasattr(model.layers[0].layer, 'g'))
 
     @tf_test_util.run_all_in_graph_and_eager_modes
-    def test_weight_norm_tflayers(self):
+    def test_weightnorm_tflayers(self):
         images = random_ops.random_uniform((2, 4, 4, 3))
-        wn_wrapper = wrappers.WeightNormalization(layers.Conv2D(32, [2, 2]),
-                                         input_shape=(4, 4, 3))
+        wn_wrapper = wrappers.WeightNormalization(
+            keras.layers.Conv2D(32, [2, 2]),
+                                                  input_shape=(4, 4, 3))
         wn_wrapper.apply(images)
         self.assertTrue(hasattr(wn_wrapper.layer, 'g'))
 
     @tf_test_util.run_all_in_graph_and_eager_modes
-    def test_weight_norm_nonlayer(self):
+    def test_weightnorm_nonlayer(self):
         images = random_ops.random_uniform((2, 4, 43))
         with self.assertRaises(ValueError):
             wrappers.WeightNormalization(images)
 
     @tf_test_util.run_all_in_graph_and_eager_modes
-    def test_weight_norm_nokernel(self):
+    def test_weightnorm_nokernel(self):
         with self.assertRaises(ValueError):
-            wrappers.WeightNormalization(layers.MaxPooling2D(2, 2)).build((2, 2))
+            wrappers.WeightNormalization(
+                keras.layers.MaxPooling2D(2, 2)).build((2, 2))
+
+    def test_weightnorm_keras(self):
+        input = np.random.random((10, 3, 4)).astype(np.float32)
+        outputs = testing_utils.layer_test(
+            wrappers.WeightNormalization,
+            kwargs={
+                'layer': keras.layers.Dense(2),
+                'input_shape': (3, 4)
+            },
+            input_data=input)
 
 
 if __name__ == "__main__":
