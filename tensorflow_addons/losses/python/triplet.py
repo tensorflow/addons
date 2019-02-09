@@ -17,6 +17,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import tensorflow as tf
 from tensorflow.python.framework import dtypes
 from tensorflow.python.keras import losses
 from tensorflow.python.keras.utils import generic_utils
@@ -71,6 +72,7 @@ def _masked_minimum(data, mask, dim=1):
 
 
 @register_keras_custom_object
+@tf.function
 def triplet_semihard_loss(y_true, y_pred, margin=1.0):
     """Computes the triplet loss with semi-hard negative mining.
 
