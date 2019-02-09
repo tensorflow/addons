@@ -69,7 +69,6 @@ class GroupNormalization(Layer):
     """
 
     def __init__(self,
-                 layer,
                  groups=32,
                  axis=-1,
                  epsilon=1e-5,
@@ -82,7 +81,7 @@ class GroupNormalization(Layer):
                  beta_constraint=None,
                  gamma_constraint=None,
                  **kwargs):
-        super(GroupNormalization, self).__init__(layer,**kwargs)
+        super(GroupNormalization, self).__init__(**kwargs)
         self.supports_masking = True
         self.groups = groups
         self.axis = axis
