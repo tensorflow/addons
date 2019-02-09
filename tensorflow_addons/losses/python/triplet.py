@@ -23,6 +23,7 @@ from tensorflow.python.keras.utils import generic_utils
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops.losses import losses_impl
+from tensorflow_addons.losses.python import metric_learning
 
 
 # TODO: move to utils module?
@@ -140,7 +141,7 @@ def triplet_semihard_loss(y_true, y_pred, margin=1.0):
     labels = array_ops.reshape(labels, [lshape[0], 1])
 
     # Build pairwise squared distance matrix.
-    pdist_matrix = pairwise_distance(embeddings, squared=True)
+    pdist_matrix = metric_learning.pairwise_distance(embeddings, squared=True)
     # Build pairwise binary adjacency matrix.
     adjacency = math_ops.equal(labels, array_ops.transpose(labels))
     # Invert so we can select negatives only.

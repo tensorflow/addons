@@ -8,6 +8,7 @@ py_library(
         "__init__.py",
         "python/__init__.py",
         "python/triplet.py",
+        "python/metric_learning.py",
     ],
     srcs_version = "PY2AND3",
 )
