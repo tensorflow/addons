@@ -20,12 +20,13 @@ from __future__ import print_function
 
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_shape
-from tensorflow.python.keras.utils import generic_utils
 from tensorflow.python.keras.engine.base_layer import Layer
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
+from tensorflow_addons.utils.python import keras_utils
 
 
+@keras_utils.register_keras_custom_object
 class Maxout(Layer):
     """Applies Maxout to the input.
 
@@ -94,5 +95,3 @@ class Maxout(Layer):
         base_config = super(Maxout, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
-
-generic_utils._GLOBAL_CUSTOM_OBJECTS['Maxout'] = Maxout
