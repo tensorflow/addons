@@ -37,7 +37,6 @@ def pairwise_distance_np(feature, squared=False):
     Returns:
       pairwise_distances: 2-D numpy array of size
         [number of data, number of data].
-
     """
     triu = np.triu_indices(feature.shape[0], 1)
     upper_tri_pdists = np.linalg.norm(feature[triu[1]] - feature[triu[0]],
