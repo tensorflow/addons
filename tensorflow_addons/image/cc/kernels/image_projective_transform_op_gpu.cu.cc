@@ -20,7 +20,7 @@ limitations under the License.
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/platform/types.h"
-#include "tensorflow_addons/image/cc/kernels/image_ops.h"
+#include "tensorflow_addons/image/cc/kernels/image_projective_transform_op.h"
 
 namespace tensorflow {
 

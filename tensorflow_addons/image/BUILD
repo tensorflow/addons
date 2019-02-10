@@ -6,8 +6,8 @@ package(default_visibility = ["//visibility:public"])
 cc_binary(
     name = "python/_image_ops.so",
     srcs = [
-        "cc/kernels/image_ops.cc",
-        "cc/kernels/image_ops.h",
+        "cc/kernels/image_projective_transform_op.cc",
+        "cc/kernels/image_projective_transform_op.h",
         "cc/ops/image_ops.cc",
     ],
     linkshared = 1,
@@ -33,9 +33,10 @@ py_library(
 )
 
 
+# TODO: use cuda_py_test later.
 py_test(
     name = "transform_ops_test",
-    size = "medium",
+    size = "small",
     srcs = [
         "python/transform_test.py"
     ],
