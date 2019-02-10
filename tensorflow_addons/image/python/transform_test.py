@@ -33,43 +33,40 @@ _DTYPES = set([dtypes.uint8, dtypes.int32, dtypes.int64, dtypes.float16,
 
 
 class ImageOpsTest(test.TestCase):
-    @tf_test_util.run_deprecated_v1
+    @tf_test_util.run_all_in_graph_and_eager_modes
     def test_compose(self):
         for dtype in _DTYPES:
-            with self.cached_session():
-                image = constant_op.constant(
-                    [[1, 1, 1, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]],
-                    dtype=dtype)
-                # Rotate counter-clockwise by pi / 2.
-                rotation = transform_ops.angles_to_projective_transforms(
-                    np.pi / 2, 4, 4)
-                # Translate right by 1 (the transformation matrix is always inverted,
-                # hence the -1).
-                translation = constant_op.constant(
-                    [1, 0, -1, 0, 1, 0, 0, 0],
-                    dtype=dtypes.float32)
-                composed = transform_ops.compose_transforms(rotation,
-                                                            translation)
-                image_transformed = transform_ops.transform(image, composed)
-                self.assertAllEqual(image_transformed.eval(),
-                                    [[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 0, 1],
-                                     [0, 1, 1, 1]])
+            image = constant_op.constant(
+                [[1, 1, 1, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]],
+                dtype=dtype)
+            # Rotate counter-clockwise by pi / 2.
+            rotation = transform_ops.angles_to_projective_transforms(np.pi / 2,
+                                                                     4, 4)
+            # Translate right by 1 (the transformation matrix is always inverted,
+            # hence the -1).
+            translation = constant_op.constant(
+                [1, 0, -1, 0, 1, 0, 0, 0],
+                dtype=dtypes.float32)
+            composed = transform_ops.compose_transforms(rotation, translation)
+            image_transformed = transform_ops.transform(image, composed)
+            self.assertAllEqual(
+                [[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 0, 1],
+                 [0, 1, 1, 1]], image_transformed)
 
-    @tf_test_util.run_deprecated_v1
+    @tf_test_util.run_all_in_graph_and_eager_modes
     def test_extreme_projective_transform(self):
         for dtype in _DTYPES:
-            with self.cached_session():
-                image = constant_op.constant(
-                    [[1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1]],
-                    dtype=dtype)
-                transformation = constant_op.constant(
-                    [1, 0, 0, 0, 1, 0, -1, 0], dtypes.float32)
-                image_transformed = transform_ops.transform(image,
-                                                            transformation)
-                self.assertAllEqual(image_transformed.eval(),
-                                    [[1, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0],
-                                     [0, 0, 0, 0]])
+            image = constant_op.constant(
+                [[1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1]],
+                dtype=dtype)
+            transformation = constant_op.constant(
+                [1, 0, 0, 0, 1, 0, -1, 0], dtypes.float32)
+            image_transformed = transform_ops.transform(image, transformation)
+            self.assertAllEqual(
+                [[1, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0],
+                 [0, 0, 0, 0]], image_transformed)
 
+    @tf_test_util.run_all_in_graph_and_eager_modes
     def test_transform_static_output_shape(self):
         image = constant_op.constant([[1., 2.], [3., 4.]])
         result = transform_ops.transform(
@@ -77,7 +74,7 @@ class ImageOpsTest(test.TestCase):
             random_ops.random_uniform(
                 [8], -1, 1),
             output_shape=constant_op.constant([3, 5]))
-        self.assertAllEqual([3, 5], result.get_shape())
+        self.assertAllEqual([3, 5], result.shape)
 
     def _test_grad(self, shape_to_test):
         with self.cached_session():
@@ -134,23 +131,21 @@ class ImageOpsTest(test.TestCase):
         self._test_grad_different_shape([4, 12, 3], [8, 24, 3])
         self._test_grad_different_shape([3, 4, 12, 3], [3, 8, 24, 3])
 
-    @tf_test_util.run_deprecated_v1
+    @tf_test_util.run_all_in_graph_and_eager_modes
     def test_transform_data_types(self):
         for dtype in _DTYPES:
             image = constant_op.constant([[1, 2], [3, 4]], dtype=dtype)
-            value = transform_ops.transform(image, [1] * 8)
             with self.test_session(use_gpu=True):
                 self.assertAllEqual(
-                    value.eval(),
-                    np.array([[4, 4], [4, 4]]).astype(dtype.as_numpy_dtype()))
+                    np.array([[4, 4], [4, 4]]).astype(dtype.as_numpy_dtype()),
+                    transform_ops.transform(image, [1] * 8))
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_transform_eager(self):
         image = constant_op.constant([[1., 2.], [3., 4.]])
-        value = transform_ops.transform(image, [1] * 8)
-        with self.test_session(use_gpu=True):
-            self.assertAllEqual(
-                self.evaluate(value), np.array([[4, 4], [4, 4]]))
+        self.assertAllEqual(
+            np.array([[4, 4], [4, 4]]),
+            transform_ops.transform(image, [1] * 8))
 
 
 if __name__ == "__main__":

@@ -17,6 +17,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import tensorflow as tf
 from tensorflow.python.framework import common_shapes
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
@@ -36,6 +37,7 @@ _IMAGE_DTYPES = set([dtypes.uint8, dtypes.int32, dtypes.int64, dtypes.float16,
 ops.RegisterShape("ImageProjectiveTransform")(common_shapes.call_cpp_shape_fn)
 
 
+@tf.function
 def transform(images,
               transforms,
               interpolation="NEAREST",
