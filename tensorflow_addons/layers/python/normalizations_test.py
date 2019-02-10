@@ -23,6 +23,19 @@ from tensorflow.python.platform import test
 from tensorflow.python.framework import test_util as tf_test_util
 
 
+def create_and_fit_Sequential_model(layer):
+    model=keras.models.Sequential()
+    model.add(layer)
+    model.add(keras.layers.Dense(32))
+
+    model.compile(optimizer=RMSPropOptimizer(0.01),loss="mse")
+    layer_shape=(10,)+layer.input_shape[1:]
+    print(type(layer_shape))
+    input_batch=np.random.random_sample(size=layer_shape)
+    model.fit(input_batch,
+              epochs=1,
+              batch_size=5)
+    return model
 class normalization_test(test.TestCase):
 
     @tf_test_util.run_all_in_graph_and_eager_modes
@@ -32,30 +45,23 @@ class normalization_test(test.TestCase):
         self.assertEqual(len(layer.trainable_weights), 0)
         self.assertEqual(len(layer.weights), 0)
 
-        layer = keras.layers.LayerNormalization()
+        layer = LayerNormalization()
         layer.build((None, 3, 4))
         self.assertEqual(len(layer.trainable_weights), 2)
         self.assertEqual(len(layer.weights), 2)
 
-
-
+        layer = InstanceNormalization()
+        layer.build((None, 3, 4))
+        self.assertEqual(len(layer.trainable_weights),2)
+        self.assertEqual(len(layer.weights),2)
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_groupnorm_flat(self):
         # Testing for 1 == LayerNorm, 16 == GroupNorm, -1 == InstanceNorm
         groups=[-1,16,1]
         for i in groups:
-            model=keras.models.Sequential()
-            model.add(GroupNormalization(
-                 input_shape=(32,),groups=i))
-            model.add(keras.layers.Dense(32))
 
-            model.compile(optimizer=RMSPropOptimizer(0.01), loss='mse')
-            model.fit(
-                    np.random.random((10,32)),
-                    np.random.random((10,32)),
-                    epochs=1,
-                    batch_size=10)
+            model=create_and_fit_Sequential_model(GroupNormalization(input_shape=(64,),groups=i))
             self.assertTrue(hasattr(model.layers[0], 'gamma'))
             self.assertTrue(hasattr(model.layers[0], 'beta'))
 
@@ -75,6 +81,7 @@ class normalization_test(test.TestCase):
             model.compile(optimizer=RMSPropOptimizer(0.01), loss='mse')
             model.fit(np.random.random((10,20, 20, 3)))
             self.assertTrue(hasattr(model.layers[0], 'gamma'))
+
 
 """
 class LayerNormalizationTest(keras_parameterized.TestCase):
