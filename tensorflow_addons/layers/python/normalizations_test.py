@@ -42,7 +42,7 @@ class normalization_test(test.TestCase):
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_groupnorm_flat(self):
-        # Testing for 1 == LayerNorm, 5 == GroupNorm, -1 == InstanceNorm
+        # Testing for 1 == LayerNorm, 16 == GroupNorm, -1 == InstanceNorm
         groups=[-1,16,1]
         for i in groups:
             model=keras.models.Sequential()
@@ -59,6 +59,7 @@ class normalization_test(test.TestCase):
             self.assertTrue(hasattr(model.layers[0], 'gamma'))
             self.assertTrue(hasattr(model.layers[0], 'beta'))
 
+    @tf_test_util.run_all_in_graph_and_eager_modes
     def test_groupnorm_conv(self):
         # Testing for 1 == LayerNorm, 5 == GroupNorm, -1 == InstanceNorm
         #groups=[1,5,-1]
@@ -74,14 +75,7 @@ class normalization_test(test.TestCase):
             model.compile(optimizer=RMSPropOptimizer(0.01), loss='mse')
             model.fit(np.random.random((10,20, 20, 3)))
             self.assertTrue(hasattr(model.layers[0], 'gamma'))
-            self.assertTrue(hasattr(model.layers[0], 'beta'))
 
-    """def testUnknownShape(self):
-        inputs = array_ops.placeholder(dtypes.float32)
-        with self.assertRaisesRegexp(ValueError, 'undefined rank'):
-            GroupNormalization(inputs)
-            LayerNormaliztion(inputs)
-            InstanceNormalization(inputs)"""
 """
 class LayerNormalizationTest(keras_parameterized.TestCase):
 
