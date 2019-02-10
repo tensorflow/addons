@@ -120,7 +120,7 @@ class ImageProjectiveTransform : public OpKernel {
 };
 
 #define REGISTER(TYPE)                                                \
-  REGISTER_KERNEL_BUILDER(Name("ImageProjectiveTransformV2")          \
+  REGISTER_KERNEL_BUILDER(Name("ImageProjectiveTransform")          \
                               .Device(DEVICE_CPU)                     \
                               .TypeConstraint<TYPE>("dtype"),         \
                           ImageProjectiveTransform<CPUDevice, TYPE>)
@@ -159,7 +159,7 @@ TF_CALL_double(DECLARE_FUNCTOR);
 }  // end namespace functor
 
 #define REGISTER(TYPE)                                                \
-  REGISTER_KERNEL_BUILDER(Name("ImageProjectiveTransformV2")          \
+  REGISTER_KERNEL_BUILDER(Name("ImageProjectiveTransform")          \
                               .Device(DEVICE_GPU)                     \
                               .TypeConstraint<TYPE>("dtype")          \
                               .HostMemory("output_shape"),            \

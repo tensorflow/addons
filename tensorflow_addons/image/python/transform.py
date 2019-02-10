@@ -34,7 +34,7 @@ _IMAGE_DTYPES = set(
     [dtypes.uint8, dtypes.int32, dtypes.int64,
      dtypes.float16, dtypes.float32, dtypes.float64])
 
-ops.RegisterShape("ImageProjectiveTransformV2")(common_shapes.call_cpp_shape_fn)
+ops.RegisterShape("ImageProjectiveTransform")(common_shapes.call_cpp_shape_fn)
 
 
 def transform(images,
@@ -109,7 +109,7 @@ def transform(images,
     else:
       raise TypeError("Transforms should have rank 1 or 2.")
 
-    output = _image_ops_so.image_projective_transform_v2(
+    output = _image_ops_so.image_projective_transform(
         images,
         output_shape=output_shape,
         transforms=transforms,
@@ -256,7 +256,7 @@ def angles_to_projective_transforms(angles,
         axis=1)
 
 
-@ops.RegisterGradient("ImageProjectiveTransformV2")
+@ops.RegisterGradient("ImageProjectiveTransform")
 def _image_projective_transform_grad(op, grad):
   """Computes the gradient for ImageProjectiveTransform."""
   images = op.inputs[0]
@@ -280,7 +280,7 @@ def _image_projective_transform_grad(op, grad):
   transforms = flat_transforms_to_matrices(transforms=transforms)
   inverse = linalg_ops.matrix_inverse(transforms)
   transforms = matrices_to_flat_transforms(inverse)
-  output = _image_ops_so.image_projective_transform_v2(
+  output = _image_ops_so.image_projective_transform(
       images=grad,
       transforms=transforms,
       output_shape=array_ops.shape(image_or_images)[1:3],
