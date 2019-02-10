@@ -19,11 +19,11 @@ limitations under the License.
 #define EIGEN_USE_GPU
 #endif  // GOOGLE_CUDA
 
+#include "tensorflow_addons/image/cc/kernels/image_projective_transform_op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/platform/types.h"
-#include "tensorflow_addons/image/cc/kernels/image_projective_transform_op.h"
 
 namespace tensorflow {
 
@@ -119,10 +119,10 @@ class ImageProjectiveTransform : public OpKernel {
   }
 };
 
-#define REGISTER(TYPE)                                                \
-  REGISTER_KERNEL_BUILDER(Name("ImageProjectiveTransform")          \
-                              .Device(DEVICE_CPU)                     \
-                              .TypeConstraint<TYPE>("dtype"),         \
+#define REGISTER(TYPE)                                        \
+  REGISTER_KERNEL_BUILDER(Name("ImageProjectiveTransform")    \
+                              .Device(DEVICE_CPU)             \
+                              .TypeConstraint<TYPE>("dtype"), \
                           ImageProjectiveTransform<CPUDevice, TYPE>)
 
 TF_CALL_uint8(REGISTER);
@@ -158,11 +158,11 @@ TF_CALL_double(DECLARE_FUNCTOR);
 
 }  // end namespace functor
 
-#define REGISTER(TYPE)                                                \
-  REGISTER_KERNEL_BUILDER(Name("ImageProjectiveTransform")          \
-                              .Device(DEVICE_GPU)                     \
-                              .TypeConstraint<TYPE>("dtype")          \
-                              .HostMemory("output_shape"),            \
+#define REGISTER(TYPE)                                       \
+  REGISTER_KERNEL_BUILDER(Name("ImageProjectiveTransform")   \
+                              .Device(DEVICE_GPU)            \
+                              .TypeConstraint<TYPE>("dtype") \
+                              .HostMemory("output_shape"),   \
                           ImageProjectiveTransform<GPUDevice, TYPE>)
 
 TF_CALL_uint8(REGISTER);
