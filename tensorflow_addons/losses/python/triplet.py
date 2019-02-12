@@ -21,9 +21,9 @@ import tensorflow as tf
 from tensorflow.python.framework import dtypes
 from tensorflow.python.keras import losses
 from tensorflow.python.keras.utils import generic_utils
+from tensorflow.python.keras.utils import losses_utils
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
-from tensorflow.python.ops.losses import losses_impl
 from tensorflow_addons.losses.python import metric_learning
 
 
@@ -175,5 +175,5 @@ class TripletSemiHardLoss(losses.LossFunctionWrapper):
         super(TripletSemiHardLoss, self).__init__(
             triplet_semihard_loss,
             name=name,
-            reduction=losses_impl.ReductionV2.NONE,
+            reduction=losses_utils.ReductionV2.NONE,
             margin=margin)
