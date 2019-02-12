@@ -20,17 +20,11 @@ from __future__ import print_function
 import tensorflow as tf
 from tensorflow.python.framework import dtypes
 from tensorflow.python.keras import losses
-from tensorflow.python.keras.utils import generic_utils
 from tensorflow.python.keras.utils import losses_utils
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
 from tensorflow_addons.losses.python import metric_learning
-
-
-# TODO: move to utils module?
-def register_keras_custom_object(cls):
-    generic_utils._GLOBAL_CUSTOM_OBJECTS[cls.__name__] = cls
-    return cls
+from tensorflow_addons.utils.python import keras_utils
 
 
 def _masked_maximum(data, mask, dim=1):
@@ -71,7 +65,7 @@ def _masked_minimum(data, mask, dim=1):
     return masked_minimums
 
 
-@register_keras_custom_object
+@keras_utils.register_keras_custom_object
 @tf.function
 def triplet_semihard_loss(y_true, y_pred, margin=1.0):
     """Computes the triplet loss with semi-hard negative mining.
@@ -151,7 +145,7 @@ def triplet_semihard_loss(y_true, y_pred, margin=1.0):
     return triplet_loss
 
 
-@register_keras_custom_object
+@keras_utils.register_keras_custom_object
 class TripletSemiHardLoss(losses.LossFunctionWrapper):
     """Computes the triplet loss with semi-hard negative mining.
 

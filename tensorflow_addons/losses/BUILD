@@ -11,6 +11,9 @@ py_library(
         "python/metric_learning.py",
     ],
     srcs_version = "PY2AND3",
+    deps = [
+        "//tensorflow_addons/utils:utils_py",
+    ],
 )
 
 py_test(
