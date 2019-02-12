@@ -4,7 +4,7 @@ not available in core TensorFlow. TensorFlow natively supports
 a larger number of operators, layers, metrics, losses, and optimizers.
 However, in a fast moving field like ML, there are many interesting new
 developments that cannot be integrated into core TensorFlow
-(because their significance is not yet clear, or it is mostly used by a smaller
+(because their broad applicability is not yet clear, or it is mostly used by a smaller
 subset of the community).
 
 # Scope
