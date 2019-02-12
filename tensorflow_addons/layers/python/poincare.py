@@ -19,11 +19,12 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorflow.python.framework import ops
-from tensorflow.python.keras.utils import generic_utils
 from tensorflow.python.keras.engine.base_layer import Layer
 from tensorflow.python.ops import math_ops
+from tensorflow_addons.utils.python import keras_utils
 
 
+@keras_utils.register_keras_custom_object
 class PoincareNormalize(Layer):
     """Project into the Poincare ball with norm <= 1.0 - epsilon.
 
@@ -72,6 +73,3 @@ class PoincareNormalize(Layer):
         base_config = super(PoincareNormalize, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
-
-generic_utils._GLOBAL_CUSTOM_OBJECTS['PoincareNormalize'] = PoincareNormalize
-    
