@@ -21,15 +21,43 @@ function write_action_env_to_bazelrc() {
   write_to_bazelrc "build --action_env $1=\"$2\""
 }
 
-rm .bazelrc
-if python -c "import tensorflow" &> /dev/null; then
-    echo 'using installed tensorflow'
+# Parse arguments
+while [ "$1" != "" ]; do
+    PARAM=`echo $1 | awk -F= '{print $1}'`
+    VALUE=`echo $1 | awk -F= '{print $2}'`
+    case $PARAM in
+        --py_version)
+            PY_VERSION=$VALUE
+            ;;
+        *)
+            echo "ERROR: unknown parameter \"$PARAM\""
+            usage
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+
+if [ "$PY_VERSION" -eq "3" ]; then
+    echo ${PY_VERSION}
+    PY_PATH=`which python3`
+    PIP_PATH=`which pip3`
 else
-    pip install tf-nightly-2.0-preview
+
+    PY_PATH=`which python`
+    PIP_PATH=`which pip`
 fi
 
-TF_CFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') )
-TF_LFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )
+rm .bazelrc
+if ${PY_PATH} -c "import tensorflow" &> /dev/null; then
+    echo 'using installed tensorflow'
+else
+    ${PIP_PATH} install tf-nightly-2.0-preview
+fi
+
+TF_CFLAGS=( $(${PY_PATH} -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') )
+TF_LFLAGS=( $(${PY_PATH} -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )
 
 write_action_env_to_bazelrc "TF_HEADER_DIR" ${TF_CFLAGS:2}
 write_action_env_to_bazelrc "TF_SHARED_LIBRARY_DIR" ${TF_LFLAGS:2}
