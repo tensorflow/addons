@@ -4,7 +4,7 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "layers_py",
-    srcs = [
+    srcs = ([
         "__init__.py",
         "python/__init__.py",
         "python/maxout.py",
