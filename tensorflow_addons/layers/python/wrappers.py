@@ -129,6 +129,7 @@ class WeightNormalization(Wrapper):
                 trainable=True,
                 aggregation=tf_variables.VariableAggregation.MEAN)
 
+            # TODO: Check if this needs control deps in TF2 graph mode
             self.layer.g.assign(self._init_norm(self.layer.v))
             self._compute_weights()
 
