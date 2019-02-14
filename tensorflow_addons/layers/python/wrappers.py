@@ -20,16 +20,17 @@ from tensorflow.python.framework import tensor_shape
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import nn_impl
 from tensorflow.python.ops import variables as tf_variables
-from tensorflow.python.ops.nn import moments
-from tensorflow.python.ops.math_ops import sqrt
 from tensorflow.python.ops.linalg_ops import norm
+from tensorflow.python.ops.math_ops import sqrt
+from tensorflow.python.ops.nn import moments
 
 from tensorflow.python.keras import initializers
-from tensorflow.python.keras.engine.base_layer import Layer, InputSpec
+from tensorflow.python.keras.engine import base_layer
 from tensorflow.python.keras.layers import Wrapper
-from tensorflow.python.keras.utils import generic_utils
+from tensorflow_addons.utils.python import keras_utils
 
 
+@keras_utils.register_keras_custom_object
 class WeightNormalization(Wrapper):
     """ This wrapper reparameterizes a layer by decoupling the weight's
     magnitude and direction. This speeds up convergence by improving the
@@ -57,7 +58,7 @@ class WeightNormalization(Wrapper):
       NotImplementedError: If `data_init` is True and running graph execution
     """
     def __init__(self, layer, data_init=True, **kwargs):
-        if not isinstance(layer, Layer):
+        if not isinstance(layer, base_layer.Layer):
             raise ValueError(
                 'Please initialize `WeightNormalization` layer with a '
                 '`Layer` instance. You passed: {input}'.format(input=layer))
@@ -103,7 +104,7 @@ class WeightNormalization(Wrapper):
     def build(self, input_shape):
         """Build `Layer`"""
         input_shape = tensor_shape.TensorShape(input_shape).as_list()
-        self.input_spec = InputSpec(shape=input_shape)
+        self.input_spec = base_layer.InputSpec(shape=input_shape)
 
         if not self.layer.built:
             self.layer.build(input_shape)
@@ -149,6 +150,3 @@ class WeightNormalization(Wrapper):
     def compute_output_shape(self, input_shape):
         return tensor_shape.TensorShape(
             self.layer.compute_output_shape(input_shape).as_list())
-
-
-generic_utils._GLOBAL_CUSTOM_OBJECTS['WeightNormalization'] = WeightNormalization

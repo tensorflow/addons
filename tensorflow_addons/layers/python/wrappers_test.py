@@ -80,8 +80,7 @@ class WeightNormalizationTest(test.TestCase):
     def test_weightnorm_tflayers(self):
         images = random_ops.random_uniform((2, 4, 4, 3))
         wn_wrapper = wrappers.WeightNormalization(
-            keras.layers.Conv2D(32, [2, 2]),
-                                                  input_shape=(4, 4, 3))
+            keras.layers.Conv2D(32, [2, 2]), input_shape=(4, 4, 3))
         wn_wrapper.apply(images)
         self.assertTrue(hasattr(wn_wrapper.layer, 'g'))
 
@@ -98,14 +97,14 @@ class WeightNormalizationTest(test.TestCase):
                 keras.layers.MaxPooling2D(2, 2)).build((2, 2))
 
     def test_weightnorm_keras(self):
-        input = np.random.random((10, 3, 4)).astype(np.float32)
+        input_data = np.random.random((10, 3, 4)).astype(np.float32)
         outputs = testing_utils.layer_test(
             wrappers.WeightNormalization,
             kwargs={
                 'layer': keras.layers.Dense(2),
                 'input_shape': (3, 4)
             },
-            input_data=input)
+            input_data=input_data)
 
 
 if __name__ == "__main__":
