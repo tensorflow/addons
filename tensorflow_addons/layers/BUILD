@@ -19,6 +19,7 @@ py_library(
 
 py_test(
     name = "layers_wrappers_py_test",
+    size = "small",
     srcs = [
         "python/wrappers_test.py",
     ],
