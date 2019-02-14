@@ -45,6 +45,7 @@ py_library(
 
 py_test(
     name = "text_ops_py_test",
+    size = "small",
     srcs = [
         "python/skip_gram_ops_test.py"
     ],
