@@ -68,7 +68,7 @@ class WeightNormalization(Wrapper):
             self.initialized = False
 
         super(WeightNormalization, self).__init__(layer, **kwargs)
-        self._track_checkpointable(layer, name='layer')
+        self._track_trackable(layer, name='layer')
 
     def _compute_weights(self):
         """Generate weights by combining the direction of weight vector
