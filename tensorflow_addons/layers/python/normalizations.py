@@ -137,6 +137,7 @@ class GroupNormalization(Layer):
         else:
             self.beta = None
         self.built = True
+        super(GroupNormalization, self).build(input_shape)
 
     def call(self, inputs):
         input_shape = K.int_shape(inputs)
