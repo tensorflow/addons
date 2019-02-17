@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,26 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 # ==============================================================================
-function write_to_bazelrc() {
-  echo "$1" >> .bazelrc
-}
 
-function write_action_env_to_bazelrc() {
-  write_to_bazelrc "build --action_env $1=\"$2\""
-}
+set -x
 
-rm .bazelrc
+## CPU Tests
+/bin/bash ci_testing/addons_cpu.sh
 
-# TODO: Verify the tensorflow version here...
-if python -c "import tensorflow" &> /dev/null; then
-    echo 'using installed tensorflow'
-else
-    pip install tf-nightly-2.0-preview
-fi
-
-TF_CFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') )
-TF_LFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )
-
-write_action_env_to_bazelrc "TF_HEADER_DIR" ${TF_CFLAGS:2}
-write_action_env_to_bazelrc "TF_SHARED_LIBRARY_DIR" ${TF_LFLAGS:2}
+## GPU Tests
+#/bin/bash ci_testing/addons_gpu.sh

@@ -15,7 +15,6 @@
 #
 # ==============================================================================
 
-set -e
 set -x
 
 N_JOBS=$(grep -c ^processor /proc/cpuinfo)
@@ -25,28 +24,15 @@ echo "Bazel will use ${N_JOBS} concurrent job(s)."
 echo ""
 
 export CC_OPT_FLAGS='-mavx'
-export TF_NEED_CUDA=0 # TODO: Verify this be used in GPU custom-op?
+export TF_NEED_CUDA=0 # TODO: Verify this is used in GPU custom-op
 
-######### Python3 Tests
-# TODO: tf-nightly-2.0-preview is unavailable for python3.4
-
-
-#export PYTHON_BIN_PATH=`which python3`
-#/bin/bash configure.sh --py_version=3
-
-## Run bazel test command. Double test timeouts to avoid flakes.
-#bazel test -c opt -k \
-#    --jobs=${N_JOBS} --test_timeout 300,450,1200,3600 \
-#    --test_output=errors --local_test_jobs=8 \
-#    //tensorflow_addons/...
-
-
-######### Python2 Tests
-export PYTHON_BIN_PATH=`which python2`
-/bin/bash configure.sh --py_version=2
+export PYTHON_BIN_PATH=`which python`
+/bin/bash configure.sh
 
 ## Run bazel test command. Double test timeouts to avoid flakes.
 bazel test -c opt -k \
     --jobs=${N_JOBS} --test_timeout 300,450,1200,3600 \
     --test_output=errors --local_test_jobs=8 \
     //tensorflow_addons/...
+
+exit $?
