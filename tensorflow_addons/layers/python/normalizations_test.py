@@ -95,8 +95,9 @@ class normalization_test(test.TestCase):
         
         weights=np.array(model.layers[0].get_weights())
         negativ=weights[weights<0.0]
-
-        self.assertTrue(len(weights)==0)
+        print("------------------------------------------------------")
+        print(negativ)
+        self.assertTrue(len(negativ)==0)
 
 
     def test_groupnorm_conv(self):
