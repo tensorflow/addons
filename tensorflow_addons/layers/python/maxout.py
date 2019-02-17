@@ -27,6 +27,7 @@ from tensorflow_addons.utils.python import keras_utils
 
 
 @keras_utils.register_keras_custom_object
+class Maxout(Layer):
     """Applies Maxout to the input.
 
     "Maxout Networks" Ian J. Goodfellow, David Warde-Farley, Mehdi Mirza, Aaron
