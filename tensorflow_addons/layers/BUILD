@@ -4,7 +4,7 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "layers_py",
-    srcs = ([
+    srcs = [
         "__init__.py",
         "python/__init__.py",
         "python/maxout.py",
@@ -13,10 +13,14 @@ py_library(
         "python/normalizations.py"
     ]),
     srcs_version = "PY2AND3",
+    deps = [
+        "//tensorflow_addons/utils:utils_py",
+    ],
 )
 
 py_test(
     name = "layers_wrappers_py_test",
+    size = "small",
     srcs = [
         "python/wrappers_test.py",
     ],
@@ -57,7 +61,19 @@ py_test(
     ],
     main = "python/normalizations_test.py",
     deps = [
-            ":layers_py",
-        ],
+        ":layers_py",
+    ],
+)
+
+py_test(
+    name = "poincare_py_test",
+    size = "small",
+    srcs = [
+        "python/poincare_test.py",
+    ],
+    main = "python/poincare_test.py",
     srcs_version = "PY2AND3",
+    deps = [
+        ":layers_py",
+    ],
 )
