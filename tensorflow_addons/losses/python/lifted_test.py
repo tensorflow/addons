@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """Tests for lifted loss."""
 
 from __future__ import absolute_import
@@ -106,6 +105,7 @@ class LiftedStructLossTest(test.TestCase):
             loss_tf = loss_tf.eval()
             self.assertAllClose(loss_np, loss_tf)
 
+
 if __name__ == '__main__':
-    test.main() 
-    
+    test.main()
+ 
