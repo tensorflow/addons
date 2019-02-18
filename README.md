@@ -9,7 +9,7 @@ developments that cannot be integrated into core TensorFlow
 (because their broad applicability is not yet clear, or it is mostly
  used by a smaller subset of the community).
 
-## Content
+## Contents
 | Sub-Package    | Addon  | Reference                                  |
 |:----------------------- |:----------- |:---------------------------- |
 | addons.image | Transform |                                           |
