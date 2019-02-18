@@ -115,6 +115,7 @@ class LiftedStructLoss(losses.LossFunctionWrapper):
     pair of embeddings with different labels) in the mini-batch in a way
     that is differentiable with respect to the embedding vectors.
     See: https://arxiv.org/abs/1511.06452.
+    
     Args:
         labels: 1-D tf.int32 `Tensor` with shape [batch_size] of
         multiclass integer labels.
