@@ -24,7 +24,32 @@ from tensorflow.python.framework import test_util
 from tensorflow.python.platform import test
 from tensorflow.python.ops import convert_to_tensor
 from tensorflow_addons.losses.python import lifted
-from tensorflow_addons.losses.python import metric_learning
+
+def pairwise_distance_np(feature, squared=False):
+    """Computes the pairwise distance matrix in numpy.
+
+    Args:
+      feature: 2-D numpy array of size [number of data, feature dimension]
+      squared: Boolean. If true, output is the pairwise squared euclidean
+        distance matrix; else, output is the pairwise euclidean distance
+        matrix.
+
+    Returns:
+      pairwise_distances: 2-D numpy array of size
+        [number of data, number of data].
+    """
+    triu = np.triu_indices(feature.shape[0], 1)
+    upper_tri_pdists = np.linalg.norm(feature[triu[1]] - feature[triu[0]],
+                                      axis=1)
+    if squared:
+        upper_tri_pdists **= 2.
+    num_data = feature.shape[0]
+    pairwise_distances = np.zeros((num_data, num_data))
+    pairwise_distances[np.triu_indices(num_data, 1)] = upper_tri_pdists
+    # Make symmetrical.
+    pairwise_distances = pairwise_distances + pairwise_distances.T - np.diag(
+        pairwise_distances.diagonal())
+    return pairwise_distances
 
 @test_util.run_all_in_graph_and_eager_modes
 class LiftedStructLossTest(test.TestCase):
@@ -42,7 +67,7 @@ class LiftedStructLossTest(test.TestCase):
 
             # Compute the loss in NP
             adjacency = np.equal(labels_reshaped, labels_reshaped.T)
-            pdist_matrix = metric_learning.pairwise_distance_np(embedding)
+            pdist_matrix = pairwise_distance_np(embedding)
             loss_np = 0.0
             num_constraints = 0.0
             for i in range(num_data):
@@ -79,3 +104,4 @@ class LiftedStructLossTest(test.TestCase):
 
 if __name__ == '__main__':
     test.main()
+    
