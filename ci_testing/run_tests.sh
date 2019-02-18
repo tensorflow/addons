@@ -22,3 +22,5 @@ set -x
 
 ## GPU Tests
 #/bin/bash ci_testing/addons_gpu.sh
+
+exit $?

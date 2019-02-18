@@ -23,3 +23,5 @@ set -x
 
 echo "FAILURE" >> tensorflow_addons/layers/python/maxout.py # Illegally append text to end of file
 /bin/bash ci_testing/addons_cpu.sh
+
+exit $?
