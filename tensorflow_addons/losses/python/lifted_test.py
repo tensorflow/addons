@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+
 """Tests for lifted loss."""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -24,6 +26,7 @@ from tensorflow.python.framework import test_util
 from tensorflow.python.platform import test
 from tensorflow.python.ops import convert_to_tensor
 from tensorflow_addons.losses.python import lifted
+
 
 def pairwise_distance_np(feature, squared=False):
     """Computes the pairwise distance matrix in numpy.
@@ -50,6 +53,7 @@ def pairwise_distance_np(feature, squared=False):
     pairwise_distances = pairwise_distances + pairwise_distances.T - np.diag(
         pairwise_distances.diagonal())
     return pairwise_distances
+
 
 @test_util.run_all_in_graph_and_eager_modes
 class LiftedStructLossTest(test.TestCase):
@@ -103,5 +107,5 @@ class LiftedStructLossTest(test.TestCase):
             self.assertAllClose(loss_np, loss_tf)
 
 if __name__ == '__main__':
-    test.main()
+    test.main() 
     

@@ -14,6 +14,7 @@
 # ==============================================================================
 
 """Implements lifted_struct_loss."""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -28,16 +29,19 @@ from tensorflow.python.ops.losses import losses_impl
 from tensorflow_addons.losses.python import metric_learning
 from tensorflow_addons.utils.python import keras_utils
 
+
 @keras_utils.register_keras_custom_object
 @tf.function
 def lifted_struct_loss(labels, embeddings, margin=1.0):
   """Computes the lifted structured loss.
+
   Args:
     labels: 1-D tf.int32 `Tensor` with shape [batch_size] of
       multiclass integer labels.
     embeddings: 2-D float `Tensor` of embedding vectors. Embeddings should not
       be l2 normalized.
     margin: Float, margin term in the loss definition.
+  
   Returns:
     lifted_loss: tf.float32 scalar.
   """
@@ -107,9 +111,11 @@ def lifted_struct_loss(labels, embeddings, margin=1.0):
       name='liftedstruct_loss')
   return lifted_loss
 
+
 @keras_utils.register_keras_custom_object
 class LiftedStructLoss(losses.LossFunctionWrapper):
     """Computes the lifted structured loss.
+
     The loss encourages the positive distances (between a pair of embeddings
     with the same labels) to be smaller than any negative distances (between a
     pair of embeddings with different labels) in the mini-batch in a way
@@ -122,6 +128,7 @@ class LiftedStructLoss(losses.LossFunctionWrapper):
         embeddings: 2-D float `Tensor` of embedding vectors. Embeddings should not
         be l2 normalized.
         margin: Float, margin term in the loss definition.
+    
     Returns:
         lifted_loss: tf.float32 scalar.
     """
@@ -131,5 +138,4 @@ class LiftedStructLoss(losses.LossFunctionWrapper):
             lifted_struct_loss,
             name=name,
             reduction=losses_impl.ReductionV2.NONE,
-            margin=margin)
-            
+            margin=margin) 
