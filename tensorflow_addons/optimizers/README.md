@@ -11,6 +11,8 @@
 In order to conform with the current API standard, all optimizers
 must:
  * Inherit from either `keras.optimizer_v2.OptimizerV2` or its subclasses.
+ * [Register as a keras global object](https://github.com/tensorflow/addons/blob/master/tensorflow_addons/utils/python/keras_utils.py)
+  so it can be serialized properly.
 
 #### Testing Requirements
  * When applicable, run all tests with TensorFlow's

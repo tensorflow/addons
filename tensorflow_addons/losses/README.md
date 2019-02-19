@@ -11,6 +11,8 @@
 In order to conform with the current API standard, all losses
 must:
  * Inherit from `keras.losses.LossFunctionWrapper`.
+ * [Register as a keras global object](https://github.com/tensorflow/addons/blob/master/tensorflow_addons/utils/python/keras_utils.py)
+  so it can be serialized properly.
 
 #### Testing Requirements
  * Simple unittests that demonstrate the loss is behaving as expected on

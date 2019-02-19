@@ -29,8 +29,10 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import resource_variable_ops
+from tensorflow_addons.utils.python import keras_utils
 
 
+@keras_utils.register_keras_custom_object
 class LazyAdamOptimizer(adam.Adam):
     """Variant of the Adam optimizer that handles sparse updates more efficiently.
 
