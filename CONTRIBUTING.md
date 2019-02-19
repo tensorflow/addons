@@ -36,7 +36,7 @@ fitting the following criteria:
 * The addon is impactful to the community (e.g. an implementation used
  in widely cited paper)
  * Lastly, the functionality conforms to the contribution guidelines of
- it's API pattern:
+ its API pattern:
     * [Layers](tensorflow_addons/layers/README.md) |
       [Optimizers](tensorflow_addons/optimizers/README.md) |
       [Losses](tensorflow_addons/losses/README.md) |
