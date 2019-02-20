@@ -144,7 +144,7 @@ class ImageOpsTest(test.TestCase):
     def test_transform_eager(self):
         image = constant_op.constant([[1., 2.], [3., 4.]])
         self.assertAllEqual(
-            np.array([[4, 4], [4, 4]]),
+            np.array([[5, 4], [4, 4]]),
             transform_ops.transform(image, [1] * 8))
 
 
