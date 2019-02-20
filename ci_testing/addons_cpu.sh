@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,26 +12,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 # ==============================================================================
-function write_to_bazelrc() {
-  echo "$1" >> .bazelrc
-}
 
-function write_action_env_to_bazelrc() {
-  write_to_bazelrc "build --action_env $1=\"$2\""
-}
+set -x
 
-rm .bazelrc
+N_JOBS=$(grep -c ^processor /proc/cpuinfo)
 
-# TODO: Verify the tensorflow version here...
-if python -c "import tensorflow" &> /dev/null; then
-    echo 'using installed tensorflow'
-else
-    pip install tf-nightly-2.0-preview
-fi
+echo ""
+echo "Bazel will use ${N_JOBS} concurrent job(s)."
+echo ""
 
-TF_CFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') )
-TF_LFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )
+export CC_OPT_FLAGS='-mavx'
+export TF_NEED_CUDA=0 # TODO: Verify this is used in GPU custom-op
 
-write_action_env_to_bazelrc "TF_HEADER_DIR" ${TF_CFLAGS:2}
-write_action_env_to_bazelrc "TF_SHARED_LIBRARY_DIR" ${TF_LFLAGS:2}
+export PYTHON_BIN_PATH=`which python`
+/bin/bash configure.sh
+
+## Run bazel test command. Double test timeouts to avoid flakes.
+bazel test -c opt -k \
+    --jobs=${N_JOBS} --test_timeout 300,450,1200,3600 \
+    --test_output=errors --local_test_jobs=8 \
+    //tensorflow_addons/...
+
+exit $?
