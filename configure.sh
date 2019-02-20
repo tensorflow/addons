@@ -22,7 +22,11 @@ function write_action_env_to_bazelrc() {
 }
 
 [ -f .bazelrc ] && rm .bazelrc
-if python -c "import tensorflow" &> /dev/null; then
+
+# TODO: Verify the tensorflow version here...
+TENSORFLOW_VERSION=$(ython -c 'import tensorflow as tf; print(tf.__version__)')i
+if [[ $TENSORFLOW_VERSION == 2* ]] 
+then
     echo 'using installed tensorflow'
 else
     pip install tf-nightly-2.0-preview
