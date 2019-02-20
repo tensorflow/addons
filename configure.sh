@@ -24,7 +24,7 @@ function write_action_env_to_bazelrc() {
 [ -f .bazelrc ] && rm .bazelrc
 
 # TODO: Verify the tensorflow version here...
-TENSORFLOW_VERSION=$(python -c 'import tensorflow as tf; print(tf.__version__)')i
+TENSORFLOW_VERSION=$(python -c 'import tensorflow as tf; print(tf.__version__)')
 if [[ $TENSORFLOW_VERSION == 2* ]] 
 then
     echo 'using installed tensorflow'
