@@ -9,7 +9,11 @@ py_library(
         "python/__init__.py",
         "python/lazy_adam_optimizer.py",
     ],
+    deps = [
+        "//tensorflow_addons/utils:utils_py",
+    ],
     srcs_version = "PY2AND3",
+
 )
 
 
