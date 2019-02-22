@@ -1,3 +1,0 @@
-# Addons Text
-
-## Standard API

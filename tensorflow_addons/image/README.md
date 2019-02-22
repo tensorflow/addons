@@ -1,4 +1,0 @@
-# Addons - Image
-
-
-## Standard API

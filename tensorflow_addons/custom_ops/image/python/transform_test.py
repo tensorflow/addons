@@ -26,7 +26,7 @@ from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import random_ops
 from tensorflow.python.platform import test
-from tensorflow_addons.image.python import transform as transform_ops
+from tensorflow_addons.custom_ops.image.python import transform as transform_ops
 
 _DTYPES = set([dtypes.uint8, dtypes.int32, dtypes.int64, dtypes.float16,
                dtypes.float32, dtypes.float64])
