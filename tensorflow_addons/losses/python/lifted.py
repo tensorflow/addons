@@ -122,11 +122,10 @@ class LiftedStructLoss(losses.LossFunctionWrapper):
 
     Args:
         labels: 1-D tf.int32 `Tensor` with shape [batch_size] of
-        multiclass integer labels.
+          multiclass integer labels.
         embeddings: 2-D float `Tensor` of embedding vectors. Embeddings should not
-        be l2 normalized.
-        margin: Float, margin term in the loss definition.
-    
+          be l2 normalized.
+        margin: Float, margin term in the loss definition.   
     Returns:
         lifted_loss: tf.float32 scalar.
     """
