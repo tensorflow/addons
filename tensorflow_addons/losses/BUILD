@@ -8,6 +8,7 @@ py_library(
         "__init__.py",
         "python/__init__.py",
         "python/triplet.py",
+        "python/lifted.py",
         "python/metric_learning.py",
     ],
     srcs_version = "PY2AND3",
@@ -27,20 +28,6 @@ py_test(
         ":losses_py",
     ],
     srcs_version = "PY2AND3",
-)
-
-py_library(
-    name = "lifted_py",
-    srcs = [
-        "__init__.py",
-        "python/__init__.py",
-        "python/lifted.py",
-        "python/metric_learning.py",
-    ],
-    srcs_version = "PY2AND3",
-    deps = [
-        "//tensorflow_addons/utils:utils_py",
-    ],
 )
 
 py_test(
