@@ -23,7 +23,6 @@ import numpy as np
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import test_util
 from tensorflow.python.platform import test
-from tensorflow.python.ops import convert_to_tensor
 from tensorflow_addons.losses.python import lifted
 
 
@@ -56,56 +55,55 @@ def pairwise_distance_np(feature, squared=False):
 
 @test_util.run_all_in_graph_and_eager_modes
 class LiftedStructLossTest(test.TestCase):
-    def testLiftedStruct(self):
-        with self.cached_session():
-            num_data = 10
-            feat_dim = 6
-            margin = 1.0
-            num_classes = 4
+  def testLiftedStruct(self):
+    with self.cached_session():
+      num_data = 10
+      feat_dim = 6
+      margin = 1.0
+      num_classes = 4
 
-            embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
-            labels = np.random.randint(0, num_classes, size=(num_data)).astype(np.float32)
-            # Reshape labels to compute adjacency matrix.
-            labels_reshaped = np.reshape(labels, (labels.shape[0], 1))
+      embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
+      labels = np.random.randint(
+          0, num_classes, size=(num_data)).astype(np.float32)
+      # Reshape labels to compute adjacency matrix.
+      labels_reshaped = np.reshape(labels, (labels.shape[0], 1))
 
-            # Compute the loss in NP
-            adjacency = np.equal(labels_reshaped, labels_reshaped.T)
-            pdist_matrix = pairwise_distance_np(embedding)
-            loss_np = 0.0
-            num_constraints = 0.0
-            for i in range(num_data):
-                for j in range(num_data):
-                    if adjacency[i][j] > 0.0 and i != j:
-                        d_pos = pdist_matrix[i][j]
-                        negs = []
-                        for k in range(num_data):
-                            if not adjacency[i][k]:
-                                negs.append(margin - pdist_matrix[i][k])
-                        for l in range(num_data):
-                            if not adjacency[j][l]:
-                                negs.append(margin - pdist_matrix[j][l])
+      # Compute the loss in NP
+      adjacency = np.equal(labels_reshaped, labels_reshaped.T)
+      pdist_matrix = pairwise_distance_np(embedding)
+      loss_np = 0.0
+      num_constraints = 0.0
+      for i in range(num_data):
+        for j in range(num_data):
+          if adjacency[i][j] > 0.0 and i != j:
+            d_pos = pdist_matrix[i][j]
+            negs = []
+            for k in range(num_data):
+              if not adjacency[i][k]:
+                negs.append(margin - pdist_matrix[i][k])
+            for l in range(num_data):
+              if not adjacency[j][l]:
+                negs.append(margin - pdist_matrix[j][l])
 
-                    negs = np.array(negs)
-                    max_elem = np.max(negs)
-                    negs -= max_elem
-                    negs = np.exp(negs)
-                    soft_maximum = np.log(np.sum(negs)) + max_elem
+            negs = np.array(negs)
+            max_elem = np.max(negs)
+            negs -= max_elem
+            negs = np.exp(negs)
+            soft_maximum = np.log(np.sum(negs)) + max_elem
 
-                    num_constraints += 1.0
-                    this_loss = max(soft_maximum + d_pos, 0)
-                    loss_np += this_loss * this_loss
+            num_constraints += 1.0
+            this_loss = max(soft_maximum + d_pos, 0)
+            loss_np += this_loss * this_loss
 
-            loss_np = loss_np / num_constraints / 2.0
+      loss_np = loss_np / num_constraints / 2.0
 
-            # Compute the loss in TF
-            loss_tf = lifted.lifted_struct_loss(
-                labels=convert_to_tensor(labels),
-                embeddings=convert_to_tensor(embedding),
-                margin=margin)
-            loss_tf = loss_tf.eval()
-            self.assertAllClose(loss_np, loss_tf)
+      # Compute the loss in TF.
+      y_true = constant_op.constant(labels)
+      y_pred = constant_op.constant(embedding)
+      cce_obj = lifted.LiftedStructLoss()
+      loss = cce_obj(y_true, y_pred)
+      self.assertAlmostEqual(self.evaluate(loss), loss_np, 3)
 
 
 if __name__ == '__main__':
     test.main()
- 

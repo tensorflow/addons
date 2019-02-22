@@ -22,10 +22,9 @@ from __future__ import print_function
 import tensorflow as tf
 from tensorflow.python.framework import dtypes
 from tensorflow.python.keras import losses
-from tensorflow.python.keras.utils import generic_utils
+from tensorflow.python.keras.utils import losses_utils
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
-from tensorflow.python.ops.losses import losses_impl
 from tensorflow_addons.losses.python import metric_learning
 from tensorflow_addons.utils.python import keras_utils
 
@@ -40,8 +39,7 @@ def lifted_struct_loss(labels, embeddings, margin=1.0):
       multiclass integer labels.
     embeddings: 2-D float `Tensor` of embedding vectors. Embeddings should not
       be l2 normalized.
-    margin: Float, margin term in the loss definition.
-  
+    margin: Float, margin term in the loss definition. 
   Returns:
     lifted_loss: tf.float32 scalar.
   """
@@ -137,5 +135,5 @@ class LiftedStructLoss(losses.LossFunctionWrapper):
         super(LiftedStructLoss, self).__init__(
             lifted_struct_loss,
             name=name,
-            reduction=losses_impl.ReductionV2.NONE,
+            reduction=losses_utils.ReductionV2.NONE,
             margin=margin) 
