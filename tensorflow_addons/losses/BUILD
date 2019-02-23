@@ -7,9 +7,9 @@ py_library(
     srcs = [
         "__init__.py",
         "python/__init__.py",
-        "python/triplet.py",
         "python/lifted.py",
         "python/metric_learning.py",
+        "python/triplet.py",
     ],
     srcs_version = "PY2AND3",
     deps = [

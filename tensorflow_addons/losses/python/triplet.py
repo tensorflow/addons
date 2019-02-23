@@ -34,6 +34,7 @@ def _masked_maximum(data, mask, dim=1):
       data: 2-D float `Tensor` of size [n, m].
       mask: 2-D Boolean `Tensor` of size [n, m].
       dim: The dimension over which to compute the maximum.
+
     Returns:
       masked_maximums: N-D `Tensor`.
         The maximized dimension is of size 1 after the operation.
@@ -53,6 +54,7 @@ def _masked_minimum(data, mask, dim=1):
       data: 2-D float `Tensor` of size [n, m].
       mask: 2-D Boolean `Tensor` of size [n, m].
       dim: The dimension over which to compute the minimum.
+
     Returns:
       masked_minimums: N-D `Tensor`.
         The minimized dimension is of size 1 after the operation.
