@@ -20,22 +20,26 @@ from tensorflow.keras import initializers, regularizers, constraints
 from tensorflow.keras import backend as K
 from tensorflow.python.ops import nn
 
+
 class GroupNormalization(Layer):
     """Group normalization layer.
+
     Group Normalization divides the channels into groups and computes
-    within each group
-    the mean and variance for normalization.
+    within each group the mean and variance for normalization.
     Group Normalization's computation is independent
-     of batch sizes, and its accuracy is stable in a wide range of batch sizes.
+    of batch sizes, and its accuracy is stable in a wide range of batch sizes.
+
     Relation to Layer Normalization:
     If the number of groups is set to 1, then this operation becomes identical to
     Layer Normalization.
+
     Relation to Instance Normalization:
     If the number of groups is set to the
     input dimension (number of groups is equal
     to number of channels), then this operation becomes
     identical to Instance Normalization.
-    # Arguments
+
+    Arguments
         groups: Integer, the number of groups for Group Normalization.
             Can be in the range [1, N] where N is the input dimension.
             The input dimension must be divisible by the number of groups.
@@ -58,13 +62,15 @@ class GroupNormalization(Layer):
         gamma_regularizer: Optional regularizer for the gamma weight.
         beta_constraint: Optional constraint for the beta weight.
         gamma_constraint: Optional constraint for the gamma weight.
-    # Input shape
+    
+    Input shape
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model.
-    # Output shape
+    
+    Output shape
         Same shape as input.
-    # References
+    References
         - [Group Normalization](https://arxiv.org/abs/1803.08494)
     """
 
@@ -205,11 +211,13 @@ class GroupNormalization(Layer):
 
 class LayerNormalization(GroupNormalization):
     """Layer normalization layer.
+
     Layer Normalization is an specific case of ```GroupNormalization```since it
     normalizes all features of a layer. The Groupsize is 1.
     Layer Normalization's computation is independent
     of batch sizes, and its accuracy is stable in a wide range of batch sizes.
-    # Arguments
+    
+    Arguments
         axis: Integer, the axis that should be normalized
             (typically the features axis).
             For instance, after a `Conv2D` layer with
@@ -229,13 +237,16 @@ class LayerNormalization(GroupNormalization):
         gamma_regularizer: Optional regularizer for the gamma weight.
         beta_constraint: Optional constraint for the beta weight.
         gamma_constraint: Optional constraint for the gamma weight.
-    # Input shape
+    
+    Input shape
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model.
-    # Output shape
+    
+    Output shape
         Same shape as input.
-    # References
+    
+    References
         - [Layer Normalization](https://arxiv.org/abs/1607.06450)
     """
     def __init__(self,**kwargs):
@@ -244,11 +255,13 @@ class LayerNormalization(GroupNormalization):
 
 class InstanceNormalization(GroupNormalization):
     """Instance normalization layer.
+    
     Instance Normalization is an specific case of ```GroupNormalization```since it
     normalizes all features of one channel. The Groupsize is equal to the channel size.
     Instance Normalization's computation is independent
     of batch sizes, and its accuracy is stable in a wide range of batch sizes.
-    # Arguments
+
+    Arguments
         axis: Integer, the axis that should be normalized
             (typically the features axis).
             For instance, after a `Conv2D` layer with
@@ -268,13 +281,16 @@ class InstanceNormalization(GroupNormalization):
         gamma_regularizer: Optional regularizer for the gamma weight.
         beta_constraint: Optional constraint for the beta weight.
         gamma_constraint: Optional constraint for the gamma weight.
-    # Input shape
+
+    Input shape
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model.
-    # Output shape
+
+    Output shape
         Same shape as input.
-    # References
+
+    References
         - [Layer Normalization](https://arxiv.org/abs/1607.06450)
     """
     def __init__(self,**kwargs):
