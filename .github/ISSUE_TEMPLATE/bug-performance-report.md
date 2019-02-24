@@ -8,19 +8,21 @@ assignees: ''
 ---
 
 **Describe the bug**
+
 A clear and concise description of what the bug is.
 
 **System information**
 - Have I written custom code (as opposed to using a stock example script provided in TensorFlow):
 - OS Platform and Distribution (e.g., Linux Ubuntu 16.04):
-- Mobile device (e.g. iPhone 8, Pixel 2, Samsung Galaxy) if the issue happens on mobile device:
+- HW Platform (e.g. iPhone 8, Pixel 2, Samsung Galaxy, Intel based Mac, i7 based Dell with NVIDIA GPGPU etc., or Google Cloud machine)
 - TensorFlow installed from (source or binary):
 - TensorFlow version (use command below):
-- Python version:
+- TensorFlow Addons version:
+- Python version and type(eg. Anaconda Python, Stock Python as in Mac, or homebrew installed Python etc):
 - Bazel version (if compiling from source):
 - GCC/Compiler version (if compiling from source):
-- CUDA/cuDNN version:
-- GPU model and memory:
+- CUDA/cuDNN version (if compiling/running with GPGPU):
+- GPGPU model and memory:
 
 You can collect some of this information using our environment capture [script](https://github.com/tensorflow/tensorflow/tree/master/tools/tf_env_collect.sh)
 You can also obtain the TensorFlow version with
@@ -29,7 +31,9 @@ python -c "import tensorflow as tf; print(tf.GIT_VERSION, tf.VERSION)"
 **Describe the expected behavior**
 
 **Code to reproduce the issue**
+
 Provide a reproducible test case that is the bare minimum necessary to generate the problem.
 
 **Other info / logs**
+
 Include any logs or source code that would be helpful to diagnose the problem. If including tracebacks, please include the full traceback. Large logs and files should be attached.
