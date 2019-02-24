@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""
-Text-processing ops.
-"""
+"""Image manipulation ops"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-# Skip Gram Sample
-from tensorflow_addons.text.python.skip_gram_ops import skip_gram_sample
-from tensorflow_addons.text.python.skip_gram_ops import skip_gram_sample_with_text_vocab
+# Transforms
+from tensorflow_addons.custom_ops.image.python.transform import transform

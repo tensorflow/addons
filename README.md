@@ -32,7 +32,7 @@ the list we adhere to:
 1) [Layers](tensorflow_addons/layers/README.md)
 1) [Optimizers](tensorflow_addons/optimizers/README.md)
 1) [Losses](tensorflow_addons/losses/README.md)
-1) Custom Ops
+1) [Custom Ops](tensorflow_addons/custom_ops/README.md)
 
 #### Periodic Evaluation
 Based on the nature of this repository, there will be contributions that
@@ -58,11 +58,11 @@ https://bazel.build/) build system.
 git clone https://github.com/tensorflow/addons.git
 cd addons
 
-# This script tells bazel where the tensorflow dependency can be found
-./configure.sh  # Links project with TensorFlow dependency
+# This script links project with TensorFlow dependency
+./configure.sh
 
 bazel build build_pip_pkg
-bazel-bin/build_pip_pkg artifact
+bazel-bin/build_pip_pkg artifacts
 
 pip install artifacts/tensorflow_addons-*.whl
 ```
