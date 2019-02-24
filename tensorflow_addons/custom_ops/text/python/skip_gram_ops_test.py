@@ -24,8 +24,8 @@ import csv
 import os
 
 from tensorflow.python.framework import test_util
-from tensorflow_addons.custom_ops.text.python import skip_gram_ops
 from tensorflow_addons.custom_ops import text
+from tensorflow_addons.custom_ops.text.python import skip_gram_ops
 
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
