@@ -13,10 +13,13 @@
 # limitations under the License.
 # ==============================================================================
 
-# import tensorflow as tf
-# import tensorflow_addons as tfa
-# from tensorflow_addons.text import skip_gram_sample
 
+import tensorflow_addons as tfa
+
+from tensorflow_addons.custom_ops.text import skip_gram_sample
+from tensorflow_addons.layers import PoincareNormalize
+from tensorflow_addons.losses import triplet_semihard_loss
+from tensorflow_addons.optimizers import lazy_adam_optimizer
 
 # TODO: Build this out
 if __name__ == "__main__":

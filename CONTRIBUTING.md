@@ -40,7 +40,7 @@ fitting the following criteria:
     * [Layers](tensorflow_addons/layers/README.md) |
       [Optimizers](tensorflow_addons/optimizers/README.md) |
       [Losses](tensorflow_addons/losses/README.md) |
-      Custom Ops
+      [Custom Ops](tensorflow_addons/custom_ops/README.md)
 
 **Note: New contributions often require team-members to read a research
 paper and understand how it fits into the TensorFlow community. This
