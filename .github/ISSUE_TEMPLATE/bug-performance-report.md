@@ -1,17 +1,14 @@
 ---
 name: Bug/Performance report
 about: Create a report to help us improve
-title: "[BUG]"
-labels: bug
+title: "[Bug/Performance]"
+labels:
 assignees: ''
 
 ---
 
 **Describe the bug**
 A clear and concise description of what the bug is.
-
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
 
 **System information**
 - Have I written custom code (as opposed to using a stock example script provided in TensorFlow):
