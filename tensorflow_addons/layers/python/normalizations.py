@@ -15,9 +15,12 @@
 
 # Orginal implementation from keras_contrib/layer/normalization
 
-from tensorflow.keras.layers import Layer, InputSpec
-from tensorflow.keras import initializers, regularizers, constraints
 from tensorflow.keras import backend as K
+from tensorflow.keras import constraints
+from tensorflow.keras import initializers
+from tensorflow.keras import regularizers 
+from tensorflow.keras.layers import InputSpec
+from tensorflow.keras.layers import Layer
 from tensorflow.python.ops import nn
 
 
@@ -102,16 +105,35 @@ class GroupNormalization(Layer):
         self.gamma_constraint = constraints.get(gamma_constraint)
 
     def build(self, input_shape):
-        dim = input_shape[self.axis]
 
+        self._check_if_input_shape_is_None(input_shape)
+        self._set_number_of_groups_for_instance_norm(input_shape)
+        self._check_size_of_dimensions(input_shape) 
+        self._create_input_spec(input_shape)
+
+        self._add_gamma_weight(input_shape)
+        self._add_beta_weight(input_shape)
+        self.built = True
+
+    def _check_if_input_shape_is_None(self, input_shape):
+        dim = input_shape[self.axis]
         if dim is None:
             raise ValueError('Axis ' + str(self.axis) + ' of '
                              'input tensor should have a defined dimension '
                              'but the layer received an input with shape ' +
                              str(input_shape) + '.')
+
+
+    def _set_number_of_groups_for_instance_norm(self, input_shape):
+        dim=input_shape[self.axis]
+
         if self.groups==-1:
             self.groups=dim
 
+
+    def _check_size_of_dimensions(self,input_shape):
+
+        dim=input_shape[self.axis]
         if dim < self.groups:
             raise ValueError('Number of groups (' + str(self.groups) + ') cannot be '
                              'more than the number of channels (' +
@@ -122,9 +144,18 @@ class GroupNormalization(Layer):
                              'multiple of the number of channels (' +
                              str(dim) + ').')
 
+
+    def _create_input_spec(self,input_shape):
+
+        dim=input_shape[self.axis]
         self.input_spec = InputSpec(ndim=len(input_shape),
                                     axes={self.axis: dim})
-        shape = (dim,)
+
+
+    def _add_gamma_weight(self,input_shape):
+
+        dim=input_shape[self.axis]
+        shape=(dim,)
 
         if self.scale:
             self.gamma = self.add_weight(shape=shape,
@@ -134,6 +165,12 @@ class GroupNormalization(Layer):
                                          constraint=self.gamma_constraint)
         else:
             self.gamma = None
+
+    def _add_beta_weight(self,input_shape):
+
+        dim=input_shape[self.axis]
+        shape=(dim,)
+
         if self.center:
             self.beta = self.add_weight(shape=shape,
                                         name='beta',
@@ -142,47 +179,50 @@ class GroupNormalization(Layer):
                                         constraint=self.beta_constraint)
         else:
             self.beta = None
-        self.built = True
 
-    def call(self, inputs):
-        input_shape = K.int_shape(inputs)
-        tensor_input_shape = K.shape(inputs)
 
-        # Prepare broadcasting shape.
-        reduction_axes = list(range(len(input_shape)))
-        del reduction_axes[self.axis]
+    def _create_broadcast_shape(self,input_shape):
         broadcast_shape = [1] * len(input_shape)
         broadcast_shape[self.axis] = input_shape[self.axis] // self.groups
         broadcast_shape.insert(1, self.groups)
+        return broadcast_shape 
 
-        reshape_group_shape = K.shape(inputs)
-        group_axes = [reshape_group_shape[i] for i in range(len(input_shape))]
+
+    def _create_group_shape(self,input_shape):
+
+        group_axes = [tensor_input_shape[i] for i in range(len(input_shape))]
         group_axes[self.axis] = input_shape[self.axis] // self.groups
         group_axes.insert(1, self.groups)
 
         # reshape inputs to new group shape
         group_shape = [group_axes[0], self.groups] + group_axes[2:]
         group_shape = K.stack(group_shape)
-        inputs = K.reshape(inputs, group_shape)
+        return group_shape
+
+
+    def call(self, inputs):
+        input_shape = K.int_shape(inputs)
+        tensor_input_shape = K.shape(inputs)
+
+        reshaped_inputs = K.reshape(inputs, group_shape)
 
         group_reduction_axes = list(range(len(group_axes)))
         mean, variance = nn.moments(inputs, group_reduction_axes[2:],
                                     keep_dims=True)
         inputs = (inputs - mean) / (K.sqrt(variance + self.epsilon))
 
-        # prepare broadcast shape
-        inputs = K.reshape(inputs, group_shape)
+        outputs = K.reshape(inputs, group_shape)
+        
+        if self.scale or self.center:
+            broadcast_shape=self._create_broadcast_shape(input_shape)
+            # In this case we must explicitly broadcast all parameters.
+            if self.scale:
+                broadcast_gamma = K.reshape(self.gamma, broadcast_shape)
+                outputs = outputs * broadcast_gamma
 
-        outputs = inputs
-
-        # In this case we must explicitly broadcast all parameters.
-        if self.scale:
-            broadcast_gamma = K.reshape(self.gamma, broadcast_shape)
-            outputs = outputs * broadcast_gamma
-
-        if self.center:
-            broadcast_beta = K.reshape(self.beta, broadcast_shape)
-            outputs = outputs + broadcast_beta
+            if self.center:
+                broadcast_beta = K.reshape(self.beta, broadcast_shape)
+                outputs = outputs + broadcast_beta
 
         # finally we reshape the output back to the input shape
         outputs = K.reshape(outputs, tensor_input_shape)
