@@ -17,3 +17,8 @@ must:
 #### Testing Requirements
  * When applicable, run all tests with TensorFlow's
  `@run_all_in_graph_and_eager_modes` decorator
+  
+#### Documentation Requirements
+ * Update the table of contents in the project's central README
+ * Update the table of contents in this sub-project's README
+  
