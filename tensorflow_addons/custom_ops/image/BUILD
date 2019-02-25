@@ -20,16 +20,51 @@ cc_binary(
 
 
 py_library(
-    name = "images_ops_py",
+    name = "image_py",
     srcs = ([
         "__init__.py",
         "python/__init__.py",
+    ]),
+    deps = [
+        ":dense_image_warp_py",
+        ":images_ops_py",
+    ],
+    srcs_version = "PY2AND3",
+)
+
+
+py_library(
+    name = "dense_image_warp_py",
+    srcs = ([
+        "python/dense_image_warp.py",
+    ]),
+    srcs_version = "PY2AND3",
+)
+
+
+py_library(
+    name = "images_ops_py",
+    srcs = ([
         "python/transform.py",
     ]),
     data = [
         ":python/_image_ops.so"
     ],
     srcs_version = "PY2AND3",
+)
+
+
+py_test(
+    name = "dense_image_warp_test",
+    size = "small",
+    srcs = [
+        "python/dense_image_warp_test.py"
+    ],
+    main = "python/dense_image_warp_test.py",
+    deps = [
+        ":dense_image_warp_py",
+    ],
+    srcs_version = "PY2AND3"
 )
 
 
