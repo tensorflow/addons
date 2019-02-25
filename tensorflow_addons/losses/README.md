@@ -3,7 +3,8 @@
 ## Contents
 | Loss  | Reference                                              |
 |:----------------------- |:-------------------------------------|
-| TripletLoss | https://arxiv.org/abs/1503.03832 |
+| LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
+| TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
 
 
 ## Contribution Guidelines
@@ -19,3 +20,8 @@ must:
  some set of known inputs and outputs.
  * When applicable, run all tests with TensorFlow's
  `@run_all_in_graph_and_eager_modes` decorator.
+ 
+#### Documentation Requirements
+ * Update the table of contents in the project's central README
+ * Update the table of contents in this sub-project's README
+ 
