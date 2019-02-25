@@ -17,5 +17,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+# Image warping
+from tensorflow_addons.custom_ops.image.python.dense_image_warp import dense_image_warp
 # Transforms
 from tensorflow_addons.custom_ops.image.python.transform import transform
