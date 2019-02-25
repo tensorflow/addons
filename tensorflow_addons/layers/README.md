@@ -22,3 +22,7 @@ must:
   `@run_all_in_graph_and_eager_modes` decorator.
  * Run `keras.testing_utils.layer_test` on the layer.
 
+#### Documentation Requirements
+ * Update the table of contents in the project's central README
+ * Update the table of contents in this sub-project's README
+ 
