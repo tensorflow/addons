@@ -1,5 +1,5 @@
 ---
-name: Feature request (new addition to addons)
+name: Feature request
 about: Suggest an idea for this project
 title: ''
 labels: ''
