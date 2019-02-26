@@ -188,41 +188,42 @@ class GroupNormalization(Layer):
         return broadcast_shape 
 
 
-    def _create_group_shape(self,input_shape):
+    def _reshape_into_groups(self,input_shape):
 
-        group_axes = [tensor_input_shape[i] for i in range(len(input_shape))]
-        group_axes[self.axis] = input_shape[self.axis] // self.groups
-        group_axes.insert(1, self.groups)
-
-        # reshape inputs to new group shape
-        group_shape = [group_axes[0], self.groups] + group_axes[2:]
+        group_shape = [tensor_input_shape[i] for i in range(len(input_shape))]
+        group_shape[self.axis] = input_shape[self.axis] // self.groups
+        group_shape.insert(1, self.groups)
         group_shape = K.stack(group_shape)
-        return group_shape
+        reshaped_inputs = K.reshape(inputs, group_shape)
+        return reshaped_inputs, group_shape
 
+    def _apply_scale_or_center(self,inputs, input_shape):
+        broadcast_shape=self._create_broadcast_shape(input_shape)
+        if self.scale:
+            broadcast_gamma = K.reshape(self.gamma, broadcast_shape)
+            outputs = outputs * broadcast_gamma
+
+        if self.center:
+            broadcast_beta = K.reshape(self.beta, broadcast_shape)
+                outputs = outputs + broadcast_beta
+        return outputs
 
     def call(self, inputs):
+
         input_shape = K.int_shape(inputs)
         tensor_input_shape = K.shape(inputs)
 
-        reshaped_inputs = K.reshape(inputs, group_shape)
+        reshaped_inputs, group_shape=self._reshape_into_groups(input_shape)
 
-        group_reduction_axes = list(range(len(group_axes)))
-        mean, variance = nn.moments(inputs, group_reduction_axes[2:],
+        group_reduction_axes = list(range(len(group_shape)))
+        mean, variance = nn.moments(reshaped_inputs, group_reduction_axes[2:],
                                     keep_dims=True)
-        inputs = (inputs - mean) / (K.sqrt(variance + self.epsilon))
+        inputs = (reshaped_inputs - mean) / (K.sqrt(variance + self.epsilon))
 
         outputs = K.reshape(inputs, group_shape)
         
         if self.scale or self.center:
-            broadcast_shape=self._create_broadcast_shape(input_shape)
-            # In this case we must explicitly broadcast all parameters.
-            if self.scale:
-                broadcast_gamma = K.reshape(self.gamma, broadcast_shape)
-                outputs = outputs * broadcast_gamma
-
-            if self.center:
-                broadcast_beta = K.reshape(self.beta, broadcast_shape)
-                outputs = outputs + broadcast_beta
+            outputs = self._apply_scale_or_center(outputs,input_shape)
 
         # finally we reshape the output back to the input shape
         outputs = K.reshape(outputs, tensor_input_shape)
