@@ -14,7 +14,7 @@ In order to conform with the current API standard, all custom ops
 must:
  * Must be impossible to implement in one of the other API
  standards (Layers, Losses, etc.)
- * Add the addon to the `py_library` in this sub-package's README
+ * Add the addon to the `py_library` in this sub-package's BUILD file
 
 #### Testing Requirements
  * Simple unittests that demonstrate the custom op is behaving as
