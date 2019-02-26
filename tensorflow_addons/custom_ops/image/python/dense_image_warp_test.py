@@ -74,7 +74,7 @@ class DenseImageWarpTest(tf.test.TestCase):
 
         self.assertAllClose(expected_results, interp)
 
-    def get_image_and_flow_placeholders(self, shape, image_type, flow_type):
+    def _get_image_and_flow_placeholders(self, shape, image_type, flow_type):
         batch_size, height, width, num_channels = shape
         image_shape = [batch_size, height, width, num_channels]
         flow_shape = [batch_size, height, width, 2]
@@ -94,7 +94,7 @@ class DenseImageWarpTest(tf.test.TestCase):
             shape=flow_shape)
         return image, flows
 
-    def get_random_image_and_flows(self, shape, image_type, flow_type):
+    def _get_random_image_and_flows(self, shape, image_type, flow_type):
         batch_size, height, width, num_channels = shape
         image_shape = [batch_size, height, width, num_channels]
         image = np.random.normal(size=image_shape)
@@ -102,7 +102,7 @@ class DenseImageWarpTest(tf.test.TestCase):
         flows = np.random.normal(size=flow_shape) * 3
         return image.astype(image_type), flows.astype(flow_type)
 
-    def assert_correct_interpolation_value(self,
+    def _assert_correct_interpolation_value(self,
                                            image,
                                            flows,
                                            pred_interpolation,
@@ -149,10 +149,10 @@ class DenseImageWarpTest(tf.test.TestCase):
             atol=atol,
             rtol=rtol)
 
-    def check_zero_flow_correctness(self, shape, image_type, flow_type):
+    def _check_zero_flow_correctness(self, shape, image_type, flow_type):
         """Assert using zero flows doesn't change the input image."""
 
-        rand_image, rand_flows = self.get_random_image_and_flows(
+        rand_image, rand_flows = self._get_random_image_and_flows(
             shape, image_type, flow_type)
         rand_flows *= 0
 
@@ -164,21 +164,21 @@ class DenseImageWarpTest(tf.test.TestCase):
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_zero_flows(self):
-        """Apply check_zero_flow_correctness() for a few sizes and types."""
+        """Apply _check_zero_flow_correctness() for a few sizes and types."""
 
         shapes_to_try = [[3, 4, 5, 6], [1, 2, 2, 1]]
         for shape in shapes_to_try:
-            self.check_zero_flow_correctness(
+            self._check_zero_flow_correctness(
                 shape, image_type="float32", flow_type="float32")
 
-    def check_interpolation_correctness(self,
-                                        shape,
-                                        image_type,
-                                        flow_type,
-                                        num_probes=5):
+    def _check_interpolation_correctness(self,
+                                         shape,
+                                         image_type,
+                                         flow_type,
+                                         num_probes=5):
         """Interpolate, and then assert correctness for a few query locations."""
         low_precision = image_type == "float16" or flow_type == "float16"
-        rand_image, rand_flows = self.get_random_image_and_flows(
+        rand_image, rand_flows = self._get_random_image_and_flows(
             shape, image_type, flow_type)
 
         interp = dense_image_warp_ops.dense_image_warp(
@@ -190,7 +190,7 @@ class DenseImageWarpTest(tf.test.TestCase):
             y_index = np.random.randint(0, shape[1])
             x_index = np.random.randint(0, shape[2])
 
-            self.assert_correct_interpolation_value(
+            self._assert_correct_interpolation_value(
                 rand_image,
                 rand_flows,
                 interp,
@@ -201,13 +201,13 @@ class DenseImageWarpTest(tf.test.TestCase):
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_interpolation(self):
-        """Apply check_interpolation_correctness() for a few sizes and types."""
+        """Apply _check_interpolation_correctness() for a few sizes and types."""
 
         shapes_to_try = [[3, 4, 5, 6], [1, 5, 5, 3], [1, 2, 2, 1]]
         for im_type in ["float32", "float64", "float16"]:
             for flow_type in ["float32", "float64", "float16"]:
                 for shape in shapes_to_try:
-                    self.check_interpolation_correctness(
+                    self._check_interpolation_correctness(
                         shape, im_type, flow_type)
 
     # TODO: switch to TF2 later.
@@ -249,7 +249,7 @@ class DenseImageWarpTest(tf.test.TestCase):
         shape = [1, 2, 1, 1]
         msg = "Should have raised an exception for invalid image size"
         with self.assertRaises(tf.errors.InvalidArgumentError, msg=msg):
-            self.check_interpolation_correctness(shape, "float32", "float32")
+            self._check_interpolation_correctness(shape, "float32", "float32")
 
 
 if __name__ == "__main__":
