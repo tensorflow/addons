@@ -14,13 +14,14 @@ A clear and concise description of what the bug is.
 **System information**
 - Have I written custom code (as opposed to using a stock example script provided in TensorFlow):
 - OS Platform and Distribution (e.g., Linux Ubuntu 16.04):
-- HW Platform (e.g. iPhone 8, Pixel 2, Samsung Galaxy, Intel based Mac, i7 based Dell with NVIDIA GPGPU etc., or Google Cloud machine)
 - TensorFlow installed from (source or binary):
 - TensorFlow version (use command below):
+- TensorFlow Addons installed from (source, PyPi):
 - TensorFlow Addons version:
 - Python version and type(eg. Anaconda Python, Stock Python as in Mac, or homebrew installed Python etc):
 - Bazel version (if compiling from source):
 - GCC/Compiler version (if compiling from source):
+- Is GPU used? : [yes/no]
 - CUDA/cuDNN version (if compiling/running with GPGPU):
 - GPGPU model and memory:
 
