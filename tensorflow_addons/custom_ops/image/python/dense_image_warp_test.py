@@ -74,26 +74,6 @@ class DenseImageWarpTest(tf.test.TestCase):
 
         self.assertAllClose(expected_results, interp)
 
-    def _get_image_and_flow_placeholders(self, shape, image_type, flow_type):
-        batch_size, height, width, num_channels = shape
-        image_shape = [batch_size, height, width, num_channels]
-        flow_shape = [batch_size, height, width, 2]
-
-        tf_type = {
-            "float16": tf.dtypes.half,
-            "float32": tf.dtypes.float32,
-            "float64": tf.dtypes.float64
-        }
-
-        image = tf.placeholder(
-            dtype=tf_type[image_type],
-            shape=image_shape)
-
-        flows = tf.placeholder(
-            dtype=tf_type[flow_type],
-            shape=flow_shape)
-        return image, flows
-
     def _get_random_image_and_flows(self, shape, image_type, flow_type):
         batch_size, height, width, num_channels = shape
         image_shape = [batch_size, height, width, num_channels]
