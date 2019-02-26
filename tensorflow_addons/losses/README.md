@@ -25,5 +25,5 @@ must:
 
 #### Documentation Requirements
  * Update the table of contents in the project's central README
- * Update the table of contents in this sub-project's README
+ * Update the table of contents in this sub-package's README
  
