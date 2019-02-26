@@ -34,48 +34,45 @@ class DenseImageWarpTest(tf.test.TestCase):
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_interpolate_small_grid_ij(self):
-        with self.cached_session():
-            grid = tf.constant(
-                [[0., 1., 2.], [3., 4., 5.], [6., 7., 8.]], shape=[1, 3, 3, 1])
-            query_points = tf.constant(
-                [[0., 0.], [1., 0.], [2., 0.5], [1.5, 1.5]], shape=[1, 4, 2])
-            expected_results = np.reshape(
-                np.array([0., 3., 6.5, 6.]), [1, 4, 1])
+        grid = tf.constant(
+            [[0., 1., 2.], [3., 4., 5.], [6., 7., 8.]], shape=[1, 3, 3, 1])
+        query_points = tf.constant(
+            [[0., 0.], [1., 0.], [2., 0.5], [1.5, 1.5]], shape=[1, 4, 2])
+        expected_results = np.reshape(
+            np.array([0., 3., 6.5, 6.]), [1, 4, 1])
 
-            interp = dense_image_warp_ops._interpolate_bilinear(
-                grid, query_points)
+        interp = dense_image_warp_ops._interpolate_bilinear(
+            grid, query_points)
 
-            self.assertAllClose(expected_results, interp)
+        self.assertAllClose(expected_results, interp)
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_interpolate_small_grid_xy(self):
-        with self.cached_session():
-            grid = tf.constant(
-                [[0., 1., 2.], [3., 4., 5.], [6., 7., 8.]], shape=[1, 3, 3, 1])
-            query_points = tf.constant(
-                [[0., 0.], [0., 1.], [0.5, 2.0], [1.5, 1.5]], shape=[1, 4, 2])
-            expected_results = np.reshape(
-                np.array([0., 3., 6.5, 6.]), [1, 4, 1])
+        grid = tf.constant(
+            [[0., 1., 2.], [3., 4., 5.], [6., 7., 8.]], shape=[1, 3, 3, 1])
+        query_points = tf.constant(
+            [[0., 0.], [0., 1.], [0.5, 2.0], [1.5, 1.5]], shape=[1, 4, 2])
+        expected_results = np.reshape(
+            np.array([0., 3., 6.5, 6.]), [1, 4, 1])
 
-            interp = dense_image_warp_ops._interpolate_bilinear(
-                grid, query_points, indexing="xy")
+        interp = dense_image_warp_ops._interpolate_bilinear(
+            grid, query_points, indexing="xy")
 
-            self.assertAllClose(expected_results, interp)
+        self.assertAllClose(expected_results, interp)
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_interpolate_small_grid_batched(self):
-        with self.cached_session():
-            grid = tf.constant(
-                [[[0., 1.], [3., 4.]], [[5., 6.], [7., 8.]]], shape=[2, 2, 2, 1])
-            query_points = tf.constant([[[0., 0.], [1., 0.], [0.5, 0.5]],
-                                                 [[0.5, 0.], [1., 0.], [1., 1.]]])
-            expected_results = np.reshape(
-                np.array([[0., 3., 2.], [6., 7., 8.]]), [2, 3, 1])
+        grid = tf.constant(
+            [[[0., 1.], [3., 4.]], [[5., 6.], [7., 8.]]], shape=[2, 2, 2, 1])
+        query_points = tf.constant([[[0., 0.], [1., 0.], [0.5, 0.5]],
+                                             [[0.5, 0.], [1., 0.], [1., 1.]]])
+        expected_results = np.reshape(
+            np.array([[0., 3., 2.], [6., 7., 8.]]), [2, 3, 1])
 
-            interp = dense_image_warp_ops._interpolate_bilinear(
-                grid, query_points)
+        interp = dense_image_warp_ops._interpolate_bilinear(
+            grid, query_points)
 
-            self.assertAllClose(expected_results, interp)
+        self.assertAllClose(expected_results, interp)
 
     def get_image_and_flow_placeholders(self, shape, image_type, flow_type):
         batch_size, height, width, num_channels = shape
@@ -155,16 +152,15 @@ class DenseImageWarpTest(tf.test.TestCase):
     def check_zero_flow_correctness(self, shape, image_type, flow_type):
         """Assert using zero flows doesn't change the input image."""
 
-        with self.cached_session():
-            rand_image, rand_flows = self.get_random_image_and_flows(
-                shape, image_type, flow_type)
-            rand_flows *= 0
+        rand_image, rand_flows = self.get_random_image_and_flows(
+            shape, image_type, flow_type)
+        rand_flows *= 0
 
-            interp = dense_image_warp_ops.dense_image_warp(
-                image=tf.convert_to_tensor(rand_image),
-                flow=tf.convert_to_tensor(rand_flows))
+        interp = dense_image_warp_ops.dense_image_warp(
+            image=tf.convert_to_tensor(rand_image),
+            flow=tf.convert_to_tensor(rand_flows))
 
-            self.assertAllClose(rand_image, interp)
+        self.assertAllClose(rand_image, interp)
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_zero_flows(self):
@@ -181,28 +177,27 @@ class DenseImageWarpTest(tf.test.TestCase):
                                         flow_type,
                                         num_probes=5):
         """Interpolate, and then assert correctness for a few query locations."""
-        with self.cached_session():
-            low_precision = image_type == "float16" or flow_type == "float16"
-            rand_image, rand_flows = self.get_random_image_and_flows(
-                shape, image_type, flow_type)
+        low_precision = image_type == "float16" or flow_type == "float16"
+        rand_image, rand_flows = self.get_random_image_and_flows(
+            shape, image_type, flow_type)
 
-            interp = dense_image_warp_ops.dense_image_warp(
-                image=tf.convert_to_tensor(rand_image),
-                flow=tf.convert_to_tensor(rand_flows))
+        interp = dense_image_warp_ops.dense_image_warp(
+            image=tf.convert_to_tensor(rand_image),
+            flow=tf.convert_to_tensor(rand_flows))
 
-            for _ in range(num_probes):
-                batch_index = np.random.randint(0, shape[0])
-                y_index = np.random.randint(0, shape[1])
-                x_index = np.random.randint(0, shape[2])
+        for _ in range(num_probes):
+            batch_index = np.random.randint(0, shape[0])
+            y_index = np.random.randint(0, shape[1])
+            x_index = np.random.randint(0, shape[2])
 
-                self.assert_correct_interpolation_value(
-                    rand_image,
-                    rand_flows,
-                    interp,
-                    batch_index,
-                    y_index,
-                    x_index,
-                    low_precision=low_precision)
+            self.assert_correct_interpolation_value(
+                rand_image,
+                rand_flows,
+                interp,
+                batch_index,
+                y_index,
+                x_index,
+                low_precision=low_precision)
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_interpolation(self):
