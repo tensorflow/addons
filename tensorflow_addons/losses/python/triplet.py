@@ -18,11 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-# from tensorflow.python.framework import dtypes
 from tensorflow.python.keras import losses
-# from tensorflow.python.keras.utils import losses_utils
-# from tensorflow.python.ops import tf
-# from tensorflow.python.ops import tf.math
 from tensorflow_addons.losses.python import metric_learning
 from tensorflow_addons.utils.python import keras_utils
 
