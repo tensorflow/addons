@@ -16,5 +16,11 @@ A clear and concise description of what you want to happen.
 **Describe alternatives you've considered**
 A clear and concise description of any alternative solutions or features you've considered.
 
+**Will this change the current api? How?**
+
+**System information**
+- TensorFlow Addons version (you are using):
+- Are you willing to maintain it (Yes/No):
+
 **Additional context**
 Add any other context or screenshots about the feature request here.
