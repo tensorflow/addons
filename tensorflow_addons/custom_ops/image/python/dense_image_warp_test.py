@@ -18,25 +18,16 @@ from __future__ import division
 from __future__ import print_function
 
 import math
+
 import numpy as np
 
+import tensorflow as tf
 
-from tensorflow.python.framework import constant_op
-from tensorflow.python.framework import dtypes
-from tensorflow.python.framework import errors
-from tensorflow.python.framework import ops
 from tensorflow.python.framework import test_util as tf_test_util
-from tensorflow.python.ops import array_ops
-from tensorflow.python.ops import gradients
-from tensorflow.python.ops import math_ops
-from tensorflow.python.ops import random_ops
-from tensorflow.python.ops import variables
-from tensorflow.python.platform import test
-from tensorflow.python.training import adam
 from tensorflow_addons.custom_ops.image.python import dense_image_warp as dense_image_warp_ops
 
 
-class DenseImageWarpTest(test.TestCase):
+class DenseImageWarpTest(tf.test.TestCase):
 
     def setUp(self):
         np.random.seed(0)
@@ -44,9 +35,9 @@ class DenseImageWarpTest(test.TestCase):
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_interpolate_small_grid_ij(self):
         with self.cached_session():
-            grid = constant_op.constant(
+            grid = tf.constant(
                 [[0., 1., 2.], [3., 4., 5.], [6., 7., 8.]], shape=[1, 3, 3, 1])
-            query_points = constant_op.constant(
+            query_points = tf.constant(
                 [[0., 0.], [1., 0.], [2., 0.5], [1.5, 1.5]], shape=[1, 4, 2])
             expected_results = np.reshape(
                 np.array([0., 3., 6.5, 6.]), [1, 4, 1])
@@ -59,9 +50,9 @@ class DenseImageWarpTest(test.TestCase):
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_interpolate_small_grid_xy(self):
         with self.cached_session():
-            grid = constant_op.constant(
+            grid = tf.constant(
                 [[0., 1., 2.], [3., 4., 5.], [6., 7., 8.]], shape=[1, 3, 3, 1])
-            query_points = constant_op.constant(
+            query_points = tf.constant(
                 [[0., 0.], [0., 1.], [0.5, 2.0], [1.5, 1.5]], shape=[1, 4, 2])
             expected_results = np.reshape(
                 np.array([0., 3., 6.5, 6.]), [1, 4, 1])
@@ -74,9 +65,9 @@ class DenseImageWarpTest(test.TestCase):
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_interpolate_small_grid_batched(self):
         with self.cached_session():
-            grid = constant_op.constant(
+            grid = tf.constant(
                 [[[0., 1.], [3., 4.]], [[5., 6.], [7., 8.]]], shape=[2, 2, 2, 1])
-            query_points = constant_op.constant([[[0., 0.], [1., 0.], [0.5, 0.5]],
+            query_points = tf.constant([[[0., 0.], [1., 0.], [0.5, 0.5]],
                                                  [[0.5, 0.], [1., 0.], [1., 1.]]])
             expected_results = np.reshape(
                 np.array([[0., 3., 2.], [6., 7., 8.]]), [2, 3, 1])
@@ -92,16 +83,16 @@ class DenseImageWarpTest(test.TestCase):
         flow_shape = [batch_size, height, width, 2]
 
         tf_type = {
-            "float16": dtypes.half,
-            "float32": dtypes.float32,
-            "float64": dtypes.float64
+            "float16": tf.dtypes.half,
+            "float32": tf.dtypes.float32,
+            "float64": tf.dtypes.float64
         }
 
-        image = array_ops.placeholder(
+        image = tf.placeholder(
             dtype=tf_type[image_type],
             shape=image_shape)
 
-        flows = array_ops.placeholder(
+        flows = tf.placeholder(
             dtype=tf_type[flow_type],
             shape=flow_shape)
         return image, flows
@@ -170,8 +161,8 @@ class DenseImageWarpTest(test.TestCase):
             rand_flows *= 0
 
             interp = dense_image_warp_ops.dense_image_warp(
-                image=ops.convert_to_tensor(rand_image),
-                flow=ops.convert_to_tensor(rand_flows))
+                image=tf.convert_to_tensor(rand_image),
+                flow=tf.convert_to_tensor(rand_flows))
 
             self.assertAllClose(rand_image, interp)
 
@@ -196,8 +187,8 @@ class DenseImageWarpTest(test.TestCase):
                 shape, image_type, flow_type)
 
             interp = dense_image_warp_ops.dense_image_warp(
-                image=ops.convert_to_tensor(rand_image),
-                flow=ops.convert_to_tensor(rand_flows))
+                image=tf.convert_to_tensor(rand_image),
+                flow=tf.convert_to_tensor(rand_flows))
 
             for _ in range(num_probes):
                 batch_index = np.random.randint(0, shape[0])
@@ -238,18 +229,18 @@ class DenseImageWarpTest(test.TestCase):
 
         batch_size, height, width, num_channels = [4, 5, 6, 7]
         image_shape = [batch_size, height, width, num_channels]
-        image = random_ops.random_normal(image_shape)
+        image = tf.random.normal(image_shape)
         flow_shape = [batch_size, height, width, 2]
         init_flows = np.float32(np.random.normal(size=flow_shape) * 0.25)
-        flows = variables.Variable(init_flows)
+        flows = tf.Variable(init_flows)
 
         interp = dense_image_warp_ops.dense_image_warp(image, flows)
-        loss = math_ops.reduce_mean(math_ops.square(interp - image))
+        loss = tf.math.reduce_mean(tf.math.square(interp - image))
 
-        optimizer = adam.AdamOptimizer(1.0)
-        grad = gradients.gradients(loss, [flows])
+        optimizer = tf.train.AdamOptimizer(1.0)
+        grad = tf.gradients(loss, [flows])
         opt_func = optimizer.apply_gradients(zip(grad, [flows]))
-        init_op = variables.global_variables_initializer()
+        init_op = tf.global_variables_initializer()
 
         with self.cached_session() as sess:
             sess.run(init_op)
@@ -262,9 +253,9 @@ class DenseImageWarpTest(test.TestCase):
 
         shape = [1, 2, 1, 1]
         msg = "Should have raised an exception for invalid image size"
-        with self.assertRaises(errors.InvalidArgumentError, msg=msg):
+        with self.assertRaises(tf.errors.InvalidArgumentError, msg=msg):
             self.check_interpolation_correctness(shape, "float32", "float32")
 
 
 if __name__ == "__main__":
-    test.main()
+    tf.test.main()
