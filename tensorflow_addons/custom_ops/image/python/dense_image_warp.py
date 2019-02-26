@@ -64,29 +64,27 @@ def _interpolate_bilinear(grid,
         query_type = query_points.dtype
         grid_type = grid.dtype
 
-        with tf.control_dependencies([
-            tf.debugging.assert_equal(
-                len(query_points.get_shape()),
-                3,
-                message="Query points must be 3 dimensional."),
-            tf.debugging.assert_equal(
-                tf.shape(query_points)[2],
-                2,
-                message="Query points must be size 2 in dim 2.")
-        ]):
-            num_queries = tf.shape(query_points)[1]
+        tf.debugging.assert_equal(
+            len(query_points.get_shape()),
+            3,
+            message="Query points must be 3 dimensional.")
+        tf.debugging.assert_equal(
+            tf.shape(query_points)[2],
+            2,
+            message="Query points must be size 2 in dim 2.")
 
-        with tf.control_dependencies([
-            tf.debugging.assert_greater_equal(
-                height, 2, message="Grid height must be at least 2."),
-            tf.debugging.assert_greater_equal(
-                width, 2, message="Grid width must be at least 2.")
-        ]):
-            alphas = []
-            floors = []
-            ceils = []
-            index_order = [0, 1] if indexing == "ij" else [1, 0]
-            unstacked_query_points = tf.unstack(query_points, axis=2)
+        num_queries = tf.shape(query_points)[1]
+
+        tf.debugging.assert_greater_equal(
+            height, 2, message="Grid height must be at least 2."),
+        tf.debugging.assert_greater_equal(
+            width, 2, message="Grid width must be at least 2.")
+
+        alphas = []
+        floors = []
+        ceils = []
+        index_order = [0, 1] if indexing == "ij" else [1, 0]
+        unstacked_query_points = tf.unstack(query_points, axis=2)
 
         for dim in index_order:
             with tf.name_scope("dim-" + str(dim)):
@@ -120,18 +118,16 @@ def _interpolate_bilinear(grid,
                 alpha = tf.expand_dims(alpha, 2)
                 alphas.append(alpha)
 
-        with tf.control_dependencies([
-            tf.debugging.assert_less_equal(
-                tf.cast(batch_size * height * width, dtype=tf.dtypes.float32),
-                np.iinfo(np.int32).max / 8.0,
-                message="""The image size or batch size is sufficiently large
-                       that the linearized addresses used by tf.gather
-                       may exceed the int32 limit.""")
-        ]):
-            flattened_grid = tf.reshape(
-                grid, [batch_size * height * width, channels])
-            batch_offsets = tf.reshape(
-                tf.range(batch_size) * height * width, [batch_size, 1])
+        tf.debugging.assert_less_equal(
+            tf.cast(batch_size * height * width, dtype=tf.dtypes.float32),
+            np.iinfo(np.int32).max / 8.0,
+            message="""The image size or batch size is sufficiently large
+                   that the linearized addresses used by tf.gather
+                   may exceed the int32 limit.""")
+        flattened_grid = tf.reshape(
+            grid, [batch_size * height * width, channels])
+        batch_offsets = tf.reshape(
+            tf.range(batch_size) * height * width, [batch_size, 1])
 
         # This wraps tf.gather. We reshape the image data such that the
         # batch, y, and x coordinates are pulled into the first dimension.
