@@ -14,12 +14,6 @@
 # =============================================================================
 
 import tensorflow as tf
-0
-# from tensorflow.python.ops import array_ops
-# from tensorflow.python.ops import nn_impl
-# from tensorflow.python.ops import variables as tf_variables
-# from tensorflow.python.ops.linalg_ops import norm
-# from tensorflow.python.keras import initializers
 from tensorflow_addons.utils.python import keras_utils
 
 
