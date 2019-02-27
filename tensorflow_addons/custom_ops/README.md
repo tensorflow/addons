@@ -26,4 +26,3 @@ must:
 #### Documentation Requirements
  * Update the table of contents in the project's central README.
  * Update the table of contents in this sub-packages's README.
-
