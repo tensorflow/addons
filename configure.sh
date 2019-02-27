@@ -23,7 +23,7 @@ function write_action_env_to_bazelrc() {
 
 rm .bazelrc
 
-# TODO: Verify the tensorflow version here...        
+# TODO: Verify the tensorflow version here...         
 if python -c "import tensorflow" &> /dev/null; then
     echo 'using installed tensorflow'
 else
