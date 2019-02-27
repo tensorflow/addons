@@ -18,7 +18,6 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-
 import tensorflow as tf
 
 
@@ -121,9 +120,9 @@ def _interpolate_bilinear(grid,
         tf.debugging.assert_less_equal(
             tf.cast(batch_size * height * width, dtype=tf.dtypes.float32),
             np.iinfo(np.int32).max / 8.0,
-            message="""The image size or batch size is sufficiently large
-                   that the linearized addresses used by tf.gather
-                   may exceed the int32 limit.""")
+            message="The image size or batch size is sufficiently large "
+                    "that the linearized addresses used by tf.gather "
+                    "may exceed the int32 limit.")
         flattened_grid = tf.reshape(
             grid, [batch_size * height * width, channels])
         batch_offsets = tf.reshape(

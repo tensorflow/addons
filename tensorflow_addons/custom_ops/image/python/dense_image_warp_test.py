@@ -20,7 +20,6 @@ from __future__ import print_function
 import math
 
 import numpy as np
-
 import tensorflow as tf
 
 from tensorflow.python.framework import test_util as tf_test_util
