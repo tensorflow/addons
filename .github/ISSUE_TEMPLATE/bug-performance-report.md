@@ -1,15 +1,7 @@
 ---
-name: Bug/Performance report
-about: Create a report to help us improve
-title: "[Bug/Performance]"
-labels:
-assignees: ''
-
+name: Bug/Performance Issue
+about: Use this template for reporting a bug or a performance issue.
 ---
-
-**Describe the bug**
-
-A clear and concise description of what the bug is.
 
 **System information**
 - Have I written custom code (as opposed to using a stock example script provided in TensorFlow):
@@ -25,9 +17,12 @@ A clear and concise description of what the bug is.
 - CUDA/cuDNN version (if compiling/running with GPGPU):
 - GPGPU model and memory:
 
-You can collect some of this information using our environment capture [script](https://github.com/tensorflow/tensorflow/tree/master/tools/tf_env_collect.sh)
-You can also obtain the TensorFlow version with
+You can obtain the TensorFlow version with
 python -c "import tensorflow as tf; print(tf.GIT_VERSION, tf.VERSION)"
+
+**Describe the bug**
+
+A clear and concise description of what the bug is.
 
 **Describe the expected behavior**
 
