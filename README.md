@@ -12,7 +12,7 @@ developments that cannot be integrated into core TensorFlow
 ## Contents
 | Sub-Package    | Addon  | Reference                                  |
 |:----------------------- |:----------- |:---------------------------- |
-| addons.image | Transform |                                           |
+| addons.image | transform |                                           |
 | addons.layers | Maxout | https://arxiv.org/abs/1302.4389             |
 | addons.layers | PoinareNormalize | https://arxiv.org/abs/1705.08039  |
 | addons.layers | WeightNormalization | https://arxiv.org/abs/1602.07868 |
