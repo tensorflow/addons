@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest a feature for addons
+about: Use this template for raising a feature request
 
 ---
 
