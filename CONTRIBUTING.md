@@ -21,7 +21,7 @@ Want to contribute but not sure of what? Here are a few suggestions:
   these are a great way to familiarize yourself and others with TF-Addons.
 2. Solve an [existing issue](https://github.com/tensorflow/addons/issues).
   These range from low-level software bugs to higher-level design problems.
-  Check out the label [help wanted](https://github.com/tensorflow/addons/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22).
+  Check out the label [help wanted](https://github.com/tensorflow/addons/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22). If you're a new contributor, the label [good first issue](https://github.com/tensorflow/addons/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) can be a good place to start.
 
 All submissions, including submissions by project members, require
 review.
