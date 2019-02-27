@@ -1,26 +1,19 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
-title: ''
-labels: ''
-assignees: ''
+about: Suggest a feature for addons
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**System information**
+- TensorFlow version (you are using):
+- TensorFlow Addons version:
+- Is it in the tf.contrib (and where):
+- Are you willing to contribute it (Yes/No):
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
-
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+**Describe the feature and the current behavior/state.**
 
 **Will this change the current api? How?**
 
-**System information**
-- TensorFlow Addons version (you are using):
-- Are you willing to maintain it (Yes/No):
+**Who will benefit with this feature?**
 
-**Additional context**
-Add any other context or screenshots about the feature request here.
+**Any Other info.**
