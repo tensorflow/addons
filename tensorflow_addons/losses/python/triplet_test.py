@@ -30,7 +30,7 @@ def pairwise_distance_np(feature, squared=False):
     Args:
       feature: 2-D numpy array of size [number of data, feature dimension]
       squared: Boolean. If true, output is the pairwise squared euclidean
-        distance matr`ix; else, output is the pairwise euclidean distance
+        distance matrix; else, output is the pairwise euclidean distance
         matrix.
 
     Returns:

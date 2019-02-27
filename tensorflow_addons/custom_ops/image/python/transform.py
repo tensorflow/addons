@@ -210,7 +210,7 @@ def matrices_to_flat_transforms(transform_matrices):
                              transform_matrices)
         # Flatten each matrix.
         transforms = tf.reshape(transform_matrices,
-                                       tf.constant([-1, 9]))
+                                tf.constant([-1, 9]))
         # Divide each matrix by the last entry (normally 1).
         transforms /= transforms[:, 8:9]
         return transforms[:, :8]

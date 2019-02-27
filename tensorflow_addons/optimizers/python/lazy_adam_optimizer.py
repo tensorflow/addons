@@ -76,7 +76,8 @@ class LazyAdamOptimizer(tf.keras.optimizers.Adam):
         # \\(variable -= learning_rate * m_t / (epsilon_t + sqrt(v_t))\\)
         var_slice = lr * m_t_slice / (tf.math.sqrt(v_t_slice) + epsilon_t)
 
-        # var_update_op = tf.raw_ops.ResourceScatterSub(
+        # FIXME: Why is Raw Ops API not working here...
+        # var_update_op = tf.raw_ops.ResourceScatterSub(var.handle, indices, var_slice)
         var_update_op = resource_variable_ops.resource_scatter_sub(
             var.handle, indices, var_slice)
 
