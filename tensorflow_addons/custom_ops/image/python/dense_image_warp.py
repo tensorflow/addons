@@ -21,6 +21,7 @@ import numpy as np
 import tensorflow as tf
 
 
+@tf.function
 def _interpolate_bilinear(grid,
                           query_points,
                           name="interpolate_bilinear",
