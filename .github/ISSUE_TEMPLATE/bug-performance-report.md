@@ -17,9 +17,6 @@ about: Use this template for reporting a bug or a performance issue.
 - CUDA/cuDNN version (if compiling/running with GPGPU):
 - GPU model and memory:
 
-You can obtain the TensorFlow version with
-python -c "import tensorflow as tf; print(tf.GIT_VERSION, tf.VERSION)"
-
 **Describe the bug**
 
 A clear and concise description of what the bug is.
