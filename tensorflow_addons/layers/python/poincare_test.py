@@ -19,13 +19,13 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+import tensorflow as tf
 
-from tensorflow.python.keras import testing_utils
-from tensorflow.python.platform import test
+from tensorflow.python.keras import testing_utils as keras_test_util
 from tensorflow_addons.layers.python.poincare import PoincareNormalize
 
 
-class PoincareNormalizeTest(test.TestCase):
+class PoincareNormalizeTest(tf.test.TestCase):
     def _PoincareNormalize(self, x, dim, epsilon=1e-5):
         if isinstance(dim, list):
             norm = np.linalg.norm(x, axis=tuple(dim))
@@ -48,7 +48,7 @@ class PoincareNormalizeTest(test.TestCase):
         for dim in range(len(x_shape)):
             outputs_expected = self._PoincareNormalize(inputs, dim, epsilon)
 
-            outputs = testing_utils.layer_test(
+            outputs = keras_test_util.layer_test(
                 PoincareNormalize,
                 kwargs={
                     'axis': dim,
@@ -70,7 +70,7 @@ class PoincareNormalizeTest(test.TestCase):
 
         outputs_expected = self._PoincareNormalize(inputs, dim, epsilon)
 
-        outputs = testing_utils.layer_test(
+        outputs = keras_test_util.layer_test(
             PoincareNormalize,
             kwargs={
                 'axis': dim,
@@ -84,4 +84,4 @@ class PoincareNormalizeTest(test.TestCase):
 
 
 if __name__ == '__main__':
-    test.main()
+    tf.test.main()

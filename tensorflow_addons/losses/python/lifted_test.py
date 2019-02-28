@@ -19,10 +19,9 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+import tensorflow as tf
 
-from tensorflow.python.framework import constant_op
-from tensorflow.python.framework import test_util
-from tensorflow.python.platform import test
+from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow_addons.losses.python import lifted
 
 
@@ -53,9 +52,9 @@ def pairwise_distance_np(feature, squared=False):
     return pairwise_distances
 
 
-class LiftedStructLossTest(test.TestCase):
+class LiftedStructLossTest(tf.test.TestCase):
 
-    @test_util.run_all_in_graph_and_eager_modes
+    @tf_test_util.run_all_in_graph_and_eager_modes
     def testLiftedStruct(self):
         num_data = 10
         feat_dim = 6
@@ -98,12 +97,12 @@ class LiftedStructLossTest(test.TestCase):
         loss_np = loss_np / num_constraints / 2.0
 
         # Compute the loss in TF.
-        y_true = constant_op.constant(labels)
-        y_pred = constant_op.constant(embedding)
+        y_true = tf.constant(labels)
+        y_pred = tf.constant(embedding)
         cce_obj = lifted.LiftedStructLoss()
         loss = cce_obj(y_true, y_pred)
         self.assertAlmostEqual(self.evaluate(loss), loss_np, 3)
 
 
 if __name__ == '__main__':
-    test.main()
+    tf.test.main()
