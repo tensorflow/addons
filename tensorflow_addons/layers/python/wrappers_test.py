@@ -18,26 +18,22 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+import tensorflow as tf
+
+from tensorflow.python.framework import test_util as tf_test_util
+from tensorflow.python.keras import testing_utils as keras_test_util
 from tensorflow_addons.layers.python import wrappers
 
-from tensorflow.python import keras
-from tensorflow.python.ops import random_ops
-from tensorflow.python.keras.optimizer_v2.rmsprop import RMSprop
 
-from tensorflow.python.platform import test
-from tensorflow.python.framework import test_util as tf_test_util
-from tensorflow.python.keras import testing_utils
-
-
-class WeightNormalizationTest(test.TestCase):
+class WeightNormalizationTest(tf.test.TestCase):
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_weightnorm_dense_train(self):
-        model = keras.models.Sequential()
+        model = tf.keras.models.Sequential()
         model.add(wrappers.WeightNormalization(
-            keras.layers.Dense(2), input_shape=(3, 4)))
+            tf.keras.layers.Dense(2), input_shape=(3, 4)))
 
-        model.compile(optimizer=RMSprop(learning_rate=0.001), loss='mse')
+        model.compile(optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.001), loss='mse')
         model.fit(
             np.random.random((10, 3, 4)),
             np.random.random((10, 3, 2)),
@@ -47,11 +43,13 @@ class WeightNormalizationTest(test.TestCase):
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_weightnorm_dense_train_notinit(self):
-        model = keras.models.Sequential()
+        model = tf.keras.models.Sequential()
         model.add(wrappers.WeightNormalization(
-            keras.layers.Dense(2), input_shape=(3, 4), data_init=False))
+            tf.keras.layers.Dense(2), input_shape=(3, 4), data_init=False))
 
-        model.compile(optimizer=RMSprop(learning_rate=0.001), loss='mse')
+        model.compile(
+            optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.001),
+            loss='mse')
         model.fit(
             np.random.random((10, 3, 4)),
             np.random.random((10, 3, 2)),
@@ -61,13 +59,15 @@ class WeightNormalizationTest(test.TestCase):
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_weightnorm_conv2d(self):
-        model = keras.models.Sequential()
+        model = tf.keras.models.Sequential()
         model.add(wrappers.WeightNormalization(
-            keras.layers.Conv2D(5, (2, 2), padding='same'),
+            tf.keras.layers.Conv2D(5, (2, 2), padding='same'),
             input_shape=(4, 4, 3)))
 
-        model.add(keras.layers.Activation('relu'))
-        model.compile(optimizer=RMSprop(learning_rate=0.001), loss='mse')
+        model.add(tf.keras.layers.Activation('relu'))
+        model.compile(
+            optimizer=tf.optimizers.RMSprop(learning_rate=0.001),
+            loss='mse')
         model.fit(
             np.random.random((2, 4, 4, 3)),
             np.random.random((2, 4, 4, 5)),
@@ -78,15 +78,15 @@ class WeightNormalizationTest(test.TestCase):
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_weightnorm_tflayers(self):
-        images = random_ops.random_uniform((2, 4, 4, 3))
+        images = tf.random.uniform((2, 4, 4, 3))
         wn_wrapper = wrappers.WeightNormalization(
-            keras.layers.Conv2D(32, [2, 2]), input_shape=(4, 4, 3))
+           tf.keras.layers.Conv2D(32, [2, 2]), input_shape=(4, 4, 3))
         wn_wrapper.apply(images)
         self.assertTrue(hasattr(wn_wrapper.layer, 'g'))
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_weightnorm_nonlayer(self):
-        images = random_ops.random_uniform((2, 4, 43))
+        images = tf.random.uniform((2, 4, 43))
         with self.assertRaises(ValueError):
             wrappers.WeightNormalization(images)
 
@@ -94,18 +94,18 @@ class WeightNormalizationTest(test.TestCase):
     def test_weightnorm_nokernel(self):
         with self.assertRaises(ValueError):
             wrappers.WeightNormalization(
-                keras.layers.MaxPooling2D(2, 2)).build((2, 2))
+                tf.keras.layers.MaxPooling2D(2, 2)).build((2, 2))
 
     def test_weightnorm_keras(self):
         input_data = np.random.random((10, 3, 4)).astype(np.float32)
-        outputs = testing_utils.layer_test(
+        outputs = keras_test_util.layer_test(
             wrappers.WeightNormalization,
             kwargs={
-                'layer': keras.layers.Dense(2),
+                'layer': tf.keras.layers.Dense(2),
                 'input_shape': (3, 4)
             },
             input_data=input_data)
 
 
 if __name__ == "__main__":
-    test.main()
+    tf.test.main()
