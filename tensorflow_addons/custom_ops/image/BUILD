@@ -19,36 +19,17 @@ cc_binary(
 )
 
 
+# TODO: split each operation into groups
 py_library(
-    name = "image_py",
+    name = "image_ops",
     srcs = ([
         "__init__.py",
         "python/__init__.py",
-    ]),
-    deps = [
-        ":dense_image_warp_py",
-        ":images_ops_py",
-    ],
-    srcs_version = "PY2AND3",
-)
-
-
-py_library(
-    name = "dense_image_warp_py",
-    srcs = ([
         "python/dense_image_warp.py",
-    ]),
-    srcs_version = "PY2AND3",
-)
-
-
-py_library(
-    name = "images_ops_py",
-    srcs = ([
         "python/transform.py",
     ]),
     data = [
-        ":python/_image_ops.so"
+        ":python/_image_ops.so",
     ],
     srcs_version = "PY2AND3",
 )
@@ -58,13 +39,13 @@ py_test(
     name = "dense_image_warp_test",
     size = "small",
     srcs = [
-        "python/dense_image_warp_test.py"
+        "python/dense_image_warp_test.py",
     ],
     main = "python/dense_image_warp_test.py",
     deps = [
-        ":dense_image_warp_py",
+        ":image_ops",      
     ],
-    srcs_version = "PY2AND3"
+    srcs_version = "PY2AND3",
 )
 
 
@@ -73,11 +54,11 @@ py_test(
     name = "transform_ops_test",
     size = "small",
     srcs = [
-        "python/transform_test.py"
+        "python/transform_test.py",
     ],
     main = "python/transform_test.py",
     deps = [
-        ":images_ops_py",
+        ":image_ops"
     ],
     srcs_version = "PY2AND3",
 )
