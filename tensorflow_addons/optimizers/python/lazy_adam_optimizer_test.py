@@ -24,7 +24,6 @@ import tensorflow as tf
 from tensorflow.python.eager import context
 from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow.python.ops import variables
-from tensorflow.python.ops import resource_variable_ops
 from tensorflow_addons.optimizers.python import lazy_adam_optimizer
 
 
@@ -71,8 +70,8 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                 grads1_np = np.array([0.01, 0.0, 0.01],
                                      dtype=dtype.as_numpy_dtype)
 
-                var0 = resource_variable_ops.ResourceVariable(var0_np)
-                var1 = resource_variable_ops.ResourceVariable(var1_np)
+                var0 = tf.Variable(var0_np)
+                var1 = tf.Variable(var1_np)
                 grads0_np_indices = np.array([0, 2], dtype=np.int32)
                 grads0 = tf.IndexedSlices(
                     tf.constant(grads0_np[grads0_np_indices]),
@@ -169,10 +168,8 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                 var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
                 grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
 
-                var0 = resource_variable_ops.ResourceVariable(
-                    var0_np, name="var0_%d" % i)
-                var1 = resource_variable_ops.ResourceVariable(
-                    var1_np, name="var1_%d" % i)
+                var0 = tf.Variable(var0_np, name="var0_%d" % i)
+                var1 = tf.Variable(var1_np, name="var1_%d" % i)
                 grads0 = tf.constant(grads0_np)
                 grads1 = tf.constant(grads1_np)
 
@@ -328,8 +325,8 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
 
     def testSlotsUniqueEager(self):
         with context.eager_mode():
-            v1 = resource_variable_ops.ResourceVariable(1.)
-            v2 = resource_variable_ops.ResourceVariable(1.)
+            v1 = tf.Variable(1.)
+            v2 = tf.Variable(1.)
             opt = lazy_adam_optimizer.LazyAdamOptimizer(1.)
             opt.minimize(lambda: v1 + v2, var_list=[v1, v2])
             # There should be iteration, and two unique slot variables for v1 and v2.
