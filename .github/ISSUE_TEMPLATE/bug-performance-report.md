@@ -15,7 +15,7 @@ about: Use this template for reporting a bug or a performance issue.
 - GCC/Compiler version (if compiling from source):
 - Is GPU used? : [yes/no]
 - CUDA/cuDNN version (if compiling/running with GPGPU):
-- GPGPU model and memory:
+- GPU model and memory:
 
 You can obtain the TensorFlow version with
 python -c "import tensorflow as tf; print(tf.GIT_VERSION, tf.VERSION)"
