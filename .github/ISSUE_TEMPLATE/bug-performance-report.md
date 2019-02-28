@@ -15,7 +15,7 @@ about: Use this template for reporting a bug or a performance issue.
 - GCC/Compiler version (if compiling from source):
 - Is GPU used? : [yes/no]
 - CUDA/cuDNN version (if compiling/running with GPGPU):
-- GPU model and memory:
+- GPU model :
 
 **Describe the bug**
 
