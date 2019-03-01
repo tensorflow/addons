@@ -104,6 +104,7 @@ class GroupNormalization(Layer):
         self.beta_constraint = constraints.get(beta_constraint)
         self.gamma_constraint = constraints.get(gamma_constraint)
 
+
     def build(self, input_shape):
 
         self._check_if_input_shape_is_None(input_shape)
@@ -115,6 +116,83 @@ class GroupNormalization(Layer):
         self._add_beta_weight(input_shape)
         self.built = True
         super(GroupNormalization, self).build(input_shape)
+
+
+    def call(self, inputs):
+
+        input_shape = K.int_shape(inputs)
+        tensor_input_shape = K.shape(inputs)
+
+        reshaped_inputs, group_shape=self._reshape_into_groups(inputs,input_shape,tensor_input_shape)
+
+        normalized_inputs = self._apply_normalization(reshaped_inputs, input_shape)
+
+        outputs = K.reshape(normalized_inputs, tensor_input_shape)
+
+        return outputs
+
+
+    def get_config(self):
+        config = {
+            'groups': self.groups,
+            'axis': self.axis,
+            'epsilon': self.epsilon,
+            'center': self.center,
+            'scale': self.scale,
+            'beta_initializer': initializers.serialize(self.beta_initializer),
+            'gamma_initializer': initializers.serialize(self.gamma_initializer),
+            'beta_regularizer': regularizers.serialize(self.beta_regularizer),
+            'gamma_regularizer': regularizers.serialize(self.gamma_regularizer),
+            'beta_constraint': constraints.serialize(self.beta_constraint),
+            'gamma_constraint': constraints.serialize(self.gamma_constraint)
+        }
+        base_config = super(GroupNormalization, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
+
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
+
+
+    def _reshape_into_groups(self,inputs,input_shape,tensor_input_shape):
+
+        group_shape = [tensor_input_shape[i] for i in range(len(input_shape))]
+        group_shape[self.axis] = input_shape[self.axis] // self.groups
+        group_shape.insert(1, self.groups)
+        group_shape = K.stack(group_shape)
+        reshaped_inputs = K.reshape(inputs, group_shape)
+        return reshaped_inputs, group_shape
+
+
+    def _apply_normalization(self, reshaped_inputs , input_shape):
+        
+        group_shape = K.int_shape(reshaped_inputs)
+        group_reduction_axes = list(range(len(group_shape)))
+        # Remember the ordering of the tensor is [batch, group , steps]. Jump the first 2 to calculate the variance and the mean
+        mean, variance = nn.moments(reshaped_inputs, group_reduction_axes[2:],
+                                    keep_dims=True)
+
+        gamma,beta= self._get_reshaped_weights(input_shape)
+        normalized_inputs= nn.batch_normalization(reshaped_inputs,
+                                                mean = mean,
+                                                variance = variance,
+                                                scale = gamma,
+                                                offset = beta,
+                                                variance_epsilon = self.epsilon)
+        return normalized_inputs
+
+
+    def _get_reshaped_weights(self, input_shape):
+        broadcast_shape=self._create_broadcast_shape(input_shape)
+        gamma=None
+        beta=None
+        if self.scale:
+            gamma = K.reshape(self.gamma, broadcast_shape)
+
+        if self.center:
+            beta = K.reshape(self.beta, broadcast_shape)
+        return gamma, beta
+
 
     def _check_if_input_shape_is_None(self, input_shape):
         dim = input_shape[self.axis]
@@ -189,68 +267,6 @@ class GroupNormalization(Layer):
         return broadcast_shape
 
 
-    def _reshape_into_groups(self,input_shape):
-
-        group_shape = [tensor_input_shape[i] for i in range(len(input_shape))]
-        group_shape[self.axis] = input_shape[self.axis] // self.groups
-        group_shape.insert(1, self.groups)
-        group_shape = K.stack(group_shape)
-        reshaped_inputs = K.reshape(inputs, group_shape)
-        return reshaped_inputs, group_shape
-
-    def _apply_scale_or_center(self,inputs, input_shape):
-        broadcast_shape=self._create_broadcast_shape(input_shape)
-        if self.scale:
-            broadcast_gamma = K.reshape(self.gamma, broadcast_shape)
-            outputs = outputs * broadcast_gamma
-
-        if self.center:
-            broadcast_beta = K.reshape(self.beta, broadcast_shape)
-                outputs = outputs + broadcast_beta
-        return outputs
-
-    def call(self, inputs):
-
-        input_shape = K.int_shape(inputs)
-        tensor_input_shape = K.shape(inputs)
-
-        reshaped_inputs, group_shape=self._reshape_into_groups(input_shape)
-
-        group_reduction_axes = list(range(len(group_shape)))
-        mean, variance = nn.moments(reshaped_inputs, group_reduction_axes[2:],
-                                    keep_dims=True)
-        inputs = (reshaped_inputs - mean) / (K.sqrt(variance + self.epsilon))
-
-        outputs = K.reshape(inputs, group_shape)
-
-        if self.scale or self.center:
-            outputs = self._apply_scale_or_center(outputs,input_shape)
-
-        # finally we reshape the output back to the input shape
-        outputs = K.reshape(outputs, tensor_input_shape)
-
-        return outputs
-
-    def get_config(self):
-        config = {
-            'groups': self.groups,
-            'axis': self.axis,
-            'epsilon': self.epsilon,
-            'center': self.center,
-            'scale': self.scale,
-            'beta_initializer': initializers.serialize(self.beta_initializer),
-            'gamma_initializer': initializers.serialize(self.gamma_initializer),
-            'beta_regularizer': regularizers.serialize(self.beta_regularizer),
-            'gamma_regularizer': regularizers.serialize(self.gamma_regularizer),
-            'beta_constraint': constraints.serialize(self.beta_constraint),
-            'gamma_constraint': constraints.serialize(self.gamma_constraint)
-        }
-        base_config = super(GroupNormalization, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
-
-    def compute_output_shape(self, input_shape):
-        return input_shape
-
 class LayerNormalization(GroupNormalization):
     """Layer normalization layer.
 
@@ -292,6 +308,8 @@ class LayerNormalization(GroupNormalization):
         - [Layer Normalization](https://arxiv.org/abs/1607.06450)
     """
     def __init__(self,**kwargs):
+        if "groups" in kwargs:
+            tf.logging.warning("The given value for groups will be overwritten.")
         kwargs["groups"]=1
         super(LayerNormalization,self).__init__(**kwargs)
 
@@ -336,5 +354,10 @@ class InstanceNormalization(GroupNormalization):
         - [Layer Normalization](https://arxiv.org/abs/1607.06450)
     """
     def __init__(self,**kwargs):
+
+        if "groups" in kwargs:
+            tf.logging.warning("The given value for groups will be overwritten.")
+
         kwargs["groups"]=-1
         super(InstanceNormalization,self).__init__(**kwargs)
+
