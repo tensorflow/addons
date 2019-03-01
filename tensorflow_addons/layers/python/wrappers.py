@@ -13,19 +13,24 @@
 # limitations under the License.
 # =============================================================================
 
+import tensorflow as tf
+
 from tensorflow import name_scope
-from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import nn_impl
-from tensorflow.python.keras import initializers
-from tensorflow.python.eager import context
-from tensorflow.python.keras.engine.base_layer import Layer
-from tensorflow.python.keras.engine.base_layer import InputSpec
-from tensorflow.python.keras.layers import Wrapper
 from tensorflow.python.ops import variables as tf_variables
+from tensorflow.python.ops.linalg_ops import norm
+from tensorflow.python.ops.math_ops import sqrt
+from tensorflow.python.ops.nn import moments
+
+from tensorflow.python.keras import initializers
+from tensorflow.python.keras.engine import base_layer
+from tensorflow.python.keras.layers import Wrapper
+from tensorflow_addons.utils.python import keras_utils
 
 
+@keras_utils.register_keras_custom_object
 class WeightNormalization(Wrapper):
     """ This wrapper reparameterizes a layer by decoupling the weight's
     magnitude and direction. This speeds up convergence by improving the
@@ -52,49 +57,42 @@ class WeightNormalization(Wrapper):
       ValueError: If `Layer` does not contain a `kernel` of weights
       NotImplementedError: If `data_init` is True and running graph execution
     """
-    def __init__(self, layer, data_init=False, **kwargs):
-        if not isinstance(layer, Layer):
+    def __init__(self, layer, data_init=True, **kwargs):
+        if not isinstance(layer, base_layer.Layer):
             raise ValueError(
                 'Please initialize `WeightNormalization` layer with a '
                 '`Layer` instance. You passed: {input}'.format(input=layer))
-
-        if not context.executing_eagerly() and data_init:
-            raise NotImplementedError(
-                'Data dependent variable initialization is not available for '
-                'graph execution')
 
         self.initialized = True
         if data_init:
             self.initialized = False
 
         super(WeightNormalization, self).__init__(layer, **kwargs)
-        self._track_checkpointable(layer, name='layer')
+        self._track_trackable(layer, name='layer')
 
     def _compute_weights(self):
         """Generate weights by combining the direction of weight vector
          with its norm """
         with name_scope('compute_weights'):
             self.layer.kernel = nn_impl.l2_normalize(
-                self.layer.v, axis=self.norm_axes) * self.layer.g
+                self.layer.v, axis=self.kernel_norm_axes) * self.layer.g
 
     def _init_norm(self, weights):
         """Set the norm of the weight vector"""
-        from tensorflow.python.ops.linalg_ops import norm
         with name_scope('init_norm'):
             flat = array_ops.reshape(weights, [-1, self.layer_depth])
             return array_ops.reshape(norm(flat, axis=0), (self.layer_depth,))
 
     def _data_dep_init(self, inputs):
-        """Data dependent initialization for eager execution"""
-        from tensorflow.python.ops.nn import moments
-        from tensorflow.python.ops.math_ops import sqrt
+        """Data dependent initialization"""
 
         with name_scope('data_dep_init'):
             # Generate data dependent init values
             activation = self.layer.activation
             self.layer.activation = None
             x_init = self.layer.call(inputs)
-            m_init, v_init = moments(x_init, self.norm_axes)
+            data_norm_axes = list(range(x_init.shape.rank - 1))
+            m_init, v_init = moments(x_init, data_norm_axes)
             scale_init = 1. / sqrt(v_init + 1e-10)
 
         # Assign data dependent init values
@@ -106,7 +104,7 @@ class WeightNormalization(Wrapper):
     def build(self, input_shape):
         """Build `Layer`"""
         input_shape = tensor_shape.TensorShape(input_shape).as_list()
-        self.input_spec = InputSpec(shape=input_shape)
+        self.input_spec = base_layer.InputSpec(shape=input_shape)
 
         if not self.layer.built:
             self.layer.build(input_shape)
@@ -120,7 +118,7 @@ class WeightNormalization(Wrapper):
 
             # The kernel's filter or unit dimension is -1
             self.layer_depth = int(self.layer.kernel.shape[-1])
-            self.norm_axes = list(range(self.layer.kernel.shape.ndims - 1))
+            self.kernel_norm_axes = list(range(self.layer.kernel.shape.rank - 1))
 
             self.layer.v = self.layer.kernel
             self.layer.g = self.layer.add_variable(
@@ -131,22 +129,22 @@ class WeightNormalization(Wrapper):
                 trainable=True,
                 aggregation=tf_variables.VariableAggregation.MEAN)
 
-            with ops.control_dependencies([self.layer.g.assign(
-                    self._init_norm(self.layer.v))]):
-                self._compute_weights()
+            # TODO: Check if this needs control deps in TF2 graph mode
+            self.layer.g.assign(self._init_norm(self.layer.v))
+            self._compute_weights()
 
             self.layer.built = True
 
         super(WeightNormalization, self).build()
         self.built = True
 
+    @tf.function
     def call(self, inputs):
         """Call `Layer`"""
-        if context.executing_eagerly():
-            if not self.initialized:
-                self._data_dep_init(inputs)
-            self._compute_weights()  # Recompute weights for each forward pass
+        if not self.initialized:
+            self._data_dep_init(inputs)
 
+        self._compute_weights()  # Recompute weights for each forward pass
         output = self.layer.call(inputs)
         return output
 

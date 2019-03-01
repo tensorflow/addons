@@ -19,12 +19,12 @@ from __future__ import print_function
 
 import csv
 
-from tensorflow.python.ops import lookup_ops
-from tensorflow.python.framework import load_library
 from tensorflow.python.framework import dtypes
+from tensorflow.python.framework import load_library
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import random_seed
 from tensorflow.python.ops import array_ops
+from tensorflow.python.ops import lookup_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import random_ops
 from tensorflow.python.platform import gfile

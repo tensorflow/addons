@@ -4,7 +4,7 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "layers_py",
-    srcs = ([
+    srcs = [
         "__init__.py",
         "python/__init__.py",
         "python/maxout.py",
@@ -13,11 +13,14 @@ py_library(
         "python/wrappers.py"
     ]),
     srcs_version = "PY2AND3",
+    deps = [
+        "//tensorflow_addons/utils:utils_py",
+    ],
 )
 
 py_test(
     name = "layers_wrappers_py_test",
-    size= "small",
+    size = "small",
     srcs = [
         "python/wrappers_test.py",
     ],

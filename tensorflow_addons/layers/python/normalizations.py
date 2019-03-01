@@ -18,7 +18,7 @@
 from tensorflow.keras import backend as K
 from tensorflow.keras import constraints
 from tensorflow.keras import initializers
-from tensorflow.keras import regularizers 
+from tensorflow.keras import regularizers
 from tensorflow.keras.layers import InputSpec
 from tensorflow.keras.layers import Layer
 from tensorflow.python.ops import nn
@@ -65,12 +65,12 @@ class GroupNormalization(Layer):
         gamma_regularizer: Optional regularizer for the gamma weight.
         beta_constraint: Optional constraint for the beta weight.
         gamma_constraint: Optional constraint for the gamma weight.
-    
+
     Input shape
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model.
-    
+
     Output shape
         Same shape as input.
     References
@@ -108,12 +108,13 @@ class GroupNormalization(Layer):
 
         self._check_if_input_shape_is_None(input_shape)
         self._set_number_of_groups_for_instance_norm(input_shape)
-        self._check_size_of_dimensions(input_shape) 
+        self._check_size_of_dimensions(input_shape)
         self._create_input_spec(input_shape)
 
         self._add_gamma_weight(input_shape)
         self._add_beta_weight(input_shape)
         self.built = True
+        super(GroupNormalization, self).build(input_shape)
 
     def _check_if_input_shape_is_None(self, input_shape):
         dim = input_shape[self.axis]
@@ -185,7 +186,7 @@ class GroupNormalization(Layer):
         broadcast_shape = [1] * len(input_shape)
         broadcast_shape[self.axis] = input_shape[self.axis] // self.groups
         broadcast_shape.insert(1, self.groups)
-        return broadcast_shape 
+        return broadcast_shape
 
 
     def _reshape_into_groups(self,input_shape):
@@ -221,7 +222,7 @@ class GroupNormalization(Layer):
         inputs = (reshaped_inputs - mean) / (K.sqrt(variance + self.epsilon))
 
         outputs = K.reshape(inputs, group_shape)
-        
+
         if self.scale or self.center:
             outputs = self._apply_scale_or_center(outputs,input_shape)
 
@@ -257,7 +258,7 @@ class LayerNormalization(GroupNormalization):
     normalizes all features of a layer. The Groupsize is 1.
     Layer Normalization's computation is independent
     of batch sizes, and its accuracy is stable in a wide range of batch sizes.
-    
+
     Arguments
         axis: Integer, the axis that should be normalized
             (typically the features axis).
@@ -278,15 +279,15 @@ class LayerNormalization(GroupNormalization):
         gamma_regularizer: Optional regularizer for the gamma weight.
         beta_constraint: Optional constraint for the beta weight.
         gamma_constraint: Optional constraint for the gamma weight.
-    
+
     Input shape
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model.
-    
+
     Output shape
         Same shape as input.
-    
+
     References
         - [Layer Normalization](https://arxiv.org/abs/1607.06450)
     """
@@ -296,7 +297,7 @@ class LayerNormalization(GroupNormalization):
 
 class InstanceNormalization(GroupNormalization):
     """Instance normalization layer.
-    
+
     Instance Normalization is an specific case of ```GroupNormalization```since it
     normalizes all features of one channel. The Groupsize is equal to the channel size.
     Instance Normalization's computation is independent
