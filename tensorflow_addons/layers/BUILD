@@ -11,11 +11,11 @@ py_library(
         "python/normalizations.py",
         "python/poincare.py",
         "python/wrappers.py"
-    ]),
+    ],
     srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/utils:utils_py",
-    ],
+    ]
 )
 
 py_test(
@@ -28,7 +28,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":layers_py",
-    ],
+    ]
 )
 
 py_test(
@@ -41,7 +41,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":layers_py",
-    ],
+    ]
 )
 
 py_test(
@@ -54,5 +54,5 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
             ":layers_py",
-        ],
+        ]
 )
