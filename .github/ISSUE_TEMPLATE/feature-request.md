@@ -8,7 +8,8 @@ about: Use this template for raising a feature request
 - TensorFlow version (you are using):
 - TensorFlow Addons version:
 - Is it in the tf.contrib (if so, where):
-- Are you willing to contribute it (Yes/No):
+- Are you willing to contribute it (yes/no):
+- Are you willing to maintain it going forward? (yes/no):
 
 **Describe the feature and the current behavior/state.**
 
