@@ -18,8 +18,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.python.ops import array_ops
-from tensorflow.python.ops import math_ops
 
 
 # TODO: add unit test later.
@@ -36,39 +34,40 @@ def pairwise_distance(feature, squared=False):
     Returns:
       pairwise_distances: 2-D Tensor of size [number of data, number of data].
     """
-    pairwise_distances_squared = math_ops.add(
-        math_ops.reduce_sum(
-            math_ops.square(feature),
+    pairwise_distances_squared = tf.math.add(
+        tf.math.reduce_sum(
+            tf.math.square(feature),
             axis=[1],
             keepdims=True),
-        math_ops.reduce_sum(
-            math_ops.square(array_ops.transpose(feature)),
+        tf.math.reduce_sum(
+            tf.math.square(tf.transpose(feature)),
             axis=[0],
-            keepdims=True)) - 2.0 * math_ops.matmul(
-                feature, array_ops.transpose(feature))
+            keepdims=True)) - 2.0 * tf.matmul(
+        feature, tf.transpose(feature))
 
     # Deal with numerical inaccuracies. Set small negatives to zero.
-    pairwise_distances_squared = math_ops.maximum(pairwise_distances_squared,
-                                                  0.0)
+    pairwise_distances_squared = tf.math.maximum(pairwise_distances_squared,
+                                                 0.0)
     # Get the mask where the zero distances are at.
-    error_mask = math_ops.less_equal(pairwise_distances_squared, 0.0)
+    error_mask = tf.math.less_equal(pairwise_distances_squared, 0.0)
 
     # Optionally take the sqrt.
     if squared:
         pairwise_distances = pairwise_distances_squared
     else:
-        pairwise_distances = math_ops.sqrt(
-            pairwise_distances_squared + math_ops.to_float(error_mask) * 1e-16)
+        pairwise_distances = tf.math.sqrt(
+            pairwise_distances_squared + tf.cast(
+                error_mask, dtype=tf.dtypes.float32) * 1e-16)
 
     # Undo conditionally adding 1e-16.
-    pairwise_distances = math_ops.multiply(
+    pairwise_distances = tf.math.multiply(
         pairwise_distances,
-        math_ops.to_float(math_ops.logical_not(error_mask)))
+        tf.cast(tf.math.logical_not(error_mask), dtype=tf.dtypes.float32))
 
-    num_data = array_ops.shape(feature)[0]
+    num_data = tf.shape(feature)[0]
     # Explicitly set diagonals to zero.
-    mask_offdiagonals = array_ops.ones_like(
-        pairwise_distances) - array_ops.diag(array_ops.ones([num_data]))
-    pairwise_distances = math_ops.multiply(pairwise_distances,
-                                           mask_offdiagonals)
+    mask_offdiagonals = tf.ones_like(
+        pairwise_distances) - tf.linalg.diag(tf.ones([num_data]))
+    pairwise_distances = tf.math.multiply(pairwise_distances,
+                                          mask_offdiagonals)
     return pairwise_distances

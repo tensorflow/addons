@@ -13,7 +13,7 @@ developments that cannot be integrated into core TensorFlow
 | Sub-Package    | Addon  | Reference                                  |
 |:----------------------- |:----------- |:---------------------------- |
 | addons.image | dense_image_warp |                                    |
-| addons.image | Transform |                                           |
+| addons.image | transform |                                           |
 | addons.layers | Maxout | https://arxiv.org/abs/1302.4389             |
 | addons.layers | PoinareNormalize | https://arxiv.org/abs/1705.08039  |
 | addons.layers | WeightNormalization | https://arxiv.org/abs/1602.07868 |
@@ -79,6 +79,7 @@ By participating, you are expected to uphold this code.
 ## Community
 * [Public Mailing List](https://groups.google.com/a/tensorflow.org/forum/#!forum/addons)
 * [SIG Monthly Meeting Notes](https://docs.google.com/document/d/1kxg5xIHWLY7EMdOJCdSGgaPu27a9YKpupUz2VTXqTJg)
+    * Join our mailing list and receive calendar invites to the meeting
 
 ## License
 [Apache License 2.0](LICENSE)

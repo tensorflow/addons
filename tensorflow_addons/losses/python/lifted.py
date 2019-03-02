@@ -19,11 +19,8 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.python.framework import dtypes
+
 from tensorflow.python.keras import losses
-from tensorflow.python.keras.utils import losses_utils
-from tensorflow.python.ops import array_ops
-from tensorflow.python.ops import math_ops
 from tensorflow_addons.losses.python import metric_learning
 from tensorflow_addons.utils.python import keras_utils
 
@@ -44,28 +41,28 @@ def lifted_struct_loss(labels, embeddings, margin=1.0):
       lifted_loss: tf.float32 scalar.
     """
     # Reshape [batch_size] label tensor to a [batch_size, 1] label tensor.
-    lshape = array_ops.shape(labels)
+    lshape = tf.shape(labels)
     assert lshape.shape == 1
-    labels = array_ops.reshape(labels, [lshape[0], 1])
+    labels = tf.reshape(labels, [lshape[0], 1])
 
     # Build pairwise squared distance matrix.
     pairwise_distances = metric_learning.pairwise_distance(embeddings)
 
     # Build pairwise binary adjacency matrix.
-    adjacency = math_ops.equal(labels, array_ops.transpose(labels))
+    adjacency = tf.math.equal(labels, tf.transpose(labels))
     # Invert so we can select negatives only.
-    adjacency_not = math_ops.logical_not(adjacency)
+    adjacency_not = tf.math.logical_not(adjacency)
 
-    batch_size = array_ops.size(labels)
+    batch_size = tf.size(labels)
 
     diff = margin - pairwise_distances
-    mask = math_ops.cast(adjacency_not, dtype=dtypes.float32)
+    mask = tf.cast(adjacency_not, dtype=tf.dtypes.float32)
     # Safe maximum: Temporarily shift negative distances
     #   above zero before taking max.
     #     this is to take the max only among negatives.
-    row_minimums = math_ops.reduce_min(diff, 1, keepdims=True)
-    row_negative_maximums = math_ops.reduce_max(
-        math_ops.multiply(diff - row_minimums, mask), 1,
+    row_minimums = tf.math.reduce_min(diff, 1, keepdims=True)
+    row_negative_maximums = tf.math.reduce_max(
+        tf.math.multiply(diff - row_minimums, mask), 1,
         keepdims=True) + row_minimums
 
     # Compute the loss.
@@ -74,37 +71,36 @@ def lifted_struct_loss(labels, embeddings, margin=1.0):
     # This matches the Caffe loss layer implementation at:
     #   https://github.com/rksltnl/Caffe-Deep-Metric-Learning-CVPR16/blob/0efd7544a9846f58df923c8b992198ba5c355454/src/caffe/layers/lifted_struct_similarity_softmax_layer.cpp  # pylint: disable=line-too-long
 
-    max_elements = math_ops.maximum(row_negative_maximums,
-                                    array_ops.transpose(row_negative_maximums))
-    diff_tiled = array_ops.tile(diff, [batch_size, 1])
-    mask_tiled = array_ops.tile(mask, [batch_size, 1])
-    max_elements_vect = array_ops.reshape(
-        array_ops.transpose(max_elements), [-1, 1])
+    max_elements = tf.math.maximum(row_negative_maximums,
+                                   tf.transpose(row_negative_maximums))
+    diff_tiled = tf.tile(diff, [batch_size, 1])
+    mask_tiled = tf.tile(mask, [batch_size, 1])
+    max_elements_vect = tf.reshape(tf.transpose(max_elements), [-1, 1])
 
-    loss_exp_left = array_ops.reshape(
-        math_ops.reduce_sum(
-            math_ops.multiply(
-                math_ops.exp(diff_tiled - max_elements_vect), mask_tiled),
+    loss_exp_left = tf.reshape(
+        tf.math.reduce_sum(
+            tf.math.multiply(
+                tf.math.exp(diff_tiled - max_elements_vect), mask_tiled),
             1,
             keepdims=True), [batch_size, batch_size])
 
-    loss_mat = max_elements + math_ops.log(loss_exp_left +
-                                           array_ops.transpose(loss_exp_left))
+    loss_mat = max_elements + tf.math.log(loss_exp_left +
+                                          tf.transpose(loss_exp_left))
     # Add the positive distance.
     loss_mat += pairwise_distances
 
-    mask_positives = math_ops.cast(
-        adjacency, dtype=dtypes.float32) - array_ops.diag(
-            array_ops.ones([batch_size]))
+    mask_positives = tf.cast(
+        adjacency, dtype=tf.dtypes.float32) - tf.linalg.diag(
+            tf.ones([batch_size]))
 
     # *0.5 for upper triangular, and another *0.5 for 1/2 factor for loss^2.
-    num_positives = math_ops.reduce_sum(mask_positives) / 2.0
+    num_positives = tf.math.reduce_sum(mask_positives) / 2.0
 
-    lifted_loss = math_ops.truediv(
-        0.25 * math_ops.reduce_sum(
-            math_ops.square(
-                math_ops.maximum(
-                    math_ops.multiply(loss_mat, mask_positives), 0.0))),
+    lifted_loss = tf.math.truediv(
+        0.25 * tf.math.reduce_sum(
+            tf.math.square(
+                tf.math.maximum(
+                    tf.math.multiply(loss_mat, mask_positives), 0.0))),
         num_positives)
     return lifted_loss
 
@@ -128,5 +124,5 @@ class LiftedStructLoss(losses.LossFunctionWrapper):
         super(LiftedStructLoss, self).__init__(
             lifted_struct_loss,
             name=name,
-            reduction=losses_utils.ReductionV2.NONE,
+            reduction=tf.keras.losses.Reduction.NONE,
             margin=margin)
