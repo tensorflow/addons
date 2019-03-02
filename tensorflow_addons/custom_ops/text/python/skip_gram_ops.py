@@ -18,20 +18,14 @@ from __future__ import division
 from __future__ import print_function
 
 import csv
+import tensorflow as tf
 
-from tensorflow.python.framework import dtypes
-from tensorflow.python.framework import load_library
-from tensorflow.python.framework import ops
 from tensorflow.python.framework import random_seed
-from tensorflow.python.ops import array_ops
+from tensorflow.python.framework import ops
 from tensorflow.python.ops import lookup_ops
-from tensorflow.python.ops import math_ops
-from tensorflow.python.ops import random_ops
-from tensorflow.python.platform import gfile
 from tensorflow.python.platform import resource_loader
-from tensorflow.python.training import input as input_ops
 
-skip_gram_ops = load_library.load_op_library(
+skip_gram_ops = tf.load_op_library(
     resource_loader.get_path_to_datafile("_skip_gram_ops.so"))
 
 ops.NotDifferentiable("SkipGramGenerateCandidates")
@@ -197,7 +191,7 @@ def skip_gram_sample(input_tensor,
             batch_capacity = (batch_capacity
                               if (batch_capacity is not None and batch_capacity > 0)
                               else 100 * batch_size)
-            return input_ops.batch(
+            return tf.train.batch(
                 [tokens, labels],
                 batch_size,
                 capacity=batch_capacity,
@@ -209,9 +203,9 @@ def skip_gram_sample(input_tensor,
 def skip_gram_sample_with_text_vocab(input_tensor,
                                      vocab_freq_file,
                                      vocab_token_index=0,
-                                     vocab_token_dtype=dtypes.string,
+                                     vocab_token_dtype=tf.dtypes.string,
                                      vocab_freq_index=1,
-                                     vocab_freq_dtype=dtypes.float64,
+                                     vocab_freq_dtype=tf.dtypes.float64,
                                      vocab_delimiter=",",
                                      vocab_min_count=0,
                                      vocab_subsampling=None,
@@ -330,7 +324,7 @@ def skip_gram_sample_with_text_vocab(input_tensor,
     # vocab terms).
     calculated_corpus_size = 0.0
     vocab_size = 0
-    with gfile.GFile(vocab_freq_file, mode="r") as f:
+    with tf.io.gfile.GFile(vocab_freq_file, mode="r") as f:
         reader = csv.reader(f, delimiter=vocab_delimiter)
         for row in reader:
             if vocab_token_index >= len(row) or vocab_freq_index >= len(row):
@@ -404,16 +398,16 @@ def _filter_input(input_tensor, vocab_freq_table, vocab_min_count,
         # Filters out elements in input_tensor that are not found in
         # vocab_freq_table (table returns a default value of -1 specified above when
         # an element is not found).
-        mask = math_ops.not_equal(freq, vocab_freq_table.default_value)
+        mask = tf.math.not_equal(freq, vocab_freq_table.default_value)
 
         # Filters out elements whose vocab frequencies are less than the threshold.
         if vocab_min_count is not None:
-            cast_threshold = math_ops.cast(vocab_min_count, freq.dtype)
-            mask = math_ops.logical_and(mask,
-                                        math_ops.greater_equal(freq, cast_threshold))
+            cast_threshold = tf.cast(vocab_min_count, freq.dtype)
+            mask = tf.math.logical_and(mask,
+                                        tf.math.greater_equal(freq, cast_threshold))
 
-        input_tensor = array_ops.boolean_mask(input_tensor, mask)
-        freq = array_ops.boolean_mask(freq, mask)
+        input_tensor = tf.boolean_mask(input_tensor, mask)
+        freq = tf.boolean_mask(freq, mask)
 
     if not vocab_subsampling:
         return input_tensor
@@ -428,21 +422,21 @@ def _filter_input(input_tensor, vocab_freq_table, vocab_min_count,
     # tokens).
     with ops.name_scope(
             "subsample_vocab", values=[input_tensor, freq, vocab_subsampling]):
-        corpus_size = math_ops.cast(corpus_size, dtypes.float64)
-        freq = math_ops.cast(freq, dtypes.float64)
-        vocab_subsampling = math_ops.cast(vocab_subsampling, dtypes.float64)
+        corpus_size = tf.cast(corpus_size, tf.dtypes.float64)
+        freq = tf.cast(freq, tf.dtypes.float64)
+        vocab_subsampling = tf.cast(vocab_subsampling, tf.dtypes.float64)
 
         # From tensorflow_models/tutorials/embedding/word2vec_kernels.cc, which is
         # suppose to correlate with Eq. 5 in http://arxiv.org/abs/1310.4546.
-        keep_prob = ((math_ops.sqrt(freq /
+        keep_prob = ((tf.math.sqrt(freq /
                                     (vocab_subsampling * corpus_size)) + 1.0) *
                      (vocab_subsampling * corpus_size / freq))
-        random_prob = random_ops.random_uniform(
-            array_ops.shape(freq),
+        random_prob = tf.random.uniform(
+            tf.shape(freq),
             minval=0,
             maxval=1,
-            dtype=dtypes.float64,
+            dtype=tf.dtypes.float64,
             seed=seed)
 
-        mask = math_ops.less_equal(random_prob, keep_prob)
-        return array_ops.boolean_mask(input_tensor, mask)
+        mask = tf.math.less_equal(random_prob, keep_prob)
+        return tf.boolean_mask(input_tensor, mask)
