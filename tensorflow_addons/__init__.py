@@ -71,8 +71,8 @@ for symbol in ["_ensure_tf_install", "_sys"]:
 
 # Local project imports
 from tensorflow_addons import layers
-from tensorflow_addons import optimizers
 from tensorflow_addons import losses
+from tensorflow_addons import optimizers
 from tensorflow_addons.custom_ops import image
 from tensorflow_addons.custom_ops import text
 
