@@ -12,19 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Setup for pip package."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+import os
 
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.dist import Distribution
 
-__version__ = '0.0.1'
+version = {}
+base_dir = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
+    exec(fp.read(), version)
+
+
 REQUIRED_PACKAGES = [
-    'tf-nightly-2.0-preview',
+    'six >= 1.10.0',
 ]
+
 project_name = 'tensorflow-addons'
 
 
@@ -37,7 +40,7 @@ class BinaryDistribution(Distribution):
 
 setup(
     name=project_name,
-    version=__version__,
+    version=version['__version__'],
     description=('TensorFlow Addons'),
     author='Google Inc.',
     author_email='opensource@google.com',
@@ -56,6 +59,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Software Development :: Libraries',
