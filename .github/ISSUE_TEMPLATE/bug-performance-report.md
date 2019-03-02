@@ -1,6 +1,7 @@
 ---
 name: Bug/Performance Issue
 about: Use this template for reporting a bug or a performance issue.
+
 ---
 
 **System information**
@@ -13,9 +14,8 @@ about: Use this template for reporting a bug or a performance issue.
 - Python version and type (eg. Anaconda Python, Stock Python as in Mac, or homebrew installed Python etc):
 - Bazel version (if compiling from source):
 - GCC/Compiler version (if compiling from source):
-- Is GPU used? : [yes/no]
-- CUDA/cuDNN version (if compiling/running with GPGPU):
-- GPU model :
+- Is GPU used? (yes/no):
+- GPU model (if used):
 
 **Describe the bug**
 
