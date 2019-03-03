@@ -23,9 +23,6 @@ from __future__ import print_function
 import os
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-ERROR_MESSAGE = """
-Files with same name but different case detected in directory: {}
-"""
 
 
 def main():
@@ -41,7 +38,9 @@ def main():
 
         lowercase_dir_contents = lowercase_directories + lowercase_files
         if len(lowercase_dir_contents) != len(set(lowercase_dir_contents)):
-            raise AssertionError(ERROR_MESSAGE.format(dirpath))
+            raise AssertionError(
+                'Files with same name but different case detected '
+                'in directory: {}'.format(dirpath))
 
 
 if __name__ == '__main__':

@@ -221,7 +221,7 @@ echo
 if [[ ${FAIL_COUNTER} == "0" ]]; then
     printf "Format checks ${COLOR_GREEN}PASSED${COLOR_NC}\n"
 else
-    printf "Use ${COLOR_GREEN}make format${COLOR_NC} command to format codes automatically\n"
+    printf "Use ${COLOR_GREEN}make code-format${COLOR_NC} command to format codes automatically\n"
     printf "Format checks ${COLOR_RED}FAILED${COLOR_NC}\n"
     exit 1
 fi
