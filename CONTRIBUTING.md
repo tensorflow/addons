@@ -52,7 +52,17 @@ us**
 It is recommended that development is done in the latest
 `nightly-custom-op` docker image.
 ```
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
+docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op
+
+# Try those commands below:
+# 0. Format codes automatically
+make code-format
+# 1. Sanity check
+make sanity-check
+# 2. Run unit test
+make unit-test
+# 3. All of the above
+make
 ```
 
 ## Code Testing
@@ -62,6 +72,13 @@ project will contain CUDA kernels, we need to make sure that the
 hardware will be available from our CI provider.
 
 #### Locally Testing
+
+```
+docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op make unit-test
+```
+
+or run manually:
+
 ```
 ./configure.sh  # Links project with TensorFlow dependency
 
