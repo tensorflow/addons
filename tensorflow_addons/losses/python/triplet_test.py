@@ -18,10 +18,9 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+import tensorflow as tf
 
-from tensorflow.python.framework import constant_op
-from tensorflow.python.framework import test_util
-from tensorflow.python.platform import test
+from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow_addons.losses.python import triplet
 
 
@@ -52,8 +51,8 @@ def pairwise_distance_np(feature, squared=False):
     return pairwise_distances
 
 
-@test_util.run_all_in_graph_and_eager_modes
-class TripletSemiHardLossTest(test.TestCase):
+@tf_test_util.run_all_in_graph_and_eager_modes
+class TripletSemiHardLossTest(tf.test.TestCase):
     def test_unweighted(self):
         num_data = 10
         feat_dim = 6
@@ -101,12 +100,12 @@ class TripletSemiHardLossTest(test.TestCase):
         loss_np /= num_positives
 
         # Compute the loss in TF.
-        y_true = constant_op.constant(labels)
-        y_pred = constant_op.constant(embedding)
+        y_true = tf.constant(labels)
+        y_pred = tf.constant(embedding)
         cce_obj = triplet.TripletSemiHardLoss()
         loss = cce_obj(y_true, y_pred)
         self.assertAlmostEqual(self.evaluate(loss), loss_np, 3)
 
 
 if __name__ == '__main__':
-    test.main()
+    tf.test.main()
