@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorflow.python.keras.utils import generic_utils
+from tensorflow.python.keras.losses import LossFunctionWrapper
 
 
 def register_keras_custom_object(cls):
