@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2016 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -42,85 +42,48 @@ num_cpus() {
     echo ${N_CPUS}
 }
 
-# Helper functions for examining changed files in the last non-merge git
-# commit.
-
-# Get the hash of the last non-merge git commit on the current branch.
-# Usage: get_last_non_merge_git_commit
-get_last_non_merge_git_commit() {
-    git rev-list --no-merges -n 1 HEAD
+# List files changed (i.e., added, or revised).
+# Usage: get_changed_files_from_master_branch
+get_changed_files_from_master_branch() {
+    git diff origin/master --diff-filter=d --name-only "$@"
 }
 
-# List files changed (i.e., added, removed or revised) in the last non-merge
-# git commit.
-# Usage: get_changed_files_in_last_non_merge_git_commit
-get_changed_files_in_last_non_merge_git_commit() {
-    git diff-tree --no-commit-id --name-only -r $(get_last_non_merge_git_commit)
-}
-
-# List bazel files changed in the last non-merge git commit that still exist,
+# List bazel files changed that still exist,
 # i.e., not removed.
 # Usage: get_bazel_files_to_check [--incremental]
 get_bazel_files_to_check() {
     if [[ "$1" == "--incremental" ]]; then
-        CHANGED_BAZEL_FILES=$(get_changed_files_in_last_non_merge_git_commit | \
-            grep 'BUILD*')
-
-        # Do not include files removed in the last non-merge commit.
-        BAZEL_FILES=""
-        for BAZEL_FILE in ${CHANGED_BAZEL_FILES}; do
-            if [[ -f "${BAZEL_FILE}" ]]; then
-                BAZEL_FILES="${BAZEL_FILES} ${BAZEL_FILE}"
-            fi
-        done
-
-        echo "${BAZEL_FILES}"
-    else
+        get_changed_files_from_master_branch -- 'BUILD*'
+    elif [[ -z "$1" ]]; then
         find . -name 'BUILD*'
+    else
+        die "Found unsupported args for get_bazel_files_to_check."
     fi
 }
 
-# List Python files changed in the last non-merge git commit that still exist,
+# List python files changed that still exist,
 # i.e., not removed.
 # Usage: get_py_files_to_check [--incremental]
 get_py_files_to_check() {
     if [[ "$1" == "--incremental" ]]; then
-        CHANGED_PY_FILES=$(get_changed_files_in_last_non_merge_git_commit | \
-            grep '.*\.py$')
-
-        # Do not include files removed in the last non-merge commit.
-        PY_FILES=""
-        for PY_FILE in ${CHANGED_PY_FILES}; do
-            if [[ -f "${PY_FILE}" ]]; then
-                PY_FILES="${PY_FILES} ${PY_FILE}"
-            fi
-        done
-
-        echo "${PY_FILES}"
-    else
+        get_changed_files_from_master_branch -- '*.py'
+    elif [[ -z "$1" ]]; then
         find . -name '*.py'
+    else
+        die "Found unsupported args for get_py_files_to_check."
     fi
 }
 
-# List .h|.cc files changed in the last non-merge git commit that still exist,
+# List .h|.cc files changed that still exist,
 # i.e., not removed.
 # Usage: get_clang_files_to_check [--incremental]
 get_clang_files_to_check() {
     if [[ "$1" == "--incremental" ]]; then
-        CHANGED_CLANG_FILES=$(get_changed_files_in_last_non_merge_git_commit | \
-            grep '.*\.h$\|.*\.cc$')
-
-        # Do not include files removed in the last non-merge commit.
-        CLANG_FILES=""
-        for CLANG_FILE in ${CHANGED_CLANG_FILES}; do
-            if [[ -f "${CLANG_FILE}" ]]; then
-                CLANG_FILES="${CLANG_FILES} ${CLANG_FILE}"
-            fi
-        done
-
-        echo "${CLANG_FILES}"
-    else
+        get_changed_files_from_master_branch -- '*.h' '*.cc'
+    elif [[ -z "$1" ]]; then
         find . -name '*.h' -o -name '*.cc'
+    else
+        die "Found unsupported args for get_clang_files_to_check."
     fi
 }
 

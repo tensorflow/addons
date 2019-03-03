@@ -48,7 +48,7 @@ do_pylint() {
     fi
 
     if [[ $1 == "PYTHON2" ]]; then
-        PYLINT_BIN="python -m pylint"
+        PYLINT_BIN="python2 -m pylint"
     elif [[ $1 == "PYTHON3" ]]; then
         PYLINT_BIN="python3 -m pylint"
     else
@@ -56,27 +56,7 @@ do_pylint() {
         return 1
     fi
 
-    if [[ "$2" == "--incremental" ]]; then
-        PYTHON_SRC_FILES=$(get_py_files_to_check --incremental)
-
-        if [[ -z "${PYTHON_SRC_FILES}" ]]; then
-            echo "do_pylint will NOT run due to --incremental flag and due to the "\
-                 "absence of Python code changes in the last commit."
-            return 0
-        else
-            # For incremental builds, we still check all Python files in cases there
-            # are function signature changes that affect unchanged Python files.
-            PYTHON_SRC_FILES=$(get_py_files_to_check)
-        fi
-
-    elif [[ -z "$2" ]]; then
-        PYTHON_SRC_FILES=$(get_py_files_to_check)
-    else
-        echo "Invalid syntax for invoking do_pylint"
-        echo "Usage: do_pylint (PYTHON2 | PYTHON3) [--incremental]"
-        return 1
-    fi
-
+    PYTHON_SRC_FILES=$(get_py_files_to_check $2)
     if [[ -z ${PYTHON_SRC_FILES} ]]; then
         echo "do_pylint found no Python files to check. Returning."
         return 0
@@ -250,7 +230,7 @@ do_check_file_name_test() {
 }
 
 do_check_code_format_test() {
-    CHECK_CMD="$SCRIPT_DIR/auto_format.sh $1"
+    CHECK_CMD="$SCRIPT_DIR/code_format.sh $1"
     ${CHECK_CMD}
 }
 

@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 #
-# Usage: auto_format.sh [--incremental] [--in-place]
+# Usage: code_format.sh [--incremental] [--in-place]
 #
 # Options:
 #  --incremental  Performs checks incrementally, by using the files changed in
@@ -48,6 +48,12 @@ fi
 
 do_bazel_config_format_check() {
     BUILD_FILES=$(get_bazel_files_to_check $INCREMENTAL_FLAG)
+    if [[ -z $BUILD_FILES ]]; then
+        echo "do_bazel_config_format_check will NOT run due to"\
+             "the absence of code changes."
+        return 0
+    fi
+
     NUM_BUILD_FILES=$(echo ${BUILD_FILES} | wc -w)
     echo "Running do_buildifier on ${NUM_BUILD_FILES} files"
     echo ""
@@ -64,54 +70,66 @@ do_bazel_config_format_check() {
 
     buildifier -showlog -v -mode=check \
         ${BUILD_FILES} 2>&1 | tee ${BUILDIFIER_OUTPUT_FILE}
-            BUILDIFIER_END_TIME=$(date +'%s')
+    BUILDIFIER_END_TIME=$(date +'%s')
 
-            echo ""
-            echo "buildifier took $((BUILDIFIER_END_TIME - BUILDIFIER_START_TIME)) s"
-            echo ""
+    echo ""
+    echo "buildifier took $((BUILDIFIER_END_TIME - BUILDIFIER_START_TIME)) s"
+    echo ""
 
-            if [[ -s ${BUILDIFIER_OUTPUT_FILE} ]]; then
-                echo "FAIL: buildifier found errors and/or warnings in above BUILD files."
-                echo "buildifier suggested the following changes:"
-                buildifier -showlog -v -mode=diff ${BUILD_FILES}
-                echo "Please fix manually or run buildifier <file> to auto-fix."
-                echo "Bazel configuration format check fails."
-                return 1
-            else
-                echo "Bazel configuration format check success."
-                return 0
-            fi
-        }
+    if [[ -s ${BUILDIFIER_OUTPUT_FILE} ]]; then
+        echo "FAIL: buildifier found errors and/or warnings in above BUILD files."
+        echo "buildifier suggested the following changes:"
+        buildifier -showlog -v -mode=diff ${BUILD_FILES}
+        echo "Please fix manually or run buildifier <file> to auto-fix."
+        echo "Bazel configuration format check fails."
+        return 1
+    else
+        echo "Bazel configuration format check success."
+        return 0
+    fi
+}
 
-    do_python_format_check() {
-        PYTHON_SRC_FILES=$(get_py_files_to_check $INCREMENTAL_FLAG)
+do_python_format_check() {
+    PYTHON_SRC_FILES=$(get_py_files_to_check $INCREMENTAL_FLAG)
+    if [[ -z $PYTHON_SRC_FILES ]]; then
+        echo "do_python_format_check will NOT run due to"\
+             "the absence of code changes."
+        return 0
+    fi
 
-        YAPFRC_FILE="${SCRIPT_DIR}/yapfrc"
-        if [[ ! -f "${YAPFRC_FILE}" ]]; then
-            die "ERROR: Cannot find yapf rc file at ${YAPFRC_FILE}"
-        fi
-        YAPF_OPTS="--style=$YAPFRC_FILE --parallel"
+    YAPFRC_FILE="${SCRIPT_DIR}/yapfrc"
+    if [[ ! -f "${YAPFRC_FILE}" ]]; then
+        die "ERROR: Cannot find yapf rc file at ${YAPFRC_FILE}"
+    fi
+    YAPF_OPTS="--style=$YAPFRC_FILE --parallel"
 
-        if [[ ! -z $IN_PLACE_FLAG ]]; then
-            echo "Auto format..."
-            yapf $YAPF_OPTS --in-place --verbose $PYTHON_SRC_FILES
-            docformatter --in-place $PYTHON_SRC_FILES
-        fi
+    echo $PYTHON_SRC_FILES
+    if [[ ! -z $IN_PLACE_FLAG ]]; then
+        echo "Auto format..."
+        yapf $YAPF_OPTS --in-place --verbose $PYTHON_SRC_FILES
+        docformatter --in-place $PYTHON_SRC_FILES
+    fi
 
-        UNFORMATTED_CODES=$(yapf $YAPF_OPTS --diff $PYTHON_SRC_FILES)
-        if [[ $? != "0" || ! -z "$UNFORMATTED_CODES" ]]; then
-            echo "Find unformatted codes:"
-            echo "$UNFORMATTED_CODES"
-            echo "Python format check fails."
-            return 1
-        else
-            echo "Python format check success."
-            return 0
-        fi
-    }
+    UNFORMATTED_CODES=$(yapf $YAPF_OPTS --diff $PYTHON_SRC_FILES)
+    if [[ $? != "0" || ! -z "$UNFORMATTED_CODES" ]]; then
+        echo "Find unformatted codes:"
+        echo "$UNFORMATTED_CODES"
+        echo "Python format check fails."
+        return 1
+    else
+        echo "Python format check success."
+        return 0
+    fi
+}
 
 do_clang_format_check() {
     CLANG_SRC_FILES=$(get_clang_files_to_check $INCREMENTAL_FLAG)
+    if [[ -z $CLANG_SRC_FILES ]]; then
+        echo "do_clang_format_check will NOT run due to"\
+             "the absence of code changes."
+        return 0
+    fi
+
     CLANG_FORMAT=${CLANG_FORMAT:-clang-format-3.8}
     CLANG_FORMAT_OPTS="--style=google"
 
@@ -157,22 +175,22 @@ while [[ ${COUNTER} -lt "${#FORMAT_STEPS[@]}" ]]; do
          "${FORMAT_STEPS[COUNTER]} (${FORMAT_STEPS_DESC[COUNTER]}) ---"
     echo ""
 
-  # subshell: don't leak variables or changes of working directory
-  (
-  ${FORMAT_STEPS[COUNTER]}
-  )
-  RESULT=$?
+    # subshell: don't leak variables or changes of working directory
+    (
+    ${FORMAT_STEPS[COUNTER]}
+    )
+    RESULT=$?
 
-  if [[ ${RESULT} != "0" ]]; then
-      ((FAIL_COUNTER++))
-  else
-      ((PASS_COUNTER++))
-  fi
+    if [[ ${RESULT} != "0" ]]; then
+        ((FAIL_COUNTER++))
+    else
+        ((PASS_COUNTER++))
+    fi
 
-  STEP_EXIT_CODES+=(${RESULT})
+    STEP_EXIT_CODES+=(${RESULT})
 
-  echo ""
-  ((COUNTER++))
+    echo ""
+    ((COUNTER++))
 done
 
 # Print summary of results
