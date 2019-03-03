@@ -26,6 +26,10 @@ SCRIPT_DIR=$( cd ${0%/*} && pwd -P )
 source "${SCRIPT_DIR}/builds/builds_common.sh"
 
 ROOT_DIR=$( cd "$SCRIPT_DIR/../.." && pwd -P )
+if [[ ! -d "tensorflow_addons" ]]; then
+    echo "ERROR: PWD: $PWD is not project root"
+    exit 1
+fi
 
 # Parse command-line arguments
 INCREMENTAL_FLAG=""

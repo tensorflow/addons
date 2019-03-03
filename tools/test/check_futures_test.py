@@ -77,12 +77,11 @@ def check_file(path, old_division):
 
 
 def main():
-    # Make sure BASE_DIR ends with addons.
+    # Make sure BASE_DIR is project root.
     # If it doesn't, we probably computed the wrong directory.
-    # TODO: more robust way to check:
-    if os.path.split(BASE_DIR)[-1] != 'addons':
+    if not os.path.isdir(os.path.join(BASE_DIR, 'tensorflow_addons')):
         raise AssertionError(
-            "BASE_DIR = '%s' doesn't end with addons" % BASE_DIR)
+            'BASE_DIR = {} is not project root'.format(BASE_DIR))
 
     # Verify that all files have futures
     whitelist = frozenset(os.path.join(BASE_DIR, w) for w in WHITELIST)

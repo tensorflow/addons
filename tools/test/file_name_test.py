@@ -29,12 +29,11 @@ Files with same name but different case detected in directory: {}
 
 
 def main():
-    # Make sure BASE_DIR ends with addons.  If it doesn't, we probably
-    # computed the wrong directory.
-    # TODO: more robust way to check:
-    if os.path.split(BASE_DIR)[-1] != 'addons':
+    # Make sure BASE_DIR is project root.
+    # If it doesn't, we probably computed the wrong directory.
+    if not os.path.isdir(os.path.join(BASE_DIR, 'tensorflow_addons')):
         raise AssertionError(
-            "BASE_DIR = '%s' doesn't end with addons" % BASE_DIR)
+            'BASE_DIR = {} is not project root'.format(BASE_DIR))
 
     for dirpath, dirnames, filenames in os.walk(BASE_DIR, followlinks=True):
         lowercase_directories = [x.lower() for x in dirnames]
