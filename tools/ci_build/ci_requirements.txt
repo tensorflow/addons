@@ -1,0 +1,4 @@
+pylint >= 1.6.4, < 2.0; python_version < '3.4'
+pylint >= 2.4; python_version >= '3.4'
+docformatter >= 1.1
+yapf >= 0.26.0

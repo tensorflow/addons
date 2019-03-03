@@ -21,11 +21,17 @@
 #                 the latest commit
 #  --in-place  make changes to files in place
 
+# Current script directory
+SCRIPT_DIR=$( cd ${0%/*} && pwd -P )
+source "${SCRIPT_DIR}/builds/builds_common.sh"
+
+ROOT_DIR=$( cd "$SCRIPT_DIR/../.." && pwd -P )
+
+# Parse command-line arguments
 INCREMENTAL_FLAG=""
 IN_PLACE_FLAG=""
 UNRESOLVED_ARGS=""
 
-# Parse command-line arguments
 for arg in "$@"; do
   if [[ "${arg}" == "--incremental" ]]; then
     INCREMENTAL_FLAG="--incremental"
@@ -39,12 +45,6 @@ done
 if [[ ! -z "$UNRESOLVED_ARGS" ]]; then
     die "ERROR: Found unsupported args: $UNRESOLVED_ARGS"
 fi
-
-# Current script directory
-SCRIPT_DIR=$( cd ${0%/*} && pwd -P )
-source "${SCRIPT_DIR}/builds/builds_common.sh"
-
-ROOT_DIR=$( cd "$SCRIPT_DIR/../.." && pwd -P )
 
 do_bazel_config_format_check() {
     BUILD_FILES=$(get_bazel_files_to_check $INCREMENTAL_FLAG)
