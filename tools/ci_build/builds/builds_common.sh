@@ -57,7 +57,7 @@ get_bazel_files_to_check() {
     elif [[ -z "$1" ]]; then
         find . -name 'BUILD*'
     else
-        die "Found unsupported args for get_bazel_files_to_check."
+        die "Found unsupported args: $@ for get_bazel_files_to_check."
     fi
 }
 
@@ -70,7 +70,7 @@ get_py_files_to_check() {
     elif [[ -z "$1" ]]; then
         find . -name '*.py'
     else
-        die "Found unsupported args for get_py_files_to_check."
+        die "Found unsupported args: $@ for get_py_files_to_check."
     fi
 }
 
@@ -83,7 +83,7 @@ get_clang_files_to_check() {
     elif [[ -z "$1" ]]; then
         find . -name '*.h' -o -name '*.cc'
     else
-        die "Found unsupported args for get_clang_files_to_check."
+        die "Found unsupported args: $@ for get_clang_files_to_check."
     fi
 }
 

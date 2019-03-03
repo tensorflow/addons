@@ -52,7 +52,7 @@ us**
 It is recommended that development is done in the latest
 `nightly-custom-op` docker image.
 ```
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op
+docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
 
 # Try those commands below:
 # 0. Format codes automatically
