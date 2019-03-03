@@ -52,7 +52,7 @@ us**
 It is recommended that development is done in the latest
 `nightly-custom-op` docker image.
 ```
-docker run --rm -it -v ${PWD}:/working_dir -w /working_dir tensorflow/tensorflow:nightly-custom-op /bin/bash
+docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
 ```
 
 ## Code Testing
