@@ -33,13 +33,13 @@ IN_PLACE_FLAG=""
 UNRESOLVED_ARGS=""
 
 for arg in "$@"; do
-  if [[ "${arg}" == "--incremental" ]]; then
-    INCREMENTAL_FLAG="--incremental"
-  elif [[ "${arg}" == "--in-place" ]]; then
-    IN_PLACE_FLAG="--in-place"
-  else
-    UNRESOLVED_ARGS="${UNRESOLVED_ARGS} ${arg}"
-  fi
+    if [[ "${arg}" == "--incremental" ]]; then
+        INCREMENTAL_FLAG="--incremental"
+    elif [[ "${arg}" == "--in-place" ]]; then
+        IN_PLACE_FLAG="--in-place"
+    else
+        UNRESOLVED_ARGS="${UNRESOLVED_ARGS} ${arg}"
+    fi
 done
 
 if [[ ! -z "$UNRESOLVED_ARGS" ]]; then
@@ -63,79 +63,79 @@ do_bazel_config_format_check() {
     rm -rf ${BUILDIFIER_OUTPUT_FILE}
 
     buildifier -showlog -v -mode=check \
-      ${BUILD_FILES} 2>&1 | tee ${BUILDIFIER_OUTPUT_FILE}
-    BUILDIFIER_END_TIME=$(date +'%s')
+        ${BUILD_FILES} 2>&1 | tee ${BUILDIFIER_OUTPUT_FILE}
+            BUILDIFIER_END_TIME=$(date +'%s')
 
-    echo ""
-    echo "buildifier took $((BUILDIFIER_END_TIME - BUILDIFIER_START_TIME)) s"
-    echo ""
+            echo ""
+            echo "buildifier took $((BUILDIFIER_END_TIME - BUILDIFIER_START_TIME)) s"
+            echo ""
 
-    if [[ -s ${BUILDIFIER_OUTPUT_FILE} ]]; then
-      echo "FAIL: buildifier found errors and/or warnings in above BUILD files."
-      echo "buildifier suggested the following changes:"
-      buildifier -showlog -v -mode=diff ${BUILD_FILES}
-      echo "Please fix manually or run buildifier <file> to auto-fix."
-      echo "Bazel configuration format check fails."
-      return 1
-    else
-      echo "Bazel configuration format check success."
-      return 0
-    fi
-}
+            if [[ -s ${BUILDIFIER_OUTPUT_FILE} ]]; then
+                echo "FAIL: buildifier found errors and/or warnings in above BUILD files."
+                echo "buildifier suggested the following changes:"
+                buildifier -showlog -v -mode=diff ${BUILD_FILES}
+                echo "Please fix manually or run buildifier <file> to auto-fix."
+                echo "Bazel configuration format check fails."
+                return 1
+            else
+                echo "Bazel configuration format check success."
+                return 0
+            fi
+        }
 
-do_python_format_check() {
-    PYTHON_SRC_FILES=$(get_py_files_to_check $INCREMENTAL_FLAG)
+    do_python_format_check() {
+        PYTHON_SRC_FILES=$(get_py_files_to_check $INCREMENTAL_FLAG)
 
-    YAPFRC_FILE="${SCRIPT_DIR}/yapfrc"
-    if [[ ! -f "${YAPFRC_FILE}" ]]; then
-      die "ERROR: Cannot find yapf rc file at ${YAPFRC_FILE}"
-    fi
-    YAPF_OPTS="--style=$YAPFRC_FILE --parallel"
+        YAPFRC_FILE="${SCRIPT_DIR}/yapfrc"
+        if [[ ! -f "${YAPFRC_FILE}" ]]; then
+            die "ERROR: Cannot find yapf rc file at ${YAPFRC_FILE}"
+        fi
+        YAPF_OPTS="--style=$YAPFRC_FILE --parallel"
+
+        if [[ ! -z $IN_PLACE_FLAG ]]; then
+            echo "Auto format..."
+            yapf $YAPF_OPTS --in-place --verbose $PYTHON_SRC_FILES
+            docformatter --in-place $PYTHON_SRC_FILES
+        fi
+
+        UNFORMATTED_CODES=$(yapf $YAPF_OPTS --diff $PYTHON_SRC_FILES)
+        if [[ $? != "0" || ! -z "$UNFORMATTED_CODES" ]]; then
+            echo "Find unformatted codes:"
+            echo "$UNFORMATTED_CODES"
+            echo "Python format check fails."
+            return 1
+        else
+            echo "Python format check success."
+            return 0
+        fi
+    }
+
+do_clang_format_check() {
+    CLANG_SRC_FILES=$(get_clang_files_to_check $INCREMENTAL_FLAG)
+    CLANG_FORMAT=${CLANG_FORMAT:-clang-format-3.8}
+    CLANG_FORMAT_OPTS="--style=google"
 
     if [[ ! -z $IN_PLACE_FLAG ]]; then
         echo "Auto format..."
-        yapf $YAPF_OPTS --in-place --verbose $PYTHON_SRC_FILES
-        docformatter --in-place $PYTHON_SRC_FILES
+        $CLANG_FORMAT $CLANG_FORMAT_OPTS -i $CLANG_SRC_FILES
     fi
 
-    UNFORMATTED_CODES=$(yapf $YAPF_OPTS --diff $PYTHON_SRC_FILES)
-    if [[ $? != "0" || ! -z "$UNFORMATTED_CODES" ]]; then
-        echo "Find unformatted codes:"
-        echo "$UNFORMATTED_CODES"
-        echo "Python format check fails."
+    success=1
+    for filename in $CLANG_SRC_FILES; do
+        $CLANG_FORMAT $CLANG_FORMAT_OPTS $filename | diff $filename - > /dev/null
+        if [ ! $? -eq 0 ]; then
+            success=0
+            echo "File $filename is not properly formatted with clang-format --style=google"
+        fi
+    done
+
+    if [ $success == 0 ]; then
+        echo "Clang format check fails."
         return 1
     else
-        echo "Python format check success."
+        echo "Clang format check success."
         return 0
     fi
-}
-
-do_clang_format_check() {
-  CLANG_SRC_FILES=$(get_clang_files_to_check $INCREMENTAL_FLAG)
-  CLANG_FORMAT=${CLANG_FORMAT:-clang-format-3.8}
-  CLANG_FORMAT_OPTS="--style=google"
-
-  if [[ ! -z $IN_PLACE_FLAG ]]; then
-    echo "Auto format..."
-    $CLANG_FORMAT $CLANG_FORMAT_OPTS -i $CLANG_SRC_FILES
-  fi
-
-  success=1
-  for filename in $CLANG_SRC_FILES; do
-    $CLANG_FORMAT $CLANG_FORMAT_OPTS $filename | diff $filename - > /dev/null
-    if [ ! $? -eq 0 ]; then
-      success=0
-      echo "File $filename is not properly formatted with clang-format --style=google"
-    fi
-  done
-
-  if [ $success == 0 ]; then
-    echo "Clang format check fails."
-    return 1
-  else
-    echo "Clang format check success."
-    return 0
-  fi
 }
 
 # Supply all auto format step commands and descriptions
@@ -149,13 +149,13 @@ STEP_EXIT_CODES=()
 # Execute all the auto format steps
 COUNTER=0
 while [[ ${COUNTER} -lt "${#FORMAT_STEPS[@]}" ]]; do
-  INDEX=COUNTER
-  ((INDEX++))
+    INDEX=COUNTER
+    ((INDEX++))
 
-  echo ""
-  echo "--- Format check step ${INDEX} of ${#FORMAT_STEPS[@]}: "\
-"${FORMAT_STEPS[COUNTER]} (${FORMAT_STEPS_DESC[COUNTER]}) ---"
-  echo ""
+    echo ""
+    echo "--- Format check step ${INDEX} of ${#FORMAT_STEPS[@]}: "\
+         "${FORMAT_STEPS[COUNTER]} (${FORMAT_STEPS_DESC[COUNTER]}) ---"
+    echo ""
 
   # subshell: don't leak variables or changes of working directory
   (
@@ -164,9 +164,9 @@ while [[ ${COUNTER} -lt "${#FORMAT_STEPS[@]}" ]]; do
   RESULT=$?
 
   if [[ ${RESULT} != "0" ]]; then
-    ((FAIL_COUNTER++))
+      ((FAIL_COUNTER++))
   else
-    ((PASS_COUNTER++))
+      ((PASS_COUNTER++))
   fi
 
   STEP_EXIT_CODES+=(${RESULT})
@@ -179,17 +179,17 @@ done
 COUNTER=0
 echo "---- Summary of format check results ----"
 while [[ ${COUNTER} -lt "${#FORMAT_STEPS[@]}" ]]; do
-  INDEX=COUNTER
-  ((INDEX++))
+    INDEX=COUNTER
+    ((INDEX++))
 
-  echo "${INDEX}. ${FORMAT_STEPS[COUNTER]}: ${FORMAT_STEPS_DESC[COUNTER]}"
-  if [[ ${STEP_EXIT_CODES[COUNTER]} == "0" ]]; then
-    printf "  ${COLOR_GREEN}PASS${COLOR_NC}\n"
-  else
-    printf "  ${COLOR_RED}FAIL${COLOR_NC}\n"
-  fi
+    echo "${INDEX}. ${FORMAT_STEPS[COUNTER]}: ${FORMAT_STEPS_DESC[COUNTER]}"
+    if [[ ${STEP_EXIT_CODES[COUNTER]} == "0" ]]; then
+        printf "  ${COLOR_GREEN}PASS${COLOR_NC}\n"
+    else
+        printf "  ${COLOR_RED}FAIL${COLOR_NC}\n"
+    fi
 
-  ((COUNTER++))
+    ((COUNTER++))
 done
 
 echo
@@ -197,8 +197,8 @@ echo "${FAIL_COUNTER} failed; ${PASS_COUNTER} passed."
 
 echo
 if [[ ${FAIL_COUNTER} == "0" ]]; then
-  printf "Format checks ${COLOR_GREEN}PASSED${COLOR_NC}\n"
+    printf "Format checks ${COLOR_GREEN}PASSED${COLOR_NC}\n"
 else
-  printf "Format checks ${COLOR_RED}FAILED${COLOR_NC}\n"
-  exit 1
+    printf "Format checks ${COLOR_RED}FAILED${COLOR_NC}\n"
+    exit 1
 fi
