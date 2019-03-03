@@ -270,7 +270,8 @@ class SparsemaxTest(tf.test.TestCase):
 
     (jacob_sym, ), (jacob_num, ) = tf.test.compute_gradient(
       lambda logits: sparsemax(logits),
-      [z])
+      [z],
+      delta=1e-6)
     self.assertAllCloseAccordingToType(jacob_sym, jacob_num)
 
 if __name__ == '__main__':

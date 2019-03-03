@@ -17,8 +17,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.python.keras.utils import generic_utils
+# TODO: find public API alternative to these
 from tensorflow.python.keras.losses import LossFunctionWrapper
+from tensorflow.python.keras.utils import generic_utils
 
 
 def register_keras_custom_object(cls):

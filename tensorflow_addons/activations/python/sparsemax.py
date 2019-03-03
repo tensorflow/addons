@@ -21,6 +21,7 @@ import tensorflow as tf
 
 from tensorflow_addons.utils.python import keras_utils
 
+@tf.function
 @keras_utils.register_keras_custom_object
 def sparsemax(logits, axis=-1, name=None):
   """Sparsemax activation function [1].
