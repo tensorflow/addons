@@ -13,7 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 """Useful extra functionality for TensorFlow maintained by SIG-addons"""
-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 # We need to put some imports inside a function call below, and the function
 # call needs to come before the *actual* imports that populate the
@@ -65,9 +67,10 @@ def _ensure_tf_install():  # pylint: disable=g-statement-before-imports
 _ensure_tf_install()
 
 # Cleanup symbols to avoid polluting namespace.
-import sys as _sys
-for symbol in ["_ensure_tf_install", "_sys"]:
-    delattr(_sys.modules[__name__], symbol)
+del _ensure_tf_install
+del absolute_import
+del division
+del print_function
 
 # Local project imports
 from tensorflow_addons import layers
