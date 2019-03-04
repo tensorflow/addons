@@ -33,7 +33,7 @@ echo ""
 export CC_OPT_FLAGS='-mavx'
 export TF_NEED_CUDA=0 # TODO: Verify this is used in GPU custom-op
 
-export PYTHON_BIN_PATH=`which python`
+export PYTHON_BIN_PATH=$(which python)
 # Use default configuration here.
 yes 'y' | ./configure.sh
 
