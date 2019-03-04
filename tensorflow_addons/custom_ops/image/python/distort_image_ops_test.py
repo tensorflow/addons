@@ -115,12 +115,13 @@ class AdjustHueInYiqTest(tf.test.TestCase):
     def test_invalid_shapes(self):
         x_np = np.random.rand(2, 3) * 255.
         delta_h = np.random.rand() * 2.0 - 1.0
-        with self.assertRaisesRegexp(tf.errors.InvalidArgumentError, "input must be at least 3-D"):
+        with self.assertRaisesRegexp(ValueError,
+                                     "Shape must be at least rank 3"):
             self._adjust_hue_in_yiq_tf(x_np, delta_h)
         x_np = np.random.rand(4, 2, 4) * 255.
         delta_h = np.random.rand() * 2.0 - 1.0
-        with self.assertRaisesOpError("input must have 3 channels but instead has "
-                                      "4 channels"):
+        with self.assertRaisesOpError("input must have 3 channels "
+                                      "but instead has 4 channels"):
             self._adjust_hue_in_yiq_tf(x_np, delta_h)
 
 
@@ -177,8 +178,8 @@ class AdjustValueInYiqTest(tf.test.TestCase):
     def test_invalid_shapes(self):
         x_np = np.random.rand(2, 3) * 255.
         scale = np.random.rand() * 2.0 - 1.0
-        with self.assertRaisesRegexp(tf.errors.InvalidArgumentError,
-                                     "input must be at least 3-D"):
+        with self.assertRaisesRegexp(ValueError,
+                                     "Shape must be at least rank 3"):
             self._adjust_value_in_yiq_tf(x_np, scale)
         x_np = np.random.rand(4, 2, 4) * 255.
         scale = np.random.rand() * 2.0 - 1.0
@@ -245,8 +246,8 @@ class AdjustSaturationInYiqTest(tf.test.TestCase):
     def test_invalid_shapes(self):
         x_np = np.random.rand(2, 3) * 255.
         scale = np.random.rand() * 2.0 - 1.0
-        with self.assertRaisesRegexp(tf.errors.InvalidArgumentError,
-                                     "input must be at least 3-D"):
+        with self.assertRaisesRegexp(ValueError,
+                                     "Shape must be at least rank 3"):
             self._adjust_saturation_in_yiq_tf(x_np, scale)
         x_np = np.random.rand(4, 2, 4) * 255.
         scale = np.random.rand() * 2.0 - 1.0
