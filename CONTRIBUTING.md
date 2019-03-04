@@ -51,7 +51,8 @@ us**
 ## Development Environment
 It is recommended that development is done in the latest
 `nightly-custom-op` docker image.
-```
+
+```bash
 docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
 ```
 
@@ -75,7 +76,7 @@ to check your C/C++ changes. Sometimes you have some manually formatted
 code that you don’t want clang-format to touch.
 You can disable formatting like this:
 
-```c_plus_plus
+```cpp
 int formatted_code;
 // clang-format off
     void    unformatted_code  ;
@@ -116,13 +117,15 @@ hardware will be available from our CI provider.
 
 #### Locally Testing
 
-```
+```bash
 docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op make unit-test
 ```
 
 or run manually:
 
-```
+```bash
+docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
+
 ./configure.sh  # Links project with TensorFlow dependency
 
 bazel test -c opt -k \
