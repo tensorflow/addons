@@ -29,21 +29,21 @@ class Maxout(tf.keras.layers.Layer):
     "Maxout Networks" Ian J. Goodfellow, David Warde-Farley, Mehdi Mirza, Aaron
     Courville, Yoshua Bengio. https://arxiv.org/abs/1302.4389
 
-    Usually the operation is performed in the filter/channel dimension. This can
-    also be used after Dense layers to reduce number of features.
+    Usually the operation is performed in the filter/channel dimension. This
+    can also be used after Dense layers to reduce number of features.
 
     Arguments:
-        num_units: Specifies how many features will remain after maxout
-            in the `axis` dimension (usually channel).
-            This must be a factor of number of features.
-        axis: The dimension where max pooling will be performed. Default is the
-            last dimension.
+      num_units: Specifies how many features will remain after maxout
+        in the `axis` dimension (usually channel).
+        This must be a factor of number of features.
+      axis: The dimension where max pooling will be performed. Default is the
+        last dimension.
 
     Input shape:
-        nD tensor with shape: `(batch_size, ..., axis_dim, ...)`.
+      nD tensor with shape: `(batch_size, ..., axis_dim, ...)`.
 
     Output shape:
-        nD tensor with shape: `(batch_size, ..., num_units, ...)`.
+      nD tensor with shape: `(batch_size, ..., num_units, ...)`.
     """
 
     def __init__(self, num_units, axis=-1, **kwargs):

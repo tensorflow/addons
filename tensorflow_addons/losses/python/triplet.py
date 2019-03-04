@@ -37,8 +37,7 @@ def _masked_maximum(data, mask, dim=1):
     """
     axis_minimums = tf.math.reduce_min(data, dim, keepdims=True)
     masked_maximums = tf.math.reduce_max(
-        tf.math.multiply(data - axis_minimums, mask),
-        dim,
+        tf.math.multiply(data - axis_minimums, mask), dim,
         keepdims=True) + axis_minimums
     return masked_maximums
 
@@ -57,8 +56,7 @@ def _masked_minimum(data, mask, dim=1):
     """
     axis_maximums = tf.math.reduce_max(data, dim, keepdims=True)
     masked_minimums = tf.math.reduce_min(
-        tf.math.multiply(data - axis_maximums, mask),
-        dim,
+        tf.math.multiply(data - axis_maximums, mask), dim,
         keepdims=True) + axis_maximums
     return masked_minimums
 
@@ -94,18 +92,13 @@ def triplet_semihard_loss(y_true, y_pred, margin=1.0):
     pdist_matrix_tile = tf.tile(pdist_matrix, [batch_size, 1])
     mask = tf.math.logical_and(
         tf.tile(adjacency_not, [batch_size, 1]),
-        tf.math.greater(
-            pdist_matrix_tile, tf.reshape(
-                tf.transpose(pdist_matrix), [-1, 1])))
+        tf.math.greater(pdist_matrix_tile,
+                        tf.reshape(tf.transpose(pdist_matrix), [-1, 1])))
     mask_final = tf.reshape(
         tf.math.greater(
             tf.math.reduce_sum(
-                tf.cast(mask,
-                             dtype=tf.dtypes.float32),
-                1,
-                keepdims=True),
-            0.0),
-        [batch_size, batch_size])
+                tf.cast(mask, dtype=tf.dtypes.float32), 1, keepdims=True),
+            0.0), [batch_size, batch_size])
     mask_final = tf.transpose(mask_final)
 
     adjacency_not = tf.cast(adjacency_not, dtype=tf.dtypes.float32)
@@ -119,15 +112,14 @@ def triplet_semihard_loss(y_true, y_pred, margin=1.0):
     # negatives_inside: largest D_an.
     negatives_inside = tf.tile(
         _masked_maximum(pdist_matrix, adjacency_not), [1, batch_size])
-    semi_hard_negatives = tf.where(mask_final,
-                                   negatives_outside,
+    semi_hard_negatives = tf.where(mask_final, negatives_outside,
                                    negatives_inside)
 
     loss_mat = tf.math.add(margin, pdist_matrix - semi_hard_negatives)
 
     mask_positives = tf.cast(
-        adjacency,
-        dtype=tf.dtypes.float32) - tf.linalg.diag(tf.ones([batch_size]))
+        adjacency, dtype=tf.dtypes.float32) - tf.linalg.diag(
+            tf.ones([batch_size]))
 
     # In lifted-struct, the authors multiply 0.5 for upper triangular
     #   in semihard, they take all positive pairs except the diagonal.
@@ -135,9 +127,7 @@ def triplet_semihard_loss(y_true, y_pred, margin=1.0):
 
     triplet_loss = tf.math.truediv(
         tf.math.reduce_sum(
-            tf.math.maximum(
-                tf.math.multiply(loss_mat, mask_positives),
-                0.0)),
+            tf.math.maximum(tf.math.multiply(loss_mat, mask_positives), 0.0)),
         num_positives)
 
     return triplet_loss

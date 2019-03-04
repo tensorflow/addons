@@ -101,17 +101,20 @@ do_python_format_check() {
         return 0
     fi
 
+    NUM_BUILD_FILES=$(echo ${PYTHON_SRC_FILES} | wc -w)
+    echo "Running do_python_format_check on ${NUM_BUILD_FILES} files"
+    echo ""
+
     YAPFRC_FILE="${SCRIPT_DIR}/yapfrc"
     if [[ ! -f "${YAPFRC_FILE}" ]]; then
         die "ERROR: Cannot find yapf rc file at ${YAPFRC_FILE}"
     fi
     YAPF_OPTS="--style=$YAPFRC_FILE --parallel"
 
-    echo $PYTHON_SRC_FILES
     if [[ ! -z $IN_PLACE_FLAG ]]; then
         echo "Auto format..."
         yapf $YAPF_OPTS --in-place --verbose $PYTHON_SRC_FILES
-        docformatter --in-place $PYTHON_SRC_FILES
+        docformatter --wrap-summaries 79 --wrap-descriptions 72 --in-place $PYTHON_SRC_FILES
     fi
 
     UNFORMATTED_CODES=$(yapf $YAPF_OPTS --diff $PYTHON_SRC_FILES)
@@ -133,6 +136,10 @@ do_clang_format_check() {
              "the absence of code changes."
         return 0
     fi
+
+    NUM_BUILD_FILES=$(echo ${CLANG_SRC_FILES} | wc -w)
+    echo "Running do_clang_format_check on ${NUM_BUILD_FILES} files"
+    echo ""
 
     CLANG_FORMAT=${CLANG_FORMAT:-clang-format-3.8}
     CLANG_FORMAT_OPTS="--style=google"

@@ -24,10 +24,10 @@ py_test(
         "python/triplet_test.py",
     ],
     main = "python/triplet_test.py",
+    srcs_version = "PY2AND3",
     deps = [
         ":losses_py",
     ],
-    srcs_version = "PY2AND3",
 )
 
 py_test(
@@ -37,8 +37,8 @@ py_test(
         "python/lifted_test.py",
     ],
     main = "python/lifted_test.py",
+    srcs_version = "PY2AND3",
     deps = [
         ":losses_py",
     ],
-    srcs_version = "PY2AND3",
 )

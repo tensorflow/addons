@@ -28,10 +28,8 @@ class PoincareNormalize(tf.keras.layers.Layer):
 
     https://en.wikipedia.org/wiki/Poincare_ball_model
 
-    Used in
-    Poincare Embeddings for Learning Hierarchical Representations
-    Maximilian Nickel, Douwe Kiela
-    https://arxiv.org/pdf/1705.08039.pdf
+    Used in Poincare Embeddings for Learning Hierarchical Representations
+    Maximilian Nickel, Douwe Kiela https://arxiv.org/pdf/1705.08039.pdf
 
     For a 1-D tensor with `axis = 0`, computes
 
@@ -43,10 +41,9 @@ class PoincareNormalize(tf.keras.layers.Layer):
     dimension `axis`.
 
     Arguments:
-        axis: Axis along which to normalize.  A scalar or a vector of
-              integers.
-        epsilon: A small deviation from the edge of the unit sphere for numerical
-              stability.
+      axis: Axis along which to normalize.  A scalar or a vector of integers.
+      epsilon: A small deviation from the edge of the unit sphere for
+        numerical stability.
     """
 
     def __init__(self, axis=1, epsilon=1e-5, **kwargs):
