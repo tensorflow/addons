@@ -26,7 +26,9 @@ from setuptools.dist import Distribution
 version = {}
 base_dir = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
-    exec (fp.read(), version)
+    # yapf: disable
+    exec(fp.read(), version)
+    # yapf: enable
 
 REQUIRED_PACKAGES = [
     'six >= 1.10.0',

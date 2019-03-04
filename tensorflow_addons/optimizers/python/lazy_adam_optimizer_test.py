@@ -153,8 +153,11 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                                         repeated_index_update_var.eval())
 
     def doTestBasic(self, use_callable_params=False):
-        for i, dtype in enumerate(
-            [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]):
+        # yapf: disable
+        for i, dtype in enumerate([tf.dtypes.half,
+                                   tf.dtypes.float32,
+                                   tf.dtypes.float64]):
+            # yapf: enable
             with self.session(graph=tf.Graph()):
                 # Initialize tf for numpy implementation.
                 m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0

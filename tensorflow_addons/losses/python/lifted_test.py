@@ -99,7 +99,7 @@ class LiftedStructLossTest(tf.test.TestCase):
         y_true = tf.constant(labels)
         y_pred = tf.constant(embedding)
         cce_obj = lifted.LiftedStructLoss()
-        loss = cce_obj(y_true, y_pred)
+        loss = cce_obj(y_true, y_pred)  # pylint: disable=not-callable
         self.assertAlmostEqual(self.evaluate(loss), loss_np, 3)
 
 

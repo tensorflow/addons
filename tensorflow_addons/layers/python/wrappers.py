@@ -32,14 +32,19 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     Tim Salimans, Diederik P. Kingma (2016)
     WeightNormalization wrapper works for keras and tf layers.
     ```python
-      net = WeightNormalization(tf.keras.layers.Conv2D(2, 2, activation='relu'),
-             input_shape=(32, 32, 3), data_init=True)(x)
-      net = WeightNormalization(tf.keras.layers.Conv2D(16, 5, activation='relu'),
-                       data_init=True)(net)
-      net = WeightNormalization(tf.keras.layers.Dense(120, activation='relu'),
-                       data_init=True)(net)
-      net = WeightNormalization(tf.keras.layers.Dense(n_classes),
-                       data_init=True)(net)
+      net = WeightNormalization(
+          tf.keras.layers.Conv2D(2, 2, activation='relu'),
+          input_shape=(32, 32, 3),
+          data_init=True)(x)
+      net = WeightNormalization(
+          tf.keras.layers.Conv2D(16, 5, activation='relu'),
+          data_init=True)(net)
+      net = WeightNormalization(
+          tf.keras.layers.Dense(120, activation='relu'),
+          data_init=True)(net)
+      net = WeightNormalization(
+          tf.keras.layers.Dense(n_classes),
+          data_init=True)(net)
     ```
     Arguments:
       layer: a layer instance.

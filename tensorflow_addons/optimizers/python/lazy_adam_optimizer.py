@@ -35,15 +35,16 @@ class LazyAdamOptimizer(tf.keras.optimizers.Adam):
 
     The original Adam algorithm maintains two moving-average accumulators for
     each trainable variable; the accumulators are updated at every step.
-    This class provides lazier handling of gradient updates for sparse variables.
-    It only updates moving-average accumulators for sparse variable indices that
-    appear in the current batch, rather than updating the accumulators for all
-    indices. Compared with the original Adam optimizer, it can provide large
-    improvements in model training throughput for some applications. However, it
-    provides slightly different semantics than the original Adam algorithm, and
-    may lead to different empirical results.
+    This class provides lazier handling of gradient updates for sparse
+    variables.  It only updates moving-average accumulators for sparse variable
+    indices that appear in the current batch, rather than updating the
+    accumulators for all indices. Compared with the original Adam optimizer,
+    it can provide large improvements in model training throughput for some
+    applications. However, it provides slightly different semantics than the
+    original Adam algorithm, and may lead to different empirical results.
 
-    Note, amsgrad is currently not supported and the argument can only be False.
+    Note, amsgrad is currently not supported and the argument can only be
+    False.
     """
 
     def _resource_apply_sparse(self, grad, var, indices):
