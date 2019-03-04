@@ -1,4 +1,4 @@
-# Addons - Layers
+# Addons - Activations
 
 ## Contents
 | Layer  | Reference                                     |
