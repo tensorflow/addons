@@ -25,10 +25,7 @@ import numpy as np
 import tensorflow as tf
 
 from six.moves import xrange
-from tensorflow.core.protobuf import config_pb2
-from tensorflow.python.client import session
 from tensorflow.python.framework import test_util as tf_test_util
-from tensorflow.python.ops import variables
 from tensorflow_addons.custom_ops.image.python import distort_image_ops
 
 # TODO(huangyp): also measure the differences between AdjustHsvInYiq and
@@ -262,13 +259,13 @@ class AdjustHueInYiqBenchmark(tf.test.Benchmark):
         image_shape = [299, 299, 3]
         warmup_rounds = 100
         benchmark_rounds = 1000
-        config = config_pb2.ConfigProto()
+        config = tf.compat.v1.ConfigProto()
         if cpu_count is not None:
             config.inter_op_parallelism_threads = 1
             config.intra_op_parallelism_threads = cpu_count
-        with session.Session("", graph=ops.Graph(), config=config) as sess:
+        with self.cached_session("", graph=ops.Graph(), config=config) as sess:
             with ops.device(device):
-                inputs = variables.Variable(
+                inputs = tf.Variable(
                     tf.random.uniform(
                         image_shape, dtype=tf.dtypes.float32) * 255,
                     trainable=False,
@@ -277,7 +274,7 @@ class AdjustHueInYiqBenchmark(tf.test.Benchmark):
                 outputs = distort_image_ops.adjust_hsv_in_yiq(
                     inputs, delta, 1, 1)
                 run_op = tf.group(outputs)
-                sess.run(variables.global_variables_initializer())
+                sess.run(tf.compat.v1.global_variables_initializer())
                 for i in xrange(warmup_rounds + benchmark_rounds):
                     if i == warmup_rounds:
                         start = time.time()
@@ -308,13 +305,13 @@ class AdjustSaturationInYiqBenchmark(tf.test.Benchmark):
         image_shape = [299, 299, 3]
         warmup_rounds = 100
         benchmark_rounds = 1000
-        config = config_pb2.ConfigProto()
+        config = tf.compat.v1.ConfigProto()
         if cpu_count is not None:
             config.inter_op_parallelism_threads = 1
             config.intra_op_parallelism_threads = cpu_count
-        with session.Session("", graph=ops.Graph(), config=config) as sess:
+        with self.cached_session("", graph=ops.Graph(), config=config) as sess:
             with ops.device(device):
-                inputs = variables.Variable(
+                inputs = tf.Variable(
                     tf.random.uniform(
                         image_shape, dtype=tf.dtypes.float32) * 255,
                     trainable=False,
@@ -323,7 +320,7 @@ class AdjustSaturationInYiqBenchmark(tf.test.Benchmark):
                 outputs = distort_image_ops.adjust_hsv_in_yiq(
                     inputs, 0, scale, 1)
                 run_op = tf.group(outputs)
-                sess.run(variables.global_variables_initializer())
+                sess.run(tf.compat.v1.global_variables_initializer())
                 for _ in xrange(warmup_rounds):
                     sess.run(run_op)
                 start = time.time()
