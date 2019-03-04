@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""
-Skip-gram sampling ops tests
-"""
+"""Skip-gram sampling ops tests."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -32,9 +30,7 @@ from tensorflow_addons.custom_ops import text
 from tensorflow_addons.custom_ops.text.python import skip_gram_ops
 
 
-
 class SkipGramOpsTest(tf.test.TestCase):
-
     @staticmethod
     def _split_tokens_labels(output):
         tokens = [x[0] for x in output]
@@ -151,8 +147,7 @@ class SkipGramOpsTest(tf.test.TestCase):
 
     def test_skip_gram_sample_limit_exceeds(self):
         """Tests skip-gram when limit exceeds the length of the input."""
-        input_tensor = tf.constant([b"foo", b"the",
-                                             b"quick", b"brown"])
+        input_tensor = tf.constant([b"foo", b"the", b"quick", b"brown"])
         tokens, labels = text.skip_gram_sample(
             input_tensor, min_skips=1, max_skips=1, start=1, limit=100)
         expected_tokens, expected_labels = self._split_tokens_labels([
@@ -195,9 +190,8 @@ class SkipGramOpsTest(tf.test.TestCase):
         self.assertAllEqual(expected_labels, labels)
 
     def test_skip_gram_sample_random_skips_default_seed(self):
-        """
-        Tests outputs are still random when no op-level seed is specified.
-        """
+        """Tests outputs are still random when no op-level seed is
+        specified."""
 
         # This is needed since tests set a graph-level seed by default. We want
         # to explicitly avoid setting both graph-level seed and op-level seed,
@@ -243,8 +237,7 @@ class SkipGramOpsTest(tf.test.TestCase):
         """Tests various errors raised by skip_gram_sample()."""
         # input_tensor must be of rank 1.
         with self.assertRaises(ValueError):
-            invalid_tensor = tf.constant([[b"the"], [b"quick"],
-                                                   [b"brown"]])
+            invalid_tensor = tf.constant([[b"the"], [b"quick"], [b"brown"]])
             text.skip_gram_sample(invalid_tensor)
 
     def test_skip_gram_sample_errors(self):
@@ -259,13 +252,12 @@ class SkipGramOpsTest(tf.test.TestCase):
             (2, 1))
         for min_skips, max_skips in invalid_skips:
             with self.assertRaises(tf.errors.InvalidArgumentError):
-                text.skip_gram_sample(input_tensor, min_skips=min_skips,
-                                      max_skips=max_skips)
+                text.skip_gram_sample(
+                    input_tensor, min_skips=min_skips, max_skips=max_skips)
 
         # Eager tensor must be rank 1
         with self.assertRaises(tf.errors.InvalidArgumentError):
-            invalid_tensor = tf.constant([[b"the"], [b"quick"],
-                                                   [b"brown"]])
+            invalid_tensor = tf.constant([[b"the"], [b"quick"], [b"brown"]])
             text.skip_gram_sample(invalid_tensor)
 
         # vocab_freq_table must be provided if vocab_min_count,
@@ -278,8 +270,8 @@ class SkipGramOpsTest(tf.test.TestCase):
             text.skip_gram_sample(
                 dummy_input, vocab_freq_table=None, vocab_subsampling=1e-5)
         with self.assertRaises(ValueError):
-            text.skip_gram_sample(dummy_input, vocab_freq_table=None,
-                                  corpus_size=100)
+            text.skip_gram_sample(
+                dummy_input, vocab_freq_table=None, corpus_size=100)
         with self.assertRaises(ValueError):
             text.skip_gram_sample(
                 dummy_input,
@@ -304,13 +296,11 @@ class SkipGramOpsTest(tf.test.TestCase):
                 corpus_size=None)
 
     def test_filter_input_filter_vocab(self):
-        """
-        Tests input filtering based on vocab frequency table and thresholds.
-        """
+        """Tests input filtering based on vocab frequency table and
+        thresholds."""
         input_tensor = tf.constant(
             [b"the", b"answer", b"to", b"life", b"and", b"universe"])
-        keys = tf.constant([b"and", b"life", b"the", b"to",
-                                     b"universe"])
+        keys = tf.constant([b"and", b"life", b"the", b"to", b"universe"])
         values = tf.constant([0, 1, 2, 3, 4], tf.dtypes.int64)
         vocab_freq_table = lookup_ops.HashTable(
             lookup_ops.KeyValueTensorInitializer(keys, values), -1)
@@ -364,8 +354,7 @@ class SkipGramOpsTest(tf.test.TestCase):
             b"and",  # keep_prob = 0.48.
             b"universe"  # Below vocab threshold of 3. (Always discarded)
         ])
-        keys = tf.constant([b"and", b"life", b"the", b"to",
-                                     b"universe"])
+        keys = tf.constant([b"and", b"life", b"the", b"to", b"universe"])
         values = tf.constant([40, 8, 30, 20, 2], tf.dtypes.int64)
         vocab_freq_table = lookup_ops.HashTable(
             lookup_ops.KeyValueTensorInitializer(keys, values), -1)
@@ -408,9 +397,8 @@ class SkipGramOpsTest(tf.test.TestCase):
         return filepath
 
     def test_skip_gram_sample_with_text_vocab_filter_vocab(self):
-        """
-        Tests skip-gram sampling with text vocab and freq threshold filtering.
-        """
+        """Tests skip-gram sampling with text vocab and freq threshold
+        filtering."""
         input_tensor = tf.constant([
             b"the",
             b"answer",  # Will be filtered before candidate generation.
@@ -444,8 +432,10 @@ class SkipGramOpsTest(tf.test.TestCase):
         self.assertAllEqual(expected_tokens, tokens)
         self.assertAllEqual(expected_labels, labels)
 
-    def _text_vocab_subsample_vocab_helper(self, vocab_freq_file,
-                                           vocab_min_count, vocab_freq_dtype,
+    def _text_vocab_subsample_vocab_helper(self,
+                                           vocab_freq_file,
+                                           vocab_min_count,
+                                           vocab_freq_dtype,
                                            corpus_size=None):
         # The outputs are non-deterministic, so set random seed to help ensure
         # that the outputs remain constant for testing.
@@ -520,9 +510,8 @@ class SkipGramOpsTest(tf.test.TestCase):
                 corpus_size=99)
 
     def test_skip_gram_sample_with_text_vocab_subsample_vocab_float(self):
-        """
-        Tests skip-gram sampling with text vocab and subsampling with floats.
-        """
+        """Tests skip-gram sampling with text vocab and subsampling with
+        floats."""
         # Vocab file frequencies
         # and: 0.4
         # life: 0.08
@@ -552,7 +541,8 @@ class SkipGramOpsTest(tf.test.TestCase):
                 corpus_size=0.99)
 
     def test_skip_gram_sample_with_text_vocab_errors(self):
-        """Tests various errors raised by skip_gram_sample_with_text_vocab()."""
+        """Tests various errors raised by
+        skip_gram_sample_with_text_vocab()."""
         dummy_input = tf.constant([""])
         vocab_freq_file = self._make_text_vocab_freq_file()
 
