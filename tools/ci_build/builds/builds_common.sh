@@ -42,10 +42,12 @@ num_cpus() {
     echo ${N_CPUS}
 }
 
-# List files changed (i.e., added, or revised).
+# List files changed (i.e., added, or revised) from
+# the common ancestor of HEAD and the latest master branch.
 # Usage: get_changed_files_from_master_branch
 get_changed_files_from_master_branch() {
-    git diff origin/master --diff-filter=d --name-only "$@"
+    ANCESTOR=$(git merge-base HEAD master origin/master)
+    git diff ${ANCESTOR} --diff-filter=d --name-only "$@"
 }
 
 # List bazel files changed that still exist,
