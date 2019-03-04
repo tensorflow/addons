@@ -14,10 +14,10 @@
 # ==============================================================================
 """Variant of the Adam optimizer that handles sparse updates more efficiently.
 
-Compared with the original Adam optimizer, the one in this file can provide a
-large improvement in model training throughput for some applications. However,
-it provides slightly different semantics than the original Adam algorithm, and
-may lead to different empirical results.
+Compared with the original Adam optimizer, the one in this file can
+provide a large improvement in model training throughput for some
+applications. However, it provides slightly different semantics than the
+original Adam algorithm, and may lead to different empirical results.
 """
 
 from __future__ import absolute_import
