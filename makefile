@@ -27,6 +27,4 @@ sanity-check: install-ci-dependency
 	bash tools/ci_build/ci_sanity.sh --incremental
 
 unit-test:
-	# Use default configuration here.
-	yes 'y' | ./configure.sh
-	bazel test //tensorflow_addons/...
+	bash ci_testing/addons_cpu.sh
