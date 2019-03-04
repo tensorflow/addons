@@ -107,11 +107,10 @@ do_python_format_check() {
     fi
     YAPF_OPTS="--style=$YAPFRC_FILE --parallel"
 
-    echo $PYTHON_SRC_FILES
     if [[ ! -z $IN_PLACE_FLAG ]]; then
         echo "Auto format..."
         yapf $YAPF_OPTS --in-place --verbose $PYTHON_SRC_FILES
-        docformatter --in-place $PYTHON_SRC_FILES
+        docformatter --wrap-summaries 79 --wrap-descriptions 79 --in-place $PYTHON_SRC_FILES
     fi
 
     UNFORMATTED_CODES=$(yapf $YAPF_OPTS --diff $PYTHON_SRC_FILES)
