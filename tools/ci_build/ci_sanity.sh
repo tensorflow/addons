@@ -215,9 +215,12 @@ cmd_status(){
 
 # Run bazel build --nobuild to test the validity of the BUILD files
 do_bazel_nobuild() {
+    # Use default configuration here.
+    yes 'y' | ./configure.sh
+
+    # Check
     BUILD_TARGET="//tensorflow_addons/..."
     BUILD_CMD="bazel build --nobuild ${BAZEL_FLAGS} -- ${BUILD_TARGET}"
-
     ${BUILD_CMD}
 
     cmd_status "This is due to invalid BUILD files."
