@@ -195,9 +195,12 @@ def skip_gram_sample(input_tensor,
         # Batches the (tokens, labels) outputs so that they will be of deterministic
         # batch_size, to facilitate feeding them into the rest of the network.
         if batch_size is not None and batch_size > 0:
-            batch_capacity = (batch_capacity if
-                              (batch_capacity is not None
-                               and batch_capacity > 0) else 100 * batch_size)
+            # yapf: disable
+            batch_capacity = (
+                batch_capacity
+                if (batch_capacity is not None and batch_capacity > 0)
+                else 100 * batch_size)
+            # yapf: enable
             return tf.train.batch([tokens, labels],
                                   batch_size,
                                   capacity=batch_capacity,
