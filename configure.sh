@@ -13,6 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+# Usage: configure.sh [--quiet]
+#
+# Options:
+#  --quiet  Give less output.
+
+QUIET_FLAG=""
+if [[ $1 == "--quiet" ]]; then
+    QUIET_FLAG="--quiet"
+elif [[ ! -z "$1" ]]; then
+    echo "Found unsupported args: $@"
+    exit 1
+fi
+
 function write_to_bazelrc() {
   echo "$1" >> .bazelrc
 }
@@ -22,7 +35,7 @@ function write_action_env_to_bazelrc() {
 }
 
 [[ -f .bazelrc ]] && rm .bazelrc
-pip install -r requirements.txt
+pip install $QUIET_FLAG -r requirements.txt
 
 TF_CFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') )
 TF_LFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )

@@ -13,6 +13,9 @@
 # limitations under the License.
 # ============================================================================
 """Define TensorFlow Addons version information."""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 # We follow Semantic Versioning (https://semver.org/)
 _MAJOR_VERSION = '0'

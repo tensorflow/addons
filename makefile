@@ -12,10 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Image manipulation ops."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+.PHONY: all
 
-# Transforms
-from tensorflow_addons.custom_ops.image.python.transform import transform
+all: code-format sanity-check unit-test
+
+# TODO: install those dependencies in docker image (dockerfile).
+install-ci-dependency:
+	bash tools/ci_build/install/install_ci_dependency.sh --quiet
+
+code-format: install-ci-dependency
+	bash tools/ci_build/code_format.sh --incremental --in-place
+
+sanity-check: install-ci-dependency
+	bash tools/ci_build/ci_sanity.sh --incremental
+
+unit-test:
+	bash ci_testing/addons_cpu.sh

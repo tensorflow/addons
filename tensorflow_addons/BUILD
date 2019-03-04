@@ -5,7 +5,7 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "tensorflow_addons",
     data = [
-            "__init__.py",
-            "version.py",
+        "__init__.py",
+        "version.py",
     ],
 )
