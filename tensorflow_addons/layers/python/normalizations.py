@@ -15,6 +15,7 @@
 
 # Orginal implementation from keras_contrib/layer/normalization
 
+import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow.keras import constraints
 from tensorflow.keras import initializers
@@ -78,7 +79,7 @@ class GroupNormalization(Layer):
     """
 
     def __init__(self,
-                 groups=32,
+                 groups=2,
                  axis=-1,
                  epsilon=1e-5,
                  center=True,
@@ -165,7 +166,7 @@ class GroupNormalization(Layer):
 
 
     def _apply_normalization(self, reshaped_inputs , input_shape):
-        
+
         group_shape = K.int_shape(reshaped_inputs)
         group_reduction_axes = list(range(len(group_shape)))
         # Remember the ordering of the tensor is [batch, group , steps]. Jump the first 2 to calculate the variance and the mean
@@ -360,4 +361,3 @@ class InstanceNormalization(GroupNormalization):
 
         kwargs["groups"]=-1
         super(InstanceNormalization,self).__init__(**kwargs)
-
