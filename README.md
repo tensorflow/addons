@@ -12,6 +12,8 @@ developments that cannot be integrated into core TensorFlow
 ## Contents
 | Sub-Package    | Addon  | Reference                                  |
 |:----------------------- |:----------- |:---------------------------- |
+| addons.image | adjust_hsv_in_yiq |                                   |
+| addons.image | random_hsv_in_yiq |                                   |
 | addons.image | Transform |                                           |
 | addons.layers | Maxout | https://arxiv.org/abs/1302.4389             |
 | addons.layers | PoinareNormalize | https://arxiv.org/abs/1705.08039  |
