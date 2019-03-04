@@ -18,6 +18,8 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+
+from tensorflow.python.framework import ops
 from tensorflow.python.platform import resource_loader
 
 _distort_image_ops = tf.load_op_library(
@@ -61,6 +63,7 @@ def random_hsv_in_yiq(image,
       ValueError: if `max_delta`, `lower_saturation`, `upper_saturation`,
                  `lower_value`, or `upper_Value` is invalid.
     """
+
     if max_delta_hue < 0:
         raise ValueError("max_delta must be non-negative.")
 
@@ -125,7 +128,7 @@ def adjust_hsv_in_yiq(image,
       Adjusted image(s), same shape and DType as `image`.
     """
 
-    with tf.name_scope(name, "adjust_hsv_in_yiq", [image]) as name:
+    with ops.name_scope(name, "adjust_hsv_in_yiq", [image]) as name:
         image = tf.convert_to_tensor(image, name="image")
         # Remember original dtype to so we can convert back if needed
         orig_dtype = image.dtype
