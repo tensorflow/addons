@@ -12,35 +12,38 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 # ==============================================================================
-# Make sure we're in the project root path.
+#
+# Usage: install_ci_dependency.sh [--quiet]
+#
+# Options:
+#  --quiet  Give less output.
+
+QUIET_FLAG=""
+if [[ $1 == "--quiet" ]]; then
+    QUIET_FLAG="--quiet"
+elif [[ ! -z "$1" ]]; then
+    echo "Found unsupported args: $@"
+    exit 1
+fi
+
+# Current script directory
 SCRIPT_DIR=$( cd ${0%/*} && pwd -P )
-ROOT_DIR=$( cd "$SCRIPT_DIR/.." && pwd -P )
+
+ROOT_DIR=$( cd "$SCRIPT_DIR/../../.." && pwd -P )
 if [[ ! -d "tensorflow_addons" ]]; then
     echo "ERROR: PWD: $PWD is not project root"
     exit 1
 fi
 
-set -x
+# Install python
+CI_REQUIREMENT="$SCRIPT_DIR/ci_requirements.txt"
+pip install ${QUIET_FLAG} -r ${CI_REQUIREMENT}
 
-N_JOBS=$(grep -c ^processor /proc/cpuinfo)
-
-echo ""
-echo "Bazel will use ${N_JOBS} concurrent job(s)."
-echo ""
-
-export CC_OPT_FLAGS='-mavx'
-export TF_NEED_CUDA=0 # TODO: Verify this is used in GPU custom-op
-
-export PYTHON_BIN_PATH=`which python`
-# Use default configuration here.
-yes 'y' | ./configure.sh
-
-## Run bazel test command. Double test timeouts to avoid flakes.
-bazel test -c opt -k \
-    --jobs=${N_JOBS} --test_timeout 300,450,1200,3600 \
-    --test_output=errors --local_test_jobs=8 \
-    //tensorflow_addons/...
-
-exit $?
+# Check clang-format
+CLANG_FORMAT=${CLANG_FORMAT:-clang-format-3.8}
+which ${CLANG_FORMAT} > /dev/null
+if [[ $? != "0" ]]; then
+    echo "ERROR: cannot find clang-format, please install it."
+    exit 1
+fi
