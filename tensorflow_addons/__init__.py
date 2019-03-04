@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Useful extra functionality for TensorFlow maintained by SIG-addons"""
+"""Useful extra functionality for TensorFlow maintained by SIG-addons."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -22,13 +22,12 @@ from __future__ import print_function
 # tensorflow_probability namespace. Hence, we disable this lint check throughout
 # the file.
 #
-# pylint: disable=g-import-not-at-top
 
 
 # Ensure TensorFlow is importable and its version is sufficiently recent. This
 # needs to happen before anything else, since the imports below will try to
 # import tensorflow, too.
-def _ensure_tf_install():  # pylint: disable=g-statement-before-imports
+def _ensure_tf_install():
     """Attempt to import tensorflow, and ensure its version is sufficient.
 
     Raises:
@@ -60,8 +59,7 @@ def _ensure_tf_install():  # pylint: disable=g-statement-before-imports
             "This version of TensorFlow Addons requires TensorFlow "
             "version >= {required}; Detected an installation of version "
             "{present}. Please upgrade TensorFlow to proceed.".format(
-                required=required_tensorflow_version,
-                present=tf.__version__))
+                required=required_tensorflow_version, present=tf.__version__))
 
 
 _ensure_tf_install()
@@ -80,4 +78,3 @@ from tensorflow_addons.custom_ops import image
 from tensorflow_addons.custom_ops import text
 
 from tensorflow_addons.version import __version__
-# pylint: enable=g-import-not-at-top

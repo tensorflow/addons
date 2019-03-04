@@ -75,13 +75,11 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                 grads0_np_indices = np.array([0, 2], dtype=np.int32)
                 grads0 = tf.IndexedSlices(
                     tf.constant(grads0_np[grads0_np_indices]),
-                    tf.constant(grads0_np_indices),
-                    tf.constant([3]))
+                    tf.constant(grads0_np_indices), tf.constant([3]))
                 grads1_np_indices = np.array([0, 2], dtype=np.int32)
                 grads1 = tf.IndexedSlices(
                     tf.constant(grads1_np[grads1_np_indices]),
-                    tf.constant(grads1_np_indices),
-                    tf.constant([3]))
+                    tf.constant(grads1_np_indices), tf.constant([3]))
                 opt = lazy_adam_optimizer.LazyAdamOptimizer()
                 update = opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
@@ -130,15 +128,12 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
         for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             with self.cached_session():
                 repeated_index_update_var = tf.Variable([[1.0], [2.0]],
-                                                               dtype=dtype)
+                                                        dtype=dtype)
                 aggregated_update_var = tf.Variable([[1.0], [2.0]],
-                                                           dtype=dtype)
+                                                    dtype=dtype)
                 grad_repeated_index = tf.IndexedSlices(
-                    tf.constant([0.1, 0.1],
-                                         shape=[2, 1],
-                                         dtype=dtype),
-                    tf.constant([1, 1]),
-                    tf.constant([2, 1]))
+                    tf.constant([0.1, 0.1], shape=[2, 1], dtype=dtype),
+                    tf.constant([1, 1]), tf.constant([2, 1]))
                 grad_aggregated = tf.IndexedSlices(
                     tf.constant([0.2], shape=[1, 1], dtype=dtype),
                     tf.constant([1]), tf.constant([2, 1]))
@@ -158,8 +153,11 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                                         repeated_index_update_var.eval())
 
     def doTestBasic(self, use_callable_params=False):
-        for i, dtype in enumerate(
-            [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]):
+        # yapf: disable
+        for i, dtype in enumerate([tf.dtypes.half,
+                                   tf.dtypes.float32,
+                                   tf.dtypes.float64]):
+            # yapf: enable
             with self.session(graph=tf.Graph()):
                 # Initialize tf for numpy implementation.
                 m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
@@ -217,7 +215,7 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                                                        self.evaluate(var0))
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
-                    self.assertEqual("var0_%d/m:0" % (i, ),
+                    self.assertEqual("var0_%d/m:0" % (i,),
                                      opt.get_slot(var0, "m").name)
 
     @tf_test_util.run_in_graph_and_eager_modes(reset_test=True)
@@ -243,8 +241,7 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                 var1 = tf.Variable(var1_np)
                 grads0 = tf.constant(grads0_np)
                 grads1 = tf.constant(grads1_np)
-                opt = lazy_adam_optimizer.LazyAdamOptimizer(
-                    tf.constant(0.001))
+                opt = lazy_adam_optimizer.LazyAdamOptimizer(tf.constant(0.001))
                 update = opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
                 self.evaluate(variables.global_variables_initializer())

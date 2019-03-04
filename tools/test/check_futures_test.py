@@ -86,6 +86,7 @@ def main():
     # Verify that all files have futures
     whitelist = frozenset(os.path.join(BASE_DIR, w) for w in WHITELIST)
     old_division = frozenset(os.path.join(BASE_DIR, w) for w in OLD_DIVISION)
+    error_msgs = []
     for root, _, filenames in os.walk(BASE_DIR):
         for f in fnmatch.filter(filenames, '*.py'):
             path = os.path.join(root, f)
@@ -94,8 +95,10 @@ def main():
                     check_file(path, old_division=path in old_division)
                 except AssertionError as e:
                     short_path = path[len(BASE_DIR) + 1:]
-                    raise AssertionError(
-                        'Error in %s: %s' % (short_path, str(e)))
+                    error_msgs.append('Error in %s: %s' % (short_path, str(e)))
+
+    if error_msgs:
+        raise AssertionError('\n'.join(error_msgs))
 
 
 if __name__ == '__main__':
