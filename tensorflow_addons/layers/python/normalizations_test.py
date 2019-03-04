@@ -29,20 +29,7 @@ from tensorflow.python.platform import test
 from tensorflow.python.training import gradient_descent
 
 
-def create_and_fit_Sequential_model(layer, shape):
-    # Helperfunction for quick evaluation
-    model = keras.models.Sequential()
-    model.add(layer)
-    model.add(keras.layers.Dense(32))
-    model.add(keras.layers.Dense(1))
 
-    model.compile(optimizer=RMSPropOptimizer(0.01),
-                  loss="categorical_crossentropy")
-    layer_shape = (10,) + shape
-    input_batch = np.random.rand(*layer_shape)
-    output_batch = np.random.rand(*(10, 1))
-    model.fit(x=input_batch, y=output_batch, epochs=1, batch_size=1)
-    return model
 
 
 class normalization_test(test.TestCase):
@@ -92,6 +79,79 @@ class normalization_test(test.TestCase):
         expected_shape=[10,1,10,10]
         run_reshape_test(1,1,input_shape,expected_shape)
 
+    def test_call_function(self):
+
+        self._test_specific_layer(tf.random.normal((10,10,10)),1,1,False,True)
+
+    def _test_specific_layer(self,inputs, axis, groups, center, scale):
+
+        input_shape=inputs.shape
+
+        layer=GroupNormalization(axis=axis,groups=groups,center=center,scale=scale)
+
+        model= keras.models.Sequential()
+        model.add(layer)
+
+        outputs=model.predict(inputs)
+        self.assertFalse(np.isnan(outputs).any())
+
+        if groups is -1:
+            groups=input_shape[axis]
+        np_inputs=inputs.numpy()
+        reshaped_dims=list(np_inputs.shape)
+        reshaped_dims[axis]=reshaped_dims[axis]//groups
+        reshaped_dims.insert(1,groups)
+        #reshaped_dims=np.array([reshaped_dims[0],groups,i for i in reshaped_dims[1:]])
+        reshaped_inputs=np.reshape(np_inputs,tuple(reshaped_dims))
+        mean = np.mean(reshaped_inputs, axis=tuple(range(2,len(reshaped_dims))),keepdims=True)
+        variance = np.var(reshaped_inputs,axis=tuple(range(2,len(reshaped_dims))),keepdims=True)
+
+        gamma,beta=layer._get_reshaped_weights(input_shape)
+        print("GAMMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        print(gamma.shape)
+        print(reshaped_dims)
+        print(np_inputs.shape)
+        print(gamma)
+        print(beta)
+        gamma=np.repeat(gamma, input_shape[0],axis=0)
+        print("GAMMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        print(gamma.shape)
+        if gamma is None:
+            gamma=1.0
+        if beta is None:
+            beta=0.0
+        output_test=[]
+                
+        a=np_inputs-mean
+        output_test=((gamma*a)*(1/np.sqrt(variance+1e-5))+beta)
+        output_test=np.array(output_test)
+        print("OOOOOOUTPUUUUUUT")
+        print(output_test.shape)
+        output_test=np.reshape(output_test,input_shape.as_list())
+        output_test=output_test.flatten()
+        
+
+        outputs_tf= outputs.flatten()
+        for i in range(len(output_test)):
+                
+            self.assertAlmostEqual(output_test[i],outputs_tf[i],places=5)
+        return outputs
+
+    def _create_and_fit_Sequential_model(self,layer, shape):
+        # Helperfunction for quick evaluation
+        model = keras.models.Sequential()
+        model.add(layer)
+        model.add(keras.layers.Dense(32))
+        model.add(keras.layers.Dense(1))
+
+        model.compile(optimizer=RMSPropOptimizer(0.01),
+                      loss="categorical_crossentropy")
+        layer_shape = (10,) + shape
+        input_batch = np.random.rand(*layer_shape)
+        output_batch = np.random.rand(*(10, 1))
+        model.fit(x=input_batch, y=output_batch, epochs=1, batch_size=1)
+        return model
+
     @tf_test_util.run_in_graph_and_eager_modes
     def test_weights(self):
         # Check if weights get initialized
@@ -119,8 +179,13 @@ class normalization_test(test.TestCase):
         normalized_input=layer._apply_normalization(reshaped_inputs, input_shape)
         self.assertTrue(tf.reduce_all(tf.equal(normalized_input,tf.constant([[[0.0,0.0],[0.0,0.0]]]))))
 
+    def test_axis_error(self):
+
+        with self.assertRaises(ValueError):
+            GroupNormalization(axis=0)
 
         
+
 
     @tf_test_util.run_in_graph_and_eager_modes
     def test_groupnorm_flat(self):
@@ -130,7 +195,7 @@ class normalization_test(test.TestCase):
         groups = [-1, 16, 1]
         shape = (64,)
         for i in groups:
-            model = create_and_fit_Sequential_model(
+            model = self._create_and_fit_Sequential_model(
                 GroupNormalization(groups=i), shape)
             self.assertTrue(hasattr(model.layers[0], 'gamma'))
             self.assertTrue(hasattr(model.layers[0], 'beta'))
@@ -140,7 +205,7 @@ class normalization_test(test.TestCase):
     def test_layernorm_flat(self):
         # Check basic usage of layernorm
 
-        model = create_and_fit_Sequential_model(LayerNormalization(), (64,))
+        model = self._create_and_fit_Sequential_model(LayerNormalization(), (64,))
         self.assertTrue(hasattr(model.layers[0], 'gamma'))
         self.assertTrue(hasattr(model.layers[0], 'beta'))
 
@@ -149,7 +214,7 @@ class normalization_test(test.TestCase):
     def test_instancenorm_flat(self):
         # Check basic usage of instancenorm
 
-        model = create_and_fit_Sequential_model(InstanceNormalization(), (64,))
+        model = self._create_and_fit_Sequential_model(InstanceNormalization(), (64,))
         self.assertTrue(hasattr(model.layers[0], 'gamma'))
         self.assertTrue(hasattr(model.layers[0], 'beta'))
 
@@ -164,7 +229,7 @@ class normalization_test(test.TestCase):
                                  gamma_initializer='random_normal',
                                  gamma_constraint='NonNeg')
 
-        model = create_and_fit_Sequential_model(layer,(64,))
+        model = self._create_and_fit_Sequential_model(layer,(64,))
 
         weights = np.array(model.layers[0].get_weights())
         negativ = weights[weights < 0.0]
