@@ -19,4 +19,5 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorflow_addons.losses.python.lifted import lifted_struct_loss
+from tensorflow_addons.losses.python.sparsemax_loss import sparsemax_loss, SparsemaxLoss
 from tensorflow_addons.losses.python.triplet import triplet_semihard_loss
