@@ -8,6 +8,7 @@ py_library(
         "__init__.py",
         "python/__init__.py",
         "python/keras_utils.py",
+        "python/test_utils.py",
     ]),
     srcs_version = "PY2AND3",
 )
