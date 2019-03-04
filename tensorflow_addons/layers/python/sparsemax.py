@@ -22,30 +22,31 @@ import tensorflow as tf
 from tensorflow_addons.activations.python.sparsemax import sparsemax
 from tensorflow_addons.utils.python import keras_utils
 
+
 @keras_utils.register_keras_custom_object
 class Sparsemax(tf.keras.layers.Layer):
-  """Sparsemax activation function [1].
+    """Sparsemax activation function [1].
 
-  The ouput shape is the same as the input shape.
+    The ouput shape is the same as the input shape.
 
-  [1]: https://arxiv.org/abs/1602.02068
+    [1]: https://arxiv.org/abs/1602.02068
 
-  Arguments:
-      axis: Integer, axis along which the sparsemax normalization is applied.
-  """
+    Arguments:
+        axis: Integer, axis along which the sparsemax normalization is applied.
+    """
 
-  def __init__(self, axis=-1, **kwargs):
-    super(Sparsemax, self).__init__(**kwargs)
-    self.supports_masking = True
-    self.axis = axis
+    def __init__(self, axis=-1, **kwargs):
+        super(Sparsemax, self).__init__(**kwargs)
+        self.supports_masking = True
+        self.axis = axis
 
-  def call(self, inputs):
-    return sparsemax(inputs, axis=self.axis)
+    def call(self, inputs):
+        return sparsemax(inputs, axis=self.axis)
 
-  def get_config(self):
-    config = {'axis': self.axis}
-    base_config = super(Sparsemax, self).get_config()
-    return dict(list(base_config.items()) + list(config.items()))
+    def get_config(self):
+        config = {'axis': self.axis}
+        base_config = super(Sparsemax, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
 
-  def compute_output_shape(self, input_shape):
-    return input_shape
+    def compute_output_shape(self, input_shape):
+        return input_shape

@@ -21,35 +21,35 @@ import inspect
 import unittest
 
 # TODO: find public API alternative to these
-from tensorflow.python.keras.testing_utils import layer_test
-from tensorflow.python.framework.test_util import run_all_in_graph_and_eager_modes
+from tensorflow.python.keras.testing_utils import layer_test  # pylint: disable=unused-import
+from tensorflow.python.framework.test_util import run_all_in_graph_and_eager_modes  # pylint: disable=unused-import
+
 
 def run_all_with_types(dtypes):
-  """Execute all test methods in the given class with and without eager."""
-  base_decorator = run_with_types(dtypes)
+    """Execute all test methods in the given class with and without eager."""
+    base_decorator = run_with_types(dtypes)
 
-  def decorator(cls):
-      for name, method in cls.__dict__.copy().items():
-        if (callable(method) and
-            name.startswith(unittest.TestLoader.testMethodPrefix) and
-            name != "test_session"):
-          setattr(cls, name, base_decorator(method))
-      return cls
+    def decorator(cls):
+        for name, method in cls.__dict__.copy().items():
+            if (callable(method)
+                    and name.startswith(unittest.TestLoader.testMethodPrefix)
+                    and name != "test_session"):
+                setattr(cls, name, base_decorator(method))
+        return cls
 
-  return decorator
+    return decorator
 
 
 def run_with_types(dtypes):
-  def decorator(f):
-    if inspect.isclass(f):
-      raise ValueError(
-          "`run_with_types` only supports test methods. "
-          "Did you mean to use `run_all_with_types`?")
+    def decorator(f):
+        if inspect.isclass(f):
+            raise ValueError("`run_with_types` only supports test methods. "
+                             "Did you mean to use `run_all_with_types`?")
 
-    def decorated(self, *args, **kwargs):
-      for t in dtypes:
-        f(self, *args, dtype=t, **kwargs)
+        def decorated(self, *args, **kwargs):
+            for t in dtypes:
+                f(self, *args, dtype=t, **kwargs)
 
-    return decorated
+        return decorated
 
-  return decorator
+    return decorator
