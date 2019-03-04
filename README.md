@@ -12,12 +12,13 @@ developments that cannot be integrated into core TensorFlow
 ## Contents
 | Sub-Package    | Addon  | Reference                                  |
 |:----------------------- |:----------- |:---------------------------- |
-| addons.activations | Sparsemax | https://arxiv.org/abs/1602.02068    |
+| tfa.activations | Sparsemax | https://arxiv.org/abs/1602.02068    |
 | tfa.image | transform |                                           |
 | tfa.layers | Maxout | https://arxiv.org/abs/1302.4389             |
 | tfa.layers | PoinareNormalize | https://arxiv.org/abs/1705.08039  |
 | tfa.layers | WeightNormalization | https://arxiv.org/abs/1602.07868 |
 | tfa.losses | LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
+| tfa.losses | SparsemaxLoss | https://arxiv.org/abs/1602.02068 | 
 | tfa.losses | TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
 | tfa.optimizers | LazyAdamOptimizer | https://arxiv.org/abs/1412.6980 |
 | tfa.text | skip_gram_sample | https://arxiv.org/abs/1301.3781 |
