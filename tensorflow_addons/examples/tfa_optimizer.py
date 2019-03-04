@@ -20,6 +20,8 @@ from __future__ import print_function
 import tensorflow as tf
 import tensorflow_addons as tfa
 
+VALIDATION_SAMPLES = 10000
+
 
 def build_mnist_model():
     """Build a simple dense network for processing MNIST data.
@@ -32,13 +34,13 @@ def build_mnist_model():
     net = tf.keras.layers.Dense(
         10, activation='softmax', name='predictions')(net)
 
-    model = tf.keras.Model(inputs=inputs, outputs=net)
-    return model
+    return tf.keras.Model(inputs=inputs, outputs=net)
 
 
-def generate_data():
+def generate_data(num_validation):
     """Download and preprocess the MNIST dataset.
 
+    :num_validaton: Number of samples to use in validation set
     :return: Dictionary of data split into train/test/val
     """
     dataset = {}
@@ -47,14 +49,14 @@ def generate_data():
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
 
     # Preprocess the data
-    x_train = x_train.reshape(60000, 784).astype('float32') / 255
-    x_test = x_test.reshape(10000, 784).astype('float32') / 255
+    x_train = x_train.reshape(-1, 784).astype('float32') / 255
+    x_test = x_test.reshape(-1, 784).astype('float32') / 255
 
-    # Reserve 10,000 samples for validation
-    dataset['x_val'] = x_train[-10000:]
-    dataset['y_val'] = y_train[-10000:]
-    dataset['x_train'] = x_train[:-10000]
-    dataset['y_train'] = y_train[:-10000]
+    # Subset validation set
+    dataset['x_train'] = x_train[:-num_validation]
+    dataset['y_train'] = y_train[:-num_validation]
+    dataset['x_val'] = x_train[-num_validation:]
+    dataset['y_val'] = y_train[-num_validation:]
 
     dataset['x_test'] = x_test
     dataset['y_test'] = y_test
@@ -62,8 +64,9 @@ def generate_data():
     return dataset
 
 
-if __name__ == "__main__":
-    data = generate_data()
+def train_and_eval():
+    """Train and evalute simple MNIST model using LazyAdamOptimizer."""
+    data = generate_data(num_validation=VALIDATION_SAMPLES)
     dense_net = build_mnist_model()
     dense_net.compile(
         optimizer=tfa.optimizers.LazyAdamOptimizer(0.001),
@@ -79,7 +82,11 @@ if __name__ == "__main__":
         validation_data=(data['x_val'], data['y_val']))
 
     # Evaluate the network
-    print('\n# Evaluate on test data')
+    print('Evaluate on test data:')
     results = dense_net.evaluate(
         data['x_test'], data['y_test'], batch_size=128)
     print('Test loss, Test acc:', results)
+
+
+if __name__ == "__main__":
+    train_and_eval()
