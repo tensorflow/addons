@@ -21,14 +21,8 @@ function write_action_env_to_bazelrc() {
   write_to_bazelrc "build --action_env $1=\"$2\""
 }
 
-rm .bazelrc
-
-# TODO: Verify the tensorflow version here...
-if python -c "import tensorflow" &> /dev/null; then
-    echo 'using installed tensorflow'
-else
-    pip install tf-nightly-2.0-preview
-fi
+[[ -f .bazelrc ]] && rm .bazelrc
+pip install -r requirements.txt
 
 TF_CFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') )
 TF_LFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )
