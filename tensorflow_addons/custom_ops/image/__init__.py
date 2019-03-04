@@ -17,5 +17,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from tensorflow_addons.custom_ops.image.python.distort_image_ops import adjust_hsv_in_yiq
+from tensorflow_addons.custom_ops.image.python.distort_image_ops import random_hsv_in_yiq
 # Transforms
 from tensorflow_addons.custom_ops.image.python.transform import transform
