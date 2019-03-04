@@ -104,7 +104,7 @@ class GroupNormalization(Layer):
         self.gamma_regularizer = regularizers.get(gamma_regularizer)
         self.beta_constraint = constraints.get(beta_constraint)
         self.gamma_constraint = constraints.get(gamma_constraint)
-
+        self._check_axis()
 
     def build(self, input_shape):
 
@@ -224,7 +224,10 @@ class GroupNormalization(Layer):
                              'multiple of the number of channels (' +
                              str(dim) + ').')
 
+    def _check_axis(self):
 
+        if self.axis==0:
+            raise ValueError("You are trying to normalize your batch axis. Do you want to use tf.layer.batch_normalization instead")
     def _create_input_spec(self,input_shape):
 
         dim=input_shape[self.axis]
