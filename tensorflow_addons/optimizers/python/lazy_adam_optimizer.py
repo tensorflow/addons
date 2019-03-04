@@ -14,10 +14,10 @@
 # ==============================================================================
 """Variant of the Adam optimizer that handles sparse updates more efficiently.
 
-Compared with the original Adam optimizer, the one in this file can
-provide a large improvement in model training throughput for some
-applications. However, it provides slightly different semantics than the
-original Adam algorithm, and may lead to different empirical results.
+Compared with the original Adam optimizer, the one in this file can provide a
+large improvement in model training throughput for some applications. However,
+it provides slightly different semantics than the original Adam algorithm, and
+may lead to different empirical results.
 """
 
 from __future__ import absolute_import
@@ -30,7 +30,8 @@ from tensorflow_addons.utils.python import keras_utils
 
 @keras_utils.register_keras_custom_object
 class LazyAdamOptimizer(tf.keras.optimizers.Adam):
-    """Variant of the Adam optimizer that handles sparse updates more efficiently.
+    """Variant of the Adam optimizer that handles sparse updates more
+    efficiently.
 
     The original Adam algorithm maintains two moving-average accumulators for
     each trainable variable; the accumulators are updated at every step.
@@ -60,9 +61,11 @@ class LazyAdamOptimizer(tf.keras.optimizers.Adam):
         m = self.get_slot(var, "m")
         m_t_slice = beta_1_t * tf.gather(m, indices) + (1 - beta_1_t) * grad
 
-        m_update_kwargs = {'resource': m.handle,
-                           'indices': indices,
-                           'updates': m_t_slice}
+        m_update_kwargs = {
+            'resource': m.handle,
+            'indices': indices,
+            'updates': m_t_slice
+        }
         m_update_op = tf.raw_ops.ResourceScatterUpdate(**m_update_kwargs)
 
         # \\(v := beta2 * v + (1 - beta2) * (g_t * g_t)\\)
@@ -70,17 +73,21 @@ class LazyAdamOptimizer(tf.keras.optimizers.Adam):
         v_t_slice = (beta_2_t * tf.gather(v, indices) +
                      (1 - beta_2_t) * tf.math.square(grad))
 
-        v_update_kwargs = {'resource': v.handle,
-                           'indices': indices,
-                           'updates': v_t_slice}
+        v_update_kwargs = {
+            'resource': v.handle,
+            'indices': indices,
+            'updates': v_t_slice
+        }
         v_update_op = tf.raw_ops.ResourceScatterUpdate(**v_update_kwargs)
 
         # \\(variable -= learning_rate * m_t / (epsilon_t + sqrt(v_t))\\)
         var_slice = lr * m_t_slice / (tf.math.sqrt(v_t_slice) + epsilon_t)
 
-        var_update_kwargs = {'resource': var.handle,
-                             'indices': indices,
-                             'updates': var_slice}
+        var_update_kwargs = {
+            'resource': var.handle,
+            'indices': indices,
+            'updates': var_slice
+        }
         var_update_op = tf.raw_ops.ResourceScatterSub(**var_update_kwargs)
 
         return tf.group(*[var_update_op, m_update_op, v_update_op])

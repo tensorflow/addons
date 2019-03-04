@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Useful extra functionality for TensorFlow maintained by SIG-addons"""
+"""Useful extra functionality for TensorFlow maintained by SIG-addons."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -60,8 +60,7 @@ def _ensure_tf_install():  # pylint: disable=g-statement-before-imports
             "This version of TensorFlow Addons requires TensorFlow "
             "version >= {required}; Detected an installation of version "
             "{present}. Please upgrade TensorFlow to proceed.".format(
-                required=required_tensorflow_version,
-                present=tf.__version__))
+                required=required_tensorflow_version, present=tf.__version__))
 
 
 _ensure_tf_install()

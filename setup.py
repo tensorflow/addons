@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Setup for pip package"""
+"""Setup for pip package."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -26,8 +26,7 @@ from setuptools.dist import Distribution
 version = {}
 base_dir = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
-    exec(fp.read(), version)
-
+    exec (fp.read(), version)
 
 REQUIRED_PACKAGES = [
     'six >= 1.10.0',

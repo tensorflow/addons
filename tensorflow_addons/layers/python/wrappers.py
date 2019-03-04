@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # =============================================================================
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow_addons.utils.python import keras_utils
@@ -19,8 +22,10 @@ from tensorflow_addons.utils.python import keras_utils
 
 @keras_utils.register_keras_custom_object
 class WeightNormalization(tf.keras.layers.Wrapper):
-    """ This wrapper reparameterizes a layer by decoupling the weight's
-    magnitude and direction. This speeds up convergence by improving the
+    """This wrapper reparameterizes a layer by decoupling the weight's
+    magnitude and direction.
+
+    This speeds up convergence by improving the
     conditioning of the optimization problem.
     Weight Normalization: A Simple Reparameterization to Accelerate
     Training of Deep Neural Networks: https://arxiv.org/abs/1602.07868
@@ -44,6 +49,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
       ValueError: If `Layer` does not contain a `kernel` of weights
       NotImplementedError: If `data_init` is True and running graph execution
     """
+
     def __init__(self, layer, data_init=True, **kwargs):
         if not isinstance(layer, tf.keras.layers.Layer):
             raise ValueError(
@@ -58,20 +64,21 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         self._track_trackable(layer, name='layer')
 
     def _compute_weights(self):
-        """Generate weights by combining the direction of weight vector
-         with its norm """
+        """Generate weights by combining the direction of weight vector with
+        its norm."""
         with tf.name_scope('compute_weights'):
             self.layer.kernel = tf.nn.l2_normalize(
                 self.layer.v, axis=self.kernel_norm_axes) * self.layer.g
 
     def _init_norm(self, weights):
-        """Set the norm of the weight vector"""
+        """Set the norm of the weight vector."""
         with tf.name_scope('init_norm'):
             flat = tf.reshape(weights, [-1, self.layer_depth])
-            return tf.reshape(tf.linalg.norm(flat, axis=0), (self.layer_depth,))
+            return tf.reshape(
+                tf.linalg.norm(flat, axis=0), (self.layer_depth,))
 
     def _data_dep_init(self, inputs):
-        """Data dependent initialization"""
+        """Data dependent initialization."""
 
         with tf.name_scope('data_dep_init'):
             # Generate data dependent init values
@@ -98,14 +105,13 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             self.layer.built = False
 
             if not hasattr(self.layer, 'kernel'):
-                raise ValueError(
-                    '`WeightNormalization` must wrap a layer that'
-                    ' contains a `kernel` for weights'
-                )
+                raise ValueError('`WeightNormalization` must wrap a layer that'
+                                 ' contains a `kernel` for weights')
 
             # The kernel's filter or unit dimension is -1
             self.layer_depth = int(self.layer.kernel.shape[-1])
-            self.kernel_norm_axes = list(range(self.layer.kernel.shape.rank - 1))
+            self.kernel_norm_axes = list(
+                range(self.layer.kernel.shape.rank - 1))
 
             self.layer.v = self.layer.kernel
             self.layer.g = self.layer.add_variable(

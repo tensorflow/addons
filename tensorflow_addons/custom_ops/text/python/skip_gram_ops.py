@@ -45,7 +45,8 @@ def skip_gram_sample(input_tensor,
                      batch_capacity=None,
                      seed=None,
                      name=None):
-    """Generates skip-gram token and label paired Tensors from the input tensor.
+    """Generates skip-gram token and label paired Tensors from the input
+    tensor.
 
     Generates skip-gram `("token", "label")` pairs using each element in the
     rank-1 `input_tensor` as a token. The window size used for each token will be
@@ -140,9 +141,9 @@ def skip_gram_sample(input_tensor,
         and `corpus_size` are not both present or both absent.
     """
 
-    if vocab_freq_table is None and (vocab_min_count is not None or
-                                     vocab_subsampling is not None or
-                                     corpus_size is not None):
+    if vocab_freq_table is None and (vocab_min_count is not None
+                                     or vocab_subsampling is not None
+                                     or corpus_size is not None):
         raise ValueError(
             "vocab_freq_table is not provided, but vocab_min_count={}, "
             "vocab_subsampling={}, or corpus_size={} is not None. These settings "
@@ -188,14 +189,13 @@ def skip_gram_sample(input_tensor,
         # Batches the (tokens, labels) outputs so that they will be of deterministic
         # batch_size, to facilitate feeding them into the rest of the network.
         if batch_size is not None and batch_size > 0:
-            batch_capacity = (batch_capacity
-                              if (batch_capacity is not None and batch_capacity > 0)
-                              else 100 * batch_size)
-            return tf.train.batch(
-                [tokens, labels],
-                batch_size,
-                capacity=batch_capacity,
-                enqueue_many=True)
+            batch_capacity = (batch_capacity if
+                              (batch_capacity is not None
+                               and batch_capacity > 0) else 100 * batch_size)
+            return tf.train.batch([tokens, labels],
+                                  batch_size,
+                                  capacity=batch_capacity,
+                                  enqueue_many=True)
 
         return tokens, labels
 
@@ -313,7 +313,7 @@ def skip_gram_sample_with_text_vocab(input_tensor,
     if vocab_token_index < 0 or vocab_freq_index < 0:
         raise ValueError(
             "vocab_token_index={} and vocab_freq_index={} must both be >= 0.".
-                format(vocab_token_index, vocab_freq_index))
+            format(vocab_token_index, vocab_freq_index))
     if vocab_token_index == vocab_freq_index:
         raise ValueError(
             "vocab_token_index and vocab_freq_index should be different, but are "
@@ -330,14 +330,14 @@ def skip_gram_sample_with_text_vocab(input_tensor,
             if vocab_token_index >= len(row) or vocab_freq_index >= len(row):
                 raise ValueError(
                     "Row in vocab file only has {} columns, so vocab_token_index={} or "
-                    "vocab_freq_index={} is out of bounds. Row content: {}".format(
-                        len(row), vocab_token_index, vocab_freq_index, row))
+                    "vocab_freq_index={} is out of bounds. Row content: {}".
+                    format(len(row), vocab_token_index, vocab_freq_index, row))
             vocab_size += 1
             freq = vocab_freq_dtype.as_numpy_dtype(row[vocab_freq_index])
             if freq < 0:
                 raise ValueError(
-                    "Row in vocab file has negative frequency of {}. Row content: {}".
-                        format(freq, row))
+                    "Row in vocab file has negative frequency of {}. Row content: {}"
+                    .format(freq, row))
             # Note: tokens whose frequencies are below vocab_min_count will still
             # contribute to the total corpus size used for vocab subsampling.
             calculated_corpus_size += freq
@@ -386,14 +386,16 @@ def _filter_input(input_tensor, vocab_freq_table, vocab_min_count,
     if vocab_freq_table is None:
         return input_tensor
 
-    if not isinstance(vocab_freq_table, lookup_ops.InitializableLookupTableBase):
+    if not isinstance(vocab_freq_table,
+                      lookup_ops.InitializableLookupTableBase):
         raise ValueError(
             "vocab_freq_table must be a subclass of "
             "InitializableLookupTableBase (such as HashTable) instead of type "
             "{}.".format(type(vocab_freq_table)))
 
     with ops.name_scope(
-            "filter_vocab", values=[vocab_freq_table, input_tensor, vocab_min_count]):
+            "filter_vocab",
+            values=[vocab_freq_table, input_tensor, vocab_min_count]):
         freq = vocab_freq_table.lookup(input_tensor)
         # Filters out elements in input_tensor that are not found in
         # vocab_freq_table (table returns a default value of -1 specified above when
@@ -403,8 +405,8 @@ def _filter_input(input_tensor, vocab_freq_table, vocab_min_count,
         # Filters out elements whose vocab frequencies are less than the threshold.
         if vocab_min_count is not None:
             cast_threshold = tf.cast(vocab_min_count, freq.dtype)
-            mask = tf.math.logical_and(mask,
-                                        tf.math.greater_equal(freq, cast_threshold))
+            mask = tf.math.logical_and(
+                mask, tf.math.greater_equal(freq, cast_threshold))
 
         input_tensor = tf.boolean_mask(input_tensor, mask)
         freq = tf.boolean_mask(freq, mask)
@@ -415,7 +417,7 @@ def _filter_input(input_tensor, vocab_freq_table, vocab_min_count,
     if vocab_subsampling < 0 or vocab_subsampling > 1:
         raise ValueError(
             "Invalid vocab_subsampling={} - it should be within range [0, 1].".
-                format(vocab_subsampling))
+            format(vocab_subsampling))
 
     # Subsamples the input tokens based on vocabulary frequency and
     # vocab_subsampling threshold (ie randomly discard commonly appearing
@@ -428,9 +430,9 @@ def _filter_input(input_tensor, vocab_freq_table, vocab_min_count,
 
         # From tensorflow_models/tutorials/embedding/word2vec_kernels.cc, which is
         # suppose to correlate with Eq. 5 in http://arxiv.org/abs/1310.4546.
-        keep_prob = ((tf.math.sqrt(freq /
-                                    (vocab_subsampling * corpus_size)) + 1.0) *
-                     (vocab_subsampling * corpus_size / freq))
+        keep_prob = (
+            (tf.math.sqrt(freq / (vocab_subsampling * corpus_size)) + 1.0) *
+            (vocab_subsampling * corpus_size / freq))
         random_prob = tf.random.uniform(
             tf.shape(freq),
             minval=0,

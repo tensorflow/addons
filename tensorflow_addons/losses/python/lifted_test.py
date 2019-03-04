@@ -53,7 +53,6 @@ def pairwise_distance_np(feature, squared=False):
 
 
 class LiftedStructLossTest(tf.test.TestCase):
-
     @tf_test_util.run_all_in_graph_and_eager_modes
     def testLiftedStruct(self):
         num_data = 10
