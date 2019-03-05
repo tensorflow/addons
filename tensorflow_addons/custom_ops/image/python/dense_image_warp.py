@@ -32,7 +32,8 @@ def _interpolate_bilinear(grid,
 
     Args:
       grid: a 4-D float `Tensor` of shape `[batch, height, width, channels]`.
-      query_points: a 3-D float `Tensor` of N points with shape `[batch, N, 2]`.
+      query_points: a 3-D float `Tensor` of N points with shape
+        `[batch, N, 2]`.
       name: a name for the operation (optional).
       indexing: whether the query points are specified as row and column (ij),
         or Cartesian coordinates (xy).
@@ -41,8 +42,8 @@ def _interpolate_bilinear(grid,
       values: a 3-D `Tensor` with shape `[batch, N, channels]`
 
     Raises:
-      ValueError: if the indexing mode is invalid, or if the shape of the inputs
-        invalid.
+      ValueError: if the indexing mode is invalid, or if the shape of the
+        inputs invalid.
     """
     if indexing != "ij" and indexing != "xy":
         raise ValueError("Indexing mode must be \'ij\' or \'xy\'")
@@ -94,11 +95,11 @@ def _interpolate_bilinear(grid,
 
                 # max_floor is size_in_indexing_dimension - 2 so that max_floor + 1
                 # is still a valid index into the grid.
-                max_floor = tf.cast(
-                    size_in_indexing_dimension - 2, query_type)
+                max_floor = tf.cast(size_in_indexing_dimension - 2, query_type)
                 min_floor = tf.constant(0.0, dtype=query_type)
-                floor = tf.math.minimum(tf.math.maximum(
-                    min_floor, tf.math.floor(queries)), max_floor)
+                floor = tf.math.minimum(
+                    tf.math.maximum(min_floor, tf.math.floor(queries)),
+                    max_floor)
                 int_floor = tf.cast(floor, tf.dtypes.int32)
                 floors.append(int_floor)
                 ceil = int_floor + 1
@@ -110,8 +111,7 @@ def _interpolate_bilinear(grid,
                 min_alpha = tf.constant(0.0, dtype=grid_type)
                 max_alpha = tf.constant(1.0, dtype=grid_type)
                 alpha = tf.math.minimum(
-                    tf.math.maximum(min_alpha, alpha),
-                    max_alpha)
+                    tf.math.maximum(min_alpha, alpha), max_alpha)
 
                 # Expand alpha to [b, n, 1] so we can use broadcasting
                 # (since the alpha values don't depend on the channel).
@@ -122,10 +122,10 @@ def _interpolate_bilinear(grid,
             tf.cast(batch_size * height * width, dtype=tf.dtypes.float32),
             np.iinfo(np.int32).max / 8.0,
             message="The image size or batch size is sufficiently large "
-                    "that the linearized addresses used by tf.gather "
-                    "may exceed the int32 limit.")
-        flattened_grid = tf.reshape(
-            grid, [batch_size * height * width, channels])
+            "that the linearized addresses used by tf.gather "
+            "may exceed the int32 limit.")
+        flattened_grid = tf.reshape(grid,
+                                    [batch_size * height * width, channels])
         batch_offsets = tf.reshape(
             tf.range(batch_size) * height * width, [batch_size, 1])
 
@@ -135,9 +135,9 @@ def _interpolate_bilinear(grid,
         # code would be made simpler by using tf.gather_nd.
         def gather(y_coords, x_coords, name):
             with tf.name_scope("gather-" + name):
-                linear_coordinates = batch_offsets + y_coords * width + x_coords
-                gathered_values = tf.gather(
-                    flattened_grid, linear_coordinates)
+                linear_coordinates = (
+                    batch_offsets + y_coords * width + x_coords)
+                gathered_values = tf.gather(flattened_grid, linear_coordinates)
                 return tf.reshape(gathered_values,
                                   [batch_size, num_queries, channels])
 
@@ -161,10 +161,10 @@ def _interpolate_bilinear(grid,
 def dense_image_warp(image, flow, name="dense_image_warp"):
     """Image warping using per-pixel flow vectors.
 
-    Apply a non-linear warp to the image, where the warp is specified by a dense
-    flow field of offset vectors that define the correspondences of pixel values
-    in the output image back to locations in the  source image. Specifically, the
-    pixel value at output[b, j, i, c] is
+    Apply a non-linear warp to the image, where the warp is specified by a
+    dense flow field of offset vectors that define the correspondences of
+    pixel values in the output image back to locations in the source image.
+    Specifically, the pixel value at output[b, j, i, c] is
     images[b, j - flow[b, j, i, 0], i - flow[b, j, i, 1], c].
 
     The locations specified by this formula do not necessarily map to an int
@@ -178,16 +178,16 @@ def dense_image_warp(image, flow, name="dense_image_warp"):
       flow: A 4-D float `Tensor` with shape `[batch, height, width, 2]`.
       name: A name for the operation (optional).
 
-      Note that image and flow can be of type tf.half, tf.float32, or tf.float64,
-      and do not necessarily have to be the same type.
+      Note that image and flow can be of type tf.half, tf.float32, or
+      tf.float64, and do not necessarily have to be the same type.
 
     Returns:
       A 4-D float `Tensor` with shape`[batch, height, width, channels]`
         and same type as input image.
 
     Raises:
-      ValueError: if height < 2 or width < 2 or the inputs have the wrong number
-                  of dimensions.
+      ValueError: if height < 2 or width < 2 or the inputs have the wrong
+        number of dimensions.
     """
     with tf.name_scope(name):
         batch_size, height, width, channels = (tf.shape(image)[0],
@@ -197,14 +197,12 @@ def dense_image_warp(image, flow, name="dense_image_warp"):
 
         # The flow is defined on the image grid. Turn the flow into a list of query
         # points in the grid space.
-        grid_x, grid_y = tf.meshgrid(
-            tf.range(width), tf.range(height))
-        stacked_grid = tf.cast(
-            tf.stack([grid_y, grid_x], axis=2), flow.dtype)
+        grid_x, grid_y = tf.meshgrid(tf.range(width), tf.range(height))
+        stacked_grid = tf.cast(tf.stack([grid_y, grid_x], axis=2), flow.dtype)
         batched_grid = tf.expand_dims(stacked_grid, axis=0)
         query_points_on_grid = batched_grid - flow
-        query_points_flattened = tf.reshape(
-            query_points_on_grid, [batch_size, height * width, 2])
+        query_points_flattened = tf.reshape(query_points_on_grid,
+                                            [batch_size, height * width, 2])
         # Compute values at the query points, then reshape the result back to the
         # image grid.
         interpolated = _interpolate_bilinear(image, query_points_flattened)

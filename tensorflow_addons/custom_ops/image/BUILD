@@ -43,10 +43,10 @@ py_test(
         "python/dense_image_warp_test.py",
     ],
     main = "python/dense_image_warp_test.py",
-    deps = [
-        ":image_ops",      
-    ],
     srcs_version = "PY2AND3",
+    deps = [
+        ":image_ops",
+    ],
 )
 
 # TODO: use cuda_py_test later.
@@ -59,6 +59,6 @@ py_test(
     main = "python/transform_test.py",
     srcs_version = "PY2AND3",
     deps = [
-        ":image_ops"
+        ":image_ops",
     ],
 )
