@@ -15,7 +15,7 @@ limitations under the License.
 
 #if GOOGLE_CUDA
 #define EIGEN_USE_GPU
-#endif //GOOGLE_CUDA
+#endif  // GOOGLE_CUDA
 
 #include <memory>
 
@@ -116,9 +116,8 @@ class AdjustHsvInYiqOp<CPUDevice> : public AdjustHsvInYiqOpBase {
     const DeviceBase::CpuWorkerThreads& worker_threads =
         *context->device()->tensorflow_cpu_worker_threads();
     Shard(worker_threads.num_threads, worker_threads.workers, channel_count,
-          kCostPerChannel,
-          [&input_data, &output_data, &tranformation_matrix](
-              int64 start_channel, int64 end_channel) {
+          kCostPerChannel, [&input_data, &output_data, &tranformation_matrix](
+                               int64 start_channel, int64 end_channel) {
             // Applying projection matrix to input RGB vectors.
             const float* p = input_data.data() + start_channel * kChannelSize;
             float* q = output_data.data() + start_channel * kChannelSize;

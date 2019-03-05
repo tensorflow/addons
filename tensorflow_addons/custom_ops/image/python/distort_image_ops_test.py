@@ -33,7 +33,6 @@ from tensorflow_addons.custom_ops.image.python import distort_image_ops
 
 
 class AdjustHueInYiqTest(tf.test.TestCase):
-
     def _adjust_hue_in_yiq_np(self, x_np, delta_h):
         """Rotate hue in YIQ space.
 
@@ -123,7 +122,6 @@ class AdjustHueInYiqTest(tf.test.TestCase):
 
 
 class AdjustValueInYiqTest(tf.test.TestCase):
-
     def _adjust_value_in_yiq_np(self, x_np, scale):
         return x_np * scale
 
@@ -186,7 +184,6 @@ class AdjustValueInYiqTest(tf.test.TestCase):
 
 
 class AdjustSaturationInYiqTest(tf.test.TestCase):
-
     def _adjust_saturation_in_yiq_tf(self, x_np, scale):
         with self.cached_session(use_gpu=True):
             x = tf.constant(x_np)
@@ -254,7 +251,6 @@ class AdjustSaturationInYiqTest(tf.test.TestCase):
 
 
 class AdjustHueInYiqBenchmark(tf.test.Benchmark):
-
     def _benchmark_adjust_hue_in_yiq(self, device, cpu_count):
         image_shape = [299, 299, 3]
         warmup_rounds = 100
@@ -263,11 +259,11 @@ class AdjustHueInYiqBenchmark(tf.test.Benchmark):
         if cpu_count is not None:
             config.inter_op_parallelism_threads = 1
             config.intra_op_parallelism_threads = cpu_count
-        with self.cached_session("", graph=ops.Graph(), config=config) as sess:
-            with ops.device(device):
+        with self.cached_session("", graph=tf.Graph(), config=config) as sess:
+            with tf.device(device):
                 inputs = tf.Variable(
-                    tf.random.uniform(
-                        image_shape, dtype=tf.dtypes.float32) * 255,
+                    tf.random.uniform(image_shape, dtype=tf.dtypes.float32) *
+                    255,
                     trainable=False,
                     dtype=tf.dtypes.float32)
                 delta = tf.constant(0.1, dtype=tf.dtypes.float32)
@@ -296,11 +292,10 @@ class AdjustHueInYiqBenchmark(tf.test.Benchmark):
         self._benchmark_adjust_hue_in_yiq("/cpu:0", None)
 
     def benchmark_adjust_hue_in_yiq_gpu_all(self):
-        self._benchmark_adjust_hue_in_yiq(test.gpu_device_name(), None)
+        self._benchmark_adjust_hue_in_yiq(tf.test.gpu_device_name(), None)
 
 
 class AdjustSaturationInYiqBenchmark(tf.test.Benchmark):
-
     def _benchmark_adjust_saturation_in_yiq(self, device, cpu_count):
         image_shape = [299, 299, 3]
         warmup_rounds = 100
@@ -309,11 +304,11 @@ class AdjustSaturationInYiqBenchmark(tf.test.Benchmark):
         if cpu_count is not None:
             config.inter_op_parallelism_threads = 1
             config.intra_op_parallelism_threads = cpu_count
-        with self.cached_session("", graph=ops.Graph(), config=config) as sess:
-            with ops.device(device):
+        with self.cached_session("", graph=tf.Graph(), config=config) as sess:
+            with tf.device(device):
                 inputs = tf.Variable(
-                    tf.random.uniform(
-                        image_shape, dtype=tf.dtypes.float32) * 255,
+                    tf.random.uniform(image_shape, dtype=tf.dtypes.float32) *
+                    255,
                     trainable=False,
                     dtype=tf.dtypes.float32)
                 scale = tf.constant(0.1, dtype=tf.dtypes.float32)
@@ -329,8 +324,9 @@ class AdjustSaturationInYiqBenchmark(tf.test.Benchmark):
         end = time.time()
         step_time = (end - start) / benchmark_rounds
         tag = "%s" % (cpu_count) if cpu_count is not None else "_all"
-        print("benchmarkAdjustSaturationInYiq_299_299_3_cpu%s step_time: %.2f us" %
-              (tag, step_time * 1e6))
+        print(
+            "benchmarkAdjustSaturationInYiq_299_299_3_cpu%s step_time: %.2f us"
+            % (tag, step_time * 1e6))
         self.report_benchmark(
             name="benchmarkAdjustSaturationInYiq_299_299_3_cpu%s" % (tag),
             iters=benchmark_rounds,
@@ -343,7 +339,8 @@ class AdjustSaturationInYiqBenchmark(tf.test.Benchmark):
         self._benchmark_adjust_saturation_in_yiq("/cpu:0", None)
 
     def benchmark_adjust_saturation_in_yiq_gpu_all(self):
-        self._benchmark_adjust_saturation_in_yiq(test.gpu_device_name(), None)
+        self._benchmark_adjust_saturation_in_yiq(tf.test.gpu_device_name(),
+                                                 None)
 
 
 if __name__ == "__main__":

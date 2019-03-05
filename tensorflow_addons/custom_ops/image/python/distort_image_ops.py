@@ -35,13 +35,14 @@ def random_hsv_in_yiq(image,
                       lower_value=1,
                       upper_value=1,
                       seed=None):
-    """Adjust hue, saturation, value of an RGB image randomly in YIQ color space.
+    """Adjust hue, saturation, value of an RGB image randomly in YIQ color
+    space.
 
     Equivalent to `adjust_yiq_hsv()` but uses a `delta_h` randomly
-    picked in the interval `[-max_delta_hue, max_delta_hue]`, a `scale_saturation`
-    randomly picked in the interval `[lower_saturation, upper_saturation]`, and
-    a `scale_value` randomly picked in the interval
-    `[lower_saturation, upper_saturation]`.
+    picked in the interval `[-max_delta_hue, max_delta_hue]`, a
+    `scale_saturation` randomly picked in the interval
+    `[lower_saturation, upper_saturation]`, and a `scale_value`
+    randomly picked in the interval `[lower_saturation, upper_saturation]`.
 
     Args:
       image: RGB image or images. Size of the last dimension must be 3.
@@ -82,18 +83,24 @@ def random_hsv_in_yiq(image,
     if max_delta_hue == 0:
         delta_hue = 0
     else:
-        delta_hue = tf.random.uniform(
-            [], -max_delta_hue, max_delta_hue, seed=seed)
+        delta_hue = tf.random.uniform([],
+                                      -max_delta_hue,
+                                      max_delta_hue,
+                                      seed=seed)
     if lower_saturation == upper_saturation:
         scale_saturation = lower_saturation
     else:
-        scale_saturation = tf.random.uniform(
-            [], lower_saturation, upper_saturation, seed=seed)
+        scale_saturation = tf.random.uniform([],
+                                             lower_saturation,
+                                             upper_saturation,
+                                             seed=seed)
     if lower_value == upper_value:
         scale_value = lower_value
     else:
-        scale_value = tf.random.uniform(
-            [], lower_value, upper_value, seed=seed)
+        scale_value = tf.random.uniform([],
+                                        lower_value,
+                                        upper_value,
+                                        seed=seed)
     return adjust_hsv_in_yiq(image, delta_hue, scale_saturation, scale_value)
 
 
@@ -106,9 +113,9 @@ def adjust_hsv_in_yiq(image,
     """Adjust hue, saturation, value of an RGB image in YIQ color space.
 
     This is a convenience method that converts an RGB image to float
-    representation, converts it to YIQ, rotates the color around the Y channel by
-    delta_hue in radians, scales the chrominance channels (I, Q) by
-    scale_saturation, scales all channels (Y, I, Q) by scale_value,
+    representation, converts it to YIQ, rotates the color around the
+    Y channel by delta_hue in radians, scales the chrominance channels
+    (I, Q) by scale_saturation, scales all channels (Y, I, Q) by scale_value,
     converts back to RGB, and then back to the original data type.
 
     `image` is an RGB image.  The image hue is adjusted by converting the

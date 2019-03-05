@@ -15,10 +15,10 @@ limitations under the License.
 
 #define EIGEN_USE_GPU
 
+#include "tensorflow_addons/custom_ops/image/cc/kernels/adjust_hsv_in_yiq_op.h"
 #include "tensorflow/core/kernels/gpu_utils.h"
 #include "tensorflow/core/platform/stream_executor.h"
 #include "tensorflow/core/util/cuda_kernel_helper.h"
-#include "tensorflow_addons/custom_ops/image/cc/kernels/adjust_hsv_in_yiq_op.h"
 
 namespace tensorflow {
 
@@ -76,8 +76,8 @@ void AdjustHsvInYiqGPU::operator()(OpKernelContext* ctx, int channel_count,
                          a_ptr, k, 0.0f, &c_ptr, n)
           .ok();
   if (!blas_launch_status) {
-    ctx->SetStatus(errors::Internal("Blas SGEMM launch failed : m=", m,
-                                    ", n=", n, ", k=", k));
+    ctx->SetStatus(errors::Internal("Blas SGEMM launch failed : m=", m, ", n=",
+                                    n, ", k=", k));
   }
 }
 }  // namespace functor
