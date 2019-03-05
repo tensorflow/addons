@@ -10,12 +10,14 @@ py_library(
         "python/maxout.py",
         "python/normalizations.py",
         "python/poincare.py",
-        "python/wrappers.py"
+        "python/sparsemax.py",
+        "python/wrappers.py",
     ],
     srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/utils:utils_py",
-    ]
+        "//tensorflow_addons/activations:activations_py",
+    ],
 )
 
 py_test(
@@ -29,6 +31,19 @@ py_test(
     deps = [
         ":layers_py",
     ]
+)
+
+py_test(
+    name = "sparsemax_py_test",
+    size = "small",
+    srcs = [
+        "python/sparsemax_test.py",
+    ],
+    main = "python/sparsemax_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":layers_py",
+    ],
 )
 
 py_test(
