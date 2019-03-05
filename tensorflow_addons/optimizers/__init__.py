@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Additional optimizers that conform to Keras API"""
+"""Additional optimizers that conform to Keras API."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow_addons.optimizers.python import lazy_adam_optimizer
+from tensorflow_addons.optimizers.python.lazy_adam_optimizer import LazyAdamOptimizer

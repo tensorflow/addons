@@ -12,15 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+.PHONY: all
 
+all: code-format sanity-check unit-test
 
-import tensorflow_addons as tfa
+# TODO: install those dependencies in docker image (dockerfile).
+install-ci-dependency:
+	bash tools/ci_build/install/install_ci_dependency.sh --quiet
 
-from tensorflow_addons.custom_ops.text import skip_gram_sample
-from tensorflow_addons.layers import PoincareNormalize
-from tensorflow_addons.losses import triplet_semihard_loss
-from tensorflow_addons.optimizers import lazy_adam_optimizer
+code-format: install-ci-dependency
+	bash tools/ci_build/code_format.sh --incremental --in-place
 
-# TODO: Build this out
-if __name__ == "__main__":
-    pass
+sanity-check: install-ci-dependency
+	bash tools/ci_build/ci_sanity.sh --incremental
+
+unit-test:
+	bash tools/ci_testing/addons_cpu.sh

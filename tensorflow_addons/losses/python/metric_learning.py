@@ -34,6 +34,7 @@ def pairwise_distance(feature, squared=False):
     Returns:
       pairwise_distances: 2-D Tensor of size [number of data, number of data].
     """
+    # yapf: disable
     pairwise_distances_squared = tf.math.add(
         tf.math.reduce_sum(
             tf.math.square(feature),
@@ -42,8 +43,8 @@ def pairwise_distance(feature, squared=False):
         tf.math.reduce_sum(
             tf.math.square(tf.transpose(feature)),
             axis=[0],
-            keepdims=True)) - 2.0 * tf.matmul(
-        feature, tf.transpose(feature))
+            keepdims=True)) - 2.0 * tf.matmul(feature, tf.transpose(feature))
+    # yapf: enable
 
     # Deal with numerical inaccuracies. Set small negatives to zero.
     pairwise_distances_squared = tf.math.maximum(pairwise_distances_squared,
@@ -56,8 +57,8 @@ def pairwise_distance(feature, squared=False):
         pairwise_distances = pairwise_distances_squared
     else:
         pairwise_distances = tf.math.sqrt(
-            pairwise_distances_squared + tf.cast(
-                error_mask, dtype=tf.dtypes.float32) * 1e-16)
+            pairwise_distances_squared +
+            tf.cast(error_mask, dtype=tf.dtypes.float32) * 1e-16)
 
     # Undo conditionally adding 1e-16.
     pairwise_distances = tf.math.multiply(
@@ -66,8 +67,8 @@ def pairwise_distance(feature, squared=False):
 
     num_data = tf.shape(feature)[0]
     # Explicitly set diagonals to zero.
-    mask_offdiagonals = tf.ones_like(
-        pairwise_distances) - tf.linalg.diag(tf.ones([num_data]))
+    mask_offdiagonals = tf.ones_like(pairwise_distances) - tf.linalg.diag(
+        tf.ones([num_data]))
     pairwise_distances = tf.math.multiply(pairwise_distances,
                                           mask_offdiagonals)
     return pairwise_distances
