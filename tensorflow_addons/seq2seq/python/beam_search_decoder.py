@@ -682,10 +682,10 @@ class BeamSearchDecoderV2(BeamSearchDecoderMixin, decoder.BaseDecoder):
                        type(embedding_fn))
 
   def initialize(self,
-      embedding,
-      start_tokens,
-      end_token,
-      initial_state):
+                 embedding,
+                 start_tokens,
+                 end_token,
+                 initial_state):
     """Initialize the decoder.
 
     Args:
@@ -781,8 +781,8 @@ class BeamSearchDecoderV2(BeamSearchDecoderMixin, decoder.BaseDecoder):
 
 
 def _beam_search_step(time, logits, next_cell_state, beam_state, batch_size,
-    beam_width, end_token, length_penalty_weight,
-    coverage_penalty_weight):
+                      beam_width, end_token, length_penalty_weight,
+                      coverage_penalty_weight):
   """Performs a single step of Beam Search Decoding.
 
   Args:
@@ -992,7 +992,7 @@ def get_attention_probs(next_cell_state, coverage_penalty_weight):
 
 
 def _get_scores(log_probs, sequence_lengths, length_penalty_weight,
-    coverage_penalty_weight, finished, accumulated_attention_probs):
+                coverage_penalty_weight, finished, accumulated_attention_probs):
   """Calculates scores for beam search hypotheses.
 
   Args:
@@ -1139,7 +1139,7 @@ def _mask_probs(probs, eos_token, finished):
 
 
 def _maybe_tensor_gather_helper(gather_indices, gather_from, batch_size,
-    range_size, gather_shape):
+                                range_size, gather_shape):
   """Maybe applies _tensor_gather_helper.
 
   This applies _tensor_gather_helper when the gather_from dims is at least as
@@ -1177,11 +1177,11 @@ def _maybe_tensor_gather_helper(gather_indices, gather_from, batch_size,
 
 
 def _tensor_gather_helper(gather_indices,
-    gather_from,
-    batch_size,
-    range_size,
-    gather_shape,
-    name=None):
+                          gather_from,
+                          batch_size,
+                          range_size,
+                          gather_shape,
+                          name=None):
   """Helper for gathering the right indices from the tensor.
 
   This works by reshaping gather_from to gather_shape (e.g. [-1]) and then

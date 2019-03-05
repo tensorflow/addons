@@ -153,12 +153,12 @@ class BaseDecoder(layers.Layer):
   """
 
   def __init__(self,
-      output_time_major=False,
-      impute_finished=False,
-      maximum_iterations=None,
-      parallel_iterations=32,
-      swap_memory=False,
-      **kwargs):
+               output_time_major=False,
+               impute_finished=False,
+               maximum_iterations=None,
+               parallel_iterations=32,
+               swap_memory=False,
+               **kwargs):
     self.output_time_major = output_time_major
     self.impute_finished = impute_finished
     self.maximum_iterations = maximum_iterations
@@ -266,13 +266,13 @@ def _create_zero_outputs(size, dtype, batch_size):
 
 
 def dynamic_decode(decoder,
-    output_time_major=False,
-    impute_finished=False,
-    maximum_iterations=None,
-    parallel_iterations=32,
-    swap_memory=False,
-    scope=None,
-    **kwargs):
+                   output_time_major=False,
+                   impute_finished=False,
+                   maximum_iterations=None,
+                   parallel_iterations=32,
+                   swap_memory=False,
+                   scope=None,
+                   **kwargs):
   """Perform dynamic decoding with `decoder`.
 
   Calls initialize() once and step() repeatedly on the Decoder object.

@@ -102,12 +102,12 @@ class _BaseAttentionMechanismV2(AttentionMechanism, layers.Layer):
   """
 
   def __init__(self,
-      memory,
-      probability_fn,
-      query_layer=None,
-      memory_layer=None,
-      memory_sequence_length=None,
-      **kwargs):
+               memory,
+               probability_fn,
+               query_layer=None,
+               memory_layer=None,
+               memory_sequence_length=None,
+               **kwargs):
     """Construct base AttentionMechanism class.
 
     Args:
@@ -517,14 +517,14 @@ class LuongAttentionV2(_BaseAttentionMechanismV2):
   """
 
   def __init__(self,
-      units,
-      memory,
-      memory_sequence_length=None,
-      scale=False,
-      probability_fn="softmax",
-      dtype=None,
-      name="LuongAttention",
-      **kwargs):
+               units,
+               memory,
+               memory_sequence_length=None,
+               scale=False,
+               probability_fn="softmax",
+               dtype=None,
+               name="LuongAttention",
+               **kwargs):
     """Construct the AttentionMechanism mechanism.
 
     Args:
@@ -679,15 +679,15 @@ class BahdanauAttentionV2(_BaseAttentionMechanismV2):
   """
 
   def __init__(self,
-      units,
-      memory,
-      memory_sequence_length=None,
-      normalize=False,
-      probability_fn="softmax",
-      kernel_initializer="glorot_uniform",
-      dtype=None,
-      name="BahdanauAttention",
-      **kwargs):
+               units,
+               memory,
+               memory_sequence_length=None,
+               normalize=False,
+               probability_fn="softmax",
+               kernel_initializer="glorot_uniform",
+               dtype=None,
+               name="BahdanauAttention",
+               **kwargs):
     """Construct the Attention mechanism.
 
     Args:
@@ -997,18 +997,18 @@ class BahdanauMonotonicAttentionV2(_BaseMonotonicAttentionMechanismV2):
   """
 
   def __init__(self,
-      units,
-      memory,
-      memory_sequence_length=None,
-      normalize=False,
-      sigmoid_noise=0.,
-      sigmoid_noise_seed=None,
-      score_bias_init=0.,
-      mode="parallel",
-      kernel_initializer="glorot_uniform",
-      dtype=None,
-      name="BahdanauMonotonicAttention",
-      **kwargs):
+               units,
+               memory,
+               memory_sequence_length=None,
+               normalize=False,
+               sigmoid_noise=0.,
+               sigmoid_noise_seed=None,
+               score_bias_init=0.,
+               mode="parallel",
+               kernel_initializer="glorot_uniform",
+               dtype=None,
+               name="BahdanauMonotonicAttention",
+               **kwargs):
     """Construct the Attention mechanism.
 
     Args:
@@ -1153,17 +1153,17 @@ class LuongMonotonicAttentionV2(_BaseMonotonicAttentionMechanismV2):
   """
 
   def __init__(self,
-      units,
-      memory,
-      memory_sequence_length=None,
-      scale=False,
-      sigmoid_noise=0.,
-      sigmoid_noise_seed=None,
-      score_bias_init=0.,
-      mode="parallel",
-      dtype=None,
-      name="LuongMonotonicAttention",
-      **kwargs):
+               units,
+               memory,
+               memory_sequence_length=None,
+               scale=False,
+               sigmoid_noise=0.,
+               sigmoid_noise_seed=None,
+               score_bias_init=0.,
+               mode="parallel",
+               dtype=None,
+               name="LuongMonotonicAttention",
+               **kwargs):
     """Construct the Attention mechanism.
 
     Args:
@@ -1470,16 +1470,16 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
   """
 
   def __init__(self,
-      cell,
-      attention_mechanism,
-      attention_layer_size=None,
-      alignment_history=False,
-      cell_input_fn=None,
-      output_attention=True,
-      initial_cell_state=None,
-      name=None,
-      attention_layer=None,
-      attention_fn=None):
+               cell,
+               attention_mechanism,
+               attention_layer_size=None,
+               alignment_history=False,
+               cell_input_fn=None,
+               output_attention=True,
+               initial_cell_state=None,
+               name=None,
+               attention_layer=None,
+               attention_fn=None):
     """Construct the `AttentionWrapper`.
 
     **NOTE** If you are using the `BeamSearchDecoder` with a cell wrapped in

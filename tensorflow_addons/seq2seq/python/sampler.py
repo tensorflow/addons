@@ -127,11 +127,11 @@ class CustomSampler(Sampler):
   """Base abstract class that allows the user to customize sampling."""
 
   def __init__(self,
-      initialize_fn,
-      sample_fn,
-      next_inputs_fn,
-      sample_ids_shape=None,
-      sample_ids_dtype=None):
+               initialize_fn,
+               sample_fn,
+               next_inputs_fn,
+               sample_ids_shape=None,
+               sample_ids_dtype=None):
     """Initializer.
 
     Args:
@@ -285,11 +285,11 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
   """
 
   def __init__(self,
-      sampling_probability,
-      embedding_fn=None,
-      time_major=False,
-      seed=None,
-      scheduling_seed=None):
+               sampling_probability,
+               embedding_fn=None,
+               time_major=False,
+               seed=None,
+               scheduling_seed=None):
     """Initializer.
 
     Args:
@@ -380,10 +380,10 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
   """
 
   def __init__(self,
-      sampling_probability,
-      time_major=False,
-      seed=None,
-      next_inputs_fn=None):
+               sampling_probability,
+               time_major=False,
+               seed=None,
+               next_inputs_fn=None):
     """Initializer.
 
     Args:
@@ -633,11 +633,11 @@ class InferenceSampler(Sampler):
   """A helper to use during inference with a custom sampling function."""
 
   def __init__(self,
-      sample_fn,
-      sample_shape,
-      sample_dtype,
-      end_fn,
-      next_inputs_fn=None):
+               sample_fn,
+               sample_shape,
+               sample_dtype,
+               end_fn,
+               next_inputs_fn=None):
     """Initializer.
 
     Args:
@@ -715,10 +715,10 @@ def _call_sampler(sample_n_fn, sample_shape, name=None):
 
 
 def bernoulli_sample(probs=None,
-    logits=None,
-    dtype=dtypes.int32,
-    sample_shape=(),
-    seed=None):
+                     logits=None,
+                     dtype=dtypes.int32,
+                     sample_shape=(),
+                     seed=None):
   """Samples from Bernoulli distribution."""
   if probs is None:
     probs = math_ops.sigmoid(logits, name="probs")

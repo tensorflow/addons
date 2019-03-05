@@ -509,7 +509,7 @@ class BeamSearchDecoderV2Test(test.TestCase):
         tiled_sequence_length = beam_search_decoder.tile_batch(
             encoder_sequence_length, multiplier=beam_width)
         attention_mechanism = attention_wrapper.BahdanauAttentionV2(
-            num_units=attention_depth,
+            units=attention_depth,
             memory=tiled_inputs,
             memory_sequence_length=tiled_sequence_length)
         initial_state = beam_search_decoder.tile_batch(
