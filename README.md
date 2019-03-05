@@ -73,8 +73,8 @@ pip install artifacts/tensorflow_addons-*.whl
 ## Contributing
 TF-Addons is a community led open source project. As such, the project
 depends on public contributions, bug-fixes, and documentation. Please
-see [CONTRIBUTING.md](CONTRIBUTING.md) for a guide on how to contribute.
-This project adheres to [TensorFlow's code of conduct](CODE_OF_CONDUCT.md).
+see [contribution guidelines](CONTRIBUTING.md) for a guide on how to
+contribute. This project adheres to [TensorFlow's code of conduct](CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code.
 
 ## Community
