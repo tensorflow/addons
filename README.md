@@ -12,8 +12,8 @@ developments that cannot be integrated into core TensorFlow
 ## Contents
 | Sub-Package    | Addon  | Reference                                  |
 |:----------------------- |:----------- |:---------------------------- |
-| tfa.image | dense_image_warp |                                    |
 | tfa.activations | Sparsemax | https://arxiv.org/abs/1602.02068    |
+| tfa.image | dense_image_warp |                                    |
 | tfa.image | transform |                                           |
 | tfa.layers | Maxout | https://arxiv.org/abs/1302.4389             |
 | tfa.layers | PoinareNormalize | https://arxiv.org/abs/1705.08039  |
