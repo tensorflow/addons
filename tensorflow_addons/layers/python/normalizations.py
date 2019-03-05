@@ -30,8 +30,9 @@ class GroupNormalization(Layer):
 
     Group Normalization divides the channels into groups and computes
     within each group the mean and variance for normalization.
-    Group Normalization's computation is independent
-    of batch sizes, and its accuracy is stable in a wide range of batch sizes.
+    Empirically, its accuracy is more stable than batch norm in a wide 
+    range of small batch sizes, if learning rate is adjusted linearly 
+    with batch sizes.
 
     Relation to Layer Normalization:
     If the number of groups is set to 1, then this operation becomes identical to
@@ -276,8 +277,9 @@ class LayerNormalization(GroupNormalization):
 
     Layer Normalization is an specific case of ```GroupNormalization```since it
     normalizes all features of a layer. The Groupsize is 1.
-    Layer Normalization's computation is independent
-    of batch sizes, and its accuracy is stable in a wide range of batch sizes.
+    Empirically, its accuracy is more stable than batch norm in a wide 
+    range of small batch sizes, if learning rate is adjusted linearly 
+    with batch sizes.
 
     Arguments
         axis: Integer, the axis that should be normalized
@@ -322,8 +324,9 @@ class InstanceNormalization(GroupNormalization):
 
     Instance Normalization is an specific case of ```GroupNormalization```since it
     normalizes all features of one channel. The Groupsize is equal to the channel size.
-    Instance Normalization's computation is independent
-    of batch sizes, and its accuracy is stable in a wide range of batch sizes.
+    Empirically, its accuracy is more stable than batch norm in a wide 
+    range of small batch sizes, if learning rate is adjusted linearly 
+    with batch sizes.
 
     Arguments
         axis: Integer, the axis that should be normalized
