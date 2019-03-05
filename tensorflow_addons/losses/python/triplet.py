@@ -18,11 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.python.framework import dtypes
 from tensorflow.python.keras import losses
-from tensorflow.python.keras.utils import losses_utils
-from tensorflow.python.ops import array_ops
-from tensorflow.python.ops import math_ops
 from tensorflow_addons.losses.python import metric_learning
 from tensorflow_addons.utils.python import keras_utils
 
@@ -39,10 +35,9 @@ def _masked_maximum(data, mask, dim=1):
       masked_maximums: N-D `Tensor`.
         The maximized dimension is of size 1 after the operation.
     """
-    axis_minimums = math_ops.reduce_min(data, dim, keepdims=True)
-    masked_maximums = math_ops.reduce_max(
-        math_ops.multiply(data - axis_minimums, mask),
-        dim,
+    axis_minimums = tf.math.reduce_min(data, dim, keepdims=True)
+    masked_maximums = tf.math.reduce_max(
+        tf.math.multiply(data - axis_minimums, mask), dim,
         keepdims=True) + axis_minimums
     return masked_maximums
 
@@ -59,10 +54,9 @@ def _masked_minimum(data, mask, dim=1):
       masked_minimums: N-D `Tensor`.
         The minimized dimension is of size 1 after the operation.
     """
-    axis_maximums = math_ops.reduce_max(data, dim, keepdims=True)
-    masked_minimums = math_ops.reduce_min(
-        math_ops.multiply(data - axis_maximums, mask),
-        dim,
+    axis_maximums = tf.math.reduce_max(data, dim, keepdims=True)
+    masked_minimums = tf.math.reduce_min(
+        tf.math.multiply(data - axis_maximums, mask), dim,
         keepdims=True) + axis_maximums
     return masked_minimums
 
@@ -81,67 +75,59 @@ def triplet_semihard_loss(y_true, y_pred, margin=1.0):
     """
     labels, embeddings = y_true, y_pred
     # Reshape [batch_size] label tensor to a [batch_size, 1] label tensor.
-    lshape = array_ops.shape(labels)
+    lshape = tf.shape(labels)
     assert lshape.shape == 1
-    labels = array_ops.reshape(labels, [lshape[0], 1])
+    labels = tf.reshape(labels, [lshape[0], 1])
 
     # Build pairwise squared distance matrix.
     pdist_matrix = metric_learning.pairwise_distance(embeddings, squared=True)
     # Build pairwise binary adjacency matrix.
-    adjacency = math_ops.equal(labels, array_ops.transpose(labels))
+    adjacency = tf.math.equal(labels, tf.transpose(labels))
     # Invert so we can select negatives only.
-    adjacency_not = math_ops.logical_not(adjacency)
+    adjacency_not = tf.math.logical_not(adjacency)
 
-    batch_size = array_ops.size(labels)
+    batch_size = tf.size(labels)
 
     # Compute the mask.
-    pdist_matrix_tile = array_ops.tile(pdist_matrix, [batch_size, 1])
-    mask = math_ops.logical_and(
-        array_ops.tile(adjacency_not, [batch_size, 1]),
-        math_ops.greater(
-            pdist_matrix_tile, array_ops.reshape(
-                array_ops.transpose(pdist_matrix), [-1, 1])))
-    mask_final = array_ops.reshape(
-        math_ops.greater(
-            math_ops.reduce_sum(
-                math_ops.cast(mask,
-                              dtype=dtypes.float32),
-                1,
-                keepdims=True),
-            0.0),
-        [batch_size, batch_size])
-    mask_final = array_ops.transpose(mask_final)
+    pdist_matrix_tile = tf.tile(pdist_matrix, [batch_size, 1])
+    mask = tf.math.logical_and(
+        tf.tile(adjacency_not, [batch_size, 1]),
+        tf.math.greater(pdist_matrix_tile,
+                        tf.reshape(tf.transpose(pdist_matrix), [-1, 1])))
+    mask_final = tf.reshape(
+        tf.math.greater(
+            tf.math.reduce_sum(
+                tf.cast(mask, dtype=tf.dtypes.float32), 1, keepdims=True),
+            0.0), [batch_size, batch_size])
+    mask_final = tf.transpose(mask_final)
 
-    adjacency_not = math_ops.cast(adjacency_not, dtype=dtypes.float32)
-    mask = math_ops.cast(mask, dtype=dtypes.float32)
+    adjacency_not = tf.cast(adjacency_not, dtype=tf.dtypes.float32)
+    mask = tf.cast(mask, dtype=tf.dtypes.float32)
 
     # negatives_outside: smallest D_an where D_an > D_ap.
-    negatives_outside = array_ops.reshape(
+    negatives_outside = tf.reshape(
         _masked_minimum(pdist_matrix_tile, mask), [batch_size, batch_size])
-    negatives_outside = array_ops.transpose(negatives_outside)
+    negatives_outside = tf.transpose(negatives_outside)
 
     # negatives_inside: largest D_an.
-    negatives_inside = array_ops.tile(
+    negatives_inside = tf.tile(
         _masked_maximum(pdist_matrix, adjacency_not), [1, batch_size])
-    semi_hard_negatives = array_ops.where(mask_final,
-                                          negatives_outside,
-                                          negatives_inside)
+    semi_hard_negatives = tf.where(mask_final, negatives_outside,
+                                   negatives_inside)
 
-    loss_mat = math_ops.add(margin, pdist_matrix - semi_hard_negatives)
+    loss_mat = tf.math.add(margin, pdist_matrix - semi_hard_negatives)
 
-    mask_positives = math_ops.cast(
-        adjacency,
-        dtype=dtypes.float32) - array_ops.diag(array_ops.ones([batch_size]))
+    mask_positives = tf.cast(
+        adjacency, dtype=tf.dtypes.float32) - tf.linalg.diag(
+            tf.ones([batch_size]))
 
     # In lifted-struct, the authors multiply 0.5 for upper triangular
     #   in semihard, they take all positive pairs except the diagonal.
-    num_positives = math_ops.reduce_sum(mask_positives)
+    num_positives = tf.math.reduce_sum(mask_positives)
 
-    triplet_loss = math_ops.truediv(
-        math_ops.reduce_sum(
-            math_ops.maximum(
-                math_ops.multiply(loss_mat, mask_positives),
-                0.0)),
+    triplet_loss = tf.math.truediv(
+        tf.math.reduce_sum(
+            tf.math.maximum(tf.math.multiply(loss_mat, mask_positives), 0.0)),
         num_positives)
 
     return triplet_loss
@@ -171,5 +157,5 @@ class TripletSemiHardLoss(losses.LossFunctionWrapper):
         super(TripletSemiHardLoss, self).__init__(
             triplet_semihard_loss,
             name=name,
-            reduction=losses_utils.ReductionV2.NONE,
+            reduction=tf.keras.losses.Reduction.NONE,
             margin=margin)

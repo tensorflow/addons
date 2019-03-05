@@ -19,11 +19,11 @@ limitations under the License.
 #define EIGEN_USE_GPU
 #endif  // GOOGLE_CUDA
 
+#include "tensorflow_addons/custom_ops/image/cc/kernels/image_projective_transform_op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/platform/types.h"
-#include "tensorflow_addons/custom_ops/image/cc/kernels/image_projective_transform_op.h"
 
 namespace tensorflow {
 
@@ -73,12 +73,11 @@ class ImageProjectiveTransform : public OpKernel {
     const Tensor& transform_t = ctx->input(1);
     OP_REQUIRES(ctx, images_t.shape().dims() == 4,
                 errors::InvalidArgument("Input images must have rank 4"));
-    OP_REQUIRES(ctx,
-                (TensorShapeUtils::IsMatrix(transform_t.shape()) &&
-                 (transform_t.dim_size(0) == images_t.dim_size(0) ||
-                  transform_t.dim_size(0) == 1) &&
-                 transform_t.dim_size(1) ==
-                     ProjectiveGenerator<Device, T>::kNumParameters),
+    OP_REQUIRES(ctx, (TensorShapeUtils::IsMatrix(transform_t.shape()) &&
+                      (transform_t.dim_size(0) == images_t.dim_size(0) ||
+                       transform_t.dim_size(0) == 1) &&
+                      transform_t.dim_size(1) ==
+                          ProjectiveGenerator<Device, T>::kNumParameters),
                 errors::InvalidArgument(
                     "Input transform should be num_images x 8 or 1 x 8"));
 
@@ -106,9 +105,8 @@ class ImageProjectiveTransform : public OpKernel {
 
     Tensor* output_t;
     OP_REQUIRES_OK(ctx, ctx->allocate_output(
-                            0,
-                            TensorShape({images_t.dim_size(0), out_height,
-                                         out_width, images_t.dim_size(3)}),
+                            0, TensorShape({images_t.dim_size(0), out_height,
+                                            out_width, images_t.dim_size(3)}),
                             &output_t));
     auto output = output_t->tensor<T, 4>();
     auto images = images_t.tensor<T, 4>();
