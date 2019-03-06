@@ -51,7 +51,10 @@ for end-to-end examples of various addons.
 
 ## Installation
 #### Stable Builds
-`tensorflow-addons` will soon be available in PyPi.
+To install the latest version, run the following:
+```
+pip install tensorflow-addons
+```
 
 #### Installing from Source
 You can also install from source. This requires the [Bazel](
