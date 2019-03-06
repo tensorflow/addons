@@ -1,5 +1,8 @@
 # TensorFlow Addons
 
+[![PyPI Status Badge](https://badge.fury.io/py/tensorflow-addons.svg)](https://pypi.org/project/tensorflow-addons/)
+[![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
+
 TensorFlow Addons is a repository of contributions that conform to
 well-established API patterns, but implement new functionality
 not available in core TensorFlow. TensorFlow natively supports
