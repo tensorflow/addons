@@ -58,9 +58,6 @@ class GroupNormalization(Layer):
             If False, `beta` is ignored.
         scale: If True, multiply by `gamma`.
             If False, `gamma` is not used.
-            When the next layer is linear (also e.g. `nn.relu`),
-            this can be disabled since the scaling
-            will be done by the next layer.
         beta_initializer: Initializer for the beta weight.
         gamma_initializer: Initializer for the gamma weight.
         beta_regularizer: Optional regularizer for the beta weight.
@@ -285,9 +282,6 @@ class LayerNormalization(GroupNormalization):
             If False, `beta` is ignored.
         scale: If True, multiply by `gamma`.
             If False, `gamma` is not used.
-            When the next layer is linear (also e.g. `nn.relu`),
-            this can be disabled since the scaling
-            will be done by the next layer.
         beta_initializer: Initializer for the beta weight.
         gamma_initializer: Initializer for the gamma weight.
         beta_regularizer: Optional regularizer for the beta weight.
@@ -335,9 +329,6 @@ class InstanceNormalization(GroupNormalization):
             If False, `beta` is ignored.
         scale: If True, multiply by `gamma`.
             If False, `gamma` is not used.
-            When the next layer is linear (also e.g. `nn.relu`),
-            this can be disabled since the scaling
-            will be done by the next layer.
         beta_initializer: Initializer for the beta weight.
         gamma_initializer: Initializer for the gamma weight.
         beta_regularizer: Optional regularizer for the beta weight.
