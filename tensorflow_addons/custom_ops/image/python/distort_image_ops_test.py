@@ -21,10 +21,9 @@ from __future__ import print_function
 import time
 
 import numpy as np
+from six.moves import xrange
 
 import tensorflow as tf
-
-from six.moves import xrange
 from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow_addons.custom_ops.image.python import distort_image_ops
 
@@ -64,9 +63,8 @@ class AdjustHueInYiqTest(tf.test.TestCase):
         return y_v.reshape(x_np.shape)
 
     def _adjust_hue_in_yiq_tf(self, x_np, delta_h):
-        with self.cached_session(use_gpu=True):
-            x = tf.constant(x_np)
-            y = distort_image_ops.adjust_hsv_in_yiq(x, delta_h, 1, 1)
+        x = tf.constant(x_np)
+        y = distort_image_ops.adjust_hsv_in_yiq(x, delta_h, 1, 1)
         return y
 
     @tf_test_util.run_all_in_graph_and_eager_modes
@@ -126,9 +124,8 @@ class AdjustValueInYiqTest(tf.test.TestCase):
         return x_np * scale
 
     def _adjust_value_in_yiq_tf(self, x_np, scale):
-        with self.cached_session(use_gpu=True):
-            x = tf.constant(x_np)
-            y = distort_image_ops.adjust_hsv_in_yiq(x, 0, 1, scale)
+        x = tf.constant(x_np)
+        y = distort_image_ops.adjust_hsv_in_yiq(x, 0, 1, scale)
         return y
 
     @tf_test_util.run_all_in_graph_and_eager_modes
@@ -185,9 +182,8 @@ class AdjustValueInYiqTest(tf.test.TestCase):
 
 class AdjustSaturationInYiqTest(tf.test.TestCase):
     def _adjust_saturation_in_yiq_tf(self, x_np, scale):
-        with self.cached_session(use_gpu=True):
-            x = tf.constant(x_np)
-            y = distort_image_ops.adjust_hsv_in_yiq(x, 0, scale, 1)
+        x = tf.constant(x_np)
+        y = distort_image_ops.adjust_hsv_in_yiq(x, 0, scale, 1)
         return y
 
     def _adjust_saturation_in_yiq_np(self, x_np, scale):
@@ -213,28 +209,27 @@ class AdjustSaturationInYiqTest(tf.test.TestCase):
             "gb_same",
             "rgb_same",
         ]
-        with self.cached_session():
-            for x_shape in x_shapes:
-                for test_style in test_styles:
-                    x_np = np.random.rand(*x_shape) * 255.
-                    scale = np.random.rand() * 2.0 - 1.0
-                    if test_style == "all_random":
-                        pass
-                    elif test_style == "rg_same":
-                        x_np[..., 1] = x_np[..., 0]
-                    elif test_style == "rb_same":
-                        x_np[..., 2] = x_np[..., 0]
-                    elif test_style == "gb_same":
-                        x_np[..., 2] = x_np[..., 1]
-                    elif test_style == "rgb_same":
-                        x_np[..., 1] = x_np[..., 0]
-                        x_np[..., 2] = x_np[..., 0]
-                    else:
-                        raise AssertionError(
-                            "Invalid test style: %s" % (test_style))
-                    y_baseline = self._adjust_saturation_in_yiq_np(x_np, scale)
-                    y_tf = self._adjust_saturation_in_yiq_tf(x_np, scale)
-                    self.assertAllClose(y_tf, y_baseline, rtol=2e-4, atol=1e-4)
+        for x_shape in x_shapes:
+            for test_style in test_styles:
+                x_np = np.random.rand(*x_shape) * 255.
+                scale = np.random.rand() * 2.0 - 1.0
+                if test_style == "all_random":
+                    pass
+                elif test_style == "rg_same":
+                    x_np[..., 1] = x_np[..., 0]
+                elif test_style == "rb_same":
+                    x_np[..., 2] = x_np[..., 0]
+                elif test_style == "gb_same":
+                    x_np[..., 2] = x_np[..., 1]
+                elif test_style == "rgb_same":
+                    x_np[..., 1] = x_np[..., 0]
+                    x_np[..., 2] = x_np[..., 0]
+                else:
+                    raise AssertionError(
+                        "Invalid test style: %s" % (test_style))
+                y_baseline = self._adjust_saturation_in_yiq_np(x_np, scale)
+                y_tf = self._adjust_saturation_in_yiq_tf(x_np, scale)
+                self.assertAllClose(y_tf, y_baseline, rtol=2e-4, atol=1e-4)
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_invalid_shapes(self):
