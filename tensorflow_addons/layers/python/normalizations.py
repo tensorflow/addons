@@ -48,11 +48,7 @@ class GroupNormalization(Layer):
         groups: Integer, the number of groups for Group Normalization.
             Can be in the range [1, N] where N is the input dimension.
             The input dimension must be divisible by the number of groups.
-        axis: Integer, the axis that should be normalized
-            (typically the features axis).
-            For instance, after a `Conv2D` layer with
-            `data_format="channels_first"`,
-            set `axis=1` in `BatchNormalization`.
+        axis: Integer, the axis that should be normalized.
         epsilon: Small float added to variance to avoid dividing by zero.
         center: If True, add offset of `beta` to normalized tensor.
             If False, `beta` is ignored.
@@ -272,11 +268,7 @@ class LayerNormalization(GroupNormalization):
     with batch sizes.
 
     Arguments
-        axis: Integer, the axis that should be normalized
-            (typically the features axis).
-            For instance, after a `Conv2D` layer with
-            `data_format="channels_first"`,
-            set `axis=1` in `BatchNormalization`.
+        axis: Integer, the axis that should be normalized.
         epsilon: Small float added to variance to avoid dividing by zero.
         center: If True, add offset of `beta` to normalized tensor.
             If False, `beta` is ignored.
@@ -319,11 +311,7 @@ class InstanceNormalization(GroupNormalization):
     with batch sizes.
 
     Arguments
-        axis: Integer, the axis that should be normalized
-            (typically the features axis).
-            For instance, after a `Conv2D` layer with
-            `data_format="channels_first"`,
-            set `axis=1` in `BatchNormalization`.
+        axis: Integer, the axis that should be normalized.
         epsilon: Small float added to variance to avoid dividing by zero.
         center: If True, add offset of `beta` to normalized tensor.
             If False, `beta` is ignored.
