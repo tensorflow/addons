@@ -67,7 +67,7 @@ class AdjustHueInYiqTest(tf.test.TestCase):
         y = distort_image_ops.adjust_hsv_in_yiq(x, delta_h, 1, 1)
         return y
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
+    @tf_test_util.run_in_graph_and_eager_modes
     def test_adjust_random_hue_in_yiq(self):
         x_shapes = [
             [2, 2, 3],
@@ -105,7 +105,7 @@ class AdjustHueInYiqTest(tf.test.TestCase):
                 y_tf = self._adjust_hue_in_yiq_tf(x_np, delta_h)
                 self.assertAllClose(y_tf, y_np, rtol=2e-4, atol=1e-4)
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
+    # TODO: run in both graph and eager modes
     def test_invalid_shapes(self):
         x_np = np.random.rand(2, 3) * 255.
         delta_h = np.random.rand() * 2.0 - 1.0
@@ -128,7 +128,7 @@ class AdjustValueInYiqTest(tf.test.TestCase):
         y = distort_image_ops.adjust_hsv_in_yiq(x, 0, 1, scale)
         return y
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
+    @tf_test_util.run_in_graph_and_eager_modes
     def test_adjust_random_value_in_yiq(self):
         x_shapes = [
             [2, 2, 3],
@@ -166,7 +166,7 @@ class AdjustValueInYiqTest(tf.test.TestCase):
                 y_tf = self._adjust_value_in_yiq_tf(x_np, scale)
                 self.assertAllClose(y_tf, y_np, rtol=2e-4, atol=1e-4)
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
+    # TODO: run in both graph and eager modes
     def test_invalid_shapes(self):
         x_np = np.random.rand(2, 3) * 255.
         scale = np.random.rand() * 2.0 - 1.0
@@ -193,7 +193,7 @@ class AdjustSaturationInYiqTest(tf.test.TestCase):
         y_v = x_np * scale + gray * (1 - scale)
         return y_v
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
+    @tf_test_util.run_in_graph_and_eager_modes
     def test_adjust_random_saturation_in_yiq(self):
         x_shapes = [
             [2, 2, 3],
@@ -231,7 +231,7 @@ class AdjustSaturationInYiqTest(tf.test.TestCase):
                 y_tf = self._adjust_saturation_in_yiq_tf(x_np, scale)
                 self.assertAllClose(y_tf, y_baseline, rtol=2e-4, atol=1e-4)
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
+    # TODO: run in both graph and eager modes
     def test_invalid_shapes(self):
         x_np = np.random.rand(2, 3) * 255.
         scale = np.random.rand() * 2.0 - 1.0
