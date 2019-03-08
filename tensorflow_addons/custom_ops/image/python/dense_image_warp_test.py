@@ -219,6 +219,7 @@ class DenseImageWarpTest(tf.test.TestCase):
             for _ in range(10):
                 sess.run(opt_func)
 
+    # TODO: run in both graph and eager modes
     def test_size_exception(self):
         """Make sure it throws an exception for images that are too small."""
 
