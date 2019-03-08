@@ -21,7 +21,7 @@ Want to contribute but not sure of what? Here are a few suggestions:
   these are a great way to familiarize yourself and others with TF-Addons.
 2. Solve an [existing issue](https://github.com/tensorflow/addons/issues).
   These range from low-level software bugs to higher-level design problems.
-  Check out the label [help wanted](https://github.com/tensorflow/addons/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22).
+  Check out the label [help wanted](https://github.com/tensorflow/addons/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22). If you're a new contributor, the label [good first issue](https://github.com/tensorflow/addons/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) can be a good place to start.
 
 All submissions, including submissions by project members, require
 review.
@@ -51,9 +51,24 @@ us**
 ## Development Environment
 It is recommended that development is done in the latest
 `nightly-custom-op` docker image.
+
+```bash
+docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
 ```
-docker run --rm -it -v ${PWD}:/working_dir -w /working_dir tensorflow/tensorflow:nightly-custom-op /bin/bash
-```
+
+Try those commands below:
+
+0. Format codes automatically: `make code-format`
+1. Sanity check: `make sanity-check`
+2. Run unit test: `make unit-test`
+3. All of the above: `make`
+
+## Coding style
+
+Addons provides `make code-format` command to format your changes
+automatically, don't forget to use it before pushing your codes.
+
+Please see our [Style Guide](SYLE_GUIDE.md) for more details.
 
 ## Code Testing
 #### CI Testing
@@ -62,7 +77,16 @@ project will contain CUDA kernels, we need to make sure that the
 hardware will be available from our CI provider.
 
 #### Locally Testing
+
+```bash
+docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op make unit-test
 ```
+
+or run manually:
+
+```bash
+docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
+
 ./configure.sh  # Links project with TensorFlow dependency
 
 bazel test -c opt -k \

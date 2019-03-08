@@ -19,69 +19,65 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+import tensorflow as tf
 
-from tensorflow.python.framework import constant_op
-from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow.python.ops import gradient_checker
-from tensorflow.python.ops import random_ops
-from tensorflow.python.platform import test
 from tensorflow_addons.custom_ops.image.python import transform as transform_ops
 
-_DTYPES = set([dtypes.uint8, dtypes.int32, dtypes.int64, dtypes.float16,
-               dtypes.float32, dtypes.float64])
+_DTYPES = set([
+    tf.dtypes.uint8, tf.dtypes.int32, tf.dtypes.int64, tf.dtypes.float16,
+    tf.dtypes.float32, tf.dtypes.float64
+])
 
 
-class ImageOpsTest(test.TestCase):
+class ImageOpsTest(tf.test.TestCase):
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_compose(self):
         for dtype in _DTYPES:
-            image = constant_op.constant(
+            image = tf.constant(
                 [[1, 1, 1, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]],
                 dtype=dtype)
             # Rotate counter-clockwise by pi / 2.
-            rotation = transform_ops.angles_to_projective_transforms(np.pi / 2,
-                                                                     4, 4)
+            rotation = transform_ops.angles_to_projective_transforms(
+                np.pi / 2, 4, 4)
             # Translate right by 1 (the transformation matrix is always inverted,
             # hence the -1).
-            translation = constant_op.constant(
-                [1, 0, -1, 0, 1, 0, 0, 0],
-                dtype=dtypes.float32)
+            translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0],
+                                      dtype=tf.dtypes.float32)
             composed = transform_ops.compose_transforms(rotation, translation)
             image_transformed = transform_ops.transform(image, composed)
             self.assertAllEqual(
-                [[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 0, 1],
-                 [0, 1, 1, 1]], image_transformed)
+                [[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 0, 1], [0, 1, 1, 1]],
+                image_transformed)
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_extreme_projective_transform(self):
         for dtype in _DTYPES:
-            image = constant_op.constant(
+            image = tf.constant(
                 [[1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1]],
                 dtype=dtype)
-            transformation = constant_op.constant(
-                [1, 0, 0, 0, 1, 0, -1, 0], dtypes.float32)
+            transformation = tf.constant([1, 0, 0, 0, 1, 0, -1, 0],
+                                         tf.dtypes.float32)
             image_transformed = transform_ops.transform(image, transformation)
             self.assertAllEqual(
-                [[1, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0],
-                 [0, 0, 0, 0]], image_transformed)
+                [[1, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0], [0, 0, 0, 0]],
+                image_transformed)
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_transform_static_output_shape(self):
-        image = constant_op.constant([[1., 2.], [3., 4.]])
+        image = tf.constant([[1., 2.], [3., 4.]])
         result = transform_ops.transform(
             image,
-            random_ops.random_uniform(
-                [8], -1, 1),
-            output_shape=constant_op.constant([3, 5]))
+            tf.random.uniform([8], -1, 1),
+            output_shape=tf.constant([3, 5]))
         self.assertAllEqual([3, 5], result.shape)
 
     def _test_grad(self, shape_to_test):
         with self.cached_session():
             test_image_shape = shape_to_test
             test_image = np.random.randn(*test_image_shape)
-            test_image_tensor = constant_op.constant(test_image,
-                                                     shape=test_image_shape)
+            test_image_tensor = tf.constant(test_image, shape=test_image_shape)
             test_transform = transform_ops.angles_to_projective_transforms(
                 np.pi / 2, 4, 4)
 
@@ -99,8 +95,7 @@ class ImageOpsTest(test.TestCase):
         with self.cached_session():
             test_image_shape = input_shape
             test_image = np.random.randn(*test_image_shape)
-            test_image_tensor = constant_op.constant(test_image,
-                                                     shape=test_image_shape)
+            test_image_tensor = tf.constant(test_image, shape=test_image_shape)
             test_transform = transform_ops.angles_to_projective_transforms(
                 np.pi / 2, 4, 4)
 
@@ -110,9 +105,10 @@ class ImageOpsTest(test.TestCase):
                 resize_shape = output_shape[0:2]
             elif len(output_shape) == 4:
                 resize_shape = output_shape[1:3]
-            output = transform_ops.transform(images=test_image_tensor,
-                                             transforms=test_transform,
-                                             output_shape=resize_shape)
+            output = transform_ops.transform(
+                images=test_image_tensor,
+                transforms=test_transform,
+                output_shape=resize_shape)
             left_err = gradient_checker.compute_gradient_error(
                 test_image_tensor,
                 test_image_shape,
@@ -134,7 +130,7 @@ class ImageOpsTest(test.TestCase):
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_transform_data_types(self):
         for dtype in _DTYPES:
-            image = constant_op.constant([[1, 2], [3, 4]], dtype=dtype)
+            image = tf.constant([[1, 2], [3, 4]], dtype=dtype)
             with self.test_session(use_gpu=True):
                 self.assertAllEqual(
                     np.array([[4, 4], [4, 4]]).astype(dtype.as_numpy_dtype()),
@@ -142,11 +138,11 @@ class ImageOpsTest(test.TestCase):
 
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_transform_eager(self):
-        image = constant_op.constant([[1., 2.], [3., 4.]])
+        image = tf.constant([[1., 2.], [3., 4.]])
         self.assertAllEqual(
-            np.array([[4, 4], [4, 4]]),
-            transform_ops.transform(image, [1] * 8))
+            np.array([[4, 4], [4, 4]]), transform_ops.transform(
+                image, [1] * 8))
 
 
 if __name__ == "__main__":
-    test.main()
+    tf.test.main()

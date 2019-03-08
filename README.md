@@ -1,5 +1,8 @@
 # TensorFlow Addons
 
+[![PyPI Status Badge](https://badge.fury.io/py/tensorflow-addons.svg)](https://pypi.org/project/tensorflow-addons/)
+[![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
+
 TensorFlow Addons is a repository of contributions that conform to
 well-established API patterns, but implement new functionality
 not available in core TensorFlow. TensorFlow natively supports
@@ -12,14 +15,16 @@ developments that cannot be integrated into core TensorFlow
 ## Contents
 | Sub-Package    | Addon  | Reference                                  |
 |:----------------------- |:----------- |:---------------------------- |
-| addons.image | Transform |                                           |
-| addons.layers | Maxout | https://arxiv.org/abs/1302.4389             |
-| addons.layers | PoinareNormalize | https://arxiv.org/abs/1705.08039  |
-| addons.layers | WeightNormalization | https://arxiv.org/abs/1602.07868 |
-| addons.losses | LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
-| addons.losses | TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
-| addons.optimizers | LazyAdamOptimizer | https://arxiv.org/abs/1412.6980 |
-| addons.text | SkipGrams | https://arxiv.org/abs/1301.3781 |
+| tfa.activations | Sparsemax | https://arxiv.org/abs/1602.02068    |
+| tfa.image | transform |                                           |
+| tfa.layers | Maxout | https://arxiv.org/abs/1302.4389             |
+| tfa.layers | PoinareNormalize | https://arxiv.org/abs/1705.08039  |
+| tfa.layers | WeightNormalization | https://arxiv.org/abs/1602.07868 |
+| tfa.losses | LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
+| tfa.losses | SparsemaxLoss | https://arxiv.org/abs/1602.02068 | 
+| tfa.losses | TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
+| tfa.optimizers | LazyAdamOptimizer | https://arxiv.org/abs/1412.6980 |
+| tfa.text | skip_gram_sample | https://arxiv.org/abs/1301.3781 |
 
 ## Core Concepts
 
@@ -49,7 +54,10 @@ for end-to-end examples of various addons.
 
 ## Installation
 #### Stable Builds
-`tensorflow-addons` will soon be available in PyPi.
+To install the latest version, run the following:
+```
+pip install tensorflow-addons
+```
 
 #### Installing from Source
 You can also install from source. This requires the [Bazel](
@@ -71,13 +79,14 @@ pip install artifacts/tensorflow_addons-*.whl
 ## Contributing
 TF-Addons is a community led open source project. As such, the project
 depends on public contributions, bug-fixes, and documentation. Please
-see [CONTRIBUTING.md](CONTRIBUTING.md) for a guide on how to contribute.
-This project adheres to [TensorFlow's code of conduct](CODE_OF_CONDUCT.md).
+see [contribution guidelines](CONTRIBUTING.md) for a guide on how to
+contribute. This project adheres to [TensorFlow's code of conduct](CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code.
 
 ## Community
 * [Public Mailing List](https://groups.google.com/a/tensorflow.org/forum/#!forum/addons)
 * [SIG Monthly Meeting Notes](https://docs.google.com/document/d/1kxg5xIHWLY7EMdOJCdSGgaPu27a9YKpupUz2VTXqTJg)
+    * Join our mailing list and receive calendar invites to the meeting
 
 ## License
 [Apache License 2.0](LICENSE)
