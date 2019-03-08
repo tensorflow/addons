@@ -45,9 +45,9 @@ class ProjectiveGenerator {
   static const int kNumParameters = 8;
 
   EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
-  ProjectiveGenerator(typename TTypes<T, 4>::ConstTensor input,
-                      typename TTypes<float>::ConstMatrix transforms,
-                      const Interpolation interpolation)
+      ProjectiveGenerator(typename TTypes<T, 4>::ConstTensor input,
+                          typename TTypes<float>::ConstMatrix transforms,
+                          const Interpolation interpolation)
       : input_(input), transforms_(transforms), interpolation_(interpolation) {}
 
   EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE T

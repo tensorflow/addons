@@ -9,6 +9,7 @@ py_library(
         "python/__init__.py",
         "python/keras_utils.py",
         "python/tensor_util.py",
+        "python/test_utils.py",
     ]),
     srcs_version = "PY2AND3",
 )
