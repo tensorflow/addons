@@ -37,6 +37,9 @@ py_library(
         ":python/_beam_search_ops.so",
     ],
     srcs_version = "PY2AND3",
+    deps = [
+        "//tensorflow_addons/utils:utils_py",
+    ],
 )
 
 py_test(

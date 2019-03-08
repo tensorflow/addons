@@ -24,6 +24,7 @@ import math
 
 import numpy as np
 
+from tensorflow_addons.utils.python import tensor_util
 from tensorflow.python.eager import context
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
