@@ -30,7 +30,7 @@ class DenseImageWarpTest(tf.test.TestCase):
     def setUp(self):
         np.random.seed(0)
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
+    @tf_test_util.run_in_graph_and_eager_modes
     def test_interpolate_small_grid_ij(self):
         grid = tf.constant([[0., 1., 2.], [3., 4., 5.], [6., 7., 8.]],
                            shape=[1, 3, 3, 1])
@@ -42,7 +42,7 @@ class DenseImageWarpTest(tf.test.TestCase):
 
         self.assertAllClose(expected_results, interp)
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
+    @tf_test_util.run_in_graph_and_eager_modes
     def test_interpolate_small_grid_xy(self):
         grid = tf.constant([[0., 1., 2.], [3., 4., 5.], [6., 7., 8.]],
                            shape=[1, 3, 3, 1])
@@ -55,7 +55,7 @@ class DenseImageWarpTest(tf.test.TestCase):
 
         self.assertAllClose(expected_results, interp)
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
+    @tf_test_util.run_in_graph_and_eager_modes
     def test_interpolate_small_grid_batched(self):
         grid = tf.constant([[[0., 1.], [3., 4.]], [[5., 6.], [7., 8.]]],
                            shape=[2, 2, 2, 1])
@@ -136,7 +136,7 @@ class DenseImageWarpTest(tf.test.TestCase):
 
         self.assertAllClose(rand_image, interp)
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
+    @tf_test_util.run_in_graph_and_eager_modes
     def test_zero_flows(self):
         """Apply _check_zero_flow_correctness() for a few sizes and types."""
 
@@ -174,7 +174,7 @@ class DenseImageWarpTest(tf.test.TestCase):
                 x_index,
                 low_precision=low_precision)
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
+    @tf_test_util.run_in_graph_and_eager_modes
     def test_interpolation(self):
         """Apply _check_interpolation_correctness() for a few sizes and
         types."""
@@ -219,7 +219,7 @@ class DenseImageWarpTest(tf.test.TestCase):
             for _ in range(10):
                 sess.run(opt_func)
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
+    @tf_test_util.run_in_graph_and_eager_modes
     def test_size_exception(self):
         """Make sure it throws an exception for images that are too small."""
 
