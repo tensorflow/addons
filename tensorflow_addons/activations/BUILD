@@ -17,7 +17,7 @@ py_library(
 
 py_test(
     name = "sparsemax_py_test",
-    size = "small",
+    size = "medium",
     srcs = [
         "python/sparsemax_test.py",
     ],

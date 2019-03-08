@@ -20,9 +20,15 @@ from __future__ import print_function
 import inspect
 import unittest
 
+# yapf: disable
+# pylint: disable=unused-import
 # TODO: find public API alternative to these
-from tensorflow.python.keras.testing_utils import layer_test  # pylint: disable=unused-import
-from tensorflow.python.framework.test_util import run_all_in_graph_and_eager_modes  # pylint: disable=unused-import
+from tensorflow.python.keras.testing_utils import layer_test
+from tensorflow.python.framework.test_util import run_all_in_graph_and_eager_modes
+from tensorflow.python.framework.test_util import run_deprecated_v1
+from tensorflow.python.framework.test_util import run_in_graph_and_eager_modes
+# pylint: enable=unused-import
+# yapf: enable
 
 
 def run_all_with_types(dtypes):

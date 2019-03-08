@@ -19,8 +19,6 @@ must:
 #### Testing Requirements
  * Simple unittests that demonstrate the custom op is behaving as
     expected.
- * When applicable, run all unittests with TensorFlow's
-  `@run_all_in_graph_and_eager_modes` decorator.
  * Add a `py_test` to the custom-op's BUILD file.
 
 #### Documentation Requirements
