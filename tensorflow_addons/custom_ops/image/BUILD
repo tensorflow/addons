@@ -38,7 +38,7 @@ py_library(
 
 py_test(
     name = "dense_image_warp_test",
-    size = "small",
+    size = "medium",
     srcs = [
         "python/dense_image_warp_test.py",
     ],
