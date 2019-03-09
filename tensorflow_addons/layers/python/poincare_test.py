@@ -21,10 +21,11 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from tensorflow.python.keras import testing_utils as keras_test_util
 from tensorflow_addons.layers.python.poincare import PoincareNormalize
+from tensorflow_addons.utils.python import test_utils
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class PoincareNormalizeTest(tf.test.TestCase):
     def _PoincareNormalize(self, x, dim, epsilon=1e-5):
         if isinstance(dim, list):
@@ -48,7 +49,7 @@ class PoincareNormalizeTest(tf.test.TestCase):
         for dim in range(len(x_shape)):
             outputs_expected = self._PoincareNormalize(inputs, dim, epsilon)
 
-            outputs = keras_test_util.layer_test(
+            outputs = test_utils.layer_test(
                 PoincareNormalize,
                 kwargs={
                     'axis': dim,
@@ -70,7 +71,7 @@ class PoincareNormalizeTest(tf.test.TestCase):
 
         outputs_expected = self._PoincareNormalize(inputs, dim, epsilon)
 
-        outputs = keras_test_util.layer_test(
+        outputs = test_utils.layer_test(
             PoincareNormalize,
             kwargs={
                 'axis': dim,

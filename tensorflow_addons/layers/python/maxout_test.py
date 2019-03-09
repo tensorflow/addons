@@ -21,17 +21,18 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from tensorflow.python.keras import testing_utils as keras_test_util
 from tensorflow_addons.layers.python.maxout import Maxout
+from tensorflow_addons.utils.python import test_utils
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class MaxOutTest(tf.test.TestCase):
     def test_simple(self):
-        keras_test_util.layer_test(
+        test_utils.layer_test(
             Maxout, kwargs={'num_units': 3}, input_shape=(5, 4, 2, 18))
 
     def test_nchw(self):
-        keras_test_util.layer_test(
+        test_utils.layer_test(
             Maxout,
             kwargs={
                 'num_units': 4,
@@ -39,7 +40,7 @@ class MaxOutTest(tf.test.TestCase):
             },
             input_shape=(2, 20, 3, 6))
 
-        keras_test_util.layer_test(
+        test_utils.layer_test(
             Maxout,
             kwargs={
                 'num_units': 4,
@@ -49,13 +50,13 @@ class MaxOutTest(tf.test.TestCase):
 
     def test_unknown(self):
         inputs = np.random.random((5, 4, 2, 18)).astype('float32')
-        keras_test_util.layer_test(
+        test_utils.layer_test(
             Maxout,
             kwargs={'num_units': 3},
             input_shape=(5, 4, 2, None),
             input_data=inputs)
 
-        keras_test_util.layer_test(
+        test_utils.layer_test(
             Maxout,
             kwargs={'num_units': 3},
             input_shape=(None, None, None, None),
@@ -63,7 +64,7 @@ class MaxOutTest(tf.test.TestCase):
 
     def test_invalid_shape(self):
         with self.assertRaisesRegexp(ValueError, r'number of features'):
-            keras_test_util.layer_test(
+            test_utils.layer_test(
                 Maxout, kwargs={'num_units': 3}, input_shape=(5, 4, 2, 7))
 
 

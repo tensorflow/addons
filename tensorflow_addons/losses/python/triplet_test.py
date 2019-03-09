@@ -20,8 +20,8 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow_addons.losses.python import triplet
+from tensorflow_addons.utils.python import test_utils
 
 
 def pairwise_distance_np(feature, squared=False):
@@ -51,7 +51,7 @@ def pairwise_distance_np(feature, squared=False):
     return pairwise_distances
 
 
-@tf_test_util.run_all_in_graph_and_eager_modes
+@test_utils.run_all_in_graph_and_eager_modes
 class TripletSemiHardLossTest(tf.test.TestCase):
     def test_unweighted(self):
         num_data = 10
