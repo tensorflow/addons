@@ -18,21 +18,18 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.python.framework import ops
-from tensorflow.python.keras.utils import generic_utils
-from tensorflow.python.keras.engine.base_layer import Layer
-from tensorflow.python.ops import math_ops
+import tensorflow as tf
+from tensorflow_addons.utils.python import keras_utils
 
 
-class PoincareNormalize(Layer):
+@keras_utils.register_keras_custom_object
+class PoincareNormalize(tf.keras.layers.Layer):
     """Project into the Poincare ball with norm <= 1.0 - epsilon.
 
     https://en.wikipedia.org/wiki/Poincare_ball_model
 
-    Used in
-    Poincare Embeddings for Learning Hierarchical Representations
-    Maximilian Nickel, Douwe Kiela
-    https://arxiv.org/pdf/1705.08039.pdf
+    Used in Poincare Embeddings for Learning Hierarchical Representations
+    Maximilian Nickel, Douwe Kiela https://arxiv.org/pdf/1705.08039.pdf
 
     For a 1-D tensor with `axis = 0`, computes
 
@@ -44,10 +41,9 @@ class PoincareNormalize(Layer):
     dimension `axis`.
 
     Arguments:
-        axis: Axis along which to normalize.  A scalar or a vector of
-              integers.
-        epsilon: A small deviation from the edge of the unit sphere for numerical
-              stability.
+      axis: Axis along which to normalize.  A scalar or a vector of integers.
+      epsilon: A small deviation from the edge of the unit sphere for
+        numerical stability.
     """
 
     def __init__(self, axis=1, epsilon=1e-5, **kwargs):
@@ -56,12 +52,12 @@ class PoincareNormalize(Layer):
         self.epsilon = epsilon
 
     def call(self, inputs):
-        x = ops.convert_to_tensor(inputs)
-        square_sum = math_ops.reduce_sum(
-            math_ops.square(x), self.axis, keepdims=True)
-        x_inv_norm = math_ops.rsqrt(square_sum)
-        x_inv_norm = math_ops.minimum((1. - self.epsilon) * x_inv_norm, 1.)
-        outputs = math_ops.multiply(x, x_inv_norm)
+        x = tf.convert_to_tensor(inputs)
+        square_sum = tf.math.reduce_sum(
+            tf.math.square(x), self.axis, keepdims=True)
+        x_inv_norm = tf.math.rsqrt(square_sum)
+        x_inv_norm = tf.math.minimum((1. - self.epsilon) * x_inv_norm, 1.)
+        outputs = tf.math.multiply(x, x_inv_norm)
         return outputs
 
     def compute_output_shape(self, input_shape):
@@ -71,7 +67,3 @@ class PoincareNormalize(Layer):
         config = {'axis': self.axis, 'epsilon': self.epsilon}
         base_config = super(PoincareNormalize, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
-
-
-generic_utils._GLOBAL_CUSTOM_OBJECTS['PoincareNormalize'] = PoincareNormalize
-    

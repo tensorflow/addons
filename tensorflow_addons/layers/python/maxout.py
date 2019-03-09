@@ -18,35 +18,32 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.python.framework import ops
-from tensorflow.python.framework import tensor_shape
-from tensorflow.python.keras.utils import generic_utils
-from tensorflow.python.keras.engine.base_layer import Layer
-from tensorflow.python.ops import array_ops
-from tensorflow.python.ops import math_ops
+import tensorflow as tf
+from tensorflow_addons.utils.python import keras_utils
 
 
-class Maxout(Layer):
+@keras_utils.register_keras_custom_object
+class Maxout(tf.keras.layers.Layer):
     """Applies Maxout to the input.
 
     "Maxout Networks" Ian J. Goodfellow, David Warde-Farley, Mehdi Mirza, Aaron
     Courville, Yoshua Bengio. https://arxiv.org/abs/1302.4389
 
-    Usually the operation is performed in the filter/channel dimension. This can
-    also be used after Dense layers to reduce number of features.
+    Usually the operation is performed in the filter/channel dimension. This
+    can also be used after Dense layers to reduce number of features.
 
     Arguments:
-        num_units: Specifies how many features will remain after maxout
-            in the `axis` dimension (usually channel).
-            This must be a factor of number of features.
-        axis: The dimension where max pooling will be performed. Default is the
-            last dimension.
+      num_units: Specifies how many features will remain after maxout
+        in the `axis` dimension (usually channel).
+        This must be a factor of number of features.
+      axis: The dimension where max pooling will be performed. Default is the
+        last dimension.
 
     Input shape:
-        nD tensor with shape: `(batch_size, ..., axis_dim, ...)`.
+      nD tensor with shape: `(batch_size, ..., axis_dim, ...)`.
 
     Output shape:
-        nD tensor with shape: `(batch_size, ..., num_units, ...)`.
+      nD tensor with shape: `(batch_size, ..., num_units, ...)`.
     """
 
     def __init__(self, num_units, axis=-1, **kwargs):
@@ -55,15 +52,15 @@ class Maxout(Layer):
         self.axis = axis
 
     def call(self, inputs):
-        inputs = ops.convert_to_tensor(inputs)
+        inputs = tf.convert_to_tensor(inputs)
         shape = inputs.get_shape().as_list()
         # Dealing with batches with arbitrary sizes
         for i in range(len(shape)):
             if shape[i] is None:
-                shape[i] = array_ops.shape(inputs)[i]
+                shape[i] = tf.shape(inputs)[i]
 
         num_channels = shape[self.axis]
-        if (not isinstance(num_channels, ops.Tensor)
+        if (not isinstance(num_channels, tf.Tensor)
                 and num_channels % self.num_units):
             raise ValueError('number of features({}) is not '
                              'a multiple of num_units({})'.format(
@@ -80,19 +77,16 @@ class Maxout(Layer):
         k = num_channels // self.num_units
         expand_shape.insert(axis, k)
 
-        outputs = math_ops.reduce_max(
-            array_ops.reshape(inputs, expand_shape), axis, keepdims=False)
+        outputs = tf.math.reduce_max(
+            tf.reshape(inputs, expand_shape), axis, keepdims=False)
         return outputs
 
     def compute_output_shape(self, input_shape):
-        input_shape = tensor_shape.TensorShape(input_shape).as_list()
+        input_shape = tf.TensorShape(input_shape).as_list()
         input_shape[self.axis] = self.num_units
-        return tensor_shape.TensorShape(input_shape)
+        return tf.TensorShape(input_shape)
 
     def get_config(self):
         config = {'num_units': self.num_units, 'axis': self.axis}
         base_config = super(Maxout, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
-
-
-generic_utils._GLOBAL_CUSTOM_OBJECTS['Maxout'] = Maxout

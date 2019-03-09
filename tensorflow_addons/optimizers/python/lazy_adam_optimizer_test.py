@@ -19,18 +19,12 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+import tensorflow as tf
 
 from tensorflow.python.eager import context
-from tensorflow.python.framework import constant_op
-from tensorflow.python.framework import dtypes
-from tensorflow.python.framework import ops
-from tensorflow.python.framework import test_util
-from tensorflow.python.ops import array_ops
-from tensorflow.python.ops import math_ops
-from tensorflow.python.ops import resource_variable_ops
 from tensorflow.python.ops import variables
-from tensorflow.python.platform import test
 from tensorflow_addons.optimizers.python import lazy_adam_optimizer
+from tensorflow_addons.utils.python import test_utils
 
 
 def adam_update_numpy(param,
@@ -52,22 +46,22 @@ def adam_update_numpy(param,
 
 
 def get_beta_accumulators(opt, dtype):
-    local_step = math_ops.cast(opt.iterations + 1, dtype)
-    beta_1_t = math_ops.cast(opt._get_hyper("beta_1"), dtype)
-    beta_1_power = math_ops.pow(beta_1_t, local_step)
-    beta_2_t = math_ops.cast(opt._get_hyper("beta_2"), dtype)
-    beta_2_power = math_ops.pow(beta_2_t, local_step)
+    local_step = tf.cast(opt.iterations + 1, dtype)
+    beta_1_t = tf.cast(opt._get_hyper("beta_1"), dtype)
+    beta_1_power = tf.math.pow(beta_1_t, local_step)
+    beta_2_t = tf.cast(opt._get_hyper("beta_2"), dtype)
+    beta_2_power = tf.math.pow(beta_2_t, local_step)
     return (beta_1_power, beta_2_power)
 
 
-class LazyAdamOptimizerTest(test.TestCase):
+class LazyAdamOptimizerTest(tf.test.TestCase):
 
     # TODO: remove v1 tests (keep pace with adam_test.py in keras).
-    @test_util.run_deprecated_v1
+    @test_utils.run_deprecated_v1
     def testSparse(self):
-        for dtype in [dtypes.half, dtypes.float32, dtypes.float64]:
+        for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             with self.cached_session():
-                # Initialize variables for numpy implementation.
+                # Initialize tf for numpy implementation.
                 m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
                 var0_np = np.array([1.0, 1.0, 2.0], dtype=dtype.as_numpy_dtype)
                 grads0_np = np.array([0.1, 0.0, 0.1],
@@ -76,18 +70,16 @@ class LazyAdamOptimizerTest(test.TestCase):
                 grads1_np = np.array([0.01, 0.0, 0.01],
                                      dtype=dtype.as_numpy_dtype)
 
-                var0 = resource_variable_ops.ResourceVariable(var0_np)
-                var1 = resource_variable_ops.ResourceVariable(var1_np)
+                var0 = tf.Variable(var0_np)
+                var1 = tf.Variable(var1_np)
                 grads0_np_indices = np.array([0, 2], dtype=np.int32)
-                grads0 = ops.IndexedSlices(
-                    constant_op.constant(grads0_np[grads0_np_indices]),
-                    constant_op.constant(grads0_np_indices),
-                    constant_op.constant([3]))
+                grads0 = tf.IndexedSlices(
+                    tf.constant(grads0_np[grads0_np_indices]),
+                    tf.constant(grads0_np_indices), tf.constant([3]))
                 grads1_np_indices = np.array([0, 2], dtype=np.int32)
-                grads1 = ops.IndexedSlices(
-                    constant_op.constant(grads1_np[grads1_np_indices]),
-                    constant_op.constant(grads1_np_indices),
-                    constant_op.constant([3]))
+                grads1 = tf.IndexedSlices(
+                    tf.constant(grads1_np[grads1_np_indices]),
+                    tf.constant(grads1_np_indices), tf.constant([3]))
                 opt = lazy_adam_optimizer.LazyAdamOptimizer()
                 update = opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
@@ -117,37 +109,34 @@ class LazyAdamOptimizerTest(test.TestCase):
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
 
-    @test_util.run_deprecated_v1
+    @test_utils.run_deprecated_v1
     def testSparseDevicePlacement(self):
-        for index_dtype in [dtypes.int32, dtypes.int64]:
-            with self.cached_session(force_gpu=test.is_gpu_available()):
+        for index_dtype in [tf.dtypes.int32, tf.dtypes.int64]:
+            with self.cached_session(force_gpu=tf.test.is_gpu_available()):
                 # If a GPU is available, tests that all optimizer ops can be placed on
                 # it (i.e. they have GPU kernels).
-                var = variables.Variable([[1.0], [2.0]])
-                indices = constant_op.constant([0, 1], dtype=index_dtype)
-                g_sum = lambda: math_ops.reduce_sum(array_ops.gather(var, indices))  # pylint: disable=cell-var-from-loop
+                var = tf.Variable([[1.0], [2.0]])
+                indices = tf.constant([0, 1], dtype=index_dtype)
+                g_sum = lambda: tf.math.reduce_sum(tf.gather(var, indices))  # pylint: disable=cell-var-from-loop
                 optimizer = lazy_adam_optimizer.LazyAdamOptimizer(3.0)
                 minimize_op = optimizer.minimize(g_sum, var_list=[var])
                 self.evaluate(variables.global_variables_initializer())
                 self.evaluate(minimize_op)
 
-    @test_util.run_deprecated_v1
+    @test_utils.run_deprecated_v1
     def testSparseRepeatedIndices(self):
-        for dtype in [dtypes.half, dtypes.float32, dtypes.float64]:
+        for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             with self.cached_session():
-                repeated_index_update_var = variables.Variable([[1.0], [2.0]],
-                                                               dtype=dtype)
-                aggregated_update_var = variables.Variable([[1.0], [2.0]],
-                                                           dtype=dtype)
-                grad_repeated_index = ops.IndexedSlices(
-                    constant_op.constant([0.1, 0.1],
-                                         shape=[2, 1],
-                                         dtype=dtype),
-                    constant_op.constant([1, 1]),
-                    constant_op.constant([2, 1]))
-                grad_aggregated = ops.IndexedSlices(
-                    constant_op.constant([0.2], shape=[1, 1], dtype=dtype),
-                    constant_op.constant([1]), constant_op.constant([2, 1]))
+                repeated_index_update_var = tf.Variable([[1.0], [2.0]],
+                                                        dtype=dtype)
+                aggregated_update_var = tf.Variable([[1.0], [2.0]],
+                                                    dtype=dtype)
+                grad_repeated_index = tf.IndexedSlices(
+                    tf.constant([0.1, 0.1], shape=[2, 1], dtype=dtype),
+                    tf.constant([1, 1]), tf.constant([2, 1]))
+                grad_aggregated = tf.IndexedSlices(
+                    tf.constant([0.2], shape=[1, 1], dtype=dtype),
+                    tf.constant([1]), tf.constant([2, 1]))
                 repeated_update_opt = lazy_adam_optimizer.LazyAdamOptimizer()
                 repeated_update = repeated_update_opt.apply_gradients(
                     [(grad_repeated_index, repeated_index_update_var)])
@@ -164,22 +153,23 @@ class LazyAdamOptimizerTest(test.TestCase):
                                         repeated_index_update_var.eval())
 
     def doTestBasic(self, use_callable_params=False):
-        for i, dtype in enumerate(
-            [dtypes.half, dtypes.float32, dtypes.float64]):
-            with self.session(graph=ops.Graph()):
-                # Initialize variables for numpy implementation.
+        # yapf: disable
+        for i, dtype in enumerate([tf.dtypes.half,
+                                   tf.dtypes.float32,
+                                   tf.dtypes.float64]):
+            # yapf: enable
+            with self.session(graph=tf.Graph()):
+                # Initialize tf for numpy implementation.
                 m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
                 var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
                 grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
                 var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
                 grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
 
-                var0 = resource_variable_ops.ResourceVariable(
-                    var0_np, name="var0_%d" % i)
-                var1 = resource_variable_ops.ResourceVariable(
-                    var1_np, name="var1_%d" % i)
-                grads0 = constant_op.constant(grads0_np)
-                grads1 = constant_op.constant(grads1_np)
+                var0 = tf.Variable(var0_np, name="var0_%d" % i)
+                var1 = tf.Variable(var1_np, name="var1_%d" % i)
+                grads0 = tf.constant(grads0_np)
+                grads1 = tf.constant(grads1_np)
 
                 learning_rate = lambda: 0.001
                 beta1 = lambda: 0.9
@@ -225,10 +215,10 @@ class LazyAdamOptimizerTest(test.TestCase):
                                                        self.evaluate(var0))
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
-                    self.assertEqual("var0_%d/m:0" % (i, ),
+                    self.assertEqual("var0_%d/m:0" % (i,),
                                      opt.get_slot(var0, "m").name)
 
-    @test_util.run_in_graph_and_eager_modes(reset_test=True)
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testResourceBasic(self):
         self.doTestBasic()
 
@@ -236,23 +226,22 @@ class LazyAdamOptimizerTest(test.TestCase):
         with context.eager_mode():
             self.doTestBasic(use_callable_params=True)
 
-    @test_util.run_deprecated_v1
+    @test_utils.run_deprecated_v1
     def testTensorLearningRate(self):
-        for dtype in [dtypes.half, dtypes.float32, dtypes.float64]:
+        for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             with self.cached_session():
-                # Initialize variables for numpy implementation.
+                # Initialize tf for numpy implementation.
                 m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
                 var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
                 grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
                 var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
                 grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
 
-                var0 = variables.Variable(var0_np)
-                var1 = variables.Variable(var1_np)
-                grads0 = constant_op.constant(grads0_np)
-                grads1 = constant_op.constant(grads1_np)
-                opt = lazy_adam_optimizer.LazyAdamOptimizer(
-                    constant_op.constant(0.001))
+                var0 = tf.Variable(var0_np)
+                var1 = tf.Variable(var1_np)
+                grads0 = tf.constant(grads0_np)
+                grads1 = tf.constant(grads1_np)
+                opt = lazy_adam_optimizer.LazyAdamOptimizer(tf.constant(0.001))
                 update = opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
                 self.evaluate(variables.global_variables_initializer())
@@ -281,21 +270,21 @@ class LazyAdamOptimizerTest(test.TestCase):
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
 
-    @test_util.run_deprecated_v1
+    @test_utils.run_deprecated_v1
     def testSharing(self):
-        for dtype in [dtypes.half, dtypes.float32, dtypes.float64]:
+        for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             with self.cached_session():
-                # Initialize variables for numpy implementation.
+                # Initialize tf for numpy implementation.
                 m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
                 var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
                 grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
                 var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
                 grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
 
-                var0 = variables.Variable(var0_np)
-                var1 = variables.Variable(var1_np)
-                grads0 = constant_op.constant(grads0_np)
-                grads1 = constant_op.constant(grads1_np)
+                var0 = tf.Variable(var0_np)
+                var1 = tf.Variable(var1_np)
+                grads0 = tf.constant(grads0_np)
+                grads1 = tf.constant(grads1_np)
                 opt = lazy_adam_optimizer.LazyAdamOptimizer()
                 update1 = opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
@@ -333,8 +322,8 @@ class LazyAdamOptimizerTest(test.TestCase):
 
     def testSlotsUniqueEager(self):
         with context.eager_mode():
-            v1 = resource_variable_ops.ResourceVariable(1.)
-            v2 = resource_variable_ops.ResourceVariable(1.)
+            v1 = tf.Variable(1.)
+            v2 = tf.Variable(1.)
             opt = lazy_adam_optimizer.LazyAdamOptimizer(1.)
             opt.minimize(lambda: v1 + v2, var_list=[v1, v2])
             # There should be iteration, and two unique slot variables for v1 and v2.
@@ -345,4 +334,4 @@ class LazyAdamOptimizerTest(test.TestCase):
 
 
 if __name__ == "__main__":
-    test.main()
+    tf.test.main()
