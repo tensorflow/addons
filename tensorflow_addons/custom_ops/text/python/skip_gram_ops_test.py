@@ -22,12 +22,12 @@ import csv
 import os
 import tensorflow as tf
 
-from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow.python.framework import random_seed
 from tensorflow.python.ops import lookup_ops
 from tensorflow.python.platform import test
 from tensorflow_addons.custom_ops import text
 from tensorflow_addons.custom_ops.text.python import skip_gram_ops
+from tensorflow_addons.utils.python import test_utils
 
 
 class SkipGramOpsTest(tf.test.TestCase):
@@ -232,7 +232,7 @@ class SkipGramOpsTest(tf.test.TestCase):
         self.assertAllEqual(expected_tokens, tokens)
         self.assertAllEqual(expected_labels, labels)
 
-    @tf_test_util.run_deprecated_v1
+    @test_utils.run_deprecated_v1
     def test_skip_gram_sample_errors_v1(self):
         """Tests various errors raised by skip_gram_sample()."""
         # input_tensor must be of rank 1.
