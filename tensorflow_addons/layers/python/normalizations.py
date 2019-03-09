@@ -11,21 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# =============================================================================
 
 # Orginal implementation from keras_contrib/layer/normalization
+# =============================================================================
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
+import logging
 import tensorflow as tf
-from tensorflow.keras import backend as K
-from tensorflow.keras import constraints
-from tensorflow.keras import initializers
-from tensorflow.keras import regularizers
-from tensorflow.keras.layers import InputSpec
-from tensorflow.keras.layers import Layer
-from tensorflow.python.ops import nn
+from tensorflow_addons.utils.python import keras_utils
 
 
-class GroupNormalization(Layer):
+@keras_utils.register_keras_custom_object
+class GroupNormalization(tf.keras.layers.Layer):
     """Group normalization layer.
 
     Group Normalization divides the channels into groups and computes
@@ -35,8 +34,8 @@ class GroupNormalization(Layer):
     with batch sizes.
 
     Relation to Layer Normalization:
-    If the number of groups is set to 1, then this operation becomes identical to
-    Layer Normalization.
+    If the number of groups is set to 1, then this operation becomes identical
+    to Layer Normalization.
 
     Relation to Instance Normalization:
     If the number of groups is set to the
@@ -92,17 +91,17 @@ class GroupNormalization(Layer):
         self.epsilon = epsilon
         self.center = center
         self.scale = scale
-        self.beta_initializer = initializers.get(beta_initializer)
-        self.gamma_initializer = initializers.get(gamma_initializer)
-        self.beta_regularizer = regularizers.get(beta_regularizer)
-        self.gamma_regularizer = regularizers.get(gamma_regularizer)
-        self.beta_constraint = constraints.get(beta_constraint)
-        self.gamma_constraint = constraints.get(gamma_constraint)
+        self.beta_initializer = tf.keras.initializers.get(beta_initializer)
+        self.gamma_initializer = tf.keras.initializers.get(gamma_initializer)
+        self.beta_regularizer = tf.keras.regularizers.get(beta_regularizer)
+        self.gamma_regularizer = tf.keras.regularizers.get(gamma_regularizer)
+        self.beta_constraint = tf.keras.constraints.get(beta_constraint)
+        self.gamma_constraint = tf.keras.constraints.get(gamma_constraint)
         self._check_axis()
 
     def build(self, input_shape):
 
-        self._check_if_input_shape_is_None(input_shape)
+        self._check_if_input_shape_is_none(input_shape)
         self._set_number_of_groups_for_instance_norm(input_shape)
         self._check_size_of_dimensions(input_shape)
         self._create_input_spec(input_shape)
@@ -114,32 +113,43 @@ class GroupNormalization(Layer):
 
     def call(self, inputs):
 
-        input_shape = K.int_shape(inputs)
-        tensor_input_shape = K.shape(inputs)
+        input_shape = tf.keras.backend.int_shape(inputs)
+        tensor_input_shape = tf.shape(inputs)
 
         reshaped_inputs, group_shape = self._reshape_into_groups(
             inputs, input_shape, tensor_input_shape)
 
-        normalized_inputs = self._apply_normalization(
-            reshaped_inputs, input_shape)
+        normalized_inputs = self._apply_normalization(reshaped_inputs,
+                                                      input_shape)
 
-        outputs = K.reshape(normalized_inputs, tensor_input_shape)
+        outputs = tf.reshape(normalized_inputs, tensor_input_shape)
 
         return outputs
 
     def get_config(self):
         config = {
-            'groups': self.groups,
-            'axis': self.axis,
-            'epsilon': self.epsilon,
-            'center': self.center,
-            'scale': self.scale,
-            'beta_initializer': initializers.serialize(self.beta_initializer),
-            'gamma_initializer': initializers.serialize(self.gamma_initializer),
-            'beta_regularizer': regularizers.serialize(self.beta_regularizer),
-            'gamma_regularizer': regularizers.serialize(self.gamma_regularizer),
-            'beta_constraint': constraints.serialize(self.beta_constraint),
-            'gamma_constraint': constraints.serialize(self.gamma_constraint)
+            'groups':
+            self.groups,
+            'axis':
+            self.axis,
+            'epsilon':
+            self.epsilon,
+            'center':
+            self.center,
+            'scale':
+            self.scale,
+            'beta_initializer':
+            tf.keras.initializers.serialize(self.beta_initializer),
+            'gamma_initializer':
+            tf.keras.initializers.serialize(self.gamma_initializer),
+            'beta_regularizer':
+            tf.keras.regularizers.serialize(self.beta_regularizer),
+            'gamma_regularizer':
+            tf.keras.regularizers.serialize(self.gamma_regularizer),
+            'beta_constraint':
+            tf.keras.constraints.serialize(self.beta_constraint),
+            'gamma_constraint':
+            tf.keras.constraints.serialize(self.gamma_constraint)
         }
         base_config = super(GroupNormalization, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
@@ -152,25 +162,27 @@ class GroupNormalization(Layer):
         group_shape = [tensor_input_shape[i] for i in range(len(input_shape))]
         group_shape[self.axis] = input_shape[self.axis] // self.groups
         group_shape.insert(1, self.groups)
-        group_shape = K.stack(group_shape)
-        reshaped_inputs = K.reshape(inputs, group_shape)
+        group_shape = tf.stack(group_shape)
+        reshaped_inputs = tf.reshape(inputs, group_shape)
         return reshaped_inputs, group_shape
 
     def _apply_normalization(self, reshaped_inputs, input_shape):
 
-        group_shape = K.int_shape(reshaped_inputs)
+        group_shape = tf.keras.backend.int_shape(reshaped_inputs)
         group_reduction_axes = list(range(len(group_shape)))
-        # Remember the ordering of the tensor is [batch, group , steps]. Jump the first 2 to calculate the variance and the mean
-        mean, variance = nn.moments(reshaped_inputs, group_reduction_axes[2:],
-                                    keep_dims=True)
+        # Remember the ordering of the tensor is [batch, group , steps]. Jump
+        # the first 2 to calculate the variance and the mean
+        mean, variance = tf.nn.moments(
+            reshaped_inputs, group_reduction_axes[2:], keepdims=True)
 
         gamma, beta = self._get_reshaped_weights(input_shape)
-        normalized_inputs = nn.batch_normalization(reshaped_inputs,
-                                                   mean=mean,
-                                                   variance=variance,
-                                                   scale=gamma,
-                                                   offset=beta,
-                                                   variance_epsilon=self.epsilon)
+        normalized_inputs = tf.nn.batch_normalization(
+            reshaped_inputs,
+            mean=mean,
+            variance=variance,
+            scale=gamma,
+            offset=beta,
+            variance_epsilon=self.epsilon)
         return normalized_inputs
 
     def _get_reshaped_weights(self, input_shape):
@@ -178,13 +190,13 @@ class GroupNormalization(Layer):
         gamma = None
         beta = None
         if self.scale:
-            gamma = K.reshape(self.gamma, broadcast_shape)
+            gamma = tf.reshape(self.gamma, broadcast_shape)
 
         if self.center:
-            beta = K.reshape(self.beta, broadcast_shape)
+            beta = tf.reshape(self.beta, broadcast_shape)
         return gamma, beta
 
-    def _check_if_input_shape_is_None(self, input_shape):
+    def _check_if_input_shape_is_none(self, input_shape):
         dim = input_shape[self.axis]
         if dim is None:
             raise ValueError('Axis ' + str(self.axis) + ' of '
@@ -202,26 +214,27 @@ class GroupNormalization(Layer):
 
         dim = input_shape[self.axis]
         if dim < self.groups:
-            raise ValueError('Number of groups (' + str(self.groups) + ') cannot be '
-                             'more than the number of channels (' +
-                             str(dim) + ').')
+            raise ValueError(
+                'Number of groups (' + str(self.groups) + ') cannot be '
+                'more than the number of channels (' + str(dim) + ').')
 
         if dim % self.groups != 0:
-            raise ValueError('Number of groups (' + str(self.groups) + ') must be a '
-                             'multiple of the number of channels (' +
-                             str(dim) + ').')
+            raise ValueError(
+                'Number of groups (' + str(self.groups) + ') must be a '
+                'multiple of the number of channels (' + str(dim) + ').')
 
     def _check_axis(self):
 
         if self.axis == 0:
             raise ValueError(
-                "You are trying to normalize your batch axis. Do you want to use tf.layer.batch_normalization instead")
+                "You are trying to normalize your batch axis. Do you want to "
+                "use tf.layer.batch_normalization instead")
 
     def _create_input_spec(self, input_shape):
 
         dim = input_shape[self.axis]
-        self.input_spec = InputSpec(ndim=len(input_shape),
-                                    axes={self.axis: dim})
+        self.input_spec = tf.keras.layers.InputSpec(
+            ndim=len(input_shape), axes={self.axis: dim})
 
     def _add_gamma_weight(self, input_shape):
 
@@ -229,11 +242,12 @@ class GroupNormalization(Layer):
         shape = (dim,)
 
         if self.scale:
-            self.gamma = self.add_weight(shape=shape,
-                                         name='gamma',
-                                         initializer=self.gamma_initializer,
-                                         regularizer=self.gamma_regularizer,
-                                         constraint=self.gamma_constraint)
+            self.gamma = self.add_weight(
+                shape=shape,
+                name='gamma',
+                initializer=self.gamma_initializer,
+                regularizer=self.gamma_regularizer,
+                constraint=self.gamma_constraint)
         else:
             self.gamma = None
 
@@ -243,11 +257,12 @@ class GroupNormalization(Layer):
         shape = (dim,)
 
         if self.center:
-            self.beta = self.add_weight(shape=shape,
-                                        name='beta',
-                                        initializer=self.beta_initializer,
-                                        regularizer=self.beta_regularizer,
-                                        constraint=self.beta_constraint)
+            self.beta = self.add_weight(
+                shape=shape,
+                name='beta',
+                initializer=self.beta_initializer,
+                regularizer=self.beta_regularizer,
+                constraint=self.beta_constraint)
         else:
             self.beta = None
 
@@ -258,6 +273,7 @@ class GroupNormalization(Layer):
         return broadcast_shape
 
 
+@keras_utils.register_keras_custom_object
 class LayerNormalization(GroupNormalization):
     """Layer normalization layer.
 
@@ -295,19 +311,19 @@ class LayerNormalization(GroupNormalization):
 
     def __init__(self, **kwargs):
         if "groups" in kwargs:
-            tf.logging.warning(
-                "The given value for groups will be overwritten.")
+            logging.warning("The given value for groups will be overwritten.")
         kwargs["groups"] = 1
         super(LayerNormalization, self).__init__(**kwargs)
 
 
+@keras_utils.register_keras_custom_object
 class InstanceNormalization(GroupNormalization):
     """Instance normalization layer.
 
-    Instance Normalization is an specific case of ```GroupNormalization```since it
-    normalizes all features of one channel. The Groupsize is equal to the channel size.
-    Empirically, its accuracy is more stable than batch norm in a wide
-    range of small batch sizes, if learning rate is adjusted linearly
+    Instance Normalization is an specific case of ```GroupNormalization```since
+    it normalizes all features of one channel. The Groupsize is equal to the
+    channel size. Empirically, its accuracy is more stable than batch norm in a
+    wide range of small batch sizes, if learning rate is adjusted linearly
     with batch sizes.
 
     Arguments
@@ -333,14 +349,13 @@ class InstanceNormalization(GroupNormalization):
         Same shape as input.
 
     References
-        - [Layer Normalization](https://arxiv.org/abs/1607.06450)
+        - [Instance Normalization: The Missing Ingredient for Fast Stylization]
+        (https://arxiv.org/abs/1607.08022)
     """
 
     def __init__(self, **kwargs):
-
         if "groups" in kwargs:
-            tf.logging.warning(
-                "The given value for groups will be overwritten.")
+            logging.warning("The given value for groups will be overwritten.")
 
         kwargs["groups"] = -1
         super(InstanceNormalization, self).__init__(**kwargs)
