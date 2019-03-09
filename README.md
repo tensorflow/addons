@@ -1,5 +1,8 @@
 # TensorFlow Addons
 
+[![PyPI Status Badge](https://badge.fury.io/py/tensorflow-addons.svg)](https://pypi.org/project/tensorflow-addons/)
+[![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
+
 TensorFlow Addons is a repository of contributions that conform to
 well-established API patterns, but implement new functionality
 not available in core TensorFlow. TensorFlow natively supports
@@ -14,6 +17,9 @@ developments that cannot be integrated into core TensorFlow
 |:----------------------- |:----------- |:---------------------------- |
 | tfa.activations | Sparsemax | https://arxiv.org/abs/1602.02068    |
 | tfa.image | transform |                                           |
+| tfa.layers | GroupNormalization | https://arxiv.org/abs/1803.08494 |
+| tfa.layers | InstanceNormalization | https://arxiv.org/abs/1607.08022 |
+| tfa.layers | LayerNormalization  | https://arxiv.org/abs/1607.06450 |
 | tfa.layers | Maxout | https://arxiv.org/abs/1302.4389             |
 | tfa.layers | PoinareNormalize | https://arxiv.org/abs/1705.08039  |
 | tfa.layers | WeightNormalization | https://arxiv.org/abs/1602.07868 |

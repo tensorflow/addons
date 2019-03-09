@@ -20,13 +20,12 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from tensorflow.python.framework import test_util as tf_test_util
-from tensorflow.python.keras import testing_utils as keras_test_util
 from tensorflow_addons.layers.python import wrappers
+from tensorflow_addons.utils.python import test_utils
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class WeightNormalizationTest(tf.test.TestCase):
-    @tf_test_util.run_all_in_graph_and_eager_modes
     def test_weightnorm_dense_train(self):
         model = tf.keras.models.Sequential()
         model.add(
@@ -43,7 +42,6 @@ class WeightNormalizationTest(tf.test.TestCase):
             batch_size=10)
         self.assertTrue(hasattr(model.layers[0].layer, 'g'))
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
     def test_weightnorm_dense_train_notinit(self):
         model = tf.keras.models.Sequential()
         model.add(
@@ -60,7 +58,6 @@ class WeightNormalizationTest(tf.test.TestCase):
             batch_size=10)
         self.assertTrue(hasattr(model.layers[0].layer, 'g'))
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
     def test_weightnorm_conv2d(self):
         model = tf.keras.models.Sequential()
         model.add(
@@ -79,7 +76,6 @@ class WeightNormalizationTest(tf.test.TestCase):
 
         self.assertTrue(hasattr(model.layers[0].layer, 'g'))
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
     def test_weightnorm_tflayers(self):
         images = tf.random.uniform((2, 4, 4, 3))
         wn_wrapper = wrappers.WeightNormalization(
@@ -87,13 +83,11 @@ class WeightNormalizationTest(tf.test.TestCase):
         wn_wrapper.apply(images)
         self.assertTrue(hasattr(wn_wrapper.layer, 'g'))
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
     def test_weightnorm_nonlayer(self):
         images = tf.random.uniform((2, 4, 43))
         with self.assertRaises(ValueError):
             wrappers.WeightNormalization(images)
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
     def test_weightnorm_nokernel(self):
         with self.assertRaises(ValueError):
             wrappers.WeightNormalization(tf.keras.layers.MaxPooling2D(
@@ -101,7 +95,7 @@ class WeightNormalizationTest(tf.test.TestCase):
 
     def test_weightnorm_keras(self):
         input_data = np.random.random((10, 3, 4)).astype(np.float32)
-        outputs = keras_test_util.layer_test(
+        outputs = test_utils.layer_test(
             wrappers.WeightNormalization,
             kwargs={
                 'layer': tf.keras.layers.Dense(2),
