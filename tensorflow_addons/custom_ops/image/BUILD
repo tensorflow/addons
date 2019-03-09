@@ -30,6 +30,7 @@ py_library(
     ]),
     data = [
         ":python/_image_ops.so",
+        "//tensorflow_addons/utils:utils_py",
     ],
     srcs_version = "PY2AND3",
 )
@@ -37,7 +38,7 @@ py_library(
 # TODO: use cuda_py_test later.
 py_test(
     name = "transform_ops_test",
-    size = "small",
+    size = "medium",
     srcs = [
         "python/transform_test.py",
     ],

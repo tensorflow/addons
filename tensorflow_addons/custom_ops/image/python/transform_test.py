@@ -21,9 +21,9 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow.python.ops import gradient_checker
 from tensorflow_addons.custom_ops.image.python import transform as transform_ops
+from tensorflow_addons.utils.python import test_utils
 
 _DTYPES = set([
     tf.dtypes.uint8, tf.dtypes.int32, tf.dtypes.int64, tf.dtypes.float16,
@@ -32,7 +32,7 @@ _DTYPES = set([
 
 
 class ImageOpsTest(tf.test.TestCase):
-    @tf_test_util.run_all_in_graph_and_eager_modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_compose(self):
         for dtype in _DTYPES:
             image = tf.constant(
@@ -51,7 +51,7 @@ class ImageOpsTest(tf.test.TestCase):
                 [[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 0, 1], [0, 1, 1, 1]],
                 image_transformed)
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_extreme_projective_transform(self):
         for dtype in _DTYPES:
             image = tf.constant(
@@ -64,7 +64,6 @@ class ImageOpsTest(tf.test.TestCase):
                 [[1, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0], [0, 0, 0, 0]],
                 image_transformed)
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
     def test_transform_static_output_shape(self):
         image = tf.constant([[1., 2.], [3., 4.]])
         result = transform_ops.transform(
@@ -118,7 +117,7 @@ class ImageOpsTest(tf.test.TestCase):
             self.assertLess(left_err, 1e-10)
 
     # TODO: switch to TF2 later.
-    @tf_test_util.run_deprecated_v1
+    @test_utils.run_deprecated_v1
     def test_grad(self):
         self._test_grad([16, 16])
         self._test_grad([4, 12, 12])
@@ -127,16 +126,15 @@ class ImageOpsTest(tf.test.TestCase):
         self._test_grad_different_shape([4, 12, 3], [8, 24, 3])
         self._test_grad_different_shape([3, 4, 12, 3], [3, 8, 24, 3])
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_transform_data_types(self):
         for dtype in _DTYPES:
             image = tf.constant([[1, 2], [3, 4]], dtype=dtype)
-            with self.test_session(use_gpu=True):
-                self.assertAllEqual(
-                    np.array([[4, 4], [4, 4]]).astype(dtype.as_numpy_dtype()),
-                    transform_ops.transform(image, [1] * 8))
+            self.assertAllEqual(
+                np.array([[4, 4], [4, 4]]).astype(dtype.as_numpy_dtype()),
+                transform_ops.transform(image, [1] * 8))
 
-    @tf_test_util.run_all_in_graph_and_eager_modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_transform_eager(self):
         image = tf.constant([[1., 2.], [3., 4.]])
         self.assertAllEqual(
