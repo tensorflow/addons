@@ -68,7 +68,7 @@ To use addons:
 
 ```python
 import tensorflow as tf
-import tensorflow_addons as addons
+import tensorflow_addons as tfa
 ```
 
 #### Installing from Source
