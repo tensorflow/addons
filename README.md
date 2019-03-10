@@ -62,6 +62,13 @@ To install the latest version, run the following:
 pip install tensorflow-addons
 ```
 
+You will also need TensorFlow 2.0 or higher. To use addons:
+
+```python
+import tensorflow as tf
+import tensorflow_addons
+```
+
 #### Installing from Source
 You can also install from source. This requires the [Bazel](
 https://bazel.build/) build system.
