@@ -1,4 +1,4 @@
-# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""
-Ops for building neural network layers, regularizers, summaries, etc.
-"""
+"""Additional layers that conform to Keras API."""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 from tensorflow_addons.layers.python.maxout import Maxout
+from tensorflow_addons.layers.python.normalizations import GroupNormalization
+from tensorflow_addons.layers.python.normalizations import InstanceNormalization
+from tensorflow_addons.layers.python.normalizations import LayerNormalization
+from tensorflow_addons.layers.python.poincare import PoincareNormalize
+from tensorflow_addons.layers.python.sparsemax import Sparsemax
 from tensorflow_addons.layers.python.wrappers import WeightNormalization
