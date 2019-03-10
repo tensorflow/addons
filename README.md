@@ -62,11 +62,13 @@ To install the latest version, run the following:
 pip install tensorflow-addons
 ```
 
-You will also need TensorFlow 2.0 or higher. To use addons:
+**Note:** You will also need [TensorFlow 2.0 or higher](https://www.tensorflow.org/alpha). 
+
+To use addons:
 
 ```python
 import tensorflow as tf
-import tensorflow_addons
+import tensorflow_addons as addons
 ```
 
 #### Installing from Source
