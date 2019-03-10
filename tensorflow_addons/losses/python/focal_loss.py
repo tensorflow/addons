@@ -24,20 +24,23 @@ import numpy as np
 
 import tensorflow as tf
 import tensorflow.keras.backend as K
-
-from tensorflow.python.framework import dtypes
-from tensorflow.python.framework import ops
-from tensorflow.python.ops import math_ops
-from tensorflow.python.ops import nn
-from tensorflow.python.util.tf_export import keras_export
 from tensorflow.python.keras import losses
 from tensorflow_addons.utils.python import keras_utils
 
 
-@keras_export('keras.losses.SigmoidFocalCrossEntropy')
+@keras_utils.register_keras_custom_object
 class SigmoidFocalCrossEntropy(losses.LossFunctionWrapper):
-  """Focal loss down-weights well classified examples and focuses on the hard
-  examples. See https://arxiv.org/pdf/1708.02002.pdf for the loss definition.
+  """Implements the focal loss function.
+
+  Focal loss was first introduced in the RetinaNet paper
+  (https://arxiv.org/pdf/1708.02002.pdf). Focal loss is extremely useful for
+  classification when you have highly imbalanced classes. It down-weights
+  well-classified examples and focuses on hard examples. The loss value is
+  much high for a sample which is misclassified by the classifier as compared
+  to the loss value corresponding to a well-classified example. One of the best
+  use-cases of focal loss is its usage in object detection where the imbalance
+  between the background class and other classes is
+  extremely high. 
 
   Usage:
 
@@ -107,20 +110,19 @@ def sigmoid_focal_crossentropy(y_true,
         gamma: modulating factor.
     
     Returns:
-        Weighted loss float `Tensor`. If `reduction` is `NONE`, this has the same
-        shape as `y_true`; otherwise, it is scalar.
+        Weighted loss float `Tensor`. If `reduction` is `NONE`,this has the 
+        same shape as `y_true`; otherwise, it is scalar.
     """
-    if gamma:
-        if gamma < 0.: 
-            raise ValueError("Value of gamma should be greater than or equal to zero")
+    if gamma and gamma < 0:
+      raise ValueError("Value of gamma should be greater than or equal to zero")
 
-    y_pred = ops.convert_to_tensor(y_pred)
-    y_true = math_ops.cast(y_true, y_pred.dtype)
+    y_pred = tf.convert_to_tensor(y_pred)
+    y_true = tf.cast(y_true, y_pred.dtype)
 
     # Get the binary cross_entropy
     bce = K.binary_crossentropy(y_true, y_pred, from_logits=from_logits)
 
-    # If logits are provided, compute convert the predictions into probabilities
+    # If logits are provided then convert the predictions into probabilities
     if from_logits:
         y_pred = K.sigmoid(y_pred)
     else:
@@ -131,11 +133,11 @@ def sigmoid_focal_crossentropy(y_true,
     modulating_factor = 1
 
     if alpha:
-        alpha = ops.convert_to_tensor(alpha, dtype=K.floatx())
+        alpha = tf.convert_to_tensor(alpha, dtype=K.floatx())
         alpha_factor = y_true*alpha + ((1-alpha)*(1-y_true))
     
     if gamma:
-        gamma = ops.convert_to_tensor(gamma, dtype=K.floatx())
+        gamma = tf.convert_to_tensor(gamma, dtype=K.floatx())
         modulating_factor = K.pow((1-p_t), gamma)
 
     # compute the final loss and return
