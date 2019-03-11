@@ -1,4 +1,4 @@
-# Contributing  
+# Contributing   
 
 Interested in contributing to TensorFlow Addons? We appreciate all kinds
 of help and are working to make this guide as comprehensive as possible.
