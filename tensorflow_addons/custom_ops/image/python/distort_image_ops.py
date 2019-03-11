@@ -18,8 +18,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-
-from tensorflow.python.framework import ops
 from tensorflow.python.platform import resource_loader
 
 _distort_image_ops = tf.load_op_library(
@@ -62,9 +60,8 @@ def random_hsv_in_yiq(image,
 
     Raises:
       ValueError: if `max_delta`, `lower_saturation`, `upper_saturation`,
-                 `lower_value`, or `upper_Value` is invalid.
+        `lower_value`, or `upper_Value` is invalid.
     """
-
     if max_delta_hue < 0:
         raise ValueError("max_delta must be non-negative.")
 
@@ -109,7 +106,7 @@ def adjust_hsv_in_yiq(image,
                       delta_hue=0,
                       scale_saturation=1,
                       scale_value=1,
-                      name=None):
+                      name="adjust_hsv_in_yiq"):
     """Adjust hue, saturation, value of an RGB image in YIQ color space.
 
     This is a convenience method that converts an RGB image to float
@@ -134,8 +131,7 @@ def adjust_hsv_in_yiq(image,
     Returns:
       Adjusted image(s), same shape and DType as `image`.
     """
-
-    with ops.name_scope(name, "adjust_hsv_in_yiq", [image]) as name:
+    with tf.name_scope(name):
         image = tf.convert_to_tensor(image, name="image")
         # Remember original dtype to so we can convert back if needed
         orig_dtype = image.dtype

@@ -21,14 +21,11 @@ from __future__ import print_function
 import time
 
 import numpy as np
-from six.moves import xrange
+from six.moves import xrange  # pylint: disable=redefined-builtin
 
 import tensorflow as tf
 from tensorflow_addons.custom_ops.image.python import distort_image_ops
 from tensorflow_addons.utils.python import test_utils
-
-# TODO(huangyp): also measure the differences between AdjustHsvInYiq and
-# AdjustHsv in core.
 
 
 class AdjustHueInYiqTest(tf.test.TestCase):
