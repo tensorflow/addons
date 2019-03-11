@@ -25,7 +25,7 @@ from tensorflow_addons.utils.python import keras_utils
 
 
 @keras_utils.register_keras_custom_object
-class SigmoidFocalCrossEntropy(losses.LossFunctionWrapper):
+class SigmoidFocalCrossEntropy(keras_utils.LossFunctionWrapper):
     """Implements the focal loss function.
 
     Focal loss was first introduced in the RetinaNet paper
@@ -57,23 +57,23 @@ class SigmoidFocalCrossEntropy(losses.LossFunctionWrapper):
     ```
 
     Args
-        alpha: balancing factor, default value is 0.25
-        gamma: modulating factor, default value is 2.0
+      alpha: balancing factor, default value is 0.25
+      gamma: modulating factor, default value is 2.0
 
     Returns:
-        Weighted loss float `Tensor`. If `reduction` is `NONE`, this has the same
-        shape as `y_true`; otherwise, it is scalar.
+      Weighted loss float `Tensor`. If `reduction` is `NONE`, this has the same
+          shape as `y_true`; otherwise, it is scalar.
 
     Raises:
         ValueError: If the shape of `sample_weight` is invalid or value of
-        `gamma` is less than zero
+          `gamma` is less than zero
     """
 
     def __init__(self,
                  from_logits=False,
                  alpha=0.25,
                  gamma=2.0,
-                 reduction=losses_utils.ReductionV2.NONE,
+                 reduction=tf.keras.losses.Reduction.NONE,
                  name='sigmoid_focal_crossentropy'):
         super(SigmoidFocalCrossEntropy, self).__init__(
             sigmoid_focal_crossentropy,
