@@ -22,9 +22,9 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow.python.eager import context
-from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow.python.ops import variables
 from tensorflow_addons.optimizers.python import lazy_adam_optimizer
+from tensorflow_addons.utils.python import test_utils
 
 
 def adam_update_numpy(param,
@@ -57,7 +57,7 @@ def get_beta_accumulators(opt, dtype):
 class LazyAdamOptimizerTest(tf.test.TestCase):
 
     # TODO: remove v1 tests (keep pace with adam_test.py in keras).
-    @tf_test_util.run_deprecated_v1
+    @test_utils.run_deprecated_v1
     def testSparse(self):
         for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             with self.cached_session():
@@ -109,7 +109,7 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
 
-    @tf_test_util.run_deprecated_v1
+    @test_utils.run_deprecated_v1
     def testSparseDevicePlacement(self):
         for index_dtype in [tf.dtypes.int32, tf.dtypes.int64]:
             with self.cached_session(force_gpu=tf.test.is_gpu_available()):
@@ -123,7 +123,7 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                 self.evaluate(variables.global_variables_initializer())
                 self.evaluate(minimize_op)
 
-    @tf_test_util.run_deprecated_v1
+    @test_utils.run_deprecated_v1
     def testSparseRepeatedIndices(self):
         for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             with self.cached_session():
@@ -218,7 +218,7 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                     self.assertEqual("var0_%d/m:0" % (i,),
                                      opt.get_slot(var0, "m").name)
 
-    @tf_test_util.run_in_graph_and_eager_modes(reset_test=True)
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testResourceBasic(self):
         self.doTestBasic()
 
@@ -226,7 +226,7 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
         with context.eager_mode():
             self.doTestBasic(use_callable_params=True)
 
-    @tf_test_util.run_deprecated_v1
+    @test_utils.run_deprecated_v1
     def testTensorLearningRate(self):
         for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             with self.cached_session():
@@ -270,7 +270,7 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
 
-    @tf_test_util.run_deprecated_v1
+    @test_utils.run_deprecated_v1
     def testSharing(self):
         for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             with self.cached_session():

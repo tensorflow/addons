@@ -19,6 +19,9 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorflow_addons.layers.python.maxout import Maxout
+from tensorflow_addons.layers.python.normalizations import GroupNormalization
+from tensorflow_addons.layers.python.normalizations import InstanceNormalization
+from tensorflow_addons.layers.python.normalizations import LayerNormalization
 from tensorflow_addons.layers.python.poincare import PoincareNormalize
 from tensorflow_addons.layers.python.sparsemax import Sparsemax
 from tensorflow_addons.layers.python.wrappers import WeightNormalization

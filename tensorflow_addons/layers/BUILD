@@ -8,6 +8,7 @@ py_library(
         "__init__.py",
         "python/__init__.py",
         "python/maxout.py",
+        "python/normalizations.py",
         "python/poincare.py",
         "python/sparsemax.py",
         "python/wrappers.py",
@@ -29,7 +30,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":layers_py",
-    ],
+    ]
 )
 
 py_test(
@@ -55,18 +56,18 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":layers_py",
-    ],
+    ]
 )
 
 py_test(
-    name = "poincare_py_test",
-    size = "small",
+    name = "layers_normalizations_py_test",
+    size= "small",
     srcs = [
-        "python/poincare_test.py",
+        "python/normalizations_test.py",
     ],
-    main = "python/poincare_test.py",
+    main = "python/normalizations_test.py",
     srcs_version = "PY2AND3",
     deps = [
-        ":layers_py",
-    ],
+            ":layers_py",
+        ]
 )
