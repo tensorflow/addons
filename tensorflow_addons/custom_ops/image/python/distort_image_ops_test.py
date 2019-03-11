@@ -24,8 +24,8 @@ import numpy as np
 from six.moves import xrange
 
 import tensorflow as tf
-from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow_addons.custom_ops.image.python import distort_image_ops
+from tensorflow_addons.utils.python import test_utils
 
 # TODO(huangyp): also measure the differences between AdjustHsvInYiq and
 # AdjustHsv in core.
@@ -67,7 +67,7 @@ class AdjustHueInYiqTest(tf.test.TestCase):
         y = distort_image_ops.adjust_hsv_in_yiq(x, delta_h, 1, 1)
         return y
 
-    @tf_test_util.run_in_graph_and_eager_modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_adjust_random_hue_in_yiq(self):
         x_shapes = [
             [2, 2, 3],
@@ -128,7 +128,7 @@ class AdjustValueInYiqTest(tf.test.TestCase):
         y = distort_image_ops.adjust_hsv_in_yiq(x, 0, 1, scale)
         return y
 
-    @tf_test_util.run_in_graph_and_eager_modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_adjust_random_value_in_yiq(self):
         x_shapes = [
             [2, 2, 3],
@@ -193,7 +193,7 @@ class AdjustSaturationInYiqTest(tf.test.TestCase):
         y_v = x_np * scale + gray * (1 - scale)
         return y_v
 
-    @tf_test_util.run_in_graph_and_eager_modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_adjust_random_saturation_in_yiq(self):
         x_shapes = [
             [2, 2, 3],
