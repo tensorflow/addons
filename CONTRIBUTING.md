@@ -51,7 +51,8 @@ us**
 ## Development Environment
 It is recommended that development is done in the latest
 `nightly-custom-op` docker image.
-```
+
+```bash
 docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
 ```
 
@@ -62,6 +63,12 @@ Try those commands below:
 2. Run unit test: `make unit-test`
 3. All of the above: `make`
 
+## Coding style
+
+Addons provides `make code-format` command to format your changes
+automatically, don't forget to use it before pushing your codes.
+
+Please see our [Style Guide](STYLE_GUIDE.md) for more details.
 
 ## Code Testing
 #### CI Testing
@@ -71,13 +78,15 @@ hardware will be available from our CI provider.
 
 #### Locally Testing
 
-```
+```bash
 docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op make unit-test
 ```
 
 or run manually:
 
-```
+```bash
+docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
+
 ./configure.sh  # Links project with TensorFlow dependency
 
 bazel test -c opt -k \

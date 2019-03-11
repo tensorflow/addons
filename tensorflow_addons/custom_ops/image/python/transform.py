@@ -121,6 +121,7 @@ def transform(images,
             return output
 
 
+@tf.function
 def compose_transforms(*transforms):
     """Composes the transforms tensors.
 
@@ -144,6 +145,7 @@ def compose_transforms(*transforms):
         return matrices_to_flat_transforms(composed)
 
 
+@tf.function
 def flat_transforms_to_matrices(transforms):
     """Converts projective transforms to affine matrices.
 
@@ -176,6 +178,7 @@ def flat_transforms_to_matrices(transforms):
             tf.constant([-1, 3, 3]))
 
 
+@tf.function
 def matrices_to_flat_transforms(transform_matrices):
     """Converts affine matrices to projective transforms.
 
@@ -208,6 +211,7 @@ def matrices_to_flat_transforms(transform_matrices):
         return transforms[:, :8]
 
 
+@tf.function
 def angles_to_projective_transforms(angles,
                                     image_height,
                                     image_width,

@@ -21,7 +21,9 @@ must:
  * Simple unittests that demonstrate the loss is behaving as expected on
  some set of known inputs and outputs.
  * When applicable, run all tests with TensorFlow's
- `@run_all_in_graph_and_eager_modes` decorator.
+   `@run_in_graph_and_eager_modes` (for test method)
+   or `run_all_in_graph_and_eager_modes` (for TestCase subclass)
+   decorator.
  * Add a `py_test` to this sub-package's BUILD file.
 
 #### Documentation Requirements
