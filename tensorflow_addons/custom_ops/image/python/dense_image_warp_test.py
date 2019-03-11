@@ -224,8 +224,8 @@ class DenseImageWarpTest(tf.test.TestCase):
         """Make sure it throws an exception for images that are too small."""
 
         shape = [1, 2, 1, 1]
-        msg = "Should have raised an exception for invalid image size"
-        with self.assertRaises(tf.errors.InvalidArgumentError, msg=msg):
+        with self.assertRaisesRegexp(tf.errors.InvalidArgumentError,
+                                     "Grid width must be at least 2."):
             self._check_interpolation_correctness(shape, "float32", "float32")
 
 
