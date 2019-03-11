@@ -245,6 +245,7 @@ class AdjustSaturationInYiqTest(tf.test.TestCase):
             self._adjust_saturation_in_yiq_tf(x_np, scale)
 
 
+# TODO: get rid of sessions
 class AdjustHueInYiqBenchmark(tf.test.Benchmark):
     def _benchmark_adjust_hue_in_yiq(self, device, cpu_count):
         image_shape = [299, 299, 3]
@@ -290,6 +291,7 @@ class AdjustHueInYiqBenchmark(tf.test.Benchmark):
         self._benchmark_adjust_hue_in_yiq(tf.test.gpu_device_name(), None)
 
 
+# TODO: get rid of sessions
 class AdjustSaturationInYiqBenchmark(tf.test.Benchmark):
     def _benchmark_adjust_saturation_in_yiq(self, device, cpu_count):
         image_shape = [299, 299, 3]
