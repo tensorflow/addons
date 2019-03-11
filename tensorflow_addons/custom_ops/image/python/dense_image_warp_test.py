@@ -22,15 +22,15 @@ import math
 import numpy as np
 import tensorflow as tf
 
-from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow_addons.custom_ops.image.python import dense_image_warp as dense_image_warp_ops
+from tensorflow_addons.utils.python import test_utils
 
 
 class DenseImageWarpTest(tf.test.TestCase):
     def setUp(self):
         np.random.seed(0)
 
-    @tf_test_util.run_in_graph_and_eager_modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_interpolate_small_grid_ij(self):
         grid = tf.constant([[0., 1., 2.], [3., 4., 5.], [6., 7., 8.]],
                            shape=[1, 3, 3, 1])
@@ -42,7 +42,7 @@ class DenseImageWarpTest(tf.test.TestCase):
 
         self.assertAllClose(expected_results, interp)
 
-    @tf_test_util.run_in_graph_and_eager_modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_interpolate_small_grid_xy(self):
         grid = tf.constant([[0., 1., 2.], [3., 4., 5.], [6., 7., 8.]],
                            shape=[1, 3, 3, 1])
@@ -55,7 +55,7 @@ class DenseImageWarpTest(tf.test.TestCase):
 
         self.assertAllClose(expected_results, interp)
 
-    @tf_test_util.run_in_graph_and_eager_modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_interpolate_small_grid_batched(self):
         grid = tf.constant([[[0., 1.], [3., 4.]], [[5., 6.], [7., 8.]]],
                            shape=[2, 2, 2, 1])
@@ -136,7 +136,7 @@ class DenseImageWarpTest(tf.test.TestCase):
 
         self.assertAllClose(rand_image, interp)
 
-    @tf_test_util.run_in_graph_and_eager_modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_zero_flows(self):
         """Apply _check_zero_flow_correctness() for a few sizes and types."""
 
@@ -174,7 +174,7 @@ class DenseImageWarpTest(tf.test.TestCase):
                 x_index,
                 low_precision=low_precision)
 
-    @tf_test_util.run_in_graph_and_eager_modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_interpolation(self):
         """Apply _check_interpolation_correctness() for a few sizes and
         types."""
@@ -187,7 +187,7 @@ class DenseImageWarpTest(tf.test.TestCase):
                         shape, im_type, flow_type)
 
     # TODO: switch to TF2 later.
-    @tf_test_util.run_deprecated_v1
+    @test_utils.run_deprecated_v1
     def test_gradients_exist(self):
         """Check that backprop can run.
 
