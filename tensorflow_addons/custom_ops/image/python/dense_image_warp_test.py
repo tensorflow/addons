@@ -85,7 +85,6 @@ class DenseImageWarpTest(tf.test.TestCase):
                                             x_index,
                                             low_precision=False):
         """Assert that the tf interpolation matches hand-computed value."""
-
         height = image.shape[1]
         width = image.shape[2]
         displacement = flows[batch_index, y_index, x_index, :]
@@ -125,7 +124,6 @@ class DenseImageWarpTest(tf.test.TestCase):
 
     def _check_zero_flow_correctness(self, shape, image_type, flow_type):
         """Assert using zero flows doesn't change the input image."""
-
         rand_image, rand_flows = self._get_random_image_and_flows(
             shape, image_type, flow_type)
         rand_flows *= 0
@@ -139,7 +137,6 @@ class DenseImageWarpTest(tf.test.TestCase):
     @test_utils.run_in_graph_and_eager_modes
     def test_zero_flows(self):
         """Apply _check_zero_flow_correctness() for a few sizes and types."""
-
         shapes_to_try = [[3, 4, 5, 6], [1, 2, 2, 1]]
         for shape in shapes_to_try:
             self._check_zero_flow_correctness(
@@ -178,7 +175,6 @@ class DenseImageWarpTest(tf.test.TestCase):
     def test_interpolation(self):
         """Apply _check_interpolation_correctness() for a few sizes and
         types."""
-
         shapes_to_try = [[3, 4, 5, 6], [1, 5, 5, 3], [1, 2, 2, 1]]
         for im_type in ["float32", "float64", "float16"]:
             for flow_type in ["float32", "float64", "float16"]:
@@ -198,7 +194,6 @@ class DenseImageWarpTest(tf.test.TestCase):
         and optimize them to minimize the difference between the
         interpolated image and the input image.
         """
-
         batch_size, height, width, num_channels = [4, 5, 6, 7]
         image_shape = [batch_size, height, width, num_channels]
         image = tf.random.normal(image_shape)
@@ -222,7 +217,6 @@ class DenseImageWarpTest(tf.test.TestCase):
     # TODO: run in both graph and eager modes
     def test_size_exception(self):
         """Make sure it throws an exception for images that are too small."""
-
         shape = [1, 2, 1, 1]
         with self.assertRaisesRegexp(tf.errors.InvalidArgumentError,
                                      "Grid width must be at least 2."):
