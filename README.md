@@ -23,7 +23,7 @@ developments that cannot be integrated into core TensorFlow
 | tfa.layers | InstanceNormalization | https://arxiv.org/abs/1607.08022 |
 | tfa.layers | LayerNormalization  | https://arxiv.org/abs/1607.06450 |
 | tfa.layers | Maxout | https://arxiv.org/abs/1302.4389             |
-| tfa.layers | PoinareNormalize | https://arxiv.org/abs/1705.08039  |
+| tfa.layers | PoincareNormalize | https://arxiv.org/abs/1705.08039  |
 | tfa.layers | WeightNormalization | https://arxiv.org/abs/1602.07868 |
 | tfa.losses | LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
 | tfa.losses | SparsemaxLoss | https://arxiv.org/abs/1602.02068 | 
