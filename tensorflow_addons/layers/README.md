@@ -7,7 +7,7 @@
 | InstanceNormalization | https://arxiv.org/abs/1607.08022 |
 | LayerNormalization | https://arxiv.org/abs/1607.06450 |
 | Maxout | https://arxiv.org/abs/1302.4389               |
-| PoinareNormalize | https://arxiv.org/abs/1705.08039    |
+| PoincareNormalize | https://arxiv.org/abs/1705.08039    |
 | WeightNormalization | https://arxiv.org/abs/1602.07868 |
 
 
