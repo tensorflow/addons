@@ -16,7 +16,9 @@ developments that cannot be integrated into core TensorFlow
 | Sub-Package    | Addon  | Reference                                  |
 |:----------------------- |:----------- |:---------------------------- |
 | tfa.activations | Sparsemax | https://arxiv.org/abs/1602.02068    |
+| tfa.image | adjust_hsv_in_yiq |                                   |
 | tfa.image | dense_image_warp |                                    |
+| tfa.image | random_hsv_in_yiq |                                   |
 | tfa.image | transform |                                           |
 | tfa.layers | GroupNormalization | https://arxiv.org/abs/1803.08494 |
 | tfa.layers | InstanceNormalization | https://arxiv.org/abs/1607.08022 |
