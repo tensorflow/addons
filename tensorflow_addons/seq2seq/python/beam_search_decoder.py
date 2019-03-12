@@ -48,7 +48,7 @@ gather_tree = _beam_search_ops_so.gather_tree
 __all__ = [
     "BeamSearchDecoderOutput",
     "BeamSearchDecoderState",
-    "BeamSearchDecoderV2"
+    "BeamSearchDecoder"
     "FinalBeamSearchDecoderOutput",
     "tile_batch",
 ]
@@ -591,7 +591,7 @@ class BeamSearchDecoderMixin(object):
     return (beam_search_output, beam_search_state, next_inputs, finished)
 
 
-class BeamSearchDecoderV2(BeamSearchDecoderMixin, decoder.BaseDecoder):
+class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
   # Note that the inheritance hierarchy is important here. The Mixin has to be
   # the first parent class since we will use super().__init__(), and Mixin which
   # is a object will properly invoke the __init__ method of other parent class.
@@ -642,7 +642,7 @@ class BeamSearchDecoderV2(BeamSearchDecoderMixin, decoder.BaseDecoder):
                coverage_penalty_weight=0.0,
                reorder_tensor_arrays=True,
                **kwargs):
-    """Initialize the BeamSearchDecoderV2.
+    """Initialize the BeamSearchDecoder.
 
     Args:
       cell: An `RNNCell` instance.
@@ -666,7 +666,7 @@ class BeamSearchDecoderV2(BeamSearchDecoderMixin, decoder.BaseDecoder):
       TypeError: if `cell` is not an instance of `RNNCell`,
         or `output_layer` is not an instance of `tf.keras.layers.Layer`.
     """
-    super(BeamSearchDecoderV2, self).__init__(
+    super(BeamSearchDecoder, self).__init__(
         cell,
         beam_width,
         output_layer=output_layer,

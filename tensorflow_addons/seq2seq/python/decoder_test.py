@@ -32,8 +32,8 @@ from tensorflow.python.platform import test
 
 
 @keras_parameterized.run_all_keras_modes
-class DecodeV2RNNTest(keras_parameterized.TestCase, test.TestCase):
-  """Tests for DecoderV2."""
+class DecodeRNNTest(keras_parameterized.TestCase, test.TestCase):
+  """Tests for Decoder."""
 
   def _testDecodeRNN(self, time_major, maximum_iterations=None):
 
@@ -54,7 +54,7 @@ class DecodeV2RNNTest(keras_parameterized.TestCase, test.TestCase):
       input_t = constant_op.constant(inputs)
       cell = rnn_cell.LSTMCell(cell_depth)
       sampler = sampler_py.TrainingSampler(time_major=time_major)
-      my_decoder = basic_decoder.BasicDecoderV2(
+      my_decoder = basic_decoder.BasicDecoder(
           cell=cell,
           sampler=sampler,
           output_time_major=time_major,
@@ -129,7 +129,7 @@ class DecodeV2RNNTest(keras_parameterized.TestCase, test.TestCase):
       cell = rnn_cell.LSTMCell(cell_depth)
       zero_state = cell.zero_state(dtype=dtypes.float32, batch_size=batch_size)
       sampler = sampler_py.TrainingSampler()
-      my_decoder = basic_decoder.BasicDecoderV2(
+      my_decoder = basic_decoder.BasicDecoder(
           cell=cell, sampler=sampler, impute_finished=use_sequence_length)
 
       final_decoder_outputs, final_decoder_state, _ = my_decoder(

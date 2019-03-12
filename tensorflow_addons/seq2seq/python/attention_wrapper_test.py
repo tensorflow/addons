@@ -51,10 +51,10 @@ class AttentionMechanismTest(test.TestCase, parameterized.TestCase):
     self.state = np.random.randn(self.batch, self.timestep).astype(np.float32)
 
   @parameterized.named_parameters(
-      ("luong", wrapper.LuongAttentionV2),
-      ("luong_monotonic", wrapper.LuongMonotonicAttentionV2),
-      ("bahdanau", wrapper.BahdanauAttentionV2),
-      ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttentionV2),
+      ("luong", wrapper.LuongAttention),
+      ("luong_monotonic", wrapper.LuongMonotonicAttention),
+      ("bahdanau", wrapper.BahdanauAttention),
+      ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttention),
   )
   def test_attention_shape_inference(self, attention_cls):
     attention = attention_cls(self.units, self.memory)
@@ -64,10 +64,10 @@ class AttentionMechanismTest(test.TestCase, parameterized.TestCase):
     self.assertEqual(attention_score[1].shape, (self.batch, self.timestep))
 
   @parameterized.named_parameters(
-      ("luong", wrapper.LuongAttentionV2),
-      ("luong_monotonic", wrapper.LuongMonotonicAttentionV2),
-      ("bahdanau", wrapper.BahdanauAttentionV2),
-      ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttentionV2),
+      ("luong", wrapper.LuongAttention),
+      ("luong_monotonic", wrapper.LuongMonotonicAttention),
+      ("bahdanau", wrapper.BahdanauAttention),
+      ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttention),
   )
   def test_get_config(self, attention_cls):
     attention = attention_cls(self.units, self.memory)
@@ -79,10 +79,10 @@ class AttentionMechanismTest(test.TestCase, parameterized.TestCase):
     self.assertDictEqual(config, config_from_clone)
 
   @parameterized.named_parameters(
-      ("luong", wrapper.LuongAttentionV2),
-      ("luong_monotonic", wrapper.LuongMonotonicAttentionV2),
-      ("bahdanau", wrapper.BahdanauAttentionV2),
-      ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttentionV2),
+      ("luong", wrapper.LuongAttention),
+      ("luong_monotonic", wrapper.LuongMonotonicAttention),
+      ("bahdanau", wrapper.BahdanauAttention),
+      ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttention),
   )
   def test_layer_output(self, attention_cls):
     attention = attention_cls(self.units, self.memory)
@@ -95,10 +95,10 @@ class AttentionMechanismTest(test.TestCase, parameterized.TestCase):
     self.assertEqual(score_val[1].shape, (self.batch, self.timestep))
 
   @parameterized.named_parameters(
-      ("luong", wrapper.LuongAttentionV2),
-      ("luong_monotonic", wrapper.LuongMonotonicAttentionV2),
-      ("bahdanau", wrapper.BahdanauAttentionV2),
-      ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttentionV2),
+      ("luong", wrapper.LuongAttention),
+      ("luong_monotonic", wrapper.LuongMonotonicAttention),
+      ("bahdanau", wrapper.BahdanauAttention),
+      ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttention),
   )
   def test_passing_memory_from_call(self, attention_cls):
     attention = attention_cls(self.units, self.memory)
@@ -123,10 +123,10 @@ class AttentionMechanismTest(test.TestCase, parameterized.TestCase):
     self.assertAllClose(ref_score_val, score_val)
 
   @parameterized.named_parameters(
-      ("luong", wrapper.LuongAttentionV2),
-      ("luong_monotonic", wrapper.LuongMonotonicAttentionV2),
-      ("bahdanau", wrapper.BahdanauAttentionV2),
-      ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttentionV2),
+      ("luong", wrapper.LuongAttention),
+      ("luong_monotonic", wrapper.LuongMonotonicAttention),
+      ("bahdanau", wrapper.BahdanauAttention),
+      ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttention),
   )
   def test_save_load_layer(self, attention_cls):
     vocab = 20
@@ -178,17 +178,17 @@ def get_result_summary(x):
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class AttentionWrapperV2Test(test.TestCase, parameterized.TestCase):
+class AttentionWrapperTest(test.TestCase, parameterized.TestCase):
 
   def assertAllCloseOrEqual(self, x, y, **kwargs):
     if isinstance(x, np.ndarray) or isinstance(x, float):
-      return super(AttentionWrapperV2Test, self).assertAllClose(
+      return super(AttentionWrapperTest, self).assertAllClose(
           x, y, atol=1e-3, **kwargs)
     else:
       self.assertAllEqual(x, y, **kwargs)
 
   def setUp(self):
-    super(AttentionWrapperV2Test, self).setUp()
+    super(AttentionWrapperTest, self).setUp()
     self.batch = 64
     self.units = 128
     self.encoder_timestep = 10
@@ -320,7 +320,7 @@ class AttentionWrapperV2Test(test.TestCase, parameterized.TestCase):
             layer.kernel_initializer = initializers.glorot_uniform(seed=1337)
 
       sampler = sampler_py.TrainingSampler()
-      my_decoder = basic_decoder.BasicDecoderV2(cell=cell, sampler=sampler)
+      my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
       initial_state = cell.get_initial_state(
           dtype=dtypes.float32, batch_size=batch_size)
       final_outputs, final_state, _ = my_decoder(
@@ -399,7 +399,7 @@ class AttentionWrapperV2Test(test.TestCase, parameterized.TestCase):
   def testBahdanauNormalizedDType(self, dtype):
     encoder_outputs = self.encoder_outputs.astype(dtype)
     decoder_inputs = self.decoder_inputs.astype(dtype)
-    attention_mechanism = wrapper.BahdanauAttentionV2(
+    attention_mechanism = wrapper.BahdanauAttention(
         units=self.units,
         memory=encoder_outputs,
         memory_sequence_length=self.encoder_sequence_length,
@@ -409,7 +409,7 @@ class AttentionWrapperV2Test(test.TestCase, parameterized.TestCase):
     cell = wrapper.AttentionWrapper(cell, attention_mechanism)
 
     sampler = sampler_py.TrainingSampler()
-    my_decoder = basic_decoder.BasicDecoderV2(cell=cell, sampler=sampler)
+    my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
 
     final_outputs, final_state, _ = my_decoder(
         decoder_inputs,
@@ -425,7 +425,7 @@ class AttentionWrapperV2Test(test.TestCase, parameterized.TestCase):
     # Test case for GitHub issue 18099
     encoder_outputs = self.encoder_outputs.astype(dtype)
     decoder_inputs = self.decoder_inputs.astype(dtype)
-    attention_mechanism = wrapper.LuongAttentionV2(
+    attention_mechanism = wrapper.LuongAttention(
         units=self.units,
         memory=encoder_outputs,
         memory_sequence_length=self.encoder_sequence_length,
@@ -436,7 +436,7 @@ class AttentionWrapperV2Test(test.TestCase, parameterized.TestCase):
     cell = wrapper.AttentionWrapper(cell, attention_mechanism)
 
     sampler = sampler_py.TrainingSampler()
-    my_decoder = basic_decoder.BasicDecoderV2(cell=cell, sampler=sampler)
+    my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
 
     final_outputs, final_state, _ = my_decoder(
         decoder_inputs,
@@ -447,7 +447,7 @@ class AttentionWrapperV2Test(test.TestCase, parameterized.TestCase):
     self.assertIsInstance(final_state, wrapper.AttentionWrapperState)
 
   def testBahdanauNotNormalized(self):
-    create_attention_mechanism = wrapper.BahdanauAttentionV2
+    create_attention_mechanism = wrapper.BahdanauAttention
     create_attention_kwargs = {"kernel_initializer": "ones"}
     expected_final_output = basic_decoder.BasicDecoderOutput(
         rnn_output=ResultSummary(
@@ -481,7 +481,7 @@ class AttentionWrapperV2Test(test.TestCase, parameterized.TestCase):
         create_attention_kwargs=create_attention_kwargs)
 
   def testBahdanauNormalized(self):
-    create_attention_mechanism = wrapper.BahdanauAttentionV2
+    create_attention_mechanism = wrapper.BahdanauAttention
     create_attention_kwargs = {"kernel_initializer": "ones", "normalize": True}
 
     expected_final_output = basic_decoder.BasicDecoderOutput(
@@ -512,7 +512,7 @@ class AttentionWrapperV2Test(test.TestCase, parameterized.TestCase):
         create_attention_kwargs=create_attention_kwargs)
 
   def testLuongNotNormalized(self):
-    create_attention_mechanism = wrapper.LuongAttentionV2
+    create_attention_mechanism = wrapper.LuongAttention
 
     expected_final_output = basic_decoder.BasicDecoderOutput(
         rnn_output=ResultSummary(
@@ -541,7 +541,7 @@ class AttentionWrapperV2Test(test.TestCase, parameterized.TestCase):
         attention_mechanism_depth=9)
 
   def testLuongScaled(self):
-    create_attention_mechanism = wrapper.LuongAttentionV2
+    create_attention_mechanism = wrapper.LuongAttention
     create_attention_kwargs = {"scale": True}
 
     expected_final_output = basic_decoder.BasicDecoderOutput(
@@ -572,7 +572,7 @@ class AttentionWrapperV2Test(test.TestCase, parameterized.TestCase):
         create_attention_kwargs=create_attention_kwargs)
 
   def testNotUseAttentionLayer(self):
-    create_attention_mechanism = wrapper.BahdanauAttentionV2
+    create_attention_mechanism = wrapper.BahdanauAttention
     create_attention_kwargs = {"kernel_initializer": "ones"}
 
     expected_final_output = basic_decoder.BasicDecoderOutput(
@@ -604,7 +604,7 @@ class AttentionWrapperV2Test(test.TestCase, parameterized.TestCase):
         create_attention_kwargs=create_attention_kwargs)
 
   def testBahdanauMonotonicNotNormalized(self):
-    create_attention_mechanism = wrapper.BahdanauMonotonicAttentionV2
+    create_attention_mechanism = wrapper.BahdanauMonotonicAttention
     create_attention_kwargs = {"kernel_initializer": "ones"}
 
     expected_final_output = basic_decoder.BasicDecoderOutput(
@@ -639,7 +639,7 @@ class AttentionWrapperV2Test(test.TestCase, parameterized.TestCase):
         create_attention_kwargs=create_attention_kwargs)
 
   def testBahdanauMonotonicNormalized(self):
-    create_attention_mechanism = wrapper.BahdanauMonotonicAttentionV2
+    create_attention_mechanism = wrapper.BahdanauMonotonicAttention
     create_attention_kwargs = {"kernel_initializer": "ones",
                                "normalize": True}
     expected_final_output = basic_decoder.BasicDecoderOutput(
@@ -674,7 +674,7 @@ class AttentionWrapperV2Test(test.TestCase, parameterized.TestCase):
         create_attention_kwargs=create_attention_kwargs)
 
   def testLuongMonotonicNotNormalized(self):
-    create_attention_mechanism = wrapper.LuongMonotonicAttentionV2
+    create_attention_mechanism = wrapper.LuongMonotonicAttention
 
     expected_final_output = basic_decoder.BasicDecoderOutput(
         rnn_output=ResultSummary(
@@ -707,7 +707,7 @@ class AttentionWrapperV2Test(test.TestCase, parameterized.TestCase):
         expected_final_alignment_history=expected_final_alignment_history)
 
   def testLuongMonotonicScaled(self):
-    create_attention_mechanism = wrapper.LuongMonotonicAttentionV2
+    create_attention_mechanism = wrapper.LuongMonotonicAttention
     create_attention_kwargs = {"scale": True}
 
     expected_final_output = basic_decoder.BasicDecoderOutput(

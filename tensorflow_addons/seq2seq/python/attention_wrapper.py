@@ -50,13 +50,13 @@ __all__ = [
     "AttentionMechanism",
     "AttentionWrapper",
     "AttentionWrapperState",
-    "LuongAttentionV2",
-    "BahdanauAttentionV2",
+    "LuongAttention",
+    "BahdanauAttention",
     "hardmax",
     "safe_cumprod",
     "monotonic_attention",
-    "BahdanauMonotonicAttentionV2",
-    "LuongMonotonicAttentionV2",
+    "BahdanauMonotonicAttention",
+    "LuongMonotonicAttention",
 ]
 
 
@@ -74,7 +74,7 @@ class AttentionMechanism(object):
     raise NotImplementedError
 
 
-class _BaseAttentionMechanismV2(AttentionMechanism, layers.Layer):
+class _BaseAttentionMechanism(AttentionMechanism, layers.Layer):
   """A base AttentionMechanism class providing common functionality.
 
   Common functionality includes:
@@ -142,7 +142,7 @@ class _BaseAttentionMechanismV2(AttentionMechanism, layers.Layer):
     self.memory_layer = memory_layer
     if self.memory_layer is not None and "dtype" not in kwargs:
       kwargs["dtype"] = self.memory_layer.dtype
-    super(_BaseAttentionMechanismV2, self).__init__(**kwargs)
+    super(_BaseAttentionMechanism, self).__init__(**kwargs)
     if not callable(probability_fn):
       raise TypeError("probability_fn must be callable, saw type: %s" %
                       type(probability_fn).__name__)
@@ -165,7 +165,7 @@ class _BaseAttentionMechanismV2(AttentionMechanism, layers.Layer):
       else:
         inputs = [memory, memory_sequence_length]
 
-      self.values = super(_BaseAttentionMechanismV2, self).__call__(
+      self.values = super(_BaseAttentionMechanism, self).__call__(
           inputs, setup_memory=True)
 
   def build(self, input_shape):
@@ -211,7 +211,7 @@ class _BaseAttentionMechanismV2(AttentionMechanism, layers.Layer):
         # We append the calculated memory here so that the graph will be
         # connected.
         inputs.append(self.values)
-    return super(_BaseAttentionMechanismV2, self).__call__(inputs, **kwargs)
+    return super(_BaseAttentionMechanism, self).__call__(inputs, **kwargs)
 
   def call(self, inputs, mask=None, setup_memory=False, **kwargs):
     """Setup the memory or query the attention.
@@ -353,7 +353,7 @@ class _BaseAttentionMechanismV2(AttentionMechanism, layers.Layer):
     # memory is a required init parameter and its a tensor. It cannot be
     # serialized to config, so we put a placeholder for it.
     config["memory"] = None
-    base_config = super(_BaseAttentionMechanismV2, self).get_config()
+    base_config = super(_BaseAttentionMechanism, self).get_config()
     return dict(list(base_config.items()) + list(config.items()))
 
   def _process_probability_fn(self, func_name):
@@ -500,7 +500,7 @@ def _luong_score(query, keys, scale):
   return score
 
 
-class LuongAttentionV2(_BaseAttentionMechanismV2):
+class LuongAttention(_BaseAttentionMechanism):
   """Implements Luong-style (multiplicative) attention scoring.
 
   This attention has two forms.  The first is standard Luong attention,
@@ -560,7 +560,7 @@ class LuongAttentionV2(_BaseAttentionMechanismV2):
     self.units = units
     self.scale = scale
     self.scale_weight = None
-    super(LuongAttentionV2, self).__init__(
+    super(LuongAttention, self).__init__(
         memory=memory,
         memory_sequence_length=memory_sequence_length,
         query_layer=None,
@@ -571,7 +571,7 @@ class LuongAttentionV2(_BaseAttentionMechanismV2):
         **kwargs)
 
   def build(self, input_shape):
-    super(LuongAttentionV2, self).build(input_shape)
+    super(LuongAttention, self).build(input_shape)
     if self.scale and self.scale_weight is None:
       self.scale_weight = self.add_weight(
           "attention_g", initializer=init_ops.ones_initializer, shape=())
@@ -604,12 +604,12 @@ class LuongAttentionV2(_BaseAttentionMechanismV2):
         "scale": self.scale,
         "probability_fn": self.probability_fn_name,
     }
-    base_config = super(LuongAttentionV2, self).get_config()
+    base_config = super(LuongAttention, self).get_config()
     return dict(list(base_config.items()) + list(config.items()))
 
   @classmethod
   def from_config(cls, config, custom_objects=None):
-    config = _BaseAttentionMechanismV2.deserialize_inner_layer_from_config(
+    config = _BaseAttentionMechanism.deserialize_inner_layer_from_config(
         config, custom_objects=custom_objects)
     return cls(**config)
 
@@ -657,7 +657,7 @@ def _bahdanau_score(processed_query, keys, attention_v,
         attention_v * math_ops.tanh(keys + processed_query), [2])
 
 
-class BahdanauAttentionV2(_BaseAttentionMechanismV2):
+class BahdanauAttention(_BaseAttentionMechanism):
   """Implements Bahdanau-style (additive) attention.
 
   This attention has two forms.  The first is Bahdanau attention,
@@ -731,7 +731,7 @@ class BahdanauAttentionV2(_BaseAttentionMechanismV2):
     self.attention_v = None
     self.attention_g = None
     self.attention_b = None
-    super(BahdanauAttentionV2, self).__init__(
+    super(BahdanauAttention, self).__init__(
         memory=memory,
         memory_sequence_length=memory_sequence_length,
         query_layer=query_layer,
@@ -742,7 +742,7 @@ class BahdanauAttentionV2(_BaseAttentionMechanismV2):
         **kwargs)
 
   def build(self, input_shape):
-    super(BahdanauAttentionV2, self).build(input_shape)
+    super(BahdanauAttention, self).build(input_shape)
     if self.attention_v is None:
       self.attention_v = self.add_weight(
           "attention_v", [self.units],
@@ -788,12 +788,12 @@ class BahdanauAttentionV2(_BaseAttentionMechanismV2):
         "probability_fn": self.probability_fn_name,
         "kernel_initializer": initializers.serialize(self.kernel_initializer)
     }
-    base_config = super(BahdanauAttentionV2, self).get_config()
+    base_config = super(BahdanauAttention, self).get_config()
     return dict(list(base_config.items()) + list(config.items()))
 
   @classmethod
   def from_config(cls, config, custom_objects=None):
-    config = _BaseAttentionMechanismV2.deserialize_inner_layer_from_config(
+    config = _BaseAttentionMechanism.deserialize_inner_layer_from_config(
         config, custom_objects=custom_objects)
     return cls(**config)
 
@@ -952,7 +952,7 @@ def _monotonic_probability_fn(score, previous_alignments, sigmoid_noise, mode,
   return monotonic_attention(p_choose_i, previous_alignments, mode)
 
 
-class _BaseMonotonicAttentionMechanismV2(_BaseAttentionMechanismV2):
+class _BaseMonotonicAttentionMechanism(_BaseAttentionMechanism):
   """Base attention mechanism for monotonic attention.
 
   Simply overrides the initial_alignments function to provide a dirac
@@ -980,7 +980,7 @@ class _BaseMonotonicAttentionMechanismV2(_BaseAttentionMechanismV2):
         dtype=dtype)
 
 
-class BahdanauMonotonicAttentionV2(_BaseMonotonicAttentionMechanismV2):
+class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
   """Monotonic attention mechanism with Bahadanau-style energy function.
 
   This type of attention enforces a monotonic constraint on the attention
@@ -1062,7 +1062,7 @@ class BahdanauMonotonicAttentionV2(_BaseMonotonicAttentionMechanismV2):
     self.attention_score_bias = None
     self.attention_g = None
     self.attention_b = None
-    super(BahdanauMonotonicAttentionV2, self).__init__(
+    super(BahdanauMonotonicAttention, self).__init__(
         memory=memory,
         memory_sequence_length=memory_sequence_length,
         query_layer=query_layer,
@@ -1073,7 +1073,7 @@ class BahdanauMonotonicAttentionV2(_BaseMonotonicAttentionMechanismV2):
         **kwargs)
 
   def build(self, input_shape):
-    super(BahdanauMonotonicAttentionV2, self).build(input_shape)
+    super(BahdanauMonotonicAttention, self).build(input_shape)
     if self.attention_v is None:
       self.attention_v = self.add_weight(
           "attention_v", [self.units], dtype=self.dtype,
@@ -1128,17 +1128,17 @@ class BahdanauMonotonicAttentionV2(_BaseMonotonicAttentionMechanismV2):
         "mode": self.mode,
         "kernel_initializer": initializers.serialize(self.kernel_initializer),
     }
-    base_config = super(BahdanauMonotonicAttentionV2, self).get_config()
+    base_config = super(BahdanauMonotonicAttention, self).get_config()
     return dict(list(base_config.items()) + list(config.items()))
 
   @classmethod
   def from_config(cls, config, custom_objects=None):
-    config = _BaseAttentionMechanismV2.deserialize_inner_layer_from_config(
+    config = _BaseAttentionMechanism.deserialize_inner_layer_from_config(
         config, custom_objects=custom_objects)
     return cls(**config)
 
 
-class LuongMonotonicAttentionV2(_BaseMonotonicAttentionMechanismV2):
+class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
   """Monotonic attention mechanism with Luong-style energy function.
 
   This type of attention enforces a monotonic constraint on the attention
@@ -1208,7 +1208,7 @@ class LuongMonotonicAttentionV2(_BaseMonotonicAttentionMechanismV2):
     self.mode = mode
     self.attention_g = None
     self.attention_score_bias = None
-    super(LuongMonotonicAttentionV2, self).__init__(
+    super(LuongMonotonicAttention, self).__init__(
         memory=memory,
         memory_sequence_length=memory_sequence_length,
         query_layer=None,
@@ -1219,7 +1219,7 @@ class LuongMonotonicAttentionV2(_BaseMonotonicAttentionMechanismV2):
         **kwargs)
 
   def build(self, input_shape):
-    super(LuongMonotonicAttentionV2, self).build(input_shape)
+    super(LuongMonotonicAttention, self).build(input_shape)
     if self.scale and self.attention_g is None:
       self.attention_g = self.add_weight(
           "attention_g", initializer=init_ops.ones_initializer, shape=())
@@ -1261,12 +1261,12 @@ class LuongMonotonicAttentionV2(_BaseMonotonicAttentionMechanismV2):
         "score_bias_init": self.score_bias_init,
         "mode": self.mode,
     }
-    base_config = super(LuongMonotonicAttentionV2, self).get_config()
+    base_config = super(LuongMonotonicAttention, self).get_config()
     return dict(list(base_config.items()) + list(config.items()))
 
   @classmethod
   def from_config(cls, config, custom_objects=None):
-    config = _BaseAttentionMechanismV2.deserialize_inner_layer_from_config(
+    config = _BaseAttentionMechanism.deserialize_inner_layer_from_config(
         config, custom_objects=custom_objects)
     return cls(**config)
 
@@ -1435,7 +1435,7 @@ def hardmax(logits, name=None):
 def _compute_attention(attention_mechanism, cell_output, attention_state,
     attention_layer):
   """Computes the attention and alignments for a given attention_mechanism."""
-  if isinstance(attention_mechanism, _BaseAttentionMechanismV2):
+  if isinstance(attention_mechanism, _BaseAttentionMechanism):
     alignments, next_attention_state = attention_mechanism(
         [cell_output, attention_state])
   else:

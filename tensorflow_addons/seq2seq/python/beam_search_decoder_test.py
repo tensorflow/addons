@@ -473,7 +473,7 @@ class TestLargeBeamStep(test.TestCase):
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class BeamSearchDecoderV2Test(test.TestCase):
+class BeamSearchDecoderTest(test.TestCase):
 
   def _testDynamicDecodeRNN(self, time_major, has_attention,
       with_alignment_history=False):
@@ -508,7 +508,7 @@ class BeamSearchDecoderV2Test(test.TestCase):
             inputs, multiplier=beam_width)
         tiled_sequence_length = beam_search_decoder.tile_batch(
             encoder_sequence_length, multiplier=beam_width)
-        attention_mechanism = attention_wrapper.BahdanauAttentionV2(
+        attention_mechanism = attention_wrapper.BahdanauAttention(
             units=attention_depth,
             memory=tiled_inputs,
             memory_sequence_length=tiled_sequence_length)
@@ -523,7 +523,7 @@ class BeamSearchDecoderV2Test(test.TestCase):
           dtype=dtypes.float32, batch_size=batch_size_tensor * beam_width)
       if has_attention:
         cell_state = cell_state.clone(cell_state=initial_state)
-      bsd = beam_search_decoder.BeamSearchDecoderV2(
+      bsd = beam_search_decoder.BeamSearchDecoder(
           cell=cell,
           beam_width=beam_width,
           output_layer=output_layer,

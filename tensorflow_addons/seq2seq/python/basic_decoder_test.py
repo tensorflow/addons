@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for contrib.seq2seq.python.seq2seq.basic_decoder_v2."""
+"""Tests for contrib.seq2seq.python.seq2seq.basic_decoder."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -37,7 +37,7 @@ from tensorflow.python.platform import test
 
 @keras_parameterized.run_all_keras_modes
 class BasicDecoderTest(keras_parameterized.TestCase):
-  """Unit test for basic_decoder.BasicDecoderV2."""
+  """Unit test for basic_decoder.BasicDecoder."""
 
   @parameterized.named_parameters(
       ("use_output_layer", True),
@@ -64,7 +64,7 @@ class BasicDecoderTest(keras_parameterized.TestCase):
         expected_output_depth = cell_depth
       initial_state = cell.zero_state(dtype=dtypes.float32,
                                       batch_size=batch_size)
-      my_decoder = basic_decoder.BasicDecoderV2(
+      my_decoder = basic_decoder.BasicDecoder(
           cell=cell,
           sampler=sampler,
           output_layer=output_layer)
@@ -143,7 +143,7 @@ class BasicDecoderTest(keras_parameterized.TestCase):
       sampler = sampler_py.GreedyEmbeddingSampler()
       initial_state = cell.zero_state(
           dtype=dtypes.float32, batch_size=batch_size)
-      my_decoder = basic_decoder.BasicDecoderV2(
+      my_decoder = basic_decoder.BasicDecoder(
           cell=cell,
           sampler=sampler)
       (first_finished, first_inputs, first_state) = my_decoder.initialize(
@@ -220,7 +220,7 @@ class BasicDecoderTest(keras_parameterized.TestCase):
       sampler = sampler_py.SampleEmbeddingSampler(seed=0)
       initial_state = cell.zero_state(
           dtype=dtypes.float32, batch_size=batch_size)
-      my_decoder = basic_decoder.BasicDecoderV2(cell=cell, sampler=sampler)
+      my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
       (first_finished,
        first_inputs,
        first_state) = my_decoder.initialize(embeddings_t,
@@ -294,7 +294,7 @@ class BasicDecoderTest(keras_parameterized.TestCase):
           time_major=False)
       initial_state = cell.zero_state(
           dtype=dtypes.float32, batch_size=batch_size)
-      my_decoder = basic_decoder.BasicDecoderV2(
+      my_decoder = basic_decoder.BasicDecoder(
           cell=cell,
           sampler=sampler)
       (first_finished, first_inputs, first_state) = my_decoder.initialize(
@@ -396,7 +396,7 @@ class BasicDecoderTest(keras_parameterized.TestCase):
       initial_state = cell.zero_state(
           dtype=dtypes.float32, batch_size=batch_size)
 
-      my_decoder = basic_decoder.BasicDecoderV2(
+      my_decoder = basic_decoder.BasicDecoder(
           cell=cell,
           sampler=sampler)
 
@@ -536,7 +536,7 @@ class BasicDecoderTest(keras_parameterized.TestCase):
           next_inputs_fn=next_inputs_fn)
       initial_state = cell.zero_state(
           dtype=dtypes.float32, batch_size=batch_size)
-      my_decoder = basic_decoder.BasicDecoderV2(
+      my_decoder = basic_decoder.BasicDecoder(
           cell=cell,
           sampler=sampler)
       (first_finished, first_inputs, first_state) = my_decoder.initialize(
@@ -615,7 +615,7 @@ class BasicDecoderTest(keras_parameterized.TestCase):
           end_fn=end_fn, next_inputs_fn=next_inputs_fn)
       initial_state = cell.zero_state(
           dtype=dtypes.float32, batch_size=batch_size)
-      my_decoder = basic_decoder.BasicDecoderV2(
+      my_decoder = basic_decoder.BasicDecoder(
           cell=cell,
           sampler=sampler)
       (first_finished, first_inputs, first_state) = my_decoder.initialize(

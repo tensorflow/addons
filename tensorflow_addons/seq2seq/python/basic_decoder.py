@@ -31,7 +31,7 @@ from tensorflow.python.util import nest
 
 __all__ = [
     "BasicDecoderOutput",
-    "BasicDecoderV2",
+    "BasicDecoder",
 ]
 
 
@@ -40,7 +40,7 @@ class BasicDecoderOutput(
   pass
 
 
-class BasicDecoderV2(decoder.BaseDecoder):
+class BasicDecoder(decoder.BaseDecoder):
   """Basic sampling decoder."""
 
   def __init__(self, cell, sampler, output_layer=None, **kwargs):
@@ -67,7 +67,7 @@ class BasicDecoderV2(decoder.BaseDecoder):
     self.cell = cell
     self.sampler = sampler
     self.output_layer = output_layer
-    super(BasicDecoderV2, self).__init__(**kwargs)
+    super(BasicDecoder, self).__init__(**kwargs)
 
   def initialize(self, inputs, initial_state=None, **kwargs):
     """Initialize the decoder."""
