@@ -3,6 +3,17 @@
 [![PyPI Status Badge](https://badge.fury.io/py/tensorflow-addons.svg)](https://pypi.org/project/tensorflow-addons/)
 [![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
 
+## Continuous build status
+
+### Official Builds
+
+| Build Type      | Status |
+| ---             | ---    |
+| **Linux Py2 CPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py2.html) |
+| **Linux Py3 CPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py3.html) |
+| **Linux Py2 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py2.html) |
+| **Linux Py3 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
+
 TensorFlow Addons is a repository of contributions that conform to
 well-established API patterns, but implement new functionality
 not available in core TensorFlow. TensorFlow natively supports
@@ -51,18 +62,6 @@ in time become dated and unused. In order to keep the project
 maintainable, SIG-Addons will perform periodic reviews and deprecate
 contributions which will be slated for removal. More information will
 be available after we submit a formal request for comment.
-
-## Continuous build status
-
-### Official Builds
-
-| Build Type      | Status |
-| ---             | ---    |
-| **Linux Py2 CPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py2.html) |
-| **Linux Py3 CPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py3.html) |
-| **Linux Py2 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py2.html) |
-| **Linux Py3 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
-
 
 ## Examples
 See [`tensorflow_addons/examples/`](tensorflow_addons/examples/)
