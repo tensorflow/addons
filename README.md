@@ -16,12 +16,14 @@ developments that cannot be integrated into core TensorFlow
 | Sub-Package    | Addon  | Reference                                  |
 |:----------------------- |:----------- |:---------------------------- |
 | tfa.activations | Sparsemax | https://arxiv.org/abs/1602.02068    |
+| tfa.image | adjust_hsv_in_yiq |                                   |
+| tfa.image | random_hsv_in_yiq |                                   |
 | tfa.image | transform |                                           |
 | tfa.layers | GroupNormalization | https://arxiv.org/abs/1803.08494 |
 | tfa.layers | InstanceNormalization | https://arxiv.org/abs/1607.08022 |
 | tfa.layers | LayerNormalization  | https://arxiv.org/abs/1607.06450 |
 | tfa.layers | Maxout | https://arxiv.org/abs/1302.4389             |
-| tfa.layers | PoinareNormalize | https://arxiv.org/abs/1705.08039  |
+| tfa.layers | PoincareNormalize | https://arxiv.org/abs/1705.08039  |
 | tfa.layers | WeightNormalization | https://arxiv.org/abs/1602.07868 |
 | tfa.losses | LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
 | tfa.losses | SparsemaxLoss | https://arxiv.org/abs/1602.02068 | 
@@ -60,6 +62,15 @@ for end-to-end examples of various addons.
 To install the latest version, run the following:
 ```
 pip install tensorflow-addons
+```
+
+**Note:** You will also need [TensorFlow 2.0 or higher](https://www.tensorflow.org/alpha). 
+
+To use addons:
+
+```python
+import tensorflow as tf
+import tensorflow_addons as tfa
 ```
 
 #### Installing from Source

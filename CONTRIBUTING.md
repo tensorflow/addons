@@ -68,7 +68,7 @@ Try those commands below:
 Addons provides `make code-format` command to format your changes
 automatically, don't forget to use it before pushing your codes.
 
-Please see our [Style Guide](SYLE_GUIDE.md) for more details.
+Please see our [Style Guide](STYLE_GUIDE.md) for more details.
 
 ## Code Testing
 #### CI Testing
