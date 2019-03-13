@@ -92,7 +92,7 @@ the `transforms` to the `images`. Satisfies the description above.
 }  // namespace
 
 // V2 op supports output_shape.
-REGISTER_OP("ImageProjectiveTransform")
+REGISTER_OP("ImageProjectiveTransformV2")
     .Input("images: dtype")
     .Input("transforms: float32")
     .Input("output_shape: int32")
