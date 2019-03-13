@@ -32,10 +32,10 @@ In order to conform with the current API standard, all objects must:
  * Update the table of contents in this sub-package's README.
 
 ## Sample code and Migration guide from TF 1.X
-The code was originally rewritten in tensorflow.contrib.seq2seq, and has been updated to work with
-TF 2.0 API. The existing API has been reworked to get rid of deprecated TF APIs (eg, using variable
+The code was originally written in tensorflow.contrib.seq2seq, and has been updated to work with
+TF 2.0 API. The API has been reworked to get rid of deprecated TF APIs (eg, using variable
 scope to create variable, etc), and also meet the 2.0 API sytle (more object-oriented and use keras
-layers). With that, the usage of code need to slightly updated to use the new API. Please see
+layers). With that, the user side code need to be slightly updated to use the new API. Please see
 examples below:
 
 ### Basic Decoder
@@ -97,13 +97,13 @@ logits = outputs.rnn_output
 Note that the major difference here are:
 
 1. Both encoder and decoder are objects now, and all the metadata can be accessed, eg,
-   encoder.weights, etc.
+   `encoder.weights`, etc.
 1. All the tensor inputs are feed to encoder/decoder by calling it, instead of feedin when construct
    the instance. This allows the same instance to be reused if needed, just call it with other input
    tensors.
 1. Helper has been renamed to Sampler since it describer its behavior/usage better. There is a
    one-to-one mapping between existing Helper and new Sampler. Sampler is also a keras layer, which
-   takes input tensors at call() instead of __init__().
+   takes input tensors at `call()` instead of `__init__()`.
 
 
 ### Attention
@@ -132,8 +132,9 @@ decoder_cell = tfa.seq2seq.AttentionWrapper(
     attention_layer_size=num_units)
 ```
 
-1. The AttentionMechanism here is also a layer, we customized it so that it will take the memory
-   (encoder_state) during __init__, since the momory of the attention shouldn't be changed.
+1. The AttentionMechanism here is also a keras `layer`, we customized it so that it will take the
+   memory (encoder_state) during `__init__()`, since the momory of the attention shouldn't be
+   changed.
 
 ### Beam Search
 ``` python
