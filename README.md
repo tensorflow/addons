@@ -3,8 +3,6 @@
 [![PyPI Status Badge](https://badge.fury.io/py/tensorflow-addons.svg)](https://pypi.org/project/tensorflow-addons/)
 [![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
 
-## Continuous build status
-
 ### Official Builds
 
 | Build Type      | Status |
@@ -52,9 +50,9 @@ the list we adhere to:
 
 
 1) [Layers](tensorflow_addons/layers/README.md)
-1) [Optimizers](tensorflow_addons/optimizers/README.md)
-1) [Losses](tensorflow_addons/losses/README.md)
-1) [Custom Ops](tensorflow_addons/custom_ops/README.md)
+2) [Optimizers](tensorflow_addons/optimizers/README.md)
+3) [Losses](tensorflow_addons/losses/README.md)
+4) [Custom Ops](tensorflow_addons/custom_ops/README.md)
 
 #### Periodic Evaluation
 Based on the nature of this repository, there will be contributions that
