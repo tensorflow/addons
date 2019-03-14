@@ -7,9 +7,10 @@ sh_binary(
         "setup.py",
         "//tensorflow_addons",
         "//tensorflow_addons/activations:activations_py",
-        "//tensorflow_addons/custom_ops:custom_ops_py",
+        "//tensorflow_addons/image:images_ops_py",
         "//tensorflow_addons/layers:layers_py",
         "//tensorflow_addons/losses:losses_py",
         "//tensorflow_addons/optimizers:optimizers_py",
+        "//tensorflow_addons/text:text_py",
     ],
 )

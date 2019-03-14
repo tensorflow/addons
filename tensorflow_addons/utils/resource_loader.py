@@ -12,10 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Additional optimizers that conform to Keras API."""
-
+"""Utilities similar to tf.python.platform.resource_loader."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow_addons.optimizers.lazy_adam_optimizer import LazyAdamOptimizer
+import os
+
+
+def get_project_root():
+    """Returns project root folder."""
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def get_path_to_datafile(path):
+    """Get the path to the specified file in the data dependencies. The path is
+    relative to tensorflow_addons/
+
+    Args:
+      path: a string resource path relative to tensorflow_addons/
+    Returns:
+      The path to the specified data file
+    """
+    root_dir = get_project_root()
+    return os.path.join(root_dir, path)

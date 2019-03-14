@@ -6,8 +6,7 @@ py_library(
     name = "activations_py",
     srcs = [
         "__init__.py",
-        "python/__init__.py",
-        "python/sparsemax.py"
+        "sparsemax.py"
     ],
     srcs_version = "PY2AND3",
     deps = [
@@ -19,9 +18,9 @@ py_test(
     name = "sparsemax_py_test",
     size = "medium",
     srcs = [
-        "python/sparsemax_test.py",
+        "sparsemax_test.py",
     ],
-    main = "python/sparsemax_test.py",
+    main = "sparsemax_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":activations_py",

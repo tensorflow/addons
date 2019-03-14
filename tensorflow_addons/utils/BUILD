@@ -6,9 +6,9 @@ py_library(
     name = "utils_py",
     srcs = ([
         "__init__.py",
-        "python/__init__.py",
-        "python/keras_utils.py",
-        "python/test_utils.py",
+        "keras_utils.py",
+        "test_utils.py",
+        "resource_loader.py",
     ]),
     srcs_version = "PY2AND3",
 )

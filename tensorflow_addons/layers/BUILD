@@ -6,12 +6,11 @@ py_library(
     name = "layers_py",
     srcs = [
         "__init__.py",
-        "python/__init__.py",
-        "python/maxout.py",
-        "python/normalizations.py",
-        "python/poincare.py",
-        "python/sparsemax.py",
-        "python/wrappers.py",
+        "maxout.py",
+        "normalizations.py",
+        "poincare.py",
+        "sparsemax.py",
+        "wrappers.py",
     ],
     srcs_version = "PY2AND3",
     deps = [
@@ -24,9 +23,9 @@ py_test(
     name = "layers_wrappers_py_test",
     size = "small",
     srcs = [
-        "python/wrappers_test.py",
+        "wrappers_test.py",
     ],
-    main = "python/wrappers_test.py",
+    main = "wrappers_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":layers_py",
@@ -37,9 +36,9 @@ py_test(
     name = "sparsemax_py_test",
     size = "small",
     srcs = [
-        "python/sparsemax_test.py",
+        "sparsemax_test.py",
     ],
-    main = "python/sparsemax_test.py",
+    main = "sparsemax_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":layers_py",
@@ -50,9 +49,9 @@ py_test(
     name = "maxout_py_test",
     size = "small",
     srcs = [
-        "python/maxout_test.py",
+        "maxout_test.py",
     ],
-    main = "python/maxout_test.py",
+    main = "maxout_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":layers_py",
@@ -63,9 +62,9 @@ py_test(
     name = "layers_normalizations_py_test",
     size= "small",
     srcs = [
-        "python/normalizations_test.py",
+        "normalizations_test.py",
     ],
-    main = "python/normalizations_test.py",
+    main = "normalizations_test.py",
     srcs_version = "PY2AND3",
     deps = [
             ":layers_py",
