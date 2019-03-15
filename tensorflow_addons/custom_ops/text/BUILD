@@ -27,6 +27,7 @@ py_library(
     ]),
     data = [
         ":python/_skip_gram_ops.so",
+        "//tensorflow_addons/utils:utils_py",
     ],
     srcs_version = "PY2AND3",
 )

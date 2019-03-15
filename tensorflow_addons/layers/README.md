@@ -3,8 +3,11 @@
 ## Contents
 | Layer  | Reference                                     |
 |:----------------------- |:-----------------------------|
+| GroupNormalization | https://arxiv.org/abs/1803.08494 |
+| InstanceNormalization | https://arxiv.org/abs/1607.08022 |
+| LayerNormalization | https://arxiv.org/abs/1607.06450 |
 | Maxout | https://arxiv.org/abs/1302.4389               |
-| PoinareNormalize | https://arxiv.org/abs/1705.08039    |
+| PoincareNormalize | https://arxiv.org/abs/1705.08039    |
 | WeightNormalization | https://arxiv.org/abs/1602.07868 |
 
 
@@ -20,8 +23,10 @@ must:
 #### Testing Requirements
  * Simple unittests that demonstrate the layer is behaving as expected.
  * When applicable, run all unittests with TensorFlow's
-  `@run_all_in_graph_and_eager_modes` decorator.
- * Run `keras.testing_utils.layer_test` on the layer.
+   `@run_in_graph_and_eager_modes` (for test method)
+   or `run_all_in_graph_and_eager_modes` (for TestCase subclass)
+   decorator.
+ * Run `layer_test` on the layer.
  * Add a `py_test` to this sub-package's BUILD file.
 
 #### Documentation Requirements

@@ -30,7 +30,7 @@ _IMAGE_DTYPES = set([
     tf.dtypes.float32, tf.dtypes.float64
 ])
 
-ops.RegisterShape("ImageProjectiveTransform")(common_shapes.call_cpp_shape_fn)
+ops.RegisterShape("ImageProjectiveTransformV2")(common_shapes.call_cpp_shape_fn)
 
 
 @tf.function
@@ -108,7 +108,7 @@ def transform(images,
         else:
             raise TypeError("Transforms should have rank 1 or 2.")
 
-        output = _image_ops_so.image_projective_transform(
+        output = _image_ops_so.image_projective_transform_v2(
             images,
             output_shape=output_shape,
             transforms=transforms,
@@ -121,6 +121,7 @@ def transform(images,
             return output
 
 
+@tf.function
 def compose_transforms(*transforms):
     """Composes the transforms tensors.
 
@@ -144,6 +145,7 @@ def compose_transforms(*transforms):
         return matrices_to_flat_transforms(composed)
 
 
+@tf.function
 def flat_transforms_to_matrices(transforms):
     """Converts projective transforms to affine matrices.
 
@@ -176,6 +178,7 @@ def flat_transforms_to_matrices(transforms):
             tf.constant([-1, 3, 3]))
 
 
+@tf.function
 def matrices_to_flat_transforms(transform_matrices):
     """Converts affine matrices to projective transforms.
 
@@ -208,6 +211,7 @@ def matrices_to_flat_transforms(transform_matrices):
         return transforms[:, :8]
 
 
+@tf.function
 def angles_to_projective_transforms(angles,
                                     image_height,
                                     image_width,
@@ -256,7 +260,7 @@ def angles_to_projective_transforms(angles,
             axis=1)
 
 
-@ops.RegisterGradient("ImageProjectiveTransform")
+@ops.RegisterGradient("ImageProjectiveTransformV2")
 def _image_projective_transform_grad(op, grad):
     """Computes the gradient for ImageProjectiveTransform."""
     images = op.inputs[0]
@@ -280,7 +284,7 @@ def _image_projective_transform_grad(op, grad):
     transforms = flat_transforms_to_matrices(transforms=transforms)
     inverse = tf.linalg.inv(transforms)
     transforms = matrices_to_flat_transforms(inverse)
-    output = _image_ops_so.image_projective_transform(
+    output = _image_ops_so.image_projective_transform_v2(
         images=grad,
         transforms=transforms,
         output_shape=tf.shape(image_or_images)[1:3],

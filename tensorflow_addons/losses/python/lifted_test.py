@@ -21,8 +21,8 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from tensorflow.python.framework import test_util as tf_test_util
 from tensorflow_addons.losses.python import lifted
+from tensorflow_addons.utils.python import test_utils
 
 
 def pairwise_distance_np(feature, squared=False):
@@ -52,8 +52,8 @@ def pairwise_distance_np(feature, squared=False):
     return pairwise_distances
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class LiftedStructLossTest(tf.test.TestCase):
-    @tf_test_util.run_all_in_graph_and_eager_modes
     def testLiftedStruct(self):
         num_data = 10
         feat_dim = 6
