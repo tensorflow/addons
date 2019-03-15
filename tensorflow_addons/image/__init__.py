@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Additional optimizers that conform to Keras API."""
-
+"""Image manipulation ops."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow_addons.optimizers.lazy_adam_optimizer import LazyAdamOptimizer
+from tensorflow_addons.image.distort_image_ops import adjust_hsv_in_yiq
+from tensorflow_addons.image.distort_image_ops import random_hsv_in_yiq
+from tensorflow_addons.image.transform_ops import transform

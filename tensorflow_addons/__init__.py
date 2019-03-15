@@ -74,7 +74,7 @@ del print_function
 from tensorflow_addons import layers
 from tensorflow_addons import losses
 from tensorflow_addons import optimizers
-from tensorflow_addons.custom_ops import image
-from tensorflow_addons.custom_ops import text
+from tensorflow_addons import image
+from tensorflow_addons import text
 
 from tensorflow_addons.version import __version__
