@@ -60,7 +60,7 @@ class SparsemaxTest(tf.test.TestCase):
         z = random.uniform(low=-3, high=3, size=(test_obs, 10)).astype(dtype)
 
         test_utils.layer_test(
-            layer_cls=Sparsemax,
+            Sparsemax,
             input_data=z,
             expected_output=_np_sparsemax(z).astype(dtype))
 
