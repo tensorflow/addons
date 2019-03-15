@@ -3,7 +3,7 @@ licenses(["notice"])  # Apache 2.0
 package(default_visibility = ["//visibility:public"])
 
 py_library(
-    name = "utils_py",
+    name = "utils",
     srcs = ([
         "__init__.py",
         "keras_utils.py",

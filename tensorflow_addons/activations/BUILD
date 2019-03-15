@@ -3,19 +3,19 @@ licenses(["notice"])  # Apache 2.0
 package(default_visibility = ["//visibility:public"])
 
 py_library(
-    name = "activations_py",
+    name = "activations",
     srcs = [
         "__init__.py",
         "sparsemax.py"
     ],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorflow_addons/utils:utils_py",
+        "//tensorflow_addons/utils:utils",
     ],
 )
 
 py_test(
-    name = "sparsemax_py_test",
+    name = "sparsemax_test",
     size = "medium",
     srcs = [
         "sparsemax_test.py",
@@ -23,6 +23,6 @@ py_test(
     main = "sparsemax_test.py",
     srcs_version = "PY2AND3",
     deps = [
-        ":activations_py",
+        ":activations",
     ],
 )

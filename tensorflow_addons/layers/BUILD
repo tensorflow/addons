@@ -3,7 +3,7 @@ licenses(["notice"])  # Apache 2.0
 package(default_visibility = ["//visibility:public"])
 
 py_library(
-    name = "layers_py",
+    name = "layers",
     srcs = [
         "__init__.py",
         "maxout.py",
@@ -14,13 +14,13 @@ py_library(
     ],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorflow_addons/utils:utils_py",
-        "//tensorflow_addons/activations:activations_py",
+        "//tensorflow_addons/utils:utils",
+        "//tensorflow_addons/activations:activations",
     ],
 )
 
 py_test(
-    name = "layers_wrappers_py_test",
+    name = "layers_wrappers_test",
     size = "small",
     srcs = [
         "wrappers_test.py",
@@ -28,12 +28,12 @@ py_test(
     main = "wrappers_test.py",
     srcs_version = "PY2AND3",
     deps = [
-        ":layers_py",
+        ":layers",
     ]
 )
 
 py_test(
-    name = "sparsemax_py_test",
+    name = "sparsemax_test",
     size = "small",
     srcs = [
         "sparsemax_test.py",
@@ -41,12 +41,12 @@ py_test(
     main = "sparsemax_test.py",
     srcs_version = "PY2AND3",
     deps = [
-        ":layers_py",
+        ":layers",
     ],
 )
 
 py_test(
-    name = "maxout_py_test",
+    name = "maxout_test",
     size = "small",
     srcs = [
         "maxout_test.py",
@@ -54,12 +54,12 @@ py_test(
     main = "maxout_test.py",
     srcs_version = "PY2AND3",
     deps = [
-        ":layers_py",
+        ":layers",
     ]
 )
 
 py_test(
-    name = "layers_normalizations_py_test",
+    name = "layers_normalizations_test",
     size= "small",
     srcs = [
         "normalizations_test.py",
@@ -67,6 +67,6 @@ py_test(
     main = "normalizations_test.py",
     srcs_version = "PY2AND3",
     deps = [
-            ":layers_py",
+            ":layers",
         ]
 )
