@@ -50,12 +50,12 @@ using generator::INTERPOLATION_NEAREST;
 using generator::ProjectiveGenerator;
 
 template <typename Device, typename T>
-class ImageProjectiveTransform : public OpKernel {
+class ImageProjectiveTransformV2 : public OpKernel {
  private:
   Interpolation interpolation_;
 
  public:
-  explicit ImageProjectiveTransform(OpKernelConstruction* ctx) : OpKernel(ctx) {
+  explicit ImageProjectiveTransformV2(OpKernelConstruction* ctx) : OpKernel(ctx) {
     string interpolation_str;
     OP_REQUIRES_OK(ctx, ctx->GetAttr("interpolation", &interpolation_str));
     if (interpolation_str == "NEAREST") {
@@ -118,10 +118,10 @@ class ImageProjectiveTransform : public OpKernel {
 };
 
 #define REGISTER(TYPE)                                        \
-  REGISTER_KERNEL_BUILDER(Name("ImageProjectiveTransform")    \
+  REGISTER_KERNEL_BUILDER(Name("ImageProjectiveTransformV2")  \
                               .Device(DEVICE_CPU)             \
                               .TypeConstraint<TYPE>("dtype"), \
-                          ImageProjectiveTransform<CPUDevice, TYPE>)
+                          ImageProjectiveTransformV2<CPUDevice, TYPE>)
 
 TF_CALL_uint8(REGISTER);
 TF_CALL_int32(REGISTER);
@@ -157,11 +157,11 @@ TF_CALL_double(DECLARE_FUNCTOR);
 }  // end namespace functor
 
 #define REGISTER(TYPE)                                       \
-  REGISTER_KERNEL_BUILDER(Name("ImageProjectiveTransform")   \
+  REGISTER_KERNEL_BUILDER(Name("ImageProjectiveTransformV2") \
                               .Device(DEVICE_GPU)            \
                               .TypeConstraint<TYPE>("dtype") \
                               .HostMemory("output_shape"),   \
-                          ImageProjectiveTransform<GPUDevice, TYPE>)
+                          ImageProjectiveTransformV2<GPUDevice, TYPE>)
 
 TF_CALL_uint8(REGISTER);
 TF_CALL_int32(REGISTER);

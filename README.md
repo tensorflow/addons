@@ -3,6 +3,15 @@
 [![PyPI Status Badge](https://badge.fury.io/py/tensorflow-addons.svg)](https://pypi.org/project/tensorflow-addons/)
 [![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
 
+### Official Builds
+
+| Build Type      | Status |
+| ---             | ---    |
+| **Linux Py2 CPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py2.html) |
+| **Linux Py3 CPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py3.html) |
+| **Linux Py2 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py2.html) |
+| **Linux Py3 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
+
 TensorFlow Addons is a repository of contributions that conform to
 well-established API patterns, but implement new functionality
 not available in core TensorFlow. TensorFlow natively supports
@@ -32,9 +41,9 @@ the list we adhere to:
 
 
 1) [Layers](tensorflow_addons/layers/README.md)
-1) [Optimizers](tensorflow_addons/optimizers/README.md)
-1) [Losses](tensorflow_addons/losses/README.md)
-1) [Custom Ops](tensorflow_addons/custom_ops/README.md)
+2) [Optimizers](tensorflow_addons/optimizers/README.md)
+3) [Losses](tensorflow_addons/losses/README.md)
+4) [Custom Ops](tensorflow_addons/custom_ops/README.md)
 
 #### Periodic Evaluation
 Based on the nature of this repository, there will be contributions that
@@ -42,7 +51,6 @@ in time become dated and unused. In order to keep the project
 maintainable, SIG-Addons will perform periodic reviews and deprecate
 contributions which will be slated for removal. More information will
 be available after we submit a formal request for comment.
-
 
 ## Examples
 See [`tensorflow_addons/examples/`](tensorflow_addons/examples/)
