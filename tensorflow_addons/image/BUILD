@@ -4,7 +4,7 @@ package(default_visibility = ["//visibility:public"])
 
 
 py_library(
-    name = "images_ops",
+    name = "image",
     srcs = ([
         "__init__.py",
         "distort_image_ops.py",
@@ -26,7 +26,7 @@ py_test(
     ],
     main = "distort_image_ops_test.py",
     deps = [
-        ":images_ops",
+        ":image",
     ],
     srcs_version = "PY2AND3"
 )
@@ -41,6 +41,6 @@ py_test(
     main = "transform_test.py",
     srcs_version = "PY2AND3",
     deps = [
-        ":images_ops",
+        ":image",
     ],
 )

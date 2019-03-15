@@ -30,7 +30,8 @@ _IMAGE_DTYPES = set([
     tf.dtypes.float32, tf.dtypes.float64
 ])
 
-ops.RegisterShape("ImageProjectiveTransformV2")(common_shapes.call_cpp_shape_fn)
+ops.RegisterShape("ImageProjectiveTransformV2")(
+    common_shapes.call_cpp_shape_fn)
 
 
 @tf.function
