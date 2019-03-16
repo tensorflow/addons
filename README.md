@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="static/SIGAddons.svg" width="60%"><br><br>
+  <img src="static/SIGAddons.png" width="60%"><br><br>
 </div>
 
 -----------------
