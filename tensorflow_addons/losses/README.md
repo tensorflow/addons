@@ -3,6 +3,7 @@
 ## Contents
 | Loss  | Reference                                              |
 |:----------------------- |:-------------------------------------|
+| FocalLoss | https://arxiv.org/abs/1708.02002       |
 | LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
 | SparsemaxLoss |  https://arxiv.org/abs/1602.02068 | 
 | TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
