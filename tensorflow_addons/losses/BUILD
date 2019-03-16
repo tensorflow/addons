@@ -7,6 +7,7 @@ py_library(
     srcs = [
         "__init__.py",
         "python/__init__.py",
+        "python/focal_loss.py",
         "python/lifted.py",
         "python/metric_learning.py",
         "python/sparsemax_loss.py",
@@ -16,6 +17,19 @@ py_library(
     deps = [
         "//tensorflow_addons/utils:utils_py",
         "//tensorflow_addons/activations:activations_py",
+    ],
+)
+
+py_test(
+    name = "focal_loss_py_test",
+    size = "small",
+    srcs = [
+        "python/focal_loss_test.py",
+    ],
+    main = "python/focal_loss_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":losses_py",
     ],
 )
 
