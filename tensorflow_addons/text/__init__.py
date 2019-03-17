@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Additional optimizers that conform to Keras API."""
-
+"""Text-processing ops."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow_addons.optimizers.lazy_adam_optimizer import LazyAdamOptimizer
+# Skip Gram Sampling
+from tensorflow_addons.text.skip_gram_ops import skip_gram_sample
+from tensorflow_addons.text.skip_gram_ops import skip_gram_sample_with_text_vocab
