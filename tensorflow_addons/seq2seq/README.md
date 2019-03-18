@@ -30,10 +30,6 @@ In order to conform with the current API standard, all objects must:
    or `run_all_in_graph_and_eager_modes` (for TestCase subclass) decorator.
  * Add a `py_test` to this sub-package's BUILD file.
 
-#### Documentation Requirements
- * Update the table of contents in the project's central README.
- * Update the table of contents in this sub-package's README.
-
 ## Sample code and Migration guide from TF 1.X
 The code was originally written in tensorflow.contrib.seq2seq, and has been updated to work with
 TF 2.0 API. The API has been reworked to get rid of deprecated TF APIs (eg, using variable
