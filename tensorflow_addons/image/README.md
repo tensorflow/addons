@@ -25,7 +25,7 @@ must:
  * Add the addon to the `py_library` in this sub-package's BUILD file.
 
 #### Testing Requirements
- * Simple unittests that demonstrate the custom op is behaving as
+ * Simple unittests that demonstrate the image op is behaving as
     expected.
  * When applicable, run all unittests with TensorFlow's
    `@run_in_graph_and_eager_modes` (for test method)
