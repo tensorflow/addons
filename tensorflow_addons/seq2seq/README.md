@@ -1,5 +1,8 @@
 # Addons - Seq2seq
 
+## Maintainers
+qlzh727
+
 ## Contents
 | Module | Description                             |
 |:----------------------- |:-----------------------------|
