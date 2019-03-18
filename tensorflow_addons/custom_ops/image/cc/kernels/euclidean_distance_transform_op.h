@@ -55,10 +55,10 @@ public:
 
     float minDistance = std::numeric_limits<T>::max();
 
-    for (int k = 0; k < height_; ++k) {
-      for (int h = 0; h < width_; ++h) {
-        if (input_({coords[0], k, h, coords[3]}) == T(0)) {
-          float dist = std::sqrt((x - k) * (x - k) + (h - y) * (h - y));
+    for (int h = 0; h < height_; ++h) {
+      for (int w = 0; w < width_; ++w) {
+        if (input_({coords[0], h, w, coords[3]}) == T(0)) {
+          float dist = std::sqrt((x - h) * (x - h) + (y - w) * (y - w));
           minDistance = std::min(minDistance, dist);
         }
       }

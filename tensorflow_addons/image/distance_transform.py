@@ -58,7 +58,7 @@ def euclidean_dist_transform(images, dtype=dtypes.float32, name=None):
       ValueError: If `image` is not a binary image
 
     """
-    with ops.name_scope(name, "euclidean_distance_transform"):
+    with ops.name_scope(name, "euclidean_distance_transform", [images]):
         image_or_images = ops.convert_to_tensor(images, name="images")
 
         if image_or_images.dtype.base_dtype != dtypes.uint8:

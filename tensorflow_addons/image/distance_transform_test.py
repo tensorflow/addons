@@ -48,8 +48,10 @@ class DistanceOpsTest(test.TestCase):
                 2, 2.23606801, 2, 2.23606801, 2, 1, 1.41421354, 1, 1.41421354,
                 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0
             ])
-            self.assertNDArrayNear(output_nd, expected_output, 1e-3)
-            self.assertEqual(output.dtype, dtype)
+            with self.subTest(name="output_value"):
+                self.assertNDArrayNear(output_nd, expected_output, 1e-3)
+            with self.subTest(name="output_type"):
+                self.assertEqual(output.dtype, dtype)
 
 
 if __name__ == "__main__":
