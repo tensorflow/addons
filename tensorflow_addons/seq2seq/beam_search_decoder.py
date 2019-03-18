@@ -21,8 +21,8 @@ from __future__ import print_function
 import collections
 import numpy as np
 
-from tensorflow_addons.seq2seq.python import attention_wrapper
-from tensorflow_addons.seq2seq.python import decoder
+from tensorflow_addons.seq2seq import attention_wrapper
+from tensorflow_addons.seq2seq import decoder
 from tensorflow.python.eager import context
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
@@ -40,9 +40,10 @@ from tensorflow.python.platform import tf_logging
 from tensorflow.python.util import nest
 
 from tensorflow.python.framework import load_library
-from tensorflow.python.platform import resource_loader
+from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+
 _beam_search_ops_so = load_library.load_op_library(
-    resource_loader.get_path_to_datafile("_beam_search_ops.so"))
+    get_path_to_datafile("custom_ops/seq2seq/_beam_search_ops.so"))
 gather_tree = _beam_search_ops_so.gather_tree
 
 __all__ = [

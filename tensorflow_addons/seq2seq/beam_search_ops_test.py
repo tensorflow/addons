@@ -25,9 +25,10 @@ from tensorflow.python.framework import ops
 from tensorflow.python.platform import test
 
 from tensorflow.python.framework import load_library
-from tensorflow.python.platform import resource_loader
+from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+
 _beam_search_ops_so = load_library.load_op_library(
-    resource_loader.get_path_to_datafile("_beam_search_ops.so"))
+    get_path_to_datafile("custom_ops/seq2seq/_beam_search_ops.so"))
 gather_tree = _beam_search_ops_so.gather_tree
 
 

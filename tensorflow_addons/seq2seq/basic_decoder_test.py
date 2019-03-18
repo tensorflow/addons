@@ -20,8 +20,8 @@ from __future__ import print_function
 from absl.testing import parameterized
 import numpy as np
 
-from tensorflow_addons.seq2seq.python import basic_decoder
-from tensorflow_addons.seq2seq.python import sampler as sampler_py
+from tensorflow_addons.seq2seq import basic_decoder
+from tensorflow_addons.seq2seq import sampler as sampler_py
 
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes

@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Additional optimizers that conform to Keras API"""
+"""Ops for building neural network sequence to sequence decoders and losses."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow_addons.seq2seq.python import attention_wrapper
-from tensorflow_addons.seq2seq.python import basic_decoder
-from tensorflow_addons.seq2seq.python import beam_search_decoder
-from tensorflow_addons.seq2seq.python import decoder
-from tensorflow_addons.seq2seq.python import loss
-from tensorflow_addons.seq2seq.python import sampler
+from tensorflow_addons.seq2seq import attention_wrapper
+from tensorflow_addons.seq2seq import basic_decoder
+from tensorflow_addons.seq2seq import beam_search_decoder
+from tensorflow_addons.seq2seq import decoder
+from tensorflow_addons.seq2seq import loss
+from tensorflow_addons.seq2seq import sampler

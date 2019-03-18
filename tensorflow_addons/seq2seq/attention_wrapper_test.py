@@ -22,9 +22,9 @@ import collections
 from absl.testing import parameterized
 import numpy as np
 
-from tensorflow_addons.seq2seq.python import attention_wrapper as wrapper
-from tensorflow_addons.seq2seq.python import basic_decoder
-from tensorflow_addons.seq2seq.python import sampler as sampler_py
+from tensorflow_addons.seq2seq import attention_wrapper as wrapper
+from tensorflow_addons.seq2seq import basic_decoder
+from tensorflow_addons.seq2seq import sampler as sampler_py
 from tensorflow.python import keras
 from tensorflow.python.eager import context
 from tensorflow.python.framework import dtypes

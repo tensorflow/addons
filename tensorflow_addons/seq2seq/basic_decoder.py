@@ -21,8 +21,8 @@ from __future__ import print_function
 
 import collections
 
-from tensorflow_addons.seq2seq.python import decoder
-from tensorflow_addons.seq2seq.python import sampler as sampler_py
+from tensorflow_addons.seq2seq import decoder
+from tensorflow_addons.seq2seq import sampler as sampler_py
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.keras import layers
 from tensorflow.python.ops import rnn_cell_impl

@@ -25,7 +25,7 @@ from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.platform import test
-from tensorflow_addons.seq2seq.python import loss
+from tensorflow_addons.seq2seq import loss
 
 
 @test_util.run_all_in_graph_and_eager_modes

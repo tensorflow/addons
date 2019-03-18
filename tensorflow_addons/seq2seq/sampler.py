@@ -22,7 +22,7 @@ import abc
 
 import six
 
-from tensorflow_addons.seq2seq.python import decoder
+from tensorflow_addons.seq2seq import decoder
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_shape
