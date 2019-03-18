@@ -13,18 +13,65 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# Usage: configure.sh [--quiet]
+# Usage: configure.sh [-q | --quiet] [-p | --pip-index xxx]
 #
 # Options:
-#  --quiet  Give less output.
+#  -q | --quiet  Give less output.
+#  -p | --pip-index using given pip index url to install python package
 
-QUIET_FLAG=""
-if [[ $1 == "--quiet" ]]; then
-    QUIET_FLAG="--quiet"
-elif [[ ! -z "$1" ]]; then
-    echo "Found unsupported args: $@"
+# getopt part of this code are created with the help of Stack Overflow question
+# https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
+# Answer by Robert Siemer:
+# https://stackoverflow.com/users/825924/robert-siemer
+
+# saner programming env: these switches turn some bugs into errors
+set -o errexit -o pipefail -o noclobber -o nounset
+
+! getopt --test > /dev/null
+if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
+    echo 'I’m sorry, `getopt --test` failed in this environment.'
     exit 1
 fi
+
+OPTIONS=qp:
+LONGOPTS=quite,pip-index:
+
+# -use ! and PIPESTATUS to get exit code with errexit set
+# -temporarily store output to be able to check for errors
+# -activate quoting/enhanced mode (e.g. by writing out “--options”)
+# -pass arguments only via   -- "$@"   to separate them correctly
+! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
+if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+    # e.g. return value is 1
+    #  then getopt has complained about wrong arguments to stdout
+    exit 2
+fi
+# read getopt’s output this way to handle the quoting right:
+eval set -- "$PARSED"
+
+QUIET_FLAG=""
+PIP_INDEX_FLAG=""
+
+while true; do
+    case "$1" in
+        -q|--quite)
+            QUIET_FLAG="--quiet"
+            shift
+            ;;
+        -p|--pip-index)
+            PIP_INDEX_FLAG="-i $2"
+            shift 2
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Found unsupported args: $@"
+            exit 1
+            ;;
+    esac
+done
 
 function write_to_bazelrc() {
   echo "$1" >> .bazelrc
@@ -35,7 +82,7 @@ function write_action_env_to_bazelrc() {
 }
 
 [[ -f .bazelrc ]] && rm .bazelrc
-pip install $QUIET_FLAG -r requirements.txt
+pip install $PIP_INDEX_FLAG $QUIET_FLAG -r requirements.txt
 
 TF_CFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') )
 TF_LFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )
