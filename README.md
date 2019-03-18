@@ -1,4 +1,8 @@
-# TensorFlow Addons
+<div align="center">
+  <img src="static/SIGAddons.png" width="60%"><br><br>
+</div>
+
+-----------------
 
 [![PyPI Status Badge](https://badge.fury.io/py/tensorflow-addons.svg)](https://pypi.org/project/tensorflow-addons/)
 [![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
@@ -12,7 +16,7 @@
 | **Linux Py2 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py2.html) |
 | **Linux Py3 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
 
-TensorFlow Addons is a repository of contributions that conform to
+**TensorFlow Addons** is a repository of contributions that conform to
 well-established API patterns, but implement new functionality
 not available in core TensorFlow. TensorFlow natively supports
 a large number of operators, layers, metrics, losses, and optimizers.
@@ -21,24 +25,15 @@ developments that cannot be integrated into core TensorFlow
 (because their broad applicability is not yet clear, or it is mostly
  used by a smaller subset of the community).
 
-## Contents
-| Sub-Package    | Addon  | Reference                                  |
-|:----------------------- |:----------- |:---------------------------- |
-| tfa.activations | Sparsemax | https://arxiv.org/abs/1602.02068    |
-| tfa.image | adjust_hsv_in_yiq |                                   |
-| tfa.image | random_hsv_in_yiq |                                   |
-| tfa.image | transform |                                           |
-| tfa.layers | GroupNormalization | https://arxiv.org/abs/1803.08494 |
-| tfa.layers | InstanceNormalization | https://arxiv.org/abs/1607.08022 |
-| tfa.layers | LayerNormalization  | https://arxiv.org/abs/1607.06450 |
-| tfa.layers | Maxout | https://arxiv.org/abs/1302.4389             |
-| tfa.layers | PoincareNormalize | https://arxiv.org/abs/1705.08039  |
-| tfa.layers | WeightNormalization | https://arxiv.org/abs/1602.07868 |
-| tfa.losses | LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
-| tfa.losses | SparsemaxLoss | https://arxiv.org/abs/1602.02068 | 
-| tfa.losses | TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
-| tfa.optimizers | LazyAdamOptimizer | https://arxiv.org/abs/1412.6980 |
-| tfa.text | skip_gram_sample | https://arxiv.org/abs/1301.3781 |
+## Maintainers
+| Sub-Package    | Maintainers  | Contact Info                        |
+|:----------------------- |:----------- |:----------------------------|
+| tfa.activations | SIG-Addons | addons@tensorflow.org    |
+| tfa.image |  |                                   |
+| tfa.layers | SIG-Addons |     addons@tensorflow.org |
+| tfa.losses | SIG-Addons |     addons@tensorflow.org |
+| tfa.optimizers | SIG-Addons | addons@tensorflow.org |
+| tfa.text |  |  |
 
 ## Core Concepts
 
