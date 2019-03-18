@@ -414,7 +414,6 @@ class AttentionWrapperTest(test.TestCase, parameterized.TestCase):
                     expected_final_alignment_history,
                     final_alignment_history_info)
 
-    # TODO(b/126893309): reenable np.float16 once the bug is fixed.
     @parameterized.parameters([np.float32, np.float64])
     def testBahdanauNormalizedDType(self, dtype):
         encoder_outputs = self.encoder_outputs.astype(dtype)
@@ -440,7 +439,6 @@ class AttentionWrapperTest(test.TestCase, parameterized.TestCase):
         self.assertEqual(final_outputs.rnn_output.dtype, dtype)
         self.assertIsInstance(final_state, wrapper.AttentionWrapperState)
 
-    # TODO(b/126893309): reenable np.float16 once the bug is fixed.
     @parameterized.parameters([np.float32, np.float64])
     def testLuongScaledDType(self, dtype):
         # Test case for GitHub issue 18099
