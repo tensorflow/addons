@@ -18,12 +18,8 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.python.eager import def_function
 from tensorflow.python.framework import common_shapes
-from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
-from tensorflow.python.ops import math_ops
-
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 _image_ops_so = tf.load_op_library(
@@ -33,18 +29,18 @@ ops.NotDifferentiable("EuclideanDistanceTransform")
 ops.RegisterShape("EuclideanDistanceTransform")(
     common_shapes.call_cpp_shape_fn)
 
-_OUTPUT_DTYPES = [dtypes.float16, dtypes.float32, dtypes.float64]
+_OUTPUT_DTYPES = [tf.dtypes.float16, tf.dtypes.float32, tf.dtypes.float64]
 
 
-@def_function.function
-def euclidean_dist_transform(images, dtype=dtypes.float32, name=None):
+@tf.function
+def euclidean_dist_transform(images, dtype=tf.dtypes.float32, name=None):
     """
     Applies euclidean distance transform to the images_t
 
     Args:
       images: Tensor of shape (num_images, num_rows, num_columns, num_channels)
         (NHWC) or (num_rows, num_columns, num_channels) (HWC). The rank must be
-        statically knownself. The image must be a binary image of uint8 type.
+        statically known. The image must be a binary image of uint8 type.
       dtype: The dtype of the output, must be float16, float32 or float64
       name: The name of the op.
 
@@ -58,7 +54,7 @@ def euclidean_dist_transform(images, dtype=dtypes.float32, name=None):
       ValueError: If `image` is not a binary image
 
     """
-    with ops.name_scope(name, "euclidean_distance_transform", [images]):
+    with tf.name_scope(name, "euclidean_distance_transform", [images]):
         image_or_images = ops.convert_to_tensor(images, name="images")
 
         if image_or_images.dtype.base_dtype != dtypes.uint8:
@@ -79,7 +75,7 @@ def euclidean_dist_transform(images, dtype=dtypes.float32, name=None):
         if dtype not in _OUTPUT_DTYPES:
             raise ValueError("`dtype` must be float16, float32 or float64")
 
-        images = math_ops.cast(images, dtype)
+        images = tf.cast(images, dtype)
         output = _image_ops_so.euclidean_distance_transform(images)
 
         if len(image_or_images.get_shape()) == 3:

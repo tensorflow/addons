@@ -28,16 +28,22 @@ from tensorflow.python.platform import test
 from tensorflow_addons.image import distance_transform as distance_tranform_ops
 
 _OUTPUT_DTYPES = [dtypes.float16, dtypes.float32, dtypes.float64]
+_PRECISION = {dtypes.float16: 1e-3, dtypes.float32: 1e-6, dtypes.float64: 1e-6}
 
 
 class DistanceOpsTest(test.TestCase):
     @tf_test_util.run_all_in_graph_and_eager_modes
     def test_compose(self):
         for dtype in _OUTPUT_DTYPES:
+            # yapf: disable
             image = constant_op.constant(
-                [[1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [0, 1, 0, 1, 0],
-                 [1, 0, 1, 0, 1], [0, 1, 0, 1, 0]],
+                [[1, 1, 1, 1, 1],
+                 [1, 1, 1, 1, 1],
+                 [0, 1, 0, 1, 0],
+                 [1, 0, 1, 0, 1],
+                 [0, 1, 0, 1, 0]],
                 dtype=dtypes.uint8)
+            # yapf: enable
             image = array_ops.reshape(image, [5, 5, 1])
 
             output = distance_tranform_ops.euclidean_dist_transform(
@@ -49,9 +55,12 @@ class DistanceOpsTest(test.TestCase):
                 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0
             ])
             with self.subTest(name="output_value"):
-                self.assertNDArrayNear(output_nd, expected_output, 1e-3)
+                self.assertNDArrayNear(output_nd, expected_output,
+                                       _PRECISION[dtype])
             with self.subTest(name="output_type"):
                 self.assertEqual(output.dtype, dtype)
+            with self.subTest(name="output_shape"):
+                self.assertEqual(output.shape, [5, 5, 1])
 
 
 if __name__ == "__main__":
