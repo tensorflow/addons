@@ -13,12 +13,12 @@
 | Submodule  | Layer |  Reference  |
 |:---------- |:----------- |:------------- |
 | maxout | Maxout | https://arxiv.org/abs/1302.4389    |
-| normalizations | GroupNormalization | https://arxiv.org/abs/1803.08494 | 
-| normalizations | InstanceNormalization | https://arxiv.org/abs/1607.08022 | 
-| normalizations | LayerNormalization | https://arxiv.org/abs/1607.06450 | 
-| poincare | PoincareNormalize | https://arxiv.org/abs/1705.08039    | 
-| sparsemax| Sparsemax | https://arxiv.org/abs/1602.02068 | 
-| wrappers | WeightNormalization | https://arxiv.org/abs/1602.07868 | 
+| normalizations | GroupNormalization | https://arxiv.org/abs/1803.08494 |
+| normalizations | InstanceNormalization | https://arxiv.org/abs/1607.08022 |
+| normalizations | LayerNormalization | https://arxiv.org/abs/1607.06450 |
+| poincare | PoincareNormalize | https://arxiv.org/abs/1705.08039    |
+| sparsemax| Sparsemax | https://arxiv.org/abs/1602.02068 |
+| wrappers | WeightNormalization | https://arxiv.org/abs/1602.07868 |
 
 ## Contribution Guidelines
 #### Standard API

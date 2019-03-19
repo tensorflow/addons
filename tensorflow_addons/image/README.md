@@ -20,7 +20,7 @@
 In order to conform with the current API standard, all image ops
 must:
  * Be a standard image processing technique 
-* Must be impossible to implement in one of the other API
+ * Must be impossible to implement in one of the other API
  standards (Layers, Losses, etc.).
  * Add the addon to the `py_library` in this sub-package's BUILD file.
 
