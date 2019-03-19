@@ -1,5 +1,7 @@
 # Addons - Layers
 
+## Maintainers
+
 ## Contents
 | Layer  | Reference                                     |
 |:----------------------- |:-----------------------------|
@@ -30,5 +32,4 @@ must:
  * Add a `py_test` to this sub-package's BUILD file.
 
 #### Documentation Requirements
- * Update the table of contents in the project's central README.
  * Update the table of contents in this sub-package's README.
