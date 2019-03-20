@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Utilities for tf.keras."""
+"""Ops for building neural network sequence to sequence decoders and losses."""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-# TODO: find public API alternative to these
-from tensorflow.python.keras.losses import LossFunctionWrapper  # pylint: disable=unused-import
-from tensorflow.keras.utils import get_custom_objects
-
-
-def register_keras_custom_object(cls):
-    get_custom_objects()[cls.__name__] = cls
-    return cls
+from tensorflow_addons.seq2seq import attention_wrapper
+from tensorflow_addons.seq2seq import basic_decoder
+from tensorflow_addons.seq2seq import beam_search_decoder
+from tensorflow_addons.seq2seq import decoder
+from tensorflow_addons.seq2seq import loss
+from tensorflow_addons.seq2seq import sampler

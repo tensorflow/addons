@@ -26,7 +26,7 @@ developments that cannot be integrated into core TensorFlow
  used by a smaller subset of the community).
 
 ## Maintainers
-| Sub-Package    | Maintainers  | Contact Info                        |
+| Subpackage    | Maintainers  | Contact Info                        |
 |:----------------------- |:----------- |:----------------------------|
 | tfa.activations | SIG-Addons | addons@tensorflow.org    |
 | tfa.image |  |                                   |
@@ -37,19 +37,20 @@ developments that cannot be integrated into core TensorFlow
 
 ## Core Concepts
 
-#### Standardized APIs
+#### Standardized API within Subpackages
 User experience and project maintainability are core concepts in
 TF-Addons. In order to achieve these we require that our additions
 conform to established API patterns seen in core TensorFlow. Below is
 the list we adhere to:
 
+1) [Activations](tensorflow_addons/activations/README.md)
+2) [Image](tensorflow_addons/image/README.md)
+3) [Layers](tensorflow_addons/layers/README.md)
+4) [Losses](tensorflow_addons/losses/README.md)
+5) [Optimizers](tensorflow_addons/optimizers/README.md)
+6) [Text](tensorflow_addons/text/README.md)
 
-1) [Layers](tensorflow_addons/layers/README.md)
-2) [Optimizers](tensorflow_addons/optimizers/README.md)
-3) [Losses](tensorflow_addons/losses/README.md)
-4) [Custom Ops](tensorflow_addons/custom_ops/README.md)
-
-#### Periodic Evaluation
+#### Periodic Evaluation of Subpackages
 Based on the nature of this repository, there will be contributions that
 in time become dated and unused. In order to keep the project
 maintainable, SIG-Addons will perform periodic reviews and deprecate
