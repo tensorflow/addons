@@ -24,7 +24,6 @@ import math
 
 import numpy as np
 
-from tensorflow_addons.utils import tensor_util
 from tensorflow.python.eager import context
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
@@ -1382,7 +1381,13 @@ class AttentionWrapperState(
             """Check and set new tensor's shape."""
             if isinstance(old, ops.Tensor) and isinstance(new, ops.Tensor):
                 if not context.executing_eagerly():
-                    return tensor_util.with_same_shape(old, new)
+                    new_shape = array_ops.shape(new)
+                    old_shape = array_ops.shape(old)
+                    with ops.control_dependencies([
+                        check_ops.assert_equal(new_shape, old_shape,
+                                               data=[new_shape, old_shape])]):
+                        # Add an identity op so that control deps can kick in.
+                        return array_ops.identity(new)
                 else:
                     if old.shape.as_list() != new.shape.as_list():
                         raise ValueError(
