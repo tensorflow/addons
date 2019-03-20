@@ -1,7 +1,10 @@
 # Addons - Seq2seq
 
 ## Maintainers
-qlzh727
+| Submodule  |  Maintainers  | Contact Info   |
+|:---------- |:----------- |:--------------|
+| ALL | Google | @qlzh727 | 
+
 
 ## Contents
 | Module | Description                             |
