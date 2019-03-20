@@ -1,13 +1,18 @@
 # Addons - Losses
 
 ## Maintainers
+| Submodule  |  Maintainers  | Contact Info   |
+|:---------- |:----------- |:------------- |
+| lifted |  SIG-Addons | addons@tensorflow.org |
+| sparsemax_loss |  SIG-Addons | addons@tensorflow.org |
+| triplet |  SIG-Addons | addons@tensorflow.org |
 
-## Contents
-| Loss  | Reference                                              |
-|:----------------------- |:-------------------------------------|
-| LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
-| SparsemaxLoss |  https://arxiv.org/abs/1602.02068 | 
-| TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
+## Components
+| Submodule | Loss  | Reference               |
+|:----------------------- |:---------------------|:--------------------------|
+| lifted | LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
+| sparsemax_loss | SparsemaxLoss |  https://arxiv.org/abs/1602.02068 | 
+| triplet | TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
 
 
 ## Contribution Guidelines
