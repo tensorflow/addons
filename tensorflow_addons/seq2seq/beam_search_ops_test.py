@@ -66,7 +66,7 @@ class GatherTreeTest(test.TestCase):
         max_sequence_lengths = [3]
         with ops.device("/cpu:0"):
             with self.assertRaisesOpError(
-                    r"parent id -1 at \(batch, time, beam\) == \(0, 0, 1\)"):
+                r"parent id -1 at \(batch, time, beam\) == \(0, 0, 1\)"):
                 beams = gather_tree(
                     step_ids=step_ids,
                     parent_ids=parent_ids,
