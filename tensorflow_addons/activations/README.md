@@ -1,12 +1,14 @@
 # Addons - Activations
 
 ## Maintainers
-
+| Submodule  | Maintainers  | Contact Info   |
+|:---------- |:------------- |:--------------|
+| sparsemax |  SIG-Addons | addons@tensorflow.org   |
 
 ## Contents
-| Layer  | Reference                                     |
-|:----------------------- |:-----------------------------|
-| Sparsemax | https://arxiv.org/abs/1602.02068           |
+| Submodule | Activation  | Reference                               |
+|:----------------------- |:-------------------|:---------------|
+| sparsemax | Sparsemax | https://arxiv.org/abs/1602.02068           |
 
 
 ## Contribution Guidelines
