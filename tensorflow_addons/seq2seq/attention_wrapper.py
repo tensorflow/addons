@@ -1389,10 +1389,10 @@ class AttentionWrapperState(
                     new_shape = array_ops.shape(new)
                     old_shape = array_ops.shape(old)
                     with ops.control_dependencies([
-                        check_ops.assert_equal(
-                            new_shape,
-                            old_shape,
-                            data=[new_shape, old_shape])
+                            check_ops.assert_equal(
+                                new_shape,
+                                old_shape,
+                                data=[new_shape, old_shape])
                     ]):
                         # Add an identity op so that control deps can kick in.
                         return array_ops.identity(new)
@@ -1491,7 +1491,8 @@ def _maybe_mask_score(score,
         message = ("All values in memory_sequence_length must greater than "
                    "zero.")
         with ops.control_dependencies([
-            check_ops.assert_positive(memory_sequence_length, message=message)
+                check_ops.assert_positive(
+                    memory_sequence_length, message=message)
         ]):
             memory_mask = array_ops.sequence_mask(
                 memory_sequence_length, maxlen=array_ops.shape(score)[1])
@@ -1758,7 +1759,8 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
                     "initial state via the tf.contrib.seq2seq.tile_batch "
                     "function with argument multiple=beam_width.")
                 with ops.control_dependencies(
-                    self._batch_size_checks(state_batch_size, error_message)):
+                        self._batch_size_checks(state_batch_size,
+                                                error_message)):
                     self._initial_cell_state = nest.map_structure(
                         lambda s: array_ops.identity(
                             s, name="check_initial_cell_state"),
@@ -1840,8 +1842,8 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
             `batch_size` does not match the output size of the encoder passed
             to the wrapper object at initialization time.
         """
-        with ops.name_scope(type(self).__name__ + "ZeroState",
-                            values=[batch_size]):
+        with ops.name_scope(
+                type(self).__name__ + "ZeroState", values=[batch_size]):
             if self._initial_cell_state is not None:
                 cell_state = self._initial_cell_state
             else:
@@ -1857,7 +1859,7 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
                 "tf.contrib.seq2seq.tile_batch, and the batch_size= argument "
                 "passed to zero_state is batch_size * beam_width.")
             with ops.control_dependencies(
-                self._batch_size_checks(batch_size, error_message)):
+                    self._batch_size_checks(batch_size, error_message)):
                 cell_state = nest.map_structure(
                     lambda s: array_ops.identity(s, name="checked_cell_state"),
                     cell_state)
@@ -1935,8 +1937,8 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
             "the BeamSearchDecoder?  You may need to tile your memory input "
             "via the tf.contrib.seq2seq.tile_batch function with argument "
             "multiple=beam_width.")
-        with ops.control_dependencies(self._batch_size_checks(cell_batch_size,
-                                                              error_message)):
+        with ops.control_dependencies(
+                self._batch_size_checks(cell_batch_size, error_message)):
             cell_output = array_ops.identity(
                 cell_output, name="checked_cell_output")
 
