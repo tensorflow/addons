@@ -192,11 +192,11 @@ class _BaseAttentionMechanism(AttentionMechanism, layers.Layer):
            proper inputs, which allows this class to setup memory.
         2. When the memory has already been setup, the input should contain
            query and state, and optionally processed memory. If the processed
-           memory is not included in the input, we will have to append it to the
-           inputs and give it to the base_layer.__call__(). The processed memory
-           is the output of first invocation of self.__call__(). If we don't add
-           it here, then from keras perspective, the graph is disconnected since
-           the output from previous call is never used.
+           memory is not included in the input, we will have to append it to
+           the inputs and give it to the base_layer.__call__(). The processed
+           memory is the output of first invocation of self.__call__(). If we
+           don't add it here, then from keras perspective, the graph is
+           disconnected since the output from previous call is never used.
 
         Args:
           inputs: the inputs tensors.
@@ -233,9 +233,9 @@ class _BaseAttentionMechanism(AttentionMechanism, layers.Layer):
             `memory_sequence_length` (optional) is the sequence lengths for the
              batch entries in memory. If provided, the memory tensor rows are
             masked with zeros for values past the respective sequence lengths.
-          mask: optional bool tensor with shape `[batch, max_time]` for the mask
-            of memory. If it is not None, the corresponding item of the memory
-            should be filtered out during calculation.
+          mask: optional bool tensor with shape `[batch, max_time]` for the
+            mask of memory. If it is not None, the corresponding item of the
+            memory should be filtered out during calculation.
           setup_memory: boolean, whether the input is for setting up memory, or
             query attention.
           **kwargs: Dict, other keyword arguments for the call method.
@@ -292,8 +292,8 @@ class _BaseAttentionMechanism(AttentionMechanism, layers.Layer):
             entries in memory. If provided, the memory tensor rows are masked
             with zeros for values past the respective sequence lengths.
           memory_mask: (Optional) The boolean tensor with shape `[batch_size,
-            max_time]`. For any value equal to False, the corresponding value in
-            memory should be ignored.
+            max_time]`. For any value equal to False, the corresponding value
+            in memory should be ignored.
         """
         if self._memory_initialized:
             raise ValueError(
@@ -387,15 +387,16 @@ class _BaseAttentionMechanism(AttentionMechanism, layers.Layer):
         action to reconstruct the layer from the config.
 
         Args:
-          config: dict, the configs that will be used to reconstruct the object.
-          custom_objects: dict mapping class names (or function names) of custom
-            (non-Keras) objects to class/functions.
+          config: dict, the configs that will be used to reconstruct the
+            object.
+          custom_objects: dict mapping class names (or function names) of
+            custom (non-Keras) objects to class/functions.
         Returns:
           config: dict, the config with layer instance created, which is ready
             to be used as init parameters.
         """
         # Reconstruct the query and memory layer for parent class.
-        from tensorflow.python.keras.layers import deserialize as deserialize_layer  # pylint: disable=g-import-not-at-top
+        from tensorflow.python.keras.layers import deserialize as deserialize_layer
         # Instead of updating the input, create a copy and use that.
         config = config.copy()
         query_layer_config = config.pop("query_layer", None)
@@ -446,7 +447,8 @@ class _BaseAttentionMechanism(AttentionMechanism, layers.Layer):
         alignment to calculate the alignment at the next time step
         (e.g. monotonic attention).
 
-        The default behavior is to return the same output as initial_alignments.
+        The default behavior is to return the same output as
+        initial_alignments.
 
         Args:
           batch_size: `int32` scalar, the batch_size.
@@ -489,7 +491,7 @@ def _luong_score(query, keys, scale):
     key_units = keys.get_shape()[-1]
     if depth != key_units:
         raise ValueError(
-            "Incompatible or unknown inner dimensions between query and keys.  "
+            "Incompatible or unknown inner dimensions between query and keys. "
             "Query (%s) has units: %s.  Keys (%s) have units: %s.  "
             "Perhaps you need to set num_units to the keys' dimension (%s)?" %
             (query, depth, keys, key_units, key_units))
@@ -551,11 +553,11 @@ class LuongAttention(_BaseAttentionMechanism):
             entries in memory.  If provided, the memory tensor rows are masked
             with zeros for values past the respective sequence lengths.
           scale: Python boolean. Whether to scale the energy term.
-          probability_fn: (optional) string, the name of function to convert the
-            attention score to probabilities. The default is `softmax` which is
-            `tf.nn.softmax`. Other options is `hardmax`, which is hardmax()
-            within this module. Any other value will result intovalidation
-            error. Default to use `softmax`.
+          probability_fn: (optional) string, the name of function to convert
+            the attention score to probabilities. The default is `softmax`
+            which is `tf.nn.softmax`. Other options is `hardmax`, which is
+            hardmax() within this module. Any other value will result
+            intovalidation error. Default to use `softmax`.
           dtype: The data type for the memory layer of the attention mechanism.
           name: Name to use when creating ops.
           **kwargs: Dictionary that contains other common arguments for layer
@@ -654,7 +656,8 @@ def _bahdanau_score(processed_query,
     To enable the second form, set please pass in attention_g and attention_b.
 
     Args:
-      processed_query: Tensor, shape `[batch_size, num_units]` to compare to keys.
+      processed_query: Tensor, shape `[batch_size, num_units]` to compare to
+        keys.
       keys: Processed memory, shape `[batch_size, max_time, num_units]`.
       attention_v: Tensor, shape `[num_units]`.
       attention_g: Optional scalar tensor for normalization.
@@ -718,11 +721,11 @@ class BahdanauAttention(_BaseAttentionMechanism):
             entries in memory.  If provided, the memory tensor rows are masked
             with zeros for values past the respective sequence lengths.
           normalize: Python boolean.  Whether to normalize the energy term.
-          probability_fn: (optional) string, the name of function to convert the
-            attention score to probabilities. The default is `softmax` which is
-            `tf.nn.softmax`. Other options is `hardmax`, which is hardmax()
-            within this module. Any other value will result into validation
-            error. Default to use `softmax`.
+          probability_fn: (optional) string, the name of function to convert
+            the attention score to probabilities. The default is `softmax`
+            which is `tf.nn.softmax`. Other options is `hardmax`, which is
+            hardmax() within this module. Any other value will result into
+            validation error. Default to use `softmax`.
           kernel_initializer: (optional), the name of the initializer for the
             attention kernel.
           dtype: The data type for the query and memory layers of the attention
@@ -767,8 +770,8 @@ class BahdanauAttention(_BaseAttentionMechanism):
                 "attention_v", [self.units],
                 dtype=self.dtype,
                 initializer=self.kernel_initializer)
-        if (self.normalize and self.attention_g is None and
-            self.attention_b is None):
+        if (self.normalize and self.attention_g is None
+                and self.attention_b is None):
             self.attention_g = self.add_weight(
                 "attention_g",
                 initializer=init_ops.constant_initializer(
@@ -832,7 +835,8 @@ def safe_cumprod(x, *args, **kwargs):
     The cumprod function and its gradient can result in numerical instabilities
     when its argument has very small and/or zero values.  As long as the
     argument is all positive, we can instead compute the cumulative product as
-    exp(cumsum(log(x))).  This function can be called identically to tf.cumprod.
+    exp(cumsum(log(x))).  This function can be called identically to
+    tf.cumprod.
 
     Args:
       x: Tensor to take the cumulative product of.
@@ -857,9 +861,9 @@ def monotonic_attention(p_choose_i, previous_attention, mode):
     explicitly left-to-right manner when generating the output sequence.  In
     addition, once an input sequence element is attended to at a given output
     timestep, elements occurring before it cannot be attended to at subsequent
-    output timesteps.  This function generates attention distributions according
-    to these assumptions.  For more information, see `Online and Linear-Time
-    Attention by Enforcing Monotonic Alignments`.
+    output timesteps.  This function generates attention distributions
+    according to these assumptions.  For more information, see `Online and
+    Linear-Time Attention by Enforcing Monotonic Alignments`.
 
     Args:
       p_choose_i: Probability of choosing input sequence/memory element i.
@@ -1028,13 +1032,13 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
     """Monotonic attention mechanism with Bahadanau-style energy function.
 
     This type of attention enforces a monotonic constraint on the attention
-    distributions; that is once the model attends to a given point in the memory
-    it can't attend to any prior points at subsequence output timesteps.  It
-    achieves this by using the _monotonic_probability_fn instead of softmax to
-    construct its attention distributions.  Since the attention scores are
-    passed through a sigmoid, a learnable scalar bias parameter is applied after
-    the score function and before the sigmoid.  Otherwise, it is equivalent to
-    BahdanauAttention.  This approach is proposed in
+    distributions; that is once the model attends to a given point in the
+    memory it can't attend to any prior points at subsequence output timesteps.
+    It achieves this by using the _monotonic_probability_fn instead of softmax
+    to construct its attention distributions.  Since the attention scores are
+    passed through a sigmoid, a learnable scalar bias parameter is applied
+    after the score function and before the sigmoid.  Otherwise, it is
+    equivalent to BahdanauAttention.  This approach is proposed in
 
     Colin Raffel, Minh-Thang Luong, Peter J. Liu, Ron J. Weiss, Douglas Eck,
     "Online and Linear-Time Attention by Enforcing Monotonic Alignments."
@@ -1067,9 +1071,9 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
           sigmoid_noise: Standard deviation of pre-sigmoid noise. See the
             docstring for `_monotonic_probability_fn` for more information.
           sigmoid_noise_seed: (optional) Random seed for pre-sigmoid noise.
-          score_bias_init: Initial value for score bias scalar. It's recommended
-            to initialize this to a negative value when the length of the memory
-            is large.
+          score_bias_init: Initial value for score bias scalar. It's
+            recommended to initialize this to a negative value when the length
+            of the memory is large.
           mode: How to compute the attention distribution. Must be one of
             'recursive', 'parallel', or 'hard'. See the docstring for
             `tf.contrib.seq2seq.monotonic_attention` for more information.
@@ -1132,8 +1136,8 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
                 dtype=self.dtype,
                 initializer=init_ops.constant_initializer(
                     self.score_bias_init, dtype=self.dtype))
-        if (self.normalize and self.attention_g is None and
-            self.attention_b is None):
+        if (self.normalize and self.attention_g is None
+                and self.attention_b is None):
             self.attention_g = self.add_weight(
                 "attention_g",
                 dtype=self.dtype,
@@ -1199,10 +1203,10 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
     """Monotonic attention mechanism with Luong-style energy function.
 
     This type of attention enforces a monotonic constraint on the attention
-    distributions; that is once the model attends to a given point in the memory
-    it can't attend to any prior points at subsequence output timesteps.  It
-    achieves this by using the _monotonic_probability_fn instead of softmax to
-    construct its attention distributions.  Otherwise, it is equivalent to
+    distributions; that is once the model attends to a given point in the
+    memory it can't attend to any prior points at subsequence output timesteps.
+    It achieves this by using the _monotonic_probability_fn instead of softmax
+    to construct its attention distributions.  Otherwise, it is equivalent to
     LuongAttention.  This approach is proposed in
 
     [Colin Raffel, Minh-Thang Luong, Peter J. Liu, Ron J. Weiss, Douglas Eck,
@@ -1344,8 +1348,9 @@ class AttentionWrapperState(
         step.
       - `attention`: The attention emitted at the previous time step.
       - `time`: int32 scalar containing the current time step.
-      - `alignments`: A single or tuple of `Tensor`(s) containing the alignments
-         emitted at the previous time step for each attention mechanism.
+      - `alignments`: A single or tuple of `Tensor`(s) containing the
+         alignments emitted at the previous time step for each attention
+         mechanism.
       - `alignment_history`: (if enabled) a single or tuple of `TensorArray`(s)
          containing alignment matrices from all time steps for each attention
          mechanism. Call `stack()` on each to convert to a `Tensor`.
@@ -1358,8 +1363,8 @@ class AttentionWrapperState(
         """Clone this object, overriding components provided by kwargs.
 
         The new state fields' shape must match original state fields' shape.
-        This will be validated, and original fields' shape will be propagated to
-        new fields.
+        This will be validated, and original fields' shape will be propagated
+        to new fields.
 
         Example:
 
@@ -1384,8 +1389,11 @@ class AttentionWrapperState(
                     new_shape = array_ops.shape(new)
                     old_shape = array_ops.shape(old)
                     with ops.control_dependencies([
-                        check_ops.assert_equal(new_shape, old_shape,
-                                               data=[new_shape, old_shape])]):
+                            check_ops.assert_equal(
+                                new_shape,
+                                old_shape,
+                                data=[new_shape, old_shape])
+                    ]):
                         # Add an identity op so that control deps can kick in.
                         return array_ops.identity(new)
                 else:
@@ -1564,8 +1572,8 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
                  attention_fn=None):
         """Construct the `AttentionWrapper`.
 
-        **NOTE** If you are using the `BeamSearchDecoder` with a cell wrapped in
-        `AttentionWrapper`, then you must ensure that:
+        **NOTE** If you are using the `BeamSearchDecoder` with a cell wrapped
+        in `AttentionWrapper`, then you must ensure that:
 
         - The encoder output has been tiled to `beam_width` via
           `tf.contrib.seq2seq.tile_batch` (NOT `tf.tile`).
@@ -1602,15 +1610,15 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
           attention_layer_size: A list of Python integers or a single Python
             integer, the depth of the attention (output) layer(s). If None
             (default), use the context as attention at each time step.
-            Otherwise, feed the context and cell output into the attention layer
-            to generate attention at each time step. If attention_mechanism is a
-            list, attention_layer_size must be a list of the same length. If
-            attention_layer is set, this must be None. If attention_fn is set,
-            it must guaranteed that the outputs of attention_fn also meet the
-            above requirements.
+            Otherwise, feed the context and cell output into the attention
+            layer to generate attention at each time step. If
+            attention_mechanism is a list, attention_layer_size must be a list
+            of the same length. If attention_layer is set, this must be None.
+            If attention_fn is set, it must guaranteed that the outputs of
+            attention_fn also meet the above requirements.
           alignment_history: Python boolean, whether to store alignment history
-            from all time steps in the final output state (currently stored as a
-            time major `TensorArray` on which you must call `stack()`).
+            from all time steps in the final output state (currently stored as
+            a time major `TensorArray` on which you must call `stack()`).
           cell_input_fn: (optional) A `callable`.  The default is:
             `lambda inputs, attention:
               array_ops.concat([inputs, attention], -1)`.
@@ -1619,28 +1627,29 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
             Luong-style attention mechanisms.  If `False`, the output at each
             time step is the output of `cell`.  This is the behavior of
             Bhadanau-style attention mechanisms.  In both cases, the `attention`
-            tensor is propagated to the next time step via the state and is used
-            there. This flag only controls whether the attention mechanism is
-            propagated up to the next cell in an RNN stack or to the top RNN
+            tensor is propagated to the next time step via the state and is
+            used there. This flag only controls whether the attention mechanism
+            is propagated up to the next cell in an RNN stack or to the top RNN
             output.
           initial_cell_state: The initial state value to use for the cell when
             the user calls `zero_state()`.  Note that if this value is provided
-            now, and the user uses a `batch_size` argument of `zero_state` which
-            does not match the batch size of `initial_cell_state`, proper
+            now, and the user uses a `batch_size` argument of `zero_state`
+            which does not match the batch size of `initial_cell_state`, proper
             behavior is not guaranteed.
           name: Name to use when creating ops.
           attention_layer: A list of `tf.layers.Layer` instances or a
-            single `tf.layers.Layer` instance taking the context and cell output
-            as inputs to generate attention at each time step. If None
+            single `tf.layers.Layer` instance taking the context and cell
+            output as inputs to generate attention at each time step. If None
             (default), use the context as attention at each time step. If
-            attention_mechanism is a list, attention_layer must be a list of the
-            same length. If attention_layers_size is set, this must be None.
+            attention_mechanism is a list, attention_layer must be a list of
+            the same length. If attention_layers_size is set, this must be
+            None.
           attention_fn: An optional callable function that allows users to
             provide their own customized attention function, which takes input
-            (attention_mechanism, cell_output, attention_state, attention_layer)
-            and outputs (attention, alignments, next_attention_state). If
-            provided, the attention_layer_size should be the size of the outputs
-            of attention_fn.
+            (attention_mechanism, cell_output, attention_state,
+            attention_layer) and outputs (attention, alignments,
+            next_attention_state). If provided, the attention_layer_size should
+            be the size of the outputs of attention_fn.
 
         Raises:
           TypeError: `attention_layer_size` is not None and
@@ -1775,8 +1784,9 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
           seq: A non-empty sequence of items or generator.
 
         Returns:
-           Either the values in the sequence as a tuple if AttentionMechanism(s)
-           were passed to the constructor as a sequence or the singular element.
+           Either the values in the sequence as a tuple if
+           AttentionMechanism(s) were passed to the constructor as a sequence
+           or the singular element.
         """
         t = tuple(seq)
         if self._is_multi:
@@ -1842,7 +1852,7 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
                 "When calling zero_state of AttentionWrapper %s: " %
                 self._base_name +
                 "Non-matching batch sizes between the memory "
-                "(encoder output) and the requested batch size.  Are you using "
+                "(encoder output) and the requested batch size. Are you using "
                 "the BeamSearchDecoder?  If so, make sure your encoder output "
                 "has been tiled to beam_width via "
                 "tf.contrib.seq2seq.tile_batch, and the batch_size= argument "

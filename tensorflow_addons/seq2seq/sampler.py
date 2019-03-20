@@ -136,16 +136,16 @@ class CustomSampler(Sampler):
         """Initializer.
 
         Args:
-          initialize_fn: callable that returns `(finished, next_inputs)` for the
-            first iteration.
+          initialize_fn: callable that returns `(finished, next_inputs)` for
+            the first iteration.
           sample_fn: callable that takes `(time, outputs, state)` and emits
             tensor `sample_ids`.
           next_inputs_fn: callable that takes
             `(time, outputs, state, sample_ids)` and emits
             `(finished, next_inputs, next_state)`.
           sample_ids_shape: Either a list of integers, or a 1-D Tensor of type
-            `int32`, the shape of each value in the `sample_ids` batch. Defaults
-            to a scalar.
+            `int32`, the shape of each value in the `sample_ids` batch.
+            Defaults to a scalar.
           sample_ids_dtype: The dtype of the `sample_ids` tensor. Defaults to
             int32.
         """
@@ -561,8 +561,8 @@ class GreedyEmbeddingSampler(Sampler):
         Returns:
           Tuple of two items: `(finished, self.start_inputs)`.
         Raises:
-          ValueError: if `start_tokens` is not a 1D tensor or `end_token` is not
-            a scalar.
+          ValueError: if `start_tokens` is not a 1D tensor or `end_token` is
+            not a scalar.
         """
         if self.embedding_fn is None:
             self.embedding_fn = (
@@ -618,8 +618,9 @@ class SampleEmbeddingSampler(GreedyEmbeddingSampler):
 
         Args:
           embedding_fn: (Optional) A callable that takes a vector tensor of
-            `ids` (argmax ids), or the `params` argument for `embedding_lookup`.
-            The returned tensor will be passed to the decoder input.
+            `ids` (argmax ids), or the `params` argument for
+            `embedding_lookup`. The returned tensor will be passed to the
+            decoder input.
           softmax_temperature: (Optional) `float32` scalar, value to divide the
             logits by before computing the softmax. Larger values (above 1.0)
             result in more random samples, while smaller values push the
@@ -628,8 +629,8 @@ class SampleEmbeddingSampler(GreedyEmbeddingSampler):
           seed: (Optional) The sampling seed.
 
         Raises:
-          ValueError: if `start_tokens` is not a 1D tensor or `end_token` is not
-            a scalar.
+          ValueError: if `start_tokens` is not a 1D tensor or `end_token` is
+            not a scalar.
         """
         super(SampleEmbeddingSampler, self).__init__(embedding_fn)
         self.softmax_temperature = softmax_temperature

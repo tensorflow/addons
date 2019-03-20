@@ -38,16 +38,16 @@ def sequence_loss(logits,
                   name=None):
     """Weighted cross-entropy loss for a sequence of logits.
 
-    Depending on the values of `average_across_timesteps` / `sum_over_timesteps`
-    and `average_across_batch` / `sum_over_batch`, the return Tensor will have
-    rank 0, 1, or 2 as these arguments reduce the cross-entropy at each target,
-    which has shape `[batch_size, sequence_length]`, over their respective
-    dimensions. For example, if `average_across_timesteps` is `True` and
-    `average_across_batch` is `False`, then the return Tensor will have shape
-    `[batch_size]`.
+    Depending on the values of `average_across_timesteps` /
+    `sum_over_timesteps` and `average_across_batch` / `sum_over_batch`, the
+    return Tensor will have rank 0, 1, or 2 as these arguments reduce the
+    cross-entropy at each target, which has shape
+    `[batch_size, sequence_length]`, over their respective dimensions. For
+    example, if `average_across_timesteps` is `True` and `average_across_batch`
+    is `False`, then the return Tensor will have shape `[batch_size]`.
 
-    Note that `average_across_timesteps` and `sum_over_timesteps` cannot be True
-    at same time. Same for `average_across_batch` and `sum_over_batch`.
+    Note that `average_across_timesteps` and `sum_over_timesteps` cannot be
+    True at same time. Same for `average_across_batch` and `sum_over_batch`.
 
     The recommended loss reduction in tf 2.0 has been changed to sum_over,
     instead of weighted average. User are recommend to use `sum_over_timesteps`
@@ -70,12 +70,12 @@ def sequence_loss(logits,
         timesteps.
       average_across_batch: If set, sum the cost across the batch dimension and
         divide the returned cost by the batch size.
-      sum_over_timesteps: If set, sum the cost across the sequence dimension and
-        divide the size of the sequence. Note that any element with 0 weights
-        will be excluded from size calculation.
-      sum_over_batch: if set, sum the cost across the batch dimension and divide
-        the total cost by the batch size. Not that any element with 0 weights
-        will be excluded from size calculation.
+      sum_over_timesteps: If set, sum the cost across the sequence dimension
+        and divide the size of the sequence. Note that any element with 0
+        weights will be excluded from size calculation.
+      sum_over_batch: if set, sum the cost across the batch dimension and
+        divide the total cost by the batch size. Not that any element with 0
+        weights will be excluded from size calculation.
       softmax_loss_function: Function (labels, logits) -> loss-batch
         to be used instead of the standard softmax (the default if this is
         None). **Note that to avoid confusion, it is required for the function

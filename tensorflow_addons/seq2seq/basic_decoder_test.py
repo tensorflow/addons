@@ -468,8 +468,8 @@ class BasicDecoderTest(keras_parameterized.TestCase):
                 "step_finished": step_finished
             }
             if use_next_inputs_fn:
-                fetches[
-                    "output_after_next_inputs_fn"] = output_after_next_inputs_fn
+                fetches["output_after_next_inputs_fn"] = \
+                    output_after_next_inputs_fn
 
             eval_result = self.evaluate(fetches)
 
@@ -504,7 +504,7 @@ class BasicDecoderTest(keras_parameterized.TestCase):
                      auxiliary_inputs_to_concat[batch_where_not_sampling]),
                     axis=-1))
 
-    def testStepWithScheduledOutputTrainingHelperWithoutNextInputsFnOrAuxInputs(
+    def testStepWithScheduledOutputTrainingHelperWithoutNextInputsFnOrAuxInput(
             self):
         self._testStepWithScheduledOutputTrainingHelper(
             sampling_probability=0.5,

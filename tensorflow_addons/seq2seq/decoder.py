@@ -55,8 +55,8 @@ class Decoder(object):
       RNNCell instance as the state.
     - `finished`: boolean tensor telling whether each sequence in the batch is
       finished.
-    - `outputs`: Instance of BasicDecoderOutput. Result of the decoding, at each
-      time step.
+    - `outputs`: Instance of BasicDecoderOutput. Result of the decoding, at
+      each time step.
     """
 
     @property
@@ -103,12 +103,12 @@ class Decoder(object):
           name: Name scope for any created operations.
 
         Returns:
-          `(outputs, next_state, next_inputs, finished)`: `outputs` is an object
-          containing the decoder output, `next_state` is a (structure of) state
-          tensors and TensorArrays, `next_inputs` is the tensor that should be
-           used
-          as input for the next step, `finished` is a boolean tensor telling
-          whether the sequence is complete, for each sequence in the batch.
+          `(outputs, next_state, next_inputs, finished)`: `outputs` is an
+          object containing the decoder output, `next_state` is a (structure
+          of) state tensors and TensorArrays, `next_inputs` is the tensor that
+          should be used as input for the next step, `finished` is a boolean
+          tensor telling whether the sequence is complete, for each sequence in
+          the batch.
         """
         raise NotImplementedError
 
@@ -126,9 +126,9 @@ class Decoder(object):
 
         Some decoders, however, shuffle batches / beams between time steps and
         `dynamic_decode` will mix up the finished state across these entries
-        because it does not track the reshuffle across time steps. In this case,
-        it is up to the decoder to declare that it will keep track of its own
-        finished state by setting this property to `True`.
+        because it does not track the reshuffle across time steps. In this
+        case, it is up to the decoder to declare that it will keep track of its
+        own finished state by setting this property to `True`.
 
         Returns:
           Python bool.
@@ -148,8 +148,8 @@ class BaseDecoder(layers.Layer):
       encoder, which will be used for the attention wrapper for the RNNCell.
     - `finished`: boolean tensor telling whether each sequence in the batch is
       finished.
-    - `outputs`: Instance of BasicDecoderOutput. Result of the decoding, at each
-      time step.
+    - `outputs`: Instance of BasicDecoderOutput. Result of the decoding, at
+      each time step.
     """
 
     def __init__(self,
@@ -206,9 +206,9 @@ class BaseDecoder(layers.Layer):
             [batch, timestep, embedding].
           initial_state: (structure of) tensors that contains the initial state
             for the RNNCell.
-          **kwargs: Other arguments that are passed in from layer.call() method.
-            It could contains item like input sequence_length, or masking for
-            input.
+          **kwargs: Other arguments that are passed in from layer.call()
+            method. It could contains item like input sequence_length, or
+            masking for input.
 
         Returns:
           `(finished, initial_inputs, initial_state)`: initial values of
@@ -227,12 +227,12 @@ class BaseDecoder(layers.Layer):
             previous time step.
 
         Returns:
-          `(outputs, next_state, next_inputs, finished)`: `outputs` is an object
-          containing the decoder output, `next_state` is a (structure of) state
-          tensors and TensorArrays, `next_inputs` is the tensor that should be
-          used as input for the next step, `finished` is a boolean tensor
-          telling whether the sequence is complete, for each sequence in the
-          batch.
+          `(outputs, next_state, next_inputs, finished)`: `outputs` is an
+          object containing the decoder output, `next_state` is a
+          (structure of) state tensors and TensorArrays, `next_inputs` is the
+          tensor that should be used as input for the next step, `finished` is
+          a boolean tensor telling whether the sequence is complete, for each
+          sequence in the batch.
         """
         raise NotImplementedError
 
@@ -250,9 +250,9 @@ class BaseDecoder(layers.Layer):
 
         Some decoders, however, shuffle batches / beams between time steps and
         `dynamic_decode` will mix up the finished state across these entries
-        because it does not track the reshuffle across time steps. In this case,
-        it is up to the decoder to declare that it will keep track of its own
-        finished state by setting this property to `True`.
+        because it does not track the reshuffle across time steps. In this
+        case, it is up to the decoder to declare that it will keep track of its
+        own finished state by setting this property to `True`.
 
         Returns:
           Python bool.

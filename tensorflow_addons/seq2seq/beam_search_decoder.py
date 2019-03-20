@@ -49,7 +49,7 @@ gather_tree = _beam_search_ops_so.gather_tree
 __all__ = [
     "BeamSearchDecoderOutput",
     "BeamSearchDecoderState",
-    "BeamSearchDecoder"
+    "BeamSearchDecoder",
     "FinalBeamSearchDecoderOutput",
     "tile_batch",
 ]
@@ -105,14 +105,15 @@ def _tile_batch(t, multiplier):
 
 
 def tile_batch(t, multiplier, name=None):
-    """Tile the batch dimension of a (possibly nested structure of) tensor(s) t.
+    """Tile the batch dimension of a (possibly nested structure of) tensor(s)
+    t.
 
     For each tensor t in a (possibly nested structure) of tensors,
     this function takes a tensor t shaped `[batch_size, s0, s1, ...]` composed
     of minibatch entries `t[0], ..., t[batch_size - 1]` and tiles it to have a
-    shape `[batch_size * multiplier, s0, s1, ...]` composed of minibatch entries
-    `t[0], t[0], ..., t[1], t[1], ...` where each minibatch entry is repeated
-    `multiplier` times.
+    shape `[batch_size * multiplier, s0, s1, ...]` composed of minibatch
+    entries `t[0], t[0], ..., t[1], t[1], ...` where each minibatch entry is
+    repeated `multiplier` times.
 
     Args:
       t: `Tensor` shaped `[batch_size, ...]`.
@@ -144,7 +145,8 @@ def gather_tree_from_array(t, parent_ids, sequence_length):
 
     Returns:
       A `Tensor` which is a stacked `TensorArray` of the same size and type as
-      `t` and where beams are sorted in each `Tensor` according to `parent_ids`.
+      `t` and where beams are sorted in each `Tensor` according to
+      `parent_ids`.
     """
     max_time = parent_ids.shape.dims[0].value or array_ops.shape(parent_ids)[0]
     batch_size = parent_ids.shape.dims[1].value or array_ops.shape(
@@ -266,9 +268,9 @@ class BeamSearchDecoderMixin(object):
         Args:
           cell: An `RNNCell` instance.
           beam_width:  Python integer, the number of beams.
-          output_layer: (Optional) An instance of `tf.keras.layers.Layer`, i.e.,
-            `tf.keras.layers.Dense`.  Optional layer to apply to the RNN output
-            prior to storing the result or sampling.
+          output_layer: (Optional) An instance of `tf.keras.layers.Layer`,
+            i.e., `tf.keras.layers.Dense`.  Optional layer to apply to the RNN
+            output prior to storing the result or sampling.
           length_penalty_weight: Float weight to penalize length. Disabled with
              0.0.
           coverage_penalty_weight: Float weight to penalize the coverage of
@@ -354,10 +356,10 @@ class BeamSearchDecoderMixin(object):
           outputs: An instance of BeamSearchDecoderOutput.
           final_state: An instance of BeamSearchDecoderState. Passed through to
             the output.
-          sequence_lengths: An `int64` tensor shaped `[batch_size, beam_width]`.
-            The sequence lengths determined for each beam during decode.
-            **NOTE** These are ignored; the updated sequence lengths are stored
-            in `final_state.lengths`.
+          sequence_lengths: An `int64` tensor shaped
+            `[batch_size, beam_width]`. The sequence lengths determined for
+            each beam during decode. **NOTE** These are ignored; the updated
+            sequence lengths are stored in `final_state.lengths`.
 
         Returns:
           outputs: An instance of `FinalBeamSearchDecoderOutput` where the
@@ -386,8 +388,8 @@ class BeamSearchDecoderMixin(object):
     def _merge_batch_beams(self, t, s=None):
         """Merges the tensor from a batch of beams into a batch by beams.
 
-        More exactly, t is a tensor of dimension [batch_size, beam_width, s]. We
-        reshape this into [batch_size*beam_width, s]
+        More exactly, t is a tensor of dimension [batch_size, beam_width, s].
+        We reshape this into [batch_size*beam_width, s]
 
         Args:
           t: Tensor of dimension [batch_size, beam_width, s]
@@ -509,9 +511,9 @@ class BeamSearchDecoderMixin(object):
         """Maybe sorts beams within a `TensorArray`.
 
         Args:
-          t: A `TensorArray` of size `max_time` that contains `Tensor`s of shape
-            `[batch_size, beam_width, s]` or `[batch_size * beam_width, s]` where
-            `s` is the depth shape.
+          t: A `TensorArray` of size `max_time` that contains `Tensor`s of
+            shape `[batch_size, beam_width, s]` or
+            `[batch_size * beam_width, s]` where `s` is the depth shape.
           parent_ids: The parent ids of shape
             `[max_time, batch_size, beam_width]`.
           sequence_length: The sequence length of shape
@@ -667,9 +669,9 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
           beam_width:  Python integer, the number of beams.
           embedding_fn: A callable that takes a vector tensor of `ids`
             (argmax ids).
-          output_layer: (Optional) An instance of `tf.keras.layers.Layer`, i.e.,
-            `tf.keras.layers.Dense`.  Optional layer to apply to the RNN output
-            prior to storing the result or sampling.
+          output_layer: (Optional) An instance of `tf.keras.layers.Layer`,
+            i.e., `tf.keras.layers.Dense`.  Optional layer to apply to the RNN
+            output prior to storing the result or sampling.
           length_penalty_weight: Float weight to penalize length. Disabled with
             0.0.
           coverage_penalty_weight: Float weight to penalize the coverage of
@@ -821,7 +823,8 @@ def _beam_search_step(time, logits, next_cell_state, beam_state, batch_size,
       batch_size: The batch size for this input.
       beam_width: Python int.  The size of the beams.
       end_token: The int32 end token.
-      length_penalty_weight: Float weight to penalize length. Disabled with 0.0.
+      length_penalty_weight: Float weight to penalize length. Disabled with
+        0.0.
       coverage_penalty_weight: Float weight to penalize the coverage of source
         sentence. Disabled with 0.0.
 
@@ -949,7 +952,6 @@ def _beam_search_step(time, logits, next_cell_state, beam_state, batch_size,
     # different gather_shape here because the cell_state tensors, i.e.
     # the tensors that would be gathered from, all have dimension
     # greater than two and we need to preserve those dimensions.
-    # pylint: disable=g-long-lambda
     next_cell_state = nest.map_structure(
         lambda gather_from: _maybe_tensor_gather_helper(
             gather_indices=next_beam_ids,
@@ -957,7 +959,6 @@ def _beam_search_step(time, logits, next_cell_state, beam_state, batch_size,
             batch_size=batch_size,
             range_size=beam_width,
             gather_shape=[batch_size * beam_width, -1]), next_cell_state)
-    # pylint: enable=g-long-lambda
 
     next_state = BeamSearchDecoderState(
         cell_state=next_cell_state,
@@ -1034,14 +1035,15 @@ def _get_scores(log_probs, sequence_lengths, length_penalty_weight,
       log_probs: The log probabilities with shape
         `[batch_size, beam_width, vocab_size]`.
       sequence_lengths: The array of sequence lengths.
-      length_penalty_weight: Float weight to penalize length. Disabled with 0.0.
+      length_penalty_weight: Float weight to penalize length. Disabled with
+        0.0.
       coverage_penalty_weight: Float weight to penalize the coverage of source
         sentence. Disabled with 0.0.
       finished: A boolean tensor of shape `[batch_size, beam_width]` that
         specifies which elements in the beam are finished already.
-      accumulated_attention_probs: Accumulated attention probabilities up to the
-        current time step, with shape `[batch_size, beam_width, max_time]` if
-        coverage_penalty_weight is not 0.0.
+      accumulated_attention_probs: Accumulated attention probabilities up to
+        the current time step, with shape `[batch_size, beam_width, max_time]`
+        if coverage_penalty_weight is not 0.0.
 
     Returns:
       The scores normalized by the length_penalty and coverage_penalty.
@@ -1155,9 +1157,9 @@ def _mask_probs(probs, eos_token, finished):
         specifies which elements in the beam are finished already.
 
     Returns:
-      A tensor of shape `[batch_size, beam_width, vocab_size]`, where unfinished
-      beams stay unchanged and finished beams are replaced with a tensor with
-      all probability on the EOS token.
+      A tensor of shape `[batch_size, beam_width, vocab_size]`, where
+      unfinished beams stay unchanged and finished beams are replaced with a
+      tensor with all probability on the EOS token.
     """
     vocab_size = array_ops.shape(probs)[2]
     # All finished examples are replaced with a vector that has all
@@ -1193,10 +1195,10 @@ def _maybe_tensor_gather_helper(gather_indices, gather_from, batch_size,
       range_size: The number of values in each range. Likely equal to
         beam_width.
       gather_shape: What we should reshape gather_from to in order to preserve
-        the correct values. An example is when gather_from is the attention from
-        an AttentionWrapperState with shape
-        [batch_size, beam_width, attention_size]. There, we want to preserve the
-        attention_size elements, so gather_shape is
+        the correct values. An example is when gather_from is the attention
+        from an AttentionWrapperState with shape
+        [batch_size, beam_width, attention_size]. There, we want to preserve
+        the attention_size elements, so gather_shape is
         [batch_size * beam_width, -1]. Then, upon reshape, we still have the
         attention_size as desired.
 
@@ -1238,10 +1240,10 @@ def _tensor_gather_helper(gather_indices,
       range_size: The number of values in each range. Likely equal to
         beam_width.
       gather_shape: What we should reshape gather_from to in order to preserve
-        the correct values. An example is when gather_from is the attention from
-        an AttentionWrapperState with shape
-        [batch_size, beam_width, attention_size]. There, we want to preserve the
-        attention_size elements, so gather_shape is
+        the correct values. An example is when gather_from is the attention
+        from an AttentionWrapperState with shape
+        [batch_size, beam_width, attention_size]. There, we want to preserve
+        the attention_size elements, so gather_shape is
         [batch_size * beam_width, -1]. Then, upon reshape, we still have the
         attention_size as desired.
       name: The tensor name for set of operations. By default this is

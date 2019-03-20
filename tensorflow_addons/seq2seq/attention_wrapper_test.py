@@ -366,8 +366,8 @@ class AttentionWrapperTest(test.TestCase, parameterized.TestCase):
                         state_alignment_history.append(history)
                     state_alignment_history = tuple(state_alignment_history)
                 else:
-                    state_alignment_history = final_state.alignment_history.stack(
-                    )
+                    state_alignment_history = \
+                        final_state.alignment_history.stack()
                     self.assertEqual(
                         (expected_time, batch_size, encoder_max_time),
                         tuple(state_alignment_history.get_shape().as_list()))
