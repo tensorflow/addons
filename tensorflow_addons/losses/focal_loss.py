@@ -20,8 +20,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 import tensorflow.keras.backend as K
-from tensorflow.keras import losses
-from tensorflow_addons.utils.python import keras_utils
+from tensorflow_addons.utils import keras_utils
 
 
 @keras_utils.register_keras_custom_object
@@ -33,15 +32,14 @@ class SigmoidFocalCrossEntropy(keras_utils.LossFunctionWrapper):
     classification when you have highly imbalanced classes. It down-weights
     well-classified examples and focuses on hard examples. The loss value is
     much high for a sample which is misclassified by the classifier as compared
-    to the loss value corresponding to a well-classified example. One of the best
-    use-cases of focal loss is its usage in object detection where the imbalance
-    between the background class and other classes is
-    extremely high.
+    to the loss value corresponding to a well-classified example. One of the
+    best use-cases of focal loss is its usage in object detection where the
+    imbalance between the background class and other classes is extremely high.
 
     Usage:
 
     ```python
-    fl = tf.keras.losses.SigmoidFocalCrossEntropy()
+    fl = tfa.losses.SigmoidFocalCrossEntropy()
     loss = fl(
       [[0.97], [0.91], [0.03]],
       [[1], [1], [0])

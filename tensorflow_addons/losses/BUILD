@@ -6,6 +6,7 @@ py_library(
     name = "losses",
     srcs = [
         "__init__.py",
+        "focal_loss.py",
         "lifted.py",
         "metric_learning.py",
         "sparsemax_loss.py",
