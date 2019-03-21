@@ -28,7 +28,7 @@ developments that cannot be integrated into core TensorFlow
 ## Maintainers
 | Subpackage    | Maintainers  | Contact Info                        |
 |:----------------------- |:----------- |:----------------------------|
-| [tfa.activations]((tensorflow_addons/activations/README.md)) | SIG-Addons | addons@tensorflow.org    |
+| [tfa.activations](tensorflow_addons/activations/README.md) | SIG-Addons | addons@tensorflow.org    |
 | [tfa.image](tensorflow_addons/image/README.md) |  |                                   |
 | [tfa.layers](tensorflow_addons/layers/README.md) | SIG-Addons |     addons@tensorflow.org |
 | [tfa.losses](tensorflow_addons/losses/README.md) | SIG-Addons |     addons@tensorflow.org |
