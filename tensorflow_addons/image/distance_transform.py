@@ -29,19 +29,20 @@ ops.NotDifferentiable("EuclideanDistanceTransform")
 ops.RegisterShape("EuclideanDistanceTransform")(
     common_shapes.call_cpp_shape_fn)
 
-_OUTPUT_DTYPES = [tf.dtypes.float16, tf.dtypes.float32, tf.dtypes.float64]
-
 
 @tf.function
-def euclidean_dist_transform(images, dtype=tf.dtypes.float32, name=None):
+def euclidean_dist_transform(images,
+                             dtype=tf.dtypes.float32,
+                             name="euclidean_distance_transform"):
     """
     Applies euclidean distance transform to the images_t
 
     Args:
       images: Tensor of shape (num_images, num_rows, num_columns, num_channels)
         (NHWC) or (num_rows, num_columns, num_channels) (HWC). The rank must be
-        statically known. The image must be a binary image of uint8 type.
-      dtype: The dtype of the output, must be float16, float32 or float64
+        statically known. The image(s) must be a binary or grayscale
+        of uint8 type.
+      dtype: The dtype of the output, must be float16, float32 or float64.
       name: The name of the op.
 
 
@@ -50,30 +51,30 @@ def euclidean_dist_transform(images, dtype=tf.dtypes.float32, name=None):
       distance transform applied.
 
     Raises:
-      TypeError: If `image` is an invalid type.
-      ValueError: If `image` is not a binary image
+      TypeError: If `image` is not uint8, or `dtype` is not floating point.
+      ValueError: If `image` is not a binary or grayscale image of rank 3 or 4.
 
     """
-    with tf.name_scope(name, "euclidean_distance_transform", [images]):
+    with tf.name_scope(name):
         image_or_images = ops.convert_to_tensor(images, name="images")
 
-        if image_or_images.dtype.base_dtype != dtypes.uint8:
+        if image_or_images.dtype.base_dtype != tf.dtypes.uint8:
             raise TypeError(
                 "Invalid dtype %s. Excepted uint8." % image_or_images.dtype)
         elif image_or_images.get_shape().ndims is None:
-            raise TypeError("`images` rank must be statically known")
+            raise ValueError("`images` rank must be statically known")
         elif len(image_or_images.get_shape()) == 3:
             images = image_or_images[None, :, :, :]
         elif len(image_or_images.get_shape()) == 4:
             images = image_or_images
         else:
-            raise TypeError("`images` should have rank between 3 and 4")
+            raise ValueError("`images` should have rank between 3 and 4")
 
-        if images.get_shape()[3] != 1:
-            raise ValueError("`images` must be a binary image with 1 channel")
+        if images.get_shape()[3] != 1 and images.get_shape()[3] is not None:
+            raise ValueError("`images` must have only one channel")
 
-        if dtype not in _OUTPUT_DTYPES:
-            raise ValueError("`dtype` must be float16, float32 or float64")
+        if not dtype.is_floating:
+            raise TypeError("`dtype` must be float16, float32 or float64")
 
         images = tf.cast(images, dtype)
         output = _image_ops_so.euclidean_distance_transform(images)
