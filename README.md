@@ -26,30 +26,24 @@ developments that cannot be integrated into core TensorFlow
  used by a smaller subset of the community).
 
 ## Maintainers
-| Sub-Package    | Maintainers  | Contact Info                        |
+| Subpackage    | Maintainers  | Contact Info                        |
 |:----------------------- |:----------- |:----------------------------|
-| tfa.activations | SIG-Addons | addons@tensorflow.org    |
-| tfa.image |  |                                   |
-| tfa.layers | SIG-Addons |     addons@tensorflow.org |
-| tfa.losses | SIG-Addons |     addons@tensorflow.org |
-| tfa.optimizers | SIG-Addons | addons@tensorflow.org |
-| tfa.text |  |  |
+| [tfa.activations](tensorflow_addons/activations/README.md) | SIG-Addons | addons@tensorflow.org    |
+| [tfa.image](tensorflow_addons/image/README.md) |  |                                   |
+| [tfa.layers](tensorflow_addons/layers/README.md) | SIG-Addons |     addons@tensorflow.org |
+| [tfa.losses](tensorflow_addons/losses/README.md) | SIG-Addons |     addons@tensorflow.org |
+| [tfa.optimizers](tensorflow_addons/optimizers/README.md) | SIG-Addons | addons@tensorflow.org |
+| [tfa.seq2seq](tensorflow_addons/seq2seq/README.md) | Google | @qlzh727 | 
+| [tfa.text](tensorflow_addons/text/README.md) |  |  |
 
 ## Core Concepts
 
-#### Standardized APIs
+#### Standardized API within Subpackages
 User experience and project maintainability are core concepts in
 TF-Addons. In order to achieve these we require that our additions
-conform to established API patterns seen in core TensorFlow. Below is
-the list we adhere to:
+conform to established API patterns seen in core TensorFlow.
 
-
-1) [Layers](tensorflow_addons/layers/README.md)
-2) [Optimizers](tensorflow_addons/optimizers/README.md)
-3) [Losses](tensorflow_addons/losses/README.md)
-4) [Custom Ops](tensorflow_addons/custom_ops/README.md)
-
-#### Periodic Evaluation
+#### Periodic Evaluation of Subpackages
 Based on the nature of this repository, there will be contributions that
 in time become dated and unused. In order to keep the project
 maintainable, SIG-Addons will perform periodic reviews and deprecate

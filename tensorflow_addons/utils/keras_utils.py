@@ -19,9 +19,9 @@ from __future__ import print_function
 
 # TODO: find public API alternative to these
 from tensorflow.python.keras.losses import LossFunctionWrapper  # pylint: disable=unused-import
-from tensorflow.python.keras.utils import generic_utils
+from tensorflow.keras.utils import get_custom_objects
 
 
 def register_keras_custom_object(cls):
-    generic_utils._GLOBAL_CUSTOM_OBJECTS[cls.__name__] = cls
+    get_custom_objects()[cls.__name__] = cls
     return cls

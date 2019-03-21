@@ -12,13 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Additional losses that conform to Keras API."""
+"""Ops for building neural network sequence to sequence decoders and losses."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow_addons.losses.focal_loss import sigmoid_focal_crossentropy, SigmoidFocalCrossEntropy
-from tensorflow_addons.losses.lifted import lifted_struct_loss, LiftedStructLoss
-from tensorflow_addons.losses.sparsemax_loss import sparsemax_loss, SparsemaxLoss
-from tensorflow_addons.losses.triplet import triplet_semihard_loss, TripletSemiHardLoss
+from tensorflow_addons.seq2seq import attention_wrapper
+from tensorflow_addons.seq2seq import basic_decoder
+from tensorflow_addons.seq2seq import beam_search_decoder
+from tensorflow_addons.seq2seq import decoder
+from tensorflow_addons.seq2seq import loss
+from tensorflow_addons.seq2seq import sampler
