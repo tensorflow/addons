@@ -22,13 +22,13 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from tensorflow_addons.utils import test_utils
-from tensorflow_addons.losses import sigmoid_focal_crossentropy
+from tensorflow_addons.losses import sigmoid_focal_crossentropy, SigmoidFocalCrossEntropy
 
 
 @test_utils.run_all_in_graph_and_eager_modes
 class SigmoidFocalCrossEntropyTest(tf.test.TestCase):
     def test_config(self):
-        bce_obj = tf.keras.losses.SigmoidFocalCrossEntropy(
+        bce_obj = SigmoidFocalCrossEntropy(
             reduction=tf.keras.losses.Reduction.NONE,
             name='sigmoid_focal_crossentropy')
         self.assertEqual(bce_obj.name, 'sigmoid_focal_crossentropy')

@@ -20,15 +20,15 @@ py_library(
 )
 
 py_test(
-    name = "focal_loss_py_test",
+    name = "focal_loss_test",
     size = "small",
     srcs = [
-        "python/focal_loss_test.py",
+        "focal_loss_test.py",
     ],
-    main = "python/focal_loss_test.py",
+    main = "focal_loss_test.py",
     srcs_version = "PY2AND3",
     deps = [
-        ":losses_py",
+        ":losses",
     ],
 )
 
