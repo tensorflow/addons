@@ -33,6 +33,7 @@ developments that cannot be integrated into core TensorFlow
 | tfa.layers | SIG-Addons |     addons@tensorflow.org |
 | tfa.losses | SIG-Addons |     addons@tensorflow.org |
 | tfa.optimizers | SIG-Addons | addons@tensorflow.org |
+| tfa.seq2seq | Google | @qlzh727 | 
 | tfa.text |  |  |
 
 ## Core Concepts
@@ -48,7 +49,8 @@ the list we adhere to:
 3) [Layers](tensorflow_addons/layers/README.md)
 4) [Losses](tensorflow_addons/losses/README.md)
 5) [Optimizers](tensorflow_addons/optimizers/README.md)
-6) [Text](tensorflow_addons/text/README.md)
+6) [Seq2seq](tensorflow_addons/seq2seq/README.md)
+7) [Text](tensorflow_addons/text/README.md)
 
 #### Periodic Evaluation of Subpackages
 Based on the nature of this repository, there will be contributions that
