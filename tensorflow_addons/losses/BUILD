@@ -20,6 +20,19 @@ py_library(
 )
 
 py_test(
+    name = "focal_loss_py_test",
+    size = "small",
+    srcs = [
+        "python/focal_loss_test.py",
+    ],
+    main = "python/focal_loss_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":losses_py",
+    ],
+)
+
+py_test(
     name = "sparsemax_loss_test",
     size = "small",
     srcs = [
