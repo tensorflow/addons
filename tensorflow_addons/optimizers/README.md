@@ -1,12 +1,14 @@
 # Addons - Optimizers
 
 ## Maintainers
+| Submodule  | Maintainers  | Contact Info   |
+|:---------- |:------------- |:--------------|
+| lazy_adam_optimizer |  SIG-Addons | addons@tensorflow.org   |
 
-
-## Contents
-| Optimizer  | Reference                                   |
-|:----------------------- |:-------------------------------|
-| LazyAdamOptimizer | https://arxiv.org/abs/1412.6980      |
+## Components
+| Submodule | Optimizer  | Reference                                   |
+|:----------------------- |:---------------------- |:---------|
+| lazy_adam_optimizer | LazyAdamOptimizer | https://arxiv.org/abs/1412.6980      |
 
 
 ## Contribution Guidelines
