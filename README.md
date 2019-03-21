@@ -1,9 +1,22 @@
-# TensorFlow Addons
+<div align="center">
+  <img src="static/SIGAddons.png" width="60%"><br><br>
+</div>
+
+-----------------
 
 [![PyPI Status Badge](https://badge.fury.io/py/tensorflow-addons.svg)](https://pypi.org/project/tensorflow-addons/)
 [![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
 
-TensorFlow Addons is a repository of contributions that conform to
+### Official Builds
+
+| Build Type      | Status |
+| ---             | ---    |
+| **Linux Py2 CPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py2.html) |
+| **Linux Py3 CPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py3.html) |
+| **Linux Py2 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py2.html) |
+| **Linux Py3 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
+
+**TensorFlow Addons** is a repository of contributions that conform to
 well-established API patterns, but implement new functionality
 not available in core TensorFlow. TensorFlow natively supports
 a large number of operators, layers, metrics, losses, and optimizers.
@@ -12,44 +25,39 @@ developments that cannot be integrated into core TensorFlow
 (because their broad applicability is not yet clear, or it is mostly
  used by a smaller subset of the community).
 
-## Contents
-| Sub-Package    | Addon  | Reference                                  |
-|:----------------------- |:----------- |:---------------------------- |
-| tfa.activations | Sparsemax | https://arxiv.org/abs/1602.02068    |
-| tfa.image | transform |                                           |
-| tfa.layers | GroupNormalization | https://arxiv.org/abs/1803.08494 |
-| tfa.layers | InstanceNormalization | https://arxiv.org/abs/1607.08022 |
-| tfa.layers | LayerNormalization  | https://arxiv.org/abs/1607.06450 |
-| tfa.layers | Maxout | https://arxiv.org/abs/1302.4389             |
-| tfa.layers | PoinareNormalize | https://arxiv.org/abs/1705.08039  |
-| tfa.layers | WeightNormalization | https://arxiv.org/abs/1602.07868 |
-| tfa.losses | LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
-| tfa.losses | SparsemaxLoss | https://arxiv.org/abs/1602.02068 | 
-| tfa.losses | TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
-| tfa.optimizers | LazyAdamOptimizer | https://arxiv.org/abs/1412.6980 |
-| tfa.text | skip_gram_sample | https://arxiv.org/abs/1301.3781 |
+## Maintainers
+| Subpackage    | Maintainers  | Contact Info                        |
+|:----------------------- |:----------- |:----------------------------|
+| tfa.activations | SIG-Addons | addons@tensorflow.org    |
+| tfa.image |  |                                   |
+| tfa.layers | SIG-Addons |     addons@tensorflow.org |
+| tfa.losses | SIG-Addons |     addons@tensorflow.org |
+| tfa.optimizers | SIG-Addons | addons@tensorflow.org |
+| tfa.seq2seq | Google | @qlzh727 | 
+| tfa.text |  |  |
 
 ## Core Concepts
 
-#### Standardized APIs
+#### Standardized API within Subpackages
 User experience and project maintainability are core concepts in
 TF-Addons. In order to achieve these we require that our additions
 conform to established API patterns seen in core TensorFlow. Below is
 the list we adhere to:
 
+1) [Activations](tensorflow_addons/activations/README.md)
+2) [Image](tensorflow_addons/image/README.md)
+3) [Layers](tensorflow_addons/layers/README.md)
+4) [Losses](tensorflow_addons/losses/README.md)
+5) [Optimizers](tensorflow_addons/optimizers/README.md)
+6) [Seq2seq](tensorflow_addons/seq2seq/README.md)
+7) [Text](tensorflow_addons/text/README.md)
 
-1) [Layers](tensorflow_addons/layers/README.md)
-1) [Optimizers](tensorflow_addons/optimizers/README.md)
-1) [Losses](tensorflow_addons/losses/README.md)
-1) [Custom Ops](tensorflow_addons/custom_ops/README.md)
-
-#### Periodic Evaluation
+#### Periodic Evaluation of Subpackages
 Based on the nature of this repository, there will be contributions that
 in time become dated and unused. In order to keep the project
 maintainable, SIG-Addons will perform periodic reviews and deprecate
 contributions which will be slated for removal. More information will
 be available after we submit a formal request for comment.
-
 
 ## Examples
 See [`tensorflow_addons/examples/`](tensorflow_addons/examples/)
@@ -60,6 +68,15 @@ for end-to-end examples of various addons.
 To install the latest version, run the following:
 ```
 pip install tensorflow-addons
+```
+
+**Note:** You will also need [TensorFlow 2.0 or higher](https://www.tensorflow.org/alpha). 
+
+To use addons:
+
+```python
+import tensorflow as tf
+import tensorflow_addons as tfa
 ```
 
 #### Installing from Source
