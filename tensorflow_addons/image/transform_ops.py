@@ -348,3 +348,61 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
             return output[0, :, :, :]
         else:
             return output
+
+
+@tf.function
+def random_rotation(images, rg, interpolation="NEAREST", name=None):
+    """Rotate image(s) counterclockwise by the passed angle(s) in radians.
+
+    Args:
+    images: A tensor of shape (num_images, num_rows, num_columns, num_channels)
+        (NHWC), (num_rows, num_columns, num_channels) (HWC), or
+        (num_rows, num_columns) (HW). The rank must be statically known (the
+        shape is not `TensorShape(None)`.
+    rg: Range (-rg, +rg) of allowed rotations.
+    interpolation: Interpolation mode. Supported values: "NEAREST", "BILINEAR".
+    name: The name of the op.
+
+    Returns:
+    Image(s) with the same type and shape as `images`, rotated by the given
+    angle(s). Empty space due to the rotation will be filled with zeros.
+
+    Raises:
+    TypeError: If `image` is an invalid type.
+    """
+    with ops.name_scope(name, "random_rotation"):
+        image_or_images = ops.convert_to_tensor(images)
+        if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
+            raise TypeError("Invalid dtype %s." % image_or_images.dtype)
+        elif image_or_images.get_shape().ndims is None:
+            raise TypeError("image_or_images rank must be statically known")
+        elif len(image_or_images.get_shape()) == 2:
+            images = image_or_images[None, :, :, None]
+        elif len(image_or_images.get_shape()) == 3:
+            images = image_or_images[None, :, :, :]
+        elif len(image_or_images.get_shape()) == 4:
+            images = image_or_images
+        else:
+            raise TypeError("Images should have rank between 2 and 4.")
+
+        image_height = math_ops.cast(
+            array_ops.shape(images)[1], dtypes.float32)[None]
+        image_width = math_ops.cast(
+            array_ops.shape(images)[2], dtypes.float32)[None]
+        n_images = array_ops.shape(images)[0]
+
+        minval, maxval = (-rg, rg)
+        angles = tf.random.uniform(shape=[n_images], minval=minval, maxval=maxval)
+        if n_images == 1:
+            angles = angles[0]
+        transforms = angles_to_projective_transforms(angles, image_height, image_width)
+        new_images = transform(images, transforms, interpolation=interpolation)
+
+        if image_or_images.get_shape().ndims is None:
+            raise TypeError("image_or_images rank must be statically known")
+        elif len(image_or_images.get_shape()) == 2:
+            return new_images[0, :, :, 0]
+        elif len(image_or_images.get_shape()) == 3:
+            return new_images[0, :, :, :]
+        else:
+            return new_images
