@@ -29,17 +29,19 @@ from tensorflow_addons.utils import test_utils
 class DistanceOpsTest(tf.test.TestCase):
     def test_single_binary_image(self):
         # yapf: disable
-        IMAGE = [[[1], [1], [1], [1], [1]],
+        image = [[[1], [1], [1], [1], [1]],
                  [[1], [1], [1], [1], [1]],
                  [[0], [1], [0], [1], [0]],
                  [[1], [0], [1], [0], [1]],
                  [[0], [1], [0], [1], [0]]]
-        # yapf: enable
-        image = tf.constant(IMAGE, dtype=tf.uint8)
         expected_output = np.array([
-            2, 2.23606801, 2, 2.23606801, 2, 1, 1.41421354, 1, 1.41421354, 1,
-            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0
-        ])
+            2, 2.23606801, 2, 2.23606801, 2,
+            1, 1.41421354, 1, 1.41421354, 1,
+            0, 1,          0, 1,          0,
+            1, 0,          1, 0,          1,
+            0, 1,          0, 1,          0])
+        # yapf: enable
+        image = tf.constant(image, dtype=tf.uint8)
 
         for output_dtype in [tf.float16, tf.float32, tf.float64]:
             output = distance_tranform_ops.euclidean_dist_transform(
@@ -55,18 +57,20 @@ class DistanceOpsTest(tf.test.TestCase):
     def test_batch_binary_images(self):
         BATCH_SIZE = 3
         # yapf: disable
-        IMAGE = [[[1], [1], [1], [1], [1]],
-                 [[1], [1], [1], [1], [1]],
-                 [[0], [1], [0], [1], [0]],
-                 [[1], [0], [1], [0], [1]],
-                 [[0], [1], [0], [1], [0]]]
-        # yapf: enable
-        images = tf.constant([IMAGE] * BATCH_SIZE, dtype=tf.uint8)
+        image = [[[0], [0], [0], [0], [0]],
+                 [[0], [1], [1], [1], [0]],
+                 [[0], [1], [1], [1], [0]],
+                 [[0], [1], [1], [1], [0]],
+                 [[0], [0], [0], [0], [0]]]
         expected_output = np.array([
-            2, 2.23606801, 2, 2.23606801, 2, 1, 1.41421354, 1, 1.41421354, 1,
-            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0
+            0, 0, 0, 0, 0,
+            0, 1, 1, 1, 0,
+            0, 1, 2, 1, 0,
+            0, 1, 1, 1, 0,
+            0, 0, 0, 0, 0
         ] * BATCH_SIZE)
-
+        # yapf: enable
+        images = tf.constant([image] * BATCH_SIZE, dtype=tf.uint8)
         for output_dtype in [tf.float16, tf.float32, tf.float64]:
             output = distance_tranform_ops.euclidean_dist_transform(
                 images, dtype=output_dtype)
@@ -114,14 +118,12 @@ class DistanceOpsTest(tf.test.TestCase):
         for output_dtype in [tf.float16, tf.float32, tf.float64]:
             output = distance_tranform_ops.euclidean_dist_transform(
                 image, dtype=output_dtype)
-
             self.assertAllClose(output, expected_output)
 
     def test_all_ones(self):
         image = tf.ones([10, 10, 1], tf.uint8)
         output = distance_tranform_ops.euclidean_dist_transform(image)
         expected_output = np.full([10, 10, 1], tf.float32.max)
-
         self.assertAllClose(output, expected_output)
 
 

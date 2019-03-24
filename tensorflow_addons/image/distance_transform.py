@@ -34,34 +34,33 @@ ops.RegisterShape("EuclideanDistanceTransform")(
 def euclidean_dist_transform(images,
                              dtype=tf.float32,
                              name="euclidean_distance_transform"):
-    """
-    Applies euclidean distance transform to the images_t
+    """Applies euclidean distance transform(s) to the image(s).
 
     Args:
-      images: Tensor of shape (num_images, num_rows, num_columns, num_channels)
-        (NHWC) or (num_rows, num_columns, num_channels) (HWC). The rank must be
-        statically known. The image(s) must be a binary or grayscale
-        of uint8 type.
-      dtype: The dtype of the output, must be float16, float32 or float64.
+      images: A tensor of shape (num_images, num_rows, num_columns, 1) (NHWC),
+        or (num_rows, num_columns, 1) (HWC). The rank must be statically known
+        (the shape is not `TensorShape(None)`.
+      dtype: DType of the output tensor.
       name: The name of the op.
 
-
     Returns:
-      Image(s) with the same type and shape as `images`, with euclidean
-      distance transform applied.
+      Image(s) with the type `dtype` and same shape as `images`, with the
+      transform applied. If a tensor of all ones is given as input, the
+      output tensor will be filled with the max value of the `dtype`.
 
     Raises:
-      TypeError: If `image` is not uint8, or `dtype` is not floating point.
-      ValueError: If `image` is not a binary or grayscale image of rank 3 or 4.
-
+      TypeError: If `image` is not tf.uint8, or `dtype` is not floating point.
+      ValueError: If `image` more than one channel, or `image` is not of
+        rank 3 or 4.
     """
+
     with tf.name_scope(name):
-        image_or_images = ops.convert_to_tensor(images, name="images")
+        image_or_images = tf.convert_to_tensor(images, name="images")
 
         if image_or_images.dtype.base_dtype != tf.uint8:
             raise TypeError(
                 "Invalid dtype %s. Excepted uint8." % image_or_images.dtype)
-        elif image_or_images.get_shape().ndims is None:
+        if image_or_images.get_shape().ndims is None:
             raise ValueError("`images` rank must be statically known")
         elif len(image_or_images.get_shape()) == 3:
             images = image_or_images[None, :, :, :]
