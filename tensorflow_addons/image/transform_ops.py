@@ -330,10 +330,8 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
         else:
             raise TypeError("Images should have rank between 2 and 4.")
 
-        image_height = tf.cast(
-            tf.shape(images)[1], dtypes.float32)[None]
-        image_width = tf.cast(
-            tf.shape(images)[2], dtypes.float32)[None]
+        image_height = tf.cast(tf.shape(images)[1], dtypes.float32)[None]
+        image_width = tf.cast(tf.shape(images)[2], dtypes.float32)[None]
         output = transform(
             images,
             angles_to_projective_transforms(angles, image_height, image_width),
