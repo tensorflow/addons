@@ -24,86 +24,104 @@ import tensorflow as tf
 from tensorflow_addons.image import distance_transform as distance_tranform_ops
 from tensorflow_addons.utils import test_utils
 
-# yapf: disable
-_IMAGE = [[1, 1, 1, 1, 1],
-          [1, 1, 1, 1, 1],
-          [0, 1, 0, 1, 0],
-          [1, 0, 1, 0, 1],
-          [0, 1, 0, 1, 0]]
-# yapf: enable
-_GROUND_TRUTH = [
-    2, 2.23606801, 2, 2.23606801, 2, 1, 1.41421354, 1, 1.41421354, 1, 0, 1, 0,
-    1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0
-]
-
 
 @test_utils.run_all_in_graph_and_eager_modes
 class DistanceOpsTest(tf.test.TestCase):
-    def test_single_img(self):
-        for dtype in [tf.float16, tf.float32, tf.float64]:
-            image = tf.constant(_IMAGE, dtype=tf.uint8)
-            image = tf.reshape(image, [5, 5, 1])
+    def test_single_binary_image(self):
+        # yapf: disable
+        IMAGE = [[[1], [1], [1], [1], [1]],
+                 [[1], [1], [1], [1], [1]],
+                 [[0], [1], [0], [1], [0]],
+                 [[1], [0], [1], [0], [1]],
+                 [[0], [1], [0], [1], [0]]]
+        # yapf: enable
+        image = tf.constant(IMAGE, dtype=tf.uint8)
+        expected_output = np.array([
+            2, 2.23606801, 2, 2.23606801, 2, 1, 1.41421354, 1, 1.41421354, 1,
+            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0
+        ])
 
+        for output_dtype in [tf.float16, tf.float32, tf.float64]:
             output = distance_tranform_ops.euclidean_dist_transform(
-                image, dtype=dtype)
+                image, dtype=output_dtype)
             output_flat = tf.reshape(output, [-1])
-            expected_output = np.array(_GROUND_TRUTH)
 
-            with self.subTest(name="output_value"):
-                self.assertAllCloseAccordingToType(output_flat,
-                                                   expected_output)
-            with self.subTest(name="output_type"):
-                self.assertEqual(output.dtype, dtype)
-            with self.subTest(name="output_shape"):
+            with self.subTest(output_dtype=output_dtype):
+                self.assertEqual(output.dtype, output_dtype)
                 self.assertEqual(output.shape, [5, 5, 1])
-
-    def test_multiple_imgs(self):
-        for dtype in [tf.float16, tf.float32, tf.float64]:
-            image = tf.constant(_IMAGE, dtype=tf.uint8)
-            image = tf.reshape(image, [5, 5, 1])
-            images = tf.stack([image, image, image], axis=0)
-
-            output = distance_tranform_ops.euclidean_dist_transform(
-                images, dtype=dtype)
-            output_flat = tf.reshape(output, [-1])
-            expected_output = np.array(_GROUND_TRUTH * 3)
-
-            with self.subTest(name="output_value"):
                 self.assertAllCloseAccordingToType(output_flat,
                                                    expected_output)
-            with self.subTest(name="output_type"):
-                self.assertEqual(output.dtype, dtype)
-            with self.subTest(name="output_shape"):
-                self.assertEqual(output.shape, [3, 5, 5, 1])
 
-    def test_failure_dtype(self):
-        for dtype in [tf.uint8, tf.int32, tf.int64]:
-            image = tf.constant(_IMAGE, dtype=tf.uint8)
-            image = tf.reshape(image, [5, 5, 1])
+    def test_batch_binary_images(self):
+        BATCH_SIZE = 3
+        # yapf: disable
+        IMAGE = [[[1], [1], [1], [1], [1]],
+                 [[1], [1], [1], [1], [1]],
+                 [[0], [1], [0], [1], [0]],
+                 [[1], [0], [1], [0], [1]],
+                 [[0], [1], [0], [1], [0]]]
+        # yapf: enable
+        images = tf.constant([IMAGE] * BATCH_SIZE, dtype=tf.uint8)
+        expected_output = np.array([
+            2, 2.23606801, 2, 2.23606801, 2, 1, 1.41421354, 1, 1.41421354, 1,
+            0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0
+        ] * BATCH_SIZE)
 
-            with self.assertRaises(TypeError):
-                output = distance_tranform_ops.euclidean_dist_transform(
-                    image, dtype=dtype)
+        for output_dtype in [tf.float16, tf.float32, tf.float64]:
+            output = distance_tranform_ops.euclidean_dist_transform(
+                images, dtype=output_dtype)
+            output_flat = tf.reshape(output, [-1])
 
-    def test_failure_shape(self):
-        for shape in ([10, 10], [1, 2, 3, 4, 5], [100, 100, 3]):
-            image = tf.zeros(shape, tf.uint8)
-            with self.assertRaises(ValueError):
-                output = distance_tranform_ops.euclidean_dist_transform(image)
+            with self.subTest(output_dtype=output_dtype):
+                self.assertEqual(output.dtype, output_dtype)
+                self.assertEqual(output.shape, [BATCH_SIZE, 5, 5, 1])
+                self.assertAllCloseAccordingToType(output_flat,
+                                                   expected_output)
+
+    def test_image_with_invalid_dtype(self):
+        # yapf: disable
+        IMAGE = [[[1], [1], [1], [1], [1]],
+                 [[1], [1], [1], [1], [1]],
+                 [[0], [1], [0], [1], [0]],
+                 [[1], [0], [1], [0], [1]],
+                 [[0], [1], [0], [1], [0]]]
+        # yapf: enable
+        image = tf.constant(IMAGE, dtype=tf.uint8)
+
+        for output_dtype in [tf.uint8, tf.int32, tf.int64]:
+            with self.assertRaisesRegex(
+                    TypeError, "`dtype` must be float16, float32 or float64"):
+                _ = distance_tranform_ops.euclidean_dist_transform(
+                    image, dtype=output_dtype)
+
+    def test_image_with_invalid_shape(self):
+        for invalid_shape in ([1], [2, 1], [2, 4, 4, 4, 1]):
+            image = tf.zeros(invalid_shape, tf.uint8)
+
+            with self.assertRaisesRegex(
+                    ValueError, "`images` should have rank between 3 and 4"):
+                _ = distance_tranform_ops.euclidean_dist_transform(image)
+
+        image = tf.zeros([2, 4, 3], tf.uint8)
+        with self.assertRaisesRegex(ValueError,
+                                    "`images` must have only one channel"):
+            _ = distance_tranform_ops.euclidean_dist_transform(image)
 
     def test_all_zeroes(self):
         image = tf.zeros([10, 10, 1], tf.uint8)
-        for dtype in [tf.float16, tf.float32, tf.float64]:
-            output = distance_tranform_ops.euclidean_dist_transform(
-                image, dtype)
-            expected_output = np.zeros([10, 10, 1])
+        expected_output = np.zeros([10, 10, 1])
 
-        self.assertAllClose(output, expected_output)
+        for output_dtype in [tf.float16, tf.float32, tf.float64]:
+            output = distance_tranform_ops.euclidean_dist_transform(
+                image, dtype=output_dtype)
+
+            self.assertAllClose(output, expected_output)
 
     def test_all_ones(self):
         image = tf.ones([10, 10, 1], tf.uint8)
         output = distance_tranform_ops.euclidean_dist_transform(image)
         expected_output = np.full([10, 10, 1], tf.float32.max)
+
         self.assertAllClose(output, expected_output)
 
 

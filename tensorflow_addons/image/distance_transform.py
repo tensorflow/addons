@@ -32,7 +32,7 @@ ops.RegisterShape("EuclideanDistanceTransform")(
 
 @tf.function
 def euclidean_dist_transform(images,
-                             dtype=tf.dtypes.float32,
+                             dtype=tf.float32,
                              name="euclidean_distance_transform"):
     """
     Applies euclidean distance transform to the images_t
@@ -58,7 +58,7 @@ def euclidean_dist_transform(images,
     with tf.name_scope(name):
         image_or_images = ops.convert_to_tensor(images, name="images")
 
-        if image_or_images.dtype.base_dtype != tf.dtypes.uint8:
+        if image_or_images.dtype.base_dtype != tf.uint8:
             raise TypeError(
                 "Invalid dtype %s. Excepted uint8." % image_or_images.dtype)
         elif image_or_images.get_shape().ndims is None:
@@ -73,7 +73,7 @@ def euclidean_dist_transform(images,
         if images.get_shape()[3] != 1 and images.get_shape()[3] is not None:
             raise ValueError("`images` must have only one channel")
 
-        if not dtype.is_floating:
+        if dtype not in [tf.float16, tf.float32, tf.float64]:
             raise TypeError("`dtype` must be float16, float32 or float64")
 
         images = tf.cast(images, dtype)
