@@ -22,8 +22,6 @@ from tensorflow.python.framework import common_shapes
 from tensorflow.python.framework import ops
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 from tensorflow.python.framework import dtypes
-from tensorflow.python import array_ops
-from tensorflow.python import math_ops
 
 _image_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/image/_image_ops.so"))
@@ -301,21 +299,21 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
     """Rotate image(s) counterclockwise by the passed angle(s) in radians.
 
     Args:
-    images: A tensor of shape (num_images, num_rows, num_columns, num_channels)
+      images: A tensor of shape (num_images, num_rows, num_columns, num_channels)
         (NHWC), (num_rows, num_columns, num_channels) (HWC), or
         (num_rows, num_columns) (HW). The rank must be statically known (the
         shape is not `TensorShape(None)`.
-    angles: A scalar angle to rotate all images by, or (if images has rank 4)
+      angles: A scalar angle to rotate all images by, or (if images has rank 4)
         a vector of length num_images, with an angle for each image in the batch.
-    interpolation: Interpolation mode. Supported values: "NEAREST", "BILINEAR".
-    name: The name of the op.
+      interpolation: Interpolation mode. Supported values: "NEAREST", "BILINEAR".
+      name: The name of the op.
 
     Returns:
-    Image(s) with the same type and shape as `images`, rotated by the given
-    angle(s). Empty space due to the rotation will be filled with zeros.
+      Image(s) with the same type and shape as `images`, rotated by the given
+      angle(s). Empty space due to the rotation will be filled with zeros.
 
     Raises:
-    TypeError: If `image` is an invalid type.
+      TypeError: If `image` is an invalid type.
     """
     with ops.name_scope(name, "rotate"):
         image_or_images = ops.convert_to_tensor(images)
@@ -332,10 +330,8 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
         else:
             raise TypeError("Images should have rank between 2 and 4.")
 
-        image_height = math_ops.cast(
-            array_ops.shape(images)[1], dtypes.float32)[None]
-        image_width = math_ops.cast(
-            array_ops.shape(images)[2], dtypes.float32)[None]
+        image_height = tf.cast(tf.shape(images)[1], dtypes.float32)[None]
+        image_width = tf.cast(tf.shape(images)[2], dtypes.float32)[None]
         output = transform(
             images,
             angles_to_projective_transforms(angles, image_height, image_width),
