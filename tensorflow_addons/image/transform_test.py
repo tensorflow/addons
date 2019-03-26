@@ -24,8 +24,6 @@ import tensorflow as tf
 from tensorflow.python.ops import gradient_checker
 from tensorflow.python.framework import dtypes
 from tensorflow.python import array_ops
-from tensorflow.python import math_ops
-from tensorflow.python import constant_op
 from tensorflow.python import random_ops
 
 from tensorflow_addons.image import transform_ops
@@ -153,7 +151,7 @@ class ImageOpsTest(tf.test.TestCase):
             with self.cached_session():
                 for shape in [(5, 5), (24, 24), (2, 24, 24, 3)]:
                     for angle in [0, 1, np.pi / 2.0]:
-                        image = array_ops.zeros(shape, dtype)
+                        image = tf.zeros(shape, dtype)
                         self.assertAllEqual(
                             transform_ops.rotate(image, angle),
                             np.zeros(shape, dtype.as_numpy_dtype()))
@@ -164,12 +162,12 @@ class RotateOpTest(tf.test.TestCase):
     def test_rotate_even(self):
         for dtype in _DTYPES:
             with self.cached_session():
-                image = array_ops.reshape(
-                    math_ops.cast(math_ops.range(36), dtype), (6, 6))
-                image_rep = array_ops.tile(image[None, :, :, None],
-                                           [3, 1, 1, 1])
-                angles = constant_op.constant([0.0, np.pi / 4.0, np.pi / 2.0],
-                                              dtypes.float32)
+                image = tf.reshape(
+                    tf.cast(tf.range(36), dtype), (6, 6))
+                image_rep = tf.tile(image[None, :, :, None],
+                                         [3, 1, 1, 1])
+                angles = tf.constant([0.0, np.pi / 4.0, np.pi / 2.0],
+                                     tf.dtypes.float32)
                 image_rotated = transform_ops.rotate(image_rep, angles)
                 # yapf: disable
                 self.assertAllEqual(
@@ -198,12 +196,12 @@ class RotateOpTest(tf.test.TestCase):
     def test_rotate_odd(self):
         for dtype in _DTYPES:
             with self.cached_session():
-                image = array_ops.reshape(
-                    math_ops.cast(math_ops.range(25), dtype), (5, 5))
-                image_rep = array_ops.tile(image[None, :, :, None],
-                                           [3, 1, 1, 1])
-                angles = constant_op.constant([np.pi / 4.0, 1.0, -np.pi / 2.0],
-                                              dtypes.float32)
+                image = tf.reshape(
+                    tf.cast(tf.range(25), dtype), (5, 5))
+                image_rep = tf.file(image[None, :, :, None],
+                                         [3, 1, 1, 1])
+                angles = tf.constant([np.pi / 4.0, 1.0, -np.pi / 2.0],
+                                     tf.dtypes.float32)
                 image_rotated = transform_ops.rotate(image_rep, angles)
                 # yapf: disable
                 self.assertAllEqual(
@@ -225,10 +223,11 @@ class RotateOpTest(tf.test.TestCase):
                       [24, 19, 14, 9, 4]]])
                 # yapf: enable
 
+    @test_utils.run_in_graph_and_eager_modes
     def test_compose_rotate(self):
         for dtype in _DTYPES:
             with self.cached_session():
-                image = constant_op.constant(
+                image = tf.constant(
                     [[1, 1, 1, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]],
                     dtype=dtype)
                 # Rotate counter-clockwise by pi / 2.
@@ -236,8 +235,8 @@ class RotateOpTest(tf.test.TestCase):
                     np.pi / 2, 4, 4)
                 # Translate right by 1 (the transformation matrix is always inverted,
                 # hence the -1).
-                translation = constant_op.constant([1, 0, -1, 0, 1, 0, 0, 0],
-                                                   dtype=dtypes.float32)
+                translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0],
+                                          dtype=dtypes.float32)
                 composed = transform_ops.compose_transforms(
                     rotation, translation)
                 image_transformed = transform_ops.transform(image, composed)
@@ -245,11 +244,18 @@ class RotateOpTest(tf.test.TestCase):
                     image_transformed,
                     [[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 0, 1], [0, 1, 1, 1]])
 
+    @test_utils.run_in_graph_and_eager_modes
     def test_bilinear(self):
         with self.cached_session():
-            image = constant_op.constant(
-                [[0, 0, 0, 0, 0], [0, 1, 1, 1, 0], [0, 1, 0, 1, 0],
-                 [0, 1, 1, 1, 0], [0, 0, 0, 0, 0]], dtypes.float32)
+            image = tf.constant(
+                # yapf: disable
+                [[0, 0, 0, 0, 0],
+                 [0, 1, 1, 1, 0],
+                 [0, 1, 0, 1, 0],
+                 [0, 1, 1, 1, 0],
+                 [0, 0, 0, 0, 0]],
+                # yapf: enable
+                dtypes.float32)
             # The following result matches:
             # >>> scipy.ndimage.rotate(image, 45, order=1, reshape=False)
             # which uses spline interpolation of order 1, equivalent to bilinear
@@ -257,11 +263,13 @@ class RotateOpTest(tf.test.TestCase):
             self.assertAllClose(
                 transform_ops.rotate(
                     image, np.pi / 4.0, interpolation="BILINEAR"),
+                # yapf: disable
                 [[0.000, 0.000, 0.343, 0.000, 0.000],
                  [0.000, 0.586, 0.914, 0.586, 0.000],
                  [0.343, 0.914, 0.000, 0.914, 0.343],
                  [0.000, 0.586, 0.914, 0.586, 0.000],
                  [0.000, 0.000, 0.343, 0.000, 0.000]],
+                # yapf: enable
                 atol=0.001)
             # yapf: disable
             self.assertAllClose(
@@ -274,21 +282,32 @@ class RotateOpTest(tf.test.TestCase):
                  [0, 0, 1, 0, 0]])
             # yapf: enable
 
+    @test_utils.run_in_graph_and_eager_modes
     def test_bilinear_uint8(self):
         with self.cached_session():
-            image = constant_op.constant(
+            image = tf.constant(
                 np.asarray(
-                    [[0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 255, 255, 255, 0.0],
-                     [0.0, 255, 0.0, 255, 0.0], [0.0, 255, 255, 255, 0.0],
-                     [0.0, 0.0, 0.0, 0.0, 0.0]], np.uint8), dtypes.uint8)
+                    # yapf: disable
+                    [[0.0, 0.0, 0.0, 0.0, 0.0],
+                     [0.0, 255, 255, 255, 0.0],
+                     [0.0, 255, 0.0, 255, 0.0],
+                     [0.0, 255, 255, 255, 0.0],
+                     [0.0, 0.0, 0.0, 0.0, 0.0]],
+                    # yapf: enable
+                    np.uint8), dtypes.uint8)
             # == np.rint((expected image above) * 255)
+            # yapf: disable
             self.assertAllEqual(
                 transform_ops.rotate(
-                    image, np.pi / 4.0, interpolation="BILINEAR"),
-                [[0.0, 0.0, 87., 0.0, 0.0], [0.0, 149, 233, 149, 0.0],
-                 [87., 233, 0.0, 233, 87.], [0.0, 149, 233, 149, 0.0],
+                 image, np.pi / 4.0, interpolation="BILINEAR"),
+                [[0.0, 0.0, 87., 0.0, 0.0],
+                 [0.0, 149, 233, 149, 0.0],
+                 [87., 233, 0.0, 233, 87.],
+                 [0.0, 149, 233, 149, 0.0],
                  [0.0, 0.0, 87., 0.0, 0.0]])
+            # yapf: enable
 
+    @test_utils.run_in_graph_and_eager_modes
     def test_rotate_static_shape(self):
         image = array_ops.diag([1., 2., 3.])
         result = transform_ops.rotate(

@@ -21,7 +21,6 @@ import tensorflow as tf
 from tensorflow.python.framework import common_shapes
 from tensorflow.python.framework import ops
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
-from tensorflow.python.framework import dtypes
 
 _image_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/image/_image_ops.so"))
@@ -322,7 +321,7 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
         image_or_images = tf.convert_to_tensor(images)
         if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
             raise TypeError("Invalid dtype %s." % image_or_images.dtype)
-        elif image_or_images.get_shape().ndims is None:
+        if image_or_images.get_shape().ndims is None:
             raise TypeError("image_or_images rank must be statically known")
         elif len(image_or_images.get_shape()) == 2:
             images = image_or_images[None, :, :, None]
@@ -333,8 +332,8 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
         else:
             raise TypeError("Images should have rank between 2 and 4.")
 
-        image_height = tf.cast(tf.shape(images)[1], dtypes.float32)[None]
-        image_width = tf.cast(tf.shape(images)[2], dtypes.float32)[None]
+        image_height = tf.cast(tf.shape(images)[1], tf.dtypes.float32)[None]
+        image_width = tf.cast(tf.shape(images)[2], tf.dtypes.float32)[None]
         output = transform(
             images,
             angles_to_projective_transforms(angles, image_height, image_width),
