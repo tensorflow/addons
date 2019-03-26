@@ -296,7 +296,7 @@ class RotateOpTest(tf.test.TestCase):
     def test_rotate_static_shape(self):
         image = tf.linalg.diag([1., 2., 3.])
         result = transform_ops.rotate(
-            image, tf.random_uniform((), -1, 1), interpolation="BILINEAR")
+            image, tf.random.uniform((), -1, 1), interpolation="BILINEAR")
         self.assertEqual(image.get_shape(), result.get_shape())
 
 
