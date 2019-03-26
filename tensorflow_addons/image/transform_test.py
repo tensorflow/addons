@@ -23,8 +23,6 @@ import tensorflow as tf
 
 from tensorflow.python.ops import gradient_checker
 from tensorflow.python.framework import dtypes
-from tensorflow.python import array_ops
-from tensorflow.python import random_ops
 
 from tensorflow_addons.image import transform_ops
 from tensorflow_addons.utils import test_utils
@@ -294,10 +292,10 @@ class RotateOpTest(tf.test.TestCase):
 
     @test_utils.run_in_graph_and_eager_modes
     def test_rotate_static_shape(self):
-        image = array_ops.diag([1., 2., 3.])
+        image = tf.diag([1., 2., 3.])
         result = transform_ops.rotate(
             image,
-            random_ops.random_uniform((), -1, 1),
+            tf.random_uniform((), -1, 1),
             interpolation="BILINEAR")
         self.assertEqual(image.get_shape(), result.get_shape())
 
