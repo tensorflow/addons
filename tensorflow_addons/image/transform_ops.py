@@ -317,7 +317,7 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
     Raises:
       TypeError: If `image` is an invalid type.
     """
-    with tf.name_scope(name, "rotate"):
+    with ops.name_scope(name, "rotate"):
         image_or_images = tf.convert_to_tensor(images)
         if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
             raise TypeError("Invalid dtype %s." % image_or_images.dtype)
