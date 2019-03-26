@@ -263,11 +263,16 @@ class RotateOpTest(tf.test.TestCase):
                  [0.000, 0.586, 0.914, 0.586, 0.000],
                  [0.000, 0.000, 0.343, 0.000, 0.000]],
                 atol=0.001)
+            # yapf: disable
             self.assertAllClose(
                 transform_ops.rotate(
                     image, np.pi / 4.0, interpolation="NEAREST"),
-                [[0, 0, 1, 0, 0], [0, 1, 1, 1, 0], [1, 1, 0, 1, 1],
-                 [0, 1, 1, 1, 0], [0, 0, 1, 0, 0]])
+                [[0, 0, 1, 0, 0],
+                 [0, 1, 1, 1, 0],
+                 [1, 1, 0, 1, 1],
+                 [0, 1, 1, 1, 0],
+                 [0, 0, 1, 0, 0]])
+            # yapf: enable
 
     def test_bilinear_uint8(self):
         with self.cached_session():
