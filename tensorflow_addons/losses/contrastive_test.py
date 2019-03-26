@@ -22,9 +22,9 @@ from tensorflow_addons.losses import contrastive
 from tensorflow_addons.utils import test_utils
 
 
+# pylint:disable=not-callable
 @test_utils.run_all_in_graph_and_eager_modes
 class ContrastiveLossTest(tf.test.TestCase):
-
     def test_config(self):
         cl_obj = contrastive.ContrastiveLoss(
             reduction=tf.keras.losses.Reduction.SUM, name='cl')
@@ -34,8 +34,7 @@ class ContrastiveLossTest(tf.test.TestCase):
     def test_all_correct_unweighted(self):
         cl_obj = contrastive.ContrastiveLoss()
         y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
-        y_pred = tf.constant([1., 1., 0., 0., 1., 0.],
-                             dtype=tf.dtypes.float32)
+        y_pred = tf.constant([1., 1., 0., 0., 1., 0.], dtype=tf.dtypes.float32)
         loss = cl_obj(y_true, y_pred)
         loss = self.evaluate(loss)
         self.assertAlmostEqual(loss, 0.0, 3)

@@ -26,8 +26,8 @@ from tensorflow_addons.utils import keras_utils
 def contrastive_loss(y_true, y_pred, margin=1.0):
     """Computes the contrastive loss.
 
-    This loss encourages the embedding to be close to each other for 
-    the samples of the same label and the embedding to be far apart at least 
+    This loss encourages the embedding to be close to each other for
+    the samples of the same label and the embedding to be far apart at least
     by the margin constant for the samples of different labels.
 
     See: http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf
@@ -43,23 +43,23 @@ def contrastive_loss(y_true, y_pred, margin=1.0):
       contrastive_loss: 1-D float `Tensor` with shape [batch_size].
     """
     y_true = tf.dtypes.cast(y_true, y_pred.dtype)
-    return (y_true * tf.math.square(y_pred) +
-            (1. - y_true) *
-            tf.math.square(tf.math.maximum(margin - y_pred, 0.)))
+    return (
+        y_true * tf.math.square(y_pred) +
+        (1. - y_true) * tf.math.square(tf.math.maximum(margin - y_pred, 0.)))
 
 
 @keras_utils.register_keras_custom_object
 class ContrastiveLoss(keras_utils.LossFunctionWrapper):
     """Computes the contrastive loss.
 
-    This loss encourages the embedding to be close to each other for 
-    the samples of the same label and the embedding to be far apart at least 
+    This loss encourages the embedding to be close to each other for
+    the samples of the same label and the embedding to be far apart at least
     by the margin constant for the samples of different labels.
 
     See: http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf
 
-    We expect labels `y_true` to be provided as 1-D integer `Tensor` with shape 
-    [batch_size] of binary ineger labels. And `y_pred` must be 
+    We expect labels `y_true` to be provided as 1-D integer `Tensor` with shape
+    [batch_size] of binary ineger labels. And `y_pred` must be
     1-D float `Tensor` distances between two embedding matrices.
 
     Args:
@@ -75,7 +75,4 @@ class ContrastiveLoss(keras_utils.LossFunctionWrapper):
                  reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
                  name="contrasitve_loss"):
         super(ContrastiveLoss, self).__init__(
-            contrastive_loss,
-            reduction=reduction,
-            name=name,
-            margin=margin)
+            contrastive_loss, reduction=reduction, name=name, margin=margin)
