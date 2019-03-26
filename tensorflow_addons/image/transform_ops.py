@@ -384,11 +384,11 @@ def random_rotation(images, rg, interpolation="NEAREST", name=None):
         else:
             raise TypeError("Images should have rank between 2 and 4.")
 
-        image_height = math_ops.cast(
-            array_ops.shape(images)[1], dtypes.float32)[None]
-        image_width = math_ops.cast(
-            array_ops.shape(images)[2], dtypes.float32)[None]
-        n_images = array_ops.shape(images)[0]
+        image_height = tf.cast(
+            tf.shape(images)[1], dtypes.float32)[None]
+        image_width = tf.cast(
+            tf.shape(images)[2], dtypes.float32)[None]
+        n_images = tf.shape(images)[0]
 
         minval, maxval = (-rg, rg)
         angles = tf.random.uniform(shape=[n_images], minval=minval, maxval=maxval)
