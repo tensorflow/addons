@@ -299,13 +299,16 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
     """Rotate image(s) counterclockwise by the passed angle(s) in radians.
 
     Args:
-      images: A tensor of shape (num_images, num_rows, num_columns, num_channels)  # noqa
+      images: A tensor of shape
+        (num_images, num_rows, num_columns, num_channels)
         (NHWC), (num_rows, num_columns, num_channels) (HWC), or
         (num_rows, num_columns) (HW). The rank must be statically known (the
         shape is not `TensorShape(None)`.
       angles: A scalar angle to rotate all images by, or (if images has rank 4)
-        a vector of length num_images, with an angle for each image in the batch.  # noqa
-      interpolation: Interpolation mode. Supported values: "NEAREST", "BILINEAR".  # noqa
+        a vector of length num_images, with an angle for each image in the
+        batch.
+      interpolation: Interpolation mode. Supported values: "NEAREST",
+        "BILINEAR".
       name: The name of the op.
 
     Returns:
