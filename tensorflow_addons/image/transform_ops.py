@@ -299,13 +299,16 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
     """Rotate image(s) counterclockwise by the passed angle(s) in radians.
 
     Args:
-      images: A tensor of shape (num_images, num_rows, num_columns, num_channels)
+      images: A tensor of shape
+        (num_images, num_rows, num_columns, num_channels)
         (NHWC), (num_rows, num_columns, num_channels) (HWC), or
         (num_rows, num_columns) (HW). The rank must be statically known (the
         shape is not `TensorShape(None)`.
       angles: A scalar angle to rotate all images by, or (if images has rank 4)
-        a vector of length num_images, with an angle for each image in the batch.
-      interpolation: Interpolation mode. Supported values: "NEAREST", "BILINEAR".
+        a vector of length num_images, with an angle for each image in the
+        batch.
+      interpolation: Interpolation mode. Supported values: "NEAREST",
+        "BILINEAR".
       name: The name of the op.
 
     Returns:
@@ -315,8 +318,8 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
     Raises:
       TypeError: If `image` is an invalid type.
     """
-    with ops.name_scope(name, "rotate"):
-        image_or_images = ops.convert_to_tensor(images)
+    with tf.name_scope(name, "rotate"):
+        image_or_images = tf.convert_to_tensor(images)
         if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
             raise TypeError("Invalid dtype %s." % image_or_images.dtype)
         elif image_or_images.get_shape().ndims is None:

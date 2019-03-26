@@ -192,6 +192,7 @@ class RotateOpTest(tf.test.TestCase):
                       [2, 8, 14, 20, 26, 32],
                       [1, 7, 13, 19, 25, 31],
                       [0, 6, 12, 18, 24, 30]]])
+                # yapf: enable
 
     @test_utils.run_in_graph_and_eager_modes
     def test_rotate_odd(self):
@@ -222,6 +223,7 @@ class RotateOpTest(tf.test.TestCase):
                       [22, 17, 12, 7, 2],
                       [23, 18, 13, 8, 3],
                       [24, 19, 14, 9, 4]]])
+                # yapf: enable
 
     def test_compose_rotate(self):
         for dtype in _DTYPES:
