@@ -22,7 +22,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow.python.ops import gradient_checker
-from tensorflow.python.framework import dtypes
+from tensorflow import dtypes
 
 from tensorflow_addons.image import transform_ops
 from tensorflow_addons.utils import test_utils
