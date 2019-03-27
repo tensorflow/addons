@@ -1,9 +1,14 @@
 # Addons - Optimizers
 
-## Contents
-| Optimizer  | Reference                                   |
-|:----------------------- |:-------------------------------|
-| LazyAdamOptimizer | https://arxiv.org/abs/1412.6980      |
+## Maintainers
+| Submodule  | Maintainers  | Contact Info   |
+|:---------- |:------------- |:--------------|
+| lazy_adam_optimizer |  SIG-Addons | addons@tensorflow.org   |
+
+## Components
+| Submodule | Optimizer  | Reference                                   |
+|:----------------------- |:---------------------- |:---------|
+| lazy_adam_optimizer | LazyAdamOptimizer | https://arxiv.org/abs/1412.6980      |
 
 
 ## Contribution Guidelines
@@ -23,5 +28,4 @@ must:
  * Add a `py_test` to this sub-package's BUILD file.
 
 #### Documentation Requirements
- * Update the table of contents in the project's central README.
  * Update the table of contents in this sub-packages's README.

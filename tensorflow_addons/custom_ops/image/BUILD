@@ -2,8 +2,9 @@ licenses(["notice"])  # Apache 2.0
 
 package(default_visibility = ["//visibility:public"])
 
+
 cc_binary(
-    name = "python/_distort_image_ops.so",
+    name = "_distort_image_ops.so",
     srcs = [
         "cc/kernels/adjust_hsv_in_yiq_op.cc",
         "cc/kernels/adjust_hsv_in_yiq_op.h",
@@ -19,7 +20,7 @@ cc_binary(
 
 
 cc_binary(
-    name = "python/_image_ops.so",
+    name = "_image_ops.so",
     srcs = [
         "cc/kernels/image_projective_transform_op.cc",
         "cc/kernels/image_projective_transform_op.h",
@@ -34,63 +35,5 @@ cc_binary(
     deps = [
         "@local_config_tf//:libtensorflow_framework",
         "@local_config_tf//:tf_header_lib",
-    ],
-)
-
-# TODO: split each operation into groups
-py_library(
-    name = "image_ops",
-    srcs = ([
-        "__init__.py",
-        "python/__init__.py",
-        "python/dense_image_warp.py",
-        "python/distort_image_ops.py",
-        "python/transform.py",
-    ]),
-    data = [
-        ":python/_distort_image_ops.so",
-        ":python/_image_ops.so",
-        "//tensorflow_addons/utils:utils_py",
-    ],
-    srcs_version = "PY2AND3",
-)
-
-py_test(
-    name = "dense_image_warp_test",
-    size = "medium",
-    srcs = [
-        "python/dense_image_warp_test.py",
-    ],
-    main = "python/dense_image_warp_test.py",
-    deps = [
-        ":image_ops",
-    ],
-    srcs_version = "PY2AND3",
-)
-
-py_test(
-    name = "distort_image_ops_test",
-    size = "small",
-    srcs = [
-        "python/distort_image_ops_test.py",
-    ],
-    main = "python/distort_image_ops_test.py",
-    deps = [
-        ":image_ops",
-    ],
-    srcs_version = "PY2AND3",
-)
-
-# TODO: use cuda_py_test later.
-py_test(
-    name = "transform_ops_test",
-    size = "medium",
-    srcs = [
-        "python/transform_test.py",
-    ],
-    main = "python/transform_test.py",
-    srcs_version = "PY2AND3",
-    deps = [
-        ":image_ops",
     ],
 )
