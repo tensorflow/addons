@@ -1785,9 +1785,9 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
           seq: A non-empty sequence of items or generator.
 
         Returns:
-           Either the values in the sequence as a tuple if
-           AttentionMechanism(s) were passed to the constructor as a sequence
-           or the singular element.
+          Either the values in the sequence as a tuple if
+          AttentionMechanism(s) were passed to the constructor as a sequence
+          or the singular element.
         """
         t = tuple(seq)
         if self._is_multi:
@@ -1807,8 +1807,8 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
         """The `state_size` property of `AttentionWrapper`.
 
         Returns:
-          An `AttentionWrapperState` tuple containing shapes used by this
-            object.
+          An `AttentionWrapperState` tuple containing shapes used
+          by this object.
         """
         return AttentionWrapperState(
             cell_state=self._cell.state_size,
