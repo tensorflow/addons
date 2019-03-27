@@ -55,7 +55,8 @@ class ImageProjectiveTransformV2 : public OpKernel {
   Interpolation interpolation_;
 
  public:
-  explicit ImageProjectiveTransformV2(OpKernelConstruction* ctx) : OpKernel(ctx) {
+  explicit ImageProjectiveTransformV2(OpKernelConstruction* ctx)
+      : OpKernel(ctx) {
     string interpolation_str;
     OP_REQUIRES_OK(ctx, ctx->GetAttr("interpolation", &interpolation_str));
     if (interpolation_str == "NEAREST") {
