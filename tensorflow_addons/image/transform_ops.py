@@ -369,7 +369,7 @@ def random_rotation(images, rg, interpolation="NEAREST", name=None):
     TypeError: If `image` is an invalid type.
     """
     with ops.name_scope(name, "random_rotation"):
-        image_or_images = ops.convert_to_tensor(images)
+        image_or_images = tf.convert_to_tensor(images)
         if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
             raise TypeError("Invalid dtype %s." % image_or_images.dtype)
         elif image_or_images.get_shape().ndims is None:
@@ -384,9 +384,9 @@ def random_rotation(images, rg, interpolation="NEAREST", name=None):
             raise TypeError("Images should have rank between 2 and 4.")
 
         image_height = tf.cast(
-            tf.shape(images)[1], dtypes.float32)[None]
+            tf.shape(images)[1], tf.dtypes.float32)[None]
         image_width = tf.cast(
-            tf.shape(images)[2], dtypes.float32)[None]
+            tf.shape(images)[2], tf.dtypes.float32)[None]
         n_images = tf.shape(images)[0]
 
         minval, maxval = (-rg, rg)
