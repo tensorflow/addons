@@ -3,12 +3,15 @@
 ## Maintainers
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:--------------|
+| dense_image_warp |  |  |
 | distort_image_ops |  |  | 
 | transform_ops |  |  | 
 
 ## Components 
 | Submodule  | Image Processing Function |  Reference  |
 |:---------- |:----------- |:----------- |
+| dense_image_warp | dense_image_warp |  |
+| dense_image_warp | _interpolate_bilinear |  |
 | distort_image_ops |  adjust_hsv_in_yiq |  |
 | distort_image_ops | random_hsv_in_yiq |  |
 | transform_ops | transform |  | 
