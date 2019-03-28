@@ -63,6 +63,17 @@ Try those commands below:
 2. Run unit test: `make unit-test`
 3. All of the above: `make`
 
+### Tips
+Using default Python Package Index (PyPI, https://pypi.org/) maybe pretty slow due to the network connection.
+Developers can choose using a PyPI mirror, search engine can help you find nearest and fast PyPI mirror.
+
+Setting python using a PyPI mirror as default package source is easy. For pip version >=10.0.0 (if not, please using `pip install pip -U` to upgrade pip):
+```bash
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+in this example, `https://pypi.tuna.tsinghua.edu.cn/simple` is a PyPI mirror for China.
+
 ## Coding style
 
 Addons provides `make code-format` command to format your changes
