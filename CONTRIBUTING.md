@@ -67,7 +67,7 @@ Try those commands below:
 Using default Python Package Index (PyPI, https://pypi.org/) maybe pretty slow due to the network connection.
 Developers can choose using a PyPI mirror, search engine can help you find nearest and fast PyPI mirror.
 
-Setting python using a PyPI mirror as default package source is easy. For pip version >=10.0.0 (if not, please using `pip install pip -U` to upgrade pip):
+Setting python using a PyPI mirror as default package source is easy. For pip version >=10.0.0 (if not satisfied, please using `pip install -U pip` to upgrade pip):
 ```bash
 pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 ```
