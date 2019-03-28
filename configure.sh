@@ -36,6 +36,7 @@ function write_action_env_to_bazelrc() {
 
 [[ -f .bazelrc ]] && rm .bazelrc
 pip install $QUIET_FLAG -r requirements.txt
+pip3 install $QUIET_FLAG -r requirements.txt
 
 TF_CFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') )
 TF_LFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )

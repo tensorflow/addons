@@ -94,6 +94,16 @@ bazel test -c opt -k \
 --test_output=errors \
 //tensorflow_addons/...
 ```
+This test will test Python2 by default.
+
+To test Python2 or Python3 specifically please run:
+```bash 
+# Python 3
+bazel test --python_top=//tools:python3.4.3 //...
+# Python 2
+bazel test --python_top=//tools:python2.7.6 //...
+```
+
 
 ## Code Reviews
 
