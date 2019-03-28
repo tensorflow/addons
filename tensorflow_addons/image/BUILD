@@ -6,6 +6,7 @@ py_library(
     name = "image",
     srcs = ([
         "__init__.py",
+        "distance_transform.py",
         "distort_image_ops.py",
         "transform_ops.py",
     ]),
@@ -15,6 +16,19 @@ py_library(
         "//tensorflow_addons/utils",
     ],
     srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "distance_transform_ops_test",
+    size = "small",
+    srcs = [
+        "distance_transform_test.py",
+    ],
+    main = "distance_transform_test.py",
+    deps = [
+        ":image",
+    ],
+    srcs_version = "PY2AND3"
 )
 
 py_test(
