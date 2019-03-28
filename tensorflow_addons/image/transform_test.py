@@ -157,8 +157,7 @@ class RotateOpTest(tf.test.TestCase):
         for dtype in _DTYPES:
             image = tf.reshape(tf.cast(tf.range(36), dtype), (6, 6))
             image_rep = tf.tile(image[None, :, :, None], [3, 1, 1, 1])
-            angles = tf.constant([0.0, np.pi / 4.0, np.pi / 2.0],
-                                 tf.float32)
+            angles = tf.constant([0.0, np.pi / 4.0, np.pi / 2.0], tf.float32)
             image_rotated = transform_ops.rotate(image_rep, angles)
             # yapf: disable
             self.assertAllEqual(
@@ -187,8 +186,7 @@ class RotateOpTest(tf.test.TestCase):
         for dtype in _DTYPES:
             image = tf.reshape(tf.cast(tf.range(25), dtype), (5, 5))
             image_rep = tf.tile(image[None, :, :, None], [3, 1, 1, 1])
-            angles = tf.constant([np.pi / 4.0, 1.0, -np.pi / 2.0],
-                                 tf.float32)
+            angles = tf.constant([np.pi / 4.0, 1.0, -np.pi / 2.0], tf.float32)
             image_rotated = transform_ops.rotate(image_rep, angles)
             # yapf: disable
             self.assertAllEqual(
@@ -261,26 +259,23 @@ class RotateOpTest(tf.test.TestCase):
         # yapf: enable
 
     def test_bilinear_uint8(self):
+        # yapf: disable
         image = tf.constant(
             np.asarray(
-                # yapf: disable
                 [[0.0, 0.0, 0.0, 0.0, 0.0],
                  [0.0, 255, 255, 255, 0.0],
                  [0.0, 255, 0.0, 255, 0.0],
                  [0.0, 255, 255, 255, 0.0],
                  [0.0, 0.0, 0.0, 0.0, 0.0]],
-                # yapf: enable
                 np.uint8),
             tf.uint8)
+        # yapf: enable
         # == np.rint((expected image above) * 255)
         # yapf: disable
         self.assertAllEqual(
-            transform_ops.rotate(
-                image, np.pi / 4.0, interpolation="BILINEAR"),
-            [[0.0, 0.0, 87., 0.0, 0.0],
-             [0.0, 149, 233, 149, 0.0],
-             [87., 233, 0.0, 233, 87.],
-             [0.0, 149, 233, 149, 0.0],
+            transform_ops.rotate(image, np.pi / 4.0, interpolation="BILINEAR"),
+            [[0.0, 0.0, 87., 0.0, 0.0], [0.0, 149, 233, 149, 0.0],
+             [87., 233, 0.0, 233, 87.], [0.0, 149, 233, 149, 0.0],
              [0.0, 0.0, 87., 0.0, 0.0]])
         # yapf: enable
 
