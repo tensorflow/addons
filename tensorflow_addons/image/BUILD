@@ -28,7 +28,7 @@ py_test(
     deps = [
         ":image",
     ],
-    srcs_version = "PY2AND3"
+    srcs_version = "PY2AND3",
 )
 
 py_test(

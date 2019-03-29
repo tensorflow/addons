@@ -34,6 +34,7 @@ class DistanceOpsTest(tf.test.TestCase):
                  [[0], [1], [0], [1], [0]],
                  [[1], [0], [1], [0], [1]],
                  [[0], [1], [0], [1], [0]]]
+        # pylint: disable=bad-whitespace
         expected_output = np.array([
             2, 2.23606801, 2, 2.23606801, 2,
             1, 1.41421354, 1, 1.41421354, 1,
@@ -93,6 +94,7 @@ class DistanceOpsTest(tf.test.TestCase):
         image = tf.constant(image, dtype=tf.uint8)
 
         for output_dtype in [tf.uint8, tf.int32, tf.int64]:
+            # pylint: disable=bad-continuation
             with self.assertRaisesRegex(
                     TypeError, "`dtype` must be float16, float32 or float64"):
                 _ = distance_tranform_ops.euclidean_dist_transform(
@@ -102,6 +104,7 @@ class DistanceOpsTest(tf.test.TestCase):
         for invalid_shape in ([1], [2, 1], [2, 4, 4, 4, 1]):
             image = tf.zeros(invalid_shape, tf.uint8)
 
+            # pylint: disable=bad-continuation
             with self.assertRaisesRegex(
                     ValueError, "`images` should have rank between 3 and 4"):
                 _ = distance_tranform_ops.euclidean_dist_transform(image)
