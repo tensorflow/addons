@@ -181,8 +181,7 @@ class LazyAdamTest(tf.test.TestCase):
                     beta2 = beta2()
                     epsilon = epsilon()
 
-                opt = lazy_adam.LazyAdam(
-                    learning_rate=learning_rate)
+                opt = lazy_adam.LazyAdam(learning_rate=learning_rate)
                 if not context.executing_eagerly():
                     update = opt.apply_gradients(
                         zip([grads0, grads1], [var0, var1]))
