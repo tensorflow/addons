@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for LazyAdamOptimizer."""
+"""Tests for LazyAdam."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,7 +23,7 @@ import tensorflow as tf
 
 from tensorflow.python.eager import context
 from tensorflow.python.ops import variables
-from tensorflow_addons.optimizers import lazy_adam_optimizer
+from tensorflow_addons.optimizers import lazy_adam
 from tensorflow_addons.utils import test_utils
 
 
@@ -54,7 +54,7 @@ def get_beta_accumulators(opt, dtype):
     return (beta_1_power, beta_2_power)
 
 
-class LazyAdamOptimizerTest(tf.test.TestCase):
+class LazyAdamTest(tf.test.TestCase):
 
     # TODO: remove v1 tests (keep pace with adam_test.py in keras).
     @test_utils.run_deprecated_v1
@@ -80,7 +80,7 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                 grads1 = tf.IndexedSlices(
                     tf.constant(grads1_np[grads1_np_indices]),
                     tf.constant(grads1_np_indices), tf.constant([3]))
-                opt = lazy_adam_optimizer.LazyAdamOptimizer()
+                opt = lazy_adam.LazyAdam()
                 update = opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
                 self.evaluate(variables.global_variables_initializer())
@@ -118,7 +118,7 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                 var = tf.Variable([[1.0], [2.0]])
                 indices = tf.constant([0, 1], dtype=index_dtype)
                 g_sum = lambda: tf.math.reduce_sum(tf.gather(var, indices))  # pylint: disable=cell-var-from-loop
-                optimizer = lazy_adam_optimizer.LazyAdamOptimizer(3.0)
+                optimizer = lazy_adam.LazyAdam(3.0)
                 minimize_op = optimizer.minimize(g_sum, var_list=[var])
                 self.evaluate(variables.global_variables_initializer())
                 self.evaluate(minimize_op)
@@ -137,10 +137,10 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                 grad_aggregated = tf.IndexedSlices(
                     tf.constant([0.2], shape=[1, 1], dtype=dtype),
                     tf.constant([1]), tf.constant([2, 1]))
-                repeated_update_opt = lazy_adam_optimizer.LazyAdamOptimizer()
+                repeated_update_opt = lazy_adam.LazyAdam()
                 repeated_update = repeated_update_opt.apply_gradients(
                     [(grad_repeated_index, repeated_index_update_var)])
-                aggregated_update_opt = lazy_adam_optimizer.LazyAdamOptimizer()
+                aggregated_update_opt = lazy_adam.LazyAdam()
                 aggregated_update = aggregated_update_opt.apply_gradients(
                     [(grad_aggregated, aggregated_update_var)])
                 self.evaluate(variables.global_variables_initializer())
@@ -181,8 +181,7 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                     beta2 = beta2()
                     epsilon = epsilon()
 
-                opt = lazy_adam_optimizer.LazyAdamOptimizer(
-                    learning_rate=learning_rate)
+                opt = lazy_adam.LazyAdam(learning_rate=learning_rate)
                 if not context.executing_eagerly():
                     update = opt.apply_gradients(
                         zip([grads0, grads1], [var0, var1]))
@@ -241,7 +240,7 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                 var1 = tf.Variable(var1_np)
                 grads0 = tf.constant(grads0_np)
                 grads1 = tf.constant(grads1_np)
-                opt = lazy_adam_optimizer.LazyAdamOptimizer(tf.constant(0.001))
+                opt = lazy_adam.LazyAdam(tf.constant(0.001))
                 update = opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
                 self.evaluate(variables.global_variables_initializer())
@@ -285,7 +284,7 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
                 var1 = tf.Variable(var1_np)
                 grads0 = tf.constant(grads0_np)
                 grads1 = tf.constant(grads1_np)
-                opt = lazy_adam_optimizer.LazyAdamOptimizer()
+                opt = lazy_adam.LazyAdam()
                 update1 = opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
                 update2 = opt.apply_gradients(
@@ -324,7 +323,7 @@ class LazyAdamOptimizerTest(tf.test.TestCase):
         with context.eager_mode():
             v1 = tf.Variable(1.)
             v2 = tf.Variable(1.)
-            opt = lazy_adam_optimizer.LazyAdamOptimizer(1.)
+            opt = lazy_adam.LazyAdam(1.)
             opt.minimize(lambda: v1 + v2, var_list=[v1, v2])
             # There should be iteration, and two unique slot variables for v1 and v2.
             self.assertEqual(5, len(set(opt.variables())))
