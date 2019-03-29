@@ -7,7 +7,7 @@ import median_filter_2D as md
 import numpy as np
 
 
-class Median_2d_test(test.TestCase):
+class Median2DTest(test.TestCase):
 
 
   def _validateMedian_2d(self, inputs, expected_values, filter_shape = (3, 3)):
