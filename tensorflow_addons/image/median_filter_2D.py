@@ -1,6 +1,5 @@
 from tensorflow.python.ops import array_ops
 from tensorflow.python.util.tf_export import tf_export
-from tensorflow.python.framework import ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.framework import dtypes
 from tensorflow.python.ops import image_ops_impl
@@ -9,8 +8,8 @@ from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import gen_math_ops
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.framework import ops
+from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import gen_array_ops
-from tensorflow.contrib.distributions.python.ops import sample_stats
 
 
 
@@ -82,7 +81,9 @@ def median_filter_2D(input, filter_shape=(3, 3)):
         slic = gen_array_ops.extract_image_patches(img, [1,
                 filter_shapex, filter_shapey, 1], [1, 1, 1, 1], [1, 1,
                 1, 1], padding='SAME')
-        li = sample_stats.percentile(slic, 50, axis=3)
+        mid = int(filter_shapex * filter_shapey / 2 + 1)
+        top = nn_ops.top_k(slic, mid, sorted=True)
+        li = tf.slice(top[0], [0, 0, 0, mid - 1], [-1, -1, -1, 1])
         li = array_ops.reshape(li, [m, no, 1])
         listi.append(li)
     y = array_ops.concat(listi[0], 2)
@@ -94,3 +95,4 @@ def median_filter_2D(input, filter_shape=(3, 3)):
     y = math_ops.cast(y, dtypes.int32)
 
     return y
+
