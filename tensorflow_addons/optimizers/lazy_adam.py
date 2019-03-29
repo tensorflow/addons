@@ -29,7 +29,7 @@ from tensorflow_addons.utils import keras_utils
 
 
 @keras_utils.register_keras_custom_object
-class LazyAdamOptimizer(tf.keras.optimizers.Adam):
+class LazyAdam(tf.keras.optimizers.Adam):
     """Variant of the Adam optimizer that handles sparse updates more
     efficiently.
 
