@@ -1,13 +1,9 @@
-
-from tensorflow.python.platform import test
-from tensorflow.python.framework import ops
-from tensorflow.python.framework import dtypes
-from tensorflow.python.ops import array_ops
+import tensorflow as tf
 import median_filter_2D as md
 
 
 
-class Median2DTest(test.TestCase):
+class Median2DTest(tf.test.TestCase):
 
 
   def _validateMedian_2d(self, inputs, expected_values, filter_shape = (3, 3)):
@@ -21,7 +17,7 @@ class Median2DTest(test.TestCase):
 
 
   def testfiltertuple(self):
-    tf_img = array_ops.zeros([3, 4, 3], dtypes.int32)
+    tf_img = tf.zeros([3, 4, 3], tf.int32)
 
     with self.assertRaisesRegexp(TypeError, 'Filter shape must be a tuple'):
       md.median_filter_2D(tf_img, 3)
@@ -40,16 +36,16 @@ class Median2DTest(test.TestCase):
 
 
   def testfiltervalue(self):
-      tf_img = array_ops.zeros([3, 4, 3], dtypes.int32)
+      tf_img = tf.zeros([3, 4, 3], tf.int32)
 
       with self.assertRaises(ValueError):
         md.median_filter_2D(tf_img, (4, 3))
 
 
   def testDimension(self) :
-    tf_img = array_ops.placeholder(dtypes.int32,shape=[3, 4, None])
-    tf_img1 = array_ops.placeholder(dtypes.int32,shape=[3, None, 4])
-    tf_img2 = array_ops.placeholder(dtypes.int32,shape=[None, 3, 4])
+    tf_img = tf.placeholder(tf.int32,shape=[3, 4, None])
+    tf_img1 = tf.placeholder(tf.int32,shape=[3, None, 4])
+    tf_img2 = tf.placeholder(tf.int32,shape=[None, 3, 4])
 
     with self.assertRaises (TypeError) :
       md.median_filter_2D(tf_img)
@@ -58,7 +54,7 @@ class Median2DTest(test.TestCase):
 
 
   def test_imagevsfilter(self):
-    tf_img = array_ops.zeros([3, 4, 3], dtypes.int32)
+    tf_img = tf.zeros([3, 4, 3], tf.int32)
     m = tf_img.shape[0].value
     no = tf_img.shape[1].value
     ch = tf_img.shape[2].value
@@ -80,7 +76,7 @@ class Median2DTest(test.TestCase):
               [0.36533048, 0.91401874, 0.02524159],
               [0.56379134, 0.9028874,  0.19505117]]]
 
-    tf_img = ops.convert_to_tensor(tf_img)
+    tf_img = tf.convert_to_tensor(tf_img)
     expt = [[[  0,   0,   0],
             [  4,  71, 141],
             [  0,   0,  0]],
@@ -92,8 +88,8 @@ class Median2DTest(test.TestCase):
            [[  0,   0,   0],
             [  4,  71,  49],
             [  0,   0,   0]]]
-    expt = ops.convert_to_tensor(expt)
+    expt = tf.convert_to_tensor(expt)
     self._validateMedian_2d(tf_img,expt)
 
 if __name__ == "__main__":
-  test.main()
+  tf.test.main()
