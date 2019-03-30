@@ -296,6 +296,7 @@ def _image_projective_transform_grad(op, grad):
 @tf.function
 def rotate(images, angles, interpolation="NEAREST", name=None):
     """Rotate image(s) counterclockwise by the passed angle(s) in radians.
+    
     Args:
       images: A tensor of shape
         (num_images, num_rows, num_columns, num_channels)
@@ -308,9 +309,11 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
       interpolation: Interpolation mode. Supported values: "NEAREST",
         "BILINEAR".
       name: The name of the op.
+      
     Returns:
       Image(s) with the same type and shape as `images`, rotated by the given
       angle(s). Empty space due to the rotation will be filled with zeros.
+      
     Raises:
       TypeError: If `image` is an invalid type.
     """
