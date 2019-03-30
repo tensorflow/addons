@@ -49,9 +49,9 @@ py_test(
     name = "transform_ops_test",
     size = "medium",
     srcs = [
-        "transform_test.py",
+        "transform_ops_test.py",
     ],
-    main = "transform_test.py",
+    main = "transform_ops_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":image",
