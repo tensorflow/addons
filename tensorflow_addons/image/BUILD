@@ -8,6 +8,7 @@ py_library(
         "__init__.py",
         "distort_image_ops.py",
         "transform_ops.py",
+        "median_filter_2D.py",
     ]),
     data = [
         "//tensorflow_addons/custom_ops/image:_distort_image_ops.so",
@@ -38,6 +39,19 @@ py_test(
         "transform_test.py",
     ],
     main = "transform_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "median_filter_2D_test",
+    size = "medium",
+    srcs = [
+        "median_filter_2D_test.py",
+    ],
+    main = "median_filter_2D_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":image",
