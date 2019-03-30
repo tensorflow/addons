@@ -6,11 +6,11 @@ py_library(
     name = "activations",
     srcs = [
         "__init__.py",
-        "sparsemax.py"
+        "sparsemax.py",
     ],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorflow_addons/utils:utils",
+        "//tensorflow_addons/utils",
     ],
 )
 
