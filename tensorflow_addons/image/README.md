@@ -11,6 +11,9 @@
 |:---------- |:----------- |:----------- |
 | distort_image_ops |  adjust_hsv_in_yiq |  |
 | distort_image_ops | random_hsv_in_yiq |  |
+| transform_ops | angles_to_projective_transforms | | 
+| transform_ops | matrices_to_flat_transforms | | 
+| transform_ops | rotate | | 
 | transform_ops | transform |  | 
 | transform_ops | angles_to_projective_transforms | | 
 | transform_ops | atrices_to_flat_transforms | | 
