@@ -1,19 +1,8 @@
-from tensorflow.python.ops import array_ops
-from tensorflow.python.util.tf_export import tf_export
-from tensorflow.python.ops import math_ops
-from tensorflow.python.framework import dtypes
-from tensorflow.python.ops import image_ops_impl
-from tensorflow.python.ops import script_ops
-from tensorflow.python.ops import control_flow_ops
-from tensorflow.python.ops import gen_math_ops
-from tensorflow.python.framework import tensor_shape
-from tensorflow.python.framework import ops
-from tensorflow.python.ops import nn_ops
-from tensorflow.python.ops import gen_array_ops
+import tensorflow as tf
+from tensorflow.python.ops.image_ops_impl import _Assert3DImage
 
 
 
-@tf_export('image.median_filter_2D')
 def median_filter_2D(input, filter_shape=(3, 3)):
     """This method performs Median Filtering on image.Filter shape can be user given.
        This method takes both kind of images where pixel values lie between 0 to 255 and where it lies between 0.0 and 1.0
@@ -40,7 +29,7 @@ def median_filter_2D(input, filter_shape=(3, 3)):
         pass
     else:
         raise TypeError('Size of the filter must be Integers')
-    input = image_ops_impl._Assert3DImage(input)
+    input = _Assert3DImage(input)
     (m, no, ch) = (input.shape[0].value, input.shape[1].value, input.shape[2].value)
     if  m != None and  no != None and ch != None:
         (m, no, ch) = (int(m), int(no), int(ch))
@@ -53,21 +42,21 @@ def median_filter_2D(input, filter_shape=(3, 3)):
     if filter_shapex % 2 == 0 or filter_shapey % 2 == 0:
         raise ValueError('Filter size should be odd. Got filter_shape (%sx'
                           % filter_shape[0] + '%s)' % filter_shape[1])
-    input = math_ops.cast(input, dtypes.float32)
-    tf_i = array_ops.reshape(input, [m * no * ch])
-    ma = math_ops.reduce_max(tf_i)
+    input = tf.cast(input, tf.float32)
+    tf_i = tf.reshape(input, [m * no * ch])
+    ma = tf.math.reduce_max(tf_i)
 
     def normalize(li):
-        one = ops.convert_to_tensor(1.0)
-        two = ops.convert_to_tensor(255.0)
+        one = tf.convert_to_tensor(1.0)
+        two = tf.convert_to_tensor(255.0)
 
         def func1():
             return li
 
         def func2():
-            return math_ops.truediv(li, two)
+            return tf.math.truediv(li, two)
 
-        return control_flow_ops.cond(gen_math_ops.greater(ma, one),
+        return tf.cond(tf.math.greater(ma, one),
                 func2, func1)
 
     input = normalize(input)
@@ -77,22 +66,21 @@ def median_filter_2D(input, filter_shape=(3, 3)):
     listi = []
     for a in range(ch):
         img = input[:, :, a:a + 1]
-        img = array_ops.reshape(img, [1, m, no, 1])
-        slic = gen_array_ops.extract_image_patches(img, [1,
+        img = tf.reshape(img, [1, m, no, 1])
+        slic = tf.extract_image_patches(img, [1,
                 filter_shapex, filter_shapey, 1], [1, 1, 1, 1], [1, 1,
                 1, 1], padding='SAME')
         mid = int(filter_shapex * filter_shapey / 2 + 1)
-        top = nn_ops.top_k(slic, mid, sorted=True)
+        top = tf.nn.top_k(slic, mid, sorted=True)
         li = tf.slice(top[0], [0, 0, 0, mid - 1], [-1, -1, -1, 1])
-        li = array_ops.reshape(li, [m, no, 1])
+        li = tf.reshape(li, [m, no, 1])
         listi.append(li)
-    y = array_ops.concat(listi[0], 2)
+    y = tf.concat(listi[0], 2)
 
     for i in range(len(listi) - 1):
-        y = array_ops.concat([y, listi[i + 1]], 2)
+        y = tf.concat([y, listi[i + 1]], 2)
 
     y *= 255
-    y = math_ops.cast(y, dtypes.int32)
+    y = tf.cast(y, tf.int32)
 
     return y
-
