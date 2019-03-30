@@ -15,8 +15,6 @@
 | transform_ops | matrices_to_flat_transforms | | 
 | transform_ops | rotate | | 
 | transform_ops | transform |  | 
-| transform_ops | angles_to_projective_transforms | | 
-| transform_ops | atrices_to_flat_transforms | | 
 
 ## Contribution Guidelines
 #### Standard API
