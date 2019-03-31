@@ -3,7 +3,7 @@
 ## Maintainers
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
-| sparsemax |  SIG-Addons | addons@tensorflow.org   |
+| sparsemax | @AndreasMadsen | amwwebdk+github@gmail.com |
 
 ## Contents
 | Submodule | Activation  | Reference                               |
