@@ -63,7 +63,10 @@ Try those commands below:
 2. Run unit test: `make unit-test`
 3. All of the above: `make`
 
-**Tip**: If having trouble with running this script due to network connection, users may find want to consult [this documentation](https://mirror.tuna.tsinghua.edu.cn/help/pypi/) to properly set their pypi repository.
+**Tip**: If having trouble with running this script due to network connection, 
+users may find want to consult 
+[this documentation](https://mirror.tuna.tsinghua.edu.cn/help/pypi/) (wrote in Chinese, user who is not in China may need replace mirror URL in the command)
+to properly set their pypi repository.
 
 ## Coding style
 
