@@ -114,7 +114,7 @@ class DistanceOpsTest(tf.test.TestCase):
                                     "`images` must have only one channel"):
             _ = distance_tranform_ops.euclidean_dist_transform(image)
 
-    def test_all_zeroes(self):
+    def test_all_zeros(self):
         image = tf.zeros([10, 10, 1], tf.uint8)
         expected_output = np.zeros([10, 10, 1])
 
