@@ -22,10 +22,10 @@ import tensorflow as tf
 
 
 @tf.function
-def _interpolate_bilinear(grid,
-                          query_points,
-                          name="interpolate_bilinear",
-                          indexing="ij"):
+def interpolate_bilinear(grid,
+                         query_points,
+                         name="interpolate_bilinear",
+                         indexing="ij"):
     """Similar to Matlab's interp2 function.
 
     Finds values for query points on a grid using bilinear interpolation.
@@ -205,7 +205,7 @@ def dense_image_warp(image, flow, name="dense_image_warp"):
                                             [batch_size, height * width, 2])
         # Compute values at the query points, then reshape the result back to the
         # image grid.
-        interpolated = _interpolate_bilinear(image, query_points_flattened)
+        interpolated = interpolate_bilinear(image, query_points_flattened)
         interpolated = tf.reshape(interpolated,
                                   [batch_size, height, width, channels])
         return interpolated

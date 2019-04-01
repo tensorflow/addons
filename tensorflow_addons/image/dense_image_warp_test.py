@@ -23,7 +23,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.image import dense_image_warp
-from tensorflow_addons.image import _interpolate_bilinear
+from tensorflow_addons.image import interpolate_bilinear
 from tensorflow_addons.utils import test_utils
 
 
@@ -39,7 +39,7 @@ class DenseImageWarpTest(tf.test.TestCase):
                                    shape=[1, 4, 2])
         expected_results = np.reshape(np.array([0., 3., 6.5, 6.]), [1, 4, 1])
 
-        interp = _interpolate_bilinear(grid, query_points)
+        interp = interpolate_bilinear(grid, query_points)
 
         self.assertAllClose(expected_results, interp)
 
@@ -51,7 +51,7 @@ class DenseImageWarpTest(tf.test.TestCase):
             [[0., 0.], [0., 1.], [0.5, 2.0], [1.5, 1.5]], shape=[1, 4, 2])
         expected_results = np.reshape(np.array([0., 3., 6.5, 6.]), [1, 4, 1])
 
-        interp = _interpolate_bilinear(grid, query_points, indexing="xy")
+        interp = interpolate_bilinear(grid, query_points, indexing="xy")
 
         self.assertAllClose(expected_results, interp)
 
@@ -64,7 +64,7 @@ class DenseImageWarpTest(tf.test.TestCase):
         expected_results = np.reshape(
             np.array([[0., 3., 2.], [6., 7., 8.]]), [2, 3, 1])
 
-        interp = _interpolate_bilinear(grid, query_points)
+        interp = interpolate_bilinear(grid, query_points)
 
         self.assertAllClose(expected_results, interp)
 

@@ -11,7 +11,7 @@
 | Submodule  | Image Processing Function |  Reference  |
 |:---------- |:----------- |:----------- |
 | dense_image_warp | dense_image_warp |  |
-| dense_image_warp | _interpolate_bilinear |  |
+| dense_image_warp | interpolate_bilinear |  |
 | distort_image_ops |  adjust_hsv_in_yiq |  |
 | distort_image_ops | random_hsv_in_yiq |  |
 | transform_ops | transform |  | 
