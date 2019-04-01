@@ -24,11 +24,20 @@ from tensorflow_addons.utils import keras_utils
 @keras_utils.register_keras_custom_object
 @tf.function
 def contrastive_loss(y_true, y_pred, margin=1.0):
-    """Computes the contrastive loss.
+    """Computes the contrastive loss between `y_true` and `y_pred`.
 
     This loss encourages the embedding to be close to each other for
     the samples of the same label and the embedding to be far apart at least
     by the margin constant for the samples of different labels.
+
+    The euclidean distances `y_pred` between two embedding matrices
+    `a` and `b` with shape [batch_size, hidden_size] can be computed
+    as follows:
+
+    ```python
+    # y_pred = \sqrt (\sum_i (a[:, i] - b[:, i])^2)
+    y_pred = tf.linalg.norm(a - b, axis=1)
+    ```
 
     See: http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf
 
@@ -50,7 +59,7 @@ def contrastive_loss(y_true, y_pred, margin=1.0):
 
 @keras_utils.register_keras_custom_object
 class ContrastiveLoss(keras_utils.LossFunctionWrapper):
-    """Computes the contrastive loss.
+    """Computes the contrastive loss between `y_true` and `y_pred`.
 
     This loss encourages the embedding to be close to each other for
     the samples of the same label and the embedding to be far apart at least
@@ -62,6 +71,15 @@ class ContrastiveLoss(keras_utils.LossFunctionWrapper):
     with shape [batch_size] of binary integer labels. And `y_pred` must be
     1-D float `Tensor` with shape [batch_size] of distances between two
     embedding matrices.
+
+    The euclidean distances `y_pred` between two embedding matrices
+    `a` and `b` with shape [batch_size, hidden_size] can be computed
+    as follows:
+
+    ```python
+    # y_pred = \sqrt (\sum_i (a[:, i] - b[:, i])^2)
+    y_pred = tf.linalg.norm(a - b, axis=1)
+    ```
 
     Args:
       margin: `Float`, margin term in the loss definition.
