@@ -36,8 +36,7 @@ class ContrastiveLossTest(tf.test.TestCase):
         y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
         y_pred = tf.constant([1., 1., 0., 0., 1., 0.], dtype=tf.dtypes.float32)
         loss = cl_obj(y_true, y_pred)
-        loss = self.evaluate(loss)
-        self.assertAlmostEqual(loss, 0.0, 3)
+        self.assertAllClose(loss, 0.0)
 
     def test_unweighted(self):
         cl_obj = contrastive.ContrastiveLoss()
@@ -54,8 +53,7 @@ class ContrastiveLossTest(tf.test.TestCase):
         # Reduced loss = (0.81 + 0.49 + 1.69 + 0.49 + 0 + 0.25) / 6
         #              = 0.621666
 
-        loss = self.evaluate(loss)
-        self.assertAlmostEqual(loss, 0.6216, 3)
+        self.assertAllClose(loss, 0.621666)
 
     def test_scalar_weighted(self):
         cl_obj = contrastive.ContrastiveLoss()
@@ -74,8 +72,7 @@ class ContrastiveLossTest(tf.test.TestCase):
         # Reduced loss = (0.81 + 0.49 + 1.69 + 0.49 + 0 + 0.25) * 6 / 6
         #              = 3.73
 
-        loss = self.evaluate(loss)
-        self.assertAlmostEqual(loss, 3.73, 3)
+        self.assertAllClose(loss, 3.73)
 
     def test_sample_weighted(self):
         cl_obj = contrastive.ContrastiveLoss()
@@ -97,8 +94,7 @@ class ContrastiveLossTest(tf.test.TestCase):
         # Reduced loss = (0.972 + 0.392 + 0.845 + 0.196 + 0 + 0.25) / 6
         #              = 0.4425
 
-        loss = self.evaluate(loss)
-        self.assertAlmostEqual(loss, 0.4424, 3)
+        self.assertAllClose(loss, 0.4425)
 
     def test_zero_weighted(self):
         cl_obj = contrastive.ContrastiveLoss()
@@ -106,8 +102,7 @@ class ContrastiveLossTest(tf.test.TestCase):
         y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5],
                              dtype=tf.dtypes.float32)
         loss = cl_obj(y_true, y_pred, sample_weight=0.0)
-        loss = self.evaluate(loss)
-        self.assertAlmostEqual(loss, 0.0, 3)
+        self.assertAllClose(loss, 0.0)
 
     def test_non_default_margin(self):
         cl_obj = contrastive.ContrastiveLoss(margin=2.0)
@@ -125,7 +120,7 @@ class ContrastiveLossTest(tf.test.TestCase):
         #              = 1.623333
 
         loss = self.evaluate(loss)
-        self.assertAlmostEqual(loss, 1.6233, 3)
+        self.assertAllClose(loss, 1.623333)
 
     def test_no_reduction(self):
         cl_obj = contrastive.ContrastiveLoss(
@@ -141,8 +136,7 @@ class ContrastiveLossTest(tf.test.TestCase):
         #      = [0.9^2, 0.7^2, 1.3^2, 0.7^2, 0^2, 0.5^2]
         #      = [0.81, 0.49, 1.69, 0.49, 0, 0.25]
 
-        loss = self.evaluate(loss)
-        self.assertArrayNear(loss, [0.81, 0.49, 1.69, 0.49, 0.0, 0.25], 1e-3)
+        self.assertAllClose(loss, [0.81, 0.49, 1.69, 0.49, 0.0, 0.25])
 
     def test_sum_reduction(self):
         cl_obj = contrastive.ContrastiveLoss(
@@ -160,11 +154,9 @@ class ContrastiveLossTest(tf.test.TestCase):
         # Reduced loss = 0.81 + 0.49 + 1.69 + 0.49 + 0 + 0.25
         #              = 3.73
 
-        loss = self.evaluate(loss)
-        self.assertAlmostEqual(loss, 3.73, 3)
+        self.assertAllClose(loss, 3.73)
 
-
-# pylint: enable=not-callable
 
 if __name__ == "__main__":
     tf.test.main()
+# pylint: enable=not-callable
