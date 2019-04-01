@@ -45,6 +45,15 @@ class ContrastiveLossTest(tf.test.TestCase):
         y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5],
                              dtype=tf.dtypes.float32)
         loss = cl_obj(y_true, y_pred)
+
+        # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
+        #      = [max(1 - 0.1, 0)^2, max(1 - 0.3, 0)^2,
+        #         1.3^2, 0.7^2, max(1 - 1.1, 0)^2, 0.5^2]
+        #      = [0.9^2, 0.7^2, 1.3^2, 0.7^2, 0^2, 0.5^2]
+        #      = [0.81, 0.49, 1.69, 0.49, 0, 0.25]
+        # Reduced loss = (0.81 + 0.49 + 1.69 + 0.49 + 0 + 0.25) / 6
+        #              = 0.621666
+
         loss = self.evaluate(loss)
         self.assertAlmostEqual(loss, 0.6216, 3)
 
@@ -54,6 +63,17 @@ class ContrastiveLossTest(tf.test.TestCase):
         y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5],
                              dtype=tf.dtypes.float32)
         loss = cl_obj(y_true, y_pred, sample_weight=6.0)
+
+        # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
+        #      = [max(1 - 0.1, 0)^2, max(1 - 0.3, 0)^2,
+        #         1.3^2, 0.7^2, max(1 - 1.1, 0)^2, 0.5^2]
+        #      = [0.9^2, 0.7^2, 1.3^2, 0.7^2, 0^2, 0.5^2]
+        #      = [0.81, 0.49, 1.69, 0.49, 0, 0.25]
+        # Weighted loss = [0.81 * 6, 0.49 * 6, 1.69 * 6,
+        #                  0.49 * 6, 0 * 6, 0.25 * 6]
+        # Reduced loss = (0.81 + 0.49 + 1.69 + 0.49 + 0 + 0.25) * 6 / 6
+        #              = 3.73
+
         loss = self.evaluate(loss)
         self.assertAlmostEqual(loss, 3.73, 3)
 
@@ -65,6 +85,18 @@ class ContrastiveLossTest(tf.test.TestCase):
         sample_weight = tf.constant([1.2, 0.8, 0.5, 0.4, 1.5, 1.0],
                                     dtype=tf.dtypes.float32)
         loss = cl_obj(y_true, y_pred, sample_weight=sample_weight)
+
+        # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
+        #      = [max(1 - 0.1, 0)^2, max(1 - 0.3, 0)^2,
+        #         1.3^2, 0.7^2, max(1 - 1.1, 0)^2, 0.5^2]
+        #      = [0.9^2, 0.7^2, 1.3^2, 0.7^2, 0^2, 0.5^2]
+        #      = [0.81, 0.49, 1.69, 0.49, 0, 0.25]
+        # Weighted loss = [0.81 * 1.2, 0.49 * 0.8, 1.69 * 0.5,
+        #                  0.49 * 0.4, 0 * 1.5, 0.25 * 1.0]
+        #               = [0.972, 0.392, 0.845, 0.196, 0, 0.25]
+        # Reduced loss = (0.972 + 0.392 + 0.845 + 0.196 + 0 + 0.25) / 6
+        #              = 0.4425
+
         loss = self.evaluate(loss)
         self.assertAlmostEqual(loss, 0.4424, 3)
 
@@ -83,6 +115,15 @@ class ContrastiveLossTest(tf.test.TestCase):
         y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5],
                              dtype=tf.dtypes.float32)
         loss = cl_obj(y_true, y_pred)
+
+        # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
+        #      = [max(2 - 0.1, 0)^2, max(2 - 0.3, 0)^2,
+        #         1.3^2, 0.7^2, max(2 - 1.1, 0)^2, 0.5^2]
+        #      = [1.9^2, 1.7^2, 1.3^2, 0.7^2, 0.9^2, 0.5^2]
+        #      = [3.61, 2.89, 1.69, 0.49, 0.81, 0.25]
+        # Reduced loss = (3.61 + 2.89 + 1.69 + 0.49 + 0.81 + 0.25) / 6
+        #              = 1.623333
+
         loss = self.evaluate(loss)
         self.assertAlmostEqual(loss, 1.6233, 3)
 
@@ -93,6 +134,13 @@ class ContrastiveLossTest(tf.test.TestCase):
         y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5],
                              dtype=tf.dtypes.float32)
         loss = cl_obj(y_true, y_pred)
+
+        # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
+        #      = [max(1 - 0.1, 0)^2, max(1 - 0.3, 0)^2,
+        #         1.3^2, 0.7^2, max(1 - 1.1, 0)^2, 0.5^2]
+        #      = [0.9^2, 0.7^2, 1.3^2, 0.7^2, 0^2, 0.5^2]
+        #      = [0.81, 0.49, 1.69, 0.49, 0, 0.25]
+
         loss = self.evaluate(loss)
         self.assertArrayNear(loss, [0.81, 0.49, 1.69, 0.49, 0.0, 0.25], 1e-3)
 
@@ -103,6 +151,15 @@ class ContrastiveLossTest(tf.test.TestCase):
         y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5],
                              dtype=tf.dtypes.float32)
         loss = cl_obj(y_true, y_pred)
+
+        # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
+        #      = [max(1 - 0.1, 0)^2, max(1 - 0.3, 0)^2,
+        #         1.3^2, 0.7^2, max(1 - 1.1, 0)^2, 0.5^2]
+        #      = [0.9^2, 0.7^2, 1.3^2, 0.7^2, 0^2, 0.5^2]
+        #      = [0.81, 0.49, 1.69, 0.49, 0, 0.25]
+        # Reduced loss = 0.81 + 0.49 + 1.69 + 0.49 + 0 + 0.25
+        #              = 3.73
+
         loss = self.evaluate(loss)
         self.assertAlmostEqual(loss, 3.73, 3)
 
