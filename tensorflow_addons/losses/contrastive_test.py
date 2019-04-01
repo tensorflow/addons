@@ -22,7 +22,7 @@ from tensorflow_addons.losses import contrastive
 from tensorflow_addons.utils import test_utils
 
 
-# pylint:disable=not-callable
+# pylint: disable=not-callable
 @test_utils.run_all_in_graph_and_eager_modes
 class ContrastiveLossTest(tf.test.TestCase):
     def test_config(self):
@@ -163,6 +163,8 @@ class ContrastiveLossTest(tf.test.TestCase):
         loss = self.evaluate(loss)
         self.assertAlmostEqual(loss, 3.73, 3)
 
+
+# pylint: enable=not-callable
 
 if __name__ == "__main__":
     tf.test.main()
