@@ -14,8 +14,8 @@ py_library(
     ],
     srcs_version = "PY2AND3",
     deps = [
-        "//tensorflow_addons/utils:utils",
-        "//tensorflow_addons/activations:activations",
+        "//tensorflow_addons/activations",
+        "//tensorflow_addons/utils",
     ],
 )
 
@@ -29,7 +29,7 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":layers",
-    ]
+    ],
 )
 
 py_test(
@@ -55,18 +55,18 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":layers",
-    ]
+    ],
 )
 
 py_test(
     name = "layers_normalizations_test",
-    size= "small",
+    size = "small",
     srcs = [
         "normalizations_test.py",
     ],
     main = "normalizations_test.py",
     srcs_version = "PY2AND3",
     deps = [
-            ":layers",
-        ]
+        ":layers",
+    ],
 )

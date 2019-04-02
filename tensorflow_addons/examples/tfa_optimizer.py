@@ -65,11 +65,11 @@ def generate_data(num_validation):
 
 
 def train_and_eval():
-    """Train and evalute simple MNIST model using LazyAdamOptimizer."""
+    """Train and evalute simple MNIST model using LazyAdam."""
     data = generate_data(num_validation=VALIDATION_SAMPLES)
     dense_net = build_mnist_model()
     dense_net.compile(
-        optimizer=tfa.optimizers.LazyAdamOptimizer(0.001),
+        optimizer=tfa.optimizers.LazyAdam(0.001),
         loss=tf.keras.losses.SparseCategoricalCrossentropy(),
         metrics=['accuracy'])
 
