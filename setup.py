@@ -23,6 +23,8 @@ from setuptools import find_packages
 from setuptools import setup
 from setuptools.dist import Distribution
 
+DOCLINES = __doc__.split('\n')
+
 version = {}
 base_dir = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
@@ -47,7 +49,8 @@ class BinaryDistribution(Distribution):
 setup(
     name=project_name,
     version=version['__version__'],
-    description=('TensorFlow Addons'),
+    description=DOCLINES[0],
+    long_description='\n'.join(DOCLINES[2:]),
     author='Google Inc.',
     author_email='opensource@google.com',
     packages=find_packages(),
