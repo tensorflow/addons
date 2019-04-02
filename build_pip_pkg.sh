@@ -21,7 +21,7 @@ PLATFORM="$(uname -s | tr 'A-Z' 'a-z')"
 PIP_FILE_PREFIX="bazel-bin/build_pip_pkg.runfiles/__main__/"
 
 if [[ ${PLATFORM} == "darwin" ]]; then
-    READLINK="greadlink"  # provided by package `coreutils` in brew in Mac OS X
+    READLINK="greadlink"  # from pkg `coreutils` in brew/macports in Mac OS X
 else
     READLINK="readlink"
 fi
