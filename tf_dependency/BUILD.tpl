@@ -9,8 +9,8 @@ cc_library(
 
 cc_library(
     name = "libtensorflow_framework",
-    srcs = [":libtensorflow_framework.so"],
-    #data = ["lib/libtensorflow_framework.so"],
+    srcs = [":libtensorflow_framework.so.1"],
+    #data = ["lib/libtensorflow_framework.so.1"],
     visibility = ["//visibility:public"],
 )
 
