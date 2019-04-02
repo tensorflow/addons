@@ -30,7 +30,6 @@ from tensorflow.python.framework import test_util
 from tensorflow.python.keras import layers
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import nn_ops
-from tensorflow.python.ops import rnn_cell
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
 
@@ -508,8 +507,9 @@ class BeamSearchDecoderTest(test.TestCase):
             batch_size_tensor = constant_op.constant(batch_size)
             embedding = np.random.randn(vocab_size,
                                         embedding_dim).astype(np.float32)
-            cell = rnn_cell.LSTMCell(cell_depth)
-            initial_state = cell.zero_state(batch_size, dtypes.float32)
+            cell = layers.LSTMCell(cell_depth)
+            initial_state = cell.get_initial_state(
+                batch_size=batch_size, dtype=dtypes.float32)
             coverage_penalty_weight = 0.0
             if has_attention:
                 coverage_penalty_weight = 0.2
@@ -532,9 +532,9 @@ class BeamSearchDecoderTest(test.TestCase):
                     attention_mechanism=attention_mechanism,
                     attention_layer_size=attention_depth,
                     alignment_history=with_alignment_history)
-            cell_state = cell.zero_state(
-                dtype=dtypes.float32,
-                batch_size=batch_size_tensor * beam_width)
+            cell_state = cell.get_initial_state(
+                batch_size=batch_size_tensor * beam_width,
+                dtype=dtypes.float32)
             if has_attention:
                 cell_state = cell_state.clone(cell_state=initial_state)
             bsd = beam_search_decoder.BeamSearchDecoder(
