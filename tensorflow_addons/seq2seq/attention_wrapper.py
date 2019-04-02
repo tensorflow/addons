@@ -1666,7 +1666,7 @@ class AttentionWrapper(layers.AbstractRNNCell):
         rnn_cell_impl.assert_like_rnncell("cell", cell)
         if isinstance(attention_mechanism, (list, tuple)):
             self._is_multi = True
-            attention_mechanisms = attention_mechanism
+            attention_mechanisms = list(attention_mechanism)
             for attention_mechanism in attention_mechanisms:
                 if not isinstance(attention_mechanism, AttentionMechanism):
                     raise TypeError(
@@ -1680,7 +1680,7 @@ class AttentionWrapper(layers.AbstractRNNCell):
                     "attention_mechanism must be an AttentionMechanism or "
                     "list of multiple AttentionMechanism instances, saw type: "
                     "%s" % type(attention_mechanism).__name__)
-            attention_mechanisms = (attention_mechanism,)
+            attention_mechanisms = [attention_mechanism]
 
         if cell_input_fn is None:
             cell_input_fn = (lambda inputs, attention: array_ops.concat(
@@ -1704,7 +1704,7 @@ class AttentionWrapper(layers.AbstractRNNCell):
                     "If provided, attention_layer_size must contain exactly "
                     "one integer per attention_mechanism, saw: %d vs %d" %
                     (len(attention_layer_sizes), len(attention_mechanisms)))
-            self._attention_layers = tuple(
+            self._attention_layers = list(
                 layers.Dense(
                     attention_layer_size,
                     name="attention_layer",
@@ -1713,7 +1713,7 @@ class AttentionWrapper(layers.AbstractRNNCell):
                 attention_layer_size in enumerate(attention_layer_sizes))
             self._attention_layer_size = sum(attention_layer_sizes)
         elif attention_layer is not None:
-            self._attention_layers = tuple(
+            self._attention_layers = list(
                 attention_layer if isinstance(attention_layer, (
                     list, tuple)) else (attention_layer,))
             if len(self._attention_layers) != len(attention_mechanisms):
