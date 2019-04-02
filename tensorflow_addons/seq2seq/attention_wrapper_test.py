@@ -319,9 +319,8 @@ class AttentionWrapperTest(test.TestCase, parameterized.TestCase):
                 attention_layer=attention_layer)
             if cell._attention_layers is not None:
                 for layer in cell._attention_layers:
-                    if getattr(layer, "kernel_initializer") is None:
-                        layer.kernel_initializer = initializers.glorot_uniform(
-                            seed=1337)
+                    layer.kernel_initializer = initializers.glorot_uniform(
+                        seed=1337)
 
             sampler = sampler_py.TrainingSampler()
             my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)

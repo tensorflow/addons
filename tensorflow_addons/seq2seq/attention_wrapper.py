@@ -31,7 +31,6 @@ from tensorflow.python.framework import tensor_shape
 from tensorflow.python.keras import initializers
 from tensorflow.python.keras import layers
 from tensorflow.python.keras.engine import base_layer_utils
-from tensorflow.python.layers import core as layers_core
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import check_ops
 from tensorflow.python.ops import clip_ops
@@ -1706,7 +1705,7 @@ class AttentionWrapper(layers.AbstractRNNCell):
                     "one integer per attention_mechanism, saw: %d vs %d" %
                     (len(attention_layer_sizes), len(attention_mechanisms)))
             self._attention_layers = tuple(
-                layers_core.Dense(
+                layers.Dense(
                     attention_layer_size,
                     name="attention_layer",
                     use_bias=False,
