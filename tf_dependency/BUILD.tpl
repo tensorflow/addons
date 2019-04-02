@@ -7,6 +7,10 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+# FIXME: Read shared library name from the installed python package.
+# See https://github.com/tensorflow/addons/pull/130 for why we're linking
+# to framework.so.1  in the meantime.
+
 cc_library(
     name = "libtensorflow_framework",
     srcs = [":libtensorflow_framework.so.1"],
