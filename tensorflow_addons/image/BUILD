@@ -6,6 +6,7 @@ py_library(
     name = "image",
     srcs = ([
         "__init__.py",
+        "dense_image_warp.py",
         "distance_transform.py",
         "distort_image_ops.py",
         "transform_ops.py",
@@ -16,6 +17,19 @@ py_library(
         "//tensorflow_addons/utils",
     ],
     srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "dense_image_warp_test",
+    size = "small",
+    srcs = [
+        "dense_image_warp_test.py",
+    ],
+    main = "dense_image_warp_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
 )
 
 py_test(
