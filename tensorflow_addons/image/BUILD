@@ -25,10 +25,10 @@ py_test(
         "dense_image_warp_test.py",
     ],
     main = "dense_image_warp_test.py",
+    srcs_version = "PY2AND3",
     deps = [
         ":image",
     ],
-    srcs_version = "PY2AND3"
 )
 
 py_test(
