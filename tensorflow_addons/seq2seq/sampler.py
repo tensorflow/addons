@@ -35,17 +35,6 @@ from tensorflow.python.ops import random_ops
 from tensorflow.python.ops import tensor_array_ops
 from tensorflow.python.util import nest
 
-__all__ = [
-    "Sampler",
-    "TrainingSampler",
-    "GreedyEmbeddingSampler",
-    "SampleEmbeddingSampler",
-    "CustomSampler",
-    "ScheduledEmbeddingTrainingSampler",
-    "ScheduledOutputTrainingSampler",
-    "InferenceSampler",
-]
-
 _transpose_batch_time = decoder._transpose_batch_time  # pylint: disable=protected-access
 
 
