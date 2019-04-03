@@ -321,9 +321,8 @@ class AttentionWrapperTest(test.TestCase, parameterized.TestCase):
                 attention_layer=attention_layer)
             if cell._attention_layers is not None:
                 for layer in cell._attention_layers:
-                    if getattr(layer, "kernel_initializer") is None:
-                        layer.kernel_initializer = initializers.glorot_uniform(
-                            seed=1337)
+                    layer.kernel_initializer = initializers.glorot_uniform(
+                        seed=1337)
 
             sampler = sampler_py.TrainingSampler()
             my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
@@ -374,8 +373,9 @@ class AttentionWrapperTest(test.TestCase, parameterized.TestCase):
                         (expected_time, batch_size, encoder_max_time),
                         tuple(state_alignment_history.get_shape().as_list()))
                 nest.assert_same_structure(
-                    cell.state_size, cell.zero_state(batch_size,
-                                                     dtypes.float32))
+                    cell.state_size,
+                    cell.get_initial_state(
+                        batch_size=batch_size, dtype=dtypes.float32))
                 # Remove the history from final_state for purposes of the
                 # remainder of the tests.
                 final_state = final_state._replace(alignment_history=())  # pylint: disable=protected-access
@@ -435,7 +435,8 @@ class AttentionWrapperTest(test.TestCase, parameterized.TestCase):
 
         final_outputs, final_state, _ = my_decoder(
             decoder_inputs,
-            initial_state=cell.zero_state(dtype=dtype, batch_size=self.batch),
+            initial_state=cell.get_initial_state(
+                batch_size=self.batch, dtype=dtype),
             sequence_length=self.decoder_sequence_length)
         self.assertIsInstance(final_outputs, basic_decoder.BasicDecoderOutput)
         self.assertEqual(final_outputs.rnn_output.dtype, dtype)
@@ -462,7 +463,8 @@ class AttentionWrapperTest(test.TestCase, parameterized.TestCase):
 
         final_outputs, final_state, _ = my_decoder(
             decoder_inputs,
-            initial_state=cell.zero_state(dtype=dtype, batch_size=self.batch),
+            initial_state=cell.get_initial_state(
+                batch_size=self.batch, dtype=dtype),
             sequence_length=self.decoder_sequence_length)
         self.assertIsInstance(final_outputs, basic_decoder.BasicDecoderOutput)
         self.assertEqual(final_outputs.rnn_output.dtype, dtype)

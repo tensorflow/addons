@@ -31,7 +31,6 @@ from tensorflow.python.framework import tensor_shape
 from tensorflow.python.keras import initializers
 from tensorflow.python.keras import layers
 from tensorflow.python.keras.engine import base_layer_utils
-from tensorflow.python.layers import core as layers_core
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import check_ops
 from tensorflow.python.ops import clip_ops
@@ -1356,7 +1355,8 @@ class AttentionWrapperState(
         Example:
 
         ```python
-        initial_state = attention_wrapper.zero_state(dtype=..., batch_size=...)
+        initial_state = attention_wrapper.get_initial_state(
+            batch_size=..., dtype=...)
         initial_state = initial_state.clone(cell_state=encoder_state)
         ```
 
@@ -1545,7 +1545,7 @@ def _compute_attention(attention_mechanism, cell_output, attention_state,
     return attention, alignments, next_attention_state
 
 
-class AttentionWrapper(rnn_cell_impl.RNNCell):
+class AttentionWrapper(layers.AbstractRNNCell):
     """Wraps another `RNNCell` with attention."""
 
     def __init__(self,
@@ -1566,9 +1566,9 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
 
         - The encoder output has been tiled to `beam_width` via
           `tf.contrib.seq2seq.tile_batch` (NOT `tf.tile`).
-        - The `batch_size` argument passed to the `zero_state` method of this
-          wrapper is equal to `true_batch_size * beam_width`.
-        - The initial state created with `zero_state` above contains a
+        - The `batch_size` argument passed to the `get_initial_state` method of
+          this wrapper is equal to `true_batch_size * beam_width`.
+        - The initial state created with `get_initial_state` above contains a
           `cell_state` value containing properly tiled final state from the
           encoder.
 
@@ -1586,8 +1586,8 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
             memory=tiled_inputs,
             memory_sequence_length=tiled_sequence_length)
         attention_cell = AttentionWrapper(cell, attention_mechanism, ...)
-        decoder_initial_state = attention_cell.zero_state(
-            dtype, batch_size=true_batch_size * beam_width)
+        decoder_initial_state = attention_cell.get_initial_state(
+            batch_size=true_batch_size * beam_width, dtype=dtype)
         decoder_initial_state = decoder_initial_state.clone(
             cell_state=tiled_encoder_final_state)
         ```
@@ -1621,10 +1621,10 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
             attention mechanism is propagated up to the next cell in an RNN
             stack or to the top RNN output.
           initial_cell_state: The initial state value to use for the cell when
-            the user calls `zero_state()`.  Note that if this value is provided
-            now, and the user uses a `batch_size` argument of `zero_state`
-            which does not match the batch size of `initial_cell_state`, proper
-            behavior is not guaranteed.
+            the user calls `get_initial_state()`.  Note that if this value is
+            provided now, and the user uses a `batch_size` argument of
+            `get_initial_state` which does not match the batch size of
+            `initial_cell_state`, proper behavior is not guaranteed.
           name: Name to use when creating ops.
           attention_layer: A list of `tf.layers.Layer` instances or a
             single `tf.layers.Layer` instance taking the context and cell
@@ -1653,7 +1653,7 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
         rnn_cell_impl.assert_like_rnncell("cell", cell)
         if isinstance(attention_mechanism, (list, tuple)):
             self._is_multi = True
-            attention_mechanisms = attention_mechanism
+            attention_mechanisms = list(attention_mechanism)
             for attention_mechanism in attention_mechanisms:
                 if not isinstance(attention_mechanism, AttentionMechanism):
                     raise TypeError(
@@ -1667,7 +1667,7 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
                     "attention_mechanism must be an AttentionMechanism or "
                     "list of multiple AttentionMechanism instances, saw type: "
                     "%s" % type(attention_mechanism).__name__)
-            attention_mechanisms = (attention_mechanism,)
+            attention_mechanisms = [attention_mechanism]
 
         if cell_input_fn is None:
             cell_input_fn = (lambda inputs, attention: array_ops.concat(
@@ -1691,8 +1691,8 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
                     "If provided, attention_layer_size must contain exactly "
                     "one integer per attention_mechanism, saw: %d vs %d" %
                     (len(attention_layer_sizes), len(attention_mechanisms)))
-            self._attention_layers = tuple(
-                layers_core.Dense(
+            self._attention_layers = list(
+                layers.Dense(
                     attention_layer_size,
                     name="attention_layer",
                     use_bias=False,
@@ -1700,7 +1700,7 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
                 attention_layer_size in enumerate(attention_layer_sizes))
             self._attention_layer_size = sum(attention_layer_sizes)
         elif attention_layer is not None:
-            self._attention_layers = tuple(
+            self._attention_layers = list(
                 attention_layer if isinstance(attention_layer, (
                     list, tuple)) else (attention_layer,))
             if len(self._attention_layers) != len(attention_mechanisms):
@@ -1740,8 +1740,8 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
                     final_state_tensor.shape[0])
                                     or array_ops.shape(final_state_tensor)[0])
                 error_message = (
-                    "When constructing AttentionWrapper %s: " % self._base_name
-                    + "Non-matching batch sizes between the memory "
+                    "When constructing AttentionWrapper %s: " % self.name +
+                    "Non-matching batch sizes between the memory "
                     "(encoder output) and initial_cell_state.  Are you using "
                     "the BeamSearchDecoder?  You may need to tile your "
                     "initial state via the tf.contrib.seq2seq.tile_batch "
@@ -1810,14 +1810,15 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
                 a.alignments_size if self._alignment_history else () for a in
                 self._attention_mechanisms))  # sometimes a TensorArray
 
-    def zero_state(self, batch_size, dtype):
+    def get_initial_state(self, inputs=None, batch_size=None, dtype=None):
         """Return an initial (zero) state tuple for this `AttentionWrapper`.
 
         **NOTE** Please see the initializer documentation for details of how
-        to call `zero_state` if using an `AttentionWrapper` with a
+        to call `get_initial_state` if using an `AttentionWrapper` with a
         `BeamSearchDecoder`.
 
         Args:
+          inputs: The inputs that will be fed to this cell.
           batch_size: `0D` integer tensor: the batch size.
           dtype: The internal state data type.
 
@@ -1830,6 +1831,9 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
             `batch_size` does not match the output size of the encoder passed
             to the wrapper object at initialization time.
         """
+        if inputs is not None:
+            batch_size = array_ops.shape(inputs)[0]
+            dtype = inputs.dtype
         with ops.name_scope(
                 type(self).__name__ + "ZeroState", values=[batch_size]):  # pylint: disable=bad-continuation
             if self._initial_cell_state is not None:
@@ -1838,14 +1842,13 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
                 cell_state = self._cell.get_initial_state(
                     batch_size=batch_size, dtype=dtype)
             error_message = (
-                "When calling zero_state of AttentionWrapper %s: " %
-                self._base_name +
-                "Non-matching batch sizes between the memory "
+                "When calling get_initial_state of AttentionWrapper %s: " %
+                self.name + "Non-matching batch sizes between the memory "
                 "(encoder output) and the requested batch size. Are you using "
                 "the BeamSearchDecoder?  If so, make sure your encoder output "
                 "has been tiled to beam_width via "
                 "tf.contrib.seq2seq.tile_batch, and the batch_size= argument "
-                "passed to zero_state is batch_size * beam_width.")
+                "passed to get_initial_state is batch_size * beam_width.")
             with ops.control_dependencies(
                     self._batch_size_checks(batch_size, error_message)):  # pylint: disable=bad-continuation
                 cell_state = nest.map_structure(
