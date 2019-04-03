@@ -18,9 +18,40 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow_addons.seq2seq import attention_wrapper
-from tensorflow_addons.seq2seq import basic_decoder
-from tensorflow_addons.seq2seq import beam_search_decoder
-from tensorflow_addons.seq2seq import decoder
-from tensorflow_addons.seq2seq import loss
-from tensorflow_addons.seq2seq import sampler
+from tensorflow_addons.seq2seq.attention_wrapper import AttentionMechanism
+from tensorflow_addons.seq2seq.attention_wrapper import AttentionWrapper
+from tensorflow_addons.seq2seq.attention_wrapper import AttentionWrapperState
+from tensorflow_addons.seq2seq.attention_wrapper import BahdanauAttention
+from tensorflow_addons.seq2seq.attention_wrapper import BahdanauMonotonicAttention
+from tensorflow_addons.seq2seq.attention_wrapper import LuongAttention
+from tensorflow_addons.seq2seq.attention_wrapper import LuongMonotonicAttention
+from tensorflow_addons.seq2seq.attention_wrapper import hardmax
+from tensorflow_addons.seq2seq.attention_wrapper import monotonic_attention
+from tensorflow_addons.seq2seq.attention_wrapper import safe_cumprod
+
+from tensorflow_addons.seq2seq.basic_decoder import BasicDecoder
+from tensorflow_addons.seq2seq.basic_decoder import BasicDecoderOutput
+
+from tensorflow_addons.seq2seq.beam_search_decoder import BeamSearchDecoder
+from tensorflow_addons.seq2seq.beam_search_decoder import BeamSearchDecoderOutput
+from tensorflow_addons.seq2seq.beam_search_decoder import BeamSearchDecoderState
+from tensorflow_addons.seq2seq.beam_search_decoder import FinalBeamSearchDecoderOutput
+from tensorflow_addons.seq2seq.beam_search_decoder import gather_tree
+from tensorflow_addons.seq2seq.beam_search_decoder import gather_tree_from_array
+from tensorflow_addons.seq2seq.beam_search_decoder import tile_batch
+
+from tensorflow_addons.seq2seq.decoder import BaseDecoder
+from tensorflow_addons.seq2seq.decoder import Decoder
+from tensorflow_addons.seq2seq.decoder import dynamic_decode
+
+from tensorflow_addons.seq2seq.loss import SequenceLoss
+from tensorflow_addons.seq2seq.loss import sequence_loss
+
+from tensorflow_addons.seq2seq.sampler import CustomSampler
+from tensorflow_addons.seq2seq.sampler import GreedyEmbeddingSampler
+from tensorflow_addons.seq2seq.sampler import InferenceSampler
+from tensorflow_addons.seq2seq.sampler import SampleEmbeddingSampler
+from tensorflow_addons.seq2seq.sampler import Sampler
+from tensorflow_addons.seq2seq.sampler import ScheduledEmbeddingTrainingSampler
+from tensorflow_addons.seq2seq.sampler import ScheduledOutputTrainingSampler
+from tensorflow_addons.seq2seq.sampler import TrainingSampler

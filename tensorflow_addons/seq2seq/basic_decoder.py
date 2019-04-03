@@ -27,11 +27,6 @@ from tensorflow.python.keras import layers
 from tensorflow.python.ops import rnn_cell_impl
 from tensorflow.python.util import nest
 
-__all__ = [
-    "BasicDecoderOutput",
-    "BasicDecoder",
-]
-
 
 class BasicDecoderOutput(
         collections.namedtuple("BasicDecoderOutput",
