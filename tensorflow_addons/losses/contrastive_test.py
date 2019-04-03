@@ -30,7 +30,7 @@ class ContrastiveLossTest(tf.test.TestCase):
         self.assertEqual(cl_obj.name, 'cl')
         self.assertEqual(cl_obj.reduction, tf.keras.losses.Reduction.SUM)
 
-    def test_all_correct_unweighted(self):
+    def test_zero_loss(self):
         cl_obj = contrastive.ContrastiveLoss()
         y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
         y_pred = tf.constant([1., 1., 0., 0., 1., 0.], dtype=tf.dtypes.float32)
