@@ -24,8 +24,6 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import nn_ops
 
-__all__ = ["sequence_loss", "SequenceLoss"]
-
 
 def sequence_loss(logits,
                   targets,
