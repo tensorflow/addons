@@ -8,11 +8,11 @@ py_library(
         "__init__.py",
         "skip_gram_ops.py",
     ]),
-    srcs_version = "PY2AND3",
     data = [
         "//tensorflow_addons/custom_ops/text:_skip_gram_ops.so",
-        "//tensorflow_addons/utils:utils",
+        "//tensorflow_addons/utils",
     ],
+    srcs_version = "PY2AND3",
 )
 
 py_test(

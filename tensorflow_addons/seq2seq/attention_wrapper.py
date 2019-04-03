@@ -1389,7 +1389,7 @@ class AttentionWrapperState(
                     new_shape = array_ops.shape(new)
                     old_shape = array_ops.shape(old)
                     with ops.control_dependencies([
-                            check_ops.assert_equal(
+                            check_ops.assert_equal(  # pylint: disable=bad-continuation
                                 new_shape,
                                 old_shape,
                                 data=[new_shape, old_shape])
@@ -1491,8 +1491,9 @@ def _maybe_mask_score(score,
         message = ("All values in memory_sequence_length must greater than "
                    "zero.")
         with ops.control_dependencies([
-                check_ops.assert_positive(
-                    memory_sequence_length, message=message)
+                check_ops.assert_positive(  # pylint: disable=bad-continuation
+                    memory_sequence_length,
+                    message=message)
         ]):
             memory_mask = array_ops.sequence_mask(
                 memory_sequence_length, maxlen=array_ops.shape(score)[1])
@@ -1759,8 +1760,8 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
                     "initial state via the tf.contrib.seq2seq.tile_batch "
                     "function with argument multiple=beam_width.")
                 with ops.control_dependencies(
-                        self._batch_size_checks(state_batch_size,
-                                                error_message)):
+                        self._batch_size_checks(  # pylint: disable=bad-continuation
+                            state_batch_size, error_message)):
                     self._initial_cell_state = nest.map_structure(
                         lambda s: array_ops.identity(
                             s, name="check_initial_cell_state"),
@@ -1785,9 +1786,9 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
           seq: A non-empty sequence of items or generator.
 
         Returns:
-           Either the values in the sequence as a tuple if
-           AttentionMechanism(s) were passed to the constructor as a sequence
-           or the singular element.
+          Either the values in the sequence as a tuple if
+          AttentionMechanism(s) were passed to the constructor as a sequence
+          or the singular element.
         """
         t = tuple(seq)
         if self._is_multi:
@@ -1807,8 +1808,8 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
         """The `state_size` property of `AttentionWrapper`.
 
         Returns:
-          An `AttentionWrapperState` tuple containing shapes used by this
-            object.
+          An `AttentionWrapperState` tuple containing shapes used
+          by this object.
         """
         return AttentionWrapperState(
             cell_state=self._cell.state_size,
@@ -1843,7 +1844,7 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
             to the wrapper object at initialization time.
         """
         with ops.name_scope(
-                type(self).__name__ + "ZeroState", values=[batch_size]):
+                type(self).__name__ + "ZeroState", values=[batch_size]):  # pylint: disable=bad-continuation
             if self._initial_cell_state is not None:
                 cell_state = self._initial_cell_state
             else:
@@ -1859,7 +1860,7 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
                 "tf.contrib.seq2seq.tile_batch, and the batch_size= argument "
                 "passed to zero_state is batch_size * beam_width.")
             with ops.control_dependencies(
-                    self._batch_size_checks(batch_size, error_message)):
+                    self._batch_size_checks(batch_size, error_message)):  # pylint: disable=bad-continuation
                 cell_state = nest.map_structure(
                     lambda s: array_ops.identity(s, name="checked_cell_state"),
                     cell_state)
@@ -1938,7 +1939,7 @@ class AttentionWrapper(rnn_cell_impl.RNNCell):
             "via the tf.contrib.seq2seq.tile_batch function with argument "
             "multiple=beam_width.")
         with ops.control_dependencies(
-                self._batch_size_checks(cell_batch_size, error_message)):
+                self._batch_size_checks(cell_batch_size, error_message)):  # pylint: disable=bad-continuation
             cell_output = array_ops.identity(
                 cell_output, name="checked_cell_output")
 
