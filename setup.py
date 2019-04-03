@@ -12,7 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Setup for pip package."""
+"""TensorFlow Addons 
+
+TensorFlow Addons is a repository of contributions that conform to well-established
+API patterns,but implement new functionality not available in core TensorFlow.
+TensorFlow natively supports a large number of operators, layers, metrics, losses,and
+optimizers. However, in a fast movingfield like ML, there are many interesting new 
+developments that cannot be integrated into core TensorFlow (because their broad
+applicability is not yet clear, or it is mostly used by a smallersubset of the community).
+"""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
