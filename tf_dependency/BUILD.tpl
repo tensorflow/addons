@@ -8,13 +8,13 @@ cc_library(
 )
 
 # FIXME: Read shared library name from the installed python package.
-# See https://github.com/tensorflow/addons/pull/130 for why we're linking
-# to framework.so.1  in the meantime.
+# See https://github.com/tensorflow/tensorflow/issues/27430 for why we're
+# linking with hardcoded framework.so.2
 
 cc_library(
     name = "libtensorflow_framework",
-    srcs = [":libtensorflow_framework.so.1"],
-    #data = ["lib/libtensorflow_framework.so.1"],
+    srcs = [":libtensorflow_framework.so.2"],
+    #data = ["lib/libtensorflow_framework.so.2"],
     visibility = ["//visibility:public"],
 )
 
