@@ -88,6 +88,8 @@ bazel-bin/build_pip_pkg artifacts
 pip install artifacts/tensorflow_addons-*.whl
 ```
 
+**Notice**: If you are using Mac OS X, you need install addition software by `brew install coreutils` (this requires the [Homebrew](https://brew.sh/)) or `port install coreutils` (this requires the [MacPorts](https://www.macports.org/))
+
 ## Contributing
 TF-Addons is a community led open source project. As such, the project
 depends on public contributions, bug-fixes, and documentation. Please
