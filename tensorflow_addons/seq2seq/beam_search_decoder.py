@@ -442,7 +442,7 @@ class BeamSearchDecoderMixin(object):
                 "and batch size.  The reshaped tensor has shape: %s.  "
                 "We expected it to have shape "
                 "(batch_size, beam_width, depth) == %s.  Perhaps you "
-                "forgot to create a zero_state with "
+                "forgot to call get_initial_state with "
                 "batch_size=encoder_batch_size * beam_width?" %
                 (reshaped_t.shape, expected_reshaped_shape))
         reshaped_t.set_shape(expected_reshaped_shape)
@@ -614,9 +614,9 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
 
     - The encoder output has been tiled to `beam_width` via
       `tf.contrib.seq2seq.tile_batch` (NOT `tf.tile`).
-    - The `batch_size` argument passed to the `zero_state` method of this
-      wrapper is equal to `true_batch_size * beam_width`.
-    - The initial state created with `zero_state` above contains a
+    - The `batch_size` argument passed to the `get_initial_state` method of
+      this wrapper is equal to `true_batch_size * beam_width`.
+    - The initial state created with `get_initial_state` above contains a
       `cell_state` value containing properly tiled final state from the
       encoder.
 
@@ -634,8 +634,8 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         memory=tiled_inputs,
         memory_sequence_length=tiled_sequence_length)
     attention_cell = AttentionWrapper(cell, attention_mechanism, ...)
-    decoder_initial_state = attention_cell.zero_state(
-        dtype, batch_size=true_batch_size * beam_width)
+    decoder_initial_state = attention_cell.get_initial_state(
+        batch_size=true_batch_size * beam_width, dtype=dtype)
     decoder_initial_state = decoder_initial_state.clone(
         cell_state=tiled_encoder_final_state)
     ```
