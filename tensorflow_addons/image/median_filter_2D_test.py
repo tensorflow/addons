@@ -1,5 +1,5 @@
 import tensorflow as tf
-import median_filter_2D as md
+import median_filter_2d as md
 
 
 
