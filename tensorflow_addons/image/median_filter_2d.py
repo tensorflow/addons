@@ -38,7 +38,7 @@ def median_filter_2D(input, filter_shape=(3, 3)):
     if not isinstance(filter_shapex, int) or not isinstance(filter_shapey,
             int):
         raise TypeError('Size of the filter must be Integers')
-    (row, col, ch) = (input.shape[0].value, input.shape[1].value, input.shape[2].value)
+    (row, col, ch) = (input.shape[0], input.shape[1], input.shape[2])
     if  row != None and  col != None and ch != None:
         (row, col, ch) = (int(row), int(col), int(ch))
     else:
@@ -61,7 +61,7 @@ def median_filter_2D(input, filter_shape=(3, 3)):
     for a in range(ch):
         img = input[:, :, a:a + 1]
         img = tf.reshape(img, [1, row, col, 1])
-        slic = tf.extract_image_patches(img, [1,
+        slic = tf.image.extract_image_patches(img, [1,
                 filter_shapex, filter_shapey, 1], [1, 1, 1, 1], [1, 1,
                 1, 1], padding='SAME')
         mid = int(filter_shapex * filter_shapey / 2 + 1)
