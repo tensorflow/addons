@@ -7,8 +7,8 @@ py_library(
     srcs = ([
         "__init__.py",
         "distort_image_ops.py",
-        "transform_ops.py",
         "median_filter_2D.py",
+        "transform_ops.py",
     ]),
     data = [
         "//tensorflow_addons/custom_ops/image:_distort_image_ops.so",
@@ -31,6 +31,19 @@ py_test(
     ],
 )
 
+py_test(
+    name = "median_filter_2D_test",
+    size = "medium",
+    srcs = [
+        "median_filter_2D_test.py",
+    ],
+    main = "median_filter_2D_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
+)
+
 # TODO: use cuda_test later.
 py_test(
     name = "transform_ops_test",
@@ -45,15 +58,4 @@ py_test(
     ],
 )
 
-py_test(
-    name = "median_filter_2D_test",
-    size = "medium",
-    srcs = [
-        "median_filter_2D_test.py",
-    ],
-    main = "median_filter_2D_test.py",
-    srcs_version = "PY2AND3",
-    deps = [
-        ":image",
-    ],
-)
+
