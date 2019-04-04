@@ -7,7 +7,7 @@ py_library(
     srcs = ([
         "__init__.py",
         "distort_image_ops.py",
-        "median_filter_2D.py",
+        "median_filter_2d.py",
         "transform_ops.py",
     ]),
     data = [
@@ -32,12 +32,12 @@ py_test(
 )
 
 py_test(
-    name = "median_filter_2D_test",
+    name = "median_filter_2d_test",
     size = "medium",
     srcs = [
-        "median_filter_2D_test.py",
+        "median_filter_2d_test.py",
     ],
-    main = "median_filter_2D_test.py",
+    main = "median_filter_2d_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":image",
