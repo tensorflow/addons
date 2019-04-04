@@ -308,7 +308,7 @@ class _BaseAttentionMechanism(AttentionMechanism, layers.Layer):
                                or array_ops.shape(self.keys)[0])
             self._alignments_size = (tensor_shape.dimension_value(
                 self.keys.shape[1]) or array_ops.shape(self.keys)[1])
-            if memory_mask is not None:
+            if memory_mask is not None or memory_sequence_length is not None:
                 unwrapped_probability_fn = self.probability_fn
 
                 def _mask_probability_fn(score, prev):
