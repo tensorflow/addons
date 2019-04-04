@@ -7,6 +7,7 @@ py_library(
     srcs = ([
         "__init__.py",
         "dense_image_warp.py",
+        "distance_transform.py",
         "distort_image_ops.py",
         "transform_ops.py",
     ]),
@@ -25,6 +26,19 @@ py_test(
         "dense_image_warp_test.py",
     ],
     main = "dense_image_warp_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "distance_transform_ops_test",
+    size = "small",
+    srcs = [
+        "distance_transform_test.py",
+    ],
+    main = "distance_transform_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":image",

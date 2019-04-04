@@ -4,6 +4,7 @@
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:--------------|
 | dense_image_warp |  |  |
+| distance_transform_ops |  |  |
 | distort_image_ops |  |  | 
 | transform_ops |  |  | 
 
@@ -12,6 +13,7 @@
 |:---------- |:----------- |:----------- |
 | dense_image_warp | dense_image_warp |  |
 | dense_image_warp | interpolate_bilinear |  |
+| distance_transform_ops | euclidean_distance_transform | |
 | distort_image_ops |  adjust_hsv_in_yiq |  |
 | distort_image_ops | random_hsv_in_yiq |  |
 | transform_ops | angles_to_projective_transforms | | 
