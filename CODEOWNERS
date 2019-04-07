@@ -1,0 +1,16 @@
+# TensorFlow Addons Codeowners
+
+# SIG maintainers are the catch all for reviews
+* @tensorflow/sig-addons-maintainers
+
+
+# Subpackage Owners
+
+
+# Submodule Owners
+# These may not automatically trigger a review because submodule owners do not
+# always have write access. But still adding these here for
+# repository understanding.
+
+sparsemax* @AndreasMadsen
+normalizations* @smokrow
