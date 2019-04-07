@@ -5,7 +5,7 @@
 
 
 # Subpackage Owners
-seq2seq/ @qlzh727
+seq2seq/* @qlzh727
 
 
 # Submodule Owners
