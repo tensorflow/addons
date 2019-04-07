@@ -18,11 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.python.framework import ops
-from tensorflow.python.keras.losses import Loss
-from tensorflow.python.ops import array_ops
-from tensorflow.python.ops import math_ops
-from tensorflow.python.ops import nn_ops
+import tensorflow as tf
 
 
 def sequence_loss(logits,
@@ -107,45 +103,48 @@ def sequence_loss(logits,
         raise ValueError(
             "average_across_batch and sum_over_batch cannot be set "
             "to True at same time.")
-    with ops.name_scope(name, "sequence_loss", [logits, targets, weights]):
-        num_classes = array_ops.shape(logits)[2]
-        logits_flat = array_ops.reshape(logits, [-1, num_classes])
-        targets = array_ops.reshape(targets, [-1])
+    with tf.name_scope(name
+                       or "sequence_loss"):  #, [logits, targets, weights]):
+        num_classes = tf.shape(input=logits)[2]
+        logits_flat = tf.reshape(logits, [-1, num_classes])
+        targets = tf.reshape(targets, [-1])
         if softmax_loss_function is None:
-            crossent = nn_ops.sparse_softmax_cross_entropy_with_logits(
+            crossent = tf.nn.sparse_softmax_cross_entropy_with_logits(
                 labels=targets, logits=logits_flat)
         else:
             crossent = softmax_loss_function(
                 labels=targets, logits=logits_flat)
-        crossent *= array_ops.reshape(weights, [-1])
+        crossent *= tf.reshape(weights, [-1])
         if average_across_timesteps and average_across_batch:
-            crossent = math_ops.reduce_sum(crossent)
-            total_size = math_ops.reduce_sum(weights)
-            crossent = math_ops.div_no_nan(crossent, total_size)
+            crossent = tf.reduce_sum(input_tensor=crossent)
+            total_size = tf.reduce_sum(input_tensor=weights)
+            crossent = tf.math.divide_no_nan(crossent, total_size)
         elif sum_over_timesteps and sum_over_batch:
-            crossent = math_ops.reduce_sum(crossent)
-            total_count = math_ops.cast(
-                math_ops.count_nonzero(weights), crossent.dtype)
-            crossent = math_ops.div_no_nan(crossent, total_count)
+            crossent = tf.reduce_sum(input_tensor=crossent)
+            total_count = tf.cast(
+                tf.math.count_nonzero(weights), crossent.dtype)
+            crossent = tf.math.divide_no_nan(crossent, total_count)
         else:
-            crossent = array_ops.reshape(crossent,
-                                         array_ops.shape(logits)[0:2])
+            crossent = tf.reshape(crossent, tf.shape(input=logits)[0:2])
             if average_across_timesteps or average_across_batch:
                 reduce_axis = [0] if average_across_batch else [1]
-                crossent = math_ops.reduce_sum(crossent, axis=reduce_axis)
-                total_size = math_ops.reduce_sum(weights, axis=reduce_axis)
-                crossent = math_ops.div_no_nan(crossent, total_size)
+                crossent = tf.reduce_sum(
+                    input_tensor=crossent, axis=reduce_axis)
+                total_size = tf.reduce_sum(
+                    input_tensor=weights, axis=reduce_axis)
+                crossent = tf.math.divide_no_nan(crossent, total_size)
             elif sum_over_timesteps or sum_over_batch:
                 reduce_axis = [0] if sum_over_batch else [1]
-                crossent = math_ops.reduce_sum(crossent, axis=reduce_axis)
-                total_count = math_ops.cast(
-                    math_ops.count_nonzero(weights, axis=reduce_axis),
+                crossent = tf.reduce_sum(
+                    input_tensor=crossent, axis=reduce_axis)
+                total_count = tf.cast(
+                    tf.math.count_nonzero(weights, axis=reduce_axis),
                     dtype=crossent.dtype)
-                crossent = math_ops.div_no_nan(crossent, total_count)
+                crossent = tf.math.divide_no_nan(crossent, total_count)
         return crossent
 
 
-class SequenceLoss(Loss):
+class SequenceLoss(tf.losses.Loss):
     """Weighted cross-entropy loss for a sequence of logits."""
 
     def __init__(self,

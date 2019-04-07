@@ -18,21 +18,18 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+import tensorflow as tf
 
 from tensorflow_addons.seq2seq import basic_decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
 from tensorflow.python.eager import context
-from tensorflow.python.framework import constant_op
-from tensorflow.python.framework import dtypes
 from tensorflow.python.keras import keras_parameterized
 from tensorflow.python.ops import rnn
 from tensorflow.python.ops import rnn_cell
-from tensorflow.python.ops import variables
-from tensorflow.python.platform import test
 
 
 @keras_parameterized.run_all_keras_modes
-class DecodeRNNTest(keras_parameterized.TestCase, test.TestCase):
+class DecodeRNNTest(keras_parameterized.TestCase, tf.test.TestCase):
     """Tests for Decoder."""
 
     def _testDecodeRNN(self, time_major, maximum_iterations=None):
@@ -51,7 +48,7 @@ class DecodeRNNTest(keras_parameterized.TestCase, test.TestCase):
             else:
                 inputs = np.random.randn(batch_size, max_time,
                                          input_depth).astype(np.float32)
-            input_t = constant_op.constant(inputs)
+            input_t = tf.constant(inputs)
             cell = rnn_cell.LSTMCell(cell_depth)
             sampler = sampler_py.TrainingSampler(time_major=time_major)
             my_decoder = basic_decoder.BasicDecoder(
@@ -61,7 +58,7 @@ class DecodeRNNTest(keras_parameterized.TestCase, test.TestCase):
                 maximum_iterations=maximum_iterations)
 
             initial_state = cell.zero_state(
-                dtype=dtypes.float32, batch_size=batch_size)
+                dtype=tf.float32, batch_size=batch_size)
             (final_outputs, unused_final_state,
              final_sequence_length) = my_decoder(
                  input_t,
@@ -84,7 +81,7 @@ class DecodeRNNTest(keras_parameterized.TestCase, test.TestCase):
                     _t((batch_size, None)),
                     tuple(final_outputs.sample_id.get_shape().as_list()))
 
-            self.evaluate(variables.global_variables_initializer())
+            self.evaluate(tf.compat.v1.global_variables_initializer())
             final_outputs = self.evaluate(final_outputs)
             final_sequence_length = self.evaluate(final_sequence_length)
 
@@ -129,11 +126,11 @@ class DecodeRNNTest(keras_parameterized.TestCase, test.TestCase):
         with self.cached_session(use_gpu=True):
             inputs = np.random.randn(batch_size, max_time,
                                      input_depth).astype(np.float32)
-            inputs = constant_op.constant(inputs)
+            inputs = tf.constant(inputs)
 
             cell = rnn_cell.LSTMCell(cell_depth)
             zero_state = cell.zero_state(
-                dtype=dtypes.float32, batch_size=batch_size)
+                dtype=tf.float32, batch_size=batch_size)
             sampler = sampler_py.TrainingSampler()
             my_decoder = basic_decoder.BasicDecoder(
                 cell=cell,
@@ -152,7 +149,7 @@ class DecodeRNNTest(keras_parameterized.TestCase, test.TestCase):
                 if use_sequence_length else None,
                 initial_state=zero_state)
 
-            self.evaluate(variables.global_variables_initializer())
+            self.evaluate(tf.compat.v1.global_variables_initializer())
             eval_result = self.evaluate({
                 "final_decoder_outputs": final_decoder_outputs,
                 "final_decoder_state": final_decoder_state,
@@ -181,4 +178,4 @@ class DecodeRNNTest(keras_parameterized.TestCase, test.TestCase):
 
 
 if __name__ == "__main__":
-    test.main()
+    tf.test.main()
