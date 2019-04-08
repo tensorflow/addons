@@ -26,8 +26,6 @@ import tensorflow as tf
 from tensorflow.python.eager import context
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_util
-#from tensorflow.python.keras.layers import Layer
-from tensorflow.python.keras import layers
 from tensorflow.python.ops import control_flow_util
 from tensorflow.python.ops import rnn
 from tensorflow.python.ops import rnn_cell_impl
@@ -129,7 +127,7 @@ class Decoder(object):
         return False
 
 
-class BaseDecoder(layers.Layer):
+class BaseDecoder(tf.keras.layers.Layer):
     """An RNN Decoder that is based on a Keras layer.
 
     Concepts used by this interface:
