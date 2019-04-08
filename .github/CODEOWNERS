@@ -13,5 +13,5 @@ seq2seq/* @qlzh727
 # always have write access. But still adding these here for
 # repository understanding.
 
-sparsemax* @AndreasMadsen
-normalizations* @smokrow
+sparsemax/* @AndreasMadsen
+layers/normalizations*.py @smokrow
