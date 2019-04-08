@@ -25,6 +25,7 @@ import tensorflow as tf
 from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
 
+from tensorflow.python.keras import layers
 from tensorflow.python.ops import rnn_cell_impl
 
 
@@ -57,7 +58,7 @@ class BasicDecoder(decoder.BaseDecoder):
             raise TypeError(
                 "sampler must be a Sampler, received: %s" % (sampler,))
         if (output_layer is not None
-                and not isinstance(output_layer, tf.keras.layers.Layer)):
+                and not isinstance(output_layer, layers.Layer)):
             raise TypeError(
                 "output_layer must be a Layer, received: %s" % (output_layer,))
         self.cell = cell

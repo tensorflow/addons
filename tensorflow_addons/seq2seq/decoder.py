@@ -26,7 +26,8 @@ import tensorflow as tf
 from tensorflow.python.eager import context
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_util
-from tensorflow.keras import layers
+#from tensorflow.python.keras.layers import Layer
+from tensorflow.python.keras import layers
 from tensorflow.python.ops import control_flow_util
 from tensorflow.python.ops import rnn
 from tensorflow.python.ops import rnn_cell_impl
