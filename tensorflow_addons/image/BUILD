@@ -9,6 +9,7 @@ py_library(
         "dense_image_warp.py",
         "distance_transform.py",
         "distort_image_ops.py",
+        "mean_filter_2d.py",
         "median_filter_2d.py",
         "transform_ops.py",
     ]),
@@ -53,6 +54,19 @@ py_test(
         "distort_image_ops_test.py",
     ],
     main = "distort_image_ops_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "mean_filter_2d_test",
+    size = "medium",
+    srcs = [
+        "mean_filter_2d_test.py",
+    ],
+    main = "mean_filter_2d_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":image",
