@@ -6,7 +6,7 @@
 | dense_image_warp |  |  |
 | distance_transform_ops |  |  |
 | distort_image_ops |  |  | 
-| median_filter_2d |  |  |
+| median_filter_2d | @Mainak431 | mainakdutta76@gmail.com |
 | transform_ops |  |  | 
 
 ## Components 
