@@ -5,7 +5,8 @@
 
 
 # Subpackage Owners
-seq2seq/* @qlzh727
+/tensorflow_addons/seq2seq/ @qlzh727
+/tensorflow_addons/custom_ops/seq2seq/ @qlzh727
 
 
 # Submodule Owners
@@ -13,5 +14,7 @@ seq2seq/* @qlzh727
 # always have write access. But still adding these here for
 # repository understanding.
 
-sparsemax/* @AndreasMadsen
-layers/normalizations*.py @smokrow
+/tensorflow_addons/activations/sparsemax*.py @AndreasMadsen
+/tensorflow_addons/layers/sparsemax*.py @AndreasMadsen
+/tensorflow_addons/losses/sparsemax*.py @AndreasMadsen
+/tensorflow_addons/layers/normalizations*.py @smokrow
