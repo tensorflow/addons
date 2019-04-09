@@ -15,6 +15,7 @@
 # repository understanding.
 
 /tensorflow_addons/activations/sparsemax*.py @AndreasMadsen
+/tensorflow_addons/image/median_filter_2d*.py @Mainak431
+/tensorflow_addons/layers/normalizations*.py @smokrow
 /tensorflow_addons/layers/sparsemax*.py @AndreasMadsen
 /tensorflow_addons/losses/sparsemax*.py @AndreasMadsen
-/tensorflow_addons/layers/normalizations*.py @smokrow
