@@ -278,7 +278,6 @@ class _BaseAttentionMechanism(AttentionMechanism, layers.Layer):
                 "memory_sequence_length and memory_mask cannot be "
                 "used at same time for attention.")
         with tf.name_scope(self.name or "BaseAttentionMechanismInit"):
-            #tf.nest.flatten(memory)):
             self.values = _prepare_memory(
                 memory,
                 memory_sequence_length=memory_sequence_length,
@@ -819,7 +818,7 @@ def safe_cumprod(x, *args, **kwargs):
     Returns:
       Cumulative product of x.
     """
-    with tf.name_scope("SafeCumprod"):  #, [x]):
+    with tf.name_scope("SafeCumprod"):
         x = tf.convert_to_tensor(x, name="x")
         tiny = np.finfo(x.dtype.as_numpy_dtype).tiny
         return tf.exp(
@@ -1483,7 +1482,7 @@ def hardmax(logits, name=None):
     Returns:
       A batched one-hot tensor.
     """
-    with tf.name_scope(name or "Hardmax"):  #, [logits]):
+    with tf.name_scope(name or "Hardmax"):
         logits = tf.convert_to_tensor(logits, name="logits")
         if tf.compat.dimension_value(logits.get_shape()[-1]) is not None:
             depth = tf.compat.dimension_value(logits.get_shape()[-1])
