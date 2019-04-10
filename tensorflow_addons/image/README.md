@@ -5,7 +5,7 @@
 |:---------- |:----------- |:--------------|
 | dense_image_warp |  |  |
 | distance_transform_ops |  |  |
-| distort_image_ops |  |  |
+| distort_image_ops | @WindQAQ | windqaq@gmail.com |
 | mean_filter_2d | @Mainak431 | mainakdutta76@gmail.com |
 | median_filter_2d | @Mainak431 | mainakdutta76@gmail.com |
 | transform_ops |  |  | 
