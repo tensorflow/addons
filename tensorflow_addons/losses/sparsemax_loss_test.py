@@ -66,7 +66,7 @@ def _np_sparsemax_loss(z, q):
     # because q is binary, sum([q_1^2, q_2^2, ...]) is just sum(q)
     q_norm = np.sum(q, axis=1)
 
-    return -z_k + 0.5 * S_sum + 0.5 * q_norm
+    return 0.5 * S_sum + 0.5 * q_norm - z_k
 
 
 @test_utils.run_all_with_types(['float32', 'float64'])
@@ -97,7 +97,7 @@ class SparsemaxTest(tf.test.TestCase):
         q[np.arange(0, test_obs), random.randint(0, 10, size=test_obs)] = 1
 
         loss_object = SparsemaxLoss()
-        tf_loss_op = loss_object(q, z)  # pylint: disable=not-callable
+        tf_loss_op = loss_object(q, z)
         tf_loss_out = self.evaluate(tf_loss_op)
         np_loss = np.mean(_np_sparsemax_loss(z, q).astype(dtype))
 

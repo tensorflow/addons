@@ -34,7 +34,7 @@ class ContrastiveLossTest(tf.test.TestCase):
         cl_obj = contrastive.ContrastiveLoss()
         y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
         y_pred = tf.constant([1., 1., 0., 0., 1., 0.], dtype=tf.dtypes.float32)
-        loss = cl_obj(y_true, y_pred)  # pylint: disable=not-callable
+        loss = cl_obj(y_true, y_pred)
         self.assertAllClose(loss, 0.0)
 
     def test_unweighted(self):
@@ -42,7 +42,7 @@ class ContrastiveLossTest(tf.test.TestCase):
         y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
         y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5],
                              dtype=tf.dtypes.float32)
-        loss = cl_obj(y_true, y_pred)  # pylint: disable=not-callable
+        loss = cl_obj(y_true, y_pred)
 
         # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
         #      = [max(1 - 0.1, 0)^2, max(1 - 0.3, 0)^2,
@@ -59,7 +59,7 @@ class ContrastiveLossTest(tf.test.TestCase):
         y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
         y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5],
                              dtype=tf.dtypes.float32)
-        loss = cl_obj(y_true, y_pred, sample_weight=6.0)  # pylint: disable=not-callable
+        loss = cl_obj(y_true, y_pred, sample_weight=6.0)
 
         # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
         #      = [max(1 - 0.1, 0)^2, max(1 - 0.3, 0)^2,
@@ -80,7 +80,7 @@ class ContrastiveLossTest(tf.test.TestCase):
                              dtype=tf.dtypes.float32)
         sample_weight = tf.constant([1.2, 0.8, 0.5, 0.4, 1.5, 1.0],
                                     dtype=tf.dtypes.float32)
-        loss = cl_obj(y_true, y_pred, sample_weight=sample_weight)  # pylint: disable=not-callable
+        loss = cl_obj(y_true, y_pred, sample_weight=sample_weight)
 
         # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
         #      = [max(1 - 0.1, 0)^2, max(1 - 0.3, 0)^2,
@@ -100,7 +100,7 @@ class ContrastiveLossTest(tf.test.TestCase):
         y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
         y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5],
                              dtype=tf.dtypes.float32)
-        loss = cl_obj(y_true, y_pred, sample_weight=0.0)  # pylint: disable=not-callable
+        loss = cl_obj(y_true, y_pred, sample_weight=0.0)
         self.assertAllClose(loss, 0.0)
 
     def test_non_default_margin(self):
@@ -108,7 +108,7 @@ class ContrastiveLossTest(tf.test.TestCase):
         y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
         y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5],
                              dtype=tf.dtypes.float32)
-        loss = cl_obj(y_true, y_pred)  # pylint: disable=not-callable
+        loss = cl_obj(y_true, y_pred)
 
         # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
         #      = [max(2 - 0.1, 0)^2, max(2 - 0.3, 0)^2,
@@ -127,7 +127,7 @@ class ContrastiveLossTest(tf.test.TestCase):
         y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
         y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5],
                              dtype=tf.dtypes.float32)
-        loss = cl_obj(y_true, y_pred)  # pylint: disable=not-callable
+        loss = cl_obj(y_true, y_pred)
 
         # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
         #      = [max(1 - 0.1, 0)^2, max(1 - 0.3, 0)^2,
@@ -143,7 +143,7 @@ class ContrastiveLossTest(tf.test.TestCase):
         y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
         y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5],
                              dtype=tf.dtypes.float32)
-        loss = cl_obj(y_true, y_pred)  # pylint: disable=not-callable
+        loss = cl_obj(y_true, y_pred)
 
         # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
         #      = [max(1 - 0.1, 0)^2, max(1 - 0.3, 0)^2,
