@@ -1,0 +1,21 @@
+# TensorFlow Addons Codeowners
+
+# SIG maintainers are the catch all for reviews
+* @tensorflow/sig-addons-maintainers
+
+
+# Subpackage Owners
+/tensorflow_addons/seq2seq/ @qlzh727
+/tensorflow_addons/custom_ops/seq2seq/ @qlzh727
+
+
+# Submodule Owners
+# These may not automatically trigger a review because submodule owners do not
+# always have write access. But still adding these here for
+# repository understanding.
+
+/tensorflow_addons/activations/sparsemax*.py @AndreasMadsen
+/tensorflow_addons/image/median_filter_2d*.py @Mainak431
+/tensorflow_addons/layers/normalizations*.py @smokrow
+/tensorflow_addons/layers/sparsemax*.py @AndreasMadsen
+/tensorflow_addons/losses/sparsemax*.py @AndreasMadsen
