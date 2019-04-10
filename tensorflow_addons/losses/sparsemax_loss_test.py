@@ -66,7 +66,7 @@ def _np_sparsemax_loss(z, q):
     # because q is binary, sum([q_1^2, q_2^2, ...]) is just sum(q)
     q_norm = np.sum(q, axis=1)
 
-    return -z_k + 0.5 * S_sum + 0.5 * q_norm
+    return 0.5 * S_sum + 0.5 * q_norm - z_k
 
 
 @test_utils.run_all_with_types(['float32', 'float64'])
