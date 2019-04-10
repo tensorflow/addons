@@ -103,8 +103,7 @@ def sequence_loss(logits,
         raise ValueError(
             "average_across_batch and sum_over_batch cannot be set "
             "to True at same time.")
-    with tf.name_scope(name
-                       or "sequence_loss"):  #, [logits, targets, weights]):
+    with tf.name_scope(name or "sequence_loss"):
         num_classes = tf.shape(input=logits)[2]
         logits_flat = tf.reshape(logits, [-1, num_classes])
         targets = tf.reshape(targets, [-1])

@@ -692,7 +692,7 @@ class InferenceSampler(Sampler):
 # categorical_sample) mimic TensorFlow Probability distribution semantics.
 def _call_sampler(sample_n_fn, sample_shape, name=None):
     """Reshapes vector of samples."""
-    with tf.name_scope(name or "call_sampler"):  #, values=[sample_shape]):
+    with tf.name_scope(name or "call_sampler"):
         sample_shape = tf.convert_to_tensor(
             sample_shape, dtype=tf.int32, name="sample_shape")
         # Ensure sample_shape is a vector (vs just a scalar).

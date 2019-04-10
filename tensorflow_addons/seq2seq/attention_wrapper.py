@@ -1814,7 +1814,7 @@ class AttentionWrapper(layers.AbstractRNNCell):
         if inputs is not None:
             batch_size = tf.shape(inputs)[0]
             dtype = inputs.dtype
-        with tf.name_scope(type(self).__name__ + "ZeroState"):  #, values=[batch_size]):  # pylint: disable=bad-continuation
+        with tf.name_scope(type(self).__name__ + "ZeroState"):  # pylint: disable=bad-continuation
             if self._initial_cell_state is not None:
                 cell_state = self._initial_cell_state
             else:

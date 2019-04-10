@@ -114,7 +114,7 @@ def tile_batch(t, multiplier, name=None):
       the rank is < 1.
     """
     flat_t = tf.nest.flatten(t)
-    with tf.name_scope(name or "tile_batch"):  #, flat_t + [multiplier]):
+    with tf.name_scope(name or "tile_batch"):
         return tf.nest.map_structure(lambda t_: _tile_batch(t_, multiplier), t)
 
 
@@ -549,7 +549,6 @@ class BeamSearchDecoderMixin(object):
         coverage_penalty_weight = self._coverage_penalty_weight
 
         with tf.name_scope(name or "BeamSearchDecoderStep"):
-            #,(time, inputs, state)):
             cell_state = state.cell_state
             inputs = tf.nest.map_structure(
                 lambda inp: self._merge_batch_beams(inp, s=inp.shape[2:]),
