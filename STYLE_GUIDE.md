@@ -15,7 +15,7 @@ void formatted_code_again;
 ```
 
 #### Python
-Python code should conform to [PEP8](https://www.python.org/dev/peps/pep-0008/).
+Python code should conform to [PEP8](https://www.python.org/dev/peps/pep-0008/) and [TensorFlow Community Python Style Guide] (https://www.tensorflow.org/community/contribute/code_style).
 
 Addons uses [yapf](https://github.com/google/yapf) to format code,
 and [pylint](https://www.pylint.org/) for code analysis.
