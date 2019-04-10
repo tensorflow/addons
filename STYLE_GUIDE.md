@@ -15,7 +15,7 @@ void formatted_code_again;
 ```
 
 #### Python
-Python code should conform to [PEP8](https://www.python.org/dev/peps/pep-0008/) and [TensorFlow Community Python Style Guide] (https://www.tensorflow.org/community/contribute/code_style).
+Python code should conform to [PEP8](https://www.python.org/dev/peps/pep-0008/).
 
 Addons uses [yapf](https://github.com/google/yapf) to format code,
 and [pylint](https://www.pylint.org/) for code analysis.
@@ -38,3 +38,8 @@ BAR = [
 foo._protected_member
 # pylint: enable=protected-access
 ```
+
+
+##### Python Special Cases Conventions
+
+Follow the guidance in the [TensorFlow Style Guide - Conventions sections] (https://www.tensorflow.org/community/contribute/code_style#tensorflow_conventions_and_special_uses).
