@@ -97,7 +97,7 @@ class SparsemaxTest(tf.test.TestCase):
         q[np.arange(0, test_obs), random.randint(0, 10, size=test_obs)] = 1
 
         loss_object = SparsemaxLoss()
-        tf_loss_op = loss_object(q, z)  # pylint: disable=not-callable
+        tf_loss_op = loss_object(q, z)
         tf_loss_out = self.evaluate(tf_loss_op)
         np_loss = np.mean(_np_sparsemax_loss(z, q).astype(dtype))
 
