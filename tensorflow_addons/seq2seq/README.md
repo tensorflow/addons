@@ -61,6 +61,7 @@ decoder_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units)
 helper = tf.contrib.seq2seq.TrainingHelper(
     decoder_emb_inp, decoder_lengths)
 # Decoder
+projection_layer = tf.keras.layers.Dense(num_outputs)
 decoder = tf.contrib.seq2seq.BasicDecoder(
     decoder_cell, helper, encoder_state,
     output_layer=projection_layer)
@@ -86,14 +87,14 @@ sampler = tfa.seq2seq.sampler.TrainingSampler()
 
 # Decoder
 decoder_cell = tf.keras.layers.LSTMCell(num_units)
-projection_layer = keras.layers.Dense(100)
+projection_layer = tf.keras.layers.Dense(num_outputs)
 decoder = tfa.seq2seq.basic_decoder.BasicDecoder(
     decoder_cell, sampler, output_layer=projection_layer)
 
 outputs, _, _ = decoder(
     decoder_emb_inp,
     initial_state=encoder_state,
-    sequence_length=sequence_length)
+    sequence_length=decoder_lengths)
 logits = outputs.rnn_output
 ```
 
