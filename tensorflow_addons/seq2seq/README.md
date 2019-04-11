@@ -61,6 +61,7 @@ decoder_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units)
 helper = tf.contrib.seq2seq.TrainingHelper(
     decoder_emb_inp, decoder_lengths)
 # Decoder
+projection_layer = tf.keras.layers.Dense(num_outputs)
 decoder = tf.contrib.seq2seq.BasicDecoder(
     decoder_cell, helper, encoder_state,
     output_layer=projection_layer)
@@ -77,19 +78,20 @@ import tensorflow_addons as tfa
 # Build RNN
 #   encoder_outputs: [max_time, batch_size, num_units]
 #   encoder_state: [batch_size, num_units]
-encoder = tf.keras.layers.LSTM(num_units)
+encoder = tf.keras.layers.LSTM(num_units, return_state=True)
 encoder_outputs, state_h, state_c = encoder(encoder_emb_inp)
 encoder_state = [state_h, state_c]
 
 # Sampler
-sampler = tfa.seq2seq.TrainingSampler()
+sampler = tfa.seq2seq.sampler.TrainingSampler()
 
 # Decoder
 decoder_cell = tf.keras.layers.LSTMCell(num_units)
+projection_layer = tf.keras.layers.Dense(num_outputs)
 decoder = tfa.seq2seq.BasicDecoder(
-    decoder_cell, sampler, output_layer=projection_layer))
+    decoder_cell, sampler, output_layer=projection_layer)
 
-outputs, _ = decoder(
+outputs, _, _ = decoder(
     decoder_emb_inp,
     initial_state=encoder_state,
     sequence_length=decoder_lengths)
@@ -100,11 +102,11 @@ Note that the major difference here are:
 
 1. Both encoder and decoder are objects now, and all the metadata can be accessed, eg,
    `encoder.weights`, etc.
-1. All the tensor inputs are feed to encoder/decoder by calling it, instead of feedin when construct
+1. All the tensor inputs are fed to encoder/decoder by calling it, instead of feeding when constructing
    the instance. This allows the same instance to be reused if needed, just call it with other input
    tensors.
-1. Helper has been renamed to Sampler since it describer its behavior/usage better. There is a
-   one-to-one mapping between existing Helper and new Sampler. Sampler is also a keras layer, which
+1. Helper has been renamed to Sampler since this better describes its behavior/usage. There is a
+   one-to-one mapping between existing Helper and new Sampler. Sampler is also a Keras layer, which
    takes input tensors at `call()` instead of `__init__()`.
 
 
@@ -134,8 +136,8 @@ decoder_cell = tfa.seq2seq.AttentionWrapper(
     attention_layer_size=num_units)
 ```
 
-1. The AttentionMechanism here is also a keras `layer`, we customized it so that it will take the
-   memory (encoder_state) during `__init__()`, since the momory of the attention shouldn't be
+1. The `attention_mechanism` here is also a Keras `layer`, we customized it so that it will take
+   the memory (encoder_state) during `__init__()`, since the memory of the attention shouldn't be
    changed.
 
 ### Beam Search
