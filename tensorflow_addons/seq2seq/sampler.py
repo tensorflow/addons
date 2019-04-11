@@ -236,7 +236,7 @@ class TrainingSampler(Sampler):
         if self.sequence_length.get_shape().ndims != 1:
             raise ValueError(
                 "Expected sequence_length to be vector, but received shape: %s"
-                % self._sequence_length.get_shape())
+                % self.sequence_length.get_shape())
 
         self.zero_inputs = nest.map_structure(
             lambda inp: array_ops.zeros_like(inp[0, :]), inputs)
