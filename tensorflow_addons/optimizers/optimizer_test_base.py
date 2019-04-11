@@ -21,9 +21,6 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from tensorflow.python.framework import test_util
-from tensorflow.python.ops import variables
-
 
 class OptimizerTestBase(tf.test.TestCase):
     """Base class for optimizer tests.
@@ -81,7 +78,7 @@ class OptimizerTestBase(tf.test.TestCase):
                 if not tf.executing_eagerly():
                     update = opt.apply_gradients(
                         zip([grads0, grads1], [var0, var1]))
-                    self.evaluate(variables.global_variables_initializer())
+                    self.evaluate(tf.compat.v1.global_variables_initializer())
                     self.assertAllClose([1.0, 2.0], self.evaluate(var0))
                     self.assertAllClose([3.0, 4.0], self.evaluate(var1))
                 # Create the update op.
@@ -132,7 +129,7 @@ class OptimizerTestBase(tf.test.TestCase):
                 opt_aggregated = optimizer(**params)
                 aggregated_update = opt_aggregated.apply_gradients(
                     [(grad_aggregated, aggregated_update_var)])
-                self.evaluate(variables.global_variables_initializer())
+                self.evaluate(tf.compat.v1.global_variables_initializer())
                 self.assertAllClose(
                     self.evaluate(aggregated_update_var),
                     self.evaluate(repeated_index_update_var))

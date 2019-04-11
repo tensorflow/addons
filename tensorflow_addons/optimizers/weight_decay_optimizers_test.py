@@ -20,8 +20,8 @@ from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.framework import test_util
 
+from tensorflow_addons.utils import test_utils
 from tensorflow_addons.optimizers.optimizer_test_base import OptimizerTestBase
 from tensorflow_addons.optimizers import weight_decay_optimizers
 
@@ -70,7 +70,7 @@ class AdamWOptimizerTest(OptimizerTestBase):
     callable_opt_params = {k: (lambda: v) for k, v in opt_params.items()}
     optimizer = weight_decay_optimizers.AdamWOptimizer
 
-    @test_util.run_in_graph_and_eager_modes(reset_test=True)
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testSparse(self):
         self.doTest(
             self.optimizer,
@@ -78,11 +78,11 @@ class AdamWOptimizerTest(OptimizerTestBase):
             self.opt_params,
             do_sparse=True)
 
-    @test_util.run_in_graph_and_eager_modes
+    @test_utils.run_in_graph_and_eager_modes
     def testSparseRepeatedIndices(self):
         self.doTestSparseRepeatedIndices(self.optimizer, self.opt_params)
 
-    @test_util.run_in_graph_and_eager_modes(reset_test=True)
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testBasic(self):
         self.doTest(self.optimizer, adamw_update_numpy, self.opt_params)
 
@@ -101,16 +101,16 @@ class SGDWOptimizerTest(OptimizerTestBase):
     callable_opt_params = {k: (lambda: v) for k, v in opt_params.items()}
     optimizer = weight_decay_optimizers.SGDWOptimizer
 
-    @test_util.run_in_graph_and_eager_modes(reset_test=True)
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testSparse(self):
         self.doTest(
             self.optimizer, sgdw_update_numpy, self.opt_params, do_sparse=True)
 
-    @test_util.run_in_graph_and_eager_modes
+    @test_utils.run_in_graph_and_eager_modes
     def testSparseRepeatedIndices(self):
         self.doTestSparseRepeatedIndices(self.optimizer, self.opt_params)
 
-    @test_util.run_in_graph_and_eager_modes(reset_test=True)
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testBasic(self):
         self.doTest(self.optimizer, sgdw_update_numpy, self.opt_params)
 
