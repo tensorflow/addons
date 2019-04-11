@@ -88,7 +88,7 @@ sampler = tfa.seq2seq.sampler.TrainingSampler()
 # Decoder
 decoder_cell = tf.keras.layers.LSTMCell(num_units)
 projection_layer = tf.keras.layers.Dense(num_outputs)
-decoder = tfa.seq2seq.basic_decoder.BasicDecoder(
+decoder = tfa.seq2seq.BasicDecoder(
     decoder_cell, sampler, output_layer=projection_layer)
 
 outputs, _, _ = decoder(
@@ -126,12 +126,12 @@ decoder_cell = tf.contrib.seq2seq.AttentionWrapper(
 ``` python
 import tensorflow_addons as tfa
 # TF 2.0, new style
-attention_mechanism = tfa.seq2seq.attention_wrapper.LuongAttention(
+attention_mechanism = tfa.seq2seq.LuongAttention(
     num_units,
     encoder_state,
     memory_sequence_length=encoder_sequence_length)
 
-decoder_cell = tfa.seq2seq.attention_wrapper.AttentionWrapper(
+decoder_cell = tfa.seq2seq.AttentionWrapper(
     decoder_cell, attention_mechanism,
     attention_layer_size=num_units)
 ```
@@ -168,11 +168,11 @@ outputs, _ = tf.contrib.seq2seq.dynamic_decode(decoder, ...)
 import tensorflow_addons as tfa
 
 # Replicate encoder infos beam_width times
-decoder_initial_state = tfa.seq2seq.beam_search_decoder.tile_batch(
+decoder_initial_state = tfa.seq2seq.tile_batch(
     encoder_state, multiplier=hparams.beam_width)
 
 # Define a beam-search decoder
-decoder = tfa.seq2seq.beam_search_decoder.BeamSearchDecoder(
+decoder = tfa.seq2seq.BeamSearchDecoder(
     cell=decoder_cell,
     beam_width=beam_width,
     output_layer=projection_layer,
