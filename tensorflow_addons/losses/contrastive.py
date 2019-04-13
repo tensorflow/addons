@@ -51,6 +51,7 @@ def contrastive_loss(y_true, y_pred, margin=1.0):
     Returns:
       contrastive_loss: 1-D float `Tensor` with shape [batch_size].
     """
+    y_pred = tf.convert_to_tensor(y_pred)
     y_true = tf.dtypes.cast(y_true, y_pred.dtype)
     return (
         y_true * tf.math.square(y_pred) +
