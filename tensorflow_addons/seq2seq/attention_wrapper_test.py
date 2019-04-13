@@ -23,21 +23,18 @@ from absl.testing import parameterized
 import numpy as np
 import tensorflow as tf
 
+from tensorflow_addons.utils import test_utils
 from tensorflow_addons.seq2seq import attention_wrapper as wrapper
 from tensorflow_addons.seq2seq import basic_decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
 from tensorflow.python import keras
 from tensorflow.python.eager import context
-from tensorflow.python.framework import dtypes
-from tensorflow.python.framework import test_util
+
 from tensorflow.python.keras import initializers
-from tensorflow.python.ops import variables
-from tensorflow.python.platform import test
-from tensorflow.python.util import nest
 
 
-@test_util.run_all_in_graph_and_eager_modes
-class AttentionMechanismTest(test.TestCase, parameterized.TestCase):
+@test_utils.run_all_in_graph_and_eager_modes
+class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
     def setUp(self):
         super(AttentionMechanismTest, self).setUp()
         self.batch = 10
@@ -88,7 +85,7 @@ class AttentionMechanismTest(test.TestCase, parameterized.TestCase):
     def test_layer_output(self, attention_cls):
         attention = attention_cls(self.units, self.memory)
         score = attention([self.query, self.state])
-        self.evaluate(variables.variables_initializer(attention.variables))
+        self.evaluate(tf.compat.v1.variables_initializer(attention.variables))
 
         score_val = self.evaluate(score)
         self.assertLen(score_val, 2)
@@ -106,7 +103,7 @@ class AttentionMechanismTest(test.TestCase, parameterized.TestCase):
         weights_before_query = attention.get_weights()
         ref_score = attention([self.query, self.state])
 
-        self.evaluate(variables.global_variables_initializer())
+        self.evaluate(tf.compat.v1.global_variables_initializer())
         ref_score_val = self.evaluate(ref_score)
 
         all_weights = attention.get_weights()
@@ -169,7 +166,7 @@ class AttentionMechanismTest(test.TestCase, parameterized.TestCase):
         state = None
         attention = wrapper.LuongAttention(5, memory, memory_sequence_length)
         alignment, _ = attention([query, state])
-        self.evaluate(variables.global_variables_initializer())
+        self.evaluate(tf.compat.v1.global_variables_initializer())
         alignment = self.evaluate(alignment)
         self.assertEqual(np.sum(np.triu(alignment, k=1)), 0)
 
@@ -187,8 +184,8 @@ def get_result_summary(x):
     return x
 
 
-@test_util.run_all_in_graph_and_eager_modes
-class AttentionWrapperTest(test.TestCase, parameterized.TestCase):
+@test_utils.run_all_in_graph_and_eager_modes
+class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
     def assertAllCloseOrEqual(self, x, y, **kwargs):
         if isinstance(x, np.ndarray) or isinstance(x, float):
             return super(AttentionWrapperTest, self).assertAllClose(
@@ -337,7 +334,7 @@ class AttentionWrapperTest(test.TestCase, parameterized.TestCase):
             sampler = sampler_py.TrainingSampler()
             my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
             initial_state = cell.get_initial_state(
-                dtype=dtypes.float32, batch_size=batch_size)
+                dtype=tf.float32, batch_size=batch_size)
             final_outputs, final_state, _ = my_decoder(
                 decoder_inputs,
                 initial_state=initial_state,
@@ -382,17 +379,17 @@ class AttentionWrapperTest(test.TestCase, parameterized.TestCase):
                     self.assertEqual(
                         (expected_time, batch_size, encoder_max_time),
                         tuple(state_alignment_history.get_shape().as_list()))
-                nest.assert_same_structure(
+                tf.nest.assert_same_structure(
                     cell.state_size,
                     cell.get_initial_state(
-                        batch_size=batch_size, dtype=dtypes.float32))
+                        batch_size=batch_size, dtype=tf.float32))
                 # Remove the history from final_state for purposes of the
                 # remainder of the tests.
                 final_state = final_state._replace(alignment_history=())  # pylint: disable=protected-access
             else:
                 state_alignment_history = ()
 
-            self.evaluate(variables.global_variables_initializer())
+            self.evaluate(tf.compat.v1.global_variables_initializer())
             eval_result = self.evaluate({
                 "final_outputs":
                 final_outputs,
@@ -402,24 +399,24 @@ class AttentionWrapperTest(test.TestCase, parameterized.TestCase):
                 state_alignment_history,
             })
 
-            final_output_info = nest.map_structure(
+            final_output_info = tf.nest.map_structure(
                 get_result_summary, eval_result["final_outputs"])
-            final_state_info = nest.map_structure(get_result_summary,
-                                                  eval_result["final_state"])
+            final_state_info = tf.nest.map_structure(
+                get_result_summary, eval_result["final_state"])
             print("final_output_info: ", final_output_info)
             print("final_state_info: ", final_state_info)
 
-            nest.map_structure(self.assertAllCloseOrEqual,
-                               expected_final_output, final_output_info)
-            nest.map_structure(self.assertAllCloseOrEqual,
-                               expected_final_state, final_state_info)
+            tf.nest.map_structure(self.assertAllCloseOrEqual,
+                                  expected_final_output, final_output_info)
+            tf.nest.map_structure(self.assertAllCloseOrEqual,
+                                  expected_final_state, final_state_info)
             # by default, the wrapper emits attention as output
             if alignment_history:
-                final_alignment_history_info = nest.map_structure(
+                final_alignment_history_info = tf.nest.map_structure(
                     get_result_summary, eval_result["state_alignment_history"])
                 print("final_alignment_history_info: ",
                       final_alignment_history_info)
-                nest.map_structure(
+                tf.nest.map_structure(
                     self.assertAllCloseOrEqual,
                     # outputs are batch major but the stacked TensorArray is
                     # time major
@@ -792,4 +789,4 @@ class AttentionWrapperTest(test.TestCase, parameterized.TestCase):
 
 
 if __name__ == "__main__":
-    test.main()
+    tf.test.main()
