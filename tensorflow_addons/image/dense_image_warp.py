@@ -22,10 +22,7 @@ import tensorflow as tf
 
 
 @tf.function
-def interpolate_bilinear(grid,
-                         query_points,
-                         name="interpolate_bilinear",
-                         indexing="ij"):
+def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
     """Similar to Matlab's interp2 function.
 
     Finds values for query points on a grid using bilinear interpolation.
@@ -34,9 +31,9 @@ def interpolate_bilinear(grid,
       grid: a 4-D float `Tensor` of shape `[batch, height, width, channels]`.
       query_points: a 3-D float `Tensor` of N points with shape
         `[batch, N, 2]`.
-      name: a name for the operation (optional).
       indexing: whether the query points are specified as row and column (ij),
         or Cartesian coordinates (xy).
+      name: a name for the operation (optional).
 
     Returns:
       values: a 3-D `Tensor` with shape `[batch, N, channels]`
@@ -48,7 +45,7 @@ def interpolate_bilinear(grid,
     if indexing != "ij" and indexing != "xy":
         raise ValueError("Indexing mode must be \'ij\' or \'xy\'")
 
-    with tf.name_scope(name):
+    with tf.name_scope(name or "interpolate_bilinear"):
         grid = tf.convert_to_tensor(grid)
         query_points = tf.convert_to_tensor(query_points)
         shape = grid.get_shape().as_list()
@@ -158,7 +155,7 @@ def interpolate_bilinear(grid,
 
 
 @tf.function
-def dense_image_warp(image, flow, name="dense_image_warp"):
+def dense_image_warp(image, flow, name=None):
     """Image warping using per-pixel flow vectors.
 
     Apply a non-linear warp to the image, where the warp is specified by a
@@ -189,7 +186,9 @@ def dense_image_warp(image, flow, name="dense_image_warp"):
       ValueError: if height < 2 or width < 2 or the inputs have the wrong
         number of dimensions.
     """
-    with tf.name_scope(name):
+    with tf.name_scope(name or "dense_image_warp"):
+        image = tf.convert_to_tensor(image)
+        flow = tf.convert_to_tensor(flow)
         batch_size, height, width, channels = (tf.shape(image)[0],
                                                tf.shape(image)[1],
                                                tf.shape(image)[2],
