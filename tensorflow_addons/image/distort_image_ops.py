@@ -32,7 +32,8 @@ def random_hsv_in_yiq(image,
                       upper_saturation=1,
                       lower_value=1,
                       upper_value=1,
-                      seed=None):
+                      seed=None,
+                      name=None):
     """Adjust hue, saturation, value of an RGB image randomly in YIQ color
     space.
 
@@ -45,22 +46,23 @@ def random_hsv_in_yiq(image,
     Args:
       image: RGB image or images. Size of the last dimension must be 3.
       max_delta_hue: float. Maximum value for the random delta_hue. Passing 0
-                     disables adjusting hue.
-      lower_saturation: float.  Lower bound for the random scale_saturation.
-      upper_saturation: float.  Upper bound for the random scale_saturation.
-      lower_value: float.  Lower bound for the random scale_value.
-      upper_value: float.  Upper bound for the random scale_value.
+        disables adjusting hue.
+      lower_saturation: float. Lower bound for the random scale_saturation.
+      upper_saturation: float. Upper bound for the random scale_saturation.
+      lower_value: float. Lower bound for the random scale_value.
+      upper_value: float. Upper bound for the random scale_value.
       seed: An operation-specific seed. It will be used in conjunction
         with the graph-level seed to determine the real seeds that will be
         used in this operation. Please see the documentation of
         set_random_seed for its interaction with the graph-level random seed.
+      name: A name for this operation (optional).
 
     Returns:
       3-D float tensor of shape `[height, width, channels]`.
 
     Raises:
       ValueError: if `max_delta`, `lower_saturation`, `upper_saturation`,
-        `lower_value`, or `upper_Value` is invalid.
+        `lower_value`, or `upper_value` is invalid.
     """
     if max_delta_hue < 0:
         raise ValueError("max_delta must be non-negative.")
@@ -72,33 +74,36 @@ def random_hsv_in_yiq(image,
         raise ValueError("lower_value must be non-negative.")
 
     if lower_saturation > upper_saturation:
-        raise ValueError("lower_saturation must be < upper_saturation.")
+        raise ValueError("lower_saturation must be not greater than "
+                         "upper_saturation.")
 
     if lower_value > upper_value:
-        raise ValueError("lower_value must be < upper_value.")
+        raise ValueError("lower_value must be not greater than upper_value.")
 
-    if max_delta_hue == 0:
-        delta_hue = 0
-    else:
-        delta_hue = tf.random.uniform([],
-                                      -max_delta_hue,
-                                      max_delta_hue,
-                                      seed=seed)
-    if lower_saturation == upper_saturation:
-        scale_saturation = lower_saturation
-    else:
-        scale_saturation = tf.random.uniform([],
-                                             lower_saturation,
-                                             upper_saturation,
-                                             seed=seed)
-    if lower_value == upper_value:
-        scale_value = lower_value
-    else:
-        scale_value = tf.random.uniform([],
-                                        lower_value,
-                                        upper_value,
-                                        seed=seed)
-    return adjust_hsv_in_yiq(image, delta_hue, scale_saturation, scale_value)
+    with tf.name_scope(name or "random_hsv_in_yiq") as scope:
+        if max_delta_hue == 0:
+            delta_hue = 0
+        else:
+            delta_hue = tf.random.uniform([],
+                                          -max_delta_hue,
+                                          max_delta_hue,
+                                          seed=seed)
+        if lower_saturation == upper_saturation:
+            scale_saturation = lower_saturation
+        else:
+            scale_saturation = tf.random.uniform([],
+                                                 lower_saturation,
+                                                 upper_saturation,
+                                                 seed=seed)
+        if lower_value == upper_value:
+            scale_value = lower_value
+        else:
+            scale_value = tf.random.uniform([],
+                                            lower_value,
+                                            upper_value,
+                                            seed=seed)
+        return adjust_hsv_in_yiq(
+            image, delta_hue, scale_saturation, scale_value, name=scope)
 
 
 @tf.function
@@ -106,7 +111,7 @@ def adjust_hsv_in_yiq(image,
                       delta_hue=0,
                       scale_saturation=1,
                       scale_value=1,
-                      name="adjust_hsv_in_yiq"):
+                      name=None):
     """Adjust hue, saturation, value of an RGB image in YIQ color space.
 
     This is a convenience method that converts an RGB image to float
@@ -115,11 +120,11 @@ def adjust_hsv_in_yiq(image,
     (I, Q) by scale_saturation, scales all channels (Y, I, Q) by scale_value,
     converts back to RGB, and then back to the original data type.
 
-    `image` is an RGB image.  The image hue is adjusted by converting the
+    `image` is an RGB image. The image hue is adjusted by converting the
     image to YIQ, rotating around the luminance channel (Y) by
-    `delta_hue` in radians, multiplying the chrominance channels (I, Q)  by
-    `scale_saturation`, and multiplying all channels (Y, I, Q)  by
-    `scale_value`.  The image is then converted back to RGB.
+    `delta_hue` in radians, multiplying the chrominance channels (I, Q) by
+    `scale_saturation`, and multiplying all channels (Y, I, Q) by
+    `scale_value`. The image is then converted back to RGB.
 
     Args:
       image: RGB image or images. Size of the last dimension must be 3.
@@ -129,9 +134,9 @@ def adjust_hsv_in_yiq(image,
       name: A name for this operation (optional).
 
     Returns:
-      Adjusted image(s), same shape and DType as `image`.
+      Adjusted image(s), same shape and dtype as `image`.
     """
-    with tf.name_scope(name):
+    with tf.name_scope(name or "adjust_hsv_in_yiq"):
         image = tf.convert_to_tensor(image, name="image")
         # Remember original dtype to so we can convert back if needed
         orig_dtype = image.dtype
