@@ -22,6 +22,7 @@ def build_sprite_image(images, size=None):
             ValueError: size is not a list consisting of integers.
 
     :return: A Tensor '[new_dim, new_dim, channels]'."""
+
     dimension = int(np.ceil(np.sqrt(np.shape(images)[0])))
     images = tf.convert_to_tensor(images, dtype=tf.float32)
     images_shape = images.get_shape()
