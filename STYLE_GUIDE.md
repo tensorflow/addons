@@ -40,6 +40,6 @@ foo._protected_member
 ```
 
 
-#### TensorFLow Conventions
+#### TensorFlow Conventions
 
 Follow the guidance in the [TensorFlow Style Guide - Conventions](https://www.tensorflow.org/community/contribute/code_style#tensorflow_conventions_and_special_uses).
