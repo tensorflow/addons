@@ -21,23 +21,17 @@ from __future__ import print_function
 import collections
 import numpy as np
 
+import tensorflow as tf
+
 from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import decoder
 from tensorflow.python.eager import context
-from tensorflow.python.framework import dtypes
-from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.framework import tensor_util
 from tensorflow.python.keras import layers
-from tensorflow.python.ops import array_ops
-from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import embedding_ops
-from tensorflow.python.ops import math_ops
-from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import rnn_cell_impl
-from tensorflow.python.ops import tensor_array_ops
 from tensorflow.python.platform import tf_logging
-from tensorflow.python.util import nest
 
 from tensorflow.python.framework import load_library
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
@@ -45,14 +39,6 @@ from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 _beam_search_ops_so = load_library.load_op_library(
     get_path_to_datafile("custom_ops/seq2seq/_beam_search_ops.so"))
 gather_tree = _beam_search_ops_so.gather_tree
-
-__all__ = [
-    "BeamSearchDecoderOutput",
-    "BeamSearchDecoderState",
-    "BeamSearchDecoder",
-    "FinalBeamSearchDecoderOutput",
-    "tile_batch",
-]
 
 
 class BeamSearchDecoderState(
@@ -87,20 +73,19 @@ class FinalBeamSearchDecoderOutput(
 
 def _tile_batch(t, multiplier):
     """Core single-tensor implementation of tile_batch."""
-    t = ops.convert_to_tensor(t, name="t")
-    shape_t = array_ops.shape(t)
+    t = tf.convert_to_tensor(t, name="t")
+    shape_t = tf.shape(t)
     if t.shape.ndims is None or t.shape.ndims < 1:
         raise ValueError("t must have statically known rank")
     tiling = [1] * (t.shape.ndims + 1)
     tiling[1] = multiplier
     tiled_static_batch_size = (t.shape.dims[0].value * multiplier
                                if t.shape.dims[0].value is not None else None)
-    tiled = array_ops.tile(array_ops.expand_dims(t, 1), tiling)
-    tiled = array_ops.reshape(
-        tiled, array_ops.concat(([shape_t[0] * multiplier], shape_t[1:]), 0))
+    tiled = tf.tile(tf.expand_dims(t, 1), tiling)
+    tiled = tf.reshape(tiled,
+                       tf.concat(([shape_t[0] * multiplier], shape_t[1:]), 0))
     tiled.set_shape(
-        tensor_shape.TensorShape([tiled_static_batch_size]).concatenate(
-            t.shape[1:]))
+        tf.TensorShape([tiled_static_batch_size]).concatenate(t.shape[1:]))
     return tiled
 
 
@@ -128,9 +113,9 @@ def tile_batch(t, multiplier, name=None):
       ValueError: if tensor(s) `t` do not have a statically known rank or
       the rank is < 1.
     """
-    flat_t = nest.flatten(t)
-    with ops.name_scope(name, "tile_batch", flat_t + [multiplier]):
-        return nest.map_structure(lambda t_: _tile_batch(t_, multiplier), t)
+    flat_t = tf.nest.flatten(t)
+    with tf.name_scope(name or "tile_batch"):
+        return tf.nest.map_structure(lambda t_: _tile_batch(t_, multiplier), t)
 
 
 def gather_tree_from_array(t, parent_ids, sequence_length):
@@ -148,19 +133,16 @@ def gather_tree_from_array(t, parent_ids, sequence_length):
       `t` and where beams are sorted in each `Tensor` according to
       `parent_ids`.
     """
-    max_time = parent_ids.shape.dims[0].value or array_ops.shape(parent_ids)[0]
-    batch_size = parent_ids.shape.dims[1].value or array_ops.shape(
-        parent_ids)[1]
-    beam_width = parent_ids.shape.dims[2].value or array_ops.shape(
-        parent_ids)[2]
+    max_time = parent_ids.shape.dims[0].value or tf.shape(parent_ids)[0]
+    batch_size = parent_ids.shape.dims[1].value or tf.shape(parent_ids)[1]
+    beam_width = parent_ids.shape.dims[2].value or tf.shape(parent_ids)[2]
 
     # Generate beam ids that will be reordered by gather_tree.
-    beam_ids = array_ops.expand_dims(
-        array_ops.expand_dims(math_ops.range(beam_width), 0), 0)
-    beam_ids = array_ops.tile(beam_ids, [max_time, batch_size, 1])
+    beam_ids = tf.expand_dims(tf.expand_dims(tf.range(beam_width), 0), 0)
+    beam_ids = tf.tile(beam_ids, [max_time, batch_size, 1])
 
-    max_sequence_lengths = math_ops.to_int32(
-        math_ops.reduce_max(sequence_length, axis=1))
+    max_sequence_lengths = tf.cast(
+        tf.reduce_max(sequence_length, axis=1), tf.int32)
     sorted_beam_ids = gather_tree(
         step_ids=beam_ids,
         parent_ids=parent_ids,
@@ -168,29 +150,27 @@ def gather_tree_from_array(t, parent_ids, sequence_length):
         end_token=beam_width + 1)
 
     # For out of range steps, simply copy the same beam.
-    in_bound_steps = array_ops.transpose(
-        array_ops.sequence_mask(sequence_length, maxlen=max_time),
-        perm=[2, 0, 1])
-    sorted_beam_ids = array_ops.where(
-        in_bound_steps, x=sorted_beam_ids, y=beam_ids)
+    in_bound_steps = tf.transpose(
+        tf.sequence_mask(sequence_length, maxlen=max_time), perm=[2, 0, 1])
+    sorted_beam_ids = tf.where(in_bound_steps, x=sorted_beam_ids, y=beam_ids)
 
     # Generate indices for gather_nd.
-    time_ind = array_ops.tile(
-        array_ops.reshape(math_ops.range(max_time), [-1, 1, 1]),
+    time_ind = tf.tile(
+        tf.reshape(tf.range(max_time), [-1, 1, 1]),
         [1, batch_size, beam_width])
-    batch_ind = array_ops.tile(
-        array_ops.reshape(math_ops.range(batch_size), [-1, 1, 1]),
+    batch_ind = tf.tile(
+        tf.reshape(tf.range(batch_size), [-1, 1, 1]),
         [1, max_time, beam_width])
-    batch_ind = array_ops.transpose(batch_ind, perm=[1, 0, 2])
-    indices = array_ops.stack([time_ind, batch_ind, sorted_beam_ids], -1)
+    batch_ind = tf.transpose(batch_ind, perm=[1, 0, 2])
+    indices = tf.stack([time_ind, batch_ind, sorted_beam_ids], -1)
 
     # Gather from a tensor with collapsed additional dimensions.
     gather_from = t
-    final_shape = array_ops.shape(gather_from)
-    gather_from = array_ops.reshape(gather_from,
-                                    [max_time, batch_size, beam_width, -1])
-    ordered = array_ops.gather_nd(gather_from, indices)
-    ordered = array_ops.reshape(ordered, final_shape)
+    final_shape = tf.shape(gather_from)
+    gather_from = tf.reshape(gather_from,
+                             [max_time, batch_size, beam_width, -1])
+    ordered = tf.gather_nd(gather_from, indices)
+    ordered = tf.reshape(ordered, final_shape)
 
     return ordered
 
@@ -204,7 +184,7 @@ def _check_ndims(t):
 def _check_static_batch_beam_maybe(shape, batch_size, beam_width):
     """Raises an exception if dimensions are known statically and can not be
     reshaped to [batch_size, beam_size, -1]."""
-    reshaped_shape = tensor_shape.TensorShape([batch_size, beam_width, None])
+    reshaped_shape = tf.TensorShape([batch_size, beam_width, None])
     if (batch_size is not None and shape.dims[0].value is not None
             and (shape[0] != batch_size * beam_width or
                  (shape.ndims >= 2 and shape.dims[1].value is not None and
@@ -234,16 +214,16 @@ def _check_batch_beam(t, batch_size, beam_width):
         "TensorArray reordering during the beam search." %
         (t if context.executing_eagerly() else t.name))
     rank = t.shape.ndims
-    shape = array_ops.shape(t)
+    shape = tf.shape(t)
     if rank == 2:
-        condition = math_ops.equal(shape[1], batch_size * beam_width)
+        condition = tf.equal(shape[1], batch_size * beam_width)
     else:
-        condition = math_ops.logical_or(
-            math_ops.equal(shape[1], batch_size * beam_width),
-            math_ops.logical_and(
-                math_ops.equal(shape[1], batch_size),
-                math_ops.equal(shape[2], beam_width)))
-    return control_flow_ops.Assert(condition, [error_message])
+        condition = tf.logical_or(
+            tf.equal(shape[1], batch_size * beam_width),
+            tf.logical_and(
+                tf.equal(shape[1], batch_size), tf.equal(shape[2],
+                                                         beam_width)))
+    return tf.Assert(condition, [error_message])
 
 
 class BeamSearchDecoderMixin(object):
@@ -320,12 +300,11 @@ class BeamSearchDecoderMixin(object):
             # compute_output_shape and read off all but the first (batch)
             # dimensions to get the output size of the rnn with the layer
             # applied to the top.
-            output_shape_with_unknown_batch = nest.map_structure(
-                lambda s: tensor_shape.TensorShape([None]).concatenate(s),
-                size)
+            output_shape_with_unknown_batch = tf.nest.map_structure(
+                lambda s: tf.TensorShape([None]).concatenate(s), size)
             layer_output_shape = self._output_layer.compute_output_shape(
                 output_shape_with_unknown_batch)
-            return nest.map_structure(lambda s: s[1:], layer_output_shape)
+            return tf.nest.map_structure(lambda s: s[1:], layer_output_shape)
 
     @property
     def tracks_own_finished(self):
@@ -345,9 +324,9 @@ class BeamSearchDecoderMixin(object):
     def output_size(self):
         # Return the cell output and the id
         return BeamSearchDecoderOutput(
-            scores=tensor_shape.TensorShape([self._beam_width]),
-            predicted_ids=tensor_shape.TensorShape([self._beam_width]),
-            parent_ids=tensor_shape.TensorShape([self._beam_width]))
+            scores=tf.TensorShape([self._beam_width]),
+            predicted_ids=tf.TensorShape([self._beam_width]),
+            parent_ids=tf.TensorShape([self._beam_width]))
 
     def finalize(self, outputs, final_state, sequence_lengths):
         """Finalize and return the predicted_ids.
@@ -368,8 +347,8 @@ class BeamSearchDecoderMixin(object):
         """
         del sequence_lengths
         # Get max_sequence_length across all beams for each batch.
-        max_sequence_lengths = math_ops.to_int32(
-            math_ops.reduce_max(final_state.lengths, axis=1))
+        max_sequence_lengths = tf.cast(
+            tf.reduce_max(final_state.lengths, axis=1), tf.int32)
         predicted_ids = gather_tree(
             outputs.predicted_ids,
             outputs.parent_ids,
@@ -377,7 +356,7 @@ class BeamSearchDecoderMixin(object):
             end_token=self._end_token)
         if self._reorder_tensor_arrays:
             final_state = final_state._replace(
-                cell_state=nest.map_structure(
+                cell_state=tf.nest.map_structure(
                     lambda t: self._maybe_sort_array_beams(
                         t, outputs.parent_ids, final_state.lengths),
                     final_state.cell_state))
@@ -398,20 +377,19 @@ class BeamSearchDecoderMixin(object):
         Returns:
           A reshaped version of t with dimension [batch_size * beam_width, s].
         """
-        if isinstance(s, ops.Tensor):
+        if isinstance(s, tf.Tensor):
             s = tensor_shape.as_shape(tensor_util.constant_value(s))
         else:
-            s = tensor_shape.TensorShape(s)
-        t_shape = array_ops.shape(t)
+            s = tf.TensorShape(s)
+        t_shape = tf.shape(t)
         static_batch_size = tensor_util.constant_value(self._batch_size)
         batch_size_beam_width = (None if static_batch_size is None else
                                  static_batch_size * self._beam_width)
-        reshaped_t = array_ops.reshape(
+        reshaped_t = tf.reshape(
             t,
-            array_ops.concat(
-                ([self._batch_size * self._beam_width], t_shape[2:]), 0))
+            tf.concat(([self._batch_size * self._beam_width], t_shape[2:]), 0))
         reshaped_t.set_shape(
-            (tensor_shape.TensorShape([batch_size_beam_width]).concatenate(s)))
+            (tf.TensorShape([batch_size_beam_width]).concatenate(s)))
         return reshaped_t
 
     def _split_batch_beams(self, t, s=None):
@@ -432,17 +410,16 @@ class BeamSearchDecoderMixin(object):
             `[batch_size, beam_width, s]` (assuming batch_size and beam_width
             are known statically).
         """
-        if isinstance(s, ops.Tensor):
-            s = tensor_shape.TensorShape(tensor_util.constant_value(s))
+        if isinstance(s, tf.Tensor):
+            s = tf.TensorShape(tensor_util.constant_value(s))
         else:
-            s = tensor_shape.TensorShape(s)
-        t_shape = array_ops.shape(t)
-        reshaped_t = array_ops.reshape(
-            t,
-            array_ops.concat(
-                ([self._batch_size, self._beam_width], t_shape[1:]), 0))
+            s = tf.TensorShape(s)
+        t_shape = tf.shape(t)
+        reshaped_t = tf.reshape(
+            t, tf.concat(([self._batch_size, self._beam_width], t_shape[1:]),
+                         0))
         static_batch_size = tensor_util.constant_value(self._batch_size)
-        expected_reshaped_shape = tensor_shape.TensorShape(
+        expected_reshaped_shape = tf.TensorShape(
             [static_batch_size, self._beam_width]).concatenate(s)
         if not reshaped_t.shape.is_compatible_with(expected_reshaped_shape):
             raise ValueError(
@@ -450,7 +427,7 @@ class BeamSearchDecoderMixin(object):
                 "and batch size.  The reshaped tensor has shape: %s.  "
                 "We expected it to have shape "
                 "(batch_size, beam_width, depth) == %s.  Perhaps you "
-                "forgot to create a zero_state with "
+                "forgot to call get_initial_state with "
                 "batch_size=encoder_batch_size * beam_width?" %
                 (reshaped_t.shape, expected_reshaped_shape))
         reshaped_t.set_shape(expected_reshaped_shape)
@@ -474,7 +451,7 @@ class BeamSearchDecoderMixin(object):
         Raises:
           ValueError: If the rank of `t` is not statically known.
         """
-        if isinstance(t, tensor_array_ops.TensorArray):
+        if isinstance(t, tf.TensorArray):
             return t
         _check_ndims(t)
         if t.shape.ndims >= 1:
@@ -499,7 +476,7 @@ class BeamSearchDecoderMixin(object):
         Raises:
           ValueError:  If the rank of `t` is not statically known.
         """
-        if isinstance(t, tensor_array_ops.TensorArray):
+        if isinstance(t, tf.TensorArray):
             return t
         _check_ndims(t)
         if t.shape.ndims >= 2:
@@ -523,7 +500,7 @@ class BeamSearchDecoderMixin(object):
           A `TensorArray` where beams are sorted in each `Tensor` or `t` itself
             if it is not a `TensorArray` or does not meet shape requirements.
         """
-        if not isinstance(t, tensor_array_ops.TensorArray):
+        if not isinstance(t, tf.TensorArray):
             return t
         # pylint: disable=protected-access
         # This is a bad hack due to the implementation detail of eager/graph TA.
@@ -535,7 +512,7 @@ class BeamSearchDecoderMixin(object):
         if (not t._infer_shape or not t._element_shape
                 or element_shape.ndims is None or element_shape.ndims < 1):
             shape = (element_shape if t._infer_shape and t._element_shape else
-                     tensor_shape.TensorShape(None))
+                     tf.TensorShape(None))
             tf_logging.warn(
                 "The TensorArray %s in the cell state is not amenable to "
                 "sorting based on the beam search result. For a "
@@ -549,7 +526,7 @@ class BeamSearchDecoderMixin(object):
                 self._beam_width):
             return t
         t = t.stack()
-        with ops.control_dependencies(
+        with tf.control_dependencies(
             [_check_batch_beam(t, self._batch_size, self._beam_width)]):
             return gather_tree_from_array(t, parent_ids, sequence_length)
 
@@ -571,21 +548,21 @@ class BeamSearchDecoderMixin(object):
         length_penalty_weight = self._length_penalty_weight
         coverage_penalty_weight = self._coverage_penalty_weight
 
-        with ops.name_scope(name, "BeamSearchDecoderStep",
-                            (time, inputs, state)):
+        with tf.name_scope(name or "BeamSearchDecoderStep"):
             cell_state = state.cell_state
-            inputs = nest.map_structure(
+            inputs = tf.nest.map_structure(
                 lambda inp: self._merge_batch_beams(inp, s=inp.shape[2:]),
                 inputs)
-            cell_state = nest.map_structure(self._maybe_merge_batch_beams,
-                                            cell_state, self._cell.state_size)
+            cell_state = tf.nest.map_structure(self._maybe_merge_batch_beams,
+                                               cell_state,
+                                               self._cell.state_size)
             cell_outputs, next_cell_state = self._cell(inputs, cell_state)
-            cell_outputs = nest.map_structure(
+            cell_outputs = tf.nest.map_structure(
                 lambda out: self._split_batch_beams(out, out.shape[1:]),
                 cell_outputs)
-            next_cell_state = nest.map_structure(self._maybe_split_batch_beams,
-                                                 next_cell_state,
-                                                 self._cell.state_size)
+            next_cell_state = tf.nest.map_structure(
+                self._maybe_split_batch_beams, next_cell_state,
+                self._cell.state_size)
 
             if self._output_layer is not None:
                 cell_outputs = self._output_layer(cell_outputs)
@@ -603,9 +580,9 @@ class BeamSearchDecoderMixin(object):
 
             finished = beam_search_state.finished
             sample_ids = beam_search_output.predicted_ids
-            next_inputs = control_flow_ops.cond(
-                math_ops.reduce_all(finished), lambda: self._start_inputs,
-                lambda: self._embedding_fn(sample_ids))
+            next_inputs = tf.cond(
+                tf.reduce_all(finished), lambda: self._start_inputs, lambda:
+                self._embedding_fn(sample_ids))
 
         return (beam_search_output, beam_search_state, next_inputs, finished)
 
@@ -622,9 +599,9 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
 
     - The encoder output has been tiled to `beam_width` via
       `tf.contrib.seq2seq.tile_batch` (NOT `tf.tile`).
-    - The `batch_size` argument passed to the `zero_state` method of this
-      wrapper is equal to `true_batch_size * beam_width`.
-    - The initial state created with `zero_state` above contains a
+    - The `batch_size` argument passed to the `get_initial_state` method of
+      this wrapper is equal to `true_batch_size * beam_width`.
+    - The initial state created with `get_initial_state` above contains a
       `cell_state` value containing properly tiled final state from the
       encoder.
 
@@ -642,8 +619,8 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         memory=tiled_inputs,
         memory_sequence_length=tiled_sequence_length)
     attention_cell = AttentionWrapper(cell, attention_mechanism, ...)
-    decoder_initial_state = attention_cell.zero_state(
-        dtype, batch_size=true_batch_size * beam_width)
+    decoder_initial_state = attention_cell.get_initial_state(
+        batch_size=true_batch_size * beam_width, dtype=dtype)
     decoder_initial_state = decoder_initial_state.clone(
         cell_state=tiled_encoder_final_state)
     ```
@@ -727,39 +704,38 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
             self._embedding_fn = (
                 lambda ids: embedding_ops.embedding_lookup(embedding, ids))
 
-        self._start_tokens = ops.convert_to_tensor(
-            start_tokens, dtype=dtypes.int32, name="start_tokens")
+        self._start_tokens = tf.convert_to_tensor(
+            start_tokens, dtype=tf.int32, name="start_tokens")
         if self._start_tokens.get_shape().ndims != 1:
             raise ValueError("start_tokens must be a vector")
-        self._end_token = ops.convert_to_tensor(
-            end_token, dtype=dtypes.int32, name="end_token")
+        self._end_token = tf.convert_to_tensor(
+            end_token, dtype=tf.int32, name="end_token")
         if self._end_token.get_shape().ndims != 0:
             raise ValueError("end_token must be a scalar")
 
-        self._batch_size = array_ops.size(start_tokens)
-        self._initial_cell_state = nest.map_structure(
+        self._batch_size = tf.size(start_tokens)
+        self._initial_cell_state = tf.nest.map_structure(
             self._maybe_split_batch_beams, initial_state,
             self._cell.state_size)
-        self._start_tokens = array_ops.tile(
-            array_ops.expand_dims(self._start_tokens, 1),
-            [1, self._beam_width])
+        self._start_tokens = tf.tile(
+            tf.expand_dims(self._start_tokens, 1), [1, self._beam_width])
         self._start_inputs = self._embedding_fn(self._start_tokens)
 
-        self._finished = array_ops.one_hot(
-            array_ops.zeros([self._batch_size], dtype=dtypes.int32),
+        self._finished = tf.one_hot(
+            tf.zeros([self._batch_size], dtype=tf.int32),
             depth=self._beam_width,
             on_value=False,
             off_value=True,
-            dtype=dtypes.bool)
+            dtype=tf.bool)
 
         finished, start_inputs = self._finished, self._start_inputs
 
-        dtype = nest.flatten(self._initial_cell_state)[0].dtype
-        log_probs = array_ops.one_hot(  # shape(batch_sz, beam_sz)
-            array_ops.zeros([self._batch_size], dtype=dtypes.int32),
+        dtype = tf.nest.flatten(self._initial_cell_state)[0].dtype
+        log_probs = tf.one_hot(  # shape(batch_sz, beam_sz)
+            tf.zeros([self._batch_size], dtype=tf.int32),
             depth=self._beam_width,
-            on_value=ops.convert_to_tensor(0.0, dtype=dtype),
-            off_value=ops.convert_to_tensor(-np.Inf, dtype=dtype),
+            on_value=tf.convert_to_tensor(0.0, dtype=dtype),
+            off_value=tf.convert_to_tensor(-np.Inf, dtype=dtype),
             dtype=dtype)
         init_attention_probs = get_attention_probs(
             self._initial_cell_state, self._coverage_penalty_weight)
@@ -770,8 +746,8 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
             cell_state=self._initial_cell_state,
             log_probs=log_probs,
             finished=finished,
-            lengths=array_ops.zeros([self._batch_size, self._beam_width],
-                                    dtype=dtypes.int64),
+            lengths=tf.zeros([self._batch_size, self._beam_width],
+                             dtype=tf.int64),
             accumulated_attention_probs=init_attention_probs)
 
         return (finished, start_inputs, initial_state)
@@ -781,12 +757,12 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         # Assume the dtype of the cell is the output_size structure
         # containing the input_state's first component's dtype.
         # Return that structure and int32 (the id)
-        dtype = nest.flatten(self._initial_cell_state)[0].dtype
+        dtype = tf.nest.flatten(self._initial_cell_state)[0].dtype
         return BeamSearchDecoderOutput(
-            scores=nest.map_structure(lambda _: dtype,
-                                      self._rnn_output_size()),
-            predicted_ids=dtypes.int32,
-            parent_ids=dtypes.int32)
+            scores=tf.nest.map_structure(lambda _: dtype,
+                                         self._rnn_output_size()),
+            predicted_ids=tf.int32,
+            parent_ids=tf.int32)
 
     def call(self, embeddning, start_tokens, end_token, initial_state,
              **kwargs):
@@ -836,28 +812,27 @@ def _beam_search_step(time, logits, next_cell_state, beam_state, batch_size,
     # Calculate the current lengths of the predictions
     prediction_lengths = beam_state.lengths
     previously_finished = beam_state.finished
-    not_finished = math_ops.logical_not(previously_finished)
+    not_finished = tf.logical_not(previously_finished)
 
     # Calculate the total log probs for the new hypotheses
     # Final Shape: [batch_size, beam_width, vocab_size]
-    step_log_probs = nn_ops.log_softmax(logits)
+    step_log_probs = tf.nn.log_softmax(logits)
     step_log_probs = _mask_probs(step_log_probs, end_token,
                                  previously_finished)
-    total_probs = array_ops.expand_dims(beam_state.log_probs,
-                                        2) + step_log_probs
+    total_probs = tf.expand_dims(beam_state.log_probs, 2) + step_log_probs
 
     # Calculate the continuation lengths by adding to all continuing beams.
-    vocab_size = logits.shape.dims[-1].value or array_ops.shape(logits)[-1]
-    lengths_to_add = array_ops.one_hot(
-        indices=array_ops.fill([batch_size, beam_width], end_token),
+    vocab_size = logits.shape.dims[-1].value or tf.shape(logits)[-1]
+    lengths_to_add = tf.one_hot(
+        indices=tf.fill([batch_size, beam_width], end_token),
         depth=vocab_size,
         on_value=np.int64(0),
         off_value=np.int64(1),
-        dtype=dtypes.int64)
-    add_mask = math_ops.to_int64(not_finished)
-    lengths_to_add *= array_ops.expand_dims(add_mask, 2)
+        dtype=tf.int64)
+    add_mask = tf.cast(not_finished, tf.int64)
+    lengths_to_add *= tf.expand_dims(add_mask, 2)
     new_prediction_lengths = (
-        lengths_to_add + array_ops.expand_dims(prediction_lengths, 2))
+        lengths_to_add + tf.expand_dims(prediction_lengths, 2))
 
     # Calculate the accumulated attention probabilities if coverage penalty is
     # enabled.
@@ -865,8 +840,7 @@ def _beam_search_step(time, logits, next_cell_state, beam_state, batch_size,
     attention_probs = get_attention_probs(next_cell_state,
                                           coverage_penalty_weight)
     if attention_probs is not None:
-        attention_probs *= array_ops.expand_dims(
-            math_ops.to_float(not_finished), 2)
+        attention_probs *= tf.expand_dims(tf.cast(not_finished, tf.float32), 2)
         accumulated_attention_probs = (
             beam_state.accumulated_attention_probs + attention_probs)
 
@@ -879,14 +853,14 @@ def _beam_search_step(time, logits, next_cell_state, beam_state, batch_size,
         finished=previously_finished,
         accumulated_attention_probs=accumulated_attention_probs)
 
-    time = ops.convert_to_tensor(time, name="time")
+    time = tf.convert_to_tensor(time, name="time")
     # During the first time step we only consider the initial beam
-    scores_flat = array_ops.reshape(scores, [batch_size, -1])
+    scores_flat = tf.reshape(scores, [batch_size, -1])
 
     # Pick the next beams according to the specified successors function
-    next_beam_size = ops.convert_to_tensor(
-        beam_width, dtype=dtypes.int32, name="beam_width")
-    next_beam_scores, word_indices = nn_ops.top_k(
+    next_beam_size = tf.convert_to_tensor(
+        beam_width, dtype=tf.int32, name="beam_width")
+    next_beam_scores, word_indices = tf.math.top_k(
         scores_flat, k=next_beam_size)
 
     next_beam_scores.set_shape([static_batch_size, beam_width])
@@ -902,15 +876,15 @@ def _beam_search_step(time, logits, next_cell_state, beam_state, batch_size,
         gather_shape=[-1],
         name="next_beam_probs")
     # Note: just doing the following
-    #   math_ops.to_int32(word_indices % vocab_size,
+    #   tf.to_int32(word_indices % vocab_size,
     #       name="next_beam_word_ids")
     # would be a lot cleaner but for reasons unclear, that hides the results of
     # the op which prevents capturing it with tfdbg debug ops.
-    raw_next_word_ids = math_ops.mod(
+    raw_next_word_ids = tf.mod(
         word_indices, vocab_size, name="next_beam_word_ids")
-    next_word_ids = math_ops.to_int32(raw_next_word_ids)
-    next_beam_ids = math_ops.to_int32(
-        word_indices / vocab_size, name="next_beam_parent_ids")
+    next_word_ids = tf.cast(raw_next_word_ids, tf.int32)
+    next_beam_ids = tf.cast(
+        word_indices / vocab_size, tf.int32, name="next_beam_parent_ids")
 
     # Append new ids to current predictions
     previously_finished = _tensor_gather_helper(
@@ -919,9 +893,9 @@ def _beam_search_step(time, logits, next_cell_state, beam_state, batch_size,
         batch_size=batch_size,
         range_size=beam_width,
         gather_shape=[-1])
-    next_finished = math_ops.logical_or(
+    next_finished = tf.logical_or(
         previously_finished,
-        math_ops.equal(next_word_ids, end_token),
+        tf.equal(next_word_ids, end_token),
         name="next_beam_finished")
 
     # Calculate the length of the next predictions.
@@ -929,8 +903,7 @@ def _beam_search_step(time, logits, next_cell_state, beam_state, batch_size,
     # 2. Beams that are now finished (EOS predicted) have their length
     #    increased by 1.
     # 3. Beams that are not yet finished have their length increased by 1.
-    lengths_to_add = math_ops.to_int64(
-        math_ops.logical_not(previously_finished))
+    lengths_to_add = tf.cast(tf.logical_not(previously_finished), tf.int64)
     next_prediction_len = _tensor_gather_helper(
         gather_indices=next_beam_ids,
         gather_from=beam_state.lengths,
@@ -952,7 +925,7 @@ def _beam_search_step(time, logits, next_cell_state, beam_state, batch_size,
     # different gather_shape here because the cell_state tensors, i.e.
     # the tensors that would be gathered from, all have dimension
     # greater than two and we need to preserve those dimensions.
-    next_cell_state = nest.map_structure(
+    next_cell_state = tf.nest.map_structure(
         lambda gather_from: _maybe_tensor_gather_helper(
             gather_indices=next_beam_ids,
             gather_from=gather_from,
@@ -1018,10 +991,10 @@ def get_attention_probs(next_cell_state, coverage_penalty_weight):
         # Calculate the average attention probabilities from all attention
         # layers.
         attention_probs = [
-            array_ops.expand_dims(prob, -1) for prob in probs_per_attn_layer
+            tf.expand_dims(prob, -1) for prob in probs_per_attn_layer
         ]
-        attention_probs = array_ops.concat(attention_probs, -1)
-        attention_probs = math_ops.reduce_mean(attention_probs, -1)
+        attention_probs = tf.concat(attention_probs, -1)
+        attention_probs = tf.reduce_mean(attention_probs, -1)
 
     return attention_probs
 
@@ -1055,10 +1028,10 @@ def _get_scores(log_probs, sequence_lengths, length_penalty_weight,
     length_penalty_ = _length_penalty(
         sequence_lengths=sequence_lengths,
         penalty_factor=length_penalty_weight)
-    length_penalty_ = math_ops.cast(length_penalty_, dtype=log_probs.dtype)
+    length_penalty_ = tf.cast(length_penalty_, dtype=log_probs.dtype)
     scores = log_probs / length_penalty_
 
-    coverage_penalty_weight = ops.convert_to_tensor(
+    coverage_penalty_weight = tf.convert_to_tensor(
         coverage_penalty_weight, name="coverage_penalty_weight")
     if coverage_penalty_weight.shape.ndims != 0:
         raise ValueError("coverage_penalty_weight should be a scalar, "
@@ -1073,21 +1046,19 @@ def _get_scores(log_probs, sequence_lengths, length_penalty_weight,
             "is disabled.")
 
     # Add source sequence length mask before computing coverage penalty.
-    accumulated_attention_probs = array_ops.where(
-        math_ops.equal(accumulated_attention_probs, 0.0),
-        array_ops.ones_like(accumulated_attention_probs),
-        accumulated_attention_probs)
+    accumulated_attention_probs = tf.where(
+        tf.equal(accumulated_attention_probs, 0.0),
+        tf.ones_like(accumulated_attention_probs), accumulated_attention_probs)
 
     # coverage penalty =
     #     sum over `max_time` {log(min(accumulated_attention_probs, 1.0))}
-    coverage_penalty = math_ops.reduce_sum(
-        math_ops.log(math_ops.minimum(accumulated_attention_probs, 1.0)), 2)
+    coverage_penalty = tf.reduce_sum(
+        tf.math.log(tf.minimum(accumulated_attention_probs, 1.0)), 2)
     # Apply coverage penalty to finished predictions.
-    coverage_penalty *= math_ops.to_float(finished)
+    coverage_penalty *= tf.cast(finished, tf.float32)
     weighted_coverage_penalty = coverage_penalty * coverage_penalty_weight
     # Reshape from [batch_size, beam_width] to [batch_size, beam_width, 1]
-    weighted_coverage_penalty = array_ops.expand_dims(
-        weighted_coverage_penalty, 2)
+    weighted_coverage_penalty = tf.expand_dims(weighted_coverage_penalty, 2)
     return scores + weighted_coverage_penalty
 
 
@@ -1107,10 +1078,10 @@ def attention_probs_from_attn_state(attention_state):
     attention_probs = attention_state.alignments
     if isinstance(attention_probs, tuple):
         attention_probs = [
-            array_ops.expand_dims(prob, -1) for prob in attention_probs
+            tf.expand_dims(prob, -1) for prob in attention_probs
         ]
-        attention_probs = array_ops.concat(attention_probs, -1)
-        attention_probs = math_ops.reduce_mean(attention_probs, -1)
+        attention_probs = tf.concat(attention_probs, -1)
+        attention_probs = tf.reduce_mean(attention_probs, -1)
     return attention_probs
 
 
@@ -1132,14 +1103,14 @@ def _length_penalty(sequence_lengths, penalty_factor):
       the length penalty factor, a tensor with the same shape as
       `sequence_lengths`.
     """
-    penalty_factor = ops.convert_to_tensor(
+    penalty_factor = tf.convert_to_tensor(
         penalty_factor, name="penalty_factor")
     penalty_factor.set_shape(())  # penalty should be a scalar.
     static_penalty = tensor_util.constant_value(penalty_factor)
     if static_penalty is not None and static_penalty == 0:
         return 1.0
-    return math_ops.div(
-        (5. + math_ops.to_float(sequence_lengths))**penalty_factor,
+    return tf.math.divide(
+        (5. + tf.cast(sequence_lengths, tf.float32))**penalty_factor,
         (5. + 1.)**penalty_factor)
 
 
@@ -1161,22 +1132,21 @@ def _mask_probs(probs, eos_token, finished):
       unfinished beams stay unchanged and finished beams are replaced with a
       tensor with all probability on the EOS token.
     """
-    vocab_size = array_ops.shape(probs)[2]
+    vocab_size = tf.shape(probs)[2]
     # All finished examples are replaced with a vector that has all
     # probability on EOS
-    finished_row = array_ops.one_hot(
+    finished_row = tf.one_hot(
         eos_token,
         vocab_size,
         dtype=probs.dtype,
-        on_value=ops.convert_to_tensor(0., dtype=probs.dtype),
+        on_value=tf.convert_to_tensor(0., dtype=probs.dtype),
         off_value=probs.dtype.min)
-    finished_probs = array_ops.tile(
-        array_ops.reshape(finished_row, [1, 1, -1]),
-        array_ops.concat([array_ops.shape(finished), [1]], 0))
-    finished_mask = array_ops.tile(
-        array_ops.expand_dims(finished, 2), [1, 1, vocab_size])
+    finished_probs = tf.tile(
+        tf.reshape(finished_row, [1, 1, -1]),
+        tf.concat([tf.shape(finished), [1]], 0))
+    finished_mask = tf.tile(tf.expand_dims(finished, 2), [1, 1, vocab_size])
 
-    return array_ops.where(finished_mask, finished_probs, probs)
+    return tf.where(finished_mask, finished_probs, probs)
 
 
 def _maybe_tensor_gather_helper(gather_indices, gather_from, batch_size,
@@ -1207,7 +1177,7 @@ def _maybe_tensor_gather_helper(gather_indices, gather_from, batch_size,
         tf.shape(gather_from)[:1+len(gather_shape)] or the original tensor if
         its dimensions are too small.
     """
-    if isinstance(gather_from, tensor_array_ops.TensorArray):
+    if isinstance(gather_from, tf.TensorArray):
         return gather_from
     _check_ndims(gather_from)
     if gather_from.shape.ndims >= len(gather_shape):
@@ -1253,17 +1223,15 @@ def _tensor_gather_helper(gather_indices,
       output: Gathered tensor of shape
         tf.shape(gather_from)[:1+len(gather_shape)]
     """
-    with ops.name_scope(name, "tensor_gather_helper"):
-        range_ = array_ops.expand_dims(
-            math_ops.range(batch_size) * range_size, 1)
-        gather_indices = array_ops.reshape(gather_indices + range_, [-1])
-        output = array_ops.gather(
-            array_ops.reshape(gather_from, gather_shape), gather_indices)
-        final_shape = array_ops.shape(gather_from)[:1 + len(gather_shape)]
+    with tf.name_scope(name or "tensor_gather_helper"):
+        range_ = tf.expand_dims(tf.range(batch_size) * range_size, 1)
+        gather_indices = tf.reshape(gather_indices + range_, [-1])
+        output = tf.gather(
+            tf.reshape(gather_from, gather_shape), gather_indices)
+        final_shape = tf.shape(gather_from)[:1 + len(gather_shape)]
         static_batch_size = tensor_util.constant_value(batch_size)
-        final_static_shape = (tensor_shape.TensorShape(
-            [static_batch_size]).concatenate(
-                gather_from.shape[1:1 + len(gather_shape)]))
-        output = array_ops.reshape(output, final_shape, name="output")
+        final_static_shape = (tf.TensorShape([static_batch_size]).concatenate(
+            gather_from.shape[1:1 + len(gather_shape)]))
+        output = tf.reshape(output, final_shape, name="output")
         output.set_shape(final_static_shape)
         return output

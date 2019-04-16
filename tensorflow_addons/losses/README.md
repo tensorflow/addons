@@ -3,17 +3,19 @@
 ## Maintainers
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:------------- |
+| contrastive |  @WindQAQ | windqaq@gmail.com |
 | focal_loss |  SIG-Addons | addons@tensorflow.org |
 | lifted |  SIG-Addons | addons@tensorflow.org |
-| sparsemax_loss |  SIG-Addons | addons@tensorflow.org |
+| sparsemax_loss | @AndreasMadsen | amwwebdk+github@gmail.com |
 | triplet |  SIG-Addons | addons@tensorflow.org |
 
 ## Components
 | Submodule | Loss  | Reference               |
 |:----------------------- |:---------------------|:--------------------------|
+| contrastive | ContrastiveLoss | http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf |
 | focal_loss | SigmoidFocalCrossEntropy | https://arxiv.org/abs/1708.02002  |
 | lifted | LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
-| sparsemax_loss | SparsemaxLoss |  https://arxiv.org/abs/1602.02068 | 
+| sparsemax_loss | SparsemaxLoss |  https://arxiv.org/abs/1602.02068 |
 | triplet | TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
 
 

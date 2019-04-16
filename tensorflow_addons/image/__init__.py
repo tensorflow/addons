@@ -17,7 +17,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from tensorflow_addons.image.dense_image_warp import dense_image_warp
+from tensorflow_addons.image.dense_image_warp import interpolate_bilinear
+from tensorflow_addons.image.distance_transform import euclidean_dist_transform
 from tensorflow_addons.image.distort_image_ops import adjust_hsv_in_yiq
 from tensorflow_addons.image.distort_image_ops import random_hsv_in_yiq
+from tensorflow_addons.image.median_filter_2d import median_filter_2D
 from tensorflow_addons.image.transform_ops import rotate
 from tensorflow_addons.image.transform_ops import transform

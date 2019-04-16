@@ -6,7 +6,10 @@ py_library(
     name = "image",
     srcs = ([
         "__init__.py",
+        "dense_image_warp.py",
+        "distance_transform.py",
         "distort_image_ops.py",
+        "median_filter_2d.py",
         "transform_ops.py",
     ]),
     data = [
@@ -18,12 +21,51 @@ py_library(
 )
 
 py_test(
+    name = "dense_image_warp_test",
+    size = "small",
+    srcs = [
+        "dense_image_warp_test.py",
+    ],
+    main = "dense_image_warp_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "distance_transform_ops_test",
+    size = "small",
+    srcs = [
+        "distance_transform_test.py",
+    ],
+    main = "distance_transform_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
     name = "distort_image_ops_test",
     size = "small",
     srcs = [
         "distort_image_ops_test.py",
     ],
     main = "distort_image_ops_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "median_filter_2d_test",
+    size = "medium",
+    srcs = [
+        "median_filter_2d_test.py",
+    ],
+    main = "median_filter_2d_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":image",

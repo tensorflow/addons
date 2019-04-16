@@ -67,6 +67,8 @@ disable=design,
         no-else-return,
         no-member,
         no-name-in-module,
+        # TODO: remove not-callable when pylint can understand tf export paradigm
+        not-callable,
         similarities,
         useless-object-inheritance
 

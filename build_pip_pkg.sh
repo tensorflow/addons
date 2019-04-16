@@ -20,6 +20,13 @@ PLATFORM="$(uname -s | tr 'A-Z' 'a-z')"
 
 PIP_FILE_PREFIX="bazel-bin/build_pip_pkg.runfiles/__main__/"
 
+if [[ ${PLATFORM} == "darwin" ]]; then
+    READLINK="greadlink"  # from pkg `coreutils` in brew/macports in Mac OS X
+else
+    READLINK="readlink"
+fi
+
+
 function main() {
   while [[ ! -z "${1}" ]]; do
     if [[ ${1} == "make" ]]; then
@@ -40,7 +47,7 @@ function main() {
   # give us an absolute paths with tilde characters resolved to the destination
   # directory.
   mkdir -p ${DEST}
-  DEST=$(readlink -f "${DEST}")
+  DEST=$(${READLINK} -f "${DEST}")
   echo "=== destination directory: ${DEST}"
 
   TMPDIR=$(mktemp -d -t tmp.XXXXXXXXXX)

@@ -20,15 +20,12 @@ from __future__ import print_function
 import csv
 import tensorflow as tf
 
-from tensorflow.python.framework import random_seed
-from tensorflow.python.framework import ops
-from tensorflow.python.ops import lookup_ops
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 skip_gram_ops = tf.load_op_library(
     get_path_to_datafile("custom_ops/text/_skip_gram_ops.so"))
 
-ops.NotDifferentiable("SkipGramGenerateCandidates")
+tf.no_gradient("SkipGramGenerateCandidates")
 
 
 def skip_gram_sample(input_tensor,
@@ -161,10 +158,7 @@ def skip_gram_sample(input_tensor,
                 vocab_subsampling, corpus_size))
 
     # pylint: disable=bad-continuation
-    with ops.name_scope(
-            name,
-            "skip_gram_sample",
-            values=[input_tensor, min_skips, max_skips, start, limit]):
+    with tf.name_scope(name or "skip_gram_sample"):
 
         # pylint: enable=bad-continuation
         input_tensor = _filter_input(
@@ -175,7 +169,7 @@ def skip_gram_sample(input_tensor,
             corpus_size=corpus_size,
             seed=seed)
 
-        seed1, seed2 = random_seed.get_seed(seed)
+        seed1, seed2 = tf.compat.v1.get_seed(seed)
         tokens, labels = skip_gram_ops.skip_gram_generate_candidates(
             input_tensor=input_tensor,
             min_skips=min_skips,
@@ -362,8 +356,8 @@ def skip_gram_sample_with_text_vocab(input_tensor,
             "sum of all the frequency counts ({}) of `vocab_freq_file` ({}).".
             format(corpus_size, calculated_corpus_size, vocab_freq_file))
 
-    vocab_freq_table = lookup_ops.HashTable(
-        lookup_ops.TextFileInitializer(
+    vocab_freq_table = tf.lookup.StaticHashTable(
+        tf.lookup.TextFileInitializer(
             filename=vocab_freq_file,
             key_dtype=vocab_token_dtype,
             key_index=vocab_token_index,
@@ -394,21 +388,19 @@ def skip_gram_sample_with_text_vocab(input_tensor,
 
 def _filter_input(input_tensor, vocab_freq_table, vocab_min_count,
                   vocab_subsampling, corpus_size, seed):
+    input_tensor = tf.convert_to_tensor(input_tensor)
     """Filters input tensor based on vocab freq, threshold, and subsampling."""
     if vocab_freq_table is None:
         return input_tensor
 
-    if not isinstance(vocab_freq_table,
-                      lookup_ops.InitializableLookupTableBase):
+    if not isinstance(vocab_freq_table, tf.lookup.StaticHashTable):
         raise ValueError(
             "vocab_freq_table must be a subclass of "
             "InitializableLookupTableBase (such as HashTable) instead of type "
             "{}.".format(type(vocab_freq_table)))
 
     # pylint: disable=bad-continuation
-    with ops.name_scope(
-            "filter_vocab",
-            values=[vocab_freq_table, input_tensor, vocab_min_count]):
+    with tf.name_scope("filter_vocab"):
         # pylint: enable=bad-continuation
         freq = vocab_freq_table.lookup(input_tensor)
         # Filters out elements in input_tensor that are not found in
@@ -436,8 +428,7 @@ def _filter_input(input_tensor, vocab_freq_table, vocab_min_count,
     # Subsamples the input tokens based on vocabulary frequency and
     # vocab_subsampling threshold (ie randomly discard commonly appearing
     # tokens).
-    with ops.name_scope(
-            "subsample_vocab", values=[input_tensor, freq, vocab_subsampling]):
+    with tf.name_scope("subsample_vocab"):
         corpus_size = tf.cast(corpus_size, tf.dtypes.float64)
         freq = tf.cast(freq, tf.dtypes.float64)
         vocab_subsampling = tf.cast(vocab_subsampling, tf.dtypes.float64)

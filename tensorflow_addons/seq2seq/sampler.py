@@ -22,29 +22,9 @@ import abc
 
 import six
 
-from tensorflow_addons.seq2seq import decoder
-from tensorflow.python.framework import dtypes
-from tensorflow.python.framework import ops
-from tensorflow.python.framework import tensor_shape
-from tensorflow.python.ops import array_ops
-from tensorflow.python.ops import control_flow_ops
-from tensorflow.python.ops import embedding_ops
-from tensorflow.python.ops import gen_array_ops
-from tensorflow.python.ops import math_ops
-from tensorflow.python.ops import random_ops
-from tensorflow.python.ops import tensor_array_ops
-from tensorflow.python.util import nest
+import tensorflow as tf
 
-__all__ = [
-    "Sampler",
-    "TrainingSampler",
-    "GreedyEmbeddingSampler",
-    "SampleEmbeddingSampler",
-    "CustomSampler",
-    "ScheduledEmbeddingTrainingSampler",
-    "ScheduledOutputTrainingSampler",
-    "InferenceSampler",
-]
+from tensorflow_addons.seq2seq import decoder
 
 _transpose_batch_time = decoder._transpose_batch_time  # pylint: disable=protected-access
 
@@ -153,9 +133,8 @@ class CustomSampler(Sampler):
         self._sample_fn = sample_fn
         self._next_inputs_fn = next_inputs_fn
         self._batch_size = None
-        self._sample_ids_shape = tensor_shape.TensorShape(sample_ids_shape
-                                                          or [])
-        self._sample_ids_dtype = sample_ids_dtype or dtypes.int32
+        self._sample_ids_shape = tf.TensorShape(sample_ids_shape or [])
+        self._sample_ids_dtype = sample_ids_dtype or tf.int32
 
     @property
     def batch_size(self):
@@ -175,7 +154,7 @@ class CustomSampler(Sampler):
     def initialize(self, inputs, **kwargs):
         (finished, next_inputs) = self._initialize_fn(inputs, **kwargs)
         if self._batch_size is None:
-            self._batch_size = array_ops.size(finished)
+            self._batch_size = tf.size(finished)
         return (finished, next_inputs)
 
     def sample(self, time, outputs, state):
@@ -216,11 +195,11 @@ class TrainingSampler(Sampler):
 
     @property
     def sample_ids_shape(self):
-        return tensor_shape.TensorShape([])
+        return tf.TensorShape([])
 
     @property
     def sample_ids_dtype(self):
-        return dtypes.int32
+        return tf.int32
 
     def initialize(self, inputs, sequence_length=None):
         """Initialize the TrainSampler.
@@ -235,50 +214,49 @@ class TrainingSampler(Sampler):
             finished. The second item is the first slide of input data based on
             the timestep dimension (usually the second dim of the input).
         """
-        self.inputs = ops.convert_to_tensor(inputs, name="inputs")
+        self.inputs = tf.convert_to_tensor(inputs, name="inputs")
         if not self.time_major:
-            inputs = nest.map_structure(_transpose_batch_time, inputs)
+            inputs = tf.nest.map_structure(_transpose_batch_time, inputs)
 
-        self.input_tas = nest.map_structure(_unstack_ta, inputs)
+        self.input_tas = tf.nest.map_structure(_unstack_ta, inputs)
         if sequence_length is None:
             raise ValueError("sequence_length is required for TrainingSampler")
-        self.sequence_length = ops.convert_to_tensor(
+        self.sequence_length = tf.convert_to_tensor(
             sequence_length, name="sequence_length")
         if self.sequence_length.get_shape().ndims != 1:
             raise ValueError(
                 "Expected sequence_length to be vector, but received shape: %s"
-                % self._sequence_length.get_shape())
+                % self.sequence_length.get_shape())
 
-        self.zero_inputs = nest.map_structure(
-            lambda inp: array_ops.zeros_like(inp[0, :]), inputs)
+        self.zero_inputs = tf.nest.map_structure(
+            lambda inp: tf.zeros_like(inp[0, :]), inputs)
 
-        self._batch_size = array_ops.size(self.sequence_length)
+        self._batch_size = tf.size(self.sequence_length)
 
-        finished = math_ops.equal(0, self.sequence_length)
-        all_finished = math_ops.reduce_all(finished)
-        next_inputs = control_flow_ops.cond(
-            all_finished, lambda: self.zero_inputs, lambda: nest.map_structure(
-                lambda inp: inp.read(0), self.input_tas))
+        finished = tf.equal(0, self.sequence_length)
+        all_finished = tf.reduce_all(finished)
+        next_inputs = tf.cond(
+            all_finished, lambda: self.zero_inputs, lambda: tf.nest.
+            map_structure(lambda inp: inp.read(0), self.input_tas))
         return (finished, next_inputs)
 
     def sample(self, time, outputs, state):
         del state
-        sample_ids = math_ops.cast(
-            math_ops.argmax(outputs, axis=-1), dtypes.int32)
+        sample_ids = tf.cast(tf.argmax(outputs, axis=-1), tf.int32)
         return sample_ids
 
     def next_inputs(self, time, outputs, state, sample_ids):
         del sample_ids
         next_time = time + 1
         finished = (next_time >= self.sequence_length)
-        all_finished = math_ops.reduce_all(finished)
+        all_finished = tf.reduce_all(finished)
 
         def read_from_ta(inp):
             return inp.read(next_time)
 
-        next_inputs = control_flow_ops.cond(
-            all_finished, lambda: self.zero_inputs, lambda: nest.map_structure(
-                read_from_ta, self.input_tas))
+        next_inputs = tf.cond(
+            all_finished, lambda: self.zero_inputs, lambda: tf.nest.
+            map_structure(read_from_ta, self.input_tas))
         return (finished, next_inputs, state)
 
 
@@ -316,7 +294,7 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
         else:
             raise ValueError("embedding_fn is expected to be callable, got %s"
                              % type(embedding_fn))
-        self.sampling_probability = ops.convert_to_tensor(
+        self.sampling_probability = tf.convert_to_tensor(
             sampling_probability, name="sampling_probability")
         if self.sampling_probability.get_shape().ndims not in (0, 1):
             raise ValueError(
@@ -334,7 +312,7 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
                     "embedding is required as a keyword argument for "
                     "ScheduledEmbeddingTrainingSampler")
             self.embedding_fn = (
-                lambda ids: embedding_ops.embedding_lookup(embedding, ids))
+                lambda ids: tf.nn.embedding_lookup(embedding, ids))
         return super(ScheduledEmbeddingTrainingSampler, self).initialize(
             inputs, sequence_length=sequence_length)
 
@@ -343,12 +321,12 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
         # Return -1s where we did not sample, and sample_ids elsewhere
         select_sample = bernoulli_sample(
             probs=self.sampling_probability,
-            dtype=dtypes.bool,
+            dtype=tf.bool,
             sample_shape=self.batch_size,
             seed=self.scheduling_seed)
-        return array_ops.where(
-            select_sample, categorical_sample(logits=outputs, seed=self.seed),
-            gen_array_ops.fill([self.batch_size], -1))
+        return tf.where(select_sample,
+                        categorical_sample(logits=outputs, seed=self.seed),
+                        tf.fill([self.batch_size], -1))
 
     def next_inputs(self, time, outputs, state, sample_ids):
         (finished, base_next_inputs,
@@ -357,27 +335,24 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
 
         def maybe_sample():
             """Perform scheduled sampling."""
-            where_sampling = math_ops.cast(
-                array_ops.where(sample_ids > -1), dtypes.int32)
-            where_not_sampling = math_ops.cast(
-                array_ops.where(sample_ids <= -1), dtypes.int32)
-            sample_ids_sampling = array_ops.gather_nd(sample_ids,
-                                                      where_sampling)
-            inputs_not_sampling = array_ops.gather_nd(base_next_inputs,
-                                                      where_not_sampling)
+            where_sampling = tf.cast(tf.where(sample_ids > -1), tf.int32)
+            where_not_sampling = tf.cast(tf.where(sample_ids <= -1), tf.int32)
+            sample_ids_sampling = tf.gather_nd(sample_ids, where_sampling)
+            inputs_not_sampling = tf.gather_nd(base_next_inputs,
+                                               where_not_sampling)
             sampled_next_inputs = self.embedding_fn(sample_ids_sampling)
-            base_shape = array_ops.shape(base_next_inputs)
-            return (array_ops.scatter_nd(
+            base_shape = tf.shape(base_next_inputs)
+            return (tf.scatter_nd(
                 indices=where_sampling,
                 updates=sampled_next_inputs,
-                shape=base_shape) + array_ops.scatter_nd(
+                shape=base_shape) + tf.scatter_nd(
                     indices=where_not_sampling,
                     updates=inputs_not_sampling,
                     shape=base_shape))
 
-        all_finished = math_ops.reduce_all(finished)
-        next_inputs = control_flow_ops.cond(
-            all_finished, lambda: base_next_inputs, maybe_sample)
+        all_finished = tf.reduce_all(finished)
+        next_inputs = tf.cond(all_finished, lambda: base_next_inputs,
+                              maybe_sample)
         return (finished, next_inputs, state)
 
 
@@ -409,7 +384,7 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
         Raises:
           ValueError: if `sampling_probability` is not a scalar or vector.
         """
-        self.sampling_probability = ops.convert_to_tensor(
+        self.sampling_probability = tf.convert_to_tensor(
             sampling_probability, name="sampling_probability")
         if self.sampling_probability.get_shape().ndims not in (0, 1):
             raise ValueError(
@@ -426,16 +401,15 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
         if auxiliary_inputs is None:
             maybe_concatenated_inputs = inputs
         else:
-            inputs = ops.convert_to_tensor(inputs)
-            auxiliary_inputs = ops.convert_to_tensor(auxiliary_inputs)
-            maybe_concatenated_inputs = nest.map_structure(
-                lambda x, y: array_ops.concat((x, y), -1), inputs,
-                auxiliary_inputs)
+            inputs = tf.convert_to_tensor(inputs)
+            auxiliary_inputs = tf.convert_to_tensor(auxiliary_inputs)
+            maybe_concatenated_inputs = tf.nest.map_structure(
+                lambda x, y: tf.concat((x, y), -1), inputs, auxiliary_inputs)
             if not self.time_major:
-                auxiliary_inputs = nest.map_structure(_transpose_batch_time,
-                                                      auxiliary_inputs)
+                auxiliary_inputs = tf.nest.map_structure(
+                    _transpose_batch_time, auxiliary_inputs)
         if auxiliary_inputs is not None:
-            self._auxiliary_input_tas = nest.map_structure(
+            self._auxiliary_input_tas = tf.nest.map_structure(
                 _unstack_ta, auxiliary_inputs)
         else:
             self._auxiliary_input_tas = None
@@ -454,7 +428,7 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
         (finished, base_next_inputs,
          state) = (super(ScheduledOutputTrainingSampler, self).next_inputs(
              time=time, outputs=outputs, state=state, sample_ids=sample_ids))
-        sample_ids = math_ops.cast(sample_ids, dtypes.bool)
+        sample_ids = tf.cast(sample_ids, tf.bool)
 
         def maybe_sample():
             """Perform scheduled sampling."""
@@ -465,45 +439,41 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
                     return outputs_
 
                 next_time = time + 1
-                auxiliary_inputs = nest.map_structure(
+                auxiliary_inputs = tf.nest.map_structure(
                     lambda ta: ta.read(next_time), self._auxiliary_input_tas)
                 if indices is not None:
-                    auxiliary_inputs = array_ops.gather_nd(
-                        auxiliary_inputs, indices)
-                return nest.map_structure(
-                    lambda x, y: array_ops.concat((x, y), -1), outputs_,
+                    auxiliary_inputs = tf.gather_nd(auxiliary_inputs, indices)
+                return tf.nest.map_structure(
+                    lambda x, y: tf.concat((x, y), -1), outputs_,
                     auxiliary_inputs)
 
             if self.next_inputs_fn is None:
-                return array_ops.where(
-                    sample_ids, maybe_concatenate_auxiliary_inputs(outputs),
-                    base_next_inputs)
+                return tf.where(sample_ids,
+                                maybe_concatenate_auxiliary_inputs(outputs),
+                                base_next_inputs)
 
-            where_sampling = math_ops.cast(
-                array_ops.where(sample_ids), dtypes.int32)
-            where_not_sampling = math_ops.cast(
-                array_ops.where(math_ops.logical_not(sample_ids)),
-                dtypes.int32)
-            outputs_sampling = array_ops.gather_nd(outputs, where_sampling)
-            inputs_not_sampling = array_ops.gather_nd(base_next_inputs,
-                                                      where_not_sampling)
+            where_sampling = tf.cast(tf.where(sample_ids), tf.int32)
+            where_not_sampling = tf.cast(
+                tf.where(tf.logical_not(sample_ids)), tf.int32)
+            outputs_sampling = tf.gather_nd(outputs, where_sampling)
+            inputs_not_sampling = tf.gather_nd(base_next_inputs,
+                                               where_not_sampling)
             sampled_next_inputs = maybe_concatenate_auxiliary_inputs(
                 self.next_inputs_fn(outputs_sampling), where_sampling)
 
-            base_shape = array_ops.shape(base_next_inputs)
-            return (array_ops.scatter_nd(
+            base_shape = tf.shape(base_next_inputs)
+            return (tf.scatter_nd(
                 indices=where_sampling,
                 updates=sampled_next_inputs,
-                shape=base_shape) + array_ops.scatter_nd(
+                shape=base_shape) + tf.scatter_nd(
                     indices=where_not_sampling,
                     updates=inputs_not_sampling,
                     shape=base_shape))
 
-        all_finished = math_ops.reduce_all(finished)
-        no_samples = math_ops.logical_not(math_ops.reduce_any(sample_ids))
-        next_inputs = control_flow_ops.cond(
-            math_ops.logical_or(all_finished,
-                                no_samples), lambda: base_next_inputs,
+        all_finished = tf.reduce_all(finished)
+        no_samples = tf.logical_not(tf.reduce_any(sample_ids))
+        next_inputs = tf.cond(
+            tf.logical_or(all_finished, no_samples), lambda: base_next_inputs,
             maybe_sample)
         return (finished, next_inputs, state)
 
@@ -522,7 +492,7 @@ class GreedyEmbeddingSampler(Sampler):
           embedding_fn: A optional callable that takes a vector tensor of `ids`
             (argmax ids), or the `params` argument for `embedding_lookup`. The
             returned tensor will be passed to the decoder input. Default to use
-            `embedding_ops.embedding_lookup`.
+            `tf.nn.embedding_lookup`.
         """
         if embedding_fn is None or callable(embedding_fn):
             self.embedding_fn = embedding_fn
@@ -541,11 +511,11 @@ class GreedyEmbeddingSampler(Sampler):
 
     @property
     def sample_ids_shape(self):
-        return tensor_shape.TensorShape([])
+        return tf.TensorShape([])
 
     @property
     def sample_ids_dtype(self):
-        return dtypes.int32
+        return tf.int32
 
     def initialize(self, embedding, start_tokens=None, end_token=None):
         """Initialize the GreedyEmbeddingSampler.
@@ -566,39 +536,38 @@ class GreedyEmbeddingSampler(Sampler):
         """
         if self.embedding_fn is None:
             self.embedding_fn = (
-                lambda ids: embedding_ops.embedding_lookup(embedding, ids))
+                lambda ids: tf.nn.embedding_lookup(embedding, ids))
 
-        self.start_tokens = ops.convert_to_tensor(
-            start_tokens, dtype=dtypes.int32, name="start_tokens")
-        self.end_token = ops.convert_to_tensor(
-            end_token, dtype=dtypes.int32, name="end_token")
+        self.start_tokens = tf.convert_to_tensor(
+            start_tokens, dtype=tf.int32, name="start_tokens")
+        self.end_token = tf.convert_to_tensor(
+            end_token, dtype=tf.int32, name="end_token")
         if self.start_tokens.get_shape().ndims != 1:
             raise ValueError("start_tokens must be a vector")
-        self._batch_size = array_ops.size(start_tokens)
+        self._batch_size = tf.size(start_tokens)
         if self.end_token.get_shape().ndims != 0:
             raise ValueError("end_token must be a scalar")
         self.start_inputs = self.embedding_fn(self.start_tokens)
 
-        finished = array_ops.tile([False], [self._batch_size])
+        finished = tf.tile([False], [self._batch_size])
         return (finished, self.start_inputs)
 
     def sample(self, time, outputs, state):
         """sample for GreedyEmbeddingHelper."""
         del time, state  # unused by sample_fn
         # Outputs are logits, use argmax to get the most probable id
-        if not isinstance(outputs, ops.Tensor):
+        if not isinstance(outputs, tf.Tensor):
             raise TypeError("Expected outputs to be a single Tensor, got: %s" %
                             type(outputs))
-        sample_ids = math_ops.argmax(
-            outputs, axis=-1, output_type=dtypes.int32)
+        sample_ids = tf.argmax(outputs, axis=-1, output_type=tf.int32)
         return sample_ids
 
     def next_inputs(self, time, outputs, state, sample_ids):
         """next_inputs_fn for GreedyEmbeddingHelper."""
         del time, outputs  # unused by next_inputs_fn
-        finished = math_ops.equal(sample_ids, self.end_token)
-        all_finished = math_ops.reduce_all(finished)
-        next_inputs = control_flow_ops.cond(
+        finished = tf.equal(sample_ids, self.end_token)
+        all_finished = tf.reduce_all(finished)
+        next_inputs = tf.cond(
             all_finished,
             # If we're finished, the next_inputs value doesn't matter
             lambda: self.start_inputs,
@@ -640,7 +609,7 @@ class SampleEmbeddingSampler(GreedyEmbeddingSampler):
         """sample for SampleEmbeddingHelper."""
         del time, state  # unused by sample_fn
         # Outputs are logits, we sample instead of argmax (greedy).
-        if not isinstance(outputs, ops.Tensor):
+        if not isinstance(outputs, tf.Tensor):
             raise TypeError("Expected outputs to be a single Tensor, got: %s" %
                             type(outputs))
         if self.softmax_temperature is None:
@@ -677,7 +646,7 @@ class InferenceSampler(Sampler):
             used as the next batch of inputs.
         """
         self.sample_fn = sample_fn
-        self.sample_shape = tensor_shape.TensorShape(sample_shape)
+        self.sample_shape = tf.TensorShape(sample_shape)
         self.sample_dtype = sample_dtype
         self.end_fn = end_fn
         self.next_inputs_fn = next_inputs_fn
@@ -699,10 +668,10 @@ class InferenceSampler(Sampler):
         return self.sample_dtype
 
     def initialize(self, start_inputs):
-        self.start_inputs = ops.convert_to_tensor(
+        self.start_inputs = tf.convert_to_tensor(
             start_inputs, name="start_inputs")
-        self._batch_size = array_ops.shape(start_inputs)[0]
-        finished = array_ops.tile([False], [self._batch_size])
+        self._batch_size = tf.shape(start_inputs)[0]
+        finished = tf.tile([False], [self._batch_size])
         return (finished, self.start_inputs)
 
     def sample(self, time, outputs, state):
@@ -723,71 +692,68 @@ class InferenceSampler(Sampler):
 # categorical_sample) mimic TensorFlow Probability distribution semantics.
 def _call_sampler(sample_n_fn, sample_shape, name=None):
     """Reshapes vector of samples."""
-    with ops.name_scope(name, "call_sampler", values=[sample_shape]):
-        sample_shape = ops.convert_to_tensor(
-            sample_shape, dtype=dtypes.int32, name="sample_shape")
+    with tf.name_scope(name or "call_sampler"):
+        sample_shape = tf.convert_to_tensor(
+            sample_shape, dtype=tf.int32, name="sample_shape")
         # Ensure sample_shape is a vector (vs just a scalar).
-        pad = math_ops.cast(
-            math_ops.equal(array_ops.rank(sample_shape), 0), dtypes.int32)
-        sample_shape = array_ops.reshape(
+        pad = tf.cast(tf.equal(tf.rank(sample_shape), 0), tf.int32)
+        sample_shape = tf.reshape(
             sample_shape,
-            array_ops.pad(
-                array_ops.shape(sample_shape),
-                paddings=[[pad, 0]],
+            tf.pad(
+                tf.shape(sample_shape), paddings=[[pad, 0]],
                 constant_values=1))
-        samples = sample_n_fn(math_ops.reduce_prod(sample_shape))
-        batch_event_shape = array_ops.shape(samples)[1:]
-        final_shape = array_ops.concat([sample_shape, batch_event_shape], 0)
-        return array_ops.reshape(samples, final_shape)
+        samples = sample_n_fn(tf.reduce_prod(sample_shape))
+        batch_event_shape = tf.shape(samples)[1:]
+        final_shape = tf.concat([sample_shape, batch_event_shape], 0)
+        return tf.reshape(samples, final_shape)
 
 
 def bernoulli_sample(probs=None,
                      logits=None,
-                     dtype=dtypes.int32,
+                     dtype=tf.int32,
                      sample_shape=(),
                      seed=None):
     """Samples from Bernoulli distribution."""
     if probs is None:
-        probs = math_ops.sigmoid(logits, name="probs")
+        probs = tf.sigmoid(logits, name="probs")
     else:
-        probs = ops.convert_to_tensor(probs, name="probs")
-    batch_shape_tensor = array_ops.shape(probs)
+        probs = tf.convert_to_tensor(probs, name="probs")
+    batch_shape_tensor = tf.shape(probs)
 
     def _sample_n(n):
         """Sample vector of Bernoullis."""
-        new_shape = array_ops.concat([[n], batch_shape_tensor], 0)
-        uniform = random_ops.random_uniform(
+        new_shape = tf.concat([[n], batch_shape_tensor], 0)
+        uniform = tf.compat.v1.random_uniform(
             new_shape, seed=seed, dtype=probs.dtype)
-        return math_ops.cast(math_ops.less(uniform, probs), dtype)
+        return tf.cast(tf.less(uniform, probs), dtype)
 
     return _call_sampler(_sample_n, sample_shape)
 
 
-def categorical_sample(logits, dtype=dtypes.int32, sample_shape=(), seed=None):
+def categorical_sample(logits, dtype=tf.int32, sample_shape=(), seed=None):
     """Samples from categorical distribution."""
-    logits = ops.convert_to_tensor(logits, name="logits")
-    event_size = array_ops.shape(logits)[-1]
-    batch_shape_tensor = array_ops.shape(logits)[:-1]
+    logits = tf.convert_to_tensor(logits, name="logits")
+    event_size = tf.shape(logits)[-1]
+    batch_shape_tensor = tf.shape(logits)[:-1]
 
     def _sample_n(n):
         """Sample vector of categoricals."""
         if logits.shape.ndims == 2:
             logits_2d = logits
         else:
-            logits_2d = array_ops.reshape(logits, [-1, event_size])
-        sample_dtype = dtypes.int64 if logits.dtype.size > 4 else dtypes.int32
-        draws = random_ops.multinomial(
+            logits_2d = tf.reshape(logits, [-1, event_size])
+        sample_dtype = tf.int64 if logits.dtype.size > 4 else tf.int32
+        draws = tf.compat.v1.multinomial(
             logits_2d, n, seed=seed, output_dtype=sample_dtype)
-        draws = array_ops.reshape(
-            array_ops.transpose(draws),
-            array_ops.concat([[n], batch_shape_tensor], 0))
-        return math_ops.cast(draws, dtype)
+        draws = tf.reshape(
+            tf.transpose(draws), tf.concat([[n], batch_shape_tensor], 0))
+        return tf.cast(draws, dtype)
 
     return _call_sampler(_sample_n, sample_shape)
 
 
 def _unstack_ta(inp):
-    return tensor_array_ops.TensorArray(
+    return tf.TensorArray(
         dtype=inp.dtype,
-        size=array_ops.shape(inp)[0],
+        size=tf.shape(inp)[0],
         element_shape=inp.get_shape()[1:]).unstack(inp)
