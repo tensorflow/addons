@@ -45,7 +45,8 @@ class ImageOpsTest(tf.test.TestCase):
             # hence the -1).
             translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0],
                                       dtype=tf.dtypes.float32)
-            composed = transform_ops.compose_transforms(rotation, translation)
+            composed = transform_ops.compose_transforms(
+                [rotation, translation])
             image_transformed = transform_ops.transform(image, composed)
             self.assertAllEqual(
                 [[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 0, 1], [0, 1, 1, 1]],
@@ -220,7 +221,8 @@ class RotateOpTest(tf.test.TestCase):
             # hence the -1).
             translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0],
                                       dtype=tf.float32)
-            composed = transform_ops.compose_transforms(rotation, translation)
+            composed = transform_ops.compose_transforms(
+                [rotation, translation])
             image_transformed = transform_ops.transform(image, composed)
             self.assertAllEqual(
                 image_transformed,
