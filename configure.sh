@@ -34,22 +34,13 @@ function write_action_env_to_bazelrc() {
   write_to_bazelrc "build --action_env $1=\"$2\""
 }
 
-function ask_before_install() {
-	while read -u 3 -r req_name || [[ -n "$req_name" ]]; do
-		while true; do
-			echo "Installing $req_name.."
-		    read -p "Proceed ?(Y/N) " yn
-		    case $yn in
-		        [Yy]* ) pip install $QUIET_FLAG $req_name; break;;
-		        [Nn]* ) echo "Exiting.."; exit;;
-		        * ) echo "Please answer Y or N.";;
-		    esac
-		done
-	done 3< requirements.txt
-}
-
 [[ -f .bazelrc ]] && rm .bazelrc
-ask_before_install
+read -r -p "Tensorflow will be upgraded to 2.0. Are You Sure? [Y/n] " reply
+case $reply in
+    [yY]*) echo "Install...";;
+    * ) echo "Goodbye!"; exit;;
+esac
+pip install $QUIET_FLAG -r requirements.txt
 
 TF_CFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') )
 TF_LFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )
