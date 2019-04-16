@@ -21,7 +21,6 @@ from __future__ import print_function
 from tensorflow_addons.layers.maxout import Maxout
 from tensorflow_addons.layers.normalizations import GroupNormalization
 from tensorflow_addons.layers.normalizations import InstanceNormalization
-from tensorflow_addons.layers.normalizations import LayerNormalization
 from tensorflow_addons.layers.poincare import PoincareNormalize
 from tensorflow_addons.layers.sparsemax import Sparsemax
 from tensorflow_addons.layers.wrappers import WeightNormalization
