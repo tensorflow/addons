@@ -74,7 +74,7 @@ class GroupNormalization(tf.keras.layers.Layer):
     def __init__(self,
                  groups=2,
                  axis=-1,
-                 epsilon=1e-5,
+                 epsilon=1e-3,
                  center=True,
                  scale=True,
                  beta_initializer='zeros',
