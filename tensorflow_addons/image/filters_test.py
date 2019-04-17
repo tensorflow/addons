@@ -18,15 +18,16 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-import median_filter_2d as md
+from tensorflow_addons.image import median_filter2d
 from tensorflow_addons.utils import test_utils
 
 
 @test_utils.run_all_in_graph_and_eager_modes
-class Median2DTest(tf.test.TestCase):
-    def _validateMedian_2d(self, inputs, expected_values, filter_shape=(3, 3)):
+class MedianFilter2dTest(tf.test.TestCase):
+    def _validate_median_filter2d(
+            self, inputs, expected_values, filter_shape=(3, 3)):
 
-        values_op = md.median_filter_2D(inputs)
+        values_op = median_filter2d(inputs)
         with self.test_session(use_gpu=False) as sess:
             if tf.executing_eagerly():
                 expected_values = expected_values.numpy()
@@ -38,54 +39,54 @@ class Median2DTest(tf.test.TestCase):
             self.assertShapeEqual(expected_values, values_op)
             self.assertAllClose(expected_values, values)
 
-    def testfiltertuple(self):
+    def test_filter_tuple(self):
         tf_img = tf.zeros([3, 4, 3], tf.int32)
 
         with self.assertRaisesRegexp(TypeError,
                                      'Filter shape must be a tuple'):
-            md.median_filter_2D(tf_img, 3)
-            md.median_filter_2D(tf_img, 3.5)
-            md.median_filter_2D(tf_img, 'dt')
-            md.median_filter_2D(tf_img, None)
+            median_filter2d(tf_img, 3)
+            median_filter2d(tf_img, 3.5)
+            median_filter2d(tf_img, 'dt')
+            median_filter2d(tf_img, None)
 
         filter_shape = (3, 3, 3)
         msg = 'Filter shape must be a tuple of 2 integers. ' \
               'Got %s values in tuple' % len(filter_shape)
         with self.assertRaisesRegexp(ValueError, msg):
-            md.median_filter_2D(tf_img, filter_shape)
+            median_filter2d(tf_img, filter_shape)
 
         with self.assertRaisesRegexp(TypeError,
                                      'Size of the filter must be Integers'):
-            md.median_filter_2D(tf_img, (3.5, 3))
-            md.median_filter_2D(tf_img, (None, 3))
+            median_filter2d(tf_img, (3.5, 3))
+            median_filter2d(tf_img, (None, 3))
 
-    def testfiltervalue(self):
+    def test_filter_value(self):
         tf_img = tf.zeros([3, 4, 3], tf.int32)
 
         with self.assertRaises(ValueError):
-            md.median_filter_2D(tf_img, (4, 3))
+            median_filter2d(tf_img, (4, 3))
 
-    def testDimension(self):
+    def test_dimension(self):
         tf.compat.v1.disable_eager_execution()
         tf_img = tf.compat.v1.placeholder(tf.int32, shape=[3, 4, None])
         tf_img1 = tf.compat.v1.placeholder(tf.int32, shape=[3, None, 4])
         tf_img2 = tf.compat.v1.placeholder(tf.int32, shape=[None, 3, 4])
 
         with self.assertRaises(TypeError):
-            md.median_filter_2D(tf_img)
-            md.median_filter_2D(tf_img1)
-            md.median_filter_2D(tf_img2)
+            median_filter2d(tf_img)
+            median_filter2d(tf_img1)
+            median_filter2d(tf_img2)
 
-    def test_imagevsfilter(self):
+    def test_image_vs_filter(self):
         tf_img = tf.zeros([3, 4, 3], tf.int32)
         m = tf_img.shape[0]
         no = tf_img.shape[1]
         ch = tf_img.shape[2]
         filter_shape = (3, 5)
         with self.assertRaises(ValueError):
-            md.median_filter_2D(tf_img, filter_shape)
+            median_filter2d(tf_img, filter_shape)
 
-    def testcase(self):
+    def test_three_channels(self):
         tf_img = [[[0.32801723, 0.08863795, 0.79119259],
                    [0.35526001, 0.79388736, 0.55435993],
                    [0.11607035, 0.55673079, 0.99473371]],
@@ -101,7 +102,7 @@ class Median2DTest(tf.test.TestCase):
                 [[83, 25, 85], [90, 190, 143], [4, 141, 49]],
                 [[0, 0, 0], [4, 71, 49], [0, 0, 0]]]
         expt = tf.convert_to_tensor(value=expt)
-        self._validateMedian_2d(tf_img, expt)
+        self._validate_median_filter2d(tf_img, expt)
 
 
 if __name__ == "__main__":
