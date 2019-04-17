@@ -77,7 +77,6 @@ class NASCell(keras.layers.AbstractRNNCell):
             self._state_size = [units, units]
             self._output_size = units
 
-
     @property
     def state_size(self):
         return self._state_size
@@ -99,13 +98,11 @@ class NASCell(keras.layers.AbstractRNNCell):
         self.recurrent_kernel = self.add_variable(
             name="recurrent_kernel",
             shape=[self.output_size, self._NAS_BASE * self.units],
-            initializer=self.recurrent_initializer
-        )
+            initializer=self.recurrent_initializer)
         self.kernel = self.add_variable(
             name="kernel",
             shape=[input_size, self._NAS_BASE * self.units],
-            initializer=self.kernel_initializer
-        )
+            initializer=self.kernel_initializer)
 
         if self.use_bias:
             self.bias = self.add_variable(
@@ -154,7 +151,7 @@ class NASCell(keras.layers.AbstractRNNCell):
         inputs_matrix = tf.matmul(inputs, self.kernel)
 
         if self.use_bias:
-          m_matrix = tf.nn.bias_add(m_matrix, self.bias)
+            m_matrix = tf.nn.bias_add(m_matrix, self.bias)
 
         # The NAS cell branches into 8 different splits for both the hidden
         # state and the input
@@ -193,7 +190,7 @@ class NASCell(keras.layers.AbstractRNNCell):
 
         # Projection layer if specified
         if self.projection is not None:
-          new_m = tf.matmul(new_m, self.projection_weights)
+            new_m = tf.matmul(new_m, self.projection_weights)
 
         return new_m, [new_c, new_m]
 
