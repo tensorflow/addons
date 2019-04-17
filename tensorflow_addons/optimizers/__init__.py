@@ -19,3 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorflow_addons.optimizers.lazy_adam import LazyAdam
+from tensorflow_addons.optimizers.weight_decay_optimizers import AdamWOptimizer
+from tensorflow_addons.optimizers.weight_decay_optimizers import SGDWOptimizer
+from tensorflow_addons.optimizers.weight_decay_optimizers import (
+    extend_with_decoupled_weight_decay)
