@@ -24,8 +24,10 @@ from tensorflow_addons.utils import test_utils
 
 @test_utils.run_all_in_graph_and_eager_modes
 class MedianFilter2dTest(tf.test.TestCase):
-    def _validate_median_filter2d(
-            self, inputs, expected_values, filter_shape=(3, 3)):
+    def _validate_median_filter2d(self,
+                                  inputs,
+                                  expected_values,
+                                  filter_shape=(3, 3)):
 
         values_op = median_filter2d(inputs)
         with self.test_session(use_gpu=False) as sess:
