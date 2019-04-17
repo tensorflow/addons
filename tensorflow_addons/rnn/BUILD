@@ -13,7 +13,7 @@ py_library(
 
 py_test(
     name = "cell_test",
-    size = "medium",
+    size = "small",
     srcs = ["cell_test.py"],
     deps = [
         ":rnn",
