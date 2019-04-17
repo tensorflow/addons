@@ -112,7 +112,7 @@ def median_filter2d(image, filter_shape=(3, 3), name=None):
 
 
 @tf.function
-def mean_filter_2D(image, filter_shape=(3, 3)):
+def mean_filter2d(image, filter_shape=(3, 3)):
     """This method performs Mean Filtering on image. Filter shape can be user
     given.
 
