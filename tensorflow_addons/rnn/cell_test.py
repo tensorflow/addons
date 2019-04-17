@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
+import tensorflow.keras as keras
 
 from tensorflow_addons.utils import test_utils
 from tensorflow_addons.rnn import cell as rnn_cell
@@ -28,7 +29,7 @@ from tensorflow_addons.rnn import cell as rnn_cell
 @test_utils.run_all_in_graph_and_eager_modes
 class RNNCellTest(tf.test.TestCase):
 
-    def testNASCell(self):
+    def test_NASCell(self):
         units = 6
         batch_size = 3
         expected_output = np.array(
@@ -45,7 +46,11 @@ class RNNCellTest(tf.test.TestCase):
             0.7945764, 0.7945764, 0.7945764, 0.7945764, 0.7945765, 0.7945765,
             0.6273934, 0.6273934, 0.6273934, 0.6273934, 0.6273934, 0.6273934
         ]])
-        cell = rnn_cell.NASCell(units=units)
+        const_initializer = tf.constant_initializer(0.5)
+        cell = rnn_cell.NASCell(units=units,
+                                kernel_initializer=const_initializer,
+                                recurrent_initializer=const_initializer)
+
         inputs = tf.constant(
             np.array(
                 [[1., 1., 1., 1.], [2., 2., 2., 2.], [3., 3., 3., 3.]],
@@ -56,7 +61,7 @@ class RNNCellTest(tf.test.TestCase):
             dtype=tf.float32)
         init_state = [state_value, state_value]
         output, state = cell(inputs, init_state)
-        # self.evaluate([tf.variables.global_variables_initializer()])
+        self.evaluate([tf.compat.v1.global_variables_initializer()])
         res = self.evaluate([output, state])
 
         # This is a smoke test: Only making sure expected values not change.
@@ -72,7 +77,7 @@ class RNNCellTest(tf.test.TestCase):
         self.assertEqual(new_h.shape[1], units)
         self.assertAllClose(np.concatenate(res[1], axis=1), expected_state)
 
-    def testNASCellProjection(self):
+    def test_NASCell_projection(self):
         units = 6
         batch_size = 3
         projection = 5
@@ -94,7 +99,13 @@ class RNNCellTest(tf.test.TestCase):
             0.78973997, 1.87398517, 1.87398517, 1.87398517, 1.87398517,
             1.87398517
         ]])
-        cell = rnn_cell.NASCell(num_units=units, num_proj=projection)
+        const_initializer = tf.constant_initializer(0.5)
+        cell = rnn_cell.NASCell(
+            units=units,
+            projection=projection,
+            kernel_initializer=const_initializer,
+            recurrent_initializer=const_initializer,
+            projection_initializer=const_initializer)
         inputs = tf.constant(
           np.array(
               [[1., 1., 1., 1.], [2., 2., 2., 2.], [3., 3., 3., 3.]],
@@ -108,6 +119,7 @@ class RNNCellTest(tf.test.TestCase):
           dtype=tf.float32)
         init_state = [state_value_c, state_value_h]
         output, state = cell(inputs, init_state)
+        self.evaluate([tf.compat.v1.global_variables_initializer()])
         res = self.evaluate([output, state])
 
         # This is a smoke test: Only making sure expected values not change.
@@ -123,11 +135,38 @@ class RNNCellTest(tf.test.TestCase):
         self.assertEqual(new_h.shape[1], projection)
         self.assertAllClose(np.concatenate(res[1], axis=1), expected_state)
 
-    def testNASCellKerasRNN(self):
+    def test_NASCell_keras_RNN(self):
         """Tests that NASCell works with keras RNN layer."""
         cell = rnn_cell.NASCell(10)
         seq_input = tf.convert_to_tensor(
           np.random.rand(2, 3, 5), name="seq_input", dtype=tf.float32)
-        rnn_layer = tf.keras.layers.RNN(cell=cell)
+        rnn_layer = keras.layers.RNN(cell=cell)
         rnn_outputs = rnn_layer(seq_input)
+        self.evaluate([tf.compat.v1.global_variables_initializer()])
         self.assertEqual(self.evaluate(rnn_outputs).shape, (2, 10))
+
+    def test_NASCell_config(self):
+        cell = rnn_cell.NASCell(10, projection=5, use_bias=True)
+
+        expected_config = {
+            "dtype": None,
+            "name": "nas_cell",
+            "trainable": True,
+            "units": 10,
+            "projection": 5,
+            "use_bias": True,
+            "kernel_initializer": "glorot_uniform",
+            "recurrent_initializer": "glorot_uniform",
+            "bias_initializer": "zeros",
+            "projection_initializer": "glorot_uniform",
+        }
+        config = cell.get_config()
+        self.assertEqual(config, expected_config)
+
+        restored_cell = rnn_cell.NASCell.from_config(config)
+        restored_config = restored_cell.get_config()
+        self.assertEqual(config, restored_config)
+
+
+if __name__ == "__main__":
+    tf.test.main()

@@ -18,9 +18,10 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+import tensorflow.keras as keras
 
 
-class NASCell(tf.keras.layers.AbstractRNNCell):
+class NASCell(keras.layers.AbstractRNNCell):
     """Neural Architecture Search (NAS) recurrent network cell.
 
     This implements the recurrent cell from the paper:
@@ -36,7 +37,15 @@ class NASCell(tf.keras.layers.AbstractRNNCell):
     # NAS cell's architecture base.
     _NAS_BASE = 8
 
-    def __init__(self, units, projection=None, use_bias=False, **kwargs):
+    def __init__(self,
+                 units,
+                 projection=None,
+                 use_bias=False,
+                 kernel_initializer="glorot_uniform",
+                 recurrent_initializer="glorot_uniform",
+                 projection_initializer="glorot_uniform",
+                 bias_initializer="zeros",
+                 **kwargs):
         """Initialize the parameters for a NAS cell.
 
         Args:
@@ -45,12 +54,21 @@ class NASCell(tf.keras.layers.AbstractRNNCell):
             projection matrices.  If None, no projection is performed.
           use_bias: (optional) bool, If True then use biases within the cell.
             This is False by default.
+          kernel_initializer: Initializer for kernel weight.
+          recurrent_initializer: Initializer for recurrent kernel weight.
+          projection_initializer: Initializer for projection weight, used when
+            projection is not None.
+          bias_initializer: Initializer for bias, used when use_bias is True.
           **kwargs: Additional keyword arguments.
         """
         super(NASCell, self).__init__(**kwargs)
         self.units = units
         self.projection = projection
         self.use_bias = use_bias
+        self.kernel_initializer = kernel_initializer
+        self.recurrent_initializer = recurrent_initializer
+        self.projection_initializer = projection_initializer
+        self.bias_initializer = bias_initializer
 
         if projection is not None:
             self._state_size = [units, projection]
@@ -58,6 +76,7 @@ class NASCell(tf.keras.layers.AbstractRNNCell):
         else:
             self._state_size = [units, units]
             self._output_size = units
+
 
     @property
     def state_size(self):
@@ -78,18 +97,27 @@ class NASCell(tf.keras.layers.AbstractRNNCell):
         # multiplying the hidden state and `kernel` is all matrices multiplying
         # the inputs.
         self.recurrent_kernel = self.add_variable(
-            "recurrent_kernel", [self.output_size, self._NAS_BASE * self.units])
+            name="recurrent_kernel",
+            shape=[self.output_size, self._NAS_BASE * self.units],
+            initializer=self.recurrent_initializer
+        )
         self.kernel = self.add_variable(
-            "kernel", [input_size, self._NAS_BASE * self.units])
+            name="kernel",
+            shape=[input_size, self._NAS_BASE * self.units],
+            initializer=self.kernel_initializer
+        )
 
         if self.use_bias:
-            self.bias = self.add_variable("bias",
-                                          shape=[self._NAS_BASE * self.units],
-                                          initializer="zeros")
+            self.bias = self.add_variable(
+                name="bias",
+                shape=[self._NAS_BASE * self.units],
+                initializer=self.bias_initializer)
         # Projection layer if specified
         if self.projection is not None:
             self.projection_weights = self.add_variable(
-                "projection_weights", [self.units, self.projection])
+                name="projection_weights",
+                shape=[self.units, self.projection],
+                initializer=self.projection_initializer)
 
         self.built = True
 
@@ -164,7 +192,7 @@ class NASCell(tf.keras.layers.AbstractRNNCell):
         new_m = tanh(l3_0 * l3_1)
 
         # Projection layer if specified
-        if self._num_proj is not None:
+        if self.projection is not None:
           new_m = tf.matmul(new_m, self.projection_weights)
 
         return new_m, [new_c, new_m]
@@ -173,12 +201,11 @@ class NASCell(tf.keras.layers.AbstractRNNCell):
         config = {
             "units": self.units,
             "projection": self.projection,
-            "use_bias": self.use_bias
+            "use_bias": self.use_bias,
+            "kernel_initializer": self.kernel_initializer,
+            "recurrent_initializer": self.recurrent_initializer,
+            "bias_initializer": self.bias_initializer,
+            "projection_initializer": self.projection_initializer,
         }
         base_config = super(NASCell, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
-
-    @classmethod
-    def from_config(cls, config):
-        pass
-
