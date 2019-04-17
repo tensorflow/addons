@@ -58,10 +58,8 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
         grid_shape = tf.shape(grid)
         query_shape = tf.shape(query_points)
 
-        batch_size, height, width, channels = (grid_shape[0],
-                                               grid_shape[1],
-                                               grid_shape[2],
-                                               grid_shape[3])
+        batch_size, height, width, channels = (grid_shape[0], grid_shape[1],
+                                               grid_shape[2], grid_shape[3])
 
         shape = [batch_size, height, width, channels]
         num_queries = query_shape[1]
@@ -70,9 +68,7 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
         grid_type = grid.dtype
 
         tf.debugging.assert_equal(
-            query_shape[2],
-            2,
-            message="Query points must be size 2 in dim 2.")
+            query_shape[2], 2, message="Query points must be size 2 in dim 2.")
 
         tf.debugging.assert_greater_equal(
             height, 2, message="Grid height must be at least 2."),
