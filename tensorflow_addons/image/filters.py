@@ -21,7 +21,7 @@ import tensorflow as tf
 
 
 @tf.function
-def median_filter_2D(image, filter_shape=(3, 3), name=None):
+def median_filter2d(image, filter_shape=(3, 3), name=None):
     """This method performs Median Filtering on image. Filter shape can be user
     given.
 
@@ -55,7 +55,7 @@ def median_filter_2D(image, filter_shape=(3, 3), name=None):
 
         return tf.cond(tf.math.greater(ma, one), func2, func1)
 
-    with tf.name_scope(name or "median_filter_2D"):
+    with tf.name_scope(name or "median_filter2d"):
         if not isinstance(filter_shape, tuple):
             raise TypeError('Filter shape must be a tuple')
         if len(filter_shape) != 2:
@@ -78,9 +78,8 @@ def median_filter_2D(image, filter_shape=(3, 3), name=None):
                 than the filter size. Got filter_shape (%sx' % filter_shape[0]
                 + '%s).' % filter_shape[1] + ' Image Shape (%s)' % image.shape)
         if filter_shapex % 2 == 0 or filter_shapey % 2 == 0:
-            raise ValueError(
-                'Filter size should be odd. Got filter_shape '
-                '(%sx%s)' % filter_shape[0], filter_shape[1])
+            raise ValueError('Filter size should be odd. Got filter_shape '
+                             '(%sx%s)' % (filter_shape[0], filter_shape[1]))
         image = tf.cast(image, tf.float32)
         tf_i = tf.reshape(image, [row * col * ch])
         ma = tf.math.reduce_max(tf_i)
