@@ -21,7 +21,6 @@ import numpy as np
 import tensorflow as tf
 
 
-@tf.function
 def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
     """Similar to Matlab's interp2 function.
 
@@ -48,30 +47,32 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
     with tf.name_scope(name or "interpolate_bilinear"):
         grid = tf.convert_to_tensor(grid)
         query_points = tf.convert_to_tensor(query_points)
-        shape = grid.get_shape().as_list()
-        if len(shape) != 4:
-            msg = "Grid must be 4 dimensional. Received size: "
-            raise ValueError(msg + str(grid.get_shape()))
 
-        batch_size, height, width, channels = (tf.shape(grid)[0],
-                                               tf.shape(grid)[1],
-                                               tf.shape(grid)[2],
-                                               tf.shape(grid)[3])
+        if len(grid.shape) != 4:
+            msg = "Grid must be 4 dimensional. Received size: "
+            raise ValueError(msg + str(grid.shape))
+
+        if len(query_points.shape) != 3:
+            raise ValueError("Query points must be 3 dimensional.")
+
+        grid_shape = tf.shape(grid)
+        query_shape = tf.shape(query_points)
+
+        batch_size, height, width, channels = (grid_shape[0],
+                                               grid_shape[1],
+                                               grid_shape[2],
+                                               grid_shape[3])
 
         shape = [batch_size, height, width, channels]
+        num_queries = query_shape[1]
+
         query_type = query_points.dtype
         grid_type = grid.dtype
 
         tf.debugging.assert_equal(
-            len(query_points.get_shape()),
-            3,
-            message="Query points must be 3 dimensional.")
-        tf.debugging.assert_equal(
-            tf.shape(query_points)[2],
+            query_shape[2],
             2,
             message="Query points must be size 2 in dim 2.")
-
-        num_queries = tf.shape(query_points)[1]
 
         tf.debugging.assert_greater_equal(
             height, 2, message="Grid height must be at least 2."),
