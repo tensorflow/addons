@@ -128,11 +128,11 @@ class NASCell(keras.layers.AbstractRNNCell):
 
         Returns:
           A tuple containing:
-          - A `2-D, [batch x output_dim]`, Tensor representing the output of the
-            NAS Cell after reading `inputs` when previous state was `state`.
+          - A `2-D, [batch x output_dim]`, Tensor representing the output of
+            the NAS Cell after reading `inputs` when previous state was
+            `state`.
             Here output_dim is:
-               num_proj if num_proj was set,
-               num_units otherwise.
+               projection if projection was set, units otherwise.
           - Tensor(s) representing the new state of NAS Cell after reading
             `inputs` when the previous state was `state`.  Same type and
             shape(s) as `state`.
