@@ -19,8 +19,10 @@ from __future__ import print_function
 
 import tensorflow as tf
 import tensorflow.keras as keras
+from tensorflow_addons.utils import keras_utils
 
 
+@keras_utils.register_keras_custom_object
 class NASCell(keras.layers.AbstractRNNCell):
     """Neural Architecture Search (NAS) recurrent network cell.
 

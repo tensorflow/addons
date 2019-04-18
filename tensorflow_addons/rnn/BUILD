@@ -9,6 +9,9 @@ py_library(
         "cell.py",
     ],
     srcs_version = "PY2AND3",
+    deps = [
+        "//tensorflow_addons/utils",
+    ],
 )
 
 py_test(
@@ -17,6 +20,5 @@ py_test(
     srcs = ["cell_test.py"],
     deps = [
         ":rnn",
-        "//tensorflow_addons/utils",
     ],
 )

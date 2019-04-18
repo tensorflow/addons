@@ -34,7 +34,8 @@ developments that cannot be integrated into core TensorFlow
 | [tfa.layers](tensorflow_addons/layers/README.md) | SIG-Addons |     addons@tensorflow.org |
 | [tfa.losses](tensorflow_addons/losses/README.md) | SIG-Addons |     addons@tensorflow.org |
 | [tfa.optimizers](tensorflow_addons/optimizers/README.md) | SIG-Addons | addons@tensorflow.org |
-| [tfa.seq2seq](tensorflow_addons/seq2seq/README.md) | Google | @qlzh727 | 
+| [tfa.rnn](tensorflow_addons/rnn/README.md) | Google | @qlzh727 |
+| [tfa.seq2seq](tensorflow_addons/seq2seq/README.md) | Google | @qlzh727 |
 | [tfa.text](tensorflow_addons/text/README.md) |  |  |
 
 ## Core Concepts
