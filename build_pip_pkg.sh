@@ -16,44 +16,27 @@
 set -e
 set -x
 
-PLATFORM="$(uname -s | tr 'A-Z' 'a-z')"
-
 PIP_FILE_PREFIX="bazel-bin/build_pip_pkg.runfiles/__main__/"
 
-if [[ ${PLATFORM} == "darwin" ]]; then
-    READLINK="greadlink"  # from pkg `coreutils` in brew/macports in Mac OS X
-else
-    READLINK="readlink"
-fi
-
+function abspath() {
+  cd "$(dirname $1)"
+  echo "$PWD/$(basename $1)"
+  cd "$OLDPWD"
+}
 
 function main() {
-  while [[ ! -z "${1}" ]]; do
-    if [[ ${1} == "make" ]]; then
-      echo "Using Makefile to build pip package."
-      PIP_FILE_PREFIX=""
-    else
-      DEST=${1}
-    fi
-    shift
-  done
-
+  DEST=${1}
   if [[ -z ${DEST} ]]; then
     echo "No destination dir provided"
     exit 1
   fi
 
-  # Create the directory, then do dirname on a non-existent file inside it to
-  # give us an absolute paths with tilde characters resolved to the destination
-  # directory.
   mkdir -p ${DEST}
-  DEST=$(${READLINK} -f "${DEST}")
+  DEST=$(abspath "${DEST}")
   echo "=== destination directory: ${DEST}"
 
   TMPDIR=$(mktemp -d -t tmp.XXXXXXXXXX)
-
   echo $(date) : "=== Using tmpdir: ${TMPDIR}"
-
   echo "=== Copy TensorFlow Addons files"
 
   cp ${PIP_FILE_PREFIX}setup.py "${TMPDIR}"
