@@ -11,6 +11,7 @@ sh_binary(
         "//tensorflow_addons/layers",
         "//tensorflow_addons/losses",
         "//tensorflow_addons/optimizers",
+        "//tensorflow_addons/rnn",
         "//tensorflow_addons/seq2seq",
         "//tensorflow_addons/text",
     ],
