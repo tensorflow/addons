@@ -24,32 +24,34 @@ import tensorflow as tf
 
 class OptimizerTestBase(tf.test.TestCase):
     """Base class for optimizer tests.
-  
-  Optimizer tests may inherit from this class and define test functions
-  using doTest. Usually this should include the functions testSparse,
-  testBasic, and testBasicCallableParams. See weight_decay_optimizers_test for
-  an example.
-  """
+
+    Optimizer tests may inherit from this class and define test
+    functions using doTest. Usually this should include the functions
+    testSparse, testBasic, and testBasicCallableParams. See
+    weight_decay_optimizers_test for an example.
+    """
 
     def doTest(self, optimizer, update_fn, params, do_sparse=False):
         """The major test function.
-    
-    Args:
-        optimizer: The tensorflow optimizer class to be tested.
-        update_fn: The numpy update function of the optimizer, the function
-            signature must be
-            update_fn(var: np.array,
-                      grad_t: np.array,
-                      slot_vars: dict,
-                      optimizer_params: dict) -> updated_var, updated_slot_vars
-            Note that slot_vars will be initialized to an empty dictionary for
-            each variable, initial values should be handled in the update_fn.
-        params: A dict, the parameters to pass to the construcor of the
-            optimizer. Either a constant or a callable. This also passed to the
-            optimizer_params in the update_fn.
-        do_sparse: If True, test sparse update. Defaults to False, i.e., dense
-            update.
-    """
+
+        Args:
+            optimizer: The tensorflow optimizer class to be tested.
+            update_fn: The numpy update function of the optimizer, the function
+                signature must be
+                update_fn(var: np.array,
+                          grad_t: np.array,
+                          slot_vars: dict,
+                          optimizer_params: dict) -> (updated_var,
+                                                      updated_slot_vars)
+                Note that slot_vars will be initialized to an empty dictionary
+                for each variable, initial values should be handled in the
+                update_fn.
+            params: A dict, the parameters to pass to the construcor of the
+                optimizer. Either a constant or a callable. This also passed to
+                    the optimizer_params in the update_fn.
+            do_sparse: If True, test sparse update. Defaults to False, i.e.,
+                dense update.
+        """
         for i, dtype in enumerate([tf.half, tf.float32, tf.float64]):
             with self.session(graph=tf.Graph()):
                 # Initialize variables for numpy implementation.
@@ -101,15 +103,15 @@ class OptimizerTestBase(tf.test.TestCase):
 
     def doTestSparseRepeatedIndices(self, optimizer, params):
         """Test for repeated indices in sparse updates.
-        
+
         This test verifies that an update with repeated indices is the same as
         an update with two times the gradient.
 
         Args:
-        optimizer: The tensorflow optimizer class to be tested.
-        params: A dict, the parameters to pass to the construcor of the
-            optimizer. Either a constant or a callable. This also passed to the
-            optimizer_params in the update_fn.
+            optimizer: The tensorflow optimizer class to be tested.
+            params: A dict, the parameters to pass to the construcor of the
+                optimizer. Either a constant or a callable. This also passed to
+                the optimizer_params in the update_fn.
         """
         for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             with self.cached_session():
@@ -145,7 +147,3 @@ class OptimizerTestBase(tf.test.TestCase):
                     self.assertAllClose(
                         self.evaluate(aggregated_update_var),
                         self.evaluate(repeated_index_update_var))
-
-
-if __name__ == "__main__":
-    tf.test.main()
