@@ -5,6 +5,7 @@
 
 
 # Subpackage Owners
+/tensorflow_addons/rnn/ @qlzh727
 /tensorflow_addons/seq2seq/ @qlzh727
 /tensorflow_addons/custom_ops/seq2seq/ @qlzh727
 
