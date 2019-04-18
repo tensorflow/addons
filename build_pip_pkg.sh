@@ -21,6 +21,7 @@ PIP_FILE_PREFIX="bazel-bin/build_pip_pkg.runfiles/__main__/"
 function abspath() {
   cd $(dirname $1)
   echo $PWD/$(basename $1)
+  cd $OLDPWD
 }
 
 function main() {
