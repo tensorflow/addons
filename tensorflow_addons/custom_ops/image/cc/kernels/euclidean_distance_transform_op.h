@@ -52,7 +52,7 @@ class EuclideanDistanceTransformGenerator {
 
     if (input_(coords) == T(0)) return T(0);
 
-    float minDistance = std::numeric_limits<T>::max();
+    float minDistance = static_cast<float>(std::numeric_limits<T>::max());
 
     for (int h = 0; h < height_; ++h) {
       for (int w = 0; w < width_; ++w) {

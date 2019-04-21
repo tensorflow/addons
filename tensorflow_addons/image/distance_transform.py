@@ -31,9 +31,7 @@ ops.RegisterShape("EuclideanDistanceTransform")(
 
 
 @tf.function
-def euclidean_dist_transform(images,
-                             dtype=tf.float32,
-                             name="euclidean_distance_transform"):
+def euclidean_dist_transform(images, dtype=tf.float32, name=None):
     """Applies euclidean distance transform(s) to the image(s).
 
     Args:
@@ -54,7 +52,7 @@ def euclidean_dist_transform(images,
         rank 3 or 4.
     """
 
-    with tf.name_scope(name):
+    with tf.name_scope(name or "euclidean_distance_transform"):
         image_or_images = tf.convert_to_tensor(images, name="images")
 
         if image_or_images.dtype.base_dtype != tf.uint8:

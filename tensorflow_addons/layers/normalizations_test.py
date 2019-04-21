@@ -21,28 +21,22 @@ import tensorflow as tf
 
 from tensorflow_addons.layers.normalizations import GroupNormalization
 from tensorflow_addons.layers.normalizations import InstanceNormalization
-from tensorflow_addons.layers.normalizations import LayerNormalization
 from tensorflow_addons.utils import test_utils
 
 
 class NormalizationTest(tf.test.TestCase):
 
     # ------------Tests to ensure proper inheritance. If these suceed you can
-    # test for Instance norm and Layernorm by setting Groupnorm groups = -1 or 1
+    # test for Instance norm by setting Groupnorm groups = -1
     def test_inheritance(self):
-        self.assertTrue(issubclass(LayerNormalization, GroupNormalization))
         self.assertTrue(issubclass(InstanceNormalization, GroupNormalization))
-        self.assertTrue(LayerNormalization.build == GroupNormalization.build)
         self.assertTrue(
             InstanceNormalization.build == GroupNormalization.build)
-        self.assertTrue(LayerNormalization.call == GroupNormalization.call)
         self.assertTrue(InstanceNormalization.call == GroupNormalization.call)
 
     def test_groups_after_init(self):
         layers = InstanceNormalization()
         self.assertTrue(layers.groups == -1)
-        layers = LayerNormalization()
-        self.assertTrue(layers.groups == 1)
 
     # ------------------------------------------------------------------------------
 
@@ -167,11 +161,6 @@ class NormalizationTest(tf.test.TestCase):
         self.assertEqual(len(layer.trainable_weights), 0)
         self.assertEqual(len(layer.weights), 0)
 
-        layer = LayerNormalization()
-        layer.build((None, 3, 4))
-        self.assertEqual(len(layer.trainable_weights), 2)
-        self.assertEqual(len(layer.weights), 2)
-
         layer = InstanceNormalization()
         layer.build((None, 3, 4))
         self.assertEqual(len(layer.trainable_weights), 2)
@@ -207,15 +196,6 @@ class NormalizationTest(tf.test.TestCase):
                 GroupNormalization(groups=i), shape)
             self.assertTrue(hasattr(model.layers[0], 'gamma'))
             self.assertTrue(hasattr(model.layers[0], 'beta'))
-
-    @test_utils.run_in_graph_and_eager_modes
-    def test_layernorm_flat(self):
-        # Check basic usage of layernorm
-
-        model = self._create_and_fit_Sequential_model(LayerNormalization(),
-                                                      (64,))
-        self.assertTrue(hasattr(model.layers[0], 'gamma'))
-        self.assertTrue(hasattr(model.layers[0], 'beta'))
 
     @test_utils.run_in_graph_and_eager_modes
     def test_instancenorm_flat(self):
