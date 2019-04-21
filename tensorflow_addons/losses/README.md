@@ -3,7 +3,7 @@
 ## Maintainers
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:------------- |
-| contrastive |  SIG-Addons | addons@tensorflow.org |
+| contrastive |  @WindQAQ | windqaq@gmail.com |
 | focal_loss |  SIG-Addons | addons@tensorflow.org |
 | lifted |  SIG-Addons | addons@tensorflow.org |
 | sparsemax_loss | @AndreasMadsen | amwwebdk+github@gmail.com |

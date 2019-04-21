@@ -1,5 +1,3 @@
-# pylint: disable=not-callable
-
 # Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,19 +19,14 @@ from __future__ import print_function
 
 import numpy as np
 
+import tensorflow as tf
+
 from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import beam_search_decoder
 from tensorflow.python.eager import context
-from tensorflow.python.framework import constant_op
-from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import errors
-from tensorflow.python.framework import ops
 from tensorflow.python.framework import test_util
 from tensorflow.python.keras import layers
-from tensorflow.python.ops import array_ops
-from tensorflow.python.ops import nn_ops
-from tensorflow.python.ops import variables
-from tensorflow.python.platform import test
 
 from tensorflow.python.framework import load_library
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
@@ -43,7 +36,7 @@ _beam_search_ops_so = load_library.load_op_library(
 gather_tree = _beam_search_ops_so.gather_tree
 
 
-class TestGatherTree(test.TestCase):
+class TestGatherTree(tf.test.TestCase):
     """Tests the gather_tree function."""
 
     def test_gather_tree(self):
@@ -90,27 +83,25 @@ class TestGatherTree(test.TestCase):
                                     [11, 12, 0]]]).transpose([1, 0, 2])
         sequence_length = [[3, 3, 3], [4, 4, 3]]
 
-        array = ops.convert_to_tensor(array, dtype=dtypes.float32)
-        parent_ids = ops.convert_to_tensor(parent_ids, dtype=dtypes.int32)
-        expected_array = ops.convert_to_tensor(
-            expected_array, dtype=dtypes.float32)
+        array = tf.convert_to_tensor(array, dtype=tf.float32)
+        parent_ids = tf.convert_to_tensor(parent_ids, dtype=tf.int32)
+        expected_array = tf.convert_to_tensor(expected_array, dtype=tf.float32)
 
-        max_time = array_ops.shape(array)[0]
-        batch_size = array_ops.shape(array)[1]
-        beam_width = array_ops.shape(array)[2]
+        max_time = tf.shape(array)[0]
+        batch_size = tf.shape(array)[1]
+        beam_width = tf.shape(array)[2]
 
         def _tile_in_depth(tensor):
             # Generate higher rank tensors by concatenating tensor and
             # tensor + 1.
             for _ in range(depth_ndims):
-                tensor = array_ops.stack([tensor, tensor + 1], -1)
+                tensor = tf.stack([tensor, tensor + 1], -1)
             return tensor
 
         if merged_batch_beam:
-            array = array_ops.reshape(array,
-                                      [max_time, batch_size * beam_width])
-            expected_array = array_ops.reshape(
-                expected_array, [max_time, batch_size * beam_width])
+            array = tf.reshape(array, [max_time, batch_size * beam_width])
+            expected_array = tf.reshape(expected_array,
+                                        [max_time, batch_size * beam_width])
 
         if depth_ndims > 0:
             array = _tile_in_depth(array)
@@ -155,10 +146,9 @@ class TestGatherTree(test.TestCase):
                                                               2]]]), -1)
         sequence_length = [[4, 6, 4, 7, 6]]
 
-        array = ops.convert_to_tensor(array, dtype=dtypes.float32)
-        parent_ids = ops.convert_to_tensor(parent_ids, dtype=dtypes.int32)
-        expected_array = ops.convert_to_tensor(
-            expected_array, dtype=dtypes.float32)
+        array = tf.convert_to_tensor(array, dtype=tf.float32)
+        parent_ids = tf.convert_to_tensor(parent_ids, dtype=tf.int32)
+        expected_array = tf.convert_to_tensor(expected_array, dtype=tf.float32)
 
         sorted_array = beam_search_decoder.gather_tree_from_array(
             array, parent_ids, sequence_length)
@@ -169,18 +159,18 @@ class TestGatherTree(test.TestCase):
             self.assertAllEqual(expected_array, sorted_array)
 
 
-class TestArrayShapeChecks(test.TestCase):
+class TestArrayShapeChecks(tf.test.TestCase):
     def _test_array_shape_dynamic_checks(self,
                                          static_shape,
                                          dynamic_shape,
                                          batch_size,
                                          beam_width,
                                          is_valid=True):
-        t = array_ops.placeholder_with_default(
+        t = tf.compat.v1.placeholder_with_default(
             np.random.randn(*static_shape).astype(np.float32),
             shape=dynamic_shape)
 
-        batch_size = array_ops.constant(batch_size)
+        batch_size = tf.constant(batch_size)
 
         def _test_body():
             # pylint: disable=protected-access
@@ -225,11 +215,11 @@ class TestArrayShapeChecks(test.TestCase):
                                               is_valid=False)
 
 
-class TestEosMasking(test.TestCase):
+class TestEosMasking(tf.test.TestCase):
     """Tests EOS masking used in beam search."""
 
     def test_eos_masking(self):
-        probs = constant_op.constant([
+        probs = tf.constant([
             [[-.2, -.2, -.2, -.2, -.2], [-.3, -.3, -.3, 3, 0], [5, 6, 0, 0,
                                                                 0]],
             [[-.2, -.2, -.2, -.2, 0], [-.3, -.3, -.1, 3, 0], [5, 6, 3, 0, 0]],
@@ -258,7 +248,7 @@ class TestEosMasking(test.TestCase):
                 self.assertAllClose(masked[1][2][i], np.finfo('float32').min)
 
 
-class TestBeamStep(test.TestCase):
+class TestBeamStep(tf.test.TestCase):
     """Tests a single step of beam search."""
 
     def setUp(self):
@@ -271,17 +261,15 @@ class TestBeamStep(test.TestCase):
         self.coverage_penalty_weight = 0.0
 
     def test_step(self):
-        dummy_cell_state = array_ops.zeros([self.batch_size, self.beam_width])
+        dummy_cell_state = tf.zeros([self.batch_size, self.beam_width])
         beam_state = beam_search_decoder.BeamSearchDecoderState(
             cell_state=dummy_cell_state,
-            log_probs=nn_ops.log_softmax(
-                array_ops.ones([self.batch_size, self.beam_width])),
-            lengths=constant_op.constant(
-                2,
-                shape=[self.batch_size, self.beam_width],
-                dtype=dtypes.int64),
-            finished=array_ops.zeros([self.batch_size, self.beam_width],
-                                     dtype=dtypes.bool),
+            log_probs=tf.nn.log_softmax(
+                tf.ones([self.batch_size, self.beam_width])),
+            lengths=tf.constant(
+                2, shape=[self.batch_size, self.beam_width], dtype=tf.int64),
+            finished=tf.zeros([self.batch_size, self.beam_width],
+                              dtype=tf.bool),
             accumulated_attention_probs=())
 
         logits_ = np.full([self.batch_size, self.beam_width, self.vocab_size],
@@ -294,15 +282,15 @@ class TestBeamStep(test.TestCase):
         logits_[1, 1, 2] = 2.7
         logits_[1, 2, 2] = 10.0
         logits_[1, 2, 3] = 0.2
-        logits = ops.convert_to_tensor(logits_, dtype=dtypes.float32)
-        log_probs = nn_ops.log_softmax(logits)
+        logits = tf.convert_to_tensor(logits_, dtype=tf.float32)
+        log_probs = tf.nn.log_softmax(logits)
 
         outputs, next_beam_state = beam_search_decoder._beam_search_step(
             time=2,
             logits=logits,
             next_cell_state=dummy_cell_state,
             beam_state=beam_state,
-            batch_size=ops.convert_to_tensor(self.batch_size),
+            batch_size=tf.convert_to_tensor(self.batch_size),
             beam_width=self.beam_width,
             end_token=self.end_token,
             length_penalty_weight=self.length_penalty_weight,
@@ -330,16 +318,15 @@ class TestBeamStep(test.TestCase):
         self.assertAllEqual(next_state_.log_probs, expected_log_probs)
 
     def test_step_with_eos(self):
-        dummy_cell_state = array_ops.zeros([self.batch_size, self.beam_width])
+        dummy_cell_state = tf.zeros([self.batch_size, self.beam_width])
         beam_state = beam_search_decoder.BeamSearchDecoderState(
             cell_state=dummy_cell_state,
-            log_probs=nn_ops.log_softmax(
-                array_ops.ones([self.batch_size, self.beam_width])),
-            lengths=ops.convert_to_tensor([[2, 1, 2], [2, 2, 1]],
-                                          dtype=dtypes.int64),
-            finished=ops.convert_to_tensor(
-                [[False, True, False], [False, False, True]],
-                dtype=dtypes.bool),
+            log_probs=tf.nn.log_softmax(
+                tf.ones([self.batch_size, self.beam_width])),
+            lengths=tf.convert_to_tensor([[2, 1, 2], [2, 2, 1]],
+                                         dtype=tf.int64),
+            finished=tf.convert_to_tensor(
+                [[False, True, False], [False, False, True]], dtype=tf.bool),
             accumulated_attention_probs=())
 
         logits_ = np.full([self.batch_size, self.beam_width, self.vocab_size],
@@ -352,15 +339,15 @@ class TestBeamStep(test.TestCase):
         logits_[1, 1, 2] = 5.7  # why does this not work when it's 2.7?
         logits_[1, 2, 2] = 1.0
         logits_[1, 2, 3] = 0.2
-        logits = ops.convert_to_tensor(logits_, dtype=dtypes.float32)
-        log_probs = nn_ops.log_softmax(logits)
+        logits = tf.convert_to_tensor(logits_, dtype=tf.float32)
+        log_probs = tf.nn.log_softmax(logits)
 
         outputs, next_beam_state = beam_search_decoder._beam_search_step(
             time=2,
             logits=logits,
             next_cell_state=dummy_cell_state,
             beam_state=beam_state,
-            batch_size=ops.convert_to_tensor(self.batch_size),
+            batch_size=tf.convert_to_tensor(self.batch_size),
             beam_width=self.beam_width,
             end_token=self.end_token,
             length_penalty_weight=self.length_penalty_weight,
@@ -386,7 +373,7 @@ class TestBeamStep(test.TestCase):
         self.assertAllEqual(next_state_.log_probs, expected_log_probs)
 
 
-class TestLargeBeamStep(test.TestCase):
+class TestLargeBeamStep(tf.test.TestCase):
     """Tests large beam step.
 
     Tests a single step of beam search in such case that beam size is
@@ -405,36 +392,35 @@ class TestLargeBeamStep(test.TestCase):
     def test_step(self):
         def get_probs():
             """this simulates the initialize method in BeamSearchDecoder."""
-            log_prob_mask = array_ops.one_hot(
-                array_ops.zeros([self.batch_size], dtype=dtypes.int32),
+            log_prob_mask = tf.one_hot(
+                tf.zeros([self.batch_size], dtype=tf.int32),
                 depth=self.beam_width,
                 on_value=True,
                 off_value=False,
-                dtype=dtypes.bool)
+                dtype=tf.bool)
 
-            log_prob_zeros = array_ops.zeros(
-                [self.batch_size, self.beam_width], dtype=dtypes.float32)
-            log_prob_neg_inf = array_ops.ones(
-                [self.batch_size, self.beam_width],
-                dtype=dtypes.float32) * -np.Inf
+            log_prob_zeros = tf.zeros([self.batch_size, self.beam_width],
+                                      dtype=tf.float32)
+            log_prob_neg_inf = tf.ones([self.batch_size, self.beam_width],
+                                       dtype=tf.float32) * -np.Inf
 
-            log_probs = array_ops.where(log_prob_mask, log_prob_zeros,
-                                        log_prob_neg_inf)
+            log_probs = tf.where(log_prob_mask, log_prob_zeros,
+                                 log_prob_neg_inf)
             return log_probs
 
         log_probs = get_probs()
-        dummy_cell_state = array_ops.zeros([self.batch_size, self.beam_width])
+        dummy_cell_state = tf.zeros([self.batch_size, self.beam_width])
 
         # pylint: disable=invalid-name
-        _finished = array_ops.one_hot(
-            array_ops.zeros([self.batch_size], dtype=dtypes.int32),
+        _finished = tf.one_hot(
+            tf.zeros([self.batch_size], dtype=tf.int32),
             depth=self.beam_width,
             on_value=False,
             off_value=True,
-            dtype=dtypes.bool)
+            dtype=tf.bool)
         _lengths = np.zeros([self.batch_size, self.beam_width], dtype=np.int64)
         _lengths[:, 0] = 2
-        _lengths = constant_op.constant(_lengths, dtype=dtypes.int64)
+        _lengths = tf.constant(_lengths, dtype=tf.int64)
 
         beam_state = beam_search_decoder.BeamSearchDecoderState(
             cell_state=dummy_cell_state,
@@ -453,15 +439,15 @@ class TestLargeBeamStep(test.TestCase):
         logits_[1, 1, 2] = 2.7
         logits_[1, 2, 2] = 10.0
         logits_[1, 2, 3] = 0.2
-        logits = constant_op.constant(logits_, dtype=dtypes.float32)
-        log_probs = nn_ops.log_softmax(logits)
+        logits = tf.constant(logits_, dtype=tf.float32)
+        log_probs = tf.nn.log_softmax(logits)
 
         outputs, next_beam_state = beam_search_decoder._beam_search_step(
             time=2,
             logits=logits,
             next_cell_state=dummy_cell_state,
             beam_state=beam_state,
-            batch_size=ops.convert_to_tensor(self.batch_size),
+            batch_size=tf.convert_to_tensor(self.batch_size),
             beam_width=self.beam_width,
             end_token=self.end_token,
             length_penalty_weight=self.length_penalty_weight,
@@ -485,7 +471,7 @@ class TestLargeBeamStep(test.TestCase):
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class BeamSearchDecoderTest(test.TestCase):
+class BeamSearchDecoderTest(tf.test.TestCase):
     def _testDynamicDecodeRNN(self,
                               time_major,
                               has_attention,
@@ -506,16 +492,16 @@ class BeamSearchDecoderTest(test.TestCase):
         beam_width = 3
 
         with self.cached_session():
-            batch_size_tensor = constant_op.constant(batch_size)
+            batch_size_tensor = tf.constant(batch_size)
             embedding = np.random.randn(vocab_size,
                                         embedding_dim).astype(np.float32)
             cell = layers.LSTMCell(cell_depth)
             initial_state = cell.get_initial_state(
-                batch_size=batch_size, dtype=dtypes.float32)
+                batch_size=batch_size, dtype=tf.float32)
             coverage_penalty_weight = 0.0
             if has_attention:
                 coverage_penalty_weight = 0.2
-                inputs = array_ops.placeholder_with_default(
+                inputs = tf.compat.v1.placeholder_with_default(
                     np.random.randn(batch_size, decoder_max_time,
                                     input_depth).astype(np.float32),
                     shape=(None, None, input_depth))
@@ -535,8 +521,7 @@ class BeamSearchDecoderTest(test.TestCase):
                     attention_layer_size=attention_depth,
                     alignment_history=with_alignment_history)
             cell_state = cell.get_initial_state(
-                batch_size=batch_size_tensor * beam_width,
-                dtype=dtypes.float32)
+                batch_size=batch_size_tensor * beam_width, dtype=tf.float32)
             if has_attention:
                 cell_state = cell_state.clone(cell_state=initial_state)
             bsd = beam_search_decoder.BeamSearchDecoder(
@@ -550,7 +535,7 @@ class BeamSearchDecoderTest(test.TestCase):
 
             final_outputs, final_state, final_sequence_lengths = bsd(
                 embedding,
-                start_tokens=array_ops.fill([batch_size_tensor], start_token),
+                start_tokens=tf.fill([batch_size_tensor], start_token),
                 end_token=end_token,
                 initial_state=cell_state)
 
@@ -575,7 +560,7 @@ class BeamSearchDecoderTest(test.TestCase):
                 _t((batch_size, expected_seq_length, beam_width)),
                 tuple(final_outputs.predicted_ids.get_shape().as_list()))
 
-            self.evaluate(variables.global_variables_initializer())
+            self.evaluate(tf.compat.v1.global_variables_initializer())
             eval_results = self.evaluate({
                 'final_outputs':
                 final_outputs,
@@ -608,4 +593,4 @@ class BeamSearchDecoderTest(test.TestCase):
 
 
 if __name__ == '__main__':
-    test.main()
+    tf.test.main()

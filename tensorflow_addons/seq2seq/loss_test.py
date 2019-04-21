@@ -19,36 +19,34 @@ from __future__ import print_function
 
 import numpy as np
 
-from tensorflow.python.framework import constant_op
-from tensorflow.python.framework import dtypes
-from tensorflow.python.framework import test_util
-from tensorflow.python.ops import array_ops
-from tensorflow.python.platform import test
+import tensorflow as tf
+
 from tensorflow_addons.seq2seq import loss
+from tensorflow_addons.utils import test_utils
 
 
-@test_util.run_all_in_graph_and_eager_modes
-class LossTest(test.TestCase):
+@test_utils.run_all_in_graph_and_eager_modes
+class LossTest(tf.test.TestCase):
     def setup(self):
         self.batch_size = 2
         self.sequence_length = 3
         self.number_of_classes = 5
         logits = [
-            constant_op.constant(
+            tf.constant(
                 i + 0.5, shape=[self.batch_size, self.number_of_classes])
             for i in range(self.sequence_length)
         ]
-        self.logits = array_ops.stack(logits, axis=1)
+        self.logits = tf.stack(logits, axis=1)
         targets = [
-            constant_op.constant(i, dtypes.int32, shape=[self.batch_size])
+            tf.constant(i, tf.int32, shape=[self.batch_size])
             for i in range(self.sequence_length)
         ]
-        self.targets = array_ops.stack(targets, axis=1)
+        self.targets = tf.stack(targets, axis=1)
         weights = [
-            constant_op.constant(1.0, shape=[self.batch_size])
+            tf.constant(1.0, shape=[self.batch_size])
             for _ in range(self.sequence_length)
         ]
-        self.weights = array_ops.stack(weights, axis=1)
+        self.weights = tf.stack(weights, axis=1)
         # expected_loss = sparse_softmax_cross_entropy_with_logits(targets,
         # logits) where targets = [0, 1, 2],
         # and logits = [[0.5] * 5, [1.5] * 5, [2.5] * 5]
@@ -195,12 +193,12 @@ class LossTest(test.TestCase):
     def testWeightedSumReduction(self):
         self.setup()
         weights = [
-            constant_op.constant(1.0, shape=[self.batch_size])
+            tf.constant(1.0, shape=[self.batch_size])
             for _ in range(self.sequence_length)
         ]
         # Make the last element in the sequence to have zero weights.
-        weights[-1] = constant_op.constant(0.0, shape=[self.batch_size])
-        self.weights = array_ops.stack(weights, axis=1)
+        weights[-1] = tf.constant(0.0, shape=[self.batch_size])
+        self.weights = tf.stack(weights, axis=1)
         with self.cached_session(use_gpu=True):
             seq_loss = loss.SequenceLoss(
                 average_across_timesteps=False,
@@ -255,10 +253,10 @@ class LossTest(test.TestCase):
     def testZeroWeights(self):
         self.setup()
         weights = [
-            constant_op.constant(0.0, shape=[self.batch_size])
+            tf.constant(0.0, shape=[self.batch_size])
             for _ in range(self.sequence_length)
         ]
-        weights = array_ops.stack(weights, axis=1)
+        weights = tf.stack(weights, axis=1)
         with self.test_session(use_gpu=True):
             average_loss_per_example = loss.sequence_loss(
                 self.logits,
@@ -301,4 +299,4 @@ class LossTest(test.TestCase):
 
 
 if __name__ == '__main__':
-    test.main()
+    tf.test.main()

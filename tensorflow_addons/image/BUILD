@@ -9,6 +9,7 @@ py_library(
         "dense_image_warp.py",
         "distance_transform.py",
         "distort_image_ops.py",
+        "filters.py",
         "transform_ops.py",
     ]),
     data = [
@@ -52,6 +53,19 @@ py_test(
         "distort_image_ops_test.py",
     ],
     main = "distort_image_ops_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "filters_test",
+    size = "medium",
+    srcs = [
+        "filters_test.py",
+    ],
+    main = "filters_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":image",

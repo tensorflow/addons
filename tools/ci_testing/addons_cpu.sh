@@ -24,7 +24,14 @@ fi
 
 set -x
 
-N_JOBS=$(grep -c ^processor /proc/cpuinfo)
+PLATFORM="$(uname -s | tr 'A-Z' 'a-z')"
+
+if [[ ${PLATFORM} == "darwin" ]]; then
+    N_JOBS=$(sysctl -n hw.ncpu)
+else
+    N_JOBS=$(grep -c ^processor /proc/cpuinfo)
+fi
+
 
 echo ""
 echo "Bazel will use ${N_JOBS} concurrent job(s)."

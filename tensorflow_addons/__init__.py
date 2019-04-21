@@ -76,6 +76,7 @@ from tensorflow_addons import image
 from tensorflow_addons import layers
 from tensorflow_addons import losses
 from tensorflow_addons import optimizers
+from tensorflow_addons import rnn
 from tensorflow_addons import seq2seq
 from tensorflow_addons import text
 
