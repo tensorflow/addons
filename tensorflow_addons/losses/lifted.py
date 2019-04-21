@@ -19,8 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-
-from tensorflow.python.keras import losses
 from tensorflow_addons.losses import metric_learning
 from tensorflow_addons.utils import keras_utils
 
@@ -106,7 +104,7 @@ def lifted_struct_loss(labels, embeddings, margin=1.0):
 
 
 @keras_utils.register_keras_custom_object
-class LiftedStructLoss(losses.LossFunctionWrapper):
+class LiftedStructLoss(keras_utils.LossFunctionWrapper):
     """Computes the lifted structured loss.
 
     The loss encourages the positive distances (between a pair of embeddings

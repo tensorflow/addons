@@ -22,7 +22,6 @@ import csv
 import os
 import tensorflow as tf
 
-from tensorflow.compat.v1 import test
 from tensorflow_addons import text
 from tensorflow_addons.text import skip_gram_ops
 from tensorflow_addons.utils import test_utils
@@ -368,7 +367,7 @@ class SkipGramOpsTest(tf.test.TestCase):
 
     @staticmethod
     def _make_text_vocab_freq_file():
-        filepath = os.path.join(test.get_temp_dir(), "vocab_freq.txt")
+        filepath = os.path.join(tf.test.get_temp_dir(), "vocab_freq.txt")
         with open(filepath, "w") as f:
             writer = csv.writer(f)
             writer.writerows([
@@ -382,7 +381,7 @@ class SkipGramOpsTest(tf.test.TestCase):
 
     @staticmethod
     def _make_text_vocab_float_file():
-        filepath = os.path.join(test.get_temp_dir(), "vocab_freq_float.txt")
+        filepath = os.path.join(tf.test.get_temp_dir(), "vocab_freq_float.txt")
         with open(filepath, "w") as f:
             writer = csv.writer(f)
             writer.writerows([
