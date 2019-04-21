@@ -353,7 +353,7 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
 
 @tf.function
 def random_rotation(images, rg, interpolation="NEAREST", name=None):
-    """Rotate image(s) counterclockwise by the passed angle(s) in radians.
+    """Rotate image(s) counterclockwise by up to `rg` radians in either direction.
 
     Args:
     images: A tensor of shape (num_images, num_rows, num_columns, num_channels)
@@ -371,7 +371,7 @@ def random_rotation(images, rg, interpolation="NEAREST", name=None):
     Raises:
     TypeError: If `image` is an invalid type.
     """
-    with ops.name_scope(name, "random_rotation"):
+    with ops.name_scope(name or "random_rotation"):
         image_or_images = tf.convert_to_tensor(images)
         if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
             raise TypeError("Invalid dtype %s." % image_or_images.dtype)
@@ -396,6 +396,67 @@ def random_rotation(images, rg, interpolation="NEAREST", name=None):
         angles = tf.random.uniform(shape=[n_images], minval=minval, maxval=maxval)
         if n_images == 1:
             angles = angles[0]
+        transforms = angles_to_projective_transforms(angles, image_height, image_width)
+        new_images = transform(images, transforms, interpolation=interpolation)
+
+        if image_or_images.get_shape().ndims is None:
+            raise TypeError("image_or_images rank must be statically known")
+        elif len(image_or_images.get_shape()) == 2:
+            return new_images[0, :, :, 0]
+        elif len(image_or_images.get_shape()) == 3:
+            return new_images[0, :, :, :]
+        else:
+            return new_images
+
+
+@tf.function
+def random_rot90(images, interpolation="NEAREST", name=None):
+    """Rotate image(s) by 90 * n degrees, drawing n randomly from [0, 1, 2, 3].
+
+    Args:
+    images: A tensor of shape (num_images, num_rows, num_columns, num_channels)
+        (NHWC), (num_rows, num_columns, num_channels) (HWC), or
+        (num_rows, num_columns) (HW). The rank must be statically known (the
+        shape is not `TensorShape(None)`.
+    interpolation: Interpolation mode. Supported values: "NEAREST", "BILINEAR".
+    name: The name of the op.
+
+    Returns:
+    Image(s) with the same type and shape as `images`, rotated by 90 degrees up to 
+    3 times.  Empty space due to the rotation will be filled with zeros.
+
+    Raises:
+    TypeError: If `image` is an invalid type.
+    """
+    with ops.name_scope(name or "random_rot90"):
+        image_or_images = tf.convert_to_tensor(images)
+        if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
+            raise TypeError("Invalid dtype %s." % image_or_images.dtype)
+        elif image_or_images.get_shape().ndims is None:
+            raise TypeError("image_or_images rank must be statically known")
+        elif len(image_or_images.get_shape()) == 2:
+            images = image_or_images[None, :, :, None]
+        elif len(image_or_images.get_shape()) == 3:
+            images = image_or_images[None, :, :, :]
+        elif len(image_or_images.get_shape()) == 4:
+            images = image_or_images
+        else:
+            raise TypeError("Images should have rank between 2 and 4.")
+
+        image_height = tf.cast(
+            tf.shape(images)[1], tf.dtypes.float32)[None]
+        image_width = tf.cast(
+            tf.shape(images)[2], tf.dtypes.float32)[None]
+        n_images = tf.shape(images)[0]
+
+        pi_2 = tf.math.asin(1.0)
+        n_rotations = tf.random.uniform(minval=0, maxval=4, shape=[n_images], dtype='int32')
+        n_rotations = tf.cast(n_rotations, tf.float32)
+        angles = pi_2 * n_rotations
+
+        if n_images == 1:
+            angles = angles[0]
+
         transforms = angles_to_projective_transforms(angles, image_height, image_width)
         new_images = transform(images, transforms, interpolation=interpolation)
 
