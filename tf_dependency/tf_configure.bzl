@@ -1,7 +1,9 @@
 """Setup TensorFlow as external dependency"""
 
 _TF_HEADER_DIR = "TF_HEADER_DIR"
+
 _TF_SHARED_LIBRARY_DIR = "TF_SHARED_LIBRARY_DIR"
+
 _TF_SHARED_LIBRARY = "TF_SHARED_LIBRARY"
 
 def _tpl(repository_ctx, tpl, substitutions = {}, out = None):
