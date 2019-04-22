@@ -63,7 +63,7 @@ To install the latest version, run the following:
 pip install tensorflow-addons
 ```
  
-**Note:** You will also need `tensorflow==2.0.0.a0` [installed](https://www.tensorflow.org/alpha)
+**Note:** You will also need [`tensorflow==2.0.0.a0`](https://www.tensorflow.org/alpha) installed.
 
 To use addons:
 
