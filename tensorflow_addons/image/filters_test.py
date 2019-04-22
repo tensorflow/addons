@@ -18,8 +18,8 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.image import median_filter2d
 from tensorflow_addons.image import mean_filter2d
+from tensorflow_addons.image import median_filter2d
 from tensorflow_addons.utils import test_utils
 
 
@@ -108,10 +108,6 @@ class MedianFilter2dTest(tf.test.TestCase):
         self._validate_median_filter2d(tf_img, expt)
 
 
-if __name__ == "__main__":
-    tf.test.main()
-
-    
 @test_utils.run_all_in_graph_and_eager_modes
 class MeanFilter2dTest(tf.test.TestCase):
     def _validateMean_2d(self, inputs, expected_values, filter_shape=(3, 3)):
