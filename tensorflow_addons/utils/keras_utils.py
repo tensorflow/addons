@@ -17,11 +17,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import tensorflow as tf
+
 # TODO: find public API alternative to these
 from tensorflow.python.keras.losses import LossFunctionWrapper  # pylint: disable=unused-import
-from tensorflow.keras.utils import get_custom_objects
 
 
 def register_keras_custom_object(cls):
-    get_custom_objects()[cls.__name__] = cls
+    tf.keras.utils.get_custom_objects()[cls.__name__] = cls
     return cls
