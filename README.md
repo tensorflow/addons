@@ -76,7 +76,7 @@ import tensorflow_addons as tfa
 You can also install from source. This requires the [Bazel](
 https://bazel.build/) build system.
 
-**Note:** If building from master you must install `tf-nightly-2.0-preview` in the process
+**Note:** If building from master you must install `tf-nightly-2.0-preview` in the process.
 
 ```
 git clone https://github.com/tensorflow/addons.git
