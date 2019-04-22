@@ -48,4 +48,4 @@ TF_SHAREDLIB=( $(python -c 'import tensorflow as tf; print(tf.sysconfig.get_link
 
 write_action_env_to_bazelrc "TF_HEADER_DIR" ${TF_CFLAGS:2}
 write_action_env_to_bazelrc "TF_SHARED_LIBRARY_DIR" ${TF_LFLAGS:2}
-write_action_env_to_bazelrc "TF_SHARED_LIBRARY" ${TF_SHAREDLIB:3}
+write_action_env_to_bazelrc "TF_SHARED_LIBRARY_NAME" ${TF_SHAREDLIB:3}

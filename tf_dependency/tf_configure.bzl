@@ -2,7 +2,7 @@
 
 _TF_HEADER_DIR = "TF_HEADER_DIR"
 _TF_SHARED_LIBRARY_DIR = "TF_SHARED_LIBRARY_DIR"
-_TF_SHARED_LIBRARY = "TF_SHARED_LIBRARY"
+_TF_SHARED_LIBRARY_NAME = "TF_SHARED_LIBRARY_NAME"
 
 def _tpl(repository_ctx, tpl, substitutions = {}, out = None):
     if not out:
@@ -183,7 +183,7 @@ def _tf_pip_impl(repository_ctx):
     )
 
     tf_shared_library_dir = repository_ctx.os.environ[_TF_SHARED_LIBRARY_DIR]
-    tf_shared_library_name = repository_ctx.os.environ[_TF_SHARED_LIBRARY]
+    tf_shared_library_name = repository_ctx.os.environ[_TF_SHARED_LIBRARY_NAME]
     tf_shared_library_path = "%s/%s" % (tf_shared_library_dir, tf_shared_library_name)
 
     tf_shared_library_rule = _symlink_genrule_for_dir(
