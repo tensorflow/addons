@@ -21,8 +21,6 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from tensorflow.python.eager import context
-from tensorflow.python.ops import variables
 from tensorflow_addons.optimizers import lazy_adam
 from tensorflow_addons.utils import test_utils
 
@@ -83,7 +81,7 @@ class LazyAdamTest(tf.test.TestCase):
                 opt = lazy_adam.LazyAdam()
                 update = opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
-                self.evaluate(variables.global_variables_initializer())
+                self.evaluate(tf.compat.v1.global_variables_initializer())
 
                 # Fetch params to validate initial values
                 self.assertAllClose([1.0, 1.0, 2.0], self.evaluate(var0))
@@ -120,7 +118,7 @@ class LazyAdamTest(tf.test.TestCase):
                 g_sum = lambda: tf.math.reduce_sum(tf.gather(var, indices))  # pylint: disable=cell-var-from-loop
                 optimizer = lazy_adam.LazyAdam(3.0)
                 minimize_op = optimizer.minimize(g_sum, var_list=[var])
-                self.evaluate(variables.global_variables_initializer())
+                self.evaluate(tf.compat.v1.global_variables_initializer())
                 self.evaluate(minimize_op)
 
     @test_utils.run_deprecated_v1
@@ -143,7 +141,7 @@ class LazyAdamTest(tf.test.TestCase):
                 aggregated_update_opt = lazy_adam.LazyAdam()
                 aggregated_update = aggregated_update_opt.apply_gradients(
                     [(grad_aggregated, aggregated_update_var)])
-                self.evaluate(variables.global_variables_initializer())
+                self.evaluate(tf.compat.v1.global_variables_initializer())
                 self.assertAllClose(aggregated_update_var.eval(),
                                     repeated_index_update_var.eval())
                 for _ in range(3):
@@ -182,10 +180,10 @@ class LazyAdamTest(tf.test.TestCase):
                     epsilon = epsilon()
 
                 opt = lazy_adam.LazyAdam(learning_rate=learning_rate)
-                if not context.executing_eagerly():
+                if not tf.executing_eagerly():
                     update = opt.apply_gradients(
                         zip([grads0, grads1], [var0, var1]))
-                    self.evaluate(variables.global_variables_initializer())
+                    self.evaluate(tf.compat.v1.global_variables_initializer())
                     # Fetch params to validate initial values
                     self.assertAllClose([1.0, 2.0], self.evaluate(var0))
                     self.assertAllClose([3.0, 4.0], self.evaluate(var1))
@@ -198,7 +196,7 @@ class LazyAdamTest(tf.test.TestCase):
                         0.9**(t + 1), self.evaluate(beta_1_power))
                     self.assertAllCloseAccordingToType(
                         0.999**(t + 1), self.evaluate(beta_2_power))
-                    if not context.executing_eagerly():
+                    if not tf.executing_eagerly():
                         self.evaluate(update)
                     else:
                         opt.apply_gradients(
@@ -222,8 +220,7 @@ class LazyAdamTest(tf.test.TestCase):
         self.doTestBasic()
 
     def testBasicCallableParams(self):
-        with context.eager_mode():
-            self.doTestBasic(use_callable_params=True)
+        self.doTestBasic(use_callable_params=True)
 
     @test_utils.run_deprecated_v1
     def testTensorLearningRate(self):
@@ -243,7 +240,7 @@ class LazyAdamTest(tf.test.TestCase):
                 opt = lazy_adam.LazyAdam(tf.constant(0.001))
                 update = opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
-                self.evaluate(variables.global_variables_initializer())
+                self.evaluate(tf.compat.v1.global_variables_initializer())
 
                 # Fetch params to validate initial values
                 self.assertAllClose([1.0, 2.0], var0.eval())
@@ -289,7 +286,7 @@ class LazyAdamTest(tf.test.TestCase):
                     zip([grads0, grads1], [var0, var1]))
                 update2 = opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
-                self.evaluate(variables.global_variables_initializer())
+                self.evaluate(tf.compat.v1.global_variables_initializer())
 
                 beta_1_power, beta_2_power = get_beta_accumulators(opt, dtype)
 
@@ -320,16 +317,14 @@ class LazyAdamTest(tf.test.TestCase):
                                                        self.evaluate(var1))
 
     def testSlotsUniqueEager(self):
-        with context.eager_mode():
-            v1 = tf.Variable(1.)
-            v2 = tf.Variable(1.)
-            opt = lazy_adam.LazyAdam(1.)
-            opt.minimize(lambda: v1 + v2, var_list=[v1, v2])
-            # There should be iteration, and two unique slot variables for v1 and v2.
-            self.assertEqual(5, len(set(opt.variables())))
-            self.assertEqual(
-                self.evaluate(opt.variables()[0]),
-                self.evaluate(opt.iterations))
+        v1 = tf.Variable(1.)
+        v2 = tf.Variable(1.)
+        opt = lazy_adam.LazyAdam(1.)
+        opt.minimize(lambda: v1 + v2, var_list=[v1, v2])
+        # There should be iteration, and two unique slot variables for v1 and v2.
+        self.assertEqual(5, len(set(opt.variables())))
+        self.assertEqual(
+            self.evaluate(opt.variables()[0]), self.evaluate(opt.iterations))
 
 
 if __name__ == "__main__":
