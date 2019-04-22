@@ -367,7 +367,8 @@ class SkipGramOpsTest(tf.test.TestCase):
 
     @staticmethod
     def _make_text_vocab_freq_file():
-        filepath = os.path.join(tf.compat.v1.test.get_temp_dir(), "vocab_freq.txt")
+        filepath = os.path.join(tf.compat.v1.test.get_temp_dir(),
+                                "vocab_freq.txt")
         with open(filepath, "w") as f:
             writer = csv.writer(f)
             writer.writerows([
@@ -381,7 +382,8 @@ class SkipGramOpsTest(tf.test.TestCase):
 
     @staticmethod
     def _make_text_vocab_float_file():
-        filepath = os.path.join(tf.compat.v1.test.get_temp_dir(), "vocab_freq_float.txt")
+        filepath = os.path.join(tf.compat.v1.test.get_temp_dir(),
+                                "vocab_freq_float.txt")
         with open(filepath, "w") as f:
             writer = csv.writer(f)
             writer.writerows([

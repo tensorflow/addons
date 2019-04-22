@@ -324,8 +324,7 @@ class LazyAdamTest(tf.test.TestCase):
         # There should be iteration, and two unique slot variables for v1 and v2.
         self.assertEqual(5, len(set(opt.variables())))
         self.assertEqual(
-            self.evaluate(opt.variables()[0]),
-            self.evaluate(opt.iterations))
+            self.evaluate(opt.variables()[0]), self.evaluate(opt.iterations))
 
 
 if __name__ == "__main__":
