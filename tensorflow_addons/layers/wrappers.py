@@ -67,6 +67,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
         super(WeightNormalization, self).__init__(layer, **kwargs)
         self._track_trackable(layer, name='layer')
+        self._keras_style = False
 
     def _compute_weights(self):
         """Generate weights by combining the direction of weight vector with
@@ -127,7 +128,6 @@ class WeightNormalization(tf.keras.layers.Wrapper):
                 trainable=True,
                 aggregation=tf.VariableAggregation.MEAN)
 
-            # TODO: Check if this needs control deps in TF2 graph mode
             self.layer.g.assign(self._init_norm(self.layer.v))
             self._compute_weights()
 
