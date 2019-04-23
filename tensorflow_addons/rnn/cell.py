@@ -210,6 +210,7 @@ class NASCell(keras.layers.AbstractRNNCell):
         return dict(list(base_config.items()) + list(config.items()))
 
 
+@keras_utils.register_keras_custom_object
 class LayerNormLSTMCell(keras.layers.LSTMCell):
     """LSTM cell with layer normalization and recurrent dropout.
 
@@ -256,8 +257,8 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
         Args:
           units: Positive integer, dimensionality of the output space.
           activation: Activation function to use. Default: hyperbolic tangent
-            (`tanh`). If you pass `None`, no activation is applied (ie. "linear"
-            activation: `a(x) = x`).
+            (`tanh`). If you pass `None`, no activation is applied (ie.
+            "linear" activation: `a(x) = x`).
           recurrent_activation: Activation function to use for the recurrent
             step. Default: sigmoid (`sigmoid`). If you pass `None`, no
             activation is applied (ie. "linear" activation: `a(x) = x`).
@@ -276,8 +277,8 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
           recurrent_regularizer: Regularizer function applied to
             the `recurrent_kernel` weights matrix.
           bias_regularizer: Regularizer function applied to the bias vector.
-          kernel_constraint: Constraint function applied to the `kernel` weights
-            matrix.
+          kernel_constraint: Constraint function applied to the `kernel`
+            weights matrix.
           recurrent_constraint: Constraint function applied to the
             `recurrent_kernel` weights matrix.
           bias_constraint: Constraint function applied to the bias vector.
@@ -369,12 +370,14 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
 
     def get_config(self):
         config = {
-            'layer_norm': self.layer_norm,
-            'norm_gamma_initializer': keras.initializers.serialize(
-                self.norm_gamma_initializer),
-            'norm_beta_initializer': keras.initializers.serialize(
-                self.norm_beta_initializer),
-            'norm_epsilon': self.norm_epsilon,
+            'layer_norm':
+            self.layer_norm,
+            'norm_gamma_initializer':
+            keras.initializers.serialize(self.norm_gamma_initializer),
+            'norm_beta_initializer':
+            keras.initializers.serialize(self.norm_beta_initializer),
+            'norm_epsilon':
+            self.norm_epsilon,
         }
         base_config = super(LayerNormLSTMCell, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))

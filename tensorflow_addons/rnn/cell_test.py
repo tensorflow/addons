@@ -28,7 +28,6 @@ from tensorflow_addons.rnn import cell as rnn_cell
 
 @test_utils.run_all_in_graph_and_eager_modes
 class NASCellTest(tf.test.TestCase):
-
     def test_base(self):
         units = 6
         batch_size = 3
@@ -261,10 +260,10 @@ class LayerNormBasicLSTMCellTest(tf.test.TestCase):
         state1 = [h1, c1]
         state = (state0, state1)
 
-        norm_cell = keras.layers.StackedRNNCells([single_cell_without_norm()
-                                                 for _ in range(2)])
-        standard_cell = keras.layers.StackedRNNCells([standard_lstm_cell()
-                                                     for _ in range(2)])
+        norm_cell = keras.layers.StackedRNNCells(
+            [single_cell_without_norm() for _ in range(2)])
+        standard_cell = keras.layers.StackedRNNCells(
+            [standard_lstm_cell() for _ in range(2)])
         norm_out, norm_states = norm_cell(x, state)
         standard_out, standard_states = standard_cell(x, state)
         self.evaluate([tf.compat.v1.global_variables_initializer()])
@@ -286,11 +285,23 @@ class LayerNormBasicLSTMCellTest(tf.test.TestCase):
             "activation": "tanh",
             "recurrent_activation": "sigmoid",
             "use_bias": True,
-            "kernel_initializer": {"class_name": "GlorotUniform",
-                                   "config": {"seed": None}},
-            "recurrent_initializer": {"class_name": "Orthogonal",
-                                      "config": {"seed": None, "gain": 1.0}},
-            "bias_initializer": {"class_name": "Zeros", "config": {}},
+            "kernel_initializer": {
+                "class_name": "GlorotUniform",
+                "config": {
+                    "seed": None
+                }
+            },
+            "recurrent_initializer": {
+                "class_name": "Orthogonal",
+                "config": {
+                    "seed": None,
+                    "gain": 1.0
+                }
+            },
+            "bias_initializer": {
+                "class_name": "Zeros",
+                "config": {}
+            },
             "unit_forget_bias": True,
             "kernel_regularizer": None,
             "recurrent_regularizer": None,
@@ -302,8 +313,14 @@ class LayerNormBasicLSTMCellTest(tf.test.TestCase):
             "recurrent_dropout": 0.,
             "implementation": 2,
             "layer_norm": True,
-            "norm_gamma_initializer": {"class_name": "Ones", "config": {}},
-            "norm_beta_initializer": {"class_name": "Zeros", "config": {}},
+            "norm_gamma_initializer": {
+                "class_name": "Ones",
+                "config": {}
+            },
+            "norm_beta_initializer": {
+                "class_name": "Zeros",
+                "config": {}
+            },
             "norm_epsilon": 1e-3,
         }
         config = cell.get_config()
