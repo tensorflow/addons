@@ -249,6 +249,7 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
                  layer_norm=True,
                  norm_gamma_initializer='ones',
                  norm_beta_initializer='zeros',
+                 norm_epsilon=1e-3,
                  **kwargs):
         """Initializes the LSTM cell.
 
@@ -312,34 +313,25 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
             recurrent_dropout=recurrent_dropout,
             **kwargs)
         self.layer_norm = layer_norm
-        self.norm_gamma_initializer = keras.initializer.get(
+        self.norm_gamma_initializer = keras.initializers.get(
             norm_gamma_initializer)
-        self.norm_beta_initializer = keras.initializer.get(
+        self.norm_beta_initializer = keras.initializers.get(
             norm_beta_initializer)
+        self.norm_epsilon = norm_epsilon
         if self.layer_norm:
-            self.input_norm = keras.layers.LayerNormalization(
-                beta_initializer=self.norm_beta_initializer,
-                gamma_initializer=self.norm_gamma_initializer)
-            self.carry_norm = keras.layers.LayerNormalization(
-                beta_initializer=self.norm_beta_initializer,
-                gamma_initializer=self.norm_gamma_initializer)
-            self.forget_norm = keras.layers.LayerNormalization(
-                beta_initializer=self.norm_beta_initializer,
-                gamma_initializer=self.norm_gamma_initializer)
-            self.output_norm = keras.layers.LayerNormalization(
-                beta_initializer=self.norm_beta_initializer,
-                gamma_initializer=self.norm_gamma_initializer)
-            self.state_norm = keras.layers.LayerNormalization(
-                beta_initializer=self.norm_beta_initializer,
-                gamma_initializer=self.norm_gamma_initializer)
+            self.input_norm = self._create_norm_layer('input_norm')
+            self.forget_norm = self._create_norm_layer('forget_norm')
+            self.carry_norm = self._create_norm_layer('carry_norm')
+            self.output_norm = self._create_norm_layer('output_norm')
+            self.state_norm = self._create_norm_layer('state_norm')
 
     def build(self, input_shape):
         super(LayerNormLSTMCell, self).build(input_shape)
         if self.layer_norm:
-            norm_input_shape = input_shape[0] + self.units
+            norm_input_shape = [input_shape[0], self.units]
             self.input_norm.build(norm_input_shape)
-            self.carry_norm.build(norm_input_shape)
             self.forget_norm.build(norm_input_shape)
+            self.carry_norm.build(norm_input_shape)
             self.output_norm.build(norm_input_shape)
             self.state_norm.build(norm_input_shape)
 
@@ -361,10 +353,10 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
         if 0. < self.recurrent_dropout < 1.:
             h_tm1 *= rec_dp_mask[0]
         z += keras.backend.dot(h_tm1, self.recurrent_kernel)
-        if self.use_bias:
+        if self.use_bias and not self.layer_norm:
             z = keras.backend.bias_add(z, self.bias)
 
-        # Apply the layer normalization for each of the gate if needed.
+        # Apply the layer normalization for each of the gate.
         i, f, c, o = tf.split(z, num_or_size_splits=4, axis=1)
         i = self.input_norm(i)
         f = self.forget_norm(f)
@@ -378,10 +370,18 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
     def get_config(self):
         config = {
             'layer_norm': self.layer_norm,
-            'norm_gamma_initializer': keras.initializer.serialize(
+            'norm_gamma_initializer': keras.initializers.serialize(
                 self.norm_gamma_initializer),
-            'norm_beta_initializer': keras.initializer.serialize(
-                self.norm_beta_initializer)
+            'norm_beta_initializer': keras.initializers.serialize(
+                self.norm_beta_initializer),
+            'norm_epsilon': self.norm_epsilon,
         }
         base_config = super(LayerNormLSTMCell, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+    def _create_norm_layer(self, name):
+        return keras.layers.LayerNormalization(
+            beta_initializer=self.norm_beta_initializer,
+            gamma_initializer=self.norm_gamma_initializer,
+            epsilon=self.norm_epsilon,
+            name=name)
