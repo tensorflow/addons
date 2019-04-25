@@ -40,14 +40,14 @@ class NASCell(keras.layers.AbstractRNNCell):
     _NAS_BASE = 8
 
     def __init__(self,
-        units,
-        projection=None,
-        use_bias=False,
-        kernel_initializer="glorot_uniform",
-        recurrent_initializer="glorot_uniform",
-        projection_initializer="glorot_uniform",
-        bias_initializer="zeros",
-        **kwargs):
+                 units,
+                 projection=None,
+                 use_bias=False,
+                 kernel_initializer="glorot_uniform",
+                 recurrent_initializer="glorot_uniform",
+                 projection_initializer="glorot_uniform",
+                 bias_initializer="zeros",
+                 **kwargs):
         """Initialize the parameters for a NAS cell.
 
         Args:
