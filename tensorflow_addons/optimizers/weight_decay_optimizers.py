@@ -37,17 +37,18 @@ class DecoupledWeightDecayExtension(object):
     optimizers with decoupled weight decay. We explicitly define the two
     examples used in the above paper (SGDW and AdamW), but in general this
     can extend any OptimizerX by using
-    `extend_with_weight_decay(OptimizerX, weight_decay=weight_decay)`.
+    `extend_with_decoupled_weight_decay(
+        OptimizerX, weight_decay=weight_decay)`.
     In order for it to work, it must be the first class the Optimizer with
     weight decay inherits from, e.g.
 
     ```python
-    class AdamWOptimizer(DecoupledWeightDecayExtension, adam.AdamOptimizer):
+    class AdamW(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
       def __init__(self, weight_decay, *args, **kwargs):
-        super(AdamWOptimizer, self).__init__(weight_decay, *args, **kwargs).
+        super(AdamW, self).__init__(weight_decay, *args, **kwargs).
     ```
 
-    Note that this extension decays weights BEFORE applying the update based
+    Note: this extension decays weights BEFORE applying the update based
     on the gradient, i.e. this extension only has the desired behaviour for
     optimizers which do not depend on the value of'var' in the update step!
 
@@ -55,17 +56,16 @@ class DecoupledWeightDecayExtension(object):
     the decay to the `weight_decay` as well. For example:
 
     ```python
-      schedule = tf.train.piecewise_constant(
-          tf.train.get_global_step(), [10000, 15000], [1e-0, 1e-1, 1e-2])
-      lr = 1e-1 * schedule()
-      wd = lambda: 1e-4 * schedule()
+    step = tf.Variable(0, trainable=False)
+    schedule = tf.optimizers.schedules.PiecewiseConstantDecay(
+        [10000, 15000], [1e-0, 1e-1, 1e-2])
+    # lr and wd can be a function or a tensor
+    lr = 1e-1 * schedule(step)
+    wd = lambda: 1e-4 * schedule(step)
 
-      # ...
+    # ...
 
-      optimizer = tf.contrib.opt.MomentumWOptimizer(learning_rate=lr,
-                                                    weight_decay=wd,
-                                                    momentum=0.9,
-                                                    use_nesterov=True)
+    optimizer = tfa.optimizers.AdamW(learning_rate=lr, weight_decay=wd)
     ```
     """
 
@@ -78,10 +78,10 @@ class DecoupledWeightDecayExtension(object):
             **kwargs: Optional list or tuple or set of `Variable` objects to
                 decay.
         """
+        wd = kwargs.pop('weight_decay', weight_decay)
         super(DecoupledWeightDecayExtension, self).__init__(**kwargs)
         self._decay_var_list = None  # is set in minimize or apply_gradients
-        self._set_hyper('weight_decay', kwargs.get('weight_decay',
-                                                   weight_decay))
+        self._set_hyper('weight_decay', wd)
 
     def get_config(self):
         config = super(DecoupledWeightDecayExtension, self).get_config()
@@ -188,8 +188,8 @@ def extend_with_decoupled_weight_decay(base_optimizer):
     Returns an optimizer class. An instance of the returned class computes the
     update step of `base_optimizer` and additionally decays the weights.
     E.g., the class returned by
-    `extend_with_decoupled_weight_decay(tf.train.AdamOptimizer)` is equivalent
-    to `tf.contrib.opt.AdamWOptimizer`.
+    `extend_with_decoupled_weight_decay(tf.keras.optimizers.Adam)` is
+    equivalent to `tfa.optimizers.AdamW`.
 
     The API of the new optimizer class slightly differs from the API of the
     base optimizer:
@@ -201,18 +201,35 @@ def extend_with_decoupled_weight_decay(base_optimizer):
     Usage example:
     ```python
     # MyAdamW is a new class
-    MyAdamW = extend_with_decoupled_weight_decay(tf.train.AdamOptimizer)
+    MyAdamW = extend_with_decoupled_weight_decay(tf.keras.optimizers.Adam)
     # Create a MyAdamW object
     optimizer = MyAdamW(weight_decay=0.001, learning_rate=0.001)
-    sess.run(optimizer.minimize(loss, decay_variables=[var1, var2]))
+    # update var1, var2 but only decay var1
+    optimizer.minimize(loss, var_list=[var1, var2], decay_variables=[var1])
 
-    Note that this extension decays weights BEFORE applying the update based
+    Note: this extension decays weights BEFORE applying the update based
     on the gradient, i.e. this extension only has the desired behaviour for
     optimizers which do not depend on the value of 'var' in the update step!
+
+    Note: when applying a decay to the learning rate, be sure to manually apply
+    the decay to the `weight_decay` as well. For example:
+
+    ```python
+    step = tf.Variable(0, trainable=False)
+    schedule = tf.optimizers.schedules.PiecewiseConstantDecay(
+        [10000, 15000], [1e-0, 1e-1, 1e-2])
+    # lr and wd can be a function or a tensor
+    lr = 1e-1 * schedule(step)
+    wd = lambda: 1e-4 * schedule(step)
+
+    # ...
+
+    optimizer = tfa.optimizers.AdamW(learning_rate=lr, weight_decay=wd)
     ```
 
     Args:
-      base_optimizer: An optimizer class that inherits from tf.train.Optimizer.
+      base_optimizer: An optimizer class that inherits from
+          tf.optimizers.Optimizer.
 
     Returns:
       A new optimizer class that inherits from DecoupledWeightDecayExtension
@@ -238,23 +255,21 @@ def extend_with_decoupled_weight_decay(base_optimizer):
 
         def __init__(self, weight_decay, *args, **kwargs):
             # super delegation is necessary here
-            # pylint: disable=useless-super-delegation
             super(OptimizerWithDecoupledWeightDecay, self).__init__(
                 weight_decay, *args, **kwargs)
-            # pylint: enable=useless-super-delegation
 
     return OptimizerWithDecoupledWeightDecay
 
 
 @keras_utils.register_keras_custom_object
-class SGDWOptimizer(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
+class SGDW(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
     """Optimizer that implements the Momentum algorithm with weight_decay.
 
-    This is an implementation of the SGDW optimizer described in "Fixing
-    Weight Decay Regularization in Adam" by Loshchilov & Hutter
+    This is an implementation of the SGDW optimizer described in "Decoupled
+    Weight Decay Regularization" by Loshchilov & Hutter
     (https://arxiv.org/abs/1711.05101)
     ([pdf])(https://arxiv.org/pdf/1711.05101.pdf).
-    It computes the update step of `train.MomentumOptimizer` and additionally
+    It computes the update step of `tf.keras.optimizers.SGD` and additionally
     decays the variable. Note that this is different from adding
     L2 regularization on the variables to the loss. Decoupling the weight decay
     from other hyperparameters (in particular the learning rate) simplifies
@@ -262,10 +277,27 @@ class SGDWOptimizer(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
 
     For further information see the documentation of the SGD Optimizer.
 
-    Note that this optimizer can also be instantiated as
+    This optimizer can also be instantiated as
     ```python
-    extend_with_weight_decay(tf.keras.optimizers.SGD,
-                             weight_decay=weight_decay)
+    extend_with_decoupled_weight_decay(tf.keras.optimizers.SGD,
+                                       weight_decay=weight_decay)
+    ```
+
+    Note: when applying a decay to the learning rate, be sure to manually apply
+    the decay to the `weight_decay` as well. For example:
+
+    ```python
+    step = tf.Variable(0, trainable=False)
+    schedule = tf.optimizers.schedules.PiecewiseConstantDecay(
+        [10000, 15000], [1e-0, 1e-1, 1e-2])
+    # lr and wd can be a function or a tensor
+    lr = 1e-1 * schedule(step)
+    wd = lambda: 1e-4 * schedule(step)
+
+    # ...
+
+    optimizer = tfa.optimizers.SGDW(
+        learning_rate=lr, weight_decay=wd, momentum=0.9)
     ```
     """
 
@@ -287,14 +319,14 @@ class SGDWOptimizer(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
             nesterov: boolean. Whether to apply Nesterov momentum.
             name: Optional name prefix for the operations created when applying
                 gradients.  Defaults to 'SGD'.
-            **kwargs: keyword arguments. Allowed to be {`clipnorm`, `clipvalue`,
-                `lr`, `decay`}. `clipnorm` is clip gradients by norm;
-                `clipvalue` is clip gradients by value, `decay` is included for
-                backward compatibility to allow time inverse decay of learning
-                rate. `lr` is included for backward compatibility, recommended
-                to use `learning_rate` instead.
+            **kwargs: keyword arguments. Allowed to be {`clipnorm`,
+                `clipvalue`, `lr`, `decay`}. `clipnorm` is clip gradients by
+                norm; `clipvalue` is clip gradients by value, `decay` is
+                included for backward compatibility to allow time inverse decay
+                of learning rate. `lr` is included for backward compatibility,
+                recommended to use `learning_rate` instead.
         """
-        super(SGDWOptimizer, self).__init__(
+        super(SGDW, self).__init__(
             weight_decay,
             learning_rate=learning_rate,
             momentum=momentum,
@@ -304,15 +336,15 @@ class SGDWOptimizer(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
 
 
 @keras_utils.register_keras_custom_object
-class AdamWOptimizer(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
+class AdamW(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
     """Optimizer that implements the Adam algorithm with weight decay.
 
-    This is an implementation of the AdamW optimizer described in "Fixing
-    Weight Decay Regularization in Adam" by Loshchilov & Hutter
+    This is an implementation of the AdamW optimizer described in "Decoupled
+    Weight Decay Regularization" by Loshchilov & Hutter
     (https://arxiv.org/abs/1711.05101)
     ([pdf])(https://arxiv.org/pdf/1711.05101.pdf).
 
-    It computes the update step of `train.AdamOptimizer` and additionally
+    It computes the update step of `tf.keras.optimizers.Adam` and additionally
     decays the variable. Note that this is different from adding L2
     regularization on the variables to the loss: it regularizes variables with
     large gradients more than L2 regularization would, which was shown to yield
@@ -320,10 +352,26 @@ class AdamWOptimizer(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
 
     For further information see the documentation of the Adam Optimizer.
 
-    Note that this optimizer can also be instantiated as
+    This optimizer can also be instantiated as
     ```python
-    extend_with_weight_decay(tf.keras.optimizers.SGD,
-                             weight_decay=weight_decay)
+    extend_with_decoupled_weight_decay(tf.keras.optimizers.Adam,
+                                       weight_decay=weight_decay)
+    ```
+
+    Note: when applying a decay to the learning rate, be sure to manually apply
+    the decay to the `weight_decay` as well. For example:
+
+    ```python
+    step = tf.Variable(0, trainable=False)
+    schedule = tf.optimizers.schedules.PiecewiseConstantDecay(
+        [10000, 15000], [1e-0, 1e-1, 1e-2])
+    # lr and wd can be a function or a tensor
+    lr = 1e-1 * schedule(step)
+    wd = lambda: 1e-4 * schedule(step)
+
+    # ...
+
+    optimizer = tfa.optimizers.AdamW(learning_rate=lr, weight_decay=wd)
     ```
     """
 
@@ -364,7 +412,7 @@ class AdamWOptimizer(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
                 of learning rate. `lr` is included for backward compatibility,
                 recommended to use `learning_rate` instead.
         """
-        super(AdamWOptimizer, self).__init__(
+        super(AdamW, self).__init__(
             weight_decay,
             learning_rate=learning_rate,
             beta_1=beta_1,

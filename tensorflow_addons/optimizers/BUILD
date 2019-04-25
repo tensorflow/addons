@@ -28,13 +28,11 @@ py_test(
     ],
 )
 
-
 py_test(
     name = "weight_decay_optimizers_test",
     size = "small",
     srcs = [
         "weight_decay_optimizers_test.py",
-        "optimizer_test_base.py",
     ],
     main = "weight_decay_optimizers_test.py",
     srcs_version = "PY2AND3",
