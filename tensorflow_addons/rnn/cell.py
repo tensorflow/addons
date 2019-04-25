@@ -365,13 +365,13 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
     def get_config(self):
         config = {
             'layer_norm':
-                self.layer_norm,
+            self.layer_norm,
             'norm_gamma_initializer':
-                keras.initializers.serialize(self.norm_gamma_initializer),
+            keras.initializers.serialize(self.norm_gamma_initializer),
             'norm_beta_initializer':
-                keras.initializers.serialize(self.norm_beta_initializer),
+            keras.initializers.serialize(self.norm_beta_initializer),
             'norm_epsilon':
-                self.norm_epsilon,
+            self.norm_epsilon,
         }
         base_config = super(LayerNormLSTMCell, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))

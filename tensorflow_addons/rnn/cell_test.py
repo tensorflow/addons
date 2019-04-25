@@ -28,7 +28,6 @@ from tensorflow_addons.rnn import cell as rnn_cell
 
 @test_utils.run_all_in_graph_and_eager_modes
 class NASCellTest(tf.test.TestCase):
-
     def test_base(self):
         units = 6
         batch_size = 3
