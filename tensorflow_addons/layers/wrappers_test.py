@@ -31,7 +31,6 @@ class WeightNormalizationTest(tf.test.TestCase):
         model.add(
             wrappers.WeightNormalization(
                 tf.keras.layers.Dense(2), input_shape=(3, 4)))
-
         model.compile(
             optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.001),
             loss='mse')
@@ -40,7 +39,7 @@ class WeightNormalizationTest(tf.test.TestCase):
             np.random.random((10, 3, 2)),
             epochs=3,
             batch_size=10)
-        self.assertTrue(hasattr(model.layers[0].layer, 'g'))
+        self.assertTrue(hasattr(model.layers[0], 'g'))
 
     def test_weightnorm_dense_train_notinit(self):
         model = tf.keras.models.Sequential()
@@ -56,7 +55,7 @@ class WeightNormalizationTest(tf.test.TestCase):
             np.random.random((10, 3, 2)),
             epochs=3,
             batch_size=10)
-        self.assertTrue(hasattr(model.layers[0].layer, 'g'))
+        self.assertTrue(hasattr(model.layers[0], 'g'))
 
     def test_weightnorm_conv2d(self):
         model = tf.keras.models.Sequential()
@@ -74,18 +73,18 @@ class WeightNormalizationTest(tf.test.TestCase):
             epochs=3,
             batch_size=10)
 
-        self.assertTrue(hasattr(model.layers[0].layer, 'g'))
+        self.assertTrue(hasattr(model.layers[0], 'g'))
 
     def test_weightnorm_tflayers(self):
         images = tf.random.uniform((2, 4, 4, 3))
         wn_wrapper = wrappers.WeightNormalization(
             tf.keras.layers.Conv2D(32, [2, 2]), input_shape=(4, 4, 3))
         wn_wrapper.apply(images)
-        self.assertTrue(hasattr(wn_wrapper.layer, 'g'))
+        self.assertTrue(hasattr(wn_wrapper, 'g'))
 
     def test_weightnorm_nonlayer(self):
         images = tf.random.uniform((2, 4, 43))
-        with self.assertRaises(ValueError):
+        with self.assertRaises(AssertionError):
             wrappers.WeightNormalization(images)
 
     def test_weightnorm_nokernel(self):
@@ -95,7 +94,7 @@ class WeightNormalizationTest(tf.test.TestCase):
 
     def test_weightnorm_keras(self):
         input_data = np.random.random((10, 3, 4)).astype(np.float32)
-        outputs = test_utils.layer_test(
+        test_utils.layer_test(
             wrappers.WeightNormalization,
             kwargs={
                 'layer': tf.keras.layers.Dense(2),
