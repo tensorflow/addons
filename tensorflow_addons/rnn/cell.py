@@ -222,7 +222,7 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
     "Layer Normalization" Jimmy Lei Ba, Jamie Ryan Kiros, Geoffrey E. Hinton
 
     and is applied before the internal nonlinearities.
-    Recurrent dropout is base on:
+    Recurrent dropout is based on:
 
       https://arxiv.org/abs/1603.05118
 
@@ -293,6 +293,9 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
           norm_beta_initializer: Initializer for the layer normalization shift
             initial value. If `layer_norm` has been set to `False`, this
             argument will be ignored.
+          norm_epsilon: Float, the epsilon value for normalization layers. If
+            `layer_norm` has been set to `False`, this argument will be
+            ignored.
           **kwargs: Dict, the other keyword arguments for layer creation.
         """
         super(LayerNormLSTMCell, self).__init__(
@@ -340,7 +343,6 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
         h_tm1 = states[0]  # previous memory state
         c_tm1 = states[1]  # previous carry state
 
-        # Linear calculation
         dp_mask = self.get_dropout_mask_for_cell(inputs, training, count=4)
         rec_dp_mask = self.get_recurrent_dropout_mask_for_cell(
             h_tm1, training, count=4)
@@ -355,7 +357,6 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
         if self.use_bias:
             z = keras.backend.bias_add(z, self.bias)
 
-        # Apply the layer normalization for each of the gate.
         z = tf.split(z, num_or_size_splits=4, axis=1)
         c, o = self._compute_carry_and_output_fused(z, c_tm1)
         c = self.state_norm(c)
