@@ -320,20 +320,16 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
             norm_beta_initializer)
         self.norm_epsilon = norm_epsilon
         if self.layer_norm:
-            self.input_norm = self._create_norm_layer('input_norm')
-            self.forget_norm = self._create_norm_layer('forget_norm')
-            self.carry_norm = self._create_norm_layer('carry_norm')
-            self.output_norm = self._create_norm_layer('output_norm')
+            self.kernel_norm = self._create_norm_layer('kernel_norm')
+            self.recurrent_norm = self._create_norm_layer('recurrent_norm')
             self.state_norm = self._create_norm_layer('state_norm')
 
     def build(self, input_shape):
         super(LayerNormLSTMCell, self).build(input_shape)
         if self.layer_norm:
             norm_input_shape = [input_shape[0], self.units]
-            self.input_norm.build(norm_input_shape)
-            self.forget_norm.build(norm_input_shape)
-            self.carry_norm.build(norm_input_shape)
-            self.output_norm.build(norm_input_shape)
+            self.kernel_norm.build(norm_input_shape)
+            self.recurrent_norm.build(norm_input_shape)
             self.state_norm.build(norm_input_shape)
 
     def call(self, inputs, states, training=None):
@@ -350,20 +346,18 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
             h_tm1, training, count=4)
         if 0. < self.dropout < 1.:
             inputs *= dp_mask[0]
-        z = keras.backend.dot(inputs, self.kernel)
+        z = self.kernel_norm(keras.backend.dot(inputs, self.kernel))
+
         if 0. < self.recurrent_dropout < 1.:
             h_tm1 *= rec_dp_mask[0]
-        z += keras.backend.dot(h_tm1, self.recurrent_kernel)
-        if self.use_bias and not self.layer_norm:
+        z += self.recurrent_norm(
+            keras.backend.dot(h_tm1, self.recurrent_kernel))
+        if self.use_bias:
             z = keras.backend.bias_add(z, self.bias)
 
         # Apply the layer normalization for each of the gate.
-        i, f, c, o = tf.split(z, num_or_size_splits=4, axis=1)
-        i = self.input_norm(i)
-        f = self.forget_norm(f)
-        c = self.carry_norm(c)
-        o = self.output_norm(o)
-        c, o = self._compute_carry_and_output_fused([i, f, c, o], c_tm1)
+        z = tf.split(z, num_or_size_splits=4, axis=1)
+        c, o = self._compute_carry_and_output_fused(z, c_tm1)
         c = self.state_norm(c)
         h = o * self.activation(c)
         return h, [h, c]
