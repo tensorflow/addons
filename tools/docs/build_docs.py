@@ -35,7 +35,7 @@ import tensorflow_addons
 from tensorflow_docs.api_generator import generate_lib
 from tensorflow_docs.api_generator import public_api
 
-PROJECT_SHORT_NAME = 'tfaddons'
+PROJECT_SHORT_NAME = 'tf_addons'
 PROJECT_FULL_NAME = 'TensorFlow Addons'
 
 FLAGS = flags.FLAGS
