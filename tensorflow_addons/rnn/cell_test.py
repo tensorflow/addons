@@ -200,11 +200,11 @@ class LayerNormBasicLSTMCellTest(tf.test.TestCase):
         self.evaluate([tf.compat.v1.global_variables_initializer()])
         output_v, output_states_v = self.evaluate([output, output_states])
 
-        expected_output = np.array([[-0.38079708, 0.38079708]])
-        expected_state0_c = np.array([[-1.0, 1.0]])
-        expected_state0_h = np.array([[-0.38079708, 0.38079708]])
-        expected_state1_c = np.array([[-1.0, 1.0]])
-        expected_state1_h = np.array([[-0.38079708, 0.38079708]])
+        expected_output = np.array([[-0.47406167, 0.47406143]])
+        expected_state0_c = np.array([[-1., 1.]])
+        expected_state0_h = np.array([[-0.47406167, 0.47406143]])
+        expected_state1_c = np.array([[-1., 1.]])
+        expected_state1_h = np.array([[-0.47406167, 0.47406143]])
 
         actual_state0_h = output_states_v[0][0]
         actual_state0_c = output_states_v[0][1]
@@ -231,7 +231,7 @@ class LayerNormBasicLSTMCellTest(tf.test.TestCase):
         output, output_states = cell(x, state)
         self.evaluate([tf.compat.v1.global_variables_initializer()])
         output_v, output_states_v = self.evaluate([output, output_states])
-        expected_h = np.array([[-0.38079708, 0.38079708]])
+        expected_h = np.array([[-0.47406167, 0.47406143]])
         expected_c = np.array([[-1.0, 1.0]])
         self.assertAllClose(output_v, expected_h, 1e-5)
         self.assertAllClose(output_states_v[0], expected_h, 1e-5)
