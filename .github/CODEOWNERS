@@ -3,12 +3,19 @@
 # SIG maintainers are the catch all for reviews
 * @tensorflow/sig-addons-maintainers
 
-
 # Subpackage Owners
+/tensorflow_addons/activations/ @facaiy @seanpmorgan
+/tensorflow_addons/image/ @windqaq @facaiy 
+/tensorflow_addons/layers/ @seanpmorgan @facaiy
+/tensorflow_addons/losses/ @facaiy @windqaq
+/tensorflow_addons/optimizers/ @facaiy @windqaq
 /tensorflow_addons/rnn/ @qlzh727
 /tensorflow_addons/seq2seq/ @qlzh727
-/tensorflow_addons/custom_ops/seq2seq/ @qlzh727
+/tensorflow_addons/text/ @seanpmorgan @facaiy
 
+/tensorflow_addons/custom_ops/image/ @windqaq @facaiy
+/tensorflow_addons/custom_ops/seq2seq/ @qlzh727
+/tensorflow_addons/custom_ops/text/ @seanpmorgan @facaiy
 
 # Submodule Owners
 # These may not automatically trigger a review because submodule owners do not
