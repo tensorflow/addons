@@ -7,6 +7,7 @@ py_library(
     srcs = [
         "__init__.py",
         "lazy_adam.py",
+        "moving_average.py",
     ],
     srcs_version = "PY2AND3",
     deps = [

@@ -4,11 +4,13 @@
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
 | lazy_adam |  SIG-Addons | addons@tensorflow.org   |
+| moving_average | Dheeraj R. Reddy | dheeraj98reddy@gmail.com |
 
 ## Components
 | Submodule | Optimizer  | Reference                                   |
 |:----------------------- |:---------------------- |:---------|
 | lazy_adam | LazyAdam | https://arxiv.org/abs/1412.6980      |
+| moving_average | MovingAverage | |
 
 
 ## Contribution Guidelines
