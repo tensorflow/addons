@@ -25,7 +25,7 @@ from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 _image_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/image/_image_ops.so"))
 
-ops.NotDifferentiable("EuclideanDistanceTransform")
+tf.no_gradient("EuclideanDistanceTransform")
 ops.RegisterShape("EuclideanDistanceTransform")(
     common_shapes.call_cpp_shape_fn)
 
