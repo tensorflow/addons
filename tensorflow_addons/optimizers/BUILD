@@ -27,3 +27,16 @@ py_test(
         ":optimizers",
     ],
 )
+
+py_test(
+    name = "moving_average_test",
+    size = "small",
+    srcs = [
+        "moving_average_test.py",
+    ],
+    main = "moving_average_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":optimizers",
+    ],
+)
