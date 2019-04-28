@@ -65,19 +65,6 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
         self._num_updates = num_updates
         self._seq_update = seq_update
 
-    def _create_slots(self, var_list):
-        self._optimizer._create_slots(var_list)  # pylint: disable=protected-access
-
-    def _resource_apply_dense(self, grad, var):
-        return self._optimizer._resource_apply_dense(grad, var)  # pylint: disable=protected-access
-
-    def _resource_apply_sparse_duplicate_indices(self, grad, var, indices):
-        return self._optimizer._resource_apply_sparse_duplicate_indices(  # pylint: disable=protected-access
-            grad, var, indices)
-
-    def _resource_apply_sparse(self, grad, var, indices):
-        return self._optimizer._resource_apply_sparse(grad, var, indices)  # pylint: disable=protected-access
-
     def apply_gradients(self, grads_and_vars, name=None):
         # pop = tf.print(grads_and_vars)
         train_op = self._optimizer.apply_gradients(grads_and_vars, name=name)
@@ -125,3 +112,16 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
     @property
     def weights(self):
         return self._optimizer.weights
+
+    def _create_slots(self, var_list):
+        self._optimizer._create_slots(var_list)  # pylint: disable=protected-access
+
+    def _resource_apply_dense(self, grad, var):
+        return self._optimizer._resource_apply_dense(grad, var)  # pylint: disable=protected-access
+
+    def _resource_apply_sparse_duplicate_indices(self, grad, var, indices):
+        return self._optimizer._resource_apply_sparse_duplicate_indices(  # pylint: disable=protected-access
+            grad, var, indices)
+
+    def _resource_apply_sparse(self, grad, var, indices):
+        return self._optimizer._resource_apply_sparse(grad, var, indices)  # pylint: disable=protected-access
