@@ -12,17 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Utilities for tf.keras."""
+"""Customized RNN cells."""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
-
-# TODO: find public API alternative to these
-from tensorflow.python.keras.losses import LossFunctionWrapper  # pylint: disable=unused-import
-
-
-def register_keras_custom_object(cls):
-    tf.keras.utils.get_custom_objects()[cls.__name__] = cls
-    return cls
+from tensorflow_addons.rnn.cell import NASCell

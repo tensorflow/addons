@@ -93,7 +93,7 @@ def median_filter2d(image, filter_shape=(3, 3), name=None):
         for a in range(ch):
             img = image[:, :, a:a + 1]
             img = tf.reshape(img, [1, row, col, 1])
-            slic = tf.image.extract_image_patches(
+            slic = tf.image.extract_patches(
                 img, [1, filter_shapex, filter_shapey, 1], [1, 1, 1, 1],
                 [1, 1, 1, 1],
                 padding='SAME')

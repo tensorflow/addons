@@ -29,13 +29,14 @@ developments that cannot be integrated into core TensorFlow
 ## Maintainers
 | Subpackage    | Maintainers  | Contact Info                        |
 |:----------------------- |:----------- |:----------------------------|
-| [tfa.activations](tensorflow_addons/activations/README.md) | SIG-Addons | addons@tensorflow.org    |
-| [tfa.image](tensorflow_addons/image/README.md) |  |                                   |
-| [tfa.layers](tensorflow_addons/layers/README.md) | SIG-Addons |     addons@tensorflow.org |
-| [tfa.losses](tensorflow_addons/losses/README.md) | SIG-Addons |     addons@tensorflow.org |
-| [tfa.optimizers](tensorflow_addons/optimizers/README.md) | SIG-Addons | addons@tensorflow.org |
-| [tfa.seq2seq](tensorflow_addons/seq2seq/README.md) | Google | @qlzh727 | 
-| [tfa.text](tensorflow_addons/text/README.md) |  |  |
+| [tfa.activations](tensorflow_addons/activations/README.md) | SIG-Addons | @facaiy @seanpmorgan | 
+| [tfa.image](tensorflow_addons/image/README.md) | SIG-Addons | @windqaq @facaiy |
+| [tfa.layers](tensorflow_addons/layers/README.md) | SIG-Addons | @seanpmorgan @facaiy |
+| [tfa.losses](tensorflow_addons/losses/README.md) | SIG-Addons | @facaiy @windqaq   |
+| [tfa.optimizers](tensorflow_addons/optimizers/README.md) | SIG-Addons | @facaiy @windqaq |
+| [tfa.rnn](tensorflow_addons/rnn/README.md) | Google | @qlzh727 |
+| [tfa.seq2seq](tensorflow_addons/seq2seq/README.md) | Google | @qlzh727 |
+| [tfa.text](tensorflow_addons/text/README.md) |  SIG-Addons |  @seanpmorgan @facaiy |
 
 ## Core Concepts
 
@@ -61,8 +62,8 @@ To install the latest version, run the following:
 ```
 pip install tensorflow-addons
 ```
-
-**Note:** You will also need [TensorFlow 2.0 or higher](https://www.tensorflow.org/alpha). 
+ 
+**Note:** You will also need [`tensorflow==2.0.0.a0`](https://www.tensorflow.org/alpha) installed.
 
 To use addons:
 
@@ -74,6 +75,8 @@ import tensorflow_addons as tfa
 #### Installing from Source
 You can also install from source. This requires the [Bazel](
 https://bazel.build/) build system.
+
+**Note:** If building from master you must install `tf-nightly-2.0-preview` in the process.
 
 ```
 git clone https://github.com/tensorflow/addons.git
@@ -87,8 +90,6 @@ bazel-bin/build_pip_pkg artifacts
 
 pip install artifacts/tensorflow_addons-*.whl
 ```
-
-**Notice**: If you are using Mac OS X, you need install addition software by `brew install coreutils` (this requires the [Homebrew](https://brew.sh/)) or `port install coreutils` (this requires the [MacPorts](https://www.macports.org/))
 
 ## Contributing
 TF-Addons is a community led open source project. As such, the project

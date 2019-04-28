@@ -880,7 +880,7 @@ def _beam_search_step(time, logits, next_cell_state, beam_state, batch_size,
     #       name="next_beam_word_ids")
     # would be a lot cleaner but for reasons unclear, that hides the results of
     # the op which prevents capturing it with tfdbg debug ops.
-    raw_next_word_ids = tf.mod(
+    raw_next_word_ids = tf.math.floormod(
         word_indices, vocab_size, name="next_beam_word_ids")
     next_word_ids = tf.cast(raw_next_word_ids, tf.int32)
     next_beam_ids = tf.cast(
