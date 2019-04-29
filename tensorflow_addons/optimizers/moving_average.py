@@ -54,43 +54,46 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
             raise TypeError(
                 "optimzer is not an object of tf.keras.optimizers.Optimizer")
 
+        if num_updates is not None and not isinstance(num_updates, int):
+            raise TypeError("num_updates must be of integer type")
+
+        if not isinstance(sequential_update, bool):
+            raise TypeError("sequential_update must be of bool type")
+
         self._optimizer = optimizer
 
-        # NoneType cannot be passed to _set_hyper, so we convert it to -1
-        # and vice-versa when creating the object using from_config
-        num_updates = None if num_updates == -1 else num_updates
         with tf.name_scope(name):
             self._ema = tf.train.ExponentialMovingAverage(
                 average_decay, num_updates=num_updates)
-        num_updates = -1 if num_updates is None else num_updates
 
         self._set_hyper("average_decay", average_decay)
-        self._set_hyper("num_updates", num_updates)
-        self._set_hyper("sequential_update", sequential_update)
+        self._num_updates = num_updates
+        self._sequential_update = sequential_update
+        self._init = True
 
     def apply_gradients(self, grads_and_vars, name=None):
-        train_op = self._optimizer.apply_gradients(grads_and_vars, name=name)
         var_list = [v for (_, v) in grads_and_vars]
-        sequential_update = self._get_hyper("sequential_update", tf.bool)
 
-        def true_fn():
+        if tf.executing_eagerly() and self._init:
+            # this to ensure that var_list is registered initially
+            self._ema.apply(var_list)
+            self._init = False
+
+        train_op = self._optimizer.apply_gradients(grads_and_vars, name=name)
+
+        if self._sequential_update:
             with tf.control_dependencies([train_op]):
-                return self._ema.apply(var_list)
+                ma_op = self._ema.apply(var_list)
+        else:
+            ma_op = self._ema.apply(var_list)
 
-        def false_fn():
-            return self._ema.apply(var_list)
-
-        ma_op = tf.cond(sequential_update, true_fn, false_fn)
         return tf.group(train_op, ma_op, name="train_with_avg")
 
     def get_config(self):
         config = {
-            'average_decay':
-            self._serialize_hyperparameter('average_decay'),
-            'num_updates':
-            self._serialize_hyperparameter('num_updates'),
-            'sequential_update':
-            self._serialize_hyperparameter('sequential_update')
+            'average_decay': self._serialize_hyperparameter('average_decay'),
+            'num_updates': self._num_updates,
+            'sequential_update': self._sequential_update
         }
         base_config = self._optimizer.get_config()
         return dict(list(base_config.items()) + list(config.items()))
