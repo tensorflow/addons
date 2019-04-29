@@ -9,7 +9,7 @@
 | Submodule | Class              | Reference |
 |:----------|:------------------ |:--------- |
 | cell      | NASCell            | https://arxiv.org/abs/1611.01578  |
-| cell      | NLayerNormLSTMCell | https://arxiv.org/abs/1607.06450  |
+| cell      | LayerNormLSTMCell  | https://arxiv.org/abs/1607.06450  |
 
 
 ## Contribution Guidelines
