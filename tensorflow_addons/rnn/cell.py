@@ -247,7 +247,6 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
                  bias_constraint=None,
                  dropout=0.,
                  recurrent_dropout=0.,
-                 layer_norm=True,
                  norm_gamma_initializer='ones',
                  norm_beta_initializer='zeros',
                  norm_epsilon=1e-3,
@@ -286,16 +285,11 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
             linear transformation of the inputs.
           recurrent_dropout: Float between 0 and 1. Fraction of the units to
             drop for the linear transformation of the recurrent state.
-          layer_norm: If `True`, layer normalization will be applied.
           norm_gamma_initializer: Initializer for the layer normalization gain
-            initial value. If `layer_norm` has been set to `False`, this
-            argument will be ignored.
+            initial value.
           norm_beta_initializer: Initializer for the layer normalization shift
-            initial value. If `layer_norm` has been set to `False`, this
-            argument will be ignored.
-          norm_epsilon: Float, the epsilon value for normalization layers. If
-            `layer_norm` has been set to `False`, this argument will be
-            ignored.
+            initial value.
+          norm_epsilon: Float, the epsilon value for normalization layers.
           **kwargs: Dict, the other keyword arguments for layer creation.
         """
         super(LayerNormLSTMCell, self).__init__(
@@ -316,30 +310,23 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
             dropout=dropout,
             recurrent_dropout=recurrent_dropout,
             **kwargs)
-        self.layer_norm = layer_norm
         self.norm_gamma_initializer = keras.initializers.get(
             norm_gamma_initializer)
         self.norm_beta_initializer = keras.initializers.get(
             norm_beta_initializer)
         self.norm_epsilon = norm_epsilon
-        if self.layer_norm:
-            self.kernel_norm = self._create_norm_layer('kernel_norm')
-            self.recurrent_norm = self._create_norm_layer('recurrent_norm')
-            self.state_norm = self._create_norm_layer('state_norm')
+        self.kernel_norm = self._create_norm_layer('kernel_norm')
+        self.recurrent_norm = self._create_norm_layer('recurrent_norm')
+        self.state_norm = self._create_norm_layer('state_norm')
 
     def build(self, input_shape):
         super(LayerNormLSTMCell, self).build(input_shape)
-        if self.layer_norm:
-            norm_input_shape = [input_shape[0], self.units]
-            self.kernel_norm.build(norm_input_shape)
-            self.recurrent_norm.build(norm_input_shape)
-            self.state_norm.build(norm_input_shape)
+        norm_input_shape = [input_shape[0], self.units]
+        self.kernel_norm.build(norm_input_shape)
+        self.recurrent_norm.build(norm_input_shape)
+        self.state_norm.build(norm_input_shape)
 
     def call(self, inputs, states, training=None):
-        if not self.layer_norm:
-            return super(LayerNormLSTMCell, self).call(
-                inputs, states, training=training)
-        # For the layer norm implementation
         h_tm1 = states[0]  # previous memory state
         c_tm1 = states[1]  # previous carry state
 
@@ -365,8 +352,6 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
 
     def get_config(self):
         config = {
-            'layer_norm':
-            self.layer_norm,
             'norm_gamma_initializer':
             keras.initializers.serialize(self.norm_gamma_initializer),
             'norm_beta_initializer':

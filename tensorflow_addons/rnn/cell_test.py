@@ -176,10 +176,10 @@ class NASCellTest(tf.test.TestCase):
 
 
 @test_utils.run_all_in_graph_and_eager_modes
-class LayerNormBasicLSTMCellTest(tf.test.TestCase):
+class LayerNormLSTMCellTest(tf.test.TestCase):
 
     # NOTE: all the values in the current test case have been calculated.
-    def testBasicLSTMCell(self):
+    def testCellOutput(self):
         x = tf.ones([1, 2], dtype=tf.float32)
         c0 = tf.constant(0.1 * np.asarray([[0, 1]]), dtype=tf.float32)
         h0 = tf.constant(0.1 * np.asarray([[2, 3]]), dtype=tf.float32)
@@ -237,43 +237,6 @@ class LayerNormBasicLSTMCellTest(tf.test.TestCase):
         self.assertAllClose(output_states_v[0], expected_h, 1e-5)
         self.assertAllClose(output_states_v[1], expected_c, 1e-5)
 
-    def testBasicLSTMCellWithoutNorm(self):
-        """Tests that BasicLSTMCell with layer_norm=False."""
-        const_initializer = tf.constant_initializer(0.5)
-        single_cell_without_norm = lambda: rnn_cell.LayerNormLSTMCell(
-            units=2,
-            kernel_initializer=const_initializer,
-            recurrent_initializer=const_initializer,
-            bias_initializer=const_initializer,
-            layer_norm=False)
-        standard_lstm_cell = lambda: keras.layers.LSTMCell(
-            units=2,
-            kernel_initializer=const_initializer,
-            recurrent_initializer=const_initializer,
-            bias_initializer=const_initializer)
-        x = tf.ones([1, 2], dtype=tf.float32)
-        c0 = tf.constant(0.1 * np.asarray([[0, 1]]), dtype=tf.float32)
-        h0 = tf.constant(0.1 * np.asarray([[2, 3]]), dtype=tf.float32)
-        state0 = [h0, c0]
-        c1 = tf.constant(0.1 * np.asarray([[4, 5]]), dtype=tf.float32)
-        h1 = tf.constant(0.1 * np.asarray([[6, 7]]), dtype=tf.float32)
-        state1 = [h1, c1]
-        state = (state0, state1)
-
-        norm_cell = keras.layers.StackedRNNCells(
-            [single_cell_without_norm() for _ in range(2)])
-        standard_cell = keras.layers.StackedRNNCells(
-            [standard_lstm_cell() for _ in range(2)])
-        norm_out, norm_states = norm_cell(x, state)
-        standard_out, standard_states = standard_cell(x, state)
-        self.evaluate([tf.compat.v1.global_variables_initializer()])
-        norm_out_v, norm_states_v = self.evaluate([norm_out, norm_states])
-        standard_out_v, standard_states_v = self.evaluate(
-            [standard_out, standard_states])
-
-        self.assertAllClose(norm_out_v, standard_out_v)
-        self.assertAllClose(norm_states_v, standard_states_v)
-
     def test_config(self):
         cell = rnn_cell.LayerNormLSTMCell(10)
 
@@ -312,7 +275,6 @@ class LayerNormBasicLSTMCellTest(tf.test.TestCase):
             "dropout": 0.,
             "recurrent_dropout": 0.,
             "implementation": 2,
-            "layer_norm": True,
             "norm_gamma_initializer": {
                 "class_name": "Ones",
                 "config": {}
