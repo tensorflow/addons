@@ -27,7 +27,6 @@ must:
    `@run_in_graph_and_eager_modes` (for test method)
    or `run_all_in_graph_and_eager_modes` (for TestCase subclass)
    decorator.
- * Consider inheriting from `OptimizerTestBase`.
  * Add a `py_test` to this sub-package's BUILD file.
 
 #### Documentation Requirements

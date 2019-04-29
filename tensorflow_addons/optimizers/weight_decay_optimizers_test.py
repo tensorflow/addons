@@ -69,13 +69,13 @@ class OptimizerTestBase(tf.test.TestCase):
             var1 = tf.Variable(var1_np, name="var1_%d" % i)
             if do_sparse:
                 grads0_np_indices = np.array([0, 1], dtype=np.int32)
-                grads0 = tf.IndexedSlices(
-                    tf.constant(grads0_np), tf.constant(grads0_np_indices),
-                    tf.constant([2]))
+                grads0 = tf.IndexedSlices(tf.constant(grads0_np),
+                                          tf.constant(grads0_np_indices),
+                                          tf.constant([2]))
                 grads1_np_indices = np.array([0, 1], dtype=np.int32)
-                grads1 = tf.IndexedSlices(
-                    tf.constant(grads1_np), tf.constant(grads1_np_indices),
-                    tf.constant([2]))
+                grads1 = tf.IndexedSlices(tf.constant(grads1_np),
+                                          tf.constant(grads1_np_indices),
+                                          tf.constant([2]))
             else:
                 grads0 = tf.constant(grads0_np)
                 grads1 = tf.constant(grads1_np)
@@ -94,10 +94,12 @@ class OptimizerTestBase(tf.test.TestCase):
                     opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
                 else:
                     self.evaluate(update)
-                var0_np, np_slot_vars0 = update_fn(
-                    var0_np, grads0_np, np_slot_vars0, **optimizer_kwargs)
-                var1_np, np_slot_vars1 = update_fn(
-                    var1_np, grads1_np, np_slot_vars1, **optimizer_kwargs)
+                var0_np, np_slot_vars0 = update_fn(var0_np, grads0_np,
+                                                   np_slot_vars0,
+                                                   **optimizer_kwargs)
+                var1_np, np_slot_vars1 = update_fn(var1_np, grads1_np,
+                                                   np_slot_vars1,
+                                                   **optimizer_kwargs)
                 # Validate updated params
                 self.assertAllCloseAccordingToType(var0_np,
                                                    self.evaluate(var0))
@@ -127,15 +129,16 @@ class OptimizerTestBase(tf.test.TestCase):
                 tf.constant([0.2], shape=[1, 1], dtype=dtype),
                 tf.constant([1]), tf.constant([2, 1]))
             opt_repeated = optimizer(**optimizer_kwargs)
-            repeated_update = opt_repeated.apply_gradients(
-                [(grad_repeated_index, repeated_index_update_var)])
+            repeated_update = opt_repeated.apply_gradients([
+                (grad_repeated_index, repeated_index_update_var)
+            ])
             opt_aggregated = optimizer(**optimizer_kwargs)
-            aggregated_update = opt_aggregated.apply_gradients(
-                [(grad_aggregated, aggregated_update_var)])
+            aggregated_update = opt_aggregated.apply_gradients([
+                (grad_aggregated, aggregated_update_var)
+            ])
             self.evaluate(tf.compat.v1.global_variables_initializer())
-            self.assertAllClose(
-                self.evaluate(aggregated_update_var),
-                self.evaluate(repeated_index_update_var))
+            self.assertAllClose(self.evaluate(aggregated_update_var),
+                                self.evaluate(repeated_index_update_var))
             for _ in range(3):
                 if not tf.executing_eagerly():
                     self.evaluate(repeated_update)
@@ -145,9 +148,8 @@ class OptimizerTestBase(tf.test.TestCase):
                                                    repeated_index_update_var)])
                     opt_aggregated.apply_gradients([(grad_aggregated,
                                                      aggregated_update_var)])
-                self.assertAllClose(
-                    self.evaluate(aggregated_update_var),
-                    self.evaluate(repeated_index_update_var))
+                self.assertAllClose(self.evaluate(aggregated_update_var),
+                                    self.evaluate(repeated_index_update_var))
 
 
 def adamw_update_numpy(param, grad_t, slot_vars, learning_rate, beta_1, beta_2,
@@ -160,8 +162,8 @@ def adamw_update_numpy(param, grad_t, slot_vars, learning_rate, beta_1, beta_2,
     lr_t = lr * np.sqrt(1 - beta2**t) / (1 - beta1**t)
     slot_vars["m"] = beta1 * slot_vars.get("m", 0) + (1 - beta1) * grad_t
     slot_vars["v"] = beta2 * slot_vars.get("v", 0) + (1 - beta2) * grad_t**2
-    param_t = (param * (1 - wd) -
-               lr_t * slot_vars["m"] / (np.sqrt(slot_vars["v"]) + eps))
+    param_t = (param * (1 - wd) - lr_t * slot_vars["m"] /
+               (np.sqrt(slot_vars["v"]) + eps))
     slot_vars["t"] = t
     return param_t, slot_vars
 
@@ -179,35 +181,46 @@ def sgdw_update_numpy(param, grad_t, slot_vars, learning_rate, momentum,
 
 class AdamWTest(OptimizerTestBase):
 
-    opt_params = {
-        "learning_rate": 0.001,
-        "beta_1": 0.9,
-        "beta_2": 0.999,
-        "epsilon": 1e-8,
-        "weight_decay": WEIGHT_DECAY
-    }
-    callable_opt_params = {k: (lambda: v) for k, v in opt_params.items()}
     optimizer = weight_decay_optimizers.AdamW
 
     @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testSparse(self):
-        self.doTest(
-            self.optimizer,
-            adamw_update_numpy,
-            do_sparse=True,
-            **self.opt_params)
+        self.doTest(self.optimizer,
+                    adamw_update_numpy,
+                    do_sparse=True,
+                    learning_rate=0.001,
+                    beta_1=0.9,
+                    beta_2=0.999,
+                    epsilon=1e-8,
+                    weight_decay=WEIGHT_DECAY)
 
     @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testSparseRepeatedIndices(self):
-        self.doTestSparseRepeatedIndices(self.optimizer, **self.opt_params)
+        self.doTestSparseRepeatedIndices(self.optimizer,
+                                         learning_rate=0.001,
+                                         beta_1=0.9,
+                                         beta_2=0.999,
+                                         epsilon=1e-8,
+                                         weight_decay=WEIGHT_DECAY)
 
     @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testBasic(self):
-        self.doTest(self.optimizer, adamw_update_numpy, **self.opt_params)
+        self.doTest(self.optimizer,
+                    adamw_update_numpy,
+                    learning_rate=0.001,
+                    beta_1=0.9,
+                    beta_2=0.999,
+                    epsilon=1e-8,
+                    weight_decay=WEIGHT_DECAY)
 
     def testBasicCallableParams(self):
-        self.doTest(self.optimizer, adamw_update_numpy,
-                    **self.callable_opt_params)
+        self.doTest(self.optimizer,
+                    adamw_update_numpy,
+                    learning_rate=lambda: 0.001,
+                    beta_1=lambda: 0.9,
+                    beta_2=lambda: 0.999,
+                    epsilon=lambda: 1e-8,
+                    weight_decay=lambda: WEIGHT_DECAY)
 
 
 class SGDWTest(OptimizerTestBase):
@@ -216,38 +229,34 @@ class SGDWTest(OptimizerTestBase):
 
     @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testSparse(self):
-        self.doTest(
-            self.optimizer,
-            sgdw_update_numpy,
-            do_sparse=True,
-            learning_rate=0.001,
-            momentum=0.9,
-            weight_decay=WEIGHT_DECAY)
+        self.doTest(self.optimizer,
+                    sgdw_update_numpy,
+                    do_sparse=True,
+                    learning_rate=0.001,
+                    momentum=0.9,
+                    weight_decay=WEIGHT_DECAY)
 
     @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testSparseRepeatedIndices(self):
-        self.doTestSparseRepeatedIndices(
-            self.optimizer,
-            learning_rate=0.001,
-            momentum=0.9,
-            weight_decay=WEIGHT_DECAY)
+        self.doTestSparseRepeatedIndices(self.optimizer,
+                                         learning_rate=0.001,
+                                         momentum=0.9,
+                                         weight_decay=WEIGHT_DECAY)
 
     @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testBasic(self):
-        self.doTest(
-            self.optimizer,
-            sgdw_update_numpy,
-            learning_rate=0.001,
-            momentum=0.9,
-            weight_decay=WEIGHT_DECAY)
+        self.doTest(self.optimizer,
+                    sgdw_update_numpy,
+                    learning_rate=0.001,
+                    momentum=0.9,
+                    weight_decay=WEIGHT_DECAY)
 
     def testBasicCallableParams(self):
-        self.doTest(
-            self.optimizer,
-            sgdw_update_numpy,
-            learning_rate=lambda: 0.001,
-            momentum=lambda: 0.9,
-            weight_decay=lambda: WEIGHT_DECAY)
+        self.doTest(self.optimizer,
+                    sgdw_update_numpy,
+                    learning_rate=lambda: 0.001,
+                    momentum=lambda: 0.9,
+                    weight_decay=lambda: WEIGHT_DECAY)
 
 
 class ExtendWithWeightDecayTest(SGDWTest):
