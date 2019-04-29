@@ -27,8 +27,8 @@ from tensorflow_addons.rnn import cell as rnn_cell
 
 
 @test_utils.run_all_in_graph_and_eager_modes
-class RNNCellTest(tf.test.TestCase):
-    def test_NASCell(self):
+class NASCellTest(tf.test.TestCase):
+    def test_base(self):
         units = 6
         batch_size = 3
         expected_output = np.array(
@@ -82,7 +82,7 @@ class RNNCellTest(tf.test.TestCase):
         self.assertEqual(new_h.shape[1], units)
         self.assertAllClose(np.concatenate(res[1], axis=1), expected_state)
 
-    def test_NASCell_projection(self):
+    def test_projection(self):
         units = 6
         batch_size = 3
         projection = 5
@@ -142,7 +142,7 @@ class RNNCellTest(tf.test.TestCase):
         self.assertEqual(new_h.shape[1], projection)
         self.assertAllClose(np.concatenate(res[1], axis=1), expected_state)
 
-    def test_NASCell_keras_RNN(self):
+    def test_keras_RNN(self):
         """Tests that NASCell works with keras RNN layer."""
         cell = rnn_cell.NASCell(10)
         seq_input = tf.convert_to_tensor(
@@ -152,7 +152,7 @@ class RNNCellTest(tf.test.TestCase):
         self.evaluate([tf.compat.v1.global_variables_initializer()])
         self.assertEqual(self.evaluate(rnn_outputs).shape, (2, 10))
 
-    def test_NASCell_config(self):
+    def test_config(self):
         cell = rnn_cell.NASCell(10, projection=5, use_bias=True)
 
         expected_config = {
@@ -171,6 +171,124 @@ class RNNCellTest(tf.test.TestCase):
         self.assertEqual(config, expected_config)
 
         restored_cell = rnn_cell.NASCell.from_config(config)
+        restored_config = restored_cell.get_config()
+        self.assertEqual(config, restored_config)
+
+
+@test_utils.run_all_in_graph_and_eager_modes
+class LayerNormLSTMCellTest(tf.test.TestCase):
+
+    # NOTE: all the values in the current test case have been calculated.
+    def testCellOutput(self):
+        x = tf.ones([1, 2], dtype=tf.float32)
+        c0 = tf.constant(0.1 * np.asarray([[0, 1]]), dtype=tf.float32)
+        h0 = tf.constant(0.1 * np.asarray([[2, 3]]), dtype=tf.float32)
+        state0 = [h0, c0]
+        c1 = tf.constant(0.1 * np.asarray([[4, 5]]), dtype=tf.float32)
+        h1 = tf.constant(0.1 * np.asarray([[6, 7]]), dtype=tf.float32)
+        state1 = [h1, c1]
+        state = (state0, state1)
+        const_initializer = tf.constant_initializer(0.5)
+        single_cell = lambda: rnn_cell.LayerNormLSTMCell(
+            units=2,
+            kernel_initializer=const_initializer,
+            recurrent_initializer=const_initializer,
+            bias_initializer=const_initializer,
+            norm_epsilon=1e-12)
+        cell = keras.layers.StackedRNNCells([single_cell() for _ in range(2)])
+        output, output_states = cell(x, state)
+        self.evaluate([tf.compat.v1.global_variables_initializer()])
+        output_v, output_states_v = self.evaluate([output, output_states])
+
+        expected_output = np.array([[-0.47406167, 0.47406143]])
+        expected_state0_c = np.array([[-1., 1.]])
+        expected_state0_h = np.array([[-0.47406167, 0.47406143]])
+        expected_state1_c = np.array([[-1., 1.]])
+        expected_state1_h = np.array([[-0.47406167, 0.47406143]])
+
+        actual_state0_h = output_states_v[0][0]
+        actual_state0_c = output_states_v[0][1]
+        actual_state1_h = output_states_v[1][0]
+        actual_state1_c = output_states_v[1][1]
+
+        self.assertAllClose(output_v, expected_output, 1e-5)
+        self.assertAllClose(expected_state0_c, actual_state0_c, 1e-5)
+        self.assertAllClose(expected_state0_h, actual_state0_h, 1e-5)
+        self.assertAllClose(expected_state1_c, actual_state1_c, 1e-5)
+        self.assertAllClose(expected_state1_h, actual_state1_h, 1e-5)
+
+        # Test BasicLSTMCell with input_size != num_units.
+        x = tf.ones([1, 3], dtype=tf.float32)
+        c = tf.constant(0.1 * np.asarray([[0, 1]]), dtype=tf.float32)
+        h = tf.constant(0.1 * np.asarray([[2, 3]]), dtype=tf.float32)
+        state = [h, c]
+        cell = rnn_cell.LayerNormLSTMCell(
+            units=2,
+            kernel_initializer=const_initializer,
+            recurrent_initializer=const_initializer,
+            bias_initializer=const_initializer,
+            norm_epsilon=1e-12)
+        output, output_states = cell(x, state)
+        self.evaluate([tf.compat.v1.global_variables_initializer()])
+        output_v, output_states_v = self.evaluate([output, output_states])
+        expected_h = np.array([[-0.47406167, 0.47406143]])
+        expected_c = np.array([[-1.0, 1.0]])
+        self.assertAllClose(output_v, expected_h, 1e-5)
+        self.assertAllClose(output_states_v[0], expected_h, 1e-5)
+        self.assertAllClose(output_states_v[1], expected_c, 1e-5)
+
+    def test_config(self):
+        cell = rnn_cell.LayerNormLSTMCell(10)
+
+        expected_config = {
+            "dtype": None,
+            "name": "layer_norm_lstm_cell",
+            "trainable": True,
+            "units": 10,
+            "activation": "tanh",
+            "recurrent_activation": "sigmoid",
+            "use_bias": True,
+            "kernel_initializer": {
+                "class_name": "GlorotUniform",
+                "config": {
+                    "seed": None
+                }
+            },
+            "recurrent_initializer": {
+                "class_name": "Orthogonal",
+                "config": {
+                    "seed": None,
+                    "gain": 1.0
+                }
+            },
+            "bias_initializer": {
+                "class_name": "Zeros",
+                "config": {}
+            },
+            "unit_forget_bias": True,
+            "kernel_regularizer": None,
+            "recurrent_regularizer": None,
+            "bias_regularizer": None,
+            "kernel_constraint": None,
+            "recurrent_constraint": None,
+            "bias_constraint": None,
+            "dropout": 0.,
+            "recurrent_dropout": 0.,
+            "implementation": 2,
+            "norm_gamma_initializer": {
+                "class_name": "Ones",
+                "config": {}
+            },
+            "norm_beta_initializer": {
+                "class_name": "Zeros",
+                "config": {}
+            },
+            "norm_epsilon": 1e-3,
+        }
+        config = cell.get_config()
+        self.assertEqual(config, expected_config)
+
+        restored_cell = rnn_cell.LayerNormLSTMCell.from_config(config)
         restored_config = restored_cell.get_config()
         self.assertEqual(config, restored_config)
 
