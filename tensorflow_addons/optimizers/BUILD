@@ -7,6 +7,7 @@ py_library(
     srcs = [
         "__init__.py",
         "lazy_adam.py",
+        "moving_average.py",
     ],
     srcs_version = "PY2AND3",
     deps = [
@@ -21,6 +22,19 @@ py_test(
         "lazy_adam_test.py",
     ],
     main = "lazy_adam_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":optimizers",
+    ],
+)
+
+py_test(
+    name = "moving_average_test",
+    size = "small",
+    srcs = [
+        "moving_average_test.py",
+    ],
+    main = "moving_average_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":optimizers",
