@@ -17,8 +17,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import six
-
 import tensorflow as tf
 
 from tensorflow_addons.optimizers import MovingAverage
@@ -35,7 +33,7 @@ class MovingAverageTest(tf.test.TestCase):
             grads0 = tf.constant([0.1, 0.1])
             grads1 = tf.constant([0.01, 0.01])
 
-            grads_and_vars = zip([grads0, grads1], [var0, var1])
+            grads_and_vars = list(zip([grads0, grads1], [var0, var1]))
 
             opt = MovingAverage(
                 tf.keras.optimizers.SGD(lr=2.0),
@@ -101,7 +99,7 @@ class MovingAverageTest(tf.test.TestCase):
         model.build(input_shape=[1, 1])
 
         opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), 0.5)
-        update = opt.apply_gradients(zip([grad], model.variables))
+        update = opt.apply_gradients(list(zip([grad], model.variables)))
 
         self.evaluate(tf.compat.v1.global_variables_initializer())
         self.evaluate(update)

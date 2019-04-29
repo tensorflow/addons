@@ -52,10 +52,10 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
 
         if not isinstance(optimizer, tf.keras.optimizers.Optimizer):
             raise TypeError(
-                "optimzer is not an object of tf.keras.optimizers.Optimizer")
+                "optimizer is not an object of tf.keras.optimizers.Optimizer")
 
         if num_updates is not None and not isinstance(num_updates, int):
-            raise TypeError("num_updates must be of integer type")
+            raise TypeError("num_updates must be None or of integer type")
 
         if not isinstance(sequential_update, bool):
             raise TypeError("sequential_update must be of bool type")
