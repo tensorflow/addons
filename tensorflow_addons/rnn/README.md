@@ -6,9 +6,10 @@
 | cell       | Google       | @qlzh727      |
 
 ## Components
-| Submodule | Class   | Reference |
-|:----------|:------- |:--------- |
-| cell      | NASCell | https://arxiv.org/abs/1611.01578  |
+| Submodule | Class              | Reference |
+|:----------|:------------------ |:--------- |
+| cell      | NASCell            | https://arxiv.org/abs/1611.01578  |
+| cell      | NLayerNormLSTMCell | https://arxiv.org/abs/1607.06450  |
 
 
 ## Contribution Guidelines
