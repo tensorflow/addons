@@ -38,14 +38,13 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
     opt = tfa.optimizers.MovingAverage(opt)
 
     ```
-
     """
 
     def __init__(self,
                  optimizer,
                  average_decay=0.1,
                  num_updates=None,
-                 seq_update=True,
+                 sequential_update=True,
                  name="MovingAverage",
                  **kwargs):
 
@@ -57,32 +56,41 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
 
         self._optimizer = optimizer
 
-        with tf.keras.backend.name_scope(self.__class__.__name__):
+        # NoneType cannot be passed to _set_hyper, so we convert it to -1
+        # and vice-versa when creating the object using from_config
+        num_updates = None if num_updates == -1 else num_updates
+        with tf.name_scope(name):
             self._ema = tf.train.ExponentialMovingAverage(
                 average_decay, num_updates=num_updates)
+        num_updates = -1 if num_updates is None else num_updates
 
-        self._average_decay = average_decay
-        self._num_updates = num_updates
-        self._seq_update = seq_update
+        self._set_hyper("average_decay", average_decay)
+        self._set_hyper("num_updates", num_updates)
+        self._set_hyper("sequential_update", sequential_update)
 
     def apply_gradients(self, grads_and_vars, name=None):
-        # pop = tf.print(grads_and_vars)
         train_op = self._optimizer.apply_gradients(grads_and_vars, name=name)
         var_list = [v for (_, v) in grads_and_vars]
+        sequential_update = self._get_hyper("sequential_update", tf.bool)
 
-        if self._seq_update:
+        def true_fn():
             with tf.control_dependencies([train_op]):
-                ma_op = self._ema.apply(var_list)
-        else:
-            ma_op = self._ema.apply(var_list)
+                return self._ema.apply(var_list)
 
+        def false_fn():
+            return self._ema.apply(var_list)
+
+        ma_op = tf.cond(sequential_update, true_fn, false_fn)
         return tf.group(train_op, ma_op, name="train_with_avg")
 
     def get_config(self):
         config = {
-            'average_decay': self._average_decay,
-            'num_updates': self._num_updates,
-            'seq_update': self._seq_update
+            'average_decay':
+            self._serialize_hyperparameter('average_decay'),
+            'num_updates':
+            self._serialize_hyperparameter('num_updates'),
+            'sequential_update':
+            self._serialize_hyperparameter('sequential_update')
         }
         base_config = self._optimizer.get_config()
         return dict(list(base_config.items()) + list(config.items()))
@@ -103,7 +111,6 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
         opt.assign_average_vars(model.variables)
 
         model.save('model.h5')
-
         ```
         """
         assign = tf.group([v.assign(self._ema.average(v)) for v in var_list])
@@ -112,9 +119,6 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
     @property
     def weights(self):
         return self._optimizer.weights
-
-    def _create_slots(self, var_list):
-        self._optimizer._create_slots(var_list)  # pylint: disable=protected-access
 
     def _resource_apply_dense(self, grad, var):
         return self._optimizer._resource_apply_dense(grad, var)  # pylint: disable=protected-access

@@ -21,14 +21,14 @@ import six
 
 import tensorflow as tf
 
-import moving_average
+from tensorflow_addons.optimizers import MovingAverage
 from tensorflow_addons.utils import test_utils
 
 
 class MovingAverageTest(tf.test.TestCase):
     @test_utils.run_deprecated_v1
     def test_run(self):
-        for seq_update in [True, False]:
+        for sequential_update in [True, False]:
             orig_var0 = [1.0, 2.0]
             orig_var1 = [3.0, 4.0]
 
@@ -38,10 +38,10 @@ class MovingAverageTest(tf.test.TestCase):
             grads0 = tf.constant([0.1, 0.1])
             grads1 = tf.constant([0.01, 0.01])
 
-            opt = moving_average.MovingAverage(
+            opt = MovingAverage(
                 tf.keras.optimizers.SGD(lr=2.0),
                 average_decay=0.5,
-                seq_update=seq_update)
+                sequential_update=sequential_update)
 
             update = opt.apply_gradients(
                 list(six.moves.zip([grads0, grads1], [var0, var1])))
@@ -55,14 +55,14 @@ class MovingAverageTest(tf.test.TestCase):
             self.assertAllClose(var0.read_value(), [0.8, 1.8])
             self.assertAllClose(var1.read_value(), [2.98, 3.98])
 
-            if seq_update:
+            if sequential_update:
                 self.assertAllClose(ema_var0.read_value(), [0.9, 1.9])
                 self.assertAllClose(ema_var1.read_value(), [2.99, 3.99])
 
             assign = opt.assign_average_vars([var0, var1])
             self.evaluate(assign)
 
-            if seq_update:
+            if sequential_update:
                 self.assertAllClose(self.evaluate(var0), [0.9, 1.9])
                 self.assertAllClose(self.evaluate(var1), [2.99, 3.99])
 
@@ -74,7 +74,7 @@ class MovingAverageTest(tf.test.TestCase):
             ])
             self.evaluate(perturb)
 
-            if seq_update:
+            if sequential_update:
                 self.assertAllClose(self.evaluate(var0), [1.9, 2.9])
                 self.assertAllClose(self.evaluate(var1), [4.99, 5.99])
                 self.assertAllClose(self.evaluate(ema_var0), [3.9, 4.9])
@@ -83,9 +83,9 @@ class MovingAverageTest(tf.test.TestCase):
     @test_utils.run_in_graph_and_eager_modes
     def test_opt_failure(self):
         base_opt = None
-        for seq_update in [True, False]:
+        for sequential_update in [True, False]:
             with self.assertRaises(TypeError):
-                moving_average.MovingAverage(base_opt, 0.5, seq_update)
+                MovingAverage(base_opt, 0.5, sequential_update)
 
     @test_utils.run_deprecated_v1
     def test_model_weights_update(self):
@@ -99,8 +99,7 @@ class MovingAverageTest(tf.test.TestCase):
 
         model.build(input_shape=[1, 1])
 
-        opt = moving_average.MovingAverage(
-            tf.keras.optimizers.SGD(lr=2.0), 0.5)
+        opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), 0.5)
 
         update = opt.apply_gradients(
             list(six.moves.zip([grad], model.variables)))
@@ -112,6 +111,26 @@ class MovingAverageTest(tf.test.TestCase):
         mean_update = opt.assign_average_vars(model.variables)
         self.evaluate(mean_update)
         self.assertAllClose(model.variables[0].read_value(), [[0.9]])
+
+    @test_utils.run_in_graph_and_eager_modes
+    def test_config(self):
+        sgd_opt = tf.keras.optimizers.SGD(
+            lr=2.0, nesterov=True, momentum=0.3, decay=0.1)
+        opt = MovingAverage(
+            sgd_opt,
+            average_decay=0.5,
+            num_updates=100,
+            sequential_update=False)
+        config = opt.get_config()
+
+        self.assertEqual(config['average_decay'], 0.5)
+        self.assertEqual(config['decay'], 0.1)
+        self.assertEqual(config['learning_rate'], 2.0)
+        self.assertEqual(config['momentum'], 0.3)
+        self.assertEqual(config['name'], 'SGD')
+        self.assertEqual(config['nesterov'], True)
+        self.assertEqual(config['num_updates'], 100)
+        self.assertEqual(config['sequential_update'], False)
 
 
 if __name__ == '__main__':
