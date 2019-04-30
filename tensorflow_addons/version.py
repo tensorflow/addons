@@ -20,14 +20,14 @@ from __future__ import print_function
 # We follow Semantic Versioning (https://semver.org/)
 _MAJOR_VERSION = '0'
 _MINOR_VERSION = '3'
-_PATCH_VERSION = '0'
+_PATCH_VERSION = '1'
 
 # When building releases, we can update this value on the release branch to
 # reflect the current release candidate ('rc0', 'rc1') or, finally, the official
 # stable release (indicated by `_VERSION_SUFFIX = ''`). Outside the context of a
 # release branch, the current version is by default assumed to be a
 # 'development' version, labeled 'dev'.
-_VERSION_SUFFIX = 'dev'
+_VERSION_SUFFIX = ''
 
 # Example, '0.1.0-dev'
 __version__ = '.'.join([
