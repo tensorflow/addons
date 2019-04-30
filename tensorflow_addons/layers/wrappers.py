@@ -93,11 +93,11 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         """Call `Layer`"""
         if not self._initialized:
             self._initialize_weights(inputs)
-            
+
         self._compute_weights()  # Recompute weights for each forward pass
         output = self.layer(inputs)
         return output
-    
+
     def compute_output_shape(self, input_shape):
         return tf.TensorShape(
             self.layer.compute_output_shape(input_shape).as_list())
@@ -155,4 +155,3 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         config = {'data_init': self.data_init}
         base_config = super(WeightNormalization, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
-        
