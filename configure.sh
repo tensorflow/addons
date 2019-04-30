@@ -35,10 +35,17 @@ function write_action_env_to_bazelrc() {
 }
 
 [[ -f .bazelrc ]] && rm .bazelrc
+read -r -p "Tensorflow will be upgraded to 2.0. Are You Sure? [Y/n] " reply
+case $reply in
+    [yY]*) echo "Installing...";;
+    * ) echo "Goodbye!"; exit;;
+esac
 pip install $QUIET_FLAG -r requirements.txt
 
 TF_CFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') )
 TF_LFLAGS=( $(python -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )
+TF_SHAREDLIB=( $(python -c 'import tensorflow as tf; print(tf.sysconfig.get_link_flags()[-1])') )
 
 write_action_env_to_bazelrc "TF_HEADER_DIR" ${TF_CFLAGS:2}
 write_action_env_to_bazelrc "TF_SHARED_LIBRARY_DIR" ${TF_LFLAGS:2}
+write_action_env_to_bazelrc "TF_SHARED_LIBRARY_NAME" ${TF_SHAREDLIB:3}

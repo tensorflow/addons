@@ -12,15 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Additional optimizers that conform to Keras API."""
+"""Customized RNN cells."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow_addons.optimizers.lazy_adam import LazyAdam
-from tensorflow_addons.optimizers.weight_decay_optimizers import AdamW
-from tensorflow_addons.optimizers.weight_decay_optimizers import SGDW
-from tensorflow_addons.optimizers.weight_decay_optimizers import (
-    extend_with_decoupled_weight_decay)
-from tensorflow_addons.optimizers.moving_average import MovingAverage
+from tensorflow_addons.rnn.cell import LayerNormLSTMCell
+from tensorflow_addons.rnn.cell import NASCell

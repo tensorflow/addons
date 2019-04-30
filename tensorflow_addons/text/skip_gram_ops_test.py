@@ -22,9 +22,6 @@ import csv
 import os
 import tensorflow as tf
 
-from tensorflow.python.framework import random_seed
-from tensorflow.python.ops import lookup_ops
-from tensorflow.python.platform import test
 from tensorflow_addons import text
 from tensorflow_addons.text import skip_gram_ops
 from tensorflow_addons.utils import test_utils
@@ -163,7 +160,7 @@ class SkipGramOpsTest(tf.test.TestCase):
         """Tests skip-gram with min_skips != max_skips, with random output."""
         # The number of outputs is non-deterministic in this case, so set random
         # seed to help ensure the outputs remain constant for this test case.
-        random_seed.set_random_seed(42)
+        tf.compat.v1.set_random_seed(42)
 
         input_tensor = tf.constant(
             [b"the", b"quick", b"brown", b"fox", b"jumps", b"over"])
@@ -199,7 +196,7 @@ class SkipGramOpsTest(tf.test.TestCase):
         # provide a seed to us. This results in random_seed.get_seed() returning
         # None for both seeds, forcing the C++ kernel to execute its default
         # seed logic.
-        random_seed.set_random_seed(None)
+        tf.compat.v1.set_random_seed(None)
 
         # Uses an input tensor with 10 words, with possible skip ranges in
         # [1, 5]. Thus, the probability that two random samplings would result
@@ -280,8 +277,8 @@ class SkipGramOpsTest(tf.test.TestCase):
                 corpus_size=100)
 
         # vocab_subsampling and corpus_size must both be present or absent.
-        dummy_table = lookup_ops.HashTable(
-            lookup_ops.KeyValueTensorInitializer([b"foo"], [10]), -1)
+        dummy_table = tf.lookup.StaticHashTable(
+            tf.lookup.KeyValueTensorInitializer([b"foo"], [10]), -1)
         with self.assertRaises(ValueError):
             text.skip_gram_sample(
                 dummy_input,
@@ -302,8 +299,8 @@ class SkipGramOpsTest(tf.test.TestCase):
             [b"the", b"answer", b"to", b"life", b"and", b"universe"])
         keys = tf.constant([b"and", b"life", b"the", b"to", b"universe"])
         values = tf.constant([0, 1, 2, 3, 4], tf.dtypes.int64)
-        vocab_freq_table = lookup_ops.HashTable(
-            lookup_ops.KeyValueTensorInitializer(keys, values), -1)
+        vocab_freq_table = tf.lookup.StaticHashTable(
+            tf.lookup.KeyValueTensorInitializer(keys, values), -1)
 
         # No vocab_freq_table specified - output should be the same as input
         no_table_output = skip_gram_ops._filter_input(
@@ -343,7 +340,7 @@ class SkipGramOpsTest(tf.test.TestCase):
         """Tests input filtering based on vocab subsampling."""
         # The outputs are non-deterministic, so set random seed to help ensure
         # that the outputs remain constant for testing.
-        random_seed.set_random_seed(42)
+        tf.compat.v1.set_random_seed(42)
 
         input_tensor = tf.constant([
             # keep_prob = (sqrt(30/(0.05*100)) + 1) * (0.05*100/30) = 0.57.
@@ -356,8 +353,8 @@ class SkipGramOpsTest(tf.test.TestCase):
         ])
         keys = tf.constant([b"and", b"life", b"the", b"to", b"universe"])
         values = tf.constant([40, 8, 30, 20, 2], tf.dtypes.int64)
-        vocab_freq_table = lookup_ops.HashTable(
-            lookup_ops.KeyValueTensorInitializer(keys, values), -1)
+        vocab_freq_table = tf.lookup.StaticHashTable(
+            tf.lookup.KeyValueTensorInitializer(keys, values), -1)
 
         output = skip_gram_ops._filter_input(
             input_tensor=input_tensor,
@@ -370,7 +367,8 @@ class SkipGramOpsTest(tf.test.TestCase):
 
     @staticmethod
     def _make_text_vocab_freq_file():
-        filepath = os.path.join(test.get_temp_dir(), "vocab_freq.txt")
+        filepath = os.path.join(tf.compat.v1.test.get_temp_dir(),
+                                "vocab_freq.txt")
         with open(filepath, "w") as f:
             writer = csv.writer(f)
             writer.writerows([
@@ -384,7 +382,8 @@ class SkipGramOpsTest(tf.test.TestCase):
 
     @staticmethod
     def _make_text_vocab_float_file():
-        filepath = os.path.join(test.get_temp_dir(), "vocab_freq_float.txt")
+        filepath = os.path.join(tf.compat.v1.test.get_temp_dir(),
+                                "vocab_freq_float.txt")
         with open(filepath, "w") as f:
             writer = csv.writer(f)
             writer.writerows([
@@ -439,7 +438,7 @@ class SkipGramOpsTest(tf.test.TestCase):
                                            corpus_size=None):
         # The outputs are non-deterministic, so set random seed to help ensure
         # that the outputs remain constant for testing.
-        random_seed.set_random_seed(42)
+        tf.compat.v1.set_random_seed(42)
 
         input_tensor = tf.constant([
             # keep_prob = (sqrt(30/(0.05*100)) + 1) * (0.05*100/30) = 0.57.

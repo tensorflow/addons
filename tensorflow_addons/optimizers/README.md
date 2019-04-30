@@ -1,15 +1,18 @@
 # Addons - Optimizers
 
 ## Maintainers
-| Submodule               | Maintainers | Contact Info   |
-|:----------------------- |:----------- |:-------------- |
-| lazy_adam               |  SIG-Addons | addons@tensorflow.org   |
-| weight_decay_optimizers |  SIG-Addons | addons@tensorflow.org   |
+| Submodule  | Maintainers  | Contact Info   |
+|:---------- |:------------- |:--------------|
+| lazy_adam |  SIG-Addons | addons@tensorflow.org   |
+| moving_average | Dheeraj R. Reddy | dheeraj98reddy@gmail.com |
+| weight_decay_optimizers |  Phil Jund | ijund.phil@googlemail.com   |
+
 
 ## Components
 | Submodule | Optimizer  | Reference                                   |
 |:--------- |:---------- |:---------|
 | lazy_adam | LazyAdam | https://arxiv.org/abs/1412.6980      |
+| moving_average | MovingAverage | |
 | weight_decay_optimizers | SGDW, AdamW, extend_with_decoupled_weight_decay | https://arxiv.org/pdf/1711.05101.pdf |
 
 

@@ -134,7 +134,7 @@ class DenseImageWarpTest(tf.test.TestCase):
 
         self.assertAllClose(rand_image, interp)
 
-    # TODO: run in both graph and eager modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_zero_flows(self):
         """Apply _check_zero_flow_correctness() for a few sizes and types."""
         shapes_to_try = [[3, 4, 5, 6], [1, 2, 2, 1]]

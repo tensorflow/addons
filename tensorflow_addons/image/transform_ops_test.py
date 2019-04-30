@@ -21,7 +21,6 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from tensorflow.python.ops import gradient_checker
 from tensorflow_addons.image import transform_ops
 from tensorflow_addons.utils import test_utils
 
@@ -45,7 +44,8 @@ class ImageOpsTest(tf.test.TestCase):
             # hence the -1).
             translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0],
                                       dtype=tf.dtypes.float32)
-            composed = transform_ops.compose_transforms(rotation, translation)
+            composed = transform_ops.compose_transforms(
+                [rotation, translation])
             image_transformed = transform_ops.transform(image, composed)
             self.assertAllEqual(
                 [[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 0, 1], [0, 1, 1, 1]],
@@ -82,7 +82,7 @@ class ImageOpsTest(tf.test.TestCase):
 
             output_shape = test_image_shape
             output = transform_ops.transform(test_image_tensor, test_transform)
-            left_err = gradient_checker.compute_gradient_error(
+            left_err = tf.compat.v1.test.compute_gradient_error(
                 test_image_tensor,
                 test_image_shape,
                 output,
@@ -108,7 +108,7 @@ class ImageOpsTest(tf.test.TestCase):
                 images=test_image_tensor,
                 transforms=test_transform,
                 output_shape=resize_shape)
-            left_err = gradient_checker.compute_gradient_error(
+            left_err = tf.compat.v1.test.compute_gradient_error(
                 test_image_tensor,
                 test_image_shape,
                 output,
@@ -220,7 +220,8 @@ class RotateOpTest(tf.test.TestCase):
             # hence the -1).
             translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0],
                                       dtype=tf.float32)
-            composed = transform_ops.compose_transforms(rotation, translation)
+            composed = transform_ops.compose_transforms(
+                [rotation, translation])
             image_transformed = transform_ops.transform(image, composed)
             self.assertAllEqual(
                 image_transformed,

@@ -25,15 +25,13 @@ from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 _image_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/image/_image_ops.so"))
 
-ops.NotDifferentiable("EuclideanDistanceTransform")
+tf.no_gradient("EuclideanDistanceTransform")
 ops.RegisterShape("EuclideanDistanceTransform")(
     common_shapes.call_cpp_shape_fn)
 
 
 @tf.function
-def euclidean_dist_transform(images,
-                             dtype=tf.float32,
-                             name="euclidean_distance_transform"):
+def euclidean_dist_transform(images, dtype=tf.float32, name=None):
     """Applies euclidean distance transform(s) to the image(s).
 
     Args:
@@ -54,7 +52,7 @@ def euclidean_dist_transform(images,
         rank 3 or 4.
     """
 
-    with tf.name_scope(name):
+    with tf.name_scope(name or "euclidean_distance_transform"):
         image_or_images = tf.convert_to_tensor(images, name="images")
 
         if image_or_images.dtype.base_dtype != tf.uint8:

@@ -30,6 +30,7 @@ wheels/
 # IDE
 .vscode/
 .idea/
+*.iml
 
 # Build
 /.bazelrc
