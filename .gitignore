@@ -36,3 +36,7 @@ wheels/
 /.bazelrc
 /bazel-*
 /artifacts
+
+# Addons
+.*
+/docs/

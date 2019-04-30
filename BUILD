@@ -6,13 +6,5 @@ sh_binary(
         "MANIFEST.in",
         "setup.py",
         "//tensorflow_addons",
-        "//tensorflow_addons/activations",
-        "//tensorflow_addons/image",
-        "//tensorflow_addons/layers",
-        "//tensorflow_addons/losses",
-        "//tensorflow_addons/optimizers",
-        "//tensorflow_addons/rnn",
-        "//tensorflow_addons/seq2seq",
-        "//tensorflow_addons/text",
     ],
 )
