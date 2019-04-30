@@ -119,7 +119,6 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         or by the input value if self.data_init is True.
         """
         if self.data_init:
-            self._init_norm()
             self._data_dep_init(inputs)
         else:
             self._init_norm()
@@ -131,7 +130,6 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             flat = tf.reshape(self.v, [-1, self.layer_depth])
             self.g.assign(
                 tf.reshape(tf.linalg.norm(flat, axis=0), (self.layer_depth,)))
-            self._compute_weights()
 
     def _data_dep_init(self, inputs):
         """Data dependent initialization."""
