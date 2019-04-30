@@ -31,7 +31,7 @@ from __future__ import print_function
 from absl import app
 from absl import flags
 
-import tensorflow_addons
+import tensorflow_addons as tfa
 
 from tensorflow_docs.api_generator import generate_lib
 from tensorflow_docs.api_generator import parser
@@ -42,7 +42,7 @@ from tensorflow.python.util import tf_inspect
 # Use tensorflow's `tf_inspect`, which is aware of `tf_decorator`.
 parser.tf_inspect = tf_inspect
 
-PROJECT_SHORT_NAME = 'tf_addons'
+PROJECT_SHORT_NAME = 'tfa'
 PROJECT_FULL_NAME = 'TensorFlow Addons'
 
 FLAGS = flags.FLAGS
@@ -69,9 +69,9 @@ def main(argv):
     doc_generator = generate_lib.DocGenerator(
         root_title=PROJECT_FULL_NAME,
         # Replace `tensorflow_docs` with your module, here.
-        py_modules=[(PROJECT_SHORT_NAME, tensorflow_addons)],
+        py_modules=[(PROJECT_SHORT_NAME, tfa)],
         code_url_prefix=code_url_prefix,
-        private_map={'tf_addons': ['__version__', 'utils', 'version']},
+        private_map={'tfa': ['__version__', 'utils', 'version']},
         # This callback cleans up a lot of aliases caused by internal imports.
         callbacks=[public_api.local_definitions_filter])
 
