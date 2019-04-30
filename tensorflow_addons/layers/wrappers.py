@@ -88,15 +88,16 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
         super(WeightNormalization, self).build()
 
+    @tf.function
     def call(self, inputs):
         """Call `Layer`"""
         if not self._initialized:
             self._initialize_weights(inputs)
-
+            
         self._compute_weights()  # Recompute weights for each forward pass
         output = self.layer(inputs)
         return output
-
+    
     def compute_output_shape(self, input_shape):
         return tf.TensorShape(
             self.layer.compute_output_shape(input_shape).as_list())
@@ -118,6 +119,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         or by the input value if self.data_init is True.
         """
         if self.data_init:
+            self._init_norm()
             self._data_dep_init(inputs)
         else:
             self._init_norm()
@@ -129,6 +131,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             flat = tf.reshape(self.v, [-1, self.layer_depth])
             self.g.assign(
                 tf.reshape(tf.linalg.norm(flat, axis=0), (self.layer_depth,)))
+            self._compute_weights()
 
     def _data_dep_init(self, inputs):
         """Data dependent initialization."""
@@ -143,12 +146,13 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             scale_init = 1. / tf.math.sqrt(v_init + 1e-10)
 
         # Assign data dependent init values
-        self.g.assign(self.g * scale_init)
+        self.g = self.g * scale_init
         if hasattr(self.layer, 'bias'):
-            self.layer.bias.assign(-m_init * scale_init)
+            self.layer.bias = -m_init * scale_init
         self.layer.activation = existing_activation
 
     def get_config(self):
         config = {'data_init': self.data_init}
         base_config = super(WeightNormalization, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+        
