@@ -363,7 +363,7 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
         return dict(list(base_config.items()) + list(config.items()))
 
     def _create_norm_layer(self, name):
-        return keras.layers.LayerNormalization(
+        return keras.layers.experimental.LayerNormalization(
             beta_initializer=self.norm_beta_initializer,
             gamma_initializer=self.norm_gamma_initializer,
             epsilon=self.norm_epsilon,

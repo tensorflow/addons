@@ -274,7 +274,7 @@ class LayerNormLSTMCellTest(tf.test.TestCase):
             "bias_constraint": None,
             "dropout": 0.,
             "recurrent_dropout": 0.,
-            "implementation": 2,
+            "implementation": 1,
             "norm_gamma_initializer": {
                 "class_name": "Ones",
                 "config": {}
