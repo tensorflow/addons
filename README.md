@@ -53,7 +53,7 @@ contributions which will be slated for removal. More information will
 be available after we submit a formal request for comment.
 
 ## Examples
-See [`tensorflow_addons/examples/`](tensorflow_addons/examples/)
+See [`examples/`](examples/)
 for end-to-end examples of various addons.
 
 ## Installation
