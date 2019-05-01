@@ -25,9 +25,9 @@ from tensorflow_addons.utils import test_utils
 
 class MeanFilter2dTest(tf.test.TestCase):
     def _validate_mean_filter2d(self,
-                                  inputs,
-                                  expected_values,
-                                  filter_shape=(3, 3)):
+                                inputs,
+                                expected_values,
+                                filter_shape=(3, 3)):
         output = mean_filter2d(inputs, filter_shape)
         self.assertAllClose(output, expected_values)
 

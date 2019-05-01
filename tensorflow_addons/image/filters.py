@@ -72,15 +72,16 @@ def mean_filter2d(image, filter_shape=(3, 3), name=None):
             (row, col, ch) = (int(row), int(col), int(ch))
         else:
             raise TypeError(
-                'All the Dimensions of the input image tensor must be Integers.')
+                'All the Dimensions of the input image tensor must be Integers.'
+            )
         if row < filter_shapex or col < filter_shapey:
             raise ValueError(
                 'Number of Pixels in each dimension of the image should be more \
-                than the filter size. Got filter_shape (%sx' % filter_shape[0] +
-                '%s).' % filter_shape[1] + ' Image Shape (%s)' % image.shape)
+                than the filter size. Got filter_shape (%sx' % filter_shape[0]
+                + '%s).' % filter_shape[1] + ' Image Shape (%s)' % image.shape)
         if filter_shapex % 2 == 0 or filter_shapey % 2 == 0:
-            raise ValueError('Filter size should be odd. Got filter_shape (%sx' %
-                             filter_shape[0] + '%s)' % filter_shape[1])
+            raise ValueError('Filter size should be odd. Got filter_shape (%sx'
+                             % filter_shape[0] + '%s)' % filter_shape[1])
         image = tf.cast(image, tf.float32)
         tf_i = tf.reshape(image, [row * col * ch])
         ma = tf.math.reduce_max(tf_i)
