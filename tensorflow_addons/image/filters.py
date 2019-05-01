@@ -76,9 +76,10 @@ def mean_filter2d(image, filter_shape=(3, 3), name=None):
             )
         if row < filter_shapex or col < filter_shapey:
             raise ValueError(
-                'Number of Pixels in each dimension of the image should be more \
-                than the filter size. Got filter_shape (%sx' % filter_shape[0]
-                + '%s).' % filter_shape[1] + ' Image Shape (%s)' % image.shape)
+                'Number of Pixels in each dimension of the image should be \
+                more than the filter size. Got filter_shape (%sx' %
+                filter_shape[0] + '%s).' % filter_shape[1] +
+                ' Image Shape (%s)' % image.shape)
         if filter_shapex % 2 == 0 or filter_shapey % 2 == 0:
             raise ValueError('Filter size should be odd. Got filter_shape (%sx'
                              % filter_shape[0] + '%s)' % filter_shape[1])
@@ -153,9 +154,10 @@ def median_filter2d(image, filter_shape=(3, 3), name=None):
                             'tensor must be Integers.')
         if row < filter_shapex or col < filter_shapey:
             raise ValueError(
-                'Number of Pixels in each dimension of the image should be more \
-                than the filter size. Got filter_shape (%sx' % filter_shape[0]
-                + '%s).' % filter_shape[1] + ' Image Shape (%s)' % image.shape)
+                'Number of Pixels in each dimension of the image should be \
+                more than the filter size. Got filter_shape (%sx' %
+                filter_shape[0] + '%s).' % filter_shape[1] +
+                ' Image Shape (%s)' % image.shape)
         if filter_shapex % 2 == 0 or filter_shapey % 2 == 0:
             raise ValueError('Filter size should be odd. Got filter_shape '
                              '(%sx%s)' % (filter_shape[0], filter_shape[1]))
