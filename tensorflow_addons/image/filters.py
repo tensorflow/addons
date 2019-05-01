@@ -73,8 +73,7 @@ def mean_filter2d(image, filter_shape=(3, 3), name=None):
         else:
             raise TypeError(
                 'All the Dimensions of the input image tensor must be \
-                Integers.'
-            )
+                Integers.')
         if row < filter_shapex or col < filter_shapey:
             raise ValueError(
                 'Number of Pixels in each dimension of the image should be \
