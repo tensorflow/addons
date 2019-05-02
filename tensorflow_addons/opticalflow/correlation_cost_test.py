@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import numpy as np
 
-from tensorflow.contrib.correlation_cost.python.ops import correlation_cost_op
+from tensorflow_addons.opticalflow import correlation_cost
 from tensorflow.python.framework import dtypes
 from tensorflow.python.ops import array_ops
 from tensorflow.python.framework import ops
@@ -49,7 +49,7 @@ class CorrelationCostTest(test.TestCase):
             stride_2 = 2
             pad = 4
 
-            call_op = correlation_cost_op.correlation_cost
+            call_op = correlation_cost
             actual_op = call_op(
                 input_a_op,
                 input_b_op,
@@ -179,7 +179,7 @@ class CorrelationCostTest(test.TestCase):
             input_a_op = ops.convert_to_tensor(input_a, dtype=dtypes.float32)
             input_b_op = ops.convert_to_tensor(input_b, dtype=dtypes.float32)
 
-            call_op = correlation_cost_op.correlation_cost
+            call_op = correlation_cost
             actual_op = call_op(
                 input_a_op,
                 input_b_op,

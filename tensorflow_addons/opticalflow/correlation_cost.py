@@ -18,14 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.contrib.correlation_cost.ops import gen_correlation_cost_op
-from tensorflow.contrib.util import loader
+import tensorflow as tf
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import array_ops
-from tensorflow.python.platform import resource_loader
+from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
-_correlation_cost_op_so = loader.load_op_library(
-    resource_loader.get_path_to_datafile("_correlation_cost_op.so"))
+_correlation_cost_op_so = tf.load_op_library(
+    get_path_to_datafile("custom_ops/opticalflow/_correlation_cost_ops.so"))
 
 # pylint: disable=redefined-builtin
 
@@ -81,7 +80,7 @@ def correlation_cost(input_a,
     """
 
     with ops.name_scope(name, "correlation_cost"):
-        op_call = gen_correlation_cost_op.correlation_cost
+        op_call = _correlation_cost_op_so.correlation_cost
         ret = op_call(
             input_a,
             input_b,
@@ -98,7 +97,7 @@ def correlation_cost(input_a,
         return ret
 
 
-correlation_cost_grad = gen_correlation_cost_op.correlation_cost_grad
+correlation_cost_grad = _correlation_cost_op_so.correlation_cost_grad
 
 
 @ops.RegisterGradient("CorrelationCost")
@@ -114,7 +113,7 @@ def _correlation_cost_grad(op, grad_output):
     input_b = ops.convert_to_tensor(op.inputs[1], name="input_b")
     grad_output_tensor = ops.convert_to_tensor(grad_output, name="grad_output")
 
-    op_call = gen_correlation_cost_op.correlation_cost_grad
+    op_call = _correlation_cost_op_so.correlation_cost_grad
     grads = op_call(
         input_a,
         input_b,

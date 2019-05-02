@@ -90,7 +90,7 @@ REGISTER_OP("CorrelationCost")
 Compute Correlation costs.
 
 This layer implements the correlation operation from
-FlowNet: Learning Optical Flow with Convolutional Networks (Fischer et al.)
+FlowNet Learning Optical Flow with Convolutional Networks (Fischer et al.)
 
 input_a: A `Tensor` of the format specified by `data_format`.
 input_b: A `Tensor` of the format specified by `data_format`.
