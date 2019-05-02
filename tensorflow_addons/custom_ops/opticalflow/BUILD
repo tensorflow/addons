@@ -3,7 +3,7 @@ licenses(["notice"])  # Apache 2.0
 package(default_visibility = ["//visibility:public"])
 
 cc_binary(
-    name = "_distort_image_ops.so",
+    name = "_correlation_cost_ops.so",
     srcs = [
         "cc/kernels/correlation_cost_op.cc",
         "cc/kernels/correlation_cost_op.h",
@@ -19,7 +19,8 @@ cc_binary(
     deps = [
         "@local_config_tf//:libtensorflow_framework",
         "@local_config_tf//:tf_header_lib",
-    ] + if_cuda([
-        "@cub_archive//:cub",
-    ]),
+    ],
+    # + if_cuda([
+    #     "@cub_archive//:cub",
+    # ]),
 )
