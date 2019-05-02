@@ -19,7 +19,7 @@ cc_binary(
     deps = [
         "@local_config_tf//:libtensorflow_framework",
         "@local_config_tf//:tf_header_lib",
-    ]+ if_cuda([
-        "@cub_archive//:cub"
+    ] + if_cuda([
+        "@cub_archive//:cub",
     ]),
 )

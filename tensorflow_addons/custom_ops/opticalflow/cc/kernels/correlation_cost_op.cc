@@ -241,12 +241,11 @@ class CorrelationCostOp : public OpKernel {
         context, context->allocate_output(0, TensorShape({N, Cout, Hout, Wout}),
                                           &output_t));
 
-
     functor::CorrelationCostFunctor<Device, T> correlationCostFunc;
-    Status s = correlationCostFunc(
-        context, input_a_t, input_b_t, output_t,
-        /* params */
-        kernel_size, max_displacement, stride_1, stride_2, pad, data_format_);
+    Status s = correlationCostFunc(context, input_a_t, input_b_t, output_t,
+                                   /* params */
+                                   kernel_size, max_displacement, stride_1,
+                                   stride_2, pad, data_format_);
 
     OP_REQUIRES_OK(context, s);
   }
@@ -296,11 +295,11 @@ class CorrelationCostGradOp : public OpKernel {
                                                      &output_b_gradient_t));
 
     functor::CorrelationCostGradFunctor<Device, T> correlationCostGrad;
-    Status s = correlationCostGrad(
-        context, input_a_t, input_b_t, topdiff_t,
-        output_a_gradient_t, output_b_gradient_t,
-        /* params */
-        kernel_size, max_displacement, stride_1, stride_2, pad, data_format_);
+    Status s = correlationCostGrad(context, input_a_t, input_b_t, topdiff_t,
+                                   output_a_gradient_t, output_b_gradient_t,
+                                   /* params */
+                                   kernel_size, max_displacement, stride_1,
+                                   stride_2, pad, data_format_);
 
     OP_REQUIRES_OK(context, s);
   }
