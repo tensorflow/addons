@@ -87,9 +87,6 @@ def mean_filter2d(image, filter_shape=(3, 3), name=None):
         tf_i = tf.reshape(image, [row * col * ch])
         ma = tf.math.reduce_max(tf_i)
         image = _normalize(image, ma)
-
-        # k and l is the Zero-padding size
-
         listi = []
         for a in range(ch):
             img = image[:, :, a:a + 1]
@@ -103,6 +100,66 @@ def mean_filter2d(image, filter_shape=(3, 3), name=None):
             listi.append(li)
         y = tf.concat(listi[0], 2)
 
+        for i in range(len(listi) - 1):
+            y = tf.concat([y, listi[i + 1]], 2)
+
+        y *= 255
+        y = tf.cast(y, tf.int32)
+
+        return y
+
+
+@tf.function
+def median_filter1d(image,filter_shape=3, name=None):
+    """This method performs 1D Median Filtering on images.Filter shape can be user given.
+       This method takes both kind of images where pixel values lie between 0 to 255 and where it lies between 0.0 and 1.0
+       Args:
+           input: A 3D `Tensor` of type `float32` or 'int32' or 'float64' or 'int64 and of shape`[rows, columns, channels]`
+
+           filter_shape: Optional Argument.Single Integer. Default value = 3
+
+        Returns:
+            A 1D median filtered image 3D tensor of shape [rows,columns,channels] and type 'int32'. Pixel value of returned 
+            tensor ranges between 0 to 255
+    """
+
+    with tf.name_scope(name or "median_filter1d"):
+        if not isinstance(filter_shape, int):
+            raise TypeError('Filter shape must be an Integer')
+        filter_shapex = filter_shape
+        (row, col, ch) = (image.shape[0], image.shape[1], image.shape[2])
+        if row != None and col != None and ch != None:
+            (row, col, ch) = (int(row), int(col), int(ch))
+        else:
+            raise TypeError('All the Dimensions of the input image '
+                            'tensor must be Integers.')
+        if row * col < filter_shapex:
+            raise ValueError(
+                'Number of Pixels in each dimension of the image should be \
+                more than the filter size. Got filter_shape %s' %
+                filter_shapex +
+                ' Image Shape (%s)' % image.shape)
+        if filter_shapex % 2 == 0 :
+            raise ValueError('Filter size should be odd. Got filter_shape '
+                             '(%s)' % filter_shapex)
+        image = tf.cast(image, tf.float32)
+        tf_i = tf.reshape(image, [row * col * ch])
+        ma = tf.math.reduce_max(tf_i)
+        image = _normalize(image, ma)
+        listi = []
+        for a in range(ch):
+            img = image[:, :, a:a + 1]
+            img = tf.reshape(img, [1, row * col, 1, 1])
+            slic = tf.image.extract_patches(
+                img, [1, filter_shapex, 1, 1], [1, 1, 1, 1],
+                [1, 1, 1, 1],
+                padding='SAME')
+            mid = int(filter_shapex / 2 + 1)
+            top = tf.nn.top_k(slic, mid, sorted=True)
+            li = tf.slice(top[0], [0, 0, 0, mid - 1], [-1, -1, -1, 1])
+            li = tf.reshape(li, [row, col, 1])
+            listi.append(li)
+        y = tf.concat(listi[0], 2)
         for i in range(len(listi) - 1):
             y = tf.concat([y, listi[i + 1]], 2)
 
@@ -165,9 +222,6 @@ def median_filter2d(image, filter_shape=(3, 3), name=None):
         tf_i = tf.reshape(image, [row * col * ch])
         ma = tf.math.reduce_max(tf_i)
         image = _normalize(image, ma)
-
-        # k and l is the Zero-padding size
-
         listi = []
         for a in range(ch):
             img = image[:, :, a:a + 1]
