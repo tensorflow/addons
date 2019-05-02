@@ -25,6 +25,8 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.framework import ops
 from tensorflow.python.platform import test
 from tensorflow.python.framework import constant_op
+import tensorflow as tf
+tf.compat.v1.disable_eager_execution()
 
 
 class CorrelationCostTest(test.TestCase):
