@@ -112,7 +112,7 @@ def mean_filter2d(image, filter_shape=(3, 3), name=None):
 @tf.function
 def median_filter1d(image,filter_shape=3, name=None):
     """This method performs 1D Median Filtering on images.Filter shape can be user given.
-       This method takes both kind of images where pixel values lie between 0 to 255 and where it lies between 0.0 and 1.0
+       This method takes both kind of images where pixel values lie between 0 to 255 and where it lies between 0.0 and 1.0.
        Args:
            input: A 3D `Tensor` of type `float32` or 'int32' or 'float64' or 'int64 and of shape`[rows, columns, channels]`
 
