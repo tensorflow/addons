@@ -67,7 +67,7 @@ def mean_filter2d(image,
         padding mode.
       name: A name for this operation (optional).
     Returns:
-      3-D or 4-D float `Tensor`, as per the input.
+      3-D or 4-D `Tensor` of the same dtype as input.
     Raises:
       ValueError: If `image` is not 3 or 4-dimensional,
         if `padding` is other than "REFLECT", "CONSTANT" or "SYMMETRIC",
@@ -94,6 +94,7 @@ def mean_filter2d(image,
 
         # Keep the precision if it's float;
         # otherwise, convert to float32 for computing.
+        orig_dtype = image.dtype
         if not image.dtype.is_floating:
             image = tf.dtypes.cast(image, tf.dtypes.float32)
 
@@ -115,7 +116,7 @@ def mean_filter2d(image,
         if rank == 3:
             output = tf.squeeze(output, axis=0)
 
-        return output
+        return tf.dtypes.cast(output, orig_dtype)
 
 
 @tf.function
