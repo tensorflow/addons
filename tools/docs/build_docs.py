@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-""" Modified from the tfdocs example api reference docs generation script.
+"""Modified from the tfdocs example api reference docs generation script.
 
 This script generates API reference docs.
 
@@ -31,19 +31,30 @@ from __future__ import print_function
 from absl import app
 from absl import flags
 
-import tensorflow_addons
+import tensorflow_addons as tfa
+
 from tensorflow_docs.api_generator import generate_lib
+from tensorflow_docs.api_generator import parser
 from tensorflow_docs.api_generator import public_api
 
-PROJECT_SHORT_NAME = 'tfaddons'
+from tensorflow.python.util import tf_inspect
+
+# Use tensorflow's `tf_inspect`, which is aware of `tf_decorator`.
+parser.tf_inspect = tf_inspect
+
+PROJECT_SHORT_NAME = 'tfa'
 PROJECT_FULL_NAME = 'TensorFlow Addons'
-CODE_URL_PREFIX = 'https://github.com/tensorflow/addons/tree/master/tensorflow_addons'
 
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string(
+    'git_branch',
+    default='master',
+    help='The name of the corresponding branch on github.')
+
+flags.DEFINE_string(
     'output_dir',
-    default='/addons/docs/api_docs/python/',
+    default='docs/api_docs/python/',
     help='Where to write the resulting docs to.')
 
 
@@ -51,11 +62,16 @@ def main(argv):
     if argv[1:]:
         raise ValueError('Unrecognized arguments: {}'.format(argv[1:]))
 
+    code_url_prefix = ('https://github.com/tensorflow/addons/tree/'
+                       '{git_branch}/tensorflow_addons'.format(
+                           git_branch=FLAGS.git_branch))
+
     doc_generator = generate_lib.DocGenerator(
         root_title=PROJECT_FULL_NAME,
         # Replace `tensorflow_docs` with your module, here.
-        py_modules=[(PROJECT_SHORT_NAME, tensorflow_addons)],
-        code_url_prefix=CODE_URL_PREFIX,
+        py_modules=[(PROJECT_SHORT_NAME, tfa)],
+        code_url_prefix=code_url_prefix,
+        private_map={'tfa': ['__version__', 'utils', 'version']},
         # This callback cleans up a lot of aliases caused by internal imports.
         callbacks=[public_api.local_definitions_filter])
 
