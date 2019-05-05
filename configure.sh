@@ -50,5 +50,5 @@ TF_CXX11_ABI_FLAG=( $(python -c 'import tensorflow as tf; print(tf.sysconfig.CXX
 write_action_env_to_bazelrc "TF_HEADER_DIR" ${TF_CFLAGS:2}
 write_action_env_to_bazelrc "TF_SHARED_LIBRARY_DIR" ${TF_LFLAGS:2}
 write_action_env_to_bazelrc "TF_SHARED_LIBRARY_NAME" ${TF_SHAREDLIB:3}
-write_action_env_to_bazelrc "TF_CXX11_ABI_FLAG" ${TF_CXX11_ABI_FLAG:1}
+write_action_env_to_bazelrc "TF_CXX11_ABI_FLAG" ${TF_CXX11_ABI_FLAG}
 # TODO: propagate TF_* variables to bazel macro file
