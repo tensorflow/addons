@@ -17,6 +17,7 @@
 | distance_transform_ops | euclidean_distance_transform | |
 | distort_image_ops |  adjust_hsv_in_yiq |  |
 | distort_image_ops | random_hsv_in_yiq |  |
+| filters | mean_filter2d |  |
 | filters | median_filter2d |  |
 | transform_ops | angles_to_projective_transforms | | 
 | transform_ops | matrices_to_flat_transforms | | 

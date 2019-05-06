@@ -75,7 +75,7 @@ class WeightNormalizationTest(tf.test.TestCase):
 
         self.assertTrue(hasattr(model.layers[0], 'g'))
 
-    def test_weightnorm_tflayers(self):
+    def test_weightnorm_applylayer(self):
         images = tf.random.uniform((2, 4, 4, 3))
         wn_wrapper = wrappers.WeightNormalization(
             tf.keras.layers.Conv2D(32, [2, 2]), input_shape=(4, 4, 3))
