@@ -26,11 +26,8 @@ import numpy as np
 
 import tensorflow as tf
 
-from tensorflow.python.eager import context
-from tensorflow.python.keras import initializers
-from tensorflow.python.keras import layers
+# TODO: Find public API alternatives to these
 from tensorflow.python.keras.engine import base_layer_utils
-from tensorflow.python.ops import random_ops
 from tensorflow.python.ops import rnn_cell_impl
 
 _zero_state_tensors = rnn_cell_impl._zero_state_tensors  # pylint: disable=protected-access
@@ -46,7 +43,7 @@ class AttentionMechanism(object):
         raise NotImplementedError
 
 
-class _BaseAttentionMechanism(AttentionMechanism, layers.Layer):
+class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
     """A base AttentionMechanism class providing common functionality.
 
     Common functionality includes:
@@ -104,11 +101,11 @@ class _BaseAttentionMechanism(AttentionMechanism, layers.Layer):
             creation.
         """
         if (query_layer is not None
-                and not isinstance(query_layer, layers.Layer)):
+                and not isinstance(query_layer, tf.keras.layers.Layer)):
             raise TypeError(
                 "query_layer is not a Layer: %s" % type(query_layer).__name__)
         if (memory_layer is not None
-                and not isinstance(memory_layer, layers.Layer)):
+                and not isinstance(memory_layer, tf.keras.layers.Layer)):
             raise TypeError("memory_layer is not a Layer: %s" %
                             type(memory_layer).__name__)
         self.query_layer = query_layer
@@ -370,17 +367,16 @@ class _BaseAttentionMechanism(AttentionMechanism, layers.Layer):
             to be used as init parameters.
         """
         # Reconstruct the query and memory layer for parent class.
-        from tensorflow.python.keras.layers import deserialize as deserialize_layer
         # Instead of updating the input, create a copy and use that.
         config = config.copy()
         query_layer_config = config.pop("query_layer", None)
         if query_layer_config:
-            query_layer = deserialize_layer(
+            query_layer = tf.keras.layers.deserialize(
                 query_layer_config, custom_objects=custom_objects)
             config["query_layer"] = query_layer
         memory_layer_config = config.pop("memory_layer", None)
         if memory_layer_config:
-            memory_layer = deserialize_layer(
+            memory_layer = tf.keras.layers.deserialize(
                 memory_layer_config, custom_objects=custom_objects)
             config["memory_layer"] = memory_layer
         return config
@@ -546,7 +542,7 @@ class LuongAttention(_BaseAttentionMechanism):
             dtype = tf.float32
         memory_layer = kwargs.pop("memory_layer", None)
         if not memory_layer:
-            memory_layer = layers.Dense(
+            memory_layer = tf.keras.layers.Dense(
                 units, name="memory_layer", use_bias=False, dtype=dtype)
         self.units = units
         self.scale = scale
@@ -714,15 +710,15 @@ class BahdanauAttention(_BaseAttentionMechanism):
             dtype = tf.float32
         query_layer = kwargs.pop("query_layer", None)
         if not query_layer:
-            query_layer = layers.Dense(
+            query_layer = tf.keras.layers.Dense(
                 units, name="query_layer", use_bias=False, dtype=dtype)
         memory_layer = kwargs.pop("memory_layer", None)
         if not memory_layer:
-            memory_layer = layers.Dense(
+            memory_layer = tf.keras.layers.Dense(
                 units, name="memory_layer", use_bias=False, dtype=dtype)
         self.units = units
         self.normalize = normalize
-        self.kernel_initializer = initializers.get(kernel_initializer)
+        self.kernel_initializer = tf.keras.initializers.get(kernel_initializer)
         self.attention_v = None
         self.attention_g = None
         self.attention_b = None
@@ -786,11 +782,14 @@ class BahdanauAttention(_BaseAttentionMechanism):
 
     def get_config(self):
         config = {
-            "units": self.units,
-            "normalize": self.normalize,
-            "probability_fn": self.probability_fn_name,
+            "units":
+            self.units,
+            "normalize":
+            self.normalize,
+            "probability_fn":
+            self.probability_fn_name,
             "kernel_initializer":
-            initializers.serialize(self.kernel_initializer)
+            tf.keras.initializers.serialize(self.kernel_initializer)
         }
         base_config = super(BahdanauAttention, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
@@ -957,8 +956,7 @@ def _monotonic_probability_fn(score,
     """
     # Optionally add pre-sigmoid noise to the scores
     if sigmoid_noise > 0:
-        noise = random_ops.random_normal(
-            tf.shape(score), dtype=score.dtype, seed=seed)
+        noise = tf.random.normal(tf.shape(score), dtype=score.dtype, seed=seed)
         score += sigmoid_noise * noise
     # Compute "choosing" probabilities from the attention scores
     if mode == "hard":
@@ -1064,11 +1062,11 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
             seed=sigmoid_noise_seed)
         query_layer = kwargs.pop("query_layer", None)
         if not query_layer:
-            query_layer = layers.Dense(
+            query_layer = tf.keras.layers.Dense(
                 units, name="query_layer", use_bias=False, dtype=dtype)
         memory_layer = kwargs.pop("memory_layer", None)
         if not memory_layer:
-            memory_layer = layers.Dense(
+            memory_layer = tf.keras.layers.Dense(
                 units, name="memory_layer", use_bias=False, dtype=dtype)
         self.units = units
         self.normalize = normalize
@@ -1076,7 +1074,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
         self.sigmoid_noise_seed = sigmoid_noise_seed
         self.score_bias_init = score_bias_init
         self.mode = mode
-        self.kernel_initializer = initializers.get(kernel_initializer)
+        self.kernel_initializer = tf.keras.initializers.get(kernel_initializer)
         self.attention_v = None
         self.attention_score_bias = None
         self.attention_g = None
@@ -1149,14 +1147,20 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
 
     def get_config(self):
         config = {
-            "units": self.units,
-            "normalize": self.normalize,
-            "sigmoid_noise": self.sigmoid_noise,
-            "sigmoid_noise_seed": self.sigmoid_noise_seed,
-            "score_bias_init": self.score_bias_init,
-            "mode": self.mode,
+            "units":
+            self.units,
+            "normalize":
+            self.normalize,
+            "sigmoid_noise":
+            self.sigmoid_noise,
+            "sigmoid_noise_seed":
+            self.sigmoid_noise_seed,
+            "score_bias_init":
+            self.score_bias_init,
+            "mode":
+            self.mode,
             "kernel_initializer":
-            initializers.serialize(self.kernel_initializer),
+            tf.keras.initializers.serialize(self.kernel_initializer),
         }
         base_config = super(BahdanauMonotonicAttention, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
@@ -1230,7 +1234,7 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
             seed=sigmoid_noise_seed)
         memory_layer = kwargs.pop("memory_layer", None)
         if not memory_layer:
-            memory_layer = layers.Dense(
+            memory_layer = tf.keras.layers.Dense(
                 units, name="memory_layer", use_bias=False, dtype=dtype)
         self.units = units
         self.scale = scale
@@ -1355,7 +1359,7 @@ class AttentionWrapperState(
         def with_same_shape(old, new):
             """Check and set new tensor's shape."""
             if isinstance(old, tf.Tensor) and isinstance(new, tf.Tensor):
-                if not context.executing_eagerly():
+                if not tf.executing_eagerly():
                     new_shape = tf.shape(new)
                     old_shape = tf.shape(old)
                     with tf.control_dependencies([
@@ -1526,7 +1530,7 @@ def _compute_attention(attention_mechanism, cell_output, attention_state,
     return attention, alignments, next_attention_state
 
 
-class AttentionWrapper(layers.AbstractRNNCell):
+class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
     """Wraps another `RNNCell` with attention."""
 
     def __init__(self,
@@ -1607,8 +1611,8 @@ class AttentionWrapper(layers.AbstractRNNCell):
             `get_initial_state` which does not match the batch size of
             `initial_cell_state`, proper behavior is not guaranteed.
           name: Name to use when creating ops.
-          attention_layer: A list of `tf.layers.Layer` instances or a
-            single `tf.layers.Layer` instance taking the context and cell
+          attention_layer: A list of `tf.tf.keras.layers.Layer` instances or a
+            single `tf.tf.keras.layers.Layer` instance taking the context and cell
             output as inputs to generate attention at each time step. If None
             (default), use the context as attention at each time step. If
             attention_mechanism is a list, attention_layer must be a list of
@@ -1673,7 +1677,7 @@ class AttentionWrapper(layers.AbstractRNNCell):
                     "one integer per attention_mechanism, saw: %d vs %d" %
                     (len(attention_layer_sizes), len(attention_mechanisms)))
             self._attention_layers = list(
-                layers.Dense(
+                tf.keras.layers.Dense(
                     attention_layer_size,
                     name="attention_layer",
                     use_bias=False,

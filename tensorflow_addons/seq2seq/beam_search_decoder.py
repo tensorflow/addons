@@ -25,18 +25,14 @@ import tensorflow as tf
 
 from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import decoder
-from tensorflow.python.eager import context
-from tensorflow.python.framework import tensor_shape
-from tensorflow.python.framework import tensor_util
-from tensorflow.python.keras import layers
-from tensorflow.python.ops import embedding_ops
-from tensorflow.python.ops import rnn_cell_impl
-from tensorflow.python.platform import tf_logging
-
-from tensorflow.python.framework import load_library
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
-_beam_search_ops_so = load_library.load_op_library(
+# TODO: Find public API alternatives to these
+from tensorflow.python.framework import tensor_shape
+from tensorflow.python.framework import tensor_util
+from tensorflow.python.ops import rnn_cell_impl
+
+_beam_search_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/seq2seq/_beam_search_ops.so"))
 gather_tree = _beam_search_ops_so.gather_tree
 
@@ -189,7 +185,7 @@ def _check_static_batch_beam_maybe(shape, batch_size, beam_width):
             and (shape[0] != batch_size * beam_width or
                  (shape.ndims >= 2 and shape.dims[1].value is not None and
                   (shape[0] != batch_size or shape[1] != beam_width)))):
-        tf_logging.warn(
+        tf.compat.v1.logging.warn(
             "TensorArray reordering expects elements to be "
             "reshapable to %s which is incompatible with the "
             "current shape %s. Consider setting "
@@ -212,7 +208,7 @@ def _check_batch_beam(t, batch_size, beam_width):
         "incompatible with the dynamic shape of %s elements. "
         "Consider setting reorder_tensor_arrays to False to disable "
         "TensorArray reordering during the beam search." %
-        (t if context.executing_eagerly() else t.name))
+        (t if tf.executing_eagerly() else t.name))
     rank = t.shape.ndims
     shape = tf.shape(t)
     if rank == 2:
@@ -269,7 +265,7 @@ class BeamSearchDecoderMixin(object):
         """
         rnn_cell_impl.assert_like_rnncell("cell", cell)  # pylint: disable=protected-access
         if (output_layer is not None
-                and not isinstance(output_layer, layers.Layer)):
+                and not isinstance(output_layer, tf.keras.layers.Layer)):
             raise TypeError("output_layer must be a Layer, received: %s" %
                             type(output_layer))
         self._cell = cell
@@ -505,7 +501,7 @@ class BeamSearchDecoderMixin(object):
         # pylint: disable=protected-access
         # This is a bad hack due to the implementation detail of eager/graph TA.
         # TODO(b/124374427): Update this to use public property of TensorArray.
-        if context.executing_eagerly():
+        if tf.executing_eagerly():
             element_shape = t._element_shape
         else:
             element_shape = t._element_shape[0]
@@ -513,7 +509,7 @@ class BeamSearchDecoderMixin(object):
                 or element_shape.ndims is None or element_shape.ndims < 1):
             shape = (element_shape if t._infer_shape and t._element_shape else
                      tf.TensorShape(None))
-            tf_logging.warn(
+            tf.compat.v1.logging.warn(
                 "The TensorArray %s in the cell state is not amenable to "
                 "sorting based on the beam search result. For a "
                 "TensorArray to be sorted, its elements shape must be "
@@ -702,7 +698,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
                 "embedding and embedding_fn cannot be provided at same time")
         elif embedding is not None:
             self._embedding_fn = (
-                lambda ids: embedding_ops.embedding_lookup(embedding, ids))
+                lambda ids: tf.nn.embedding_lookup(embedding, ids))
 
         self._start_tokens = tf.convert_to_tensor(
             start_tokens, dtype=tf.int32, name="start_tokens")
