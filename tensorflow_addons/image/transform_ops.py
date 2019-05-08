@@ -18,8 +18,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.python.framework import common_shapes
-from tensorflow.python.framework import ops
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 _image_ops_so = tf.load_op_library(
@@ -29,9 +27,6 @@ _IMAGE_DTYPES = set([
     tf.dtypes.uint8, tf.dtypes.int32, tf.dtypes.int64, tf.dtypes.float16,
     tf.dtypes.float32, tf.dtypes.float64
 ])
-
-ops.RegisterShape("ImageProjectiveTransformV2")(
-    common_shapes.call_cpp_shape_fn)
 
 
 @tf.function
