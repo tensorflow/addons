@@ -24,7 +24,6 @@ import six
 import tensorflow as tf
 
 # TODO: Find public API alternatives to these
-from tensorflow.python.framework import tensor_util
 from tensorflow.python.ops import control_flow_util
 from tensorflow.python.ops import rnn
 from tensorflow.python.ops import rnn_cell_impl
@@ -353,7 +352,7 @@ def dynamic_decode(decoder,
                     or from_shape.ndims == 0):
                 return None
             else:
-                batch_size = tensor_util.constant_value(
+                batch_size = tf.get_static_value(
                     tf.convert_to_tensor(batch_size, name="batch_size"))
                 return tf.TensorShape([batch_size]).concatenate(from_shape)
 
