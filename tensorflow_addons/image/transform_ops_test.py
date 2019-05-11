@@ -364,6 +364,23 @@ class RandomRot90Test(tf.test.TestCase):
                     truth = np.zeros(shape, dtype.as_numpy_dtype())
                     self.assertAllEqual(after, truth)
 
+    def test_averages(self):
+        """Test that, on average, rot90 turns points into uniform images."""
+        channels = 3
+        samples = 500
+        for channel in range(channels):
+            shape = (samples, 2, 2, channels)
+            for dtype in _DTYPES:
+                test_image = np.zeros(shape, dtype=dtype.as_numpy_dtype())
+                test_image[:, 0, 1, channel] = 1  # E.g., [[0,1],[0,0]]
+                test_image_tensor = tf.constant(test_image, shape=shape)
+                rotated = transform_ops.random_rot90(test_image_tensor)
+
+                sums = tf.reduce_sum(rotated, axis=0)[:, :, channel]
+                truth = (samples / 4.0) + np.zeros((2, 2), dtype.as_numpy_dtype())
+
+                self.assertAllEqual(sums, truth)
+
 
 if __name__ == "__main__":
     tf.test.main()
