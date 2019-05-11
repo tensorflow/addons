@@ -287,5 +287,83 @@ class RotateOpTest(tf.test.TestCase):
         self.assertEqual(image.get_shape(), result.get_shape())
 
 
+@test_utils.run_all_in_graph_and_eager_modes
+class RandomRotateOpTest(tf.test.TestCase):
+    def test_zeros(self):
+        """Zeros should be invariant under rotation."""
+        for dtype in _DTYPES:
+            for shape in [(5, 5), (24, 24), (2, 24, 24, 3)]:
+                for max_angle in [0, 1, np.pi / 2.0]:
+                    image = tf.zeros(shape, dtype)
+                    self.assertAllEqual(
+                        transform_ops.random_rotation(image, max_angle),
+                        np.zeros(shape, dtype.as_numpy_dtype()))
+
+    def test_rotate_by_zero(self):
+        """Anything should be invariant under rotation by zero."""
+        for dtype in _DTYPES:
+            for shape in [(5, 5), (24, 24), (2, 24, 24, 3)]:
+                max_angle = 0.0
+                before = np.random.randn(*shape)
+                before = tf.constant(before, shape=shape)
+                after = transform_ops.random_rotation(before, max_angle)
+                self.assertAllEqual(before, after)
+
+    def test_rot90(self):
+        """Test 90 degree rotations of simple images."""
+        experiments = [dict(rotation=np.pi / 2.,
+                            inval=[[0, 1],
+                                   [0, 0]],
+                            truth=[[1, 0],
+                                   [0, 0]],
+                            ),
+                       dict(rotation=np.pi,
+                            inval=[[0, 1],
+                                   [0, 0]],
+                            truth=[[0, 0],
+                                   [1, 0]],
+                            ),
+                       dict(rotation=-1 * np.pi / 2.,
+                            inval=[[0, 1],
+                                   [0, 0]],
+                            truth=[[0, 0],
+                                   [0, 1]],
+                            )
+                       ]
+        for dtype in _DTYPES:
+            for shape in [(2, 2), (3, 2, 2, 5)]:
+                for expt in experiments:
+                    rotation = expt["rotation"]
+                    inval_slice = expt["inval"]
+                    truth_slice = expt["truth"]
+                    test_image = np.zeros(shape, dtype=dtype.as_numpy_dtype())
+                    truth = np.zeros(shape, dtype=dtype.as_numpy_dtype())
+                    if len(shape) == 2:
+                        test_image[:] = inval_slice
+                        truth[:] = truth_slice
+                    else:
+                        # Apply stencil to random sample and channel
+                        sample = np.random.randint(0, shape[0])
+                        channel = np.random.randint(0, shape[-1])
+                        test_image[sample, :, :, channel] = inval_slice
+                        truth[sample, :, :, channel] = truth_slice
+                    test_image_tensor = tf.constant(test_image, shape=shape)
+                    rotated = transform_ops.random_rotation(test_image_tensor, rotation, rotation)
+                    self.assertAllEqual(rotated, truth)
+
+
+@test_utils.run_all_in_graph_and_eager_modes
+class RandomRot90Test(tf.test.TestCase):
+    def test_zeros(self):
+        """Zeros should be invariant under rotation."""
+        for dtype in _DTYPES:
+            for shape in [(5, 5), (24, 24), (2, 24, 24, 3)]:
+                for angle in [0, 1, np.pi / 2.0]:
+                    before = tf.zeros(shape, dtype)
+                    after = transform_ops.random_rot90(before)
+                    truth = np.zeros(shape, dtype.as_numpy_dtype())
+                    self.assertAllEqual(after, truth)
+
+
 if __name__ == "__main__":
     tf.test.main()

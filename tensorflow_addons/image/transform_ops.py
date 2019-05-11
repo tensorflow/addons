@@ -352,7 +352,7 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
 
 
 @tf.function
-def random_rotation(images, rg, interpolation="NEAREST", name=None):
+def random_rotation(images, min_rot, max_rot=None, interpolation="NEAREST", name=None):
     """Rotate image(s) counterclockwise by up to `rg` radians in either direction.
 
     Args:
@@ -360,7 +360,8 @@ def random_rotation(images, rg, interpolation="NEAREST", name=None):
         (NHWC), (num_rows, num_columns, num_channels) (HWC), or
         (num_rows, num_columns) (HW). The rank must be statically known (the
         shape is not `TensorShape(None)`.
-    rg: Range (-rg, +rg) of allowed rotations.
+    min_rot: Minimum allowed rotation
+    max_rot: Maximum allowed rotation; if None, use `-min_rot`.
     interpolation: Interpolation mode. Supported values: "NEAREST", "BILINEAR".
     name: The name of the op.
 
@@ -386,14 +387,15 @@ def random_rotation(images, rg, interpolation="NEAREST", name=None):
         else:
             raise TypeError("Images should have rank between 2 and 4.")
 
+        max_rot = max_rot if max_rot else -1.0 * min_rot
+
         image_height = tf.cast(
             tf.shape(images)[1], tf.dtypes.float32)[None]
         image_width = tf.cast(
             tf.shape(images)[2], tf.dtypes.float32)[None]
         n_images = tf.shape(images)[0]
 
-        minval, maxval = (-rg, rg)
-        angles = tf.random.uniform(shape=[n_images], minval=minval, maxval=maxval)
+        angles = tf.random.uniform(shape=[n_images], minval=max_rot, maxval=max_rot)
         if n_images == 1:
             angles = angles[0]
         transforms = angles_to_projective_transforms(angles, image_height, image_width)
@@ -422,7 +424,7 @@ def random_rot90(images, interpolation="NEAREST", name=None):
     name: The name of the op.
 
     Returns:
-    Image(s) with the same type and shape as `images`, rotated by 90 degrees up to 
+    Image(s) with the same type and shape as `images`, rotated by 90 degrees up to
     3 times.  Empty space due to the rotation will be filled with zeros.
 
     Raises:
