@@ -431,7 +431,8 @@ def random_rot90(images, max_turns=1, interpolation="NEAREST", name=None):
 
     Returns:
     Image(s) with the same type and shape as `images`, rotated by 90 degrees up
-    to max_turns times.  Empty space due to the rotation will be filled with zeros.
+    to max_turns times.  Empty space due to the rotation will be filled with
+    zeros.
 
     Raises:
     TypeError: If `image` is an invalid type.
