@@ -391,7 +391,6 @@ class RandomRot90Test(tf.test.TestCase):
 
                 # lower, upper = scipy.stats.binom(1000, 0.25).interval(0.99)
                 lower, upper = 215., 286.
-                print(sums)
                 assert sums.min().min() >= lower, "Must lie in confidence interval!"
                 assert sums.max().max() <= upper, "Must lie in confidence interval!"
 
