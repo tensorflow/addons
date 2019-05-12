@@ -417,7 +417,7 @@ def random_rotation(images,
 
 
 @tf.function
-def random_rot90(images, interpolation="NEAREST", name=None):
+def random_rot90(images, max_turns=1, interpolation="NEAREST", name=None):
     """Rotate image(s) by 90 * n degrees, drawing n randomly from [0, 1, 2, 3].
 
     Args:
@@ -425,12 +425,13 @@ def random_rot90(images, interpolation="NEAREST", name=None):
         (NHWC), (num_rows, num_columns, num_channels) (HWC), or
         (num_rows, num_columns) (HW). The rank must be statically known (the
         shape is not `TensorShape(None)`.
+    max_turns: The maximum number of 90 degree rotations to apply (default 1).
     interpolation: Interpolation mode. Supported values: "NEAREST", "BILINEAR".
     name: The name of the op.
 
     Returns:
     Image(s) with the same type and shape as `images`, rotated by 90 degrees up
-    to 3 times.  Empty space due to the rotation will be filled with zeros.
+    to max_turns times.  Empty space due to the rotation will be filled with zeros.
 
     Raises:
     TypeError: If `image` is an invalid type.
@@ -456,7 +457,7 @@ def random_rot90(images, interpolation="NEAREST", name=None):
 
         pi_2 = tf.math.asin(1.0)
         n_rotations = tf.random.uniform(
-            minval=0, maxval=4, shape=[n_images], dtype='int32')
+            minval=0, maxval=max_turns + 1, shape=[n_images], dtype='int32')
         n_rotations = tf.cast(n_rotations, tf.float32)
         angles = pi_2 * n_rotations
 

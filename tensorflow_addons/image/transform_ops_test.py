@@ -370,6 +370,15 @@ class RandomRot90Test(tf.test.TestCase):
                     truth = np.zeros(shape, dtype.as_numpy_dtype())
                     self.assertAllEqual(after, truth)
 
+    def test_zero_turns(self):
+        """Anything should be invariant under rotation by zero."""
+        for dtype in _DTYPES:
+            for shape in [(5, 5), (24, 24), (2, 24, 24, 3)]:
+                before = np.random.randn(*shape)
+                before = tf.constant(before, shape=shape)
+                after = transform_ops.random_rot90(before, max_turns=0)
+                self.assertAllEqual(before, after)
+
     def test_averages(self):
         """Test that, on average, rot90 turns points into uniform images."""
         channels = 3
@@ -381,19 +390,21 @@ class RandomRot90Test(tf.test.TestCase):
                 test_image = np.zeros(shape, dtype=dtype.as_numpy_dtype())
                 test_image[:, 0, 1, channel] = 1  # E.g., [[0,1],[0,0]]
                 test_image_tensor = tf.constant(test_image, shape=shape)
-                rotated = transform_ops.random_rot90(test_image_tensor)
+
+                # Test up to 3 turns, which fully samples the group
+                rotated = transform_ops.random_rot90(test_image_tensor, max_turns=3)
 
                 # cast to higher precision to avoid uint8 accumulate overflow
                 rotated = tf.cast(rotated, tf.float64)
 
                 sums = try_eval(tf.reduce_sum(rotated, axis=0)[:, :, channel])
-
                 # lower, upper = scipy.stats.binom(1000, 0.25).interval(0.99)
                 lower, upper = 215., 286.
                 assert sums.min().min(
                 ) >= lower, "Must lie in confidence interval!"
                 assert sums.max().max(
                 ) <= upper, "Must lie in confidence interval!"
+
 
 
 if __name__ == "__main__":
