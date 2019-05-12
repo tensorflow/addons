@@ -318,25 +318,23 @@ class RandomRotateOpTest(tf.test.TestCase):
 
     def test_rot90(self):
         """Test 90 degree rotations of simple images."""
-        experiments = [dict(rotation=np.pi / 2.,
-                            inval=[[0, 1],
-                                   [0, 0]],
-                            truth=[[1, 0],
-                                   [0, 0]],
-                            ),
-                       dict(rotation=np.pi,
-                            inval=[[0, 1],
-                                   [0, 0]],
-                            truth=[[0, 0],
-                                   [1, 0]],
-                            ),
-                       dict(rotation=-1 * np.pi / 2.,
-                            inval=[[0, 1],
-                                   [0, 0]],
-                            truth=[[0, 0],
-                                   [0, 1]],
-                            )
-                       ]
+        experiments = [
+            dict(
+                rotation=np.pi / 2.,
+                inval=[[0, 1], [0, 0]],
+                truth=[[1, 0], [0, 0]],
+            ),
+            dict(
+                rotation=np.pi,
+                inval=[[0, 1], [0, 0]],
+                truth=[[0, 0], [1, 0]],
+            ),
+            dict(
+                rotation=-1 * np.pi / 2.,
+                inval=[[0, 1], [0, 0]],
+                truth=[[0, 0], [0, 1]],
+            )
+        ]
         for dtype in _DTYPES:
             for shape in [(2, 2), (3, 2, 2, 5)]:
                 for expt in experiments:
@@ -355,7 +353,8 @@ class RandomRotateOpTest(tf.test.TestCase):
                         test_image[sample, :, :, channel] = inval_slice
                         truth[sample, :, :, channel] = truth_slice
                     test_image_tensor = tf.constant(test_image, shape=shape)
-                    rotated = transform_ops.random_rotation(test_image_tensor, rotation, rotation)
+                    rotated = transform_ops.random_rotation(
+                        test_image_tensor, rotation, rotation)
                     self.assertAllEqual(rotated, truth)
 
 
@@ -391,8 +390,10 @@ class RandomRot90Test(tf.test.TestCase):
 
                 # lower, upper = scipy.stats.binom(1000, 0.25).interval(0.99)
                 lower, upper = 215., 286.
-                assert sums.min().min() >= lower, "Must lie in confidence interval!"
-                assert sums.max().max() <= upper, "Must lie in confidence interval!"
+                assert sums.min().min(
+                ) >= lower, "Must lie in confidence interval!"
+                assert sums.max().max(
+                ) <= upper, "Must lie in confidence interval!"
 
 
 if __name__ == "__main__":
