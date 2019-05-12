@@ -392,7 +392,8 @@ class RandomRot90Test(tf.test.TestCase):
                 test_image_tensor = tf.constant(test_image, shape=shape)
 
                 # Test up to 3 turns, which fully samples the group
-                rotated = transform_ops.random_rot90(test_image_tensor, max_turns=3)
+                rotated = transform_ops.random_rot90(
+                    test_image_tensor, max_turns=3)
 
                 # cast to higher precision to avoid uint8 accumulate overflow
                 rotated = tf.cast(rotated, tf.float64)
@@ -404,7 +405,6 @@ class RandomRot90Test(tf.test.TestCase):
                 ) >= lower, "Must lie in confidence interval!"
                 assert sums.max().max(
                 ) <= upper, "Must lie in confidence interval!"
-
 
 
 if __name__ == "__main__":
