@@ -781,6 +781,7 @@ class BahdanauAttention(_BaseAttentionMechanism):
         return alignments, next_state
 
     def get_config(self):
+        # yapf: disable
         config = {
             "units": self.units,
             "normalize": self.normalize,
@@ -788,6 +789,8 @@ class BahdanauAttention(_BaseAttentionMechanism):
             "kernel_initializer": tf.keras.initializers.serialize(
                 self.kernel_initializer)
         }
+        # yapf: enable
+
         base_config = super(BahdanauAttention, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
@@ -1143,6 +1146,8 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
         return alignments, next_state
 
     def get_config(self):
+
+        # yapf: disable
         config = {
             "units": self.units,
             "normalize": self.normalize,
@@ -1153,6 +1158,8 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
             "kernel_initializer": tf.keras.initializers.serialize(
                 self.kernel_initializer),
         }
+        # yapf: enable
+
         base_config = super(BahdanauMonotonicAttention, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
