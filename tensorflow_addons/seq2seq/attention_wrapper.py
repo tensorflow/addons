@@ -782,14 +782,11 @@ class BahdanauAttention(_BaseAttentionMechanism):
 
     def get_config(self):
         config = {
-            "units":
-            self.units,
-            "normalize":
-            self.normalize,
-            "probability_fn":
-            self.probability_fn_name,
-            "kernel_initializer":
-            tf.keras.initializers.serialize(self.kernel_initializer)
+            "units": self.units,
+            "normalize": self.normalize,
+            "probability_fn": self.probability_fn_name,
+            "kernel_initializer": tf.keras.initializers.serialize(
+                self.kernel_initializer)
         }
         base_config = super(BahdanauAttention, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
@@ -1147,20 +1144,14 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
 
     def get_config(self):
         config = {
-            "units":
-            self.units,
-            "normalize":
-            self.normalize,
-            "sigmoid_noise":
-            self.sigmoid_noise,
-            "sigmoid_noise_seed":
-            self.sigmoid_noise_seed,
-            "score_bias_init":
-            self.score_bias_init,
-            "mode":
-            self.mode,
-            "kernel_initializer":
-            tf.keras.initializers.serialize(self.kernel_initializer),
+            "units": self.units,
+            "normalize": self.normalize,
+            "sigmoid_noise": self.sigmoid_noise,
+            "sigmoid_noise_seed": self.sigmoid_noise_seed,
+            "score_bias_init": self.score_bias_init,
+            "mode": self.mode,
+            "kernel_initializer": tf.keras.initializers.serialize(
+                self.kernel_initializer),
         }
         base_config = super(BahdanauMonotonicAttention, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
