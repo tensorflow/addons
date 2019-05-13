@@ -79,14 +79,12 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
                  tf.constant(0), first_inputs, first_state)
             batch_size_t = my_decoder.batch_size
 
-            self.assertTrue(
-                isinstance(first_state,
-                           tf.compat.v1.nn.rnn_cell.LSTMStateTuple))
-            self.assertTrue(
-                isinstance(step_state,
-                           tf.compat.v1.nn.rnn_cell.LSTMStateTuple))
-            self.assertTrue(
-                isinstance(step_outputs, basic_decoder.BasicDecoderOutput))
+            self.assertIsInstance(first_state,
+                                  tf.compat.v1.nn.rnn_cell.LSTMStateTuple)
+            self.assertIsInstance(step_state,
+                                  tf.compat.v1.nn.rnn_cell.LSTMStateTuple)
+            self.assertIsInstance(step_outputs,
+                                  basic_decoder.BasicDecoderOutput)
             self.assertEqual((batch_size, expected_output_depth),
                              step_outputs[0].get_shape())
             self.assertEqual((batch_size,), step_outputs[1].get_shape())
