@@ -184,7 +184,7 @@ def _check_static_batch_beam_maybe(shape, batch_size, beam_width):
             and (shape[0] != batch_size * beam_width or
                  (shape.ndims >= 2 and shape.dims[1].value is not None and
                   (shape[0] != batch_size or shape[1] != beam_width)))):
-        tf.compat.v1.logging.warn(
+        tf.get_logger().warn(
             "TensorArray reordering expects elements to be "
             "reshapable to %s which is incompatible with the "
             "current shape %s. Consider setting "
@@ -508,7 +508,7 @@ class BeamSearchDecoderMixin(object):
                 or element_shape.ndims is None or element_shape.ndims < 1):
             shape = (element_shape if t._infer_shape and t._element_shape else
                      tf.TensorShape(None))
-            tf.compat.v1.logging.warn(
+            tf.get_logger().warn(
                 "The TensorArray %s in the cell state is not amenable to "
                 "sorting based on the beam search result. For a "
                 "TensorArray to be sorted, its elements shape must be "
