@@ -25,6 +25,7 @@ import tensorflow as tf
 from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
 
+# TODO: Find public API alternatives to this
 from tensorflow.python.ops import rnn_cell_impl
 
 
