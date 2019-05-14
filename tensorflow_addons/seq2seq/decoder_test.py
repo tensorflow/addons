@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for contrib.seq2seq.python.seq2seq.decoder."""
+"""Tests for tfa.seq2seq.decoder."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -20,16 +20,13 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
+from tensorflow_addons.utils import test_utils
 from tensorflow_addons.seq2seq import basic_decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
-from tensorflow.python.eager import context
-from tensorflow.python.keras import keras_parameterized
-from tensorflow.python.ops import rnn
-from tensorflow.python.ops import rnn_cell
 
 
-@keras_parameterized.run_all_keras_modes
-class DecodeRNNTest(keras_parameterized.TestCase, tf.test.TestCase):
+@test_utils.keras_parameterized.run_all_keras_modes
+class DecodeRNNTest(test_utils.keras_parameterized.TestCase, tf.test.TestCase):
     """Tests for Decoder."""
 
     def _testDecodeRNN(self, time_major, maximum_iterations=None):
@@ -49,7 +46,7 @@ class DecodeRNNTest(keras_parameterized.TestCase, tf.test.TestCase):
                 inputs = np.random.randn(batch_size, max_time,
                                          input_depth).astype(np.float32)
             input_t = tf.constant(inputs)
-            cell = rnn_cell.LSTMCell(cell_depth)
+            cell = tf.compat.v1.nn.rnn_cell.LSTMCell(cell_depth)
             sampler = sampler_py.TrainingSampler(time_major=time_major)
             my_decoder = basic_decoder.BasicDecoder(
                 cell=cell,
@@ -70,7 +67,7 @@ class DecodeRNNTest(keras_parameterized.TestCase, tf.test.TestCase):
                     return (shape[1], shape[0]) + shape[2:]
                 return shape
 
-            if not context.executing_eagerly():
+            if not tf.executing_eagerly():
                 self.assertEqual(
                     (batch_size,),
                     tuple(final_sequence_length.get_shape().as_list()))
@@ -93,7 +90,7 @@ class DecodeRNNTest(keras_parameterized.TestCase, tf.test.TestCase):
                 expected_length = [
                     min(x, maximum_iterations) for x in expected_length
                 ]
-            if context.executing_eagerly() and maximum_iterations != 0:
+            if tf.executing_eagerly() and maximum_iterations != 0:
                 self.assertEqual(
                     _t((batch_size, time_steps, cell_depth)),
                     final_outputs.rnn_output.shape)
@@ -128,7 +125,7 @@ class DecodeRNNTest(keras_parameterized.TestCase, tf.test.TestCase):
                                      input_depth).astype(np.float32)
             inputs = tf.constant(inputs)
 
-            cell = rnn_cell.LSTMCell(cell_depth)
+            cell = tf.compat.v1.nn.rnn_cell.LSTMCell(cell_depth)
             zero_state = cell.zero_state(
                 dtype=tf.float32, batch_size=batch_size)
             sampler = sampler_py.TrainingSampler()
@@ -142,7 +139,7 @@ class DecodeRNNTest(keras_parameterized.TestCase, tf.test.TestCase):
                 initial_state=zero_state,
                 sequence_length=sequence_length)
 
-            final_rnn_outputs, final_rnn_state = rnn.dynamic_rnn(
+            final_rnn_outputs, final_rnn_state = tf.compat.v1.nn.dynamic_rnn(
                 cell,
                 inputs,
                 sequence_length=sequence_length
