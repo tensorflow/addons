@@ -301,7 +301,7 @@ def preprocess_image(image):
 
 def load_and_preprocess_tfa(path):
     image = tf.io.read_file(path)
-    return preprocess_image(image, addons=True)
+    return preprocess_image(image)
 
 
 @test_utils.run_all_in_graph_and_eager_modes
