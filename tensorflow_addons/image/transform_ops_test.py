@@ -288,18 +288,13 @@ class RotateOpTest(tf.test.TestCase):
         self.assertEqual(image.get_shape(), result.get_shape())
 
 
-def preprocess_image(image, addons):
+def preprocess_image(image):
     image = tf.image.decode_image(image, channels=3)
 
-    if addons:
-        angle = 1.57
-        image = transform_ops.rotate(image, angle)
-        print(type(image))
-        print(image.get_shape())
-    else:
-        image = tf.image.rot90(image)
-        print(type(image))
-        print(image.get_shape())
+    angle = 1.57
+    image = transform_ops.rotate(image, angle)
+    print(type(image))
+    print(image.get_shape())
 
     return image
 
@@ -307,11 +302,6 @@ def preprocess_image(image, addons):
 def load_and_preprocess_tfa(path):
     image = tf.io.read_file(path)
     return preprocess_image(image, addons=True)
-
-
-def load_and_preprocess_tf(path):
-    image = tf.io.read_file(path)
-    return preprocess_image(image, addons=False)
 
 
 @test_utils.run_all_in_graph_and_eager_modes
