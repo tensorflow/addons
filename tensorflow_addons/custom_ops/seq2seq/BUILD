@@ -2,7 +2,7 @@ licenses(["notice"])  # Apache 2.0
 
 package(default_visibility = ["//visibility:public"])
 
-load("//tensorflow_addons:addons_bazel_macros.bzl", "D_GLIBCXX_USE_CXX11_ABI")
+load("@local_config_tf//:build_defs.bzl", "D_GLIBCXX_USE_CXX11_ABI")
 
 cc_binary(
     name = "_beam_search_ops.so",
