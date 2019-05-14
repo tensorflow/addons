@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
 import numpy as np
 import tensorflow as tf
 
@@ -285,6 +286,45 @@ class RotateOpTest(tf.test.TestCase):
         result = transform_ops.rotate(
             image, tf.random.uniform((), -1, 1), interpolation="BILINEAR")
         self.assertEqual(image.get_shape(), result.get_shape())
+
+
+def preprocess_image(image, addons):
+    image = tf.image.decode_image(image, channels=3)
+
+    if addons:
+        angle = 1.57
+        image = transform_ops.rotate(image, angle)
+        print(type(image))
+        print(image.get_shape())
+    else:
+        image = tf.image.rot90(image)
+        print(type(image))
+        print(image.get_shape())
+
+    return image
+
+
+def load_and_preprocess_tfa(path):
+    image = tf.io.read_file(path)
+    return preprocess_image(image, addons=True)
+
+
+def load_and_preprocess_tf(path):
+    image = tf.io.read_file(path)
+    return preprocess_image(image, addons=False)
+
+
+@test_utils.run_all_in_graph_and_eager_modes
+class DatasetTests(tf.test.TestCase):
+    prefix_path = "tensorflow/core/lib"
+    image_path = os.path.join(prefix_path, "gif", "testdata", "scan.gif")
+
+    def test_rotate_static_shape(self):
+        path_ds = tf.data.Dataset.from_tensor_slices([self.image_path])
+        image_ds = path_ds.map(load_and_preprocess_tfa)
+        for image in image_ds:
+            print(type(image))
+            print(image.shape)
 
 
 if __name__ == "__main__":
