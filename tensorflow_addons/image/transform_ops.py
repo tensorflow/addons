@@ -352,7 +352,8 @@ def random_rotation(images,
                     min_rot=None,
                     interpolation="NEAREST",
                     name=None):
-    """Rotate image(s) counterclockwise between `min_rot` and `max_rot` radians.
+    """Rotate image(s) counterclockwise between `min_rot` and `max_rot`
+    radians.
 
     Args:
     images: A tensor of shape (num_images, num_rows, num_columns, num_channels)
@@ -412,7 +413,7 @@ def random_rotation(images,
 
 @tf.function
 def random_rot90(images, max_turns=1, interpolation="NEAREST", name=None):
-    """Rotate image(s) by 90 * n degrees, drawing n randomly from [0, 1, 2, 3].
+    """Rotate image(s) by 90 * n degrees, drawing n randomly from [0, ..., max_turns].
 
     Args:
     images: A tensor of shape (num_images, num_rows, num_columns, num_channels)
