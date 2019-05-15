@@ -372,7 +372,7 @@ def random_rotation(images,
     Raises:
     TypeError: If `image` is an invalid type.
     """
-    with ops.name_scope(name or "random_rotation"):
+    with tf.name_scope(name or "random_rotation"):
         image_or_images = tf.convert_to_tensor(images)
         if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
             raise TypeError("Invalid dtype %s." % image_or_images.dtype)
@@ -432,7 +432,7 @@ def random_rot90(images, max_turns=1, interpolation="NEAREST", name=None):
     Raises:
     TypeError: If `image` is an invalid type.
     """
-    with ops.name_scope(name or "random_rot90"):
+    with tf.name_scope(name or "random_rot90"):
         image_or_images = tf.convert_to_tensor(images)
         if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
             raise TypeError("Invalid dtype %s." % image_or_images.dtype)
