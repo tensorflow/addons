@@ -352,8 +352,7 @@ def random_rotation(images,
                     min_rot=None,
                     interpolation="NEAREST",
                     name=None):
-    """Rotate image(s) counterclockwise by up to `rg` radians in either
-    direction.
+    """Rotate image(s) counterclockwise between `min_rot` and `max_rot` radians.
 
     Args:
     images: A tensor of shape (num_images, num_rows, num_columns, num_channels)
