@@ -365,6 +365,7 @@ class RandomRotateOpTest(tf.test.TestCase):
                         test_image[sample, :, :, channel] = inval_slice
                         truth[sample, :, :, channel] = truth_slice
                     test_image_tensor = tf.constant(test_image, shape=shape)
+                    # Apply constant rotation via max_rot=min_rot
                     rotated = transform_ops.random_rotation(
                         test_image_tensor, rotation, rotation)
                     self.assertAllEqual(rotated, truth)
