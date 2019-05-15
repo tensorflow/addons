@@ -386,7 +386,6 @@ class RandomRot90Test(tf.test.TestCase):
         for channel in range(channels):
             shape = (samples, 2, 2, channels)
             for dtype in _DTYPES:
-                print(channel, dtype)
                 test_image = np.zeros(shape, dtype=dtype.as_numpy_dtype())
                 test_image[:, 0, 1, channel] = 1  # E.g., [[0,1],[0,0]]
                 test_image_tensor = tf.constant(test_image, shape=shape)
