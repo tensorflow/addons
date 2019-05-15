@@ -12,23 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for contrib.seq2seq.python.seq2seq.beam_search_ops."""
+"""Tests for tfa.seq2seq.beam_search_ops."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import itertools
-
 import numpy as np
-
 import tensorflow as tf
 
-from tensorflow.python.framework import ops
-
-from tensorflow.python.framework import load_library
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
-_beam_search_ops_so = load_library.load_op_library(
+_beam_search_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/seq2seq/_beam_search_ops.so"))
 gather_tree = _beam_search_ops_so.gather_tree
 
@@ -65,7 +60,7 @@ class GatherTreeTest(tf.test.TestCase):
         parent_ids = _transpose_batch_time([[[0, 0, 0], [0, -1, 1], [2, 1, 2],
                                              [-1, -1, -1]]])
         max_sequence_lengths = [3]
-        with ops.device("/cpu:0"):
+        with tf.device("/cpu:0"):
             msg = r"parent id -1 at \(batch, time, beam\) == \(0, 0, 1\)"
             with self.assertRaisesOpError(msg):
                 beams = gather_tree(
@@ -90,7 +85,7 @@ class GatherTreeTest(tf.test.TestCase):
         max_sequence_lengths = [3]
         expected_result = _transpose_batch_time([[[2, -1, 2], [6, 5, 6],
                                                   [7, 8, 9], [10, 10, 10]]])
-        with ops.device("/device:GPU:0"):
+        with tf.device("/device:GPU:0"):
             beams = gather_tree(
                 step_ids=step_ids,
                 parent_ids=parent_ids,
