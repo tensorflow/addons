@@ -348,8 +348,8 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
 
 @tf.function
 def random_rotation(images,
-                    min_rot,
-                    max_rot=None,
+                    max_rot,
+                    min_rot=None,
                     interpolation="NEAREST",
                     name=None):
     """Rotate image(s) counterclockwise by up to `rg` radians in either
@@ -360,8 +360,8 @@ def random_rotation(images,
         (NHWC), (num_rows, num_columns, num_channels) (HWC), or
         (num_rows, num_columns) (HW). The rank must be statically known (the
         shape is not `TensorShape(None)`.
-    min_rot: Minimum allowed rotation
-    max_rot: Maximum allowed rotation; if None, use `-min_rot`.
+    max_rot: Maximum allowed rotation
+    min_rot: Minimum allowed rotation; if None, use `-max_rot`.
     interpolation: Interpolation mode. Supported values: "NEAREST", "BILINEAR".
     name: The name of the op.
 
@@ -387,14 +387,14 @@ def random_rotation(images,
         else:
             raise TypeError("Images should have rank between 2 and 4.")
 
-        max_rot = max_rot if max_rot else -1.0 * min_rot
+        min_rot = min_rot if min_rot else -1.0 * max_rot
 
         image_height = tf.cast(tf.shape(images)[1], tf.dtypes.float32)[None]
         image_width = tf.cast(tf.shape(images)[2], tf.dtypes.float32)[None]
         n_images = tf.shape(images)[0]
 
         angles = tf.random.uniform(
-            shape=[n_images], minval=max_rot, maxval=max_rot)
+            shape=[n_images], minval=min_rot, maxval=max_rot)
         if n_images == 1:
             angles = angles[0]
         transforms = angles_to_projective_transforms(angles, image_height,

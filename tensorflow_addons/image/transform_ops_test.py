@@ -316,6 +316,17 @@ class RandomRotateOpTest(tf.test.TestCase):
                 after = transform_ops.random_rotation(before, max_angle)
                 self.assertAllEqual(before, after)
 
+    def test_rotate_by_2pi(self):
+        """Anything should be invariant under rotation by 2 * pi."""
+        for dtype in _DTYPES:
+            for shape in [(5, 5), (24, 24), (2, 24, 24, 3)]:
+                max_angle = 2.0 * np.pi
+                min_angle = max_angle  # test optional arg here
+                before = np.random.randn(*shape)
+                before = tf.constant(before, shape=shape)
+                after = transform_ops.random_rotation(before, max_angle, min_rot=min_angle)
+                self.assertAllEqual(before, after)
+
     def test_rot90(self):
         """Test 90 degree rotations of simple images."""
         experiments = [
@@ -398,8 +409,8 @@ class RandomRot90Test(tf.test.TestCase):
                 rotated = tf.cast(rotated, tf.float64)
 
                 sums = try_eval(tf.reduce_sum(rotated, axis=0)[:, :, channel])
-                # lower, upper = scipy.stats.binom(1000, 0.25).interval(0.99)
-                lower, upper = 215., 286.
+                # lower, upper = scipy.stats.binom(1000, 0.25).interval(0.998)
+                lower, upper = 208., 293.
                 assert sums.min().min(
                 ) >= lower, "Must lie in confidence interval!"
                 assert sums.max().max(
