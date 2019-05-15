@@ -324,7 +324,8 @@ class RandomRotateOpTest(tf.test.TestCase):
                 min_angle = max_angle  # test optional arg here
                 before = np.random.randn(*shape)
                 before = tf.constant(before, shape=shape)
-                after = transform_ops.random_rotation(before, max_angle, min_rot=min_angle)
+                after = transform_ops.random_rotation(
+                    before, max_angle, min_rot=min_angle)
                 self.assertAllEqual(before, after)
 
     def test_rot90(self):
