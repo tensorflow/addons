@@ -55,7 +55,7 @@ class LazyAdam(tf.keras.optimizers.Adam):
         local_step = tf.cast(self.iterations + 1, var_dtype)
         beta_1_power = tf.math.pow(beta_1_t, local_step)
         beta_2_power = tf.math.pow(beta_2_t, local_step)
-        epsilon_t = self._get_hyper('epsilon', var_dtype)
+        epsilon_t = tf.convert_to_tensor(self.epsilon, var_dtype)
         lr = (lr_t * tf.math.sqrt(1 - beta_2_power) / (1 - beta_1_power))
 
         # \\(m := beta1 * m + (1 - beta1) * g_t\\)
