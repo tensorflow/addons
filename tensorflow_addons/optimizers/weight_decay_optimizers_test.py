@@ -221,7 +221,7 @@ class AdamWTest(OptimizerTestBase):
             learning_rate=lambda: 0.001,
             beta_1=lambda: 0.9,
             beta_2=lambda: 0.999,
-            epsilon=lambda: 1e-8,
+            epsilon=1e-8,
             weight_decay=lambda: WEIGHT_DECAY)
 
 
