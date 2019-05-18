@@ -126,7 +126,8 @@ def _compute_2d_sparsemax(logits, name=None):
     p = tf.math.maximum(
         tf.cast(0, logits.dtype), z - tf.expand_dims(tau_z, -1))
     # If k_z = 0 or if z = nan, then the input is invalid
-    p_safe = tf.where(
+    # TODO: Adjust dimension order for TF2 broadcasting
+    p_safe = tf.compat.v1.where(
         tf.math.logical_or(
             tf.math.equal(k_z, 0), tf.math.is_nan(z_cumsum[:, -1])),
         tf.fill([obs, dims], tf.cast(float("nan"), logits.dtype)), p)
