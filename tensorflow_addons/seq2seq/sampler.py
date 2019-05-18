@@ -448,9 +448,10 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
                     auxiliary_inputs)
 
             if self.next_inputs_fn is None:
-                return tf.where(sample_ids,
-                                maybe_concatenate_auxiliary_inputs(outputs),
-                                base_next_inputs)
+                # TODO: Adjust dimension order for TF2 broadcasting
+                return tf.compat.v1.where(
+                    sample_ids, maybe_concatenate_auxiliary_inputs(outputs),
+                    base_next_inputs)
 
             where_sampling = tf.cast(tf.where(sample_ids), tf.int32)
             where_not_sampling = tf.cast(
