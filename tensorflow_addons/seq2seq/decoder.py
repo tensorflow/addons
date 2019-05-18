@@ -406,8 +406,10 @@ def dynamic_decode(decoder,
             # Zero out output values past finish
             if impute_finished:
                 emit = tf.nest.map_structure(
-                    lambda out, zero: tf.where(finished, zero, out),
-                    next_outputs, zero_outputs)
+                    # TODO: Adjust dimension order for TF2 broadcasting
+                    lambda out, zero: tf.compat.v1.where(finished, zero, out),
+                    next_outputs,
+                    zero_outputs)
             else:
                 emit = next_outputs
 
@@ -419,7 +421,9 @@ def dynamic_decode(decoder,
                 else:
                     new.set_shape(cur.shape)
                     pass_through = (new.shape.ndims == 0)
-                return new if pass_through else tf.where(finished, cur, new)
+                # TODO: Adjust dimension order for TF2 broadcasting
+                return new if pass_through else tf.compat.v1.where(
+                    finished, cur, new)
 
             if impute_finished:
                 next_state = tf.nest.map_structure(_maybe_copy_state,
