@@ -11,6 +11,8 @@ py_library(
         "distort_image_ops.py",
         "filters.py",
         "transform_ops.py",
+        "sparse_image_warp.py",
+        "interpolate_spline.py",
     ]),
     data = [
         "//tensorflow_addons/custom_ops/image:_distort_image_ops.so",
@@ -80,6 +82,32 @@ py_test(
         "transform_ops_test.py",
     ],
     main = "transform_ops_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "sparse_image_warp_test",
+    size = "medium",
+    srcs = [
+        "sparse_image_warp_test.py",
+    ],
+    main = "sparse_image_warp_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "interpolate_spline_test",
+    size = "medium",
+    srcs = [
+        "interpolate_spline_test.py",
+    ],
+    main = "interpolate_spline_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":image",
