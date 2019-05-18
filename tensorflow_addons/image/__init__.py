@@ -27,4 +27,7 @@ from tensorflow_addons.image.filters import median_filter2d
 from tensorflow_addons.image.transform_ops import rotate
 from tensorflow_addons.image.transform_ops import transform
 from tensorflow_addons.image.sparse_image_warp import sparse_image_warp
+# partially expose private functions needed by test suite.
+from tensorflow_addons.image.sparse_image_warp import _get_grid_locations
+from tensorflow_addons.image.sparse_image_warp import _get_boundary_locations
 from tensorflow_addons.image.interpolate_spline import interpolate_spline

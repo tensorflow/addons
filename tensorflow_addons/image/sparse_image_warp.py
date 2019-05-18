@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.framework import tensor_shape  # TODO: better import
+from tensorflow.python.framework import tensor_shape  # TODO: better import?
 from tensorflow_addons.image import dense_image_warp
 from tensorflow_addons.image import interpolate_spline
 
@@ -44,8 +44,9 @@ def _get_boundary_locations(image_height, image_width, num_points_per_edge):
     y_range = np.linspace(0, image_height - 1, num_points_per_edge + 2)
     x_range = np.linspace(0, image_width - 1, num_points_per_edge + 2)
     ys, xs = np.meshgrid(y_range, x_range, indexing='ij')
-    is_boundary = np.logical_or(np.logical_or(xs == 0, xs == image_width - 1),
-                                np.logical_or(ys == 0, ys == image_height - 1))
+    is_boundary = np.logical_or(
+        np.logical_or(xs == 0, xs == image_width - 1),
+        np.logical_or(ys == 0, ys == image_height - 1))
     return np.stack([ys[is_boundary], xs[is_boundary]], axis=-1)
 
 
@@ -80,13 +81,13 @@ def _add_zero_flow_controls_at_boundary(control_point_locations,
     boundary_point_flows = np.zeros([boundary_point_locations.shape[0], 2])
 
     type_to_use = control_point_locations.dtype
-    boundary_point_locations = tf.constant(_expand_to_minibatch(
-        boundary_point_locations, batch_size),
-                                                    dtype=type_to_use)
+    boundary_point_locations = tf.constant(
+        _expand_to_minibatch(boundary_point_locations, batch_size),
+        dtype=type_to_use)
 
-    boundary_point_flows = tf.constant(_expand_to_minibatch(
-        boundary_point_flows, batch_size),
-                                                dtype=type_to_use)
+    boundary_point_flows = tf.constant(
+        _expand_to_minibatch(boundary_point_flows, batch_size),
+        dtype=type_to_use)
 
     merged_control_point_locations = tf.concat(
         [control_point_locations, boundary_point_locations], 1)
@@ -106,53 +107,53 @@ def sparse_image_warp(image,
                       name='sparse_image_warp'):
     """Image warping using correspondences between sparse control points.
 
-  Apply a non-linear warp to the image, where the warp is specified by
-  the source and destination locations of a (potentially small) number of
-  control points. First, we use a polyharmonic spline
-  (`tf.contrib.image.interpolate_spline`) to interpolate the displacements
-  between the corresponding control points to a dense flow field.
-  Then, we warp the image using this dense flow field
-  (`tf.contrib.image.dense_image_warp`).
+    Apply a non-linear warp to the image, where the warp is specified by
+    the source and destination locations of a (potentially small) number of
+    control points. First, we use a polyharmonic spline
+    (`tf.contrib.image.interpolate_spline`) to interpolate the displacements
+    between the corresponding control points to a dense flow field.
+    Then, we warp the image using this dense flow field
+    (`tf.contrib.image.dense_image_warp`).
 
-  Let t index our control points. For regularization_weight=0, we have:
-  warped_image[b, dest_control_point_locations[b, t, 0],
-                  dest_control_point_locations[b, t, 1], :] =
-  image[b, source_control_point_locations[b, t, 0],
-           source_control_point_locations[b, t, 1], :].
+    Let t index our control points. For regularization_weight=0, we have:
+    warped_image[b, dest_control_point_locations[b, t, 0],
+                    dest_control_point_locations[b, t, 1], :] =
+    image[b, source_control_point_locations[b, t, 0],
+             source_control_point_locations[b, t, 1], :].
 
-  For regularization_weight > 0, this condition is met approximately, since
-  regularized interpolation trades off smoothness of the interpolant vs.
-  reconstruction of the interpolant at the control points.
-  See `tf.contrib.image.interpolate_spline` for further documentation of the
-  interpolation_order and regularization_weight arguments.
+    For regularization_weight > 0, this condition is met approximately, since
+    regularized interpolation trades off smoothness of the interpolant vs.
+    reconstruction of the interpolant at the control points.
+    See `tf.contrib.image.interpolate_spline` for further documentation of the
+    interpolation_order and regularization_weight arguments.
 
 
-  Args:
-    image: `[batch, height, width, channels]` float `Tensor`
-    source_control_point_locations: `[batch, num_control_points, 2]` float
-      `Tensor`
-    dest_control_point_locations: `[batch, num_control_points, 2]` float
-      `Tensor`
-    interpolation_order: polynomial order used by the spline interpolation
-    regularization_weight: weight on smoothness regularizer in interpolation
-    num_boundary_points: How many zero-flow boundary points to include at
-      each image edge.Usage:
-        num_boundary_points=0: don't add zero-flow points
-        num_boundary_points=1: 4 corners of the image
-        num_boundary_points=2: 4 corners and one in the middle of each edge
-          (8 points total)
-        num_boundary_points=n: 4 corners and n-1 along each edge
-    name: A name for the operation (optional).
+    Args:
+      image: `[batch, height, width, channels]` float `Tensor`
+      source_control_point_locations: `[batch, num_control_points, 2]` float
+        `Tensor`
+      dest_control_point_locations: `[batch, num_control_points, 2]` float
+        `Tensor`
+      interpolation_order: polynomial order used by the spline interpolation
+      regularization_weight: weight on smoothness regularizer in interpolation
+      num_boundary_points: How many zero-flow boundary points to include at
+        each image edge.Usage:
+          num_boundary_points=0: don't add zero-flow points
+          num_boundary_points=1: 4 corners of the image
+          num_boundary_points=2: 4 corners and one in the middle of each edge
+            (8 points total)
+          num_boundary_points=n: 4 corners and n-1 along each edge
+      name: A name for the operation (optional).
 
-    Note that image and offsets can be of type tf.half, tf.float32, or
-    tf.float64, and do not necessarily have to be the same type.
+      Note that image and offsets can be of type tf.half, tf.float32, or
+      tf.float64, and do not necessarily have to be the same type.
 
-  Returns:
-    warped_image: `[batch, height, width, channels]` float `Tensor` with same
-      type as input image.
-    flow_field: `[batch, height, width, 2]` float `Tensor` containing the dense
-      flow field produced by the interpolation.
-  """
+    Returns:
+      warped_image: `[batch, height, width, channels]` float `Tensor` with same
+        type as input image.
+      flow_field: `[batch, height, width, 2]` float `Tensor` containing the
+        dense flow field produced by the interpolation.
+    """
 
     image = tf.convert_to_tensor(image)
     source_control_point_locations = tf.convert_to_tensor(
@@ -160,8 +161,8 @@ def sparse_image_warp(image,
     dest_control_point_locations = tf.convert_to_tensor(
         dest_control_point_locations)
 
-    control_point_flows = (dest_control_point_locations -
-                           source_control_point_locations)
+    control_point_flows = (
+        dest_control_point_locations - source_control_point_locations)
 
     clamp_boundaries = num_boundary_points > 0
     boundary_points_per_edge = num_boundary_points - 1
@@ -192,9 +193,9 @@ def sparse_image_warp(image,
             flattened_grid_locations, interpolation_order,
             regularization_weight)
 
-        dense_flows = tf.reshape(
-            flattened_flows, [batch_size, image_height, image_width, 2])
+        dense_flows = tf.reshape(flattened_flows,
+                                 [batch_size, image_height, image_width, 2])
 
-        warped_image = dense_image_warp.dense_image_warp(image, dense_flows)
+        warped_image = dense_image_warp(image, dense_flows)
 
         return warped_image, dense_flows

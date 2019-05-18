@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+from tensorflow.python.framework import tensor_shape  # TODO: better import?
 
 EPSILON = 0.0000000001
 
@@ -43,8 +44,10 @@ def _cross_squared_distance_matrix(x, y):
 
     x_y_transpose = tf.matmul(x, y, adjoint_b=True)
 
-    # squared_dists[b,i,j] = ||x_bi - y_bj||^2 = x_bi'x_bi- 2x_bi'x_bj + x_bj'x_bj
-    squared_dists = x_norm_squared_tile - 2 * x_y_transpose + y_norm_squared_tile
+    # squared_dists[b,i,j] = ||x_bi - y_bj||^2 =
+    # x_bi'x_bi- 2x_bi'x_bj + x_bj'x_bj
+    squared_dists = (
+        x_norm_squared_tile - 2 * x_y_transpose + y_norm_squared_tile)
 
     return squared_dists
 
@@ -52,7 +55,8 @@ def _cross_squared_distance_matrix(x, y):
 def _pairwise_squared_distance_matrix(x):
     """Pairwise squared distance among a (batch) matrix's rows (2nd dim).
 
-    This saves a bit of computation vs. using _cross_squared_distance_matrix(x,x)
+    This saves a bit of computation vs. using
+    _cross_squared_distance_matrix(x,x)
 
     Args:
       x: `[batch_size, n, d]` float `Tensor`
@@ -60,13 +64,14 @@ def _pairwise_squared_distance_matrix(x):
     Returns:
       squared_dists: `[batch_size, n, n]` float `Tensor`, where
       squared_dists[b,i,j] = ||x[b,i,:] - x[b,j,:]||^2
-  """
+    """
 
     x_x_transpose = tf.matmul(x, x, adjoint_b=True)
-    x_norm_squared = tf.matrix_diag_part(x_x_transpose)
+    x_norm_squared = tf.linalg.diag_part(x_x_transpose)
     x_norm_squared_tile = tf.expand_dims(x_norm_squared, 2)
 
-    # squared_dists[b,i,j] = ||x_bi - x_bj||^2 = x_bi'x_bi- 2x_bi'x_bj + x_bj'x_bj
+    # squared_dists[b,i,j] = ||x_bi - x_bj||^2 =
+    # = x_bi'x_bi- 2x_bi'x_bj + x_bj'x_bj
     squared_dists = x_norm_squared_tile - 2 * x_x_transpose + tf.transpose(
         x_norm_squared_tile, [0, 2, 1])
 
@@ -77,8 +82,9 @@ def _solve_interpolation(train_points, train_values, order,
                          regularization_weight):
     """Solve for interpolation coefficients.
 
-    Computes the coefficients of the polyharmonic interpolant for the 'training'
-    data defined by (train_points, train_values) using the kernel phi.
+    Computes the coefficients of the polyharmonic interpolant for the
+    'training' data defined by (train_points, train_values) using the kernel
+    phi.
 
     Args:
       train_points: `[b, n, d]` interpolation centers
@@ -97,12 +103,12 @@ def _solve_interpolation(train_points, train_values, order,
     b, n, _ = tf.unstack(tf.shape(train_points), num=3)
 
     d = train_points.shape[-1]
-    if tf.dimension_value(d) is None:
+    if tensor_shape.dimension_value(d) is None:
         raise ValueError('The dimensionality of the input points (d) must be '
                          'statically-inferrable.')
 
     k = train_values.shape[-1]
-    if tf.dimension_value(k) is None:
+    if tensor_shape.dimension_value(k) is None:
         raise ValueError('The dimensionality of the output values (k) must be '
                          'statically-inferrable.')
 
@@ -120,11 +126,11 @@ def _solve_interpolation(train_points, train_values, order,
         matrix_a = _phi(_pairwise_squared_distance_matrix(c),
                         order)  # [b, n, n]
         if regularization_weight > 0:
-            batch_identity_matrix = tf.expand_dims(
-                tf.eye(n, dtype=c.dtype), 0)
+            batch_identity_matrix = tf.expand_dims(tf.eye(n, dtype=c.dtype), 0)
             matrix_a += regularization_weight * batch_identity_matrix
 
-        # Append ones to the feature values for the bias term in the linear model.
+        # Append ones to the feature values for the bias term
+        # in the linear model.
         ones = tf.ones_like(c[..., :1], dtype=c.dtype)
         matrix_b = tf.concat([c, ones], 2)  # [b, n, d + 1]
 
@@ -133,8 +139,7 @@ def _solve_interpolation(train_points, train_values, order,
             [matrix_a, tf.transpose(matrix_b, [0, 2, 1])], 1)
 
         num_b_cols = matrix_b.get_shape()[2]  # d + 1
-        lhs_zeros = tf.zeros([b, num_b_cols, num_b_cols],
-                             train_points.dtype)
+        lhs_zeros = tf.zeros([b, num_b_cols, num_b_cols], train_points.dtype)
         right_block = tf.concat([matrix_b, lhs_zeros],
                                 1)  # [b, n + d + 1, d + 1]
         lhs = tf.concat([left_block, right_block],
@@ -145,7 +150,7 @@ def _solve_interpolation(train_points, train_values, order,
 
     # Then, solve the linear system and unpack the results.
     with tf.name_scope('solve_linear_system'):
-        w_v = tf.matrix_solve(lhs, rhs)
+        w_v = tf.linalg.solve(lhs, rhs)
         w = w_v[:, :n, :]
         v = w_v[:, n:, :]
 
@@ -188,7 +193,8 @@ def _apply_interpolation(query_points, train_points, w, v, order):
 
 
 def _phi(r, order):
-    """Coordinate-wise nonlinearity used to define the order of the interpolation.
+    """Coordinate-wise nonlinearity used to define the order of the
+    interpolation.
 
     See https://en.wikipedia.org/wiki/Polyharmonic_spline for the definition.
 
@@ -208,13 +214,12 @@ def _phi(r, order):
             r = tf.sqrt(r)
             return r
         elif order == 2:
-            return 0.5 * r * tf.log(tf.maximum(r, EPSILON))
+            return 0.5 * r * tf.math.log(tf.maximum(r, EPSILON))
         elif order == 4:
-            return 0.5 * tf.square(r) * tf.log(
-                tf.maximum(r, EPSILON))
+            return 0.5 * tf.square(r) * tf.math.log(tf.maximum(r, EPSILON))
         elif order % 2 == 0:
             r = tf.maximum(r, EPSILON)
-            return 0.5 * tf.pow(r, 0.5 * order) * tf.log(r)
+            return 0.5 * tf.pow(r, 0.5 * order) * tf.math.log(r)
         else:
             r = tf.maximum(r, EPSILON)
             return tf.pow(r, 0.5 * order)
@@ -231,28 +236,30 @@ def interpolate_spline(train_points,
     The interpolant has the form
     $$f(x) = \sum_{i = 1}^n w_i \phi(||x - c_i||) + v^T x + b.$$
 
-    This is a sum of two terms: (1) a weighted sum of radial basis function (RBF)
-    terms, with the centers \\(c_1, ... c_n\\), and (2) a linear term with a bias.
-    The \\(c_i\\) vectors are 'training' points. In the code, b is absorbed into v
+    This is a sum of two terms: (1) a weighted sum of radial basis function
+    (RBF) terms, with the centers \\(c_1, ... c_n\\), and (2) a linear term
+    with a bias. The \\(c_i\\) vectors are 'training' points.
+    In the code, b is absorbed into v
     by appending 1 as a final dimension to x. The coefficients w and v are
-    estimated such that the interpolant exactly fits the value of the function at
-    the \\(c_i\\) points, the vector w is orthogonal to each \\(c_i\\), and the
-    vector w sums to 0. With these constraints, the coefficients can be obtained
-    by solving a linear system.
+    estimated such that the interpolant exactly fits the value of the function
+    at the \\(c_i\\) points, the vector w is orthogonal to each \\(c_i\\),
+    and the vector w sums to 0. With these constraints, the coefficients
+    can be obtained by solving a linear system.
 
     \\(\phi\\) is an RBF, parametrized by an interpolation
     order. Using order=2 produces the well-known thin-plate spline.
 
     We also provide the option to perform regularized interpolation. Here, the
-    interpolant is selected to trade off between the squared loss on the training
-    data and a certain measure of its curvature
+    interpolant is selected to trade off between the squared loss on the
+    training data and a certain measure of its curvature
     ([details](https://en.wikipedia.org/wiki/Polyharmonic_spline)).
     Using a regularization weight greater than zero has the effect that the
-    interpolant will no longer exactly fit the training data. However, it may be
-    less vulnerable to overfitting, particularly for high-order interpolation.
+    interpolant will no longer exactly fit the training data. However, it may
+    be less vulnerable to overfitting, particularly for high-order
+    interpolation.
 
-    Note the interpolation procedure is differentiable with respect to all inputs
-    besides the order parameter.
+    Note the interpolation procedure is differentiable with respect to all
+    inputs besides the order parameter.
 
     We support dynamically-shaped inputs, where batch_size, n, and m are None
     at graph construction time. However, d and k must be known.
@@ -260,13 +267,13 @@ def interpolate_spline(train_points,
     Args:
       train_points: `[batch_size, n, d]` float `Tensor` of n d-dimensional
         locations. These do not need to be regularly-spaced.
-      train_values: `[batch_size, n, k]` float `Tensor` of n c-dimensional values
-        evaluated at train_points.
+      train_values: `[batch_size, n, k]` float `Tensor` of n c-dimensional
+        values evaluated at train_points.
       query_points: `[batch_size, m, d]` `Tensor` of m d-dimensional locations
         where we will output the interpolant's values.
       order: order of the interpolation. Common values are 1 for
-        \\(\phi(r) = r\\), 2 for \\(\phi(r) = r^2 * log(r)\\) (thin-plate spline),
-        or 3 for \\(\phi(r) = r^3\\).
+        \\(\phi(r) = r\\), 2 for \\(\phi(r) = r^2 * log(r)\\)
+        (thin-plate spline), or 3 for \\(\phi(r) = r^3\\).
       regularization_weight: weight placed on the regularization term.
         This will depend substantially on the problem, and it should always be
         tuned. For many problems, it is reasonable to use no regularization.

@@ -15,11 +15,17 @@ py_library(
         "interpolate_spline.py",
     ]),
     data = [
+        ":sparse_image_warp_test_data",
         "//tensorflow_addons/custom_ops/image:_distort_image_ops.so",
         "//tensorflow_addons/custom_ops/image:_image_ops.so",
         "//tensorflow_addons/utils",
     ],
     srcs_version = "PY2AND3",
+)
+
+filegroup(
+    name = "sparse_image_warp_test_data",
+    srcs = glob(["test_data/*.png"]),
 )
 
 py_test(
