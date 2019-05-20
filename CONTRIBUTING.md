@@ -18,7 +18,9 @@ minor, then feel free to make them without discussion.
 
 Want to contribute but not sure of what? Here are a few suggestions:
 1. Add a new example or tutorial. Located in [`examples/`](examples),
-  these are a great way to familiarize yourself and others with TF-Addons.
+  these are a great way to familiarize yourself and others with TF-Addons. See 
+  [the guidelines](examples/README.md) for more information on hwo to add 
+  examples.
 2. Solve an [existing issue](https://github.com/tensorflow/addons/issues).
   These range from low-level software bugs to higher-level design problems.
   Check out the label [help wanted](https://github.com/tensorflow/addons/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22). If you're a new contributor, the label [good first issue](https://github.com/tensorflow/addons/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) can be a good place to start.
@@ -36,11 +38,7 @@ fitting the following criteria:
 * The addon is impactful to the community (e.g. an implementation used
  in widely cited paper)
  * Lastly, the functionality conforms to the contribution guidelines of
- its API pattern:
-    * [Layers](tensorflow_addons/layers/README.md) |
-      [Optimizers](tensorflow_addons/optimizers/README.md) |
-      [Losses](tensorflow_addons/losses/README.md) |
-      [Custom Ops](tensorflow_addons/custom_ops/README.md)
+ its subpackage.
 
 **Note: New contributions often require team-members to read a research
 paper and understand how it fits into the TensorFlow community. This
