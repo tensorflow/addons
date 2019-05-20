@@ -47,7 +47,7 @@ TF-Addons. In order to achieve these we require that our additions
 conform to established API patterns seen in core TensorFlow.
 
 #### Proxy Maintainership
-Addons has been designed to compartmentatlizae subpackages and submodules so 
+Addons has been designed to compartmentalize subpackages and submodules so 
 that they can be maintained by users who have expertise and a vested interest 
 in that component. 
 
