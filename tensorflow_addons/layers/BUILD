@@ -6,6 +6,7 @@ py_library(
     name = "layers",
     srcs = [
         "__init__.py",
+        "decorators.py",
         "maxout.py",
         "normalizations.py",
         "poincare.py",
@@ -16,6 +17,19 @@ py_library(
     deps = [
         "//tensorflow_addons/activations",
         "//tensorflow_addons/utils",
+    ],
+)
+
+py_test(
+    name = "layers_decorators_test",
+    size = "small",
+    srcs = [
+        "decorators_test.py",
+    ],
+    main = "decorators_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":layers",
     ],
 )
 
