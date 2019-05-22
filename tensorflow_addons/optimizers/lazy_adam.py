@@ -47,6 +47,23 @@ class LazyAdam(tf.keras.optimizers.Adam):
     False.
     """
 
+    def __init__(self,
+                 learning_rate=0.001,
+                 beta_1=0.9,
+                 beta_2=0.999,
+                 epsilon=1e-7,
+                 amsgrad=False,
+                 name='LazyAdam',
+                 **kwargs):
+        super(LazyAdam, self).__init__(
+            learning_rate=learning_rate,
+            beta_1=beta_1,
+            beta_2=beta_2,
+            epsilon=epsilon,
+            amsgrad=amsgrad,
+            name=name,
+            **kwargs)
+
     def _resource_apply_sparse(self, grad, var, indices):
         var_dtype = var.dtype.base_dtype
         lr_t = self._decayed_lr(var_dtype)
