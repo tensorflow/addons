@@ -57,8 +57,8 @@ docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-c
 Try these commands below:
 
 * Format code automatically: `make code-format`
-* Sanity check: `make sanity-check`
-* Run unit test: `make unit-test`
+* Run sanity check: `make sanity-check`
+* Run unit tests: `make unit-test`
 * All of the above: `make`
 
 ## Coding style
