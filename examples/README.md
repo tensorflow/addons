@@ -17,5 +17,5 @@ notebook using addons example template:
 URL boxes so that they match the name of your new example notebook.
 4. Follow the guidelines of the template
 5. "Save a copy in Github" and select your new branch. The notebook should be 
-named `subpackage_submodule`.
+named `subpackage_submodule`
 6. Submit the branch as a PR on the TF-Addons Github
