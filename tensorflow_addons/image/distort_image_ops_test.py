@@ -107,7 +107,7 @@ class AdjustHueInYiqTest(tf.test.TestCase):
         x_np = np.random.rand(2, 3) * 255.
         delta_h = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesRegexp(ValueError,
-                                     "Shape must be at least rank 3"):
+                                     "input must be at least rank 3."):
             self._adjust_hue_in_yiq_tf(x_np, delta_h)
         x_np = np.random.rand(4, 2, 4) * 255.
         delta_h = np.random.rand() * 2.0 - 1.0
@@ -168,7 +168,7 @@ class AdjustValueInYiqTest(tf.test.TestCase):
         x_np = np.random.rand(2, 3) * 255.
         scale = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesRegexp(ValueError,
-                                     "Shape must be at least rank 3"):
+                                     "input must be at least rank 3."):
             self._adjust_value_in_yiq_tf(x_np, scale)
         x_np = np.random.rand(4, 2, 4) * 255.
         scale = np.random.rand() * 2.0 - 1.0
@@ -233,7 +233,7 @@ class AdjustSaturationInYiqTest(tf.test.TestCase):
         x_np = np.random.rand(2, 3) * 255.
         scale = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesRegexp(ValueError,
-                                     "Shape must be at least rank 3"):
+                                     "input must be at least rank 3."):
             self._adjust_saturation_in_yiq_tf(x_np, scale)
         x_np = np.random.rand(4, 2, 4) * 255.
         scale = np.random.rand() * 2.0 - 1.0
