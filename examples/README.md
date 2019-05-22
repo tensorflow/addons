@@ -14,7 +14,7 @@ this, follow the below steps:
 notebook using addons example template:
 [examples/template.ipynb](template.ipynb)
 3. Edit the the links for the "View source on GitHub" and "Run in Google Colab" 
-URL boxes so that they match the name of your new example notebook.
+URL boxes so that they match the name of your new example notebook
 4. Follow the guidelines of the template
 5. "Save a copy in Github" and select your new branch. The notebook should be 
 named `subpackage_submodule`
