@@ -64,15 +64,14 @@ Try these commands below:
 ## Coding style
 
 Addons provides `make code-format` command to format your changes
-automatically, don't forget to use it before pushing your codes.
+automatically, don't forget to use it before pushing your code.
 
 Please see our [Style Guide](STYLE_GUIDE.md) for more details.
 
 ## Code Testing
 #### CI Testing
-We're in the process of setting up our nightly CI testing. Because this
-project will contain CUDA kernels, we need to make sure that the
-hardware will be available from our CI provider.
+Nighly CI tests are ran and results can be found on the central README. To 
+subscribe for alerts please join the [addons-testing mailing list](https://groups.google.com/a/tensorflow.org/forum/#!forum/addons-testing).
 
 #### Locally Testing
 
