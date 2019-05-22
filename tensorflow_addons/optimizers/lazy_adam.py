@@ -55,7 +55,14 @@ class LazyAdam(tf.keras.optimizers.Adam):
                  amsgrad=False,
                  name='LazyAdam',
                  **kwargs):
-        super(LazyAdam, self).__init__(name=name, **kwargs)
+        super(LazyAdam, self).__init__(
+            learning_rate=learning_rate,
+            beta_1=beta_1,
+            beta_2=beta_2,
+            epsilon=epsilon,
+            amsgrad=amsgrad,
+            name=name,
+            **kwargs)
 
     def _resource_apply_sparse(self, grad, var, indices):
         var_dtype = var.dtype.base_dtype
