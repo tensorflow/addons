@@ -54,12 +54,12 @@ It is recommended that development is done in the latest
 docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
 ```
 
-Try those commands below:
+Try these commands below:
 
-0. Format codes automatically: `make code-format`
-1. Sanity check: `make sanity-check`
-2. Run unit test: `make unit-test`
-3. All of the above: `make`
+* Format codes automatically: `make code-format`
+* Sanity check: `make sanity-check`
+* Run unit test: `make unit-test`
+* All of the above: `make`
 
 ## Coding style
 
