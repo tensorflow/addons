@@ -103,13 +103,16 @@ def mean_filter2d(image,
             image, filter_shape, mode=padding, constant_values=constant_values)
 
         # Filter of shape (filter_width, filter_height, in_channels, 1)
-        # has value 1 / (filter_width * filter_height) for each element.
-        area = filter_shape[0] * filter_shape[1]
+        # has the value of 1 for each element.
+        area = tf.constant(
+            filter_shape[0] * filter_shape[1], dtype=image.dtype)
         filter_shape = filter_shape + (tf.shape(image)[-1], 1)
-        kernel = tf.ones(shape=filter_shape, dtype=image.dtype) / area
+        kernel = tf.ones(shape=filter_shape, dtype=image.dtype)
 
         output = tf.nn.depthwise_conv2d(
             image, kernel, strides=(1, 1, 1, 1), padding="VALID")
+
+        output /= area
 
         # Squeeze out the first axis to make sure
         # output has the same dimension with image.
