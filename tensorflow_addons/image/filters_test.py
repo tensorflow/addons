@@ -25,6 +25,50 @@ from tensorflow_addons.utils import test_utils
 
 @test_utils.run_all_in_graph_and_eager_modes
 class MeanFilter2dTest(tf.test.TestCase):
+    def _tile_image(self, plane, image_shape):
+        assert 3 <= len(image_shape) <= 4
+        plane = tf.convert_to_tensor(plane)
+        plane = tf.expand_dims(plane, -1)
+        channels = image_shape[-1]
+        image = tf.tile(plane, (1, 1, channels))
+
+        if len(image_shape) == 4:
+            batch_size = image_shape[0]
+            image = tf.expand_dims(image, 0)
+            image = tf.tile(image, (batch_size, 1, 1, 1))
+
+        return image
+
+    def _setup_values(self, image_shape, filter_shape, padding,
+                      constant_values, dtype):
+        assert 3 <= len(image_shape) <= 4
+        height, width = image_shape[-3], image_shape[-2]
+        plane = tf.constant([x for x in range(1, height * width + 1)],
+                            shape=(height, width),
+                            dtype=dtype)
+        image = self._tile_image(plane, image_shape=image_shape)
+
+        result = mean_filter2d(
+            image,
+            filter_shape=filter_shape,
+            padding=padding,
+            constant_values=constant_values)
+
+        return result
+
+    def _verify_values(self, image_shape, filter_shape, padding,
+                       constant_values, expected_plane):
+
+        expected_output = self._tile_image(expected_plane, image_shape)
+        dtypes = tf.dtypes
+        for dtype in [
+                dtypes.uint8, dtypes.float16, dtypes.float32, dtypes.float64
+        ]:
+            result = self._setup_values(image_shape, filter_shape, padding,
+                                        constant_values, dtype)
+            self.assertAllCloseAccordingToType(
+                result, tf.dtypes.cast(expected_output, dtype))
+
     def test_invalid_image(self):
         msg = "image should be either 3 or 4-dimensional."
 
@@ -34,7 +78,7 @@ class MeanFilter2dTest(tf.test.TestCase):
                     mean_filter2d(tf.ones(shape=image_shape))
 
     def test_invalid_filter_shape(self):
-        msg = ("The `filter_shape` argument must be a tuple of " "2 integers.")
+        msg = ("The `filter_shape` argument must be a tuple of 2 integers.")
         image = tf.ones(shape=(1, 28, 28, 1))
 
         for filter_shape in [(3, 3, 3), (3, None, 3), None]:
@@ -50,102 +94,60 @@ class MeanFilter2dTest(tf.test.TestCase):
         with self.assertRaisesRegexp(ValueError, msg):
             mean_filter2d(image, padding="TEST")
 
-    def test_3d_image(self):
-        # Test shape (3, 3, 1)
-        image = tf.constant([[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]],
-                            shape=(3, 3, 1))
+    def test_reflect_padding(self):
+        expected_plane = tf.constant([[33. / 9., 36. / 9., 39. / 9.],
+                                      [42. / 9., 45. / 9., 48. / 9.],
+                                      [51. / 9., 54. / 9., 57. / 9.]])
 
-        # (3, 3) filter shape:
-        # reflected padding with 1 pixel to each direction
-        #   5 4 5 6 5
-        #   2 1 2 3 2
-        #   5 4 5 6 5
-        #   8 7 8 9 8
-        #   5 4 5 6 5
+        for image_shape in [(3, 3, 1), (3, 3, 3), (1, 3, 3, 1), (1, 3, 3, 3),
+                            (2, 3, 3, 1), (2, 3, 3, 3)]:
+            self._verify_values(
+                image_shape=image_shape,
+                filter_shape=(3, 3),
+                padding="REFLECT",
+                constant_values=0,
+                expected_plane=expected_plane)
 
-        expected = tf.constant(
-            [[33. / 9., 36. / 9., 39. / 9.], [42. / 9., 45. / 9., 48. / 9.],
-             [51. / 9., 54. / 9., 57. / 9.]],
-            shape=(3, 3, 1))
+    def test_constant_padding(self):
+        expected_plane = tf.constant([[12. / 9., 21. / 9., 16. / 9.],
+                                      [27. / 9., 45. / 9., 33. / 9.],
+                                      [24. / 9., 39. / 9., 28. / 9.]])
 
-        output = mean_filter2d(image)
-        self.assertAllClose(output, expected)
+        for image_shape in [(3, 3, 1), (3, 3, 3), (1, 3, 3, 1), (1, 3, 3, 3),
+                            (2, 3, 3, 1), (2, 3, 3, 3)]:
+            self._verify_values(
+                image_shape=image_shape,
+                filter_shape=(3, 3),
+                padding="CONSTANT",
+                constant_values=0,
+                expected_plane=expected_plane)
 
-        # Test shape (3, 3, 3)
-        image = tf.stack([image, 2. * image, 3. * image], axis=-1)
-        expected = tf.stack([expected, 2. * expected, 3. * expected], axis=-1)
-        # Squeeze shape from (3, 3, 1, 3) to (3, 3, 3)
-        image = tf.squeeze(image, axis=-2)
-        expected = tf.squeeze(expected, axis=-2)
+        expected_plane = tf.constant([[17. / 9., 24. / 9., 21. / 9.],
+                                      [30. / 9., 45. / 9., 36. / 9.],
+                                      [29. / 9., 42. / 9., 33. / 9.]])
 
-        output = mean_filter2d(image)
-        self.assertAllClose(output, expected)
-
-    def test_4d_image(self):
-        # Test shape (2, 3, 3, 1)
-        image = tf.constant([[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]],
-                            shape=(3, 3, 1))
-
-        expected = tf.constant(
-            [[33. / 9., 36. / 9., 39. / 9.], [42. / 9., 45. / 9., 48. / 9.],
-             [51. / 9., 54. / 9., 57. / 9.]],
-            shape=(3, 3, 1))
-
-        # Batch size = 2, shape = (2, 3, 3, 1)
-        image = tf.stack([image, 2. * image], axis=0)
-        expected = tf.stack([expected, 2. * expected], axis=0)
-
-        output = mean_filter2d(image)
-        self.assertAllClose(output, expected)
-
-        # Test shape (2, 3, 3, 3)
-        image = tf.stack([image, image, image], axis=-1)
-        expected = tf.stack([expected, expected, expected], axis=-1)
-        image = tf.squeeze(image, axis=-2)
-        expected = tf.squeeze(expected, axis=-2)
-
-        output = mean_filter2d(image)
-        self.assertAllClose(output, expected)
-
-    def test_zero_padding(self):
-        image = tf.constant([[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]],
-                            shape=(3, 3, 1))
-
-        # (3, 3) filter shape:
-        # zero padding with 1 pixel to each direction
-        #   0 0 0 0 0
-        #   0 1 2 3 0
-        #   0 4 5 6 0
-        #   0 7 8 9 0
-        #   0 0 0 0 0
-
-        expected = tf.constant(
-            [[12. / 9., 21. / 9., 16. / 9.], [27. / 9., 45. / 9., 33. / 9.],
-             [24. / 9., 39. / 9., 28. / 9.]],
-            shape=(3, 3, 1))
-
-        output = mean_filter2d(image, padding="CONSTANT", constant_values=0)
-        self.assertAllClose(output, expected)
+        for image_shape in [(3, 3, 1), (3, 3, 3), (1, 3, 3, 1), (1, 3, 3, 3),
+                            (2, 3, 3, 1), (2, 3, 3, 3)]:
+            self._verify_values(
+                image_shape=image_shape,
+                filter_shape=(3, 3),
+                padding="CONSTANT",
+                constant_values=1,
+                expected_plane=expected_plane)
 
     def test_symmetric_padding(self):
-        image = tf.constant([[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]],
-                            shape=(3, 3, 1))
+        expected_plane = tf.constant([[21. / 9., 27. / 9., 33. / 9.],
+                                      [39. / 9., 45. / 9., 51. / 9.],
+                                      [57. / 9., 63. / 9., 69. / 9.]])
 
-        # (3, 3) filter shape:
-        # symmetric padding with 1 pixel to each direction
-        #   1 1 2 3 3
-        #   1 1 2 3 3
-        #   4 4 5 6 6
-        #   7 7 8 9 9
-        #   7 7 8 9 9
-
-        expected = tf.constant(
-            [[21. / 9., 27. / 9., 33. / 9.], [39. / 9., 45. / 9., 51. / 9.],
-             [57. / 9., 63. / 9., 69. / 9.]],
-            shape=(3, 3, 1))
-
-        output = mean_filter2d(image, padding="SYMMETRIC")
-        self.assertAllClose(output, expected)
+        for image_shape in [(3, 3, 1), (3, 3, 3), (1, 3, 3, 1), (1, 3, 3, 3),
+                            (2, 3, 3, 1), (2, 3, 3, 3)]:
+            self._verify_values(
+                image_shape=image_shape,
+                filter_shape=(3, 3),
+                padding="SYMMETRIC",
+                constant_values=0,
+                expected_plane=expected_plane)
 
 
 class MedianFilter2dTest(tf.test.TestCase):
