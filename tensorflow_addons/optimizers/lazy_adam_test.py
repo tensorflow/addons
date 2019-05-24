@@ -212,7 +212,7 @@ class LazyAdamTest(tf.test.TestCase):
                                                        self.evaluate(var0))
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
-                    self.assertEqual("var0_%d/m:0" % (i,),
+                    self.assertEqual("LazyAdam/var0_%d/m:0" % (i,),
                                      opt.get_slot(var0, "m").name)
 
     @test_utils.run_in_graph_and_eager_modes(reset_test=True)

@@ -18,16 +18,12 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.python.framework import common_shapes
-from tensorflow.python.framework import ops
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 _image_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/image/_image_ops.so"))
 
 tf.no_gradient("EuclideanDistanceTransform")
-ops.RegisterShape("EuclideanDistanceTransform")(
-    common_shapes.call_cpp_shape_fn)
 
 
 @tf.function
