@@ -26,6 +26,7 @@ from tensorflow_addons.utils import test_utils
 @test_utils.run_all_in_graph_and_eager_modes
 class MeanFilter2dTest(tf.test.TestCase):
     def _tile_image(self, plane, image_shape):
+        "Tile a 2-D image `plane` into 3-D or 4-D as per `image_shape`."
         assert 3 <= len(image_shape) <= 4
         plane = tf.convert_to_tensor(plane)
         plane = tf.expand_dims(plane, -1)
