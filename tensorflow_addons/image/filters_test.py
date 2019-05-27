@@ -26,7 +26,7 @@ from tensorflow_addons.utils import test_utils
 @test_utils.run_all_in_graph_and_eager_modes
 class MeanFilter2dTest(tf.test.TestCase):
     def _tile_image(self, plane, image_shape):
-        "Tile a 2-D image `plane` into 3-D or 4-D as per `image_shape`."
+        """Tile a 2-D image `plane` into 3-D or 4-D as per `image_shape`."""
         assert 3 <= len(image_shape) <= 4
         plane = tf.convert_to_tensor(plane)
         plane = tf.expand_dims(plane, -1)
@@ -108,7 +108,7 @@ class MeanFilter2dTest(tf.test.TestCase):
         fn(tf.ones(shape=(1, 3, 3, 1)))
         fn(tf.ones(shape=(1, 3, 3, 3)))
 
-    def test_reflect_padding(self):
+    def test_reflect_padding_with_3x3_filter(self):
         expected_plane = tf.constant([[33. / 9., 36. / 9., 39. / 9.],
                                       [42. / 9., 45. / 9., 48. / 9.],
                                       [51. / 9., 54. / 9., 57. / 9.]])
@@ -122,7 +122,21 @@ class MeanFilter2dTest(tf.test.TestCase):
                 constant_values=0,
                 expected_plane=expected_plane)
 
-    def test_constant_padding(self):
+    def test_reflect_padding_with_4x4_filter(self):
+        expected_plane = tf.constant([[80. / 16., 80. / 16., 80. / 16.],
+                                      [80. / 16., 80. / 16., 80. / 16.],
+                                      [80. / 16., 80. / 16., 80. / 16.]])
+
+        for image_shape in [(3, 3, 1), (3, 3, 3), (1, 3, 3, 1), (1, 3, 3, 3),
+                            (2, 3, 3, 1), (2, 3, 3, 3)]:
+            self._verify_values(
+                image_shape=image_shape,
+                filter_shape=(4, 4),
+                padding="REFLECT",
+                constant_values=0,
+                expected_plane=expected_plane)
+
+    def test_constant_padding_with_3x3_filter(self):
         expected_plane = tf.constant([[12. / 9., 21. / 9., 16. / 9.],
                                       [27. / 9., 45. / 9., 33. / 9.],
                                       [24. / 9., 39. / 9., 28. / 9.]])
@@ -149,7 +163,7 @@ class MeanFilter2dTest(tf.test.TestCase):
                 constant_values=1,
                 expected_plane=expected_plane)
 
-    def test_symmetric_padding(self):
+    def test_symmetric_padding_with_3x3_filter(self):
         expected_plane = tf.constant([[21. / 9., 27. / 9., 33. / 9.],
                                       [39. / 9., 45. / 9., 51. / 9.],
                                       [57. / 9., 63. / 9., 69. / 9.]])
