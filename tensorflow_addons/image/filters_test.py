@@ -99,14 +99,14 @@ class MeanFilter2dTest(tf.test.TestCase):
         # 3-D image
         fn = mean_filter2d.get_concrete_function(
             tf.TensorSpec(dtype=tf.dtypes.float32, shape=(3, 3, None)))
-        fn(tf.random.uniform(shape=(3, 3, 1)))
-        fn(tf.random.uniform(shape=(3, 3, 3)))
+        fn(tf.ones(shape=(3, 3, 1)))
+        fn(tf.ones(shape=(3, 3, 3)))
 
         # 4-D image
         fn = mean_filter2d.get_concrete_function(
             tf.TensorSpec(dtype=tf.dtypes.float32, shape=(1, 3, 3, None)))
-        fn(tf.random.uniform(shape=(1, 3, 3, 1)))
-        fn(tf.random.uniform(shape=(1, 3, 3, 3)))
+        fn(tf.ones(shape=(1, 3, 3, 1)))
+        fn(tf.ones(shape=(1, 3, 3, 3)))
 
     def test_reflect_padding(self):
         expected_plane = tf.constant([[33. / 9., 36. / 9., 39. / 9.],
