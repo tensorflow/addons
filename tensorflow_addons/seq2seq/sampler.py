@@ -449,8 +449,9 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
 
             if self.next_inputs_fn is None:
                 return tf.where(
-                    tf.broadcast_to(tf.expand_dims(sample_ids, axis=-1),
-                                    base_next_inputs.shape),
+                    tf.broadcast_to(
+                        tf.expand_dims(sample_ids, axis=-1),
+                        base_next_inputs.shape),
                     maybe_concatenate_auxiliary_inputs(outputs),
                     base_next_inputs)
 

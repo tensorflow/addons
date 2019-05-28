@@ -405,6 +405,7 @@ def dynamic_decode(decoder,
 
             # Zero out output values past finish
             if impute_finished:
+
                 def zero_out_finished(out, zero):
                     if finished.shape.rank < zero.shape.rank:
                         broadcast_finished = tf.broadcast_to(
@@ -412,10 +413,9 @@ def dynamic_decode(decoder,
                         return tf.where(broadcast_finished, zero, out)
                     else:
                         return tf.where(finished, zero, out)
-                emit = tf.nest.map_structure(
-                    zero_out_finished,
-                    next_outputs,
-                    zero_outputs)
+
+                emit = tf.nest.map_structure(zero_out_finished, next_outputs,
+                                             zero_outputs)
             else:
                 emit = next_outputs
 
