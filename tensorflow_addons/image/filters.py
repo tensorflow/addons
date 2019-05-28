@@ -36,7 +36,24 @@ def _normalize(li, ma):
 
 
 def _pad(image, filter_shape, mode="CONSTANT", constant_values=0):
-    """Explicitly pad a 4-D image."""
+    """Explicitly pad a 4-D image.
+
+    Equivalent to the implicit padding method offered in `tf.nn.conv2d` and
+    `tf.nn.depthwise_conv2d`, but supports non-zero, reflect and symmetric
+    padding mode. For the even-sized filter, it pads one more value to the
+    right or the bottom side.
+
+    Args:
+      image: A 4-D `Tensor` of shape `[batch_size, height, width, channels]`.
+      filter_shape: A `tuple`/`list` of 2 integers, specifying the height
+        and width of the 2-D filter.
+      mode: A `string`, one of "REFLECT", "CONSTANT", or "SYMMETRIC".
+        The type of padding algorithm to use, which is compatible with
+        `mode` argument in `tf.pad`. For more details, please refer to
+        https://www.tensorflow.org/api_docs/python/tf/pad.
+      constant_values: A `scalar`, the pad value to use in "CONSTANT"
+        padding mode.
+    """
     assert mode in ["CONSTANT", "REFLECT", "SYMMETRIC"]
     filter_height, filter_width = filter_shape
     pad_top = (filter_height - 1) // 2
@@ -62,7 +79,9 @@ def mean_filter2d(image,
         the height and width of the 2-D mean filter. Can be a single integer
         to specify the same value for all spatial dimensions.
       padding: A `string`, one of "REFLECT", "CONSTANT", or "SYMMETRIC".
-        The type of padding algorithm to use.
+        The type of padding algorithm to use, which is compatible with
+        `mode` argument in `tf.pad`. For more details, please refer to
+        https://www.tensorflow.org/api_docs/python/tf/pad.
       constant_values: A `scalar`, the pad value to use in "CONSTANT"
         padding mode.
       name: A name for this operation (optional).
