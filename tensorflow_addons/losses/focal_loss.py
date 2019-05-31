@@ -24,7 +24,7 @@ from tensorflow_addons.utils import keras_utils
 
 
 @keras_utils.register_keras_custom_object
-class SigmoidFocalCrossEntropy(keras_utils.LossFunctionWrapper):
+class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
     """Implements the focal loss function.
 
     Focal loss was first introduced in the RetinaNet paper
@@ -74,16 +74,28 @@ class SigmoidFocalCrossEntropy(keras_utils.LossFunctionWrapper):
                  reduction=tf.keras.losses.Reduction.NONE,
                  name='sigmoid_focal_crossentropy'):
         super(SigmoidFocalCrossEntropy, self).__init__(
-            sigmoid_focal_crossentropy,
-            name=name,
-            reduction=reduction,
-            from_logits=from_logits,
-            alpha=alpha,
-            gamma=gamma)
+            name=name, reduction=reduction)
 
         self.from_logits = from_logits
         self.alpha = alpha
         self.gamma = gamma
+
+    def call(self, y_true, y_pred):
+        return sigmoid_focal_crossentropy(
+            y_true,
+            y_pred,
+            alpha=self.alpha,
+            gamma=self.gamma,
+            from_logits=self.from_logits)
+
+    def get_config(self):
+        config = {
+            "from_logits": self.from_logits,
+            "alpha": self.alpha,
+            "gamma": self.gamma,
+        }
+        base_config = super(SigmoidFocalCrossEntropy, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
 
 
 @keras_utils.register_keras_custom_object
