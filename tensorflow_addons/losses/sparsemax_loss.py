@@ -87,7 +87,7 @@ def sparsemax_loss_from_logits(y_true, logits_pred):
 
 
 @keras_utils.register_keras_custom_object
-class SparsemaxLoss(keras_utils.LossFunctionWrapper):
+class SparsemaxLoss(tf.keras.losses.Loss):
     """Sparsemax loss function.
 
     Computes the generalized multi-label classification loss for the sparsemax
@@ -114,5 +114,15 @@ class SparsemaxLoss(keras_utils.LossFunctionWrapper):
         if from_logits is not True:
             raise ValueError('from_logits must be True')
 
-        super(SparsemaxLoss, self).__init__(
-            sparsemax_loss_from_logits, name=name, reduction=reduction)
+        super(SparsemaxLoss, self).__init__(name=name, reduction=reduction)
+        self.from_logits = from_logits
+
+    def call(self, y_true, y_pred):
+        return sparsemax_loss_from_logits(y_true, y_pred)
+
+    def get_config(self):
+        config = {
+            "from_logits": self.from_logits,
+        }
+        base_config = super(SparsemaxLoss, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
