@@ -30,9 +30,7 @@ class CohensKappaTest(tf.test.TestCase):
     kp_obj = CohensKappa(name='cohens_kappa')
     self.assertEqual(kp_obj.name, 'cohens_kappa')
 
-  def test_kappa(self):
-    kp_obj = CohensKappa()
-
+  def test_kappa_random_score(self):
     # random score
     actuals = np.array([4, 4, 3, 4, 2, 4, 1, 1], dtype=np.int32)
     preds = np.array([4, 4, 3, 4, 4, 2, 1, 1], dtype=np.int32)
@@ -51,7 +49,7 @@ class CohensKappaTest(tf.test.TestCase):
     self.assertAlmostEqual(score2, 0.62790, 4)
     self.assertAlmostEqual(score3, 0.68932, 4)
 
-
+  def test_kappa_perfect_score(self):
     # perfect score
     actuals = np.array([4, 4, 3, 3, 2, 2, 1, 1], dtype=np.int32)
     preds = np.array([4, 4, 3, 3, 2, 2, 1, 1], dtype=np.int32)
@@ -70,7 +68,7 @@ class CohensKappaTest(tf.test.TestCase):
     self.assertAlmostEqual(score2, 1.0, 4)
     self.assertAlmostEqual(score3, 1.0, 4)
 
-
+  def test_kappa_worse_than_random(self)
     # worse than random 
     actuals = np.array([4, 4, 3, 3, 2, 2, 1, 1], dtype=np.int32)
     preds = np.array([1, 2, 4, 1, 3, 3, 4, 4], dtype=np.int32)
@@ -88,4 +86,3 @@ class CohensKappaTest(tf.test.TestCase):
     self.assertAlmostEqual(score1, -0.33333, 4)
     self.assertAlmostEqual(score2, -0.52380, 4)
     self.assertAlmostEqual(score3, -0.72727, 4)
-
