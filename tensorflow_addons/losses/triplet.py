@@ -133,7 +133,7 @@ def triplet_semihard_loss(y_true, y_pred, margin=1.0):
 
 
 @keras_utils.register_keras_custom_object
-class TripletSemiHardLoss(keras_utils.LossFunctionWrapper):
+class TripletSemiHardLoss(tf.keras.losses.Loss):
     """Computes the triplet loss with semi-hard negative mining.
 
     The loss encourages the positive distances (between a pair of embeddings
@@ -154,7 +154,15 @@ class TripletSemiHardLoss(keras_utils.LossFunctionWrapper):
 
     def __init__(self, margin=1.0, name=None):
         super(TripletSemiHardLoss, self).__init__(
-            triplet_semihard_loss,
-            name=name,
-            reduction=tf.keras.losses.Reduction.NONE,
-            margin=margin)
+            name=name, reduction=tf.keras.losses.Reduction.NONE)
+        self.margin = margin
+
+    def call(self, y_true, y_pred):
+        return triplet_semihard_loss(y_true, y_pred, self.margin)
+
+    def get_config(self):
+        config = {
+            "margin": self.margin,
+        }
+        base_config = super(TripletSemiHardLoss, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
