@@ -127,12 +127,11 @@ def _compute_2d_sparsemax(logits, name=None):
         tf.cast(0, logits.dtype), z - tf.expand_dims(tau_z, -1))
     # If k_z = 0 or if z = nan, then the input is invalid
     p_safe = tf.where(
-        tf.broadcast_to(
-            tf.expand_dims(
-                tf.math.logical_or(
-                    tf.math.equal(k_z, 0), tf.math.is_nan(z_cumsum[:, -1])),
-                axis=-1), [obs, dims]),
-        tf.fill([obs, dims], tf.cast(float("nan"), logits.dtype)), p)
+        tf.expand_dims(
+            tf.math.logical_or(
+                tf.math.equal(k_z, 0), tf.math.is_nan(z_cumsum[:, -1])),
+            axis=-1), tf.fill([obs, dims], tf.cast(float("nan"),
+                                                   logits.dtype)), p)
 
     # Reshape back to original size
     p_safe = tf.reshape(p_safe, shape_op, name=name)
