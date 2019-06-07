@@ -20,9 +20,9 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 import tensorflow.compat.v1 as tf1  # TODO: port TF1 test files?
-from tensorflow_addons.image import _get_boundary_locations
+from tensorflow_addons.image.sparse_image_warp import _get_boundary_locations
+from tensorflow_addons.image.sparse_image_warp import _get_grid_locations
 from tensorflow_addons.image import sparse_image_warp
-from tensorflow_addons.image import _get_grid_locations
 from tensorflow.python.training import momentum
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
