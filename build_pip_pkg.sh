@@ -26,6 +26,8 @@ function abspath() {
 
 function main() {
   DEST=${1}
+  BUILD_FLAG=${2}
+
   if [[ -z ${DEST} ]]; then
     echo "No destination dir provided"
     exit 1
@@ -47,7 +49,11 @@ function main() {
   pushd ${TMPDIR}
   echo $(date) : "=== Building wheel"
 
-  python setup.py bdist_wheel > /dev/null
+  if [[ -z ${BUILD_FLAG} ]]; then
+    ${PYTHON_VERSION:=python} setup.py bdist_wheel > /dev/null
+  else
+    ${PYTHON_VERSION:=python} setup.py bdist_wheel "${2}" > /dev/null
+  fi
 
   cp dist/*.whl "${DEST}"
   popd
