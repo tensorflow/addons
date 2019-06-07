@@ -17,10 +17,10 @@
 TensorFlow Addons is a repository of contributions that conform to
 well-established API patterns,but implement new functionality not available in
 core TensorFlow.TensorFlow natively supports a large number of operators,
-layers, metrics, losses, and optimizers. However, in a fast movingfield like
+layers, metrics, losses, and optimizers. However, in a fast moving field like
 ML, there are many interesting new developments that cannot be integrated into
 core TensorFlow (because their broad applicability is not yet clear, or it is
-mostly used by a smallersubset of the community).
+mostly used by a smaller subset of the community).
 """
 
 from __future__ import absolute_import
@@ -28,7 +28,9 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import sys
 
+from datetime import datetime
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.dist import Distribution
@@ -46,7 +48,13 @@ REQUIRED_PACKAGES = [
     'six >= 1.10.0',
 ]
 
-project_name = 'tensorflow-addons'
+if '--nightly' in sys.argv:
+    project_name = 'tfa-nightly'
+    nightly_idx = sys.argv.index('--nightly')
+    sys.argv.pop(nightly_idx)
+    version['__version__'] += datetime.strftime(datetime.today(), "%Y%m%d")
+else:
+    project_name = 'tensorflow-addons'
 
 
 class BinaryDistribution(Distribution):
@@ -78,7 +86,6 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Software Development :: Libraries',
