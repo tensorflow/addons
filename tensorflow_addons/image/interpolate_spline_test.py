@@ -254,7 +254,6 @@ class InterpolateSplineTest(tf.test.TestCase):
     def test_nd_linear_interpolation_unspecified_shape(self):
         """Ensure that interpolation supports dynamic batch_size and
         num_points."""
-        self.skipTest("TODO: port to tf2.0 / eager")
         tp = _QuadraticPlusSinProblemND()
         (query_points, _, train_points,
          train_values) = tp.get_problem(dtype='float64')
