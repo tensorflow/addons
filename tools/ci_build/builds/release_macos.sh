@@ -26,7 +26,6 @@ for version in ${PYTHON_VERSIONS}; do
     export PYENV_VERSION=${version}
     pyenv install -s $PYENV_VERSION
 
-
     python get-pip.py -q
     python -m pip install -q delocate
 
