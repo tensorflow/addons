@@ -23,6 +23,7 @@ from scipy import interpolate as sc_interpolate
 import tensorflow as tf
 import tensorflow.compat.v1 as tf1  # TODO: locate placeholder
 from tensorflow.python.training import momentum
+from tensorflow_addons.utils import test_utils
 from tensorflow_addons.image import interpolate_spline
 
 
@@ -249,6 +250,7 @@ class InterpolateSplineTest(tf.test.TestCase):
                     self.assertAllClose(interp_val[0, :, 0],
                                         target_interpolation)
 
+    @test_utils.run_deprecated_v1
     def test_nd_linear_interpolation_unspecified_shape(self):
         """Ensure that interpolation supports dynamic batch_size and
         num_points."""
@@ -336,29 +338,28 @@ class InterpolateSplineTest(tf.test.TestCase):
         training data locations are optimized iteratively using gradient
         descent.
         """
-        self.skipTest("TODO: port gradient to tf2.0")
         tp = _QuadraticPlusSinProblemND()
         (query_points, query_values, train_points,
          train_values) = tp.get_problem(optimizable=True)
 
         regularization = 0.001
         for interpolation_order in (1, 2, 3, 4):
-            interpolator = interpolate_spline(
-                train_points, train_values, query_points, interpolation_order,
-                regularization)
-
-            loss = tf.reduce_mean(tf.square(query_values - interpolator))
-
             optimizer = momentum.MomentumOptimizer(0.001, 0.9)
-            grad = tf.gradients(loss, [train_points])
-            grad, _ = tf.clip_by_global_norm(grad, 1.0)
-            opt_func = optimizer.apply_gradients(zip(grad, [train_points]))
-            init_op = tf1.variables.global_variables_initializer()
 
-            with self.cached_session() as sess:
-                sess.run(init_op)
-                for _ in range(100):
-                    sess.run([loss, opt_func])
+            @tf.function
+            def train_step():
+                with tf.GradientTape() as gt:
+                    interpolator = interpolate_spline(
+                        train_points, train_values, query_points,
+                        interpolation_order, regularization)
+                    loss = tf.reduce_mean(
+                        tf.square(query_values - interpolator))
+                grad = gt.gradient(loss, [train_points])
+                grad, _ = tf.clip_by_global_norm(grad, 1.0)
+                opt_func = optimizer.apply_gradients(zip(grad, [train_points]))
+
+            for epoch in range(100):
+                train_step()
 
 
 if __name__ == '__main__':

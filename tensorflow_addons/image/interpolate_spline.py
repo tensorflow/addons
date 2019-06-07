@@ -18,7 +18,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.python.framework import tensor_shape  # TODO: better import?
 
 EPSILON = 0.0000000001
 
@@ -103,12 +102,12 @@ def _solve_interpolation(train_points, train_values, order,
     b, n, _ = tf.unstack(tf.shape(train_points), num=3)
 
     d = train_points.shape[-1]
-    if tensor_shape.dimension_value(d) is None:
+    if d is None:
         raise ValueError('The dimensionality of the input points (d) must be '
                          'statically-inferrable.')
 
     k = train_values.shape[-1]
-    if tensor_shape.dimension_value(k) is None:
+    if k is None:
         raise ValueError('The dimensionality of the output values (k) must be '
                          'statically-inferrable.')
 
