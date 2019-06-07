@@ -59,7 +59,7 @@ def contrastive_loss(y_true, y_pred, margin=1.0):
 
 
 @keras_utils.register_keras_custom_object
-class ContrastiveLoss(keras_utils.LossFunctionWrapper):
+class ContrastiveLoss(tf.keras.losses.Loss):
     """Computes the contrastive loss between `y_true` and `y_pred`.
 
     This loss encourages the embedding to be close to each other for
@@ -94,5 +94,15 @@ class ContrastiveLoss(keras_utils.LossFunctionWrapper):
                  margin=1.0,
                  reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
                  name="contrasitve_loss"):
-        super(ContrastiveLoss, self).__init__(
-            contrastive_loss, reduction=reduction, name=name, margin=margin)
+        super(ContrastiveLoss, self).__init__(reduction=reduction, name=name)
+        self.margin = margin
+
+    def call(self, y_true, y_pred):
+        return contrastive_loss(y_true, y_pred, self.margin)
+
+    def get_config(self):
+        config = {
+            "margin": self.margin,
+        }
+        base_config = super(ContrastiveLoss, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))

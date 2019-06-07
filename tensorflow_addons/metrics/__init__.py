@@ -12,17 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Utilities for tf.keras."""
+"""A module containing metrics that conform to Keras API."""
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-
-import tensorflow as tf
-
-# TODO: find public API alternative to these
-from tensorflow.python.keras.utils import conv_utils  # pylint: disable=unused-import
-
-
-def register_keras_custom_object(cls):
-    tf.keras.utils.get_custom_objects()[cls.__name__] = cls
-    return cls
