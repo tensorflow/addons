@@ -1857,7 +1857,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                     _alignment_history else ()
                     for alignment in initial_alignments))
 
-    def call(self, inputs, state):
+    def call(self, inputs, state, **kwargs):
         """Perform a step of attention-wrapped RNN.
 
         - Step 1: Mix the `inputs` and previous step's `attention` output via
@@ -1878,6 +1878,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             step.
           state: An instance of `AttentionWrapperState` containing
             tensors from the previous time step.
+          **kwargs: Dict, other keyword arguments for the cell call method.
 
         Returns:
           A tuple `(attention_or_cell_output, next_state)`, where:
@@ -1898,7 +1899,8 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         # previous attention value.
         cell_inputs = self._cell_input_fn(inputs, state.attention)
         cell_state = state.cell_state
-        cell_output, next_cell_state = self._cell(cell_inputs, cell_state)
+        cell_output, next_cell_state = self._cell(
+            cell_inputs, cell_state, **kwargs)
 
         cell_batch_size = (tf.compat.dimension_value(cell_output.shape[0])
                            or tf.shape(cell_output)[0])
