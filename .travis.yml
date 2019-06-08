@@ -1,0 +1,43 @@
+dist: xenial
+language: minimal
+
+git:
+  quiet: true
+
+services:
+- docker
+
+install:
+- curl https://bootstrap.pypa.io/get-pip.py | sudo -H python
+- sudo -H python -m pip install -q -U twine --ignore-installed six
+- twine --version
+
+stages:
+- test
+- build
+
+jobs:
+  include:
+    # Linux Tests
+    - stage: test
+      name: "Test on Ubuntu 14.04"
+      script:
+      - docker run --rm -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op make unit-test
+
+    # Linux Builds
+    - stage: build
+      name: "Build on Ubuntu 14.04 for Python 2.7 3.4 3.5 3.6"
+      script:
+      - docker run --rm -v $PWD:/addons -w /addons tensorflow/tensorflow:nightly-custom-op tools/ci_build/builds/release_linux.sh
+      after_success:
+        - twine upload -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
+
+    # MacOS Builds
+    - stage: build
+      name: "Build on MacOS for Python 2.7 3.4 3.5 3.6"
+      os: osx
+      osx_image: xcode10
+      script:
+        - bash -x -e tools/ci_build/builds/release_macos.sh
+      after_success:
+        - twine upload -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl

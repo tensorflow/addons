@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Utilities for tf.keras."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
-import tensorflow as tf
+set -e
 
-# TODO: find public API alternative to these
-from tensorflow.python.keras.utils import conv_utils  # pylint: disable=unused-import
-
-
-def register_keras_custom_object(cls):
-    tf.keras.utils.get_custom_objects()[cls.__name__] = cls
-    return cls
+ls artifacts/*
+for f in artifacts/*.whl; do
+  if [[ $(uname) == "Darwin" ]]; then
+    delocate-wheel -w wheelhouse  $f
+  else
+    auditwheel repair $f
+  fi
+done
+ls wheelhouse/*

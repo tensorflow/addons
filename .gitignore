@@ -38,5 +38,4 @@ wheels/
 /artifacts
 
 # Addons
-.*
 /docs/

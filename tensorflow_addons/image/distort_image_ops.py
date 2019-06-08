@@ -138,6 +138,10 @@ def adjust_hsv_in_yiq(image,
     """
     with tf.name_scope(name or "adjust_hsv_in_yiq"):
         image = tf.convert_to_tensor(image, name="image")
+
+        if image.shape.rank < 3:
+            raise ValueError("input must be at least rank 3.")
+
         # Remember original dtype to so we can convert back if needed
         orig_dtype = image.dtype
         flt_image = tf.image.convert_image_dtype(image, tf.dtypes.float32)
