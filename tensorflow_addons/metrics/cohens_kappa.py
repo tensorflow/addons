@@ -43,27 +43,22 @@ class CohensKappa(Metric):
   actuals = np.array([4, 4, 3, 4, 2, 4, 1, 1], dtype=np.int32)
   preds = np.array([4, 4, 3, 4, 4, 2, 1, 1], dtype=np.int32)
 
-  m = tf.keras.metrics.CohensKappa()
+  m = tf.keras.metrics.CohensKappa(num_classes=5)
   m.update_state(actuals, preds, "quadratic")
   print('Final result: ', m.result().numpy()) # Result: 0.68932
   ```
   Usage with tf.keras API:
   ```python
   model = keras.models.Model(inputs, outputs)
-  model.add_metric(tf.keras.metrics.CohensKappa(name='kp_score')(outputs))
+  model.add_metric(tf.keras.metrics.CohensKappa(num_classes=5)(outputs))
   model.compile('sgd', loss='mse')
   ```
 
   Args:
-    y1 : array, shape = [n_samples]
-      Labels assigned by the first annotator.
-    y2 : array, shape = [n_samples]
-      Labels assigned by the second annotator. The kappa statistic is
-      symmetric, so swapping ``y1`` and ``y2`` doesn't change the value.
-    sample_weight(optional) : None or str 
-      A string denoting the type of weighting to be used.
-      Valid values for this parameter are [None, 'linear', 'quadratic'].
-      Default value is None.
+    num_classes : Number of unique classes in your dataset
+    weightage   : Type of weighting to be considered for calculating 
+      kappa statistics. A valid value is one of [None, 'linear', 'quadratic'].
+      Defaults to None
 
   Returns:
     kappa_score : float
@@ -71,30 +66,65 @@ class CohensKappa(Metric):
       value means complete agreement; zero or lower means chance agreement.
 
   Raises:
-    ValueError: If the value passed for `sample_weight` is invalid
+    ValueError: If the value passed for `weightage` is invalid
       i.e. not any one of [None, 'linear', 'quadratic']
 
   """
-  def __init__(self, name='cohens_kappa', dtype=tf.float32):
+  def __init__(self,
+               num_classes,
+               name='cohens_kappa', 
+               weightage=None, 
+               dtype=tf.float32):
     super(CohensKappa, self).__init__(name=name, dtype=dtype)
-    self.kappa_score = self.add_weight('kappa_score', 
-                                       initializer=None)
+    
+    if weightage not in (None, 'linear', 'quadratic'):
+      raise ValueError("Unknown kappa weighting type.")
+    else:
+      self.weightage = weightage
+   
+    self.num_classes = num_classes
+    self.conf_mtx = self.add_weight('conf_mtx',
+                                    shape=(self.num_classes, self.num_classes),
+                                    initializer=tf.initializers.zeros,
+                                    dtype=tf.int32)
 
   def update_state(self, y_true, y_pred, sample_weight=None):
+    """Accumulates the confusion matrix condition statistics.
+    
+    Args:
+      y1 : array, shape = [n_samples]
+           Labels assigned by the first annotator.
+      y2 : array, shape = [n_samples]
+           Labels assigned by the second annotator. The kappa statistic is
+           symmetric, so swapping ``y1`` and ``y2`` doesn't change the value.
+      sample_weight(optional) : for weighting labels in confusion matrix
+           Default is None. Check tf.math.consfusion_matrix for details 
+    
+    Returns:
+      Update op.
+      
+    """
     y_true = tf.cast(y_true, dtype=tf.int32)
     y_pred = tf.cast(y_pred, dtype=tf.int32)
+    
+    if y_true.shape != y_pred.shape:
+      raise ValueError("Number of samples in y_true and y_pred are different")
+    
+    # compute the new values of the confusion matrix
+    new_conf_mtx = confusion_matrix(labels=y_true, 
+                                     predictions=y_pred,
+                                     num_classes=self.num_classes,
+                                     weights=sample_weight)
+  
+    # update the values in the orifinal confusion matrix
+    return self.conf_mtx.assign_add(new_conf_mtx)
 
-    # check if weighting type is valid
-    if sample_weight not in (None, 'linear', 'quadratic'):
-      raise ValueError("Unknown kappa weighting type.")
-
-    # 1. Get the confusion matrix
-    conf_mtx = confusion_matrix(labels=y_true, predictions=y_pred)     
-    nb_ratings = tf.shape(conf_mtx)[0]
+  def result(self):    
+    nb_ratings = tf.shape(self.conf_mtx)[0]
     weight_mtx = tf.ones([nb_ratings, nb_ratings], dtype=tf.int32)
     
     # 2. Create a weight matrix
-    if sample_weight is None:
+    if self.weightage is None:
       diagonal = tf.zeros([5], dtype=tf.int32)
       weight_mtx = tf.linalg.set_diag(weight_mtx, diagonal=diagonal)
       weight_mtx = tf.cast(weight_mtx, dtype=tf.float32)
@@ -103,21 +133,21 @@ class CohensKappa(Metric):
       weight_mtx += tf.range(nb_ratings, dtype=tf.int32)
       weight_mtx = tf.cast(weight_mtx, dtype=tf.float32)
 
-      if sample_weight=='linear':
+      if self.weightage=='linear':
         weight_mtx = tf.abs(weight_mtx - K.transpose(weight_mtx))
       else:
         weight_mtx = K.pow((weight_mtx - K.transpose(weight_mtx)), 2)
       weight_mtx = tf.cast(weight_mtx, dtype=tf.float32)
     
     # 3. Get counts
-    actual_ratings_hist = K.sum(conf_mtx, axis=1)
-    pred_ratings_hist = K.sum(conf_mtx, axis=0)
+    actual_ratings_hist = K.sum(self.conf_mtx, axis=1)
+    pred_ratings_hist = K.sum(self.conf_mtx, axis=0)
     
     # 4. Get the outer product
     out_prod = pred_ratings_hist[..., None] * actual_ratings_hist[None, ...]
     
     # 5. Normalize the confusion matrix and outer product
-    conf_mtx = conf_mtx / K.sum(conf_mtx)
+    conf_mtx = self.conf_mtx / K.sum(self.conf_mtx)
     out_prod = out_prod / K.sum(out_prod)
     
     conf_mtx = tf.cast(conf_mtx, dtype=tf.float32)
@@ -125,10 +155,7 @@ class CohensKappa(Metric):
     
     # 6. Calculate Kappa score
     numerator = K.sum(conf_mtx * weight_mtx)
-    denominator = K.sum(out_prod * weight_mtx)
+    denominator = K.sum(out_prod * weight_mtx) 
     kp = 1-(numerator/denominator)
     
-    return self.kappa_score.assign(kp)
-
-  def result(self):
-    return self.kappa_score
+    return kp
