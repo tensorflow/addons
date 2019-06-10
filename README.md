@@ -33,8 +33,8 @@ developments that cannot be integrated into core TensorFlow
 | [tfa.image](tensorflow_addons/image/README.md) | SIG-Addons | @windqaq @facaiy |
 | [tfa.layers](tensorflow_addons/layers/README.md) | SIG-Addons | @seanpmorgan @facaiy |
 | [tfa.losses](tensorflow_addons/losses/README.md) | SIG-Addons | @facaiy @windqaq   |
-| [tfa.metrics](tensorflow_addons/metrics/README.md) | SIG-Addons |  | 
-| [tfa.optimizers](tensorflow_addons/optimizers/README.md) | SIG-Addons | @facaiy @windqaq |
+| [tfa.metrics](tensorflow_addons/metrics/README.md) | SIG-Addons | @squadrick | 
+| [tfa.optimizers](tensorflow_addons/optimizers/README.md) | SIG-Addons | @facaiy @windqaq @squadrick |
 | [tfa.rnn](tensorflow_addons/rnn/README.md) | Google | @qlzh727 |
 | [tfa.seq2seq](tensorflow_addons/seq2seq/README.md) | Google | @qlzh727 |
 | [tfa.text](tensorflow_addons/text/README.md) |  SIG-Addons |  @seanpmorgan @facaiy |
