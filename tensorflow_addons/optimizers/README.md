@@ -3,7 +3,7 @@
 ## Maintainers
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
-| lazy_adam |  SIG-Addons | addons@tensorflow.org   |
+| lazy_adam |   |   |
 | moving_average | Dheeraj R. Reddy | dheeraj98reddy@gmail.com |
 | weight_decay_optimizers |  Phil Jund | ijund.phil@googlemail.com   |
 
