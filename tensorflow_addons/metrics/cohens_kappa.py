@@ -27,7 +27,7 @@ from tensorflow_addons.utils import keras_utils
 
 
 @keras_utils.register_keras_custom_object
-class CohensKappa(Metric):
+class CohenKappa(Metric):
   """Computes Kappa score between two raters.
 
   The score lies in the range [-1, 1]. A score of -1 represents
@@ -43,14 +43,14 @@ class CohensKappa(Metric):
   actuals = np.array([4, 4, 3, 4, 2, 4, 1, 1], dtype=np.int32)
   preds = np.array([4, 4, 3, 4, 4, 2, 1, 1], dtype=np.int32)
 
-  m = tf.keras.metrics.CohensKappa(num_classes=5)
+  m = tf.keras.metrics.CohenKappa(num_classes=5)
   m.update_state(actuals, preds, "quadratic")
   print('Final result: ', m.result().numpy()) # Result: 0.68932
   ```
   Usage with tf.keras API:
   ```python
   model = keras.models.Model(inputs, outputs)
-  model.add_metric(tf.keras.metrics.CohensKappa(num_classes=5)(outputs))
+  model.add_metric(tf.keras.metrics.CohenKappa(num_classes=5)(outputs))
   model.compile('sgd', loss='mse')
   ```
 
@@ -72,10 +72,10 @@ class CohensKappa(Metric):
   """
   def __init__(self,
                num_classes,
-               name='cohens_kappa', 
+               name='cohen_kappa', 
                weightage=None, 
                dtype=tf.float32):
-    super(CohensKappa, self).__init__(name=name, dtype=dtype)
+    super(CohenKappa, self).__init__(name=name, dtype=dtype)
     
     if weightage not in (None, 'linear', 'quadratic'):
       raise ValueError("Unknown kappa weighting type.")
@@ -92,13 +92,17 @@ class CohensKappa(Metric):
     """Accumulates the confusion matrix condition statistics.
     
     Args:
-      y1 : array, shape = [n_samples]
-           Labels assigned by the first annotator.
-      y2 : array, shape = [n_samples]
-           Labels assigned by the second annotator. The kappa statistic is
-           symmetric, so swapping ``y1`` and ``y2`` doesn't change the value.
+      y_true : array, shape = [n_samples]
+               Labels assigned by the first annotator.
+      y_pred : array, shape = [n_samples]
+               Labels assigned by the second annotator. The kappa statistic 
+               is symmetric, so swapping ``y_true`` and ``y_pred`` doesn't 
+               change the value.
       sample_weight(optional) : for weighting labels in confusion matrix
-           Default is None. Check tf.math.consfusion_matrix for details 
+               Default is None. The dtype for weights should be the same as 
+               the dtype for confusion matrix.Check tf.math.consfusion_matrix 
+               for details
+               
     
     Returns:
       Update op.
@@ -157,5 +161,20 @@ class CohensKappa(Metric):
     numerator = K.sum(conf_mtx * weight_mtx)
     denominator = K.sum(out_prod * weight_mtx) 
     kp = 1-(numerator/denominator)
-    
     return kp
+  
+  def get_config(self):
+    """Returns the serializable config of the metric."""
+    
+    config = {
+        "num_classes": self.num_classes,
+        "weightage": self.weightage,
+    }
+    base_config = super(CohenKappa, self).get_config()
+    return dict(list(base_config.items()) + list(config.items()))
+  
+  def reset_states(self):
+    """Resets all of the metric state variables."""
+    
+    for v in self.variables:
+      K.set_value(v ,np.zeros((self.num_classes, self.num_classes), np.int32))
