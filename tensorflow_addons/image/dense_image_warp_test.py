@@ -204,7 +204,7 @@ class DenseImageWarpTest(tf.test.TestCase):
         interp = dense_image_warp(image, flows)
         loss = tf.math.reduce_mean(tf.math.square(interp - image))
 
-        optimizer = tf.optimizers.Adam(1.0)
+        optimizer = tf.keras.optimizers.Adam(1.0)
         grad = tf.gradients(loss, [flows])
         opt_func = optimizer.apply_gradients(zip(grad, [flows]))
         init_op = tf.compat.v1.global_variables_initializer()
