@@ -4,10 +4,10 @@
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:------------- |
 | contrastive |  @WindQAQ | windqaq@gmail.com |
-| focal_loss |  SIG-Addons | addons@tensorflow.org |
-| lifted |  SIG-Addons | addons@tensorflow.org |
+| focal_loss |   |  |
+| lifted |  |  |
 | sparsemax_loss | @AndreasMadsen | amwwebdk+github@gmail.com |
-| triplet |  SIG-Addons | addons@tensorflow.org |
+| triplet |   |  |
 
 ## Components
 | Submodule | Loss  | Reference               |
