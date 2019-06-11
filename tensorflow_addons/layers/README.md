@@ -3,11 +3,11 @@
 ## Maintainers
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:------------- |
-| maxout |  SIG-Addons | addons@tensorflow.org |
+| maxout |  |  |
 | normalizations | @smokrow | moritz.kroeger@tu-dortmund.de |
-| poincare | SIG-Addons | addons@tensorflow.org |
+| poincare |  |  |
 | sparsemax | @AndreasMadsen | amwwebdk+github@gmail.com |
-| wrappers | SIG-Addons | addons@tensorflow.org |
+| wrappers | @seanpmorgan | seanmorgan@outlook.com |
 
 ## Components
 | Submodule  | Layer |  Reference  |
