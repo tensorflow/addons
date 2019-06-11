@@ -122,7 +122,7 @@ class CohenKappa(Metric):
             num_classes=self.num_classes,
             weights=sample_weight)
 
-        # update the values in the orifinal confusion matrix
+        # update the values in the original confusion matrix
         return self.conf_mtx.assign_add(new_conf_mtx)
 
     def result(self):
@@ -131,7 +131,7 @@ class CohenKappa(Metric):
 
         # 2. Create a weight matrix
         if self.weightage is None:
-            diagonal = tf.zeros([5], dtype=tf.int32)
+            diagonal = tf.zeros([nb_ratings], dtype=tf.int32)
             weight_mtx = tf.linalg.set_diag(weight_mtx, diagonal=diagonal)
             weight_mtx = tf.cast(weight_mtx, dtype=tf.float32)
 
