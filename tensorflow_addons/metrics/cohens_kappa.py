@@ -101,8 +101,8 @@ class CohenKappa(Metric):
                    change the value.
           sample_weight(optional) : for weighting labels in confusion matrix
                    Default is None. The dtype for weights should be the same
-                   asthe dtype for confusion matrix. For more details,
-                   please Check tf.math.consfusion_matrix
+                   as the dtype for confusion matrix. For more details,
+                   please check tf.math.confusion_matrix.
 
 
         Returns:
@@ -140,29 +140,29 @@ class CohenKappa(Metric):
             weight_mtx = tf.cast(weight_mtx, dtype=tf.float32)
 
             if self.weightage == 'linear':
-                weight_mtx = tf.abs(weight_mtx - K.transpose(weight_mtx))
+                weight_mtx = tf.abs(weight_mtx - tf.transpose(weight_mtx))
             else:
-                weight_mtx = K.pow((weight_mtx - K.transpose(weight_mtx)), 2)
+                weight_mtx = tf.pow((weight_mtx - tf.transpose(weight_mtx)), 2)
             weight_mtx = tf.cast(weight_mtx, dtype=tf.float32)
 
         # 3. Get counts
-        actual_ratings_hist = K.sum(self.conf_mtx, axis=1)
-        pred_ratings_hist = K.sum(self.conf_mtx, axis=0)
+        actual_ratings_hist = tf.reduce_sum(self.conf_mtx, axis=1)
+        pred_ratings_hist = tf.reduce_sum(self.conf_mtx, axis=0)
 
         # 4. Get the outer product
         out_prod = pred_ratings_hist[..., None] * \
                     actual_ratings_hist[None, ...]
 
         # 5. Normalize the confusion matrix and outer product
-        conf_mtx = self.conf_mtx / K.sum(self.conf_mtx)
-        out_prod = out_prod / K.sum(out_prod)
+        conf_mtx = self.conf_mtx / tf.reduce_sum(self.conf_mtx)
+        out_prod = out_prod / tf.reduce_sum(out_prod)
 
         conf_mtx = tf.cast(conf_mtx, dtype=tf.float32)
         out_prod = tf.cast(out_prod, dtype=tf.float32)
 
         # 6. Calculate Kappa score
-        numerator = K.sum(conf_mtx * weight_mtx)
-        denominator = K.sum(out_prod * weight_mtx)
+        numerator = tf.reduce_sum(conf_mtx * weight_mtx)
+        denominator = tf.reduce_sum(out_prod * weight_mtx)
         kp = 1 - (numerator / denominator)
         return kp
 
