@@ -45,7 +45,6 @@ class CohenKappaTest(tf.test.TestCase):
         self.evaluate(tf.compat.v1.variables_initializer(kp_obj1.variables))
         self.evaluate(tf.compat.v1.variables_initializer(kp_obj2.variables))
         self.evaluate(tf.compat.v1.variables_initializer(kp_obj3.variables))
-
         return kp_obj1, kp_obj2, kp_obj3
 
     def update_obj_states(self, obj1, obj2, obj3, actuals, preds, weights):
@@ -57,11 +56,19 @@ class CohenKappaTest(tf.test.TestCase):
         self.evaluate(update_op2)
         self.evaluate(update_op3)
 
+    def check_results(self, objs, values):
+        obj1, obj2, obj3 = objs
+        val1, val2, val3 = values
+
+        self.assertAllClose(val1, self.evaluate(obj1.result()), atol=1e-5)
+        self.assertAllClose(val2, self.evaluate(obj2.result()), atol=1e-5)
+        self.assertAllClose(val3, self.evaluate(obj3.result()), atol=1e-5)
+
     def test_kappa_random_score(self):
         actuals = [4, 4, 3, 4, 2, 4, 1, 1]
         preds = [4, 4, 3, 4, 4, 2, 1, 1]
-        actuals = tf.convert_to_tensor(actuals, dtype=tf.int32)
-        preds = tf.convert_to_tensor(preds, dtype=tf.int32)
+        actuals = tf.constant(actuals, dtype=tf.int32)
+        preds = tf.constant(preds, dtype=tf.int32)
 
         # Initialize
         kp_obj1, kp_obj2, kp_obj3 = self.initialize_vars()
@@ -70,15 +77,14 @@ class CohenKappaTest(tf.test.TestCase):
         self.update_obj_states(kp_obj1, kp_obj2, kp_obj3, actuals, preds, None)
 
         # Check results
-        self.assertAlmostEqual(self.evaluate(kp_obj1.result()), 0.61904, 4)
-        self.assertAlmostEqual(self.evaluate(kp_obj2.result()), 0.62790, 4)
-        self.assertAlmostEqual(self.evaluate(kp_obj3.result()), 0.68932, 4)
+        self.check_results([kp_obj1, kp_obj2, kp_obj3],
+                           [0.61904761, 0.62790697, 0.68932038])
 
     def test_kappa_perfect_score(self):
         actuals = [4, 4, 3, 3, 2, 2, 1, 1]
         preds = [4, 4, 3, 3, 2, 2, 1, 1]
-        actuals = tf.convert_to_tensor(actuals, dtype=tf.int32)
-        preds = tf.convert_to_tensor(preds, dtype=tf.int32)
+        actuals = tf.constant(actuals, dtype=tf.int32)
+        preds = tf.constant(preds, dtype=tf.int32)
 
         # Initialize
         kp_obj1, kp_obj2, kp_obj3 = self.initialize_vars()
@@ -86,15 +92,14 @@ class CohenKappaTest(tf.test.TestCase):
         # Update
         self.update_obj_states(kp_obj1, kp_obj2, kp_obj3, actuals, preds, None)
 
-        self.assertAlmostEqual(self.evaluate(kp_obj1.result()), 1.0, 4)
-        self.assertAlmostEqual(self.evaluate(kp_obj2.result()), 1.0, 4)
-        self.assertAlmostEqual(self.evaluate(kp_obj3.result()), 1.0, 4)
+        # Check results
+        self.check_results([kp_obj1, kp_obj2, kp_obj3], [1.0, 1.0, 1.0])
 
     def test_kappa_worse_than_random(self):
         actuals = [4, 4, 3, 3, 2, 2, 1, 1]
         preds = [1, 2, 4, 1, 3, 3, 4, 4]
-        actuals = tf.convert_to_tensor(actuals, dtype=tf.int32)
-        preds = tf.convert_to_tensor(preds, dtype=tf.int32)
+        actuals = tf.constant(actuals, dtype=tf.int32)
+        preds = tf.constant(preds, dtype=tf.int32)
 
         # Initialize
         kp_obj1, kp_obj2, kp_obj3 = self.initialize_vars()
@@ -102,17 +107,17 @@ class CohenKappaTest(tf.test.TestCase):
         # Update
         self.update_obj_states(kp_obj1, kp_obj2, kp_obj3, actuals, preds, None)
 
-        self.assertAlmostEqual(self.evaluate(kp_obj1.result()), -0.33333, 4)
-        self.assertAlmostEqual(self.evaluate(kp_obj2.result()), -0.52380, 4)
-        self.assertAlmostEqual(self.evaluate(kp_obj3.result()), -0.72727, 4)
+        # check results
+        self.check_results([kp_obj1, kp_obj2, kp_obj3],
+                           [-0.3333333, -0.52380952, -0.72727272])
 
     def test_kappa_with_sample_weights(self):
         actuals = [4, 4, 3, 3, 2, 2, 1, 1]
         preds = [1, 2, 4, 1, 3, 3, 4, 4]
         weights = [1, 1, 2, 5, 10, 2, 3, 3]
-        actuals = tf.convert_to_tensor(actuals, dtype=tf.int32)
-        preds = tf.convert_to_tensor(preds, dtype=tf.int32)
-        weights = tf.convert_to_tensor(weights, dtype=tf.int32)
+        actuals = tf.constant(actuals, dtype=tf.int32)
+        preds = tf.constant(preds, dtype=tf.int32)
+        weights = tf.constant(weights, dtype=tf.int32)
 
         # Initialize
         kp_obj1, kp_obj2, kp_obj3 = self.initialize_vars()
@@ -121,6 +126,10 @@ class CohenKappaTest(tf.test.TestCase):
         self.update_obj_states(kp_obj1, kp_obj2, kp_obj3, actuals, preds,
                                weights)
 
-        self.assertAlmostEqual(self.evaluate(kp_obj1.result()), -0.254733, 4)
-        self.assertAlmostEqual(self.evaluate(kp_obj2.result()), -0.389923, 4)
-        self.assertAlmostEqual(self.evaluate(kp_obj3.result()), -0.606953, 4)
+        # check results
+        self.check_results([kp_obj1, kp_obj2, kp_obj3],
+                           [-0.25473321, -0.38992332, -0.60695344])
+
+
+if __name__ == '__main__':
+    tf.test.main()
