@@ -269,7 +269,7 @@ class ExtendWithWeightDecayTest(SGDWTest):
     """Verify that the factory function SGDW is the same as SGDW."""
 
     optimizer = weight_decay_optimizers.extend_with_decoupled_weight_decay(
-        tf.optimizers.SGD)
+        tf.keras.optimizers.SGD)
 
 
 if __name__ == "__main__":
