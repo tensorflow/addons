@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+import numpy as np
 import tensorflow.keras.backend as K
 from tensorflow.math import confusion_matrix
 from tensorflow.keras.metrics import Metric
@@ -55,9 +56,9 @@ class CohenKappa(Metric):
 
     Args:
       num_classes : Number of unique classes in your dataset
-      weightage   : Type of weighting to be considered for calculating
-        kappa statistics. A valid value is one of [None, 'linear', 'quadratic'].
-        Defaults to None
+      weightage   : Weighting to be considered for calculating
+                    kappa statistics. A valid value is one of
+                    [None, 'linear', 'quadratic']. Defaults to None.
 
     Returns:
       kappa_score : float
@@ -99,9 +100,9 @@ class CohenKappa(Metric):
                    is symmetric, so swapping ``y_true`` and ``y_pred`` doesn't
                    change the value.
           sample_weight(optional) : for weighting labels in confusion matrix
-                   Default is None. The dtype for weights should be the same as
-                   the dtype for confusion matrix.Check tf.math.consfusion_matrix
-                   for details
+                   Default is None. The dtype for weights should be the same
+                   asthe dtype for confusion matrix. For more details,
+                   please Check tf.math.consfusion_matrix
 
 
         Returns:
@@ -149,7 +150,8 @@ class CohenKappa(Metric):
         pred_ratings_hist = K.sum(self.conf_mtx, axis=0)
 
         # 4. Get the outer product
-        out_prod = pred_ratings_hist[..., None] * actual_ratings_hist[None, ...]
+        out_prod = pred_ratings_hist[..., None] * \
+                    actual_ratings_hist[None, ...]
 
         # 5. Normalize the confusion matrix and outer product
         conf_mtx = self.conf_mtx / K.sum(self.conf_mtx)
