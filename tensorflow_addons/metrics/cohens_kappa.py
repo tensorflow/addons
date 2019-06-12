@@ -85,7 +85,7 @@ class CohenKappa(Metric):
         self.conf_mtx = self.add_weight(
             'conf_mtx',
             shape=(self.num_classes, self.num_classes),
-            initializer=tf.initializers.zeros,
+            initializer=tf.keras.initializers.zeros,
             dtype=tf.int32)
 
     def update_state(self, y_true, y_pred, sample_weight=None):
