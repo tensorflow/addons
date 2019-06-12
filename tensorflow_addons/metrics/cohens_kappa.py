@@ -21,7 +21,7 @@ from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 import tensorflow.keras.backend as K
-from tensorflow.metrics import Metric
+from tensorflow.keras.metrics import Metric
 from tensorflow_addons.utils import keras_utils
 
 
