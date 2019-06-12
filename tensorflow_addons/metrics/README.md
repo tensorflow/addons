@@ -3,12 +3,12 @@
 ## Maintainers
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
-|  |  |  |
+|  cohens_kappa| Aakash Nain   |  aakashnain@outlook.com|
 
 ## Contents
-| Submodule | Activation  | Reference                               |
+| Submodule | Metric  | Reference                               |
 |:----------------------- |:-------------------|:---------------|
-|  |  |            |
+| cohens_kappa| CohenKappa|[Cohen's Kappa](https://en.wikipedia.org/wiki/Cohen%27s_kappa)|
 
 
 ## Contribution Guidelines

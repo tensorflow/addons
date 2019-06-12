@@ -6,9 +6,23 @@ py_library(
     name = "metrics",
     srcs = [
         "__init__.py",
+        "cohens_kappa.py",
     ],
     srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/utils",
+    ],
+)
+
+py_test(
+    name = "cohens_kappa_test",
+    size = "small",
+    srcs = [
+        "cohens_kappa_test.py",
+    ],
+    main = "cohens_kappa_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":metrics",
     ],
 )
