@@ -21,8 +21,7 @@ from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 import tensorflow.keras.backend as K
-from tensorflow.math import confusion_matrix
-from tensorflow.keras.metrics import Metric
+from tensorflow.metrics import Metric
 from tensorflow_addons.utils import keras_utils
 
 
@@ -116,7 +115,7 @@ class CohenKappa(Metric):
                 "Number of samples in y_true and y_pred are different")
 
         # compute the new values of the confusion matrix
-        new_conf_mtx = confusion_matrix(
+        new_conf_mtx = tf.math.confusion_matrix(
             labels=y_true,
             predictions=y_pred,
             num_classes=self.num_classes,
