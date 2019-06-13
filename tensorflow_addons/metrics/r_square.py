@@ -1,3 +1,23 @@
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+"""Implements F1 scores."""
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
 
@@ -15,7 +35,7 @@ class RSquare(Metric):
       account for variation in the target.
     - It can also be negative if the model is worse.
     """
-    def __init__(self, name='r-square'):
+    def __init__(self, name='r_square'):
         super(RSquare, self).__init__(name=name, dtype=tf.float32)
         self.squared_sum = self.add_weight("squared_sum", initializer="zeros")
         self.sum = self.add_weight("sum", initializer="zeros")
@@ -25,10 +45,10 @@ class RSquare(Metric):
     def update_state(self, y_true, y_pred):
         y_true = tf.convert_to_tensor(y_true, tf.float32)
         y_pred = tf.convert_to_tensor(y_pred, tf.float32)
-        self.squared_sum.assign_add(tf.reduce_sum(y_true ** 2)),
-        self.sum.assign_add(tf.reduce_sum(y_true)),
+        self.squared_sum.assign_add(tf.reduce_sum(y_true ** 2))
+        self.sum.assign_add(tf.reduce_sum(y_true))
         self.res.assign_add(tf.reduce_sum(
-            tf.square(tf.subtract(y_true, y_pred)))),
+            tf.square(tf.subtract(y_true, y_pred))))
         self.count.assign_add(tf.cast(tf.shape(y_true)[0], tf.float32))
 
     def result(self):
