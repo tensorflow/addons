@@ -20,3 +20,15 @@ from __future__ import print_function
 # Skip Gram Sampling
 from tensorflow_addons.text.skip_gram_ops import skip_gram_sample
 from tensorflow_addons.text.skip_gram_ops import skip_gram_sample_with_text_vocab
+
+from tensorflow_addons.text.crf_ops import crf_binary_score
+from tensorflow_addons.text.crf_ops import crf_decode
+from tensorflow_addons.text.crf_ops import crf_log_likelihood
+from tensorflow_addons.text.crf_ops import crf_log_norm
+from tensorflow_addons.text.crf_ops import crf_multitag_sequence_score
+from tensorflow_addons.text.crf_ops import crf_sequence_score
+from tensorflow_addons.text.crf_ops import crf_unary_score
+from tensorflow_addons.text.crf_ops import CrfDecodeBackwardRnnCell
+from tensorflow_addons.text.crf_ops import CrfDecodeForwardRnnCell
+from tensorflow_addons.text.crf_ops import CrfForwardRnnCell
+from tensorflow_addons.text.crf_ops import viterbi_decode
