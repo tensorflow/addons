@@ -45,6 +45,7 @@ jobs:
 notifications:
   email:
     recipients:
+      - seanmorgan@outlook.com
       - addons-testing@tensorflow.org
     on_success: never
     on_failure: always
