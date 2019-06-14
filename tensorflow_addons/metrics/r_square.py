@@ -35,8 +35,8 @@ class RSquare(Metric):
       account for variation in the target.
     - It can also be negative if the model is worse.
     """
-    def __init__(self, name='r_square'):
-        super(RSquare, self).__init__(name=name, dtype=tf.float32)
+    def __init__(self, name='r_square', dtype=tf.float32):
+        super(RSquare, self).__init__(name=name, dtype=dtype)
         self.squared_sum = self.add_weight("squared_sum", initializer="zeros")
         self.sum = self.add_weight("sum", initializer="zeros")
         self.res = self.add_weight("residual", initializer="zeros")

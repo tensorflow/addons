@@ -45,8 +45,8 @@ class RSquareTest(tf.test.TestCase):
         self.assertAllClose(value, self.evaluate(obj.result()), atol=1e-5)
 
     def test_r2_perfect_score(self):
-        actuals = [100, 700, 40, 5.7]
-        preds = [100, 700, 40, 5.7]
+        actuals = tf.constant([100, 700, 40, 5.7], dtype=tf.float32)
+        preds = tf.constant([100, 700, 40, 5.7], dtype=tf.float32)
         actuals = tf.constant(actuals, dtype=tf.float32)
         preds = tf.constant(preds, dtype=tf.float32)
         # Initialize
@@ -57,8 +57,8 @@ class RSquareTest(tf.test.TestCase):
         self.check_results(r2_obj, 1.0)
 
     def test_r2_worst_score(self):
-        actuals = [10, 600, 4, 9.77]
-        preds = [1, 70, 40, 5.7]
+        actuals = tf.constant([10, 600, 4, 9.77], dtype=tf.float32)
+        preds = tf.constant([1, 70, 40, 5.7], dtype=tf.float32)
         actuals = tf.constant(actuals, dtype=tf.float32)
         preds = tf.constant(preds, dtype=tf.float32)
         # Initialize
@@ -69,8 +69,8 @@ class RSquareTest(tf.test.TestCase):
         self.check_results(r2_obj, -0.073607)
 
     def test_r2_random_score(self):
-        actuals = [10, 600, 3, 9.77]
-        preds = [1, 340, 40, 5.7]
+        actuals = tf.constant([10, 600, 3, 9.77], dtype=tf.float32)
+        preds = tf.constant([1, 340, 40, 5.7], dtype=tf.float32)
         actuals = tf.constant(actuals, dtype=tf.float32)
         preds = tf.constant(preds, dtype=tf.float32)
         # Initialize
@@ -79,3 +79,7 @@ class RSquareTest(tf.test.TestCase):
         self.update_obj_states(r2_obj, actuals, preds)
         # Check results
         self.check_results(r2_obj, 0.7376327)
+
+
+if __name__ == '__main__':
+    tf.test.main()

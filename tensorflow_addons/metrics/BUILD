@@ -26,3 +26,28 @@ py_test(
         ":metrics",
     ],
 )
+
+py_library(
+    name = "metrics",
+    srcs = [
+        "__init__.py",
+        "r_square.py",
+    ],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorflow_addons/utils",
+    ],
+)
+
+py_test(
+    name = "r_square_test",
+    size = "small",
+    srcs = [
+        "r_square_test.py",
+    ],
+    main = "r_square_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":metrics",
+    ],
+)
