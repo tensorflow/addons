@@ -139,7 +139,7 @@ def median_filter2d(image,
       image: Either a 3-D `Tensor` of shape `[height, width, channels]`,
         or a 4-D `Tensor` of shape `[batch_size, height, width, channels]`.
       filter_shape: An `integer` or `tuple`/`list` of 2 integers, specifying
-        the height and width of the 2-D mean filter. Can be a single integer
+        the height and width of the 2-D median filter. Can be a single integer
         to specify the same value for all spatial dimensions.
       padding: A `string`, one of "REFLECT", "CONSTANT", or "SYMMETRIC".
         The type of padding algorithm to use, which is compatible with
