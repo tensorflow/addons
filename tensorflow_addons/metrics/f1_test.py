@@ -26,8 +26,7 @@ from tensorflow_addons.utils import test_utils
 @test_utils.run_all_in_graph_and_eager_modes
 class F1ScoreTest(tf.test.TestCase):
     def test_config(self):
-        f1_obj = F1Score(name='f1_score',
-                         num_classes=3)
+        f1_obj = F1Score(name='f1_score', num_classes=3)
         self.assertEqual(f1_obj.name, 'f1_score')
         self.assertEqual(f1_obj.dtype, tf.float32)
         self.assertEqual(f1_obj.num_classes, 3)
@@ -108,10 +107,12 @@ class F1ScoreTest(tf.test.TestCase):
         self.check_results(f1_obj2, 0.6777777)
 
     def test_f1_none_score(self):
-        actuals = tf.constant([[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0],
-                               [0, 1, 0], [0, 0, 1]], dtype=tf.int32)
-        preds = tf.constant([[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0],
-                             [1, 0, 0], [0, 0, 1]], dtype=tf.int32)
+        actuals = tf.constant(
+            [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [0, 1, 0], [0, 0, 1]],
+            dtype=tf.int32)
+        preds = tf.constant(
+            [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [1, 0, 0], [0, 0, 1]],
+            dtype=tf.int32)
         # Initialize
         f1_none = self.initialize_vars_none()
         # Update

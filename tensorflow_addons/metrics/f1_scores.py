@@ -24,9 +24,7 @@ import numpy as np
 
 
 class F1Score(Metric):
-    """
-    Calculates F1 micro, macro or weighted based on the
-    user's choice.
+    """Calculates F1 micro, macro or weighted based on the user's choice.
 
     F1 score is the weighted average of precision and
     recall. Output range is [0, 1]. This works for both
@@ -79,11 +77,13 @@ class F1Score(Metric):
     print('F1 Micro score is: ',
             output.result().numpy()) # 0.6666667
     ```
-
     """
 
-    def __init__(self, num_classes, average=None,
-                 name='f1_score', dtype=tf.float32):
+    def __init__(self,
+                 num_classes,
+                 average=None,
+                 name='f1_score',
+                 dtype=tf.float32):
         super(F1Score, self).__init__(name=name)
         self.num_classes = num_classes
         if average not in (None, 'micro', 'macro', 'weighted'):
@@ -96,66 +96,75 @@ class F1Score(Metric):
             else:
                 self.axis = 0
         if self.average == 'micro':
-            self.true_positives = self.add_weight('true_positives',
-                                                  shape=[],
-                                                  initializer='zeros',
-                                                  dtype=tf.float32)
-            self.false_positives = self.add_weight('false_positives',
-                                                   shape=[],
-                                                   initializer='zeros',
-                                                   dtype=tf.float32)
-            self.false_negatives = self.add_weight('false_negatives',
-                                                   shape=[],
-                                                   initializer='zeros',
-                                                   dtype=tf.float32)
+            self.true_positives = self.add_weight(
+                'true_positives',
+                shape=[],
+                initializer='zeros',
+                dtype=tf.float32)
+            self.false_positives = self.add_weight(
+                'false_positives',
+                shape=[],
+                initializer='zeros',
+                dtype=tf.float32)
+            self.false_negatives = self.add_weight(
+                'false_negatives',
+                shape=[],
+                initializer='zeros',
+                dtype=tf.float32)
         else:
-            self.true_positives = self.add_weight('true_positives',
-                                                  shape=[self.num_classes],
-                                                  initializer='zeros',
-                                                  dtype=tf.float32)
-            self.false_positives = self.add_weight('false_positives',
-                                                   shape=[self.num_classes],
-                                                   initializer='zeros',
-                                                   dtype=tf.float32)
-            self.false_negatives = self.add_weight('false_negatives',
-                                                   shape=[self.num_classes],
-                                                   initializer='zeros',
-                                                   dtype=tf.float32)
-            self.weights_intermediate = self.add_weight('weights', shape=[
-                self.num_classes], initializer='zeros', dtype=tf.float32)
+            self.true_positives = self.add_weight(
+                'true_positives',
+                shape=[self.num_classes],
+                initializer='zeros',
+                dtype=tf.float32)
+            self.false_positives = self.add_weight(
+                'false_positives',
+                shape=[self.num_classes],
+                initializer='zeros',
+                dtype=tf.float32)
+            self.false_negatives = self.add_weight(
+                'false_negatives',
+                shape=[self.num_classes],
+                initializer='zeros',
+                dtype=tf.float32)
+            self.weights_intermediate = self.add_weight(
+                'weights',
+                shape=[self.num_classes],
+                initializer='zeros',
+                dtype=tf.float32)
 
     def update_state(self, y_true, y_pred):
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred, tf.int32)
 
         # true positive
-        self.true_positives.assign_add(tf.cast(
-            tf.math.count_nonzero(y_pred * y_true, axis=self.axis),
-            tf.float32))
+        self.true_positives.assign_add(
+            tf.cast(
+                tf.math.count_nonzero(y_pred * y_true, axis=self.axis),
+                tf.float32))
         # false positive
         self.false_positives.assign_add(
-            tf.cast(tf.math.count_nonzero(y_pred * (y_true - 1),
-                                          axis=self.axis), tf.float32))
+            tf.cast(
+                tf.math.count_nonzero(y_pred * (y_true - 1), axis=self.axis),
+                tf.float32))
         # false negative
-        self.false_negatives.assign_add(tf.cast(tf.math.count_nonzero(
-            (y_pred - 1) * y_true, axis=self.axis), tf.float32))
+        self.false_negatives.assign_add(
+            tf.cast(
+                tf.math.count_nonzero((y_pred - 1) * y_true, axis=self.axis),
+                tf.float32))
         if self.average == 'weighted':
             # variable to hold intermediate weights
-            self.weights_intermediate.assign_add(tf.cast(
-                tf.reduce_sum(y_true, axis=self.axis), tf.float32))
+            self.weights_intermediate.assign_add(
+                tf.cast(tf.reduce_sum(y_true, axis=self.axis), tf.float32))
 
     def result(self):
-        p_sum = tf.cast(self.true_positives + self.false_positives,
-                        tf.float32)
+        p_sum = tf.cast(self.true_positives + self.false_positives, tf.float32)
         # calculate precision
-        precision = tf.math.divide_no_nan(self.true_positives,
-                                          p_sum)
+        precision = tf.math.divide_no_nan(self.true_positives, p_sum)
 
-        r_sum = tf.cast(self.true_positives + self.false_negatives,
-                        tf.float32)
+        r_sum = tf.cast(self.true_positives + self.false_negatives, tf.float32)
         # calculate recall
-        recall = tf.math.divide_no_nan(self.true_positives,
-                                       r_sum)
+        recall = tf.math.divide_no_nan(self.true_positives, r_sum)
 
         mul_value = 2 * precision * recall
         add_value = precision + recall
@@ -168,8 +177,8 @@ class F1Score(Metric):
         # condition for weighted f1 score
         if self.average == 'weighted':
             f1_int_weights = tf.math.divide_no_nan(
-                self.weights_intermediate, tf.reduce_sum(
-                    self.weights_intermediate))
+                self.weights_intermediate,
+                tf.reduce_sum(self.weights_intermediate))
             # weighted f1 score calculation
             f1_score = tf.reduce_sum(f1_int * f1_int_weights)
 
@@ -195,5 +204,5 @@ class F1Score(Metric):
             self.true_positives.assign(np.zeros(self.num_classes), np.float32)
             self.false_positives.assign(np.zeros(self.num_classes), np.float32)
             self.false_negatives.assign(np.zeros(self.num_classes), np.float32)
-            self.weights_intermediate.assign(np.zeros(self.num_classes),
-                                             np.float32)
+            self.weights_intermediate.assign(
+                np.zeros(self.num_classes), np.float32)
