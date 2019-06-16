@@ -189,6 +189,10 @@ def median_filter2d(image,
                 strides=[1, 1, 1, 1],
                 rates=[1, 1, 1, 1],
                 padding="VALID")
+
+            # Note the returned median is casted back to the original type
+            # Take [5, 6, 7, 8] for example, the median is (6 + 7) / 2 = 3.5
+            # It turns out to be int(6.5) = 6 if the original type is int
             top = tf.nn.top_k(patches, k=ceil).values
             median = (top[:, :, :, floor - 1] + top[:, :, :, ceil - 1]) / 2
             return tf.dtypes.cast(median, x.dtype)
