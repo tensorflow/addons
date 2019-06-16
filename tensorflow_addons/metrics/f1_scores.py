@@ -23,124 +23,85 @@ from tensorflow.keras.metrics import Metric
 import numpy as np
 
 
-class F1Micro(Metric):
+class F1Score(Metric):
     """
-    Calculates F1 micro score
+    Calculates F1 micro, macro or weighted based on the
+    user's choice
     """
-    def __init__(self, name='f1_micro_score', dtype=tf.float32):
-        super(F1Micro, self).__init__(name=name)
-        self.true_positives = self.add_weight('true_positives', shape=[],
-                                              initializer='zeros',
-                                              dtype=tf.float32)
-        self.false_positives = self.add_weight('false_positives', shape=[],
-                                               initializer='zeros',
-                                               dtype=tf.float32)
-        self.false_negatives = self.add_weight('false_negatives', shape=[],
-                                               initializer='zeros',
-                                               dtype=tf.float32)
+
+    def __init__(self, num_classes, average=None,
+                 name='f1_score', dtype=tf.float32):
+        super(F1Score, self).__init__(name=name)
+        self.num_classes = num_classes
+        if average not in (None, 'micro', 'macro', 'weighted'):
+            raise ValueError("Unknown average type. Acceptable values "
+                             "are: [micro, macro, weighted]")
+        else:
+            self.average = average
+            if self.average == 'micro':
+                self.axis = None
+            if self.average == 'macro' or self.average == 'weighted':
+                self.axis = 0
+        if self.average == 'micro':
+            self.true_positives = self.add_weight('true_positives',
+                                                  shape=[],
+                                                  initializer='zeros',
+                                                  dtype=tf.float32)
+            self.false_positives = self.add_weight('false_positives',
+                                                   shape=[],
+                                                   initializer='zeros',
+                                                   dtype=tf.float32)
+            self.false_negatives = self.add_weight('false_negatives',
+                                                   shape=[],
+                                                   initializer='zeros',
+                                                   dtype=tf.float32)
+        else:
+            self.true_positives = self.add_weight('true_positives',
+                                                  shape=[self.num_classes],
+                                                  initializer='zeros',
+                                                  dtype=tf.float32)
+            self.false_positives = self.add_weight('false_positives',
+                                                   shape=[self.num_classes],
+                                                   initializer='zeros',
+                                                   dtype=tf.float32)
+            self.false_negatives = self.add_weight('false_negatives',
+                                                   shape=[self.num_classes],
+                                                   initializer='zeros',
+                                                   dtype=tf.float32)
+            self.weights_intermediate = self.add_weight('weights', shape=[
+                self.num_classes], initializer='zeros', dtype=tf.float32)
 
     def update_state(self, y_true, y_pred):
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred, tf.int32)
 
-        # true positive across column
-        self.true_positives.assign_add(tf.cast(tf.math.count_nonzero(
-            y_pred * y_true, axis=None), tf.float32))
-        # false positive across column
-        self.false_positives.assign_add(tf.cast(tf.math.count_nonzero(
-            y_pred * (y_true - 1), axis=None), tf.float32))
-        # false negative across column
-        self.false_negatives.assign_add(tf.cast(
-            tf.math.count_nonzero((y_pred - 1) * y_true, axis=None),
+        # true positive
+        self.true_positives.assign_add(tf.cast(
+            tf.math.count_nonzero(y_pred * y_true, axis=self.axis),
             tf.float32))
+        # false positive
+        self.false_positives.assign_add(
+            tf.cast(tf.math.count_nonzero(y_pred * (y_true - 1),
+                                          axis=self.axis), tf.float32))
+        # false negative
+        self.false_negatives.assign_add(tf.cast(tf.math.count_nonzero(
+            (y_pred - 1) * y_true, axis=self.axis), tf.float32))
+        if self.average == 'weighted':
+            # variable to hold intermediate weights
+            self.weights_intermediate.assign_add(tf.cast(
+                tf.reduce_sum(y_true, axis=self.axis), tf.float32))
 
     def result(self):
         p_sum = tf.cast(self.true_positives + self.false_positives,
                         tf.float32)
-        # precision calculation
-        precision_micro = tf.math.divide_no_nan(self.true_positives,
+        # calculate precision
+        precision_macro = tf.math.divide_no_nan(self.true_positives,
                                                 p_sum)
 
         r_sum = tf.cast(self.true_positives + self.false_negatives,
                         tf.float32)
-        # recall calculation
-        recall_micro = tf.math.divide_no_nan(self.true_positives,
-                                             r_sum)
-        # f1 micro score calculation
-        mul_value = 2 * precision_micro * recall_micro
-        add_value = precision_micro + recall_micro
-        f1_micro = tf.math.divide_no_nan(mul_value, add_value)
-        f1_micro = tf.reduce_mean(f1_micro)
-
-        return f1_micro
-
-    def reset_states(self):
-        # reset state of the variables to zero
-        self.true_positives.assign(0)
-        self.false_positives.assign(0)
-        self.false_negatives.assign(0)
-
-
-class F1MacroAndWeighted(Metric):
-    """
-    Calculates F1 macro or weighted based on the user's choice
-    """
-
-    def __init__(self, num_classes, average=None,
-                 name='f1_macro_and_weighted_score', dtype=tf.float32):
-        super(F1MacroAndWeighted, self).__init__(name=name)
-        self.num_classes = num_classes
-        if average not in (None, 'macro', 'weighted'):
-            raise ValueError("Unknown average type. Acceptable values "
-                             "are: [macro, weighted]")
-        else:
-            self.average = average
-        self.true_positives_col = self.add_weight('true_positives',
-                                                  shape=[self.num_classes],
-                                                  initializer='zeros',
-                                                  dtype=tf.float32)
-        self.false_positives_col = self.add_weight('false_positives',
-                                                   shape=[self.num_classes],
-                                                   initializer='zeros',
-                                                   dtype=tf.float32)
-        self.false_negatives_col = self.add_weight('false_negatives',
-                                                   shape=[self.num_classes],
-                                                   initializer='zeros',
-                                                   dtype=tf.float32)
-        self.weights_intermediate = self.add_weight('weights',
-                                                    shape=[self.num_classes],
-                                                    initializer='zeros',
-                                                    dtype=tf.float32)
-
-    def update_state(self, y_true, y_pred):
-        y_true = tf.cast(y_true, tf.int32)
-        y_pred = tf.cast(y_pred, tf.int32)
-
-        # true positive across column
-        self.true_positives_col.assign_add(tf.cast(
-            tf.math.count_nonzero(y_pred * y_true, axis=0), tf.float32))
-        # false positive across column
-        self.false_positives_col.assign_add(
-            tf.cast(tf.math.count_nonzero(y_pred * (y_true - 1), axis=0),
-                    tf.float32))
-        # false negative across column
-        self.false_negatives_col.assign_add(tf.cast(tf.math.count_nonzero(
-            (y_pred - 1) * y_true, axis=0), tf.float32))
-        # variable to hold intermediate weights
-        self.weights_intermediate.assign_add(tf.cast(
-            tf.reduce_sum(y_true, axis=0), tf.float32))
-
-    def result(self):
-        p_sum = tf.cast(self.true_positives_col + self.false_positives_col,
-                        tf.float32)
-        # calculate precision
-        precision_macro = tf.math.divide_no_nan(self.true_positives_col,
-                                                p_sum)
-
-        r_sum = tf.cast(self.true_positives_col + self.false_negatives_col,
-                        tf.float32)
         # calculate recall
-        recall_macro = tf.math.divide_no_nan(self.true_positives_col,
+        recall_macro = tf.math.divide_no_nan(self.true_positives,
                                              r_sum)
 
         mul_value = 2 * precision_macro * recall_macro
@@ -161,17 +122,23 @@ class F1MacroAndWeighted(Metric):
 
     def get_config(self):
         """Returns the serializable config of the metric."""
+
         config = {
             "num_classes": self.num_classes,
             "average": self.average,
         }
-        base_config = super(F1MacroAndWeighted, self).get_config()
+        base_config = super(F1Score, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
     def reset_states(self):
         # reset state of the variables to zero
-        self.true_positives_col.assign(np.zeros(self.num_classes), np.float32)
-        self.false_positives_col.assign(np.zeros(self.num_classes), np.float32)
-        self.false_negatives_col.assign(np.zeros(self.num_classes), np.float32)
-        self.weights_intermediate.assign(np.zeros(self.num_classes),
-                                         np.float32)
+        if self.average == 'micro':
+            self.true_positives.assign(0)
+            self.false_positives.assign(0)
+            self.false_negatives.assign(0)
+        else:
+            self.true_positives.assign(np.zeros(self.num_classes), np.float32)
+            self.false_positives.assign(np.zeros(self.num_classes), np.float32)
+            self.false_negatives.assign(np.zeros(self.num_classes), np.float32)
+            self.weights_intermediate.assign(np.zeros(self.num_classes),
+                                             np.float32)

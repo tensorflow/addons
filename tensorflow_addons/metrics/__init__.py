@@ -19,6 +19,5 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorflow_addons.metrics.cohens_kappa import CohenKappa
-from tensorflow_addons.metrics.f1_scores import F1Micro
-from tensorflow_addons.metrics.f1_scores import F1MacroAndWeighted
+from tensorflow_addons.metrics.f1_scores import F1Score
 
