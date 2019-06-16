@@ -26,7 +26,60 @@ import numpy as np
 class F1Score(Metric):
     """
     Calculates F1 micro, macro or weighted based on the
-    user's choice
+    user's choice.
+
+    F1 score is the weighted average of precision and
+    recall. Output range is [0, 1]. This works for both
+    multi-class and multi-label classification.
+
+
+    Args:
+       num_classes : Number of unique classes in the dataset.
+       average : Type of averaging to be performed on data.
+                 Acceptable values are None, micro, macro and
+                 weighted.
+                 Default value is None.
+
+    Returns:
+       F1 score: float
+
+    Raises:
+       ValueError: If the `average` has values other than
+       [None, micro, macro. weighted].
+
+    `average` parameter behavior:
+
+    1. If `None` is specified as an input, scores for each
+       class are returned.
+
+    2. If `micro` is specified, metrics like true positivies,
+       false positives and false negatives are computed
+       globally.
+
+    3. If `macro` is specified, metrics like true positivies,
+       false positives and false negatives are computed for
+       each class and their unweighted mean is returned.
+       Imbalance in dataset is not taken into account for
+       calculating the score
+
+    4. If `weighted` is specified, metrics are computed for
+       each class and returns the mean weighted by the
+       number of true instances in each class taking data
+       imbalance into account.
+
+    Usage:
+    ```python
+    actuals = tf.constant([[1, 1, 0],[1, 0, 0]],
+              dtype=tf.int32)
+    preds = tf.constant([[1, 0, 0],[1, 0, 1]],
+            dtype=tf.int32)
+    output = tf.keras.metrics.F1Score(num_classes=3,
+              average='micro')
+    output.update_state(actuals, predictions)
+    print('F1 Micro score is: ',
+            output.result().numpy()) # 0.6666667
+    ```
+
     """
 
     def __init__(self, num_classes, average=None,
@@ -40,7 +93,7 @@ class F1Score(Metric):
             self.average = average
             if self.average == 'micro':
                 self.axis = None
-            if self.average == 'macro' or self.average == 'weighted':
+            else:
                 self.axis = 0
         if self.average == 'micro':
             self.true_positives = self.add_weight('true_positives',
@@ -95,28 +148,30 @@ class F1Score(Metric):
         p_sum = tf.cast(self.true_positives + self.false_positives,
                         tf.float32)
         # calculate precision
-        precision_macro = tf.math.divide_no_nan(self.true_positives,
-                                                p_sum)
+        precision = tf.math.divide_no_nan(self.true_positives,
+                                          p_sum)
 
         r_sum = tf.cast(self.true_positives + self.false_negatives,
                         tf.float32)
         # calculate recall
-        recall_macro = tf.math.divide_no_nan(self.true_positives,
-                                             r_sum)
+        recall = tf.math.divide_no_nan(self.true_positives,
+                                       r_sum)
 
-        mul_value = 2 * precision_macro * recall_macro
-        add_value = precision_macro + recall_macro
-        f1_macro_int = tf.math.divide_no_nan(mul_value, add_value)
-        # f1 macro score
-        f1_score = tf.reduce_mean(f1_macro_int)
+        mul_value = 2 * precision * recall
+        add_value = precision + recall
+        f1_int = tf.math.divide_no_nan(mul_value, add_value)
+        # f1 score
+        if self.average is not None:
+            f1_score = tf.reduce_mean(f1_int)
+        else:
+            f1_score = f1_int
         # condition for weighted f1 score
         if self.average == 'weighted':
-            f1_int_weights = tf.cast(tf.math.divide_no_nan(
+            f1_int_weights = tf.math.divide_no_nan(
                 self.weights_intermediate, tf.reduce_sum(
-                    self.weights_intermediate)),
-                tf.float32)
+                    self.weights_intermediate))
             # weighted f1 score calculation
-            f1_score = tf.reduce_sum(f1_macro_int * f1_int_weights)
+            f1_score = tf.reduce_sum(f1_int * f1_int_weights)
 
         return f1_score
 
