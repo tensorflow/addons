@@ -31,6 +31,11 @@ _DTYPES = set([
 
 
 class ImageOpsTest(tf.test.TestCase):
+    def setUp(self):
+        np.random.seed(0)
+        tf.random.set_seed(0)
+        super(ImageOpsTest, self).setUp()
+
     @test_utils.run_in_graph_and_eager_modes
     def test_compose(self):
         for dtype in _DTYPES:
@@ -73,51 +78,44 @@ class ImageOpsTest(tf.test.TestCase):
         self.assertAllEqual([3, 5], result.shape)
 
     def _test_grad(self, shape_to_test):
-        with self.cached_session():
-            test_image_shape = shape_to_test
-            test_image = np.random.randn(*test_image_shape)
-            test_image_tensor = tf.constant(test_image, shape=test_image_shape)
-            test_transform = transform_ops.angles_to_projective_transforms(
-                np.pi / 2, 4, 4)
+        test_image_shape = shape_to_test
+        test_image = tf.random.normal(test_image_shape, dtype=tf.float32)
 
-            output_shape = test_image_shape
-            output = transform_ops.transform(test_image_tensor, test_transform)
-            left_err = tf.compat.v1.test.compute_gradient_error(
-                test_image_tensor,
-                test_image_shape,
-                output,
-                output_shape,
-                x_init_value=test_image)
-            self.assertLess(left_err, 1e-10)
+        def transform_fn(x):
+            x.set_shape(test_image_shape)
+            transform = transform_ops.angles_to_projective_transforms(
+                np.pi / 2, 4, 4)
+            return transform_ops.transform(x, transform)
+
+        theoretical, numerical = tf.test.compute_gradient(
+            transform_fn, [test_image])
+
+        self.assertAllClose(theoretical[0], numerical[0], rtol=1e-4, atol=1e-4)
 
     def _test_grad_different_shape(self, input_shape, output_shape):
-        with self.cached_session():
-            test_image_shape = input_shape
-            test_image = np.random.randn(*test_image_shape)
-            test_image_tensor = tf.constant(test_image, shape=test_image_shape)
-            test_transform = transform_ops.angles_to_projective_transforms(
+        test_image_shape = input_shape
+        test_image = tf.random.normal(test_image_shape, dtype=tf.float32)
+
+        if len(output_shape) == 2:
+            resize_shape = output_shape
+        elif len(output_shape) == 3:
+            resize_shape = output_shape[0:2]
+        elif len(output_shape) == 4:
+            resize_shape = output_shape[1:3]
+
+        def transform_fn(x):
+            x.set_shape(test_image_shape)
+            transform = transform_ops.angles_to_projective_transforms(
                 np.pi / 2, 4, 4)
+            return transform_ops.transform(
+                images=x, transforms=transform, output_shape=resize_shape)
 
-            if len(output_shape) == 2:
-                resize_shape = output_shape
-            elif len(output_shape) == 3:
-                resize_shape = output_shape[0:2]
-            elif len(output_shape) == 4:
-                resize_shape = output_shape[1:3]
-            output = transform_ops.transform(
-                images=test_image_tensor,
-                transforms=test_transform,
-                output_shape=resize_shape)
-            left_err = tf.compat.v1.test.compute_gradient_error(
-                test_image_tensor,
-                test_image_shape,
-                output,
-                output_shape,
-                x_init_value=test_image)
-            self.assertLess(left_err, 1e-10)
+        theoretical, numerical = tf.test.compute_gradient(
+            transform_fn, [test_image])
 
-    # TODO: switch to TF2 later.
-    @test_utils.run_deprecated_v1
+        self.assertAllClose(theoretical[0], numerical[0], rtol=1e-4, atol=1e-4)
+
+    @test_utils.run_in_graph_and_eager_modes
     def test_grad(self):
         self._test_grad([16, 16])
         self._test_grad([4, 12, 12])
