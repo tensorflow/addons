@@ -77,26 +77,12 @@ class ImageOpsTest(tf.test.TestCase):
             output_shape=tf.constant([3, 5]))
         self.assertAllEqual([3, 5], result.shape)
 
-    def _test_grad(self, shape_to_test):
-        test_image_shape = shape_to_test
-        test_image = tf.random.normal(test_image_shape, dtype=tf.float32)
+    def _test_grad(self, input_shape, output_shape=None):
+        test_image = tf.random.normal(input_shape, dtype=tf.float32)
 
-        def transform_fn(x):
-            x.set_shape(test_image_shape)
-            transform = transform_ops.angles_to_projective_transforms(
-                np.pi / 2, 4, 4)
-            return transform_ops.transform(x, transform)
-
-        theoretical, numerical = tf.test.compute_gradient(
-            transform_fn, [test_image])
-
-        self.assertAllClose(theoretical[0], numerical[0], rtol=1e-4, atol=1e-4)
-
-    def _test_grad_different_shape(self, input_shape, output_shape):
-        test_image_shape = input_shape
-        test_image = tf.random.normal(test_image_shape, dtype=tf.float32)
-
-        if len(output_shape) == 2:
+        if output_shape is None:
+            resize_shape = None
+        elif len(output_shape) == 2:
             resize_shape = output_shape
         elif len(output_shape) == 3:
             resize_shape = output_shape[0:2]
@@ -104,7 +90,7 @@ class ImageOpsTest(tf.test.TestCase):
             resize_shape = output_shape[1:3]
 
         def transform_fn(x):
-            x.set_shape(test_image_shape)
+            x.set_shape(input_shape)
             transform = transform_ops.angles_to_projective_transforms(
                 np.pi / 2, 4, 4)
             return transform_ops.transform(
@@ -120,9 +106,9 @@ class ImageOpsTest(tf.test.TestCase):
         self._test_grad([16, 16])
         self._test_grad([4, 12, 12])
         self._test_grad([3, 4, 12, 12])
-        self._test_grad_different_shape([16, 16], [8, 8])
-        self._test_grad_different_shape([4, 12, 3], [8, 24, 3])
-        self._test_grad_different_shape([3, 4, 12, 3], [3, 8, 24, 3])
+        self._test_grad([16, 16], [8, 8])
+        self._test_grad([4, 12, 3], [8, 24, 3])
+        self._test_grad([3, 4, 12, 3], [3, 8, 24, 3])
 
     @test_utils.run_in_graph_and_eager_modes
     def test_transform_data_types(self):
