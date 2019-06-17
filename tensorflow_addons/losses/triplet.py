@@ -75,7 +75,7 @@ def triplet_semihard_loss(y_true, y_pred, margin=1.0):
     labels, embeddings = y_true, y_pred
     # Reshape [batch_size] label tensor to a [batch_size, 1] label tensor.
     lshape = tf.shape(labels)
-    assert lshape.shape == 1
+    assert lshape.shape.rank == 1
     labels = tf.reshape(labels, [lshape[0], 1])
 
     # Build pairwise squared distance matrix.
