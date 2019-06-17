@@ -104,6 +104,13 @@ class TripletSemiHardLossTest(tf.test.TestCase):
         loss = cce_obj(y_true, y_pred)
         self.assertAlmostEqual(self.evaluate(loss), loss_np, 3)
 
+    def test_keras_model_compile(self):
+        model = tf.keras.models.Sequential([
+            tf.keras.layers.Input(shape=(784,)),
+            tf.keras.layers.Dense(10),
+        ])
+        model.compile(loss="triplet_semihard_loss", optimizer="adam")
+
 
 if __name__ == '__main__':
     tf.test.main()
