@@ -7,6 +7,7 @@ py_library(
     srcs = [
         "__init__.py",
         "cohens_kappa.py",
+        "r_square.py"
     ],
     srcs_version = "PY2AND3",
     deps = [
@@ -24,18 +25,6 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":metrics",
-    ],
-)
-
-py_library(
-    name = "metrics",
-    srcs = [
-        "__init__.py",
-        "r_square.py",
-    ],
-    srcs_version = "PY2AND3",
-    deps = [
-        "//tensorflow_addons/utils",
     ],
 )
 
