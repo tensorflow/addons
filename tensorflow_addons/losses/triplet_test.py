@@ -104,15 +104,6 @@ class TripletSemiHardLossTest(tf.test.TestCase):
         loss = cce_obj(y_true, y_pred)
         self.assertAlmostEqual(self.evaluate(loss), loss_np, 3)
 
-    def test_invalid_y_true_shape(self):
-        triplet_loss_obj = triplet.TripletSemiHardLoss()
-
-        # The shape of y_true should be either [batch_size] or [batch_size, 1]
-        y_true = tf.ones(shape=(10, 3), dtype=tf.int32)
-        y_pred = tf.ones(shape=(10, 3), dtype=tf.float32)
-        with self.assertRaises(ValueError):
-            loss = triplet_loss_obj(y_true, y_pred)
-
     def test_keras_model_compile(self):
         model = tf.keras.models.Sequential([
             tf.keras.layers.Input(shape=(784,)),
