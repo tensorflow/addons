@@ -182,8 +182,7 @@ class DenseImageWarpTest(tf.test.TestCase):
                     self._check_interpolation_correctness(
                         shape, im_type, flow_type)
 
-    # TODO: switch to TF2 later.
-    @test_utils.run_deprecated_v1
+    @test_utils.run_in_graph_and_eager_modes
     def test_gradients_exist(self):
         """Check that backprop can run.
 
@@ -198,21 +197,21 @@ class DenseImageWarpTest(tf.test.TestCase):
         image_shape = [batch_size, height, width, num_channels]
         image = tf.random.normal(image_shape)
         flow_shape = [batch_size, height, width, 2]
-        init_flows = np.float32(np.random.normal(size=flow_shape) * 0.25)
-        flows = tf.Variable(init_flows)
+        flows = tf.Variable(
+            tf.random.normal(shape=flow_shape) * 0.25, dtype=tf.float32)
 
         interp = dense_image_warp(image, flows)
-        loss = tf.math.reduce_mean(tf.math.square(interp - image))
+
+        def loss():
+            return tf.math.reduce_mean(tf.math.square(interp - image))
 
         optimizer = tf.keras.optimizers.Adam(1.0)
-        grad = tf.gradients(loss, [flows])
-        opt_func = optimizer.apply_gradients(zip(grad, [flows]))
-        init_op = tf.compat.v1.global_variables_initializer()
+        minimize_op = optimizer.minimize(loss, var_list=[flows])
 
-        with self.cached_session() as sess:
-            sess.run(init_op)
-            for _ in range(10):
-                sess.run(opt_func)
+        self.evaluate(tf.compat.v1.global_variables_initializer())
+
+        for _ in range(10):
+            self.evaluate(minimize_op)
 
     @test_utils.run_in_graph_and_eager_modes
     def test_size_exception(self):
