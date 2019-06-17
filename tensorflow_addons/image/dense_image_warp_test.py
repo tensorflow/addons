@@ -27,11 +27,12 @@ from tensorflow_addons.image import interpolate_bilinear
 from tensorflow_addons.utils import test_utils
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class DenseImageWarpTest(tf.test.TestCase):
     def setUp(self):
         np.random.seed(0)
+        tf.random.set_seed(0)
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_interpolate_small_grid_ij(self):
         grid = tf.constant([[0., 1., 2.], [3., 4., 5.], [6., 7., 8.]],
                            shape=[1, 3, 3, 1])
@@ -43,7 +44,6 @@ class DenseImageWarpTest(tf.test.TestCase):
 
         self.assertAllClose(expected_results, interp)
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_interpolate_small_grid_xy(self):
         grid = tf.constant([[0., 1., 2.], [3., 4., 5.], [6., 7., 8.]],
                            shape=[1, 3, 3, 1])
@@ -55,7 +55,6 @@ class DenseImageWarpTest(tf.test.TestCase):
 
         self.assertAllClose(expected_results, interp)
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_interpolate_small_grid_batched(self):
         grid = tf.constant([[[0., 1.], [3., 4.]], [[5., 6.], [7., 8.]]],
                            shape=[2, 2, 2, 1])
@@ -134,7 +133,6 @@ class DenseImageWarpTest(tf.test.TestCase):
 
         self.assertAllClose(rand_image, interp)
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_zero_flows(self):
         """Apply _check_zero_flow_correctness() for a few sizes and types."""
         shapes_to_try = [[3, 4, 5, 6], [1, 2, 2, 1]]
@@ -171,7 +169,6 @@ class DenseImageWarpTest(tf.test.TestCase):
                 x_index,
                 low_precision=low_precision)
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_interpolation(self):
         """Apply _check_interpolation_correctness() for a few sizes and
         types."""
@@ -182,7 +179,6 @@ class DenseImageWarpTest(tf.test.TestCase):
                     self._check_interpolation_correctness(
                         shape, im_type, flow_type)
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_gradients_exist(self):
         """Check that backprop can run.
 
@@ -200,9 +196,8 @@ class DenseImageWarpTest(tf.test.TestCase):
         flows = tf.Variable(
             tf.random.normal(shape=flow_shape) * 0.25, dtype=tf.float32)
 
-        interp = dense_image_warp(image, flows)
-
         def loss():
+            interp = dense_image_warp(image, flows)
             return tf.math.reduce_mean(tf.math.square(interp - image))
 
         optimizer = tf.keras.optimizers.Adam(1.0)
@@ -213,7 +208,6 @@ class DenseImageWarpTest(tf.test.TestCase):
         for _ in range(10):
             self.evaluate(minimize_op)
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_size_exception(self):
         """Make sure it throws an exception for images that are too small."""
         shape = [1, 2, 1, 1]
