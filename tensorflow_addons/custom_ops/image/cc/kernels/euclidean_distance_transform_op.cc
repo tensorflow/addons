@@ -77,7 +77,8 @@ TF_CALL_double(REGISTER);
 
 #undef REGISTER
 
-#if GOOGLE_CUDA
+// TODO: fix compile issue of the gpu kernel.
+#if 0 && GOOGLE_CUDA
 
 typedef Eigen::GpuDevice GPUDevice;
 
@@ -86,7 +87,7 @@ namespace functor {
 #define DECLARE_FUNCTOR(TYPE)                                              \
   template <>                                                              \
   void EuclideanDistanceTransformFunctor<GPUDevice, TYPE>::operator()(     \
-      const GPUDevice &device, OutpuType *output, const InputType *images) \
+      const GPUDevice &device, OutputType *output, const InputType *images) \
       const;                                                               \
   extern template struct EuclideanDistanceTransformFunctor<GPUDevice, TYPE>
 
