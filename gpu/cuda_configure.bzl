@@ -22,20 +22,35 @@
 """
 
 _GCC_HOST_COMPILER_PATH = "GCC_HOST_COMPILER_PATH"
+
 _CLANG_CUDA_COMPILER_PATH = "CLANG_CUDA_COMPILER_PATH"
+
 _CUDA_TOOLKIT_PATH = "CUDA_TOOLKIT_PATH"
+
 _TF_CUDA_VERSION = "TF_CUDA_VERSION"
+
 _TF_CUDNN_VERSION = "TF_CUDNN_VERSION"
+
 _CUDNN_INSTALL_PATH = "CUDNN_INSTALL_PATH"
+
 _TF_CUDA_COMPUTE_CAPABILITIES = "TF_CUDA_COMPUTE_CAPABILITIES"
+
 _TF_DOWNLOAD_CLANG = "TF_DOWNLOAD_CLANG"
+
 _PYTHON_BIN_PATH = "PYTHON_BIN_PATH"
 
 _DEFAULT_CUDA_VERSION = ""
+
 _DEFAULT_CUDNN_VERSION = ""
+
 _DEFAULT_CUDA_TOOLKIT_PATH = "/usr/local/cuda"
+
 _DEFAULT_CUDNN_INSTALL_PATH = "/usr/local/cuda"
-_DEFAULT_CUDA_COMPUTE_CAPABILITIES = ["3.5", "5.2"]
+
+_DEFAULT_CUDA_COMPUTE_CAPABILITIES = [
+    "3.5",
+    "5.2",
+]
 
 # Lookup paths for CUDA / cuDNN libraries, relative to the install directories.
 #
@@ -250,11 +265,11 @@ def find_cc(repository_ctx):
               " environment variable").format(target_cc_name, cc_path_envvar))
     return cc
 
-
 _INC_DIR_MARKER_BEGIN = "#include <...>"
 
 # OSX add " (framework directory)" at the end of line, strip it.
 _OSX_FRAMEWORK_SUFFIX = " (framework directory)"
+
 _OSX_FRAMEWORK_SUFFIX_LEN = len(_OSX_FRAMEWORK_SUFFIX)
 
 def _cxx_inc_convert(path):
@@ -509,7 +524,9 @@ def _cuda_version(repository_ctx, cuda_toolkit_path, cpu_value):
     return version
 
 _DEFINE_CUDNN_MAJOR = "#define CUDNN_MAJOR"
+
 _DEFINE_CUDNN_MINOR = "#define CUDNN_MINOR"
+
 _DEFINE_CUDNN_PATCHLEVEL = "#define CUDNN_PATCHLEVEL"
 
 def find_cuda_define(repository_ctx, header_dir, header_file, define):
@@ -1013,7 +1030,6 @@ def _create_dummy_repository(repository_ctx):
     repository_ctx.file("cuda/cuda/lib/%s" % lib_name("cufft", cpu_value))
     repository_ctx.file("cuda/cuda/lib/%s" % lib_name("cupti", cpu_value))
 
-
 def _execute(
         repository_ctx,
         cmdline,
@@ -1297,7 +1313,6 @@ def _cuda_autoconf_impl(repository_ctx):
         _create_local_cuda_repository(repository_ctx)
 
 cuda_configure = repository_rule(
-    implementation = _cuda_autoconf_impl,
     environ = [
         _GCC_HOST_COMPILER_PATH,
         _CLANG_CUDA_COMPILER_PATH,
@@ -1312,6 +1327,7 @@ cuda_configure = repository_rule(
         "NVVMIR_LIBRARY_DIR",
         _PYTHON_BIN_PATH,
     ],
+    implementation = _cuda_autoconf_impl,
 )
 
 """Detects and configures the local CUDA toolchain.

@@ -61,7 +61,8 @@ class ImageOpsTest(tf.test.TestCase):
                     dtype=dtype)
                 transformation = tf.constant([1, 0, 0, 0, 1, 0, -1, 0],
                                              tf.dtypes.float32)
-                image_transformed = transform_ops.transform(image, transformation)
+                image_transformed = transform_ops.transform(
+                    image, transformation)
                 self.assertAllEqual(
                     [[1, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0], [0, 0, 0, 0]],
                     image_transformed)

@@ -46,13 +46,24 @@ cc_binary(
 
 cc_library(
     name = "image_projective_transform_op_gpu",
-    srcs = ["cc/kernels/image_projective_transform_op.h", "cc/kernels/image_projective_transform_op_gpu.cu.cc"],
+    srcs = [
+        "cc/kernels/image_projective_transform_op.h",
+        "cc/kernels/image_projective_transform_op_gpu.cu.cc",
+    ],
+    copts = if_cuda_is_configured([
+        "-DGOOGLE_CUDA=1",
+        "-x cuda",
+        "-nvcc_options=relaxed-constexpr",
+        "-nvcc_options=ftz=true",
+    ]),
     deps = [
         "@local_config_tf//:libtensorflow_framework",
         "@local_config_tf//:tf_header_lib",
-    ] + if_cuda_is_configured([":cuda",  "@local_config_cuda//cuda:cuda_headers"]),
+    ] + if_cuda_is_configured([
+        ":cuda",
+        "@local_config_cuda//cuda:cuda_headers",
+    ]),
     alwayslink = 1,
-    copts = if_cuda_is_configured(["-DGOOGLE_CUDA=1", "-x cuda", "-nvcc_options=relaxed-constexpr", "-nvcc_options=ftz=true"]),
 )
 
 cc_binary(
@@ -64,7 +75,11 @@ cc_binary(
         "cc/kernels/image_projective_transform_op.h",
         "cc/ops/image_ops.cc",
     ],
-    copts = ["-pthread", "-std=c++11", "-D_GLIBCXX_USE_CXX11_ABI=0"] + if_cuda(["-DGOOGLE_CUDA=1"]),
+    copts = [
+        "-pthread",
+        "-std=c++11",
+        "-D_GLIBCXX_USE_CXX11_ABI=0",
+    ] + if_cuda(["-DGOOGLE_CUDA=1"]),
     linkshared = 1,
     deps = [
         "@local_config_tf//:libtensorflow_framework",

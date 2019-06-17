@@ -84,11 +84,11 @@ typedef Eigen::GpuDevice GPUDevice;
 
 namespace functor {
 
-#define DECLARE_FUNCTOR(TYPE)                                              \
-  template <>                                                              \
-  void EuclideanDistanceTransformFunctor<GPUDevice, TYPE>::operator()(     \
+#define DECLARE_FUNCTOR(TYPE)                                               \
+  template <>                                                               \
+  void EuclideanDistanceTransformFunctor<GPUDevice, TYPE>::operator()(      \
       const GPUDevice &device, OutputType *output, const InputType *images) \
-      const;                                                               \
+      const;                                                                \
   extern template struct EuclideanDistanceTransformFunctor<GPUDevice, TYPE>
 
 TF_CALL_half(DECLARE_FUNCTOR);
