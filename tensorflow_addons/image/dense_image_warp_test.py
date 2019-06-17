@@ -214,12 +214,12 @@ class DenseImageWarpTest(tf.test.TestCase):
             for _ in range(10):
                 sess.run(opt_func)
 
-    # TODO: run in both graph and eager modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_size_exception(self):
         """Make sure it throws an exception for images that are too small."""
         shape = [1, 2, 1, 1]
-        with self.assertRaisesRegexp(tf.errors.InvalidArgumentError,
-                                     "Grid width must be at least 2."):
+        errors = (ValueError, tf.errors.InvalidArgumentError)
+        with self.assertRaisesRegexp(errors, "Grid width must be at least 2."):
             self._check_interpolation_correctness(shape, "float32", "float32")
 
 
