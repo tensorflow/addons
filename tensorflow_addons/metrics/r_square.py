@@ -23,8 +23,7 @@ from tensorflow.keras.metrics import Metric
 
 
 class RSquare(Metric):
-    """
-    Compute R^2 score
+    """Compute R^2 score.
 
     This is also called as coefficient of determination.
     It tells how close are data to the fitted regression line.
@@ -35,6 +34,7 @@ class RSquare(Metric):
       account for variation in the target.
     - It can also be negative if the model is worse.
     """
+
     def __init__(self, name='r_square', dtype=tf.float32):
         super(RSquare, self).__init__(name=name, dtype=dtype)
         self.squared_sum = self.add_weight("squared_sum", initializer="zeros")
@@ -45,15 +45,15 @@ class RSquare(Metric):
     def update_state(self, y_true, y_pred):
         y_true = tf.convert_to_tensor(y_true, tf.float32)
         y_pred = tf.convert_to_tensor(y_pred, tf.float32)
-        self.squared_sum.assign_add(tf.reduce_sum(y_true ** 2))
+        self.squared_sum.assign_add(tf.reduce_sum(y_true**2))
         self.sum.assign_add(tf.reduce_sum(y_true))
-        self.res.assign_add(tf.reduce_sum(
-            tf.square(tf.subtract(y_true, y_pred))))
+        self.res.assign_add(
+            tf.reduce_sum(tf.square(tf.subtract(y_true, y_pred))))
         self.count.assign_add(tf.cast(tf.shape(y_true)[0], tf.float32))
 
     def result(self):
         mean = self.sum / self.count
-        total = self.squared_sum - 2 * self.sum * mean + self.count * mean ** 2
+        total = self.squared_sum - 2 * self.sum * mean + self.count * mean**2
         return 1 - (self.res / total)
 
     def reset_states(self):
