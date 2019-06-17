@@ -2,7 +2,7 @@ Generate API documents
 
 ```bash
 # Install dependencies:
-pip install -r doc_requirements.txt
+pip install -r tools/docs/doc_requirements.txt
 
 # Build tool:
 bazel build tools/docs:build_docs
