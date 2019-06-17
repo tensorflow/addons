@@ -4,11 +4,13 @@
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
 |  cohens_kappa| Aakash Nain   |  aakashnain@outlook.com|
+|  r_square| Saishruthi Swaminathan| saishruthi.tn@gmail.com|
 
 ## Contents
 | Submodule | Metric  | Reference                               |
 |:----------------------- |:-------------------|:---------------|
 | cohens_kappa| CohenKappa|[Cohen's Kappa](https://en.wikipedia.org/wiki/Cohen%27s_kappa)|
+| r_square| RSquare|[R-Sqaure](https://en.wikipedia.org/wiki/Coefficient_of_determination)|
 
 
 ## Contribution Guidelines
