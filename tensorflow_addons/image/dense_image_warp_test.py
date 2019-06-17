@@ -29,10 +29,6 @@ from tensorflow_addons.utils import test_utils
 
 @test_utils.run_all_in_graph_and_eager_modes
 class DenseImageWarpTest(tf.test.TestCase):
-    def setUp(self):
-        np.random.seed(0)
-        tf.random.set_seed(0)
-
     def test_interpolate_small_grid_ij(self):
         grid = tf.constant([[0., 1., 2.], [3., 4., 5.], [6., 7., 8.]],
                            shape=[1, 3, 3, 1])

@@ -31,11 +31,6 @@ _DTYPES = set([
 
 
 class ImageOpsTest(tf.test.TestCase):
-    def setUp(self):
-        np.random.seed(0)
-        tf.random.set_seed(0)
-        super(ImageOpsTest, self).setUp()
-
     @test_utils.run_in_graph_and_eager_modes
     def test_compose(self):
         for dtype in _DTYPES:
