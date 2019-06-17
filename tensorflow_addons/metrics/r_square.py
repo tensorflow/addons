@@ -25,14 +25,23 @@ from tensorflow.keras.metrics import Metric
 class RSquare(Metric):
     """Compute R^2 score.
 
-    This is also called as coefficient of determination.
-    It tells how close are data to the fitted regression line.
+     This is also called as coefficient of determination.
+     It tells how close are data to the fitted regression line.
 
-    - Highest score can be 1.0 and it indicates that the predictors
-      perfectly accounts for variation in the target.
-    - Score 0.0 indicates that the predictors do not
-      account for variation in the target.
-    - It can also be negative if the model is worse.
+     - Highest score can be 1.0 and it indicates that the predictors
+       perfectly accounts for variation in the target.
+     - Score 0.0 indicates that the predictors do not
+       account for variation in the target.
+     - It can also be negative if the model is worse.
+
+     Usage:
+     ```python
+     actuals = tf.constant([1, 4, 3], dtype=tf.float32)
+     preds = tf.constant([2, 4, 4], dtype=tf.float32)
+     result = tf.keras.metrics.RSquare()
+     result.update_state(actuals, preds)
+     print('R^2 score is: ', r1.result().numpy()) # 0.57142866
+    ```
     """
 
     def __init__(self, name='r_square', dtype=tf.float32):
