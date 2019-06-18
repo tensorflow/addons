@@ -205,9 +205,13 @@ def median_filter2d(image,
         # Take [5, 6, 7, 8] for example, the median is (6 + 7) / 2 = 3.5
         # It turns out to be int(6.5) = 6 if the original type is int
         top = tf.nn.top_k(patches, k=ceil).values
-        output = tf.cast(
-            (top[:, :, :, :, floor - 1] + top[:, :, :, :, ceil - 1]) / 2,
-            image.dtype)
+        if area % 2 == 1:
+            median = top[:, :, :, :, floor - 1]
+        else:
+            median = (
+                top[:, :, :, :, floor - 1] + top[:, :, :, :, ceil - 1]) / 2
+
+        output = tf.cast(median, image.dtype)
 
         # Squeeze out the first axis to make sure
         # output has the same dimension with image.
