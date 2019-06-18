@@ -180,10 +180,12 @@ def _check_static_batch_beam_maybe(shape, batch_size, beam_width):
     """Raises an exception if dimensions are known statically and can not be
     reshaped to [batch_size, beam_size, -1]."""
     reshaped_shape = tf.TensorShape([batch_size, beam_width, None])
-    if (batch_size is not None and shape.dims[0].value is not None
-            and (shape[0] != batch_size * beam_width or
-                 (shape.ndims >= 2 and shape.dims[1].value is not None and
-                  (shape[0] != batch_size or shape[1] != beam_width)))):
+    assert len(shape.dims) > 0
+    known_size = batch_size is not None and shape.dims[0].value is not None
+    case_1 = (shape[0] == batch_size * beam_width)
+    case_2_guard = shape.ndims >= 2 and shape.dims[1].value is not None
+    case_2 = case_2_guard and shape[0] == batch_size and shape[1] == beam_width
+    if known_size and not (case_1 or case_2):
         tf.get_logger().warn(
             "TensorArray reordering expects elements to be "
             "reshapable to %s which is incompatible with the "
