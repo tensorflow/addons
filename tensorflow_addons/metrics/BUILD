@@ -7,6 +7,7 @@ py_library(
     srcs = [
         "__init__.py",
         "cohens_kappa.py",
+        "f1_scores.py",
         "r_square.py",
     ],
     srcs_version = "PY2AND3",
@@ -35,6 +36,19 @@ py_test(
         "r_square_test.py",
     ],
     main = "r_square_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":metrics",
+    ],
+)
+
+py_test(
+    name = "f1_test",
+    size = "small",
+    srcs = [
+        "f1_test.py",
+    ],
+    main = "f1_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":metrics",
