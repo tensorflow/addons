@@ -43,3 +43,6 @@ foo._protected_member
 #### TensorFlow Conventions
 
 Follow the guidance in the [TensorFlow Style Guide - Conventions](https://www.tensorflow.org/community/contribute/code_style#tensorflow_conventions_and_special_uses).
+
+Please note that Addons follows these conventions but _not_ the entirety of the [TensorFlow Style Guide](https://www.tensorflow.org/community/contribute/code_style).
+In particular, as stated above, Python code should conform to [PEP8](https://www.python.org/dev/peps/pep-0008/) _without_ the Tensorflow spacing exception.

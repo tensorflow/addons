@@ -53,7 +53,7 @@ def euclidean_dist_transform(images, dtype=tf.float32, name=None):
 
         if image_or_images.dtype.base_dtype != tf.uint8:
             raise TypeError(
-                "Invalid dtype %s. Excepted uint8." % image_or_images.dtype)
+                "Invalid dtype %s. Expected uint8." % image_or_images.dtype)
         if image_or_images.get_shape().ndims is None:
             raise ValueError("`images` rank must be statically known")
         elif len(image_or_images.get_shape()) == 3:
