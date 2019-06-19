@@ -73,7 +73,12 @@ class ImageOpsTest(tf.test.TestCase):
         self.assertAllEqual([3, 5], result.shape)
 
     def _test_grad(self, input_shape, output_shape=None):
-        test_image = tf.random.normal(input_shape, dtype=tf.float32)
+        image_size = tf.math.cumprod(input_shape)[-1]
+        image_size = tf.cast(image_size, tf.float32)
+        test_image = tf.reshape(
+            tf.range(0, image_size, dtype=tf.float32), input_shape)
+        # Scale test image to range [0, 0.01]
+        test_image = (test_image / image_size) * 0.01
 
         if output_shape is None:
             resize_shape = None
@@ -94,7 +99,7 @@ class ImageOpsTest(tf.test.TestCase):
         theoretical, numerical = tf.test.compute_gradient(
             transform_fn, [test_image])
 
-        self.assertAllClose(theoretical[0], numerical[0], rtol=1e-4, atol=1e-4)
+        self.assertAllClose(theoretical[0], numerical[0], rtol=1e-6, atol=1e-6)
 
     @test_utils.run_in_graph_and_eager_modes
     def test_grad(self):
