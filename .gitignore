@@ -1,4 +1,9 @@
-.DS_Store
+# Ignore all hidden files
+.*
+
+# Include travis.yml
+\!.travis.yml
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
