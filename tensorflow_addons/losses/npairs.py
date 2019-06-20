@@ -25,7 +25,7 @@ from tensorflow_addons.utils import keras_utils
 @tf.function
 def npairs_loss(y_true, y_pred):
     """Computes the npairs loss between `y_true` and `y_pred`.
-    
+
     Npairs loss expects paired data where a pair is composed of samples from
     the same labels and each pairs in the minibatch have different labels.
     The loss takes each row of the pair-wise similarity matrix, `y_pred`,
@@ -46,7 +46,7 @@ def npairs_loss(y_true, y_pred):
         multi-class labels.
       y_pred: 2-D float `Tensor` with shape `[batch_size, batch_size]` of
         similarity matrix between embedding matrices.
-        
+
     Returns:
       npairs_loss: float scalar.
     """
@@ -58,8 +58,7 @@ def npairs_loss(y_true, y_pred):
     y_true /= tf.math.reduce_sum(y_true, 1, keepdims=True)
 
     loss = tf.nn.softmax_cross_entropy_with_logits(
-        logits=y_pred,
-        labels=y_true)
+        logits=y_pred, labels=y_true)
 
     return tf.math.reduce_mean(loss)
 
@@ -67,7 +66,7 @@ def npairs_loss(y_true, y_pred):
 @keras_utils.register_keras_custom_object
 class NpairsLoss(tf.keras.losses.Loss):
     """Computes the npairs loss between `y_true` and `y_pred`.
-    
+
     Npairs loss expects paired data where a pair is composed of samples from
     the same labels and each pairs in the minibatch have different labels.
     The loss takes each row of the pair-wise similarity matrix, `y_pred`,
@@ -87,8 +86,7 @@ class NpairsLoss(tf.keras.losses.Loss):
       name: (Optional) name for the loss.
     """
 
-    def __init__(self,
-                 name="npairs_loss"):
+    def __init__(self, name="npairs_loss"):
         super(NpairsLoss, self).__init__(
             reduction=tf.keras.losses.Reduction.NONE, name=name)
 
