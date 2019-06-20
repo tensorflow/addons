@@ -43,7 +43,7 @@ class NpairsLossTest(tf.test.TestCase):
         y_pred = tf.matmul(f, fp, transpose_a=False, transpose_b=True)
         loss = nl_obj(y_true, y_pred)
 
-        # Loss = 1/4 * \sum_i log(1 + \sum_{j != i} exp(f_i*fp_j^T-f_i*fi^T))
+        # Loss = 1/4 * \sum_i log(1 + \sum_{j != i} exp(f_i*fp_j^T-f_i*f_i^T))
         # Compute loss for i = 0, 1, 2, 3 without multiplier 1/4
         # i = 0 => log(1 + sum([exp(-2), exp(-2), exp(-4)])) = 0.253846
         # i = 1 => log(1 + sum([exp(-2), exp(-4), exp(-2)])) = 0.253846
