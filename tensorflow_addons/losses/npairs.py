@@ -31,7 +31,7 @@ def npairs_loss(y_true, y_pred):
     The loss takes each row of the pair-wise similarity matrix, `y_pred`,
     as logits and the remapped multi-class labels, `y_true`, as labels.
 
-    The similarity matrix `y_pred` between two embedding matrics `a` and `b`
+    The similarity matrix `y_pred` between two embedding matrices `a` and `b`
     with shape `[batch_size, hidden_size]` can be computed as follows:
 
     ```python
@@ -72,7 +72,7 @@ class NpairsLoss(tf.keras.losses.Loss):
     The loss takes each row of the pair-wise similarity matrix, `y_pred`,
     as logits and the remapped multi-class labels, `y_true`, as labels.
 
-    The similarity matrix `y_pred` between two embedding matrics `a` and `b`
+    The similarity matrix `y_pred` between two embedding matrices `a` and `b`
     with shape `[batch_size, hidden_size]` can be computed as follows:
 
     ```python
