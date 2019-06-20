@@ -31,14 +31,27 @@ class NpairsLossTest(tf.test.TestCase):
 
     def test_unweighted(self):
         nl_obj = npairs.NpairsLoss()
-        y_true = tf.constant([0, 0, 1, 1, 2], dtype=tf.int64)
-        y_pred = tf.constant(
-            [[0.0, 0.1, 0.2, 0.3, 0.4], [0.5, 0.6, 0.7, 0.8, 0.9],
-             [1.0, 1.1, 1.2, 1.3, 1.4], [1.5, 1.6, 1.7, 1.8, 1.9],
-             [2.0, 2.1, 2.2, 2.3, 2.4]],
-            dtype=tf.float32)
+        # batch size = 4, hidden size = 2
+        y_true = tf.constant([0, 1, 2, 3], dtype=tf.int64)
+        # features of anchors
+        f = tf.constant([[1., 1.], [1., -1.], [-1., 1.], [-1., -1.]],
+                        dtype=tf.float32)
+        # features of positive samples
+        fp = tf.constant([[1., 1.], [1., -1.], [-1., 1.], [-1., -1.]],
+                         dtype=tf.float32)
+        # similarity matrix
+        y_pred = tf.matmul(f, fp, transpose_a=False, transpose_b=True)
         loss = nl_obj(y_true, y_pred)
-        self.assertAllClose(loss, 1.619416)
+
+        # Loss = 1/4 * \sum_i log(1 + \sum_{j != i} exp(f_i*fp_j^T-f_i*fi^T))
+        # Compute loss for i = 0, 1, 2, 3 without  multiplier 1/4
+        # i = 0 => log(1 + sum([exp(-2), exp(-2), exp(-4)])) = 0.253846
+        # i = 1 => log(1 + sum([exp(-2), exp(-4), exp(-2)])) = 0.253846
+        # i = 2 => log(1 + sum([exp(-2), exp(-4), exp(-2)])) = 0.253846
+        # i = 3 => log(1 + sum([exp(-4), exp(-2), exp(-2)])) = 0.253846
+        # Loss = (0.253856 + 0.253856 + 0.253856 + 0.253856) / 4 = 0.253856
+
+        self.assertAllClose(loss, 0.253856)
 
 
 if __name__ == "__main__":
