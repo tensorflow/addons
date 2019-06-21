@@ -27,6 +27,7 @@ from tensorflow_addons import text
 from tensorflow_addons.utils import test_utils
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class CrfTest(tf.test.TestCase):
     def calculateSequenceScore(self, inputs, transition_params, tag_indices,
                                sequence_lengths):
