@@ -53,7 +53,8 @@ def npairs_loss(y_true, y_pred):
     y_pred = tf.convert_to_tensor(y_pred)
     y_true = tf.cast(y_true, y_pred.dtype)
 
-    y_true = tf.reshape(y_true, (tf.shape(y_true)[0], 1))
+    # Expand to [batch_size, 1]
+    y_true = tf.expand_dims(y_true, -1)
     y_true = tf.cast(tf.equal(y_true, tf.transpose(y_true)), y_pred.dtype)
     y_true /= tf.math.reduce_sum(y_true, 1, keepdims=True)
 
