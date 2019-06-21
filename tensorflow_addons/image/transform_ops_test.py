@@ -99,7 +99,7 @@ class ImageOpsTest(tf.test.TestCase):
         theoretical, numerical = tf.test.compute_gradient(
             transform_fn, [test_image])
 
-        self.assertAllClose(theoretical[0], numerical[0], rtol=1e-6, atol=1e-6)
+        self.assertAllClose(theoretical[0], numerical[0])
 
     @test_utils.run_in_graph_and_eager_modes
     def test_grad(self):
