@@ -155,8 +155,9 @@ def crf_log_norm(inputs, sequence_lengths, transition_params):
         forward_layer = tf.keras.layers.RNN(
             forward_cell, return_sequences=True, return_state=True)
 
-        _, alphas = forward_layer(rest_of_input, first_input)
-
+        mask = tf.sequence_mask(sequence_lengths_less_one,
+                                tf.shape(inputs)[1] - 1)
+        _, alphas = forward_layer(rest_of_input, first_input, mask=mask)
         log_norm = tf.reduce_logsumexp(alphas, [1])
         # Mask `log_norm` of the sequences with length <= zero.
         log_norm = tf.where(
@@ -170,7 +171,6 @@ def crf_log_norm(inputs, sequence_lengths, transition_params):
         return _multi_seq_fn()
 
 
-@tf.function
 def crf_log_likelihood(inputs,
                        tag_indices,
                        sequence_lengths,
@@ -428,13 +428,15 @@ def crf_decode(potentials, transition_params, sequence_length):
         sequence_length_less_one = tf.maximum(
             tf.constant(0, dtype=sequence_length.dtype), sequence_length - 1)
 
+        mask = tf.sequence_mask(sequence_length_less_one, tf.shape(inputs)[1])
         crf_fwd_cell = CrfDecodeForwardRnnCell(transition_params)
         crf_fwd_layer = tf.keras.layers.RNN(
             crf_fwd_cell,
             return_sequences=True,
             return_state=True,
             time_major=False)
-        backpointers, last_score = crf_fwd_layer(inputs, initial_state)
+        backpointers, last_score = crf_fwd_layer(
+            inputs, initial_state, mask=mask)
         backpointers = tf.reverse_sequence(
             backpointers, sequence_length_less_one, seq_axis=1)
 
