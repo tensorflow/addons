@@ -21,5 +21,6 @@ from __future__ import print_function
 from tensorflow_addons.losses.contrastive import contrastive_loss, ContrastiveLoss
 from tensorflow_addons.losses.focal_loss import sigmoid_focal_crossentropy, SigmoidFocalCrossEntropy
 from tensorflow_addons.losses.lifted import lifted_struct_loss, LiftedStructLoss
+from tensorflow_addons.losses.npairs import npairs_loss, NpairsLoss
 from tensorflow_addons.losses.sparsemax_loss import sparsemax_loss, SparsemaxLoss
 from tensorflow_addons.losses.triplet import triplet_semihard_loss, TripletSemiHardLoss

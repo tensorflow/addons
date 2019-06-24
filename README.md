@@ -30,6 +30,7 @@ developments that cannot be integrated into core TensorFlow
 | Subpackage    | Maintainers  | Contact Info                        |
 |:----------------------- |:----------- |:----------------------------|
 | [tfa.activations](tensorflow_addons/activations/README.md) | SIG-Addons | @facaiy @seanpmorgan | 
+| [tfa.callbacks](tensorflow_addons/callbacks/README.md) | SIG-Addons | @squadrick |
 | [tfa.image](tensorflow_addons/image/README.md) | SIG-Addons | @windqaq @facaiy |
 | [tfa.layers](tensorflow_addons/layers/README.md) | SIG-Addons | @seanpmorgan @facaiy |
 | [tfa.losses](tensorflow_addons/losses/README.md) | SIG-Addons | @facaiy @windqaq   |
@@ -46,7 +47,7 @@ To install the latest version, run the following:
 pip install tensorflow-addons
 ```
  
-**Note:** You will also need [`tensorflow==2.0.0.a0`](https://www.tensorflow.org/alpha) installed.
+**Note:** You will also need [`tensorflow==2.0.0-beta1`](https://www.tensorflow.org/beta) installed.
 
 To use addons:
 
