@@ -21,6 +21,7 @@ import numpy as np
 import tensorflow as tf
 
 
+@tf.function
 def crf_sequence_score(inputs, tag_indices, sequence_lengths,
                        transition_params):
     """Computes the unnormalized score for a tag sequence.
@@ -65,6 +66,7 @@ def crf_sequence_score(inputs, tag_indices, sequence_lengths,
         return _multi_seq_fn()
 
 
+@tf.function
 def crf_multitag_sequence_score(inputs, tag_bitmap, sequence_lengths,
                                 transition_params):
     """Computes the unnormalized score of all tag sequences matching
@@ -113,6 +115,7 @@ def crf_multitag_sequence_score(inputs, tag_bitmap, sequence_lengths,
         return _multi_seq_fn()
 
 
+@tf.function
 def crf_log_norm(inputs, sequence_lengths, transition_params):
     """Computes the normalization for a CRF.
 
@@ -168,6 +171,7 @@ def crf_log_norm(inputs, sequence_lengths, transition_params):
         return _multi_seq_fn()
 
 
+@tf.function
 def crf_log_likelihood(inputs,
                        tag_indices,
                        sequence_lengths,
@@ -205,6 +209,7 @@ def crf_log_likelihood(inputs,
     return log_likelihood, transition_params
 
 
+@tf.function
 def crf_unary_score(tag_indices, sequence_lengths, inputs):
     """Computes the unary scores of tag sequences.
 
@@ -239,6 +244,7 @@ def crf_unary_score(tag_indices, sequence_lengths, inputs):
     return unary_scores
 
 
+@tf.function
 def crf_binary_score(tag_indices, sequence_lengths, transition_params):
     """Computes the binary scores of tag sequences.
 
@@ -382,6 +388,7 @@ class CrfDecodeBackwardRnnCell(tf.keras.layers.Layer):
         return new_tags, new_tags
 
 
+@tf.function
 def crf_decode(potentials, transition_params, sequence_length):
     """Decode the highest scoring sequence of tags in TensorFlow.
 
