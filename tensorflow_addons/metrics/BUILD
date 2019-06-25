@@ -9,6 +9,7 @@ py_library(
         "cohens_kappa.py",
         "f1_scores.py",
         "r_square.py",
+        "utils.py",
     ],
     srcs_version = "PY2AND3",
     deps = [
