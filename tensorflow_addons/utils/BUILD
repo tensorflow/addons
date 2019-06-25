@@ -7,6 +7,7 @@ py_library(
     srcs = ([
         "__init__.py",
         "keras_utils.py",
+        "metrics_utils.py",
         "test_utils.py",
         "resource_loader.py",
     ]),
