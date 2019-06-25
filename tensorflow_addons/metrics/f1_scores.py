@@ -37,13 +37,18 @@ class F1Score(Metric):
                  Acceptable values are None, micro, macro and
                  weighted.
                  Default value is None.
+       beta : Determines the weight of precision and recall in harmonic
+              mean.
 
     Returns:
-       F1 score: float
+       F1 Score: float
 
     Raises:
        ValueError: If the `average` has values other than
-       [None, micro, macro. weighted].
+       [None, micro, macro, weighted].
+
+       ValueError: If the `beta` value is less than or equal
+       to 0.
 
     `average` parameter behavior:
 
@@ -66,26 +71,52 @@ class F1Score(Metric):
        imbalance into account.
 
     Usage:
+
+    F1 Micro Score
+
     ```python
+    # F1 Micro
     actuals = tf.constant([[1, 1, 0],[1, 0, 0]],
               dtype=tf.int32)
     preds = tf.constant([[1, 0, 0],[1, 0, 1]],
-            dtype=tf.int32)
+              dtype=tf.int32)
     output = tf.keras.metrics.F1Score(num_classes=3,
               average='micro')
-    output.update_state(actuals, predictions)
+    output.update_state(actuals, preds)
     print('F1 Micro score is: ',
             output.result().numpy()) # 0.6666667
+    # F1 Macro
+    output = tf.keras.metrics.F1Score(num_classes=3,
+                average='macro')
+    output.update_state(actuals, preds)
+    print('F1 Macro score is: ',
+            output.result().numpy()) # 0.33333334
+    # F1 weighted
+    output = tf.keras.metrics.F1Score(num_classes=3,
+              average='weighted')
+    output.update_state(actuals, preds)
+    print('F1 Weighted score is: ',
+            output.result().numpy()) # 0.6666667
+    # F1 score for each class (average=None).
+    output = tf.keras.metrics.F1Score(num_classes=3)
+    output.update_state(actuals, preds)
+    print('F1 score is: ',
+            output.result().numpy()) # [1. 0. 0.]
     ```
     """
 
     def __init__(self,
                  num_classes,
+                 beta=1.0,
                  average=None,
                  name='f1_score',
                  dtype=tf.float32):
         super(F1Score, self).__init__(name=name)
         self.num_classes = num_classes
+        if beta <= 0:
+            raise ValueError("beta value should be greater tha zero")
+        else:
+            self.beta = beta
         if average not in (None, 'micro', 'macro', 'weighted'):
             raise ValueError("Unknown average type. Acceptable values "
                              "are: [micro, macro, weighted]")
@@ -165,10 +196,10 @@ class F1Score(Metric):
         r_sum = tf.cast(self.true_positives + self.false_negatives, tf.float32)
         # calculate recall
         recall = tf.math.divide_no_nan(self.true_positives, r_sum)
-
-        mul_value = 2 * precision * recall
-        add_value = precision + recall
-        f1_int = tf.math.divide_no_nan(mul_value, add_value)
+        mul_value = precision * recall
+        add_value = (tf.math.square(self.beta) * precision) + recall
+        f1_int = (1 + tf.math.square(self.beta)) * (tf.math.divide_no_nan(
+            mul_value, add_value))
         # f1 score
         if self.average is not None:
             f1_score = tf.reduce_mean(f1_int)
@@ -190,6 +221,7 @@ class F1Score(Metric):
         config = {
             "num_classes": self.num_classes,
             "average": self.average,
+            "beta": self.beta,
         }
         base_config = super(F1Score, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
@@ -206,3 +238,97 @@ class F1Score(Metric):
             self.false_negatives.assign(np.zeros(self.num_classes), np.float32)
             self.weights_intermediate.assign(
                 np.zeros(self.num_classes), np.float32)
+
+
+class FBetaScore(F1Score):
+    """Computes F-Beta Score.
+
+    This is the weighted harmonic mean of precision and recall.
+    Output range is [0,1].
+
+    F-Beta = (1 + beta^2) * ((precision * recall) /
+                             ((beta^2 * precision) + recall))
+
+    `beta` parameter determines the weight given to the
+    precision and recall.
+
+    `beta < 1` gives more weight to the precision.
+    `beta > 1` gives more weight to the recall.
+    `beta == 1` gives equal weight to precision and recall.
+
+    Args:
+         num_classes : Number of unique classes in the dataset.
+         average : Type of averaging to be performed on data.
+                   Acceptable values are None, micro, macro and
+                   weighted.
+         beta : Determines the weight of precision and recall in harmonic
+                mean.
+
+      Returns:
+         F1 Beta Score: float
+
+      Raises:
+         ValueError: If the `average` has values other than
+         [None, micro, macro, weighted].
+
+         ValueError: If the `beta` value is less than or equal
+         to 0.
+
+      `average` parameter behavior:
+
+      1. If `None` is specified as an input, scores for each
+         class are returned.
+
+      2. If `micro` is specified, metrics like true positivies,
+         false positives and false negatives are computed
+         globally.
+
+      3. If `macro` is specified, metrics like true positivies,
+         false positives and false negatives are computed for
+         each class and their unweighted mean is returned.
+         Imbalance in dataset is not taken into account for
+         calculating the score
+
+      4. If `weighted` is specified, metrics are computed for
+         each class and returns the mean weighted by the
+         number of true instances in each class taking data
+         imbalance into account.
+
+    Usage:
+    ```python
+    actuals = tf.constant([[1, 1, 0],[1, 0, 0]], dtype=tf.int32)
+    predis = tf.constant([[1, 0, 0],[1, 0, 1]], dtype=tf.int32)
+
+    fb_score = tf.keras.metrics.FBetaScore(num_classes=3,
+                beta=0.4, average='micro')
+    fb_score.update_state(actuals, preds)
+    print('F1-Beta Score is: ',
+           fb_score.result().numpy()) # 0.6666666
+
+    fb_score = tf.keras.metrics.FBetaScore(num_classes=3,
+           beta=0.4, average='macro')
+    fb_score.update_state(actuals, preds)
+    print('F1-Beta Score is: ',
+          fb_score.result().numpy()) # 0.33333334
+
+    fb_score = tf.keras.metrics.FBetaScore(num_classes=3,
+               beta=0.4, average='weighted')
+    fb_score.update_state(actuals, preds)
+    print('F1-Beta Score is: ',
+          fb_score.result().numpy()) # 0.6666667
+
+    fb_score = tf.keras.metrics.FBetaScore(num_classes=3,
+               beta=0.4, average=None)
+    fb_score.update_state(actuals, preds)
+    print('F1-Beta Score is: ',
+         fb_score.result().numpy()) # [1. 0. 0.]
+    ```
+    """
+
+    def __init__(self,
+                 num_classes,
+                 beta,
+                 average,
+                 name='fbeta_score',
+                 dtype=tf.float32):
+        super().__init__(num_classes, beta, average, name=name)

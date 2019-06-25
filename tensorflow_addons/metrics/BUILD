@@ -54,3 +54,16 @@ py_test(
         ":metrics",
     ],
 )
+
+py_test(
+    name = "f1beta_test",
+    size = "small",
+    srcs = [
+        "f1beta_test.py",
+    ],
+    main = "f1beta_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":metrics",
+    ],
+)
