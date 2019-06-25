@@ -282,6 +282,7 @@ class CrfForwardRnnCell(tf.keras.layers.AbstractRNNCell):
 
     See http://www.cs.columbia.edu/~mcollins/fb.pdf for reference.
     """
+
     def __init__(self, transition_params, **kwargs):
         """Initialize the CrfForwardRnnCell.
         Args:
@@ -307,13 +308,14 @@ class CrfForwardRnnCell(tf.keras.layers.AbstractRNNCell):
 
     def call(self, inputs, state):
         """Build the CrfForwardRnnCell.
+
         Args:
             inputs: A [batch_size, num_tags] matrix of unary potentials.
-            state: A [batch_size, num_tags] matrix containing the 
+            state: A [batch_size, num_tags] matrix containing the
                 previous alpha values.
             scope: Unused variable scope of this cell.
             Returns:
-            new_alphas, new_alphas: A pair of [batch_size, num_tags] 
+            new_alphas, new_alphas: A pair of [batch_size, num_tags]
                 matrices values containing the new alpha values.
         """
         state = tf.expand_dims(state[0], 2)
@@ -369,7 +371,7 @@ class CrfDecodeForwardRnnCell(tf.keras.layers.AbstractRNNCell):
         super(CrfDecodeForwardRnnCell, self).__init__(**kwargs)
         self._transition_params = tf.expand_dims(transition_params, 0)
         self._num_tags = transition_params.shape[0]
-    
+
     @property
     def state_size(self):
         return self._num_tags
