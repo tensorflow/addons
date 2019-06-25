@@ -17,6 +17,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import six
 import tensorflow as tf
 
 
@@ -61,6 +62,6 @@ class MeanMetricWrapper(tf.keras.metrics.Mean):
     def get_config(self):
         config = {}
         for k, v in six.iteritems(self._fn_kwargs):
-            config[k] = K.eval(v) if is_tensor_or_variable(v) else v
+            config[k] = v
         base_config = super(MeanMetricWrapper, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
