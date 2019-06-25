@@ -51,7 +51,7 @@ class MeanMetricWrapper(tf.keras.metrics.Mean):
         """
         y_true = tf.cast(y_true, self._dtype)
         y_pred = tf.cast(y_pred, self._dtype)
-        # TODO: Add checks ragged tensors and dimensions:
+        # TODO: Add checks for ragged tensors and dimensions:
         #   `ragged_assert_compatible_and_get_flat_values`
         #   and `squeeze_or_expand_dimensions`
         matches = self._fn(y_true, y_pred, **self._fn_kwargs)
