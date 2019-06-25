@@ -280,18 +280,45 @@ def crf_binary_score(tag_indices, sequence_lengths, transition_params):
     return binary_scores
 
 
-class CrfForwardRnnCell(tf.keras.layers.Layer):
+class CrfForwardRnnCell(tf.keras.layers.AbstractRNNCell):
+    """Computes the alpha values in a linear-chain CRF.
+
+    See http://www.cs.columbia.edu/~mcollins/fb.pdf for reference.
+    """
     def __init__(self, transition_params, **kwargs):
+        """Initialize the CrfForwardRnnCell.
+        Args:
+            transition_params: A [num_tags, num_tags] matrix of binary 
+                potentials. This matrix is expanded into a 
+                [1, num_tags, num_tags] in preparation for the 
+                broadcast summation occurring within the cell.
+        """
         super(CrfForwardRnnCell, self).__init__(**kwargs)
         self._transition_params = tf.expand_dims(transition_params, 0)
         self._num_tags = transition_params.shape[0]
-        self.state_size = self._num_tags
-        self.output_size = self._num_tags
+
+    @property
+    def state_size(self):
+        return self._num_tags
+
+    @property
+    def output_size(self):
+        return self._num_tags
 
     def build(self, input_shape):
         super(CrfForwardRnnCell, self).build(input_shape)
 
-    def call(self, inputs, state, training=None):
+    def call(self, inputs, state):
+        """Build the CrfForwardRnnCell.
+        Args:
+            inputs: A [batch_size, num_tags] matrix of unary potentials.
+            state: A [batch_size, num_tags] matrix containing the 
+                previous alpha values.
+            scope: Unused variable scope of this cell.
+            Returns:
+            new_alphas, new_alphas: A pair of [batch_size, num_tags] 
+                matrices values containing the new alpha values.
+        """
         state = tf.expand_dims(state[0], 2)
         transition_scores = state + self._transition_params
         new_alphas = inputs + tf.reduce_logsumexp(transition_scores, [1])
@@ -330,7 +357,7 @@ def viterbi_decode(score, transition_params):
     return viterbi, viterbi_score
 
 
-class CrfDecodeForwardRnnCell(tf.keras.layers.Layer):
+class CrfDecodeForwardRnnCell(tf.keras.layers.AbstractRNNCell):
     """Computes the forward decoding in a linear-chain CRF."""
 
     def __init__(self, transition_params, **kwargs):
@@ -345,13 +372,19 @@ class CrfDecodeForwardRnnCell(tf.keras.layers.Layer):
         super(CrfDecodeForwardRnnCell, self).__init__(**kwargs)
         self._transition_params = tf.expand_dims(transition_params, 0)
         self._num_tags = transition_params.shape[0]
-        self.state_size = self._num_tags
-        self.output_size = self._num_tags
+    
+    @property
+    def state_size(self):
+        return self._num_tags
+
+    @property
+    def output_size(self):
+        return self._num_tags
 
     def build(self, input_shape):
         super(CrfDecodeForwardRnnCell, self).build(input_shape)
 
-    def call(self, inputs, state, training=None):
+    def call(self, inputs, state):
         state = tf.expand_dims(state[0], 2)
         transition_scores = state + self._transition_params
         new_state = inputs + tf.reduce_max(transition_scores, [1])
@@ -372,13 +405,18 @@ class CrfDecodeBackwardRnnCell(tf.keras.layers.Layer):
         super(CrfDecodeBackwardRnnCell, self).__init__(**kwargs)
         self._num_tags = num_tags
 
-        self.state_size = 1
-        self.output_size = 1
+    @property
+    def state_size(self):
+        return 1
+
+    @property
+    def output_size(self):
+        return 1
 
     def build(self, input_shape):
         super(CrfDecodeBackwardRnnCell, self).build(input_shape)
 
-    def call(self, inputs, state, training=None):
+    def call(self, inputs, state):
         state = tf.squeeze(state[0], axis=[1])
         batch_size = tf.shape(inputs)[0]
         b_indices = tf.range(batch_size)
