@@ -34,10 +34,11 @@ class F1Score(Metric):
     Args:
        num_classes : Number of unique classes in the dataset.
        average : Type of averaging to be performed on data.
-                 Acceptable values are None, micro, macro and
-                 weighted.
+                 Acceptable values are `None`, `micro`, `macro` and
+                 `weighted`.
                  Default value is None.
-       beta : Determines the weight of precision and recall in harmonic
+       beta : `float`
+              Determines the weight of precision and recall in harmonic
               mean.
 
     Returns:
@@ -114,7 +115,7 @@ class F1Score(Metric):
         super(F1Score, self).__init__(name=name)
         self.num_classes = num_classes
         if beta <= 0:
-            raise ValueError("beta value should be greater tha zero")
+            raise ValueError("beta value should be greater than zero")
         else:
             self.beta = beta
         if average not in (None, 'micro', 'macro', 'weighted'):
@@ -244,7 +245,7 @@ class FBetaScore(F1Score):
     """Computes F-Beta Score.
 
     This is the weighted harmonic mean of precision and recall.
-    Output range is [0,1].
+    Output range is [0, 1].
 
     F-Beta = (1 + beta^2) * ((precision * recall) /
                              ((beta^2 * precision) + recall))
@@ -331,4 +332,4 @@ class FBetaScore(F1Score):
                  average,
                  name='fbeta_score',
                  dtype=tf.float32):
-        super().__init__(num_classes, beta, average, name=name)
+        super().__init__(num_classes, beta, average, name=name, dtype=dtype)
