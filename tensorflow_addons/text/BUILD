@@ -6,7 +6,7 @@ py_library(
     name = "text",
     srcs = ([
         "__init__.py",
-        "crf_ops.py",
+        "crf.py",
         "skip_gram_ops.py",
     ]),
     data = [
@@ -17,12 +17,12 @@ py_library(
 )
 
 py_test(
-    name = "crf_ops_test",
+    name = "crf_test",
     size = "small",
     srcs = [
-        "crf_ops_test.py",
+        "crf_test.py",
     ],
-    main = "crf_ops_test.py",
+    main = "crf_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":text",
