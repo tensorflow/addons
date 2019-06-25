@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"Utilities for metrics"
+"""Utilities for metrics."""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import tensorflow as tf
 
@@ -35,6 +38,7 @@ class MeanMetricWrapper(tf.keras.metrics.Mean):
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         """Accumulates metric statistics.
+
         `y_true` and `y_pred` should have the same shape.
         Args:
           y_true: The ground truth values.
@@ -47,7 +51,16 @@ class MeanMetricWrapper(tf.keras.metrics.Mean):
         """
         y_true = tf.cast(y_true, self._dtype)
         y_pred = tf.cast(y_pred, self._dtype)
-
+        # TODO: Add checks ragged tensors and dimensions:
+        #   `ragged_assert_compatible_and_get_flat_values`
+        #   and `squeeze_or_expand_dimensions`
         matches = self._fn(y_true, y_pred, **self._fn_kwargs)
-        return super(MeanMetricWrapper,
-                     self).update_state(matches, sample_weight=sample_weight)
+        return super(MeanMetricWrapper, self).update_state(
+            matches, sample_weight=sample_weight)
+
+    def get_config(self):
+        config = {}
+        for k, v in six.iteritems(self._fn_kwargs):
+            config[k] = K.eval(v) if is_tensor_or_variable(v) else v
+        base_config = super(MeanMetricWrapper, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
