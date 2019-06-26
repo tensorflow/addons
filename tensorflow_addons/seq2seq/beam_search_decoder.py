@@ -181,19 +181,21 @@ def _check_static_batch_beam_maybe(shape, batch_size, beam_width):
     reshaped to [batch_size, beam_size, -1]."""
     reshaped_shape = tf.TensorShape([batch_size, beam_width, None])
     assert len(shape.dims) > 0
-    known_size = batch_size is not None and shape.dims[0].value is not None
-    case_1 = (shape[0] == batch_size * beam_width)
-    case_2_guard = shape.ndims >= 2 and shape.dims[1].value is not None
-    case_2 = case_2_guard and shape[0] == batch_size and shape[1] == beam_width
-    if known_size and not (case_1 or case_2):
-        tf.get_logger().warn(
-            "TensorArray reordering expects elements to be "
-            "reshapable to %s which is incompatible with the "
-            "current shape %s. Consider setting "
-            "reorder_tensor_arrays to False to disable TensorArray "
-            "reordering during the beam search." % (reshaped_shape, shape))
-        return False
-    return True
+    if batch_size is None or shape.dims[0].value is None:
+        return True  # not statically known => no check
+    if shape[0] == batch_size * beam_width:
+        return True  # flattened, matching
+    has_second_dim = shape.ndims >= 2 and shape.dims[1].value is not None
+    if has_second_dim and shape[0] == batch_size and shape[1] == beam_width:
+        return True  # non-flattened, matching
+    # Otherwise we could not find a match and warn:
+    tf.get_logger().warn(
+        "TensorArray reordering expects elements to be "
+        "reshapable to %s which is incompatible with the "
+        "current shape %s. Consider setting "
+        "reorder_tensor_arrays to False to disable TensorArray "
+        "reordering during the beam search." % (reshaped_shape, shape))
+    return False
 
 
 def _check_batch_beam(t, batch_size, beam_width):
