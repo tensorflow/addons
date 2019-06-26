@@ -123,14 +123,15 @@ def transform(images,
 
 
 @tf.function
-def compose_transforms(*transforms):
+def compose_transforms(transforms, name=None):
     """Composes the transforms tensors.
 
     Args:
-      *transforms: List of image projective transforms to be composed. Each
-          transform is length 8 (single transform) or shape (N, 8) (batched
-          transforms). The shapes of all inputs must be equal, and at least one
-          input must be given.
+      transforms: List of image projective transforms to be composed. Each
+        transform is length 8 (single transform) or shape (N, 8) (batched
+        transforms). The shapes of all inputs must be equal, and at least one
+        input must be given.
+      name: The name for the op.
 
     Returns:
       A composed transform tensor. When passed to `transform` op,
@@ -138,7 +139,7 @@ def compose_transforms(*transforms):
           order.
     """
     assert transforms, "transforms cannot be empty"
-    with ops.name_scope("compose_transforms"):
+    with tf.name_scope(name or "compose_transforms"):
         composed = flat_transforms_to_matrices(transforms[0])
         for tr in transforms[1:]:
             # Multiply batches of matrices.
@@ -147,7 +148,7 @@ def compose_transforms(*transforms):
 
 
 @tf.function
-def flat_transforms_to_matrices(transforms):
+def flat_transforms_to_matrices(transforms, name=None):
     """Converts projective transforms to affine matrices.
 
     Note that the output matrices map output coordinates to input coordinates.
@@ -156,6 +157,7 @@ def flat_transforms_to_matrices(transforms):
     Args:
       transforms: Vector of length 8, or batches of transforms with shape
         `(N, 8)`.
+      name: The name for the op.
 
     Returns:
       3D tensor of matrices with shape `(N, 3, 3)`. The output matrices map the
@@ -165,7 +167,7 @@ def flat_transforms_to_matrices(transforms):
     Raises:
       ValueError: If `transforms` have an invalid shape.
     """
-    with ops.name_scope("flat_transforms_to_matrices"):
+    with tf.name_scope(name or "flat_transforms_to_matrices"):
         transforms = ops.convert_to_tensor(transforms, name="transforms")
         if transforms.shape.ndims not in (1, 2):
             raise ValueError(
@@ -180,7 +182,7 @@ def flat_transforms_to_matrices(transforms):
 
 
 @tf.function
-def matrices_to_flat_transforms(transform_matrices):
+def matrices_to_flat_transforms(transform_matrices, name=None):
     """Converts affine matrices to projective transforms.
 
     Note that we expect matrices that map output coordinates to input
@@ -191,6 +193,7 @@ def matrices_to_flat_transforms(transform_matrices):
       transform_matrices: One or more affine transformation matrices, for the
         reverse transformation in homogeneous coordinates. Shape `(3, 3)` or
         `(N, 3, 3)`.
+      name: The name for the op.
 
     Returns:
       2D tensor of flat transforms with shape `(N, 8)`, which may be passed
@@ -199,7 +202,7 @@ def matrices_to_flat_transforms(transform_matrices):
     Raises:
       ValueError: If `transform_matrices` have an invalid shape.
     """
-    with ops.name_scope("matrices_to_flat_transforms"):
+    with tf.name_scope(name or "matrices_to_flat_transforms"):
         transform_matrices = ops.convert_to_tensor(
             transform_matrices, name="transform_matrices")
         if transform_matrices.shape.ndims not in (2, 3):
@@ -291,3 +294,58 @@ def _image_projective_transform_grad(op, grad):
         output_shape=tf.shape(image_or_images)[1:3],
         interpolation=interpolation)
     return [output, None, None]
+
+
+@tf.function
+def rotate(images, angles, interpolation="NEAREST", name=None):
+    """Rotate image(s) counterclockwise by the passed angle(s) in radians.
+
+    Args:
+      images: A tensor of shape
+        (num_images, num_rows, num_columns, num_channels)
+        (NHWC), (num_rows, num_columns, num_channels) (HWC), or
+        (num_rows, num_columns) (HW). The rank must be statically known (the
+        shape is not `TensorShape(None)`.
+      angles: A scalar angle to rotate all images by, or (if images has rank 4)
+        a vector of length num_images, with an angle for each image in the
+        batch.
+      interpolation: Interpolation mode. Supported values: "NEAREST",
+        "BILINEAR".
+      name: The name of the op.
+
+    Returns:
+      Image(s) with the same type and shape as `images`, rotated by the given
+      angle(s). Empty space due to the rotation will be filled with zeros.
+
+    Raises:
+      TypeError: If `image` is an invalid type.
+    """
+    with tf.name_scope(name or "rotate"):
+        image_or_images = tf.convert_to_tensor(images)
+        if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
+            raise TypeError("Invalid dtype %s." % image_or_images.dtype)
+        if image_or_images.get_shape().ndims is None:
+            raise TypeError("image_or_images rank must be statically known")
+        elif len(image_or_images.get_shape()) == 2:
+            images = image_or_images[None, :, :, None]
+        elif len(image_or_images.get_shape()) == 3:
+            images = image_or_images[None, :, :, :]
+        elif len(image_or_images.get_shape()) == 4:
+            images = image_or_images
+        else:
+            raise TypeError("Images should have rank between 2 and 4.")
+
+        image_height = tf.cast(tf.shape(images)[1], tf.dtypes.float32)[None]
+        image_width = tf.cast(tf.shape(images)[2], tf.dtypes.float32)[None]
+        output = transform(
+            images,
+            angles_to_projective_transforms(angles, image_height, image_width),
+            interpolation=interpolation)
+        if image_or_images.get_shape().ndims is None:
+            raise TypeError("image_or_images rank must be statically known")
+        elif len(image_or_images.get_shape()) == 2:
+            return output[0, :, :, 0]
+        elif len(image_or_images.get_shape()) == 3:
+            return output[0, :, :, :]
+        else:
+            return output

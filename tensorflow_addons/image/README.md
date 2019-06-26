@@ -3,17 +3,25 @@
 ## Maintainers
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:--------------|
-| distort_image_ops |  |  | 
+| dense_image_warp | @WindQAQ | windqaq@gmail.com |
+| distance_transform_ops |  |  |
+| distort_image_ops | @WindQAQ | windqaq@gmail.com |
+| median_filter_2d | @Mainak431 | mainakdutta76@gmail.com |
 | transform_ops |  |  | 
 
 ## Components 
 | Submodule  | Image Processing Function |  Reference  |
 |:---------- |:----------- |:----------- |
+| dense_image_warp | dense_image_warp |  |
+| dense_image_warp | interpolate_bilinear |  |
+| distance_transform_ops | euclidean_distance_transform | |
 | distort_image_ops |  adjust_hsv_in_yiq |  |
 | distort_image_ops | random_hsv_in_yiq |  |
-| transform_ops | transform |  | 
+| median_filter_2d | median_filter_2D |  |
 | transform_ops | angles_to_projective_transforms | | 
-| transform_ops | atrices_to_flat_transforms | | 
+| transform_ops | matrices_to_flat_transforms | | 
+| transform_ops | rotate | | 
+| transform_ops | transform |  | 
 
 ## Contribution Guidelines
 #### Standard API

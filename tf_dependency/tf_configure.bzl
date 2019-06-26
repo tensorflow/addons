@@ -183,14 +183,14 @@ def _tf_pip_impl(repository_ctx):
     )
 
     tf_shared_library_dir = repository_ctx.os.environ[_TF_SHARED_LIBRARY_DIR]
-    tf_shared_library_path = "%s/libtensorflow_framework.so" % tf_shared_library_dir
+    tf_shared_library_path = "%s/libtensorflow_framework.so.2" % tf_shared_library_dir
     tf_shared_library_rule = _symlink_genrule_for_dir(
         repository_ctx,
         None,
         "",
-        "libtensorflow_framework.so",
+        "libtensorflow_framework.so.2",
         [tf_shared_library_path],
-        ["libtensorflow_framework.so"],
+        ["libtensorflow_framework.so.2"],
     )
 
     _tpl(repository_ctx, "BUILD", {

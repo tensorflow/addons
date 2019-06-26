@@ -6,6 +6,7 @@ py_library(
     name = "losses",
     srcs = [
         "__init__.py",
+        "contrastive.py",
         "focal_loss.py",
         "lifted.py",
         "metric_learning.py",
@@ -16,6 +17,19 @@ py_library(
     deps = [
         "//tensorflow_addons/activations",
         "//tensorflow_addons/utils",
+    ],
+)
+
+py_test(
+    name = "contrastive_test",
+    size = "small",
+    srcs = [
+        "contrastive_test.py",
+    ],
+    main = "contrastive_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":losses",
     ],
 )
 

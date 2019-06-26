@@ -4,10 +4,10 @@
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:------------- |
 | maxout |  SIG-Addons | addons@tensorflow.org |
-| normalizations | SIG-Addons | addons@tensorflow.org |
-| poincare | SIG-Addons | addons@tensorflow.org | 
-| sparsemax | SIG-Addons | addons@tensorflow.org | 
-| wrappers | SIG-Addons | addons@tensorflow.org | 
+| normalizations | @smokrow | moritz.kroeger@tu-dortmund.de |
+| poincare | SIG-Addons | addons@tensorflow.org |
+| sparsemax | @AndreasMadsen | amwwebdk+github@gmail.com |
+| wrappers | SIG-Addons | addons@tensorflow.org |
 
 ## Components
 | Submodule  | Layer |  Reference  |

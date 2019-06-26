@@ -20,17 +20,12 @@ from __future__ import print_function
 
 import collections
 
+import tensorflow as tf
+
 from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
-from tensorflow.python.framework import tensor_shape
-from tensorflow.python.keras import layers
-from tensorflow.python.ops import rnn_cell_impl
-from tensorflow.python.util import nest
 
-__all__ = [
-    "BasicDecoderOutput",
-    "BasicDecoder",
-]
+from tensorflow.python.ops import rnn_cell_impl
 
 
 class BasicDecoderOutput(
@@ -62,7 +57,7 @@ class BasicDecoder(decoder.BaseDecoder):
             raise TypeError(
                 "sampler must be a Sampler, received: %s" % (sampler,))
         if (output_layer is not None
-                and not isinstance(output_layer, layers.Layer)):
+                and not isinstance(output_layer, tf.keras.layers.Layer)):
             raise TypeError(
                 "output_layer must be a Layer, received: %s" % (output_layer,))
         self.cell = cell
@@ -74,7 +69,7 @@ class BasicDecoder(decoder.BaseDecoder):
         """Initialize the decoder."""
         # Assume the dtype of the cell is the output_size structure
         # containing the input_state's first component's dtype.
-        self._cell_dtype = nest.flatten(initial_state)[0].dtype
+        self._cell_dtype = tf.nest.flatten(initial_state)[0].dtype
         return self.sampler.initialize(inputs, **kwargs) + (initial_state,)
 
     @property
@@ -82,7 +77,7 @@ class BasicDecoder(decoder.BaseDecoder):
         return self.sampler.batch_size
 
     def _rnn_output_size(self):
-        size = tensor_shape.TensorShape(self.cell.output_size)
+        size = tf.TensorShape(self.cell.output_size)
         if self.output_layer is None:
             return size
         else:
@@ -92,12 +87,11 @@ class BasicDecoder(decoder.BaseDecoder):
             # compute_output_shape and read off all but the first (batch)
             # dimensions to get the output size of the rnn with the layer
             # applied to the top.
-            output_shape_with_unknown_batch = nest.map_structure(
-                lambda s: tensor_shape.TensorShape([None]).concatenate(s),
-                size)
+            output_shape_with_unknown_batch = tf.nest.map_structure(
+                lambda s: tf.TensorShape([None]).concatenate(s), size)
             layer_output_shape = self.output_layer.compute_output_shape(
                 output_shape_with_unknown_batch)
-            return nest.map_structure(lambda s: s[1:], layer_output_shape)
+            return tf.nest.map_structure(lambda s: s[1:], layer_output_shape)
 
     @property
     def output_size(self):
@@ -113,7 +107,7 @@ class BasicDecoder(decoder.BaseDecoder):
         # Return that structure and the sample_ids_dtype from the helper.
         dtype = self._cell_dtype
         return BasicDecoderOutput(
-            nest.map_structure(lambda _: dtype, self._rnn_output_size()),
+            tf.nest.map_structure(lambda _: dtype, self._rnn_output_size()),
             self.sampler.sample_ids_dtype)
 
     def step(self, time, inputs, state):

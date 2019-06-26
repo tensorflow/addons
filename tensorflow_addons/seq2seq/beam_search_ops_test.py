@@ -21,8 +21,9 @@ import itertools
 
 import numpy as np
 
+import tensorflow as tf
+
 from tensorflow.python.framework import ops
-from tensorflow.python.platform import test
 
 from tensorflow.python.framework import load_library
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
@@ -36,7 +37,7 @@ def _transpose_batch_time(x):
     return np.transpose(x, [1, 0, 2]).astype(np.int32)
 
 
-class GatherTreeTest(test.TestCase):
+class GatherTreeTest(tf.test.TestCase):
     def testGatherTreeOne(self):
         # (max_time = 4, batch_size = 1, beams = 3)
         end_token = 10
@@ -65,8 +66,8 @@ class GatherTreeTest(test.TestCase):
                                              [-1, -1, -1]]])
         max_sequence_lengths = [3]
         with ops.device("/cpu:0"):
-            with self.assertRaisesOpError(
-                    r"parent id -1 at \(batch, time, beam\) == \(0, 0, 1\)"):
+            msg = r"parent id -1 at \(batch, time, beam\) == \(0, 0, 1\)"
+            with self.assertRaisesOpError(msg):
                 beams = gather_tree(
                     step_ids=step_ids,
                     parent_ids=parent_ids,
@@ -77,7 +78,7 @@ class GatherTreeTest(test.TestCase):
     def testBadParentValuesOnGPU(self):
         # Only want to run this test on CUDA devices, as gather_tree is not
         # registered for SYCL devices.
-        if not test.is_gpu_available(cuda_only=True):
+        if not tf.test.is_gpu_available(cuda_only=True):
             return
         # (max_time = 4, batch_size = 1, beams = 3)
         # bad parent in beam 1 time 1; appears as a negative index at time 0
@@ -143,4 +144,4 @@ class GatherTreeTest(test.TestCase):
 
 
 if __name__ == "__main__":
-    test.main()
+    tf.test.main()
