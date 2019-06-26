@@ -152,12 +152,11 @@ def crf_log_norm(inputs, sequence_lengths, transition_params):
         sequence_lengths_less_one = tf.maximum(
             tf.constant(0, dtype=sequence_lengths.dtype), sequence_lengths - 1)
 
-        forward_layer = tf.keras.layers.RNN(
-            forward_cell, return_sequences=True, return_state=True)
+        forward_layer = tf.keras.layers.RNN(forward_cell)
 
         mask = tf.sequence_mask(sequence_lengths_less_one,
                                 tf.shape(inputs)[1] - 1)
-        _, alphas = forward_layer(rest_of_input, first_input, mask=mask)
+        alphas = forward_layer(rest_of_input, first_input, mask=mask)
         log_norm = tf.reduce_logsumexp(alphas, [1])
         # Mask `log_norm` of the sequences with length <= zero.
         log_norm = tf.where(
@@ -402,7 +401,6 @@ class CrfDecodeBackwardRnnCell(tf.keras.layers.Layer):
           num_tags: An integer. The number of tags.
         """
         super(CrfDecodeBackwardRnnCell, self).__init__(**kwargs)
-        self._num_tags = num_tags
 
     @property
     def state_size(self):
@@ -471,10 +469,7 @@ def crf_decode(potentials, transition_params, sequence_length):
         mask = tf.sequence_mask(sequence_length_less_one, tf.shape(inputs)[1])
         crf_fwd_cell = CrfDecodeForwardRnnCell(transition_params)
         crf_fwd_layer = tf.keras.layers.RNN(
-            crf_fwd_cell,
-            return_sequences=True,
-            return_state=True,
-            time_major=False)
+            crf_fwd_cell, return_sequences=True, return_state=True)
         backpointers, last_score = crf_fwd_layer(
             inputs, initial_state, mask=mask)
         backpointers = tf.reverse_sequence(
@@ -484,11 +479,8 @@ def crf_decode(potentials, transition_params, sequence_length):
         initial_state = tf.cast(tf.argmax(last_score, axis=1), dtype=tf.int32)
         initial_state = tf.expand_dims(initial_state, axis=-1)
         crf_bwd_layer = tf.keras.layers.RNN(
-            crf_bwd_cell,
-            return_sequences=True,
-            return_state=True,
-            time_major=False)
-        decode_tags, _ = crf_bwd_layer(backpointers, initial_state)
+            crf_bwd_cell, return_sequences=True)
+        decode_tags = crf_bwd_layer(backpointers, initial_state)
 
         decode_tags = tf.squeeze(decode_tags, axis=[2])  # [B, T - 1]
         decode_tags = tf.concat(
