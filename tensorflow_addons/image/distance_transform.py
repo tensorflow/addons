@@ -18,16 +18,12 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.python.framework import common_shapes
-from tensorflow.python.framework import ops
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 _image_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/image/_image_ops.so"))
 
-ops.NotDifferentiable("EuclideanDistanceTransform")
-ops.RegisterShape("EuclideanDistanceTransform")(
-    common_shapes.call_cpp_shape_fn)
+tf.no_gradient("EuclideanDistanceTransform")
 
 
 @tf.function
@@ -57,7 +53,7 @@ def euclidean_dist_transform(images, dtype=tf.float32, name=None):
 
         if image_or_images.dtype.base_dtype != tf.uint8:
             raise TypeError(
-                "Invalid dtype %s. Excepted uint8." % image_or_images.dtype)
+                "Invalid dtype %s. Expected uint8." % image_or_images.dtype)
         if image_or_images.get_shape().ndims is None:
             raise ValueError("`images` rank must be statically known")
         elif len(image_or_images.get_shape()) == 3:

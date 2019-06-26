@@ -19,8 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-
-from tensorflow.python.keras import losses
 from tensorflow_addons.losses import metric_learning
 from tensorflow_addons.utils import keras_utils
 
@@ -106,7 +104,7 @@ def lifted_struct_loss(labels, embeddings, margin=1.0):
 
 
 @keras_utils.register_keras_custom_object
-class LiftedStructLoss(losses.LossFunctionWrapper):
+class LiftedStructLoss(tf.keras.losses.Loss):
     """Computes the lifted structured loss.
 
     The loss encourages the positive distances (between a pair of embeddings
@@ -122,7 +120,15 @@ class LiftedStructLoss(losses.LossFunctionWrapper):
 
     def __init__(self, margin=1.0, name=None):
         super(LiftedStructLoss, self).__init__(
-            lifted_struct_loss,
-            name=name,
-            reduction=tf.keras.losses.Reduction.NONE,
-            margin=margin)
+            name=name, reduction=tf.keras.losses.Reduction.NONE)
+        self.margin = margin
+
+    def call(self, y_true, y_pred):
+        return lifted_struct_loss(y_true, y_pred, self.margin)
+
+    def get_config(self):
+        config = {
+            "margin": self.margin,
+        }
+        base_config = super(LiftedStructLoss, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))

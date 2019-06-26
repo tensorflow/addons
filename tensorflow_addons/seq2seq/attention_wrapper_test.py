@@ -27,9 +27,9 @@ from tensorflow_addons.utils import test_utils
 from tensorflow_addons.seq2seq import attention_wrapper as wrapper
 from tensorflow_addons.seq2seq import basic_decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
-from tensorflow.python import keras
-from tensorflow.python.eager import context
 
+# TODO: Find public API alternatives to these
+from tensorflow.python import keras
 from tensorflow.python.keras import initializers
 
 
@@ -345,7 +345,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             self.assertIsInstance(final_state, wrapper.AttentionWrapperState)
 
             expected_time = (expected_final_state.time
-                             if context.executing_eagerly() else None)
+                             if tf.executing_eagerly() else None)
             self.assertEqual(
                 (batch_size, expected_time, attention_depth),
                 tuple(final_outputs.rnn_output.get_shape().as_list()))

@@ -25,18 +25,13 @@ import tensorflow as tf
 
 from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import decoder
-from tensorflow.python.eager import context
-from tensorflow.python.framework import tensor_shape
-from tensorflow.python.framework import tensor_util
-from tensorflow.python.keras import layers
-from tensorflow.python.ops import embedding_ops
-from tensorflow.python.ops import rnn_cell_impl
-from tensorflow.python.platform import tf_logging
-
-from tensorflow.python.framework import load_library
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
-_beam_search_ops_so = load_library.load_op_library(
+# TODO: Find public API alternatives to these
+from tensorflow.python.framework import tensor_shape
+from tensorflow.python.ops import rnn_cell_impl
+
+_beam_search_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/seq2seq/_beam_search_ops.so"))
 gather_tree = _beam_search_ops_so.gather_tree
 
@@ -189,7 +184,7 @@ def _check_static_batch_beam_maybe(shape, batch_size, beam_width):
             and (shape[0] != batch_size * beam_width or
                  (shape.ndims >= 2 and shape.dims[1].value is not None and
                   (shape[0] != batch_size or shape[1] != beam_width)))):
-        tf_logging.warn(
+        tf.get_logger().warn(
             "TensorArray reordering expects elements to be "
             "reshapable to %s which is incompatible with the "
             "current shape %s. Consider setting "
@@ -212,7 +207,7 @@ def _check_batch_beam(t, batch_size, beam_width):
         "incompatible with the dynamic shape of %s elements. "
         "Consider setting reorder_tensor_arrays to False to disable "
         "TensorArray reordering during the beam search." %
-        (t if context.executing_eagerly() else t.name))
+        (t if tf.executing_eagerly() else t.name))
     rank = t.shape.ndims
     shape = tf.shape(t)
     if rank == 2:
@@ -269,7 +264,7 @@ class BeamSearchDecoderMixin(object):
         """
         rnn_cell_impl.assert_like_rnncell("cell", cell)  # pylint: disable=protected-access
         if (output_layer is not None
-                and not isinstance(output_layer, layers.Layer)):
+                and not isinstance(output_layer, tf.keras.layers.Layer)):
             raise TypeError("output_layer must be a Layer, received: %s" %
                             type(output_layer))
         self._cell = cell
@@ -378,11 +373,11 @@ class BeamSearchDecoderMixin(object):
           A reshaped version of t with dimension [batch_size * beam_width, s].
         """
         if isinstance(s, tf.Tensor):
-            s = tensor_shape.as_shape(tensor_util.constant_value(s))
+            s = tensor_shape.as_shape(tf.get_static_value(s))
         else:
             s = tf.TensorShape(s)
         t_shape = tf.shape(t)
-        static_batch_size = tensor_util.constant_value(self._batch_size)
+        static_batch_size = tf.get_static_value(self._batch_size)
         batch_size_beam_width = (None if static_batch_size is None else
                                  static_batch_size * self._beam_width)
         reshaped_t = tf.reshape(
@@ -411,14 +406,14 @@ class BeamSearchDecoderMixin(object):
             are known statically).
         """
         if isinstance(s, tf.Tensor):
-            s = tf.TensorShape(tensor_util.constant_value(s))
+            s = tf.TensorShape(tf.get_static_value(s))
         else:
             s = tf.TensorShape(s)
         t_shape = tf.shape(t)
         reshaped_t = tf.reshape(
             t, tf.concat(([self._batch_size, self._beam_width], t_shape[1:]),
                          0))
-        static_batch_size = tensor_util.constant_value(self._batch_size)
+        static_batch_size = tf.get_static_value(self._batch_size)
         expected_reshaped_shape = tf.TensorShape(
             [static_batch_size, self._beam_width]).concatenate(s)
         if not reshaped_t.shape.is_compatible_with(expected_reshaped_shape):
@@ -502,27 +497,16 @@ class BeamSearchDecoderMixin(object):
         """
         if not isinstance(t, tf.TensorArray):
             return t
-        # pylint: disable=protected-access
-        # This is a bad hack due to the implementation detail of eager/graph TA.
-        # TODO(b/124374427): Update this to use public property of TensorArray.
-        if context.executing_eagerly():
-            element_shape = t._element_shape
-        else:
-            element_shape = t._element_shape[0]
-        if (not t._infer_shape or not t._element_shape
-                or element_shape.ndims is None or element_shape.ndims < 1):
-            shape = (element_shape if t._infer_shape and t._element_shape else
-                     tf.TensorShape(None))
-            tf_logging.warn(
+        if t.element_shape.ndims is None or t.element_shape.ndims < 1:
+            tf.get_logger().warn(
                 "The TensorArray %s in the cell state is not amenable to "
                 "sorting based on the beam search result. For a "
                 "TensorArray to be sorted, its elements shape must be "
                 "defined and have at least a rank of 1, but saw shape: %s" %
-                (t.handle.name, shape))
+                (t.handle.name, t.element_shape))
             return t
-        # pylint: enable=protected-access
         if not _check_static_batch_beam_maybe(
-                element_shape, tensor_util.constant_value(self._batch_size),
+                t.element_shape, tf.get_static_value(self._batch_size),
                 self._beam_width):
             return t
         t = t.stack()
@@ -702,7 +686,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
                 "embedding and embedding_fn cannot be provided at same time")
         elif embedding is not None:
             self._embedding_fn = (
-                lambda ids: embedding_ops.embedding_lookup(embedding, ids))
+                lambda ids: tf.nn.embedding_lookup(embedding, ids))
 
         self._start_tokens = tf.convert_to_tensor(
             start_tokens, dtype=tf.int32, name="start_tokens")
@@ -807,7 +791,7 @@ def _beam_search_step(time, logits, next_cell_state, beam_state, batch_size,
     Returns:
       A new beam state.
     """
-    static_batch_size = tensor_util.constant_value(batch_size)
+    static_batch_size = tf.get_static_value(batch_size)
 
     # Calculate the current lengths of the predictions
     prediction_lengths = beam_state.lengths
@@ -880,7 +864,7 @@ def _beam_search_step(time, logits, next_cell_state, beam_state, batch_size,
     #       name="next_beam_word_ids")
     # would be a lot cleaner but for reasons unclear, that hides the results of
     # the op which prevents capturing it with tfdbg debug ops.
-    raw_next_word_ids = tf.mod(
+    raw_next_word_ids = tf.math.floormod(
         word_indices, vocab_size, name="next_beam_word_ids")
     next_word_ids = tf.cast(raw_next_word_ids, tf.int32)
     next_beam_ids = tf.cast(
@@ -1037,7 +1021,7 @@ def _get_scores(log_probs, sequence_lengths, length_penalty_weight,
         raise ValueError("coverage_penalty_weight should be a scalar, "
                          "but saw shape: %s" % coverage_penalty_weight.shape)
 
-    if tensor_util.constant_value(coverage_penalty_weight) == 0.0:
+    if tf.get_static_value(coverage_penalty_weight) == 0.0:
         return scores
 
     if accumulated_attention_probs is None:
@@ -1106,7 +1090,7 @@ def _length_penalty(sequence_lengths, penalty_factor):
     penalty_factor = tf.convert_to_tensor(
         penalty_factor, name="penalty_factor")
     penalty_factor.set_shape(())  # penalty should be a scalar.
-    static_penalty = tensor_util.constant_value(penalty_factor)
+    static_penalty = tf.get_static_value(penalty_factor)
     if static_penalty is not None and static_penalty == 0:
         return 1.0
     return tf.math.divide(
@@ -1229,7 +1213,7 @@ def _tensor_gather_helper(gather_indices,
         output = tf.gather(
             tf.reshape(gather_from, gather_shape), gather_indices)
         final_shape = tf.shape(gather_from)[:1 + len(gather_shape)]
-        static_batch_size = tensor_util.constant_value(batch_size)
+        static_batch_size = tf.get_static_value(batch_size)
         final_static_shape = (tf.TensorShape([static_batch_size]).concatenate(
             gather_from.shape[1:1 + len(gather_shape)]))
         output = tf.reshape(output, final_shape, name="output")

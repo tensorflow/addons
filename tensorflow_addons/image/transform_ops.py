@@ -18,8 +18,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.python.framework import common_shapes
-from tensorflow.python.framework import ops
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 _image_ops_so = tf.load_op_library(
@@ -29,9 +27,6 @@ _IMAGE_DTYPES = set([
     tf.dtypes.uint8, tf.dtypes.int32, tf.dtypes.int64, tf.dtypes.float16,
     tf.dtypes.float32, tf.dtypes.float64
 ])
-
-ops.RegisterShape("ImageProjectiveTransformV2")(
-    common_shapes.call_cpp_shape_fn)
 
 
 @tf.function
@@ -71,9 +66,9 @@ def transform(images,
       TypeError: If `image` is an invalid type.
       ValueError: If output shape is not 1-D int32 Tensor.
     """
-    with ops.name_scope(name, "transform"):
-        image_or_images = ops.convert_to_tensor(images, name="images")
-        transform_or_transforms = ops.convert_to_tensor(
+    with tf.name_scope(name or "transform"):
+        image_or_images = tf.convert_to_tensor(images, name="images")
+        transform_or_transforms = tf.convert_to_tensor(
             transforms, name="transforms", dtype=tf.dtypes.float32)
         if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
             raise TypeError("Invalid dtype %s." % image_or_images.dtype)
@@ -91,7 +86,7 @@ def transform(images,
         if output_shape is None:
             output_shape = tf.shape(images)[1:3]
 
-        output_shape = ops.convert_to_tensor(
+        output_shape = tf.convert_to_tensor(
             output_shape, tf.dtypes.int32, name="output_shape")
 
         if not output_shape.get_shape().is_compatible_with([2]):
@@ -168,7 +163,7 @@ def flat_transforms_to_matrices(transforms, name=None):
       ValueError: If `transforms` have an invalid shape.
     """
     with tf.name_scope(name or "flat_transforms_to_matrices"):
-        transforms = ops.convert_to_tensor(transforms, name="transforms")
+        transforms = tf.convert_to_tensor(transforms, name="transforms")
         if transforms.shape.ndims not in (1, 2):
             raise ValueError(
                 "Transforms should be 1D or 2D, got: %s" % transforms)
@@ -203,7 +198,7 @@ def matrices_to_flat_transforms(transform_matrices, name=None):
       ValueError: If `transform_matrices` have an invalid shape.
     """
     with tf.name_scope(name or "matrices_to_flat_transforms"):
-        transform_matrices = ops.convert_to_tensor(
+        transform_matrices = tf.convert_to_tensor(
             transform_matrices, name="transform_matrices")
         if transform_matrices.shape.ndims not in (2, 3):
             raise ValueError(
@@ -233,8 +228,8 @@ def angles_to_projective_transforms(angles,
       A tensor of shape (num_images, 8). Projective transforms which can be
       given to `transform` op.
     """
-    with ops.name_scope(name, "angles_to_projective_transforms"):
-        angle_or_angles = ops.convert_to_tensor(
+    with tf.name_scope(name or "angles_to_projective_transforms"):
+        angle_or_angles = tf.convert_to_tensor(
             angles, name="angles", dtype=tf.dtypes.float32)
         if len(angle_or_angles.get_shape()) == 0:
             angles = angle_or_angles[None]
@@ -264,15 +259,15 @@ def angles_to_projective_transforms(angles,
             axis=1)
 
 
-@ops.RegisterGradient("ImageProjectiveTransformV2")
+@tf.RegisterGradient("ImageProjectiveTransformV2")
 def _image_projective_transform_grad(op, grad):
     """Computes the gradient for ImageProjectiveTransform."""
     images = op.inputs[0]
     transforms = op.inputs[1]
     interpolation = op.get_attr("interpolation")
 
-    image_or_images = ops.convert_to_tensor(images, name="images")
-    transform_or_transforms = ops.convert_to_tensor(
+    image_or_images = tf.convert_to_tensor(images, name="images")
+    transform_or_transforms = tf.convert_to_tensor(
         transforms, name="transforms", dtype=tf.dtypes.float32)
 
     if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:

@@ -102,18 +102,18 @@ class AdjustHueInYiqTest(tf.test.TestCase):
                 y_tf = self._adjust_hue_in_yiq_tf(x_np, delta_h)
                 self.assertAllClose(y_tf, y_np, rtol=2e-4, atol=1e-4)
 
-    # TODO: run in both graph and eager modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_invalid_shapes(self):
         x_np = np.random.rand(2, 3) * 255.
         delta_h = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesRegexp(ValueError,
                                      "Shape must be at least rank 3"):
-            self._adjust_hue_in_yiq_tf(x_np, delta_h)
+            self.evaluate(self._adjust_hue_in_yiq_tf(x_np, delta_h))
         x_np = np.random.rand(4, 2, 4) * 255.
         delta_h = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesOpError("input must have 3 channels "
                                       "but instead has 4 channels"):
-            self._adjust_hue_in_yiq_tf(x_np, delta_h)
+            self.evaluate(self._adjust_hue_in_yiq_tf(x_np, delta_h))
 
 
 class AdjustValueInYiqTest(tf.test.TestCase):
@@ -163,18 +163,18 @@ class AdjustValueInYiqTest(tf.test.TestCase):
                 y_tf = self._adjust_value_in_yiq_tf(x_np, scale)
                 self.assertAllClose(y_tf, y_np, rtol=2e-4, atol=1e-4)
 
-    # TODO: run in both graph and eager modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_invalid_shapes(self):
         x_np = np.random.rand(2, 3) * 255.
         scale = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesRegexp(ValueError,
                                      "Shape must be at least rank 3"):
-            self._adjust_value_in_yiq_tf(x_np, scale)
+            self.evaluate(self._adjust_value_in_yiq_tf(x_np, scale))
         x_np = np.random.rand(4, 2, 4) * 255.
         scale = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesOpError("input must have 3 channels "
                                       "but instead has 4 channels"):
-            self._adjust_value_in_yiq_tf(x_np, scale)
+            self.evaluate(self._adjust_value_in_yiq_tf(x_np, scale))
 
 
 class AdjustSaturationInYiqTest(tf.test.TestCase):
@@ -228,18 +228,18 @@ class AdjustSaturationInYiqTest(tf.test.TestCase):
                 y_tf = self._adjust_saturation_in_yiq_tf(x_np, scale)
                 self.assertAllClose(y_tf, y_baseline, rtol=2e-4, atol=1e-4)
 
-    # TODO: run in both graph and eager modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_invalid_shapes(self):
         x_np = np.random.rand(2, 3) * 255.
         scale = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesRegexp(ValueError,
                                      "Shape must be at least rank 3"):
-            self._adjust_saturation_in_yiq_tf(x_np, scale)
+            self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
         x_np = np.random.rand(4, 2, 4) * 255.
         scale = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesOpError("input must have 3 channels "
                                       "but instead has 4 channels"):
-            self._adjust_saturation_in_yiq_tf(x_np, scale)
+            self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
 
 
 # TODO: get rid of sessions
