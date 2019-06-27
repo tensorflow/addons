@@ -14,8 +14,6 @@
 # ==============================================================================
 """Image translate ops."""
 
-# tda55441@bcaoo.com
-# Sayooj_30
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
