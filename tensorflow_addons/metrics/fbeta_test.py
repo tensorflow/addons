@@ -38,144 +38,79 @@ class FBetaScoreTest(tf.test.TestCase):
         self.assertEqual(fbeta_obj2.num_classes, 3)
         self.assertEqual(fbeta_obj2.dtype, tf.float32)
 
-    def initialize_vars(self, beta_val):
-        fbeta_micro = FBetaScore(num_classes=3, beta=beta_val, average='micro')
-        fbeta_macro = FBetaScore(num_classes=3, beta=beta_val, average='macro')
-        fbeta_weighted = FBetaScore(
-            num_classes=3, beta=beta_val, average='weighted')
+    def initialize_vars(self, beta_val, average):
+        # initialize variables
+        fbeta_obj = FBetaScore(num_classes=3, beta=beta_val, average=average)
 
-        self.evaluate(
-            tf.compat.v1.variables_initializer(fbeta_micro.variables))
-        self.evaluate(
-            tf.compat.v1.variables_initializer(fbeta_macro.variables))
-        self.evaluate(
-            tf.compat.v1.variables_initializer(fbeta_weighted.variables))
-        return fbeta_micro, fbeta_macro, fbeta_weighted
+        self.evaluate(tf.compat.v1.variables_initializer(fbeta_obj.variables))
 
-    def initialize_vars_none(self, beta_val):
-        fbeta_none = FBetaScore(num_classes=3, beta=beta_val, average=None)
+        return fbeta_obj
 
-        self.evaluate(tf.compat.v1.variables_initializer(fbeta_none.variables))
-        return fbeta_none
+    def update_obj_states(self, fbeta_obj, actuals, preds):
+        # update state variables values
+        update_op = fbeta_obj.update_state(actuals, preds)
+        self.evaluate(update_op)
 
-    def update_obj_states(self, fbeta_micro, fbeta_macro, fbeta_weighted,
-                          actuals, preds):
-        update_micro = fbeta_micro.update_state(actuals, preds)
-        update_macro = fbeta_macro.update_state(actuals, preds)
-        update_weighted = fbeta_weighted.update_state(actuals, preds)
-        self.evaluate(update_micro)
-        self.evaluate(update_macro)
-        self.evaluate(update_weighted)
+    def check_results(self, fbeta_obj, value):
+        # check results
+        self.assertAllClose(
+            value, self.evaluate(fbeta_obj.result()), atol=1e-5)
 
-    def update_obj_states_none(self, fbeta_none, actuals, preds):
-        update_none = fbeta_none.update_state(actuals, preds)
-        self.evaluate(update_none)
+    def _test_fbeta(self, avg, beta, act, pred, res):
+        fbeta = self.initialize_vars(beta, avg)
+        self.update_obj_states(fbeta, act, pred)
+        self.check_results(fbeta, res)
 
-    def check_results(self, obj, value):
-        self.assertAllClose(value, self.evaluate(obj.result()), atol=1e-5)
+    def _test_fbeta_score(self, actuals, preds, res):
+        # This function tests for three average values and
+        # two beta values
+        for avg in ['micro', 'macro', 'weighted']:
+            for beta_val in [0.5, 2.0]:
+                self._test_fbeta(avg, beta_val, actuals, preds, res)
 
+    # test for the perfect score
     def test_fbeta_perfect_score(self):
         actuals = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]],
                               dtype=tf.int32)
         preds = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]], dtype=tf.int32)
-        # For beta 0.5
-        # Initialize
-        fbeta_micro, fbeta_macro, fbeta_weighted = self.initialize_vars(
-            beta_val=0.5)
-        # Update
-        self.update_obj_states(fbeta_micro, fbeta_macro, fbeta_weighted,
-                               actuals, preds)
-        # Check results
-        self.check_results(fbeta_micro, 1.0)
-        self.check_results(fbeta_macro, 1.0)
-        self.check_results(fbeta_weighted, 1.0)
-        # For beta 2.0
-        # Initialize
-        fbeta_micro, fbeta_macro, fbeta_weighted = self.initialize_vars(
-            beta_val=2.0)
-        # Update
-        self.update_obj_states(fbeta_micro, fbeta_macro, fbeta_weighted,
-                               actuals, preds)
-        # Check results
-        self.check_results(fbeta_micro, 1.0)
-        self.check_results(fbeta_macro, 1.0)
-        self.check_results(fbeta_weighted, 1.0)
+        self._test_fbeta_score(actuals, preds, 1.0)
 
+    # test for the worst score
     def test_fbeta_worst_score(self):
         actuals = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]],
                               dtype=tf.int32)
         preds = tf.constant([[0, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=tf.int32)
-        # For beta 0.5
-        # Initialize
-        fbeta_micro, fbeta_macro, fbeta_weighted = self.initialize_vars(
-            beta_val=0.5)
-        # Update state information
-        self.update_obj_states(fbeta_micro, fbeta_macro, fbeta_weighted,
-                               actuals, preds)
-        # Check results
-        self.check_results(fbeta_micro, 0.0)
-        self.check_results(fbeta_macro, 0.0)
-        self.check_results(fbeta_weighted, 0.0)
-        # For beta 2.0
-        # Initialize
-        fbeta_micro, fbeta_macro, fbeta_weighted = self.initialize_vars(
-            beta_val=2.0)
-        # Update state information
-        self.update_obj_states(fbeta_micro, fbeta_macro, fbeta_weighted,
-                               actuals, preds)
-        # Check results
-        self.check_results(fbeta_micro, 0.0)
-        self.check_results(fbeta_macro, 0.0)
-        self.check_results(fbeta_weighted, 0.0)
+        self._test_fbeta_score(actuals, preds, 0.0)
 
+    # test for the random score
     def test_fbeta_random_score(self):
         actuals = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]],
                               dtype=tf.int32)
         preds = tf.constant([[0, 0, 1], [1, 1, 0], [1, 1, 1]], dtype=tf.int32)
-        # For beta 0.5
-        # Initialize
-        fbeta_micro, fbeta_macro, fbeta_weighted = self.initialize_vars(
-            beta_val=0.5)
-        # Update
-        self.update_obj_states(fbeta_micro, fbeta_macro, fbeta_weighted,
-                               actuals, preds)
-        # Check results
-        self.check_results(fbeta_micro, 0.6666667)
-        self.check_results(fbeta_macro, 0.6548822)
-        self.check_results(fbeta_weighted, 0.7138047)
-        # For beta 2.0
-        # Initialize
-        fbeta_micro, fbeta_macro, fbeta_weighted = self.initialize_vars(
-            beta_val=2.0)
-        # Update
-        self.update_obj_states(fbeta_micro, fbeta_macro, fbeta_weighted,
-                               actuals, preds)
-        # Check results
-        self.check_results(fbeta_micro, 0.6666667)
-        self.check_results(fbeta_macro, 0.6825397)
-        self.check_results(fbeta_weighted, 0.66269845)
 
-    def test_fbeta_none_score(self):
+        # Use absl parameterized test here if possible
+        test_params = [['micro', 0.5, 0.666667], ['macro', 0.5, 0.654882],
+                       ['weighted', 0.5, 0.71380], ['micro', 2.0, 0.666667],
+                       ['macro', 2.0, 0.68253], ['weighted', 2.0, 0.66269]]
+
+        for avg, beta, res in test_params:
+            self._test_fbeta(avg, beta, actuals, preds, res)
+
+    # Test for the random score with average value as None
+    def test_fbeta_random_score_none(self):
         actuals = tf.constant(
             [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [0, 1, 0], [0, 0, 1]],
             dtype=tf.int32)
         preds = tf.constant(
             [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [1, 0, 0], [0, 0, 1]],
             dtype=tf.int32)
-        # For beta 0.5
-        # Initialize
-        fbeta_none = self.initialize_vars_none(beta_val=0.5)
-        # Update
-        self.update_obj_states_none(fbeta_none, actuals, preds)
-        # Check results
-        self.check_results(fbeta_none, [0.71428573, 0.8333334, 1.])
-        # For beta 2.0
-        # Initialize
-        fbeta_none = self.initialize_vars_none(beta_val=2.0)
-        # Update
-        self.update_obj_states_none(fbeta_none, actuals, preds)
-        # Check results
-        self.check_results(fbeta_none, [0.90909094, 0.5555556, 1.])
+
+        # Use absl parameterized test here if possible
+        test_params = [[0.5, [0.71428573, 0.8333334, 1.]],
+                       [2.0, [0.90909094, 0.5555556, 1.]]]
+
+        for beta, res in test_params:
+            self._test_fbeta(None, beta, actuals, preds, res)
 
 
 if __name__ == '__main__':
