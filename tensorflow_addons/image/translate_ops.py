@@ -91,7 +91,7 @@ def translate(images, translations, interpolation="NEAREST", name=None):
     name: The name of the op.
   Returns:
     Image(s) with the same type and shape as `images`, translated by the given
-        vector(s). Empty space due to the translation will be filled with zeros.
+    vector(s). Empty space due to the translation will be filled with zeros.
   Raises:
     TypeError: If `images` is an invalid type.
   """
