@@ -42,7 +42,7 @@ def translations_to_projective_transforms(translations, name=None):
       name: The name of the op.
   Returns:
       A tensor of shape (num_images, 8) projective transforms which can be given
-          to `tf.contrib.image.transform`.
+      to `tf.contrib.image.transform`.
   """
   with tf.name_scope(name or "translations_to_projective_transforms"):
     translation_or_translations = tf.convert_to_tensor(
@@ -76,7 +76,6 @@ def translations_to_projective_transforms(translations, name=None):
         axis=1)
 
 
-
 @tf.function
 def translate(images, translations, interpolation="NEAREST", name=None):
   """Translate image(s) by the passed vectors(s).
@@ -94,7 +93,7 @@ def translate(images, translations, interpolation="NEAREST", name=None):
     Image(s) with the same type and shape as `images`, translated by the given
         vector(s). Empty space due to the translation will be filled with zeros.
   Raises:
-    TypeError: If `image` is an invalid type.
+    TypeError: If `images` is an invalid type.
   """
   with tf.name_scope(name or "translate"):
     return transform(
