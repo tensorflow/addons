@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.image import translate_ops
@@ -32,25 +31,20 @@ _DTYPES = set([
 
 @test_utils.run_all_in_graph_and_eager_modes
 class TranslateOpTest(tf.test.TestCase):
-	def test_translate(self):
+  def test_translate(self):
     for dtype in _DTYPES:
-      	with self.cached_session():
-	        image = tf.constant(
+      image = tf.constant(
 	            [[1, 0, 1, 0],
 	             [0, 1, 0, 1],
 	             [1, 0, 1, 0],
 	             [0, 1, 0, 1]], dtype=dtype)
-	        translation = tf.constant([-1, -1], dtype=tf.float32)
-	        image_translated = translate_ops.translate(image, translation)
-	        self.assertAllEqual(image_translated.eval(),
+      translation = tf.constant([-1, -1], dtype=tf.float32)
+      image_translated = translate_ops.translate(image, translation)
+      self.assertAllEqual(self.evaluate(image_translated),
 	                            [[1, 0, 1, 0],
 	                             [0, 1, 0, 0],
 	                             [1, 0, 1, 0],
 	                             [0, 0, 0, 0]])
 
-
-
 if __name__ == "__main__":
     tf.test.main()
-
-
