@@ -23,7 +23,6 @@ import tensorflow.compat.v1 as tf1  # TODO: port TF1 test files?
 from tensorflow_addons.image.sparse_image_warp import _get_boundary_locations
 from tensorflow_addons.image.sparse_image_warp import _get_grid_locations
 from tensorflow_addons.image import sparse_image_warp
-from tensorflow.python.training import momentum
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 
@@ -238,7 +237,7 @@ class SparseImageWarpTest(tf.test.TestCase):
             num_boundary_points=3)
 
         loss = tf.reduce_mean(tf.abs(warped_image - image))
-        optimizer = momentum.MomentumOptimizer(0.001, 0.9)
+        optimizer = tf1.train.MomentumOptimizer(0.001, 0.9)
         grad = tf.gradients(loss, [image])
         grad, _ = tf.clip_by_global_norm(grad, 1.0)
         opt_func = optimizer.apply_gradients(zip(grad, [image]))

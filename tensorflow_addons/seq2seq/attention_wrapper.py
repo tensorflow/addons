@@ -1899,8 +1899,8 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         # previous attention value.
         cell_inputs = self._cell_input_fn(inputs, state.attention)
         cell_state = state.cell_state
-        cell_output, next_cell_state = self._cell(
-            cell_inputs, cell_state, **kwargs)
+        cell_output, next_cell_state = self._cell(cell_inputs, cell_state,
+                                                  **kwargs)
 
         cell_batch_size = (tf.compat.dimension_value(cell_output.shape[0])
                            or tf.shape(cell_output)[0])
