@@ -8,6 +8,8 @@
 | distort_image_ops | @WindQAQ | windqaq@gmail.com |
 | filters | @Mainak431 | mainakdutta76@gmail.com |
 | transform_ops | @mels630 | mels630@gmail.com | 
+| translate_ops | @sayoojbk	| sayoojbk@gmail.com |
+| translations_to_projective_transforms | @sayoojbk	| sayoojbk@gmail.com |
 
 ## Components 
 | Submodule  | Image Processing Function |  Reference  |
