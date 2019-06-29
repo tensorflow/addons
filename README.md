@@ -30,14 +30,61 @@ developments that cannot be integrated into core TensorFlow
 | Subpackage    | Maintainers  | Contact Info                        |
 |:----------------------- |:----------- |:----------------------------|
 | [tfa.activations](tensorflow_addons/activations/README.md) | SIG-Addons | @facaiy @seanpmorgan | 
+| [tfa.callbacks](tensorflow_addons/callbacks/README.md) | SIG-Addons | @squadrick |
 | [tfa.image](tensorflow_addons/image/README.md) | SIG-Addons | @windqaq @facaiy |
 | [tfa.layers](tensorflow_addons/layers/README.md) | SIG-Addons | @seanpmorgan @facaiy |
 | [tfa.losses](tensorflow_addons/losses/README.md) | SIG-Addons | @facaiy @windqaq   |
-| [tfa.metrics](tensorflow_addons/metrics/README.md) | SIG-Addons |  | 
-| [tfa.optimizers](tensorflow_addons/optimizers/README.md) | SIG-Addons | @facaiy @windqaq |
+| [tfa.metrics](tensorflow_addons/metrics/README.md) | SIG-Addons | @squadrick | 
+| [tfa.optimizers](tensorflow_addons/optimizers/README.md) | SIG-Addons | @facaiy @windqaq @squadrick |
 | [tfa.rnn](tensorflow_addons/rnn/README.md) | Google | @qlzh727 |
 | [tfa.seq2seq](tensorflow_addons/seq2seq/README.md) | Google | @qlzh727 |
 | [tfa.text](tensorflow_addons/text/README.md) |  SIG-Addons |  @seanpmorgan @facaiy |
+
+## Installation
+#### Stable Builds
+To install the latest version, run the following:
+```
+pip install tensorflow-addons
+```
+ 
+**Note:** You will also need [`tensorflow==2.0.0-beta1`](https://www.tensorflow.org/beta) installed.
+
+To use addons:
+
+```python
+import tensorflow as tf
+import tensorflow_addons as tfa
+```
+
+#### Nightly Builds
+There are also nightly builds of TensorFlow Addons under the pip package 
+`tfa-nightly`, which is built against `tf-nightly-2.0-preview`. Nightly builds 
+include newer features, but may be less stable than the versioned releases.
+
+```
+pip install tfa-nightly
+```
+
+#### Installing from Source
+You can also install from source. This requires the [Bazel](
+https://bazel.build/) build system.
+
+```
+git clone https://github.com/tensorflow/addons.git
+cd addons
+
+# This script links project with TensorFlow dependency
+./configure.sh
+
+bazel build build_pip_pkg
+bazel-bin/build_pip_pkg artifacts
+
+pip install artifacts/tensorflow_addons-*.whl
+```
+
+## Examples
+See [`examples/`](examples/)
+for end-to-end examples of various addons.
 
 ## Core Concepts
 
@@ -93,45 +140,6 @@ warning.
 
 2. 90 days gives maintainers ample time to fix their code.
 
-
-## Examples
-See [`examples/`](examples/)
-for end-to-end examples of various addons.
-
-## Installation
-#### Stable Builds
-To install the latest version, run the following:
-```
-pip install tensorflow-addons
-```
- 
-**Note:** You will also need [`tensorflow==2.0.0.a0`](https://www.tensorflow.org/alpha) installed.
-
-To use addons:
-
-```python
-import tensorflow as tf
-import tensorflow_addons as tfa
-```
-
-#### Installing from Source
-You can also install from source. This requires the [Bazel](
-https://bazel.build/) build system.
-
-**Note:** If building from master you must install `tf-nightly-2.0-preview` in the process.
-
-```
-git clone https://github.com/tensorflow/addons.git
-cd addons
-
-# This script links project with TensorFlow dependency
-./configure.sh
-
-bazel build build_pip_pkg
-bazel-bin/build_pip_pkg artifacts
-
-pip install artifacts/tensorflow_addons-*.whl
-```
 
 ## Contributing
 TF-Addons is a community led open source project. As such, the project

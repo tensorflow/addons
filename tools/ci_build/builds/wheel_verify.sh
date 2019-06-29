@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,12 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A module containing metrics that conform to Keras API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+set -e
 
-from tensorflow_addons.metrics.cohens_kappa import CohenKappa
-from tensorflow_addons.metrics.f1_scores import F1Score
-from tensorflow_addons.metrics.r_square import RSquare
+ls artifacts/*
+for f in artifacts/*.whl; do
+  if [[ $(uname) == "Darwin" ]]; then
+    delocate-wheel -w wheelhouse  $f
+  else
+    auditwheel repair $f
+  fi
+done
+ls wheelhouse/*
