@@ -1,4 +1,4 @@
-# Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ from scipy import interpolate as sc_interpolate
 
 import tensorflow as tf
 import tensorflow.compat.v1 as tf1  # TODO: locate placeholder
-from tensorflow.python.training import momentum
 from tensorflow_addons.utils import test_utils
 from tensorflow_addons.image import interpolate_spline
 
@@ -343,7 +342,7 @@ class InterpolateSplineTest(tf.test.TestCase):
 
         regularization = 0.001
         for interpolation_order in (1, 2, 3, 4):
-            optimizer = momentum.MomentumOptimizer(0.001, 0.9)
+            optimizer = tf1.train.MomentumOptimizer(0.001, 0.9)
 
             @tf.function
             def train_step():
