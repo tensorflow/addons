@@ -66,7 +66,8 @@ class WeightNormalizationTest(tf.test.TestCase):
 
         model.add(tf.keras.layers.Activation('relu'))
         model.compile(
-            optimizer=tf.optimizers.RMSprop(learning_rate=0.001), loss='mse')
+            optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.001),
+            loss='mse')
         model.fit(
             np.random.random((2, 4, 4, 3)),
             np.random.random((2, 4, 4, 5)),
