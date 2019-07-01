@@ -44,13 +44,13 @@ class FBetaScore(Metric):
          average : Type of averaging to be performed on data.
                    Acceptable values are None, micro, macro and
                    weighted.
-         beta : float
-                Determines the weight of precision and recall in harmonic
-                mean. Acceptable values are either a number of float data
-                type greater than 0.0 or a scale tensor of dtype tf.float32.
+         beta : float. Determines the weight of precision and recall
+                in harmonic mean. Acceptable values are either a number
+                of float data type greater than 0.0 or a scale tensor
+                of dtype tf.float32.
 
       Returns:
-         F1 Beta Score: float
+         F Beta Score: float
 
       Raises:
          ValueError: If the `average` has values other than
@@ -84,25 +84,25 @@ class FBetaScore(Metric):
     actuals = tf.constant([[1, 1, 0],[1, 0, 0]], dtype=tf.int32)
     predis = tf.constant([[1, 0, 0],[1, 0, 1]], dtype=tf.int32)
 
-    fb_score = tf.keras.metrics.FBetaScore(num_classes=3,
+    fb_score = tfa.metrics.FBetaScore(num_classes=3,
                 beta=0.4, average='micro')
     fb_score.update_state(actuals, preds)
     print('F1-Beta Score is: ',
            fb_score.result().numpy()) # 0.6666666
 
-    fb_score = tf.keras.metrics.FBetaScore(num_classes=3,
+    fb_score = tfa.metrics.FBetaScore(num_classes=3,
            beta=0.4, average='macro')
     fb_score.update_state(actuals, preds)
     print('F1-Beta Score is: ',
           fb_score.result().numpy()) # 0.33333334
 
-    fb_score = tf.keras.metrics.FBetaScore(num_classes=3,
+    fb_score = tfa.metrics.FBetaScore(num_classes=3,
                beta=0.4, average='weighted')
     fb_score.update_state(actuals, preds)
     print('F1-Beta Score is: ',
           fb_score.result().numpy()) # 0.6666667
 
-    fb_score = tf.keras.metrics.FBetaScore(num_classes=3,
+    fb_score = tfa.metrics.FBetaScore(num_classes=3,
                beta=0.4, average=None)
     fb_score.update_state(actuals, preds)
     print('F1-Beta Score is: ',
@@ -128,7 +128,7 @@ class FBetaScore(Metric):
             self.beta = beta
         if average not in (None, 'micro', 'macro', 'weighted'):
             raise ValueError("Unknown average type. Acceptable values "
-                             "are: [micro, macro, weighted]")
+                             "are: [None, micro, macro, weighted]")
         else:
             self.average = average
             if self.average == 'micro':
@@ -251,7 +251,7 @@ class FBetaScore(Metric):
 
 
 class F1Score(FBetaScore):
-    """Calculates F1 micro, macro or weighted based on the user's choice.
+    """Computes F1 micro, macro or weighted based on the user's choice.
 
     F1 score is the weighted average of precision and
     recall. Output range is [0, 1]. This works for both
@@ -309,25 +309,25 @@ class F1Score(FBetaScore):
               dtype=tf.int32)
     preds = tf.constant([[1, 0, 0],[1, 0, 1]],
               dtype=tf.int32)
-    output = tf.keras.metrics.F1Score(num_classes=3,
+    output = tfa.metrics.F1Score(num_classes=3,
               average='micro')
     output.update_state(actuals, preds)
     print('F1 Micro score is: ',
             output.result().numpy()) # 0.6666667
     # F1 Macro
-    output = tf.keras.metrics.F1Score(num_classes=3,
+    output = tfa.metrics.F1Score(num_classes=3,
                 average='macro')
     output.update_state(actuals, preds)
     print('F1 Macro score is: ',
             output.result().numpy()) # 0.33333334
     # F1 weighted
-    output = tf.keras.metrics.F1Score(num_classes=3,
+    output = tfa.metrics.F1Score(num_classes=3,
               average='weighted')
     output.update_state(actuals, preds)
     print('F1 Weighted score is: ',
             output.result().numpy()) # 0.6666667
     # F1 score for each class (average=None).
-    output = tf.keras.metrics.F1Score(num_classes=3)
+    output = tfa.metrics.F1Score(num_classes=3)
     output.update_state(actuals, preds)
     print('F1 score is: ',
             output.result().numpy()) # [1. 0. 0.]
@@ -336,7 +336,8 @@ class F1Score(FBetaScore):
 
     def __init__(self, num_classes, average, name='f1_score',
                  dtype=tf.float32):
-        super().__init__(num_classes, average, 1.0, name=name, dtype=dtype)
+        super(F1Score, self).__init__(
+            num_classes, average, 1.0, name=name, dtype=dtype)
 
     def get_config(self):
         """Returns the serializable config of the metric."""
