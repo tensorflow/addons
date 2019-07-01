@@ -27,4 +27,7 @@ sanity-check: install-ci-dependency
 	bash tools/ci_build/ci_sanity.sh --incremental
 
 unit-test:
-	bash tools/ci_testing/addons_cpu.sh
+	bash tools/ci_testing/addons_cpu_tests.sh
+
+gpu-unit-test:
+	bash tools/ci_testing/addons_gpu_tests.sh
