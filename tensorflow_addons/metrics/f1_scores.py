@@ -44,8 +44,10 @@ class FBetaScore(Metric):
          average : Type of averaging to be performed on data.
                    Acceptable values are None, micro, macro and
                    weighted.
-         beta : Determines the weight of precision and recall in harmonic
-                mean.
+         beta : float
+                Determines the weight of precision and recall in harmonic
+                mean. Acceptable values are either a number of float data
+                type greater than 0.0 or a scale tensor of dtype tf.float32.
 
       Returns:
          F1 Beta Score: float
@@ -265,7 +267,7 @@ class F1Score(FBetaScore):
                  Default value is None.
        beta : float
               Determines the weight of precision and recall in harmonic
-              mean.
+              mean. It's value is 1.0 for F1 score.
 
     Returns:
        F1 Score: float
