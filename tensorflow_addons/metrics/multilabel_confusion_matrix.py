@@ -27,72 +27,68 @@ class MultiLabelConfusionMatrix(Metric):
     def __init__(self,
                  num_classes,
                  name='Multilabel_confusion_matrix',
-                 dtype=tf.float32):
-        super(MultiLabelConfusionMatrix, self).__init__(name=name)
+                 dtype=tf.int32):
+        super(MultiLabelConfusionMatrix, self).__init__(name=name, dtype=dtype)
         self.num_classes = num_classes
         self.true_positives = self.add_weight(
             'true_positives',
             shape=[self.num_classes],
             initializer='zeros',
-            dtype=tf.float32)
+            dtype=self.dtype)
         self.false_positives = self.add_weight(
             'false_positives',
             shape=[self.num_classes],
             initializer='zeros',
-            dtype=tf.float32)
+            dtype=self.dtype)
         self.false_negatives = self.add_weight(
             'false_negatives',
             shape=[self.num_classes],
             initializer='zeros',
-            dtype=tf.float32)
+            dtype=self.dtype)
         self.true_negatives = self.add_weight(
             'true_negatives',
             shape=[self.num_classes],
             initializer='zeros',
-            dtype=tf.float32)
+            dtype=self.dtype)
 
     def update_state(self, y_true, y_pred):
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred, tf.int32)
 
-        # intermediate true positive calculation
-        true_positive_inter = y_true * y_pred
         # true positives
-        tp = tf.math.count_nonzero(true_positive_inter, 0)
+        true_positive = tf.math.count_nonzero(y_true * y_pred, 0)
         # predictions sum
         pred_sum = tf.math.count_nonzero(y_pred, 0)
         # true labels sum
         true_sum = tf.math.count_nonzero(y_true, 0)
         # false positives
-        print(tf.size(tp))
-        print(tp)
-        fp = pred_sum - tp
+        false_positive = pred_sum - true_positive
         # false negatives
-        fn = true_sum - tp
+        false_negative = true_sum - true_positive
         # true negatives
         print('in')
-        tn = y_true.get_shape()[0] - tp - fp - fn
+        true_negative = y_true.get_shape()[0] - true_positive - false_positive - false_negative
 
         # true positive state update
         self.true_positives.assign_add(
-            tf.cast(tp, tf.float32))
+            tf.cast(true_positive, self.dtype))
         # false positive state update
         self.false_positives.assign_add(
-            tf.cast(fp, tf.float32))
+            tf.cast(false_positive, self.dtype))
         # false negative state update
         self.false_negatives.assign_add(
-            tf.cast(fn, tf.float32))
+            tf.cast(false_negative, self.dtype))
         # true negative state update
         self.true_negatives.assign_add(
-            tf.cast(tn, tf.float32))
+            tf.cast(true_negative, self.dtype))
 
     def result(self):
-        tf_int = tf.convert_to_tensor([self.true_negatives, self.false_positives,
-                                       self.false_negatives,
-                                       self.true_positives])
-        result = tf.reshape(tf.transpose(tf_int), [-1, 2, 2])
+        flat_confusion_matrix = tf.convert_to_tensor([self.true_negatives, self.false_positives,
+                                                      self.false_negatives,
+                                                      self.true_positives])
+        confusion_matrix = tf.reshape(tf.transpose(flat_confusion_matrix), [-1, 2, 2])
 
-        return result
+        return confusion_matrix
 
     def get_config(self):
         """Returns the serializable config of the metric."""
@@ -104,7 +100,8 @@ class MultiLabelConfusionMatrix(Metric):
         return dict(list(base_config.items()) + list(config.items()))
 
     def reset_states(self):
-        self.true_positives.assign(np.zeros(self.num_classes), np.float32)
-        self.false_positives.assign(np.zeros(self.num_classes), np.float32)
-        self.false_negatives.assign(np.zeros(self.num_classes), np.float32)
-        self.true_negatives.assign(np.zeros(self.num_classes), np.float32)
+        self.true_positives.assign(np.zeros(self.num_classes), np.int32)
+        self.false_positives.assign(np.zeros(self.num_classes), np.int32)
+        self.false_negatives.assign(np.zeros(self.num_classes), np.int32)
+        self.true_negatives.assign(np.zeros(self.num_classes), np.int32)
+
