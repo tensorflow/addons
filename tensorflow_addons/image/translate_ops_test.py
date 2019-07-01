@@ -31,20 +31,17 @@ _DTYPES = set([
 
 @test_utils.run_all_in_graph_and_eager_modes
 class TranslateOpTest(tf.test.TestCase):
-  def test_translate(self):
-    for dtype in _DTYPES:
-      image = tf.constant(
-	            [[1, 0, 1, 0],
-	             [0, 1, 0, 1],
-	             [1, 0, 1, 0],
-	             [0, 1, 0, 1]], dtype=dtype)
-      translation = tf.constant([-1, -1], dtype=tf.float32)
-      image_translated = translate_ops.translate(image, translation)
-      self.assertAllEqual(self.evaluate(image_translated),
-	                            [[1, 0, 1, 0],
-	                             [0, 1, 0, 0],
-	                             [1, 0, 1, 0],
-	                             [0, 0, 0, 0]])
+    def test_translate(self):
+        for dtype in _DTYPES:
+            image = tf.constant(
+                [[1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1]],
+                dtype=dtype)
+            translation = tf.constant([-1, -1], dtype=tf.float32)
+            image_translated = translate_ops.translate(image, translation)
+            self.assertAllEqual(
+                self.evaluate(image_translated),
+                [[1, 0, 1, 0], [0, 1, 0, 0], [1, 0, 1, 0], [0, 0, 0, 0]])
+
 
 if __name__ == "__main__":
     tf.test.main()
