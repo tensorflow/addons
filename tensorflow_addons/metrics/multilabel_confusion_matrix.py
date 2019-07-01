@@ -67,26 +67,25 @@ class MultiLabelConfusionMatrix(Metric):
         false_negative = true_sum - true_positive
         # true negatives
         print('in')
-        true_negative = y_true.get_shape()[0] - true_positive - false_positive - false_negative
+        true_negative = y_true.get_shape(
+        )[0] - true_positive - false_positive - false_negative
 
         # true positive state update
-        self.true_positives.assign_add(
-            tf.cast(true_positive, self.dtype))
+        self.true_positives.assign_add(tf.cast(true_positive, self.dtype))
         # false positive state update
-        self.false_positives.assign_add(
-            tf.cast(false_positive, self.dtype))
+        self.false_positives.assign_add(tf.cast(false_positive, self.dtype))
         # false negative state update
-        self.false_negatives.assign_add(
-            tf.cast(false_negative, self.dtype))
+        self.false_negatives.assign_add(tf.cast(false_negative, self.dtype))
         # true negative state update
-        self.true_negatives.assign_add(
-            tf.cast(true_negative, self.dtype))
+        self.true_negatives.assign_add(tf.cast(true_negative, self.dtype))
 
     def result(self):
-        flat_confusion_matrix = tf.convert_to_tensor([self.true_negatives, self.false_positives,
-                                                      self.false_negatives,
-                                                      self.true_positives])
-        confusion_matrix = tf.reshape(tf.transpose(flat_confusion_matrix), [-1, 2, 2])
+        flat_confusion_matrix = tf.convert_to_tensor([
+            self.true_negatives, self.false_positives, self.false_negatives,
+            self.true_positives
+        ])
+        confusion_matrix = tf.reshape(
+            tf.transpose(flat_confusion_matrix), [-1, 2, 2])
 
         return confusion_matrix
 
@@ -104,4 +103,3 @@ class MultiLabelConfusionMatrix(Metric):
         self.false_positives.assign(np.zeros(self.num_classes), np.int32)
         self.false_negatives.assign(np.zeros(self.num_classes), np.int32)
         self.true_negatives.assign(np.zeros(self.num_classes), np.int32)
-
