@@ -117,7 +117,7 @@ class FBetaScore(Metric):
         super(FBetaScore, self).__init__(name=name)
         self.num_classes = num_classes
         # type check
-        if not isinstance(beta, float):
+        if not isinstance(beta, float) and beta.dtype != tf.float32:
             raise TypeError("The value of beta should be float")
         # value check
         if beta <= 0.0:
@@ -138,38 +138,38 @@ class FBetaScore(Metric):
                 'true_positives',
                 shape=[],
                 initializer='zeros',
-                dtype=tf.float32)
+                dtype=self.dtype)
             self.false_positives = self.add_weight(
                 'false_positives',
                 shape=[],
                 initializer='zeros',
-                dtype=tf.float32)
+                dtype=self.dtype)
             self.false_negatives = self.add_weight(
                 'false_negatives',
                 shape=[],
                 initializer='zeros',
-                dtype=tf.float32)
+                dtype=self.dtype)
         else:
             self.true_positives = self.add_weight(
                 'true_positives',
                 shape=[self.num_classes],
                 initializer='zeros',
-                dtype=tf.float32)
+                dtype=self.dtype)
             self.false_positives = self.add_weight(
                 'false_positives',
                 shape=[self.num_classes],
                 initializer='zeros',
-                dtype=tf.float32)
+                dtype=self.dtype)
             self.false_negatives = self.add_weight(
                 'false_negatives',
                 shape=[self.num_classes],
                 initializer='zeros',
-                dtype=tf.float32)
+                dtype=self.dtype)
             self.weights_intermediate = self.add_weight(
                 'weights',
                 shape=[self.num_classes],
                 initializer='zeros',
-                dtype=tf.float32)
+                dtype=self.dtype)
 
     def update_state(self, y_true, y_pred):
         y_true = tf.cast(y_true, tf.int32)
@@ -179,28 +179,28 @@ class FBetaScore(Metric):
         self.true_positives.assign_add(
             tf.cast(
                 tf.math.count_nonzero(y_pred * y_true, axis=self.axis),
-                tf.float32))
+                self.dtype))
         # false positive
         self.false_positives.assign_add(
             tf.cast(
                 tf.math.count_nonzero(y_pred * (y_true - 1), axis=self.axis),
-                tf.float32))
+                self.dtype))
         # false negative
         self.false_negatives.assign_add(
             tf.cast(
                 tf.math.count_nonzero((y_pred - 1) * y_true, axis=self.axis),
-                tf.float32))
+                self.dtype))
         if self.average == 'weighted':
             # variable to hold intermediate weights
             self.weights_intermediate.assign_add(
-                tf.cast(tf.reduce_sum(y_true, axis=self.axis), tf.float32))
+                tf.cast(tf.reduce_sum(y_true, axis=self.axis), self.dtype))
 
     def result(self):
-        p_sum = tf.cast(self.true_positives + self.false_positives, tf.float32)
+        p_sum = tf.cast(self.true_positives + self.false_positives, self.dtype)
         # calculate precision
         precision = tf.math.divide_no_nan(self.true_positives, p_sum)
 
-        r_sum = tf.cast(self.true_positives + self.false_negatives, tf.float32)
+        r_sum = tf.cast(self.true_positives + self.false_negatives, self.dtype)
         # calculate recall
         recall = tf.math.divide_no_nan(self.true_positives, r_sum)
         # intermediate calculations
@@ -255,7 +255,7 @@ class F1Score(FBetaScore):
     recall. Output range is [0, 1]. This works for both
     multi-class and multi-label classification.
 
-    F-Beta = (2) * ((precision * recall) / (precision + recall))
+    F-1 = (2) * ((precision * recall) / (precision + recall))
 
     Args:
        num_classes : Number of unique classes in the dataset.
@@ -263,7 +263,7 @@ class F1Score(FBetaScore):
                  Acceptable values are `None`, `micro`, `macro` and
                  `weighted`.
                  Default value is None.
-       beta : `float`
+       beta : float
               Determines the weight of precision and recall in harmonic
               mean.
 
