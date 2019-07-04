@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import tempfile
 import numpy as np
 import tensorflow as tf
 
@@ -304,11 +305,21 @@ def load_and_preprocess_tfa(path):
     return preprocess_image(image)
 
 
-@test_utils.run_all_in_graph_and_eager_modes
 class DatasetTests(tf.test.TestCase):
-    prefix_path = "tensorflow/core/lib"
-    image_path = os.path.join(prefix_path, "gif", "testdata", "scan.gif")
+    def setUp(self):
+        x = np.random.random(size=(24, 24, 3))
 
+        buf = tf.image.encode_jpeg(x, format='rgb', quality=100).numpy()
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as fh:
+            fh.write(buf)
+
+        self.image_path = fh.name
+
+    def tearDown(self):
+        os.unlink(self.image_path)
+
+    @test_utils.run_v2_only
     def test_rotate_static_shape(self):
         path_ds = tf.data.Dataset.from_tensor_slices([self.image_path])
         image_ds = path_ds.map(load_and_preprocess_tfa)
