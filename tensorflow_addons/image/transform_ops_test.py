@@ -72,6 +72,15 @@ class ImageOpsTest(tf.test.TestCase):
             output_shape=tf.constant([3, 5]))
         self.assertAllEqual([3, 5], result.shape)
 
+    @test_utils.run_in_graph_and_eager_modes
+    def test_transform_unknown_shape(self):
+        fn = transform_ops.transform.get_concrete_function(
+            tf.TensorSpec(shape=None, dtype=tf.float32),
+            [1, 0, 0, 0, 1, 0, 0, 0])
+        for shape in (2, 4), (2, 4, 3), (1, 2, 4, 3):
+            image = tf.ones(shape=shape)
+            self.assertAllEqual(self.evaluate(image), self.evaluate(fn(image)))
+
     def _test_grad(self, input_shape, output_shape=None):
         image_size = tf.math.cumprod(input_shape)[-1]
         image_size = tf.cast(image_size, tf.float32)
@@ -269,6 +278,13 @@ class RotateOpTest(tf.test.TestCase):
         result = transform_ops.rotate(
             image, tf.random.uniform((), -1, 1), interpolation="BILINEAR")
         self.assertEqual(image.get_shape(), result.get_shape())
+
+    def test_unknown_shape(self):
+        fn = transform_ops.rotate.get_concrete_function(
+            tf.TensorSpec(shape=None, dtype=tf.float32), 0)
+        for shape in (2, 4), (2, 4, 3), (1, 2, 4, 3):
+            image = tf.ones(shape=shape)
+            self.assertAllEqual(self.evaluate(image), self.evaluate(fn(image)))
 
 
 if __name__ == "__main__":
