@@ -55,6 +55,15 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
         if len(query_points.shape) != 3:
             raise ValueError("Query points must be 3 dimensional.")
 
+        if query_points.shape[2] is not None and query_points.shape[2] != 2:
+            raise ValueError("Query points must be size 2 in dim 2.")
+
+        if grid.shape[1] is not None and grid.shape[1] < 2:
+            raise ValueError("Grid height must be at least 2.")
+
+        if grid.shape[2] is not None and grid.shape[2] < 2:
+            raise ValueError("Grid width must be at least 2.")
+
         grid_shape = tf.shape(grid)
         query_shape = tf.shape(query_points)
 
@@ -62,24 +71,33 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
                                                grid_shape[2], grid_shape[3])
 
         shape = [batch_size, height, width, channels]
-        num_queries = query_shape[1]
+
+        # pylint: disable=bad-continuation
+        with tf.control_dependencies([
+                tf.debugging.assert_equal(
+                    query_shape[2],
+                    2,
+                    message="Query points must be size 2 in dim 2.")
+        ]):
+            num_queries = query_shape[1]
+        # pylint: enable=bad-continuation
 
         query_type = query_points.dtype
         grid_type = grid.dtype
 
-        tf.debugging.assert_equal(
-            query_shape[2], 2, message="Query points must be size 2 in dim 2.")
-
-        tf.debugging.assert_greater_equal(
-            height, 2, message="Grid height must be at least 2."),
-        tf.debugging.assert_greater_equal(
-            width, 2, message="Grid width must be at least 2.")
-
-        alphas = []
-        floors = []
-        ceils = []
-        index_order = [0, 1] if indexing == "ij" else [1, 0]
-        unstacked_query_points = tf.unstack(query_points, axis=2)
+        # pylint: disable=bad-continuation
+        with tf.control_dependencies([
+                tf.debugging.assert_greater_equal(
+                    height, 2, message="Grid height must be at least 2."),
+                tf.debugging.assert_greater_equal(
+                    width, 2, message="Grid width must be at least 2."),
+        ]):
+            alphas = []
+            floors = []
+            ceils = []
+            index_order = [0, 1] if indexing == "ij" else [1, 0]
+            unstacked_query_points = tf.unstack(query_points, axis=2)
+        # pylint: enable=bad-continuation
 
         for dim in index_order:
             with tf.name_scope("dim-" + str(dim)):
@@ -112,16 +130,21 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
                 alpha = tf.expand_dims(alpha, 2)
                 alphas.append(alpha)
 
-        tf.debugging.assert_less_equal(
-            tf.cast(batch_size * height * width, dtype=tf.dtypes.float32),
-            np.iinfo(np.int32).max / 8.0,
-            message="The image size or batch size is sufficiently large "
-            "that the linearized addresses used by tf.gather "
-            "may exceed the int32 limit.")
-        flattened_grid = tf.reshape(grid,
-                                    [batch_size * height * width, channels])
-        batch_offsets = tf.reshape(
-            tf.range(batch_size) * height * width, [batch_size, 1])
+        # pylint: disable=bad-continuation
+        with tf.control_dependencies([
+                tf.debugging.assert_less_equal(
+                    tf.cast(
+                        batch_size * height * width, dtype=tf.dtypes.float32),
+                    np.iinfo(np.int32).max / 8.0,
+                    message="The image size or batch size is sufficiently "
+                    "large that the linearized addresses used by tf.gather "
+                    "may exceed the int32 limit.")
+        ]):
+            flattened_grid = tf.reshape(
+                grid, [batch_size * height * width, channels])
+            batch_offsets = tf.reshape(
+                tf.range(batch_size) * height * width, [batch_size, 1])
+        # pylint: enable=bad-continuation
 
         # This wraps tf.gather. We reshape the image data such that the
         # batch, y, and x coordinates are pulled into the first dimension.

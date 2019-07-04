@@ -143,7 +143,7 @@ def sequence_loss(logits,
         return crossent
 
 
-class SequenceLoss(tf.losses.Loss):
+class SequenceLoss(tf.keras.losses.Loss):
     """Weighted cross-entropy loss for a sequence of logits."""
 
     def __init__(self,

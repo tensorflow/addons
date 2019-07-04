@@ -30,31 +30,15 @@ developments that cannot be integrated into core TensorFlow
 | Subpackage    | Maintainers  | Contact Info                        |
 |:----------------------- |:----------- |:----------------------------|
 | [tfa.activations](tensorflow_addons/activations/README.md) | SIG-Addons | @facaiy @seanpmorgan | 
+| [tfa.callbacks](tensorflow_addons/callbacks/README.md) | SIG-Addons | @squadrick |
 | [tfa.image](tensorflow_addons/image/README.md) | SIG-Addons | @windqaq @facaiy |
 | [tfa.layers](tensorflow_addons/layers/README.md) | SIG-Addons | @seanpmorgan @facaiy |
 | [tfa.losses](tensorflow_addons/losses/README.md) | SIG-Addons | @facaiy @windqaq   |
-| [tfa.optimizers](tensorflow_addons/optimizers/README.md) | SIG-Addons | @facaiy @windqaq |
+| [tfa.metrics](tensorflow_addons/metrics/README.md) | SIG-Addons | @squadrick | 
+| [tfa.optimizers](tensorflow_addons/optimizers/README.md) | SIG-Addons | @facaiy @windqaq @squadrick |
 | [tfa.rnn](tensorflow_addons/rnn/README.md) | Google | @qlzh727 |
 | [tfa.seq2seq](tensorflow_addons/seq2seq/README.md) | Google | @qlzh727 |
 | [tfa.text](tensorflow_addons/text/README.md) |  SIG-Addons |  @seanpmorgan @facaiy |
-
-## Core Concepts
-
-#### Standardized API within Subpackages
-User experience and project maintainability are core concepts in
-TF-Addons. In order to achieve these we require that our additions
-conform to established API patterns seen in core TensorFlow.
-
-#### Periodic Evaluation of Subpackages
-Based on the nature of this repository, there will be contributions that
-in time become dated and unused. In order to keep the project
-maintainable, SIG-Addons will perform periodic reviews and deprecate
-contributions which will be slated for removal. More information will
-be available after we submit a formal request for comment.
-
-## Examples
-See [`examples/`](examples/)
-for end-to-end examples of various addons.
 
 ## Installation
 #### Stable Builds
@@ -63,7 +47,7 @@ To install the latest version, run the following:
 pip install tensorflow-addons
 ```
  
-**Note:** You will also need [`tensorflow==2.0.0.a0`](https://www.tensorflow.org/alpha) installed.
+**Note:** You will also need [`tensorflow==2.0.0-beta1`](https://www.tensorflow.org/beta) installed.
 
 To use addons:
 
@@ -72,11 +56,18 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 ```
 
+#### Nightly Builds
+There are also nightly builds of TensorFlow Addons under the pip package 
+`tfa-nightly`, which is built against `tf-nightly-2.0-preview`. Nightly builds 
+include newer features, but may be less stable than the versioned releases.
+
+```
+pip install tfa-nightly
+```
+
 #### Installing from Source
 You can also install from source. This requires the [Bazel](
 https://bazel.build/) build system.
-
-**Note:** If building from master you must install `tf-nightly-2.0-preview` in the process.
 
 ```
 git clone https://github.com/tensorflow/addons.git
@@ -90,6 +81,65 @@ bazel-bin/build_pip_pkg artifacts
 
 pip install artifacts/tensorflow_addons-*.whl
 ```
+
+## Examples
+See [`examples/`](examples/)
+for end-to-end examples of various addons.
+
+## Core Concepts
+
+#### Standardized API within Subpackages
+User experience and project maintainability are core concepts in
+TF-Addons. In order to achieve these we require that our additions
+conform to established API patterns seen in core TensorFlow.
+
+#### Proxy Maintainership
+Addons has been designed to compartmentalize subpackages and submodules so 
+that they can be maintained by users who have expertise and a vested interest 
+in that component. 
+
+Subpackage maintainership will only be granted after substantial contribution 
+has been made in order to limit the number of users with write permission. 
+Contributions can come in the form of issue closings, bug fixes, documentation, 
+new code, or optimizing existing code. Submodule maintainership can be granted 
+with a lower barrier for entry as this will not include write permissions to 
+the repo.
+
+For more information see [the RFC](https://github.com/tensorflow/community/blob/master/rfcs/20190308-addons-proxy-maintainership.md) 
+on this topic.
+
+#### Periodic Evaluation of Subpackages
+Given the nature of this repository, subpackages and submodules may become less 
+and less useful to the community as time goes on. In order to keep the 
+repository sustainable, we'll be performing bi-annual reviews of our code to 
+ensure everything still belongs within the repo. Contributing factors to this 
+review will be:
+
+1. Number of active maintainers
+2. Amount of OSS use
+3. Amount of issues or bugs attributed to the code
+4. If a better solution is now available
+
+Functionality within TensorFlow Addons can be categorized into three groups:
+
+* **Suggested**: well-maintained API; use is encouraged.
+* **Discouraged**: a better alternative is available; the API is kept for 
+historic reasons; or the API requires maintenance and is the waiting period 
+to be deprecated.
+* **Deprecated**: use at your own risk; subject to be deleted.
+
+The status change between these three groups is: 
+Suggested <-> Discouraged -> Deprecated.
+
+The period between an API being marked as deprecated and being deleted will be 
+90 days. The rationale being:
+
+1. In the event that TensorFlow Addons releases monthly, there will be 2-3 
+releases before an API is deleted. The release notes could give user enough 
+warning.
+
+2. 90 days gives maintainers ample time to fix their code.
+
 
 ## Contributing
 TF-Addons is a community led open source project. As such, the project

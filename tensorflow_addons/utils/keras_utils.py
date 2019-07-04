@@ -20,7 +20,7 @@ from __future__ import print_function
 import tensorflow as tf
 
 # TODO: find public API alternative to these
-from tensorflow.python.keras.losses import LossFunctionWrapper  # pylint: disable=unused-import
+from tensorflow.python.keras.utils import conv_utils  # pylint: disable=unused-import
 
 
 def register_keras_custom_object(cls):
