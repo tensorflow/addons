@@ -15,7 +15,7 @@
 """TensorFlow Addons.
 
 TensorFlow Addons is a repository of contributions that conform to well-
-established API patterns,but implement new functionality not available
+established API patterns, but implement new functionality not available
 in core TensorFlow. TensorFlow natively supports a large number of
 operators, layers, metrics, losses, and optimizers. However, in a fast
 moving field like ML, there are many interesting new developments that
