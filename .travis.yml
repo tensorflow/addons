@@ -41,3 +41,10 @@ jobs:
         - bash -x -e tools/ci_build/builds/release_macos.sh
       after_success:
         - twine upload -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
+
+notifications:
+  email:
+    recipients:
+      - addons-testing@tensorflow.org
+    on_success: never
+    on_failure: always

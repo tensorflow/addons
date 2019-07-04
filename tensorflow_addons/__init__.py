@@ -72,6 +72,7 @@ del print_function
 
 # Local project imports
 from tensorflow_addons import activations
+from tensorflow_addons import callbacks
 from tensorflow_addons import image
 from tensorflow_addons import layers
 from tensorflow_addons import losses

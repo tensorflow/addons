@@ -11,6 +11,7 @@ py_library(
         "distort_image_ops.py",
         "filters.py",
         "transform_ops.py",
+        "utils.py",
     ]),
     data = [
         "//tensorflow_addons/custom_ops/image:_distort_image_ops.so",
@@ -80,6 +81,19 @@ py_test(
         "transform_ops_test.py",
     ],
     main = "transform_ops_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "utils_test",
+    size = "small",
+    srcs = [
+        "utils_test.py",
+    ],
+    main = "utils_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":image",
