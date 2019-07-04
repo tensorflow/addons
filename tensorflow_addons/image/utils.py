@@ -55,11 +55,13 @@ def _dynamic_to_4D_image(image):
     # 2D image => [1, H, W, 1]
     left_pad = tf.cast(tf.less_equal(original_rank, 3), dtype=tf.int32)
     right_pad = tf.cast(tf.equal(original_rank, 2), dtype=tf.int32)
-    new_shape = tf.squeeze(
-        tf.pad(
-            tf.expand_dims(shape, axis=0), [[0, 0], [left_pad, right_pad]],
-            constant_values=1),
+    # yapf: disable
+    new_shape = tf.concat(
+        [tf.ones(shape=left_pad, dtype=tf.int32),
+         shape,
+         tf.ones(shape=right_pad, dtype=tf.int32)],
         axis=0)
+    # yapf: enable
     return tf.reshape(image, new_shape)
 
 
