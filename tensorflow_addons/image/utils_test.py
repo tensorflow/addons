@@ -56,6 +56,14 @@ class UtilsOpsTest(tf.test.TestCase):
                     img_utils.from_4D_image(
                         tf.ones(shape=(1, 2, 4, 1)), len(shape))))
 
+    def test_from_4D_image_with_unknown_shape(self):
+        for shape in (2, 4), (2, 4, 1), (1, 2, 4, 1):
+            fn = img_utils.from_4D_image.get_concrete_function(
+                tf.TensorSpec(shape=None, dtype=tf.float32), tf.size(shape))
+            self.assertAllEqual(
+                self.evaluate(tf.ones(shape=shape)),
+                self.evaluate(fn(tf.ones(shape=(1, 2, 4, 1)), tf.size(shape))))
+
     def test_from_4D_image_with_invalid_data(self):
         with self.assertRaises(ValueError):
             self.evaluate(
@@ -66,26 +74,21 @@ class UtilsOpsTest(tf.test.TestCase):
                 img_utils.from_4D_image(
                     tf.ones(shape=(2, 2, 4, 1)), tf.constant(2)))
 
-    def test_from_4D_image_with_unknown_shape(self):
-        for shape in (2, 4), (2, 4, 1), (1, 2, 4, 1):
-            fn = img_utils.from_4D_image.get_concrete_function(
-                tf.TensorSpec(shape=None, dtype=tf.float32), tf.size(shape))
-            self.assertAllEqual(
-                self.evaluate(tf.ones(shape=shape)),
-                self.evaluate(fn(tf.ones(shape=(1, 2, 4, 1)), tf.size(shape))))
-
     def test_from_4D_image_with_invalid_shape(self):
-        with self.assertRaises((ValueError, tf.errors.InvalidArgumentError)):
-            img_utils.from_4D_image(tf.ones(shape=(1,)), 1)
+        for rank in 2, tf.constant(2):
+            with self.subTest(rank=rank):
+                with self.assertRaises((ValueError,
+                                        tf.errors.InvalidArgumentError)):
+                    img_utils.from_4D_image(tf.ones(shape=(2, 4)), rank)
 
-        with self.assertRaises((ValueError, tf.errors.InvalidArgumentError)):
-            img_utils.from_4D_image(tf.ones(shape=(2, 4)), 2)
+                with self.assertRaises((ValueError,
+                                        tf.errors.InvalidArgumentError)):
+                    img_utils.from_4D_image(tf.ones(shape=(2, 4, 1)), rank)
 
-        with self.assertRaises((ValueError, tf.errors.InvalidArgumentError)):
-            img_utils.from_4D_image(tf.ones(shape=(2, 4, 1)), 2)
-
-        with self.assertRaises((ValueError, tf.errors.InvalidArgumentError)):
-            img_utils.from_4D_image(tf.ones(shape=(1, 2, 4, 1, 1)), 2)
+                with self.assertRaises((ValueError,
+                                        tf.errors.InvalidArgumentError)):
+                    img_utils.from_4D_image(
+                        tf.ones(shape=(1, 2, 4, 1, 1)), rank)
 
 
 if __name__ == "__main__":
