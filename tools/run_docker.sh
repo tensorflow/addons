@@ -33,8 +33,8 @@ while getopts ":s:d:p:c:h" opt; do
         p) PYTHON=$OPTARG;;
         c) COMMAND=$OPTARG;;
         h)
-            echo -n "usage: run_docker.sh -s SYSTEM -d DEVICE "
-            echo "-p PYTHON -c string"
+            echo -n "usage: run_docker.sh [-s SYSTEM] [-d DEVICE] "
+            echo "[-p PYTHON] -c string"
             echo "available commands:"
             echo "    -s    select operating system: 'linux'"
             echo "    -d    select device: 'cpu', 'gpu'"
@@ -58,7 +58,6 @@ if [[ "$SYSTEM" != "linux" ]]; then
     echo "System $SYSTEM is not supported yet"
     exit 1
 fi
-
 
 DOCKER_OPTS=''
 case ${DEVICE} in
@@ -84,6 +83,10 @@ case ${PYTHON} in
         ;;
 esac
 
+if [[ -z "${COMMAND}" ]]; then
+    echo "command string cannot be empty"
+    exit 1
+fi
 
 DOCKER_CMD="ln -sf ${PYTHON_LIB} /usr/bin/python && ${COMMAND}"
 echo "Docker image: ${DOCKER_IMAGE}"
