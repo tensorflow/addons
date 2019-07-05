@@ -104,5 +104,5 @@ def _dynamic_from_4D_image(image, original_rank):
     # 2D image <= [1, H, W, 1]
     begin = tf.cast(tf.less_equal(original_rank, 3), dtype=tf.int32)
     end = 4 - tf.cast(tf.equal(original_rank, 2), dtype=tf.int32)
-    original_shape = shape[begin:end]
-    return tf.reshape(image, original_shape)
+    new_shape = shape[begin:end]
+    return tf.reshape(image, new_shape)
