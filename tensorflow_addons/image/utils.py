@@ -40,7 +40,7 @@ def to_4D_image(image):
         tf.debugging.assert_rank_in(
             image, [2, 3, 4], message='`image` must be 2/3/4D tensor')
     ]):
-        # ydpf: enable
+        # yapf: enable
         ndims = image.get_shape().ndims
         if ndims is None:
             return _dynamic_to_4D_image(image)
