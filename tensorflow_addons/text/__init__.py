@@ -20,14 +20,14 @@ from __future__ import print_function
 # Conditional Random Field
 from tensorflow_addons.text.crf import crf_binary_score
 from tensorflow_addons.text.crf import crf_decode
+from tensorflow_addons.text.crf import crf_decode_backward
+from tensorflow_addons.text.crf import crf_decode_forward
+from tensorflow_addons.text.crf import crf_forward
 from tensorflow_addons.text.crf import crf_log_likelihood
 from tensorflow_addons.text.crf import crf_log_norm
 from tensorflow_addons.text.crf import crf_multitag_sequence_score
 from tensorflow_addons.text.crf import crf_sequence_score
 from tensorflow_addons.text.crf import crf_unary_score
-from tensorflow_addons.text.crf import CrfDecodeBackwardRnnCell
-from tensorflow_addons.text.crf import CrfDecodeForwardRnnCell
-from tensorflow_addons.text.crf import CrfForwardRnnCell
 from tensorflow_addons.text.crf import viterbi_decode
 
 # Skip Gram Sampling

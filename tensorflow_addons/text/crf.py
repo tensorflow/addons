@@ -147,16 +147,9 @@ def crf_log_norm(inputs, sequence_lengths, transition_params):
         rest_of_input = tf.slice(inputs, [0, 1, 0], [-1, -1, -1])
         # Compute the alpha values in the forward algorithm in order to get the
         # partition function.
-        forward_cell = CrfForwardRnnCell(transition_params)
-        # Sequence length is not allowed to be less than zero.
-        sequence_lengths_less_one = tf.maximum(
-            tf.constant(0, dtype=sequence_lengths.dtype), sequence_lengths - 1)
 
-        forward_layer = tf.keras.layers.RNN(forward_cell)
-
-        mask = tf.sequence_mask(sequence_lengths_less_one,
-                                tf.shape(inputs)[1] - 1)
-        alphas = forward_layer(rest_of_input, first_input, mask=mask)
+        alphas = crf_forward(rest_of_input, first_input, transition_params,
+                             sequence_lengths)
         log_norm = tf.reduce_logsumexp(alphas, [1])
         # Mask `log_norm` of the sequences with length <= zero.
         log_norm = tf.where(
@@ -276,51 +269,28 @@ def crf_binary_score(tag_indices, sequence_lengths, transition_params):
     return binary_scores
 
 
-class CrfForwardRnnCell(tf.keras.layers.AbstractRNNCell):
+@tf.function
+def crf_forward(inputs, state, transition_params, sequence_lengths):
     """Computes the alpha values in a linear-chain CRF.
 
     See http://www.cs.columbia.edu/~mcollins/fb.pdf for reference.
     """
 
-    def __init__(self, transition_params, **kwargs):
-        """Initialize the CrfForwardRnnCell.
-        Args:
-            transition_params: A [num_tags, num_tags] matrix of binary 
-                potentials. This matrix is expanded into a 
-                [1, num_tags, num_tags] in preparation for the 
-                broadcast summation occurring within the cell.
-        """
-        super(CrfForwardRnnCell, self).__init__(**kwargs)
-        self._transition_params = tf.expand_dims(transition_params, 0)
-        self._num_tags = transition_params.shape[0]
+    sequence_lengths = tf.maximum(
+        tf.constant(0, dtype=sequence_lengths.dtype), sequence_lengths - 2)
+    inputs = tf.transpose(inputs, [1, 0, 2])
+    transition_params = tf.expand_dims(transition_params, 0)
 
-    @property
-    def state_size(self):
-        return self._num_tags
-
-    @property
-    def output_size(self):
-        return self._num_tags
-
-    def build(self, input_shape):
-        super(CrfForwardRnnCell, self).build(input_shape)
-
-    def call(self, inputs, state):
-        """Build the CrfForwardRnnCell.
-
-        Args:
-            inputs: A [batch_size, num_tags] matrix of unary potentials.
-            state: A [batch_size, num_tags] matrix containing the
-                previous alpha values.
-            scope: Unused variable scope of this cell.
-            Returns:
-            new_alphas, new_alphas: A pair of [batch_size, num_tags]
-                matrices values containing the new alpha values.
-        """
-        state = tf.expand_dims(state[0], 2)
-        transition_scores = state + self._transition_params
+    def _scan_fn(state, inputs):
+        state = tf.expand_dims(state, 2)
+        transition_scores = state + transition_params
         new_alphas = inputs + tf.reduce_logsumexp(transition_scores, [1])
-        return new_alphas, new_alphas
+        return new_alphas
+
+    all_alphas = tf.transpose(tf.scan(_scan_fn, inputs, state), [1, 0, 2])
+    idxs = tf.stack(
+        [tf.range(tf.shape(sequence_lengths)[0]), sequence_lengths], axis=1)
+    return tf.gather_nd(all_alphas, idxs)
 
 
 def viterbi_decode(score, transition_params):
@@ -391,36 +361,27 @@ class CrfDecodeForwardRnnCell(tf.keras.layers.AbstractRNNCell):
         return backpointers, new_state
 
 
-class CrfDecodeBackwardRnnCell(tf.keras.layers.Layer):
+@tf.function
+def crf_decode_forward(inputs, state, transition_params, sequence_lengths):
+    mask = tf.sequence_mask(sequence_lengths, tf.shape(inputs)[1])
+    crf_fwd_cell = CrfDecodeForwardRnnCell(transition_params)
+    crf_fwd_layer = tf.keras.layers.RNN(
+        crf_fwd_cell, return_sequences=True, return_state=True)
+    return crf_fwd_layer(inputs, state, mask=mask)
+
+
+@tf.function
+def crf_decode_backward(inputs, state):
     """Computes backward decoding in a linear-chain CRF."""
+    inputs = tf.transpose(inputs, [1, 0, 2])
 
-    def __init__(self, num_tags, **kwargs):
-        """Initialize the CrfDecodeBackwardRnnCell.
+    def _scan_fn(state, inputs):
+        state = tf.squeeze(state, axis=[1])
+        idxs = tf.stack([tf.range(tf.shape(inputs)[0]), state], axis=1)
+        new_tags = tf.expand_dims(tf.gather_nd(inputs, idxs), axis=-1)
+        return new_tags
 
-        Args:
-          num_tags: An integer. The number of tags.
-        """
-        super(CrfDecodeBackwardRnnCell, self).__init__(**kwargs)
-
-    @property
-    def state_size(self):
-        return 1
-
-    @property
-    def output_size(self):
-        return 1
-
-    def build(self, input_shape):
-        super(CrfDecodeBackwardRnnCell, self).build(input_shape)
-
-    def call(self, inputs, state):
-        state = tf.squeeze(state[0], axis=[1])
-        batch_size = tf.shape(inputs)[0]
-        b_indices = tf.range(batch_size)
-        indices = tf.stack([b_indices, state], axis=1)
-        new_tags = tf.expand_dims(tf.gather_nd(inputs, indices), axis=-1)
-
-        return new_tags, new_tags
+    return tf.transpose(tf.scan(_scan_fn, inputs, state), [1, 0, 2])
 
 
 @tf.function
@@ -452,44 +413,30 @@ def crf_decode(potentials, transition_params, sequence_length):
 
     def _multi_seq_fn():
         """Decoding of highest scoring sequence."""
-
-        # For simplicity, in shape comments, denote:
-        # 'batch_size' by 'B', 'max_seq_len' by 'T' , 'num_tags' by 'O' (output).
-        num_tags = potentials.shape[2]
-
         # Computes forward decoding. Get last score and backpointers.
         initial_state = tf.slice(potentials, [0, 0, 0], [-1, 1, -1])
-        initial_state = tf.squeeze(initial_state, axis=[1])  # [B, O]
-        inputs = tf.slice(potentials, [0, 1, 0], [-1, -1, -1])  # [B, T-1, O]
-        # Sequence length is not allowed to be less than zero.
+        initial_state = tf.squeeze(initial_state, axis=[1])
+        inputs = tf.slice(potentials, [0, 1, 0], [-1, -1, -1])
 
         sequence_length_less_one = tf.maximum(
             tf.constant(0, dtype=sequence_length.dtype), sequence_length - 1)
 
-        mask = tf.sequence_mask(sequence_length_less_one, tf.shape(inputs)[1])
-        crf_fwd_cell = CrfDecodeForwardRnnCell(transition_params)
-        crf_fwd_layer = tf.keras.layers.RNN(
-            crf_fwd_cell, return_sequences=True, return_state=True)
-        backpointers, last_score = crf_fwd_layer(
-            inputs, initial_state, mask=mask)
+        backpointers, last_score = crf_decode_forward(
+            inputs, initial_state, transition_params, sequence_length_less_one)
+
         backpointers = tf.reverse_sequence(
             backpointers, sequence_length_less_one, seq_axis=1)
 
-        crf_bwd_cell = CrfDecodeBackwardRnnCell(num_tags)
         initial_state = tf.cast(tf.argmax(last_score, axis=1), dtype=tf.int32)
         initial_state = tf.expand_dims(initial_state, axis=-1)
-        crf_bwd_layer = tf.keras.layers.RNN(
-            crf_bwd_cell, return_sequences=True)
-        decode_tags = crf_bwd_layer(backpointers, initial_state)
 
-        decode_tags = tf.squeeze(decode_tags, axis=[2])  # [B, T - 1]
-        decode_tags = tf.concat(
-            [initial_state, decode_tags],  # [B, T]
-            axis=1)
-        decode_tags = tf.reverse_sequence(  # [B, T]
+        decode_tags = crf_decode_backward(backpointers, initial_state)
+        decode_tags = tf.squeeze(decode_tags, axis=[2])
+        decode_tags = tf.concat([initial_state, decode_tags], axis=1)
+        decode_tags = tf.reverse_sequence(
             decode_tags, sequence_length, seq_axis=1)
 
-        best_score = tf.reduce_max(last_score, axis=1)  # [B]
+        best_score = tf.reduce_max(last_score, axis=1)
         return decode_tags, best_score
 
     if potentials.shape[1] == 1:
