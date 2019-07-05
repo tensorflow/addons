@@ -42,6 +42,13 @@ class TranslateOpTest(tf.test.TestCase):
                 self.evaluate(image_translated),
                 [[1, 0, 1, 0], [0, 1, 0, 0], [1, 0, 1, 0], [0, 0, 0, 0]])
 
+    def test_translations_to_projective_transforms(self):
+        translation = tf.constant([-1, -1], dtype=tf.float32)
+        transform = translate_ops.translations_to_projective_transforms(
+            translation)
+        self.assertAllEqual(
+            self.evaluate(transform), [[1, 0, 1, 0, 1, 1, 0, 0]])
+
 
 if __name__ == "__main__":
     tf.test.main()
