@@ -8,10 +8,7 @@
 | distort_image_ops | @WindQAQ | windqaq@gmail.com |
 | filters | @Mainak431 | mainakdutta76@gmail.com |
 | transform_ops | @mels630 | mels630@gmail.com | 
-<<<<<<< HEAD
 | translate_ops | @sayoojbk	| sayoojbk@gmail.com |
-=======
->>>>>>> e049dbc434886f9331acb6bbc25592540320c23e
 
 ## Components 
 | Submodule  | Image Processing Function |  Reference  |
@@ -26,17 +23,10 @@
 | transform_ops | angles_to_projective_transforms | | 
 | transform_ops | matrices_to_flat_transforms | | 
 | transform_ops | rotate | | 
-<<<<<<< HEAD
 | transform_ops | transform |  | 
 | translate_ops | translate | |
 | translate_ops | translations_to_projective_transforms | |
 
-=======
-| transform_ops | transform | |
-| translate_ops | translate | |
-| translate_ops | translations_to_projective_transforms | |
- 
->>>>>>> e049dbc434886f9331acb6bbc25592540320c23e
 ## Contribution Guidelines
 #### Standard API
 In order to conform with the current API standard, all image ops
