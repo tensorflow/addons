@@ -35,23 +35,26 @@ def to_4D_image(image):
     Returns:
       4D tensor with the same type.
     """
-    tf.debugging.assert_rank_in(image, [2, 3, 4])
-    ndims = image.get_shape().ndims
-    if ndims is None:
-        return _dynamic_to_4D_image(image)
-    elif ndims == 2:
-        return image[None, :, :, None]
-    elif ndims == 3:
-        return image[None, :, :, :]
-    else:
-        return image
+    with tf.control_dependencies([
+            tf.debugging.assert_rank_in(
+                image, [2, 3, 4], message='`image` must be 2/3/4D tensor')
+    ]):
+        ndims = image.get_shape().ndims
+        if ndims is None:
+            return _dynamic_to_4D_image(image)
+        elif ndims == 2:
+            return image[None, :, :, None]
+        elif ndims == 3:
+            return image[None, :, :, :]
+        else:
+            return image
 
 
 def _dynamic_to_4D_image(image):
     shape = tf.shape(image)
     original_rank = tf.rank(image)
-    # 4D image => [N, H, W, C]
-    # 3D image => [1, H, W, C]
+    # 4D image => [N, H, W, C] or [N, C, H, W]
+    # 3D image => [1, H, W, C] or [1, C, H, W]
     # 2D image => [1, H, W, 1]
     left_pad = tf.cast(tf.less_equal(original_rank, 3), dtype=tf.int32)
     right_pad = tf.cast(tf.equal(original_rank, 2), dtype=tf.int32)
@@ -76,21 +79,24 @@ def from_4D_image(image, ndims):
     Returns:
       `ndims`-D tensor with the same type.
     """
-    tf.debugging.assert_rank(image, 4)
-    if isinstance(ndims, tf.Tensor):
-        return _dynamic_from_4D_image(image, ndims)
-    elif ndims == 2:
-        return tf.squeeze(image, [0, 3])
-    elif ndims == 3:
-        return tf.squeeze(image, [0])
-    else:
-        return image
+    with tf.control_dependencies([
+            tf.debugging.assert_rank(
+                image, 4, message='`image` must be 4D tensor')
+    ]):
+        if isinstance(ndims, tf.Tensor):
+            return _dynamic_from_4D_image(image, ndims)
+        elif ndims == 2:
+            return tf.squeeze(image, [0, 3])
+        elif ndims == 3:
+            return tf.squeeze(image, [0])
+        else:
+            return image
 
 
 def _dynamic_from_4D_image(image, original_rank):
     shape = tf.shape(image)
-    # 4D image <= [N, H, W, C]
-    # 3D image <= [1, H, W, C]
+    # 4D image <= [N, H, W, C] or [N, C, H, W]
+    # 3D image <= [1, H, W, C] or [1, C, H, W]
     # 2D image <= [1, H, W, 1]
     begin = tf.cast(tf.less_equal(original_rank, 3), dtype=tf.int32)
     end = 4 - tf.cast(tf.equal(original_rank, 2), dtype=tf.int32)
