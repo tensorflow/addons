@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+from tensorflow_addons.image import utils as img_utils
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 _image_ops_so = tf.load_op_library(
@@ -40,8 +41,7 @@ def transform(images,
     Args:
       images: A tensor of shape (num_images, num_rows, num_columns,
         num_channels) (NHWC), (num_rows, num_columns, num_channels) (HWC), or
-        (num_rows, num_columns) (HW). The rank must be statically known (the
-        shape is not `TensorShape(None)`.
+        (num_rows, num_columns) (HW).
       transforms: Projective transform matrix/matrices. A vector of length 8 or
         tensor of size N x 8. If one row of transforms is
         [a0, a1, a2, b0, b1, b2, c0, c1], then it maps the *output* point
@@ -72,16 +72,8 @@ def transform(images,
             transforms, name="transforms", dtype=tf.dtypes.float32)
         if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
             raise TypeError("Invalid dtype %s." % image_or_images.dtype)
-        elif image_or_images.get_shape().ndims is None:
-            raise TypeError("image_or_images rank must be statically known")
-        elif len(image_or_images.get_shape()) == 2:
-            images = image_or_images[None, :, :, None]
-        elif len(image_or_images.get_shape()) == 3:
-            images = image_or_images[None, :, :, :]
-        elif len(image_or_images.get_shape()) == 4:
-            images = image_or_images
-        else:
-            raise TypeError("Images should have rank between 2 and 4.")
+        images = img_utils.to_4D_image(image_or_images)
+        original_ndims = img_utils.get_ndims(image_or_images)
 
         if output_shape is None:
             output_shape = tf.shape(images)[1:3]
@@ -109,12 +101,7 @@ def transform(images,
             output_shape=output_shape,
             transforms=transforms,
             interpolation=interpolation.upper())
-        if len(image_or_images.get_shape()) == 2:
-            return output[0, :, :, 0]
-        elif len(image_or_images.get_shape()) == 3:
-            return output[0, :, :, :]
-        else:
-            return output
+        return img_utils.from_4D_image(output, original_ndims)
 
 
 @tf.function
@@ -299,8 +286,7 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
       images: A tensor of shape
         (num_images, num_rows, num_columns, num_channels)
         (NHWC), (num_rows, num_columns, num_channels) (HWC), or
-        (num_rows, num_columns) (HW). The rank must be statically known (the
-        shape is not `TensorShape(None)`.
+        (num_rows, num_columns) (HW).
       angles: A scalar angle to rotate all images by, or (if images has rank 4)
         a vector of length num_images, with an angle for each image in the
         batch.
@@ -319,16 +305,8 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
         image_or_images = tf.convert_to_tensor(images)
         if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
             raise TypeError("Invalid dtype %s." % image_or_images.dtype)
-        if image_or_images.get_shape().ndims is None:
-            raise TypeError("image_or_images rank must be statically known")
-        elif len(image_or_images.get_shape()) == 2:
-            images = image_or_images[None, :, :, None]
-        elif len(image_or_images.get_shape()) == 3:
-            images = image_or_images[None, :, :, :]
-        elif len(image_or_images.get_shape()) == 4:
-            images = image_or_images
-        else:
-            raise TypeError("Images should have rank between 2 and 4.")
+        images = img_utils.to_4D_image(image_or_images)
+        original_ndims = img_utils.get_ndims(image_or_images)
 
         image_height = tf.cast(tf.shape(images)[1], tf.dtypes.float32)[None]
         image_width = tf.cast(tf.shape(images)[2], tf.dtypes.float32)[None]
@@ -336,14 +314,7 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
             images,
             angles_to_projective_transforms(angles, image_height, image_width),
             interpolation=interpolation)
-        if image_or_images.get_shape().ndims is None:
-            raise TypeError("image_or_images rank must be statically known")
-        elif len(image_or_images.get_shape()) == 2:
-            return output[0, :, :, 0]
-        elif len(image_or_images.get_shape()) == 3:
-            return output[0, :, :, :]
-        else:
-            return output
+        return img_utils.from_4D_image(output, original_ndims)
 
 
 @tf.function
