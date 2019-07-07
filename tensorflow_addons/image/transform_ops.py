@@ -347,16 +347,8 @@ def random_rotation(images,
         image_or_images = tf.convert_to_tensor(images)
         if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
             raise TypeError("Invalid dtype %s." % image_or_images.dtype)
-        elif image_or_images.get_shape().ndims is None:
-            raise TypeError("image_or_images rank must be statically known")
-        elif len(image_or_images.get_shape()) == 2:
-            images = image_or_images[None, :, :, None]
-        elif len(image_or_images.get_shape()) == 3:
-            images = image_or_images[None, :, :, :]
-        elif len(image_or_images.get_shape()) == 4:
-            images = image_or_images
-        else:
-            raise TypeError("Images should have rank between 2 and 4.")
+        images = img_utils.to_4D_image(image_or_images)
+        original_ndims = img_utils.get_ndims(image_or_images)
 
         min_rot = min_rot if min_rot else -1.0 * max_rot
 
@@ -372,14 +364,7 @@ def random_rotation(images,
                                                      image_width)
         new_images = transform(images, transforms, interpolation=interpolation)
 
-        if image_or_images.get_shape().ndims is None:
-            raise TypeError("image_or_images rank must be statically known")
-        elif len(image_or_images.get_shape()) == 2:
-            return new_images[0, :, :, 0]
-        elif len(image_or_images.get_shape()) == 3:
-            return new_images[0, :, :, :]
-        else:
-            return new_images
+        return img_utils.from_4D_image(new_images, original_ndims)
 
 
 @tf.function
@@ -407,16 +392,8 @@ def random_rot90(images, max_turns=1, interpolation="NEAREST", name=None):
         image_or_images = tf.convert_to_tensor(images)
         if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
             raise TypeError("Invalid dtype %s." % image_or_images.dtype)
-        elif image_or_images.get_shape().ndims is None:
-            raise TypeError("image_or_images rank must be statically known")
-        elif len(image_or_images.get_shape()) == 2:
-            images = image_or_images[None, :, :, None]
-        elif len(image_or_images.get_shape()) == 3:
-            images = image_or_images[None, :, :, :]
-        elif len(image_or_images.get_shape()) == 4:
-            images = image_or_images
-        else:
-            raise TypeError("Images should have rank between 2 and 4.")
+        images = img_utils.to_4D_image(image_or_images)
+        original_ndims = img_utils.get_ndims(image_or_images)
 
         image_height = tf.cast(tf.shape(images)[1], tf.dtypes.float32)[None]
         image_width = tf.cast(tf.shape(images)[2], tf.dtypes.float32)[None]
@@ -435,11 +412,4 @@ def random_rot90(images, max_turns=1, interpolation="NEAREST", name=None):
                                                      image_width)
         new_images = transform(images, transforms, interpolation=interpolation)
 
-        if image_or_images.get_shape().ndims is None:
-            raise TypeError("image_or_images rank must be statically known")
-        elif len(image_or_images.get_shape()) == 2:
-            return new_images[0, :, :, 0]
-        elif len(image_or_images.get_shape()) == 3:
-            return new_images[0, :, :, :]
-        else:
-            return new_images
+        return img_utils.from_4D_image(new_images, original_ndims)
