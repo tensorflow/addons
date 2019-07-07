@@ -12,6 +12,7 @@ py_library(
         "filters.py",
         "transform_ops.py",
         "translate_ops.py",
+        "utils.py",
     ]),
     data = [
         "//tensorflow_addons/custom_ops/image:_distort_image_ops.so",
@@ -94,6 +95,19 @@ py_test(
         "translate_ops_test.py",
     ],
     main = "translate_ops_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "utils_test",
+    size = "small",
+    srcs = [
+        "utils_test.py",
+    ],
+    main = "utils_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":image",
