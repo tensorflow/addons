@@ -27,8 +27,7 @@ from tensorflow_addons.utils import test_utils
 class PairWiseDistance(tf.test.TestCase):
     def test_zero_distance(self):
         """Test that equal embeddings have a pairwise distance of 0."""
-        equal_embeddings = tf.constant([[1.0, 0.5],
-                                     [1.0, 0.5]])
+        equal_embeddings = tf.constant([[1.0, 0.5], [1.0, 0.5]])
 
         distances = pairwise_distance(equal_embeddings, squared=False)
         self.assertAllClose(tf.math.reduce_sum(distances), 0)
@@ -44,22 +43,19 @@ class PairWiseDistance(tf.test.TestCase):
 
     def test_correct_distance(self):
         """Compare against numpy caluclation."""
-        tf_embeddings = tf.constant([[0.5, 0.5],
-                                     [1.0, 1.0]])
+        tf_embeddings = tf.constant([[0.5, 0.5], [1.0, 1.0]])
 
-        expected_distance = np.array([[0, np.sqrt(2)/2],
-                                     [np.sqrt(2)/2, 0]])
+        expected_distance = np.array([[0, np.sqrt(2) / 2], [np.sqrt(2) / 2,
+                                                            0]])
 
         distances = pairwise_distance(tf_embeddings, squared=False)
         self.assertAllClose(expected_distance, distances)
 
     def test_correct_distance_squared(self):
         """Compare against numpy caluclation for squared distances."""
-        tf_embeddings = tf.constant([[0.5, 0.5],
-                                     [1.0, 1.0]])
+        tf_embeddings = tf.constant([[0.5, 0.5], [1.0, 1.0]])
 
-        expected_distance = np.array([[0, 0.5],
-                                      [0.5, 0]])
+        expected_distance = np.array([[0, 0.5], [0.5, 0]])
 
         distances = pairwise_distance(tf_embeddings, squared=True)
         self.assertAllClose(expected_distance, distances)
