@@ -98,3 +98,16 @@ py_test(
         ":losses",
     ],
 )
+
+py_test(
+    name = "metric_test",
+    size = "small",
+    srcs = [
+        "metric_test.py",
+    ],
+    main = "metric_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":losses",
+    ],
+)
