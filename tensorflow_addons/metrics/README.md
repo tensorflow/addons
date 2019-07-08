@@ -4,7 +4,7 @@
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
 |  cohens_kappa| Aakash Nain   |  aakashnain@outlook.com|
-|  f_scores| Saishruthi Swaminathan | saishruthi.tn@gmail.com|
+|  fb_scores| Saishruthi Swaminathan | saishruthi.tn@gmail.com|
 |  r_square| Saishruthi Swaminathan| saishruthi.tn@gmail.com|
 
 ## Contents
