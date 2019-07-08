@@ -21,7 +21,7 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from tensorflow_addons.image import distance_transform as distance_tranform_ops
+from tensorflow_addons.image import distance_transform as distance_transform_ops
 from tensorflow_addons.utils import test_utils
 
 
@@ -45,7 +45,7 @@ class DistanceOpsTest(tf.test.TestCase):
         image = tf.constant(image, dtype=tf.uint8)
 
         for output_dtype in [tf.float16, tf.float32, tf.float64]:
-            output = distance_tranform_ops.euclidean_dist_transform(
+            output = distance_transform_ops.euclidean_dist_transform(
                 image, dtype=output_dtype)
             output_flat = tf.reshape(output, [-1])
 
@@ -73,7 +73,7 @@ class DistanceOpsTest(tf.test.TestCase):
         # yapf: enable
         images = tf.constant([image] * batch_size, dtype=tf.uint8)
         for output_dtype in [tf.float16, tf.float32, tf.float64]:
-            output = distance_tranform_ops.euclidean_dist_transform(
+            output = distance_transform_ops.euclidean_dist_transform(
                 images, dtype=output_dtype)
             output_flat = tf.reshape(output, [-1])
 
@@ -97,37 +97,36 @@ class DistanceOpsTest(tf.test.TestCase):
             # pylint: disable=bad-continuation
             with self.assertRaisesRegex(
                     TypeError, "`dtype` must be float16, float32 or float64"):
-                _ = distance_tranform_ops.euclidean_dist_transform(
+                _ = distance_transform_ops.euclidean_dist_transform(
                     image, dtype=output_dtype)
 
     def test_image_with_invalid_shape(self):
-        for invalid_shape in ([1], [2, 1], [2, 4, 4, 4, 1]):
-            image = tf.zeros(invalid_shape, tf.uint8)
-
-            # pylint: disable=bad-continuation
-            with self.assertRaisesRegex(
-                    ValueError, "`images` should have rank between 3 and 4"):
-                _ = distance_tranform_ops.euclidean_dist_transform(image)
-
         image = tf.zeros([2, 4, 3], tf.uint8)
         with self.assertRaisesRegex(ValueError,
                                     "`images` must have only one channel"):
-            _ = distance_tranform_ops.euclidean_dist_transform(image)
+            _ = distance_transform_ops.euclidean_dist_transform(image)
 
     def test_all_zeros(self):
-        image = tf.zeros([10, 10, 1], tf.uint8)
-        expected_output = np.zeros([10, 10, 1])
+        image = tf.zeros([10, 10], tf.uint8)
+        expected_output = np.zeros([10, 10])
 
         for output_dtype in [tf.float16, tf.float32, tf.float64]:
-            output = distance_tranform_ops.euclidean_dist_transform(
+            output = distance_transform_ops.euclidean_dist_transform(
                 image, dtype=output_dtype)
             self.assertAllClose(output, expected_output)
 
     def test_all_ones(self):
         image = tf.ones([10, 10, 1], tf.uint8)
-        output = distance_tranform_ops.euclidean_dist_transform(image)
+        output = distance_transform_ops.euclidean_dist_transform(image)
         expected_output = np.full([10, 10, 1], tf.float32.max)
         self.assertAllClose(output, expected_output)
+
+    def test_unknown_shape(self):
+        fn = distance_transform_ops.euclidean_dist_transform.\
+                get_concrete_function(tf.TensorSpec(None, tf.uint8))
+        for shape in [[5, 10], [10, 7, 1], [4, 10, 10, 1]]:
+            image = tf.zeros(shape, dtype=tf.uint8)
+            self.assertAllClose(image, fn(image))
 
 
 if __name__ == "__main__":
