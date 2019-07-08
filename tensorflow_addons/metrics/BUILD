@@ -7,7 +7,7 @@ py_library(
     srcs = [
         "__init__.py",
         "cohens_kappa.py",
-        "f1_scores.py",
+        "f_scores.py",
         "r_square.py",
     ],
     srcs_version = "PY2AND3",
