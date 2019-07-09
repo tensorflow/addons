@@ -55,18 +55,13 @@ class MultiLabelConfusionMatrix(Metric):
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred, tf.int32)
 
-        # true positives
         true_positive = tf.math.count_nonzero(y_true * y_pred, 0)
         # predictions sum
         pred_sum = tf.math.count_nonzero(y_pred, 0)
         # true labels sum
         true_sum = tf.math.count_nonzero(y_true, 0)
-        # false positives
         false_positive = pred_sum - true_positive
-        # false negatives
         false_negative = true_sum - true_positive
-        # true negatives
-        print('in')
         true_negative = y_true.get_shape(
         )[0] - true_positive - false_positive - false_negative
 
