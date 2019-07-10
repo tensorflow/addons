@@ -16,7 +16,8 @@
 # ==============================================================================
 # Make sure we're in the project root path.
 SCRIPT_DIR=$( cd ${0%/*} && pwd -P )
-ROOT_DIR=$( cd "$SCRIPT_DIR/.." && pwd -P )
+ROOT_DIR=$( cd "$SCRIPT_DIR/../.." && pwd -P )
+cd $ROOT_DIR
 if [[ ! -d "tensorflow_addons" ]]; then
     echo "ERROR: PWD: $PWD is not project root"
     exit 1
@@ -34,6 +35,7 @@ export CC_OPT_FLAGS='-mavx'
 export TF_NEED_CUDA=1
 
 export PYTHON_BIN_PATH=`which python`
+ls -alh $PYTHON_BIN_PATH
 # Use default configuration here.
 yes 'y' | ./configure.sh
 
