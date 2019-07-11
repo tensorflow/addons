@@ -5,7 +5,6 @@ package(default_visibility = ["//visibility:public"])
 load("@local_config_tf//:build_defs.bzl", "D_GLIBCXX_USE_CXX11_ABI")
 load("@local_config_cuda//cuda:build_defs.bzl", "if_cuda_is_configured", "if_cuda")
 
-
 cc_binary(
     name = "_distort_image_ops.so",
     srcs = [

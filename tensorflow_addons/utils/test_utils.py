@@ -17,21 +17,40 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import contextlib
 import inspect
 import unittest
 
+import tensorflow as tf
 # yapf: disable
 # pylint: disable=unused-import
 # TODO: find public API alternative to these
 from tensorflow.python.framework.test_util import run_all_in_graph_and_eager_modes
 from tensorflow.python.framework.test_util import run_deprecated_v1
 from tensorflow.python.framework.test_util import run_in_graph_and_eager_modes
-from tensorflow.python.framework.test_util import use_gpu
 from tensorflow.python.keras.testing_utils import layer_test
 from tensorflow.python.keras import keras_parameterized
 
 # pylint: enable=unused-import
 # yapf: enable
+
+
+@contextlib.contextmanager
+def device(use_gpu):
+    """Uses gpu when requested and available."""
+    if use_gpu and tf.test.is_gpu_available():
+        dev = "/device:GPU:0"
+    else:
+        dev = "/device:CPU:0"
+    with tf.device(dev):
+        yield
+
+
+@contextlib.contextmanager
+def use_gpu():
+    """Uses gpu when requested and available."""
+    with device(use_gpu=True):
+        yield
 
 
 def run_all_with_types(dtypes):
