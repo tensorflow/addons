@@ -12,3 +12,16 @@ py_library(
     ]),
     srcs_version = "PY2AND3",
 )
+
+py_test(
+    name = "keras_utils_test",
+    size = "small",
+    srcs = [
+        "keras_utils_test.py",
+    ],
+    main = "keras_utils_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":utils",
+    ],
+)
