@@ -12,12 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A module containing metrics that conform to Keras API."""
-
+"""Tests for Keras utils."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow_addons.metrics.cohens_kappa import CohenKappa
-from tensorflow_addons.metrics.f1_scores import F1Score
-from tensorflow_addons.metrics.r_square import RSquare
+import tensorflow as tf
+from tensorflow_addons.utils.keras_utils import normalize_tuple
+
+
+class NormalizeTupleTest(tf.test.TestCase):
+    def test_normalize_tuple(self):
+        self.assertEqual((2, 2, 2), normalize_tuple(2, n=3, name='strides'))
+        self.assertEqual((2, 1, 2),
+                         normalize_tuple((2, 1, 2), n=3, name='strides'))
+
+        with self.assertRaises(ValueError):
+            normalize_tuple((2, 1), n=3, name='strides')
+
+        with self.assertRaises(ValueError):
+            normalize_tuple(None, n=3, name='strides')
+
+
+if __name__ == '__main__':
+    tf.test.main()

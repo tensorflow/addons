@@ -12,12 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A module containing metrics that conform to Keras API."""
+"""A module containing callbacks that conform to Keras API."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-
-from tensorflow_addons.metrics.cohens_kappa import CohenKappa
-from tensorflow_addons.metrics.f1_scores import F1Score
-from tensorflow_addons.metrics.r_square import RSquare

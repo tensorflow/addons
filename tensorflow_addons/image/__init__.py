@@ -26,3 +26,4 @@ from tensorflow_addons.image.filters import mean_filter2d
 from tensorflow_addons.image.filters import median_filter2d
 from tensorflow_addons.image.transform_ops import rotate
 from tensorflow_addons.image.transform_ops import transform
+from tensorflow_addons.image.translate_ops import translate
