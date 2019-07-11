@@ -201,4 +201,24 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "cuda_libs",
+    data = [
+        ":cudart",
+    ],
+    linkopts = select({
+        ":darwin": [
+            "-Wl,-rpath,./lib",
+            "-Wl,-rpath,./extras/CUPTI/lib",
+        ],
+        "//conditions:default": [
+            "-Wl,-rpath,./lib64",
+            "-Wl,-rpath,./extras/CUPTI/lib64",
+        ],
+    }),
+    deps = [
+        ":cudart",
+    ],
+)
+
 %{copy_rules}
