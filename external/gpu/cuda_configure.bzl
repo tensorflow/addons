@@ -961,14 +961,14 @@ def _tpl(repository_ctx, tpl, substitutions = {}, out = None):
         out = tpl.replace(":", "/")
     repository_ctx.template(
         out,
-        Label("//gpu/%s.tpl" % tpl),
+        Label("//external/gpu/%s.tpl" % tpl),
         substitutions,
     )
 
 def _file(repository_ctx, label):
     repository_ctx.template(
         label.replace(":", "/"),
-        Label("//gpu/%s.tpl" % label),
+        Label("//external/gpu/%s.tpl" % label),
         {},
     )
 

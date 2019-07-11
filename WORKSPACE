@@ -1,5 +1,5 @@
 load("//tf_dependency:tf_configure.bzl", "tf_configure")
-load("//gpu:cuda_configure.bzl", "cuda_configure")
+load("//external/gpu:cuda_configure.bzl", "cuda_configure")
 
 tf_configure(
     name = "local_config_tf",
