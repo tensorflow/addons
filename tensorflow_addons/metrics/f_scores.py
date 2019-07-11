@@ -81,27 +81,29 @@ class FBetaScore(Metric):
 
     Usage:
     ```python
-    actuals = tf.constant([[1, 1, 0],[1, 0, 0]], dtype=tf.int32)
-    predis = tf.constant([[1, 0, 0],[1, 0, 1]], dtype=tf.int32)
-
+    actuals = tf.constant([[1, 1, 0],[1, 0, 0]],
+              dtype=tf.int32)
+    predis = tf.constant([[1, 0, 0],[1, 0, 1]],
+             dtype=tf.int32)
+    # F-Beta Micro
     fb_score = tfa.metrics.FBetaScore(num_classes=3,
                 beta=0.4, average='micro')
     fb_score.update_state(actuals, preds)
     print('F1-Beta Score is: ',
            fb_score.result().numpy()) # 0.6666666
-
+    # F-Beta Macro
     fb_score = tfa.metrics.FBetaScore(num_classes=3,
            beta=0.4, average='macro')
     fb_score.update_state(actuals, preds)
     print('F1-Beta Score is: ',
           fb_score.result().numpy()) # 0.33333334
-
+    # F-Beta Weighted
     fb_score = tfa.metrics.FBetaScore(num_classes=3,
                beta=0.4, average='weighted')
     fb_score.update_state(actuals, preds)
     print('F1-Beta Score is: ',
           fb_score.result().numpy()) # 0.6666667
-
+    # F-Beta score for each class (average=None).
     fb_score = tfa.metrics.FBetaScore(num_classes=3,
                beta=0.4, average=None)
     fb_score.update_state(actuals, preds)
@@ -249,7 +251,6 @@ class FBetaScore(Metric):
             self.weights_intermediate.assign(
                 np.zeros(self.num_classes), np.float32)
 
-
 class F1Score(FBetaScore):
     """Computes F1 micro, macro or weighted based on the user's choice.
 
@@ -340,12 +341,6 @@ class F1Score(FBetaScore):
             num_classes, average, 1.0, name=name, dtype=dtype)
 
     def get_config(self):
-        """Returns the serializable config of the metric."""
-        config = {
-            "num_classes": self.num_classes,
-            "average": self.average,
-        }
-        base_config = super(F1Score, self).get_config()
-        new_config = dict(list(base_config.items()))
-        del new_config['beta']
-        return new_config
+      base_config = super(F1Score, self).get_config()
+      del base_config["beta"]
+      return base_config

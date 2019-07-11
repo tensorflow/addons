@@ -88,7 +88,7 @@ class FBetaScoreTest(tf.test.TestCase):
                               dtype=tf.int32)
         preds = tf.constant([[0, 0, 1], [1, 1, 0], [1, 1, 1]], dtype=tf.int32)
 
-        # Use absl parameterized test here if possible
+        # test parameters
         test_params = [['micro', 0.5, 0.666667], ['macro', 0.5, 0.654882],
                        ['weighted', 0.5, 0.71380], ['micro', 2.0, 0.666667],
                        ['macro', 2.0, 0.68253], ['weighted', 2.0, 0.66269]]
@@ -105,7 +105,7 @@ class FBetaScoreTest(tf.test.TestCase):
             [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [1, 0, 0], [0, 0, 1]],
             dtype=tf.int32)
 
-        # Use absl parameterized test here if possible
+        # test parameters
         test_params = [[0.5, [0.71428573, 0.8333334, 1.]],
                        [2.0, [0.90909094, 0.5555556, 1.]]]
 
