@@ -90,8 +90,8 @@ def mean_filter2d(image,
                 "padding should be one of \"REFLECT\", \"CONSTANT\", or "
                 "\"SYMMETRIC\".")
 
-        filter_shape = keras_utils.conv_utils.normalize_tuple(
-            filter_shape, 2, "filter_shape")
+        filter_shape = keras_utils.normalize_tuple(filter_shape, 2,
+                                                   "filter_shape")
 
         # Expand to a 4-D tensor
         if rank == 3:
@@ -167,8 +167,8 @@ def median_filter2d(image,
                 "padding should be one of \"REFLECT\", \"CONSTANT\", or "
                 "\"SYMMETRIC\".")
 
-        filter_shape = keras_utils.conv_utils.normalize_tuple(
-            filter_shape, 2, "filter_shape")
+        filter_shape = keras_utils.normalize_tuple(filter_shape, 2,
+                                                   "filter_shape")
 
         # Expand to a 4-D tensor
         if rank == 3:
