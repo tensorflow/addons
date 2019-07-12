@@ -298,7 +298,7 @@ class LossTest(tf.test.TestCase):
             self.assertAllClose(compare_total, res)
 
     def testAmbiguousOrder(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegexp(ValueError, 'because of ambiguous order'):
             with self.cached_session(use_gpu=True):
                 self.setup()
                 seq_loss = loss.SequenceLoss(
