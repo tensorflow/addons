@@ -306,7 +306,8 @@ class LossTest(tf.test.TestCase):
                     average_across_batch=True,
                     sum_over_timesteps=True,
                     sum_over_batch=False)
-                self.evaluate(seq_loss(self.targets, self.logits, self.weights))
+                self.evaluate(
+                    seq_loss(self.targets, self.logits, self.weights))
 
 
 if __name__ == '__main__':
