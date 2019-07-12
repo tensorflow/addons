@@ -40,44 +40,44 @@ class FBetaScore(Metric):
     `beta == 1` gives equal weight to precision and recall.
 
     Args:
-         num_classes : Number of unique classes in the dataset.
-         average : Type of averaging to be performed on data.
+       num_classes : Number of unique classes in the dataset.
+       average : Type of averaging to be performed on data.
                    Acceptable values are None, micro, macro and
                    weighted.
-         beta : float. Determines the weight of precision and recall
+       beta : float. Determines the weight of precision and recall
                 in harmonic mean. Acceptable values are either a number
                 of float data type greater than 0.0 or a scale tensor
                 of dtype tf.float32.
 
-      Returns:
-         F Beta Score: float
+    Returns:
+       F Beta Score: float
 
-      Raises:
-         ValueError: If the `average` has values other than
-         [None, micro, macro, weighted].
+    Raises:
+       ValueError: If the `average` has values other than
+       [None, micro, macro, weighted].
 
-         ValueError: If the `beta` value is less than or equal
-         to 0.
+       ValueError: If the `beta` value is less than or equal
+       to 0.
 
-      `average` parameter behavior:
+    `average` parameter behavior:
 
-      1. If `None` is specified as an input, scores for each
-         class are returned.
+    1. If `None` is specified as an input, scores for each
+       class are returned.
 
-      2. If `micro` is specified, metrics like true positivies,
-         false positives and false negatives are computed
-         globally.
+    2. If `micro` is specified, metrics like true positivies,
+       false positives and false negatives are computed
+       globally.
 
-      3. If `macro` is specified, metrics like true positivies,
-         false positives and false negatives are computed for
-         each class and their unweighted mean is returned.
-         Imbalance in dataset is not taken into account for
-         calculating the score
+    3. If `macro` is specified, metrics like true positivies,
+       false positives and false negatives are computed for
+       each class and their unweighted mean is returned.
+       Imbalance in dataset is not taken into account for
+       calculating the score
 
-      4. If `weighted` is specified, metrics are computed for
-         each class and returns the mean weighted by the
-         number of true instances in each class taking data
-         imbalance into account.
+    4. If `weighted` is specified, metrics are computed for
+       each class and returns the mean weighted by the
+       number of true instances in each class taking data
+       imbalance into account.
 
     Usage:
     ```python
@@ -302,15 +302,12 @@ class F1Score(FBetaScore):
        imbalance into account.
 
     Usage:
-
-    F1 Micro Score
-
     ```python
-    # F1 Micro
     actuals = tf.constant([[1, 1, 0],[1, 0, 0]],
               dtype=tf.int32)
     preds = tf.constant([[1, 0, 0],[1, 0, 1]],
               dtype=tf.int32)
+    # F1 Micro
     output = tfa.metrics.F1Score(num_classes=3,
               average='micro')
     output.update_state(actuals, preds)
