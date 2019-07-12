@@ -26,6 +26,24 @@ elif [[ ! -z "$1" ]]; then
     exit 1
 fi
 
+# Install python dependencies
+read -r -p "Tensorflow will be upgraded to 2.0. Are You Sure? [y/n] " reply
+case $reply in
+    [yY]*) echo "Installing...";;
+    * ) echo "Goodbye!"; exit;;
+esac
+
+BUILD_DEPS_DIR=build_deps
+REQUIREMENTS_TXT=$BUILD_DEPS_DIR/requirements.txt
+if [[ "$TF_NEED_CUDA" == "1" ]]; then
+    # TODO: delete it when tf2 standard package supports
+    # both cpu and gpu kernel.
+    REQUIREMENTS_TXT=$BUILD_DEPS_DIR/requirements_gpu.txt
+fi
+
+${PYTHON_VERSION:=python} -m pip install $QUIET_FLAG -r $REQUIREMENTS_TXT
+
+# Bazel configure
 function write_to_bazelrc() {
   echo "$1" >> .bazelrc
 }
@@ -35,12 +53,6 @@ function write_action_env_to_bazelrc() {
 }
 
 [[ -f .bazelrc ]] && rm .bazelrc
-read -r -p "Tensorflow will be upgraded to 2.0. Are You Sure? [Y/n] " reply
-case $reply in
-    [yY]*) echo "Installing...";;
-    * ) echo "Goodbye!"; exit;;
-esac
-${PYTHON_VERSION:=python} -m pip install $QUIET_FLAG -r requirements.txt
 
 TF_CFLAGS=( $(${PYTHON_VERSION} -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') )
 TF_LFLAGS="$(${PYTHON_VERSION} -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))')"
