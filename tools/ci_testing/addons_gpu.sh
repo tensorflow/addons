@@ -25,7 +25,7 @@ fi
 
 set -x
 
-N_JOBS=$(grep -c ^processor /proc/cpuinfo)
+N_JOBS=1 # Must limit GPU testing to single job to prevent OOM error.
 
 echo ""
 echo "Bazel will use ${N_JOBS} concurrent job(s)."
