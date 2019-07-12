@@ -24,6 +24,49 @@ import numpy as np
 
 
 class MultiLabelConfusionMatrix(Metric):
+    """Computes Multi-label confusion matrix.
+
+    Class-wise confusion matrix is computed for the
+    evaluation of classification.
+
+    If multi-class input is provided, it will be treated
+    as multilabel data.
+
+    Consider classification problem with two classes.
+    Resultant matrix `M` will be in the shape of (num_classes, 2, 2).
+
+    Every class has a dedicated 2*2 matrix that contains:
+    - true negatives for class i in M(0,0)
+    - false positives for class i in M(0,1)
+    - false negatives for class i in M(1,0)
+    - true positives for class i in M(1,1)
+
+    ```python
+    # multilabel confusion matrix
+    y_true = tf.constant([[1, 0, 1], [0, 1, 0]],
+             dtype=tf.int32)
+    y_pred = tf.constant([[1, 0, 0],[0, 1, 1]],
+             dtype=tf.int32)
+    output = MultiLabelConfusionMatrix(num_classes=3)
+    output.update_state(y_true, y_pred)
+    print('Confusion matrix:', output.result().numpy())
+
+    # Confusion matrix: [[[1 0] [0 1]] [[1 0] [0 1]]
+                      [[0 1] [1 0]]]
+
+    # if multiclass input is provided
+    y_true = tf.constant([[1, 0, 0], [0, 1, 0]],
+             dtype=tf.int32)
+    y_pred = tf.constant([[1, 0, 0],[0, 0, 1]],
+             dtype=tf.int32)
+    output = MultiLabelConfusionMatrix(num_classes=3)
+    output.update_state(y_true, y_pred)
+    print('Confusion matrix:', output.result().numpy())
+
+    # Confusion matrix: [[[1 0] [0 1]] [[1 0] [1 0]] [[1 1] [0 0]]]
+    ```
+    """
+
     def __init__(self,
                  num_classes,
                  name='Multilabel_confusion_matrix',
@@ -79,6 +122,7 @@ class MultiLabelConfusionMatrix(Metric):
             self.true_negatives, self.false_positives, self.false_negatives,
             self.true_positives
         ])
+        # reshape into 2*2 matrix
         confusion_matrix = tf.reshape(
             tf.transpose(flat_confusion_matrix), [-1, 2, 2])
 

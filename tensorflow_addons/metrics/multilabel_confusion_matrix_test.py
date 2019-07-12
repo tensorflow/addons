@@ -47,32 +47,58 @@ class MultiLabelConfusionMatrixTest(tf.test.TestCase):
         self.assertAllClose(value, self.evaluate(obj.result()), atol=1e-5)
 
     def test_mcm_3_classes(self):
-        actuals = tf.constant([[1, 0, 1], [0, 1, 0], [1, 0, 1], [0, 1, 0]],
-                              dtype=tf.int32)
-        preds = tf.constant([[1, 0, 0], [0, 1, 1], [1, 0, 0], [0, 1, 1]],
-                            dtype=tf.int32)
-        # Initialize
-        mcm_obj = self.initialize_vars(n_classes=3)
-        # Update
-        self.update_obj_states(mcm_obj, actuals, preds)
-        # Check results
-        self.check_results(mcm_obj, [[[2, 0], [0, 2]], [[2, 0], [0, 2]],
-                                     [[0, 2], [2, 0]]])
+        for input_dtype in [tf.int32, tf.int64, tf.float32, tf.float64]:
+            actuals = tf.constant([[1, 0, 1], [0, 1, 0], [1, 0, 1], [0, 1, 0]],
+                                  dtype=input_dtype)
+            preds = tf.constant([[1, 0, 0], [0, 1, 1], [1, 0, 0], [0, 1, 1]],
+                                dtype=input_dtype)
+            # Initialize
+            mcm_obj = self.initialize_vars(n_classes=3)
+            # Update
+            self.update_obj_states(mcm_obj, actuals, preds)
+            # Check results
+            self.check_results(
+                mcm_obj,
+                [[[2, 0], [0, 2]], [[2, 0], [0, 2]], [[0, 2], [2, 0]]])
 
     def test_mcm_4_classes(self):
-        actuals = tf.constant([[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1],
-                               [0, 1, 0, 0], [0, 1, 0, 0], [1, 0, 0, 0],
-                               [0, 0, 1, 0], [1, 0, 0, 0], [0, 0, 1, 0],
-                               [0, 0, 0, 1]], dtype=tf.int32)
-        preds = tf.constant([[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1],
-                             [1, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 0],
-                             [0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0],
-                             [0, 0, 0, 1]], dtype=tf.int32)
+        for input_dtype in [tf.int32, tf.int64, tf.float32, tf.float64]:
+            actuals = tf.constant(
+                [[1, 0, 0, 1], [0, 0, 1, 1], [1, 0, 0, 1], [1, 1, 0, 0],
+                 [0, 1, 0, 1], [1, 0, 0, 1], [0, 0, 1, 1], [1, 0, 0, 1],
+                 [0, 1, 1, 0], [0, 1, 0, 1]],
+                dtype=np.int32)
+            preds = tf.constant(
+                [[1, 0, 1, 0], [0, 0, 1, 1], [0, 0, 0, 1], [1, 1, 0, 0],
+                 [1, 0, 0, 0], [1, 0, 0, 1], [0, 0, 1, 1], [1, 0, 0, 1],
+                 [0, 1, 0, 0], [0, 0, 0, 1]],
+                dtype=np.int32)
 
-        # Initialize
-        mcm_obj = self.initialize_vars(n_classes=4)
-        # Update
-        self.update_obj_states(mcm_obj, actuals, preds)
-        # Check results
-        self.check_results(mcm_obj, [[[5, 2], [0, 3]], [[7, 1], [2, 0]],
-                                     [[7, 0], [1, 2]], [[8, 0], [0, 2]]])
+            # Initialize
+            mcm_obj = self.initialize_vars(n_classes=4)
+            # Update
+            self.update_obj_states(mcm_obj, actuals, preds)
+            # Check results
+            self.check_results(mcm_obj, [[[4, 1], [1, 4]], [[6, 0], [2, 2]],
+                                         [[6, 1], [1, 2]], [[2, 0], [2, 6]]])
+
+    def test_multiclass(self):
+        for input_dtype in [tf.int32, tf.int64, tf.float32, tf.float64]:
+            actuals = tf.constant(
+                [[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [0, 1, 0, 0],
+                 [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [1, 0, 0, 0],
+                 [0, 0, 1, 0], [0, 0, 0, 1]],
+                dtype=input_dtype)
+            preds = tf.constant(
+                [[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [1, 0, 0, 0],
+                 [1, 0, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [1, 0, 0, 0],
+                 [0, 1, 0, 0], [0, 0, 0, 1]],
+                dtype=input_dtype)
+
+            # Initialize
+            mcm_obj = self.initialize_vars(n_classes=4)
+            # Update
+            self.update_obj_states(mcm_obj, actuals, preds)
+            # Check results
+            self.check_results(mcm_obj, [[[5, 2], [0, 3]], [[7, 1], [2, 0]],
+                                         [[7, 0], [1, 2]], [[8, 0], [0, 2]]])

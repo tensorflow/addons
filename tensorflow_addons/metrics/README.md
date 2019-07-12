@@ -6,6 +6,7 @@
 |  cohens_kappa| Aakash Nain   |  aakashnain@outlook.com|
 |  f1_scores| Saishruthi Swaminathan | saishruthi.tn@gmail.com|
 |  r_square| Saishruthi Swaminathan| saishruthi.tn@gmail.com|
+|  multilabel_confusion_matrix | Saishruthi Swaminathan | saishruthi.tn@gmail.com|
 
 ## Contents
 | Submodule | Metric  | Reference                               |
@@ -13,7 +14,7 @@
 | cohens_kappa| CohenKappa|[Cohen's Kappa](https://en.wikipedia.org/wiki/Cohen%27s_kappa)|
 | f1_scores| F1 micro, macro and weighted| [F1 Score](https://en.wikipedia.org/wiki/F1_score)|
 | r_square| RSquare|[R-Sqaure](https://en.wikipedia.org/wiki/Coefficient_of_determination)|
-
+| multilabel_confusion_matrix | Multilabel Confusion Matrix | [mcm](https://en.wikipedia.org/wiki/Confusion_matrix)|
 
 ## Contribution Guidelines
 #### Standard API
