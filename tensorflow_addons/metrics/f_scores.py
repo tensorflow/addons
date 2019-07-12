@@ -251,6 +251,7 @@ class FBetaScore(Metric):
             self.weights_intermediate.assign(
                 np.zeros(self.num_classes), np.float32)
 
+
 class F1Score(FBetaScore):
     """Computes F1 micro, macro or weighted based on the user's choice.
 
@@ -341,6 +342,6 @@ class F1Score(FBetaScore):
             num_classes, average, 1.0, name=name, dtype=dtype)
 
     def get_config(self):
-      base_config = super(F1Score, self).get_config()
-      del base_config["beta"]
-      return base_config
+        base_config = super(F1Score, self).get_config()
+        del base_config["beta"]
+        return base_config
