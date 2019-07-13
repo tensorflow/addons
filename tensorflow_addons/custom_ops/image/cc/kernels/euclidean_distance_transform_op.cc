@@ -77,7 +77,7 @@ TF_CALL_double(REGISTER);
 
 #undef REGISTER
 
-// TODO: fix compile issue of the gpu kernel.
+// TODO: fix compile issue #349 of the gpu kernel.
 #if 0 && GOOGLE_CUDA
 
 typedef Eigen::GpuDevice GPUDevice;
