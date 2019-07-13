@@ -71,9 +71,6 @@ class GatherTreeTest(tf.test.TestCase):
                 self.evaluate(beams)
 
     def testBadParentValuesOnGPU(self):
-        # TODO: Fix #348 issue
-        self.skipTest('Wait #348 to be fixed')
-
         # Only want to run this test on CUDA devices, as gather_tree is not
         # registered for SYCL devices.
         if not tf.test.is_gpu_available(cuda_only=True):
@@ -89,12 +86,14 @@ class GatherTreeTest(tf.test.TestCase):
         expected_result = _transpose_batch_time([[[2, -1, 2], [6, 5, 6],
                                                   [7, 8, 9], [10, 10, 10]]])
         with tf.device("/device:GPU:0"):
-            beams = gather_tree(
-                step_ids=step_ids,
-                parent_ids=parent_ids,
-                max_sequence_lengths=max_sequence_lengths,
-                end_token=end_token)
-            self.assertAllEqual(expected_result, self.evaluate(beams))
+            msg = r"parent id -1 at \(batch, time, beam\) == \(0, 0, 1\)"
+            with self.assertRaisesOpError(msg):
+                beams = gather_tree(
+                    step_ids=step_ids,
+                    parent_ids=parent_ids,
+                    max_sequence_lengths=max_sequence_lengths,
+                    end_token=end_token)
+                self.assertAllEqual(expected_result, self.evaluate(beams))
 
     def testGatherTreeBatch(self):
         batch_size = 10
