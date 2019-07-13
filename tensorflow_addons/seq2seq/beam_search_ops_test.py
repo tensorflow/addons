@@ -71,6 +71,9 @@ class GatherTreeTest(tf.test.TestCase):
                 self.evaluate(beams)
 
     def testBadParentValuesOnGPU(self):
+        # TODO: Fix #348 issue
+        self.skipTest('Wait #348 to be fixed')
+
         # Only want to run this test on CUDA devices, as gather_tree is not
         # registered for SYCL devices.
         if not tf.test.is_gpu_available(cuda_only=True):

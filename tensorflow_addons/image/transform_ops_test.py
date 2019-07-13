@@ -34,35 +34,38 @@ class ImageOpsTest(tf.test.TestCase):
     @test_utils.run_in_graph_and_eager_modes
     def test_compose(self):
         for dtype in _DTYPES:
-            image = tf.constant(
-                [[1, 1, 1, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]],
-                dtype=dtype)
-            # Rotate counter-clockwise by pi / 2.
-            rotation = transform_ops.angles_to_projective_transforms(
-                np.pi / 2, 4, 4)
-            # Translate right by 1 (the transformation matrix is always inverted,
-            # hence the -1).
-            translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0],
-                                      dtype=tf.dtypes.float32)
-            composed = transform_ops.compose_transforms(
-                [rotation, translation])
-            image_transformed = transform_ops.transform(image, composed)
-            self.assertAllEqual(
-                [[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 0, 1], [0, 1, 1, 1]],
-                image_transformed)
+            with test_utils.use_gpu():
+                image = tf.constant(
+                    [[1, 1, 1, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]],
+                    dtype=dtype)
+                # Rotate counter-clockwise by pi / 2.
+                rotation = transform_ops.angles_to_projective_transforms(
+                    np.pi / 2, 4, 4)
+                # Translate right by 1 (the transformation matrix is always inverted,
+                # hence the -1).
+                translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0],
+                                          dtype=tf.dtypes.float32)
+                composed = transform_ops.compose_transforms(
+                    [rotation, translation])
+                image_transformed = transform_ops.transform(image, composed)
+                self.assertAllEqual(
+                    [[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 0, 1], [0, 1, 1, 1]],
+                    image_transformed)
 
     @test_utils.run_in_graph_and_eager_modes
     def test_extreme_projective_transform(self):
         for dtype in _DTYPES:
-            image = tf.constant(
-                [[1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1]],
-                dtype=dtype)
-            transformation = tf.constant([1, 0, 0, 0, 1, 0, -1, 0],
-                                         tf.dtypes.float32)
-            image_transformed = transform_ops.transform(image, transformation)
-            self.assertAllEqual(
-                [[1, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0], [0, 0, 0, 0]],
-                image_transformed)
+            with test_utils.use_gpu():
+                image = tf.constant(
+                    [[1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1]],
+                    dtype=dtype)
+                transformation = tf.constant([1, 0, 0, 0, 1, 0, -1, 0],
+                                             tf.dtypes.float32)
+                image_transformed = transform_ops.transform(
+                    image, transformation)
+                self.assertAllEqual(
+                    [[1, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0], [0, 0, 0, 0]],
+                    image_transformed)
 
     def test_transform_static_output_shape(self):
         image = tf.constant([[1., 2.], [3., 4.]])
