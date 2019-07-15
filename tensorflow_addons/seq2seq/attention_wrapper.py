@@ -116,6 +116,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
         if not callable(probability_fn):
             raise TypeError("probability_fn must be callable, saw type: %s" %
                             type(probability_fn).__name__)
+        self.default_probability_fn = probability_fn
         self.probability_fn = probability_fn
 
         self.keys = None
@@ -226,7 +227,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
             else:
                 memory, memory_sequence_length = inputs, None
                 memory_mask = mask
-            self._setup_memory(memory, memory_sequence_length, memory_mask)
+            self.setup_memory(memory, memory_sequence_length, memory_mask)
             # We force the self.built to false here since only memory is,
             # initialized but the real query/state has not been call() yet. The
             # layer should be build and call again.
@@ -248,10 +249,10 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
             query, state = inputs[0], inputs[1]
             return self._calculate_attention(query, state)
 
-    def _setup_memory(self,
-                      memory,
-                      memory_sequence_length=None,
-                      memory_mask=None):
+    def setup_memory(self,
+                     memory,
+                     memory_sequence_length=None,
+                     memory_mask=None):
         """Pre-process the memory before actually query the memory.
 
         This should only be called once at the first invocation of call().
@@ -266,9 +267,6 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
             max_time]`. For any value equal to False, the corresponding value
             in memory should be ignored.
         """
-        if self._memory_initialized:
-            raise ValueError(
-                "The memory for the attention has already been setup.")
         if memory_sequence_length is not None and memory_mask is not None:
             raise ValueError(
                 "memory_sequence_length and memory_mask cannot be "
@@ -293,7 +291,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
             self._alignments_size = (tf.compat.dimension_value(
                 self.keys.shape[1]) or tf.shape(self.keys)[1])
             if memory_mask is not None or memory_sequence_length is not None:
-                unwrapped_probability_fn = self.probability_fn
+                unwrapped_probability_fn = self.default_probability_fn
 
                 def _mask_probability_fn(score, prev):
                     return unwrapped_probability_fn(
@@ -505,7 +503,7 @@ class LuongAttention(_BaseAttentionMechanism):
 
     def __init__(self,
                  units,
-                 memory,
+                 memory=None,
                  memory_sequence_length=None,
                  scale=False,
                  probability_fn="softmax",
@@ -671,7 +669,7 @@ class BahdanauAttention(_BaseAttentionMechanism):
 
     def __init__(self,
                  units,
-                 memory,
+                 memory=None,
                  memory_sequence_length=None,
                  normalize=False,
                  probability_fn="softmax",
@@ -1013,7 +1011,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
 
     def __init__(self,
                  units,
-                 memory,
+                 memory=None,
                  memory_sequence_length=None,
                  normalize=False,
                  sigmoid_noise=0.,
@@ -1186,7 +1184,7 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
 
     def __init__(self,
                  units,
-                 memory,
+                 memory=None,
                  memory_sequence_length=None,
                  scale=False,
                  sigmoid_noise=0.,
