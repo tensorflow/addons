@@ -10,6 +10,7 @@ py_library(
         "focal_loss.py",
         "lifted.py",
         "metric_learning.py",
+        "npairs.py",
         "sparsemax_loss.py",
         "triplet.py",
     ],
@@ -40,6 +41,19 @@ py_test(
         "focal_loss_test.py",
     ],
     main = "focal_loss_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":losses",
+    ],
+)
+
+py_test(
+    name = "npairs_test",
+    size = "small",
+    srcs = [
+        "npairs_test.py",
+    ],
+    main = "npairs_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":losses",
@@ -79,6 +93,19 @@ py_test(
         "lifted_test.py",
     ],
     main = "lifted_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":losses",
+    ],
+)
+
+py_test(
+    name = "metric_test",
+    size = "small",
+    srcs = [
+        "metric_test.py",
+    ],
+    main = "metric_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":losses",

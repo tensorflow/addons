@@ -20,7 +20,6 @@ from __future__ import print_function
 import tensorflow as tf
 
 
-# TODO: add unit test later.
 @tf.function
 def pairwise_distance(feature, squared=False):
     """Computes the pairwise distance matrix with numerical stability.

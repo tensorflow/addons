@@ -23,15 +23,10 @@ import tensorflow as tf
 
 from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import beam_search_decoder
-from tensorflow.python.eager import context
-from tensorflow.python.framework import errors
-from tensorflow.python.framework import test_util
-from tensorflow.python.keras import layers
-
-from tensorflow.python.framework import load_library
+from tensorflow_addons.utils import test_utils
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
-_beam_search_ops_so = load_library.load_op_library(
+_beam_search_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/seq2seq/_beam_search_ops.so"))
 gather_tree = _beam_search_ops_so.gather_tree
 
@@ -174,7 +169,7 @@ class TestArrayShapeChecks(tf.test.TestCase):
 
         def _test_body():
             # pylint: disable=protected-access
-            if context.executing_eagerly():
+            if tf.executing_eagerly():
                 beam_search_decoder._check_batch_beam(t, batch_size,
                                                       beam_width)
             else:
@@ -187,7 +182,7 @@ class TestArrayShapeChecks(tf.test.TestCase):
         if is_valid:
             _test_body()
         else:
-            with self.assertRaises(errors.InvalidArgumentError):
+            with self.assertRaises(tf.errors.InvalidArgumentError):
                 _test_body()
 
     def test_array_shape_dynamic_checks(self):
@@ -213,6 +208,26 @@ class TestArrayShapeChecks(tf.test.TestCase):
                                               4,
                                               5,
                                               is_valid=False)
+
+    def test_array_shape_static_checks(self):
+        self.assertTrue(
+            beam_search_decoder._check_static_batch_beam_maybe(
+                tf.TensorShape([None, None, None]), 3, 5))
+        self.assertTrue(
+            beam_search_decoder._check_static_batch_beam_maybe(
+                tf.TensorShape([15, None, None]), 3, 5))
+        self.assertFalse(
+            beam_search_decoder._check_static_batch_beam_maybe(
+                tf.TensorShape([16, None, None]), 3, 5))
+        self.assertTrue(
+            beam_search_decoder._check_static_batch_beam_maybe(
+                tf.TensorShape([3, 5, None]), 3, 5))
+        self.assertFalse(
+            beam_search_decoder._check_static_batch_beam_maybe(
+                tf.TensorShape([3, 6, None]), 3, 5))
+        self.assertFalse(
+            beam_search_decoder._check_static_batch_beam_maybe(
+                tf.TensorShape([5, 3, None]), 3, 5))
 
 
 class TestEosMasking(tf.test.TestCase):
@@ -470,7 +485,7 @@ class TestLargeBeamStep(tf.test.TestCase):
                             [[0, 0, 0], [0, 0, 0]])
 
 
-@test_util.run_all_in_graph_and_eager_modes
+@test_utils.run_all_in_graph_and_eager_modes
 class BeamSearchDecoderTest(tf.test.TestCase):
     def _testDynamicDecodeRNN(self,
                               time_major,
@@ -488,14 +503,15 @@ class BeamSearchDecoderTest(tf.test.TestCase):
         start_token = 0
         embedding_dim = 50
         max_out = max(decoder_sequence_length)
-        output_layer = layers.Dense(vocab_size, use_bias=True, activation=None)
+        output_layer = tf.keras.layers.Dense(
+            vocab_size, use_bias=True, activation=None)
         beam_width = 3
 
         with self.cached_session():
             batch_size_tensor = tf.constant(batch_size)
             embedding = np.random.randn(vocab_size,
                                         embedding_dim).astype(np.float32)
-            cell = layers.LSTMCell(cell_depth)
+            cell = tf.keras.layers.LSTMCell(cell_depth)
             initial_state = cell.get_initial_state(
                 batch_size=batch_size, dtype=tf.float32)
             coverage_penalty_weight = 0.0
@@ -552,7 +568,7 @@ class BeamSearchDecoderTest(tf.test.TestCase):
 
             beam_search_decoder_output = \
                 final_outputs.beam_search_decoder_output
-            expected_seq_length = 3 if context.executing_eagerly() else None
+            expected_seq_length = 3 if tf.executing_eagerly() else None
             self.assertEqual(
                 _t((batch_size, expected_seq_length, beam_width)),
                 tuple(beam_search_decoder_output.scores.get_shape().as_list()))

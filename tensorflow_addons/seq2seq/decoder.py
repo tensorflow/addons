@@ -23,13 +23,10 @@ import six
 
 import tensorflow as tf
 
-from tensorflow.python.eager import context
-from tensorflow.python.framework import ops
-from tensorflow.python.framework import tensor_util
+# TODO: Find public API alternatives to these
 from tensorflow.python.ops import control_flow_util
 from tensorflow.python.ops import rnn
 from tensorflow.python.ops import rnn_cell_impl
-from tensorflow.python.ops import variable_scope
 
 _transpose_batch_time = rnn._transpose_batch_time  # pylint: disable=protected-access
 _zero_state_tensors = rnn_cell_impl._zero_state_tensors  # pylint: disable=protected-access
@@ -306,9 +303,9 @@ def dynamic_decode(decoder,
         raise TypeError(
             "Expected decoder to be type Decoder, but saw: %s" % type(decoder))
 
-    with variable_scope.variable_scope(scope, "decoder") as varscope:
+    with tf.compat.v1.variable_scope(scope, "decoder") as varscope:
         # Determine context types.
-        ctxt = ops.get_default_graph()._get_control_flow_context()  # pylint: disable=protected-access
+        ctxt = tf.compat.v1.get_default_graph()._get_control_flow_context()  # pylint: disable=protected-access
         is_xla = control_flow_util.GetContainingXLAContext(ctxt) is not None
         in_while_loop = (control_flow_util.GetContainingWhileContext(ctxt) is
                          not None)
@@ -317,7 +314,7 @@ def dynamic_decode(decoder,
         # possible that train steps could be wrapped in a tf.while_loop. In that
         # scenario caching prevents forward computations in loop iterations from
         # re-reading the updated weights.
-        if not context.executing_eagerly() and not in_while_loop:
+        if not tf.executing_eagerly() and not in_while_loop:
             if varscope.caching_device is None:
                 varscope.set_caching_device(lambda op: op.device)
 
@@ -355,7 +352,7 @@ def dynamic_decode(decoder,
                     or from_shape.ndims == 0):
                 return None
             else:
-                batch_size = tensor_util.constant_value(
+                batch_size = tf.get_static_value(
                     tf.convert_to_tensor(batch_size, name="batch_size"))
                 return tf.TensorShape([batch_size]).concatenate(from_shape)
 
@@ -408,9 +405,17 @@ def dynamic_decode(decoder,
 
             # Zero out output values past finish
             if impute_finished:
-                emit = tf.nest.map_structure(
-                    lambda out, zero: tf.where(finished, zero, out),
-                    next_outputs, zero_outputs)
+
+                def zero_out_finished(out, zero):
+                    if finished.shape.rank < zero.shape.rank:
+                        broadcast_finished = tf.broadcast_to(
+                            tf.expand_dims(finished, axis=-1), zero.shape)
+                        return tf.where(broadcast_finished, zero, out)
+                    else:
+                        return tf.where(finished, zero, out)
+
+                emit = tf.nest.map_structure(zero_out_finished, next_outputs,
+                                             zero_outputs)
             else:
                 emit = next_outputs
 
@@ -422,7 +427,10 @@ def dynamic_decode(decoder,
                 else:
                     new.set_shape(cur.shape)
                     pass_through = (new.shape.ndims == 0)
-                return new if pass_through else tf.where(finished, cur, new)
+                broadcast_finished = tf.broadcast_to(
+                    tf.expand_dims(finished, axis=-1), new.shape)
+                return new if pass_through else tf.where(
+                    broadcast_finished, cur, new)
 
             if impute_finished:
                 next_state = tf.nest.map_structure(_maybe_copy_state,

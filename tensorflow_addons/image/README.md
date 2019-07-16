@@ -4,10 +4,11 @@
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:--------------|
 | dense_image_warp | @WindQAQ | windqaq@gmail.com |
-| distance_transform_ops |  |  |
+| distance_transform_ops | @mels630 | mels630@gmail.com |
 | distort_image_ops | @WindQAQ | windqaq@gmail.com |
 | filters | @Mainak431 | mainakdutta76@gmail.com |
-| transform_ops |  |  | 
+| transform_ops | @mels630 | mels630@gmail.com | 
+| translate_ops | @sayoojbk	| sayoojbk@gmail.com |
 
 ## Components 
 | Submodule  | Image Processing Function |  Reference  |
@@ -23,6 +24,8 @@
 | transform_ops | matrices_to_flat_transforms | | 
 | transform_ops | rotate | | 
 | transform_ops | transform |  | 
+| translate_ops | translate | |
+| translate_ops | translations_to_projective_transforms | |
 
 ## Contribution Guidelines
 #### Standard API

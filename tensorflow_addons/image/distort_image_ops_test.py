@@ -18,16 +18,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import time
-
 import numpy as np
-from six.moves import xrange  # pylint: disable=redefined-builtin
 
 import tensorflow as tf
 from tensorflow_addons.image import distort_image_ops
 from tensorflow_addons.utils import test_utils
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class AdjustHueInYiqTest(tf.test.TestCase):
     def _adjust_hue_in_yiq_np(self, x_np, delta_h):
         """Rotate hue in YIQ space.
@@ -64,7 +62,6 @@ class AdjustHueInYiqTest(tf.test.TestCase):
         y = distort_image_ops.adjust_hsv_in_yiq(x, delta_h, 1, 1)
         return y
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_adjust_random_hue_in_yiq(self):
         x_shapes = [
             [2, 2, 3],
@@ -102,20 +99,20 @@ class AdjustHueInYiqTest(tf.test.TestCase):
                 y_tf = self._adjust_hue_in_yiq_tf(x_np, delta_h)
                 self.assertAllClose(y_tf, y_np, rtol=2e-4, atol=1e-4)
 
-    # TODO: run in both graph and eager modes
     def test_invalid_shapes(self):
         x_np = np.random.rand(2, 3) * 255.
         delta_h = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesRegexp(ValueError,
                                      "Shape must be at least rank 3"):
-            self._adjust_hue_in_yiq_tf(x_np, delta_h)
+            self.evaluate(self._adjust_hue_in_yiq_tf(x_np, delta_h))
         x_np = np.random.rand(4, 2, 4) * 255.
         delta_h = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesOpError("input must have 3 channels "
                                       "but instead has 4 channels"):
-            self._adjust_hue_in_yiq_tf(x_np, delta_h)
+            self.evaluate(self._adjust_hue_in_yiq_tf(x_np, delta_h))
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class AdjustValueInYiqTest(tf.test.TestCase):
     def _adjust_value_in_yiq_np(self, x_np, scale):
         return x_np * scale
@@ -125,7 +122,6 @@ class AdjustValueInYiqTest(tf.test.TestCase):
         y = distort_image_ops.adjust_hsv_in_yiq(x, 0, 1, scale)
         return y
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_adjust_random_value_in_yiq(self):
         x_shapes = [
             [2, 2, 3],
@@ -163,18 +159,17 @@ class AdjustValueInYiqTest(tf.test.TestCase):
                 y_tf = self._adjust_value_in_yiq_tf(x_np, scale)
                 self.assertAllClose(y_tf, y_np, rtol=2e-4, atol=1e-4)
 
-    # TODO: run in both graph and eager modes
     def test_invalid_shapes(self):
         x_np = np.random.rand(2, 3) * 255.
         scale = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesRegexp(ValueError,
                                      "Shape must be at least rank 3"):
-            self._adjust_value_in_yiq_tf(x_np, scale)
+            self.evaluate(self._adjust_value_in_yiq_tf(x_np, scale))
         x_np = np.random.rand(4, 2, 4) * 255.
         scale = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesOpError("input must have 3 channels "
                                       "but instead has 4 channels"):
-            self._adjust_value_in_yiq_tf(x_np, scale)
+            self.evaluate(self._adjust_value_in_yiq_tf(x_np, scale))
 
 
 class AdjustSaturationInYiqTest(tf.test.TestCase):
@@ -228,27 +223,28 @@ class AdjustSaturationInYiqTest(tf.test.TestCase):
                 y_tf = self._adjust_saturation_in_yiq_tf(x_np, scale)
                 self.assertAllClose(y_tf, y_baseline, rtol=2e-4, atol=1e-4)
 
-    # TODO: run in both graph and eager modes
+    @test_utils.run_in_graph_and_eager_modes
     def test_invalid_shapes(self):
         x_np = np.random.rand(2, 3) * 255.
         scale = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesRegexp(ValueError,
                                      "Shape must be at least rank 3"):
-            self._adjust_saturation_in_yiq_tf(x_np, scale)
+            self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
         x_np = np.random.rand(4, 2, 4) * 255.
         scale = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesOpError("input must have 3 channels "
                                       "but instead has 4 channels"):
-            self._adjust_saturation_in_yiq_tf(x_np, scale)
+            self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
 
 
 # TODO: get rid of sessions
 class AdjustHueInYiqBenchmark(tf.test.Benchmark):
     def _benchmark_adjust_hue_in_yiq(self, device, cpu_count):
         image_shape = [299, 299, 3]
-        warmup_rounds = 100
-        benchmark_rounds = 1000
+        burn_iters = 100
+        benchmark_iters = 1000
         config = tf.compat.v1.ConfigProto()
+        tag = device + "_%s" % (cpu_count if cpu_count is not None else "all")
         if cpu_count is not None:
             config.inter_op_parallelism_threads = 1
             config.intra_op_parallelism_threads = cpu_count
@@ -264,19 +260,14 @@ class AdjustHueInYiqBenchmark(tf.test.Benchmark):
                     inputs, delta, 1, 1)
                 run_op = tf.group(outputs)
                 sess.run(tf.compat.v1.global_variables_initializer())
-                for i in xrange(warmup_rounds + benchmark_rounds):
-                    if i == warmup_rounds:
-                        start = time.time()
-                    sess.run(run_op)
-        end = time.time()
-        step_time = (end - start) / benchmark_rounds
-        tag = device + "_%s" % (cpu_count if cpu_count is not None else "all")
-        print("benchmarkadjust_hue_in_yiq_299_299_3_%s step_time: %.2f us" %
-              (tag, step_time * 1e6))
-        self.report_benchmark(
-            name="benchmarkadjust_hue_in_yiq_299_299_3_%s" % (tag),
-            iters=benchmark_rounds,
-            wall_time=step_time)
+                benchmark_values = self.run_op_benchmark(
+                    sess,
+                    run_op,
+                    burn_iters=burn_iters,
+                    min_iters=benchmark_iters,
+                    name="benchmarkAdjustSaturationInYiq_299_299_3_%s" % (tag))
+        print("benchmarkAdjustSaturationInYiq_299_299_3_%s step_time: %.2f us"
+              % (tag, benchmark_values['wall_time'] * 1e6))
 
     def benchmark_adjust_hue_in_yiqCpu1(self):
         self._benchmark_adjust_hue_in_yiq("/cpu:0", 1)
@@ -292,9 +283,10 @@ class AdjustHueInYiqBenchmark(tf.test.Benchmark):
 class AdjustSaturationInYiqBenchmark(tf.test.Benchmark):
     def _benchmark_adjust_saturation_in_yiq(self, device, cpu_count):
         image_shape = [299, 299, 3]
-        warmup_rounds = 100
-        benchmark_rounds = 1000
+        burn_iters = 100
+        benchmark_iters = 1000
         config = tf.compat.v1.ConfigProto()
+        tag = device + "_%s" % (cpu_count if cpu_count is not None else "all")
         if cpu_count is not None:
             config.inter_op_parallelism_threads = 1
             config.intra_op_parallelism_threads = cpu_count
@@ -310,21 +302,14 @@ class AdjustSaturationInYiqBenchmark(tf.test.Benchmark):
                     inputs, 0, scale, 1)
                 run_op = tf.group(outputs)
                 sess.run(tf.compat.v1.global_variables_initializer())
-                for _ in xrange(warmup_rounds):
-                    sess.run(run_op)
-                start = time.time()
-                for _ in xrange(benchmark_rounds):
-                    sess.run(run_op)
-        end = time.time()
-        step_time = (end - start) / benchmark_rounds
-        tag = "%s" % (cpu_count) if cpu_count is not None else "_all"
-        print(
-            "benchmarkAdjustSaturationInYiq_299_299_3_cpu%s step_time: %.2f us"
-            % (tag, step_time * 1e6))
-        self.report_benchmark(
-            name="benchmarkAdjustSaturationInYiq_299_299_3_cpu%s" % (tag),
-            iters=benchmark_rounds,
-            wall_time=step_time)
+                benchmark_values = self.run_op_benchmark(
+                    sess,
+                    run_op,
+                    burn_iters=burn_iters,
+                    min_iters=benchmark_iters,
+                    name="benchmarkAdjustSaturationInYiq_299_299_3_%s" % (tag))
+        print("benchmarkAdjustSaturationInYiq_299_299_3_%s step_time: %.2f us"
+              % (tag, benchmark_values['wall_time'] * 1e6))
 
     def benchmark_adjust_saturation_in_yiq_cpu1(self):
         self._benchmark_adjust_saturation_in_yiq("/cpu:0", 1)

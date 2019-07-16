@@ -23,142 +23,286 @@ from tensorflow_addons.image import median_filter2d
 from tensorflow_addons.utils import test_utils
 
 
-class MeanFilter2dTest(tf.test.TestCase):
-    def _validate_mean_filter2d(self,
-                                inputs,
-                                expected_values,
-                                filter_shape=(3, 3)):
-        output = mean_filter2d(inputs, filter_shape)
-        self.assertAllClose(output, expected_values)
+class _Filter2dTest(tf.test.TestCase):
+    def setUp(self):
+        self._dtypes_to_test = [
+            tf.dtypes.uint8, tf.dtypes.int32, tf.dtypes.float16,
+            tf.dtypes.float32, tf.dtypes.float64
+        ]
+        self._image_shapes_to_test = [(3, 3, 1), (3, 3, 3), (1, 3, 3, 1),
+                                      (1, 3, 3, 3), (2, 3, 3, 1), (2, 3, 3, 3)]
+        super(_Filter2dTest, self).setUp()
 
-    @test_utils.run_in_graph_and_eager_modes
-    def test_filter_tuple(self):
-        tf_img = tf.zeros([3, 4, 3], tf.int32)
+    def _tile_image(self, plane, image_shape):
+        """Tile a 2-D image `plane` into 3-D or 4-D as per `image_shape`."""
+        assert 3 <= len(image_shape) <= 4
+        plane = tf.convert_to_tensor(plane)
+        plane = tf.expand_dims(plane, -1)
+        channels = image_shape[-1]
+        image = tf.tile(plane, (1, 1, channels))
 
-        for filter_shape in [3, 3.5, 'dt', None]:
-            with self.assertRaisesRegexp(TypeError,
-                                         'Filter shape must be a tuple'):
-                mean_filter2d(tf_img, filter_shape)
+        if len(image_shape) == 4:
+            batch_size = image_shape[0]
+            image = tf.expand_dims(image, 0)
+            image = tf.tile(image, (batch_size, 1, 1, 1))
 
-        filter_shape = (3, 3, 3)
-        msg = ('Filter shape must be a tuple of 2 integers. '
-               'Got %s values in tuple' % len(filter_shape))
+        return image
+
+    def _setup_values(self, image_shape, filter_shape, padding,
+                      constant_values, dtype):
+        assert 3 <= len(image_shape) <= 4
+        height, width = image_shape[-3], image_shape[-2]
+        plane = tf.constant([x for x in range(1, height * width + 1)],
+                            shape=(height, width),
+                            dtype=dtype)
+        image = self._tile_image(plane, image_shape=image_shape)
+
+        result = self._filter2d_fn(
+            image,
+            filter_shape=filter_shape,
+            padding=padding,
+            constant_values=constant_values)
+
+        return result
+
+    def _verify_values(self, image_shape, filter_shape, padding,
+                       constant_values, expected_plane):
+        expected_output = self._tile_image(expected_plane, image_shape)
+        for dtype in self._dtypes_to_test:
+            result = self._setup_values(image_shape, filter_shape, padding,
+                                        constant_values, dtype)
+            self.assertAllCloseAccordingToType(
+                result, tf.dtypes.cast(expected_output, dtype))
+
+
+@test_utils.run_all_in_graph_and_eager_modes
+class MeanFilter2dTest(_Filter2dTest):
+    def setUp(self):
+        self._filter2d_fn = mean_filter2d
+        super(MeanFilter2dTest, self).setUp()
+
+    def test_invalid_image(self):
+        msg = "`image` must be 2/3/4D tensor"
+        errors = (ValueError, tf.errors.InvalidArgumentError)
+        for image_shape in [(1,), (16, 28, 28, 1, 1)]:
+            with self.subTest(dim=len(image_shape)):
+                with self.assertRaisesRegexp(errors, msg):
+                    image = tf.ones(shape=image_shape)
+                    self.evaluate(mean_filter2d(image))
+
+    def test_invalid_filter_shape(self):
+        msg = ("The `filter_shape` argument must be a tuple of 2 integers.")
+        image = tf.ones(shape=(1, 28, 28, 1))
+
+        for filter_shape in [(3, 3, 3), (3, None, 3), None]:
+            with self.subTest(filter_shape=filter_shape):
+                with self.assertRaisesRegexp(ValueError, msg):
+                    mean_filter2d(image, filter_shape=filter_shape)
+
+    def test_invalid_padding(self):
+        msg = ("padding should be one of \"REFLECT\", \"CONSTANT\", "
+               "or \"SYMMETRIC\".")
+        image = tf.ones(shape=(1, 28, 28, 1))
+
         with self.assertRaisesRegexp(ValueError, msg):
-            mean_filter2d(tf_img, filter_shape)
+            mean_filter2d(image, padding="TEST")
 
-        msg = 'Size of the filter must be Integers'
-        for filter_shape in [(3.5, 3), (None, 3)]:
-            with self.assertRaisesRegexp(TypeError, msg):
-                mean_filter2d(tf_img, filter_shape)
+    def test_none_channels(self):
+        # 3-D image
+        fn = mean_filter2d.get_concrete_function(
+            tf.TensorSpec(dtype=tf.dtypes.float32, shape=(3, 3, None)))
+        fn(tf.ones(shape=(3, 3, 1)))
+        fn(tf.ones(shape=(3, 3, 3)))
 
-    @test_utils.run_in_graph_and_eager_modes
-    def test_filter_value(self):
-        tf_img = tf.zeros([3, 4, 3], tf.int32)
+        # 4-D image
+        fn = mean_filter2d.get_concrete_function(
+            tf.TensorSpec(dtype=tf.dtypes.float32, shape=(1, 3, 3, None)))
+        fn(tf.ones(shape=(1, 3, 3, 1)))
+        fn(tf.ones(shape=(1, 3, 3, 3)))
 
-        with self.assertRaises(ValueError):
-            mean_filter2d(tf_img, (4, 3))
+    def test_unknown_shape(self):
+        fn = mean_filter2d.get_concrete_function(
+            tf.TensorSpec(shape=None, dtype=tf.dtypes.float32),
+            padding="CONSTANT",
+            constant_values=1.)
 
-    @test_utils.run_deprecated_v1
-    def test_dimension(self):
-        for image_shape in [(3, 4, None), (3, None, 4), (None, 3, 4)]:
-            with self.assertRaises(TypeError):
-                tf_img = tf.compat.v1.placeholder(tf.int32, shape=image_shape)
-                mean_filter2d(tf_img)
+        for shape in [(3, 3), (3, 3, 3), (1, 3, 3, 3)]:
+            image = tf.ones(shape=shape)
+            self.assertAllEqual(self.evaluate(image), self.evaluate(fn(image)))
 
-    @test_utils.run_in_graph_and_eager_modes
-    def test_image_vs_filter(self):
-        tf_img = tf.zeros([3, 4, 3], tf.int32)
-        filter_shape = (3, 5)
-        with self.assertRaises(ValueError):
-            mean_filter2d(tf_img, filter_shape)
+    def test_reflect_padding_with_3x3_filter(self):
+        expected_plane = tf.constant([[33. / 9., 36. / 9., 39. / 9.],
+                                      [42. / 9., 45. / 9., 48. / 9.],
+                                      [51. / 9., 54. / 9., 57. / 9.]])
 
-    @test_utils.run_in_graph_and_eager_modes
-    def test_three_channels(self):
-        tf_img = [[[0.32801723, 0.08863795, 0.79119259],
-                   [0.35526001, 0.79388736, 0.55435993],
-                   [0.11607035, 0.55673079, 0.99473371]],
-                  [[0.53240645, 0.74684819, 0.33700031],
-                   [0.01760473, 0.28181609, 0.9751476],
-                   [0.01605137, 0.8292904, 0.56405609]],
-                  [[0.57215374, 0.10155051, 0.64836128],
-                   [0.36533048, 0.91401874, 0.02524159],
-                   [0.56379134, 0.9028874, 0.19505117]]]
+        for image_shape in self._image_shapes_to_test:
+            self._verify_values(
+                image_shape=image_shape,
+                filter_shape=(3, 3),
+                padding="REFLECT",
+                constant_values=0,
+                expected_plane=expected_plane)
 
-        tf_img = tf.convert_to_tensor(value=tf_img)
-        expt = [[[34, 54, 75], [38, 93, 119], [14, 69, 87]],
-                [[61, 82, 94], [81, 147, 144], [40, 121, 93]],
-                [[42, 57, 56], [58, 106, 77], [27, 82, 49]]]
-        expt = tf.convert_to_tensor(value=expt)
-        self._validate_mean_filter2d(tf_img, expt)
+    def test_reflect_padding_with_4x4_filter(self):
+        expected_plane = tf.constant([[80. / 16., 80. / 16., 80. / 16.],
+                                      [80. / 16., 80. / 16., 80. / 16.],
+                                      [80. / 16., 80. / 16., 80. / 16.]])
+
+        for image_shape in self._image_shapes_to_test:
+            self._verify_values(
+                image_shape=image_shape,
+                filter_shape=(4, 4),
+                padding="REFLECT",
+                constant_values=0,
+                expected_plane=expected_plane)
+
+    def test_constant_padding_with_3x3_filter(self):
+        expected_plane = tf.constant([[12. / 9., 21. / 9., 16. / 9.],
+                                      [27. / 9., 45. / 9., 33. / 9.],
+                                      [24. / 9., 39. / 9., 28. / 9.]])
+
+        for image_shape in self._image_shapes_to_test:
+            self._verify_values(
+                image_shape=image_shape,
+                filter_shape=(3, 3),
+                padding="CONSTANT",
+                constant_values=0,
+                expected_plane=expected_plane)
+
+        expected_plane = tf.constant([[17. / 9., 24. / 9., 21. / 9.],
+                                      [30. / 9., 45. / 9., 36. / 9.],
+                                      [29. / 9., 42. / 9., 33. / 9.]])
+
+        for image_shape in self._image_shapes_to_test:
+            self._verify_values(
+                image_shape=image_shape,
+                filter_shape=(3, 3),
+                padding="CONSTANT",
+                constant_values=1,
+                expected_plane=expected_plane)
+
+    def test_symmetric_padding_with_3x3_filter(self):
+        expected_plane = tf.constant([[21. / 9., 27. / 9., 33. / 9.],
+                                      [39. / 9., 45. / 9., 51. / 9.],
+                                      [57. / 9., 63. / 9., 69. / 9.]])
+
+        for image_shape in self._image_shapes_to_test:
+            self._verify_values(
+                image_shape=image_shape,
+                filter_shape=(3, 3),
+                padding="SYMMETRIC",
+                constant_values=0,
+                expected_plane=expected_plane)
 
 
-class MedianFilter2dTest(tf.test.TestCase):
-    def _validate_median_filter2d(self,
-                                  inputs,
-                                  expected_values,
-                                  filter_shape=(3, 3)):
-        output = median_filter2d(inputs, filter_shape)
-        self.assertAllClose(output, expected_values)
+@test_utils.run_all_in_graph_and_eager_modes
+class MedianFilter2dTest(_Filter2dTest):
+    def setUp(self):
+        self._filter2d_fn = median_filter2d
+        super(MedianFilter2dTest, self).setUp()
 
-    @test_utils.run_in_graph_and_eager_modes
-    def test_filter_tuple(self):
-        tf_img = tf.zeros([3, 4, 3], tf.int32)
+    def test_invalid_image(self):
+        msg = "`image` must be 2/3/4D tensor"
+        errors = (ValueError, tf.errors.InvalidArgumentError)
+        for image_shape in [(1,), (16, 28, 28, 1, 1)]:
+            with self.subTest(dim=len(image_shape)):
+                with self.assertRaisesRegexp(errors, msg):
+                    image = tf.ones(shape=image_shape)
+                    self.evaluate(median_filter2d(image))
 
-        for filter_shape in [3, 3.5, 'dt', None]:
-            with self.assertRaisesRegexp(TypeError,
-                                         'Filter shape must be a tuple'):
-                median_filter2d(tf_img, filter_shape)
+    def test_invalid_filter_shape(self):
+        msg = ("The `filter_shape` argument must be a tuple of 2 integers.")
+        image = tf.ones(shape=(1, 28, 28, 1))
 
-        filter_shape = (3, 3, 3)
-        msg = ('Filter shape must be a tuple of 2 integers. '
-               'Got %s values in tuple' % len(filter_shape))
+        for filter_shape in [(3, 3, 3), (3, None, 3), None]:
+            with self.subTest(filter_shape=filter_shape):
+                with self.assertRaisesRegexp(ValueError, msg):
+                    median_filter2d(image, filter_shape=filter_shape)
+
+    def test_invalid_padding(self):
+        msg = ("padding should be one of \"REFLECT\", \"CONSTANT\", "
+               "or \"SYMMETRIC\".")
+        image = tf.ones(shape=(1, 28, 28, 1))
+
         with self.assertRaisesRegexp(ValueError, msg):
-            median_filter2d(tf_img, filter_shape)
+            median_filter2d(image, padding="TEST")
 
-        msg = 'Size of the filter must be Integers'
-        for filter_shape in [(3.5, 3), (None, 3)]:
-            with self.assertRaisesRegexp(TypeError, msg):
-                median_filter2d(tf_img, filter_shape)
+    def test_none_channels(self):
+        # 3-D image
+        fn = median_filter2d.get_concrete_function(
+            tf.TensorSpec(dtype=tf.dtypes.float32, shape=(3, 3, None)))
+        fn(tf.ones(shape=(3, 3, 1)))
+        fn(tf.ones(shape=(3, 3, 3)))
 
-    @test_utils.run_in_graph_and_eager_modes
-    def test_filter_value(self):
-        tf_img = tf.zeros([3, 4, 3], tf.int32)
+        # 4-D image
+        fn = median_filter2d.get_concrete_function(
+            tf.TensorSpec(dtype=tf.dtypes.float32, shape=(1, 3, 3, None)))
+        fn(tf.ones(shape=(1, 3, 3, 1)))
+        fn(tf.ones(shape=(1, 3, 3, 3)))
 
-        with self.assertRaises(ValueError):
-            median_filter2d(tf_img, (4, 3))
+    def test_unknown_shape(self):
+        fn = median_filter2d.get_concrete_function(
+            tf.TensorSpec(shape=None, dtype=tf.dtypes.float32),
+            padding="CONSTANT",
+            constant_values=1.)
 
-    @test_utils.run_deprecated_v1
-    def test_dimension(self):
-        for image_shape in [(3, 4, None), (3, None, 4), (None, 3, 4)]:
-            with self.assertRaises(TypeError):
-                tf_img = tf.compat.v1.placeholder(tf.int32, shape=image_shape)
-                median_filter2d(tf_img)
+        for shape in [(3, 3), (3, 3, 3), (1, 3, 3, 3)]:
+            image = tf.ones(shape=shape)
+            self.assertAllEqual(self.evaluate(image), self.evaluate(fn(image)))
 
-    @test_utils.run_in_graph_and_eager_modes
-    def test_image_vs_filter(self):
-        tf_img = tf.zeros([3, 4, 3], tf.int32)
-        filter_shape = (3, 5)
-        with self.assertRaises(ValueError):
-            median_filter2d(tf_img, filter_shape)
+    def test_reflect_padding_with_3x3_filter(self):
+        expected_plane = tf.constant([[4, 4, 5], [5, 5, 5], [5, 6, 6]])
 
-    @test_utils.run_in_graph_and_eager_modes
-    def test_three_channels(self):
-        tf_img = [[[0.32801723, 0.08863795, 0.79119259],
-                   [0.35526001, 0.79388736, 0.55435993],
-                   [0.11607035, 0.55673079, 0.99473371]],
-                  [[0.53240645, 0.74684819, 0.33700031],
-                   [0.01760473, 0.28181609, 0.9751476],
-                   [0.01605137, 0.8292904, 0.56405609]],
-                  [[0.57215374, 0.10155051, 0.64836128],
-                   [0.36533048, 0.91401874, 0.02524159],
-                   [0.56379134, 0.9028874, 0.19505117]]]
+        for image_shape in self._image_shapes_to_test:
+            self._verify_values(
+                image_shape=image_shape,
+                filter_shape=(3, 3),
+                padding="REFLECT",
+                constant_values=0,
+                expected_plane=expected_plane)
 
-        tf_img = tf.convert_to_tensor(value=tf_img)
-        expt = [[[0, 0, 0], [4, 71, 141], [0, 0, 0]],
-                [[83, 25, 85], [90, 190, 143], [4, 141, 49]],
-                [[0, 0, 0], [4, 71, 49], [0, 0, 0]]]
-        expt = tf.convert_to_tensor(value=expt)
-        self._validate_median_filter2d(tf_img, expt)
+    def test_reflect_padding_with_4x4_filter(self):
+        expected_plane = tf.constant([[5, 5, 5], [5, 5, 5], [5, 5, 5]])
+
+        for image_shape in self._image_shapes_to_test:
+            self._verify_values(
+                image_shape=image_shape,
+                filter_shape=(4, 4),
+                padding="REFLECT",
+                constant_values=0,
+                expected_plane=expected_plane)
+
+    def test_constant_padding_with_3x3_filter(self):
+        expected_plane = tf.constant([[0, 2, 0], [2, 5, 3], [0, 5, 0]])
+
+        for image_shape in self._image_shapes_to_test:
+            self._verify_values(
+                image_shape=image_shape,
+                filter_shape=(3, 3),
+                padding="CONSTANT",
+                constant_values=0,
+                expected_plane=expected_plane)
+
+        expected_plane = tf.constant([[1, 2, 1], [2, 5, 3], [1, 5, 1]])
+
+        for image_shape in self._image_shapes_to_test:
+            self._verify_values(
+                image_shape=image_shape,
+                filter_shape=(3, 3),
+                padding="CONSTANT",
+                constant_values=1,
+                expected_plane=expected_plane)
+
+    def test_symmetric_padding_with_3x3_filter(self):
+        expected_plane = tf.constant([[2, 3, 3], [4, 5, 6], [7, 7, 8]])
+
+        for image_shape in self._image_shapes_to_test:
+            self._verify_values(
+                image_shape=image_shape,
+                filter_shape=(3, 3),
+                padding="SYMMETRIC",
+                constant_values=0,
+                expected_plane=expected_plane)
 
 
 if __name__ == "__main__":

@@ -57,6 +57,10 @@ class OptimizerTestBase(tf.test.TestCase):
                 optimizer. Either a constant or a callable. This also passed to
                 the optimizer_params in the update_fn.
         """
+        # TODO: Fix #347 issue
+        if do_sparse and tf.test.is_gpu_available():
+            self.skipTest('Wait #347 to be fixed')
+
         for i, dtype in enumerate([tf.half, tf.float32, tf.float64]):
             # Initialize variables for numpy implementation.
             np_slot_vars0, np_slot_vars1 = {}, {}
@@ -116,6 +120,10 @@ class OptimizerTestBase(tf.test.TestCase):
                 optimizer. Either a constant or a callable. This also passed to
                 the optimizer_params in the update_fn.
         """
+        # TODO: Fix #347 issue
+        if tf.test.is_gpu_available():
+            self.skipTest('Wait #347 to be fixed')
+
         for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             repeated_index_update_var = tf.Variable([[1.0], [2.0]],
                                                     dtype=dtype)
@@ -221,7 +229,7 @@ class AdamWTest(OptimizerTestBase):
             learning_rate=lambda: 0.001,
             beta_1=lambda: 0.9,
             beta_2=lambda: 0.999,
-            epsilon=lambda: 1e-8,
+            epsilon=1e-8,
             weight_decay=lambda: WEIGHT_DECAY)
 
 
@@ -269,7 +277,7 @@ class ExtendWithWeightDecayTest(SGDWTest):
     """Verify that the factory function SGDW is the same as SGDW."""
 
     optimizer = weight_decay_optimizers.extend_with_decoupled_weight_decay(
-        tf.optimizers.SGD)
+        tf.keras.optimizers.SGD)
 
 
 if __name__ == "__main__":

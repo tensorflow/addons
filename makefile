@@ -28,3 +28,6 @@ sanity-check: install-ci-dependency
 
 unit-test:
 	bash tools/ci_testing/addons_cpu.sh
+
+gpu-unit-test:
+	bash tools/ci_testing/addons_gpu.sh
