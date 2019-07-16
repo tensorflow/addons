@@ -31,7 +31,7 @@ function write_action_env_to_bazelrc() {
 function generate_shared_lib_name() {
   if [[ $(uname) == "Darwin" ]]; then
     local namespec="$1"
-    echo "lib" + ${namespec:1}
+    echo "lib"${namespec:2}".dylib"
   else
     local namespec="$1"
     echo ${namespec:3}
