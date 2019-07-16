@@ -7,12 +7,10 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
-
 cc_library(
     name = "libtensorflow_framework",
-    srcs = ["%{TF_SHARED_LIBRARY_NAME}"],
+    copts=["%{tf_searchdir}","%{tf_namespec}"],
     visibility = ["//visibility:public"],
 )
 
 %{TF_HEADER_GENRULE}
-%{TF_SHARED_LIBRARY_GENRULE}

@@ -55,15 +55,12 @@ function write_action_env_to_bazelrc() {
 [[ -f .bazelrc ]] && rm .bazelrc
 
 TF_CFLAGS=( $(${PYTHON_VERSION} -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') )
-TF_LFLAGS="$(${PYTHON_VERSION} -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))')"
+TF_LFLAGS=( $(${PYTHON_VERSION} -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )
 TF_CXX11_ABI_FLAG=( $(${PYTHON_VERSION} -c 'import tensorflow as tf; print(tf.sysconfig.CXX11_ABI_FLAG)') )
 
-SHARED_LIBRARY_DIR=${TF_LFLAGS:2}
-SHARED_LIBRARY_NAME=$(echo $TF_LFLAGS | rev | cut -d":" -f1 | rev)
-
 write_action_env_to_bazelrc "TF_HEADER_DIR" ${TF_CFLAGS:2}
-write_action_env_to_bazelrc "TF_SHARED_LIBRARY_DIR" ${SHARED_LIBRARY_DIR}
-write_action_env_to_bazelrc "TF_SHARED_LIBRARY_NAME" ${SHARED_LIBRARY_NAME}
+write_action_env_to_bazelrc "TF_SEARCHDIR" ${TF_LFLAGS[0]}
+write_action_env_to_bazelrc "TF_NAMESPEC" ${TF_LFLAGS[1]}
 write_action_env_to_bazelrc "TF_CXX11_ABI_FLAG" ${TF_CXX11_ABI_FLAG}
 
 write_to_bazelrc "build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true"
@@ -72,9 +69,7 @@ write_to_bazelrc "build --spawn_strategy=standalone"
 write_to_bazelrc "build --strategy=Genrule=standalone"
 write_action_env_to_bazelrc "TF_NEED_CUDA" ${TF_NEED_CUDA}
 
-# TODO(yifeif): do not hardcode path
 if [[ "$TF_NEED_CUDA" == "1" ]]; then
-    # TODO: use CUDA_HOME here?
     write_action_env_to_bazelrc "CUDNN_INSTALL_PATH" "/usr/lib/x86_64-linux-gnu"
     write_action_env_to_bazelrc "TF_CUDA_VERSION" "10.0"
     write_action_env_to_bazelrc "TF_CUDNN_VERSION" "7"
