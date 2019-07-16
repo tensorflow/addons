@@ -19,7 +19,7 @@
 #  --quiet  Give less output.
 
 
-# Bazel configure
+# Writes variables to bazelrc file
 function write_to_bazelrc() {
   echo "$1" >> .bazelrc
 }
@@ -28,6 +28,7 @@ function write_action_env_to_bazelrc() {
   write_to_bazelrc "build --action_env $1=\"$2\""
 }
 
+# Converts the linkflag namespec to the full shared library name
 function generate_shared_lib_name() {
   if [[ $(uname) == "Darwin" ]]; then
     local namespec="$1"
