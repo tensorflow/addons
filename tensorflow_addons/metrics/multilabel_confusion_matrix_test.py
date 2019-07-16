@@ -34,8 +34,9 @@ class MultiLabelConfusionMatrixTest(tf.test.TestCase):
         self.assertEqual(mcm_obj2.num_classes, 3)
         self.assertEqual(mcm_obj2.dtype, tf.int32)
 
-    def initialize_vars(self, n_classes):
-        mcm_obj = MultiLabelConfusionMatrix(num_classes=n_classes)
+    def initialize_vars(self, n_classes, input_dtype):
+        mcm_obj = MultiLabelConfusionMatrix(num_classes=n_classes,
+                                            dtype=input_dtype)
         self.evaluate(tf.compat.v1.variables_initializer(mcm_obj.variables))
         return mcm_obj
 
@@ -53,7 +54,8 @@ class MultiLabelConfusionMatrixTest(tf.test.TestCase):
             preds = tf.constant([[1, 0, 0], [0, 1, 1], [1, 0, 0], [0, 1, 1]],
                                 dtype=input_dtype)
             # Initialize
-            mcm_obj = self.initialize_vars(n_classes=3)
+            mcm_obj = self.initialize_vars(n_classes=3,
+                                           input_dtype=input_dtype)
             # Update
             self.update_obj_states(mcm_obj, actuals, preds)
             # Check results
@@ -67,15 +69,16 @@ class MultiLabelConfusionMatrixTest(tf.test.TestCase):
                 [[1, 0, 0, 1], [0, 0, 1, 1], [1, 0, 0, 1], [1, 1, 0, 0],
                  [0, 1, 0, 1], [1, 0, 0, 1], [0, 0, 1, 1], [1, 0, 0, 1],
                  [0, 1, 1, 0], [0, 1, 0, 1]],
-                dtype=np.int32)
+                dtype=input_dtype)
             preds = tf.constant(
                 [[1, 0, 1, 0], [0, 0, 1, 1], [0, 0, 0, 1], [1, 1, 0, 0],
                  [1, 0, 0, 0], [1, 0, 0, 1], [0, 0, 1, 1], [1, 0, 0, 1],
                  [0, 1, 0, 0], [0, 0, 0, 1]],
-                dtype=np.int32)
+                dtype=input_dtype)
 
             # Initialize
-            mcm_obj = self.initialize_vars(n_classes=4)
+            mcm_obj = self.initialize_vars(n_classes=4,
+                                           input_dtype=input_dtype)
             # Update
             self.update_obj_states(mcm_obj, actuals, preds)
             # Check results
@@ -96,7 +99,8 @@ class MultiLabelConfusionMatrixTest(tf.test.TestCase):
                 dtype=input_dtype)
 
             # Initialize
-            mcm_obj = self.initialize_vars(n_classes=4)
+            mcm_obj = self.initialize_vars(n_classes=4,
+                                           input_dtype=input_dtype)
             # Update
             self.update_obj_states(mcm_obj, actuals, preds)
             # Check results

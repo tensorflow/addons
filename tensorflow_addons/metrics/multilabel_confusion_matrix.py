@@ -32,10 +32,13 @@ class MultiLabelConfusionMatrix(Metric):
     If multi-class input is provided, it will be treated
     as multilabel data.
 
-    Consider classification problem with two classes.
+    Consider classification problem with two classes
+    (i.e num_classes=2).
+
     Resultant matrix `M` will be in the shape of (num_classes, 2, 2).
 
-    Every class has a dedicated 2*2 matrix that contains:
+    Every class `i` has a dedicated 2*2 matrix that contains:
+
     - true negatives for class i in M(0,0)
     - false positives for class i in M(0,1)
     - false negatives for class i in M(1,0)
