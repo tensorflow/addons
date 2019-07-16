@@ -13,7 +13,7 @@ def _tpl(repository_ctx, tpl, substitutions = {}, out = None):
         out = tpl
     repository_ctx.template(
         out,
-        Label("//tf_dependency:%s.tpl" % tpl),
+        Label("//build_deps/tf_dependency:%s.tpl" % tpl),
         substitutions,
     )
 
