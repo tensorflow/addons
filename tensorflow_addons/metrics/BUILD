@@ -76,7 +76,7 @@ py_test(
     srcs = [
         "multilabel_confusion_matrix_test.py",
     ],
-    main = "multilabel_confusion_matrix_test",
+    main = "multilabel_confusion_matrix_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":metrics",
