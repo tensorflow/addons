@@ -7,8 +7,9 @@ py_library(
     srcs = [
         "__init__.py",
         "cohens_kappa.py",
-        "f1_scores.py",
+        "f_scores.py",
         "r_square.py",
+        "utils.py",
         "multilabel_confusion_matrix.py",
     ],
     srcs_version = "PY2AND3",
@@ -57,6 +58,19 @@ py_test(
 )
 
 py_test(
+    name = "fbeta_test",
+    size = "small",
+    srcs = [
+        "fbeta_test.py",
+    ],
+    main = "fbeta_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":metrics",
+    ],
+)
+
+py_test(
     name = "multilabel_confusion_matrix_test",
     size = "small",
     srcs = [
@@ -68,3 +82,4 @@ py_test(
         ":metrics",
     ],
 )
+
