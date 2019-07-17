@@ -180,18 +180,22 @@ def _check_static_batch_beam_maybe(shape, batch_size, beam_width):
     """Raises an exception if dimensions are known statically and can not be
     reshaped to [batch_size, beam_size, -1]."""
     reshaped_shape = tf.TensorShape([batch_size, beam_width, None])
-    if (batch_size is not None and shape.dims[0].value is not None
-            and (shape[0] != batch_size * beam_width or
-                 (shape.ndims >= 2 and shape.dims[1].value is not None and
-                  (shape[0] != batch_size or shape[1] != beam_width)))):
-        tf.get_logger().warn(
-            "TensorArray reordering expects elements to be "
-            "reshapable to %s which is incompatible with the "
-            "current shape %s. Consider setting "
-            "reorder_tensor_arrays to False to disable TensorArray "
-            "reordering during the beam search." % (reshaped_shape, shape))
-        return False
-    return True
+    assert len(shape.dims) > 0
+    if batch_size is None or shape.dims[0].value is None:
+        return True  # not statically known => no check
+    if shape[0] == batch_size * beam_width:
+        return True  # flattened, matching
+    has_second_dim = shape.ndims >= 2 and shape.dims[1].value is not None
+    if has_second_dim and shape[0] == batch_size and shape[1] == beam_width:
+        return True  # non-flattened, matching
+    # Otherwise we could not find a match and warn:
+    tf.get_logger().warn(
+        "TensorArray reordering expects elements to be "
+        "reshapable to %s which is incompatible with the "
+        "current shape %s. Consider setting "
+        "reorder_tensor_arrays to False to disable TensorArray "
+        "reordering during the beam search." % (reshaped_shape, shape))
+    return False
 
 
 def _check_batch_beam(t, batch_size, beam_width):
@@ -497,27 +501,16 @@ class BeamSearchDecoderMixin(object):
         """
         if not isinstance(t, tf.TensorArray):
             return t
-        # pylint: disable=protected-access
-        # This is a bad hack due to the implementation detail of eager/graph TA.
-        # TODO(b/124374427): Update this to use public property of TensorArray.
-        if tf.executing_eagerly():
-            element_shape = t._element_shape
-        else:
-            element_shape = t._element_shape[0]
-        if (not t._infer_shape or not t._element_shape
-                or element_shape.ndims is None or element_shape.ndims < 1):
-            shape = (element_shape if t._infer_shape and t._element_shape else
-                     tf.TensorShape(None))
+        if t.element_shape.ndims is None or t.element_shape.ndims < 1:
             tf.get_logger().warn(
                 "The TensorArray %s in the cell state is not amenable to "
                 "sorting based on the beam search result. For a "
                 "TensorArray to be sorted, its elements shape must be "
                 "defined and have at least a rank of 1, but saw shape: %s" %
-                (t.handle.name, shape))
+                (t.handle.name, t.element_shape))
             return t
-        # pylint: enable=protected-access
         if not _check_static_batch_beam_maybe(
-                element_shape, tf.get_static_value(self._batch_size),
+                t.element_shape, tf.get_static_value(self._batch_size),
                 self._beam_width):
             return t
         t = t.stack()

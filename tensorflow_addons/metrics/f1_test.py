@@ -26,101 +26,85 @@ from tensorflow_addons.utils import test_utils
 @test_utils.run_all_in_graph_and_eager_modes
 class F1ScoreTest(tf.test.TestCase):
     def test_config(self):
-        f1_obj = F1Score(name='f1_score', num_classes=3)
+        f1_obj = F1Score(num_classes=3, average=None)
         self.assertEqual(f1_obj.name, 'f1_score')
         self.assertEqual(f1_obj.dtype, tf.float32)
         self.assertEqual(f1_obj.num_classes, 3)
+        self.assertEqual(f1_obj.average, None)
         # Check save and restore config
         f1_obj2 = F1Score.from_config(f1_obj.get_config())
         self.assertEqual(f1_obj2.name, 'f1_score')
         self.assertEqual(f1_obj2.dtype, tf.float32)
         self.assertEqual(f1_obj2.num_classes, 3)
+        self.assertEqual(f1_obj2.average, None)
 
-    def initialize_vars(self):
-        f1_micro = F1Score(num_classes=3, average='micro')
-        f1_macro = F1Score(num_classes=3, average='macro')
-        f1_weighted = F1Score(num_classes=3, average='weighted')
+    def initialize_vars(self, average):
+        # initialize variables
+        f1_obj = F1Score(num_classes=3, average=average)
 
-        self.evaluate(tf.compat.v1.variables_initializer(f1_micro.variables))
-        self.evaluate(tf.compat.v1.variables_initializer(f1_macro.variables))
-        self.evaluate(
-            tf.compat.v1.variables_initializer(f1_weighted.variables))
-        return f1_micro, f1_macro, f1_weighted
+        self.evaluate(tf.compat.v1.variables_initializer(f1_obj.variables))
 
-    def initialize_vars_none(self):
-        f1_none = F1Score(num_classes=3, average=None)
+        return f1_obj
 
-        self.evaluate(tf.compat.v1.variables_initializer(f1_none.variables))
-        return f1_none
+    def update_obj_states(self, f1_obj, actuals, preds):
+        # update state variable values
+        update_op = f1_obj.update_state(actuals, preds)
+        self.evaluate(update_op)
 
-    def update_obj_states(self, f1_micro, f1_macro, f1_weighted, actuals,
-                          preds):
-        update_micro = f1_micro.update_state(actuals, preds)
-        update_macro = f1_macro.update_state(actuals, preds)
-        update_weighted = f1_weighted.update_state(actuals, preds)
-        self.evaluate(update_micro)
-        self.evaluate(update_macro)
-        self.evaluate(update_weighted)
+    def check_results(self, f1_obj, value):
+        # check result
+        self.assertAllClose(value, self.evaluate(f1_obj.result()), atol=1e-5)
 
-    def update_obj_states_none(self, f1_none, actuals, preds):
-        update_none = f1_none.update_state(actuals, preds)
-        self.evaluate(update_none)
+    def _test_f1(self, avg, act, pred, res):
+        f1_init = self.initialize_vars(avg)
+        self.update_obj_states(f1_init, act, pred)
+        self.check_results(f1_init, res)
 
-    def check_results(self, obj, value):
-        self.assertAllClose(value, self.evaluate(obj.result()), atol=1e-5)
+    def _test_f1_score(self, actuals, preds, res):
+        # test for three average values with beta value as 1.0
+        for avg in ['micro', 'macro', 'weighted']:
+            self._test_f1(avg, actuals, preds, res)
 
+    # test for perfect f1 score
     def test_f1_perfect_score(self):
         actuals = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]],
                               dtype=tf.int32)
         preds = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]], dtype=tf.int32)
-        # Initialize
-        f1_micro, f1_macro, f1_weighted = self.initialize_vars()
-        # Update
-        self.update_obj_states(f1_micro, f1_macro, f1_weighted, actuals, preds)
-        # Check results
-        self.check_results(f1_micro, 1.0)
-        self.check_results(f1_macro, 1.0)
-        self.check_results(f1_weighted, 1.0)
+        self._test_f1_score(actuals, preds, 1.0)
 
+    # test for worst f1 score
     def test_f1_worst_score(self):
         actuals = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]],
                               dtype=tf.int32)
         preds = tf.constant([[0, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=tf.int32)
-        # Initialize
-        f1_micro, f1_macro, f1_weighted = self.initialize_vars()
-        # Update
-        self.update_obj_states(f1_micro, f1_macro, f1_weighted, actuals, preds)
-        # Check results
-        self.check_results(f1_micro, 0.0)
-        self.check_results(f1_macro, 0.0)
-        self.check_results(f1_weighted, 0.0)
+        self._test_f1_score(actuals, preds, 0.0)
 
+    # test for random f1 score
     def test_f1_random_score(self):
         actuals = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]],
                               dtype=tf.int32)
         preds = tf.constant([[0, 0, 1], [1, 1, 0], [1, 1, 1]], dtype=tf.int32)
-        # Initialize
-        f1_micro, f1_macro, f1_weighted = self.initialize_vars()
-        # Update
-        self.update_obj_states(f1_micro, f1_macro, f1_weighted, actuals, preds)
-        # Check results
-        self.check_results(f1_micro, 0.6666666)
-        self.check_results(f1_macro, 0.6555555)
-        self.check_results(f1_weighted, 0.6777777)
+        # Use absl parameterized test here if possible
+        test_params = [['micro', 0.6666667], ['macro', 0.65555555],
+                       ['weighted', 0.67777777]]
 
-    def test_f1_none_score(self):
+        for avg, res in test_params:
+            self._test_f1(avg, actuals, preds, res)
+
+    # test for random f1 score with average as None
+    def test_f1_random_score_none(self):
         actuals = tf.constant(
             [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [0, 1, 0], [0, 0, 1]],
             dtype=tf.int32)
         preds = tf.constant(
             [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [1, 0, 0], [0, 0, 1]],
             dtype=tf.int32)
-        # Initialize
-        f1_none = self.initialize_vars_none()
-        # Update
-        self.update_obj_states_none(f1_none, actuals, preds)
-        # Check results
-        self.check_results(f1_none, [0.8, 0.6666667, 1.])
+
+        # Use absl parameterized test here if possible
+        test_params = [[None, [0.8, 0.6666667, 1.]]]
+
+        for avg, res in test_params:
+            self._test_f1(avg, actuals, preds, res)
 
 
 if __name__ == '__main__':

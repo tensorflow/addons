@@ -26,6 +26,24 @@ elif [[ ! -z "$1" ]]; then
     exit 1
 fi
 
+# Install python dependencies
+read -r -p "Tensorflow will be upgraded to 2.0. Are You Sure? [y/n] " reply
+case $reply in
+    [yY]*) echo "Installing...";;
+    * ) echo "Goodbye!"; exit;;
+esac
+
+BUILD_DEPS_DIR=build_deps
+REQUIREMENTS_TXT=$BUILD_DEPS_DIR/requirements.txt
+if [[ "$TF_NEED_CUDA" == "1" ]]; then
+    # TODO: delete it when tf2 standard package supports
+    # both cpu and gpu kernel.
+    REQUIREMENTS_TXT=$BUILD_DEPS_DIR/requirements_gpu.txt
+fi
+
+${PYTHON_VERSION:=python} -m pip install $QUIET_FLAG -r $REQUIREMENTS_TXT
+
+# Bazel configure
 function write_to_bazelrc() {
   echo "$1" >> .bazelrc
 }
@@ -35,12 +53,6 @@ function write_action_env_to_bazelrc() {
 }
 
 [[ -f .bazelrc ]] && rm .bazelrc
-read -r -p "Tensorflow will be upgraded to 2.0. Are You Sure? [Y/n] " reply
-case $reply in
-    [yY]*) echo "Installing...";;
-    * ) echo "Goodbye!"; exit;;
-esac
-${PYTHON_VERSION:=python} -m pip install $QUIET_FLAG -r requirements.txt
 
 TF_CFLAGS=( $(${PYTHON_VERSION} -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))') )
 TF_LFLAGS="$(${PYTHON_VERSION} -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))')"
@@ -53,3 +65,20 @@ write_action_env_to_bazelrc "TF_HEADER_DIR" ${TF_CFLAGS:2}
 write_action_env_to_bazelrc "TF_SHARED_LIBRARY_DIR" ${SHARED_LIBRARY_DIR}
 write_action_env_to_bazelrc "TF_SHARED_LIBRARY_NAME" ${SHARED_LIBRARY_NAME}
 write_action_env_to_bazelrc "TF_CXX11_ABI_FLAG" ${TF_CXX11_ABI_FLAG}
+
+write_to_bazelrc "build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true"
+write_to_bazelrc "build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain"
+write_to_bazelrc "build --spawn_strategy=standalone"
+write_to_bazelrc "build --strategy=Genrule=standalone"
+write_action_env_to_bazelrc "TF_NEED_CUDA" ${TF_NEED_CUDA}
+
+# TODO(yifeif): do not hardcode path
+if [[ "$TF_NEED_CUDA" == "1" ]]; then
+    # TODO: use CUDA_HOME here?
+    write_action_env_to_bazelrc "CUDNN_INSTALL_PATH" "/usr/lib/x86_64-linux-gnu"
+    write_action_env_to_bazelrc "TF_CUDA_VERSION" "10.0"
+    write_action_env_to_bazelrc "TF_CUDNN_VERSION" "7"
+    write_action_env_to_bazelrc "CUDA_TOOLKIT_PATH" "${CUDA_HOME:=/usr/local/cuda}"
+    write_to_bazelrc "build --config=cuda"
+    write_to_bazelrc "test --config=cuda"
+fi
