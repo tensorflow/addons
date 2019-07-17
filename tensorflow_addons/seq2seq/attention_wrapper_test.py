@@ -175,14 +175,11 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
                 batch_size = self.batch
             memory = self.memory[:batch_size]
             attention.setup_memory(
-                memory,
-                memory_sequence_length=self.memory_length[:batch_size])
-            self.assertListEqual(
-                attention.values.shape.as_list(),
-                list(memory.shape))
-            self.assertListEqual(
-                attention.keys.shape.as_list(),
-                list(memory.shape)[:-1] + [self.units])
+                memory, memory_sequence_length=self.memory_length[:batch_size])
+            self.assertListEqual(attention.values.shape.as_list(),
+                                 list(memory.shape))
+            self.assertListEqual(attention.keys.shape.as_list(),
+                                 list(memory.shape)[:-1] + [self.units])
             return attention(
                 [self.query[:batch_size], self.state[:batch_size]])
 
