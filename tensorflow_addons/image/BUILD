@@ -11,6 +11,8 @@ py_library(
         "distort_image_ops.py",
         "filters.py",
         "transform_ops.py",
+        "translate_ops.py",
+        "utils.py",
         "sparse_image_warp.py",
         "interpolate_spline.py",
     ]),
@@ -27,6 +29,7 @@ filegroup(
     name = "sparse_image_warp_test_data",
     srcs = glob(["test_data/*.png"]),
 )
+
 
 py_test(
     name = "dense_image_warp_test",
@@ -88,6 +91,32 @@ py_test(
         "transform_ops_test.py",
     ],
     main = "transform_ops_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "translate_ops_test",
+    size = "medium",
+    srcs = [
+        "translate_ops_test.py",
+    ],
+    main = "translate_ops_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "utils_test",
+    size = "small",
+    srcs = [
+        "utils_test.py",
+    ],
+    main = "utils_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":image",

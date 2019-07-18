@@ -4,7 +4,7 @@
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:------------- |
 | contrastive |  @WindQAQ | windqaq@gmail.com |
-| focal_loss |   |  |
+| focal_loss | @SSaishruthi  | saishruthi.tn@gmail.com |
 | lifted |  |  |
 | npairs | @WindQAQ | windqaq@gmail.com |
 | sparsemax_loss | @AndreasMadsen | amwwebdk+github@gmail.com |
