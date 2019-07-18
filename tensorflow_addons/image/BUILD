@@ -30,7 +30,6 @@ filegroup(
     srcs = glob(["test_data/*.png"]),
 )
 
-
 py_test(
     name = "dense_image_warp_test",
     size = "small",
