@@ -19,7 +19,7 @@ PYTHON_VERSIONS="2.7.15 3.4.9 3.5.6 3.6.6"
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
 
 # Install Bazel 0.24
-curl https://github.com/bazelbuild/bazel/releases/download/0.24.1/bazel-0.24.1-installer-darwin-x86_64.sh
+wget https://github.com/bazelbuild/bazel/releases/download/0.24.1/bazel-0.24.1-installer-darwin-x86_64.sh
 chmod +x bazel-0.24.1-installer-darwin-x86_64.sh
 ./bazel-0.24.1-installer-darwin-x86_64.sh --user
 export PATH="$PATH:$HOME/bin"
