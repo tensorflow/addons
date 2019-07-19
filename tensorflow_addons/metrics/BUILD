@@ -10,7 +10,7 @@ py_library(
         "f_scores.py",
         "r_square.py",
         "utils.py",
-        "multilabel_confusion_matrix.py"
+        "multilabel_confusion_matrix.py",
     ],
     srcs_version = "PY2AND3",
     deps = [
