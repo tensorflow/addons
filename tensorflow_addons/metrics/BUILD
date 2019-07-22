@@ -8,9 +8,9 @@ py_library(
         "__init__.py",
         "cohens_kappa.py",
         "f_scores.py",
+        "multilabel_confusion_matrix.py",
         "r_square.py",
         "utils.py",
-        "multilabel_confusion_matrix.py",
     ],
     srcs_version = "PY2AND3",
     deps = [
