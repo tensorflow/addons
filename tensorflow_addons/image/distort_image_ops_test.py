@@ -113,13 +113,15 @@ class AdjustHueInYiqTest(tf.test.TestCase):
 
     def test_adjust_hsv_in_yiq_unknown_shape(self):
         fn = distort_image_ops.adjust_hsv_in_yiq.get_concrete_function(
-            tf.TensorSpec(shape=None, dtype=tf.double))
+            tf.TensorSpec(shape=None, dtype=tf.float64))
         for shape in (2, 3, 3), (4, 2, 3, 3):
             image_np = np.random.rand(*shape) * 255.
             image_tf = tf.constant(image_np)
             self.assertAllClose(
                 self._adjust_hue_in_yiq_np(image_np, 0),
-                self.evaluate(fn(image_tf)), rtol=2e-4, atol=1e-4)
+                self.evaluate(fn(image_tf)),
+                rtol=2e-4,
+                atol=1e-4)
 
     def test_random_hsv_in_yiq_unknown_shape(self):
         fn = distort_image_ops.random_hsv_in_yiq.get_concrete_function(
