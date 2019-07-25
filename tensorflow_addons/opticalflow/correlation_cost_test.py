@@ -20,16 +20,12 @@ from __future__ import print_function
 import numpy as np
 
 from tensorflow_addons.opticalflow import correlation_cost
-from tensorflow.python.framework import dtypes
-from tensorflow.python.ops import array_ops
-from tensorflow.python.framework import ops
 from tensorflow.python.platform import test
-from tensorflow.python.framework import constant_op
 import tensorflow as tf
 tf.compat.v1.disable_eager_execution()
 
 
-class CorrelationCostTest(test.TestCase):
+class CorrelationCostTest(tf.test.TestCase):
     def _forward(self,
                  input_a,
                  input_b,
@@ -42,8 +38,8 @@ class CorrelationCostTest(test.TestCase):
                  use_gpu=False):
         with self.test_session(use_gpu=use_gpu, force_gpu=use_gpu) as sess:
 
-            input_a_op = ops.convert_to_tensor(input_a, dtype=dtypes.float32)
-            input_b_op = ops.convert_to_tensor(input_b, dtype=dtypes.float32)
+            input_a_op = tf.convert_to_tensor(input_a, dtype=tf.float32)
+            input_b_op = tf.convert_to_tensor(input_b, dtype=tf.float32)
 
             kernel_size = 1
             max_displacement = 2
@@ -70,9 +66,9 @@ class CorrelationCostTest(test.TestCase):
                [[[6, 0, 15, -7], [7, 1, 16, -9], [8, 2, 17, -11]],
                 [[9, 3, 18, -13], [10, 4, 19, -15], [11, 5, 20, -17]]]]
 
-        input_a = constant_op.constant(np.array(val), dtype=dtypes.float32)
+        input_a = tf.constant(np.array(val), dtype=tf.float32)
         valb = np.array(val).transpose(2, 3, 0, 1).reshape(2, 2, 3, 4)
-        input_b = constant_op.constant(valb, dtype=dtypes.float32)
+        input_b = tf.constant(valb, dtype=tf.float32)
 
         kernel_size = 1
         max_displacement = 2
@@ -81,8 +77,8 @@ class CorrelationCostTest(test.TestCase):
         pad = 4
 
         if data_format == 'NHWC':
-            input_a = array_ops.transpose(input_a, [0, 2, 3, 1])
-            input_b = array_ops.transpose(input_b, [0, 2, 3, 1])
+            input_a = tf.transpose(input_a, [0, 2, 3, 1])
+            input_b = tf.transpose(input_b, [0, 2, 3, 1])
 
         actual_cpu = self._forward(
             input_a,
@@ -117,16 +113,16 @@ class CorrelationCostTest(test.TestCase):
                [[[6, 0, 15, -7], [7, 1, 16, -9], [8, 2, 17, -11]],
                 [[9, 3, 18, -13], [10, 4, 19, -15], [11, 5, 20, -17]]]]
 
-        input_a = constant_op.constant(np.array(val), dtype=dtypes.float32)
+        input_a = tf.constant(np.array(val), dtype=tf.float32)
         valb = np.array(val).transpose(2, 3, 0, 1).reshape(2, 2, 3, 4)
-        input_b = constant_op.constant(valb, dtype=dtypes.float32)
+        input_b = tf.constant(valb, dtype=tf.float32)
 
         if data_format == 'NHWC':
-            input_a = array_ops.transpose(input_a, [0, 2, 3, 1])
-            input_b = array_ops.transpose(input_b, [0, 2, 3, 1])
+            input_a = tf.transpose(input_a, [0, 2, 3, 1])
+            input_b = tf.transpose(input_b, [0, 2, 3, 1])
 
-        input_a_op = ops.convert_to_tensor(input_a, dtype=dtypes.float32)
-        input_b_op = ops.convert_to_tensor(input_b, dtype=dtypes.float32)
+        input_a_op = tf.convert_to_tensor(input_a, dtype=tf.float32)
+        input_b_op = tf.convert_to_tensor(input_b, dtype=tf.float32)
 
         kernel_size = 1
         max_displacement = 2
@@ -178,8 +174,8 @@ class CorrelationCostTest(test.TestCase):
 
         with self.test_session(use_gpu=use_gpu, force_gpu=use_gpu):
 
-            input_a_op = ops.convert_to_tensor(input_a, dtype=dtypes.float32)
-            input_b_op = ops.convert_to_tensor(input_b, dtype=dtypes.float32)
+            input_a_op = tf.convert_to_tensor(input_a, dtype=tf.float32)
+            input_b_op = tf.convert_to_tensor(input_b, dtype=tf.float32)
 
             call_op = correlation_cost
             actual_op = call_op(
@@ -221,4 +217,4 @@ class CorrelationCostTest(test.TestCase):
 
 
 if __name__ == "__main__":
-    test.main()
+    tf.test.main()

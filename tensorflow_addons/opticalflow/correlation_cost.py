@@ -19,8 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.python.framework import ops
-from tensorflow.python.ops import array_ops
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 _correlation_cost_op_so = tf.load_op_library(
@@ -79,7 +77,7 @@ def correlation_cost(input_a,
       A `Tensor` of the format specified by `data_format`.
     """
 
-    with ops.name_scope(name, "correlation_cost"):
+    with tf.name_scope(name or "correlation_cost"):
         op_call = _correlation_cost_op_so.correlation_cost
         ret = op_call(
             input_a,
@@ -93,14 +91,14 @@ def correlation_cost(input_a,
         if data_format == 'NHWC':
             # this is easier to maintain without
             # specializing an additional cuda kernel
-            return array_ops.transpose(ret, [0, 2, 3, 1])
+            return tf.transpose(ret, [0, 2, 3, 1])
         return ret
 
 
 correlation_cost_grad = _correlation_cost_op_so.correlation_cost_grad
 
 
-@ops.RegisterGradient("CorrelationCost")
+@tf.RegisterGradient("CorrelationCost")
 def _correlation_cost_grad(op, grad_output):
     kernel_size = op.get_attr("kernel_size")
     max_displacement = op.get_attr("max_displacement")
@@ -109,9 +107,9 @@ def _correlation_cost_grad(op, grad_output):
     pad = op.get_attr("pad")
     data_format = op.get_attr("data_format")
 
-    input_a = ops.convert_to_tensor(op.inputs[0], name="input_a")
-    input_b = ops.convert_to_tensor(op.inputs[1], name="input_b")
-    grad_output_tensor = ops.convert_to_tensor(grad_output, name="grad_output")
+    input_a = tf.convert_to_tensor(op.inputs[0], name="input_a")
+    input_b = tf.convert_to_tensor(op.inputs[1], name="input_b")
+    grad_output_tensor = tf.convert_to_tensor(grad_output, name="grad_output")
 
     op_call = _correlation_cost_op_so.correlation_cost_grad
     grads = op_call(
@@ -125,6 +123,6 @@ def _correlation_cost_grad(op, grad_output):
         pad=pad,
         data_format=data_format)
 
-    grad_input_a = ops.convert_to_tensor(grads[0], name="grad_input_a")
-    grad_input_b = ops.convert_to_tensor(grads[1], name="grad_input_b")
+    grad_input_a = tf.convert_to_tensor(grads[0], name="grad_input_a")
+    grad_input_b = tf.convert_to_tensor(grads[1], name="grad_input_b")
     return [grad_input_a, grad_input_b]
