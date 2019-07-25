@@ -19,7 +19,7 @@ limitations under the License.
 #define EIGEN_USE_GPU
 #endif  // GOOGLE_CUDA
 
-#include "tensorflow_addons/custom_ops/opticalflow/cc/kernels/correlation_cost_op.h"
+#include "tensorflow_addons/custom_ops/layers/cc/kernels/correlation_cost_op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/framework/types.h"

@@ -11,8 +11,12 @@ py_library(
         "poincare.py",
         "sparsemax.py",
         "wrappers.py",
+        "correlation_cost.py",
     ],
     srcs_version = "PY2AND3",
+    data = [
+        "//tensorflow_addons/custom_ops/layers:_correlation_cost_ops.so",
+    ],
     deps = [
         "//tensorflow_addons/activations",
         "//tensorflow_addons/utils",
@@ -65,6 +69,19 @@ py_test(
         "normalizations_test.py",
     ],
     main = "normalizations_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "correlation_cost_test",
+    size = "small",
+    srcs = [
+        "correlation_cost_test.py",
+    ],
+    main = "correlation_cost_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":layers",

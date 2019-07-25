@@ -18,10 +18,10 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-
-from tensorflow_addons.opticalflow import correlation_cost
-from tensorflow.python.platform import test
 import tensorflow as tf
+
+from tensorflow_addons.layers.correlation_cost import correlation_cost
+from tensorflow.python.platform import test
 tf.compat.v1.disable_eager_execution()
 
 
@@ -170,6 +170,23 @@ class CorrelationCostTest(tf.test.TestCase):
 
             input_a_op = tf.convert_to_tensor(input_a, dtype=tf.float32)
             input_b_op = tf.convert_to_tensor(input_b, dtype=tf.float32)
+
+            # def correlation_fn(inputs):
+            #     output = correlation_cost(
+            #         inputs[0],
+            #         inputs[1],
+            #         kernel_size=kernel_size,
+            #         max_displacement=max_displacement,
+            #         stride_1=stride_1,
+            #         stride_2=stride_2,
+            #         pad=pad,
+            #         data_format=data_format)
+            #     return output
+            #
+            # theoretical, numerical = tf.test.compute_gradient(
+            #     correlation_fn, [[input_a_op, input_b_op]])
+            #
+            # self.assertAllClose(theoretical[0], numerical[0], 1e-4)
 
             call_op = correlation_cost
             actual_op = call_op(

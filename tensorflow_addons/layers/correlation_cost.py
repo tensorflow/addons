@@ -22,7 +22,7 @@ import tensorflow as tf
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 _correlation_cost_op_so = tf.load_op_library(
-    get_path_to_datafile("custom_ops/opticalflow/_correlation_cost_ops.so"))
+    get_path_to_datafile("custom_ops/layers/_correlation_cost_ops.so"))
 
 # pylint: disable=redefined-builtin
 
