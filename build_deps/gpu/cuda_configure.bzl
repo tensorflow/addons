@@ -21,6 +21,18 @@
   * `PYTHON_BIN_PATH`: The python binary path
 """
 
+load(
+    "@bazel_tools//tools/cpp:lib_cc_configure.bzl",
+    "escape_string",
+    "get_env_var",
+)
+load(
+    "@bazel_tools//tools/cpp:windows_cc_configure.bzl",
+    "find_msvc_tool",
+    "find_vc_path",
+    "setup_vc_env_vars",
+)
+
 _GCC_HOST_COMPILER_PATH = "GCC_HOST_COMPILER_PATH"
 
 _CLANG_CUDA_COMPILER_PATH = "CLANG_CUDA_COMPILER_PATH"
@@ -123,18 +135,6 @@ NVVM_LIBDEVICE_FILES = [
     # Probing for one of them is sufficient.
     "libdevice.compute_20.10.bc",
 ]
-
-load(
-    "@bazel_tools//tools/cpp:lib_cc_configure.bzl",
-    "escape_string",
-    "get_env_var",
-)
-load(
-    "@bazel_tools//tools/cpp:windows_cc_configure.bzl",
-    "find_msvc_tool",
-    "find_vc_path",
-    "setup_vc_env_vars",
-)
 
 def _get_python_bin(repository_ctx):
     """Gets the python bin path."""
