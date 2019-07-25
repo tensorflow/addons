@@ -41,12 +41,6 @@ class CorrelationCostTest(tf.test.TestCase):
             input_a_op = tf.convert_to_tensor(input_a, dtype=tf.float32)
             input_b_op = tf.convert_to_tensor(input_b, dtype=tf.float32)
 
-            kernel_size = 1
-            max_displacement = 2
-            stride_1 = 1
-            stride_2 = 2
-            pad = 4
-
             call_op = correlation_cost
             actual_op = call_op(
                 input_a_op,
