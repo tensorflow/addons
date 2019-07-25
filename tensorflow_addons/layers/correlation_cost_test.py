@@ -19,10 +19,11 @@ from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
-
 from tensorflow_addons.layers.correlation_cost import correlation_cost
+from tensorflow_addons.utils import test_utils
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class CorrelationCostTest(tf.test.TestCase):
     def _forward(self,
                  input_a,
@@ -88,22 +89,24 @@ class CorrelationCostTest(tf.test.TestCase):
             # NHWC -> NCHW
             actual = tf.transpose(actual, [0, 3, 1, 2])
 
-        # we just need to test fixed ids, as output is NCHW independently from data_format
+        # We can test fixed ids, as output is independent from data_format
         expected_ids = np.concatenate([np.zeros(464,), np.ones(464,)])
-        self.assertAllClose(np.where(actual.numpy() == 0)[0], expected_ids)
+        self.assertAllClose(tf.where(tf.equal(actual, 0))[:, 0], expected_ids)
 
         counts = [54, 52, 54, 50, 44, 50, 54, 52, 54]
         expected_ids = np.concatenate(
             [k * np.ones(v,) for k, v in enumerate(counts)])
         expected_ids = np.concatenate([expected_ids, expected_ids])
-        self.assertAllClose(np.where(actual.numpy() == 0)[1], expected_ids)
+        self.assertAllClose(tf.where(tf.equal(actual, 0))[:, 1], expected_ids)
         self.assertEqual(actual.shape, (2, 9, 7, 8))
 
     def _gradients(self, data_format='NCHW'):
 
         batch, channels, height, width = 2, 3, 5, 6
-        input_a = tf.random.normal([batch, channels, height, width])
-        input_b = tf.random.normal([batch, channels, height, width])
+        input_a = np.random.randn(
+            batch, channels, height, width).astype(np.float32)
+        input_b = np.random.randn(
+            batch, channels, height, width).astype(np.float32)
 
         kernel_size = 1
         max_displacement = 2
@@ -118,20 +121,19 @@ class CorrelationCostTest(tf.test.TestCase):
         input_a_op = tf.convert_to_tensor(input_a, dtype=tf.float32)
         input_b_op = tf.convert_to_tensor(input_b, dtype=tf.float32)
 
-        def correlation_fn(inputs):
-            output = correlation_cost(
-                inputs[0],
-                inputs[1],
+        def correlation_fn(input_a, input_b):
+            return correlation_cost(
+                input_a,
+                input_b,
                 kernel_size=kernel_size,
                 max_displacement=max_displacement,
                 stride_1=stride_1,
                 stride_2=stride_2,
                 pad=pad,
                 data_format=data_format)
-            return output
 
         theoretical, numerical = tf.test.compute_gradient(
-            correlation_fn, [[input_a_op, input_b_op]])
+            correlation_fn, [input_a_op, input_b_op])
 
         self.assertAllClose(theoretical[0], numerical[0], atol=1e-3)
 
