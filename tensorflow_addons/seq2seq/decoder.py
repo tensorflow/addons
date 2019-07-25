@@ -43,6 +43,8 @@ class Decoder(object):
       RNNCell instance as the state.
     - `finished`: boolean tensor telling whether each sequence in the batch is
       finished.
+    - `training`: boolean whether it should behave in training mode or in
+      inference mode.
     - `outputs`: Instance of BasicDecoderOutput. Result of the decoding, at
       each time step.
     """
@@ -79,7 +81,7 @@ class Decoder(object):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def step(self, time, inputs, state, name=None):
+    def step(self, time, inputs, state, training=None, name=None):
         """Called per step of decoding (but only once for dynamic decoding).
 
         Args:
@@ -88,6 +90,9 @@ class Decoder(object):
             time step.
           state: RNNCell state (possibly nested tuple of) tensor[s] from
             previous time step.
+          training: Python boolean. Indicates whether the layer should behave
+            in training  mode or in inference mode. Only relevant
+            when `dropout` or `recurrent_dropout` is used.
           name: Name scope for any created operations.
 
         Returns:
@@ -136,6 +141,8 @@ class BaseDecoder(tf.keras.layers.Layer):
       encoder, which will be used for the attention wrapper for the RNNCell.
     - `finished`: boolean tensor telling whether each sequence in the batch is
       finished.
+    - `training`: boolean whether it should behave in training mode or in
+      inference mode.
     - `outputs`: Instance of BasicDecoderOutput. Result of the decoding, at
       each time step.
     """
@@ -154,7 +161,7 @@ class BaseDecoder(tf.keras.layers.Layer):
         self.swap_memory = swap_memory
         super(BaseDecoder, self).__init__(**kwargs)
 
-    def call(self, inputs, initial_state=None, **kwargs):
+    def call(self, inputs, initial_state=None, training=None, **kwargs):
         init_kwargs = kwargs
         init_kwargs["initial_state"] = initial_state
         return dynamic_decode(
@@ -164,6 +171,7 @@ class BaseDecoder(tf.keras.layers.Layer):
             maximum_iterations=self.maximum_iterations,
             parallel_iterations=self.parallel_iterations,
             swap_memory=self.swap_memory,
+            training=training,
             decoder_init_input=inputs,
             decoder_init_kwargs=init_kwargs)
 
@@ -204,7 +212,7 @@ class BaseDecoder(tf.keras.layers.Layer):
         """
         raise NotImplementedError
 
-    def step(self, time, inputs, state):
+    def step(self, time, inputs, state, training):
         """Called per step of decoding (but only once for dynamic decoding).
 
         Args:
@@ -213,6 +221,8 @@ class BaseDecoder(tf.keras.layers.Layer):
             time step.
           state: RNNCell state (possibly nested tuple of) tensor[s] from
             previous time step.
+          training: Python boolean. Indicates whether the layer should
+            behave in training mode or in inference mode.
 
         Returns:
           `(outputs, next_state, next_inputs, finished)`: `outputs` is an
@@ -265,6 +275,7 @@ def dynamic_decode(decoder,
                    maximum_iterations=None,
                    parallel_iterations=32,
                    swap_memory=False,
+                   training=None,
                    scope=None,
                    **kwargs):
     """Perform dynamic decoding with `decoder`.
@@ -287,6 +298,9 @@ def dynamic_decode(decoder,
          steps.  Default is `None` (decode until the decoder is fully done).
       parallel_iterations: Argument passed to `tf.while_loop`.
       swap_memory: Argument passed to `tf.while_loop`.
+      training: Python boolean. Indicates whether the layer should behave
+          in training  mode or in inference mode. Only relevant
+          when `dropout` or `recurrent_dropout` is used.
       scope: Optional variable scope to use.
       **kwargs: dict, other keyword arguments for dynamic_decode. It might
         contain arguments for `BaseDecoder` to initialize, which takes all
@@ -389,7 +403,7 @@ def dynamic_decode(decoder,
               ```
             """
             (next_outputs, decoder_state, next_inputs,
-             decoder_finished) = decoder.step(time, inputs, state)
+             decoder_finished) = decoder.step(time, inputs, state, training)
             if decoder.tracks_own_finished:
                 next_finished = decoder_finished
             else:
