@@ -17,10 +17,7 @@ limitations under the License.
 
 #define EIGEN_USE_GPU
 
-// TODO: FIX CUDA Build
-//#include "third_party/cub/device/device_reduce.cuh"
-//#include "tensorflow/core/util/gpu_kernel_helper.h"
-
+#include "gpu/cub/device/device_reduce.cuh"
 #include "tensorflow_addons/custom_ops/layers/cc/kernels/correlation_cost_op.h"
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/tensor_shape.h"

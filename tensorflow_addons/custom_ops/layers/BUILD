@@ -43,6 +43,7 @@ cc_library(
     ] + if_cuda_is_configured([
         "@local_config_cuda//cuda:cuda_libs",
         "@local_config_cuda//cuda:cuda_headers",
+        "@cub_archive//:cub",
     ]),
     alwayslink = 1,
 )
