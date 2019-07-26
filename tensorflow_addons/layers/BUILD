@@ -8,15 +8,15 @@ py_library(
         "__init__.py",
         "maxout.py",
         "normalizations.py",
+        "optical_flow.py",
         "poincare.py",
         "sparsemax.py",
         "wrappers.py",
-        "correlation_cost.py",
     ],
-    srcs_version = "PY2AND3",
     data = [
         "//tensorflow_addons/custom_ops/layers:_correlation_cost_ops.so",
     ],
+    srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/activations",
         "//tensorflow_addons/utils",
@@ -76,12 +76,12 @@ py_test(
 )
 
 py_test(
-    name = "correlation_cost_test",
+    name = "optical_flow_test",
     size = "small",
     srcs = [
-        "correlation_cost_test.py",
+        "optical_flow_test.py",
     ],
-    main = "correlation_cost_test.py",
+    main = "optical_flow_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":layers",

@@ -19,21 +19,14 @@ from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
-from tensorflow_addons.layers.correlation_cost import correlation_cost
+from tensorflow_addons.layers.optical_flow import correlation_cost, CorrelationCost
 from tensorflow_addons.utils import test_utils
 
 
 @test_utils.run_all_in_graph_and_eager_modes
 class CorrelationCostTest(tf.test.TestCase):
-    def _forward(self,
-                 input_a,
-                 input_b,
-                 kernel_size,
-                 max_displacement,
-                 stride_1,
-                 stride_2,
-                 pad,
-                 data_format):
+    def _forward(self, input_a, input_b, kernel_size, max_displacement,
+                 stride_1, stride_2, pad, data_format):
 
         input_a_op = tf.convert_to_tensor(input_a, dtype=tf.float32)
         input_b_op = tf.convert_to_tensor(input_b, dtype=tf.float32)
@@ -50,7 +43,7 @@ class CorrelationCostTest(tf.test.TestCase):
 
         return output
 
-    def _forward_simple(self, data_format='NCHW'):
+    def _forward_simple(self, data_format='channels_first'):
         # cumbersome calculation by hand for a fixed input
         # we just test where zeros occurs and a few entries
         val = [[[[0, -6, 9, 5], [1, -5, 10, 3], [2, -4, 11, 1]],
@@ -62,7 +55,7 @@ class CorrelationCostTest(tf.test.TestCase):
         valb = np.array(val).transpose(2, 3, 0, 1).reshape(2, 2, 3, 4)
         input_b = tf.constant(valb, dtype=tf.float32)
 
-        if data_format == 'NHWC':
+        if data_format == 'channels_last':
             input_a = tf.transpose(input_a, [0, 2, 3, 1])
             input_b = tf.transpose(input_b, [0, 2, 3, 1])
 
@@ -85,7 +78,7 @@ class CorrelationCostTest(tf.test.TestCase):
             pad=pad,
             data_format=data_format)
 
-        if data_format == 'NHWC':
+        if data_format == 'channels_last':
             # NHWC -> NCHW
             actual = tf.transpose(actual, [0, 3, 1, 2])
 
@@ -100,13 +93,13 @@ class CorrelationCostTest(tf.test.TestCase):
         self.assertAllClose(tf.where(tf.equal(actual, 0))[:, 1], expected_ids)
         self.assertEqual(actual.shape, (2, 9, 7, 8))
 
-    def _gradients(self, data_format='NCHW'):
+    def _gradients(self, data_format='channels_first'):
 
         batch, channels, height, width = 2, 3, 5, 6
-        input_a = np.random.randn(
-            batch, channels, height, width).astype(np.float32)
-        input_b = np.random.randn(
-            batch, channels, height, width).astype(np.float32)
+        input_a = np.random.randn(batch, channels, height,
+                                  width).astype(np.float32)
+        input_b = np.random.randn(batch, channels, height,
+                                  width).astype(np.float32)
 
         kernel_size = 1
         max_displacement = 2
@@ -114,12 +107,12 @@ class CorrelationCostTest(tf.test.TestCase):
         stride_2 = 2
         pad = 4
 
-        if data_format == 'NHWC':
+        if data_format == 'channels_last':
             input_a = tf.transpose(input_a, [0, 2, 3, 1])
             input_b = tf.transpose(input_b, [0, 2, 3, 1])
 
-        input_a_op = tf.convert_to_tensor(input_a, dtype=tf.float32)
-        input_b_op = tf.convert_to_tensor(input_b, dtype=tf.float32)
+        input_a_op = tf.convert_to_tensor(input_a)
+        input_b_op = tf.convert_to_tensor(input_b)
 
         def correlation_fn(input_a, input_b):
             return correlation_cost(
@@ -138,16 +131,56 @@ class CorrelationCostTest(tf.test.TestCase):
         self.assertAllClose(theoretical[0], numerical[0], atol=1e-3)
 
     def testForwardNCHW(self):
-        self._forward_simple(data_format='NCHW')
+        self._forward_simple(data_format='channels_first')
 
     def testForwardNHWC(self):
-        self._forward_simple(data_format='NHWC')
+        self._forward_simple(data_format='channels_last')
 
     def testBackwardNCHW(self):
-        self._gradients(data_format='NCHW')
+        self._gradients(data_format='channels_first')
 
     def testBackwardNHWC(self):
-        self._gradients(data_format='NHWC')
+        self._gradients(data_format='channels_last')
+
+    def testKerasLayer(self):
+        val_a = [[[[0, -6, 9, 5], [1, -5, 10, 3], [2, -4, 11, 1]],
+                  [[3, -3, 12, -1], [4, -2, 13, -3], [5, -1, 14, -5]]],
+                 [[[6, 0, 15, -7], [7, 1, 16, -9], [8, 2, 17, -11]],
+                  [[9, 3, 18, -13], [10, 4, 19, -15], [11, 5, 20, -17]]]]
+        val_b = np.array(val_a).transpose(2, 3, 0, 1).reshape(2, 2, 3, 4)
+
+        # yapf: disable
+        input_a = tf.keras.Input(shape=(2, 3, 4,))
+        input_b = tf.keras.Input(shape=(2, 3, 4,))
+
+        layer = CorrelationCost(
+            kernel_size=1,
+            max_displacement=2,
+            stride_1=1,
+            stride_2=2,
+            pad=4,
+            data_format="channels_first")
+
+        expected_output_shape = tuple(
+            layer.compute_output_shape([(2, 3, 4,), (2, 3, 4,)]))[1:]
+        # yapf: enable
+
+        x = [input_a, input_b]
+        y = layer(x)
+        model = tf.python.keras.models.Model(x, y)
+        actual_output = model.predict([val_a, val_b])
+
+        expected_output_type = 'float32'
+        if tf.keras.backend.dtype(y[0]) != expected_output_type:
+            raise AssertionError(
+                "Inferred output type %s does not equal "
+                "expected output type %s" % (tf.keras.backend.dtype(y[0]),
+                                             expected_output_type))
+
+        if actual_output[0].shape != expected_output_shape:
+            raise AssertionError(
+                "Expected shape %s does not equal output shape"
+                "%s" % (actual_output[0].shape, expected_output_shape))
 
 
 if __name__ == "__main__":
