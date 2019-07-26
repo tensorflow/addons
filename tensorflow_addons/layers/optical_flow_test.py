@@ -86,13 +86,15 @@ class CorrelationCostTest(tf.test.TestCase):
 
             # We can test fixed ids, as output is independent from data_format
             expected_ids = np.concatenate([np.zeros(464,), np.ones(464,)])
-            self.assertAllClose(tf.where(tf.equal(actual, 0))[:, 0], expected_ids)
+            self.assertAllClose(
+                tf.where(tf.equal(actual, 0))[:, 0], expected_ids)
 
             counts = [54, 52, 54, 50, 44, 50, 54, 52, 54]
             expected_ids = np.concatenate(
                 [k * np.ones(v,) for k, v in enumerate(counts)])
             expected_ids = np.concatenate([expected_ids, expected_ids])
-            self.assertAllClose(tf.where(tf.equal(actual, 0))[:, 1], expected_ids)
+            self.assertAllClose(
+                tf.where(tf.equal(actual, 0))[:, 1], expected_ids)
             self.assertEqual(actual.shape, (2, 9, 7, 8))
 
     def _gradients(self, data_format):
@@ -118,14 +120,14 @@ class CorrelationCostTest(tf.test.TestCase):
 
             def correlation_fn(input_a, input_b):
                 return correlation_cost(
-                        input_a,
-                        input_b,
-                        kernel_size=kernel_size,
-                        max_displacement=max_displacement,
-                        stride_1=stride_1,
-                        stride_2=stride_2,
-                        pad=pad,
-                        data_format=data_format)
+                    input_a,
+                    input_b,
+                    kernel_size=kernel_size,
+                    max_displacement=max_displacement,
+                    stride_1=stride_1,
+                    stride_2=stride_2,
+                    pad=pad,
+                    data_format=data_format)
 
             theoretical, numerical = tf.test.compute_gradient(
                 correlation_fn, [input_a_op, input_b_op])

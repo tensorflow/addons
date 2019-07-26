@@ -8,7 +8,6 @@ package(
 
 licenses(["notice"])  # BSD
 
-
 filegroup(
     name = "cub_header_files",
     srcs = glob([
