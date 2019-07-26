@@ -94,6 +94,12 @@ bazel test -c opt -k \
 
 ### Locally Testing GPU
 ```bash
+docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-gpu make gpu-unit-test
+```
+
+or run manually:
+
+```bash
 docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-gpu /bin/bash
 export TF_NEED_CUDA=1
 ./configure.sh  # Links project with TensorFlow dependency
