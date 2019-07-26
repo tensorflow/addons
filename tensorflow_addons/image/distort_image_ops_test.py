@@ -59,7 +59,10 @@ class AdjustHueInYiqTest(tf.test.TestCase):
 
     def _adjust_hue_in_yiq_tf(self, x_np, delta_h):
         x = tf.constant(x_np)
-        y = distort_image_ops.adjust_hsv_in_yiq(x, delta_h, 1, 1)
+        try:
+            y = distort_image_ops.adjust_hsv_in_yiq(x, delta_h, 1, 1)
+        except tf.errors.InvalidArgumentError as e:
+            raise
         return y
 
     def test_adjust_random_hue_in_yiq(self):
@@ -107,8 +110,7 @@ class AdjustHueInYiqTest(tf.test.TestCase):
             self.evaluate(self._adjust_hue_in_yiq_tf(x_np, delta_h))
         x_np = np.random.rand(4, 2, 4) * 255.
         delta_h = np.random.rand() * 2.0 - 1.0
-        with self.assertRaisesOpError("input must have 3 channels "
-                                      "but instead has 4 channels"):
+        with self.assertRaises(tf.errors.InvalidArgumentError):
             self.evaluate(self._adjust_hue_in_yiq_tf(x_np, delta_h))
 
     def test_adjust_hsv_in_yiq_unknown_shape(self):
@@ -186,8 +188,7 @@ class AdjustValueInYiqTest(tf.test.TestCase):
             self.evaluate(self._adjust_value_in_yiq_tf(x_np, scale))
         x_np = np.random.rand(4, 2, 4) * 255.
         scale = np.random.rand() * 2.0 - 1.0
-        with self.assertRaisesOpError("input must have 3 channels "
-                                      "but instead has 4 channels"):
+        with self.assertRaises(tf.errors.InvalidArgumentError):
             self.evaluate(self._adjust_value_in_yiq_tf(x_np, scale))
 
 
@@ -250,8 +251,7 @@ class AdjustSaturationInYiqTest(tf.test.TestCase):
             self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
         x_np = np.random.rand(4, 2, 4) * 255.
         scale = np.random.rand() * 2.0 - 1.0
-        with self.assertRaisesOpError("input must have 3 channels "
-                                      "but instead has 4 channels"):
+        with self.assertRaises(tf.errors.InvalidArgumentError):
             self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
 
 
