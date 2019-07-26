@@ -73,7 +73,7 @@ Please see our [Style Guide](STYLE_GUIDE.md) for more details.
 Nighly CI tests are ran and results can be found on the central README. To 
 subscribe for alerts please join the [addons-testing mailing list](https://groups.google.com/a/tensorflow.org/forum/#!forum/addons-testing).
 
-#### Locally Testing
+#### Locally Testing CPU
 
 ```bash
 docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op make unit-test
@@ -88,7 +88,20 @@ docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-c
 
 bazel test -c opt -k \
 --test_timeout 300,450,1200,3600 \
---test_output=errors \
+--test_output=all \
+//tensorflow_addons/...
+```
+
+### Locally Testing GPU
+```bash
+docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-gpu /bin/bash
+export TF_NEED_CUDA=1
+./configure.sh  # Links project with TensorFlow dependency
+
+bazel test -c opt -k \
+--test_timeout 300,450,1200,3600 \
+--test_output=all \
+--jobs=1 \
 //tensorflow_addons/...
 ```
 
