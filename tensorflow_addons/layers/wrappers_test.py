@@ -141,12 +141,12 @@ class SpectralNormalizationTest(tf.test.TestCase):
 
         self.assertTrue(hasattr(model.layers[0], 'u'))
 
-    def test_spectralnorm_applylayer(self):
+    def test_applylayer(self):
         images = tf.random.uniform((2, 4, 4, 3))
-        wn_wrapper = wrappers.SpectralNormalization(
+        sn_wrapper = wrappers.SpectralNormalization(
             tf.keras.layers.Conv2D(32, [2, 2]), input_shape=(4, 4, 3))
-        wn_wrapper.apply(images)
-        self.assertTrue(hasattr(wn_wrapper, 'u'))
+        sn_wrapper.apply(images)
+        self.assertTrue(hasattr(sn_wrapper, 'u'))
 
     def test_no_layer(self):
         images = tf.random.uniform((2, 4, 43))
