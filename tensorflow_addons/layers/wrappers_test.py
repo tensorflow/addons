@@ -104,5 +104,70 @@ class WeightNormalizationTest(tf.test.TestCase):
             input_data=input_data)
 
 
+@test_utils.run_all_in_graph_and_eager_modes
+class SpectralNormalizationTest(tf.test.TestCase):
+    def test_dense_train(self):
+        model = tf.keras.models.Sequential((
+            wrappers.SpectralNormalization(
+                tf.keras.layers.Dense(2), input_shape=(3, 4)),
+        ))
+        model.compile(
+            optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.001),
+            loss='mse')
+        model.fit(
+            np.random.random((10, 3, 4)),
+            np.random.random((10, 3, 2)),
+            epochs=3,
+            batch_size=10)
+
+        self.assertTrue(hasattr(model.layers[0], 'u'))
+
+    def test_conv2d(self):
+        model = tf.keras.models.Sequential((
+            wrappers.SpectralNormalization(
+                tf.keras.layers.Conv2D(5, (2, 2), padding='same'),
+                input_shape=(4, 4, 3)),
+        ))
+
+        model.add(tf.keras.layers.Activation('relu'))
+        model.compile(
+            optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.001),
+            loss='mse')
+        model.fit(
+            np.random.random((2, 4, 4, 3)),
+            np.random.random((2, 4, 4, 5)),
+            epochs=3,
+            batch_size=10)
+
+        self.assertTrue(hasattr(model.layers[0], 'u'))
+
+    def test_spectralnorm_applylayer(self):
+        images = tf.random.uniform((2, 4, 4, 3))
+        wn_wrapper = wrappers.SpectralNormalization(
+            tf.keras.layers.Conv2D(32, [2, 2]), input_shape=(4, 4, 3))
+        wn_wrapper.apply(images)
+        self.assertTrue(hasattr(wn_wrapper, 'u'))
+
+    def test_no_layer(self):
+        images = tf.random.uniform((2, 4, 43))
+        with self.assertRaises(AssertionError):
+            wrappers.SpectralNormalization(images)
+
+    def test_no_kernel(self):
+        with self.assertRaises(ValueError):
+            wrappers.SpectralNormalization(tf.keras.layers.MaxPooling2D(
+                2, 2)).build((2, 2))
+
+    def test_keras(self):
+        input_data = np.random.random((10, 3, 4)).astype(np.float32)
+        test_utils.layer_test(
+            wrappers.SpectralNormalization,
+            kwargs={
+                'layer': tf.keras.layers.Dense(2),
+                'input_shape': (3, 4)
+            },
+            input_data=input_data)
+
+
 if __name__ == "__main__":
     tf.test.main()
