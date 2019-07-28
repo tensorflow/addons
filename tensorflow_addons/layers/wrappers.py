@@ -153,3 +153,104 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         config = {'data_init': self.data_init}
         base_config = super(WeightNormalization, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+
+@keras_utils.register_keras_custom_object
+class SpectralNormalization(tf.keras.layers.Wrapper):
+    """This wrapper controls the Lipschitz constant of the layer by
+       constraining its spectral norm.
+
+    This speeds up convergence by improving the conditioning of the
+    optimization problem.
+
+    [1] Spectral Normalization for Generative Adversarial Networks:
+    https://arxiv.org/abs/1802.05957
+    Takeru Miyato, Toshiki Kataoka, Masanori Koyama, Yuichi Yoshida (2018)
+
+    SpectralNormalization wrapper works for keras and tf layers.
+    ```python
+      net = SpectralNormalization(
+          tf.keras.layers.Conv2D(2, 2, activation="relu"),
+          input_shape=(32, 32, 3))(x)
+      net = SpectralNormalization(
+          tf.keras.layers.Conv2D(16, 5, activation="relu"))(net)
+      net = SpectralNormalization(
+          tf.keras.layers.Dense(120, activation="relu"))(net)
+      net = SpectralNormalization(
+          tf.keras.layers.Dense(n_classes))(net)
+    ```
+    Arguments:
+      layer: a layer instance.
+    Raises:
+      ValueError: If not initialized with a `Layer` instance.
+      ValueError: If `Layer` does not contain a `kernel` of spectrals
+      NotImplementedError: If `data_init` is True and running graph execution
+    """
+
+    def __init__(self, layer, power_iterations=1, **kwargs):
+        super(SpectralNormalization, self).__init__(layer, **kwargs)
+        assert power_iterations > 0, (
+            "`power_iterations` should be positive, got `power_iterations={}`"
+            "".format(power_iterations))
+        self.power_iterations = power_iterations
+        self._initialized = False
+        self._track_trackable(layer, name="layer")
+
+    def build(self, input_shape):
+        """Build `Layer`"""
+
+        input_shape = tf.TensorShape(input_shape).as_list()
+        self.input_spec = tf.keras.layers.InputSpec(shape=input_shape)
+
+        if not self.layer.built:
+            self.layer.build(input_shape)
+
+            if not hasattr(self.layer, "kernel"):
+                raise ValueError(
+                    "`SpectralNormalization` must wrap a layer that contains"
+                    " a `kernel` attribute for parameters.")
+
+            self.u = self.add_variable(
+                name="u",
+                shape=(1, int(self.layer.kernel.shape[-1])),
+                initializer=tf.keras.initializers.get("normal"),
+                dtype=self.layer.kernel.dtype,
+                trainable=False)
+
+        super(SpectralNormalization, self).build()
+
+    @tf.function
+    def call(self, *args, **kwargs):
+        """Call `Layer`"""
+        self._spectral_normalize()
+        output = self.layer(*args, **kwargs)
+        return output
+
+    def compute_output_shape(self, input_shape):
+        return tf.TensorShape(
+            self.layer.compute_output_shape(input_shape).as_list())
+
+    def _spectral_normalize(self):
+        """Generate spectral normalized weights.
+
+        This method will update the value of self.layer.kernel with the
+        spectral normalized value, so that the layer is ready for call().
+        """
+
+        w = self.layer.kernel
+        u = self.u
+
+        with tf.name_scope("spectral_normalize"):
+            for i in range(self.power_iterations):
+                v = tf.math.l2_normalize(tf.matmul(u, tf.transpose(w)))
+                u = tf.math.l2_normalize(tf.matmul(v, w))
+
+            sigma = tf.matmul(tf.matmul(v, w), tf.transpose(u))
+
+            self.layer.kernel = w / sigma
+            self.u.assign(u)
+
+    def get_config(self):
+        config = {"power_iterations": self.power_iterations}
+        base_config = super(SpectralNormalization, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
