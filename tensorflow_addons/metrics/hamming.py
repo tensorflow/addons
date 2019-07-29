@@ -19,31 +19,32 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.keras.metrics import Metric
 from tensorflow_addons.metrics.utils import MeanMetricWrapper
 
-def hamming_distance(actuals, predictions):
-  result=tf.not_equal(actuals,predictions)
-  not_eq = tf.reduce_sum(tf.cast(result, tf.float32))
-  ham_distance = tf.math.divide_no_nan(not_eq, len(result))
-  return ham_distance
 
-def hamming_loss(y_true, y_pred, mode='multiclass'):
+def hamming_distance(actuals, predictions):
+    result = tf.not_equal(actuals, predictions)
+    not_eq = tf.reduce_sum(tf.cast(result, tf.float32))
+    ham_distance = tf.math.divide_no_nan(not_eq, len(result))
+    return ham_distance
+
+
+def hamming_loss_fn(y_true, y_pred, mode):
     if mode not in ['multiclass', 'multilabel']:
         raise TypeError('mode must be: [multiclass, multilabel])')
 
     if mode == 'multiclass':
-        nonzero = tf.cast(tf.math.count_nonzero(y_true * y_pred, axis=-1), tf.float32)
-        print(nonzero)
+        nonzero = tf.cast(
+            tf.math.count_nonzero(y_true * y_pred, axis=-1), tf.float32)
         return 1.0 - nonzero
 
     else:
-        nonzero = tf.cast(tf.math.count_nonzero(y_true - y_pred, axis=-1),
-            tf.float32)
+        nonzero = tf.cast(
+            tf.math.count_nonzero(y_true - y_pred, axis=-1), tf.float32)
         return nonzero / y_true.get_shape()[-1]
 
 
-class HammingLoss(tf.keras.metrics.Metric):
-    def __init__(self, name='hamming_loss', dtype=None, mode='multiclass'):
+class HammingLoss(MeanMetricWrapper):
+    def __init__(self, mode, name='hamming_loss', dtype=tf.float32):
         super(HammingLoss, self).__init__(
-                hamming_loss, name, dtype=dtype, mode=mode)
+            hamming_loss_fn, name, dtype=dtype, mode=mode)
