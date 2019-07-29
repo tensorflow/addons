@@ -1,4 +1,4 @@
-# Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ def _correlation_cost_grad(op, grad_output):
 
 
 @keras_utils.register_keras_custom_object
-class CorrelationCost(tf.python.keras.layers.Layer):
+class CorrelationCost(tf.keras.layers.Layer):
     def __init__(self, kernel_size, max_displacement, stride_1, stride_2, pad,
                  data_format, **kwargs):
         self.kernel_size = kernel_size
@@ -148,7 +148,13 @@ class CorrelationCost(tf.python.keras.layers.Layer):
         self.stride_1 = stride_1
         self.stride_2 = stride_2
         self.pad = pad
+
+        if data_format != "channels_last" or data_format == "channels_first":
+            raise ValueError("`data_format` must be either `channels_last` or"
+                             "`channels_first`")
+
         self.data_format = data_format
+
         super(CorrelationCost, self).__init__(**kwargs)
 
     def build(self, input_shape):

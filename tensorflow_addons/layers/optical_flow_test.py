@@ -1,4 +1,4 @@
-# Copyright 2018 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,9 +44,7 @@ class CorrelationCostTest(tf.test.TestCase):
         return output
 
     def _forward_simple(self, data_format):
-        # cumbersome calculation by hand for a fixed input
-        # we just test where zeros occurs and a few entries
-
+        # We are just testing where the output has vanishing values.
         with test_utils.use_gpu():
             val = [[[[0, -6, 9, 5], [1, -5, 10, 3], [2, -4, 11, 1]],
                     [[3, -3, 12, -1], [4, -2, 13, -3], [5, -1, 14, -5]]],
@@ -135,7 +133,7 @@ class CorrelationCostTest(tf.test.TestCase):
             self.assertAllClose(theoretical[0], numerical[0], atol=1e-3)
 
     def _keras(self, data_format):
-        # Unable to use `layer_test` as this layer has multiple inputs
+        # Unable to use `layer_test` as this layer has multiple inputs.
         with test_utils.use_gpu():
             val_a = [[[[0, -6, 9, 5], [1, -5, 10, 3], [2, -4, 11, 1]],
                       [[3, -3, 12, -1], [4, -2, 13, -3], [5, -1, 14, -5]]],
