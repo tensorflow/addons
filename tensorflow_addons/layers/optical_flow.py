@@ -149,9 +149,9 @@ class CorrelationCost(tf.keras.layers.Layer):
         self.stride_2 = stride_2
         self.pad = pad
 
-        if data_format != "channels_last" or data_format == "channels_first":
+        if data_format != "channels_last" or data_format != "channels_first":
             raise ValueError("`data_format` must be either `channels_last` or"
-                             "`channels_first`")
+                             "`channels_first`, instead got %s" % data_format)
 
         self.data_format = data_format
 
