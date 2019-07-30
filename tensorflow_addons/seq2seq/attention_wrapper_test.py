@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for contrib.seq2seq.python.ops.attention_wrapper."""
+"""Tests for tfa.seq2seq.attention_wrapper."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
