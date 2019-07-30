@@ -22,7 +22,7 @@ import numpy as np
 
 import tensorflow as tf
 from tensorflow_addons.image import distort_image_ops
-from tensorflow_addons.utils import test_utils
+# from tensorflow_addons.utils import test_utils
 
 
 # TODO: #373 Get this to run in graph mode as well
