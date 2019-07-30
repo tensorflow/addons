@@ -46,20 +46,14 @@ process can take longer than typical commit reviews so please bare with
 us**
 
 
-## Development Environment
-It is recommended that development is done in the latest
-`nightly-custom-op` docker image.
+## Development Tips
+Try these useful commands below:
 
-```bash
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
-```
-
-Try these commands below:
-
-* Format code automatically: `make code-format`
-* Run sanity check: `make sanity-check`
-* Run unit tests: `make unit-test`
-* All of the above: `make`
+* Format code automatically: `bash tools/run_docker.sh -c 'make code-format'`
+* Run sanity check: `bash tools/run_docker.sh -c 'make sanity-check'`
+* Run CPU unit tests: `bash tools/run_docker.sh -c 'make unit-test'`
+* Run GPU unit tests: `bash tools/run_docker.sh -c 'make gpu-unit-test'`
+* All of the above: `bash tools/run_docker.sh -c 'make'`
 
 ## Coding style
 
@@ -76,7 +70,7 @@ subscribe for alerts please join the [addons-testing mailing list](https://group
 #### Locally Testing CPU
 
 ```bash
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op make unit-test
+bash tools/run_docker.sh -c 'make unit-test'
 ```
 
 or run manually:
@@ -94,7 +88,7 @@ bazel test -c opt -k \
 
 #### Locally Testing GPU
 ```bash
-docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-gpu make gpu-unit-test
+bash tools/run_docker.sh -d gpu -c 'make gpu-unit-test'
 ```
 
 or run manually:
