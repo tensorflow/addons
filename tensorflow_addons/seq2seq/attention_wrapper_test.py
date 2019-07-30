@@ -44,6 +44,8 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
 
         self.memory = np.random.randn(self.batch, self.timestep,
                                       self.memory_size).astype(np.float32)
+        self.memory_length = np.random.randint(
+            low=1, high=self.timestep + 1, size=(self.batch,))
         self.query = np.random.randn(self.batch, self.units).astype(np.float32)
         self.state = np.random.randn(self.batch,
                                      self.timestep).astype(np.float32)
@@ -158,6 +160,40 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
         y = loaded_model.predict_on_batch([x_test, self.query, self.state])
 
         self.assertAllClose(y_ref, y)
+
+    @parameterized.named_parameters(
+        ("luong", wrapper.LuongAttention),
+        ("luong_monotonic", wrapper.LuongMonotonicAttention),
+        ("bahdanau", wrapper.BahdanauAttention),
+        ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttention),
+    )
+    def test_manual_memory_reset(self, attention_cls):
+        attention = attention_cls(self.units)
+
+        def _compute_score(batch_size=None):
+            if batch_size is None:
+                batch_size = self.batch
+            memory = self.memory[:batch_size]
+            attention.setup_memory(
+                memory, memory_sequence_length=self.memory_length[:batch_size])
+            self.assertListEqual(attention.values.shape.as_list(),
+                                 list(memory.shape))
+            self.assertListEqual(attention.keys.shape.as_list(),
+                                 list(memory.shape)[:-1] + [self.units])
+            return attention(
+                [self.query[:batch_size], self.state[:batch_size]])
+
+        score = _compute_score(batch_size=self.batch)
+        variables = list(attention.variables)
+        score = _compute_score(batch_size=self.batch - 1)
+
+        # No new variables were created.
+        for var_1, var_2 in zip(variables, list(attention.variables)):
+            self.assertIs(var_1, var_2)
+
+        # Score can be computed without errors.
+        self.evaluate(tf.compat.v1.global_variables_initializer())
+        self.evaluate(score)
 
     def test_masking(self):
         memory = tf.ones([4, 4, 5], dtype=tf.float32)
