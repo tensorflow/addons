@@ -11,11 +11,13 @@ py_library(
         "poincare.py",
         "sparsemax.py",
         "wrappers.py",
+        "crf.py"
     ],
     srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/activations",
         "//tensorflow_addons/utils",
+        "//tensorflow_addons/text",
     ],
 )
 

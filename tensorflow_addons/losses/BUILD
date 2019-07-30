@@ -13,6 +13,7 @@ py_library(
         "npairs.py",
         "sparsemax_loss.py",
         "triplet.py",
+        "crf_losses.py"
     ],
     srcs_version = "PY2AND3",
     deps = [

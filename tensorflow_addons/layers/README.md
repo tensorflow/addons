@@ -8,6 +8,7 @@
 | poincare |  |  |
 | sparsemax | @AndreasMadsen | amwwebdk+github@gmail.com |
 | wrappers | @seanpmorgan | seanmorgan@outlook.com |
+| crf | @howl-anderson | u1mail2me@gmail.com |
 
 ## Components
 | Submodule  | Layer |  Reference  |
@@ -18,6 +19,7 @@
 | poincare | PoincareNormalize | https://arxiv.org/abs/1705.08039    |
 | sparsemax| Sparsemax | https://arxiv.org/abs/1602.02068 |
 | wrappers | WeightNormalization | https://arxiv.org/abs/1602.07868 |
+| crf | CRF | https://repository.upenn.edu/cgi/viewcontent.cgi?article=1162&context=cis_papers |
 
 ## Contribution Guidelines
 #### Standard API

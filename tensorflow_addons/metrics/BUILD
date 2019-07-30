@@ -11,6 +11,7 @@ py_library(
         "multilabel_confusion_matrix.py",
         "r_square.py",
         "utils.py",
+        "crf_accuracy.py"
     ],
     srcs_version = "PY2AND3",
     deps = [
