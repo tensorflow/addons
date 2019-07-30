@@ -946,7 +946,7 @@ def _monotonic_probability_fn(score,
         test-time, and when hard attention is not desired.
       mode: How to compute the attention distribution.  Must be one of
         'recursive', 'parallel', or 'hard'.  See the docstring for
-        `tf.contrib.seq2seq.monotonic_attention` for more information.
+        `tfa.seq2seq.monotonic_attention` for more information.
       seed: (optional) Random seed for pre-sigmoid noise.
 
     Returns:
@@ -1042,7 +1042,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
             of the memory is large.
           mode: How to compute the attention distribution. Must be one of
             'recursive', 'parallel', or 'hard'. See the docstring for
-            `tf.contrib.seq2seq.monotonic_attention` for more information.
+            `tfa.seq2seq.monotonic_attention` for more information.
           kernel_initializer: (optional), the name of the initializer for the
             attention kernel.
           dtype: The data type for the query and memory layers of the attention
@@ -1214,7 +1214,7 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
             of the memory is large.
           mode: How to compute the attention distribution.  Must be one of
             'recursive', 'parallel', or 'hard'.  See the docstring for
-            `tf.contrib.seq2seq.monotonic_attention` for more information.
+            `tfa.seq2seq.monotonic_attention` for more information.
           dtype: The data type for the query and memory layers of the attention
             mechanism.
           name: Name to use when creating ops.
@@ -1547,7 +1547,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         in `AttentionWrapper`, then you must ensure that:
 
         - The encoder output has been tiled to `beam_width` via
-          `tf.contrib.seq2seq.tile_batch` (NOT `tf.tile`).
+          `tfa.seq2seq.tile_batch` (NOT `tf.tile`).
         - The `batch_size` argument passed to the `get_initial_state` method of
           this wrapper is equal to `true_batch_size * beam_width`.
         - The initial state created with `get_initial_state` above contains a
@@ -1557,11 +1557,11 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         An example:
 
         ```
-        tiled_encoder_outputs = tf.contrib.seq2seq.tile_batch(
+        tiled_encoder_outputs = tfa.seq2seq.tile_batch(
             encoder_outputs, multiplier=beam_width)
-        tiled_encoder_final_state = tf.conrib.seq2seq.tile_batch(
+        tiled_encoder_final_state = tfa.seq2seq.tile_batch(
             encoder_final_state, multiplier=beam_width)
-        tiled_sequence_length = tf.contrib.seq2seq.tile_batch(
+        tiled_sequence_length = tfa.seq2seq.tile_batch(
             sequence_length, multiplier=beam_width)
         attention_mechanism = MyFavoriteAttentionMechanism(
             num_units=attention_depth,
@@ -1725,7 +1725,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                     "Non-matching batch sizes between the memory "
                     "(encoder output) and initial_cell_state.  Are you using "
                     "the BeamSearchDecoder?  You may need to tile your "
-                    "initial state via the tf.contrib.seq2seq.tile_batch "
+                    "initial state via the tfa.seq2seq.tile_batch "
                     "function with argument multiple=beam_width.")
                 with tf.control_dependencies(
                         self._batch_size_checks(  # pylint: disable=bad-continuation
@@ -1827,7 +1827,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                 "(encoder output) and the requested batch size. Are you using "
                 "the BeamSearchDecoder?  If so, make sure your encoder output "
                 "has been tiled to beam_width via "
-                "tf.contrib.seq2seq.tile_batch, and the batch_size= argument "
+                "tfa.seq2seq.tile_batch, and the batch_size= argument "
                 "passed to get_initial_state is batch_size * beam_width.")
             with tf.control_dependencies(
                     self._batch_size_checks(batch_size, error_message)):  # pylint: disable=bad-continuation
@@ -1908,7 +1908,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             "Non-matching batch sizes between the memory "
             "(encoder output) and the query (decoder output).  Are you using "
             "the BeamSearchDecoder?  You may need to tile your memory input "
-            "via the tf.contrib.seq2seq.tile_batch function with argument "
+            "via the tfa.seq2seq.tile_batch function with argument "
             "multiple=beam_width.")
         with tf.control_dependencies(
                 self._batch_size_checks(cell_batch_size, error_message)):  # pylint: disable=bad-continuation

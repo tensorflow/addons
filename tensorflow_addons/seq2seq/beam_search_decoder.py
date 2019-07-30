@@ -518,13 +518,16 @@ class BeamSearchDecoderMixin(object):
             [_check_batch_beam(t, self._batch_size, self._beam_width)]):
             return gather_tree_from_array(t, parent_ids, sequence_length)
 
-    def step(self, time, inputs, state, name=None):
+    def step(self, time, inputs, state, training=None, name=None):
         """Perform a decoding step.
 
         Args:
           time: scalar `int32` tensor.
           inputs: A (structure of) input tensors.
           state: A (structure of) state tensors and TensorArrays.
+          training: Python boolean. Indicates whether the layer should
+              behave in training mode or in inference mode. Only relevant
+              when `dropout` or `recurrent_dropout` is used.
           name: Name scope for any created operations.
 
         Returns:
@@ -544,7 +547,8 @@ class BeamSearchDecoderMixin(object):
             cell_state = tf.nest.map_structure(self._maybe_merge_batch_beams,
                                                cell_state,
                                                self._cell.state_size)
-            cell_outputs, next_cell_state = self._cell(inputs, cell_state)
+            cell_outputs, next_cell_state = self._cell(
+                inputs, cell_state, training=training)
             cell_outputs = tf.nest.map_structure(
                 lambda out: self._split_batch_beams(out, out.shape[1:]),
                 cell_outputs)
@@ -586,7 +590,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
     `AttentionWrapper`, then you must ensure that:
 
     - The encoder output has been tiled to `beam_width` via
-      `tf.contrib.seq2seq.tile_batch` (NOT `tf.tile`).
+      `tfa.seq2seq.tile_batch` (NOT `tf.tile`).
     - The `batch_size` argument passed to the `get_initial_state` method of
       this wrapper is equal to `true_batch_size * beam_width`.
     - The initial state created with `get_initial_state` above contains a
@@ -596,11 +600,11 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
     An example:
 
     ```
-    tiled_encoder_outputs = tf.contrib.seq2seq.tile_batch(
+    tiled_encoder_outputs = tfa.seq2seq.tile_batch(
         encoder_outputs, multiplier=beam_width)
-    tiled_encoder_final_state = tf.contrib.seq2seq.tile_batch(
+    tiled_encoder_final_state = tfa.seq2seq.tile_batch(
         encoder_final_state, multiplier=beam_width)
-    tiled_sequence_length = tf.contrib.seq2seq.tile_batch(
+    tiled_sequence_length = tfa.seq2seq.tile_batch(
         sequence_length, multiplier=beam_width)
     attention_mechanism = MyFavoriteAttentionMechanism(
         num_units=attention_depth,
@@ -752,7 +756,12 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
             predicted_ids=tf.int32,
             parent_ids=tf.int32)
 
-    def call(self, embeddning, start_tokens, end_token, initial_state,
+    def call(self,
+             embeddning,
+             start_tokens,
+             end_token,
+             initial_state,
+             training=None,
              **kwargs):
         init_kwargs = kwargs
         init_kwargs["start_tokens"] = start_tokens
@@ -765,6 +774,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
             maximum_iterations=self.maximum_iterations,
             parallel_iterations=self.parallel_iterations,
             swap_memory=self.swap_memory,
+            training=training,
             decoder_init_input=embeddning,
             decoder_init_kwargs=init_kwargs)
 
