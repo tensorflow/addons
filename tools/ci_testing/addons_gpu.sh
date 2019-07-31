@@ -25,7 +25,6 @@ fi
 
 set -x
 
-tools/ci_testing/install_py36.sh # Patch to test on py36
 N_JOBS=1 # Must limit GPU testing to single job to prevent OOM error.
 
 echo ""
