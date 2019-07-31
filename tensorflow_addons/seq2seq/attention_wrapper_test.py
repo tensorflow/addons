@@ -161,7 +161,8 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
 
         # Fall back to v1-style Keras training loop until issue with 
         # using outputs of a layer in another layer's constructor.
-        loaded_model.compile("rmsprop", "mse", experimental_run_tf_function=False)
+        loaded_model.compile(
+            "rmsprop", "mse", experimental_run_tf_function=False)
         
         y = loaded_model.predict_on_batch([x_test, self.query, self.state])
 
