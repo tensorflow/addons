@@ -21,6 +21,7 @@
 | filters | mean_filter2d |  |
 | filters | median_filter2d |  |
 | transform_ops | angles_to_projective_transforms | | 
+| transform_ops | compose_transforms | | 
 | transform_ops | matrices_to_flat_transforms | | 
 | transform_ops | rotate | | 
 | transform_ops | transform |  | 
