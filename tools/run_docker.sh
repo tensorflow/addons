@@ -88,7 +88,7 @@ if [[ -z "${COMMAND}" ]]; then
     exit 1
 fi
 
-DOCKER_CMD="ln -sf ${PYTHON_LIB} /usr/bin/python && ${COMMAND}"
+DOCKER_CMD="tools/ci_testing/install_py36.sh && ln -sf ${PYTHON_LIB} /usr/bin/python && ${COMMAND}"
 echo "Docker image: ${DOCKER_IMAGE}"
 echo "Docker command: ${DOCKER_CMD}"
 docker run ${DOCKER_OPTS}                   \
