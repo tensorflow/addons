@@ -116,6 +116,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
         if not callable(probability_fn):
             raise TypeError("probability_fn must be callable, saw type: %s" %
                             type(probability_fn).__name__)
+        self.default_probability_fn = probability_fn
         self.probability_fn = probability_fn
 
         self.keys = None
@@ -124,7 +125,6 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
         self._memory_initialized = False
         self._check_inner_dims_defined = True
         self.supports_masking = True
-        self.score_mask_value = tf.as_dtype(self.dtype).as_numpy_dtype(-np.inf)
 
         if memory is not None:
             # Setup the memory by self.__call__() with memory and
@@ -227,7 +227,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
             else:
                 memory, memory_sequence_length = inputs, None
                 memory_mask = mask
-            self._setup_memory(memory, memory_sequence_length, memory_mask)
+            self.setup_memory(memory, memory_sequence_length, memory_mask)
             # We force the self.built to false here since only memory is,
             # initialized but the real query/state has not been call() yet. The
             # layer should be build and call again.
@@ -249,10 +249,10 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
             query, state = inputs[0], inputs[1]
             return self._calculate_attention(query, state)
 
-    def _setup_memory(self,
-                      memory,
-                      memory_sequence_length=None,
-                      memory_mask=None):
+    def setup_memory(self,
+                     memory,
+                     memory_sequence_length=None,
+                     memory_mask=None):
         """Pre-process the memory before actually query the memory.
 
         This should only be called once at the first invocation of call().
@@ -267,9 +267,6 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
             max_time]`. For any value equal to False, the corresponding value
             in memory should be ignored.
         """
-        if self._memory_initialized:
-            raise ValueError(
-                "The memory for the attention has already been setup.")
         if memory_sequence_length is not None and memory_mask is not None:
             raise ValueError(
                 "memory_sequence_length and memory_mask cannot be "
@@ -294,7 +291,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
             self._alignments_size = (tf.compat.dimension_value(
                 self.keys.shape[1]) or tf.shape(self.keys)[1])
             if memory_mask is not None or memory_sequence_length is not None:
-                unwrapped_probability_fn = self.probability_fn
+                unwrapped_probability_fn = self.default_probability_fn
 
                 def _mask_probability_fn(score, prev):
                     return unwrapped_probability_fn(
@@ -302,7 +299,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
                             score,
                             memory_mask=memory_mask,
                             memory_sequence_length=memory_sequence_length,
-                            score_mask_value=self.score_mask_value), prev)
+                            score_mask_value=score.dtype.min), prev)
 
                 self.probability_fn = _mask_probability_fn
         self._memory_initialized = True
@@ -506,7 +503,7 @@ class LuongAttention(_BaseAttentionMechanism):
 
     def __init__(self,
                  units,
-                 memory,
+                 memory=None,
                  memory_sequence_length=None,
                  scale=False,
                  probability_fn="softmax",
@@ -672,7 +669,7 @@ class BahdanauAttention(_BaseAttentionMechanism):
 
     def __init__(self,
                  units,
-                 memory,
+                 memory=None,
                  memory_sequence_length=None,
                  normalize=False,
                  probability_fn="softmax",
@@ -947,7 +944,7 @@ def _monotonic_probability_fn(score,
         test-time, and when hard attention is not desired.
       mode: How to compute the attention distribution.  Must be one of
         'recursive', 'parallel', or 'hard'.  See the docstring for
-        `tf.contrib.seq2seq.monotonic_attention` for more information.
+        `tfa.seq2seq.monotonic_attention` for more information.
       seed: (optional) Random seed for pre-sigmoid noise.
 
     Returns:
@@ -1014,7 +1011,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
 
     def __init__(self,
                  units,
-                 memory,
+                 memory=None,
                  memory_sequence_length=None,
                  normalize=False,
                  sigmoid_noise=0.,
@@ -1043,7 +1040,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
             of the memory is large.
           mode: How to compute the attention distribution. Must be one of
             'recursive', 'parallel', or 'hard'. See the docstring for
-            `tf.contrib.seq2seq.monotonic_attention` for more information.
+            `tfa.seq2seq.monotonic_attention` for more information.
           kernel_initializer: (optional), the name of the initializer for the
             attention kernel.
           dtype: The data type for the query and memory layers of the attention
@@ -1187,7 +1184,7 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
 
     def __init__(self,
                  units,
-                 memory,
+                 memory=None,
                  memory_sequence_length=None,
                  scale=False,
                  sigmoid_noise=0.,
@@ -1215,7 +1212,7 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
             of the memory is large.
           mode: How to compute the attention distribution.  Must be one of
             'recursive', 'parallel', or 'hard'.  See the docstring for
-            `tf.contrib.seq2seq.monotonic_attention` for more information.
+            `tfa.seq2seq.monotonic_attention` for more information.
           dtype: The data type for the query and memory layers of the attention
             mechanism.
           name: Name to use when creating ops.
@@ -1548,7 +1545,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         in `AttentionWrapper`, then you must ensure that:
 
         - The encoder output has been tiled to `beam_width` via
-          `tf.contrib.seq2seq.tile_batch` (NOT `tf.tile`).
+          `tfa.seq2seq.tile_batch` (NOT `tf.tile`).
         - The `batch_size` argument passed to the `get_initial_state` method of
           this wrapper is equal to `true_batch_size * beam_width`.
         - The initial state created with `get_initial_state` above contains a
@@ -1558,11 +1555,11 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         An example:
 
         ```
-        tiled_encoder_outputs = tf.contrib.seq2seq.tile_batch(
+        tiled_encoder_outputs = tfa.seq2seq.tile_batch(
             encoder_outputs, multiplier=beam_width)
-        tiled_encoder_final_state = tf.conrib.seq2seq.tile_batch(
+        tiled_encoder_final_state = tfa.seq2seq.tile_batch(
             encoder_final_state, multiplier=beam_width)
-        tiled_sequence_length = tf.contrib.seq2seq.tile_batch(
+        tiled_sequence_length = tfa.seq2seq.tile_batch(
             sequence_length, multiplier=beam_width)
         attention_mechanism = MyFavoriteAttentionMechanism(
             num_units=attention_depth,
@@ -1726,7 +1723,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                     "Non-matching batch sizes between the memory "
                     "(encoder output) and initial_cell_state.  Are you using "
                     "the BeamSearchDecoder?  You may need to tile your "
-                    "initial state via the tf.contrib.seq2seq.tile_batch "
+                    "initial state via the tfa.seq2seq.tile_batch "
                     "function with argument multiple=beam_width.")
                 with tf.control_dependencies(
                         self._batch_size_checks(  # pylint: disable=bad-continuation
@@ -1828,7 +1825,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                 "(encoder output) and the requested batch size. Are you using "
                 "the BeamSearchDecoder?  If so, make sure your encoder output "
                 "has been tiled to beam_width via "
-                "tf.contrib.seq2seq.tile_batch, and the batch_size= argument "
+                "tfa.seq2seq.tile_batch, and the batch_size= argument "
                 "passed to get_initial_state is batch_size * beam_width.")
             with tf.control_dependencies(
                     self._batch_size_checks(batch_size, error_message)):  # pylint: disable=bad-continuation
@@ -1899,8 +1896,8 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         # previous attention value.
         cell_inputs = self._cell_input_fn(inputs, state.attention)
         cell_state = state.cell_state
-        cell_output, next_cell_state = self._cell(
-            cell_inputs, cell_state, **kwargs)
+        cell_output, next_cell_state = self._cell(cell_inputs, cell_state,
+                                                  **kwargs)
 
         cell_batch_size = (tf.compat.dimension_value(cell_output.shape[0])
                            or tf.shape(cell_output)[0])
@@ -1909,7 +1906,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             "Non-matching batch sizes between the memory "
             "(encoder output) and the query (decoder output).  Are you using "
             "the BeamSearchDecoder?  You may need to tile your memory input "
-            "via the tf.contrib.seq2seq.tile_batch function with argument "
+            "via the tfa.seq2seq.tile_batch function with argument "
             "multiple=beam_width.")
         with tf.control_dependencies(
                 self._batch_size_checks(cell_batch_size, error_message)):  # pylint: disable=bad-continuation

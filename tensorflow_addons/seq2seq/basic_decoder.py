@@ -111,18 +111,19 @@ class BasicDecoder(decoder.BaseDecoder):
             tf.nest.map_structure(lambda _: dtype, self._rnn_output_size()),
             self.sampler.sample_ids_dtype)
 
-    def step(self, time, inputs, state):
+    def step(self, time, inputs, state, training=None):
         """Perform a decoding step.
 
         Args:
           time: scalar `int32` tensor.
           inputs: A (structure of) input tensors.
           state: A (structure of) state tensors and TensorArrays.
+          training: Python boolean.
 
         Returns:
           `(outputs, next_state, next_inputs, finished)`.
         """
-        cell_outputs, cell_state = self.cell(inputs, state)
+        cell_outputs, cell_state = self.cell(inputs, state, training=training)
         if self.output_layer is not None:
             cell_outputs = self.output_layer(cell_outputs)
         sample_ids = self.sampler.sample(
