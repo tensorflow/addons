@@ -31,6 +31,7 @@ if [[ ${PLATFORM} == "darwin" ]]; then
     N_JOBS=$(sysctl -n hw.ncpu)
 else
     N_JOBS=$(grep -c ^processor /proc/cpuinfo)
+    tools/ci_testing/install_py36.sh # Patch to test on py36
 fi
 
 
