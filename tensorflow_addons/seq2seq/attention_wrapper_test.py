@@ -147,7 +147,9 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
         x_test = np.random.randint(vocab, size=(self.batch, self.timestep))
         y = np.random.randn(self.batch, self.timestep)
         model = keras.models.Model([inputs, query, state], score)
-        model.compile("rmsprop", "mse")
+        # Fall back to v1 style Keras training loop until issue with
+        # using outputs of a layer in another layer's constructor.
+        model.compile("rmsprop", "mse", experimental_run_tf_function=False)
         model.fit([x, self.query, self.state], (y, y))
         y_ref = model.predict_on_batch([x_test, self.query, self.state])
 
@@ -156,6 +158,11 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
         loaded_model = keras.models.Model.from_config(
             config, custom_objects={attention_cls.__name__: attention_cls})
         loaded_model.set_weights(weights)
+
+        # Fall back to v1 style Keras training loop until issue with
+        # using outputs of a layer in another layer's constructor.
+        loaded_model.compile(
+            "rmsprop", "mse", experimental_run_tf_function=False)
 
         y = loaded_model.predict_on_batch([x_test, self.query, self.state])
 
