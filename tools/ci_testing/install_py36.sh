@@ -25,6 +25,7 @@ apt-get -y -qq update && apt-get -y -qq install python3.6
 
 python3.6 get-pip.py -q
 python3.6 -m pip --version
+rm get-pip.py
 
 ln -sfn /usr/bin/python3.6 /usr/bin/python3
 pip3 install scipy  # Pre-installed in custom-op
