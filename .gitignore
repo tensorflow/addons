@@ -45,3 +45,6 @@ wheels/
 
 # Addons
 /docs/
+
+# temp for py36 fix
+get-pip.py
