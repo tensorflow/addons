@@ -270,6 +270,19 @@ def crf_forward(inputs, state, transition_params, sequence_lengths):
     """Computes the alpha values in a linear-chain CRF.
 
     See http://www.cs.columbia.edu/~mcollins/fb.pdf for reference.
+
+    Args:
+      inputs: A [batch_size, num_tags] matrix of unary potentials.
+      state: A [batch_size, num_tags] matrix containing the previous alpha
+         values.
+      transition_params: A [num_tags, num_tags] matrix of binary potentials.
+          This matrix is expanded into a [1, num_tags, num_tags] in preparation
+          for the broadcast summation occurring within the cell.
+      sequence_lengths: A [batch_size] vector of true sequence lengths.
+
+    Returns:
+      new_alphas: A [batch_size, num_tags] matrix containing the 
+          new alpha values.
     """
 
     sequence_lengths = tf.maximum(
@@ -349,6 +362,17 @@ class CrfDecodeForwardRnnCell(tf.keras.layers.AbstractRNNCell):
         super(CrfDecodeForwardRnnCell, self).build(input_shape)
 
     def call(self, inputs, state):
+        """Build the CrfDecodeForwardRnnCell.
+
+        Args:
+          inputs: A [batch_size, num_tags] matrix of unary potentials.
+          state: A [batch_size, num_tags] matrix containing the previous step's
+                score values.
+
+        Returns:
+          backpointers: A [batch_size, num_tags] matrix of backpointers.
+          new_state: A [batch_size, num_tags] matrix of new score values.
+        """
         state = tf.expand_dims(state[0], 2)
         transition_scores = state + self._transition_params
         new_state = inputs + tf.reduce_max(transition_scores, [1])
@@ -358,6 +382,19 @@ class CrfDecodeForwardRnnCell(tf.keras.layers.AbstractRNNCell):
 
 
 def crf_decode_forward(inputs, state, transition_params, sequence_lengths):
+    """Computes forward decoding in a linear-chain CRF.
+
+    Args:
+      inputs: A [batch_size, num_tags] matrix of unary potentials.
+      state: A [batch_size, num_tags] matrix containing the previous step's
+            score values.
+      transition_params: A [num_tags, num_tags] matrix of binary potentials.
+      sequence_lengths: A [batch_size] vector of true sequence lengths.
+
+    Returns:
+      backpointers: A [batch_size, num_tags] matrix of backpointers.
+      new_state: A [batch_size, num_tags] matrix of new score values.
+    """
     mask = tf.sequence_mask(sequence_lengths, tf.shape(inputs)[1])
     crf_fwd_cell = CrfDecodeForwardRnnCell(transition_params)
     crf_fwd_layer = tf.keras.layers.RNN(
@@ -366,7 +403,17 @@ def crf_decode_forward(inputs, state, transition_params, sequence_lengths):
 
 
 def crf_decode_backward(inputs, state):
-    """Computes backward decoding in a linear-chain CRF."""
+    """Computes backward decoding in a linear-chain CRF.
+
+    Args:
+      inputs: A [batch_size, num_tags] matrix of
+            backpointer of next step (in time order).
+      state: A [batch_size, 1] matrix of tag index of next step.
+
+    Returns:
+      new_tags: A [batch_size, num_tags]
+        tensor containing the new tag indices.
+    """
     inputs = tf.transpose(inputs, [1, 0, 2])
 
     def _scan_fn(state, inputs):
