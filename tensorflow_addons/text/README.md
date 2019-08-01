@@ -4,6 +4,7 @@
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:------------- |
 | skip_gram_ops |  |  |
+| crf | Dheeraj R. Reddy | dheeraj98reddy@gmail.com |
 
 ## Components 
 | Submodule  | Text Processing Function |  Reference  |
