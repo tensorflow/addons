@@ -21,13 +21,13 @@ from __future__ import print_function
 import numpy as np
 
 import tensorflow as tf
+from tensorflow.python.eager import context
+
 from tensorflow_addons.image import distort_image_ops
+from tensorflow_addons.utils import test_utils
 
-# from tensorflow_addons.utils import test_utils
 
-
-# TODO: #373 Get this to run in graph mode as well
-# @test_utils.run_all_in_graph_and_eager_modes
+@test_utils.run_all_in_graph_and_eager_modes
 class AdjustHueInYiqTest(tf.test.TestCase):
     def _adjust_hue_in_yiq_np(self, x_np, delta_h):
         """Rotate hue in YIQ space.
@@ -101,11 +101,14 @@ class AdjustHueInYiqTest(tf.test.TestCase):
                 y_tf = self._adjust_hue_in_yiq_tf(x_np, delta_h)
                 self.assertAllClose(y_tf, y_np, rtol=2e-4, atol=1e-4)
 
+    # TODO: #373 Get this to run in graph mode as well
     def test_invalid_shapes(self):
         x_np = np.random.rand(2, 3) * 255.
         delta_h = np.random.rand() * 2.0 - 1.0
         with self.assertRaises((tf.errors.InvalidArgumentError, ValueError)):
             self.evaluate(self._adjust_hue_in_yiq_tf(x_np, delta_h))
+        if not context.executing_eagerly():
+            self.skipTest("This test does not work in the graph mode yet.")
         x_np = np.random.rand(4, 2, 4) * 255.
         delta_h = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesOpError("input must have 3 channels "
@@ -132,8 +135,7 @@ class AdjustHueInYiqTest(tf.test.TestCase):
             self.assertAllEqual(fn(image_tf), fn(image_tf))
 
 
-# TODO: #373 Get this to run in graph mode as well
-# @test_utils.run_all_in_graph_and_eager_modes
+@test_utils.run_all_in_graph_and_eager_modes
 class AdjustValueInYiqTest(tf.test.TestCase):
     def _adjust_value_in_yiq_np(self, x_np, scale):
         return x_np * scale
@@ -180,11 +182,14 @@ class AdjustValueInYiqTest(tf.test.TestCase):
                 y_tf = self._adjust_value_in_yiq_tf(x_np, scale)
                 self.assertAllClose(y_tf, y_np, rtol=2e-4, atol=1e-4)
 
+    # TODO: #373 Get this to run in graph mode as well
     def test_invalid_shapes(self):
         x_np = np.random.rand(2, 3) * 255.
         scale = np.random.rand() * 2.0 - 1.0
         with self.assertRaises((tf.errors.InvalidArgumentError, ValueError)):
             self.evaluate(self._adjust_value_in_yiq_tf(x_np, scale))
+        if not context.executing_eagerly():
+            self.skipTest("This test does not work in the graph mode yet.")
         x_np = np.random.rand(4, 2, 4) * 255.
         scale = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesOpError("input must have 3 channels "
@@ -192,8 +197,7 @@ class AdjustValueInYiqTest(tf.test.TestCase):
             self.evaluate(self._adjust_value_in_yiq_tf(x_np, scale))
 
 
-# TODO: #373 Get this to run in graph mode as well
-# @test_utils.run_all_in_graph_and_eager_modes
+@test_utils.run_all_in_graph_and_eager_modes
 class AdjustSaturationInYiqTest(tf.test.TestCase):
     def _adjust_saturation_in_yiq_tf(self, x_np, scale):
         x = tf.constant(x_np)
@@ -244,11 +248,14 @@ class AdjustSaturationInYiqTest(tf.test.TestCase):
                 y_tf = self._adjust_saturation_in_yiq_tf(x_np, scale)
                 self.assertAllClose(y_tf, y_baseline, rtol=2e-4, atol=1e-4)
 
+    # TODO: #373 Get this to run in graph mode as well
     def test_invalid_shapes(self):
         x_np = np.random.rand(2, 3) * 255.
         scale = np.random.rand() * 2.0 - 1.0
         with self.assertRaises((tf.errors.InvalidArgumentError, ValueError)):
             self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
+        if not context.executing_eagerly():
+            self.skipTest("This test does not work in the graph mode yet.")
         x_np = np.random.rand(4, 2, 4) * 255.
         scale = np.random.rand() * 2.0 - 1.0
         with self.assertRaisesOpError("input must have 3 channels "
