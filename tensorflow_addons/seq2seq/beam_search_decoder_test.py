@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for contrib.seq2seq.python.seq2seq.beam_search_decoder."""
+"""Tests for tfa.seq2seq.seq2seq.beam_search_decoder."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -208,6 +208,26 @@ class TestArrayShapeChecks(tf.test.TestCase):
                                               4,
                                               5,
                                               is_valid=False)
+
+    def test_array_shape_static_checks(self):
+        self.assertTrue(
+            beam_search_decoder._check_static_batch_beam_maybe(
+                tf.TensorShape([None, None, None]), 3, 5))
+        self.assertTrue(
+            beam_search_decoder._check_static_batch_beam_maybe(
+                tf.TensorShape([15, None, None]), 3, 5))
+        self.assertFalse(
+            beam_search_decoder._check_static_batch_beam_maybe(
+                tf.TensorShape([16, None, None]), 3, 5))
+        self.assertTrue(
+            beam_search_decoder._check_static_batch_beam_maybe(
+                tf.TensorShape([3, 5, None]), 3, 5))
+        self.assertFalse(
+            beam_search_decoder._check_static_batch_beam_maybe(
+                tf.TensorShape([3, 6, None]), 3, 5))
+        self.assertFalse(
+            beam_search_decoder._check_static_batch_beam_maybe(
+                tf.TensorShape([5, 3, None]), 3, 5))
 
 
 class TestEosMasking(tf.test.TestCase):

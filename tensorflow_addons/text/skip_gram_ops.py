@@ -22,7 +22,7 @@ import tensorflow as tf
 
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
-skip_gram_ops = tf.load_op_library(
+_skip_gram_ops = tf.load_op_library(
     get_path_to_datafile("custom_ops/text/_skip_gram_ops.so"))
 
 tf.no_gradient("SkipGramGenerateCandidates")
@@ -170,7 +170,7 @@ def skip_gram_sample(input_tensor,
             seed=seed)
 
         seed1, seed2 = tf.compat.v1.get_seed(seed)
-        tokens, labels = skip_gram_ops.skip_gram_generate_candidates(
+        tokens, labels = _skip_gram_ops.skip_gram_generate_candidates(
             input_tensor=input_tensor,
             min_skips=min_skips,
             max_skips=max_skips,

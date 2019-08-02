@@ -75,8 +75,8 @@ case ${DEVICE} in
 esac
 
 case ${PYTHON} in
-    py2) PYTHON_LIB=/usr/bin/python2;;
-    py3) PYTHON_LIB=/usr/bin/python3;;
+    py2) ENVIRONMENT_CMD="ln -sf /usr/bin/python2 /usr/bin/python";;
+    py3) ENVIRONMENT_CMD="tools/ci_testing/install_py36.sh && ln -sf /usr/bin/python3.6 /usr/bin/python";;
     *)
         echo "Invalid or missing python $OPTARG"
         exit 1
@@ -88,7 +88,7 @@ if [[ -z "${COMMAND}" ]]; then
     exit 1
 fi
 
-DOCKER_CMD="ln -sf ${PYTHON_LIB} /usr/bin/python && ${COMMAND}"
+DOCKER_CMD="${ENVIRONMENT_CMD} && ${COMMAND}"
 echo "Docker image: ${DOCKER_IMAGE}"
 echo "Docker command: ${DOCKER_CMD}"
 docker run ${DOCKER_OPTS}                   \
