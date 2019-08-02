@@ -15,7 +15,8 @@
 # ==============================================================================
 set -e -x
 
-PYTHON_VERSIONS="python2.7 python3.4 python3.5 python3.6"
+PYTHON_VERSIONS="python2.7 python3.5 python3.6 python3.7"
+ln -sf /usr/bin/python3.5 /usr/bin/python3
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
 add-apt-repository -y ppa:deadsnakes/ppa
 
@@ -25,6 +26,7 @@ for version in ${PYTHON_VERSIONS}; do
 
     ${PYTHON_VERSION} get-pip.py -q
     ${PYTHON_VERSION} -m pip --version
+    rm get-pip.py
 
     #Link TF dependency
     yes 'y' | ./configure.sh --quiet

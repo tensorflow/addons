@@ -15,7 +15,7 @@
 # ==============================================================================
 set -e -x
 
-PYTHON_VERSIONS="2.7.15 3.4.9 3.5.6 3.6.6"
+PYTHON_VERSIONS="2.7.15 3.5.6 3.6.6 3.7.4"
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
 
 # Install Bazel 0.24
@@ -31,7 +31,8 @@ for version in ${PYTHON_VERSIONS}; do
     pyenv install -s $PYENV_VERSION
 
     python get-pip.py -q
-    python -m pip install -q delocate
+    python -m pip --version
+    rm get-pip.py
 
     #Link TF dependency
     yes 'y' | sudo ./configure.sh --quiet

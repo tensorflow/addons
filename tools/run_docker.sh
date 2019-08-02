@@ -62,10 +62,10 @@ fi
 DOCKER_OPTS=''
 case ${DEVICE} in
     cpu)
-        DOCKER_IMAGE=tensorflow/tensorflow:custom-op
+        DOCKER_IMAGE=tensorflow/tensorflow:custom-op-ubuntu16
         ;;
     gpu)
-        DOCKER_IMAGE=tensorflow/tensorflow:custom-op-gpu
+        DOCKER_IMAGE=tensorflow/tensorflow:custom-op-gpu-ubuntu16
         DOCKER_OPTS="--runtime=nvidia ${DOCKER_OPTS}"
         ;;
     *)
@@ -76,7 +76,7 @@ esac
 
 case ${PYTHON} in
     py2) ENVIRONMENT_CMD="ln -sf /usr/bin/python2 /usr/bin/python";;
-    py3) ENVIRONMENT_CMD="tools/ci_testing/install_py36.sh && ln -sf /usr/bin/python3.6 /usr/bin/python";;
+    py3) ENVIRONMENT_CMD="ln -sf /usr/bin/python3.6 /usr/bin/python";;
     *)
         echo "Invalid or missing python $OPTARG"
         exit 1
