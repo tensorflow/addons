@@ -18,11 +18,8 @@ set -e
 ls artifacts/*
 for f in artifacts/*.whl; do
   if [[ $(uname) == "Darwin" ]]; then
-    python3 -m pip install -q delocate
     delocate-wheel -w wheelhouse  $f
   else
-    apt-get -y -qq update && apt-get -y -qq install patchelf
-    python3 -m pip install -q auditwheel
     auditwheel -v repair $f
   fi
 done

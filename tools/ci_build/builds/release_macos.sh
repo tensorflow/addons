@@ -24,6 +24,9 @@ chmod +x bazel-0.24.1-installer-darwin-x86_64.sh
 ./bazel-0.24.1-installer-darwin-x86_64.sh --user
 export PATH="$PATH:$HOME/bin"
 
+# Install delocate
+python3 -m pip install -q delocate
+
 eval "$(pyenv init -)"
 
 for version in ${PYTHON_VERSIONS}; do
