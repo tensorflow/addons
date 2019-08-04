@@ -4,6 +4,7 @@
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:--------------|
 | ALL | Google | @qlzh727 | 
+| ALL | Guillaume Klein | @guillaumekln |
 
 
 ## Contents
