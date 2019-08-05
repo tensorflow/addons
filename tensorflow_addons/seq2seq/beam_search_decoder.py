@@ -224,13 +224,13 @@ def _check_batch_beam(t, batch_size, beam_width):
     return tf.Assert(condition, [error_message])
 
 
-def _as_shape(shape):
+def _as_shape(value):
     """Converts the argument to a TensorShape if not already one."""
-    if not isinstance(shape, tf.TensorShape):
-        if isinstance(shape, tf.Tensor):
-            shape = tf.get_static_value(shape)
-        shape = tf.TensorShape(shape)
-    return shape
+    if not isinstance(value, tf.TensorShape):
+        if isinstance(value, tf.Tensor):
+            value = tf.get_static_value(value)
+        value = tf.TensorShape(value)
+    return value
 
 
 class BeamSearchDecoderMixin(object):
