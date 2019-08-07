@@ -226,7 +226,7 @@ def extend_with_decoupled_weight_decay(base_optimizer):
 
     optimizer = tfa.optimizers.AdamW(learning_rate=lr, weight_decay=wd)
     ```
-    
+
     Note: you might want to register your own custom optimizer using
     `tf.keras.utils.get_custom_objects()`.
 

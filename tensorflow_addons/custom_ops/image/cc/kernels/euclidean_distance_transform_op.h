@@ -38,8 +38,8 @@ class EuclideanDistanceTransformGenerator {
   int64 height_, width_;
 
  public:
-  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
-  EuclideanDistanceTransformGenerator(typename TTypes<T, 4>::ConstTensor input)
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE EuclideanDistanceTransformGenerator(
+      typename TTypes<T, 4>::ConstTensor input)
       : input_(input) {
     height_ = input_.dimensions()[1];
     width_ = input_.dimensions()[2];
