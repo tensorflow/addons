@@ -70,6 +70,7 @@ disable=design,
         # TODO: remove not-callable when pylint can understand tf export paradigm
         not-callable,
         similarities,
+        unsupported-assignment-operation,
         useless-object-inheritance
 
 # Enable the message, report, category or checker with the given id(s). You can
