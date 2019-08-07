@@ -15,7 +15,7 @@
 # ==============================================================================
 set -e -x
 
-PYTHON_VERSIONS="python2.7 python3.4 python3.5 python3.6"
+PYTHON_VERSIONS="python2.7 python3.5 python3.6"
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
 add-apt-repository -y ppa:deadsnakes/ppa
 
