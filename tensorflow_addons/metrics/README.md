@@ -7,6 +7,7 @@
 |  f_scores| Saishruthi Swaminathan | saishruthi.tn@gmail.com|
 |  r_square| Saishruthi Swaminathan| saishruthi.tn@gmail.com|
 |  multilabel_confusion_matrix | Saishruthi Swaminathan | saishruthi.tn@gmail.com|
+|  Hamming metrics | Saishruthi Swaminathan | saishruthi.tn@gmail.com|
 
 ## Contents
 | Submodule | Metric  | Reference                               |
@@ -15,6 +16,7 @@
 | f1_scores| F1 micro, macro and weighted| [F1 Score](https://en.wikipedia.org/wiki/F1_score)|
 | r_square| RSquare|[R-Sqaure](https://en.wikipedia.org/wiki/Coefficient_of_determination)|
 | multilabel_confusion_matrix | Multilabel Confusion Matrix | [mcm](https://en.wikipedia.org/wiki/Confusion_matrix)|
+| hamming | Hamming loss and distance | [Hamming distance](https://en.wikipedia.org/wiki/Hamming_distance)|
 
 ## Contribution Guidelines
 #### Standard API

@@ -23,6 +23,25 @@ from tensorflow_addons.metrics.utils import MeanMetricWrapper
 
 
 def hamming_distance(actuals, predictions):
+    """Computes hamming distance.
+
+    Hamming distance is for comparing two binary strings.
+    It is the number of bit positions in which two bits
+    are different.
+
+    :param actuals: actual target value
+    :param predictions: predicted value
+    :return: hamming distance
+
+    ```python
+    actuals = tf.constant([1, 1, 0, 0, 1, 0, 1, 0, 0, 1],
+                          dtype=tf.int32)
+    predictions = tf.constant([1, 0, 0, 0, 1, 0, 0, 1, 0, 1],
+                              dtype=tf.int32)
+    result = hamming_distance(actuals, predictions)
+    print('Hamming distance: ', result.numpy())
+    ```
+    """
     result = tf.not_equal(actuals, predictions)
     not_eq = tf.reduce_sum(tf.cast(result, tf.float32))
     ham_distance = tf.math.divide_no_nan(not_eq, len(result))
@@ -30,8 +49,45 @@ def hamming_distance(actuals, predictions):
 
 
 def hamming_loss_fn(y_true, y_pred, mode):
+    """Computes hamming loss.
+
+    Hamming loss is the fraction of wrong labels to the total number
+    of labels.
+
+    In multi-class classification, hamming loss is calculated as the
+    hamming distance between `actual` and `predictions`.
+    In multi-label classification, hamming loss penalizes only the
+    individual labels.
+
+    :param y_true: actual target value
+    :param y_pred: predicted target value
+    :param mode: multi-class or multi-label
+    :return: hamming loss
+
+    ```python
+    # multi-class hamming loss
+    hl = HammingLoss(mode='multiclass')
+    actuals = tf.constant([[1, 0, 0, 0],[0, 0, 1, 0],
+                       [0, 0, 0, 1],[0, 1, 0, 0]],
+                      dtype=np.int32)
+    predictions = tf.constant([[1, 0, 0, 0], [0, 0, 1, 0],
+                           [0, 0, 0, 1], [1, 0, 0, 0]],
+                          dtype=np.int32)
+    hl.update_state(actuals, predictions)
+    print('Hamming loss: ', hl.result().numpy()) # 0.25
+
+    # multi-label hamming loss
+    hl = HammingLoss(mode='multilabel')
+    actuals = tf.constant([[1, 0, 1, 0],[0, 1, 0, 1],
+                       [0, 0, 0,1]], dtype=tf.int32)
+    predictions = tf.constant([[1, 0, 1, 0],[0, 1, 0, 1],
+                           [1, 0, 0, 0]], dtype=tf.int32)
+    hl.update_state(actuals, predictions)
+    print('Hamming loss: ', hl.result().numpy()) # 0.16666667
+    ```
+    """
     if mode not in ['multiclass', 'multilabel']:
-        raise TypeError('mode must be: [multiclass, multilabel])')
+        raise TypeError('mode must be: [multiclass, multilabel]')
 
     if mode == 'multiclass':
         nonzero = tf.cast(
