@@ -72,10 +72,12 @@ class MultiLabelConfusionMatrix(Metric):
 
     def __init__(self,
                  num_classes,
+                 sample_weight=None,
                  name='Multilabel_confusion_matrix',
                  dtype=tf.int32):
         super(MultiLabelConfusionMatrix, self).__init__(name=name, dtype=dtype)
         self.num_classes = num_classes
+        self.sample_weight = sample_weight
         self.true_positives = self.add_weight(
             'true_positives',
             shape=[self.num_classes],
@@ -97,10 +99,10 @@ class MultiLabelConfusionMatrix(Metric):
             initializer='zeros',
             dtype=self.dtype)
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred, tf.int32)
-
+        sample_weight = self.sample_weight
         true_positive = tf.math.count_nonzero(y_true * y_pred, 0)
         # predictions sum
         pred_sum = tf.math.count_nonzero(y_pred, 0)
