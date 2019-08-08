@@ -41,9 +41,10 @@ class CohenKappa(Metric):
     ```python
     actuals = np.array([4, 4, 3, 4, 2, 4, 1, 1], dtype=np.int32)
     preds = np.array([4, 4, 3, 4, 4, 2, 1, 1], dtype=np.int32)
-
+    weights = np.array([1, 1, 2, 5, 10, 2, 3, 3], dtype=np.int32)
+    
     m = tf.keras.metrics.CohenKappa(num_classes=5)
-    m.update_state(actuals, preds, "quadratic")
+    m.update_state(actuals, preds, sample_weight=weights)
     print('Final result: ', m.result().numpy()) # Result: 0.68932
     ```
     Usage with tf.keras API:
