@@ -22,15 +22,15 @@ import tensorflow as tf
 from tensorflow_addons.metrics.utils import MeanMetricWrapper
 
 
-def hamming_distance(actuals, predictions):
+def hamming_distance(y_true, y_pred):
     """Computes hamming distance.
 
     Hamming distance is for comparing two binary strings.
     It is the number of bit positions in which two bits
     are different.
 
-    :param actuals: actual target value
-    :param predictions: predicted value
+    :param y_true: actual target value
+    :param y_pred: predicted value
     :return: hamming distance
 
     ```python
