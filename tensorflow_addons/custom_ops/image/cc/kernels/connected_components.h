@@ -15,7 +15,6 @@ limitations under the License.
 // See docs for ImageConnectedComponents in ../ops/image_ops.cc, and description
 // of the algorithm in connected_components.h.
 
-
 #ifndef TENSORFLOW_CONTRIB_IMAGE_KERNELS_SEGMENTATION_OPS_H_
 #define TENSORFLOW_CONTRIB_IMAGE_KERNELS_SEGMENTATION_OPS_H_
 
@@ -24,11 +23,11 @@ limitations under the License.
 
 #define EIGEN_USE_THREADS
 
-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/tensor_types.h"
 #include "tensorflow/core/platform/types.h"
 #include "tensorflow/core/util/work_sharder.h"
+#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
 

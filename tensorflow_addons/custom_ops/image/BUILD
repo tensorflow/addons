@@ -85,4 +85,3 @@ cc_binary(
         "@local_config_tf//:tf_header_lib",
     ] + if_cuda_is_configured([":connected_components_gpu"]),
 )
-

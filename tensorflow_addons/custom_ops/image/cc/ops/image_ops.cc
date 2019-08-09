@@ -118,7 +118,6 @@ components: Component ids for each pixel in "image". Same shape as "image". Zero
     the same value are given consecutive ids, starting from 1.
 )doc";
 
-
 }  // namespace
 
 REGISTER_OP("EuclideanDistanceTransform")
@@ -146,9 +145,9 @@ REGISTER_OP("ImageConnectedComponents")
     .Attr(
         "dtype: {int64, int32, uint16, int16, uint8, int8, half, float, "
         "double, bool, string}")
-    .SetShapeFn([](InferenceContext* c) {
+    .SetShapeFn([](InferenceContext *c) {
       return shape_inference::UnchangedShape(c);
     })
     .Doc(ImageConnectedComponentsDoc);
-    
+
 }  // namespace tensorflow
