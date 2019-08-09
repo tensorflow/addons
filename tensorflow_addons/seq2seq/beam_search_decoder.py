@@ -28,7 +28,6 @@ from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 # TODO: Find public API alternatives to these
-from tensorflow.python.framework import tensor_shape
 from tensorflow.python.ops import rnn_cell_impl
 
 _beam_search_ops_so = tf.load_op_library(
@@ -225,6 +224,15 @@ def _check_batch_beam(t, batch_size, beam_width):
     return tf.Assert(condition, [error_message])
 
 
+def _as_shape(value):
+    """Converts the argument to a TensorShape if not already one."""
+    if not isinstance(value, tf.TensorShape):
+        if isinstance(value, tf.Tensor):
+            value = tf.get_static_value(value)
+        value = tf.TensorShape(value)
+    return value
+
+
 class BeamSearchDecoderMixin(object):
     """BeamSearchDecoderMixin contains the common methods for
     BeamSearchDecoder.
@@ -376,10 +384,7 @@ class BeamSearchDecoderMixin(object):
         Returns:
           A reshaped version of t with dimension [batch_size * beam_width, s].
         """
-        if isinstance(s, tf.Tensor):
-            s = tensor_shape.as_shape(tf.get_static_value(s))
-        else:
-            s = tf.TensorShape(s)
+        s = _as_shape(s)
         t_shape = tf.shape(t)
         static_batch_size = tf.get_static_value(self._batch_size)
         batch_size_beam_width = (None if static_batch_size is None else
@@ -409,10 +414,7 @@ class BeamSearchDecoderMixin(object):
             `[batch_size, beam_width, s]` (assuming batch_size and beam_width
             are known statically).
         """
-        if isinstance(s, tf.Tensor):
-            s = tf.TensorShape(tf.get_static_value(s))
-        else:
-            s = tf.TensorShape(s)
+        s = _as_shape(s)
         t_shape = tf.shape(t)
         reshaped_t = tf.reshape(
             t, tf.concat(([self._batch_size, self._beam_width], t_shape[1:]),
@@ -514,8 +516,13 @@ class BeamSearchDecoderMixin(object):
                 self._beam_width):
             return t
         t = t.stack()
+        # yapf:disable
         with tf.control_dependencies(
-            [_check_batch_beam(t, self._batch_size, self._beam_width)]):
+                [_check_batch_beam(  # pylint: disable=bad-continuation
+                    t,
+                    self._batch_size,
+                    self._beam_width)]):
+            # yapf:enable
             return gather_tree_from_array(t, parent_ids, sequence_length)
 
     def step(self, time, inputs, state, training=None, name=None):

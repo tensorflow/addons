@@ -15,7 +15,7 @@
 # ==============================================================================
 set -e -x
 
-PYTHON_VERSIONS="2.7.15 3.4.9 3.5.6 3.6.6"
+PYTHON_VERSIONS="2.7.15 3.5.6 3.6.6"
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
 
 # Install Bazel 0.24
