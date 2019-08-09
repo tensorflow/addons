@@ -36,11 +36,11 @@ if [[ ! -d "tensorflow_addons" ]]; then
     exit 1
 fi
 
-# Install python
+# Install python dependencies:
 CI_REQUIREMENT="$SCRIPT_DIR/ci_requirements.txt"
 pip install ${QUIET_FLAG} -r ${CI_REQUIREMENT}
 
-# Check clang-format
+# Check clang-format:
 CLANG_FORMAT=${CLANG_FORMAT:-clang-format-3.8}
 which ${CLANG_FORMAT} > /dev/null
 if [[ $? != "0" ]]; then

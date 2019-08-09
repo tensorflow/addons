@@ -19,7 +19,9 @@ limitations under the License.
 
 namespace tensorflow {
 
+using shape_inference::DimensionHandle;
 using shape_inference::InferenceContext;
+using shape_inference::ShapeHandle;
 
 // --------------------------------------------------------------------------
 REGISTER_OP("AdjustHsvInYiq")
@@ -30,6 +32,15 @@ REGISTER_OP("AdjustHsvInYiq")
     .Output("output: T")
     .Attr("T: {uint8, int8, int16, int32, int64, half, float, double}")
     .SetShapeFn([](InferenceContext* c) {
+      ShapeHandle images, delta_h, scale_s, scale_v;
+
+      TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(0), 3, &images));
+      TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 0, &delta_h));
+      TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 0, &scale_s));
+      TF_RETURN_IF_ERROR(c->WithRank(c->input(3), 0, &scale_v));
+
+      DimensionHandle channels;
+      TF_RETURN_IF_ERROR(c->WithValue(c->Dim(c->input(0), -1), 3, &channels));
       return shape_inference::UnchangedShapeWithRankAtLeast(c, 3);
     })
     .Doc(R"Doc(

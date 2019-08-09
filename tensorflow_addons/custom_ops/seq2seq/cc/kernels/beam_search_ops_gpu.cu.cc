@@ -18,7 +18,7 @@ limitations under the License.
 #define EIGEN_USE_GPU
 
 #include "tensorflow_addons/custom_ops/seq2seq/cc/kernels/beam_search_ops.h"
-#include "tensorflow/core/util/cuda_kernel_helper.h"
+#include "tensorflow/core/util/gpu_kernel_helper.h"
 
 namespace tensorflow {
 namespace functor {
