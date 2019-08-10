@@ -19,13 +19,14 @@ from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
-import tensorflow.compat.v1 as tf1  # TODO: port TF1 test files?
+from tensorflow_addons.image import sparse_image_warp
 from tensorflow_addons.image.sparse_image_warp import _get_boundary_locations
 from tensorflow_addons.image.sparse_image_warp import _get_grid_locations
-from tensorflow_addons.image import sparse_image_warp
+from tensorflow_addons.utils import test_utils
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class SparseImageWarpTest(tf.test.TestCase):
     def setUp(self):
         np.random.seed(0)
@@ -101,11 +102,10 @@ class SparseImageWarpTest(tf.test.TestCase):
             regularization_weight=regularization,
             num_boundary_points=num_boundary_points)
 
-        with self.cached_session() as sess:
-            warped_image, input_image, _ = sess.run(
-                [warped_image_op, input_image_op, flow_field])
+        warped_image, input_image, _ = self.evaluate(
+            [warped_image_op, input_image_op, flow_field])
 
-            self.assertAllClose(warped_image, input_image)
+        self.assertAllClose(warped_image, input_image)
 
     def testMoveSinglePixel(self):
         """Run assertMoveSinglePixel for various hyperparameters and data
@@ -145,35 +145,33 @@ class SparseImageWarpTest(tf.test.TestCase):
             interpolation_order=order,
             num_boundary_points=num_boundary_points)
 
-        with self.cached_session() as sess:
-            warped_image, input_image, flow = sess.run(
-                [warped_image_op, input_image_op, flow_field])
-            # Check that it moved the pixel correctly.
-            self.assertAllClose(
-                warped_image[0, 4, 5, :],
-                input_image[0, 4, 4, :],
-                atol=1e-5,
-                rtol=1e-5)
+        warped_image, input_image, flow = self.evaluate(
+            [warped_image_op, input_image_op, flow_field])
+        # Check that it moved the pixel correctly.
+        self.assertAllClose(
+            warped_image[0, 4, 5, :],
+            input_image[0, 4, 4, :],
+            atol=1e-5,
+            rtol=1e-5)
 
-            # Test that there is no flow at the corners.
-            for i in (0, image_height - 1):
-                for j in (0, image_width - 1):
-                    self.assertAllClose(
-                        flow[0, i, j, :], np.zeros([2]), atol=1e-5, rtol=1e-5)
+        # Test that there is no flow at the corners.
+        for i in (0, image_height - 1):
+            for j in (0, image_width - 1):
+                self.assertAllClose(
+                    flow[0, i, j, :], np.zeros([2]), atol=1e-5, rtol=1e-5)
 
-    def load_image(self, image_file, sess):
+    def load_image(self, image_file):
         image_op = tf.image.decode_png(
             tf.io.read_file(image_file), dtype=tf.dtypes.uint8,
             channels=4)[:, :, 0:3]
-        return sess.run(image_op)
+        return self.evaluate(image_op)
 
     def testSmileyFace(self):
         """Check warping accuracy by comparing to hardcoded warped images."""
 
         input_file = get_path_to_datafile(
             "image/test_data/Yellow_Smiley_Face.png")
-        with self.cached_session() as sess:
-            input_image = self.load_image(input_file, sess)
+        input_image = self.load_image(input_file)
         control_points = np.asarray([[64, 59], [180 - 64, 59], [39, 111],
                                      [180 - 39, 111], [90, 143], [58, 134],
                                      [180 - 58, 134]])  # pyformat: disable
@@ -196,58 +194,54 @@ class SparseImageWarpTest(tf.test.TestCase):
                     control_points_op + control_point_displacements_op,
                     interpolation_order=interpolation_order,
                     num_boundary_points=num_boundary_points)
-                with self.cached_session() as sess:
-                    warped_image = sess.run(warp_op)
-                    out_image = np.uint8(warped_image[0, :, :, :] * 255)
-                    target_file = get_path_to_datafile(
-                        "image/test_data/Yellow_Smiley_Face_Warp-interp" +
-                        "-{}-clamp-{}.png".format(interpolation_order,
-                                                  num_boundary_points))
 
-                    target_image = self.load_image(target_file, sess)
+                warped_image = self.evaluate(warp_op)
+                out_image = np.uint8(warped_image[0, :, :, :] * 255)
+                target_file = get_path_to_datafile(
+                    "image/test_data/Yellow_Smiley_Face_Warp-interp" +
+                    "-{}-clamp-{}.png".format(interpolation_order,
+                                              num_boundary_points))
 
-                    # Check that the target_image and out_image difference is no
-                    # bigger than 2 (on a scale of 0-255). Due to differences in
-                    # floating point computation on different devices, the float
-                    # output in warped_image may get rounded to a different int
-                    # than that in the saved png file loaded into target_image.
-                    self.assertAllClose(
-                        target_image, out_image, atol=2, rtol=1e-3)
+                target_image = self.load_image(target_file)
+
+                # Check that the target_image and out_image difference is no
+                # bigger than 2 (on a scale of 0-255). Due to differences in
+                # floating point computation on different devices, the float
+                # output in warped_image may get rounded to a different int
+                # than that in the saved png file loaded into target_image.
+                self.assertAllClose(target_image, out_image, atol=2, rtol=1e-3)
 
     def testThatBackpropRuns(self):
         """Run optimization to ensure that gradients can be computed."""
-        self.skipTest("TODO: port to tf2.0 / eager")
         batch_size = 1
         image_height = 9
         image_width = 12
         image = tf.Variable(
-            np.float32(
-                np.random.uniform(
-                    size=[batch_size, image_height, image_width, 3])))
+            np.random.uniform(size=[batch_size, image_height, image_width, 3]),
+            dtype=tf.float32)
         control_point_locations = [[3., 3.]]
         control_point_locations = tf.constant(
             np.float32(np.expand_dims(control_point_locations, 0)))
         control_point_displacements = [[0.25, -0.5]]
         control_point_displacements = tf.constant(
             np.float32(np.expand_dims(control_point_displacements, 0)))
-        warped_image, _ = sparse_image_warp(
-            image,
-            control_point_locations,
-            control_point_locations + control_point_displacements,
-            num_boundary_points=3)
 
-        loss = tf.reduce_mean(tf.abs(warped_image - image))
-        optimizer = tf1.train.MomentumOptimizer(0.001, 0.9)
-        grad = tf.gradients(loss, [image])
-        grad, _ = tf.clip_by_global_norm(grad, 1.0)
-        opt_func = optimizer.apply_gradients(zip(grad, [image]))
-        init_op = tf1.variables.global_variables_initializer(
-        )  # TODO: fix TF1 ref.
+        def loss_fn():
+            warped_image, _ = sparse_image_warp(
+                image,
+                control_point_locations,
+                control_point_locations + control_point_displacements,
+                num_boundary_points=3)
+            loss = tf.reduce_mean(tf.abs(warped_image - image))
+            return loss
 
-        with self.cached_session() as sess:
-            sess.run(init_op)
-            for _ in range(5):
-                sess.run([loss, opt_func])
+        optimizer = tf.keras.optimizers.SGD(
+            learning_rate=0.001, momentum=0.9, clipnorm=1.0)
+        opt_op = optimizer.minimize(loss_fn, [image])
+
+        self.evaluate(tf.compat.v1.global_variables_initializer())
+        for _ in range(5):
+            self.evaluate(opt_op)
 
 
 if __name__ == "__main__":
