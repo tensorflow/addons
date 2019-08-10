@@ -83,7 +83,7 @@ class SparseImageWarpTest(tf.test.TestCase):
         image = np.random.uniform(
             size=[batch_size, image_height, image_width, channels])
 
-        input_image_op = tf.constant(np.float32(image))
+        input_image = tf.constant(np.float32(image))
 
         control_point_locations = [[1., 1.], [2., 2.], [2., 1.]]
         control_point_locations = tf.constant(
@@ -94,17 +94,15 @@ class SparseImageWarpTest(tf.test.TestCase):
         control_point_displacements = tf.constant(
             np.float32(control_point_displacements))
 
-        (warped_image_op, flow_field) = sparse_image_warp(
-            input_image_op,
+        (warped_image, flow) = sparse_image_warp(
+            input_image,
             control_point_locations,
             control_point_locations + control_point_displacements,
             interpolation_order=order,
             regularization_weight=regularization,
             num_boundary_points=num_boundary_points)
 
-        warped_image, input_image, _ = self.evaluate(
-            [warped_image_op, input_image_op, flow_field])
-
+        warped_image, input_image = self.evaluate([warped_image, input_image])
         self.assertAllClose(warped_image, input_image)
 
     def testMoveSinglePixel(self):
@@ -125,7 +123,7 @@ class SparseImageWarpTest(tf.test.TestCase):
 
         image = np.zeros([batch_size, image_height, image_width, channels])
         image[:, 3, 3, :] = 1.0
-        input_image_op = tf.constant(image, dtype=type_to_use)
+        input_image = tf.constant(image, dtype=type_to_use)
 
         # Place a control point at the one white pixel.
         control_point_locations = [[3., 3.]]
@@ -138,15 +136,15 @@ class SparseImageWarpTest(tf.test.TestCase):
             np.float32(np.expand_dims(control_point_displacements, 0)),
             dtype=type_to_use)
 
-        (warped_image_op, flow_field) = sparse_image_warp(
-            input_image_op,
+        (warped_image, flow) = sparse_image_warp(
+            input_image,
             control_point_locations,
             control_point_locations + control_point_displacements,
             interpolation_order=order,
             num_boundary_points=num_boundary_points)
 
         warped_image, input_image, flow = self.evaluate(
-            [warped_image_op, input_image_op, flow_field])
+            [warped_image, input_image, flow])
         # Check that it moved the pixel correctly.
         self.assertAllClose(
             warped_image[0, 4, 5, :],
@@ -161,10 +159,10 @@ class SparseImageWarpTest(tf.test.TestCase):
                     flow[0, i, j, :], np.zeros([2]), atol=1e-5, rtol=1e-5)
 
     def load_image(self, image_file):
-        image_op = tf.image.decode_png(
+        image = tf.image.decode_png(
             tf.io.read_file(image_file), dtype=tf.dtypes.uint8,
             channels=4)[:, :, 0:3]
-        return self.evaluate(image_op)
+        return self.evaluate(image)
 
     def testSmileyFace(self):
         """Check warping accuracy by comparing to hardcoded warped images."""
@@ -178,24 +176,24 @@ class SparseImageWarpTest(tf.test.TestCase):
         control_point_displacements = np.asarray([[-10.5, 10.5], [10.5, 10.5],
                                                   [0, 0], [0, 0], [0, -10],
                                                   [-20, 10.25], [10, 10.75]])
-        control_points_op = tf.constant(
+        control_points = tf.constant(
             np.expand_dims(np.float32(control_points[:, [1, 0]]), 0))
-        control_point_displacements_op = tf.constant(
+        control_point_displacements = tf.constant(
             np.expand_dims(
                 np.float32(control_point_displacements[:, [1, 0]]), 0))
         float_image = np.expand_dims(np.float32(input_image) / 255, 0)
-        input_image_op = tf.constant(float_image)
+        input_image = tf.constant(float_image)
 
         for interpolation_order in (1, 2, 3):
             for num_boundary_points in (0, 1, 4):
-                warp_op, _ = sparse_image_warp(
-                    input_image_op,
-                    control_points_op,
-                    control_points_op + control_point_displacements_op,
+                warped_image, _ = sparse_image_warp(
+                    input_image,
+                    control_points,
+                    control_points + control_point_displacements,
                     interpolation_order=interpolation_order,
                     num_boundary_points=num_boundary_points)
 
-                warped_image = self.evaluate(warp_op)
+                warped_image = self.evaluate(warped_image)
                 out_image = np.uint8(warped_image[0, :, :, :] * 255)
                 target_file = get_path_to_datafile(
                     "image/test_data/Yellow_Smiley_Face_Warp-interp" +
