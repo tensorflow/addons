@@ -20,7 +20,6 @@ ln -sf /usr/bin/python3.5 /usr/bin/python3 # Py36 has issues with add-apt
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
 add-apt-repository -y ppa:deadsnakes/ppa
 
-
 for version in ${PYTHON_VERSIONS}; do
     export PYTHON_VERSION=${version}
     apt-get -y -qq update && apt-get -y -qq install ${PYTHON_VERSION}
@@ -29,7 +28,7 @@ for version in ${PYTHON_VERSIONS}; do
     ${PYTHON_VERSION} -m pip --version
 
     #Link TF dependency
-    yes 'y' | ./configure.sh
+    yes 'y' | ./configure.sh --quiet
 
     # Build
     bazel build \
