@@ -30,21 +30,25 @@ _connected_components_so = tf.load_op_library(
 def connected_components(images, name=None):
     """Labels the connected components in a batch of images.
 
-    A component is a set of pixels in a single input image, which are all adjacent
-    and all have the same non-zero value. The components using a squared
-    connectivity of one (all True entries are joined with their neighbors above,
-    below, left, and right). Components across all images have consecutive ids 1
-    through n. Components are labeled according to the first pixel of the
+    A component is a set of pixels in a single input image, which are 
+    all adjacent     and all have the same non-zero value. The components
+    using a squared connectivity of one (all True entries are joined with
+    their neighbors above,below, left, and right). Components across all
+    images have consecutive ids 1 through n.
+    Components are labeled according to the first pixel of the
     component appearing in row-major order (lexicographic order by
-    image_index_in_batch, row, col). Zero entries all have an output id of 0.
-    This op is equivalent with `scipy.ndimage.measurements.label` on a 2D array
-    with the default structuring element (which is the connectivity used here).
+    image_index_in_batch, row, col). 
+    Zero entries all have an output id of 0.
+    This op is equivalent with `scipy.ndimage.measurements.label` 
+    on a 2D array with the default structuring element 
+    (which is the connectivity used here).
     Args:
       images: A 2D (H, W) or 3D (N, H, W) Tensor of boolean image(s).
       name: The name of the op.
     Returns:
-      Components with the same shape as `images`. False entries in `images` have
-      value 0, and all True entries map to a component id > 0.
+      Components with the same shape as `images`. 
+      False entries in `images` have value 0, and 
+      all True entries map to a component id > 0.
     Raises:
       TypeError: if `images` is not 2D or 3D.
     """
@@ -61,8 +65,8 @@ def connected_components(images, name=None):
         components = _connected_components_so.image_connected_components(
             images)
 
-        # TODO(ringwalt): Component id renaming should be done in the op, to avoid
-        # constructing multiple additional large tensors.
+        # TODO(ringwalt): Component id renaming should be done in the op, 
+        # to avoid constructing multiple additional large tensors.
         components_flat = tf.reshape(components, [-1])
         unique_ids, id_index = tf.unique(components_flat)
         id_is_zero = tf.where(tf.equal(unique_ids, 0))[:, 0]
@@ -75,7 +79,8 @@ def connected_components(images, name=None):
             return nonzero_consecutive_ids
 
         def has_zero():
-            # Insert a zero in the consecutive ids where zero appears in unique_ids.
+            # Insert a zero in the consecutive ids 
+            # where zero appears in unique_ids.
             # id_is_zero has length 1.
             zero_id_ind = tf.cast(id_is_zero[0], tf.int32)
             ids_before = nonzero_consecutive_ids[:zero_id_ind]
