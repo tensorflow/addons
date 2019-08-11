@@ -70,13 +70,17 @@ TF_CFLAGS=( $(${PYTHON_VERSION} -c 'import tensorflow as tf; print(" ".join(tf.s
 TF_LFLAGS=( $(${PYTHON_VERSION} -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )
 TF_CXX11_ABI_FLAG=( $(${PYTHON_VERSION} -c 'import tensorflow as tf; print(tf.sysconfig.CXX11_ABI_FLAG)') )
 
-SHARED_LIBRARY_DIR=${TF_LFLAGS[0]:2}
-SHARED_LIBRARY_NAME=$(generate_shared_lib_name ${TF_LFLAGS[1]})
+TF_SHARED_LIBRARY_DIR=${TF_LFLAGS[0]:2}
+TF_SHARED_LIBRARY_NAME=$(generate_shared_lib_name ${TF_LFLAGS[1]})
 
 write_action_env_to_bazelrc "TF_HEADER_DIR" ${TF_CFLAGS:2}
-write_action_env_to_bazelrc "TF_SHARED_LIBRARY_DIR" ${SHARED_LIBRARY_DIR}
-write_action_env_to_bazelrc "TF_SHARED_LIBRARY_NAME" ${SHARED_LIBRARY_NAME}
+write_action_env_to_bazelrc "TF_SHARED_LIBRARY_DIR" ${TF_SHARED_LIBRARY_DIR}
+write_action_env_to_bazelrc "TF_SHARED_LIBRARY_NAME" ${TF_SHARED_LIBRARY_NAME}
 write_action_env_to_bazelrc "TF_CXX11_ABI_FLAG" ${TF_CXX11_ABI_FLAG}
+
+write_to_bazelrc "build:manylinux2010 --crosstool_top=//build_deps/toolchains/preconfig/ubuntu16.04/gcc7_manylinux2010-nvcc-cuda10.0:toolchain"
+write_to_bazelrc "build --config=manylinux2010"
+write_to_bazelrc "test --config=manylinux2010"
 
 if [[ "$TF_NEED_CUDA" == "1" ]]; then
     write_action_env_to_bazelrc "CUDNN_INSTALL_PATH" "/usr/lib/x86_64-linux-gnu"
@@ -87,7 +91,6 @@ if [[ "$TF_NEED_CUDA" == "1" ]]; then
     write_to_bazelrc "test --config=cuda"
 
     write_to_bazelrc "build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true"
-    write_to_bazelrc "build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain"
     write_to_bazelrc "build --spawn_strategy=standalone"
     write_to_bazelrc "build --strategy=Genrule=standalone"
     write_action_env_to_bazelrc "TF_NEED_CUDA" ${TF_NEED_CUDA}

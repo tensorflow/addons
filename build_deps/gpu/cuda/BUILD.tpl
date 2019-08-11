@@ -1,3 +1,5 @@
+load(":build_defs.bzl", "cuda_header_library")
+
 licenses(["restricted"])  # MPL2, portions GPL v3, LGPL v3, BSD-like
 
 package(default_visibility = ["//visibility:public"])
@@ -37,11 +39,12 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
-cc_library(
+cuda_header_library(
     name = "cuda_headers",
     hdrs = [
         %{cuda_headers}
     ],
+    include_prefix = "build_deps/gpu",
     includes = [
         ".",
         "cuda/include",

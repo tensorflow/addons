@@ -75,8 +75,8 @@ case ${DEVICE} in
 esac
 
 case ${PYTHON} in
-    py2) ENVIRONMENT_CMD="ln -sf /usr/bin/python2 /usr/bin/python";;
-    py3) ENVIRONMENT_CMD="ln -sf /usr/bin/python3.6 /usr/bin/python";;
+    py2) ENVIRONMENT_CMD="ln -sf /usr/bin/python2 /usr/bin/python && python -m pip install -U pip";;
+    py3) ENVIRONMENT_CMD="ln -sf /usr/bin/python3.6 /usr/bin/python && python -m pip install -U pip";;
     *)
         echo "Invalid or missing python $OPTARG"
         exit 1

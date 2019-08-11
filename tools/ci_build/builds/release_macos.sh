@@ -35,7 +35,6 @@ for version in ${PYTHON_VERSIONS}; do
 
     python get-pip.py -q
     python -m pip --version
-    rm get-pip.py
 
     #Link TF dependency
     yes 'y' | sudo ./configure.sh --quiet
@@ -54,6 +53,9 @@ for version in ${PYTHON_VERSIONS}; do
     # Uncomment and use this command for release branches
     #bazel-bin/build_pip_pkg artifacts
 done
+
+# Clean up
+rm get-pip.py
 
 ## Verify Wheel
 ./tools/ci_build/builds/wheel_verify.sh

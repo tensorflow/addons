@@ -30,13 +30,13 @@ import sys
 import pipes
 
 # Template values set by cuda_autoconf.
-CPU_COMPILER = ('%{cpu_compiler}')
-GCC_HOST_COMPILER_PATH = ('%{gcc_host_compiler_path}')
+CPU_COMPILER = ('/dt7/usr/bin/gcc')
+GCC_HOST_COMPILER_PATH = ('/dt7/usr/bin/gcc')
 
-NVCC_PATH = '%{nvcc_path}'
-NVCC_VERSION = '%{cuda_version}'
-NVCC_TEMP_DIR = "%{nvcc_tmp_dir}"
-supported_cuda_compute_capabilities = [ %{cuda_compute_capabilities} ]
+NVCC_PATH = '/usr/local/cuda-10.0/bin/nvcc'
+NVCC_VERSION = '10.0'
+NVCC_TEMP_DIR = "C:\\Windows\\Temp\\nvcc_inter_files_tmp_dir"
+supported_cuda_compute_capabilities = [ "3.0", "6.0" ]
 
 def Log(s):
   print('gpus/crosstool: {0}'.format(s))

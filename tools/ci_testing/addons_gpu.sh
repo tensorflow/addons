@@ -42,6 +42,7 @@ yes 'y' | ./configure.sh
 ## Run bazel test command. Double test timeouts to avoid flakes.
 bazel test -c opt -k \
     --jobs=${N_JOBS} --test_timeout 300,450,1200,3600 \
+    --incompatible_disallow_dict_plus=false \
     --test_output=errors --local_test_jobs=8 \
     //tensorflow_addons/...
 
