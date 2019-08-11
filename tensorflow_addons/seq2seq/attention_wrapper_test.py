@@ -466,7 +466,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
                     expected_final_alignment_history,
                     final_alignment_history_info)
 
-    # TODO: Float64 test is failing
+    # TODO: #407 Float64 test is failing
     @parameterized.parameters([np.float32])
     def testBahdanauNormalizedDType(self, dtype):
         encoder_outputs = self.encoder_outputs.astype(dtype)
@@ -493,7 +493,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         self.assertEqual(final_outputs.rnn_output.dtype, dtype)
         self.assertIsInstance(final_state, wrapper.AttentionWrapperState)
 
-    # TODO: Float64 test is failing
+    # TODO: #407 Float64 test is failing
     @parameterized.parameters([np.float32])
     def testLuongScaledDType(self, dtype):
         # Test case for GitHub issue 18099
