@@ -1,1 +1,2 @@
+# TensorFlow greater than this date is manylinux2010 compliant
 tf-nightly-2.0-preview>=2.0.0.dev20190802
