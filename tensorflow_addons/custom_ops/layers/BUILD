@@ -17,7 +17,7 @@ cc_binary(
         "-pthread",
         "-std=c++11",
         D_GLIBCXX_USE_CXX11_ABI,
-    ] + if_cuda(["-DGOOGLE_CUDA=1"]),
+    ],
     linkshared = 1,
     deps = [
         "@local_config_tf//:libtensorflow_framework",

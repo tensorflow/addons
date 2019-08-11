@@ -48,7 +48,7 @@ elif [[ ! -z "$1" ]]; then
 fi
 
 # Install python dependencies
-read -r -p "Tensorflow will be upgraded to 2.0. Are You Sure? [y/n] " reply
+read -r -p "Tensorflow 2.0 will be installed if it is not already. Are You Sure? [y/n] " reply
 case $reply in
     [yY]*) echo "Installing...";;
     * ) echo "Goodbye!"; exit;;
