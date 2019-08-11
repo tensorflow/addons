@@ -41,31 +41,31 @@ load(
 )
 
 ACTION_NAMES = struct(
-    c_compile = C_COMPILE_ACTION_NAME,
-    cpp_compile = CPP_COMPILE_ACTION_NAME,
-    linkstamp_compile = LINKSTAMP_COMPILE_ACTION_NAME,
-    cc_flags_make_variable = CC_FLAGS_MAKE_VARIABLE_ACTION_NAME,
-    cpp_module_codegen = CPP_MODULE_CODEGEN_ACTION_NAME,
-    cpp_header_parsing = CPP_HEADER_PARSING_ACTION_NAME,
-    cpp_module_compile = CPP_MODULE_COMPILE_ACTION_NAME,
     assemble = ASSEMBLE_ACTION_NAME,
-    preprocess_assemble = PREPROCESS_ASSEMBLE_ACTION_NAME,
-    lto_indexing = LTO_INDEXING_ACTION_NAME,
-    lto_backend = LTO_BACKEND_ACTION_NAME,
-    cpp_link_executable = CPP_LINK_EXECUTABLE_ACTION_NAME,
+    c_compile = C_COMPILE_ACTION_NAME,
+    cc_flags_make_variable = CC_FLAGS_MAKE_VARIABLE_ACTION_NAME,
+    clif_match = CLIF_MATCH_ACTION_NAME,
+    cpp_compile = CPP_COMPILE_ACTION_NAME,
+    cpp_header_parsing = CPP_HEADER_PARSING_ACTION_NAME,
     cpp_link_dynamic_library = CPP_LINK_DYNAMIC_LIBRARY_ACTION_NAME,
+    cpp_link_executable = CPP_LINK_EXECUTABLE_ACTION_NAME,
     cpp_link_nodeps_dynamic_library = CPP_LINK_NODEPS_DYNAMIC_LIBRARY_ACTION_NAME,
     cpp_link_static_library = CPP_LINK_STATIC_LIBRARY_ACTION_NAME,
-    strip = STRIP_ACTION_NAME,
+    cpp_module_codegen = CPP_MODULE_CODEGEN_ACTION_NAME,
+    cpp_module_compile = CPP_MODULE_COMPILE_ACTION_NAME,
+    ld_embed_data = "ld_embed_data",
+    linkstamp_compile = LINKSTAMP_COMPILE_ACTION_NAME,
+    lto_backend = LTO_BACKEND_ACTION_NAME,
+    lto_indexing = LTO_INDEXING_ACTION_NAME,
     objc_archive = OBJC_ARCHIVE_ACTION_NAME,
     objc_compile = OBJC_COMPILE_ACTION_NAME,
     objc_executable = OBJC_EXECUTABLE_ACTION_NAME,
     objc_fully_link = OBJC_FULLY_LINK_ACTION_NAME,
+    objcopy_embed_data = "objcopy_embed_data",
     objcpp_compile = OBJCPP_COMPILE_ACTION_NAME,
     objcpp_executable = OBJCPP_EXECUTABLE_ACTION_NAME,
-    clif_match = CLIF_MATCH_ACTION_NAME,
-    objcopy_embed_data = "objcopy_embed_data",
-    ld_embed_data = "ld_embed_data",
+    preprocess_assemble = PREPROCESS_ASSEMBLE_ACTION_NAME,
+    strip = STRIP_ACTION_NAME,
 )
 
 def _impl(ctx):
@@ -1462,9 +1462,15 @@ def _impl(ctx):
     ]
 
 cc_toolchain_config = rule(
-    implementation = _impl,
     attrs = {
-        "cpu": attr.string(mandatory = True, values = ["darwin", "local", "x64_windows"]),
+        "cpu": attr.string(
+            mandatory = True,
+            values = [
+                "darwin",
+                "local",
+                "x64_windows",
+            ],
+        ),
         "builtin_include_directories": attr.string_list(),
         "extra_no_canonical_prefixes_flags": attr.string_list(),
         "host_compiler_path": attr.string(),
@@ -1481,6 +1487,7 @@ cc_toolchain_config = rule(
         "msvc_link_path": attr.string(default = "msvc_not_used"),
         "msvc_ml_path": attr.string(default = "msvc_not_used"),
     },
-    provides = [CcToolchainConfigInfo],
     executable = True,
+    provides = [CcToolchainConfigInfo],
+    implementation = _impl,
 )
