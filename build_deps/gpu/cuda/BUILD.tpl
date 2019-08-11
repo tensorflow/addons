@@ -44,7 +44,7 @@ cuda_header_library(
     hdrs = [
         %{cuda_headers}
     ],
-    include_prefix = "build_deps/gpu",
+    include_prefix = "third_party/gpus",
     includes = [
         ".",
         "cuda/include",
