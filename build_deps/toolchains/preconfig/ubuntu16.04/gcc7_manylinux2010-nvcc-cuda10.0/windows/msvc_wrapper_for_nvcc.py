@@ -16,9 +16,11 @@
 """Crosstool wrapper for compiling CUDA programs with nvcc on Windows.
 
 DESCRIPTION:
-  This script is the Windows version of //third_party/gpus/crosstool/crosstool_wrapper_is_not_gcc
+  This script is the Windows version of crosstool_wrapper_is_not_gcc
 """
 
+from __future__ import absolute_import
+from __future__ import division
 from __future__ import print_function
 
 from argparse import ArgumentParser
@@ -111,11 +113,11 @@ def InvokeNvcc(argv, log=False):
         f for f in argv if re.search('\.cpp$|\.cc$|\.c$|\.cxx$|\.C$', f)
     ]
     if len(src_files) == 0:
-        raise Error('No source files found for cuda compilation.')
+        raise ValueError('No source files found for cuda compilation.')
 
     out_file = [f for f in argv if f.startswith('/Fo')]
     if len(out_file) != 1:
-        raise Error(
+        raise ValueError(
             'Please sepecify exactly one output file for cuda compilation.')
     out = ['-o', out_file[0][len('/Fo'):]]
 
