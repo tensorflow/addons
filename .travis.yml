@@ -22,13 +22,13 @@ jobs:
     - stage: test
       name: "Test on Ubuntu 16.04"
       script:
-      - docker run --rm -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-ubuntu16 make unit-test
+      - bash -x -e tools/run_docker.sh -c 'make unit-test'
 
     # Linux Builds
     - stage: build
       name: "Build on Ubuntu 16.04 for Python 2.7 3.5 3.6 3.7"
       script:
-      - docker run --rm -v $PWD:/addons -w /addons tensorflow/tensorflow:custom-op-ubuntu16 tools/ci_build/builds/release_linux.sh
+      - bash -x -e tools/run_docker.sh -c 'tools/ci_build/builds/release_linux.sh'
       after_success:
         - twine upload -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
 
