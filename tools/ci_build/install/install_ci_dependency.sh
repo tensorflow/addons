@@ -36,6 +36,11 @@ if [[ ! -d "tensorflow_addons" ]]; then
     exit 1
 fi
 
+# Download buildifier.
+wget https://github.com/bazelbuild/buildtools/releases/download/0.4.5/buildifier
+chmod +x buildifier
+sudo mv buildifier /usr/local/bin/.
+
 # Install python dependencies:
 CI_REQUIREMENT="$SCRIPT_DIR/ci_requirements.txt"
 pip install ${QUIET_FLAG} -r ${CI_REQUIREMENT}
