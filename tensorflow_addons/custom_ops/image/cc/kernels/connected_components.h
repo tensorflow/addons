@@ -302,4 +302,4 @@ class FindRootFunctor {
 
 }  // namespace tensorflow
 
-#endif  // TENSORFLOW_CONTRIB_IMAGE_KERNELS_SEGMENTATION_OPS_H_
+#endif  // TENSORFLOW_ADDONS_CONNECTED_COMPONENTS_H_
