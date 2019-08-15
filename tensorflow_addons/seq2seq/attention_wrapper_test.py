@@ -466,8 +466,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
                     expected_final_alignment_history,
                     final_alignment_history_info)
 
-    # TODO: #407 Float64 test is failing
-    @parameterized.parameters([np.float32])
+    @parameterized.parameters([np.float32, np.float64])
     def testBahdanauNormalizedDType(self, dtype):
         encoder_outputs = self.encoder_outputs.astype(dtype)
         decoder_inputs = self.decoder_inputs.astype(dtype)
@@ -478,11 +477,12 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             normalize=True,
             dtype=dtype)
         cell = keras.layers.LSTMCell(
-            self.units, recurrent_activation="sigmoid")
-        cell = wrapper.AttentionWrapper(cell, attention_mechanism)
+            self.units, recurrent_activation="sigmoid", dtype=dtype)
+        cell = wrapper.AttentionWrapper(cell, attention_mechanism, dtype=dtype)
 
         sampler = sampler_py.TrainingSampler()
-        my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
+        my_decoder = basic_decoder.BasicDecoder(
+            cell=cell, sampler=sampler, dtype=dtype)
 
         final_outputs, final_state, _ = my_decoder(
             decoder_inputs,
@@ -493,8 +493,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         self.assertEqual(final_outputs.rnn_output.dtype, dtype)
         self.assertIsInstance(final_state, wrapper.AttentionWrapperState)
 
-    # TODO: #407 Float64 test is failing
-    @parameterized.parameters([np.float32])
+    @parameterized.parameters([np.float32, np.float64])
     def testLuongScaledDType(self, dtype):
         # Test case for GitHub issue 18099
         encoder_outputs = self.encoder_outputs.astype(dtype)
@@ -507,11 +506,12 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             dtype=dtype,
         )
         cell = keras.layers.LSTMCell(
-            self.units, recurrent_activation="sigmoid")
-        cell = wrapper.AttentionWrapper(cell, attention_mechanism)
+            self.units, recurrent_activation="sigmoid", dtype=dtype)
+        cell = wrapper.AttentionWrapper(cell, attention_mechanism, dtype=dtype)
 
         sampler = sampler_py.TrainingSampler()
-        my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
+        my_decoder = basic_decoder.BasicDecoder(
+            cell=cell, sampler=sampler, dtype=dtype)
 
         final_outputs, final_state, _ = my_decoder(
             decoder_inputs,

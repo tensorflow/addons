@@ -1538,7 +1538,8 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                  initial_cell_state=None,
                  name=None,
                  attention_layer=None,
-                 attention_fn=None):
+                 attention_fn=None,
+                 **kwargs):
         """Construct the `AttentionWrapper`.
 
         **NOTE** If you are using the `BeamSearchDecoder` with a cell wrapped
@@ -1619,6 +1620,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             attention_layer) and outputs (attention, alignments,
             next_attention_state). If provided, the attention_layer_size should
             be the size of the outputs of attention_fn.
+          **kwargs: Other keyword arguments for layer creation.
 
         Raises:
           TypeError: `attention_layer_size` is not None and
@@ -1629,7 +1631,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             of `attention_layer_size`; if `attention_layer_size` and
             `attention_layer` are set simultaneously.
         """
-        super(AttentionWrapper, self).__init__(name=name)
+        super(AttentionWrapper, self).__init__(name=name, **kwargs)
         rnn_cell_impl.assert_like_rnncell("cell", cell)
         if isinstance(attention_mechanism, (list, tuple)):
             self._is_multi = True
