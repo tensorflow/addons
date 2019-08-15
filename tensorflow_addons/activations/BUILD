@@ -26,3 +26,16 @@ py_test(
         ":activations",
     ],
 )
+
+py_test(
+    name = "gelu_test",
+    size = "medium",
+    srcs = [
+        "gelu_test.py",
+    ],
+    main = "gelu_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":activations",
+    ],
+)
