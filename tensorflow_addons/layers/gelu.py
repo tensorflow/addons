@@ -22,9 +22,8 @@ import math
 import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow_addons.utils import keras_utils
+from tensorflow_addons.activations import gelu
 
-
-@keras_utils.register_keras_custom_object
 @keras_utils.register_keras_custom_object
 class GeLU(tf.keras.layers.Layer):
     """Gaussian Error Linear Unit.
@@ -47,9 +46,7 @@ class GeLU(tf.keras.layers.Layer):
         self.supports_masking = True
 
     def call(self, inputs):
-        pi = K.cast(math.pi, inputs.dtype)
-        return 0.5 * inputs * (1 + tf.tanh(tf.sqrt(2.0 / pi) * \
-                                (inputs + 0.044715 * tf.pow(inputs, 3))))
+        return gelu(inputs, dtype=inputs.dtype)
 
     def get_config(self):
         config = {}
