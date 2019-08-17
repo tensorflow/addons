@@ -26,7 +26,7 @@ from tensorflow_addons.utils import keras_utils
 
 @tf.function
 @keras_utils.register_keras_custom_object
-def GeLU(x, dtype='float32'):
+def gelu(x, dtype='float32'):
     """Gaussian Error Linear Unit.
 
     A smoother version of ReLU generally used 
