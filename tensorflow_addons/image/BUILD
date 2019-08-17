@@ -82,7 +82,6 @@ py_test(
     ],
 )
 
-# TODO: use cuda_test later.
 py_test(
     name = "transform_ops_test",
     size = "medium",

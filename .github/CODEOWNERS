@@ -12,7 +12,7 @@
 /tensorflow_addons/metrics/ @squadrick
 /tensorflow_addons/optimizers/ @facaiy @windqaq @squadrick
 /tensorflow_addons/rnn/ @qlzh727
-/tensorflow_addons/seq2seq/ @qlzh727
+/tensorflow_addons/seq2seq/ @qlzh727 @guillaumekln
 /tensorflow_addons/text/ @seanpmorgan @facaiy
 
 /tensorflow_addons/custom_ops/image/ @windqaq @facaiy

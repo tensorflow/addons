@@ -477,11 +477,12 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             normalize=True,
             dtype=dtype)
         cell = keras.layers.LSTMCell(
-            self.units, recurrent_activation="sigmoid")
-        cell = wrapper.AttentionWrapper(cell, attention_mechanism)
+            self.units, recurrent_activation="sigmoid", dtype=dtype)
+        cell = wrapper.AttentionWrapper(cell, attention_mechanism, dtype=dtype)
 
         sampler = sampler_py.TrainingSampler()
-        my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
+        my_decoder = basic_decoder.BasicDecoder(
+            cell=cell, sampler=sampler, dtype=dtype)
 
         final_outputs, final_state, _ = my_decoder(
             decoder_inputs,
@@ -505,11 +506,12 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             dtype=dtype,
         )
         cell = keras.layers.LSTMCell(
-            self.units, recurrent_activation="sigmoid")
-        cell = wrapper.AttentionWrapper(cell, attention_mechanism)
+            self.units, recurrent_activation="sigmoid", dtype=dtype)
+        cell = wrapper.AttentionWrapper(cell, attention_mechanism, dtype=dtype)
 
         sampler = sampler_py.TrainingSampler()
-        my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
+        my_decoder = basic_decoder.BasicDecoder(
+            cell=cell, sampler=sampler, dtype=dtype)
 
         final_outputs, final_state, _ = my_decoder(
             decoder_inputs,

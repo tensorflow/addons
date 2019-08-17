@@ -76,8 +76,8 @@ bash tools/run_docker.sh -c 'make unit-test'
 or run manually:
 
 ```bash
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
-
+docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-ubuntu16 /bin/bash
+pip install --upgrade pip # Pip must be upgraded to install manylinux2010 pkg
 ./configure.sh  # Links project with TensorFlow dependency
 
 bazel test -c opt -k \
@@ -94,7 +94,8 @@ bash tools/run_docker.sh -d gpu -c 'make gpu-unit-test'
 or run manually:
 
 ```bash
-docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-gpu /bin/bash
+docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-gpu-ubuntu16 /bin/bash
+pip install --upgrade pip # Pip must be upgraded to install manylinux2010 pkg
 ./configure.sh  # Links project with TensorFlow dependency
 
 bazel test -c opt -k \

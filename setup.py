@@ -35,6 +35,7 @@ from datetime import datetime
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.dist import Distribution
+from setuptools import Extension
 
 DOCLINES = __doc__.split('\n')
 
@@ -73,6 +74,7 @@ setup(
     author='Google Inc.',
     author_email='opensource@google.com',
     packages=find_packages(),
+    ext_modules=[Extension('_foo', ['stub.cc'])],
     install_requires=REQUIRED_PACKAGES,
     include_package_data=True,
     zip_safe=False,
@@ -84,9 +86,9 @@ setup(
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Software Development :: Libraries',
