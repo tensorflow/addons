@@ -23,26 +23,14 @@ import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow_addons.layers.gelu import GeLU
 from tensorflow_addons.utils import test_utils
+from tensorflow_addons.utils.test_utils import keras_parameterized
 from absl.testing import parameterized
 
 
 @parameterized.parameters([np.float16, np.float32, np.float64])
 @test_utils.run_all_in_graph_and_eager_modes
-class GELUTest(tf.test.TestCase):
-    def random_test(self, dtype):
-        x = tf.constant([2.5, 0.02, -0.001], shape=(3,1))
-        val = np.array([ 2.4849157e+00, 
-                        1.0159566e-02, 
-                        -4.9960107e-04], 
-                        dtype=dtype).reshape(3,1)
-     
-        test_utils.layer_test(
-            GeLU,
-            kwargs={'dtype': dtype},
-            input_data=x,
-            expected_output=val) 
-
-    def random_test_with_numpy(self, dtype):
+class TestGeLU(tf.test.TestCase):
+    def test_random(self, dtype):
         x = np.array([[0.5, 1.2, -0.3]]).astype(dtype)
         val = np.array([[0.345714, 1.0617027, -0.11462909]]).astype(dtype)
      
@@ -51,6 +39,20 @@ class GELUTest(tf.test.TestCase):
             kwargs={'dtype': dtype},
             input_data=x,
             expected_output=val)
+
+
+@keras_parameterized.run_all_keras_modes
+@keras_parameterized.run_with_all_model_types
+class TestGeLU_v2(keras_parameterized.TestCase):
+	def test_layer_random(self):
+		layer = tf.keras.layers.Dense(1, activation=GeLU())
+		model = keras_parameterized.testing_utils.get_model_from_layers([layer], 
+                                                              input_shape=(10,))
+		model.compile(
+			'sgd',
+			'mse',
+			run_eagerly=keras_parameterized.testing_utils.should_run_eagerly())
+		model.fit(np.ones((10, 10)), np.ones((10, 1)), batch_size=2)
 
 if __name__ == '__main__':
     tf.test.main()
