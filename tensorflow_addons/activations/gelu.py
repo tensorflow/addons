@@ -20,12 +20,13 @@ from __future__ import print_function
 
 import math
 import tensorflow as tf
+from tensorflow.keras import backend as K
 from tensorflow_addons.utils import keras_utils
 
 
 @tf.function
 @keras_utils.register_keras_custom_object
-def gelu(x):
+def GeLU(x, dtype='float32'):
     """Gaussian Error Linear Unit.
 
     A smoother version of ReLU generally used 
@@ -38,6 +39,7 @@ def gelu(x):
         `x` with the GELU activation applied.
     """
 
-    x = tf.convert_to_tensor(x, dtype=tf.float32)
-    return 0.5 * x * (1 + tf.tanh(tf.sqrt(2 / math.pi) * \
+    x  = K.cast(x, dtype=dtype)
+    pi = K.cast(math.pi, dtype=dtype)
+    return 0.5 * x * (1 + tf.tanh(tf.sqrt(2 / pi) * \
              (x + 0.044715 * tf.pow(x, 3))))
