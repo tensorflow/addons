@@ -20,27 +20,19 @@ from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
-from tensorflow_addons.activations import gelu
+from tensorflow_addons.activations import GeLU
 from tensorflow_addons.utils import test_utils
+from absl.testing import parameterized
 
 
+@parameterized.parameters(['float16', 'float32', 'float64'])
 @test_utils.run_all_in_graph_and_eager_modes
-class GELUTest(tf.test.TestCase):
-    def random_test(self):
-        x = tf.constant([0.5, 1.2, -0.3], dtype=tf.float32)
+class TestGeLU(tf.test.TestCase):
+    def test_random(self, dtype):
+        x = tf.constant([0.5, 1.2, -0.3], dtype=dtype)
         val = tf.constant([0.345714, 1.0617027, -0.11462909], 
-                            dtype=tf.float32)
-        act = gelu(x)
-        self.assertAllClose(val, self.evaluate(act), atol=1e-5)
-
-    def test_with_numpy(self):
-        x = np.array([2.5, 0.02, -0.001])
-        val = tf.constant([ 2.4849157e+00, 
-                            1.0159566e-02, 
-                            -4.9960107e-04], 
-                            dtype=tf.float32)
-        
-        act = gelu(x)
+                            dtype=dtype)
+        act = GeLU(x, dtype)
         self.assertAllClose(val, self.evaluate(act), atol=1e-5)
 
 
