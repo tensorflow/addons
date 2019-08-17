@@ -18,50 +18,51 @@ limitations under the License.
 
 #define EIGEN_USE_THREADS
 
-#include "tensorflow_addons/custom_ops/activations/cc/kernels/gelu_op_functor.h"
-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 #include "tensorflow/core/framework/numeric_op.h"
 #include "tensorflow/core/framework/op_kernel.h"
+#include "tensorflow_addons/custom_ops/activations/cc/kernels/gelu_op_functor.h"
+#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
 
 template <typename Device, typename T>
 class GeluOp : public UnaryElementWiseOp<T, GeluOp<Device, T>> {
-    public:
-        using UnaryElementWiseOp<T, GeluOp<Device, T>>::UnaryElementWiseOp;
+ public:
+  using UnaryElementWiseOp<T, GeluOp<Device, T>>::UnaryElementWiseOp;
 
-        void Operate(OpKernelContext* context, const Tensor& input, Tensor* output) {
-            functor::Gelu<Device, T> functor;
-            functor(context->eigen_device<Device>(), input.flat<T>(), output->flat<T>());
-        }
+  void Operate(OpKernelContext* context, const Tensor& input, Tensor* output) {
+    functor::Gelu<Device, T> functor;
+    functor(context->eigen_device<Device>(), input.flat<T>(),
+            output->flat<T>());
+  }
 };
 
 template <typename Device, typename T>
 class GeluGradOp : public BinaryElementWiseOp<T, GeluGradOp<Device, T>> {
-    public:
-        using BinaryElementWiseOp<T, GeluGradOp<Device, T>>::BinaryElementWiseOp;
+ public:
+  using BinaryElementWiseOp<T, GeluGradOp<Device, T>>::BinaryElementWiseOp;
 
-        void OperateNoTemplate(OpKernelContext* context, const Tensor& g,
-                               const Tensor& a, Tensor* output);
+  void OperateNoTemplate(OpKernelContext* context, const Tensor& g,
+                         const Tensor& a, Tensor* output);
 
-        template <int NDIMS>
-        void Operate(OpKernelContext* context, const Tensor& g, const Tensor& a,
-                     Tensor* output) {
-            OperateNoTemplate(context, g, a, output);
-        }
+  template <int NDIMS>
+  void Operate(OpKernelContext* context, const Tensor& g, const Tensor& a,
+               Tensor* output) {
+    OperateNoTemplate(context, g, a, output);
+  }
 };
 
 template <typename Device, typename T>
 void GeluGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
                                               const Tensor& g, const Tensor& a,
                                               Tensor* output) {
-    functor::GeluGrad<Device, T> functor;
-    functor(context->eigen_device<Device>(), g.flat<T>(), a.flat<T>(),
-            output->flat<T>());
+  functor::GeluGrad<Device, T> functor;
+  functor(context->eigen_device<Device>(), g.flat<T>(), a.flat<T>(),
+          output->flat<T>());
 }
 
-} // namespace tensorflow
+}  // namespace tensorflow
 
 #undef EIGEN_USE_THREADS
 
-#endif // TENSORFLOW_ADDONS_GELU_OP_H_
+#endif  // TENSORFLOW_ADDONS_GELU_OP_H_

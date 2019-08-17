@@ -32,4 +32,4 @@ REGISTER_OP("GeluGrad")
     .Attr("T: {half, float, double}")
     .SetShapeFn(shape_inference::MergeBothInputsShapeFn);
 
-} // namespace tensorflow
+}  // namespace tensorflow
