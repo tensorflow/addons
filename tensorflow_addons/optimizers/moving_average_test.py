@@ -26,6 +26,8 @@ from tensorflow_addons.utils import test_utils
 @test_utils.run_all_in_graph_and_eager_modes
 class MovingAverageTest(tf.test.TestCase):
     def test_run(self):
+        self.skipTest(
+            "Wait for https://github.com/tensorflow/tensorflow/issues/31582")
         for sequential_update in [True, False]:
             var0 = tf.Variable([1.0, 2.0])
             var1 = tf.Variable([3.0, 4.0])
@@ -87,6 +89,8 @@ class MovingAverageTest(tf.test.TestCase):
                 MovingAverage(base_opt, 0.5, sequential_update)
 
     def test_model_weights_update(self):
+        self.skipTest(
+            "Wait for https://github.com/tensorflow/tensorflow/issues/31582")
         grad = tf.Variable([[0.1]])
         model = tf.keras.Sequential([
             tf.keras.layers.Dense(

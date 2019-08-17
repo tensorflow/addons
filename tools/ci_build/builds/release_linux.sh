@@ -15,7 +15,8 @@
 # ==============================================================================
 set -e -x
 
-PYTHON_VERSIONS="python2.7 python3.5 python3.6"
+PYTHON_VERSIONS="python2.7 python3.5 python3.6 python3.7"
+ln -sf /usr/bin/python3.5 /usr/bin/python3 # Py36 has issues with add-apt
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
 add-apt-repository -y ppa:deadsnakes/ppa
 
@@ -43,6 +44,9 @@ for version in ${PYTHON_VERSIONS}; do
     # Uncomment and use this command for release branches
     #bazel-bin/build_pip_pkg artifacts
 done
+
+# Clean up
+rm get-pip.py
 
 # Verify Wheels
 ./tools/ci_build/builds/wheel_verify.sh
