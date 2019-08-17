@@ -37,23 +37,27 @@ __global__ void GeluKernel(const int32 count, const T* input, T* output) {
     const T kAlpha = static_cast<T>(M_2_SQRTPI * M_SQRT1_2);
     GPU_1D_KERNEL_LOOP(i, count) {
         T x = input[i];
-        output[i] = T(0.5) * x * (T(1) + tanh(kAlpha * (x + T(0.044715) * (x * x * x))));
+        output[i] = static_cast<T>(0.5) * x * (static_cast<T>(1) + tanh(kAlpha * (x + static_cast<T>(0.044715) * (x * x * x))));
     }
 }
 
 template <typename T>
 __global__ void GeluGradKernel(const int32 count, const T* gradients, const T* features, T* backprops) {
     const T kAlpha = static_cast<T>(M_2_SQRTPI * M_SQRT1_2);
-    const T kBeta = kAlpha * T(0.044715) * T(3);
+    const T kBeta = kAlpha * static_cast<T>(0.044715) * static_cast<T>(3);
     GPU_1D_KERNEL_LOOP(i, count) {
         T x = features[i];
-        const T y = tanh(kAlpha * ((T(0.044715) * x * x * x) + x));
-        backprops[i] = ((-x * (y * y) + x) * (kBeta * x * x + kAlpha) + T(1) + y) * gradients[i] * T(0.5);
+        const T y = tanh(kAlpha * ((static_cast<T>(0.044715) * x * x * x) + x));
+        backprops[i] = ((-x * (y * y) + x) * (kBeta * x * x + kAlpha) + static_cast<T>(1) + y) * gradients[i] * static_cast<T>(0.5);
     }
 }
 
 template <typename T>
 struct Gelu<GPUDevice, T> {
+    // Computes Gelu activation.
+    //
+    // features: any shape.
+    // activations: same shape as "features".
     void operator()(const GPUDevice& d,
                     typename TTypes<T>::ConstTensor features,
                     typename TTypes<T>::Tensor activations) {
@@ -61,8 +65,7 @@ struct Gelu<GPUDevice, T> {
         const int32 count = features.size();
         if (count == 0) return;
 
-        // GpuLaunchConfig config = GetGpuLaunchConfig(count, d);
-        GpuLaunchConfig config = GetGpuLaunchConfigFixedBlockSize(count, d, GeluKernel<T>, 0, 1024);
+        GpuLaunchConfig config = GetGpuLaunchConfig(count, d, GeluKernel<T>, 0, 0);
 
         TF_CHECK_OK(GpuLaunchKernel(
             GeluKernel<T>, config.block_count, config.thread_per_block, 0,
@@ -72,6 +75,12 @@ struct Gelu<GPUDevice, T> {
 
 template <typename T>
 struct GeluGrad<GPUDevice, T> {
+    // Computes GeluGrad backprop.
+    //
+    // gradients: gradient backpropagated to the Gelu op.
+    // features: either the inputs that were passed to the Gelu, or its outputs
+    //           (using either one yields the same result here).
+    // backprops: gradient to backpropagate to the Gelu inputs.
     void operator()(const GPUDevice& d,
                     typename TTypes<T>::ConstTensor gradients,
                     typename TTypes<T>::ConstTensor features,
@@ -79,8 +88,7 @@ struct GeluGrad<GPUDevice, T> {
         const int32 count = gradients.size();
         if (count == 0) return;
 
-        // GpuLaunchConfig config = GetGpuLaunchConfig(count, d);
-        GpuLaunchConfig config = GetGpuLaunchConfigFixedBlockSize(count, d, GeluKernel<T>, 0, 1024);
+        GpuLaunchConfig config = GetGpuLaunchConfig(count, d, GeluKernel<T>, 0, 0);
 
         TF_CHECK_OK(GpuLaunchKernel(
             GeluGradKernel<T>, config.block_count, config.thread_per_block, 0,

@@ -23,26 +23,38 @@ limitations under the License.
 namespace tensorflow {
 namespace functor {
 
+// Functor used by GeluOp to do the computations.
 template <typename Device, typename T>
 struct Gelu {
+    // Computes Gelu activation.
+    //
+    // features: any shape.
+    // activations: same shape as "features".
     void operator()(const Device& d,
                     typename TTypes<T>::ConstTensor features,
                     typename TTypes<T>::Tensor activations) {
         const T kAlpha = static_cast<T>(M_2_SQRTPI * M_SQRT1_2);
-        activations.device(d) = T(0.5) * features * (T(1) + (kAlpha * (features + T(0.044715) * features.cube())).tanh());
+        activations.device(d) = static_cast<T>(0.5) * features * (static_cast<T>(1) + (kAlpha * (features + static_cast<T>(0.044715) * features.cube())).tanh());
     }
 };
 
+// Functor used by GeluGradOp to do the computations.
 template <typename Device, typename T>
 struct GeluGrad {
+    // Computes GeluGrad backprops.
+    //
+    // gradients: gradients backpropagated to the Gelu op.
+    // features: either the inputs that were passed to the Gelu or, or its
+    //           outputs (using either one yields the same result here).
+    // backprops: gradients to backpropagate to the Gelu inputs.
     void operator()(const Device& d,
                     typename TTypes<T>::ConstTensor gradients,
                     typename TTypes<T>::ConstTensor features,
                     typename TTypes<T>::Tensor backprops) {
         const T kAlpha = static_cast<T>(M_2_SQRTPI * M_SQRT1_2);
-        const T kBeta = kAlpha * T(0.044715) * T(3);
-        const auto y = (kAlpha * ((T(0.044715) * features.cube()) + features)).tanh();
-        backprops.device(d) = ((-features * (y * y) + features) * (kBeta * features.square() + kAlpha) + T(1) + y) * gradients * T(0.5);
+        const T kBeta = kAlpha * static_cast<T>(0.044715) * static_cast<T>(3);
+        const auto y = (kAlpha * ((static_cast<T>(0.044715) * features.cube()) + features)).tanh();
+        backprops.device(d) = ((-features * y.square() + features) * (kBeta * features.square() + kAlpha) + static_cast<T>(1) + y) * gradients * static_cast<T>(0.5);
     }
 };
 

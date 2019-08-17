@@ -24,10 +24,6 @@ namespace tensorflow {
 
 using CPUDevice = Eigen::ThreadPoolDevice;
 
-#ifdef GOOGLE_CUDA
-using GPUDevice = Eigen::GpuDevice;
-#endif
-
 #define REGISTER_GELU_KERNELS(type)                                 \
     REGISTER_KERNEL_BUILDER(                                        \
         Name("Gelu").Device(DEVICE_CPU).TypeConstraint<type>("T"),  \
@@ -36,11 +32,15 @@ using GPUDevice = Eigen::GpuDevice;
         Name("GeluGrad").Device(DEVICE_CPU).TypeConstraint<type>("T"),  \
         GeluGradOp<CPUDevice, type>);
 
+// Gelu only makes sense with floating points.
 TF_CALL_GPU_NUMBER_TYPES(REGISTER_GELU_KERNELS);
 #undef REGISTER_GELU_KERNELS
 
 #ifdef GOOGLE_CUDA
 
+using GPUDevice = Eigen::GpuDevice;
+
+// Forward declarations of the functor specializations for GPU.
 namespace functor {
 #define DECLARE_GPU_SPEC(T)                                                             \
     template <>                                                                         \
@@ -57,8 +57,10 @@ namespace functor {
     extern template struct GeluGrad<GPUDevice, T>;
 
 TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
+#undef DECLARE_GPU_DPEC
 } // namespace functor
 
+// Registration of the GPU implementations.
 #define REGISTER_GPU_KERNELS(type)                                  \
     REGISTER_KERNEL_BUILDER(                                        \
         Name("Gelu").Device(DEVICE_GPU).TypeConstraint<type>("T"),  \
