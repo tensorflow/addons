@@ -85,7 +85,8 @@ struct GeluGrad {
     }
   }
 };
-}
+
+} // namespace functor
 
 template <typename Device, typename T>
 class GeluOp : public UnaryElementWiseOp<T, GeluOp<Device, T>> {

@@ -57,7 +57,7 @@ namespace functor {
   extern template struct GeluGrad<GPUDevice, T>;
 
 TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
-#undef DECLARE_GPU_DPEC
+#undef DECLARE_GPU_SPEC
 }  // namespace functor
 
 // Registration of the GPU implementations.
