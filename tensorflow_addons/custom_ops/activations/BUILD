@@ -9,7 +9,6 @@ cc_library(
     name = "gelu_op_gpu",
     srcs = [
         "cc/kernels/gelu_op.h",
-        "cc/kernels/gelu_op_functor.h",
         "cc/kernels/gelu_op_gpu.cu.cc",
     ],
     copts = if_cuda_is_configured([
@@ -33,7 +32,6 @@ cc_binary(
     srcs = [
         "cc/kernels/gelu_op.cc",
         "cc/kernels/gelu_op.h",
-        "cc/kernels/gelu_op_functor.h",
         "cc/ops/gelu_op.cc",
     ],
     copts = [

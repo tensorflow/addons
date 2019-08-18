@@ -20,10 +20,72 @@ limitations under the License.
 
 #include "tensorflow/core/framework/numeric_op.h"
 #include "tensorflow/core/framework/op_kernel.h"
-#include "tensorflow_addons/custom_ops/activations/cc/kernels/gelu_op_functor.h"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
+namespace functor {
+
+// Functor used by GeluOp to do the computations.
+template <typename Device, typename T>
+struct Gelu {
+  // Computes Gelu activation.
+  //
+  // features: any shape.
+  // approximate: whether to enable approximation.
+  // activations: same shape as "features".
+  void operator()(const Device& d, typename TTypes<T>::ConstTensor features,
+                  bool approximate, typename TTypes<T>::Tensor activations) {
+    if (approximate) {
+      // y = 0.5 * x * (1 + tanh(sqrt(2 / pi) * (x + 0.44715 * x^3)))
+      activations.device(d) =
+          static_cast<T>(0.5) * features *
+          (static_cast<T>(1) +
+           (static_cast<T>(M_2_SQRTPI * M_SQRT1_2) *
+            (features + static_cast<T>(0.044715) * features.cube()))
+               .tanh());
+    } else {
+      // y = x * normcdf(x) = 0.5 * x * (1 + erf(x / sqrt(2)))
+      activations.device(d) =
+          static_cast<T>(0.5) * features *
+          (static_cast<T>(1) + (features * static_cast<T>(M_SQRT1_2)).erf());
+    }
+  }
+};
+
+// Functor used by GeluGradOp to do the computations.
+template <typename Device, typename T>
+struct GeluGrad {
+  // Computes GeluGrad backprops.
+  //
+  // gradients: gradients backpropagated to the Gelu op.
+  // features: either the inputs that were passed to the Gelu or, or its
+  //           outputs (using either one yields the same result here).
+  // approximate: whether to enable approximation.
+  // backprops: gradients to backpropagate to the Gelu inputs.
+  void operator()(const Device& d, typename TTypes<T>::ConstTensor gradients,
+                  typename TTypes<T>::ConstTensor features, bool approximate,
+                  typename TTypes<T>::Tensor backprops) {
+    if (approximate) {
+      const T kAlpha = static_cast<T>(M_2_SQRTPI * M_SQRT1_2);
+      const T kBeta = kAlpha * static_cast<T>(0.044715) * static_cast<T>(3);
+      const auto y =
+          (kAlpha * ((static_cast<T>(0.044715) * features.cube()) + features))
+              .tanh();
+      backprops.device(d) = ((-features * y.square() + features) *
+                                 (kBeta * features.square() + kAlpha) +
+                             static_cast<T>(1) + y) *
+                            gradients * static_cast<T>(0.5);
+    } else {
+      backprops.device(d) =
+          gradients * (static_cast<T>(M_2_SQRTPI * M_SQRT1_2 * 0.5) * features *
+                           (-features.square() * static_cast<T>(0.5)).exp() +
+                       (static_cast<T>(0.5) *
+                        (static_cast<T>(1) +
+                         (features * static_cast<T>(M_SQRT1_2)).erf())));
+    }
+  }
+};
+}
 
 template <typename Device, typename T>
 class GeluOp : public UnaryElementWiseOp<T, GeluOp<Device, T>> {
