@@ -61,7 +61,7 @@ TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
 }  // namespace functor
 
 // Registration of the GPU implementations.
-#define REGISTER_GPU_KERNELS(type)                                   \
+#define REGISTER_GELU_GPU_KERNELS(type)                              \
   REGISTER_KERNEL_BUILDER(                                           \
       Name("Gelu").Device(DEVICE_GPU).TypeConstraint<type>("T"),     \
       GeluOp<GPUDevice, type>);                                      \
@@ -69,8 +69,8 @@ TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
       Name("GeluGrad").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
       GeluGradOp<GPUDevice, type>);
 
-TF_CALL_GPU_NUMBER_TYPES(REGISTER_GPU_KERNELS);
-#undef REGISTER_GPU_KERNELS
+TF_CALL_GPU_NUMBER_TYPES(REGISTER_GELU_GPU_KERNELS);
+#undef REGISTER_GELU_GPU_KERNELS
 
 #endif  // GOOGLE_CUDA
 
