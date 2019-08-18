@@ -137,7 +137,6 @@ REGISTER_OP("ImageProjectiveTransformV2")
     .Output("transformed_images: dtype")
     .SetShapeFn(ResizeShapeFn)
     .Doc(kImageProjectiveTransformDoc);
-}  // namespace tensorflow
 
 REGISTER_OP("ImageConnectedComponents")
     .Input("image: dtype")

@@ -151,9 +151,9 @@ py_test(
     name = "connected_components_test",
     size = "medium",
     srcs = [
-        "connected_components_test.py",
+        "connected_ops_test.py",
     ],
-    main = "connected_components_test.py",
+    main = "connected_ops_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":image",
