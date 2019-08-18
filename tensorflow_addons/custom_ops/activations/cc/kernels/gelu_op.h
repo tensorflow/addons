@@ -28,37 +28,51 @@ namespace tensorflow {
 template <typename Device, typename T>
 class GeluOp : public UnaryElementWiseOp<T, GeluOp<Device, T>> {
  public:
-  using UnaryElementWiseOp<T, GeluOp<Device, T>>::UnaryElementWiseOp;
+  explicit GeluOp(OpKernelConstruction* context)
+      : UnaryElementWiseOp<T, GeluOp<Device, T>>::UnaryElementWiseOp(context) {
+    OP_REQUIRES_OK(context, context->GetAttr("approximate", &approximate_));
+  }
 
   void Operate(OpKernelContext* context, const Tensor& input, Tensor* output) {
     functor::Gelu<Device, T> functor;
-    functor(context->eigen_device<Device>(), input.flat<T>(),
+    functor(context->eigen_device<Device>(), input.flat<T>(), approximate_,
             output->flat<T>());
   }
+
+ private:
+  bool approximate_;
 };
 
 template <typename Device, typename T>
 class GeluGradOp : public BinaryElementWiseOp<T, GeluGradOp<Device, T>> {
  public:
-  using BinaryElementWiseOp<T, GeluGradOp<Device, T>>::BinaryElementWiseOp;
+  explicit GeluGradOp(OpKernelConstruction* context)
+      : BinaryElementWiseOp<T, GeluGradOp<Device, T>>::BinaryElementWiseOp(
+            context) {
+    OP_REQUIRES_OK(context, context->GetAttr("approximate", &approximate_));
+  }
 
   void OperateNoTemplate(OpKernelContext* context, const Tensor& g,
-                         const Tensor& a, Tensor* output);
+                         const Tensor& a, bool approximate, Tensor* output);
 
   template <int NDIMS>
   void Operate(OpKernelContext* context, const Tensor& g, const Tensor& a,
                Tensor* output) {
-    OperateNoTemplate(context, g, a, output);
+    OperateNoTemplate(context, g, a, approximate_, output);
   }
+
+ private:
+  bool approximate_;
 };
 
 template <typename Device, typename T>
 void GeluGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
                                               const Tensor& g, const Tensor& a,
+                                              bool approximate,
                                               Tensor* output) {
   functor::GeluGrad<Device, T> functor;
   functor(context->eigen_device<Device>(), g.flat<T>(), a.flat<T>(),
-          output->flat<T>());
+          approximate, output->flat<T>());
 }
 
 }  // namespace tensorflow

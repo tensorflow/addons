@@ -29,15 +29,23 @@ struct Gelu {
   // Computes Gelu activation.
   //
   // features: any shape.
+  // approximate: whether to enable approximation.
   // activations: same shape as "features".
   void operator()(const Device& d, typename TTypes<T>::ConstTensor features,
-                  typename TTypes<T>::Tensor activations) {
-    const T kAlpha = static_cast<T>(M_2_SQRTPI * M_SQRT1_2);
-    activations.device(d) =
-        static_cast<T>(0.5) * features *
-        (static_cast<T>(1) +
-         (kAlpha * (features + static_cast<T>(0.044715) * features.cube()))
-             .tanh());
+                  bool approximate, typename TTypes<T>::Tensor activations) {
+    if (approximate) {
+      const T kAlpha = static_cast<T>(M_2_SQRTPI * M_SQRT1_2);
+
+      activations.device(d) =
+          static_cast<T>(0.5) * features *
+          (static_cast<T>(1) +
+           (kAlpha * (features + static_cast<T>(0.044715) * features.cube()))
+               .tanh());
+    } else {
+      activations.device(d) =
+          static_cast<T>(0.5) * features *
+          (static_cast<T>(1) + (features * static_cast<T>(M_SQRT1_2)).erf());
+    }
   }
 };
 
@@ -49,19 +57,30 @@ struct GeluGrad {
   // gradients: gradients backpropagated to the Gelu op.
   // features: either the inputs that were passed to the Gelu or, or its
   //           outputs (using either one yields the same result here).
+  // approximate: whether to enable approximation.
   // backprops: gradients to backpropagate to the Gelu inputs.
   void operator()(const Device& d, typename TTypes<T>::ConstTensor gradients,
-                  typename TTypes<T>::ConstTensor features,
+                  typename TTypes<T>::ConstTensor features, bool approximate,
                   typename TTypes<T>::Tensor backprops) {
-    const T kAlpha = static_cast<T>(M_2_SQRTPI * M_SQRT1_2);
-    const T kBeta = kAlpha * static_cast<T>(0.044715) * static_cast<T>(3);
-    const auto y =
-        (kAlpha * ((static_cast<T>(0.044715) * features.cube()) + features))
-            .tanh();
-    backprops.device(d) = ((-features * y.square() + features) *
-                               (kBeta * features.square() + kAlpha) +
-                           static_cast<T>(1) + y) *
-                          gradients * static_cast<T>(0.5);
+    if (approximate) {
+      const T kAlpha = static_cast<T>(M_2_SQRTPI * M_SQRT1_2);
+      const T kBeta = kAlpha * static_cast<T>(0.044715) * static_cast<T>(3);
+      const auto y =
+          (kAlpha * ((static_cast<T>(0.044715) * features.cube()) + features))
+              .tanh();
+      backprops.device(d) = ((-features * y.square() + features) *
+                                 (kBeta * features.square() + kAlpha) +
+                             static_cast<T>(1) + y) *
+                            gradients * static_cast<T>(0.5);
+    } else {
+      const T kAlpha = static_cast<T>(M_2_SQRTPI * M_SQRT1_2 * 0.5);
+      backprops.device(d) =
+          gradients * (kAlpha * features *
+                           (-features.square() * static_cast<T>(0.5)).exp() +
+                       (static_cast<T>(0.5) *
+                        (static_cast<T>(1) +
+                         (features * static_cast<T>(M_SQRT1_2)).erf())));
+    }
   }
 };
 

@@ -23,6 +23,7 @@ REGISTER_OP("Gelu")
     .Input("features: T")
     .Output("activations: T")
     .Attr("T: {half, float, double}")
+    .Attr("approximate: bool = true")
     .SetShapeFn(shape_inference::UnchangedShape);
 
 REGISTER_OP("GeluGrad")
@@ -30,6 +31,7 @@ REGISTER_OP("GeluGrad")
     .Input("features: T")
     .Output("backprops: T")
     .Attr("T: {half, float, double}")
+    .Attr("approximate: bool = true")
     .SetShapeFn(shape_inference::MergeBothInputsShapeFn);
 
 }  // namespace tensorflow

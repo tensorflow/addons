@@ -46,13 +46,13 @@ namespace functor {
   template <>                                                        \
   void Gelu<GPUDevice, T>::operator()(                               \
       const GPUDevice& d, typename TTypes<T>::ConstTensor features,  \
-      typename TTypes<T>::Tensor activations);                       \
+      bool approximate, typename TTypes<T>::Tensor activations);     \
   extern template struct Gelu<GPUDevice, T>;                         \
                                                                      \
   template <>                                                        \
   void GeluGrad<GPUDevice, T>::operator()(                           \
       const GPUDevice& d, typename TTypes<T>::ConstTensor gradients, \
-      typename TTypes<T>::ConstTensor features,                      \
+      typename TTypes<T>::ConstTensor features, bool approximate,    \
       typename TTypes<T>::Tensor backprops);                         \
   extern template struct GeluGrad<GPUDevice, T>;
 
