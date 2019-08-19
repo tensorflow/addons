@@ -88,7 +88,6 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
         super(WeightNormalization, self).build()
 
-    @tf.function
     def call(self, inputs):
         """Call `Layer`"""
         if not self._initialized:
@@ -131,6 +130,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             self.g.assign(
                 tf.reshape(tf.linalg.norm(flat, axis=0), (self.layer_depth,)))
 
+    # TODO: Get data init to work with tf_function compile #428
     def _data_dep_init(self, inputs):
         """Data dependent initialization."""
 

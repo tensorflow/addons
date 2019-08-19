@@ -26,6 +26,7 @@ from tensorflow_addons.utils import test_utils
 
 @test_utils.run_all_in_graph_and_eager_modes
 class WeightNormalizationTest(tf.test.TestCase):
+    # TODO: Get data init to work with tf_function compile #428
     def test_weightnorm_dense_train(self):
         model = tf.keras.models.Sequential()
         model.add(
@@ -33,7 +34,8 @@ class WeightNormalizationTest(tf.test.TestCase):
                 tf.keras.layers.Dense(2), input_shape=(3, 4)))
         model.compile(
             optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.001),
-            loss='mse')
+            loss='mse',
+            experimental_run_tf_function=False)
         model.fit(
             np.random.random((10, 3, 4)),
             np.random.random((10, 3, 2)),
@@ -58,6 +60,7 @@ class WeightNormalizationTest(tf.test.TestCase):
         self.assertTrue(hasattr(model.layers[0], 'g'))
 
     def test_weightnorm_conv2d(self):
+        # TODO: Get data init to work with tf_function compile #428
         model = tf.keras.models.Sequential()
         model.add(
             wrappers.WeightNormalization(
@@ -67,7 +70,8 @@ class WeightNormalizationTest(tf.test.TestCase):
         model.add(tf.keras.layers.Activation('relu'))
         model.compile(
             optimizer=tf.keras.optimizers.RMSprop(learning_rate=0.001),
-            loss='mse')
+            loss='mse',
+            experimental_run_tf_function=False)
         model.fit(
             np.random.random((2, 4, 4, 3)),
             np.random.random((2, 4, 4, 5)),
