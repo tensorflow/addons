@@ -18,11 +18,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import numpy as np
 import tensorflow as tf
+from absl.testing import parameterized
 from tensorflow_addons.activations import gelu
 from tensorflow_addons.utils import test_utils
-from absl.testing import parameterized
+
 
 
 @parameterized.parameters(['float16', 'float32', 'float64'])
@@ -30,11 +30,9 @@ from absl.testing import parameterized
 class TestGelu(tf.test.TestCase):
     def test_random(self, dtype):
         x = tf.constant([0.5, 1.2, -0.3], dtype=dtype)
-        val = tf.constant([0.345714, 1.0617027, -0.11462909], 
-                            dtype=dtype)
+        val = tf.constant([0.345714, 1.0617027, -0.11462909], dtype=dtype)
         act = gelu(x, dtype)
         self.assertAllClose(val, self.evaluate(act), atol=1e-5)
-
 
 if __name__ == '__main__':
     tf.test.main()
