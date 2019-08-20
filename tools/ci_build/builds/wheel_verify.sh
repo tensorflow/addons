@@ -19,9 +19,14 @@ set -e
 if [[ $(uname) == "Darwin" ]]; then
     CMD="delocate-wheel -w wheelhouse"
 else
-    LD_PATH="$(cat .bazelrc | grep TF_SHARED_LIBRARY_DIR | sed 's/"//g' | awk -F'=' '{print $2}')"
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LD_PATH
-    CMD="auditwheel repair --plat manylinux2010_x86_64"
+    pip3 install auditwheel==1.5.0
+    sudo pip3 install wheel==0.31.1
+    CMD="auditwheel repair"
+
+#    pip3 install auditwheel==2.0.0
+#    LD_PATH="$(cat .bazelrc | grep TF_SHARED_LIBRARY_DIR | sed 's/"//g' | awk -F'=' '{print $2}')"
+#    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LD_PATH
+#    CMD="auditwheel repair --plat manylinux2010_x86_64"
 fi
 
 ls artifacts/*
