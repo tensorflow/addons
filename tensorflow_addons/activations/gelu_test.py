@@ -32,31 +32,27 @@ def _ref_gelu(x, approximate=True):
     if approximate:
         pi = tf.cast(math.pi, x.dtype)
         coeff = tf.cast(0.044715, x.dtype)
-        return 0.5 * x * (1.0 + tf.tanh(tf.sqrt(2.0 / pi) * (x + coeff * tf.pow(x, 3))))
+        return 0.5 * x * (
+            1.0 + tf.tanh(tf.sqrt(2.0 / pi) * (x + coeff * tf.pow(x, 3))))
     else:
-        return 0.5 * x * (1.0 + tf.math.erf(x / tf.cast(tf.sqrt(2.0), x.dtype)))
+        return 0.5 * x * (
+            1.0 + tf.math.erf(x / tf.cast(tf.sqrt(2.0), x.dtype)))
 
 
 @test_utils.run_all_in_graph_and_eager_modes
 class TestGelu(tf.test.TestCase, parameterized.TestCase):
-
-    @parameterized.named_parameters(
-        ("float16", np.float16),
-        ("float32", np.float32),
-        ("float64", np.float64)
-    )
+    @parameterized.named_parameters(("float16", np.float16),
+                                    ("float32", np.float32),
+                                    ("float64", np.float64))
     def test_gelu(self, dtype):
         x = np.random.rand(2, 3, 4).astype(dtype)
-        self.assertAllCloseAccordingToType(gelu.gelu(x),
-                                           _ref_gelu(x))
-        self.assertAllCloseAccordingToType(gelu.gelu(x, False),
-                                           _ref_gelu(x, False))
+        self.assertAllCloseAccordingToType(gelu.gelu(x), _ref_gelu(x))
+        self.assertAllCloseAccordingToType(
+            gelu.gelu(x, False), _ref_gelu(x, False))
 
-    @parameterized.named_parameters(
-        ("float16", np.float16),
-        ("float32", np.float32),
-        ("float64", np.float64)
-    )
+    @parameterized.named_parameters(("float16", np.float16),
+                                    ("float32", np.float32),
+                                    ("float64", np.float64))
     def test_gradients(self, dtype):
         x = tf.constant([1.0, 2.0, 3.0], dtype=dtype)
 
@@ -70,10 +66,8 @@ class TestGelu(tf.test.TestCase, parameterized.TestCase):
                 grad = tape.gradient(y, x)
                 self.assertAllCloseAccordingToType(grad, grad_ref)
 
-    @parameterized.named_parameters(
-        ("float32", np.float32),
-        ("float64", np.float64)
-    )
+    @parameterized.named_parameters(("float32", np.float32),
+                                    ("float64", np.float64))
     def test_theoretical_gradients(self, dtype):
         # Only test theoretical gradients for float32 and float64
         # because of the instability of float16 while computing jacobian

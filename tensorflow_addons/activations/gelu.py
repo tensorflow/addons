@@ -21,7 +21,6 @@ import tensorflow as tf
 from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
-
 _activation_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/activations/_activation_ops.so"))
 
@@ -35,4 +34,5 @@ def gelu(x, approximate=True):
 
 @tf.RegisterGradient("Gelu")
 def _gelu_grad(op, grad):
-    return _activation_ops_so.gelu_grad(grad, op.inputs[0], op.get_attr("approximate"))
+    return _activation_ops_so.gelu_grad(grad, op.inputs[0],
+                                        op.get_attr("approximate"))
