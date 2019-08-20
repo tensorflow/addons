@@ -24,7 +24,6 @@ from tensorflow_addons.activations import gelu
 from tensorflow_addons.utils import test_utils
 
 
-
 @parameterized.parameters(['float16', 'float32', 'float64'])
 @test_utils.run_all_in_graph_and_eager_modes
 class TestGelu(tf.test.TestCase):
@@ -33,6 +32,7 @@ class TestGelu(tf.test.TestCase):
         val = tf.constant([0.345714, 1.0617027, -0.11462909], dtype=dtype)
         act = gelu(x, dtype)
         self.assertAllClose(val, self.evaluate(act), atol=1e-5)
+
 
 if __name__ == '__main__':
     tf.test.main()
