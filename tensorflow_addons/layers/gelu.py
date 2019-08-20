@@ -18,9 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import math
 import tensorflow as tf
-from tensorflow.keras import backend as K
 from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.activations import gelu
 
@@ -28,19 +26,19 @@ from tensorflow_addons.activations import gelu
 class GeLU(tf.keras.layers.Layer):
     """Gaussian Error Linear Unit.
 
-    A smoother version of ReLU generally used 
+    A smoother version of ReLU generally used
     in the BERT or BERT architecture based models.
     Original paper: https://arxiv.org/abs/1606.08415
-    
+
     Input shape:
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model.
-    
+
     Output shape:
         Same shape as the input.
     """
-    
+
     def __init__(self, **kwargs):
         super(GeLU, self).__init__(**kwargs)
         self.supports_masking = True
