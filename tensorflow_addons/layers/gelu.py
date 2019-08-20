@@ -22,6 +22,7 @@ import tensorflow as tf
 from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.activations import gelu
 
+
 @keras_utils.register_keras_custom_object
 class GeLU(tf.keras.layers.Layer):
     """Gaussian Error Linear Unit.
