@@ -36,7 +36,7 @@ struct Gelu {
   void operator()(const Device& d, typename TTypes<T>::ConstTensor features,
                   bool approximate, typename TTypes<T>::Tensor activations) {
     if (approximate) {
-      // y = 0.5 * x * (1 + tanh(sqrt(2 / pi) * (x + 0.44715 * x^3)))
+      // y = 0.5 * x * (1 + tanh(sqrt(2 / pi) * (x + 0.044715 * x^3)))
       activations.device(d) =
           static_cast<T>(0.5) * features *
           (static_cast<T>(1) +

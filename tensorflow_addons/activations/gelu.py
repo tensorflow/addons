@@ -28,6 +28,23 @@ _activation_ops_so = tf.load_op_library(
 @keras_utils.register_keras_custom_object
 @tf.function
 def gelu(x, approximate=True):
+    """Gaussian Error Linear Unit.
+
+    Computes gaussian error linear:
+    `0.5 * x * (1 + tanh(sqrt(2 / pi) * (x + 0.044715 * x^3)))` or
+    `x * P(X <= x) = 0.5 * x * (1 + erf(x / sqrt(2)))`, where P(X) ~ N(0, 1),
+    depending on whether approximation is enabled.
+
+    See [Gaussian Error Linear Units (GELUs)](https://arxiv.org/abs/1606.08415)
+    and [BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding](https://arxiv.org/abs/1810.04805).
+
+    Args:
+        x: A `Tensor`. Must be one of the following types:
+            `float16`, `float32`, `float64`.
+        approximate: bool, whether to enable approximation.
+    Returns:
+        A `Tensor`. Has the same type as `x`.
+    """
     x = tf.convert_to_tensor(x)
     return _activation_ops_so.gelu(x, approximate)
 
