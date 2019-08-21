@@ -3,8 +3,8 @@
 ## Maintainers
 | Submodule | Maintainers               | Contact Info                             |
 |:----------|:--------------------------|:-----------------------------------------|
-| sparsemax | @AndreasMadsen            | amwwebdk+github@gmail.com                |
 | gelu      | @AakashKumarNain @WindQAQ | aakashnain@outlook.com windqaq@gmail.com |
+| sparsemax | @AndreasMadsen            | amwwebdk+github@gmail.com                |
 
 ## Contents
 | Submodule | Activation | Reference                        |
