@@ -115,13 +115,11 @@ class FBetaScore(Metric):
     def __init__(self,
                  num_classes,
                  average=None,
-                 sample_weight=None,
                  beta=1.0,
                  name='fbeta_score',
                  dtype=tf.float32):
         super(FBetaScore, self).__init__(name=name)
         self.num_classes = num_classes
-        self.sample_weight = sample_weight
         # type check
         if not isinstance(beta, float) and beta.dtype != tf.float32:
             raise TypeError("The value of beta should be float")
@@ -177,10 +175,11 @@ class FBetaScore(Metric):
                 initializer='zeros',
                 dtype=self.dtype)
 
+    # TO DO SSaishruthi: Add sample weight option
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred, tf.int32)
-        sample_weight = self.sample_weight
+
         # true positive
         self.true_positives.assign_add(
             tf.cast(
@@ -335,15 +334,12 @@ class F1Score(FBetaScore):
     ```
     """
 
-    def __init__(self,
-                 num_classes,
-                 average,
-                 sample_weight=None,
-                 name='f1_score',
+    def __init__(self, num_classes, average, name='f1_score',
                  dtype=tf.float32):
         super(F1Score, self).__init__(
-            num_classes, average, sample_weight, 1.0, name=name, dtype=dtype)
+            num_classes, average, 1.0, name=name, dtype=dtype)
 
+    # TO DO SSaishruthi: Add sample weight option
     def get_config(self):
         base_config = super(F1Score, self).get_config()
         del base_config["beta"]
