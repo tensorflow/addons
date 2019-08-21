@@ -15,7 +15,7 @@ py_library(
         "utils.py",
         "sparse_image_warp.py",
         "interpolate_spline.py",
-        "connected_ops.py"
+        "connected_ops.py",
     ]),
     data = [
         ":sparse_image_warp_test_data",
