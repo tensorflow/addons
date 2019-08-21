@@ -46,9 +46,8 @@ class TestGelu(tf.test.TestCase, parameterized.TestCase):
                                     ("float64", np.float64))
     def test_gelu(self, dtype):
         x = np.random.rand(2, 3, 4).astype(dtype)
-        self.assertAllCloseAccordingToType(gelu.gelu(x), _ref_gelu(x))
-        self.assertAllCloseAccordingToType(
-            gelu.gelu(x, False), _ref_gelu(x, False))
+        self.assertAllCloseAccordingToType(gelu(x), _ref_gelu(x))
+        self.assertAllCloseAccordingToType(gelu(x, False), _ref_gelu(x, False))
 
     @parameterized.named_parameters(("float16", np.float16),
                                     ("float32", np.float32),
@@ -61,7 +60,7 @@ class TestGelu(tf.test.TestCase, parameterized.TestCase):
                 with tf.GradientTape(persistent=True) as tape:
                     tape.watch(x)
                     y_ref = _ref_gelu(x, approximate)
-                    y = gelu.gelu(x, approximate)
+                    y = gelu(x, approximate)
                 grad_ref = tape.gradient(y_ref, x)
                 grad = tape.gradient(y, x)
                 self.assertAllCloseAccordingToType(grad, grad_ref)
@@ -72,25 +71,25 @@ class TestGelu(tf.test.TestCase, parameterized.TestCase):
         # Only test theoretical gradients for float32 and float64
         # because of the instability of float16 while computing jacobian
         x = tf.constant([1.0, 2.0, 3.0], dtype=dtype)
-        theoretical, numerical = tf.test.compute_gradient(gelu.gelu, [x])
+        theoretical, numerical = tf.test.compute_gradient(gelu, [x])
         self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
 
     def test_unknown_shape(self):
-        fn = gelu.gelu.get_concrete_function(
+        fn = gelu.get_concrete_function(
             tf.TensorSpec(shape=None, dtype=tf.float32))
 
         for shape in [(1,), (1, 2), (1, 2, 3), (1, 2, 3, 4)]:
             x = tf.ones(shape=shape, dtype=tf.float32)
-            self.assertAllClose(fn(x), gelu.gelu(x))
+            self.assertAllClose(fn(x), gelu(x))
 
     def test_serialization(self):
-        ref_fn = gelu.gelu
+        ref_fn = gelu
         config = tf.keras.activations.serialize(ref_fn)
         fn = tf.keras.activations.deserialize(config)
         self.assertEqual(fn, ref_fn)
 
     def test_serialization_with_layers(self):
-        layer = tf.keras.layers.Dense(3, activation=gelu.gelu)
+        layer = tf.keras.layers.Dense(3, activation=gelu)
         config = tf.keras.layers.serialize(layer)
         deserialized_layer = tf.keras.layers.deserialize(config)
         self.assertEqual(deserialized_layer.__class__.__name__,

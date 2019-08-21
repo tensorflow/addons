@@ -1,14 +1,16 @@
 # Addons - Activations
 
 ## Maintainers
-| Submodule  | Maintainers  | Contact Info   |
-|:---------- |:------------- |:--------------|
-| sparsemax | @AndreasMadsen | amwwebdk+github@gmail.com |
+| Submodule | Maintainers               | Contact Info                             |
+|:----------|:--------------------------|:-----------------------------------------|
+| sparsemax | @AndreasMadsen            | amwwebdk+github@gmail.com                |
+| gelu      | @AakashKumarNain @WindQAQ | aakashnain@outlook.com windqaq@gmail.com |
 
 ## Contents
-| Submodule | Activation  | Reference                               |
-|:----------------------- |:-------------------|:---------------|
-| sparsemax | Sparsemax | https://arxiv.org/abs/1602.02068           |
+| Submodule | Activation | Reference                        |
+|:----------|:-----------|:---------------------------------|
+| gelu      | gelu       | https://arxiv.org/abs/1606.08415 |
+| sparsemax | Sparsemax  | https://arxiv.org/abs/1602.02068 |
 
 
 ## Contribution Guidelines
