@@ -20,9 +20,11 @@ ln -sf /usr/bin/python3.5 /usr/bin/python3 # Py36 has issues with add-apt
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
 add-apt-repository -y ppa:deadsnakes/ppa
 
+apt-get -y -qq update
+
 for version in ${PYTHON_VERSIONS}; do
     export PYTHON_VERSION=${version}
-    apt-get -y -qq update && apt-get -y -qq install ${PYTHON_VERSION}
+    apt-get -y -qq install ${PYTHON_VERSION}
 
     ${PYTHON_VERSION} get-pip.py -q
     ${PYTHON_VERSION} -m pip --version
