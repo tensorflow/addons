@@ -16,16 +16,6 @@
 
 set -e
 
-if [[ $(uname) == "Darwin" ]]; then
-    CMD="delocate-wheel -w wheelhouse"
-else
-    pip3.6 install -U auditwheel==2.0.0
-    tools/ci_build/builds/tf_auditwheel_patch.sh
-    CMD="auditwheel repair --plat manylinux2010_x86_64"
-fi
-
-ls artifacts/*
-for f in artifacts/*.whl; do
-    $CMD $f
-done
-ls wheelhouse/*
+TF_SHARED_LIBRARY_NAME=$(grep -r TF_SHARED_LIBRARY_NAME .bazelrc | awk -F= '{print$2}')
+POLICY_JSON="/usr/local/lib/python3.6/dist-packages/auditwheel/policy/policy.json"
+sed -i "s/libresolv.so.2\"/libresolv.so.2\", $TF_SHARED_LIBRARY_NAME/g" $POLICY_JSON
