@@ -21,6 +21,10 @@ from __future__ import print_function
 import tensorflow as tf
 from tensorflow_addons.metrics import F1Score
 from tensorflow_addons.utils import test_utils
+import tensorflow.keras
+from tensorflow.keras import layers
+from tensorflow.keras import models
+import numpy as np
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -105,6 +109,23 @@ class F1ScoreTest(tf.test.TestCase):
 
         for avg, res in test_params:
             self._test_f1(avg, actuals, preds, res)
+
+    # Keras model check
+    def keras_check(self):
+        model = tf.keras.Sequential()
+        model.add(layers.Dense(64, activation='relu'))
+        model.add(layers.Dense(64, activation='relu'))
+        model.add(layers.Dense(1, activation='softmax'))
+        fb = F1Score(1, 'macro')
+        model.compile(
+            optimizer='rmsprop',
+            loss='categorical_crossentropy',
+            metrics=['acc', fb])
+        # data preparation
+        data = np.random.random((10, 3))
+        labels = np.random.random((10, 1))
+        labels = np.where(labels > 0.5, 1, 0)
+        model.fit(data, labels, epochs=10, batch_size=32, verbose=0)
 
 
 if __name__ == '__main__':
