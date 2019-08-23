@@ -71,8 +71,13 @@ class TestGelu(tf.test.TestCase, parameterized.TestCase):
         # Only test theoretical gradients for float32 and float64
         # because of the instability of float16 while computing jacobian
         x = tf.constant([1.0, 2.0, 3.0], dtype=dtype)
-        theoretical, numerical = tf.test.compute_gradient(gelu, [x])
-        self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
+
+        for approximate in [True, False]:
+            with self.subTest(approximate=approximate):
+                theoretical, numerical = tf.test.compute_gradient(
+                    lambda x: gelu(x, approximate=approximate), [x])
+                self.assertAllCloseAccordingToType(
+                    theoretical, numerical, atol=1e-4)
 
     def test_unknown_shape(self):
         fn = gelu.get_concrete_function(
