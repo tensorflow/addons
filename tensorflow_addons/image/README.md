@@ -28,6 +28,12 @@
 | translate_ops | translate | |
 | translate_ops | translations_to_projective_transforms | |
 
+Along with these operations, there are a few important image operations implemented along with some examples [here](https://colab.research.google.com/drive/1Qf3ixXAQ2PJOD75f_RptkaRZ3DOCkrm8). This includes implementation of following operations:
+ - Histogram Equalization
+ - Gaussian Blurring
+ - Laplacian Filter
+ - Laplacian of Gaussian Filter
+
 ## Contribution Guidelines
 #### Standard API
 In order to conform with the current API standard, all image ops
