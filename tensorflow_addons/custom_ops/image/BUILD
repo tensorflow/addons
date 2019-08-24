@@ -97,6 +97,8 @@ cc_binary(
         "cc/kernels/euclidean_distance_transform_op.h",
         "cc/kernels/image_projective_transform_op.cc",
         "cc/kernels/image_projective_transform_op.h",
+        "cc/kernels/connected_components.cc",
+        "cc/kernels/connected_components.h",
         "cc/ops/image_ops.cc",
     ],
     copts = [
@@ -112,23 +114,4 @@ cc_binary(
         ":image_projective_transform_op_gpu",
         ":euclidean_distance_transform_op_gpu",
     ]),
-)
-
-cc_binary(
-    name = "_connected_components.so",
-    srcs = [
-        "cc/kernels/connected_components.cc",
-        "cc/kernels/connected_components.h",
-        "cc/ops/image_ops.cc",
-    ],
-    copts = [
-        "-pthread",
-        "-std=c++11",
-        D_GLIBCXX_USE_CXX11_ABI,
-    ] + if_cuda(["-DGOOGLE_CUDA=1"]),
-    linkshared = 1,
-    deps = [
-        "@local_config_tf//:libtensorflow_framework",
-        "@local_config_tf//:tf_header_lib",
-    ] + if_cuda_is_configured([":connected_components_gpu"]),
 )
