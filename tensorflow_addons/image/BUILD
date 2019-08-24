@@ -15,6 +15,7 @@ py_library(
         "utils.py",
         "sparse_image_warp.py",
         "interpolate_spline.py",
+        "threshold_ops.py",
     ]),
     data = [
         ":sparse_image_warp_test_data",
@@ -142,6 +143,19 @@ py_test(
         "interpolate_spline_test.py",
     ],
     main = "interpolate_spline_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "threshold_ops_test",
+    size = "medium",
+    srcs = [
+        "threshold_ops_test.py",
+    ],
+    main = "threshold_ops_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":image",

@@ -18,158 +18,162 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-import numpy as np
+
 
 @tf.function
-def basic_threshold(image, threshold):
-	"""Applies a basic threshold operation and outputs a binary image.
-	
-	Args:
-	  image: A tensor of shape (num_rows, num_columns, num_channels) (HWC) or
-	  (num_rows, num_columns) (HW). The rank must be statically known (the
-	  shape is not `TensorShape(None)`.
+def basic_threshold(image, threshold, name=None):
+    """Applies a basic threshold operation and outputs a binary image.
 
-	  threshold: An integer value between 0 and 255 which is used to binarize the image by 
-	  comparing it with the pixel values.
-	
-	Returns:
-	  Binary thresholded image based on the threshold value 
+    Args:
+      image: A tensor of shape (num_rows, num_columns, num_channels) (HWC) or
+      (num_rows, num_columns) (HW). The rank must be statically known (the
+      shape is not `TensorShape(None)`.
 
-	Raises:
-	  TypeError: If `image` is an invalid type.
-	"""
-	with tf.name_scope(name or "basic_threshold"):
-		image = tf.convert_to_tensor(image, name="image")
-		
-		rank = image.shape.rank
-		if rank != 2 and rank != 3:
-			raise ValueError("Image should be either 2 or 3-dimensional.")
- 
-		if not isinstance(threshold,int):
-			raise ValueError("Threshold value must be an integer.")
+      threshold: An integer value between 0 and 255 which is used to binarize
+      the image by comparing it with the pixel values.
 
-		if rank == 3:
-			image = tf.image.rgb_to_grayscale(image)
-			image = tf.image.convert_image_dtype(image, tf.dtypes.uint8)
-			image = tf.squeeze(image,2)
-		
-		r, c = image.shape
-		image = image.numpy()
-		final = np.zeros((r,c))
-		final[image>threshold] = 255
-		return final
+    Returns:
+      Binary thresholded image based on the threshold value
+
+    Raises:
+      TypeError: If `image` is an invalid type.
+    """
+    with tf.name_scope(name or "basic_threshold"):
+        image = tf.convert_to_tensor(image, name="image")
+
+        rank = image.shape.rank
+        if rank != 2 and rank != 3:
+            raise ValueError("Image should be either 2 or 3-dimensional.")
+
+        if not isinstance(threshold, int):
+            raise ValueError("Threshold value must be an integer.")
+
+        if rank == 3:
+            image = tf.image.rgb_to_grayscale(image)
+            image = tf.image.convert_image_dtype(image, tf.dtypes.uint8)
+            image = tf.squeeze(image, 2)
+
+        final = tf.where(image > threshold, 255, 0)
+        return final
+
 
 @tf.function
-def adaptive_threshold(image, window):
-	"""
-	Applies a basic threshold operation but instead of applying on complete
-	image it applies on small regions and outputs a binary image(s). Here 
-	threshold is calculated from mean of the region where operation is done. 
-	
-	Args:
-	  image: A tensor of shape (num_rows, num_columns, num_channels) (HWC) or
-	  (num_rows, num_columns) (HW). The rank must be statically known (the
-	  shape is not `TensorShape(None)`.
-	
-	  window: An integer value used as the size of the local region.
-	Returns:
-	  Binary thresholded image.
+def adaptive_threshold(image, window, name=None):
+    """Applies a basic threshold operation but instead of applying on complete
+    image it applies on small regions and outputs a binary image(s). Here
+    threshold is calculated from mean of the region where operation is done.
 
-	Raises:
-	  TypeError: If `image` is an invalid type.
-	"""
-	with tf.name_scope(name or "adaptive_threshold"):
-		image = tf.convert_to_tensor(image, name="image")
-		
-		rank = image.shape.rank
-		if rank != 2 and rank != 3:
-			raise ValueError("Image should be either 2 or 3-dimensional.")
- 
-		if not isinstance(window,int):
-			raise ValueError("Window size value must be an integer.")
+    Args:
+      image: A tensor of shape (num_rows, num_columns, num_channels)
+      (HWC) or (num_rows, num_columns) (HW). The rank must be statically
+      known (the shape is not `TensorShape(None)`.
 
-		r, c = image.shape
-		if window > min(r,c):
-			raise ValueError("Window size should be lesser than the size of the image.")
+      window: An integer value used as the size of the local region.
+    Returns:
+      Binary thresholded image.
 
-		if rank == 3:
-			image = tf.image.rgb_to_grayscale(image)
-			image = tf.image.convert_image_dtype(image, tf.dtypes.uint8)
-			image = tf.squeeze(image,2)
-		image = image.numpy()
+    Raises:
+      TypeError: If `image` is an invalid type.
+    """
+    with tf.name_scope(name or "adaptive_threshold"):
+        image = tf.convert_to_tensor(image, name="image")
 
-		i = 0
-		final = np.zeros((r,c))
-		while i<r:
-			j = 0
-			r1 = min(i+window, r)
-			while j<c:
-				c1 = min(j+window, c)
-				cur = image[i:r1,j:c1]
-				threshold = np.mean(np.mean(cur,axis=0))
-				res = np.zeros_like(cur)
-				res[cur>threshold] = 255
-				final[i:r1,j:c1] = res
+        rank = image.shape.rank
+        if rank != 2 and rank != 3:
+            raise ValueError("Image should be either 2 or 3-dimensional.")
 
-				j += window
-			i += window
-		return final
+        if not isinstance(window, int):
+            raise ValueError("Window size value must be an integer.")
+
+        r, c = image.shape
+        if window > min(r, c):
+            raise ValueError(
+                "Window size should be lesser than the size of the image.")
+
+        if rank == 3:
+            image = tf.image.rgb_to_grayscale(image)
+            image = tf.squeeze(image, 2)
+
+        image = tf.image.convert_image_dtype(image, tf.dtypes.float32)
+
+        i = 0
+        final = tf.zeros((r, c))
+        while i < r:
+            j = 0
+            r1 = min(i + window, r)
+            while j < c:
+                c1 = min(j + window, c)
+                cur = image[i:r1, j:c1]
+                thresh = tf.reduce_mean(cur)
+                new = tf.where(cur > thresh, 255.0, 0.0)
+
+                s1 = [x for x in range(i, r1)]
+                s2 = [x for x in range(j, c1)]
+                X, Y = tf.meshgrid(s2, s1)
+                ind = tf.stack([tf.reshape(Y, [-1]),
+                                tf.reshape(X, [-1])],
+                               axis=1)
+
+                final = tf.tensor_scatter_nd_update(final, ind,
+                                                    tf.reshape(new, [-1]))
+                j += window
+            i += window
+        return final
+
 
 @tf.function
-def otsu_thresholding(image):
-	"""
-	Applies thresholding on any image using otsu's method which exhaustively
-	searches for the threshold that minimizes the intra-class variance. 
-	
-	Args:
-	  image: A tensor of shape (num_rows, num_columns, num_channels) (HWC) or
-	  (num_rows, num_columns) (HW). The rank must be statically known (the
-	  shape is not `TensorShape(None)`.	
-	Returns:
-	  Binary thresholded image.
+def otsu_thresholding(image, name=None):
+    """Applies thresholding on any image using otsu's method which exhaustively
+    searches for the threshold that minimizes the intra-class variance.
 
-	Raises:
-	  TypeError: If `image` is an invalid type.
-	"""
-	with tf.name_scope(name or "otsu_thresholding"):
-		image = tf.convert_to_tensor(image, name="image")
+    Args:
+      image: A tensor of shape (num_rows, num_columns, num_channels) (HWC) or
+      (num_rows, num_columns) (HW). The rank must be statically known (the
+      shape is not `TensorShape(None)`.
+    Returns:
+      Binary thresholded image.
 
-		rank = image.shape.rank
-		if rank != 2 and rank != 3:
-			raise ValueError("Image should be either 2 or 3-dimensional.")
+    Raises:
+      TypeError: If `image` is an invalid type.
+    """
+    with tf.name_scope(name or "otsu_thresholding"):
+        image = tf.convert_to_tensor(image, name="image")
 
-		if image.dtype!=tf.int32:
-			image = tf.cast(image, tf.int32)
+        rank = image.shape.rank
+        if rank != 2 and rank != 3:
+            raise ValueError("Image should be either 2 or 3-dimensional.")
 
-		r, c = image.shape
-		hist = tf.math.bincount(image, dtype=tf.int32)
+        if image.dtype != tf.int32:
+            image = tf.cast(image, tf.int32)
 
-		current_max, threshold = 0, 0
-		total = r * c
+        r, c = image.shape
+        hist = tf.math.bincount(image, dtype=tf.int32)
 
-		hist = hist.numpy()
-		spre = [0]*256
-		sw = [0]*256
-		spre[0] = hist[0]
+        if len(hist) < 256:
+            hist = tf.concat([hist, [0] * (256 - len(hist))], 0)
 
-		for i in range(1,256):
-			spre[i] = spre[i-1] + hist[i]
-			sw[i] = sw[i-1]  + (i * hist[i])
+        current_max, threshold = 0, 0
+        total = r * c
 
-		for i in range(256):
-			if total - spre[i] == 0:
-				break
+        spre = [0] * 256
+        sw = [0] * 256
+        spre[0] = int(hist[0])
 
-			meanB = sw[i]/spre[i]
-			meanF = (sw[255] - sw[i])/(total - spre[i])
-			varBetween = (total - spre[i]) * spre[i] * ((meanB-meanF)**2)
+        for i in range(1, 256):
+            spre[i] = spre[i - 1] + int(hist[i])
+            sw[i] = sw[i - 1] + (i * int(hist[i]))
 
-			if varBetween > current_max:
-				current_max = varBetween
-				threshold = i
+        for i in range(256):
+            if total - spre[i] == 0:
+                break
 
-		final = np.zeros((r,c))
-		image = image.numpy()
-		final[image>threshold] = 255
+            meanB = 0 if int(spre[i]) == 0 else sw[i] / spre[i]
+            meanF = (sw[255] - sw[i]) / (total - spre[i])
+            varBetween = (total - spre[i]) * spre[i] * ((meanB - meanF)**2)
 
-		return final
+            if varBetween > current_max:
+                current_max = varBetween
+                threshold = i
+
+        final = tf.where(image > threshold, 255, 0)
+        return final

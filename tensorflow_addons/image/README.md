@@ -27,9 +27,9 @@
 | transform_ops | transform |  | 
 | translate_ops | translate | |
 | translate_ops | translations_to_projective_transforms | |
-| threshold_ops | basic thresholding | |
-| threshold_ops | adaptive thresholding | |
-| threshold_ops | otsu's thresholding | |
+| threshold_ops | basic_thresholding | |
+| threshold_ops | adaptive_thresholding | |
+| threshold_ops | otsu_thresholding | |
 
 ## Contribution Guidelines
 #### Standard API

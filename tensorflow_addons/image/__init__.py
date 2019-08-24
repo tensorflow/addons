@@ -29,4 +29,6 @@ from tensorflow_addons.image.transform_ops import transform
 from tensorflow_addons.image.sparse_image_warp import sparse_image_warp
 from tensorflow_addons.image.interpolate_spline import interpolate_spline
 from tensorflow_addons.image.translate_ops import translate
-from tensorflow_addons.image.threshold_ops import threshold
+from tensorflow_addons.image.threshold_ops import basic_threshold
+from tensorflow_addons.image.threshold_ops import adaptive_threshold
+from tensorflow_addons.image.threshold_ops import otsu_thresholding

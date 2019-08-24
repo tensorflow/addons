@@ -17,60 +17,89 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import numpy as np
 import tensorflow as tf
 from tensorflow_addons.image import basic_threshold
 from tensorflow_addons.image import adaptive_threshold
 from tensorflow_addons.image import otsu_thresholding
 from tensorflow_addons.utils import test_utils
 
+
+@test_utils.run_all_in_graph_and_eager_modes
 class BasicThresholdTest(tf.test.TestCase):
-	def test_invalid_image(self):
-		msg = 'Image should be either 2 or 3-dimensional.'
+    def test_invalid_image(self):
+        msg = 'Image should be either 2 or 3-dimensional.'
 
-		for image_shape in [(28, 28), (36,45,3), (16, 28, 28, 1, 1)]:
-			with self.subTest(dim=len(image_shape)):
-				with self.assertRaisesRegexp(ValueError, msg):
-					basic_threshold(tf.ones(shape=image_shape),127)
+        for image_shape in [(28, 28), (36, 45, 3), (16, 28, 28, 1, 1)]:
+            with self.subTest(dim=len(image_shape)):
+                with self.assertRaisesRegexp(ValueError, msg):
+                    basic_threshold(tf.ones(shape=image_shape), 127)
 
-	def test_thresholding_grayscale(self):
-		image = tf.constant([[5, 150, 220, 49, 110],
-							[81, 251, 20, 180, 99],
-							[239, 7, 129, 47, 235],
-							[88, 84, 115, 171, 75],
-							[145, 150, 250, 64, 32]])
-		threshold = 127
+    def test_thresholding_grayscale(self):
+        image = tf.constant([[5, 150, 220, 49, 110], [81, 251, 20, 180, 99],
+                             [239, 7, 129, 47, 235], [88, 84, 115, 171, 75],
+                             [145, 150, 250, 64, 32]])
+        threshold = 127
 
-		expected_output = np.array([[0, 255, 255, 0, 0],
-									[0, 255, 0, 255, 0],
-									[255, 0, 255, 0, 255],
-									[0, 0, 0, 255, 0],
-									[255, 255, 255, 0, 0]])
+        expected_output = tf.constant(
+            [[0, 255, 255, 0, 0], [0, 255, 0, 255, 0], [255, 0, 255, 0, 255],
+             [0, 0, 0, 255, 0], [255, 255, 255, 0, 0]])
 
-		output = basic_threshold(image,threshold)
-		self.assertAllClose(output,expected_output)
+        output = basic_threshold(image, threshold)
+        self.assertAllClose(output, expected_output)
 
+
+@test_utils.run_all_in_graph_and_eager_modes
 class AdaptiveThresholdTest(tf.test.TestCase):
-	def test_invalid_image(self):
-		msg = 'Image should be either 2 or 3-dimensional.'
+    def test_invalid_image(self):
+        msg = 'Image should be either 2 or 3-dimensional.'
 
-		for image_shape in [(28, 28), (36,45,3), (16, 28, 28, 1, 1)]:
-			with self.subTest(dim=len(image_shape)):
-				with self.assertRaisesRegexp(ValueError, msg):
-					adaptive_threshold(tf.ones(shape=image_shape),5)
+        for image_shape in [(28, 28), (36, 45, 3), (16, 28, 28, 1, 1)]:
+            with self.subTest(dim=len(image_shape)):
+                with self.assertRaisesRegexp(ValueError, msg):
+                    adaptive_threshold(tf.ones(shape=image_shape), 5)
 
-	def test_window_size(self):
-		msg = 'Window size should be lesser than the size of the image.'
-		image_shape = (25,25)
-		for window_size in [3, 5, 15, 30, 10]:
-			with self.assertRaisesRegexp(ValueError, msg):
-				adaptive_threshold(tf.ones(shape=image_shape),window_size)
+    def test_window_size(self):
+        msg = 'Window size should be lesser than the size of the image.'
+        image_shape = (25, 25)
+        for window_size in [3, 5, 15, 30, 10]:
+            with self.assertRaisesRegexp(ValueError, msg):
+                adaptive_threshold(tf.ones(shape=image_shape), window_size)
 
+    def test_thresholding_grayscale(self):
+        image = tf.constant([[5, 150, 220, 49, 110], [81, 251, 20, 180, 99],
+                             [239, 7, 129, 47, 235], [88, 84, 115, 171, 75],
+                             [145, 150, 250, 64, 32]])
+        window = 2
+
+        expected_output = tf.constant([[0.0, 255.0, 255.0, 0.0, 0.0],
+                                       [0.0, 255.0, 0.0, 255.0, 0.0],
+                                       [255.0, 0.0, 255.0, 0.0, 255.0],
+                                       [0.0, 0.0, 0.0, 255.0, 0.0],
+                                       [0.0, 255.0, 255.0, 0.0, 0.0]])
+
+        output = adaptive_threshold(image, window)
+        self.assertAllClose(output, expected_output)
+
+
+@test_utils.run_all_in_graph_and_eager_modes
 class OtsuThresholdTest(tf.test.TestCase):
-	def test_invalid_image(self):
-		msg = 'Image should be either 2 or 3-dimensional.'
+    def test_invalid_image(self):
+        msg = 'Image should be either 2 or 3-dimensional.'
 
-		for image_shape in [(28, 28), (36,45,3), (16, 28, 28, 1, 1)]:
-			with self.subTest(dim=len(image_shape)):
-				with self.assertRaisesRegexp(ValueError, msg):
-					otsu_thresholding(tf.ones(shape=image_shape))
+        for image_shape in [(28, 28), (36, 45, 3), (16, 28, 28, 1, 1)]:
+            with self.subTest(dim=len(image_shape)):
+                with self.assertRaisesRegexp(ValueError, msg):
+                    otsu_thresholding(tf.ones(shape=image_shape))
+
+    def test_thresholding_grayscale(self):
+        image = tf.constant([[5, 150, 220, 49, 110], [81, 251, 20, 180, 99],
+                             [239, 7, 129, 47, 235], [88, 84, 115, 171, 75],
+                             [145, 150, 250, 64, 32]])
+
+        expected_output = tf.constant([[0, 255, 255, 0,
+                                        0], [0, 255, 0, 255, 0],
+                                       [255, 0, 0, 0, 255], [0, 0, 0, 255, 0],
+                                       [255, 255, 255, 0, 0]])
+
+        output = otsu_thresholding(image)
+        self.assertAllClose(output, expected_output)
