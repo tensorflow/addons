@@ -40,7 +40,7 @@ def _ref_gelu(x, approximate=True):
 
 
 @test_utils.run_all_in_graph_and_eager_modes
-class TestGelu(tf.test.TestCase, parameterized.TestCase):
+class GeluTest(tf.test.TestCase, parameterized.TestCase):
     @parameterized.named_parameters(("float16", np.float16),
                                     ("float32", np.float32),
                                     ("float64", np.float64))
