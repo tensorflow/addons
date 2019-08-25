@@ -37,6 +37,7 @@ class SparseImageWarpTest(tf.test.TestCase):
         num_points_per_edge = 4
         locs = _get_boundary_locations(image_height, image_width,
                                        num_points_per_edge)
+        locs = self.evaluate(locs)
         num_points = locs.shape[0]
         self.assertEqual(num_points, 4 + 4 * num_points_per_edge)
         locs = [(locs[i, 0], locs[i, 1]) for i in range(num_points)]
@@ -59,6 +60,7 @@ class SparseImageWarpTest(tf.test.TestCase):
         image_height = 5
         image_width = 3
         grid = _get_grid_locations(image_height, image_width)
+        grid = self.evaluate(grid)
         for i in range(image_height):
             for j in range(image_width):
                 self.assertEqual(grid[i, j, 0], i)

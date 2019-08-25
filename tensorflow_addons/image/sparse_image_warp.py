@@ -17,36 +17,40 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import numpy as np
 import tensorflow as tf
 from tensorflow_addons.image import dense_image_warp
 from tensorflow_addons.image import interpolate_spline
 
 
 def _get_grid_locations(image_height, image_width):
-    """Wrapper for np.meshgrid."""
+    """Wrapper for tf.meshgrid."""
 
-    y_range = np.linspace(0, image_height - 1, image_height)
-    x_range = np.linspace(0, image_width - 1, image_width)
-    y_grid, x_grid = np.meshgrid(y_range, x_range, indexing='ij')
-    return np.stack((y_grid, x_grid), -1)
+    y_range = tf.linspace(0.0, tf.cast(image_height, tf.float32) - 1, image_height)
+    x_range = tf.linspace(0.0, tf.cast(image_width, tf.float32) - 1, image_width)
+    y_grid, x_grid = tf.meshgrid(y_range, x_range, indexing='ij')
+    return tf.stack((y_grid, x_grid), -1)
 
 
-def _expand_to_minibatch(np_array, batch_size):
-    """Tile arbitrarily-sized np_array to include new batch dimension."""
-    tiles = [batch_size] + [1] * np_array.ndim
-    return np.tile(np.expand_dims(np_array, 0), tiles)
+def _expand_to_minibatch(array, batch_size):
+    """Tile arbitrarily-sized array to include new batch dimension."""
+    batch_size = tf.expand_dims(batch_size, 0)
+    array_ones = tf.ones((tf.rank(array)), dtype=tf.dtypes.int32)
+    tiles = tf.concat([batch_size, array_ones], axis=0)
+    return tf.tile(tf.expand_dims(array, 0), tiles)
 
 
 def _get_boundary_locations(image_height, image_width, num_points_per_edge):
     """Compute evenly-spaced indices along edge of image."""
-    y_range = np.linspace(0, image_height - 1, num_points_per_edge + 2)
-    x_range = np.linspace(0, image_width - 1, num_points_per_edge + 2)
-    ys, xs = np.meshgrid(y_range, x_range, indexing='ij')
-    is_boundary = np.logical_or(
-        np.logical_or(xs == 0, xs == image_width - 1),
-        np.logical_or(ys == 0, ys == image_height - 1))
-    return np.stack([ys[is_boundary], xs[is_boundary]], axis=-1)
+    image_height = tf.cast(image_height, tf.float32)
+    image_width = tf.cast(image_width, tf.float32)
+    y_range = tf.linspace(0.0, image_height - 1, num_points_per_edge + 2)
+    x_range = tf.linspace(0.0, image_width - 1, num_points_per_edge + 2)
+    ys, xs = tf.meshgrid(y_range, x_range, indexing='ij')
+    is_boundary = tf.logical_or(
+        tf.logical_or(tf.equal(xs, 0), tf.equal(xs, image_width - 1)),
+        tf.logical_or(tf.equal(ys, 0), tf.equal(ys, image_height - 1)))
+    return tf.stack([tf.boolean_mask(ys, is_boundary),
+                     tf.boolean_mask(xs, is_boundary)], axis=-1)
 
 
 def _add_zero_flow_controls_at_boundary(control_point_locations,
@@ -77,16 +81,14 @@ def _add_zero_flow_controls_at_boundary(control_point_locations,
     boundary_point_locations = _get_boundary_locations(
         image_height, image_width, boundary_points_per_edge)
 
-    boundary_point_flows = np.zeros([boundary_point_locations.shape[0], 2])
+    boundary_point_flows = tf.zeros([tf.shape(boundary_point_locations)[0], 2])
 
     type_to_use = control_point_locations.dtype
-    boundary_point_locations = tf.constant(
-        _expand_to_minibatch(boundary_point_locations, batch_size),
-        dtype=type_to_use)
+    boundary_point_locations = tf.cast(
+        _expand_to_minibatch(boundary_point_locations, batch_size), type_to_use)
 
-    boundary_point_flows = tf.constant(
-        _expand_to_minibatch(boundary_point_flows, batch_size),
-        dtype=type_to_use)
+    boundary_point_flows = tf.cast(
+        _expand_to_minibatch(boundary_point_flows, batch_size), type_to_use)
 
     merged_control_point_locations = tf.concat(
         [control_point_locations, boundary_point_locations], 1)
@@ -168,16 +170,18 @@ def sparse_image_warp(image,
 
     with tf.name_scope(name or "sparse_image_warp"):
 
-        batch_size, image_height, image_width, _ = image.get_shape().as_list()
+        image_shape = tf.shape(image)
+        batch_size, image_height, image_width = (image_shape[0], image_shape[1],
+                                                 image_shape[2])
 
         # This generates the dense locations where the interpolant
         # will be evaluated.
         grid_locations = _get_grid_locations(image_height, image_width)
 
-        flattened_grid_locations = np.reshape(grid_locations,
+        flattened_grid_locations = tf.reshape(grid_locations,
                                               [image_height * image_width, 2])
 
-        flattened_grid_locations = tf.constant(
+        flattened_grid_locations = tf.cast(
             _expand_to_minibatch(flattened_grid_locations, batch_size),
             image.dtype)
 
