@@ -93,12 +93,12 @@ cc_library(
 cc_binary(
     name = "_image_ops.so",
     srcs = [
+        "cc/kernels/connected_components.cc",
+        "cc/kernels/connected_components.h",
         "cc/kernels/euclidean_distance_transform_op.cc",
         "cc/kernels/euclidean_distance_transform_op.h",
         "cc/kernels/image_projective_transform_op.cc",
         "cc/kernels/image_projective_transform_op.h",
-        "cc/kernels/connected_components.cc",
-        "cc/kernels/connected_components.h",
         "cc/ops/image_ops.cc",
     ],
     copts = [

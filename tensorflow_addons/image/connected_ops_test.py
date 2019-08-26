@@ -103,7 +103,8 @@ class ConnectedComponentsTest(tf.test.TestCase):
 
         self.assertAllEqual(
             connected_ops.connected_components(
-                tf.zeros((100, 20, 50), tf.bool)).eval(),
+                self.evaluate(
+                    tf.zeros((100, 20, 50), tf.bool)) ),
             np.zeros((100, 20, 50)))
 
     def testOnes(self):
@@ -130,7 +131,7 @@ class ConnectedComponentsTest(tf.test.TestCase):
 
         self.assertAllEqual(
             self.evaluate(connected_ops.connected_components(images)),
-            expected)
+            expected)        
 
 
 def connected_components_reference_implementation(images):
