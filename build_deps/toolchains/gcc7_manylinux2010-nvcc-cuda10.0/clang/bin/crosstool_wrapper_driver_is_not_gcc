@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,11 +26,6 @@ DESCRIPTION:
   as is as a string to --compiler-options of nvcc. When "-x cuda" is not
   present, this wrapper invokes hybrid_driver_is_not_gcc with the input
   arguments as is.
-
-NOTES:
-  Changes to the contents of this file must be propagated from
-  //third_party/gpus/crosstool/crosstool_wrapper_is_not_gcc to
-  //third_party/gpus/crosstool/v*/*/clang/bin/crosstool_wrapper_is_not_gcc
 """
 
 from __future__ import print_function

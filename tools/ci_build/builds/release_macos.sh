@@ -41,6 +41,7 @@ for version in ${PYTHON_VERSIONS}; do
 
     # Build
     bazel build \
+      -c opt \
       --noshow_progress \
       --noshow_loading_progress \
       --verbose_failures \

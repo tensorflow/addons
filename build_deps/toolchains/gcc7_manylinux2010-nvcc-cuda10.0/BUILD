@@ -26,13 +26,7 @@ cc_toolchain_suite(
     toolchains = {
         "local|compiler": ":cc-compiler-local",
         "darwin|compiler": ":cc-compiler-darwin",
-        "x64_windows|msvc-cl": ":cc-compiler-windows",
-        "x64_windows": ":cc-compiler-windows",
-        "arm": ":cc-compiler-local",
-        "aarch64": ":cc-compiler-local",
         "k8": ":cc-compiler-local",
-        "piii": ":cc-compiler-local",
-        "ppc": ":cc-compiler-local",
         "darwin": ":cc-compiler-darwin",
     },
 )
@@ -99,9 +93,6 @@ cc_toolchain_config(
         "/dt7/usr/lib/gcc/x86_64-pc-linux-gnu/7/include",
         "/dt7/usr/lib/gcc/x86_64-pc-linux-gnu/7/include-fixed",
         "/dt7/usr/include",
-        "/usr/local/cuda-10.0/targets/x86_64-linux/include",
-        "/usr/local/cuda-10.0/include",
-        "/usr/local/cuda-10.0/extras/CUPTI/include",
         "/usr/include",
     ],
     cpu = "darwin",
@@ -111,44 +102,6 @@ cc_toolchain_config(
     host_compiler_warnings = [],
     host_unfiltered_compile_flags = [],
     linker_bin_path = "/usr/bin",
-)
-
-cc_toolchain(
-    name = "cc-compiler-windows",
-    all_files = ":windows_msvc_wrapper_files",
-    compiler_files = ":empty",
-    dwp_files = ":empty",
-    linker_files = ":windows_msvc_wrapper_files",
-    objcopy_files = ":empty",
-    strip_files = ":empty",
-    supports_param_files = 1,
-    toolchain_config = ":cc-compiler-windows-config",
-    toolchain_identifier = "local_windows",
-)
-
-cc_toolchain_config(
-    name = "cc-compiler-windows-config",
-    builtin_include_directories = [
-        "/dt7/usr/include/c++/7",
-        "/dt7/usr/include/c++/7/x86_64-pc-linux-gnu",
-        "/dt7/usr/include/c++/7/backward",
-        "/dt7/usr/lib/gcc/x86_64-pc-linux-gnu/7/include",
-        "/dt7/usr/lib/gcc/x86_64-pc-linux-gnu/7/include-fixed",
-        "/dt7/usr/include",
-        "/usr/local/cuda-10.0/targets/x86_64-linux/include",
-        "/usr/local/cuda-10.0/include",
-        "/usr/local/cuda-10.0/extras/CUPTI/include",
-        "/usr/include",
-    ],
-    cpu = "x64_windows",
-    msvc_cl_path = "msvc_not_used",
-    msvc_env_include = "msvc_not_used",
-    msvc_env_lib = "msvc_not_used",
-    msvc_env_path = "msvc_not_used",
-    msvc_env_tmp = "msvc_not_used",
-    msvc_lib_path = "msvc_not_used",
-    msvc_link_path = "msvc_not_used",
-    msvc_ml_path = "msvc_not_used",
 )
 
 filegroup(
@@ -161,7 +114,3 @@ filegroup(
     srcs = ["clang/bin/crosstool_wrapper_driver_is_not_gcc"],
 )
 
-filegroup(
-    name = "windows_msvc_wrapper_files",
-    srcs = glob(["windows/msvc_*"]),
-)
