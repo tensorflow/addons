@@ -40,15 +40,16 @@ class GeLU(tf.keras.layers.Layer):
         Same shape as the input.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, approximate=True, **kwargs):
         super(GeLU, self).__init__(**kwargs)
+        self.approximate = approximate
         self.supports_masking = True
 
     def call(self, inputs):
-        return gelu(inputs, dtype=inputs.dtype)
+        return gelu(inputs, approximate=self.approximate)
 
     def get_config(self):
-        config = {}
+        config = {'approximate': self.approximate}
         base_config = super(GeLU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
