@@ -24,6 +24,7 @@ chmod +x bazel-0.24.1-installer-darwin-x86_64.sh
 ./bazel-0.24.1-installer-darwin-x86_64.sh --user
 export PATH="$PATH:$HOME/bin"
 
+brew update && brew upgrade pyenv
 eval "$(pyenv init -)"
 
 for version in ${PYTHON_VERSIONS}; do
