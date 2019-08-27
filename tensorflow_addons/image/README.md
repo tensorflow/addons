@@ -3,7 +3,7 @@
 ## Maintainers
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:--------------|
-| connected_components | @sayooj_bk | sayoojbk@gmail.com |
+| connected_components | @sayoojbk | sayoojbk@gmail.com |
 | dense_image_warp | @WindQAQ | windqaq@gmail.com |
 | distance_transform_ops | @mels630 | mels630@gmail.com |
 | distort_image_ops | @WindQAQ | windqaq@gmail.com |
