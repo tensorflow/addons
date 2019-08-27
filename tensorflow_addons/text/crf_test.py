@@ -229,6 +229,12 @@ class CrfTest(tf.test.TestCase):
         tf_total_log_likelihood = self.evaluate(total_log_likelihood)
         self.assertAllClose(tf_total_log_likelihood, 0.0)
 
+        # check if `transition_params = None` raises an error
+        text.crf_log_likelihood(
+            inputs=tf.expand_dims(inputs, 0),
+            tag_indices=tf.expand_dims(tag_indices, 0),
+            sequence_lengths=tf.expand_dims(sequence_lengths, 0))
+
     def testViterbiDecode(self):
         inputs = np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]],
                           dtype=np.float32)

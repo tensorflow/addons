@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A module containing activation routines."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+set -e
 
-from tensorflow_addons.activations.gelu import gelu
-from tensorflow_addons.activations.sparsemax import sparsemax
+TF_SHARED_LIBRARY_NAME=$(grep -r TF_SHARED_LIBRARY_NAME .bazelrc | awk -F= '{print$2}')
+POLICY_JSON="/usr/local/lib/python3.6/dist-packages/auditwheel/policy/policy.json"
+sed -i "s/libresolv.so.2\"/libresolv.so.2\", $TF_SHARED_LIBRARY_NAME/g" $POLICY_JSON
