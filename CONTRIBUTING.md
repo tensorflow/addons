@@ -98,6 +98,7 @@ docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/ten
 
 bazel test -c opt -k \
 --test_timeout 300,450,1200,3600 \
+--crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.0:toolchain \
 --test_output=all \
 --jobs=1 \
 //tensorflow_addons/...
