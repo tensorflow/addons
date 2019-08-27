@@ -113,4 +113,3 @@ filegroup(
     name = "crosstool_wrapper_driver_is_not_gcc",
     srcs = ["clang/bin/crosstool_wrapper_driver_is_not_gcc"],
 )
-
