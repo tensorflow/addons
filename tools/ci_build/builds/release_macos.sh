@@ -24,6 +24,9 @@ chmod +x bazel-0.24.1-installer-darwin-x86_64.sh
 ./bazel-0.24.1-installer-darwin-x86_64.sh --user
 export PATH="$PATH:$HOME/bin"
 
+# Install delocate
+python3 -m pip install -q delocate
+
 brew update && brew upgrade pyenv
 eval "$(pyenv init -)"
 
@@ -57,5 +60,4 @@ done
 rm get-pip.py
 
 ## Verify Wheel
-sudo python3 -m pip install -q delocate
 ./tools/ci_build/builds/wheel_verify.sh
