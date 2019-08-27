@@ -22,7 +22,7 @@ import logging
 import tensorflow as tf
 import numpy as np
 
-from tensorflow_addons.image import connected_ops
+from tensorflow_addons.image.connected_components import connected_components
 from tensorflow_addons.utils import test_utils
 
 # Image for testing connected_components, with a single, winding component.
@@ -45,7 +45,7 @@ class ConnectedComponentsTest(tf.test.TestCase):
                      [7, 0, 8, 0, 0, 0, 9, 0, 0], [0, 0, 0, 0, 10, 0, 0, 0, 0],
                      [0, 0, 11, 0, 0, 0, 0, 0, 0]])  # pylint: disable
         self.assertAllEqual(
-            self.evaluate(connected_ops.connected_components(arr)), expected)
+            self.evaluate(connected_components(arr)), expected)
 
     def testSimple(self):
         arr = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
@@ -53,7 +53,7 @@ class ConnectedComponentsTest(tf.test.TestCase):
         # Single component with id 1.
         self.assertAllEqual(
             self.evaluate(
-                connected_ops.connected_components(tf.cast(arr, tf.bool))),
+                connected_components(tf.cast(arr, tf.bool))),
             arr)
 
     def testSnake(self):
@@ -61,7 +61,7 @@ class ConnectedComponentsTest(tf.test.TestCase):
         # Single component with id 1.
         self.assertAllEqual(
             self.evaluate(
-                connected_ops.connected_components(tf.cast(SNAKE, tf.bool))),
+                connected_components(tf.cast(SNAKE, tf.bool))),
             SNAKE)
 
     def testSnake_disconnected(self):
@@ -74,7 +74,7 @@ class ConnectedComponentsTest(tf.test.TestCase):
                     disconnected_snake = SNAKE.copy()
                     disconnected_snake[i, j] = 0
                     components = self.evaluate(
-                        connected_ops.connected_components(
+                        connected_components(
                             tf.cast(disconnected_snake, tf.bool)))
                     self.assertEqual(components.max(), 2,
                                      'disconnect (%d, %d)' % (i, j))
@@ -96,22 +96,21 @@ class ConnectedComponentsTest(tf.test.TestCase):
 
         self.assertAllEqual(
             self.evaluate(
-                connected_ops.connected_components(tf.cast(images, tf.bool))),
+                connected_components(tf.cast(images, tf.bool))),
             expected)
 
     def testZeros(self):
 
         self.assertAllEqual(
-            connected_ops.connected_components(
-                self.evaluate(
-                    tf.zeros((100, 20, 50), tf.bool)) ),
+            connected_components(
+                self.evaluate(tf.zeros((100, 20, 50), tf.bool))),
             np.zeros((100, 20, 50)))
 
     def testOnes(self):
 
         self.assertAllEqual(
             self.evaluate(
-                connected_ops.connected_components(
+                connected_components(
                     tf.ones((100, 20, 50), tf.bool))),
             np.tile(np.arange(100)[:, None, None] + 1, [1, 20, 50]))
 
@@ -119,7 +118,7 @@ class ConnectedComponentsTest(tf.test.TestCase):
 
         self.assertAllEqual(
             self.evaluate(
-                connected_ops.connected_components(tf.ones((3, 5), tf.bool))),
+                connected_components(tf.ones((3, 5), tf.bool))),
             np.ones((3, 5)))
 
     def testRandom_scipy(self):
@@ -130,8 +129,8 @@ class ConnectedComponentsTest(tf.test.TestCase):
             return
 
         self.assertAllEqual(
-            self.evaluate(connected_ops.connected_components(images)),
-            expected)        
+            self.evaluate(connected_components(images)),
+            expected)
 
 
 def connected_components_reference_implementation(images):
