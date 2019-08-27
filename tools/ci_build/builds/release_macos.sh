@@ -57,4 +57,5 @@ done
 rm get-pip.py
 
 ## Verify Wheel
+sudo python3 -m pip install -q delocate
 ./tools/ci_build/builds/wheel_verify.sh
