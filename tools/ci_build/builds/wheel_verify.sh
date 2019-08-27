@@ -17,6 +17,7 @@
 set -e
 
 if [[ $(uname) == "Darwin" ]]; then
+    python3 -m pip install -q delocate
     CMD="delocate-wheel -w wheelhouse"
 else
     pip3.6 install -U auditwheel==2.0.0
