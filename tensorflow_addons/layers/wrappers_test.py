@@ -99,7 +99,6 @@ class WeightNormalizationTest(tf.test.TestCase):
             wrappers.WeightNormalization,
             kwargs={
                 'layer': tf.keras.layers.Dense(2),
-                'data_init': False,
                 'input_shape': (3, 4)
             },
             input_data=input_data)

@@ -58,7 +58,6 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     def __init__(self, layer, data_init=True, **kwargs):
         super(WeightNormalization, self).__init__(layer, **kwargs)
         self.data_init = data_init
-        self._initialized = False
         self._track_trackable(layer, name='layer')
 
     def build(self, input_shape):
@@ -80,32 +79,67 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         self.g = self.add_variable(
             name='g',
             shape=(self.layer_depth,),
-            initializer=tf.keras.initializers.get('ones'),
+            initializer='ones',
             dtype=self.layer.kernel.dtype,
             trainable=True)
         self.v = self.layer.kernel
+
+        self._initialized = self.add_variable(
+            name='initialized',
+            shape=None,
+            initializer='zeros',
+            dtype=tf.dtypes.bool,
+            trainable=False)
+
+        if self.data_init:
+            self._naked_layer = tf.keras.layers.deserialize(
+                tf.keras.layers.serialize(self.layer))
+            self._naked_layer.build(input_shape)
+            self._naked_layer.set_weights(self.layer.get_weights())
+            self._naked_layer.activation = None
 
         self.built = True
 
     def call(self, inputs):
         """Call `Layer`"""
-        if not self._initialized:
-            if self.data_init:
-                self._data_dep_init(inputs)
-            else:
-                self._init_norm()
-            self._initialized = True
+
+        def _do_nothing():
+            return inputs
+
+        def _update_weights():
+            self._initialize_weights(inputs)
+            return inputs
+
+        inputs = tf.cond(self._initialized, _do_nothing, _update_weights)
 
         with tf.name_scope('compute_weights'):
             # Replace kernel by normalized weight variable.
             self.layer.kernel = tf.nn.l2_normalize(
-                self.v,
-                axis=self.kernel_norm_axes) * self.g
+                self.v, axis=self.kernel_norm_axes) * self.g
+
         return self.layer(inputs)
 
     def compute_output_shape(self, input_shape):
         return tf.TensorShape(
             self.layer.compute_output_shape(input_shape).as_list())
+
+    def _initialize_weights(self, inputs):
+        """Initialize weight g.
+
+        The initial value of g could either from the initial value in v,
+        or by the input value if self.data_init is True.
+        """
+        with tf.control_dependencies([
+                tf.debugging.assert_equal(  # pylint: disable=bad-continuation
+                    self._initialized,
+                    False,
+                    message='The layer has been initialized.')
+        ]):
+            if self.data_init:
+                self._data_dep_init(inputs)
+            else:
+                self._init_norm()
+            self._initialized.assign(True)
 
     def _init_norm(self):
         """Set the weight g with the norm of the weight vector."""
@@ -118,19 +152,15 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         """Data dependent initialization."""
         with tf.name_scope('data_dep_init'):
             # Generate data dependent init values
-            existing_activation = self.layer.activation
-            self.layer.activation = None
-            x_init = self.layer(inputs)
-            self.layer.activation = existing_activation
-
+            x_init = self._naked_layer(inputs)
             data_norm_axes = list(range(x_init.shape.rank - 1))
             m_init, v_init = tf.nn.moments(x_init, data_norm_axes)
             scale_init = 1. / tf.math.sqrt(v_init + 1e-10)
 
-        # Assign data dependent init values
-        self.g.assign(self.g * scale_init)
-        if hasattr(self.layer, 'bias'):
-            self.layer.bias.assign(-m_init * scale_init)
+            # Assign data dependent init values
+            self.g.assign(self.g * scale_init)
+            if hasattr(self.layer, 'bias'):
+                self.layer.bias.assign(-m_init * scale_init)
 
     def get_config(self):
         config = {'data_init': self.data_init}
