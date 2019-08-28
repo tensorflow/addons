@@ -111,7 +111,7 @@ class F1ScoreTest(tf.test.TestCase):
             self._test_f1(avg, actuals, preds, res)
 
     # Keras model check
-    def keras_check(self):
+    def test_keras_model(self):
         model = tf.keras.Sequential()
         model.add(layers.Dense(64, activation='relu'))
         model.add(layers.Dense(64, activation='relu'))
@@ -125,7 +125,7 @@ class F1ScoreTest(tf.test.TestCase):
         data = np.random.random((10, 3))
         labels = np.random.random((10, 1))
         labels = np.where(labels > 0.5, 1, 0)
-        model.fit(data, labels, epochs=10, batch_size=32, verbose=0)
+        model.fit(data, labels, epochs=1, batch_size=32, verbose=0)
 
 
 if __name__ == '__main__':
