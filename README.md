@@ -73,6 +73,9 @@ https://bazel.build/) build system.
 git clone https://github.com/tensorflow/addons.git
 cd addons
 
+# If building GPU Ops (Requires CUDA 10.0 and CuDNN 7)
+export TF_NEED_CUDA=1
+
 # This script links project with TensorFlow dependency
 ./configure.sh
 
