@@ -144,9 +144,9 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             scale_init = 1. / tf.math.sqrt(v_init + 1e-10)
 
         # Assign data dependent init values
-        self.g = self.g * scale_init
+        self.g.assign(self.g * scale_init)
         if hasattr(self.layer, 'bias'):
-            self.layer.bias = -m_init * scale_init
+            self.layer.bias.assign(-m_init * scale_init)
         self.layer.activation = existing_activation
 
     def get_config(self):
