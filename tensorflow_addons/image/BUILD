@@ -15,6 +15,7 @@ py_library(
         "utils.py",
         "sparse_image_warp.py",
         "interpolate_spline.py",
+        "connected_components.py",
     ]),
     data = [
         ":sparse_image_warp_test_data",
@@ -141,6 +142,19 @@ py_test(
         "interpolate_spline_test.py",
     ],
     main = "interpolate_spline_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "connected_components_test",
+    size = "medium",
+    srcs = [
+        "connected_components_test.py",
+    ],
+    main = "connected_components_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":image",
