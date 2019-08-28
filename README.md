@@ -93,6 +93,11 @@ User experience and project maintainability are core concepts in
 TF-Addons. In order to achieve these we require that our additions
 conform to established API patterns seen in core TensorFlow.
 
+#### GPU/CPU Custom-Ops
+A major benefit of TensorFlow Addons is that there are precompiled ops. Should 
+a CUDA 10 installation not be found then the op will automatically fall back to 
+a CPU implementation.
+
 #### Proxy Maintainership
 Addons has been designed to compartmentalize subpackages and submodules so 
 that they can be maintained by users who have expertise and a vested interest 
