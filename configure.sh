@@ -78,21 +78,18 @@ write_action_env_to_bazelrc "TF_SHARED_LIBRARY_DIR" ${TF_SHARED_LIBRARY_DIR}
 write_action_env_to_bazelrc "TF_SHARED_LIBRARY_NAME" ${TF_SHARED_LIBRARY_NAME}
 write_action_env_to_bazelrc "TF_CXX11_ABI_FLAG" ${TF_CXX11_ABI_FLAG}
 
-write_to_bazelrc "build:manylinux2010 --crosstool_top=//build_deps/toolchains/preconfig/ubuntu16.04/gcc7_manylinux2010-nvcc-cuda10.0:toolchain"
-write_to_bazelrc "build --config=manylinux2010"
-write_to_bazelrc "test --config=manylinux2010"
 
 if [[ "$TF_NEED_CUDA" == "1" ]]; then
+    write_action_env_to_bazelrc "TF_NEED_CUDA" ${TF_NEED_CUDA}
     write_action_env_to_bazelrc "CUDNN_INSTALL_PATH" "/usr/lib/x86_64-linux-gnu"
     write_action_env_to_bazelrc "TF_CUDA_VERSION" "10.0"
     write_action_env_to_bazelrc "TF_CUDNN_VERSION" "7"
     write_action_env_to_bazelrc "CUDA_TOOLKIT_PATH" "${CUDA_HOME:=/usr/local/cuda}"
-    write_to_bazelrc "build --config=cuda"
-    write_to_bazelrc "test --config=cuda"
 
+    write_to_bazelrc "test --config=cuda"
+    write_to_bazelrc "build --config=cuda"
+    write_to_bazelrc "build --spawn_strategy=local"
+    write_to_bazelrc "build --strategy=Genrule=local"
     write_to_bazelrc "build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true"
-    write_to_bazelrc "build --spawn_strategy=standalone"
-    write_to_bazelrc "build --strategy=Genrule=standalone"
-    write_action_env_to_bazelrc "TF_NEED_CUDA" ${TF_NEED_CUDA}
 
 fi
