@@ -21,7 +21,7 @@ limitations under the License.
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/util/tensor_format.h"
-#include "third_party/cub/device/device_reduce.cuh"
+#include "gpu/cub/device/device_reduce.cuh"
 
 namespace tensorflow {
 
