@@ -68,7 +68,7 @@ class WeightNormalizationTest(tf.test.TestCase):
 
     def test_weightnorm_non_kernel_layer(self):
         images = tf.random.uniform((2, 2, 2))
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegexp(ValueError, 'contains a `kernel`'):
             non_kernel_layer = tf.keras.layers.MaxPooling2D(2, 2)
             wn_wrapper = wrappers.WeightNormalization(non_kernel_layer)
             wn_wrapper(images)
