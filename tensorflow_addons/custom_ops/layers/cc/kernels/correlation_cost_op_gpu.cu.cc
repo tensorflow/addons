@@ -20,7 +20,6 @@ limitations under the License.
 #include "tensorflow_addons/custom_ops/layers/cc/kernels/correlation_cost_op.h"
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/tensor_shape.h"
-#include "tensorflow/core/util/gpu_kernel_helper.h"
 #include "tensorflow/core/util/tensor_format.h"
 #include "third_party/cub/device/device_reduce.cuh"
 
