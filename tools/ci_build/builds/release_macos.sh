@@ -27,6 +27,7 @@ export PATH="$PATH:$HOME/bin"
 # Install delocate
 python3 -m pip install -q delocate
 
+brew update && brew upgrade pyenv
 eval "$(pyenv init -)"
 
 for version in ${PYTHON_VERSIONS}; do
@@ -41,6 +42,7 @@ for version in ${PYTHON_VERSIONS}; do
 
     # Build
     bazel build \
+      -c opt \
       --noshow_progress \
       --noshow_loading_progress \
       --verbose_failures \

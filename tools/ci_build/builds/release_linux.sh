@@ -34,10 +34,12 @@ for version in ${PYTHON_VERSIONS}; do
 
     # Build
     bazel build \
+      -c opt \
       --noshow_progress \
       --noshow_loading_progress \
       --verbose_failures \
       --test_output=errors \
+      --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.0:toolchain \
       build_pip_pkg
 
     # Package Whl

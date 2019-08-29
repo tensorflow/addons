@@ -10,14 +10,13 @@ cc_binary(
     srcs = [
         "cc/kernels/correlation_cost_op.cc",
         "cc/kernels/correlation_cost_op.h",
-        "cc/kernels/correlation_cost_op_gpu.cu.cc",
         "cc/ops/correlation_cost_op.cc",
     ],
     copts = [
         "-pthread",
         "-std=c++11",
         D_GLIBCXX_USE_CXX11_ABI,
-    ],
+    ] + if_cuda(["-DGOOGLE_CUDA=1"]),
     linkshared = 1,
     deps = [
         "@local_config_tf//:libtensorflow_framework",

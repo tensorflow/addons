@@ -28,7 +28,8 @@ jobs:
     - stage: build
       name: "Build on Ubuntu 16.04 for Python 2.7 3.5 3.6 3.7"
       script:
-      - bash -x -e tools/run_docker.sh -c 'tools/ci_build/builds/release_linux.sh'
+      # Build GPU kernels without runtime=nvidia as there are no GPUs/Drivers
+      - docker run -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-gpu-ubuntu16 tools/ci_build/builds/release_linux.sh
       after_success:
         - twine upload -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
 
