@@ -36,7 +36,7 @@ using CPUDevice = Eigen::ThreadPoolDevice;
 TF_CALL_GPU_NUMBER_TYPES(REGISTER_GELU_KERNELS);
 #undef REGISTER_GELU_KERNELS
 
-#ifdef GOOGLE_CUDA
+#if GOOGLE_CUDA
 
 using GPUDevice = Eigen::GpuDevice;
 
