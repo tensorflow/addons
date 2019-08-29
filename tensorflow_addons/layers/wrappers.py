@@ -93,8 +93,9 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
         if self.data_init:
             # Used for data initialization in self._data_dep_init.
-            self._naked_clone_layer = tf.keras.layers.deserialize(
-                tf.keras.layers.serialize(self.layer))
+            layer_config = tf.keras.layers.serialize(self.layer)
+            layer_config['config']['trainable'] = False
+            self._naked_clone_layer = tf.keras.layers.deserialize(layer_config)
             self._naked_clone_layer.build(input_shape)
             self._naked_clone_layer.set_weights(self.layer.get_weights())
             self._naked_clone_layer.activation = None
@@ -105,27 +106,25 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         """Call `Layer`"""
 
         def _do_nothing():
-            return tf.identity(inputs)
+            return tf.identity(self.g)
 
         def _update_weights():
+            # Ensure we read `self.g` after _update_weights.
             with tf.control_dependencies(self._initialize_weights(inputs)):
-                return tf.identity(inputs)
+                return tf.identity(self.g)
 
-        inputs = tf.cond(self._initialized, _do_nothing, _update_weights)
+        g = tf.cond(self._initialized, _do_nothing, _update_weights)
 
-        # Ensure we read `self.g` after _update_weights.
-        with tf.control_dependencies([inputs]):
-            with tf.name_scope('compute_weights'):
-                # Replace kernel by normalized weight variable.
-                self.layer.kernel = tf.nn.l2_normalize(
-                    self.v, axis=self.kernel_norm_axes) * self.g
+        with tf.name_scope('compute_weights'):
+            # Replace kernel by normalized weight variable.
+            self.layer.kernel = tf.nn.l2_normalize(
+                self.v, axis=self.kernel_norm_axes) * g
 
-                # Ensure we calculate result after updating kernel.
-                update_kernel = tf.identity(self.layer.kernel)
-                with tf.control_dependencies([update_kernel]):
-                    outputs = self.layer(inputs)
-
-        return outputs
+            # Ensure we calculate result after updating kernel.
+            update_kernel = tf.identity(self.layer.kernel)
+            with tf.control_dependencies([update_kernel]):
+                outputs = self.layer(inputs)
+                return outputs
 
     def compute_output_shape(self, input_shape):
         return tf.TensorShape(
