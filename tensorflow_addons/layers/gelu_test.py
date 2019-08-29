@@ -12,17 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Additional layers that conform to Keras API."""
+"""Tests for GeLU activation."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import numpy as np
+import tensorflow as tf
+from absl.testing import parameterized
 from tensorflow_addons.layers.gelu import GeLU
-from tensorflow_addons.layers.maxout import Maxout
-from tensorflow_addons.layers.normalizations import GroupNormalization
-from tensorflow_addons.layers.normalizations import InstanceNormalization
-from tensorflow_addons.layers.optical_flow import CorrelationCost
-from tensorflow_addons.layers.poincare import PoincareNormalize
-from tensorflow_addons.layers.sparsemax import Sparsemax
-from tensorflow_addons.layers.wrappers import WeightNormalization
+from tensorflow_addons.utils import test_utils
+
+
+@parameterized.parameters([np.float16, np.float32, np.float64])
+@test_utils.run_all_in_graph_and_eager_modes
+class TestGeLU(tf.test.TestCase):
+    def test_random(self, dtype):
+        x = np.array([[0.5, 1.2, -0.3]]).astype(dtype)
+        val = np.array([[0.345714, 1.0617027, -0.11462909]]).astype(dtype)
+        test_utils.layer_test(
+            GeLU, kwargs={'dtype': dtype}, input_data=x, expected_output=val)
+
+
+if __name__ == '__main__':
+    tf.test.main()
