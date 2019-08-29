@@ -21,9 +21,7 @@ from __future__ import print_function
 import tensorflow as tf
 from tensorflow_addons.metrics import FBetaScore
 from tensorflow_addons.utils import test_utils
-import tensorflow.keras
 from tensorflow.keras import layers
-from tensorflow.keras import models
 import numpy as np
 
 
