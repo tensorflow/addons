@@ -56,11 +56,8 @@ class MAP(tf.metrics.Metric):
         cls = 0
         for cls_result in cls_results:
             npos = 0
-            nd = tf.shape(cls_result)[0]
-            tp = tf.fill([nd], 0.)
-            fp = tf.fill([nd], 0.)
-            tp = tf.unstack(tp)
-            fp = tf.unstack(fp)
+            tp=tf.constant([], shape=[0])
+            fp=tf.constant([], shape=[0])
             # sort result by confidence
             sorted_index=tf.argsort(tf.transpose(cls_result)[1],0,'DESCENDING')
             items=[]
@@ -71,11 +68,13 @@ class MAP(tf.metrics.Metric):
             bbox = cls_result[:, 2:6]
 
             # loop every cls_result image indexes
-            for index in cls_result[:, 6]:
+            index=0
+            for image_index in cls_result[:, 6]:
                 ground_truth = tf.boolean_mask(
-                    self.ground_truth, self.ground_truth[:, 7] == index)
-                index = tf.cast(index, tf.int32)
+                    self.ground_truth, self.ground_truth[:, 7] == image_index)
+
                 objs = tf.boolean_mask(ground_truth, ground_truth[:, 0] == cls)
+                nd = tf.shape(objs)[0]
                 ovmax = -float('inf')
                 BBGT = objs[:, 1:5]
                 npos += tf.shape(objs)[0]
@@ -98,20 +97,26 @@ class MAP(tf.metrics.Metric):
                 idx = tf.argmax(overlaps)
                 gt_match = objs[idx]
                 # ensure max iou greater than iou threshold
-
+                tp_sub=tf.fill([nd],0.)
+                fp_sub = tf.fill([nd], 0.)
+                tp_sub=tf.unstack(tp_sub)
+                fp_sub=tf.unstack(fp_sub)
                 if ovmax > self.iou_threshold:
                     # difficult is useless for now
                     if tf.equal(gt_match[5], 0):
                         # if item is not used,set it used and set tp=1
                         if tf.equal(gt_match[6], 0):
-                            tp[idx] = 1.
-                            gt_match[6] = 1
+                            tp_sub[idx] = 1.
+                            # gt_match[6] = 1 # need to fix assign item bug
                         else:
-                            fp[idx] = 1.
+                            fp_sub[idx] = 1.
                 else:
-                    fp[idx] = 1.
-
-
+                    fp_sub[idx] = 1.
+                index+=1
+                tp_sub=tf.stack(tp_sub)
+                fp_sub=tf.stack(fp_sub)
+                tp=tf.concat([tp,tp_sub],0)
+                fp=tf.concat([fp,fp_sub],0)
             fp = tf.cumsum(fp)
             tp = tf.cumsum(tp)
             rec = tp / tf.maximum(tf.cast(npos, tf.float32), 1e-8)
