@@ -59,8 +59,15 @@ class MAP(tf.metrics.Metric):
             nd = tf.shape(cls_result)[0]
             tp = tf.fill([nd], 0.)
             fp = tf.fill([nd], 0.)
+            tp = tf.unstack(tp)
+            fp = tf.unstack(fp)
             # sort result by confidence
-            cls_result = tf.sort(cls_result, 1, 'DESCENDING')
+            sorted_index=tf.argsort(tf.transpose(cls_result)[1],0,'DESCENDING')
+            items=[]
+            for item in tf.transpose(cls_result):
+                items.append(tf.gather(item,sorted_index))
+            cls_result=tf.transpose(tf.stack(items))
+
             bbox = cls_result[:, 2:6]
 
             # loop every cls_result image indexes
@@ -91,6 +98,7 @@ class MAP(tf.metrics.Metric):
                 idx = tf.argmax(overlaps)
                 gt_match = objs[idx]
                 # ensure max iou greater than iou threshold
+
                 if ovmax > self.iou_threshold:
                     # difficult is useless for now
                     if tf.equal(gt_match[5], 0):
