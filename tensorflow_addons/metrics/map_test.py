@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for MAPCallback."""
+"""Tests for MAP."""
 import tensorflow as tf
 from tensorflow_addons.metrics import map
 import numpy as np
@@ -20,10 +20,10 @@ tf.config.experimental_run_functions_eagerly(True)
 
 
 def generate_data():
-    ground_truth = np.array([[0, 0, 4, 13, 79, 154], [1, 0, 93, 37, 194, 121],
-                             [2, 0, 277, 2, 444, 101], [3, 0, 469, 4, 552, 91],
-                             [4, 0, 11, 152, 84, 250],
-                             [5, 0, 516, 5, 638, 410]])
+    ground_truth = np.array([[0, 4, 13, 79, 154, 0, 0], [1, 93, 37, 194, 121, 0, 0],
+                             [2, 277, 2, 444, 101, 0, 0], [3, 469, 4, 552, 91, 0, 0],
+                             [4, 11, 152, 84, 250, 0, 0],
+                             [5, 516, 5, 638, 410, 0, 0]])
     detection_result = np.array([[0, 0.529134, 3, 12, 78, 153],
                                  [1, 0.523199, 92, 37, 193, 121],
                                  [6, 0.386569, 63, 77, 560, 477],
@@ -33,7 +33,7 @@ def generate_data():
     return [[ground_truth, detection_result]]
 
 
-class MAPCallbackTest(tf.test.TestCase):
+class MAPTest(tf.test.TestCase):
     def test_calculate_ap(self):
         class_names = [
             "pottedplant", "tvmonitor", "shelf", "windowblind", "coffeetable",
