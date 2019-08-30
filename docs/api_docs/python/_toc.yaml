@@ -1,0 +1,402 @@
+# Automatically generated file; please do not edit
+toc:
+  - title: tfa
+    section:
+    - title: Overview
+      path: /api_docs/python/tfa
+  - title: tfa.activations
+    section:
+    - title: Overview
+      path: /api_docs/python/tfa/activations
+    - title: gelu
+      path: /api_docs/python/tfa/activations/gelu
+    - title: sparsemax
+      path: /api_docs/python/tfa/activations/sparsemax
+  - title: tfa.callbacks
+    section:
+    - title: Overview
+      path: /api_docs/python/tfa/callbacks
+  - title: tfa.image
+    section:
+    - title: Overview
+      path: /api_docs/python/tfa/image
+    - title: adjust_hsv_in_yiq
+      path: /api_docs/python/tfa/image/adjust_hsv_in_yiq
+    - title: connected_components
+      path: /api_docs/python/tfa/image/connected_components
+    - title: dense_image_warp
+      path: /api_docs/python/tfa/image/dense_image_warp
+    - title: euclidean_dist_transform
+      path: /api_docs/python/tfa/image/euclidean_dist_transform
+    - title: interpolate_bilinear
+      path: /api_docs/python/tfa/image/interpolate_bilinear
+    - title: interpolate_spline
+      path: /api_docs/python/tfa/image/interpolate_spline
+    - title: mean_filter2d
+      path: /api_docs/python/tfa/image/mean_filter2d
+    - title: median_filter2d
+      path: /api_docs/python/tfa/image/median_filter2d
+    - title: random_hsv_in_yiq
+      path: /api_docs/python/tfa/image/random_hsv_in_yiq
+    - title: rotate
+      path: /api_docs/python/tfa/image/rotate
+    - title: sparse_image_warp
+      path: /api_docs/python/tfa/image/sparse_image_warp
+    - title: transform
+      path: /api_docs/python/tfa/image/transform
+    - title: translate
+      path: /api_docs/python/tfa/image/translate
+    - title: distance_transform
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/image/distance_transform
+    - title: distort_image_ops
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/image/distort_image_ops
+    - title: filters
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/image/filters
+    - title: transform_ops
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/image/transform_ops
+      - title: angles_to_projective_transforms
+        path: /api_docs/python/tfa/image/transform_ops/angles_to_projective_transforms
+      - title: compose_transforms
+        path: /api_docs/python/tfa/image/transform_ops/compose_transforms
+      - title: flat_transforms_to_matrices
+        path: /api_docs/python/tfa/image/transform_ops/flat_transforms_to_matrices
+      - title: matrices_to_flat_transforms
+        path: /api_docs/python/tfa/image/transform_ops/matrices_to_flat_transforms
+    - title: translate_ops
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/image/translate_ops
+      - title: translations_to_projective_transforms
+        path: /api_docs/python/tfa/image/translate_ops/translations_to_projective_transforms
+    - title: utils
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/image/utils
+      - title: from_4D_image
+        path: /api_docs/python/tfa/image/utils/from_4D_image
+      - title: get_ndims
+        path: /api_docs/python/tfa/image/utils/get_ndims
+      - title: to_4D_image
+        path: /api_docs/python/tfa/image/utils/to_4D_image
+  - title: tfa.layers
+    section:
+    - title: Overview
+      path: /api_docs/python/tfa/layers
+    - title: CorrelationCost
+      path: /api_docs/python/tfa/layers/CorrelationCost
+    - title: GeLU
+      path: /api_docs/python/tfa/layers/GeLU
+    - title: GroupNormalization
+      path: /api_docs/python/tfa/layers/GroupNormalization
+    - title: InstanceNormalization
+      path: /api_docs/python/tfa/layers/InstanceNormalization
+    - title: Maxout
+      path: /api_docs/python/tfa/layers/Maxout
+    - title: PoincareNormalize
+      path: /api_docs/python/tfa/layers/PoincareNormalize
+    - title: Sparsemax
+      path: /api_docs/python/tfa/layers/Sparsemax
+    - title: WeightNormalization
+      path: /api_docs/python/tfa/layers/WeightNormalization
+    - title: gelu
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/layers/gelu
+    - title: maxout
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/layers/maxout
+    - title: normalizations
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/layers/normalizations
+    - title: optical_flow
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/layers/optical_flow
+      - title: correlation_cost
+        path: /api_docs/python/tfa/layers/optical_flow/correlation_cost
+    - title: poincare
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/layers/poincare
+    - title: sparsemax
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/layers/sparsemax
+    - title: wrappers
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/layers/wrappers
+  - title: tfa.losses
+    section:
+    - title: Overview
+      path: /api_docs/python/tfa/losses
+    - title: ContrastiveLoss
+      path: /api_docs/python/tfa/losses/ContrastiveLoss
+    - title: contrastive_loss
+      path: /api_docs/python/tfa/losses/contrastive_loss
+    - title: LiftedStructLoss
+      path: /api_docs/python/tfa/losses/LiftedStructLoss
+    - title: lifted_struct_loss
+      path: /api_docs/python/tfa/losses/lifted_struct_loss
+    - title: NpairsLoss
+      path: /api_docs/python/tfa/losses/NpairsLoss
+    - title: npairs_loss
+      path: /api_docs/python/tfa/losses/npairs_loss
+    - title: SigmoidFocalCrossEntropy
+      path: /api_docs/python/tfa/losses/SigmoidFocalCrossEntropy
+    - title: sigmoid_focal_crossentropy
+      path: /api_docs/python/tfa/losses/sigmoid_focal_crossentropy
+    - title: SparsemaxLoss
+      path: /api_docs/python/tfa/losses/SparsemaxLoss
+    - title: sparsemax_loss
+      path: /api_docs/python/tfa/losses/sparsemax_loss
+    - title: TripletSemiHardLoss
+      path: /api_docs/python/tfa/losses/TripletSemiHardLoss
+    - title: triplet_semihard_loss
+      path: /api_docs/python/tfa/losses/triplet_semihard_loss
+    - title: contrastive
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/losses/contrastive
+    - title: focal_loss
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/losses/focal_loss
+    - title: lifted
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/losses/lifted
+    - title: metric_learning
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/losses/metric_learning
+      - title: pairwise_distance
+        path: /api_docs/python/tfa/losses/metric_learning/pairwise_distance
+    - title: npairs
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/losses/npairs
+    - title: triplet
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/losses/triplet
+  - title: tfa.metrics
+    section:
+    - title: Overview
+      path: /api_docs/python/tfa/metrics
+    - title: CohenKappa
+      path: /api_docs/python/tfa/metrics/CohenKappa
+    - title: F1Score
+      path: /api_docs/python/tfa/metrics/F1Score
+    - title: FBetaScore
+      path: /api_docs/python/tfa/metrics/FBetaScore
+    - title: MultiLabelConfusionMatrix
+      path: /api_docs/python/tfa/metrics/MultiLabelConfusionMatrix
+    - title: RSquare
+      path: /api_docs/python/tfa/metrics/RSquare
+    - title: cohens_kappa
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/metrics/cohens_kappa
+    - title: f_scores
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/metrics/f_scores
+    - title: multilabel_confusion_matrix
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/metrics/multilabel_confusion_matrix
+    - title: r_square
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/metrics/r_square
+  - title: tfa.optimizers
+    section:
+    - title: Overview
+      path: /api_docs/python/tfa/optimizers
+    - title: AdamW
+      path: /api_docs/python/tfa/optimizers/AdamW
+    - title: extend_with_decoupled_weight_decay
+      path: /api_docs/python/tfa/optimizers/extend_with_decoupled_weight_decay
+    - title: LazyAdam
+      path: /api_docs/python/tfa/optimizers/LazyAdam
+    - title: MovingAverage
+      path: /api_docs/python/tfa/optimizers/MovingAverage
+    - title: SGDW
+      path: /api_docs/python/tfa/optimizers/SGDW
+    - title: lazy_adam
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/optimizers/lazy_adam
+    - title: moving_average
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/optimizers/moving_average
+    - title: weight_decay_optimizers
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/optimizers/weight_decay_optimizers
+      - title: DecoupledWeightDecayExtension
+        path: /api_docs/python/tfa/optimizers/weight_decay_optimizers/DecoupledWeightDecayExtension
+  - title: tfa.rnn
+    section:
+    - title: Overview
+      path: /api_docs/python/tfa/rnn
+    - title: LayerNormLSTMCell
+      path: /api_docs/python/tfa/rnn/LayerNormLSTMCell
+    - title: NASCell
+      path: /api_docs/python/tfa/rnn/NASCell
+    - title: cell
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/rnn/cell
+  - title: tfa.seq2seq
+    section:
+    - title: Overview
+      path: /api_docs/python/tfa/seq2seq
+    - title: AttentionMechanism
+      path: /api_docs/python/tfa/seq2seq/AttentionMechanism
+    - title: AttentionWrapper
+      path: /api_docs/python/tfa/seq2seq/AttentionWrapper
+    - title: AttentionWrapperState
+      path: /api_docs/python/tfa/seq2seq/AttentionWrapperState
+    - title: BahdanauAttention
+      path: /api_docs/python/tfa/seq2seq/BahdanauAttention
+    - title: BahdanauMonotonicAttention
+      path: /api_docs/python/tfa/seq2seq/BahdanauMonotonicAttention
+    - title: BaseDecoder
+      path: /api_docs/python/tfa/seq2seq/BaseDecoder
+    - title: BasicDecoder
+      path: /api_docs/python/tfa/seq2seq/BasicDecoder
+    - title: BasicDecoderOutput
+      path: /api_docs/python/tfa/seq2seq/BasicDecoderOutput
+    - title: BeamSearchDecoder
+      path: /api_docs/python/tfa/seq2seq/BeamSearchDecoder
+    - title: BeamSearchDecoderOutput
+      path: /api_docs/python/tfa/seq2seq/BeamSearchDecoderOutput
+    - title: BeamSearchDecoderState
+      path: /api_docs/python/tfa/seq2seq/BeamSearchDecoderState
+    - title: CustomSampler
+      path: /api_docs/python/tfa/seq2seq/CustomSampler
+    - title: Decoder
+      path: /api_docs/python/tfa/seq2seq/Decoder
+    - title: dynamic_decode
+      path: /api_docs/python/tfa/seq2seq/dynamic_decode
+    - title: FinalBeamSearchDecoderOutput
+      path: /api_docs/python/tfa/seq2seq/FinalBeamSearchDecoderOutput
+    - title: gather_tree_from_array
+      path: /api_docs/python/tfa/seq2seq/gather_tree_from_array
+    - title: GreedyEmbeddingSampler
+      path: /api_docs/python/tfa/seq2seq/GreedyEmbeddingSampler
+    - title: hardmax
+      path: /api_docs/python/tfa/seq2seq/hardmax
+    - title: InferenceSampler
+      path: /api_docs/python/tfa/seq2seq/InferenceSampler
+    - title: LuongAttention
+      path: /api_docs/python/tfa/seq2seq/LuongAttention
+    - title: LuongMonotonicAttention
+      path: /api_docs/python/tfa/seq2seq/LuongMonotonicAttention
+    - title: monotonic_attention
+      path: /api_docs/python/tfa/seq2seq/monotonic_attention
+    - title: safe_cumprod
+      path: /api_docs/python/tfa/seq2seq/safe_cumprod
+    - title: SampleEmbeddingSampler
+      path: /api_docs/python/tfa/seq2seq/SampleEmbeddingSampler
+    - title: Sampler
+      path: /api_docs/python/tfa/seq2seq/Sampler
+    - title: ScheduledEmbeddingTrainingSampler
+      path: /api_docs/python/tfa/seq2seq/ScheduledEmbeddingTrainingSampler
+    - title: ScheduledOutputTrainingSampler
+      path: /api_docs/python/tfa/seq2seq/ScheduledOutputTrainingSampler
+    - title: SequenceLoss
+      path: /api_docs/python/tfa/seq2seq/SequenceLoss
+    - title: sequence_loss
+      path: /api_docs/python/tfa/seq2seq/sequence_loss
+    - title: tile_batch
+      path: /api_docs/python/tfa/seq2seq/tile_batch
+    - title: TrainingSampler
+      path: /api_docs/python/tfa/seq2seq/TrainingSampler
+    - title: attention_wrapper
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/seq2seq/attention_wrapper
+    - title: basic_decoder
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/seq2seq/basic_decoder
+    - title: beam_search_decoder
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/seq2seq/beam_search_decoder
+      - title: attention_probs_from_attn_state
+        path: /api_docs/python/tfa/seq2seq/beam_search_decoder/attention_probs_from_attn_state
+      - title: BeamSearchDecoderMixin
+        path: /api_docs/python/tfa/seq2seq/beam_search_decoder/BeamSearchDecoderMixin
+      - title: get_attention_probs
+        path: /api_docs/python/tfa/seq2seq/beam_search_decoder/get_attention_probs
+    - title: decoder
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/seq2seq/decoder
+    - title: loss
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/seq2seq/loss
+    - title: sampler
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/seq2seq/sampler
+      - title: bernoulli_sample
+        path: /api_docs/python/tfa/seq2seq/sampler/bernoulli_sample
+      - title: categorical_sample
+        path: /api_docs/python/tfa/seq2seq/sampler/categorical_sample
+  - title: tfa.text
+    section:
+    - title: Overview
+      path: /api_docs/python/tfa/text
+    - title: crf_binary_score
+      path: /api_docs/python/tfa/text/crf_binary_score
+    - title: crf_decode
+      path: /api_docs/python/tfa/text/crf_decode
+    - title: crf_decode_backward
+      path: /api_docs/python/tfa/text/crf_decode_backward
+    - title: crf_decode_forward
+      path: /api_docs/python/tfa/text/crf_decode_forward
+    - title: crf_forward
+      path: /api_docs/python/tfa/text/crf_forward
+    - title: crf_log_likelihood
+      path: /api_docs/python/tfa/text/crf_log_likelihood
+    - title: crf_log_norm
+      path: /api_docs/python/tfa/text/crf_log_norm
+    - title: crf_multitag_sequence_score
+      path: /api_docs/python/tfa/text/crf_multitag_sequence_score
+    - title: crf_sequence_score
+      path: /api_docs/python/tfa/text/crf_sequence_score
+    - title: crf_unary_score
+      path: /api_docs/python/tfa/text/crf_unary_score
+    - title: skip_gram_sample
+      path: /api_docs/python/tfa/text/skip_gram_sample
+    - title: skip_gram_sample_with_text_vocab
+      path: /api_docs/python/tfa/text/skip_gram_sample_with_text_vocab
+    - title: viterbi_decode
+      path: /api_docs/python/tfa/text/viterbi_decode
+    - title: crf
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/text/crf
+      - title: CrfDecodeForwardRnnCell
+        path: /api_docs/python/tfa/text/crf/CrfDecodeForwardRnnCell
+    - title: skip_gram_ops
+      section:
+      - title: Overview
+        path: /api_docs/python/tfa/text/skip_gram_ops
