@@ -108,7 +108,7 @@ def npairs_multilabel_loss(y_true, y_pred):
         similarity matrix between embedding matrices.
 
     Returns:
-      npairs_mutlilabel_loss: float scalar.
+      npairs_multilabel_loss: float scalar.
     """
     y_pred = tf.convert_to_tensor(y_pred)
     y_true = tf.cast(y_true, y_pred.dtype)
