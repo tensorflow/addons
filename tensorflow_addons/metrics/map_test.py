@@ -20,12 +20,14 @@ tf.config.experimental_run_functions_eagerly(True)
 
 
 def generate_data():
+    # [class,left,top,right,bottom,difficult,used]
     ground_truth = np.array([[0, 4, 13, 79, 154, 0, 0],
                              [1, 93, 37, 194, 121, 0, 0],
                              [2, 277, 2, 444, 101, 0, 0],
                              [3, 469, 4, 552, 91, 0, 0],
                              [4, 11, 152, 84, 250, 0, 0],
                              [5, 516, 5, 638, 410, 0, 0]])
+    # [class,confidence,left,top,right,bottom,difficult]
     detection_result = np.array([[0, 0.529134, 3, 12, 78, 153],
                                  [1, 0.523199, 92, 37, 193, 121],
                                  [6, 0.386569, 63, 77, 560, 477],
