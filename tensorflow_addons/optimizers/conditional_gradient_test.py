@@ -246,21 +246,6 @@ class ConditionalGradientTest(tf.test.TestCase):
         # Run 1 step of cg_op
         self.evaluate(cg_op)
         norm0 = self.evaluate(norm0)
-        '''
-            #If we have to update all the sparse dimension's entry of var,
-                this is the test case we have to pass.
-
-        self.assertAllCloseAccordingToType([
-                    [learning_rate * 1 - (1-learning_rate)*lamda*0/norm0,
-                    learning_rate * 1 - (1-learning_rate)*lamda*0/norm0],
-                    [learning_rate * 1 - (1-learning_rate)*lamda*1/norm0,
-                    learning_rate * 1 - (1-learning_rate)*lamda*1/norm0]
-        ],self.evaluate(var0))
-        '''
-        '''
-            This is the test case we need to pass, if we only want to
-            update the sparse dimension's entry of the var.
-        '''
         self.assertAllCloseAccordingToType([
                     [1,
                     1],
@@ -292,11 +277,6 @@ class ConditionalGradientTest(tf.test.TestCase):
                 self.assertEquals(slot0.get_shape(), var0.get_shape())
                 slot1 = cg_opt.get_slot(var1, "conditional_gradient")
                 self.assertEquals(slot1.get_shape(), var1.get_shape())
-                '''
-                if not tf.executing_eagerly():
-                    self.assertFalse(slot0 in tf.trainable_variables())
-                    self.assertFalse(slot1 in tf.trainable_variables())
-                '''
 
                 # Fetch params to validate initial values
                 self.assertAllClose([1.0, 2.0], self.evaluate(var0))

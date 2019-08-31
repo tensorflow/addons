@@ -22,7 +22,6 @@ import tensorflow as tf
 from tensorflow_addons.utils import keras_utils
 
 @keras_utils.register_keras_custom_object
-    #class ConditionalGradientOptimizer(tf.keras.optimizer_v2.OptimizerV2):
 class ConditionalGradientOptimizer(tf.keras.optimizers.Optimizer):
     """Optimizer that implements the Conditional Gradient optimization.
     Helps handle constraints well.
