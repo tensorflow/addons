@@ -24,3 +24,5 @@ from tensorflow_addons.optimizers.weight_decay_optimizers import AdamW
 from tensorflow_addons.optimizers.weight_decay_optimizers import SGDW
 from tensorflow_addons.optimizers.weight_decay_optimizers import (
     extend_with_decoupled_weight_decay)
+from conditional_gradient import ConditionalGradientOptimizer
+#from tensorflow_addons.optimizers.conditional_gradient import ConditionalGradientOptimizer

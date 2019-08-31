@@ -9,6 +9,7 @@ py_library(
         "lazy_adam.py",
         "moving_average.py",
         "weight_decay_optimizers.py",
+        "conditional_gradient.py",
     ],
     srcs_version = "PY2AND3",
     deps = [
@@ -49,6 +50,19 @@ py_test(
         "weight_decay_optimizers_test.py",
     ],
     main = "weight_decay_optimizers_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":optimizers",
+    ],
+)
+
+py_test(
+    name = "conditional_gradient_test",
+    size = "small",
+    srcs = [
+        "conditional_gradient_test.py",
+    ],
+    main = "conditional_gradient_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":optimizers",
