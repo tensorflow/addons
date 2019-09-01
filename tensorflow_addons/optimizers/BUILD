@@ -6,14 +6,27 @@ py_library(
     name = "optimizers",
     srcs = [
         "__init__.py",
+        "conditional_gradient.py",
         "lazy_adam.py",
         "moving_average.py",
-        "weight_decay_optimizers.py",
-        "conditional_gradient.py",
+        "weight_decay_optimizers.py"
     ],
     srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/utils",
+    ],
+)
+
+py_test(
+    name = "conditional_gradient_test",
+    size = "small",
+    srcs = [
+        "conditional_gradient_test.py",
+    ],
+    main = "conditional_gradient_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":optimizers",
     ],
 )
 
@@ -50,19 +63,6 @@ py_test(
         "weight_decay_optimizers_test.py",
     ],
     main = "weight_decay_optimizers_test.py",
-    srcs_version = "PY2AND3",
-    deps = [
-        ":optimizers",
-    ],
-)
-
-py_test(
-    name = "conditional_gradient_test",
-    size = "small",
-    srcs = [
-        "conditional_gradient_test.py",
-    ],
-    main = "conditional_gradient_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":optimizers",
