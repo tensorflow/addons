@@ -514,11 +514,11 @@ class ConditionalGradientTest(tf.test.TestCase):
                                 (1 - learning_rate) * lamda * 0.01
                                 / norm1]),
                 self.evaluate(var1)[2])
-                # Step 2: the conditional_gradient contain the 
+                # Step 2: the conditional_gradient contain the
                 # previous update.
                 cg_update.run()
                 # Check that the parameters have been updated.
-                self.assertAllClose(np.array([0, 0]), 
+                self.assertAllClose(np.array([0, 0]),
                             self.evaluate(var0)[0])
                 self.assertAllCloseAccordingToType(
                             np.array([
@@ -570,7 +570,7 @@ class ConditionalGradientTest(tf.test.TestCase):
                 self.evaluate(tf.compat.v1.global_variables_initializer())
 
                 # Check we have slots
-                self.assertEqual(["conditional_gradient"], 
+                self.assertEqual(["conditional_gradient"],
                             cg_opt.get_slot_names())
                 slot0 = cg_opt.get_slot(var0, "conditional_gradient")
                 self.assertEquals(slot0.get_shape(), var0.get_shape())
