@@ -1,4 +1,4 @@
-# Copyright 2018 Pengyu Kan & Vishnu sai rao suresh Lokhande. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,8 @@ import tensorflow as tf
 from tensorflow_addons.utils import keras_utils
 
 @keras_utils.register_keras_custom_object
-class ConditionalGradientOptimizer(tf.keras.optimizers.Optimizer):
+    #class ConditionalGradient(tf.keras.optimizer_v2.OptimizerV2):
+class ConditionalGradient(tf.keras.optimizers.Optimizer):
     """Optimizer that implements the Conditional Gradient optimization.
     Helps handle constraints well.
     Currently only supports frobenius norm constraint.
@@ -44,7 +45,7 @@ class ConditionalGradientOptimizer(tf.keras.optimizers.Optimizer):
             name: Optional name prefix for the operations created when
                   applying gradients.  Defaults to "ConditionalGradient"
         """
-        super(ConditionalGradientOptimizer, self).__init__(name=name)
+        super(ConditionalGradient, self).__init__(name=name)
         self._set_hyper("learning_rate", learning_rate)
         self._set_hyper("lamda", lamda)
 
@@ -77,11 +78,10 @@ class ConditionalGradientOptimizer(tf.keras.optimizers.Optimizer):
             return tf.math.reduce_sum(m ** 2) ** 0.5
         norm = tf.convert_to_tensor(frobenius_norm(grad), name="norm")
         norm = tf.dtypes.cast(norm, var.dtype.base_dtype)
-        lr = tf.dtypes.cast(self._learning_rate_tensor,
-                    var.dtype.base_dtype)
+        lr = tf.dtypes.cast(self._learning_rate_tensor, var.dtype.base_dtype)
         lamda = tf.dtypes.cast(self._lamda_tensor, var.dtype.base_dtype)
-        var_update_tensor = tf.math.multiply(var, lr)       \
-            - (1-lr)* lamda * grad / norm
+        var_update_tensor = (tf.math.multiply(var, lr) -
+                    (1 - lr) * lamda * grad / norm)
         var_update_kwargs = {
             'resource': var.handle,
             'value': var_update_tensor,
@@ -95,17 +95,15 @@ class ConditionalGradientOptimizer(tf.keras.optimizers.Optimizer):
             return tf.reduce_sum(m ** 2) ** 0.5
         norm = tf.convert_to_tensor(frobenius_norm(grad), name="norm")
         norm = tf.dtypes.cast(norm, var.dtype.base_dtype)
-        lr = tf.dtypes.cast(self._learning_rate_tensor,
-                    var.dtype.base_dtype)
+        lr = tf.dtypes.cast(self._learning_rate_tensor, var.dtype.base_dtype)
         lamda = tf.dtypes.cast(self._lamda_tensor, var.dtype.base_dtype)
         var_slice = tf.gather(var, indices)
-        var_update_value = tf.math.multiply(var_slice, lr)  \
-                                - (1-lr) * lamda * grad / norm
+        var_update_value = (tf.math.multiply(var_slice, lr) -
+                    (1 - lr) * lamda * grad / norm)
         var_update_kwargs = {
             'resource': var.handle,
             'indices': indices,
             'updates': var_update_value
         }
-        var_update_op = tf.raw_ops.ResourceScatterUpdate    \
-                                (**var_update_kwargs)
+        var_update_op = tf.raw_ops.ResourceScatterUpdate(**var_update_kwargs)
         return tf.group(var_update_op)
