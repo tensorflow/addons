@@ -69,11 +69,11 @@ class ConditionalGradientTest(tf.test.TestCase):
             self.assertEquals(slot0.get_shape(), var0.get_shape())
             slot1 = cg_opt.get_slot(var1, "conditional_gradient")
             self.assertEquals(slot1.get_shape(), var1.get_shape())
-            '''
+
             if not tf.executing_eagerly():
-            self.assertFalse(slot0 in tf.trainable_variables())
-            self.assertFalse(slot1 in tf.trainable_variables())
-            '''
+                self.assertFalse(slot0 in tf.compat.v1.trainable_variables())
+                self.assertFalse(slot1 in tf.compat.v1.trainable_variables())
+
             if not tf.executing_eagerly():
                 self.evaluate(cg_update)
 
@@ -115,7 +115,8 @@ class ConditionalGradientTest(tf.test.TestCase):
                             - (1 - 0.5) * 0.01 * 0.01 / norm1
                         ]), self.evaluate(var1))
 
-
+    #@test_utils.run_in_graph_and_eager_modes(reset_test=True)
+    #?
     def testBasic(self):
         with self.cached_session():
             self.doTestBasic(use_resource=False)
@@ -129,6 +130,8 @@ class ConditionalGradientTest(tf.test.TestCase):
         #with tf.enable_eager_execution():
         self.doTestBasic(use_resource=True, use_callable_params=True)
 
+    #@test_utils.run_in_graph_and_eager_modes(reset_test=True)
+    #?
     def testVariablesAcrossGraphs(self):
         optimizer = cg_lib.ConditionalGradient(0.01, 0.5)
         with tf.Graph().as_default():
@@ -166,8 +169,7 @@ class ConditionalGradientTest(tf.test.TestCase):
     def testMinimizeSparseResourceVariable(self):
         for dtype in [tf.half, tf.float32, tf.float64]:
             # This test invokes the ResourceSparseApplyConditionalGradient
-            # operation, which did not have a registered GPU kernel as of
-            # April 2018.
+            # operation.
             # With graph execution, the placement algorithm notices this
             # and automatically places the variable in CPU (host) memory. 
             # With eager execution, the variable would be placed in GPU
@@ -277,11 +279,13 @@ class ConditionalGradientTest(tf.test.TestCase):
                 self.assertEquals(slot0.get_shape(), var0.get_shape())
                 slot1 = cg_opt.get_slot(var1, "conditional_gradient")
                 self.assertEquals(slot1.get_shape(), var1.get_shape())
-                '''
+
                 if not tf.executing_eagerly():
-                    self.assertFalse(slot0 in tf.trainable_variables())
-                    self.assertFalse(slot1 in tf.trainable_variables())
-                '''
+                    self.assertFalse(slot0 in
+                                tf.compat.v1.trainable_variables())
+                    self.assertFalse(slot1 in
+                                tf.compat.v1.trainable_variables())
+
 
                 # Fetch params to validate initial values
                 self.assertAllClose([1.0, 2.0], self.evaluate(var0))
@@ -479,11 +483,13 @@ class ConditionalGradientTest(tf.test.TestCase):
                 self.assertEquals(slot0.get_shape(), var0.get_shape())
                 slot1 = cg_opt.get_slot(var1, "conditional_gradient")
                 self.assertEquals(slot1.get_shape(), var1.get_shape())
-                '''
+
                 if not tf.executing_eagerly():
-                    self.assertFalse(slot0 in tf.trainable_variables())
-                    self.assertFalse(slot1 in tf.trainable_variables())
-                '''
+                    self.assertFalse(slot0 in
+                                tf.compat.v1.trainable_variables())
+                    self.assertFalse(slot1 in
+                                tf.compat.v1.trainable_variables())
+
                 # Fetch params to validate initial values
                 self.assertAllClose([0, 0], self.evaluate(var0)[0])
                 self.assertAllClose([0, 0], self.evaluate(var0)[1])
@@ -576,11 +582,13 @@ class ConditionalGradientTest(tf.test.TestCase):
                 self.assertEquals(slot0.get_shape(), var0.get_shape())
                 slot1 = cg_opt.get_slot(var1, "conditional_gradient")
                 self.assertEquals(slot1.get_shape(), var1.get_shape())
-                '''
-                    if not tf.executing_eagerly():
-                    self.assertFalse(slot0 in tf.trainable_variables())
-                    self.assertFalse(slot1 in tf.trainable_variables())
-                '''
+
+                if not tf.executing_eagerly():
+                    self.assertFalse(slot0 in
+                                tf.compat.v1.trainable_variables())
+                    self.assertFalse(slot1 in
+                                tf.compat.v1.trainable_variables())
+
                 # Fetch params to validate initial values
                 self.assertAllClose([1.0, 2.0], self.evaluate(var0))
                 self.assertAllClose([3.0, 4.0], self.evaluate(var1))
