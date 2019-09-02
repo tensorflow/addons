@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
 """Conditional Gradient method for TensorFlow."""
 from __future__ import absolute_import
 from __future__ import division
@@ -21,8 +20,8 @@ from __future__ import print_function
 import tensorflow as tf
 from tensorflow_addons.utils import keras_utils
 
+
 @keras_utils.register_keras_custom_object
-    #class ConditionalGradient(tf.keras.optimizer_v2.OptimizerV2):
 class ConditionalGradient(tf.keras.optimizers.Optimizer):
     """Optimizer that implements the Conditional Gradient optimization.
     Helps handle constraints well.
@@ -34,8 +33,11 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
     ```
     """
 
-    def __init__(self, learning_rate, lamda,
-                use_locking=False, name="ConditionalGradient"):
+    def __init__(self,
+                 learning_rate,
+                 lamda,
+                 use_locking=False,
+                 name="ConditionalGradient"):
         """Construct a conditional gradient optimizer.
             Args:
             learning_rate: A `Tensor` or a floating point value.
@@ -67,7 +69,7 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
         if callable(learning_rate):
             learning_rate = learning_rate()
         self._learning_rate_tensor = tf.convert_to_tensor(
-                    learning_rate, name="learning_rate")
+            learning_rate, name="learning_rate")
         lamda = self.lamda
         if callable(lamda):
             lamda = lamda()
@@ -75,13 +77,14 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
 
     def _resource_apply_dense(self, grad, var):
         def frobenius_norm(m):
-            return tf.math.reduce_sum(m ** 2) ** 0.5
+            return tf.math.reduce_sum(m**2)**0.5
+
         norm = tf.convert_to_tensor(frobenius_norm(grad), name="norm")
         norm = tf.dtypes.cast(norm, var.dtype.base_dtype)
         lr = tf.dtypes.cast(self._learning_rate_tensor, var.dtype.base_dtype)
         lamda = tf.dtypes.cast(self._lamda_tensor, var.dtype.base_dtype)
-        var_update_tensor = (tf.math.multiply(var, lr) -
-                    (1 - lr) * lamda * grad / norm)
+        var_update_tensor = (
+            tf.math.multiply(var, lr) - (1 - lr) * lamda * grad / norm)
         var_update_kwargs = {
             'resource': var.handle,
             'value': var_update_tensor,
@@ -92,14 +95,15 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
 
     def _resource_apply_sparse(self, grad, var, indices):
         def frobenius_norm(m):
-            return tf.reduce_sum(m ** 2) ** 0.5
+            return tf.reduce_sum(m**2)**0.5
+
         norm = tf.convert_to_tensor(frobenius_norm(grad), name="norm")
         norm = tf.dtypes.cast(norm, var.dtype.base_dtype)
         lr = tf.dtypes.cast(self._learning_rate_tensor, var.dtype.base_dtype)
         lamda = tf.dtypes.cast(self._lamda_tensor, var.dtype.base_dtype)
         var_slice = tf.gather(var, indices)
-        var_update_value = (tf.math.multiply(var_slice, lr) -
-                    (1 - lr) * lamda * grad / norm)
+        var_update_value = (
+            tf.math.multiply(var_slice, lr) - (1 - lr) * lamda * grad / norm)
         var_update_kwargs = {
             'resource': var.handle,
             'indices': indices,
