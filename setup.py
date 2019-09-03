@@ -40,6 +40,16 @@ from setuptools import Extension
 
 DOCLINES = __doc__.split('\n')
 
+TFA_NIGHTLY = 'tfa-nightly'
+TFA_RELEASE = 'tensorflow-addons'
+
+if '--nightly' in sys.argv:
+    project_name = TFA_NIGHTLY
+    nightly_idx = sys.argv.index('--nightly')
+    sys.argv.pop(nightly_idx)
+else:
+    project_name = TFA_RELEASE
+
 # Version
 version = {}
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -48,24 +58,26 @@ with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
     exec(fp.read(), version)
     # yapf: enable
 
-if '--nightly' in sys.argv:
-    project_name = 'tfa-nightly'
-    nightly_idx = sys.argv.index('--nightly')
-    sys.argv.pop(nightly_idx)
+if project_name == TFA_NIGHTLY:
     version['__version__'] += datetime.strftime(datetime.today(), "%Y%m%d")
-else:
-    project_name = 'tensorflow-addons'
 
 # Dependencies
 REQUIRED_PACKAGES = [
     'six >= 1.10.0',
 ]
 
-# TODO: remove if-else condition when tf 2.1 package consolidation.
-if platform.system() == 'Linux':
-    REQUIRED_PACKAGES.append('tensorflow-gpu >= 2.0.0-rc0')
-else:
-    REQUIRED_PACKAGES.append('tensorflow >= 2.0.0-rc0')
+if project_name == TFA_RELEASE:
+    # TODO: remove if-else condition when tf supports package consolidation.
+    if platform.system() == 'Linux':
+        REQUIRED_PACKAGES.append('tensorflow-gpu >= 2.0.0-rc0')
+    else:
+        REQUIRED_PACKAGES.append('tensorflow >= 2.0.0-rc0')
+elif project_name == TFA_NIGHTLY:
+    # TODO: remove if-else condition when tf-nightly supports package consolidation.
+    if platform.system() == 'Linux':
+        REQUIRED_PACKAGES.append('tf-nightly-gpu-2.0-preview')
+    else:
+        REQUIRED_PACKAGES.append('tf-nightly-2.0-preview')
 
 
 class BinaryDistribution(Distribution):
