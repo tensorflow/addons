@@ -29,6 +29,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import platform
 import sys
 
 from datetime import datetime
@@ -39,16 +40,13 @@ from setuptools import Extension
 
 DOCLINES = __doc__.split('\n')
 
+# Version
 version = {}
 base_dir = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
     # yapf: disable
     exec(fp.read(), version)
     # yapf: enable
-
-REQUIRED_PACKAGES = [
-    'six >= 1.10.0',
-]
 
 if '--nightly' in sys.argv:
     project_name = 'tfa-nightly'
@@ -57,6 +55,17 @@ if '--nightly' in sys.argv:
     version['__version__'] += datetime.strftime(datetime.today(), "%Y%m%d")
 else:
     project_name = 'tensorflow-addons'
+
+# Dependencies
+REQUIRED_PACKAGES = [
+    'six >= 1.10.0',
+]
+
+# TODO: remove if-else condition when tf 2.1 package consolidation.
+if platform.system() == 'Linux':
+    REQUIRED_PACKAGES.append('tensorflow-gpu >= 2.0.0-rc0')
+else:
+    REQUIRED_PACKAGES.append('tensorflow >= 2.0.0-rc0')
 
 
 class BinaryDistribution(Distribution):
