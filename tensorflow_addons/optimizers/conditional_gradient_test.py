@@ -173,6 +173,10 @@ class ConditionalGradientTest(tf.test.TestCase):
         # for 'GPU' devices. However, tf.half is not registered in this case,
         # based on issue #347.
         # Thus, we will call the "_DtypesToTest" function.
+        #
+        # TODO:
+        #       Wait for the solving of issue #347. After that, we will test
+        #       for the dtype to be tf.half, with 'GPU' devices.
         for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
             var0 = tf.Variable([[1.0, 2.0]], dtype=dtype)
 
