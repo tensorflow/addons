@@ -162,10 +162,7 @@ class ConditionalGradientTest(tf.test.TestCase):
 
     def _DtypesToTest(self, use_gpu):
         if use_gpu:
-            if not test_utils.GpuSupportsHalfMatMulAndConv():
-                return [tf.float32, tf.float64]
-            else:
-                return [tf.half, tf.float32, tf.float64]
+            return [tf.float32, tf.float64]
         else:
             return [tf.half, tf.float32, tf.float64]
 
