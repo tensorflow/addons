@@ -47,7 +47,6 @@ To install the latest version, run the following:
 pip install tensorflow-addons
 ```
  
-**Note:** You will also need [`tensorflow==2.0.0-beta1`](https://www.tensorflow.org/beta) installed.
 
 To use addons:
 
