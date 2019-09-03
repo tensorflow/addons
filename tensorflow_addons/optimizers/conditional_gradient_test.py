@@ -152,11 +152,31 @@ class ConditionalGradientTest(tf.test.TestCase):
             self.assertEqual(3, len(optimizer_variables))
         '''
 
+    # Based on issue #347 in the following link,
+    #        "https://github.com/tensorflow/addons/issues/347"
+    # tf.half is not registered for 'ResourceScatterUpdate' OpKernel for 'GPU' devices.
+    # So we have to remove tf.half when testing with gpu.
+    # The function "_DtypesToTest" is from
+    #       "https://github.com/tensorflow/tensorflow/blob/5d4a6cee737a1dc6c20172a1dc1
+    #        5df10def2df72/tensorflow/python/kernel_tests/conv_ops_3d_test.py#L53-L62"
+
+    def _DtypesToTest(self, use_gpu):
+        if use_gpu:
+            if not test_utils.GpuSupportsHalfMatMulAndConv():
+                return [tf.float32, tf.float64]
+            else:
+                return [tf.half, tf.float32, tf.float64]
+        else:
+            return [tf.half, tf.float32, tf.float64]
+
     @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testMinimizeSparseResourceVariable(self):
-        for dtype in [tf.half, tf.float32, tf.float64]:
-            # This test invokes the ResourceSparseApplyConditionalGradient
-            # operation.
+        # This test invokes the ResourceSparseApplyConditionalGradient
+        # operation. And it will call the 'ResourceScatterUpdate' OpKernel
+        # for 'GPU' devices. However, tf.half is not registered in this case,
+        # based on issue #347.
+        # Thus, we will call the "_DtypesToTest" function.
+        for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
             var0 = tf.Variable([[1.0, 2.0]], dtype=dtype)
 
             # pylint: disable=cell-var-from-loop

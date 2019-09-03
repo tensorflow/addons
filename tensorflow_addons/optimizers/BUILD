@@ -9,7 +9,7 @@ py_library(
         "conditional_gradient.py",
         "lazy_adam.py",
         "moving_average.py",
-        "weight_decay_optimizers.py"
+        "weight_decay_optimizers.py",
     ],
     srcs_version = "PY2AND3",
     deps = [
