@@ -52,8 +52,8 @@ Try these useful commands below:
 * Format code automatically: `bash tools/run_docker.sh -c 'make code-format'`
 * Run sanity check: `bash tools/run_docker.sh -c 'make sanity-check'`
 * Run CPU unit tests: `bash tools/run_docker.sh -c 'make unit-test'`
-* Run GPU unit tests: `bash tools/run_docker.sh -c 'make gpu-unit-test'`
-* All of the above: `bash tools/run_docker.sh -c 'make'`
+* Run GPU unit tests: `bash tools/run_docker.sh -d gpu -c 'make gpu-unit-test'`
+* All of the above: `bash tools/run_docker.sh -d gpu -c 'make'`
 
 ## Coding style
 
