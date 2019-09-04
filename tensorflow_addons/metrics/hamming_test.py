@@ -21,6 +21,8 @@ from __future__ import print_function
 import tensorflow as tf
 from tensorflow_addons.metrics import HammingLoss, hamming_distance
 from tensorflow_addons.utils import test_utils
+from tensorflow.keras import layers
+import numpy as np
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -111,3 +113,17 @@ class HammingMetricsTest(tf.test.TestCase):
                                   dtype=tf.int32)
         test_result = hamming_distance(actuals, predictions)
         self.assertAllClose(0.3, test_result, atol=1e-5)
+
+    # Keras model check
+    def test_keras_model(self):
+        model = tf.keras.Sequential()
+        model.add(layers.Dense(64, activation='relu'))
+        model.add(layers.Dense(64, activation='relu'))
+        model.add(layers.Dense(1, activation='softmax'))
+        h1 = HammingLoss(mode='multiclass')
+        model.compile(
+            optimizer='rmsprop', loss='categorical_crossentropy', metrics=[h1])
+        data = np.random.random((10, 3))
+        labels = np.random.random((10, 1))
+        labels = np.where(labels > 0.5, 1, 0)
+        model.fit(data, labels, epochs=1, batch_size=32, verbose=0)
