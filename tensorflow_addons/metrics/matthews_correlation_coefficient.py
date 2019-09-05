@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implements F1 scores."""
+"""Matthews Correlation Coefficient Implementation"""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -26,17 +26,17 @@ import numpy as np
 class MatthewsCorrelationCoefficient(Metric):
     """Computes the Matthews Correlation Coefficient.
 
-    The Matthews correlation coefficient is used in 
+    The Matthews correlation coefficient (MCC) is used in 
     machine learning as a measure of the quality of binary 
     and multiclass classifications. It takes into account 
     true and false positives and negatives and is generally 
     regarded as a balanced measure which can be used even 
-    if the classes are of very different sizes. The MCC is 
-    in essence a correlation coefficient value between 
-    -1 and +1. A coefficient of +1 represents a perfect 
-    prediction, 0 an average random prediction and -1 an 
-    inverse prediction. The statistic is also known as 
-    the phi coefficient. [Wikipedia]
+    if the classes are of very different sizes. The correlation 
+    coefficient value of MCC is between -1 and +1. A 
+    coefficient of +1 represents a perfect prediction, 
+    0 an average random prediction and -1 an inverse 
+    prediction. The statistic is also known as 
+    the phi coefficient.
 
     MCC = (TP * TN) - (FP * FN) /
           ((TP + FP) * (TP + FN) * (TN + FP ) * (TN + FN))^(1/2)
@@ -45,7 +45,7 @@ class MatthewsCorrelationCoefficient(Metric):
        num_classes : Number of unique classes in the dataset.
 
     Returns:
-       mcc : float
+       mcc : float (the Matthews correlation coefficient)
 
     Usage:
     ```python
