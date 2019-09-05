@@ -22,7 +22,7 @@ from __future__ import print_function
 
 import os
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
 
 
 def main():
