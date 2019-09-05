@@ -233,7 +233,7 @@ do_check_futures_test() {
 
 do_check_file_name_test() {
     cd "$ROOT_DIR/tools/ci_build/verify"
-    python file_name.py
+    python check_file_name.py
 }
 
 do_check_code_format_test() {
