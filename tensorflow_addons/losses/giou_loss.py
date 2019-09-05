@@ -27,8 +27,8 @@ class GIOULoss(tf.keras.losses.Loss):
     """Implements the GIOU loss function.
 
     GIOU loss was first introduced in the Generalized Intersection over Union paper
-    (https://giou.stanford.edu/GIoU.pdf). GIOU loss is a patch for model which IOU
-    is used in object detection.
+    (https://giou.stanford.edu/GIoU.pdf). GIOU is a enhance for model which use IOU
+    in object detection.
 
     Usage:
 
@@ -52,12 +52,7 @@ class GIOULoss(tf.keras.losses.Loss):
       name: Op name
 
     Returns:
-      Weighted loss float `Tensor`. If `reduction` is `NONE`, this has the same
-          shape as `y_true`; otherwise, it is scalar.
-
-    Raises:
-        ValueError: If the shape of `sample_weight` is invalid or value of
-          `gamma` is less than zero
+      GIOU loss float `Tensor`.
     """
 
     def __init__(self,
@@ -81,19 +76,39 @@ def giou_loss(y_true, y_pred):
         y_pred: predictions tensor.
     
     Returns:
-        Weighted loss float `Tensor`.
+        GIOU loss float `Tensor`.
     """
 
     y_pred = tf.convert_to_tensor(y_pred)
     y_true = tf.cast(y_true, y_pred.dtype)
-    giou = _giou(y_pred, y_true)
+    giou = giou_calculate(y_pred, y_true)
 
     # compute the final loss and return
     return 1 - giou
 
 
-@tf.function
-def _giou(b1, b2):
+def giou_calculate(b1, b2):
+    """
+    Args
+        b1: bbox.
+        b1: the other bbox.
+
+    Returns:
+        iou float `Tensor`, between [-1, 1].
+    """
+    return do_iou_calculate(b1, b2, mode='giou')
+
+
+def do_iou_calculate(b1, b2, mode='iou'):
+    """
+    Args
+        b1: bbox.
+        b1: the other bbox.
+        mode: one of ['iou', 'giou']
+
+    Returns:
+        iou float `Tensor`.
+    """
     b1_ymin = tf.minimum(b1[:, 0], b1[:, 2])
     b1_xmin = tf.minimum(b1[:, 1], b1[:, 3])
     b1_ymax = tf.maximum(b1[:, 0], b1[:, 2])
@@ -108,8 +123,6 @@ def _giou(b1, b2):
         tf.where(tf.logical_or(b1_area < 0, b2_area < 0)), tf.int32)
     valid_area_indexes = tf.cast(
         tf.where(tf.logical_and(b1_area >= 0, b2_area >= 0)), tf.int32)
-    # if b1_area<0 or b2_area<0:
-    #     return 0
 
     intersect_ymin = tf.maximum(b1_ymin, b2_ymin)
     intersect_xmin = tf.maximum(b1_xmin, b2_xmin)
@@ -127,6 +140,8 @@ def _giou(b1, b2):
         tf.zeros([tf.shape(illegal_area_indexes)[0], 1], tf.float64)
     ]
     iou = tf.dynamic_stitch(indices, data)
+    if mode == 'iou':
+        return iou
     bc_ymin = tf.minimum(b1_ymin, b2_ymin)
     bc_xmin = tf.minimum(b1_xmin, b2_xmin)
     bc_ymax = tf.maximum(b1_ymax, b2_ymax)
@@ -134,5 +149,6 @@ def _giou(b1, b2):
 
     enclose_area = tf.maximum(0, bc_ymax - bc_ymin) * tf.maximum(
         0, bc_xmax - bc_xmin)
-    giou = iou - (enclose_area - union_area) / enclose_area
+    giou = iou - tf.cast(enclose_area - union_area, tf.float64) / (
+        tf.cast(enclose_area, tf.float64) + 1e-8)
     return giou
