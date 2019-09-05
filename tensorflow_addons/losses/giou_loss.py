@@ -33,13 +33,11 @@ class GIOULoss(tf.keras.losses.Loss):
     Usage:
 
     ```python
-    fl = tfa.losses.GIOU()
-    loss = fl(
-      [[0.97], [0.91], [0.03]],
-      [[1], [1], [0])
-    print('Loss: ', loss.numpy())  # Loss: [[0.03045921]
-                                            [0.09431068]
-                                            [0.31471074]
+    gl = tfa.losses.GIOU()
+    loss = gl(
+      [[0, 0, 1, 1], [0, 0, 2, 2], [0, 0, 2, 2]],
+      [[0, 0, 1, 1], [0, 0, 1, 2], [2, 2, 4, 4]])
+    print('Loss: ', loss.numpy())  # Loss: [0, 0.5, 1.25]
     ```
     Usage with tf.keras API:
 
@@ -49,6 +47,7 @@ class GIOULoss(tf.keras.losses.Loss):
     ```
 
     Args
+        reduction
       name: Op name
 
     Returns:
