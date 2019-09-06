@@ -26,6 +26,7 @@ import numpy as np
 class MatthewsCorrelationCoefficient(Metric):
     """Computes the Matthews Correlation Coefficient.
 
+    The statistic is also known as the phi coefficient.
     The Matthews correlation coefficient (MCC) is used in 
     machine learning as a measure of the quality of binary 
     and multiclass classifications. It takes into account 
@@ -49,13 +50,13 @@ class MatthewsCorrelationCoefficient(Metric):
 
     Usage:
     ```python
-    y_GroundTruth = tf.constant([[1, 0, 1], [0, 1, 0]],
+    actuals = tf.constant([[1, 0, 1], [0, 1, 0]],
              dtype=tf.int32)
-    y_Prediction = tf.constant([[1, 0, 0],[0, 1, 1]],
+    preds = tf.constant([[1, 0, 0],[0, 1, 1]],
              dtype=tf.int32)             
     # Matthews correlation coefficient
     mcc = MatthewsCorrelationCoefficient(num_classes=3)
-	output.update_state(y_GroundTruth, y_Prediction)
+	output.update_state(actuals, preds)
 	print('MCC:', output.result().numpy())
 
 	# mcc : 
@@ -63,86 +64,86 @@ class MatthewsCorrelationCoefficient(Metric):
     ```
     """
 
-	 def __init__(self,
-	                 num_classes,
-	                 name='Matthews_Correlation_Coefficient',
-	                 dtype=tf.int32):
-	        super(MatthewsCorrelationCoefficient, self).__init__(name=name, dtype=dtype)
-	        self.num_classes = num_classes
-	        self.true_positives = self.add_weight(
-	            'true_positives',
-	            shape=[self.num_classes],
-	            initializer='zeros',
-	            dtype=self.dtype)
-	        self.false_positives = self.add_weight(
-	            'false_positives',
-	            shape=[self.num_classes],
-	            initializer='zeros',
-	            dtype=self.dtype)
-	        self.false_negatives = self.add_weight(
-	            'false_negatives',
-	            shape=[self.num_classes],
-	            initializer='zeros',
-	            dtype=self.dtype)
-	        self.true_negatives = self.add_weight(
-	            'true_negatives',
-	            shape=[self.num_classes],
-	            initializer='zeros',
-	            dtype=self.dtype)
+	def __init__(self,
+                 num_classes,
+                 name='Matthews_Correlation_Coefficient',
+                 dtype=tf.int32):
+        super(MatthewsCorrelationCoefficient, self).__init__(name=name, dtype=dtype)
+        self.num_classes = num_classes
+        self.true_positives = self.add_weight(
+            'true_positives',
+            shape=[self.num_classes],
+            initializer='zeros',
+            dtype=self.dtype)
+        self.false_positives = self.add_weight(
+            'false_positives',
+            shape=[self.num_classes],
+            initializer='zeros',
+            dtype=self.dtype)
+        self.false_negatives = self.add_weight(
+            'false_negatives',
+            shape=[self.num_classes],
+            initializer='zeros',
+            dtype=self.dtype)
+        self.true_negatives = self.add_weight(
+            'true_negatives',
+            shape=[self.num_classes],
+            initializer='zeros',
+            dtype=self.dtype)
 
-	    def update_state(self, y_true, y_pred):
-	        y_true = tf.cast(y_true, tf.int32)
-	        y_pred = tf.cast(y_pred, tf.int32)
+    def update_state(self, y_true, y_pred):
+        y_true = tf.cast(y_true, tf.int32)
+        y_pred = tf.cast(y_pred, tf.int32)
 
-	        true_positive = tf.math.count_nonzero(y_true * y_pred, 0)
-	        # predicted sum
-	        pred_sum = tf.math.count_nonzero(y_pred, 0)
-	        # Ground truth label sum
-	        true_sum = tf.math.count_nonzero(y_true, 0)
-	        false_positive = pred_sum - true_positive
-	        false_negative = true_sum - true_positive
-	        true_negative = y_true.get_shape(
-	        )[0] - true_positive - false_positive - false_negative
+        true_positive = tf.math.count_nonzero(y_true * y_pred, 0)
+        # predicted sum
+        pred_sum = tf.math.count_nonzero(y_pred, 0)
+        # Ground truth label sum
+        true_sum = tf.math.count_nonzero(y_true, 0)
+        false_positive = pred_sum - true_positive
+        false_negative = true_sum - true_positive
+        true_negative = y_true.get_shape(
+        )[0] - true_positive - false_positive - false_negative
 
-	        # true positive state_update
-	        self.true_positives.assign_add(tf.cast(true_positive, self.dtype))
-	        # false positive state_update
-	        self.false_positives.assign_add(tf.cast(false_positive, self.dtype))
-	        # false negative state_update
-	        self.false_negatives.assign_add(tf.cast(false_negative, self.dtype))
-	        # true negative state_update
-	        self.true_negatives.assign_add(tf.cast(true_negative, self.dtype))
+        # true positive state_update
+        self.true_positives.assign_add(tf.cast(true_positive, self.dtype))
+        # false positive state_update
+        self.false_positives.assign_add(tf.cast(false_positive, self.dtype))
+        # false negative state_update
+        self.false_negatives.assign_add(tf.cast(false_negative, self.dtype))
+        # true negative state_update
+        self.true_negatives.assign_add(tf.cast(true_negative, self.dtype))
 
 
-	    def result(self):
-	    	# numerator
-	    	numerator1 = tf.cast(self.true_positives + self.true_negative, self.dtype)
-	    	numerator2 = tf.cast(self.false_positives + self.false_negatives, self.dtype)
-	    	numerator = numerator1 -numerator2
-	    	# denominator
-	    	denominator1 = tf.cast(self.true_positives + self.false_positives, self.dtype)
-	    	denominator2 = tf.cast(self.true_positives + self.false_negatives, self.dtype)
-	    	denominator3 = tf.cast(self.true_negatives + self.false_positives, self.dtype)
-	    	denominator4 = tf.cast(self.true_negatives + self.false_negatives, self.dtype)
-	    	denominator = tf.math.sqrt(denominator1 * denominator2 * denominator3 * denominator4)
-	    	mcc = tf.math.divide_no_nan(numerator, denominator)
+    def result(self):
+    	# numerator
+    	numerator1 = tf.cast(self.true_positives + self.true_negative, self.dtype)
+    	numerator2 = tf.cast(self.false_positives + self.false_negatives, self.dtype)
+    	numerator = numerator1 -numerator2
+    	# denominator
+    	denominator1 = tf.cast(self.true_positives + self.false_positives, self.dtype)
+    	denominator2 = tf.cast(self.true_positives + self.false_negatives, self.dtype)
+    	denominator3 = tf.cast(self.true_negatives + self.false_positives, self.dtype)
+    	denominator4 = tf.cast(self.true_negatives + self.false_negatives, self.dtype)
+    	denominator = tf.math.sqrt(denominator1 * denominator2 * denominator3 * denominator4)
+    	mcc = tf.math.divide_no_nan(numerator, denominator)
 
-	        return mcc
+    	return mcc
 
-	    def get_config(self):
-	        """Returns the serializable config of the metric."""
+    def get_config(self):
+        """Returns the serializable config of the metric."""
 
-	        config = {
-	            "num_classes": self.num_classes,
-	        }
-	        base_config = super(MatthewsCorrelationCoefficient, self).get_config()
-	        return dict(list(base_config.items()) + list(config.items()))
+        config = {
+            "num_classes": self.num_classes,
+        }
+        base_config = super(MatthewsCorrelationCoefficient, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
 
-	    def reset_states(self):
-	    	"""Resets all of the metric state variables."""
-	        self.true_positives.assign(np.zeros(self.num_classes), np.int32)
-	        self.false_positives.assign(np.zeros(self.num_classes), np.int32)
-	        self.false_negatives.assign(np.zeros(self.num_classes), np.int32)
-	        self.true_negatives.assign(np.zeros(self.num_classes), np.int32)
+    def reset_states(self):
+    	"""Resets all of the metric state variables."""
+        self.true_positives.assign(np.zeros(self.num_classes), np.int32)
+        self.false_positives.assign(np.zeros(self.num_classes), np.int32)
+        self.false_negatives.assign(np.zeros(self.num_classes), np.int32)
+        self.true_negatives.assign(np.zeros(self.num_classes), np.int32)
   
 
