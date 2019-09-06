@@ -5,16 +5,17 @@
 |:---------- |:----------- |:------------- |
 | contrastive |  @WindQAQ | windqaq@gmail.com |
 | focal_loss | @SSaishruthi  | saishruthi.tn@gmail.com |
+| giou_loss | @who who who  | fsx950223@gmail.com |
 | lifted | @rahulunair | rahulunair@gmail.com  |
 | npairs | @WindQAQ | windqaq@gmail.com |
 | sparsemax_loss | @AndreasMadsen | amwwebdk+github@gmail.com |
-| triplet |  @rahulunair | rahulunair@gmail.com  |
 
 ## Components
 | Submodule | Loss  | Reference               |
 |:----------------------- |:---------------------|:--------------------------|
 | contrastive | ContrastiveLoss | http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf |
 | focal_loss | SigmoidFocalCrossEntropy | https://arxiv.org/abs/1708.02002  |
+| giou_loss | GIOULoss | https://giou.stanford.edu/GIoU.pdf       |
 | lifted | LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
 | npairs | NpairsLoss | http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf |
 | npairs | NpairsMultilabelLoss | http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf |
