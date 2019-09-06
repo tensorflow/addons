@@ -19,75 +19,54 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.metrics import MatthewsCorrelationCoefficient
 from tensorflow_addons.utils import test_utils
+from tensorflow_addons.metrics import MatthewsCorrelationCoefficient
 
 
 @test_utils.run_all_in_graph_and_eager_modes
 class MatthewsCorrelationCoefficientTest(tf.test.TestCase):
     def test_config(self):
-        mcm_obj = MatthewsCorrelationCoefficient(num_classes=3)
-        self.assertEqual(mcm_obj.num_classes, 3)
-        self.assertEqual(mcm_obj.dtype, tf.int32)
-        # Check save and restore config
-        mcm_obj2 = MatthewsCorrelationCoefficient.from_config(mcm_obj.get_config())
-        self.assertEqual(mcm_obj2.num_classes, 3)
-        self.assertEqual(mcm_obj2.dtype, tf.int32)
+        # mcc object
+        mcc1 = MatthewsCorrelationCoefficient(num_classes=3)
+        self.assertEqual(mcc1.num_classes, 3)
+        self.assertEqual(mcc1.dtype, tf.int32)
+        # check configure
+        mcc2 = MatthewsCorrelationCoefficient.from_config(mcc1.get_config())
+        self.assertEqual(mcc2.num_classes, 3)
+        self.assertEqual(mcc2.dtype, tf.int32)
 
     def initialize_vars(self, n_classes, input_dtype):
-        mcm_obj = MatthewsCorrelationCoefficient(
+        mcc = MatthewsCorrelationCoefficient(
             num_classes=n_classes, dtype=input_dtype)
-        self.evaluate(tf.compat.v1.variables_initializer(mcm_obj.variables))
-        return mcm_obj
+        self.evaluate(tf.compat.v1.variables_initializer(mcc.variables))
+        return mcc
 
-    def update_obj_states(self, obj, actuals, preds):
-        update_op = obj.update_state(actuals, preds)
+    def update_obj_states(self, obj, gt_label, preds):
+        update_op = obj.update_state(gt_label, preds)
         self.evaluate(update_op)
 
     def check_results(self, obj, value):
         self.assertAllClose(value, self.evaluate(obj.result()), atol=1e-5)
 
-    def test_mcm_3_classes(self):
+    def test_multiple_classes(self):
         for input_dtype in [tf.int32, tf.int64, tf.float32, tf.float64]:
-            actuals = tf.constant([[1, 0, 1], [0, 1, 0], [1, 0, 1], [0, 1, 0]],
+            gt_label = tf.constant([[1, 0, 1], [0, 1, 0], [1, 0, 1], [0, 1, 0]],
                                   dtype=input_dtype)
             preds = tf.constant([[1, 0, 0], [0, 1, 1], [1, 0, 0], [0, 1, 1]],
                                 dtype=input_dtype)
             # Initialize
-            mcm_obj = self.initialize_vars(
+            mcc = self.initialize_vars(
                 n_classes=3, input_dtype=input_dtype)
             # Update
-            self.update_obj_states(mcm_obj, actuals, preds)
+            self.update_obj_states(mcc, gt_label, preds)
             # Check results
             self.check_results(
-                mcm_obj,
+                mcc,
                 [[[2, 0], [0, 2]], [[2, 0], [0, 2]], [[0, 2], [2, 0]]])
-
-    def test_mcm_4_classes(self):
-        for input_dtype in [tf.int32, tf.int64, tf.float32, tf.float64]:
-            actuals = tf.constant(
-                [[1, 0, 0, 1], [0, 0, 1, 1], [1, 0, 0, 1], [1, 1, 0, 0],
-                 [0, 1, 0, 1], [1, 0, 0, 1], [0, 0, 1, 1], [1, 0, 0, 1],
-                 [0, 1, 1, 0], [0, 1, 0, 1]],
-                dtype=input_dtype)
-            preds = tf.constant(
-                [[1, 0, 1, 0], [0, 0, 1, 1], [0, 0, 0, 1], [1, 1, 0, 0],
-                 [1, 0, 0, 0], [1, 0, 0, 1], [0, 0, 1, 1], [1, 0, 0, 1],
-                 [0, 1, 0, 0], [0, 0, 0, 1]],
-                dtype=input_dtype)
-
-            # Initialize
-            mcm_obj = self.initialize_vars(
-                n_classes=4, input_dtype=input_dtype)
-            # Update
-            self.update_obj_states(mcm_obj, actuals, preds)
-            # Check results
-            self.check_results(mcm_obj, [[[4, 1], [1, 4]], [[6, 0], [2, 2]],
-                                         [[6, 1], [1, 2]], [[2, 0], [2, 6]]])
 
     def test_multiclass(self):
         for input_dtype in [tf.int32, tf.int64, tf.float32, tf.float64]:
-            actuals = tf.constant(
+            gt_label = tf.constant(
                 [[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [0, 1, 0, 0],
                  [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [1, 0, 0, 0],
                  [0, 0, 1, 0], [0, 0, 0, 1]],
@@ -99,10 +78,10 @@ class MatthewsCorrelationCoefficientTest(tf.test.TestCase):
                 dtype=input_dtype)
 
             # Initialize
-            mcm_obj = self.initialize_vars(
+            mcc = self.initialize_vars(
                 n_classes=4, input_dtype=input_dtype)
             # Update
-            self.update_obj_states(mcm_obj, actuals, preds)
+            self.update_obj_states(mcc, gt_label, preds)
             # Check results
-            self.check_results(mcm_obj, [[[5, 2], [0, 3]], [[7, 1], [2, 0]],
+            self.check_results(mcc, [[[5, 2], [0, 3]], [[7, 1], [2, 0]],
                                          [[7, 0], [1, 2]], [[8, 0], [0, 2]]])
