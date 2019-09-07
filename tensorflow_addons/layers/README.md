@@ -14,7 +14,7 @@
 ## Components
 | Submodule  | Layer |  Reference  |
 |:---------- |:----------- |:------------- |
-| gelu   | GeLU   |  
+| gelu   | GeLU   | https://arxiv.org/abs/1606.08415 | 
 | maxout | Maxout | https://arxiv.org/abs/1302.4389    |
 | normalizations | GroupNormalization | https://arxiv.org/abs/1803.08494 |
 | normalizations | InstanceNormalization | https://arxiv.org/abs/1607.08022 |
