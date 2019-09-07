@@ -3,6 +3,7 @@
 ## Maintainers
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:------------- |
+| GeLU       | @AakashKumarNain | aakashnain@outlook.com |  
 | maxout |  |  |
 | normalizations | @smokrow | moritz.kroeger@tu-dortmund.de |
 | opticalflow |  |  |
