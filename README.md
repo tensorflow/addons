@@ -47,6 +47,7 @@ To install the latest version, run the following:
 pip install tensorflow-addons
 ```
  
+**Note:** You will also need [`tensorflow==2.0.0-beta1`](https://www.tensorflow.org/beta) installed.
 
 To use addons:
 
@@ -72,9 +73,6 @@ https://bazel.build/) build system.
 git clone https://github.com/tensorflow/addons.git
 cd addons
 
-# If building GPU Ops (Requires CUDA 10.0 and CuDNN 7)
-export TF_NEED_CUDA=1
-
 # This script links project with TensorFlow dependency
 ./configure.sh
 
@@ -94,11 +92,6 @@ for end-to-end examples of various addons.
 User experience and project maintainability are core concepts in
 TF-Addons. In order to achieve these we require that our additions
 conform to established API patterns seen in core TensorFlow.
-
-#### GPU/CPU Custom-Ops
-A major benefit of TensorFlow Addons is that there are precompiled ops. Should 
-a CUDA 10 installation not be found then the op will automatically fall back to 
-a CPU implementation.
 
 #### Proxy Maintainership
 Addons has been designed to compartmentalize subpackages and submodules so 

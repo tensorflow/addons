@@ -188,9 +188,8 @@ def crf_log_likelihood(inputs,
 
     # Get the transition matrix if not provided.
     if transition_params is None:
-        initializer = tf.keras.initializers.GlorotUniform()
-        transition_params = tf.Variable(
-            initializer([num_tags, num_tags]), "transitions")
+        transition_params = tf.get_variable("transitions",
+                                            [num_tags, num_tags])
 
     sequence_scores = crf_sequence_score(inputs, tag_indices, sequence_lengths,
                                          transition_params)

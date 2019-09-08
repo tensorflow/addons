@@ -17,7 +17,6 @@
 | focal_loss | SigmoidFocalCrossEntropy | https://arxiv.org/abs/1708.02002  |
 | lifted | LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
 | npairs | NpairsLoss | http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf |
-| npairs | NpairsMultilabelLoss | http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf |
 | sparsemax_loss | SparsemaxLoss |  https://arxiv.org/abs/1602.02068 |
 | triplet | TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
 

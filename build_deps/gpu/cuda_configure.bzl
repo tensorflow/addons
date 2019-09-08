@@ -174,7 +174,7 @@ def _get_win_cuda_defines(repository_ctx):
     # If we are not on Windows, return empty vaules for Windows specific fields.
     # This ensures the CROSSTOOL file parser is happy.
     if not _is_windows(repository_ctx):
-        return dict({
+        return {
             "%{msvc_env_tmp}": "",
             "%{msvc_env_path}": "",
             "%{msvc_env_include}": "",
@@ -184,7 +184,7 @@ def _get_win_cuda_defines(repository_ctx):
             "%{msvc_link_path}": "",
             "%{msvc_lib_path}": "",
             "%{cxx_builtin_include_directory}": "",
-        })
+        }
 
     vc_path = find_vc_path(repository_ctx)
     if not vc_path:
@@ -957,8 +957,6 @@ def _get_cuda_config(repository_ctx):
     )
 
 def _tpl(repository_ctx, tpl, substitutions = {}, out = None):
-    if substitutions == None:
-        substitutions = {}
     if not out:
         out = tpl.replace(":", "/")
     repository_ctx.template(
@@ -1303,7 +1301,7 @@ def _create_local_cuda_repository(repository_ctx):
     _tpl(
         repository_ctx,
         "crosstool:CROSSTOOL",
-        cuda_defines.update(_get_win_cuda_defines(repository_ctx)),
+        cuda_defines + _get_win_cuda_defines(repository_ctx),
         out = "crosstool/CROSSTOOL",
     )
 

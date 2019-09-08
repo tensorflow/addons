@@ -32,7 +32,7 @@ import re
 
 import six
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 FUTURES_PATTERN = re.compile(r'^from __future__ import (\w+)\s*$')
 FUTURES_PATTERN_2 = re.compile(
     r'^from __future__ import (\w+), (\w+), (\w+)\s*$')

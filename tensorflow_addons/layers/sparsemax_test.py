@@ -20,7 +20,6 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from absl.testing import parameterized
 from tensorflow_addons.layers import Sparsemax
 from tensorflow_addons.utils import test_utils
 
@@ -51,10 +50,10 @@ def _np_sparsemax(z):
     return np.maximum(0, z - tau_z)
 
 
-@parameterized.parameters([np.float32, np.float64])
+@test_utils.run_all_with_types(['float32', 'float64'])
 @test_utils.run_all_in_graph_and_eager_modes
 class SparsemaxTest(tf.test.TestCase):
-    def test_sparsemax_layer_against_numpy(self, dtype):
+    def test_sparsemax_layer_against_numpy(self, dtype=None):
         """check sparsemax kernel against numpy."""
         random = np.random.RandomState(1)
 
@@ -62,7 +61,6 @@ class SparsemaxTest(tf.test.TestCase):
 
         test_utils.layer_test(
             Sparsemax,
-            kwargs={'dtype': dtype},
             input_data=z,
             expected_output=_np_sparsemax(z).astype(dtype))
 

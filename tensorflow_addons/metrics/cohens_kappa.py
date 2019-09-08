@@ -41,21 +41,15 @@ class CohenKappa(Metric):
     ```python
     actuals = np.array([4, 4, 3, 4, 2, 4, 1, 1], dtype=np.int32)
     preds = np.array([4, 4, 3, 4, 4, 2, 1, 1], dtype=np.int32)
-    weights = np.array([1, 1, 2, 5, 10, 2, 3, 3], dtype=np.int32)
-    
-    m = tfa.metrics.CohenKappa(num_classes=5)
-    m.update_state(actuals, preds)
-    print('Final result: ', m.result().numpy()) # Result: 0.61904764
-    
-    # To use this with weights, sample_weight argument can be used.
-    m = tfa.metrics.CohenKappa(num_classes=5)
-    m.update_state(actuals, preds, sample_weight=weights)
-    print('Final result: ', m.result().numpy()) # Result: 0.37209308
+
+    m = tf.keras.metrics.CohenKappa(num_classes=5)
+    m.update_state(actuals, preds, "quadratic")
+    print('Final result: ', m.result().numpy()) # Result: 0.68932
     ```
     Usage with tf.keras API:
     ```python
     model = keras.models.Model(inputs, outputs)
-    model.add_metric(tfa.metrics.CohenKappa(num_classes=5)(outputs))
+    model.add_metric(tf.keras.metrics.CohenKappa(num_classes=5)(outputs))
     model.compile('sgd', loss='mse')
     ```
 

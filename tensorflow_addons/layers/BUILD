@@ -6,7 +6,6 @@ py_library(
     name = "layers",
     srcs = [
         "__init__.py",
-        "gelu.py",
         "maxout.py",
         "normalizations.py",
         "optical_flow.py",
@@ -21,19 +20,6 @@ py_library(
     deps = [
         "//tensorflow_addons/activations",
         "//tensorflow_addons/utils",
-    ],
-)
-
-py_test(
-    name = "gelu_test",
-    size = "small",
-    srcs = [
-        "gelu_test.py",
-    ],
-    main = "gelu_test.py",
-    srcs_version = "PY2AND3",
-    deps = [
-        ":layers",
     ],
 )
 

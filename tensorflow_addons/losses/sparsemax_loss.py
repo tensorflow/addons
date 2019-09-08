@@ -23,8 +23,8 @@ from tensorflow_addons.activations.sparsemax import sparsemax
 from tensorflow_addons.utils import keras_utils
 
 
-@keras_utils.register_keras_custom_object
 @tf.function
+@keras_utils.register_keras_custom_object
 def sparsemax_loss(logits, sparsemax, labels, name=None):
     """Sparsemax loss function [1].
 

@@ -3,7 +3,6 @@
 ## Maintainers
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:--------------|
-| connected_components | @sayoojbk | sayoojbk@gmail.com |
 | dense_image_warp | @WindQAQ | windqaq@gmail.com |
 | distance_transform_ops | @mels630 | mels630@gmail.com |
 | distort_image_ops | @WindQAQ | windqaq@gmail.com |
@@ -14,7 +13,6 @@
 ## Components 
 | Submodule  | Image Processing Function |  Reference  |
 |:---------- |:----------- |:----------- |
-| connected_components | connected_components |  |
 | dense_image_warp | dense_image_warp |  |
 | dense_image_warp | interpolate_bilinear |  |
 | distance_transform_ops | euclidean_distance_transform | |
@@ -29,7 +27,6 @@
 | transform_ops | transform |  | 
 | translate_ops | translate | |
 | translate_ops | translations_to_projective_transforms | |
-
 
 ## Contribution Guidelines
 #### Standard API

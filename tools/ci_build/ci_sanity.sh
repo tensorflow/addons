@@ -227,13 +227,13 @@ do_bazel_nobuild() {
 }
 
 do_check_futures_test() {
-    cd "$ROOT_DIR/tools/ci_build/verify"
-    python check_futures.py
+    cd "$ROOT_DIR/tools/test"
+    python check_futures_test.py
 }
 
 do_check_file_name_test() {
-    cd "$ROOT_DIR/tools/ci_build/verify"
-    python check_file_name.py
+    cd "$ROOT_DIR/tools/test"
+    python file_name_test.py
 }
 
 do_check_code_format_test() {

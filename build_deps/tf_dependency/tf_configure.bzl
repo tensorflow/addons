@@ -168,7 +168,7 @@ def _symlink_genrule_for_dir(
 
             # Copy the headers to create a sandboxable setup.
             cmd = "cp -f"
-            command.append(cmd + ' "%s" "%s" | true' % (src_files[i], dest))
+            command.append(cmd + ' "%s" "%s"' % (src_files[i], dest))
             outs.append('        "' + dest_dir + dest_files[i] + '",')
     genrule = _genrule(
         genrule_name,

@@ -16,6 +16,7 @@
 
 all: code-format sanity-check unit-test
 
+# TODO: install those dependencies in docker image (dockerfile).
 install-ci-dependency:
 	bash tools/ci_build/install/install_ci_dependency.sh --quiet
 

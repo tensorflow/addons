@@ -156,7 +156,7 @@ class NASCellTest(tf.test.TestCase):
         cell = rnn_cell.NASCell(10, projection=5, use_bias=True)
 
         expected_config = {
-            "dtype": "float32",
+            "dtype": None,
             "name": "nas_cell",
             "trainable": True,
             "units": 10,
@@ -241,7 +241,7 @@ class LayerNormLSTMCellTest(tf.test.TestCase):
         cell = rnn_cell.LayerNormLSTMCell(10)
 
         expected_config = {
-            "dtype": "float32",
+            "dtype": None,
             "name": "layer_norm_lstm_cell",
             "trainable": True,
             "units": 10,

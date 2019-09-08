@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,17 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 # ==============================================================================
-"""Additional optimizers that conform to Keras API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+set -x
 
-from tensorflow_addons.optimizers.conditional_gradient import ConditionalGradient
-from tensorflow_addons.optimizers.lazy_adam import LazyAdam
-from tensorflow_addons.optimizers.moving_average import MovingAverage
-from tensorflow_addons.optimizers.weight_decay_optimizers import AdamW
-from tensorflow_addons.optimizers.weight_decay_optimizers import SGDW
-from tensorflow_addons.optimizers.weight_decay_optimizers import (
-    extend_with_decoupled_weight_decay)
+## CPU Tests
+/bin/bash ci_testing/addons_cpu.sh
+
+## GPU Tests
+#/bin/bash ci_testing/addons_gpu.sh
+
+exit $?
