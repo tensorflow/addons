@@ -37,7 +37,8 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
                  learning_rate,
                  lamda,
                  use_locking=False,
-                 name="ConditionalGradient"):
+                 name="ConditionalGradient",
+                 **kwargs):
         """Construct a conditional gradient optimizer.
             Args:
             learning_rate: A `Tensor` or a floating point value.
@@ -47,9 +48,10 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
             name: Optional name prefix for the operations created when
                   applying gradients.  Defaults to "ConditionalGradient"
         """
-        super(ConditionalGradient, self).__init__(name=name)
+        super(ConditionalGradient, self).__init__(name=name, **kwargs)
         self._set_hyper("learning_rate", learning_rate)
         self._set_hyper("lamda", lamda)
+        self._set_hyper("use_locking", use_locking)
 
     def get_config(self):
         config = {
@@ -74,13 +76,14 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
         if callable(lamda):
             lamda = lamda()
         self._lamda_tensor = tf.convert_to_tensor(lamda, name="lamda")
+        return super(ConditionalGradient, self)._prepare(var_list)
 
     def _resource_apply_dense(self, grad, var):
         def frobenius_norm(m):
             return tf.math.reduce_sum(m**2)**0.5
 
-        norm = tf.convert_to_tensor(frobenius_norm(grad), name="norm")
-        norm = tf.dtypes.cast(norm, var.dtype.base_dtype)
+        norm = tf.convert_to_tensor(
+            frobenius_norm(grad), name="norm", dtype=var.dtype.base_dtype)
         lr = tf.dtypes.cast(self._learning_rate_tensor, var.dtype.base_dtype)
         lamda = tf.dtypes.cast(self._lamda_tensor, var.dtype.base_dtype)
         var_update_tensor = (
@@ -97,8 +100,8 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
         def frobenius_norm(m):
             return tf.reduce_sum(m**2)**0.5
 
-        norm = tf.convert_to_tensor(frobenius_norm(grad), name="norm")
-        norm = tf.dtypes.cast(norm, var.dtype.base_dtype)
+        norm = tf.convert_to_tensor(
+            frobenius_norm(grad), name="norm", dtype=var.dtype.base_dtype)
         lr = tf.dtypes.cast(self._learning_rate_tensor, var.dtype.base_dtype)
         lamda = tf.dtypes.cast(self._lamda_tensor, var.dtype.base_dtype)
         var_slice = tf.gather(var, indices)

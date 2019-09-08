@@ -105,8 +105,7 @@ class ConditionalGradientTest(tf.test.TestCase):
                           - (1 - 0.5) * 0.01 * 0.01 / norm1]),
                 self.evaluate(var1))
 
-    #@test_utils.run_in_graph_and_eager_modes(reset_test=True)
-    #?
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testBasic(self):
         with self.cached_session():
             self.doTestBasic(use_resource=False)
@@ -115,12 +114,11 @@ class ConditionalGradientTest(tf.test.TestCase):
     def testResourceBasic(self):
         self.doTestBasic(use_resource=True)
 
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testBasicCallableParams(self):
-        #with tf.enable_eager_execution():
         self.doTestBasic(use_resource=True, use_callable_params=True)
 
-    #@test_utils.run_in_graph_and_eager_modes(reset_test=True)
-    #?
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testVariablesAcrossGraphs(self):
         optimizer = cg_lib.ConditionalGradient(0.01, 0.5)
         with tf.Graph().as_default():
@@ -242,7 +240,7 @@ class ConditionalGradientTest(tf.test.TestCase):
                  learning_rate * 1 - (1 - learning_rate) * lamda * 1 / norm0
              ]], self.evaluate(var0))
 
-    @test_utils.run_deprecated_v1
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testTensorLearningRateAndConditionalGradient(self):
         for dtype in [tf.half, tf.float32, tf.float64]:
             with self.cached_session():
@@ -256,7 +254,11 @@ class ConditionalGradientTest(tf.test.TestCase):
                     learning_rate=tf.constant(0.5), lamda=tf.constant(0.01))
                 cg_update = cg_opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
-                self.evaluate(tf.compat.v1.global_variables_initializer())
+                if not tf.executing_eagerly():
+                    self.evaluate(tf.compat.v1.global_variables_initializer())
+                    # Fetch params to validate initial values
+                    self.assertAllClose([1.0, 2.0], self.evaluate(var0))
+                    self.assertAllClose([3.0, 4.0], self.evaluate(var1))
 
                 # Check we have slots
                 self.assertEqual(["conditional_gradient"],
@@ -272,11 +274,8 @@ class ConditionalGradientTest(tf.test.TestCase):
                     self.assertFalse(
                         slot1 in tf.compat.v1.trainable_variables())
 
-                # Fetch params to validate initial values
-                self.assertAllClose([1.0, 2.0], self.evaluate(var0))
-                self.assertAllClose([3.0, 4.0], self.evaluate(var1))
-
-                cg_update.run()
+                if not tf.executing_eagerly():
+                    self.evaluate(cg_update)
                 # Check that the parameters have been updated.
                 norm0 = self.evaluate(norm0)
                 norm1 = self.evaluate(norm1)
@@ -292,7 +291,10 @@ class ConditionalGradientTest(tf.test.TestCase):
                     ]), self.evaluate(var1))
                 # Step 2: the conditional_gradient contain the
                 # previous update.
-                cg_update.run()
+                if tf.executing_eagerly():
+                    cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+                else:
+                    self.evaluate(cg_update)
                 # Check that the parameters have been updated.
                 self.assertAllCloseAccordingToType(
                     np.array(
@@ -411,7 +413,7 @@ class ConditionalGradientTest(tf.test.TestCase):
         # pylint: enable=line-too-long
         return db_grad, db_out
 
-    @test_utils.run_deprecated_v1
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testLikeDistBeliefCG01(self):
         with self.cached_session():
             db_grad, db_out = self._dbParamsCG01()
@@ -419,15 +421,23 @@ class ConditionalGradientTest(tf.test.TestCase):
             var0 = tf.Variable([0.0] * num_samples)
             grads0 = tf.constant([0.0] * num_samples)
             cg_opt = cg_lib.ConditionalGradient(learning_rate=0.1, lamda=0.1)
-            cg_update = cg_opt.apply_gradients(zip([grads0], [var0]))
-            self.evaluate(tf.compat.v1.global_variables_initializer())
+            if not tf.executing_eagerly():
+                cg_update = cg_opt.apply_gradients(zip([grads0], [var0]))
+                self.evaluate(tf.compat.v1.global_variables_initializer())
+
             for i in xrange(num_samples):
-                cg_update.run(feed_dict={grads0: db_grad[i]})
+                if tf.executing_eagerly():
+                    grads0 = tf.constant(db_grad[i])
+                    cg_opt.apply_gradients(zip([grads0], [var0]))
+                else:
+                    cg_update.run(feed_dict={grads0: db_grad[i]})
                 self.assertAllClose(np.array(db_out[i]), self.evaluate(var0))
 
-    @test_utils.run_deprecated_v1
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testSparse(self):
-        for dtype in [tf.half, tf.float32, tf.float64]:
+        # TODO:
+        #       To address the issue #347.
+        for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
             with self.cached_session():
                 var0 = tf.Variable(tf.zeros([4, 2], dtype=dtype))
                 var1 = tf.Variable(tf.constant(1.0, dtype, [4, 2]))
@@ -447,7 +457,13 @@ class ConditionalGradientTest(tf.test.TestCase):
                     learning_rate=learning_rate, lamda=lamda)
                 cg_update = cg_opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
-                self.evaluate(tf.compat.v1.global_variables_initializer())
+
+                if not tf.executing_eagerly():
+                    self.evaluate(tf.compat.v1.global_variables_initializer())
+                    # Fetch params to validate initial values
+                    self.assertAllClose([0, 0], self.evaluate(var0)[0])
+                    self.assertAllClose([0, 0], self.evaluate(var0)[1])
+                    self.assertAllClose([1, 1], self.evaluate(var1)[2])
 
                 # Check we have slots
                 self.assertEqual(["conditional_gradient"],
@@ -463,13 +479,9 @@ class ConditionalGradientTest(tf.test.TestCase):
                     self.assertFalse(
                         slot1 in tf.compat.v1.trainable_variables())
 
-                # Fetch params to validate initial values
-                self.assertAllClose([0, 0], self.evaluate(var0)[0])
-                self.assertAllClose([0, 0], self.evaluate(var0)[1])
-                self.assertAllClose([1, 1], self.evaluate(var1)[2])
-
                 # Step 1:
-                cg_update.run()
+                if not tf.executing_eagerly():
+                    self.evaluate(cg_update)
                 # Check that the parameters have been updated.
                 norm0 = self.evaluate(norm0)
                 norm1 = self.evaluate(norm1)
@@ -495,7 +507,10 @@ class ConditionalGradientTest(tf.test.TestCase):
                     self.evaluate(var1)[2])
                 # Step 2: the conditional_gradient contain the
                 # previous update.
-                cg_update.run()
+                if tf.executing_eagerly():
+                    cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+                else:
+                    self.evaluate(cg_update)
                 # Check that the parameters have been updated.
                 self.assertAllClose(np.array([0, 0]), self.evaluate(var0)[0])
                 self.assertAllCloseAccordingToType(
@@ -517,7 +532,7 @@ class ConditionalGradientTest(tf.test.TestCase):
                               (1 - learning_rate) * lamda * 0.01 / norm1]),
                     self.evaluate(var1)[2])
 
-    @test_utils.run_deprecated_v1
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testSharing(self):
         for dtype in [tf.half, tf.float32, tf.float64]:
             with self.cached_session():
@@ -535,7 +550,11 @@ class ConditionalGradientTest(tf.test.TestCase):
                     zip([grads0, grads1], [var0, var1]))
                 cg_update2 = cg_opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
-                self.evaluate(tf.compat.v1.global_variables_initializer())
+                if not tf.executing_eagerly():
+                    self.evaluate(tf.compat.v1.global_variables_initializer())
+                    # Fetch params to validate initial values
+                    self.assertAllClose([1.0, 2.0], self.evaluate(var0))
+                    self.assertAllClose([3.0, 4.0], self.evaluate(var1))
 
                 # Check we have slots
                 self.assertEqual(["conditional_gradient"],
@@ -550,34 +569,34 @@ class ConditionalGradientTest(tf.test.TestCase):
                         slot0 in tf.compat.v1.trainable_variables())
                     self.assertFalse(
                         slot1 in tf.compat.v1.trainable_variables())
-
-                # Fetch params to validate initial values
-                self.assertAllClose([1.0, 2.0], self.evaluate(var0))
-                self.assertAllClose([3.0, 4.0], self.evaluate(var1))
-
-                cg_update1.run()
-                # Check that the parameters have been updated.
-                norm0 = self.evaluate(norm0)
-                norm1 = self.evaluate(norm1)
-                self.assertAllCloseAccordingToType(
-                    np.array([
-                        1.0 * learning_rate -
-                        (1 - learning_rate) * lamda * 0.1 / norm0,
-                        2.0 * learning_rate -
-                        (1 - learning_rate) * lamda * 0.1 / norm0
-                    ]), self.evaluate(var0))
-                self.assertAllCloseAccordingToType(
-                    np.array([
-                        3.0 * learning_rate -
-                        (1 - learning_rate) * lamda * 0.01 / norm1,
-                        4.0 * learning_rate -
-                        (1 - learning_rate) * lamda * 0.01 / norm1
-                    ]), self.evaluate(var1))
+                # Because in the eager mode, as we declare two cg_update variables,
+                # it already altomatically finish executing them. Thus, we cannot
+                # test the param value at this time for eager mode. We can only test
+                # the final value of param after the second execution.
+                if not tf.executing_eagerly():
+                    self.evaluate(cg_update1)
+                    # Check that the parameters have been updated.
+                    norm0 = self.evaluate(norm0)
+                    norm1 = self.evaluate(norm1)
+                    self.assertAllCloseAccordingToType(
+                        np.array([
+                            1.0 * learning_rate -
+                            (1 - learning_rate) * lamda * 0.1 / norm0,
+                            2.0 * learning_rate -
+                            (1 - learning_rate) * lamda * 0.1 / norm0
+                        ]), self.evaluate(var0))
+                    self.assertAllCloseAccordingToType(
+                        np.array([
+                            3.0 * learning_rate -
+                            (1 - learning_rate) * lamda * 0.01 / norm1,
+                            4.0 * learning_rate -
+                            (1 - learning_rate) * lamda * 0.01 / norm1
+                        ]), self.evaluate(var1))
 
                 # Step 2: the second conditional_gradient contain
                 # the previous update.
-                cg_update2.run()
-
+                if not tf.executing_eagerly():
+                    self.evaluate(cg_update2)
                 # Check that the parameters have been updated.
                 self.assertAllCloseAccordingToType(
                     np.array([(1.0 * learning_rate -
