@@ -175,7 +175,9 @@ class FBetaScore(Metric):
                 initializer='zeros',
                 dtype=self.dtype)
 
-    def update_state(self, y_true, y_pred):
+    # TODO: Add sample_weight support, currently it is
+    # ignored during calculations.
+    def update_state(self, y_true, y_pred, sample_weight=None):
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred, tf.int32)
 
@@ -338,6 +340,8 @@ class F1Score(FBetaScore):
         super(F1Score, self).__init__(
             num_classes, average, 1.0, name=name, dtype=dtype)
 
+    # TODO: Add sample_weight support, currently it is
+    # ignored during calculations.
     def get_config(self):
         base_config = super(F1Score, self).get_config()
         del base_config["beta"]

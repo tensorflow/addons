@@ -322,7 +322,7 @@ class LazyAdamTest(tf.test.TestCase):
         opt = lazy_adam.LazyAdam(1.)
         opt.minimize(lambda: v1 + v2, var_list=[v1, v2])
         # There should be iteration, and two unique slot variables for v1 and v2.
-        self.assertEqual(5, len(set(opt.variables())))
+        self.assertEqual(5, len(opt.variables()))
         self.assertEqual(
             self.evaluate(opt.variables()[0]), self.evaluate(opt.iterations))
 

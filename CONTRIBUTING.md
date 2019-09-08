@@ -52,8 +52,8 @@ Try these useful commands below:
 * Format code automatically: `bash tools/run_docker.sh -c 'make code-format'`
 * Run sanity check: `bash tools/run_docker.sh -c 'make sanity-check'`
 * Run CPU unit tests: `bash tools/run_docker.sh -c 'make unit-test'`
-* Run GPU unit tests: `bash tools/run_docker.sh -c 'make gpu-unit-test'`
-* All of the above: `bash tools/run_docker.sh -c 'make'`
+* Run GPU unit tests: `bash tools/run_docker.sh -d gpu -c 'make gpu-unit-test'`
+* All of the above: `bash tools/run_docker.sh -d gpu -c 'make'`
 
 ## Coding style
 
@@ -76,8 +76,7 @@ bash tools/run_docker.sh -c 'make unit-test'
 or run manually:
 
 ```bash
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
-
+docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-ubuntu16 /bin/bash
 ./configure.sh  # Links project with TensorFlow dependency
 
 bazel test -c opt -k \
@@ -94,11 +93,12 @@ bash tools/run_docker.sh -d gpu -c 'make gpu-unit-test'
 or run manually:
 
 ```bash
-docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-gpu /bin/bash
+docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-gpu-ubuntu16 /bin/bash
 ./configure.sh  # Links project with TensorFlow dependency
 
 bazel test -c opt -k \
 --test_timeout 300,450,1200,3600 \
+--crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.0:toolchain \
 --test_output=all \
 --jobs=1 \
 //tensorflow_addons/...

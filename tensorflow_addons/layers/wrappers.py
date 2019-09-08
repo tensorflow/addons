@@ -58,7 +58,6 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     def __init__(self, layer, data_init=True, **kwargs):
         super(WeightNormalization, self).__init__(layer, **kwargs)
         self.data_init = data_init
-        self._initialized = False
         self._track_trackable(layer, name='layer')
 
     def build(self, input_shape):
@@ -69,48 +68,67 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         if not self.layer.built:
             self.layer.build(input_shape)
 
-            if not hasattr(self.layer, 'kernel'):
-                raise ValueError('`WeightNormalization` must wrap a layer that'
-                                 ' contains a `kernel` for weights')
+        if not hasattr(self.layer, 'kernel'):
+            raise ValueError('`WeightNormalization` must wrap a layer that'
+                             ' contains a `kernel` for weights')
 
-            # The kernel's filter or unit dimension is -1
-            self.layer_depth = int(self.layer.kernel.shape[-1])
-            self.kernel_norm_axes = list(
-                range(self.layer.kernel.shape.rank - 1))
+        # The kernel's filter or unit dimension is -1
+        self.layer_depth = int(self.layer.kernel.shape[-1])
+        self.kernel_norm_axes = list(range(self.layer.kernel.shape.rank - 1))
 
-            self.v = self.layer.kernel
-            self.g = self.add_variable(
-                name="g",
-                shape=(self.layer_depth,),
-                initializer=tf.keras.initializers.get('ones'),
-                dtype=self.layer.kernel.dtype,
-                trainable=True)
+        self.g = self.add_variable(
+            name='g',
+            shape=(self.layer_depth,),
+            initializer='ones',
+            dtype=self.layer.kernel.dtype,
+            trainable=True)
+        self.v = self.layer.kernel
 
-        super(WeightNormalization, self).build()
+        self._initialized = self.add_variable(
+            name='initialized',
+            shape=None,
+            initializer='zeros',
+            dtype=tf.dtypes.bool,
+            trainable=False)
 
-    @tf.function
+        if self.data_init:
+            # Used for data initialization in self._data_dep_init.
+            layer_config = tf.keras.layers.serialize(self.layer)
+            layer_config['config']['trainable'] = False
+            self._naked_clone_layer = tf.keras.layers.deserialize(layer_config)
+            self._naked_clone_layer.build(input_shape)
+            self._naked_clone_layer.set_weights(self.layer.get_weights())
+            self._naked_clone_layer.activation = None
+
+        self.built = True
+
     def call(self, inputs):
         """Call `Layer`"""
-        if not self._initialized:
-            self._initialize_weights(inputs)
 
-        self._compute_weights()  # Recompute weights for each forward pass
-        output = self.layer(inputs)
-        return output
+        def _do_nothing():
+            return tf.identity(self.g)
+
+        def _update_weights():
+            # Ensure we read `self.g` after _update_weights.
+            with tf.control_dependencies(self._initialize_weights(inputs)):
+                return tf.identity(self.g)
+
+        g = tf.cond(self._initialized, _do_nothing, _update_weights)
+
+        with tf.name_scope('compute_weights'):
+            # Replace kernel by normalized weight variable.
+            self.layer.kernel = tf.nn.l2_normalize(
+                self.v, axis=self.kernel_norm_axes) * g
+
+            # Ensure we calculate result after updating kernel.
+            update_kernel = tf.identity(self.layer.kernel)
+            with tf.control_dependencies([update_kernel]):
+                outputs = self.layer(inputs)
+                return outputs
 
     def compute_output_shape(self, input_shape):
         return tf.TensorShape(
             self.layer.compute_output_shape(input_shape).as_list())
-
-    def _compute_weights(self):
-        """Generate normalized weights.
-
-        This method will update the value of self.layer.kernel with the
-        normalized value, so that the layer is ready for call().
-        """
-        with tf.name_scope('compute_weights'):
-            self.layer.kernel = tf.nn.l2_normalize(
-                self.v, axis=self.kernel_norm_axes) * self.g
 
     def _initialize_weights(self, inputs):
         """Initialize weight g.
@@ -118,36 +136,43 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         The initial value of g could either from the initial value in v,
         or by the input value if self.data_init is True.
         """
-        if self.data_init:
-            self._data_dep_init(inputs)
-        else:
-            self._init_norm()
-        self._initialized = True
+        with tf.control_dependencies([
+                tf.debugging.assert_equal(  # pylint: disable=bad-continuation
+                    self._initialized,
+                    False,
+                    message='The layer has been initialized.')
+        ]):
+            if self.data_init:
+                assign_tensors = self._data_dep_init(inputs)
+            else:
+                assign_tensors = self._init_norm()
+            assign_tensors.append(self._initialized.assign(True))
+            return assign_tensors
 
     def _init_norm(self):
         """Set the weight g with the norm of the weight vector."""
         with tf.name_scope('init_norm'):
-            flat = tf.reshape(self.v, [-1, self.layer_depth])
-            self.g.assign(
-                tf.reshape(tf.linalg.norm(flat, axis=0), (self.layer_depth,)))
+            v_flat = tf.reshape(self.v, [-1, self.layer_depth])
+            v_norm = tf.linalg.norm(v_flat, axis=0)
+            g_tensor = self.g.assign(tf.reshape(v_norm, (self.layer_depth,)))
+            return [g_tensor]
 
     def _data_dep_init(self, inputs):
         """Data dependent initialization."""
-
         with tf.name_scope('data_dep_init'):
             # Generate data dependent init values
-            existing_activation = self.layer.activation
-            self.layer.activation = None
-            x_init = self.layer(inputs)
+            x_init = self._naked_clone_layer(inputs)
             data_norm_axes = list(range(x_init.shape.rank - 1))
             m_init, v_init = tf.nn.moments(x_init, data_norm_axes)
             scale_init = 1. / tf.math.sqrt(v_init + 1e-10)
 
-        # Assign data dependent init values
-        self.g = self.g * scale_init
-        if hasattr(self.layer, 'bias'):
-            self.layer.bias = -m_init * scale_init
-        self.layer.activation = existing_activation
+            # Assign data dependent init values
+            g_tensor = self.g.assign(self.g * scale_init)
+            if hasattr(self.layer, 'bias'):
+                bias_tensor = self.layer.bias.assign(-m_init * scale_init)
+                return [g_tensor, bias_tensor]
+            else:
+                return [g_tensor]
 
     def get_config(self):
         config = {'data_init': self.data_init}
