@@ -43,6 +43,7 @@ yes 'y' | ./configure.sh
 bazel test -c opt -k \
     --jobs=${N_JOBS} --test_timeout 300,450,1200,3600 \
     --test_output=errors --local_test_jobs=8 \
+    --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.0:toolchain \
     //tensorflow_addons/...
 
 exit $?

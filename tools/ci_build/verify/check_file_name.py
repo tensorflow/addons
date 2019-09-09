@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ from __future__ import print_function
 
 import os
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
 
 
 def main():
