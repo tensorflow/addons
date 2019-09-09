@@ -83,7 +83,7 @@ class FBetaScore(Metric):
     ```python
     actuals = tf.constant([[1, 1, 0],[1, 0, 0]],
               dtype=tf.int32)
-    predis = tf.constant([[1, 0, 0],[1, 0, 1]],
+    preds = tf.constant([[1, 0, 0],[1, 0, 1]],
              dtype=tf.int32)
     # F-Beta Micro
     fb_score = tfa.metrics.FBetaScore(num_classes=3,
