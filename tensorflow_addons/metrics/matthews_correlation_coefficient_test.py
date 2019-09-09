@@ -63,25 +63,3 @@ class MatthewsCorrelationCoefficientTest(tf.test.TestCase):
             self.check_results(
                 mcc,
                 [[[2, 0], [0, 2]], [[2, 0], [0, 2]], [[0, 2], [2, 0]]])
-
-    def test_multiclass(self):
-        for input_dtype in [tf.int32, tf.int64, tf.float32, tf.float64]:
-            gt_label = tf.constant(
-                [[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [0, 1, 0, 0],
-                 [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [1, 0, 0, 0],
-                 [0, 0, 1, 0], [0, 0, 0, 1]],
-                dtype=input_dtype)
-            preds = tf.constant(
-                [[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [1, 0, 0, 0],
-                 [1, 0, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [1, 0, 0, 0],
-                 [0, 1, 0, 0], [0, 0, 0, 1]],
-                dtype=input_dtype)
-
-            # Initialize
-            mcc = self.initialize_vars(
-                n_classes=4, input_dtype=input_dtype)
-            # Update
-            self.update_obj_states(mcc, gt_label, preds)
-            # Check results
-            self.check_results(mcc, [[[5, 2], [0, 3]], [[7, 1], [2, 0]],
-                                         [[7, 0], [1, 2]], [[8, 0], [0, 2]]])
