@@ -6,6 +6,7 @@ py_library(
     name = "text",
     srcs = ([
         "__init__.py",
+        "crf.py",
         "skip_gram_ops.py",
     ]),
     data = [
@@ -13,6 +14,19 @@ py_library(
         "//tensorflow_addons/utils",
     ],
     srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "crf_test",
+    size = "small",
+    srcs = [
+        "crf_test.py",
+    ],
+    main = "crf_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":text",
+    ],
 )
 
 py_test(

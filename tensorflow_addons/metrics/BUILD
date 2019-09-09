@@ -8,6 +8,7 @@ py_library(
         "__init__.py",
         "cohens_kappa.py",
         "f_scores.py",
+        "multilabel_confusion_matrix.py",
         "r_square.py",
         "utils.py",
     ],
@@ -63,6 +64,19 @@ py_test(
         "fbeta_test.py",
     ],
     main = "fbeta_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":metrics",
+    ],
+)
+
+py_test(
+    name = "multilabel_confusion_matrix_test",
+    size = "small",
+    srcs = [
+        "multilabel_confusion_matrix_test.py",
+    ],
+    main = "multilabel_confusion_matrix_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":metrics",

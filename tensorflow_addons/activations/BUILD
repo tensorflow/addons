@@ -6,12 +6,14 @@ py_library(
     name = "activations",
     srcs = [
         "__init__.py",
+        "gelu.py",
         "sparsemax.py",
     ],
-    srcs_version = "PY2AND3",
-    deps = [
+    data = [
+        "//tensorflow_addons/custom_ops/activations:_activation_ops.so",
         "//tensorflow_addons/utils",
     ],
+    srcs_version = "PY2AND3",
 )
 
 py_test(
@@ -21,6 +23,19 @@ py_test(
         "sparsemax_test.py",
     ],
     main = "sparsemax_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":activations",
+    ],
+)
+
+py_test(
+    name = "gelu_test",
+    size = "large",
+    srcs = [
+        "gelu_test.py",
+    ],
+    main = "gelu_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":activations",

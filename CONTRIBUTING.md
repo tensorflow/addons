@@ -46,20 +46,14 @@ process can take longer than typical commit reviews so please bare with
 us**
 
 
-## Development Environment
-It is recommended that development is done in the latest
-`nightly-custom-op` docker image.
+## Development Tips
+Try these useful commands below:
 
-```bash
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
-```
-
-Try these commands below:
-
-* Format code automatically: `make code-format`
-* Run sanity check: `make sanity-check`
-* Run unit tests: `make unit-test`
-* All of the above: `make`
+* Format code automatically: `bash tools/run_docker.sh -c 'make code-format'`
+* Run sanity check: `bash tools/run_docker.sh -c 'make sanity-check'`
+* Run CPU unit tests: `bash tools/run_docker.sh -c 'make unit-test'`
+* Run GPU unit tests: `bash tools/run_docker.sh -d gpu -c 'make gpu-unit-test'`
+* All of the above: `bash tools/run_docker.sh -d gpu -c 'make'`
 
 ## Coding style
 
@@ -73,22 +67,40 @@ Please see our [Style Guide](STYLE_GUIDE.md) for more details.
 Nighly CI tests are ran and results can be found on the central README. To 
 subscribe for alerts please join the [addons-testing mailing list](https://groups.google.com/a/tensorflow.org/forum/#!forum/addons-testing).
 
-#### Locally Testing
+#### Locally Testing CPU
 
 ```bash
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op make unit-test
+bash tools/run_docker.sh -c 'make unit-test'
 ```
 
 or run manually:
 
 ```bash
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
-
+docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-ubuntu16 /bin/bash
 ./configure.sh  # Links project with TensorFlow dependency
 
 bazel test -c opt -k \
 --test_timeout 300,450,1200,3600 \
---test_output=errors \
+--test_output=all \
+//tensorflow_addons/...
+```
+
+#### Locally Testing GPU
+```bash
+bash tools/run_docker.sh -d gpu -c 'make gpu-unit-test'
+```
+
+or run manually:
+
+```bash
+docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-gpu-ubuntu16 /bin/bash
+./configure.sh  # Links project with TensorFlow dependency
+
+bazel test -c opt -k \
+--test_timeout 300,450,1200,3600 \
+--crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.0:toolchain \
+--test_output=all \
+--jobs=1 \
 //tensorflow_addons/...
 ```
 

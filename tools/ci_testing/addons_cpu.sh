@@ -39,7 +39,7 @@ echo "Bazel will use ${N_JOBS} concurrent job(s)."
 echo ""
 
 export CC_OPT_FLAGS='-mavx'
-export TF_NEED_CUDA=0 # TODO: Verify this is used in GPU custom-op
+export TF_NEED_CUDA=0
 
 export PYTHON_BIN_PATH=`which python`
 ls -alh $PYTHON_BIN_PATH

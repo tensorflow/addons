@@ -16,12 +16,16 @@
 
 set -e
 
+if [[ $(uname) == "Darwin" ]]; then
+    CMD="delocate-wheel -w wheelhouse"
+else
+    pip3.6 install -U auditwheel==2.0.0
+    tools/ci_build/builds/tf_auditwheel_patch.sh
+    CMD="auditwheel repair --plat manylinux2010_x86_64"
+fi
+
 ls artifacts/*
 for f in artifacts/*.whl; do
-  if [[ $(uname) == "Darwin" ]]; then
-    delocate-wheel -w wheelhouse  $f
-  else
-    auditwheel repair $f
-  fi
+    $CMD $f
 done
 ls wheelhouse/*
