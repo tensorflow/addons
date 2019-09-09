@@ -1702,6 +1702,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         if attention_fn is None:
             attention_fn = _compute_attention
         self._attention_fn = attention_fn
+        self._attention_layer_size = None
 
         self._cell = cell
         self._attention_mechanisms = attention_mechanisms
@@ -1751,21 +1752,24 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         ]
 
     def _get_attention_layer_size(self):
+        if self._attention_layer_size is not None:
+            return self._attention_layer_size
         self._attention_mechanisms_checks()
         attention_output_sizes = (
             attention_mechanism.values.shape[-1]
             for attention_mechanism in self._attention_mechanisms)
         if self._attention_layers is None:
-            return sum(attention_output_sizes)
+            self._attention_layer_size = sum(attention_output_sizes)
         else:
             # Compute the layer output size from its input which is the
             # concatenation of the cell output and the attention mechanism
             # output.
-            return sum(
+            self._attention_layer_size = sum(
                 layer.compute_output_shape(
                     [None, self._cell.output_size + attention_output_size])[-1]
                 for layer, attention_output_size in zip(
                     self._attention_layers, attention_output_sizes))
+        return self._attention_layer_size
 
     def _item_or_tuple(self, seq):
         """Returns `seq` as tuple or the singular element.
