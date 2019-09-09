@@ -4,9 +4,9 @@
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:------------- |
 | gelu       | @AakashKumarNain | aakashnain@outlook.com |  
-| maxout |  |  |
+| maxout | @fsx950223 | fsx950223@gmail.com |
 | normalizations | @smokrow | moritz.kroeger@tu-dortmund.de |
-| opticalflow |  |  |
+| opticalflow | @fsx950223 | fsx950223@gmail.com |
 | poincare |  |  |
 | sparsemax | @AndreasMadsen | amwwebdk+github@gmail.com |
 | wrappers | @seanpmorgan | seanmorgan@outlook.com |
