@@ -26,9 +26,9 @@ from tensorflow_addons.utils import keras_utils
 class GIOULoss(tf.keras.losses.Loss):
     """Implements the GIOU loss function.
 
-    GIOU loss was first introduced in the Generalized Intersection over Union paper
-    (https://giou.stanford.edu/GIoU.pdf). GIOU is a enhance for model which use IOU
-    in object detection.
+    GIOU loss was first introduced in the Generalized Intersection over Union
+    paper (https://giou.stanford.edu/GIoU.pdf). GIOU is a enhance for model
+    which use IOU in object detection.
 
     Usage:
 
@@ -73,7 +73,7 @@ def giou_loss(y_true, y_pred):
     Args
         y_true: true targets tensor.
         y_pred: predictions tensor.
-    
+
     Returns:
         GIOU loss float `Tensor`.
     """

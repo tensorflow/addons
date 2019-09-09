@@ -25,6 +25,8 @@ from tensorflow_addons.losses import giou_loss, GIOULoss
 
 @test_utils.run_all_in_graph_and_eager_modes
 class GIOULossTest(tf.test.TestCase):
+    """GIOU test class."""
+
     def test_config(self):
         gl_obj = GIOULoss(
             reduction=tf.keras.losses.Reduction.NONE, name='giou_loss')
