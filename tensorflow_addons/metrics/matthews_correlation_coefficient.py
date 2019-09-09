@@ -51,9 +51,9 @@ class MatthewsCorrelationCoefficient(Metric):
   Usage:
   ```python
   actuals = tf.constant([[1, 0, 1], [0, 1, 0]],
-           dtype=tf.int32)
+           dtype=tf.float32)
   preds = tf.constant([[1, 0, 0],[0, 1, 1]],
-           dtype=tf.int32)             
+           dtype=tf.float32)             
   # Matthews correlation coefficient
   mcc = MatthewsCorrelationCoefficient(num_classes=3)
   output.update_state(actuals, preds)
@@ -66,7 +66,7 @@ class MatthewsCorrelationCoefficient(Metric):
   def __init__(self,
                num_classes=None,
                name='MatthewsCorrelationCoefficient',
-               dtype=tf.int32):
+               dtype=tf.float32):
     super(MatthewsCorrelationCoefficient, self).__init__(name=name, dtype=dtype)
     self.num_classes = num_classes
     self.true_positives = self.add_weight(
@@ -89,10 +89,10 @@ class MatthewsCorrelationCoefficient(Metric):
         shape=[self.num_classes],
         initializer='zeros',
         dtype=self.dtype)
-
+  # TODO: sample_weights
   def update_state(self, y_true, y_pred, sample_weights=None):
-      y_true = tf.cast(y_true, tf.int32)
-      y_pred = tf.cast(y_pred, tf.int32)
+      y_true = tf.cast(y_true, tf.float32)
+      y_pred = tf.cast(y_pred, tf.float32)
 
       true_positive = tf.math.count_nonzero(y_true * y_pred, 0)
       # predicted sum
@@ -138,9 +138,9 @@ class MatthewsCorrelationCoefficient(Metric):
 
   def reset_states(self):
     """Resets all of the metric state variables."""
-    self.true_positives.assign(np.zeros(self.num_classes), np.int32)
-    self.false_positives.assign(np.zeros(self.num_classes), np.int32)
-    self.false_negatives.assign(np.zeros(self.num_classes), np.int32)
-    self.true_negatives.assign(np.zeros(self.num_classes), np.int32)
+    self.true_positives.assign(np.zeros(self.num_classes), np.float32)
+    self.false_positives.assign(np.zeros(self.num_classes), np.float32)
+    self.false_negatives.assign(np.zeros(self.num_classes), np.float32)
+    self.true_negatives.assign(np.zeros(self.num_classes), np.float32)
   
 
