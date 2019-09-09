@@ -6,6 +6,7 @@ py_library(
     name = "optimizers",
     srcs = [
         "__init__.py",
+        "lamb_optimizer.py",
         "lazy_adam.py",
         "moving_average.py",
         "weight_decay_optimizers.py",
@@ -13,6 +14,19 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/utils",
+    ],
+)
+
+py_test(
+    name = "lamb_optimizer_test",
+    size = "small",
+    srcs = [
+        "lamb_optimizer_test.py",
+    ],
+    main = "lamb_optimizer_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":optimizers",
     ],
 )
 
