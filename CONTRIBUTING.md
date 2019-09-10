@@ -17,7 +17,7 @@ let us give you advice on the proposed changes. If the changes are
 minor, then feel free to make them without discussion.
 
 Want to contribute but not sure of what? Here are a few suggestions:
-1. Add a new tutorial. Located in [`docs/turoials/`](docs/tutorials),
+1. Add a new tutorial. Located in [`docs/tutorials/`](docs/tutorials),
   these are a great way to familiarize yourself and others with TF-Addons. See 
   [the guidelines](docs/tutorials/README.md) for more information on how to add 
   examples.

@@ -28,15 +28,15 @@ upper_tabs:
       other:
         - name: tutorials
           contents:
-            - title: Triplet Loss
+            - title: Triplet loss
               path: /addons/tutorials/losses_triplet
             - title: Image Ops
               path: /addons/tutorials/image_ops
-            - title: Normalization Layers
+            - title: Normalization layers
                 path: /addons/tutorials/layers_normalizations
-            - title: Weight Normalization Layer
+            - title: Weight normalization layer
                 path: /addons/tutorials/layers_weightnormalization
-            - title: LazyAdam Optimizer
+            - title: Lazyadam optimizer
                 path: /addons/tutorials/optimizers_lazyadam
         - name: API
           skip_translation: true
