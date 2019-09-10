@@ -104,8 +104,8 @@ class MatthewsCorrelationCoefficient(Metric):
         true_sum = tf.math.count_nonzero(y_true, 0)
         false_positive = pred_sum - true_positive
         false_negative = true_sum - true_positive
-        true_negative = y_true.get_shape()[0] 
-        - (true_positive + false_positive + false_negative)
+        true_negative = y_true.get_shape(
+        )[0] - ( true_positive + false_positive + false_negative)
 
         # true positive state_update
         self.true_positives.assign_add(tf.cast(true_positive, self.dtype))
