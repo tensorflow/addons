@@ -115,14 +115,14 @@ class MatthewsCorrelationCoefficient(Metric):
 
   def result(self):
     # numerator
-    numerator1 = self.true_positives + self.true_negatives, self.dtype
-    numerator2 = self.false_positives + self.false_negatives, self.dtype
+    numerator1 = self.true_positives + self.true_negatives
+    numerator2 = self.false_positives + self.false_negatives
     numerator = numerator1 -numerator2
     # denominator
-    denominator1 = self.true_positives + self.false_positives, self.dtype
-    denominator2 = self.true_positives + self.false_negatives, self.dtype
-    denominator3 = self.true_negatives + self.false_positives, self.dtype
-    denominator4 = self.true_negatives + self.false_negatives, self.dtype
+    denominator1 = self.true_positives + self.false_positives
+    denominator2 = self.true_positives + self.false_negatives
+    denominator3 = self.true_negatives + self.false_positives
+    denominator4 = self.true_negatives + self.false_negatives
     denominator = tf.math.sqrt(denominator1 * denominator2 * denominator3 * denominator4)
     mcc = tf.math.divide_no_nan(numerator, denominator)
     return mcc
