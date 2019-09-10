@@ -34,15 +34,15 @@ def hamming_distance(y_true, y_pred):
     :return: hamming distance
 
     ```python
-    actuals = tf.constant([1, 1, 0, 0, 1, 0, 1, 0, 0, 1],
+    y_true = tf.constant([1, 1, 0, 0, 1, 0, 1, 0, 0, 1],
                           dtype=tf.int32)
-    predictions = tf.constant([1, 0, 0, 0, 1, 0, 0, 1, 0, 1],
+    y_pred = tf.constant([1, 0, 0, 0, 1, 0, 0, 1, 0, 1],
                               dtype=tf.int32)
-    result = hamming_distance(actuals, predictions)
+    result = hamming_distance(y_true, y_pred)
     print('Hamming distance: ', result.numpy())
     ```
     """
-    result = tf.not_equal(actuals, predictions)
+    result = tf.not_equal(y_true, y_pred)
     not_eq = tf.reduce_sum(tf.cast(result, tf.float32))
     ham_distance = tf.math.divide_no_nan(not_eq, len(result))
     return ham_distance
