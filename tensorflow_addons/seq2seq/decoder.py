@@ -409,10 +409,10 @@ def dynamic_decode(decoder,
                 next_finished = decoder_finished
                 lengths = getattr(decoder_state, "lengths", None)
                 if lengths is not None:
-                  # sequence lengths are provided by decoder_state.lengths;
-                  # overwrite our sequence lengths.
-                  decoder_state_sequence_lengths = True
-                  sequence_lengths = tf.cast(lengths, tf.int32)
+                    # sequence lengths are provided by decoder_state.lengths;
+                    # overwrite our sequence lengths.
+                    decoder_state_sequence_lengths = True
+                    sequence_lengths = tf.cast(lengths, tf.int32)
             else:
                 next_finished = tf.logical_or(decoder_finished, finished)
 
