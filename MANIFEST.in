@@ -1,2 +1,2 @@
 recursive-include tensorflow_addons/ *.so
-include examples/*.ipynb
+include docs/*

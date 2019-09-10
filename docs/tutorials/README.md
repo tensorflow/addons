@@ -1,18 +1,18 @@
-# TensorFlow Addons Examples
+# TensorFlow Addons Tutorials
 
-TensorFlow Addons welcomes and highly encourages example contributions.
+TensorFlow Addons welcomes and highly encourages tutorial contributions.
 
 
 ## How To Contribute
 
-Addons examples are created using [Google Colab](https://colab.research.google.com/) 
+Addons tutorials are created using [Google Colab](https://colab.research.google.com/) 
 and the jupyter notebooks are saved to this directory in the repository. To do 
 this, follow the below steps:
 
 1. Create a new branch on your fork of TensorFlow Addons
 2. Goto [Google Colab](https://colab.research.google.com/) and start a new 
 notebook using addons example template:
-[examples/template.ipynb](template.ipynb)
+[docs/tutorials/template.ipynb](template.ipynb)
 3. Edit the the links for the "View source on GitHub" and "Run in Google Colab" 
 URL boxes so that they match the name of your new example notebook
 4. Follow the guidelines of the template

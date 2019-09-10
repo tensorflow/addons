@@ -26,18 +26,18 @@ upper_tabs:
     lower_tabs:
       # Subsite tabs
       other:
-        - name: Examples
+        - name: tutorials
           contents:
             - title: Triplet Loss
-              path: /addons/examples/losses_triplet
+              path: /addons/tutorials/losses_triplet
             - title: Image Ops
-              path: /addons/examples/image_ops
+              path: /addons/tutorials/image_ops
             - title: Normalization Layers
-                path: /addons/examples/layers_normalizations
+                path: /addons/tutorials/layers_normalizations
             - title: Weight Normalization Layer
-                path: /addons/examples/layers_weightnormalization
+                path: /addons/tutorials/layers_weightnormalization
             - title: LazyAdam Optimizer
-                path: /addons/examples/optimizers_lazyadam
+                path: /addons/tutorials/optimizers_lazyadam
         - name: API
           skip_translation: true
           contents:
