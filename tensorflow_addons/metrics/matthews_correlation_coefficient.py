@@ -50,16 +50,16 @@ class MatthewsCorrelationCoefficient(Metric):
 
   Usage:
   ```python
-  actuals = tf.constant([[1, 0, 1], [0, 1, 0]],
+  actuals = tf.constant([[1.0], [1.0], [1.0], [0.0]],
            dtype=tf.float32)
-  preds = tf.constant([[1, 0, 0],[0, 1, 1]],
+  preds = tf.constant([[1.0], [0.0], [1.0], [1.0]],
            dtype=tf.float32)             
   # Matthews correlation coefficient
   mcc = MatthewsCorrelationCoefficient(num_classes=3)
   output.update_state(actuals, preds)
   print('MCC:', output.result().numpy())
 
-  # mcc : 
+  # mcc : -0.333334
 
   ```
   """  
@@ -115,9 +115,9 @@ class MatthewsCorrelationCoefficient(Metric):
 
   def result(self):
     # numerator
-    numerator1 = self.true_positives + self.true_negatives
-    numerator2 = self.false_positives + self.false_negatives
-    numerator = numerator1 -numerator2
+    numerator1 = self.true_positives * self.true_negatives
+    numerator2 = self.false_positives * self.false_negatives
+    numerator = numerator1 - numerator2
     # denominator
     denominator1 = self.true_positives + self.false_positives
     denominator2 = self.true_positives + self.false_negatives
