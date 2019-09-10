@@ -12,13 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A module containing activation routines."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow_addons.activations.gelu import gelu
-from tensorflow_addons.activations.hardshrink import hardshrink
-from tensorflow_addons.activations.sparsemax import sparsemax
-from tensorflow_addons.activations.tanhshrink import tanhshrink
+import tensorflow as tf
+from tensorflow_addons.utils import keras_utils
+from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+
+_activation_ops_so = tf.load_op_library(
+    get_path_to_datafile("custom_ops/activations/_activation_ops.so"))
+
+
+@keras_utils.register_keras_custom_object
+@tf.function
+def tanhshrink(x):
+    """Applies the element-wise function: x - tanh(x)
+
+    Args:
+        x: A `Tensor`. Must be one of the following types:
+            `float16`, `float32`, `float64`.
+    Returns:
+        A `Tensor`. Has the same type as `x`.
+    """
+    x = tf.convert_to_tensor(x)
+    return _activation_ops_so.tanhshrink(x)
+
+
+@tf.RegisterGradient("Tanhshrink")
+def _tanhshrink_grad(op, grad):
+    return _activation_ops_so.tanhshrink_grad(grad, op.inputs[0])
