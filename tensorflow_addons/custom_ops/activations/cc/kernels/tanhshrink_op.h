@@ -38,7 +38,7 @@ struct TanhshrinkGrad {
   void operator()(const Device& d, typename TTypes<T>::ConstTensor gradients,
                   typename TTypes<T>::ConstTensor features,
                   typename TTypes<T>::Tensor backprops) {
-    backprops.device(d) = features.tanh().square();
+    backprops.device(d) = gradients * features.tanh().square();
   }
 };
 
