@@ -27,17 +27,20 @@ _activation_ops_so = tf.load_op_library(
 
 @keras_utils.register_keras_custom_object
 @tf.function
-def tanhshrink(x):
+def tanhshrink(features, name="Tanhshrink"):
     """Applies the element-wise function: x - tanh(x)
 
     Args:
-        x: A `Tensor`. Must be one of the following types:
-            `float16`, `float32`, `float64`.
+        features: A `Tensor`. Must be one of the following types:
+            `float16`, `float32`, `float64`, `int32`, `int64`.
     Returns:
-        A `Tensor`. Has the same type as `x`.
+        A `Tensor`. Has the same type as `features`.
     """
-    x = tf.convert_to_tensor(x)
-    return _activation_ops_so.tanhshrink(x)
+    with tf.name_scope(name) as name:
+        features = tf.convert_to_tensor(features, name="features")
+        if features.dtype.is_integer:
+            features = tf.cast(features, tf.float32)
+        return _activation_ops_so.tanhshrink(features, name=name)
 
 
 @tf.RegisterGradient("Tanhshrink")
