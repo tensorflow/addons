@@ -404,14 +404,27 @@ def dynamic_decode(decoder,
             """
             (next_outputs, decoder_state, next_inputs,
              decoder_finished) = decoder.step(time, inputs, state, training)
+            decoder_state_sequence_lengths = False
             if decoder.tracks_own_finished:
                 next_finished = decoder_finished
+                lengths = getattr(decoder_state, "lengths", None)
+                if lengths is not None:
+                  # sequence lengths are provided by decoder_state.lengths;
+                  # overwrite our sequence lengths.
+                  decoder_state_sequence_lengths = True
+                  sequence_lengths = tf.cast(lengths, tf.int32)
             else:
                 next_finished = tf.logical_or(decoder_finished, finished)
-            next_sequence_lengths = tf.where(
-                tf.logical_not(finished),
-                tf.fill(tf.shape(sequence_lengths), time + 1),
-                sequence_lengths)
+
+            if decoder_state_sequence_lengths:
+                # Just pass something through the loop; at the next iteration
+                # we'll pull the sequence lengths from the decoder_state again.
+                next_sequence_lengths = sequence_lengths
+            else:
+                next_sequence_lengths = tf.where(
+                    tf.logical_not(finished),
+                    tf.fill(tf.shape(sequence_lengths), time + 1),
+                    sequence_lengths)
 
             tf.nest.assert_same_structure(state, decoder_state)
             tf.nest.assert_same_structure(outputs_ta, next_outputs)
