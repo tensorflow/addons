@@ -35,12 +35,31 @@ landing_page:
             <pre class = "prettyprint">
             import tensorflow as tf
             import tensorflow_addons as tfa
-            # This is a short code snippet that shows off your project.
-            # Launch a Colab notebook to run this example.
-            print("Hello, PROJECT_NAME")
+
+            # Load MNIST dataset as NumPy arrays
+            dataset = {}
+            num_validation = 10000
+            (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
+
+            # Preprocess the data
+            x_train = x_train.reshape(-1, 784).astype('float32') / 255
+            x_test = x_test.reshape(-1, 784).astype('float32') / 255
+
+            # Compile the model
+            model.compile(
+                optimizer=tfa.optimizers.LazyAdam(0.001),  # Utilize TFA optimizer
+                loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+                metrics=['accuracy'])
+
+            # Train the network
+            history = model.fit(
+                x_train,
+                y_train,
+                batch_size=24,
+                epochs=10)
             </pre>
             {% dynamic if request.tld != 'cn' %}
-            <a class="colab-button" target="_blank" href="https://colab.research.google.com/github/tensorflow/docs/blob/master/site/en/tutorials/_index.ipynb">Run in a <span>Notebook</span></a>
+            <a class="colab-button" target="_blank" href="https://colab.research.google.com/github/tensorflow/addons/blob/master/docs/tutorials/optimizers_lazyadam.ipynb">Run in a <span>Notebook</span></a>
             {% dynamic endif %}
     - classname: devsite-landing-row-cards
       items:
