@@ -49,7 +49,7 @@ namespace functor {
   extern template struct Tanhshrink<GPUDevice, T>;                   \
                                                                      \
   template <>                                                        \
-  void Tanhshrink<GPUDevice, T>::operator()(                         \
+  void TanhshrinkGrad<GPUDevice, T>::operator()(                     \
       const GPUDevice& d, typename TTypes<T>::ConstTensor gradients, \
       typename TTypes<T>::ConstTensor features,                      \
       typename TTypes<T>::Tensor backprops);                         \
