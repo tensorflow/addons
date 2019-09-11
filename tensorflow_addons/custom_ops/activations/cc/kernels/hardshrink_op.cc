@@ -25,10 +25,10 @@ namespace tensorflow {
 using CPUDevice = Eigen::ThreadPoolDevice;
 
 #define REGISTER_HARDSHRINK_KERNELS(type)                                  \
-  REGISTER_KERNEL_BUILDER(                                           \
+  REGISTER_KERNEL_BUILDER(                                                 \
       Name("Hardshrink").Device(DEVICE_CPU).TypeConstraint<type>("T"),     \
       HardshrinkOp<CPUDevice, type>);                                      \
-  REGISTER_KERNEL_BUILDER(                                           \
+  REGISTER_KERNEL_BUILDER(                                                 \
       Name("HardshrinkGrad").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
       HardshrinkGradOp<CPUDevice, type>);
 
@@ -42,18 +42,18 @@ using GPUDevice = Eigen::GpuDevice;
 
 // Forward declarations of the functor specializations for GPU.
 namespace functor {
-#define DECLARE_GPU_SPEC(T)                                          \
-  template <>                                                        \
-  void Hardshrink<GPUDevice, T>::operator()(                               \
-      const GPUDevice& d, typename TTypes<T>::ConstTensor features,  \
-      T lower, T upper, typename TTypes<T>::Tensor activations);     \
-  extern template struct Hardshrink<GPUDevice, T>;                         \
-                                                                     \
-  template <>                                                        \
-  void HardshrinkGrad<GPUDevice, T>::operator()(                           \
-      const GPUDevice& d, typename TTypes<T>::ConstTensor gradients, \
-      typename TTypes<T>::ConstTensor features, T lower, T upper,    \
-      typename TTypes<T>::Tensor backprops);                         \
+#define DECLARE_GPU_SPEC(T)                                                  \
+  template <>                                                                \
+  void Hardshrink<GPUDevice, T>::operator()(                                 \
+      const GPUDevice& d, typename TTypes<T>::ConstTensor features, T lower, \
+      T upper, typename TTypes<T>::Tensor activations);                      \
+  extern template struct Hardshrink<GPUDevice, T>;                           \
+                                                                             \
+  template <>                                                                \
+  void HardshrinkGrad<GPUDevice, T>::operator()(                             \
+      const GPUDevice& d, typename TTypes<T>::ConstTensor gradients,         \
+      typename TTypes<T>::ConstTensor features, T lower, T upper,            \
+      typename TTypes<T>::Tensor backprops);                                 \
   extern template struct HardshrinkGrad<GPUDevice, T>;
 
 TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
@@ -61,11 +61,11 @@ TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
 }  // namespace functor
 
 // Registration of the GPU implementations.
-#define REGISTER_HARDSHRINK_GPU_KERNELS(type)                              \
-  REGISTER_KERNEL_BUILDER(                                           \
-      Name("Hardshrink").Device(DEVICE_GPU).TypeConstraint<type>("T"),     \
-      HardshrinkOp<GPUDevice, type>);                                      \
-  REGISTER_KERNEL_BUILDER(                                           \
+#define REGISTER_HARDSHRINK_GPU_KERNELS(type)                          \
+  REGISTER_KERNEL_BUILDER(                                             \
+      Name("Hardshrink").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
+      HardshrinkOp<GPUDevice, type>);                                  \
+  REGISTER_KERNEL_BUILDER(                                             \
       Name("Hardshrink").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
       HardshrinkGradOp<GPUDevice, type>);
 

@@ -33,7 +33,8 @@ def _ref_hardshrink(x, lower=-1.0, upper=1.0):
 @test_utils.run_all_in_graph_and_eager_modes
 class HardshrinkTest(tf.test.TestCase, parameterized.TestCase):
     def test_invalid(self):
-        with self.assertRaisesOpError("lower must be less than or equal to upper."):
+        with self.assertRaisesOpError(
+                "lower must be less than or equal to upper."):  # pylint: disable=bad-continuation
             y = hardshrink(tf.ones(shape=(1, 2, 3)), lower=2.0, upper=-2.0)
             self.evaluate(y)
 
@@ -43,7 +44,8 @@ class HardshrinkTest(tf.test.TestCase, parameterized.TestCase):
     def test_hardshrink(self, dtype):
         x = (np.random.rand(2, 3, 4) * 2.0 - 1.0).astype(dtype)
         self.assertAllCloseAccordingToType(hardshrink(x), _ref_hardshrink(x))
-        self.assertAllCloseAccordingToType(hardshrink(x, -2.0, 2.0), _ref_hardshrink(x, -2.0, 2.0))
+        self.assertAllCloseAccordingToType(
+            hardshrink(x, -2.0, 2.0), _ref_hardshrink(x, -2.0, 2.0))
 
     @parameterized.named_parameters(("float16", np.float16),
                                     ("float32", np.float32),

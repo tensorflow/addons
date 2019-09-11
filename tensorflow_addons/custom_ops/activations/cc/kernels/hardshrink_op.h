@@ -37,7 +37,9 @@ struct Hardshrink {
   // activations: same shape as "features".
   void operator()(const Device& d, typename TTypes<T>::ConstTensor features,
                   T lower, T upper, typename TTypes<T>::Tensor activations) {
-    activations.device(d) = (features < lower || features > upper).select(features, features.constant(static_cast<T>(0))); 
+    activations.device(d) =
+        (features < lower || features > upper)
+            .select(features, features.constant(static_cast<T>(0)));
   }
 };
 
@@ -54,7 +56,9 @@ struct HardshrinkGrad {
   void operator()(const Device& d, typename TTypes<T>::ConstTensor gradients,
                   typename TTypes<T>::ConstTensor features, T lower, T upper,
                   typename TTypes<T>::Tensor backprops) {
-      backprops.device(d) = (features < lower || features > upper).select(gradients, features.constant(static_cast<T>(0)));
+    backprops.device(d) =
+        (features < lower || features > upper)
+            .select(gradients, features.constant(static_cast<T>(0)));
   }
 };
 
@@ -64,14 +68,17 @@ template <typename Device, typename T>
 class HardshrinkOp : public UnaryElementWiseOp<T, HardshrinkOp<Device, T>> {
  public:
   explicit HardshrinkOp(OpKernelConstruction* context)
-      : UnaryElementWiseOp<T, HardshrinkOp<Device, T>>::UnaryElementWiseOp(context) {
-    float lower, upper; 
+      : UnaryElementWiseOp<T, HardshrinkOp<Device, T>>::UnaryElementWiseOp(
+            context) {
+    float lower, upper;
     OP_REQUIRES_OK(context, context->GetAttr("lower", &lower));
     OP_REQUIRES_OK(context, context->GetAttr("upper", &upper));
     lower_ = static_cast<T>(lower);
     upper_ = static_cast<T>(upper);
-    
-    OP_REQUIRES(context, lower_ <= upper_, errors::InvalidArgument("lower must be less than or equal to upper.")); 
+
+    OP_REQUIRES(
+        context, lower_ <= upper_,
+        errors::InvalidArgument("lower must be less than or equal to upper."));
   }
 
   void Operate(OpKernelContext* context, const Tensor& input, Tensor* output) {
@@ -86,18 +93,21 @@ class HardshrinkOp : public UnaryElementWiseOp<T, HardshrinkOp<Device, T>> {
 };
 
 template <typename Device, typename T>
-class HardshrinkGradOp : public BinaryElementWiseOp<T, HardshrinkGradOp<Device, T>> {
+class HardshrinkGradOp
+    : public BinaryElementWiseOp<T, HardshrinkGradOp<Device, T>> {
  public:
   explicit HardshrinkGradOp(OpKernelConstruction* context)
-      : BinaryElementWiseOp<T, HardshrinkGradOp<Device, T>>::BinaryElementWiseOp(
-            context) {
-    float lower, upper; 
+      : BinaryElementWiseOp<
+            T, HardshrinkGradOp<Device, T>>::BinaryElementWiseOp(context) {
+    float lower, upper;
     OP_REQUIRES_OK(context, context->GetAttr("lower", &lower));
     OP_REQUIRES_OK(context, context->GetAttr("upper", &upper));
     lower_ = static_cast<T>(lower);
     upper_ = static_cast<T>(upper);
 
-    OP_REQUIRES(context, lower_ <= upper_, errors::InvalidArgument("lower must be less than or equal to upper.")); 
+    OP_REQUIRES(
+        context, lower_ <= upper_,
+        errors::InvalidArgument("lower must be less than or equal to upper."));
   }
 
   void OperateNoTemplate(OpKernelContext* context, const Tensor& g,
@@ -116,12 +126,12 @@ class HardshrinkGradOp : public BinaryElementWiseOp<T, HardshrinkGradOp<Device, 
 
 template <typename Device, typename T>
 void HardshrinkGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
-                                              const Tensor& g, const Tensor& a,
-                                              T lower, T upper,
-                                              Tensor* output) {
+                                                    const Tensor& g,
+                                                    const Tensor& a, T lower,
+                                                    T upper, Tensor* output) {
   functor::HardshrinkGrad<Device, T> functor;
-  functor(context->eigen_device<Device>(), g.flat<T>(), a.flat<T>(),
-          lower, upper, output->flat<T>());
+  functor(context->eigen_device<Device>(), g.flat<T>(), a.flat<T>(), lower,
+          upper, output->flat<T>());
 }
 
 }  // namespace tensorflow

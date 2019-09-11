@@ -25,7 +25,7 @@ namespace tensorflow {
 
 using GPUDevice = Eigen::GpuDevice;
 
-#define DEFINE_GPU_KERNELS(T)                  \
+#define DEFINE_GPU_KERNELS(T)                        \
   template struct functor::Hardshrink<GPUDevice, T>; \
   template struct functor::HardshrinkGrad<GPUDevice, T>;
 

@@ -48,4 +48,5 @@ def hardshrink(x, lower=-1.0, upper=1.0):
 @tf.RegisterGradient("Hardshrink")
 def _hardshrink_grad(op, grad):
     return _activation_ops_so.hardshrink_grad(grad, op.inputs[0],
-                                              op.get_attr("lower"), op.get_attr("upper"))
+                                              op.get_attr("lower"),
+                                              op.get_attr("upper"))
