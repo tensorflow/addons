@@ -28,7 +28,8 @@ import numpy as np
 @test_utils.run_all_in_graph_and_eager_modes
 class FBetaScoreTest(tf.test.TestCase):
     def test_config(self):
-        fbeta_obj = FBetaScore(num_classes=3, beta=0.5, average=None)
+        fbeta_obj = FBetaScore(
+            num_classes=3, beta=0.5, threshold=0.8, average=None)
         self.assertEqual(fbeta_obj.beta, 0.5)
         self.assertEqual(fbeta_obj.average, None)
         self.assertEqual(fbeta_obj.num_classes, 3)
@@ -74,23 +75,27 @@ class FBetaScoreTest(tf.test.TestCase):
     def test_fbeta_perfect_score(self):
         actuals = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]],
                               dtype=tf.int32)
-        preds = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]], dtype=tf.int32)
+        preds = tf.constant([[1, 0.9, 0.98], [0.85, 0.3, 0.2], [0.85, 1, 0.6]],
+                            dtype=tf.float32)
         self._test_fbeta_score(actuals, preds, 1.0)
 
     # test for the worst score
     def test_fbeta_worst_score(self):
         actuals = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]],
                               dtype=tf.int32)
-        preds = tf.constant([[0, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=tf.int32)
+        preds = tf.constant(
+            [[0.4, 0.7, 0.65], [0.5, 0.9, 0.78], [0.65, 0.78, 1]],
+            dtype=tf.float32)
         self._test_fbeta_score(actuals, preds, 0.0)
 
     # test for the random score
     def test_fbeta_random_score(self):
         actuals = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]],
                               dtype=tf.int32)
-        preds = tf.constant([[0, 0, 1], [1, 1, 0], [1, 1, 1]], dtype=tf.int32)
+        preds = tf.constant([[0.7, 0.76, 0.98], [0.9, 1, 0.6], [1, 0.9, 0.81]],
+                            dtype=tf.float32)
 
-        # test parameters
+        # Use absl parameterized test here if possible
         test_params = [['micro', 0.5, 0.666667], ['macro', 0.5, 0.654882],
                        ['weighted', 0.5, 0.71380], ['micro', 2.0, 0.666667],
                        ['macro', 2.0, 0.68253], ['weighted', 2.0, 0.66269]]
@@ -104,10 +109,11 @@ class FBetaScoreTest(tf.test.TestCase):
             [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [0, 1, 0], [0, 0, 1]],
             dtype=tf.int32)
         preds = tf.constant(
-            [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [1, 0, 0], [0, 0, 1]],
-            dtype=tf.int32)
+            [[0.9, 0.75, 0], [0.33, 1, 0.70], [0.79, 0.56, 0.98],
+             [1, 0.46, 0.67], [0.95, 0.44, 0.54], [0.77, 0.42, 1]],
+            dtype=tf.float32)
 
-        # test parameters
+        # Use absl parameterized test here if possible
         test_params = [[0.5, [0.71428573, 0.8333334, 1.]],
                        [2.0, [0.90909094, 0.5555556, 1.]]]
 
@@ -119,17 +125,22 @@ class FBetaScoreTest(tf.test.TestCase):
         model = tf.keras.Sequential()
         model.add(layers.Dense(64, activation='relu'))
         model.add(layers.Dense(64, activation='relu'))
-        model.add(layers.Dense(1, activation='softmax'))
-        fb = FBetaScore(1, 'macro')
+        model.add(layers.Dense(2, activation='softmax'))
+
+        fb = FBetaScore(
+            num_classes=2, beta=2.0, threshold=0.4, average='weighted')
+
         model.compile(
             optimizer='rmsprop',
             loss='categorical_crossentropy',
             metrics=['acc', fb])
-        # data preparation
         data = np.random.random((10, 3))
-        labels = np.random.random((10, 1))
+
+        labels = np.random.random((10, 2))
         labels = np.where(labels > 0.5, 1, 0)
-        model.fit(data, labels, epochs=1, batch_size=32, verbose=0)
+
+        fitted_model = model.fit(
+            data, labels, epochs=2, batch_size=32, verbose=0)
 
 
 if __name__ == '__main__':

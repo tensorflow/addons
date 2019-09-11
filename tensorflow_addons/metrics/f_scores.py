@@ -41,13 +41,15 @@ class FBetaScore(Metric):
 
     Args:
        num_classes : Number of unique classes in the dataset.
+       threshold: Float representing the threshold for deciding whether
+                  prediction values are 1 or 0.
        average : Type of averaging to be performed on data.
-                   Acceptable values are None, micro, macro and
-                   weighted.
+                 Acceptable values are None, micro, macro and
+                 weighted.
        beta : float. Determines the weight of precision and recall
-                in harmonic mean. Acceptable values are either a number
-                of float data type greater than 0.0 or a scale tensor
-                of dtype tf.float32.
+              in harmonic mean. Acceptable values are either a number
+              of float data type greater than 0.0 or a scale tensor
+              of dtype tf.float32.
 
     Returns:
        F Beta Score: float
@@ -82,30 +84,30 @@ class FBetaScore(Metric):
     Usage:
     ```python
     actuals = tf.constant([[1, 1, 0],[1, 0, 0]],
-              dtype=tf.int32)
-    preds = tf.constant([[1, 0, 0],[1, 0, 1]],
-             dtype=tf.int32)
+              dtype=tf.float32)
+    preds = tf.constant([[0.9, 0.2, 0.2],[0.82, 0.3, 0.85]],
+            dtype=tf.float32)
     # F-Beta Micro
     fb_score = tfa.metrics.FBetaScore(num_classes=3,
-                beta=0.4, average='micro')
+                beta=0.4, threshold = 0.8, average='micro')
     fb_score.update_state(actuals, preds)
     print('F1-Beta Score is: ',
            fb_score.result().numpy()) # 0.6666666
     # F-Beta Macro
     fb_score = tfa.metrics.FBetaScore(num_classes=3,
-           beta=0.4, average='macro')
+           beta=0.4, threshold = 0.8, average='macro')
     fb_score.update_state(actuals, preds)
     print('F1-Beta Score is: ',
           fb_score.result().numpy()) # 0.33333334
     # F-Beta Weighted
     fb_score = tfa.metrics.FBetaScore(num_classes=3,
-               beta=0.4, average='weighted')
+               beta=0.4, threshold = 0.8, average='weighted')
     fb_score.update_state(actuals, preds)
     print('F1-Beta Score is: ',
           fb_score.result().numpy()) # 0.6666667
     # F-Beta score for each class (average=None).
     fb_score = tfa.metrics.FBetaScore(num_classes=3,
-               beta=0.4, average=None)
+               beta=0.4, threshold = 0.8, average=None)
     fb_score.update_state(actuals, preds)
     print('F1-Beta Score is: ',
          fb_score.result().numpy()) # [1. 0. 0.]
@@ -116,10 +118,12 @@ class FBetaScore(Metric):
                  num_classes,
                  average=None,
                  beta=1.0,
+                 threshold=0.8,
                  name='fbeta_score',
                  dtype=tf.float32):
         super(FBetaScore, self).__init__(name=name)
         self.num_classes = num_classes
+        self.threshold = threshold
         # type check
         if not isinstance(beta, float) and beta.dtype != tf.float32:
             raise TypeError("The value of beta should be float")
@@ -175,11 +179,10 @@ class FBetaScore(Metric):
                 initializer='zeros',
                 dtype=self.dtype)
 
-    # TODO: Add sample_weight support, currently it is
-    # ignored during calculations.
+    # TO DO SSaishruthi: Add sample weight option
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_true = tf.cast(y_true, tf.int32)
-        y_pred = tf.cast(y_pred, tf.int32)
+        y_pred = tf.cast(y_pred > self.threshold, tf.int32)
 
         # true positive
         self.true_positives.assign_add(
@@ -234,6 +237,7 @@ class FBetaScore(Metric):
 
         config = {
             "num_classes": self.num_classes,
+            "threshold": self.threshold,
             "average": self.average,
             "beta": self.beta,
         }
@@ -265,6 +269,8 @@ class F1Score(FBetaScore):
 
     Args:
        num_classes : Number of unique classes in the dataset.
+       threshold: Float representing the threshold for deciding whether
+                  prediction values are 1 or 0.
        average : Type of averaging to be performed on data.
                  Acceptable values are `None`, `micro`, `macro` and
                  `weighted`.
@@ -307,41 +313,44 @@ class F1Score(FBetaScore):
     ```python
     actuals = tf.constant([[1, 1, 0],[1, 0, 0]],
               dtype=tf.int32)
-    preds = tf.constant([[1, 0, 0],[1, 0, 1]],
-              dtype=tf.int32)
+    preds = tf.constant([[0.9, 0.4, 0.45],[1, 0.2, 0.87]],
+            dtype=tf.float32)
     # F1 Micro
-    output = tfa.metrics.F1Score(num_classes=3,
+    output = tfa.metrics.F1Score(num_classes=3, threshold=0.8,
               average='micro')
     output.update_state(actuals, preds)
     print('F1 Micro score is: ',
             output.result().numpy()) # 0.6666667
     # F1 Macro
-    output = tfa.metrics.F1Score(num_classes=3,
+    output = tfa.metrics.F1Score(num_classes=3, threshold=0.8,
                 average='macro')
     output.update_state(actuals, preds)
     print('F1 Macro score is: ',
             output.result().numpy()) # 0.33333334
     # F1 weighted
-    output = tfa.metrics.F1Score(num_classes=3,
+    output = tfa.metrics.F1Score(num_classes=3, threshold=0.8,
               average='weighted')
     output.update_state(actuals, preds)
     print('F1 Weighted score is: ',
             output.result().numpy()) # 0.6666667
     # F1 score for each class (average=None).
-    output = tfa.metrics.F1Score(num_classes=3)
+    output = tfa.metrics.F1Score(num_classes=3, threshold=0.8,
+              average=None)
     output.update_state(actuals, preds)
     print('F1 score is: ',
             output.result().numpy()) # [1. 0. 0.]
     ```
     """
 
-    def __init__(self, num_classes, average, name='f1_score',
+    def __init__(self,
+                 num_classes,
+                 threshold,
+                 average,
+                 name='f1_score',
                  dtype=tf.float32):
         super(F1Score, self).__init__(
-            num_classes, average, 1.0, name=name, dtype=dtype)
+            num_classes, average, 1.0, threshold, name=name, dtype=dtype)
 
-    # TODO: Add sample_weight support, currently it is
-    # ignored during calculations.
     def get_config(self):
         base_config = super(F1Score, self).get_config()
         del base_config["beta"]

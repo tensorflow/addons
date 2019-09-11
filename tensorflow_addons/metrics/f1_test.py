@@ -28,7 +28,7 @@ import numpy as np
 @test_utils.run_all_in_graph_and_eager_modes
 class F1ScoreTest(tf.test.TestCase):
     def test_config(self):
-        f1_obj = F1Score(num_classes=3, average=None)
+        f1_obj = F1Score(num_classes=3, threshold=0.75, average=None)
         self.assertEqual(f1_obj.name, 'f1_score')
         self.assertEqual(f1_obj.dtype, tf.float32)
         self.assertEqual(f1_obj.num_classes, 3)
@@ -42,7 +42,7 @@ class F1ScoreTest(tf.test.TestCase):
 
     def initialize_vars(self, average):
         # initialize variables
-        f1_obj = F1Score(num_classes=3, average=average)
+        f1_obj = F1Score(num_classes=3, threshold=0.75, average=average)
 
         self.evaluate(tf.compat.v1.variables_initializer(f1_obj.variables))
 
@@ -71,21 +71,24 @@ class F1ScoreTest(tf.test.TestCase):
     def test_f1_perfect_score(self):
         actuals = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]],
                               dtype=tf.int32)
-        preds = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]], dtype=tf.int32)
+        preds = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]],
+                            dtype=tf.float32)
         self._test_f1_score(actuals, preds, 1.0)
 
     # test for worst f1 score
     def test_f1_worst_score(self):
         actuals = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]],
                               dtype=tf.int32)
-        preds = tf.constant([[0, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=tf.int32)
+        preds = tf.constant([[0, 0, 0], [0, 1, 0], [0, 0, 1]],
+                            dtype=tf.float32)
         self._test_f1_score(actuals, preds, 0.0)
 
     # test for random f1 score
     def test_f1_random_score(self):
         actuals = tf.constant([[1, 1, 1], [1, 0, 0], [1, 1, 0]],
                               dtype=tf.int32)
-        preds = tf.constant([[0, 0, 1], [1, 1, 0], [1, 1, 1]], dtype=tf.int32)
+        preds = tf.constant([[0.4, 0.7, 1], [1, 0.8, 0], [1, 0.9, 0.8]],
+                            dtype=tf.float32)
         # Use absl parameterized test here if possible
         test_params = [['micro', 0.6666667], ['macro', 0.65555555],
                        ['weighted', 0.67777777]]
@@ -98,9 +101,9 @@ class F1ScoreTest(tf.test.TestCase):
         actuals = tf.constant(
             [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [0, 1, 0], [0, 0, 1]],
             dtype=tf.int32)
-        preds = tf.constant(
-            [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [1, 0, 0], [0, 0, 1]],
-            dtype=tf.int32)
+        preds = tf.constant([[0.8, 0.1, 0.1], [0, 1, 0], [0.11, 0.13, 0.76],
+                             [0.8, 0.2, 0], [0.99, 0.05, 0.05], [0, 0, 1]],
+                            dtype=tf.float32)
 
         # Use absl parameterized test here if possible
         test_params = [[None, [0.8, 0.6666667, 1.]]]
@@ -113,17 +116,21 @@ class F1ScoreTest(tf.test.TestCase):
         model = tf.keras.Sequential()
         model.add(layers.Dense(64, activation='relu'))
         model.add(layers.Dense(64, activation='relu'))
-        model.add(layers.Dense(1, activation='softmax'))
-        fb = F1Score(1, 'macro')
+        model.add(layers.Dense(2, activation='softmax'))
+
+        f1 = F1Score(num_classes=2, threshold=0.6, average='weighted')
+
         model.compile(
             optimizer='rmsprop',
             loss='categorical_crossentropy',
             metrics=['acc', fb])
-        # data preparation
         data = np.random.random((10, 3))
-        labels = np.random.random((10, 1))
+
+        labels = np.random.random((10, 2))
         labels = np.where(labels > 0.5, 1, 0)
-        model.fit(data, labels, epochs=1, batch_size=32, verbose=0)
+
+        fitted_model = model.fit(
+            data, labels, epochs=1, batch_size=32, verbose=0)
 
 
 if __name__ == '__main__':
