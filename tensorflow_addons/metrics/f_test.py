@@ -50,10 +50,8 @@ class FBetaScoreTest(tf.test.TestCase):
         pred = tf.constant(pred, tf.float32)
 
         fbeta = FBetaScore(3, avg, beta, threshold)
-        update_op = fbeta.update_state(act, pred)
-
         self.evaluate(tf.compat.v1.variables_initializer(fbeta.variables))
-        self.evaluate(update_op)
+        self.evaluate(fbeta.update_state(act, pred))
         return self.evaluate(fbeta.result())
 
     def _test_sk(self, avg, beta, act, pred, threshold):

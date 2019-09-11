@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-import numpy as np
 
 
 class FBetaScore(tf.keras.metrics.Metric):
@@ -29,7 +28,7 @@ class FBetaScore(tf.keras.metrics.Metric):
     and recall. Output range is [0, 1]. Works for
     both multi-class and multi-label classification.
 
-    F-Beta = (1 + beta^2) * (precision * recall) / ((beta^2 * precision) + recall)
+    F-Beta = (1 + beta^2) * (prec * recall) / ((beta^2 * prec) + recall)
 
     Args:
         num_classes: Number of unique classes in the dataset.
