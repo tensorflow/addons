@@ -11,7 +11,7 @@
 | Submodule | Activation | Reference                        |
 |:----------|:-----------|:---------------------------------|
 | gelu      | gelu       | https://arxiv.org/abs/1606.08415 |
-| hardshrink| hardshrnk  |                                  |
+| hardshrink| hardshrink |                                  |
 | sparsemax | Sparsemax  | https://arxiv.org/abs/1602.02068 |
 
 
