@@ -92,7 +92,6 @@ def sequence_loss(logits,
 
     targets_rank = len(targets.get_shape())
     if targets_rank != 2 and targets_rank != 3:
-        print(targets_rank)
         raise ValueError(
             "Targets must be either a [batch_size x sequence_length] tensor " \
             + "where each element contains the labels' index" \
