@@ -184,7 +184,7 @@ class SequenceLoss(tf.keras.losses.Loss):
 
         # Delete the reduction attribute to inform Keras that it
         # should call this class by the __call__(...) method.
-        if 'reduction' in dir(self):
+        if hasattr(self, 'reduction'):
             delattr(self, 'reduction')
 
     def __call__(self, y_true, y_pred, sample_weight=None):
