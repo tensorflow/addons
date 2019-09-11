@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+import numpy as np
 from tensorflow_addons.utils import test_utils
 from tensorflow_addons.metrics import MatthewsCorrelationCoefficient
 
@@ -27,13 +28,13 @@ from tensorflow_addons.metrics import MatthewsCorrelationCoefficient
 class MatthewsCorrelationCoefficientTest(tf.test.TestCase):
     def test_config(self):
         # mcc object
-        mcc1 = MatthewsCorrelationCoefficient(num_classes=3)
-        self.assertEqual(mcc1.num_classes, 3)
-        self.assertEqual(mcc1.dtype, tf.int32)
+        mcc1 = MatthewsCorrelationCoefficient(num_classes=1)
+        self.assertEqual(mcc1.num_classes, 1)
+        self.assertEqual(mcc1.dtype, tf.float32)
         # check configure
         mcc2 = MatthewsCorrelationCoefficient.from_config(mcc1.get_config())
-        self.assertEqual(mcc2.num_classes, 3)
-        self.assertEqual(mcc2.dtype, tf.int32)
+        self.assertEqual(mcc2.num_classes, 1)
+        self.assertEqual(mcc2.dtype, tf.float32)
 
     def initialize_vars(self, n_classes, input_dtype):
         mcc = MatthewsCorrelationCoefficient(
@@ -48,18 +49,38 @@ class MatthewsCorrelationCoefficientTest(tf.test.TestCase):
     def check_results(self, obj, value):
         self.assertAllClose(value, self.evaluate(obj.result()), atol=1e-5)
 
-    def test_multiple_classes(self):
-        for input_dtype in [tf.int32, tf.int64, tf.float32, tf.float64]:
-            gt_label = tf.constant([[1, 0, 1], [0, 1, 0], [1, 0, 1], [0, 1, 0]],
-                                  dtype=input_dtype)
-            preds = tf.constant([[1, 0, 0], [0, 1, 1], [1, 0, 0], [0, 1, 1]],
-                                dtype=input_dtype)
-            # Initialize
-            mcc = self.initialize_vars(
-                n_classes=3, input_dtype=input_dtype)
-            # Update
-            self.update_obj_states(mcc, gt_label, preds)
-            # Check results
-            self.check_results(
-                mcc,
-                [[[2, 0], [0, 2]], [[2, 0], [0, 2]], [[0, 2], [2, 0]]])
+    def test_binary_classes(self):
+        gt_label = tf.constant([[1.0], [1.0], [1.0], [0.0]],
+                            dtype=tf.flaot32)
+        preds = tf.constant([[1.0], [0.0], [1.0], [1.0]],
+                            dtype=tf.flaot32)
+        # Initialize
+        mcc = self.initialize_vars(
+            n_classes=1, input_dtype=tf.flaot32)
+        # Update
+        self.update_obj_states(mcc, gt_label, preds)
+        # Check results
+        self.check_results(
+            mcc,
+            [-0.33333334])
+    
+    # Keras model API check
+    def test_keras_model(self):
+        model = tf.keras.Sequential()
+        model.add(layers.Dense(64, activation='relu'))
+        model.add(layers.Dense(64, activation='relu'))
+        model.add(layers.Dense(1, activation='softmax'))
+        mcc = MatthewsCorrelationCoefficient(num_classes=1)
+        model.compile(
+            optimizer='Adam',
+            loss='binary_crossentropy',
+            metrics=['accuracy', mcc])
+        # data preparation
+        data = np.random.random((10, 1))
+        labels = np.random.random((10, 1))
+        labels = np.where(labels > 0.5, 1.0, 0.0)
+        model.fit(data, labels, epochs=1, batch_size=32, verbose=0)
+
+
+if __name__ == '__main__':
+    tf.test.main()
