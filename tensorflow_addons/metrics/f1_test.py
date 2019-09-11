@@ -89,7 +89,7 @@ class F1ScoreTest(tf.test.TestCase):
                               dtype=tf.int32)
         preds = tf.constant([[0.4, 0.7, 1], [1, 0.8, 0], [1, 0.9, 0.8]],
                             dtype=tf.float32)
-        # Use absl parameterized test here if possible
+        # test parameters
         test_params = [['micro', 0.6666667], ['macro', 0.65555555],
                        ['weighted', 0.67777777]]
 
@@ -105,7 +105,7 @@ class F1ScoreTest(tf.test.TestCase):
                              [0.8, 0.2, 0], [0.99, 0.05, 0.05], [0, 0, 1]],
                             dtype=tf.float32)
 
-        # Use absl parameterized test here if possible
+        # test parameters
         test_params = [[None, [0.8, 0.6666667, 1.]]]
 
         for avg, res in test_params:

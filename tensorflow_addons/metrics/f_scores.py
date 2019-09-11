@@ -179,7 +179,8 @@ class FBetaScore(Metric):
                 initializer='zeros',
                 dtype=self.dtype)
 
-    # TO DO SSaishruthi: Add sample weight option
+    # TODO: Add sample_weight support, currently it is
+    # ignored during calculations.
     def update_state(self, y_true, y_pred, sample_weight=None):
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred > self.threshold, tf.int32)
