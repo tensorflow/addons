@@ -66,7 +66,7 @@ TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
       Name("Hardshrink").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
       HardshrinkOp<GPUDevice, type>);                                  \
   REGISTER_KERNEL_BUILDER(                                             \
-      Name("Hardshrink").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
+      Name("HardshrinkGrad").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
       HardshrinkGradOp<GPUDevice, type>);
 
 TF_CALL_GPU_NUMBER_TYPES(REGISTER_HARDSHRINK_GPU_KERNELS);
