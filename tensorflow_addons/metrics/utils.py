@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 import six
+import numpy as np
 import tensorflow as tf
 
 
@@ -65,3 +66,18 @@ class MeanMetricWrapper(tf.keras.metrics.Mean):
             config[k] = v
         base_config = super(MeanMetricWrapper, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+
+def test_keras_model(metric, num_output):
+    # Test API comptibility with tf.keras Model
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Dense(64, activation='relu'))
+    model.add(tf.keras.layers.Dense(num_output, activation='softmax'))
+    model.compile(
+        optimizer='adam',
+        loss='categorical_crossentropy',
+        metrics=['acc', metric])
+
+    data = np.random.random((10, 3))
+    labels = np.random.random((10, num_output))
+    model.fit(data, labels, epochs=1, batch_size=5, verbose=0)
