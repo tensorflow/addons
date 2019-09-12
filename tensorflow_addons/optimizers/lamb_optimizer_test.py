@@ -65,8 +65,8 @@ def get_beta_accumulators(opt, dtype):
     return (beta_1_power, beta_2_power)
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class LambOptimizerTest(tf.test.TestCase):
-    @test_utils.run_deprecated_v1
     def testSparse(self):
         for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             with self.cached_session():
@@ -90,22 +90,28 @@ class LambOptimizerTest(tf.test.TestCase):
                     tf.constant(grads1_np[grads1_np_indices]),
                     tf.constant(grads1_np_indices), tf.constant([3]))
                 opt = lamb_optimizer.LAMBOptimizer()
-                update = opt.apply_gradients(
-                    zip([grads0, grads1], [var0, var1]))
-                self.evaluate(tf.compat.v1.global_variables_initializer())
+                if not tf.executing_eagerly():
+                    update = opt.apply_gradients(
+                        zip([grads0, grads1], [var0, var1]))
+                    self.evaluate(tf.compat.v1.global_variables_initializer())
 
                 # Fetch params to validate initial values
                 self.assertAllClose([1.0, 1.0, 2.0], self.evaluate(var0))
                 self.assertAllClose([3.0, 3.0, 4.0], self.evaluate(var1))
 
-                beta_1_power, beta_2_power = get_beta_accumulators(opt, dtype)
                 # Run 3 steps of Lamb
                 for t in range(3):
+                    beta_1_power, beta_2_power = get_beta_accumulators(
+                        opt, dtype)
                     self.assertAllCloseAccordingToType(
                         0.9**(t + 1), self.evaluate(beta_1_power))
                     self.assertAllCloseAccordingToType(
                         0.999**(t + 1), self.evaluate(beta_2_power))
-                    self.evaluate(update)
+                    if not tf.executing_eagerly():
+                        self.evaluate(update)
+                    else:
+                        opt.apply_gradients(
+                            zip([grads0, grads1], [var0, var1]))
 
                     var0_np, m0, v0 = lamb_update_numpy(
                         var0_np, grads0_np, t, m0, v0)
@@ -117,49 +123,6 @@ class LambOptimizerTest(tf.test.TestCase):
                                                        self.evaluate(var0))
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
-
-    @test_utils.run_deprecated_v1
-    def testSparseDevicePlacement(self):
-        for index_dtype in [tf.dtypes.int32, tf.dtypes.int64]:
-            with self.cached_session(force_gpu=tf.test.is_gpu_available()):
-                # If a GPU is available, tests that all optimizer ops can be placed on
-                # it (i.e. they have GPU kernels).
-                var = tf.Variable([[1.0], [2.0]])
-                indices = tf.constant([0, 1], dtype=index_dtype)
-                g_sum = lambda: tf.reduce_sum(tf.gather(var, indices))  # pylint: disable=cell-var-from-loop
-                optimizer = lamb_optimizer.LAMBOptimizer(3.0)
-                minimize_op = optimizer.minimize(g_sum, var_list=[var])
-                self.evaluate(tf.compat.v1.global_variables_initializer())
-                minimize_op.run()
-
-    @test_utils.run_deprecated_v1
-    def testSparseRepeatedIndices(self):
-        for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
-            with self.cached_session():
-                repeated_index_update_var = tf.Variable([[1.0], [2.0]],
-                                                        dtype=dtype)
-                aggregated_update_var = tf.Variable([[1.0], [2.0]],
-                                                    dtype=dtype)
-                grad_repeated_index = tf.IndexedSlices(
-                    tf.constant([0.1, 0.1], shape=[2, 1], dtype=dtype),
-                    tf.constant([1, 1]), tf.constant([2, 1]))
-                grad_aggregated = tf.IndexedSlices(
-                    tf.constant([0.2], shape=[1, 1], dtype=dtype),
-                    tf.constant([1]), tf.constant([2, 1]))
-                repeated_update = lamb_optimizer.LAMBOptimizer(
-                ).apply_gradients([(grad_repeated_index,
-                                    repeated_index_update_var)])
-                aggregated_update = lamb_optimizer.LAMBOptimizer(
-                ).apply_gradients([(grad_aggregated, aggregated_update_var)])
-                self.evaluate(tf.compat.v1.global_variables_initializer())
-                self.assertAllClose(aggregated_update_var.eval(),
-                                    self.evaluate(repeated_index_update_var))
-                for _ in range(3):
-                    repeated_update.run()
-                    aggregated_update.run()
-                    self.assertAllClose(
-                        aggregated_update_var.eval(),
-                        self.evaluate(repeated_index_update_var))
 
     def doTestBasic(self, use_callable_params=False):
         # yapf: disable
@@ -221,14 +184,12 @@ class LambOptimizerTest(tf.test.TestCase):
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testResourceBasic(self):
         self.doTestBasic()
 
     def testBasicCallableParams(self):
         self.doTestBasic(use_callable_params=True)
 
-    @test_utils.run_deprecated_v1
     def testBasicWithLearningRateDecay(self):
         # yapf: disable
         for i, dtype in enumerate([tf.dtypes.half,
@@ -262,13 +223,20 @@ class LambOptimizerTest(tf.test.TestCase):
                     epsilon=epsilon,
                     weight_decay_rate=lamb_wd,
                     decay=decay)
-                update = opt.apply_gradients(
-                    zip([grads0, grads1], [var0, var1]))
 
-                self.evaluate(tf.compat.v1.global_variables_initializer())
+                if not tf.executing_eagerly():
+                    update = opt.apply_gradients(
+                        zip([grads0, grads1], [var0, var1]))
+                    self.evaluate(tf.compat.v1.global_variables_initializer())
+
                 # Run 3 steps of LAMB
                 for t in range(3):
-                    self.evaluate(update)
+                    if not tf.executing_eagerly():
+                        self.evaluate(update)
+                    else:
+                        opt.apply_gradients(
+                            zip([grads0, grads1], [var0, var1]))
+
                     lr_np = learning_rate / (1 + decay * t)
 
                     var0_np, m0, v0 = lamb_update_numpy(
@@ -294,7 +262,6 @@ class LambOptimizerTest(tf.test.TestCase):
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
 
-    @test_utils.run_deprecated_v1
     def testBasicWithLearningRateInverseTimeDecay(self):
         # yapf: disable
         for i, dtype in enumerate([tf.dtypes.half,
@@ -327,13 +294,19 @@ class LambOptimizerTest(tf.test.TestCase):
                     beta_1=beta_1,
                     beta_2=beta_2,
                     epsilon=epsilon)
-                update = opt.apply_gradients(
-                    zip([grads0, grads1], [var0, var1]))
 
-                self.evaluate(tf.compat.v1.global_variables_initializer())
+                if not tf.executing_eagerly():
+                    update = opt.apply_gradients(
+                        zip([grads0, grads1], [var0, var1]))
+                    self.evaluate(tf.compat.v1.global_variables_initializer())
+
                 # Run 3 steps of LAMB
                 for t in range(3):
-                    self.evaluate(update)
+                    if not tf.executing_eagerly():
+                        self.evaluate(update)
+                    else:
+                        opt.apply_gradients(
+                            zip([grads0, grads1], [var0, var1]))
 
                     lr_np = learning_rate / (1 + decay * t)
 
@@ -348,7 +321,6 @@ class LambOptimizerTest(tf.test.TestCase):
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
 
-    @test_utils.run_deprecated_v1
     def testTensorLearningRate(self):
         for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             with self.cached_session():
@@ -364,22 +336,29 @@ class LambOptimizerTest(tf.test.TestCase):
                 grads0 = tf.constant(grads0_np)
                 grads1 = tf.constant(grads1_np)
                 opt = lamb_optimizer.LAMBOptimizer(tf.constant(0.001))
-                update = opt.apply_gradients(
-                    zip([grads0, grads1], [var0, var1]))
-                self.evaluate(tf.compat.v1.global_variables_initializer())
+
+                if not tf.executing_eagerly():
+                    update = opt.apply_gradients(
+                        zip([grads0, grads1], [var0, var1]))
+                    self.evaluate(tf.compat.v1.global_variables_initializer())
 
                 # Fetch params to validate initial values
                 self.assertAllClose([1.0, 2.0], self.evaluate(var0))
                 self.assertAllClose([3.0, 4.0], self.evaluate(var1))
 
-                beta_1_power, beta_2_power = get_beta_accumulators(opt, dtype)
                 # Run 3 steps of LAMB
                 for t in range(3):
+                    beta_1_power, beta_2_power = get_beta_accumulators(
+                        opt, dtype)
                     self.assertAllCloseAccordingToType(
                         0.9**(t + 1), self.evaluate(beta_1_power))
                     self.assertAllCloseAccordingToType(
                         0.999**(t + 1), self.evaluate(beta_2_power))
-                    update.run()
+                    if not tf.executing_eagerly():
+                        self.evaluate(update)
+                    else:
+                        opt.apply_gradients(
+                            zip([grads0, grads1], [var0, var1]))
 
                     var0_np, m0, v0 = lamb_update_numpy(
                         var0_np, grads0_np, t, m0, v0)
@@ -392,7 +371,6 @@ class LambOptimizerTest(tf.test.TestCase):
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
 
-    @test_utils.run_deprecated_v1
     def testSharing(self):
         for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             with self.cached_session():
@@ -408,13 +386,13 @@ class LambOptimizerTest(tf.test.TestCase):
                 grads0 = tf.constant(grads0_np)
                 grads1 = tf.constant(grads1_np)
                 opt = lamb_optimizer.LAMBOptimizer()
-                update1 = opt.apply_gradients(
-                    zip([grads0, grads1], [var0, var1]))
-                update2 = opt.apply_gradients(
-                    zip([grads0, grads1], [var0, var1]))
-                self.evaluate(tf.compat.v1.global_variables_initializer())
 
-                beta_1_power, beta_2_power = get_beta_accumulators(opt, dtype)
+                if not tf.executing_eagerly():
+                    update1 = opt.apply_gradients(
+                        zip([grads0, grads1], [var0, var1]))
+                    update2 = opt.apply_gradients(
+                        zip([grads0, grads1], [var0, var1]))
+                    self.evaluate(tf.compat.v1.global_variables_initializer())
 
                 # Fetch params to validate initial values
                 self.assertAllClose([1.0, 2.0], self.evaluate(var0))
@@ -422,14 +400,21 @@ class LambOptimizerTest(tf.test.TestCase):
 
                 # Run 3 steps of intertwined LAMB1 and LAMB2.
                 for t in range(3):
+                    beta_1_power, beta_2_power = get_beta_accumulators(
+                        opt, dtype)
                     self.assertAllCloseAccordingToType(
                         0.9**(t + 1), self.evaluate(beta_1_power))
                     self.assertAllCloseAccordingToType(
                         0.999**(t + 1), self.evaluate(beta_2_power))
-                    if t % 2 == 0:
-                        update1.run()
+
+                    if not tf.executing_eagerly():
+                        if t % 2 == 0:
+                            update1.run()
+                        else:
+                            update2.run()
                     else:
-                        update2.run()
+                        opt.apply_gradients(
+                            zip([grads0, grads1], [var0, var1]))
 
                     var0_np, m0, v0 = lamb_update_numpy(
                         var0_np, grads0_np, t, m0, v0)
@@ -442,18 +427,24 @@ class LambOptimizerTest(tf.test.TestCase):
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
 
-    @test_utils.run_deprecated_v1
     def testMinimizeMeanSquareLossWithWeightDecay(self):
         with self.cached_session():
             w = tf.Variable([0.1, -0.2, -0.1])
             x = tf.constant([0.4, 0.2, -0.5])
             loss = lambda: tf.reduce_mean(tf.square(x - w))  # pylint:disable=cell-var-from-loop
             opt = lamb_optimizer.LAMBOptimizer(0.02, weight_decay_rate=0.01)
-            op = opt.minimize(loss, [w])
+
+            if not tf.executing_eagerly():
+                op = opt.minimize(loss, [w])
+                self.evaluate(tf.compat.v1.global_variables_initializer())
+
             self.evaluate(tf.compat.v1.global_variables_initializer())
             # Run 200 steps
             for _ in range(200):
-                self.evaluate(op)
+                if tf.executing_eagerly():
+                    opt.minimize(loss, [w])
+                else:
+                    self.evaluate(op)
             # Validate updated params
             self.assertAllClose(
                 self.evaluate(w), [0.4, 0.2, -0.5], rtol=1e-2, atol=1e-2)
