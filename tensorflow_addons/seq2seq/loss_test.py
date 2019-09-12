@@ -310,5 +310,56 @@ class LossTest(tf.test.TestCase):
                     seq_loss(self.targets, self.logits, self.weights))
 
 
+@test_utils.run_all_in_graph_and_eager_modes
+class DenseTargetLossTest(LossTest):
+    def setup(self):
+        super(DenseTargetLossTest, self).setup()
+        self.targets = tf.one_hot(self.targets, depth=self.number_of_classes)
+
+    def testKerasCompatibility(self):
+        """To test the compatibility of SequenceLoss with Keras's built-in
+        training loops, we create a fake model which always outputs a pre-
+        defined set of logits.
+
+        Then we check the calculated loss to be equal to the expected
+        loss. Note that since the fake model doesn't have any trainable
+        parameters, no matter how many steps we train it, it always
+        outputs the same loss value.
+        """
+        with self.cached_session(use_gpu=True):
+            self.setup()
+
+            def return_logits(x):
+                batch_size = tf.shape(x)[0]
+                logits_single_row = self.logits[0, :, :]
+                logits_batch = tf.tile(
+                    tf.expand_dims(logits_single_row, 0), [batch_size, 1, 1])
+                return logits_batch
+
+            inp = tf.keras.layers.Input(shape=(self.sequence_length,))
+            out = tf.keras.layers.Lambda(
+                return_logits,
+                output_shape=(self.sequence_length,
+                              self.number_of_classes))(inp)
+            model = tf.keras.models.Model(inp, out)
+
+            loss_obj = loss.SequenceLoss()
+            model.compile(
+                optimizer='adam', loss=loss_obj, sample_weight_mode="temporal")
+
+            # This is a fake input.
+            x = tf.ones(shape=(self.batch_size, self.sequence_length))
+
+            h = model.fit(
+                x,
+                self.targets,
+                sample_weight=self.weights,
+                batch_size=self.batch_size,
+                steps_per_epoch=1)
+
+            calculated_loss = h.history['loss'][0]
+            self.assertAllClose(calculated_loss, self.expected_loss)
+
+
 if __name__ == '__main__':
     tf.test.main()
