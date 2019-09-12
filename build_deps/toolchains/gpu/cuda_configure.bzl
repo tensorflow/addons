@@ -34,35 +34,20 @@ load(
 )
 
 _GCC_HOST_COMPILER_PATH = "GCC_HOST_COMPILER_PATH"
-
 _CLANG_CUDA_COMPILER_PATH = "CLANG_CUDA_COMPILER_PATH"
-
 _CUDA_TOOLKIT_PATH = "CUDA_TOOLKIT_PATH"
-
 _TF_CUDA_VERSION = "TF_CUDA_VERSION"
-
 _TF_CUDNN_VERSION = "TF_CUDNN_VERSION"
-
 _CUDNN_INSTALL_PATH = "CUDNN_INSTALL_PATH"
-
 _TF_CUDA_COMPUTE_CAPABILITIES = "TF_CUDA_COMPUTE_CAPABILITIES"
-
 _TF_DOWNLOAD_CLANG = "TF_DOWNLOAD_CLANG"
-
 _PYTHON_BIN_PATH = "PYTHON_BIN_PATH"
 
 _DEFAULT_CUDA_VERSION = ""
-
 _DEFAULT_CUDNN_VERSION = ""
-
 _DEFAULT_CUDA_TOOLKIT_PATH = "/usr/local/cuda"
-
 _DEFAULT_CUDNN_INSTALL_PATH = "/usr/local/cuda"
-
-_DEFAULT_CUDA_COMPUTE_CAPABILITIES = [
-    "3.5",
-    "5.2",
-]
+_DEFAULT_CUDA_COMPUTE_CAPABILITIES = ["3.5", "5.2"]
 
 # Lookup paths for CUDA / cuDNN libraries, relative to the install directories.
 #
@@ -269,7 +254,6 @@ _INC_DIR_MARKER_BEGIN = "#include <...>"
 
 # OSX add " (framework directory)" at the end of line, strip it.
 _OSX_FRAMEWORK_SUFFIX = " (framework directory)"
-
 _OSX_FRAMEWORK_SUFFIX_LEN = len(_OSX_FRAMEWORK_SUFFIX)
 
 def _cxx_inc_convert(path):
@@ -524,9 +508,7 @@ def _cuda_version(repository_ctx, cuda_toolkit_path, cpu_value):
     return version
 
 _DEFINE_CUDNN_MAJOR = "#define CUDNN_MAJOR"
-
 _DEFINE_CUDNN_MINOR = "#define CUDNN_MINOR"
-
 _DEFINE_CUDNN_PATCHLEVEL = "#define CUDNN_PATCHLEVEL"
 
 def find_cuda_define(repository_ctx, header_dir, header_file, define):
@@ -963,14 +945,14 @@ def _tpl(repository_ctx, tpl, substitutions = {}, out = None):
         out = tpl.replace(":", "/")
     repository_ctx.template(
         out,
-        Label("//build_deps/gpu/%s.tpl" % tpl),
+        Label("//build_deps/toolchains/gpu/%s.tpl" % tpl),
         substitutions,
     )
 
 def _file(repository_ctx, label):
     repository_ctx.template(
         label.replace(":", "/"),
-        Label("//build_deps/gpu/%s.tpl" % label),
+        Label("//build_deps/tolchains/gpu/%s.tpl" % label),
         {},
     )
 
@@ -1198,7 +1180,7 @@ def _create_local_cuda_repository(repository_ctx):
         "cuda:build_defs.bzl",
         {
             "%{cuda_is_configured}": "True",
-             "%{cuda_extra_copts}": "[]",
+            "%{cuda_extra_copts}": "[]",
         },
     )
 
@@ -1223,12 +1205,13 @@ def _create_local_cuda_repository(repository_ctx):
         },
         "cuda/BUILD",
     )
-   
+
     # Set up crosstool/
     cc = find_cc(repository_ctx)
     cc_fullpath = cc
 
     host_compiler_includes = _host_compiler_includes(repository_ctx, cc_fullpath)
+
     cuda_defines = {}
 
     # Bazel sets '-B/usr/bin' flag to workaround build errors on RHEL (see
@@ -1241,7 +1224,6 @@ def _create_local_cuda_repository(repository_ctx):
     #       https://github.com/bazelbuild/bazel/issues/5634)
     cuda_defines["%{linker_bin_path_flag}"] = 'flag: "-B/usr/bin"'
 
-    
     cuda_defines["%{host_compiler_path}"] = "clang/bin/crosstool_wrapper_driver_is_not_gcc"
     cuda_defines["%{host_compiler_warnings}"] = ""
 
@@ -1271,11 +1253,18 @@ def _create_local_cuda_repository(repository_ctx):
             ".exe" if _is_windows(repository_ctx) else "",
         )),
     )
+
+    builtin_include_directories = []
+    for one_line in cuda_defines["%{host_compiler_includes}"].splitlines():
+        inc_dir = one_line.split(":")[1][2:-1]
+        builtin_include_directories.append(inc_dir)
+
     _tpl(
         repository_ctx,
         "crosstool:BUILD",
         {
             "%{linker_files}": ":crosstool_wrapper_driver_is_not_gcc",
+            "%{cxx_builtin_include_directories}": ",".join(builtin_include_directories),
             "%{win_linker_files}": ":windows_msvc_wrapper_files",
         },
     )
@@ -1289,11 +1278,18 @@ def _create_local_cuda_repository(repository_ctx):
         ),
         "%{nvcc_tmp_dir}": _get_nvcc_tmp_dir_for_windows(repository_ctx),
     }
+
+    _tpl(
+        repository_ctx,
+        "crosstool:cc_toolchain_config.bzl",
+        wrapper_defines,
+    )
     _tpl(
         repository_ctx,
         "crosstool:clang/bin/crosstool_wrapper_driver_is_not_gcc",
         wrapper_defines,
     )
+
     _tpl(
         repository_ctx,
         "crosstool:windows/msvc_wrapper_for_nvcc.py",
@@ -1315,6 +1311,7 @@ def _cuda_autoconf_impl(repository_ctx):
         _create_local_cuda_repository(repository_ctx)
 
 cuda_configure = repository_rule(
+    implementation = _cuda_autoconf_impl,
     environ = [
         _GCC_HOST_COMPILER_PATH,
         _CLANG_CUDA_COMPILER_PATH,
@@ -1329,7 +1326,6 @@ cuda_configure = repository_rule(
         "NVVMIR_LIBRARY_DIR",
         _PYTHON_BIN_PATH,
     ],
-    implementation = _cuda_autoconf_impl,
 )
 
 """Detects and configures the local CUDA toolchain.
