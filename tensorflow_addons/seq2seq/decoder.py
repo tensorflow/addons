@@ -454,10 +454,12 @@ def dynamic_decode(decoder,
                 else:
                     new.set_shape(cur.shape)
                     pass_through = (new.shape.ndims == 0)
-                broadcast_finished = tf.broadcast_to(
-                    tf.expand_dims(finished, axis=-1), new.shape)
-                return new if pass_through else tf.where(
-                    broadcast_finished, cur, new)
+                if not pass_through:
+                    broadcast_finished = tf.broadcast_to(
+                        tf.expand_dims(finished, axis=-1), new.shape)
+                    return tf.where(broadcast_finished, cur, new)
+                else:
+                    return new
 
             if impute_finished:
                 next_state = tf.nest.map_structure(_maybe_copy_state,
