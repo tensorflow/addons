@@ -66,6 +66,7 @@ class MatthewsCorrelationCoefficient(Metric):
 
     def __init__(self,
                  num_classes=None,
+                 sample_weight=None,
                  name='MatthewsCorrelationCoefficient',
                  dtype=tf.float32):
         super(MatthewsCorrelationCoefficient, self).__init__(
@@ -94,6 +95,7 @@ class MatthewsCorrelationCoefficient(Metric):
 
     # TODO: sample_weights
     def update_state(self, y_true, y_pred, sample_weight=None):
+        sample_weight = self.sample_weight
         y_true = tf.cast(y_true, tf.float32)
         y_pred = tf.cast(y_pred, tf.float32)
 
