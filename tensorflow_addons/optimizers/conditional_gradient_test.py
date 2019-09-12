@@ -134,21 +134,6 @@ class ConditionalGradientTest(tf.test.TestCase):
             self.assertStartsWith(optimizer_variables[2].name,
                                   "ConditionalGradient/var1")
             self.assertEqual(3, len(optimizer_variables))
-        '''
-        with tf.Graph().as_default():
-            var2 = tf.Variable(
-                        [1.0, 2.0], dtype=tf.float32, name="var2")
-            var3 = tf.Variable(
-                        [3.0, 4.0], dtype=tf.float32, name="var3")
-            loss = lambda: tf.math.reduce_sum(var2 + var3)
-            optimizer.minimize(loss, var_list=[var2, var3])
-            optimizer_variables = optimizer.variables()
-            self.assertStartsWith(optimizer_variables[1].name, 
-                        "ConditionalGraident/var2")
-            self.assertStartsWith(optimizer_variables[2].name, 
-                        "ConditionalGraident/var3")
-            self.assertEqual(3, len(optimizer_variables))
-        '''
 
     # Based on issue #347 in the following link,
     #        "https://github.com/tensorflow/addons/issues/347"

@@ -55,9 +55,9 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
 
     def get_config(self):
         config = {
-            'learning_rate': self._learning_rate,
-            'lamda': self._lamda,
-            'use_locking': self._use_locking
+            'learning_rate': self._serialize_hyperparameter('learning_rate'),
+            'lamda': self._serialize_hyperparameter('lamda'),
+            'use_locking': self._serialize_hyperparameter('use_locking')
         }
         base_config = super(ConditionalGradient, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
@@ -67,12 +67,12 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
             self.add_slot(v, "conditional_gradient")
 
     def _prepare(self, var_list):
-        learning_rate = self.learning_rate
+        learning_rate = self._get_hyper('learning_rate')
         if callable(learning_rate):
             learning_rate = learning_rate()
         self._learning_rate_tensor = tf.convert_to_tensor(
             learning_rate, name="learning_rate")
-        lamda = self.lamda
+        lamda = self._get_hyper('lamda')
         if callable(lamda):
             lamda = lamda()
         self._lamda_tensor = tf.convert_to_tensor(lamda, name="lamda")
