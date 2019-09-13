@@ -1362,8 +1362,9 @@ class AttentionWrapperState(
                 if not tf.executing_eagerly():
                     new_shape = tf.shape(new)
                     old_shape = tf.shape(old)
-                    with tf.control_dependencies(
-                        [tf.debugging.assert_equal(new_shape, old_shape)]):
+                    assert_equal = tf.debugging.assert_equal(
+                        new_shape, old_shape)
+                    with tf.control_dependencies([assert_equal]):
                         # Add an identity op so that control deps can kick in.
                         return tf.identity(new)
                 else:
