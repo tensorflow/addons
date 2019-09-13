@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow.python import ops
-from tensorflow.python.ops import math_ops, state_ops, control_flow_ops
+from tensorflow.python.ops import math_ops, state_ops, array_ops, control_flow_ops
 from tensorflow_addons.utils import keras_utils
 
 
@@ -224,9 +224,12 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         if self._initial_weight_decay > 0.0:
             var_t += self._get_hyper('weight_decay', var_dtype) * var
 
-        var_update = state_ops.assign_sub(var,
-                                          lr_t * var_t,
-                                          use_locking=self._use_locking)
+        var_t *= lr_t
+        with ops.control_dependencies([var_t]):
+            var_update = state_ops.scatter_sub(var,
+                                               indices,
+                                               array_ops.gather(var_t, indices),
+                                               use_locking=self._use_locking)
 
         updates = [var_update, m_t, v_t]
         if self.amsgrad:

@@ -27,7 +27,7 @@ from tensorflow_addons.optimizers import RectifiedAdam
 @test_utils.run_all_in_graph_and_eager_modes
 class RectifiedAdamTest(tf.test.TestCase):
 
-    def test_dense_sample(self):
+    def run_dense_sample(self, iterations, expected, **opt_kwargs):
         var_0 = tf.Variable([1.0, 2.0], dtype=tf.dtypes.float32)
         var_1 = tf.Variable([3.0, 4.0], dtype=tf.dtypes.float32)
 
@@ -36,22 +36,21 @@ class RectifiedAdamTest(tf.test.TestCase):
 
         grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
-        opt = RectifiedAdam(lr=1e-3)
+        opt = RectifiedAdam(**opt_kwargs)
 
         if tf.executing_eagerly():
-            for _ in range(1000):
+            for _ in range(iterations):
                 opt.apply_gradients(grads_and_vars)
         else:
             update = opt.apply_gradients(grads_and_vars)
             self.evaluate(tf.compat.v1.global_variables_initializer())
-            for _ in range(1000):
+            for _ in range(iterations):
                 self.evaluate(update)
 
-        # Expected values are obtained from the official implementation
-        self.assertAllClose(var_0.read_value(), [0.5554, 1.5549], atol=1e-4)
-        self.assertAllClose(var_1.read_value(), [2.5557, 3.5557], atol=1e-4)
+        self.assertAllClose(var_0.read_value(), expected[0], atol=1e-4)
+        self.assertAllClose(var_1.read_value(), expected[1], atol=1e-4)
 
-    def test_sparse_sample(self):
+    def run_sparse_sample(self, iterations, expected, **opt_kwargs):
         var_0 = tf.Variable([1.0, 2.0])
         var_1 = tf.Variable([3.0, 4.0])
 
@@ -68,21 +67,75 @@ class RectifiedAdamTest(tf.test.TestCase):
 
         grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
-        opt = RectifiedAdam(lr=1e-3)
+        opt = RectifiedAdam(**opt_kwargs)
 
         if tf.executing_eagerly():
-            for _ in range(5000):
+            for _ in range(iterations):
                 opt.apply_gradients(grads_and_vars)
         else:
             update = opt.apply_gradients(grads_and_vars)
             self.evaluate(tf.compat.v1.global_variables_initializer())
-            for _ in range(5000):
+            for _ in range(iterations):
                 self.evaluate(update)
 
+        self.assertAllClose(var_0.read_value(), expected[0], atol=1e-4)
+        self.assertAllClose(var_1.read_value(), expected[1], atol=1e-4)
+
+    def test_dense_sample(self):
         # Expected values are obtained from the official implementation
-        # Dense results should be: [-2.9875, -1.9880], [-0.9871,  0.0128]
-        self.assertAllClose(var_0.read_value(), [-2.9875, 2.0], atol=1e-4)
-        self.assertAllClose(var_1.read_value(), [3.0, 0.0128], atol=1e-4)
+        self.run_dense_sample(
+            iterations=1000,
+            expected=[[0.5554, 1.5549], [2.5557, 3.5557]],
+            lr=1e-3,
+        )
+
+    def test_sparse_sample(self):
+        # Expected values are obtained from the official implementation
+        # Dense results should be: [-0.1929,  0.8066], [1.8075, 2.8074]
+        self.run_sparse_sample(
+            iterations=2000,
+            expected=[[-0.1929, 2.0], [3.0, 2.8074]],
+            lr=1e-3,
+        )
+
+    def test_dense_sample_with_amsgrad(self):
+        # Expected values are obtained from the official implementation
+        # `amsgrad` has no effect because the gradient is fixed
+        self.run_dense_sample(
+            iterations=1000,
+            expected=[[0.5554, 1.5549], [2.5557, 3.5557]],
+            lr=1e-3,
+            amsgrad=True,
+        )
+
+    def test_sparse_sample_with_amsgrad(self):
+        # Expected values are obtained from the official implementation
+        # `amsgrad` has no effect because the gradient is fixed
+        self.run_sparse_sample(
+            iterations=2000,
+            expected=[[-0.1929, 2.0], [3.0, 2.8074]],
+            lr=1e-3,
+            amsgrad=True,
+        )
+
+    def test_dense_sample_with_weight_decay(self):
+        # Expected values are obtained from the official implementation
+        self.run_dense_sample(
+            iterations=1000,
+            expected=[[0.5472, 1.5368], [2.5276, 3.5176]],
+            lr=1e-3,
+            weight_decay=0.01,
+        )
+
+    def test_sparse_sample_with_weight_decay(self):
+        # Expected values are obtained from the official implementation
+        # Dense results should be: [-0.2029,  0.7768], [1.7578, 2.7380]
+        self.run_sparse_sample(
+            iterations=2000,
+            expected=[[-0.2029, 2.0], [3.0, 2.7380]],
+            lr=1e-3,
+            weight_decay=0.01,
+        )
 
 
 if __name__ == '__main__':
