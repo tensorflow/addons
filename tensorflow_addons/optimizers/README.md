@@ -14,6 +14,7 @@
 | lazy_adam | LazyAdam | https://arxiv.org/abs/1412.6980      |
 | moving_average | MovingAverage | |
 | weight_decay_optimizers | SGDW, AdamW, extend_with_decoupled_weight_decay | https://arxiv.org/pdf/1711.05101.pdf |
+| rectified_adam | RectifiedAdam | https://arxiv.org/pdf/1908.03265v1.pdf |
 
 
 ## Contribution Guidelines
