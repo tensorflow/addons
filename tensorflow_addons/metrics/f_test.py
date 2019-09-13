@@ -19,7 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.metrics import FBetaScore, utils
+from tensorflow_addons.metrics import FBetaScore, F1Score, utils
 from tensorflow_addons.utils import test_utils
 
 import numpy as np
@@ -101,6 +101,27 @@ class FBetaScoreTest(tf.test.TestCase):
     def test_keras_model(self):
         fbeta = FBetaScore(5, 'micro', 1.0)
         utils.test_keras_model(fbeta, 5)
+
+
+@test_utils.run_all_in_graph_and_eager_modes
+class F1ScoreTest(tf.test.TestCase):
+    def test_eq(self):
+        f1 = F1Score(4)
+        fbeta = FBetaScore(4, beta=1.0)
+        self.evaluate(tf.compat.v1.variables_initializer(f1.variables))
+        self.evaluate(tf.compat.v1.variables_initializer(fbeta.variables))
+
+        actuals = np.random.randint(2, size=(10, 4))
+        preds = np.random.uniform(size=(10, 4))
+
+        self.evaluate(fbeta.update_state(actuals, preds))
+        self.evaluate(f1.update_state(actuals, preds))
+        self.assertAllClose(
+            self.evaluate(fbeta.result()), self.evaluate(f1.result()))
+
+    def test_keras_model(self):
+        f1 = F1Score(5)
+        utils.test_keras_model(f1, 5)
 
 
 if __name__ == '__main__':

@@ -19,8 +19,10 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+from tensorflow_addons.utils import keras_utils
 
 
+@keras_utils.register_keras_custom_object
 class FBetaScore(tf.keras.metrics.Metric):
     """Computes F-Beta score.
 
@@ -185,6 +187,7 @@ class FBetaScore(tf.keras.metrics.Metric):
         self.weights_intermediate.assign(tf.zeros(self.init_shape, self.dtype))
 
 
+@keras_utils.register_keras_custom_object
 class F1Score(FBetaScore):
     """Computes F-1 Score.
 
@@ -227,7 +230,7 @@ class F1Score(FBetaScore):
 
     def __init__(self,
                  num_classes,
-                 average,
+                 average=None,
                  threshold=None,
                  name='f1_score',
                  dtype=tf.float32):
