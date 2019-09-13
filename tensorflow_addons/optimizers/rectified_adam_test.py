@@ -46,7 +46,6 @@ class RectifiedAdamTest(tf.test.TestCase):
             self.evaluate(tf.compat.v1.global_variables_initializer())
             for _ in range(iterations):
                 self.evaluate(update)
-
         self.assertAllClose(var_0.read_value(), expected[0], atol=1e-4)
         self.assertAllClose(var_1.read_value(), expected[1], atol=1e-4)
 
@@ -136,6 +135,32 @@ class RectifiedAdamTest(tf.test.TestCase):
             lr=1e-3,
             weight_decay=0.01,
         )
+
+    def test_dense_sample_with_warmup(self):
+        self.run_dense_sample(
+            iterations=1000,
+            expected=[[0.8041, 1.8041], [2.8041, 3.8041]],
+            lr=1e-3,
+            total_steps=1000,
+            warmup_proportion=0.1,
+            min_lr=1e-5,
+        )
+
+    def test_sparse_sample_with_warmup(self):
+        self.run_sparse_sample(
+            iterations=2000,
+            expected=[[0.4653, 2.0], [3.0, 3.4653]],
+            lr=1e-3,
+            total_steps=2000,
+            warmup_proportion=0.1,
+            min_lr=1e-5,
+        )
+
+    def test_get_config(self):
+        opt = RectifiedAdam(lr=1e-4)
+        config = opt.get_config()
+        self.assertEqual(config['learning_rate'], 1e-4)
+        self.assertEqual(config['total_steps'], 0)
 
 
 if __name__ == '__main__':

@@ -19,20 +19,44 @@ from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow.python import ops
-from tensorflow.python.ops import math_ops, state_ops, array_ops, control_flow_ops
+from tensorflow.python.ops import (math_ops, state_ops,
+                                   array_ops, control_flow_ops)
 from tensorflow_addons.utils import keras_utils
 
 
 @keras_utils.register_keras_custom_object
 class RectifiedAdam(tf.keras.optimizers.Optimizer):
-    """Variant of the Adam optimizer whose adaptive learning rate is rectified so as to
-    have a consistent variance.
+    """Variant of the Adam optimizer whose adaptive learning rate is rectified
+    so as to have a consistent variance.
 
-    It implements the Rectified Adam (a.k.a. RAdam) proposed by Liyuan Liu et al. in
-    [On The Variance Of The Adaptive Learning Rate And Beyond]
-    (https://arxiv.org/pdf/1908.03265v1.pdf).
+    It implements the Rectified Adam (a.k.a. RAdam) proposed by
+    Liyuan Liu et al. in [On The Variance Of The Adaptive Learning Rate
+    And Beyond](https://arxiv.org/pdf/1908.03265v1.pdf).
+
+    Example of usage:
+
+    ```python
+    opt = tfa.optimizers.RectifiedAdam(lr=1e-3)
+    ```
 
     Note: `amsgrad` is not described in the original paper. Use it with caution.
+
+    RAdam is not a placement of the heuristic warmup, the settings should be
+    kept if warmup has already been employed and tuned in the baseline method.
+    You can enable warmup by setting `total_steps` and `warmup_proportion`:
+
+    ```python
+    opt = tfa.optimizers.RectifiedAdam(
+        lr=1e-3,
+        total_steps=10000,
+        warmup_proportion=0.1,
+        min_lr=1e-5,
+    )
+    ```
+
+    In the above example, the learning rate will increase linearly
+    from 0 to `lr` in 1000 steps, then decrease linearly from `lr` to `min_lr`
+    in 9000 steps.
     """
 
     def __init__(self,
@@ -48,33 +72,31 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
                  name='RectifiedAdam',
                  **kwargs):
         r"""Construct a new RAdam optimizer.
+
         Args:
-            learning_rate: A Tensor or a floating point value.    The learning rate.
-            beta_1: A float value or a constant float tensor. The exponential decay
-                rate for the 1st moment estimates.
-            beta_2: A float value or a constant float tensor. The exponential decay
-                rate for the 2nd moment estimates.
-            epsilon: A small constant for numerical stability. This epsilon is
-                "epsilon hat" in the Kingma and Ba paper (in the formula just before
-                Section 2.1), not the epsilon in Algorithm 1 of the paper.
+            learning_rate: A Tensor or a floating point value.
+                The learning rate.
+            beta_1: A float value or a constant float tensor.
+                The exponential decay rate for the 1st moment estimates.
+            beta_2: A float value or a constant float tensor.
+                The exponential decay rate for the 2nd moment estimates.
+            epsilon: A small constant for numerical stability.
             weight_decay: A floating point value. Weight decay for each param.
-            amsgrad: boolean. Whether to apply AMSGrad variant of this algorithm from
-                the paper "On the Convergence of Adam and beyond".
+            amsgrad: boolean. Whether to apply AMSGrad variant of this algorithm
+                from the paper "On the Convergence of Adam and beyond".
             total_steps: An integer. Total number of training steps.
                 Enable warmup by setting a positive value.
-            warmup_proportion: A floating point value. The proportion of increasing steps.
+            warmup_proportion: A floating point value.
+                The proportion of increasing steps.
             min_lr: A floating point value. Minimum learning rate after warmup.
-            name: Optional name for the operations created when applying gradients.
-                Defaults to "Adam".    @compatibility(eager) When eager execution is
-                enabled, `learning_rate`, `beta_1`, `beta_2`, and `epsilon` can each be
-                a callable that takes no arguments and returns the actual value to use.
-                This can be useful for changing these values across different
-                invocations of optimizer functions. @end_compatibility
-            **kwargs: keyword arguments. Allowed to be {`clipnorm`, `clipvalue`, `lr`,
-                `decay`}. `clipnorm` is clip gradients by norm; `clipvalue` is clip
-                gradients by value, `decay` is included for backward compatibility to
-                allow time inverse decay of learning rate. `lr` is included for backward
-                compatibility, recommended to use `learning_rate` instead.
+            name: Optional name for the operations created when applying
+                gradients. Defaults to "RectifiedAdam".
+            **kwargs: keyword arguments. Allowed to be {`clipnorm`, `clipvalue`,
+                `lr`, `decay`}. `clipnorm` is clip gradients by norm;
+                `clipvalue` is clip gradients by value, `decay` is included for
+                backward compatibility to allow time inverse decay of learning
+                rate. `lr` is included for backward compatibility, recommended
+                to use `learning_rate` instead.
         """
         super(RectifiedAdam, self).__init__(name, **kwargs)
         self._set_hyper('learning_rate', kwargs.get('lr', learning_rate))
@@ -120,14 +142,17 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
 
         if self._initial_total_steps > 0:
             total_steps = self._get_hyper('total_steps', var_dtype)
-            warmup_steps = total_steps * self._get_hyper('warmup_proportion', var_dtype)
+            warmup_steps = total_steps *\
+                self._get_hyper('warmup_proportion', var_dtype)
             min_lr = self._get_hyper('min_lr', var_dtype)
             decay_steps = math_ops.maximum(total_steps - warmup_steps, 1)
             decay_rate = (min_lr - lr_t) / decay_steps
             lr_t = tf.where(
                 local_step <= warmup_steps,
                 lr_t * (local_step / warmup_steps),
-                lr_t + decay_rate * math_ops.minimum(local_step - warmup_steps, decay_steps),
+                lr_t + decay_rate * math_ops.minimum(
+                    local_step - warmup_steps,
+                    decay_steps),
             )
 
         sma_inf = 2.0 / (1.0 - beta_2_t) - 1.0
@@ -139,7 +164,8 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         m_corr_t = m_t / (1.0 - beta_1_power)
 
         v_t = state_ops.assign(v,
-                               beta_2_t * v + (1.0 - beta_2_t) * math_ops.square(grad),
+                               beta_2_t * v +
+                               (1.0 - beta_2_t) * math_ops.square(grad),
                                use_locking=self._use_locking)
         if self.amsgrad:
             vhat = self.get_slot(var, 'vhat')
@@ -154,7 +180,10 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
                             (sma_t - 2.0) / (sma_inf - 2.0) *
                             sma_inf / sma_t)
 
-        var_t = tf.where(sma_t >= 5.0, r_t * m_corr_t / (v_corr_t + epsilon_t), m_corr_t)
+        var_t = tf.where(
+            sma_t >= 5.0,
+            r_t * m_corr_t / (v_corr_t + epsilon_t),
+            m_corr_t)
 
         if self._initial_weight_decay > 0.0:
             var_t += self._get_hyper('weight_decay', var_dtype) * var
@@ -180,14 +209,17 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
 
         if self._initial_total_steps > 0:
             total_steps = self._get_hyper('total_steps', var_dtype)
-            warmup_steps = total_steps * self._get_hyper('warmup_proportion', var_dtype)
+            warmup_steps = total_steps *\
+                self._get_hyper('warmup_proportion', var_dtype)
             min_lr = self._get_hyper('min_lr', var_dtype)
             decay_steps = math_ops.maximum(total_steps - warmup_steps, 1)
             decay_rate = (min_lr - lr_t) / decay_steps
             lr_t = tf.where(
                 local_step <= warmup_steps,
                 lr_t * (local_step / warmup_steps),
-                lr_t + decay_rate * math_ops.minimum(local_step - warmup_steps, decay_steps),
+                lr_t + decay_rate * math_ops.minimum(
+                    local_step - warmup_steps,
+                    decay_steps),
             )
 
         sma_inf = 2.0 / (1.0 - beta_2_t) - 1.0
@@ -219,7 +251,10 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
                             (sma_t - 2.0) / (sma_inf - 2.0) *
                             sma_inf / sma_t)
 
-        var_t = tf.where(sma_t >= 5.0, r_t * m_corr_t / (v_corr_t + epsilon_t), m_corr_t)
+        var_t = tf.where(
+            sma_t >= 5.0,
+            r_t * m_corr_t / (v_corr_t + epsilon_t),
+            m_corr_t)
 
         if self._initial_weight_decay > 0.0:
             var_t += self._get_hyper('weight_decay', var_dtype) * var
@@ -247,7 +282,8 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
             'epsilon': self.epsilon,
             'amsgrad': self.amsgrad,
             'total_steps': self._serialize_hyperparameter('total_steps'),
-            'warmup_proportion': self._serialize_hyperparameter('warmup_proportion'),
+            'warmup_proportion':
+                self._serialize_hyperparameter('warmup_proportion'),
             'min_lr': self._serialize_hyperparameter('min_lr'),
         })
         return config
