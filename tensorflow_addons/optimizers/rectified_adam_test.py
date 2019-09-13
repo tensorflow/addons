@@ -156,6 +156,31 @@ class RectifiedAdamTest(tf.test.TestCase):
             min_lr=1e-5,
         )
 
+    def test_dense_sample_with_lookahead(self):
+        # Expected values are obtained from the original implementation
+        # of Ranger
+        self.run_dense_sample(
+            iterations=1000,
+            expected=[[0.7985, 1.7983], [2.7987, 3.7986]],
+            lr=1e-3,
+            beta_1=0.95,
+            lookahead_step=6,
+            lookahead_ratio=0.45,
+        )
+
+    def test_sparse_sample_with_lookahead(self):
+        # Expected values are obtained from the original implementation
+        # of Ranger.
+        # Dense results should be: [0.6417,  1.6415], [2.6419, 3.6418]
+        self.run_sparse_sample(
+            iterations=1500,
+            expected=[[0.6417, 2.0], [3.0, 3.6418]],
+            lr=1e-3,
+            beta_1=0.95,
+            lookahead_step=6,
+            lookahead_ratio=0.45,
+        )
+
     def test_get_config(self):
         opt = RectifiedAdam(lr=1e-4)
         config = opt.get_config()

@@ -57,6 +57,23 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
     In the above example, the learning rate will increase linearly
     from 0 to `lr` in 1000 steps, then decrease linearly from `lr` to `min_lr`
     in 9000 steps.
+
+    Lookahead, proposed by Michael R. Zhang et.al in the paper
+    [Lookahead Optimizer: k steps forward, 1 step back]
+    (https://arxiv.org/abs/1907.08610v1), can be integrated with RAdam,
+    which is announced by Less Wright and the new combined optimizer can also be
+    called "Ranger". By setting `lookahead_step` and `lookahead_ratio`, the
+    lookahead mechanism will be used. For example:
+
+    ```python
+    opt = tfa.optimizers.RectifiedAdam(
+        lr=1e-3,
+        lookahead_step=5,
+        lookahead_ratio=0.5,
+    )
+    ```
+
+    Note: more memory will be used since all the variables will be duplicated.
     """
 
     def __init__(self,
@@ -66,9 +83,12 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
                  epsilon=1e-7,
                  weight_decay=0.,
                  amsgrad=False,
+                 sma_threshold=5.0,
                  total_steps=0,
                  warmup_proportion=0.1,
                  min_lr=0.,
+                 lookahead_step=0,
+                 lookahead_ratio=0.5,
                  name='RectifiedAdam',
                  **kwargs):
         r"""Construct a new RAdam optimizer.
@@ -84,11 +104,15 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
             weight_decay: A floating point value. Weight decay for each param.
             amsgrad: boolean. Whether to apply AMSGrad variant of this algorithm
                 from the paper "On the Convergence of Adam and beyond".
+            sma_threshold. A float value. The threshold for simple mean average.
             total_steps: An integer. Total number of training steps.
                 Enable warmup by setting a positive value.
             warmup_proportion: A floating point value.
                 The proportion of increasing steps.
             min_lr: A floating point value. Minimum learning rate after warmup.
+            lookahead_step: An integer. Synchronization period of lookhead.
+                Enable lookahead mechanism by setting it with a positive value.
+            lookahead_ratio: A float value. Slow weights step size.
             name: Optional name for the operations created when applying
                 gradients. Defaults to "RectifiedAdam".
             **kwargs: keyword arguments. Allowed to be {`clipnorm`, `clipvalue`,
@@ -104,13 +128,17 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         self._set_hyper('beta_2', beta_2)
         self._set_hyper('decay', self._initial_decay)
         self._set_hyper('weight_decay', weight_decay)
+        self._set_hyper('sma_threshold', sma_threshold)
         self._set_hyper('total_steps', float(total_steps))
         self._set_hyper('warmup_proportion', warmup_proportion)
         self._set_hyper('min_lr', min_lr)
+        self._set_hyper('lookahead_step', lookahead_step)
+        self._set_hyper('lookahead_ratio', lookahead_ratio)
         self.epsilon = epsilon or tf.keras.backend.epsilon()
         self.amsgrad = amsgrad
         self._initial_weight_decay = weight_decay
         self._initial_total_steps = total_steps
+        self._initial_lookahead_step = lookahead_step
 
     def _create_slots(self, var_list):
         for var in var_list:
@@ -120,6 +148,9 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         if self.amsgrad:
             for var in var_list:
                 self.add_slot(var, 'vhat')
+        if self._initial_lookahead_step:
+            for var in var_list:
+                self.add_slot(var, 'slow')
 
     def set_weights(self, weights):
         params = self.weights
@@ -180,19 +211,45 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
                             (sma_t - 2.0) / (sma_inf - 2.0) *
                             sma_inf / sma_t)
 
+        sma_threshold = self._get_hyper('sma_threshold', var_dtype)
         var_t = tf.where(
-            sma_t >= 5.0,
+            sma_t >= sma_threshold,
             r_t * m_corr_t / (v_corr_t + epsilon_t),
             m_corr_t)
 
         if self._initial_weight_decay > 0.0:
             var_t += self._get_hyper('weight_decay', var_dtype) * var
 
-        var_update = state_ops.assign_sub(var,
-                                          lr_t * var_t,
-                                          use_locking=self._use_locking)
+        if self._initial_lookahead_step > 0:
+            slow_var = self.get_slot(var, 'slow')
+            lookahead_step = self._get_hyper('lookahead_step', local_step.dtype)
+            lookahead_ratio = self._get_hyper('lookahead_ratio', var_dtype)
+            sync_cond = math_ops.equal(local_step % lookahead_step, 0)
+            new_var = var - lr_t * var_t
+            slow_init = tf.where(
+                tf.equal(local_step, tf.constant(1, dtype=local_step.dtype)),
+                var,
+                slow_var,
+            )
+            slow_t = slow_init + (new_var - slow_var) * lookahead_ratio
+            var_updates = [
+                state_ops.assign(
+                    slow_var,
+                    tf.where(sync_cond, slow_t, slow_init),
+                    use_locking=self._use_locking,
+                ),
+                state_ops.assign(
+                    var,
+                    tf.where(sync_cond, slow_t, new_var),
+                    use_locking=self._use_locking,
+                ),
+            ]
+        else:
+            var_updates = [state_ops.assign_sub(var,
+                                                lr_t * var_t,
+                                                use_locking=self._use_locking)]
 
-        updates = [var_update, m_t, v_t]
+        updates = var_updates + [m_t, v_t]
         if self.amsgrad:
             updates.append(vhat_t)
         return control_flow_ops.group(*updates)
@@ -251,8 +308,9 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
                             (sma_t - 2.0) / (sma_inf - 2.0) *
                             sma_inf / sma_t)
 
+        sma_threshold = self._get_hyper('sma_threshold', var_dtype)
         var_t = tf.where(
-            sma_t >= 5.0,
+            sma_t >= sma_threshold,
             r_t * m_corr_t / (v_corr_t + epsilon_t),
             m_corr_t)
 
@@ -261,12 +319,41 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
 
         var_t *= lr_t
         with ops.control_dependencies([var_t]):
-            var_update = state_ops.scatter_sub(var,
-                                               indices,
-                                               array_ops.gather(var_t, indices),
-                                               use_locking=self._use_locking)
+            if self._initial_lookahead_step > 0:
+                slow_var = self.get_slot(var, 'slow')
+                lookahead_step = self._get_hyper('lookahead_step', local_step.dtype)
+                lookahead_ratio = self._get_hyper('lookahead_ratio', var_dtype)
+                sync_cond = math_ops.equal(local_step % lookahead_step, 0)
+                new_var = var - var_t
+                slow_init = tf.where(
+                    tf.equal(local_step, tf.constant(1, dtype=local_step.dtype)),
+                    var,
+                    slow_var,
+                )
+                slow_t = slow_init + (new_var - slow_var) * lookahead_ratio
+                var_updates = [
+                    state_ops.assign(
+                        slow_var,
+                        tf.where(sync_cond, slow_t, slow_init),
+                        use_locking=self._use_locking,
+                    ),
+                    state_ops.scatter_update(
+                        var,
+                        indices,
+                        array_ops.gather(
+                            tf.where(sync_cond, slow_t, new_var), indices,
+                        ),
+                        use_locking=self._use_locking,
+                    ),
+                ]
+            else:
+                var_updates = [state_ops.scatter_sub(
+                    var,
+                    indices,
+                    array_ops.gather(var_t, indices),
+                    use_locking=self._use_locking)]
 
-        updates = [var_update, m_t, v_t]
+        updates = var_updates + [m_t, v_t]
         if self.amsgrad:
             updates.append(vhat_t)
         return control_flow_ops.group(*updates)
@@ -279,11 +366,16 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
             'beta_2': self._serialize_hyperparameter('beta_2'),
             'decay': self._serialize_hyperparameter('decay'),
             'weight_decay': self._serialize_hyperparameter('weight_decay'),
+            'sma_threshold': self._serialize_hyperparameter('sma_threshold'),
             'epsilon': self.epsilon,
             'amsgrad': self.amsgrad,
             'total_steps': self._serialize_hyperparameter('total_steps'),
             'warmup_proportion':
                 self._serialize_hyperparameter('warmup_proportion'),
+            'lookahead_step':
+                self._serialize_hyperparameter('lookahead_step'),
+            'lookahead_ratio':
+                self._serialize_hyperparameter('lookahead_ratio'),
             'min_lr': self._serialize_hyperparameter('min_lr'),
         })
         return config
