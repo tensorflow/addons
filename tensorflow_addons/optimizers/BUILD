@@ -10,6 +10,7 @@ py_library(
         "moving_average.py",
         "weight_decay_optimizers.py",
         "rectified_adam.py",
+        "lookahead.py",
     ],
     srcs_version = "PY2AND3",
     deps = [
@@ -63,6 +64,19 @@ py_test(
         "rectified_adam_test.py",
     ],
     main = "rectified_adam_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":optimizers",
+    ],
+)
+
+py_test(
+    name = "lookahead_test",
+    size = "small",
+    srcs = [
+        "lookahead_test.py",
+    ],
+    main = "lookahead_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":optimizers",

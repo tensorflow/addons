@@ -21,13 +21,13 @@ from __future__ import print_function
 import tensorflow as tf
 
 from tensorflow_addons.utils import test_utils
-from tensorflow_addons.optimizers import RectifiedAdam
+from tensorflow_addons.optimizers import RectifiedAdam, Lookahead
 
 
 @test_utils.run_all_in_graph_and_eager_modes
 class RectifiedAdamTest(tf.test.TestCase):
 
-    def run_dense_sample(self, iterations, expected, **opt_kwargs):
+    def run_dense_sample(self, iterations, expected, optimizer):
         var_0 = tf.Variable([1.0, 2.0], dtype=tf.dtypes.float32)
         var_1 = tf.Variable([3.0, 4.0], dtype=tf.dtypes.float32)
 
@@ -36,20 +36,19 @@ class RectifiedAdamTest(tf.test.TestCase):
 
         grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
-        opt = RectifiedAdam(**opt_kwargs)
-
         if tf.executing_eagerly():
             for _ in range(iterations):
-                opt.apply_gradients(grads_and_vars)
+                optimizer.apply_gradients(grads_and_vars)
         else:
-            update = opt.apply_gradients(grads_and_vars)
+            update = optimizer.apply_gradients(grads_and_vars)
             self.evaluate(tf.compat.v1.global_variables_initializer())
             for _ in range(iterations):
                 self.evaluate(update)
+
         self.assertAllClose(var_0.read_value(), expected[0], atol=1e-4)
         self.assertAllClose(var_1.read_value(), expected[1], atol=1e-4)
 
-    def run_sparse_sample(self, iterations, expected, **opt_kwargs):
+    def run_sparse_sample(self, iterations, expected, optimizer):
         var_0 = tf.Variable([1.0, 2.0])
         var_1 = tf.Variable([3.0, 4.0])
 
@@ -66,13 +65,11 @@ class RectifiedAdamTest(tf.test.TestCase):
 
         grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
-        opt = RectifiedAdam(**opt_kwargs)
-
         if tf.executing_eagerly():
             for _ in range(iterations):
-                opt.apply_gradients(grads_and_vars)
+                optimizer.apply_gradients(grads_and_vars)
         else:
-            update = opt.apply_gradients(grads_and_vars)
+            update = optimizer.apply_gradients(grads_and_vars)
             self.evaluate(tf.compat.v1.global_variables_initializer())
             for _ in range(iterations):
                 self.evaluate(update)
@@ -85,7 +82,7 @@ class RectifiedAdamTest(tf.test.TestCase):
         self.run_dense_sample(
             iterations=1000,
             expected=[[0.5554, 1.5549], [2.5557, 3.5557]],
-            lr=1e-3,
+            optimizer=RectifiedAdam(lr=1e-3),
         )
 
     def test_sparse_sample(self):
@@ -94,7 +91,7 @@ class RectifiedAdamTest(tf.test.TestCase):
         self.run_sparse_sample(
             iterations=2000,
             expected=[[-0.1929, 2.0], [3.0, 2.8074]],
-            lr=1e-3,
+            optimizer=RectifiedAdam(lr=1e-3),
         )
 
     def test_dense_sample_with_amsgrad(self):
@@ -103,8 +100,7 @@ class RectifiedAdamTest(tf.test.TestCase):
         self.run_dense_sample(
             iterations=1000,
             expected=[[0.5554, 1.5549], [2.5557, 3.5557]],
-            lr=1e-3,
-            amsgrad=True,
+            optimizer=RectifiedAdam(lr=1e-3, amsgrad=True),
         )
 
     def test_sparse_sample_with_amsgrad(self):
@@ -113,8 +109,7 @@ class RectifiedAdamTest(tf.test.TestCase):
         self.run_sparse_sample(
             iterations=2000,
             expected=[[-0.1929, 2.0], [3.0, 2.8074]],
-            lr=1e-3,
-            amsgrad=True,
+            optimizer=RectifiedAdam(lr=1e-3, amsgrad=True),
         )
 
     def test_dense_sample_with_weight_decay(self):
@@ -122,8 +117,7 @@ class RectifiedAdamTest(tf.test.TestCase):
         self.run_dense_sample(
             iterations=1000,
             expected=[[0.5472, 1.5368], [2.5276, 3.5176]],
-            lr=1e-3,
-            weight_decay=0.01,
+            optimizer=RectifiedAdam(lr=1e-3, weight_decay=0.01),
         )
 
     def test_sparse_sample_with_weight_decay(self):
@@ -132,28 +126,31 @@ class RectifiedAdamTest(tf.test.TestCase):
         self.run_sparse_sample(
             iterations=2000,
             expected=[[-0.2029, 2.0], [3.0, 2.7380]],
-            lr=1e-3,
-            weight_decay=0.01,
+            optimizer=RectifiedAdam(lr=1e-3, weight_decay=0.01),
         )
 
     def test_dense_sample_with_warmup(self):
         self.run_dense_sample(
             iterations=1000,
             expected=[[0.8041, 1.8041], [2.8041, 3.8041]],
-            lr=1e-3,
-            total_steps=1000,
-            warmup_proportion=0.1,
-            min_lr=1e-5,
+            optimizer=RectifiedAdam(
+                lr=1e-3,
+                total_steps=1000,
+                warmup_proportion=0.1,
+                min_lr=1e-5,
+            ),
         )
 
     def test_sparse_sample_with_warmup(self):
         self.run_sparse_sample(
             iterations=2000,
             expected=[[0.4653, 2.0], [3.0, 3.4653]],
-            lr=1e-3,
-            total_steps=2000,
-            warmup_proportion=0.1,
-            min_lr=1e-5,
+            optimizer=RectifiedAdam(
+                lr=1e-3,
+                total_steps=2000,
+                warmup_proportion=0.1,
+                min_lr=1e-5,
+            ),
         )
 
     def test_dense_sample_with_lookahead(self):
@@ -162,10 +159,14 @@ class RectifiedAdamTest(tf.test.TestCase):
         self.run_dense_sample(
             iterations=1000,
             expected=[[0.7985, 1.7983], [2.7987, 3.7986]],
-            lr=1e-3,
-            beta_1=0.95,
-            lookahead_step=6,
-            lookahead_ratio=0.45,
+            optimizer=Lookahead(
+                RectifiedAdam(
+                    lr=1e-3,
+                    beta_1=0.95,
+                ),
+                k=6,
+                alpha=0.45,
+            ),
         )
 
     def test_sparse_sample_with_lookahead(self):
@@ -175,10 +176,14 @@ class RectifiedAdamTest(tf.test.TestCase):
         self.run_sparse_sample(
             iterations=1500,
             expected=[[0.6417, 2.0], [3.0, 3.6418]],
-            lr=1e-3,
-            beta_1=0.95,
-            lookahead_step=6,
-            lookahead_ratio=0.45,
+            optimizer=Lookahead(
+                RectifiedAdam(
+                    lr=1e-3,
+                    beta_1=0.95,
+                ),
+                k=6,
+                alpha=0.45,
+            ),
         )
 
     def test_get_config(self):

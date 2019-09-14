@@ -7,6 +7,7 @@
 | moving_average | Dheeraj R. Reddy | dheeraj98reddy@gmail.com |
 | weight_decay_optimizers |  Phil Jund | ijund.phil@googlemail.com   |
 | rectified_adam | Zhao Hanguang | cyberzhg@gmail.com |
+| lookahead | Zhao Hanguang | cyberzhg@gmail.com |
 
 
 ## Components
@@ -16,6 +17,7 @@
 | moving_average | MovingAverage | |
 | weight_decay_optimizers | SGDW, AdamW, extend_with_decoupled_weight_decay | https://arxiv.org/pdf/1711.05101.pdf |
 | rectified_adam | RectifiedAdam | https://arxiv.org/pdf/1908.03265v1.pdf |
+| lookahead | Lookahead | https://arxiv.org/abs/1907.08610v1 |
 
 
 ## Contribution Guidelines
