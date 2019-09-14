@@ -111,6 +111,26 @@ class LookaheadTest(tf.test.TestCase):
                     expected = val + (quick - val) * alpha
                     self.assertAllClose(expected, slow)
 
+    def test_fit_simple_linear_model(self):
+        np.random.seed(0x2019)
+
+        x = np.random.standard_normal((100000, 3))
+        w = np.random.standard_normal((3, 1))
+        y = np.dot(x, w) + np.random.standard_normal((100000, 1)) * 1e-4
+
+        model = tf.keras.models.Sequential()
+        model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
+        model.compile(Lookahead('adam'), loss='mse')
+
+        model.fit(x, y, epochs=3)
+
+        x = np.random.standard_normal((100, 3))
+        y = np.dot(x, w)
+        predicted = model.predict(x)
+
+        max_abs_diff = np.max(np.abs(predicted - y))
+        self.assertLess(max_abs_diff, 1e-4)
+
     def test_invalid_optimizer_type(self):
         with self.assertRaises(TypeError):
             Lookahead(optimizers.Adam())

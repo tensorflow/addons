@@ -112,14 +112,13 @@ class Lookahead(tf.keras.optimizers.Optimizer):
 
     def _init_op(self, var_list):
         updates = []
-        iterations = self._optimizer.iterations
         for var in var_list:
             slow_var = self.get_slot(var, 'slow')
             updates.append(state_ops.assign(
                 slow_var,
                 tf.where(
-                    math_ops.equal(iterations,
-                                   tf.constant(0, dtype=iterations.dtype)),
+                    math_ops.equal(self.iterations,
+                                   tf.constant(0, dtype=self.iterations.dtype)),
                     var,
                     slow_var,
                 ),
@@ -129,22 +128,27 @@ class Lookahead(tf.keras.optimizers.Optimizer):
     def _look_ahead_op(self, var):
         var_dtype = var.dtype.base_dtype
         slow_var = self.get_slot(var, 'slow')
-        local_step = math_ops.cast(self._optimizer.iterations, var_dtype)
+        local_step = math_ops.cast(self.iterations, var_dtype)
         k = self._get_hyper('k', local_step.dtype)
         alpha = self._get_hyper('alpha', var_dtype)
         step_back = slow_var + alpha * (var - slow_var)
         sync_cond = math_ops.equal(local_step % k, 0)
-        slow_update = state_ops.assign(slow_var, tf.where(
-            sync_cond,
-            step_back,
-            slow_var,
-        ), use_locking=self._use_locking)
-        var_update = state_ops.assign(var, tf.where(
-            sync_cond,
-            step_back,
-            var,
-        ), use_locking=self._use_locking)
+        with tf.control_dependencies([step_back]):
+            slow_update = state_ops.assign(slow_var, tf.where(
+                sync_cond,
+                step_back,
+                slow_var,
+            ), use_locking=self._use_locking)
+            var_update = state_ops.assign(var, tf.where(
+                sync_cond,
+                step_back,
+                var,
+            ), use_locking=self._use_locking)
         return control_flow_ops.group(slow_update, var_update)
+
+    @property
+    def iterations(self):
+        return self._optimizer.iterations
 
     @property
     def weights(self):
