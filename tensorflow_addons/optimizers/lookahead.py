@@ -18,7 +18,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.python import ops
 from tensorflow.python.ops import math_ops, state_ops, control_flow_ops
 from tensorflow.python.keras import optimizers
 from tensorflow_addons.utils import keras_utils
@@ -82,53 +81,36 @@ class Lookahead(tf.keras.optimizers.Optimizer):
         self._initialized = False
 
     def _create_slots(self, var_list):
+        self._optimizer._create_slots(var_list=var_list)  # pylint: disable=protected-access
         for var in var_list:
             self.add_slot(var, 'slow')
 
+    def _create_hypers(self):
+        self._optimizer._create_hypers()  # pylint: disable=protected-access
+
+    def _prepare(self, var_list):
+        self._optimizer._prepare(var_list=var_list)  # pylint: disable=protected-access
+
     def apply_gradients(self, grads_and_vars, name=None):
-        var_list = [v for (_, v) in grads_and_vars]
+        self._optimizer._iterations = self.iterations  # pylint: disable=protected-access
+        return super(Lookahead, self).apply_gradients(grads_and_vars, name)
 
-        with tf.keras.backend.name_scope(self._name):
-            with ops.init_scope():
-                _ = self.iterations
-                self._create_hypers()
-                self._create_slots(var_list)
-            self._prepare(var_list)
-
-        if self._initialized:
-            init_op = tf.no_op()
-        else:
-            self._initialized = True
-            init_op = self._init_op(var_list)
-
-        with tf.control_dependencies([init_op]):
-            train_op = self._optimizer.apply_gradients(
-                grads_and_vars, name=name)
-            with tf.control_dependencies([train_op]):
-                lookahead_op = control_flow_ops.group([
-                    self._look_ahead_op(var) for var in var_list])
-
-        return control_flow_ops.group(init_op, train_op, lookahead_op)
-
-    def _init_op(self, var_list):
-        updates = []
-        for var in var_list:
-            slow_var = self.get_slot(var, 'slow')
-            updates.append(state_ops.assign(
+    def _init_op(self, var):
+        slow_var = self.get_slot(var, 'slow')
+        return state_ops.assign(
+            slow_var,
+            tf.where(
+                math_ops.equal(self.iterations,
+                               tf.constant(0, dtype=self.iterations.dtype)),
+                var,
                 slow_var,
-                tf.where(
-                    math_ops.equal(self.iterations,
-                                   tf.constant(0, dtype=self.iterations.dtype)),
-                    var,
-                    slow_var,
-                ),
-                use_locking=self._use_locking))
-        return control_flow_ops.group(*updates)
+            ),
+            use_locking=self._use_locking)
 
     def _look_ahead_op(self, var):
         var_dtype = var.dtype.base_dtype
         slow_var = self.get_slot(var, 'slow')
-        local_step = math_ops.cast(self.iterations, var_dtype)
+        local_step = math_ops.cast(self.iterations + 1, var_dtype)
         k = self._get_hyper('k', local_step.dtype)
         alpha = self._get_hyper('alpha', var_dtype)
         step_back = slow_var + alpha * (var - slow_var)
@@ -147,22 +129,25 @@ class Lookahead(tf.keras.optimizers.Optimizer):
         return control_flow_ops.group(slow_update, var_update)
 
     @property
-    def iterations(self):
-        return self._optimizer.iterations
-
-    @property
     def weights(self):
-        return self._optimizer.weights
+        return self._weights + self._optimizer.weights
 
     def _resource_apply_dense(self, grad, var):
-        return self._optimizer._resource_apply_dense(grad, var)  # pylint: disable=protected-access
-
-    def _resource_apply_sparse_duplicate_indices(self, grad, var, indices):
-        return self._optimizer._resource_apply_sparse_duplicate_indices(  # pylint: disable=protected-access
-            grad, var, indices)
+        init_op = self._init_op(var)
+        with tf.control_dependencies([init_op]):
+            train_op = self._optimizer._resource_apply_dense(grad, var)  # pylint: disable=protected-access
+            with tf.control_dependencies([train_op]):
+                look_ahead_op = self._look_ahead_op(var)
+        return tf.group(init_op, train_op, look_ahead_op)
 
     def _resource_apply_sparse(self, grad, var, indices):
-        return self._optimizer._resource_apply_sparse(grad, var, indices)  # pylint: disable=protected-access
+        init_op = self._init_op(var)
+        with tf.control_dependencies([init_op]):
+            train_op = self._optimizer._resource_apply_sparse(  # pylint: disable=protected-access
+                grad, var, indices)
+            with tf.control_dependencies([train_op]):
+                look_ahead_op = self._look_ahead_op(var)
+        return tf.group(init_op, train_op, look_ahead_op)
 
     def get_config(self):
         config = {
