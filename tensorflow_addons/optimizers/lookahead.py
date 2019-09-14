@@ -88,7 +88,7 @@ class Lookahead(tf.keras.optimizers.Optimizer):
     def apply_gradients(self, grads_and_vars, name=None):
         var_list = [v for (_, v) in grads_and_vars]
 
-        with tf.keras.backend.name_scope(self._scope_ctx):
+        with tf.keras.backend.name_scope(self._name):
             with ops.init_scope():
                 _ = self.iterations
                 self._create_hypers()
@@ -102,10 +102,11 @@ class Lookahead(tf.keras.optimizers.Optimizer):
             init_op = self._init_op(var_list)
 
         with tf.control_dependencies([init_op]):
-            train_op = self._optimizer.apply_gradients(grads_and_vars, name=name)
+            train_op = self._optimizer.apply_gradients(
+                grads_and_vars, name=name)
             with tf.control_dependencies([train_op]):
-                lookahead_updates = [self._look_ahead_op(var) for var in var_list]
-                lookahead_op = control_flow_ops.group(lookahead_updates)
+                lookahead_op = control_flow_ops.group([
+                    self._look_ahead_op(var) for var in var_list])
 
         return control_flow_ops.group(init_op, train_op, lookahead_op)
 

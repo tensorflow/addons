@@ -91,7 +91,7 @@ class LookaheadTest(tf.test.TestCase):
 
     def test_dense_exact_ratio(self):
         for k in [5, 10, 100, 500]:
-            for alpha in [0.1, 0.5, 0.9]:
+            for alpha in [0.1, 0.5, 0.8]:
                 optimizer = optimizers.get('adam')
                 vals, quick_vars = self.run_dense_sample(k, optimizer)
                 optimizer = Lookahead('adam', k=k, alpha=alpha)
