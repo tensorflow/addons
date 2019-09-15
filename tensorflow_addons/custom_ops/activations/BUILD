@@ -27,12 +27,37 @@ cc_library(
     alwayslink = 1,
 )
 
+cc_library(
+    name = "hardshrink_op_gpu",
+    srcs = [
+        "cc/kernels/hardshrink_op.h",
+        "cc/kernels/hardshrink_op_gpu.cu.cc",
+    ],
+    copts = if_cuda_is_configured([
+        "-DGOOGLE_CUDA=1",
+        "-x cuda",
+        "-nvcc_options=relaxed-constexpr",
+        "-nvcc_options=ftz=true",
+    ]),
+    deps = [
+        "@local_config_tf//:libtensorflow_framework",
+        "@local_config_tf//:tf_header_lib",
+    ] + if_cuda_is_configured([
+        "@local_config_cuda//cuda:cuda_libs",
+        "@local_config_cuda//cuda:cuda_headers",
+    ]),
+    alwayslink = 1,
+)
+
 cc_binary(
     name = "_activation_ops.so",
     srcs = [
         "cc/kernels/gelu_op.cc",
         "cc/kernels/gelu_op.h",
+        "cc/kernels/hardshrink_op.cc",
+        "cc/kernels/hardshrink_op.h",
         "cc/ops/gelu_op.cc",
+        "cc/ops/hardshrink_op.cc",
     ],
     copts = [
         "-pthread",
@@ -43,5 +68,8 @@ cc_binary(
     deps = [
         "@local_config_tf//:libtensorflow_framework",
         "@local_config_tf//:tf_header_lib",
-    ] + if_cuda_is_configured([":gelu_op_gpu"]),
+    ] + if_cuda_is_configured([
+        ":gelu_op_gpu",
+        ":hardshrink_op_gpu",
+    ]),
 )

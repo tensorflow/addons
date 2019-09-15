@@ -7,6 +7,7 @@ py_library(
     srcs = [
         "__init__.py",
         "gelu.py",
+        "hardshrink.py",
         "sparsemax.py",
     ],
     data = [
@@ -31,11 +32,24 @@ py_test(
 
 py_test(
     name = "gelu_test",
-    size = "large",
+    size = "medium",
     srcs = [
         "gelu_test.py",
     ],
     main = "gelu_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":activations",
+    ],
+)
+
+py_test(
+    name = "hardshrink_test",
+    size = "medium",
+    srcs = [
+        "hardshrink_test.py",
+    ],
+    main = "hardshrink_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":activations",
