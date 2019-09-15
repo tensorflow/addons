@@ -20,7 +20,6 @@ from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.keras import optimizers
 
 from tensorflow_addons.utils import test_utils
 from tensorflow_addons.optimizers import Lookahead
@@ -90,22 +89,26 @@ class LookaheadTest(tf.test.TestCase):
         return [val_0, val_1], [self.evaluate(var_0), self.evaluate(var_1)]
 
     def test_dense_exact_ratio(self):
-        for k in [5, 10, 100, 500]:
-            for alpha in [0.1, 0.5, 0.8]:
-                optimizer = optimizers.get('adam')
+        for k in [5, 10, 100]:
+            for alpha in [0.3, 0.7]:
+                optimizer = tf.keras.optimizers.get('adam')
                 vals, quick_vars = self.run_dense_sample(k, optimizer)
-                optimizer = Lookahead('adam', k=k, alpha=alpha)
+                optimizer = Lookahead('adam',
+                                      sync_period=k,
+                                      slow_step_size=alpha)
                 _, slow_vars = self.run_dense_sample(k, optimizer)
                 for val, quick, slow in zip(vals, quick_vars, slow_vars):
                     expected = val + (quick - val) * alpha
                     self.assertAllClose(expected, slow)
 
     def test_sparse_exact_ratio(self):
-        for k in [5, 10, 100, 500]:
-            for alpha in [0.1, 0.5, 0.9]:
-                optimizer = optimizers.get('adam')
+        for k in [5, 10, 100]:
+            for alpha in [0.3, 0.7]:
+                optimizer = tf.keras.optimizers.get('adam')
                 vals, quick_vars = self.run_sparse_sample(k, optimizer)
-                optimizer = Lookahead('adam', k=k, alpha=alpha)
+                optimizer = Lookahead('adam',
+                                      sync_period=k,
+                                      slow_step_size=alpha)
                 _, slow_vars = self.run_sparse_sample(k, optimizer)
                 for val, quick, slow in zip(vals, quick_vars, slow_vars):
                     expected = val + (quick - val) * alpha
@@ -131,16 +134,13 @@ class LookaheadTest(tf.test.TestCase):
         max_abs_diff = np.max(np.abs(predicted - y))
         self.assertLess(max_abs_diff, 1e-4)
 
-    def test_invalid_optimizer_type(self):
-        with self.assertRaises(TypeError):
-            Lookahead(optimizers.Adam())
-
     def test_get_config(self):
-        opt = Lookahead('adam', k=10, alpha=0.4)
-        opt = optimizers.deserialize(optimizers.serialize(opt))
+        opt = Lookahead('adam', sync_period=10, slow_step_size=0.4)
+        opt = tf.keras.optimizers.deserialize(
+            tf.keras.optimizers.serialize(opt))
         config = opt.get_config()
-        self.assertEqual(config['k'], 10)
-        self.assertEqual(config['alpha'], 0.4)
+        self.assertEqual(config['sync_period'], 10)
+        self.assertEqual(config['slow_step_size'], 0.4)
 
 
 if __name__ == '__main__':

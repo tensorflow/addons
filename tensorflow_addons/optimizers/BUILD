@@ -7,10 +7,10 @@ py_library(
     srcs = [
         "__init__.py",
         "lazy_adam.py",
-        "moving_average.py",
-        "weight_decay_optimizers.py",
-        "rectified_adam.py",
         "lookahead.py",
+        "moving_average.py",
+        "rectified_adam.py",
+        "weight_decay_optimizers.py",
     ],
     srcs_version = "PY2AND3",
     deps = [
@@ -32,12 +32,12 @@ py_test(
 )
 
 py_test(
-    name = "moving_average_test",
+    name = "lookahead_test",
     size = "small",
     srcs = [
-        "moving_average_test.py",
+        "lookahead_test.py",
     ],
-    main = "moving_average_test.py",
+    main = "lookahead_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":optimizers",
@@ -45,12 +45,12 @@ py_test(
 )
 
 py_test(
-    name = "weight_decay_optimizers_test",
+    name = "moving_average_test",
     size = "small",
     srcs = [
-        "weight_decay_optimizers_test.py",
+        "moving_average_test.py",
     ],
-    main = "weight_decay_optimizers_test.py",
+    main = "moving_average_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":optimizers",
@@ -71,12 +71,12 @@ py_test(
 )
 
 py_test(
-    name = "lookahead_test",
+    name = "weight_decay_optimizers_test",
     size = "small",
     srcs = [
-        "lookahead_test.py",
+        "weight_decay_optimizers_test.py",
     ],
-    main = "lookahead_test.py",
+    main = "weight_decay_optimizers_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":optimizers",

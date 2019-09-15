@@ -164,8 +164,8 @@ class RectifiedAdamTest(tf.test.TestCase):
                     lr=1e-3,
                     beta_1=0.95,
                 ),
-                k=6,
-                alpha=0.45,
+                sync_period=6,
+                slow_step_size=0.45,
             ),
         )
 
@@ -181,8 +181,8 @@ class RectifiedAdamTest(tf.test.TestCase):
                     lr=1e-3,
                     beta_1=0.95,
                 ),
-                k=6,
-                alpha=0.45,
+                sync_period=6,
+                slow_step_size=0.45,
             ),
         )
 
