@@ -27,7 +27,6 @@ from tensorflow_addons.optimizers import Lookahead
 
 @test_utils.run_all_in_graph_and_eager_modes
 class LookaheadTest(tf.test.TestCase):
-
     def run_dense_sample(self, iterations, optimizer, seed=0x2019):
         np.random.seed(seed)
 
@@ -65,15 +64,11 @@ class LookaheadTest(tf.test.TestCase):
         var_1 = tf.Variable(val_1, dtype=tf.dtypes.float32)
 
         grad_0 = tf.IndexedSlices(
-            tf.constant([np.random.standard_normal()]),
-            tf.constant([0]),
-            tf.constant([2])
-        )
+            tf.constant([np.random.standard_normal()]), tf.constant([0]),
+            tf.constant([2]))
         grad_1 = tf.IndexedSlices(
-            tf.constant([np.random.standard_normal()]),
-            tf.constant([1]),
-            tf.constant([2])
-        )
+            tf.constant([np.random.standard_normal()]), tf.constant([1]),
+            tf.constant([2]))
 
         grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
@@ -93,9 +88,8 @@ class LookaheadTest(tf.test.TestCase):
             for alpha in [0.3, 0.7]:
                 optimizer = tf.keras.optimizers.get('adam')
                 vals, quick_vars = self.run_dense_sample(k, optimizer)
-                optimizer = Lookahead('adam',
-                                      sync_period=k,
-                                      slow_step_size=alpha)
+                optimizer = Lookahead(
+                    'adam', sync_period=k, slow_step_size=alpha)
                 _, slow_vars = self.run_dense_sample(k, optimizer)
                 for val, quick, slow in zip(vals, quick_vars, slow_vars):
                     expected = val + (quick - val) * alpha
@@ -106,9 +100,8 @@ class LookaheadTest(tf.test.TestCase):
             for alpha in [0.3, 0.7]:
                 optimizer = tf.keras.optimizers.get('adam')
                 vals, quick_vars = self.run_sparse_sample(k, optimizer)
-                optimizer = Lookahead('adam',
-                                      sync_period=k,
-                                      slow_step_size=alpha)
+                optimizer = Lookahead(
+                    'adam', sync_period=k, slow_step_size=alpha)
                 _, slow_vars = self.run_sparse_sample(k, optimizer)
                 for val, quick, slow in zip(vals, quick_vars, slow_vars):
                     expected = val + (quick - val) * alpha

@@ -26,7 +26,6 @@ from tensorflow_addons.optimizers import RectifiedAdam, Lookahead
 
 @test_utils.run_all_in_graph_and_eager_modes
 class RectifiedAdamTest(tf.test.TestCase):
-
     def run_dense_sample(self, iterations, expected, optimizer):
         var_0 = tf.Variable([1.0, 2.0], dtype=tf.dtypes.float32)
         var_1 = tf.Variable([3.0, 4.0], dtype=tf.dtypes.float32)
@@ -53,15 +52,9 @@ class RectifiedAdamTest(tf.test.TestCase):
         var_1 = tf.Variable([3.0, 4.0])
 
         grad_0 = tf.IndexedSlices(
-            tf.constant([0.1]),
-            tf.constant([0]),
-            tf.constant([2])
-        )
+            tf.constant([0.1]), tf.constant([0]), tf.constant([2]))
         grad_1 = tf.IndexedSlices(
-            tf.constant([0.04]),
-            tf.constant([1]),
-            tf.constant([2])
-        )
+            tf.constant([0.04]), tf.constant([1]), tf.constant([2]))
 
         grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 

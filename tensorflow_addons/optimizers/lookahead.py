@@ -59,12 +59,12 @@ class Lookahead(tf.keras.optimizers.Optimizer):
                 The ratio for updating the slow weights.
             name: Optional name for the operations created when applying
                 gradients. Defaults to "RectifiedAdam".
-            **kwargs: keyword arguments. Allowed to be {`clipnorm`, `clipvalue`,
-                `lr`, `decay`}. `clipnorm` is clip gradients by norm;
-                `clipvalue` is clip gradients by value, `decay` is included for
-                backward compatibility to allow time inverse decay of learning
-                rate. `lr` is included for backward compatibility, recommended
-                to use `learning_rate` instead.
+            **kwargs: keyword arguments. Allowed to be {`clipnorm`,
+                `clipvalue`, `lr`, `decay`}. `clipnorm` is clip gradients
+                by norm; `clipvalue` is clip gradients by value, `decay` is
+                included for backward compatibility to allow time inverse
+                decay of learning rate. `lr` is included for backward
+                compatibility, recommended to use `learning_rate` instead.
         """
         super(Lookahead, self).__init__(name, **kwargs)
 
@@ -114,16 +114,20 @@ class Lookahead(tf.keras.optimizers.Optimizer):
         step_back = slow_var + slow_step_size * (var - slow_var)
         sync_cond = tf.equal(local_step % sync_period, 0)
         with tf.control_dependencies([step_back]):
-            slow_update = slow_var.assign(tf.where(
-                sync_cond,
-                step_back,
-                slow_var,
-            ), use_locking=self._use_locking)
-            var_update = var.assign(tf.where(
-                sync_cond,
-                step_back,
-                var,
-            ), use_locking=self._use_locking)
+            slow_update = slow_var.assign(
+                tf.where(
+                    sync_cond,
+                    step_back,
+                    slow_var,
+                ),
+                use_locking=self._use_locking)
+            var_update = var.assign(
+                tf.where(
+                    sync_cond,
+                    step_back,
+                    var,
+                ),
+                use_locking=self._use_locking)
         return tf.group(slow_update, var_update)
 
     @property
