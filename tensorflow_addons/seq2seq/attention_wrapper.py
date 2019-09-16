@@ -747,7 +747,7 @@ class BahdanauAttention(_BaseAttentionMechanism):
                 and self.attention_b is None):
             self.attention_g = self.add_weight(
                 "attention_g",
-                initializer=tf.compat.v1.constant_initializer(
+                initializer=tf.constant_initializer(
                     math.sqrt((1. / self.units))),
                 shape=())
             self.attention_b = self.add_weight(
@@ -1105,14 +1105,13 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
                 "attention_score_bias",
                 shape=(),
                 dtype=self.dtype,
-                initializer=tf.compat.v1.constant_initializer(
-                    self.score_bias_init, dtype=self.dtype))
+                initializer=tf.constant_initializer(self.score_bias_init))
         if (self.normalize and self.attention_g is None
                 and self.attention_b is None):
             self.attention_g = self.add_weight(
                 "attention_g",
                 dtype=self.dtype,
-                initializer=tf.compat.v1.constant_initializer(
+                initializer=tf.constant_initializer(
                     math.sqrt((1. / self.units))),
                 shape=())
             self.attention_b = self.add_weight(
@@ -1265,8 +1264,7 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
             self.attention_score_bias = self.add_weight(
                 "attention_score_bias",
                 shape=(),
-                initializer=tf.compat.v1.constant_initializer(
-                    self.score_bias_init, self.dtype))
+                initializer=tf.constant_initializer(self.score_bias_init))
         self.built = True
 
     def _calculate_attention(self, query, state):
@@ -1364,12 +1362,9 @@ class AttentionWrapperState(
                 if not tf.executing_eagerly():
                     new_shape = tf.shape(new)
                     old_shape = tf.shape(old)
-                    with tf.control_dependencies([
-                            tf.compat.v1.assert_equal(  # pylint: disable=bad-continuation
-                                new_shape,
-                                old_shape,
-                                data=[new_shape, old_shape])
-                    ]):
+                    assert_equal = tf.debugging.assert_equal(
+                        new_shape, old_shape)
+                    with tf.control_dependencies([assert_equal]):
                         # Add an identity op so that control deps can kick in.
                         return tf.identity(new)
                 else:
@@ -1467,7 +1462,7 @@ def _maybe_mask_score(score,
         message = ("All values in memory_sequence_length must greater than "
                    "zero.")
         with tf.control_dependencies([
-                tf.compat.v1.assert_positive(  # pylint: disable=bad-continuation
+                tf.debugging.assert_positive(  # pylint: disable=bad-continuation
                     memory_sequence_length,
                     message=message)
         ]):
@@ -1744,7 +1739,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
     def _batch_size_checks(self, batch_size, error_message):
         self._attention_mechanisms_checks()
         return [
-            tf.compat.v1.assert_equal(
+            tf.debugging.assert_equal(
                 batch_size,
                 attention_mechanism.batch_size,
                 message=error_message)
