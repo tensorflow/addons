@@ -108,11 +108,13 @@ class Lookahead(tf.keras.optimizers.Optimizer):
     def _look_ahead_op(self, var):
         var_dtype = var.dtype.base_dtype
         slow_var = self.get_slot(var, 'slow')
-        local_step = tf.cast(self.iterations + 1, var_dtype)
-        sync_period = self._get_hyper('sync_period', local_step.dtype)
+        local_step = tf.cast(self.iterations + 1, tf.dtypes.int64)
+        sync_period = self._get_hyper('sync_period', tf.dtypes.int64)
         slow_step_size = self._get_hyper('slow_step_size', var_dtype)
         step_back = slow_var + slow_step_size * (var - slow_var)
-        sync_cond = tf.equal(local_step % sync_period, 0)
+        sync_cond = tf.equal(
+            tf.math.floordiv(local_step, sync_period) * sync_period,
+            local_step)
         with tf.control_dependencies([step_back]):
             slow_update = slow_var.assign(
                 tf.where(

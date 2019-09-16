@@ -44,8 +44,8 @@ class RectifiedAdamTest(tf.test.TestCase):
             for _ in range(iterations):
                 self.evaluate(update)
 
-        self.assertAllClose(var_0.read_value(), expected[0], atol=1e-4)
-        self.assertAllClose(var_1.read_value(), expected[1], atol=1e-4)
+        self.assertAllClose(var_0.read_value(), expected[0], atol=2e-4)
+        self.assertAllClose(var_1.read_value(), expected[1], atol=2e-4)
 
     def run_sparse_sample(self, iterations, expected, optimizer):
         var_0 = tf.Variable([1.0, 2.0])
@@ -67,8 +67,8 @@ class RectifiedAdamTest(tf.test.TestCase):
             for _ in range(iterations):
                 self.evaluate(update)
 
-        self.assertAllClose(var_0.read_value(), expected[0], atol=1e-4)
-        self.assertAllClose(var_1.read_value(), expected[1], atol=1e-4)
+        self.assertAllClose(var_0.read_value(), expected[0], atol=2e-4)
+        self.assertAllClose(var_1.read_value(), expected[1], atol=2e-4)
 
     def test_dense_sample(self):
         # Expected values are obtained from the official implementation
