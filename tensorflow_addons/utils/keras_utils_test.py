@@ -18,20 +18,41 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils.keras_utils import normalize_tuple
+
+from tensorflow_addons.utils import keras_utils
 
 
 class NormalizeTupleTest(tf.test.TestCase):
     def test_normalize_tuple(self):
-        self.assertEqual((2, 2, 2), normalize_tuple(2, n=3, name='strides'))
+        self.assertEqual((2, 2, 2),
+                         keras_utils.normalize_tuple(2, n=3, name='strides'))
         self.assertEqual((2, 1, 2),
-                         normalize_tuple((2, 1, 2), n=3, name='strides'))
+                         keras_utils.normalize_tuple((2, 1, 2),
+                                                     n=3,
+                                                     name='strides'))
 
         with self.assertRaises(ValueError):
-            normalize_tuple((2, 1), n=3, name='strides')
+            keras_utils.normalize_tuple((2, 1), n=3, name='strides')
 
         with self.assertRaises(ValueError):
-            normalize_tuple(None, n=3, name='strides')
+            keras_utils.normalize_tuple(None, n=3, name='strides')
+
+
+class AssertRNNCellTest(tf.test.TestCase):
+    def test_standard_cell(self):
+        keras_utils.assert_like_rnncell("cell", tf.keras.layers.LSTMCell(10))
+
+    def test_non_cell(self):
+        with self.assertRaises(TypeError):
+            keras_utils.assert_like_rnncell("cell", tf.keras.layers.Dense(10))
+
+    def test_custom_cell(self):
+        class CustomCell(tf.keras.layers.AbstractRNNCell):
+            @property
+            def output_size(self):
+                raise ValueError("assert_like_rnncell should not run code")
+
+        keras_utils.assert_like_rnncell("cell", CustomCell())
 
 
 if __name__ == '__main__':
