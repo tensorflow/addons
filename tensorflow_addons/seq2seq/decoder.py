@@ -472,7 +472,7 @@ def dynamic_decode(decoder,
             return (time + 1, outputs_ta, next_state, next_inputs,
                     next_finished, next_sequence_lengths)
 
-        res = tf.compat.v1.while_loop(
+        res = tf.while_loop(
             condition,
             body,
             loop_vars=(
