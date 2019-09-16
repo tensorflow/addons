@@ -24,7 +24,7 @@ using shape_inference::InferenceContext;
 using shape_inference::ShapeHandle;
 
 // --------------------------------------------------------------------------
-REGISTER_OP("AdjustHsvInYiq")
+REGISTER_OP("Addons>AdjustHsvInYiq")
     .Input("images: T")
     .Input("delta_h: float")
     .Input("scale_s: float")

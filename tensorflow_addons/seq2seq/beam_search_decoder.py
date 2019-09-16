@@ -32,7 +32,7 @@ from tensorflow.python.ops import rnn_cell_impl
 
 _beam_search_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/seq2seq/_beam_search_ops.so"))
-gather_tree = _beam_search_ops_so.gather_tree
+gather_tree = _beam_search_ops_so.addons_gather_tree
 
 
 class BeamSearchDecoderState(

@@ -23,7 +23,7 @@ using ::tensorflow::shape_inference::ShapeHandle;
 
 // --------------------------------------------------------------------------
 
-REGISTER_OP("CorrelationCost")
+REGISTER_OP("Addons>CorrelationCost")
     .Input("input_a: T")
     .Input("input_b: T")
     .Output("output: T")
@@ -108,7 +108,7 @@ data_format: Specifies the data format.
     Defaults to `"NHWC"`.
 )Doc");
 
-REGISTER_OP("CorrelationCostGrad")
+REGISTER_OP("Addons>CorrelationCostGrad")
     .Input("orig_input_a: T")
     .Input("orig_input_b: T")
     .Input("top_diff: T")

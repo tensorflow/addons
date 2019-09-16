@@ -26,10 +26,10 @@ using CPUDevice = Eigen::ThreadPoolDevice;
 
 #define REGISTER_GELU_KERNELS(type)                                  \
   REGISTER_KERNEL_BUILDER(                                           \
-      Name("Gelu").Device(DEVICE_CPU).TypeConstraint<type>("T"),     \
+      Name("Addons>Gelu").Device(DEVICE_CPU).TypeConstraint<type>("T"),     \
       GeluOp<CPUDevice, type>);                                      \
   REGISTER_KERNEL_BUILDER(                                           \
-      Name("GeluGrad").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
+      Name("Addons>GeluGrad").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
       GeluGradOp<CPUDevice, type>);
 
 // Gelu only makes sense with floating points.
@@ -63,10 +63,10 @@ TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
 // Registration of the GPU implementations.
 #define REGISTER_GELU_GPU_KERNELS(type)                              \
   REGISTER_KERNEL_BUILDER(                                           \
-      Name("Gelu").Device(DEVICE_GPU).TypeConstraint<type>("T"),     \
+      Name("Addons>Gelu").Device(DEVICE_GPU).TypeConstraint<type>("T"),     \
       GeluOp<GPUDevice, type>);                                      \
   REGISTER_KERNEL_BUILDER(                                           \
-      Name("GeluGrad").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
+      Name("Addons>GeluGrad").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
       GeluGradOp<GPUDevice, type>);
 
 TF_CALL_GPU_NUMBER_TYPES(REGISTER_GELU_GPU_KERNELS);

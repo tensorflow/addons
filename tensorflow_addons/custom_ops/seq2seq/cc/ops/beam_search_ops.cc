@@ -22,7 +22,7 @@ using shape_inference::DimensionHandle;
 using shape_inference::InferenceContext;
 using shape_inference::ShapeHandle;
 
-REGISTER_OP("GatherTree")
+REGISTER_OP("Addons>GatherTree")
     .Input("step_ids: T")
     .Input("parent_ids: T")
     .Input("max_sequence_lengths: int32")

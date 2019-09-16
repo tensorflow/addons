@@ -138,7 +138,7 @@ class AdjustHsvInYiqOp<CPUDevice> : public AdjustHsvInYiqOpBase {
 };
 
 REGISTER_KERNEL_BUILDER(
-    Name("AdjustHsvInYiq").Device(DEVICE_CPU).TypeConstraint<float>("T"),
+    Name("Addons>AdjustHsvInYiq").Device(DEVICE_CPU).TypeConstraint<float>("T"),
     AdjustHsvInYiqOp<CPUDevice>);
 
 #if GOOGLE_CUDA
@@ -162,7 +162,7 @@ class AdjustHsvInYiqOp<GPUDevice> : public AdjustHsvInYiqOpBase {
 };
 
 REGISTER_KERNEL_BUILDER(
-    Name("AdjustHsvInYiq").Device(DEVICE_GPU).TypeConstraint<float>("T"),
+    Name("Addons>AdjustHsvInYiq").Device(DEVICE_GPU).TypeConstraint<float>("T"),
     AdjustHsvInYiqOp<GPUDevice>);
 #endif
 

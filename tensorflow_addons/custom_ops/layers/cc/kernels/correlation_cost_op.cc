@@ -321,10 +321,10 @@ class CorrelationCostGradOp : public OpKernel {
 // Register the CPU kernels.
 #define REGISTER_CORRELATIONCOST_OP_CPU(T)                                   \
   REGISTER_KERNEL_BUILDER(                                                   \
-      Name("CorrelationCost").Device(DEVICE_CPU).TypeConstraint<T>("T"),     \
+      Name("Addons>CorrelationCost").Device(DEVICE_CPU).TypeConstraint<T>("T"),     \
       CorrelationCostOp<CPUDevice, T>)                                       \
   REGISTER_KERNEL_BUILDER(                                                   \
-      Name("CorrelationCostGrad").Device(DEVICE_CPU).TypeConstraint<T>("T"), \
+      Name("Addons>CorrelationCostGrad").Device(DEVICE_CPU).TypeConstraint<T>("T"), \
       CorrelationCostGradOp<CPUDevice, T>)
 
 TF_CALL_float(REGISTER_CORRELATIONCOST_OP_CPU);
@@ -335,10 +335,10 @@ TF_CALL_float(REGISTER_CORRELATIONCOST_OP_CPU);
 
 #define REGISTER_CORRELATIONCOST_OP_GPU(T)                                   \
   REGISTER_KERNEL_BUILDER(                                                   \
-      Name("CorrelationCost").Device(DEVICE_GPU).TypeConstraint<T>("T"),     \
+      Name("Addons>CorrelationCost").Device(DEVICE_GPU).TypeConstraint<T>("T"),     \
       CorrelationCostOp<GPUDevice, T>)                                       \
   REGISTER_KERNEL_BUILDER(                                                   \
-      Name("CorrelationCostGrad").Device(DEVICE_GPU).TypeConstraint<T>("T"), \
+      Name("Addons>CorrelationCostGrad").Device(DEVICE_GPU).TypeConstraint<T>("T"), \
       CorrelationCostGradOp<GPUDevice, T>)
 
 TF_CALL_float(REGISTER_CORRELATIONCOST_OP_GPU);

@@ -127,7 +127,7 @@ class SkipGramGenerateCandidatesOp : public OpKernel {
 };
 
 #define REGISTER_KERNEL(type)                                \
-  REGISTER_KERNEL_BUILDER(Name("SkipGramGenerateCandidates") \
+  REGISTER_KERNEL_BUILDER(Name("Addons>SkipGramGenerateCandidates") \
                               .Device(DEVICE_CPU)            \
                               .TypeConstraint<type>("T"),    \
                           SkipGramGenerateCandidatesOp<type>)

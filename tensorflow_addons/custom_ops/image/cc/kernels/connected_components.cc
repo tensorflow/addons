@@ -120,7 +120,7 @@ struct ImageConnectedComponentsFunctor<CPUDevice, T> {
 }  // end namespace functor
 
 #define REGISTER_IMAGE_CONNECTED_COMPONENTS(TYPE)             \
-  REGISTER_KERNEL_BUILDER(Name("ImageConnectedComponents")    \
+  REGISTER_KERNEL_BUILDER(Name("Addons>ImageConnectedComponents")    \
                               .Device(DEVICE_CPU)             \
                               .TypeConstraint<TYPE>("dtype"), \
                           ImageConnectedComponents<CPUDevice, TYPE>)

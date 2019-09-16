@@ -17,7 +17,7 @@ limitations under the License.
 #include "tensorflow/core/framework/shape_inference.h"
 
 namespace tensorflow {
-REGISTER_OP("SkipGramGenerateCandidates")
+REGISTER_OP("Addons>SkipGramGenerateCandidates")
     .Input("input_tensor: T")
     .Input("min_skips: int32")
     .Input("max_skips: int32")
