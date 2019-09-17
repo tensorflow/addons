@@ -51,8 +51,8 @@ class Lookahead(tf.keras.optimizers.Optimizer):
         r"""Wrap optimizer with the lookahead mechanism.
 
         Args:
-            optimizer: A Tensor or a floating point value.
-                The learning rate.
+            optimizer: The original optimizer that will be used to compute
+                and apply the gradients.
             sync_period: An integer. The synchronization period of lookahead.
                 Enable lookahead mechanism by setting it with a positive value.
             slow_step_size: A floating point value.
