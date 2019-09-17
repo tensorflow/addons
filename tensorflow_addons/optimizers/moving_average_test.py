@@ -107,24 +107,29 @@ class MovingAverageTest(tf.test.TestCase):
         self.evaluate(mean_update)
         self.assertAllClose(model.variables[0].read_value(), [[0.9]])
 
+    def test_optimizer_string(self):
+        _ = MovingAverage('adam')
+
     def test_config(self):
         sgd_opt = tf.keras.optimizers.SGD(
             lr=2.0, nesterov=True, momentum=0.3, decay=0.1)
         opt = MovingAverage(
             sgd_opt,
             average_decay=0.5,
-            num_updates=100,
+            num_updates=None,
             sequential_update=False)
         config = opt.get_config()
 
         self.assertEqual(config['average_decay'], 0.5)
-        self.assertEqual(config['decay'], 0.1)
-        self.assertEqual(config['learning_rate'], 2.0)
-        self.assertEqual(config['momentum'], 0.3)
-        self.assertEqual(config['name'], 'SGD')
-        self.assertEqual(config['nesterov'], True)
-        self.assertEqual(config['num_updates'], 100)
+        self.assertEqual(config['num_updates'], None)
         self.assertEqual(config['sequential_update'], False)
+
+        new_opt = MovingAverage.from_config(config)
+        old_sgd_config = opt._optimizer.get_config()
+        new_sgd_config = new_opt._optimizer.get_config()
+
+        for k1, k2 in zip(old_sgd_config, new_sgd_config):
+            self.assertEqual(old_sgd_config[k1], new_sgd_config[k2])
 
 
 if __name__ == '__main__':
