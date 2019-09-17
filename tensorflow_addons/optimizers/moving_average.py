@@ -47,7 +47,21 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
                  sequential_update=True,
                  name="MovingAverage",
                  **kwargs):
+        """Construct a new MovingAverage optimizer.
 
+        Args:
+            optimizer: str or tf.keras.optimizers.Optimizer that will be used
+                to compute and apply gradients.
+            average_decay: float. Decay to use to maintain the moving averages
+                of trained variables. See tf.train.ExponentialMovingAverage
+                for details.
+            num_updates: Optional count of the number of updates applied to
+                variables. See tf.train.ExponentialMovingAverage for details.
+            sequential_update: Bool. If False, will compute the moving average
+                at the same time as the model is updated, potentially doing
+                benign data races. If True, will update the moving average
+                after gradient updates.
+        """
         super(MovingAverage, self).__init__(name, **kwargs)
 
         if isinstance(optimizer, str):
@@ -108,7 +122,7 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
         return cls(optimizer, **config)
 
     def assign_average_vars(self, var_list):
-        """Update variables in var_list with the running mean of the variables.
+        """Assign variables in var_list with their respective moving averages.
 
         Example:
         ```python
