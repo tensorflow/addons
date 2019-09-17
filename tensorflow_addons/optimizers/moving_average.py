@@ -50,17 +50,25 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
         """Construct a new MovingAverage optimizer.
 
         Args:
-            optimizer: str or tf.keras.optimizers.Optimizer that will be used
-                to compute and apply gradients.
+            optimizer: str or `tf.keras.optimizers.Optimizer` that will be
+                used to compute and apply gradients.
             average_decay: float. Decay to use to maintain the moving averages
-                of trained variables. See tf.train.ExponentialMovingAverage
+                of trained variables. See `tf.train.ExponentialMovingAverage`
                 for details.
             num_updates: Optional count of the number of updates applied to
-                variables. See tf.train.ExponentialMovingAverage for details.
+                variables. See `tf.train.ExponentialMovingAverage` for details.
             sequential_update: Bool. If False, will compute the moving average
                 at the same time as the model is updated, potentially doing
                 benign data races. If True, will update the moving average
                 after gradient updates.
+            name: Optional name for the operations created when applying
+                gradients. Defaults to "MovingAverage".
+            **kwargs: keyword arguments. Allowed to be {`clipnorm`,
+                `clipvalue`, `lr`, `decay`}. `clipnorm` is clip gradients by
+                norm; `clipvalue` is clip gradients by value, `decay` is
+                included for backward compatibility to allow time inverse
+                decay of learning rate. `lr` is included for backward
+                compatibility, recommended to use `learning_rate` instead.
         """
         super(MovingAverage, self).__init__(name, **kwargs)
 
