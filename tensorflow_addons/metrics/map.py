@@ -26,105 +26,126 @@ class MAP(tf.metrics.Metric):
 
         self.num_classes = num_classes
         self.iou_threshold = iou_threshold
-
-        self.vars = []
-        self.ground_truth = tf.constant([], shape=[0, 8])
-        self.detection_result = tf.constant([], shape=[0, 7])
-        self.index = 0.
+        self.accumulate_true_positives = self.add_weight(
+            'accumulate_true_positives',
+            shape=[self.num_classes],
+            initializer='zeros',
+            dtype=tf.float32)
+        self.accumulate_false_positives = self.add_weight(
+            'accumulate_false_positives',
+            shape=[self.num_classes],
+            initializer='zeros',
+            dtype=tf.float32)
+        self.accumulate_ground_truth = self.add_weight(
+            'accumulate_ground_truth',
+            shape=[self.num_classes],
+            initializer='zeros',
+            dtype=tf.float32)
 
     def update_state(self, y_true, y_pred):
         y_true = tf.cast(y_true, tf.float32)
         y_pred = tf.cast(y_pred, tf.float32)
-        # add image index to data
-        indexs = tf.fill([tf.shape(y_pred)[0], 1], self.index)
-        y_pred = tf.concat([y_pred, indexs], 1)
-        self.detection_result = tf.concat([self.detection_result, y_pred], 0)
-        # add image index to data
-        indexs = tf.fill([tf.shape(y_true)[0], 1], self.index)
-        y_true = tf.concat([y_true, indexs], 1)
-        self.ground_truth = tf.concat([self.ground_truth, y_true], 0)
-        self.index += 1.
+        total_tp_count = tf.constant([], shape=[0])
+        total_fp_count = tf.constant([], shape=[0])
+        total_ground_truth_count = tf.constant([], shape=[0])
+        for class_index in range(self.num_classes):
+            y_true_class = tf.gather(y_true,
+                                     tf.where(y_true[:, 0] == class_index))
+            y_pred_class = tf.gather(y_pred,
+                                     tf.where(y_pred[:, 0] == class_index))
+            y_true_boxes = y_true_class[:, 1:5]
+            y_pred_boxes = y_pred_class[:, 2:]
+
+            def calcluate_iou(y_true_box):
+                ious = self.iou(tf.expand_dims(y_true_box, 0), y_pred_boxes)
+                ious = tf.gather(ious, tf.where(ious > self.iou_threshold))
+                if tf.equal(tf.shape(ious), 0):
+                    return -1
+                return tf.arg_max(ious)
+
+            iou_result = tf.map_fn(calcluate_iou, y_true_boxes)
+            tp = tf.cast(iou_result >= 0, tf.float32)
+            tp_count = tf.math.count_nonzero(tp)
+            fp_count = tf.shape(tp)[0] - tp_count
+            ground_truth_count = tf.shape(y_true)[0]
+            total_tp_count = tf.concat([total_tp_count, [tp_count]], 0)
+            total_fp_count = tf.concat([total_fp_count, [fp_count]], 0)
+            total_ground_truth_count = tf.concat(
+                [total_ground_truth_count, [ground_truth_count]], 0)
+
+        self.accumulate_true_positives.assign_add(total_tp_count)
+        self.accumulate_false_positives.assign_add(total_fp_count)
+        self.accumulate_ground_truth.assign_add(total_ground_truth_count)
+
+    def iou(self, b1, b2):
+        """
+        Args
+            b1: bbox.
+            b1: the other bbox.
+        Returns:
+            iou float `Tensor`.
+        """
+        b1_ymin = tf.minimum(b1[:, 0], b1[:, 2])
+        b1_xmin = tf.minimum(b1[:, 1], b1[:, 3])
+        b1_ymax = tf.maximum(b1[:, 0], b1[:, 2])
+        b1_xmax = tf.maximum(b1[:, 1], b1[:, 3])
+        b2_ymin = tf.minimum(b2[:, 0], b2[:, 2])
+        b2_xmin = tf.minimum(b2[:, 1], b2[:, 3])
+        b2_ymax = tf.maximum(b2[:, 0], b2[:, 2])
+        b2_xmax = tf.maximum(b2[:, 1], b2[:, 3])
+        b1_area = (b1_ymax - b1_ymin) * (b1_xmax - b1_xmin)
+        b2_area = (b2_ymax - b2_ymin) * (b2_xmax - b1_xmin)
+        illegal_area_indexes = tf.cast(
+            tf.where(tf.logical_or(b1_area < 0, b2_area < 0)), tf.int32)
+        valid_area_indexes = tf.cast(
+            tf.where(tf.logical_and(b1_area >= 0, b2_area >= 0)), tf.int32)
+
+        intersect_ymin = tf.maximum(b1_ymin, b2_ymin)
+        intersect_xmin = tf.maximum(b1_xmin, b2_xmin)
+        intersect_ymax = tf.minimum(b1_ymax, b2_ymax)
+        intersect_xmax = tf.minimum(b1_xmax, b2_xmax)
+        intersect_area = tf.maximum(
+            0, intersect_ymax - intersect_ymin) * tf.maximum(
+                0, intersect_xmax - intersect_xmin)
+
+        union_area = b1_area + b2_area - intersect_area
+        iou = intersect_area / union_area
+        indices = [valid_area_indexes, illegal_area_indexes]
+        data = [
+            tf.gather(iou, valid_area_indexes),
+            tf.zeros([tf.shape(illegal_area_indexes)[0], 1], tf.float64)
+        ]
+        iou = tf.dynamic_stitch(indices, data)
+        return iou
 
     @tf.function
     def result(self):
-        APs = tf.TensorArray(tf.float32, self.num_classes)
-        APs.write(0, 0)
-        # separate detection result by class
-        cls_results = tf.dynamic_partition(
-            self.detection_result,
-            tf.cast(self.detection_result[:, 0], tf.int32), self.num_classes)
-        cls = 0
-        for cls_result in cls_results:
-            npos = 0
-            tp=tf.constant([], shape=[0])
-            fp=tf.constant([], shape=[0])
-            # sort result by confidence
-            sorted_index=tf.argsort(tf.transpose(cls_result)[1],0,'DESCENDING')
-            items=[]
-            for item in tf.transpose(cls_result):
-                items.append(tf.gather(item,sorted_index))
-            cls_result=tf.transpose(tf.stack(items))
-
-            bbox = cls_result[:, 2:6]
-
-            # loop every cls_result image indexes
-            index=0
-            for image_index in cls_result[:, 6]:
-                ground_truth = tf.boolean_mask(
-                    self.ground_truth, self.ground_truth[:, 7] == image_index)
-
-                objs = tf.boolean_mask(ground_truth, ground_truth[:, 0] == cls)
-                nd = tf.shape(objs)[0]
-                ovmax = -float('inf')
-                BBGT = objs[:, 1:5]
-                npos += tf.shape(objs)[0]
-                ixmin = tf.maximum(BBGT[:, 0], bbox[index, 0])
-                iymin = tf.maximum(BBGT[:, 1], bbox[index, 1])
-                ixmax = tf.minimum(BBGT[:, 2], bbox[index, 2])
-                iymax = tf.minimum(BBGT[:, 3], bbox[index, 3])
-                iw = tf.maximum(ixmax - ixmin + 1., 0.)
-                ih = tf.maximum(iymax - iymin + 1., 0.)
-                inters = iw * ih
-
-                # union
-                uni = ((bbox[index, 2] - bbox[index, 0] + 1.) *
-                       (bbox[index, 3] - bbox[index, 1] + 1.) +
-                       (BBGT[:, 2] - BBGT[:, 0] + 1.) *
-                       (BBGT[:, 3] - BBGT[:, 1] + 1.) - inters)
-                # calculate iou
-                overlaps = inters / uni
-                ovmax = tf.maximum(tf.reduce_max(overlaps), ovmax)
-                idx = tf.argmax(overlaps)
-                gt_match = objs[idx]
-                # ensure max iou greater than iou threshold
-                tp_sub=tf.fill([nd],0.)
-                fp_sub = tf.fill([nd], 0.)
-                tp_sub=tf.unstack(tp_sub)
-                fp_sub=tf.unstack(fp_sub)
-                if ovmax > self.iou_threshold:
-                    # difficult is useless for now
-                    if tf.equal(gt_match[5], 0):
-                        # if item is not used,set it used and set tp=1
-                        if tf.equal(gt_match[6], 0):
-                            tp_sub[idx] = 1.
-                            # gt_match[6] = 1 # need to fix assign item bug
-                        else:
-                            fp_sub[idx] = 1.
-                else:
-                    fp_sub[idx] = 1.
-                index+=1
-                tp_sub=tf.stack(tp_sub)
-                fp_sub=tf.stack(fp_sub)
-                tp=tf.concat([tp,tp_sub],0)
-                fp=tf.concat([fp,fp_sub],0)
-            fp = tf.cumsum(fp)
-            tp = tf.cumsum(tp)
-            rec = tp / tf.maximum(tf.cast(npos, tf.float32), 1e-8)
-            prec = tp / tf.maximum(tp + fp, 1e-8)
-            ap = self._voc_ap(rec, prec)
-            APs.write(cls, ap)
-            cls += 1
-        return APs
+        true_positives_classes = tf.unstack(self.accumulate_true_positives)
+        false_positives_classes = tf.unstack(self.accumulate_false_positives)
+        ground_truth_classes = tf.unstack(self.accumulate_ground_truth)
+        aps = tf.constant([], shape=[self.num_classes])
+        for (true_positives_class,
+             false_positives_class, ground_truth_class) in zip(
+                 true_positives_classes, false_positives_classes,
+                 ground_truth_classes):
+            recall_class = tf.math.divide_no_nan(true_positives_class,
+                                                 ground_truth_class)
+            precision_class = tf.math.divide_no_nan(
+                true_positives_class,
+                true_positives_class + false_positives_class)
+            sorted_idx = tf.arg_sort(recall_class)
+            recall_class = tf.sort(recall_class)
+            precision_class = tf.gather(precision_class, sorted_idx)
+            _, idx, count = tf.unique_with_counts(recall_class)
+            partitions = tf.dynamic_partition(precision_class, idx,
+                                              tf.shape(count)[0])
+            results = tf.constant([])
+            for partition in partitions:
+                max_precision = tf.reduce_max(partition)
+                results = tf.concat([results, max_precision], 0)
+            ap = tf.reduce_mean(results, 0)
+            aps = tf.concat([aps, [ap]], 0)
+        return tf.reduce_mean(aps)
 
     def get_config(self):
         """Returns the serializable config of the metric."""
@@ -137,21 +158,9 @@ class MAP(tf.metrics.Metric):
         return dict(list(base_config.items()) + list(config.items()))
 
     def reset_states(self):
-        self.ground_truth = tf.constant([], shape=[0, 8])
-        self.detection_result = tf.constant([], shape=[0, 7])
-
-    def _voc_ap(self, recall, precision):
-        # voc2010+ mAP algorithm,use AUC
-        mrec = tf.concat([[0.], recall, [1.]], 0)
-        mpre = tf.concat([[0.], precision, [0.]], 0)
-        mpre_arr = tf.TensorArray(tf.float32, tf.shape(mpre)[0])
-        last_idx = tf.shape(mpre)[0] - 1
-        mpre_arr.write(last_idx, mpre[last_idx])
-        for i in tf.range(last_idx, 0, -1):
-            mpre_arr.write(i - 1, tf.maximum(mpre[i - 1], mpre[i]))
-        mpre = mpre_arr.stack()
-        idxs = tf.where(mrec[1:] != mrec[:-1])[:, 0]
-        ap = 0
-        for i in idxs:
-            ap += (mrec[i + 1] - mrec[i]) * mpre[i + 1]
-        return ap
+        self.accumulate_true_positives.assign(
+            np.zeros(self.num_classes), np.float32)
+        self.accumulate_false_positives.assign(
+            np.zeros(self.num_classes), np.float32)
+        self.accumulate_ground_truth.assign(
+            np.zeros(self.num_classes), np.float32)
