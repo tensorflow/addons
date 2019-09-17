@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
-from tensorflow_addons.layers.optical_flow import correlation_cost, CorrelationCost
+from tensorflow_addons.layers.optical_flow import _correlation_cost, CorrelationCost
 from tensorflow_addons.utils import test_utils
 
 
@@ -31,7 +31,7 @@ class CorrelationCostTest(tf.test.TestCase):
         input_a_op = tf.convert_to_tensor(input_a, dtype=tf.float32)
         input_b_op = tf.convert_to_tensor(input_b, dtype=tf.float32)
 
-        output = correlation_cost(
+        output = _correlation_cost(
             input_a_op,
             input_b_op,
             kernel_size=kernel_size,
@@ -117,7 +117,7 @@ class CorrelationCostTest(tf.test.TestCase):
             input_b_op = tf.convert_to_tensor(input_b)
 
             def correlation_fn(input_a, input_b):
-                return correlation_cost(
+                return _correlation_cost(
                     input_a,
                     input_b,
                     kernel_size=kernel_size,

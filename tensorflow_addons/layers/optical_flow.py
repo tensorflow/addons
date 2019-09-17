@@ -82,8 +82,8 @@ def _correlation_cost(input_a,
       A `Tensor` of the format specified by `data_format`.
     """
 
-    with tf.name_scope(name or "_correlation_cost"):
-        op_call = _correlation_cost_op_so._correlation_cost
+    with tf.name_scope(name or "correlation_cost"):
+        op_call = _correlation_cost_op_so.correlation_cost
 
         if data_format == "channels_last":
             op_data_format = "NHWC"
@@ -141,28 +141,25 @@ def _correlation_cost_grad(op, grad_output):
 
 @keras_utils.register_keras_custom_object
 class CorrelationCost(tf.keras.layers.Layer):
-    """This layer implements the correlation operation from FlowNet Learning
-    Optical Flow with Convolutional Networks (Fischer et al.) r.
+    """Correlation Cost Layer.
+
+    This layer implements the correlation operation from FlowNet Learning
+    Optical Flow with Convolutional Networks (Fischer et al.):
+    https://arxiv.org/abs/1504.06
 
     Args:
-
         kernel_size: An integer specifying the height and width of the
-        patch used to compute the per-patch costs.
-
+            patch used to compute the per-patch costs.
         max_displacement: An integer specifying the maximum search radius
-        for each position.
-
+            for each position.
         stride_1: An integer specifying the stride length in the input.
-
         stride_2: An integer specifying the stride length in the patch.
-
         pad: An integer specifying the paddings in height and width.
-
         data_format: Specifies the data format.
-        Possible values are:
-            "channels_last" float [batch, height, width, channels]
-            "channels_first" float [batch, channels, height, width]
-            Defaults to `"channels_last"`.
+            Possible values are:
+                "channels_last" float [batch, height, width, channels]
+                "channels_first" float [batch, channels, height, width]
+                Defaults to `"channels_last"`.
     """
 
     def __init__(self, kernel_size, max_displacement, stride_1, stride_2, pad,
