@@ -25,11 +25,11 @@ namespace addons {
 
 using CPUDevice = Eigen::ThreadPoolDevice;
 
-#define REGISTER_GELU_KERNELS(type)                                  \
-  REGISTER_KERNEL_BUILDER(                                           \
+#define REGISTER_GELU_KERNELS(type)                                         \
+  REGISTER_KERNEL_BUILDER(                                                  \
       Name("Addons>Gelu").Device(DEVICE_CPU).TypeConstraint<type>("T"),     \
-      GeluOp<CPUDevice, type>);                                      \
-  REGISTER_KERNEL_BUILDER(                                           \
+      GeluOp<CPUDevice, type>);                                             \
+  REGISTER_KERNEL_BUILDER(                                                  \
       Name("Addons>GeluGrad").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
       GeluGradOp<CPUDevice, type>);
 
@@ -62,11 +62,11 @@ TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
 }  // namespace functor
 
 // Registration of the GPU implementations.
-#define REGISTER_GELU_GPU_KERNELS(type)                              \
-  REGISTER_KERNEL_BUILDER(                                           \
+#define REGISTER_GELU_GPU_KERNELS(type)                                     \
+  REGISTER_KERNEL_BUILDER(                                                  \
       Name("Addons>Gelu").Device(DEVICE_GPU).TypeConstraint<type>("T"),     \
-      GeluOp<GPUDevice, type>);                                      \
-  REGISTER_KERNEL_BUILDER(                                           \
+      GeluOp<GPUDevice, type>);                                             \
+  REGISTER_KERNEL_BUILDER(                                                  \
       Name("Addons>GeluGrad").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
       GeluGradOp<GPUDevice, type>);
 

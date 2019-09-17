@@ -52,4 +52,4 @@ def gelu(x, approximate=True):
 @tf.RegisterGradient("Addons>Gelu")
 def _gelu_grad(op, grad):
     return _activation_ops_so.addons_gelu_grad(grad, op.inputs[0],
-                                        op.get_attr("approximate"))
+                                               op.get_attr("approximate"))

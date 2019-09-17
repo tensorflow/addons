@@ -92,8 +92,8 @@ class GatherTreeOp : public OpKernel {
   }
 };
 
-#define REGISTER_KERNEL(T)                                          \
-  REGISTER_KERNEL_BUILDER(                                          \
+#define REGISTER_KERNEL(T)                                                 \
+  REGISTER_KERNEL_BUILDER(                                                 \
       Name("Addons>GatherTree").Device(DEVICE_CPU).TypeConstraint<T>("T"), \
       GatherTreeOp<CPUDevice, T>);
 REGISTER_KERNEL(int32);
@@ -182,7 +182,7 @@ DECLARE_GPU_SPEC(int32);
 }  // end namespace functor
 
 #define REGISTER_GPU_KERNEL(T)                          \
-  REGISTER_KERNEL_BUILDER(Name("Addons>GatherTree")            \
+  REGISTER_KERNEL_BUILDER(Name("Addons>GatherTree")     \
                               .Device(DEVICE_GPU)       \
                               .TypeConstraint<T>("T")   \
                               .HostMemory("end_token"), \
