@@ -58,7 +58,7 @@ class Lookahead(tf.keras.optimizers.Optimizer):
             slow_step_size: A floating point value.
                 The ratio for updating the slow weights.
             name: Optional name for the operations created when applying
-                gradients. Defaults to "RectifiedAdam".
+                gradients. Defaults to "Lookahead".
             **kwargs: keyword arguments. Allowed to be {`clipnorm`,
                 `clipvalue`, `lr`, `decay`}. `clipnorm` is clip gradients
                 by norm; `clipvalue` is clip gradients by value, `decay` is
