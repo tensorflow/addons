@@ -26,6 +26,7 @@ limitations under the License.
 #include "tensorflow/core/util/tensor_format.h"
 
 namespace tensorflow {
+namespace addons {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
@@ -346,4 +347,5 @@ TF_CALL_float(REGISTER_CORRELATIONCOST_OP_GPU);
 
 #endif  // GOOGLE_CUDA
 
+}  // end namespace addons
 }  // end namespace tensorflow

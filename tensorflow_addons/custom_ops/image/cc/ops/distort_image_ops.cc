@@ -18,6 +18,7 @@ limitations under the License.
 #include "tensorflow/core/framework/shape_inference.h"
 
 namespace tensorflow {
+namespace addons {
 
 using shape_inference::DimensionHandle;
 using shape_inference::InferenceContext;
@@ -68,4 +69,5 @@ output: The hsv-adjusted image or images. No clipping will be done in this op.
         The client can clip them using additional ops in their graph.
 )Doc");
 
+}  // end namespace addons
 }  // namespace tensorflow

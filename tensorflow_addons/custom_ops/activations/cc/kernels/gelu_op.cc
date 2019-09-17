@@ -21,6 +21,7 @@ limitations under the License.
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
+namespace addons {
 
 using CPUDevice = Eigen::ThreadPoolDevice;
 
@@ -74,4 +75,5 @@ TF_CALL_GPU_NUMBER_TYPES(REGISTER_GELU_GPU_KERNELS);
 
 #endif  // GOOGLE_CUDA
 
+}  // end namespace addons
 }  // namespace tensorflow

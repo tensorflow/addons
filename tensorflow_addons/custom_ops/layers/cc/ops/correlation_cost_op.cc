@@ -17,6 +17,7 @@
 #include "tensorflow/core/framework/shape_inference.h"
 
 namespace tensorflow {
+namespace addons {
 
 using ::tensorflow::shape_inference::InferenceContext;
 using ::tensorflow::shape_inference::ShapeHandle;
@@ -130,4 +131,5 @@ REGISTER_OP("Addons>CorrelationCostGrad")
     })
     .Doc(R"doc(CorrelationCostGrad op.)doc");
 
+}  // end namespace addons
 }  // namespace tensorflow

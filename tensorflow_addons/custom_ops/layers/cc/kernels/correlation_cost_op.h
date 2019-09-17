@@ -20,6 +20,7 @@ limitations under the License.
 #include "tensorflow/core/util/tensor_format.h"
 
 namespace tensorflow {
+namespace addons {
 namespace functor {
 
 template <typename Device, typename T>
@@ -42,6 +43,7 @@ struct CorrelationCostGradFunctor {
 };
 
 }  // end namespace functor
+}  // end namespace addons
 }  // end namespace tensorflow
 
 #endif  // TENSORFLOW_CORRELATION_COST_OP_H_

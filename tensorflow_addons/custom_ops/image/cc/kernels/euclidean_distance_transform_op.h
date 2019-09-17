@@ -25,6 +25,7 @@ limitations under the License.
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
+namespace addons {
 
 namespace generator {
 
@@ -91,6 +92,7 @@ struct EuclideanDistanceTransformFunctor {
 
 }  // end namespace functor
 
+}  // end namespace addons
 }  // end namespace tensorflow
 
 #endif  // TENSORFLOW_ADDONS_EUCLIDEAN_DISTANCE_OP_H_

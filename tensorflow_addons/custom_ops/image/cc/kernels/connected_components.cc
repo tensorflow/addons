@@ -25,10 +25,12 @@ limitations under the License.
 
 namespace tensorflow {
 
-using tensorflow::functor::BlockedImageUnionFindFunctor;
-using tensorflow::functor::FindRootFunctor;
-using tensorflow::functor::ImageConnectedComponentsFunctor;
-using tensorflow::functor::TensorRangeFunctor;
+namespace addons {
+
+using tensorflow::addons::functor::BlockedImageUnionFindFunctor;
+using tensorflow::addons::functor::FindRootFunctor;
+using tensorflow::addons::functor::ImageConnectedComponentsFunctor;
+using tensorflow::addons::functor::TensorRangeFunctor;
 
 using OutputType = typename BlockedImageUnionFindFunctor<bool>::OutputType;
 
@@ -135,4 +137,5 @@ TF_CALL_string(REGISTER_IMAGE_CONNECTED_COMPONENTS);
 // shared memory in CUDA thread blocks, instead of starting with single-pixel
 // blocks).
 
+}  // end namespace addons
 }  // end namespace tensorflow

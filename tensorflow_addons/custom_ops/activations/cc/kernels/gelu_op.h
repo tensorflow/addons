@@ -23,6 +23,7 @@ limitations under the License.
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
+namespace addons {
 namespace functor {
 
 // Functor used by GeluOp to do the computations.
@@ -137,8 +138,7 @@ void GeluGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
           approximate, output->flat<T>());
 }
 
-}  // namespace tensorflow
-
-#undef EIGEN_USE_THREADS
+}  // end namespace addons
+}  // namespace tensorflow#undef EIGEN_USE_THREADS
 
 #endif  // TENSORFLOW_ADDONS_GELU_OP_H_

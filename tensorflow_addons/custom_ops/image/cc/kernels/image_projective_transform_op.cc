@@ -26,6 +26,7 @@ limitations under the License.
 #include "tensorflow/core/platform/types.h"
 
 namespace tensorflow {
+namespace addons {
 
 namespace functor {
 
@@ -175,4 +176,5 @@ TF_CALL_double(REGISTER);
 
 #endif  // GOOGLE_CUDA
 
+}  // end namespace addons
 }  // end namespace tensorflow

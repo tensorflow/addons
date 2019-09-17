@@ -20,6 +20,7 @@ limitations under the License.
 #include "tensorflow/core/util/gpu_kernel_helper.h"
 
 namespace tensorflow {
+namespace addons {
 
 namespace {
 
@@ -90,5 +91,7 @@ void AdjustHsvInYiqGPU::operator()(OpKernelContext* ctx, int channel_count,
   }
 }
 }  // namespace functor
+}  // end namespace addons
 }  // namespace tensorflow
+
 #endif  // GOOGLE_CUDA
