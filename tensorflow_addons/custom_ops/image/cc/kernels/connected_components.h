@@ -15,8 +15,8 @@ limitations under the License.
 // See docs for ImageConnectedComponents in ../ops/image_ops.cc, and description
 // of the algorithm in connected_components.h.
 
-#ifndef TENSORFLOW_ADDONS_CONNECTED_COMPONENTS_H_
-#define TENSORFLOW_ADDONS_CONNECTED_COMPONENTS_H_
+#ifndef TENSORFLOW_ADDONS_IMAGE_KERNELS_CONNECTED_COMPONENTS_OPS_H_
+#define TENSORFLOW_ADDONS_IMAGE_KERNELS_CONNECTED_COMPONENTS_OPS_H_
 
 // Connected component analysis. The op is described in ../ops/image_ops.cc. A
 // description of the algorithm appears below.
@@ -304,4 +304,4 @@ class FindRootFunctor {
 }  // end namespace addons
 }  // namespace tensorflow
 
-#endif  // TENSORFLOW_ADDONS_CONNECTED_COMPONENTS_H_
+#endif  // TENSORFLOW_ADDONS_IMAGE_KERNELS_CONNECTED_COMPONENTS_OPS_H_

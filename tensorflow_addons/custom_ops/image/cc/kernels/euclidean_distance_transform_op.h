@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_ADDONS_EUCLIDEAN_DISTANCE_OP_H_
-#define TENSORFLOW_ADDONS_EUCLIDEAN_DISTANCE_OP_H_
+#ifndef TENSORFLOW_ADDONS_IMAGE_KERNELS_EUCLIDEAN_DISTANCE_TRANSFORM_OP_H_
+#define TENSORFLOW_ADDONS_IMAGE_KERNELS_EUCLIDEAN_DISTANCE_TRANSFORM_OP_H_
 
 #define EIGEN_USE_THREADS
 
@@ -95,4 +95,4 @@ struct EuclideanDistanceTransformFunctor {
 }  // end namespace addons
 }  // end namespace tensorflow
 
-#endif  // TENSORFLOW_ADDONS_EUCLIDEAN_DISTANCE_OP_H_
+#endif  // TENSORFLOW_ADDONS_IMAGE_KERNELS_EUCLIDEAN_DISTANCE_TRANSFORM_OP_H_

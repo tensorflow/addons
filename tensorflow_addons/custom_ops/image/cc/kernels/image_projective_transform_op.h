@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_ADDONS_IMAGE_KERNELS_IMAGE_OPS_H_
-#define TENSORFLOW_ADDONS_IMAGE_KERNELS_IMAGE_OPS_H_
+#ifndef TENSORFLOW_ADDONS_IMAGE_KERNELS_IMAGE_PROJECTIVE_TRANSFORM_OP_H__
+#define TENSORFLOW_ADDONS_IMAGE_KERNELS_IMAGE_PROJECTIVE_TRANSFORM_OP_H__
 
 // See docs in ../ops/image_ops.cc.
 
@@ -171,4 +171,4 @@ struct FillProjectiveTransform {
 }  // end namespace addons
 }  // end namespace tensorflow
 
-#endif  // TENSORFLOW_ADDONS_IMAGE_KERNELS_IMAGE_OPS_H_
+#endif  // TENSORFLOW_ADDONS_IMAGE_KERNELS_IMAGE_PROJECTIVE_TRANSFORM_OP_H__
