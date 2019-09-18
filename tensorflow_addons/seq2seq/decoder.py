@@ -25,11 +25,6 @@ import tensorflow as tf
 
 # TODO: Find public API alternatives to these
 from tensorflow.python.ops import control_flow_util
-from tensorflow.python.ops import rnn
-from tensorflow.python.ops import rnn_cell_impl
-
-_transpose_batch_time = rnn._transpose_batch_time  # pylint: disable=protected-access
-_zero_state_tensors = rnn_cell_impl._zero_state_tensors  # pylint: disable=protected-access
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -260,15 +255,6 @@ class BaseDecoder(tf.keras.layers.Layer):
     # TODO(scottzhu): Add build/get_config/from_config and other layer methods.
 
 
-def _create_zero_outputs(size, dtype, batch_size):
-    """Create a zero outputs Tensor structure."""
-
-    def _create(s, d):
-        return _zero_state_tensors(s, batch_size, d)
-
-    return tf.nest.map_structure(_create, size, dtype)
-
-
 def dynamic_decode(decoder,
                    output_time_major=False,
                    impute_finished=False,
@@ -348,8 +334,10 @@ def dynamic_decode(decoder,
             initial_finished, initial_inputs, initial_state = \
                 decoder.initialize(decoder_init_input, **decoder_init_kwargs)
 
-        zero_outputs = _create_zero_outputs(
-            decoder.output_size, decoder.output_dtype, decoder.batch_size)
+        zero_outputs = tf.nest.map_structure(
+            lambda shape, dtype: tf.zeros(
+                _prepend_batch(decoder.batch_size, shape), dtype=dtype),
+            decoder.output_size, decoder.output_dtype)
 
         if is_xla and maximum_iterations is None:
             raise ValueError(
@@ -505,3 +493,28 @@ def dynamic_decode(decoder,
                                                   final_outputs)
 
     return final_outputs, final_state, final_sequence_lengths
+
+
+def _prepend_batch(batch_size, shape):
+    """Prepends the batch dimension to the shape.
+
+    If the batch_size value is known statically, this function returns a
+    TensorShape, otherwise a Tensor.
+    """
+    if isinstance(batch_size, tf.Tensor):
+        static_batch_size = tf.get_static_value(batch_size)
+    else:
+        static_batch_size = batch_size
+    if static_batch_size is None:
+        return tf.concat(([batch_size], shape), axis=0)
+    return [static_batch_size] + shape
+
+
+def _transpose_batch_time(tensor):
+    """Transposes the batch and time dimension of tensor if its rank is at
+    least 2."""
+    shape = tensor.shape
+    if shape.rank is not None and shape.rank < 2:
+        return tensor
+    perm = tf.concat(([1, 0], tf.range(2, tf.rank(tensor))), axis=0)
+    return tf.transpose(tensor, perm)
