@@ -139,6 +139,8 @@ void GeluGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
 }
 
 }  // end namespace addons
-}  // namespace tensorflow#undef EIGEN_USE_THREADS
+}  // namespace tensorflow
+
+#undef EIGEN_USE_THREADS
 
 #endif  // TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_GELU_OP_H_
