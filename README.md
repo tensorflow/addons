@@ -84,8 +84,8 @@ bazel-bin/build_pip_pkg artifacts
 pip install artifacts/tensorflow_addons-*.whl
 ```
 
-## Examples
-See [`examples/`](examples/)
+## Tutorials
+See [`docs/tutorials/`](docs/tutorials/)
 for end-to-end examples of various addons.
 
 ## Core Concepts
