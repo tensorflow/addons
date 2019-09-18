@@ -32,7 +32,7 @@ def tanhshrink(features, name=None):
 
     Args:
         features: A `Tensor`. Must be one of the following types:
-            `float16`, `float32`, `float64`, `int32`, `int64`.
+            `float16`, `float32`, `float64`.
     Returns:
         A `Tensor`. Has the same type as `features`.
     """

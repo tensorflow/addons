@@ -69,8 +69,7 @@ class TanhshrinkGradOp
 
   // INPUTS:
   //   g (gradients): backpropagated gradients
-  //   a (inputs): either the inputs that were passed to TanhshrinkOp(), or its
-  //               outputs (using either one yields the same result here).
+  //   a (inputs): the inputs that were passed to the Tanhshrink op.
   // OUTPUT:
   //   gradients to backprop
   template <int NDIMS>
@@ -94,4 +93,4 @@ void TanhshrinkGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
 
 #undef EIGEN_USE_THREADS
 
-#endif
+#endif  // TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_TANHSHRINK_OP_H_
