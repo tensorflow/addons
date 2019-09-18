@@ -24,39 +24,43 @@ from tensorflow_addons.utils import keras_utils
 @keras_utils.register_keras_custom_object
 class ConditionalGradient(tf.keras.optimizers.Optimizer):
     """Optimizer that implements the Conditional Gradient optimization.
-    Helps handle constraints well.
+
+    This optimizer helps handle constraints well.
+
     Currently only supports frobenius norm constraint.
     See https://arxiv.org/pdf/1803.06453.pdf
+
     ```
     variable -= (1-learning_rate)
-        * (variable + Lambda * gradient / frobenius_norm(gradient))
+        * (variable + l_ambda * gradient / frobenius_norm(gradient))
     ```
     """
 
     def __init__(self,
                  learning_rate,
-                 Lambda,
+                 l_ambda,
                  use_locking=False,
-                 name="ConditionalGradient",
+                 name='ConditionalGradient',
                  **kwargs):
         """Construct a conditional gradient optimizer.
-            Args:
+
+        Args:
             learning_rate: A `Tensor` or a floating point value.
-                           The learning rate.
-            Lambda: A `Tensor` or a floating point value. The constraint.
+                        The learning rate.
+            l_ambda: A `Tensor` or a floating point value. The constraint.
             use_locking: If `True` use locks for update operations.
             name: Optional name prefix for the operations created when
-                  applying gradients.  Defaults to "ConditionalGradient"
+                applying gradients.  Defaults to 'ConditionalGradient'
         """
         super(ConditionalGradient, self).__init__(name=name, **kwargs)
-        self._set_hyper("learning_rate", learning_rate)
-        self._set_hyper("Lambda", Lambda)
-        self._set_hyper("use_locking", use_locking)
+        self._set_hyper('learning_rate', kwargs.get('lr', learning_rate))
+        self._set_hyper('l_ambda', l_ambda)
+        self._set_hyper('use_locking', use_locking)
 
     def get_config(self):
         config = {
             'learning_rate': self._serialize_hyperparameter('learning_rate'),
-            'Lambda': self._serialize_hyperparameter('Lambda'),
+            'l_ambda': self._serialize_hyperparameter('l_ambda'),
             'use_locking': self._serialize_hyperparameter('use_locking')
         }
         base_config = super(ConditionalGradient, self).get_config()
@@ -64,30 +68,29 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
 
     def _create_slots(self, var_list):
         for v in var_list:
-            self.add_slot(v, "conditional_gradient")
+            self.add_slot(v, 'conditional_gradient')
 
-    def _prepare(self, var_list):
-        learning_rate = self._get_hyper('learning_rate')
-        if callable(learning_rate):
-            learning_rate = learning_rate()
-        self._learning_rate_tensor = tf.convert_to_tensor(
-            learning_rate, name="learning_rate")
-        Lambda = self._get_hyper('Lambda')
-        if callable(Lambda):
-            Lambda = Lambda()
-        self._Lambda_tensor = tf.convert_to_tensor(Lambda, name="Lambda")
-        return super(ConditionalGradient, self)._prepare(var_list)
+    def _prepare_local(self, var_device, var_dtype, apply_state):
+        super(ConditionalGradient, self)._prepare_local(
+            var_device, var_dtype, apply_state)
+        apply_state[(var_device, var_dtype)]['learning_rate'] = tf.identity(
+            self._get_hyper('learning_rate', var_dtype))
+        apply_state[(var_device, var_dtype)]['l_ambda'] = tf.identity(
+            self._get_hyper('l_ambda', var_dtype))
 
-    def _resource_apply_dense(self, grad, var):
+    def _resource_apply_dense(self, grad, var, apply_state=None):
         def frobenius_norm(m):
             return tf.math.reduce_sum(m**2)**0.5
 
+        var_device, var_dtype = var.device, var.dtype.base_dtype
+        coefficients = ((apply_state or {}).get((var_device, var_dtype))
+                        or self._fallback_apply_state(var_device, var_dtype))
         norm = tf.convert_to_tensor(
-            frobenius_norm(grad), name="norm", dtype=var.dtype.base_dtype)
-        lr = tf.dtypes.cast(self._learning_rate_tensor, var.dtype.base_dtype)
-        Lambda = tf.dtypes.cast(self._Lambda_tensor, var.dtype.base_dtype)
+            frobenius_norm(grad), name='norm', dtype=var.dtype.base_dtype)
+        lr = coefficients['learning_rate']
+        l_ambda = coefficients['l_ambda']
         var_update_tensor = (
-            tf.math.multiply(var, lr) - (1 - lr) * Lambda * grad / norm)
+            tf.math.multiply(var, lr) - (1 - lr) * l_ambda * grad / norm)
         var_update_kwargs = {
             'resource': var.handle,
             'value': var_update_tensor,
@@ -96,17 +99,20 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
         var_update_op = tf.raw_ops.AssignVariableOp(**var_update_kwargs)
         return tf.group(var_update_op)
 
-    def _resource_apply_sparse(self, grad, var, indices):
+    def _resource_apply_sparse(self, grad, var, indices, apply_state=None):
         def frobenius_norm(m):
             return tf.reduce_sum(m**2)**0.5
 
+        var_device, var_dtype = var.device, var.dtype.base_dtype
+        coefficients = ((apply_state or {}).get((var_device, var_dtype))
+                        or self._fallback_apply_state(var_device, var_dtype))
         norm = tf.convert_to_tensor(
-            frobenius_norm(grad), name="norm", dtype=var.dtype.base_dtype)
-        lr = tf.dtypes.cast(self._learning_rate_tensor, var.dtype.base_dtype)
-        Lambda = tf.dtypes.cast(self._Lambda_tensor, var.dtype.base_dtype)
+            frobenius_norm(grad), name='norm', dtype=var.dtype.base_dtype)
+        lr = coefficients['learning_rate']
+        l_ambda = coefficients['l_ambda']
         var_slice = tf.gather(var, indices)
         var_update_value = (
-            tf.math.multiply(var_slice, lr) - (1 - lr) * Lambda * grad / norm)
+            tf.math.multiply(var_slice, lr) - (1 - lr) * l_ambda * grad / norm)
         var_update_kwargs = {
             'resource': var.handle,
             'indices': indices,
