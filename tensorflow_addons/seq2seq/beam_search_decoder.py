@@ -762,7 +762,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
             parent_ids=tf.int32)
 
     def call(self,
-             embeddning,
+             embedding,
              start_tokens,
              end_token,
              initial_state,
@@ -780,7 +780,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
             parallel_iterations=self.parallel_iterations,
             swap_memory=self.swap_memory,
             training=training,
-            decoder_init_input=embeddning,
+            decoder_init_input=embedding,
             decoder_init_kwargs=init_kwargs)
 
 
