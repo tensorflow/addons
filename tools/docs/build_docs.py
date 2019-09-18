@@ -52,12 +52,13 @@ flags.DEFINE_string(
     default=None,
     help='The name of the corresponding branch on github.')
 
-flags.DEFINE_string("output_dir", "/tmp/addons_api",
-                    "Where to output the docs")
-
 CODE_PREFIX_TEMPLATE = "https://github.com/tensorflow/addons/tree/{git_branch}/tensorflow_addons"
 flags.DEFINE_string("code_url_prefix", None,
                     "The url prefix for links to the code.")
+flags.mark_flags_as_mutual_exclusive(['code_url_prefix', 'git_branch'])
+
+flags.DEFINE_string("output_dir", "/tmp/addons_api",
+                    "Where to output the docs")
 
 flags.DEFINE_bool("search_hints", True,
                   "Include metadata search hints in the generated files")
@@ -65,18 +66,16 @@ flags.DEFINE_bool("search_hints", True,
 flags.DEFINE_string("site_path", "addons/api_docs/python",
                     "Path prefix in the _toc.yaml")
 
-flags.mark_flags_as_mutual_exclusive(['code_url_prefix', 'git_branch'])
-
 
 def main(argv):
     if argv[1:]:
         raise ValueError('Unrecognized arguments: {}'.format(argv[1:]))
 
-    if FLAGS.git_branch:
+    if FLAGS.code_url_prefix:
+        code_url_prefix = FLAGS.code_url_prefix
+    elif FLAGS.git_branch:
         code_url_prefix = CODE_PREFIX_TEMPLATE.format(
             git_branch=FLAGS.git_branch)
-    elif FLAGS.code_url_prefix:
-        code_url_prefix = FLAGS.code_url_prefix
     else:
         code_url_prefix = CODE_PREFIX_TEMPLATE.format(git_branch='master')
 
