@@ -336,7 +336,7 @@ def dynamic_decode(decoder,
 
         zero_outputs = tf.nest.map_structure(
             lambda shape, dtype: tf.zeros(
-                [decoder.batch_size] + shape, dtype=dtype),
+                _prepend_batch(decoder.batch_size, shape), dtype=dtype),
             decoder.output_size, decoder.output_dtype)
 
         if is_xla and maximum_iterations is None:
@@ -495,7 +495,24 @@ def dynamic_decode(decoder,
     return final_outputs, final_state, final_sequence_lengths
 
 
+def _prepend_batch(batch_size, shape):
+    """Prepends the batch dimension to the shape.
+
+    If the batch_size value is known statically, this function returns a
+    TensorShape, otherwise a Tensor.
+    """
+    if isinstance(batch_size, tf.Tensor):
+        static_batch_size = tf.get_static_value(batch_size)
+    else:
+        static_batch_size = batch_size
+    if static_batch_size is None:
+        return tf.concat(([batch_size], shape), axis=0)
+    return [static_batch_size] + shape
+
+
 def _transpose_batch_time(tensor):
+    """Transposes the batch and time dimension of tensor if its rank is at
+    least 2."""
     shape = tensor.shape
     if shape.rank is not None and shape.rank < 2:
         return tensor
