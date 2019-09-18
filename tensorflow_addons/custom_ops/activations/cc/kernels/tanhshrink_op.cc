@@ -21,16 +21,18 @@ limitations under the License.
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
+namespace addons {
 
 using CPUDevice = Eigen::ThreadPoolDevice;
 
-#define REGISTER_TANHSHRINK_KERNELS(type)                                  \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("Tanhshrink").Device(DEVICE_CPU).TypeConstraint<type>("T"),     \
-      TanhshrinkOp<CPUDevice, type>);                                      \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("TanhshrinkGrad").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
-      TanhshrinkGradOp<CPUDevice, type>);
+#define REGISTER_TANHSHRINK_KERNELS(type)                                     \
+  REGISTER_KERNEL_BUILDER(                                                    \
+      Name("Addons>Tanhshrink").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
+      TanhshrinkOp<CPUDevice, type>);                                         \
+  REGISTER_KERNEL_BUILDER(Name("Addons>TanhshrinkGrad")                       \
+                              .Device(DEVICE_CPU)                             \
+                              .TypeConstraint<type>("T"),                     \
+                          TanhshrinkGradOp<CPUDevice, type>);
 
 TF_CALL_GPU_NUMBER_TYPES(REGISTER_TANHSHRINK_KERNELS);
 #undef REGISTER_TANHSHRINK_KERNELS
@@ -60,17 +62,19 @@ TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
 }  // namespace functor
 
 // Registration of the GPU implementations.
-#define REGISTER_TANHSHRINK_GPU_KERNELS(type)                              \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("Tanhshrink").Device(DEVICE_GPU).TypeConstraint<type>("T"),     \
-      TanhshrinkOp<GPUDevice, type>);                                      \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("TanhshrinkGrad").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
-      TanhshrinkGradOp<GPUDevice, type>);
+#define REGISTER_TANHSHRINK_GPU_KERNELS(type)                                 \
+  REGISTER_KERNEL_BUILDER(                                                    \
+      Name("Addons>Tanhshrink").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
+      TanhshrinkOp<GPUDevice, type>);                                         \
+  REGISTER_KERNEL_BUILDER(Name("Addons>TanhshrinkGrad")                       \
+                              .Device(DEVICE_GPU)                             \
+                              .TypeConstraint<type>("T"),                     \
+                          TanhshrinkGradOp<GPUDevice, type>);
 
 TF_CALL_GPU_NUMBER_TYPES(REGISTER_TANHSHRINK_GPU_KERNELS);
 #undef REGISTER_TANHSHRINK_GPU_KERNELS
 
 #endif  // GOOGLE_CUDA
 
+}  // namespace addons
 }  // namespace tensorflow

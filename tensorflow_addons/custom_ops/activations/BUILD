@@ -96,6 +96,6 @@ cc_binary(
     ] + if_cuda_is_configured([
         ":gelu_op_gpu",
         ":hardshrink_op_gpu",
-        ":tanhshrink_op_gpu"
+        ":tanhshrink_op_gpu",
     ]),
 )

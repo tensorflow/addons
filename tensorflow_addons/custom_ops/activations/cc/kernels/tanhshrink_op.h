@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_ADDONS_TANHSHRINK_OP_H_
-#define TENSORFLOW_ADDONS_TANHSHRINK_OP_H_
+#ifndef TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_TANHSHRINK_OP_H_
+#define TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_TANHSHRINK_OP_H_
 
 #define EIGEN_USE_THREADS
 
@@ -23,6 +23,7 @@ limitations under the License.
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
+namespace addons {
 namespace functor {
 
 template <typename Device, typename T>
@@ -88,7 +89,8 @@ void TanhshrinkGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
   functor(context->eigen_device<Device>(), g.flat<T>(), a.flat<T>(),
           output->flat<T>());
 }
-}
+}  // namespace addons
+}  // namespace tensorflow
 
 #undef EIGEN_USE_THREADS
 
