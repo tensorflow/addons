@@ -26,6 +26,8 @@ import numpy as np
 
 import tensorflow as tf
 
+from tensorflow_addons.utils import keras_utils
+
 # TODO: Find public API alternatives to these
 from tensorflow.python.keras.engine import base_layer_utils
 from tensorflow.python.ops import rnn_cell_impl
@@ -1634,7 +1636,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             `attention_layer` are set simultaneously.
         """
         super(AttentionWrapper, self).__init__(name=name, **kwargs)
-        rnn_cell_impl.assert_like_rnncell("cell", cell)
+        keras_utils.assert_like_rnncell("cell", cell)
         if isinstance(attention_mechanism, (list, tuple)):
             self._is_multi = True
             attention_mechanisms = list(attention_mechanism)
