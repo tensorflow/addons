@@ -203,7 +203,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         var_update = var.assign_sub(
             lr_t * var_t, use_locking=self._use_locking)
 
-        updates = [var_update + m_t, v_t]
+        updates = [var_update, m_t, v_t]
         if self.amsgrad:
             updates.append(vhat_t)
         return tf.group(*updates)
