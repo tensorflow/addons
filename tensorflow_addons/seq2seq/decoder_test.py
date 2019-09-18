@@ -46,7 +46,7 @@ class DecodeRNNTest(test_utils.keras_parameterized.TestCase, tf.test.TestCase):
                 inputs = np.random.randn(batch_size, max_time,
                                          input_depth).astype(np.float32)
             input_t = tf.constant(inputs)
-            cell = tf.compat.v1.nn.rnn_cell.LSTMCell(cell_depth)
+            cell = tf.keras.layers.LSTMCell(cell_depth)
             sampler = sampler_py.TrainingSampler(time_major=time_major)
             my_decoder = basic_decoder.BasicDecoder(
                 cell=cell,
@@ -54,8 +54,8 @@ class DecodeRNNTest(test_utils.keras_parameterized.TestCase, tf.test.TestCase):
                 output_time_major=time_major,
                 maximum_iterations=maximum_iterations)
 
-            initial_state = cell.zero_state(
-                dtype=tf.float32, batch_size=batch_size)
+            initial_state = cell.get_initial_state(
+                batch_size=batch_size, dtype=tf.float32)
             (final_outputs, unused_final_state,
              final_sequence_length) = my_decoder(  # pylint: disable=not-callable
                  input_t,
@@ -125,9 +125,9 @@ class DecodeRNNTest(test_utils.keras_parameterized.TestCase, tf.test.TestCase):
                                      input_depth).astype(np.float32)
             inputs = tf.constant(inputs)
 
-            cell = tf.compat.v1.nn.rnn_cell.LSTMCell(cell_depth)
-            zero_state = cell.zero_state(
-                dtype=tf.float32, batch_size=batch_size)
+            cell = tf.keras.layers.LSTMCell(cell_depth)
+            zero_state = cell.get_initial_state(
+                batch_size=batch_size, dtype=tf.float32)
             sampler = sampler_py.TrainingSampler()
             my_decoder = basic_decoder.BasicDecoder(
                 cell=cell,
@@ -139,12 +139,16 @@ class DecodeRNNTest(test_utils.keras_parameterized.TestCase, tf.test.TestCase):
                 initial_state=zero_state,
                 sequence_length=sequence_length)
 
-            final_rnn_outputs, final_rnn_state = tf.compat.v1.nn.dynamic_rnn(
-                cell,
-                inputs,
-                sequence_length=sequence_length
-                if use_sequence_length else None,
-                initial_state=zero_state)
+            rnn = tf.keras.layers.RNN(
+                cell, return_sequences=True, return_state=True)
+            mask = (tf.sequence_mask(sequence_length, maxlen=max_time)
+                    if use_sequence_length else None)
+            outputs = rnn(inputs, mask=mask, initial_state=zero_state)
+            final_rnn_outputs = outputs[0]
+            final_rnn_state = outputs[1:]
+            if use_sequence_length:
+                final_rnn_outputs *= tf.cast(
+                    tf.expand_dims(mask, -1), final_rnn_outputs.dtype)
 
             self.evaluate(tf.compat.v1.global_variables_initializer())
             eval_result = self.evaluate({
