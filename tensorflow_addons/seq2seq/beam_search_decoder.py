@@ -25,10 +25,8 @@ import tensorflow as tf
 
 from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import decoder
+from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
-
-# TODO: Find public API alternatives to these
-from tensorflow.python.ops import rnn_cell_impl
 
 _beam_search_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/seq2seq/_beam_search_ops.so"))
@@ -274,7 +272,7 @@ class BeamSearchDecoderMixin(object):
           TypeError: if `cell` is not an instance of `RNNCell`,
             or `output_layer` is not an instance of `tf.keras.layers.Layer`.
         """
-        rnn_cell_impl.assert_like_rnncell("cell", cell)  # pylint: disable=protected-access
+        keras_utils.assert_like_rnncell("cell", cell)
         if (output_layer is not None
                 and not isinstance(output_layer, tf.keras.layers.Layer)):
             raise TypeError("output_layer must be a Layer, received: %s" %

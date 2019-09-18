@@ -24,9 +24,7 @@ import tensorflow as tf
 
 from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
-
-# TODO: Find public API alternatives to this
-from tensorflow.python.ops import rnn_cell_impl
+from tensorflow_addons.utils import keras_utils
 
 
 class BasicDecoderOutput(
@@ -53,7 +51,7 @@ class BasicDecoder(decoder.BaseDecoder):
           TypeError: if `cell`, `helper` or `output_layer` have an incorrect
           type.
         """
-        rnn_cell_impl.assert_like_rnncell("cell", cell)
+        keras_utils.assert_like_rnncell("cell", cell)
         if not isinstance(sampler, sampler_py.Sampler):
             raise TypeError(
                 "sampler must be a Sampler, received: %s" % (sampler,))
