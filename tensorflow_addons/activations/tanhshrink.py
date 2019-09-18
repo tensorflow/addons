@@ -27,7 +27,7 @@ _activation_ops_so = tf.load_op_library(
 
 @keras_utils.register_keras_custom_object
 @tf.function
-def tanhshrink(features, name=None):
+def tanhshrink(features):
     """Applies the element-wise function: x - tanh(x)
 
     Args:
@@ -36,7 +36,7 @@ def tanhshrink(features, name=None):
     Returns:
         A `Tensor`. Has the same type as `features`.
     """
-    with tf.name_scope(name or "tanhshrink") as name:
+    with tf.name_scope("tanhshrink") as name:
         features = tf.convert_to_tensor(features, name="features")
         return _activation_ops_so.addons_tanhshrink(features, name=name)
 
