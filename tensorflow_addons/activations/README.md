@@ -13,8 +13,9 @@
 |:----------|:-----------|:---------------------------------|
 | gelu      | gelu       | https://arxiv.org/abs/1606.08415 |
 | hardshrink| hardshrink |                                  |
-| sparsemax | Sparsemax  | https://arxiv.org/abs/1602.02068 |
-| tanhshrink | Tanhshrink  |  |
+| lisht     | lisht      | https://arxiv.org/abs/1901.05894 | 
+| sparsemax | sparsemax  | https://arxiv.org/abs/1602.02068 |
+| tanhshrink | tanhshrink  |  |
 
 
 ## Contribution Guidelines
