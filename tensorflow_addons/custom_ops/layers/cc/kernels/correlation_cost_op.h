@@ -13,13 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_CORRELATION_COST_OP_H_
-#define TENSORFLOW_CORRELATION_COST_OP_H_
+#ifndef TENSORFLOW_ADDONS_LAYERS_KERNELS_CORRELATION_COST_OP_H_
+#define TENSORFLOW_ADDONS_LAYERS_KERNELS_CORRELATION_COST_OP_H_
 
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/util/tensor_format.h"
 
 namespace tensorflow {
+namespace addons {
 namespace functor {
 
 template <typename Device, typename T>
@@ -42,6 +43,7 @@ struct CorrelationCostGradFunctor {
 };
 
 }  // end namespace functor
+}  // end namespace addons
 }  // end namespace tensorflow
 
-#endif  // TENSORFLOW_CORRELATION_COST_OP_H_
+#endif  // TENSORFLOW_ADDONS_LAYERS_KERNELS_CORRELATION_COST_OP_H_
