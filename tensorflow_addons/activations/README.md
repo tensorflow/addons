@@ -4,9 +4,10 @@
 | Submodule | Maintainers               | Contact Info                             |
 |:----------|:--------------------------|:-----------------------------------------|
 | gelu      | @AakashKumarNain @WindQAQ | aakashnain@outlook.com windqaq@gmail.com |
-| hardshrink| @WindQAQ                  | windqaq@gmail.com
+| hardshrink| @WindQAQ                  | windqaq@gmail.com                        |
+| lisht     | @WindQAQ                  | windqaq@gmail.com                        |
 | sparsemax | @AndreasMadsen            | amwwebdk+github@gmail.com                |
-| tanhshrink | @fsx950223            | fsx950223@gmail.com                |
+| tanhshrink| @fsx950223                | fsx950223@gmail.com                      |
 
 ## Contents
 | Submodule | Activation | Reference                        |
@@ -15,7 +16,7 @@
 | hardshrink| hardshrink |                                  |
 | lisht     | lisht      | https://arxiv.org/abs/1901.05894 | 
 | sparsemax | sparsemax  | https://arxiv.org/abs/1602.02068 |
-| tanhshrink | tanhshrink  |  |
+| tanhshrink| tanhshrink |                                  |
 
 
 ## Contribution Guidelines
@@ -23,7 +24,6 @@
 In order to conform with the current API standard, all activations
 must:
  * Be a `tf.function`.
- * Have the signature `fn(input, axis=-1, name=None)`.
  * [Register as a keras global object](https://github.com/tensorflow/addons/blob/master/tensorflow_addons/utils/python/keras_utils.py)
   so it can be serialized properly.
  * Add the addon to the `py_library` in this sub-package's BUILD file.
