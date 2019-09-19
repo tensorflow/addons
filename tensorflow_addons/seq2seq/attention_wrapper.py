@@ -26,11 +26,10 @@ import numpy as np
 
 import tensorflow as tf
 
+from tensorflow_addons.utils import keras_utils
+
 # TODO: Find public API alternatives to these
 from tensorflow.python.keras.engine import base_layer_utils
-from tensorflow.python.ops import rnn_cell_impl
-
-_zero_state_tensors = rnn_cell_impl._zero_state_tensors  # pylint: disable=protected-access
 
 
 class AttentionMechanism(object):
@@ -411,8 +410,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
           A `dtype` tensor shaped `[batch_size, alignments_size]`
           (`alignments_size` is the values' `max_time`).
         """
-        max_time = self._alignments_size
-        return _zero_state_tensors(max_time, batch_size, dtype)
+        return tf.zeros([batch_size, self._alignments_size], dtype=dtype)
 
     def initial_state(self, batch_size, dtype):
         """Creates the initial state values for the `AttentionWrapper` class.
@@ -1634,7 +1632,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             `attention_layer` are set simultaneously.
         """
         super(AttentionWrapper, self).__init__(name=name, **kwargs)
-        rnn_cell_impl.assert_like_rnncell("cell", cell)
+        keras_utils.assert_like_rnncell("cell", cell)
         if isinstance(attention_mechanism, (list, tuple)):
             self._is_multi = True
             attention_mechanisms = list(attention_mechanism)
@@ -1863,8 +1861,9 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             return AttentionWrapperState(
                 cell_state=cell_state,
                 time=tf.zeros([], dtype=tf.int32),
-                attention=_zero_state_tensors(self._get_attention_layer_size(),
-                                              batch_size, dtype),
+                attention=tf.zeros(
+                    [batch_size, self._get_attention_layer_size()],
+                    dtype=dtype),
                 alignments=self._item_or_tuple(initial_alignments),
                 attention_state=self._item_or_tuple(
                     attention_mechanism.initial_state(batch_size, dtype)

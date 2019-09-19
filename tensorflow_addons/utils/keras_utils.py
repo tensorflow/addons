@@ -67,3 +67,48 @@ def normalize_tuple(value, n, name):
                                  'including element ' + str(single_value) +
                                  ' of type' + ' ' + str(type(single_value)))
         return value_tuple
+
+
+def _hasattr(obj, attr_name):
+    # If possible, avoid retrieving the attribute as the object might run some
+    # lazy computation in it.
+    if attr_name in dir(obj):
+        return True
+    try:
+        getattr(obj, attr_name)
+    except AttributeError:
+        return False
+    else:
+        return True
+
+
+def assert_like_rnncell(cell_name, cell):
+    """Raises a TypeError if cell is not like a
+    tf.keras.layers.AbstractRNNCell.
+
+    Args:
+      cell_name: A string to give a meaningful error referencing to the name
+        of the function argument.
+      cell: The object which should behave like a
+        tf.keras.layers.AbstractRNNCell.
+
+    Raises:
+      TypeError: A human-friendly exception.
+    """
+    conditions = [
+        _hasattr(cell, "output_size"),
+        _hasattr(cell, "state_size"),
+        _hasattr(cell, "get_initial_state"),
+        callable(cell),
+    ]
+
+    errors = [
+        "'output_size' property is missing",
+        "'state_size' property is missing",
+        "'get_initial_state' method is required", "is not callable"
+    ]
+
+    if not all(conditions):
+        errors = [error for error, cond in zip(errors, conditions) if not cond]
+        raise TypeError("The argument {!r} ({}) is not an RNNCell: {}.".format(
+            cell_name, cell, ", ".join(errors)))

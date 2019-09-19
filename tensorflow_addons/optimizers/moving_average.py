@@ -47,8 +47,33 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
                  sequential_update=True,
                  name="MovingAverage",
                  **kwargs):
+        """Construct a new MovingAverage optimizer.
 
+        Args:
+            optimizer: str or `tf.keras.optimizers.Optimizer` that will be
+                used to compute and apply gradients.
+            average_decay: float. Decay to use to maintain the moving averages
+                of trained variables. See `tf.train.ExponentialMovingAverage`
+                for details.
+            num_updates: Optional count of the number of updates applied to
+                variables. See `tf.train.ExponentialMovingAverage` for details.
+            sequential_update: Bool. If False, will compute the moving average
+                at the same time as the model is updated, potentially doing
+                benign data races. If True, will update the moving average
+                after gradient updates.
+            name: Optional name for the operations created when applying
+                gradients. Defaults to "MovingAverage".
+            **kwargs: keyword arguments. Allowed to be {`clipnorm`,
+                `clipvalue`, `lr`, `decay`}. `clipnorm` is clip gradients by
+                norm; `clipvalue` is clip gradients by value, `decay` is
+                included for backward compatibility to allow time inverse
+                decay of learning rate. `lr` is included for backward
+                compatibility, recommended to use `learning_rate` instead.
+        """
         super(MovingAverage, self).__init__(name, **kwargs)
+
+        if isinstance(optimizer, str):
+            optimizer = tf.keras.optimizers.get(optimizer)
 
         if not isinstance(optimizer, tf.keras.optimizers.Optimizer):
             raise TypeError(
@@ -60,24 +85,23 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
         if not isinstance(sequential_update, bool):
             raise TypeError("sequential_update must be of bool type")
 
-        self._optimizer = optimizer
-
         with tf.name_scope(name):
             self._ema = tf.train.ExponentialMovingAverage(
                 average_decay, num_updates=num_updates)
 
+        self._optimizer = optimizer
         self._set_hyper("average_decay", average_decay)
         self._num_updates = num_updates
         self._sequential_update = sequential_update
-        self._init = True
+        self._initialized = False
 
     def apply_gradients(self, grads_and_vars, name=None):
         var_list = [v for (_, v) in grads_and_vars]
 
-        if tf.executing_eagerly() and self._init:
+        if tf.executing_eagerly() and not self._initialized:
             # this to ensure that var_list is registered initially
             self._ema.apply(var_list)
-            self._init = False
+            self._initialized = True
 
         train_op = self._optimizer.apply_gradients(grads_and_vars, name=name)
 
@@ -91,15 +115,22 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
 
     def get_config(self):
         config = {
+            'optimizer': tf.keras.optimizers.serialize(self._optimizer),
             'average_decay': self._serialize_hyperparameter('average_decay'),
             'num_updates': self._num_updates,
             'sequential_update': self._sequential_update
         }
-        base_config = self._optimizer.get_config()
+        base_config = super(MovingAverage, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
+    @classmethod
+    def from_config(cls, config, custom_objects=None):
+        optimizer = tf.keras.optimizers.deserialize(
+            config.pop('optimizer'), custom_objects=custom_objects)
+        return cls(optimizer, **config)
+
     def assign_average_vars(self, var_list):
-        """Update variables in var_list with the running mean of the variables.
+        """Assign variables in var_list with their respective moving averages.
 
         Example:
         ```python
