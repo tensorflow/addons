@@ -42,11 +42,11 @@ def hardshrink(x, lower=-1.0, upper=1.0):
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
-    return _activation_ops_so.hardshrink(x, lower, upper)
+    return _activation_ops_so.addons_hardshrink(x, lower, upper)
 
 
-@tf.RegisterGradient("Hardshrink")
+@tf.RegisterGradient("Addons>Hardshrink")
 def _hardshrink_grad(op, grad):
-    return _activation_ops_so.hardshrink_grad(grad, op.inputs[0],
-                                              op.get_attr("lower"),
-                                              op.get_attr("upper"))
+    return _activation_ops_so.addons_hardshrink_grad(grad, op.inputs[0],
+                                                     op.get_attr("lower"),
+                                                     op.get_attr("upper"))

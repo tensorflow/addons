@@ -19,7 +19,7 @@ limitations under the License.
 
 namespace tensorflow {
 
-REGISTER_OP("Hardshrink")
+REGISTER_OP("Addons>Hardshrink")
     .Input("features: T")
     .Output("activations: T")
     .Attr("T: {half, float, double}")
@@ -27,7 +27,7 @@ REGISTER_OP("Hardshrink")
     .Attr("upper: float = 1.0")
     .SetShapeFn(shape_inference::UnchangedShape);
 
-REGISTER_OP("HardshrinkGrad")
+REGISTER_OP("Addons>HardshrinkGrad")
     .Input("gradients: T")
     .Input("features: T")
     .Output("backprops: T")

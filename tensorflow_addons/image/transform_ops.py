@@ -96,7 +96,7 @@ def transform(images,
         else:
             raise TypeError("Transforms should have rank 1 or 2.")
 
-        output = _image_ops_so.image_projective_transform_v2(
+        output = _image_ops_so.addons_image_projective_transform_v2(
             images,
             output_shape=output_shape,
             transforms=transforms,
@@ -246,7 +246,7 @@ def angles_to_projective_transforms(angles,
             axis=1)
 
 
-@tf.RegisterGradient("ImageProjectiveTransformV2")
+@tf.RegisterGradient("Addons>ImageProjectiveTransformV2")
 def _image_projective_transform_grad(op, grad):
     """Computes the gradient for ImageProjectiveTransform."""
     images = op.inputs[0]
@@ -270,7 +270,7 @@ def _image_projective_transform_grad(op, grad):
     transforms = flat_transforms_to_matrices(transforms=transforms)
     inverse = tf.linalg.inv(transforms)
     transforms = matrices_to_flat_transforms(inverse)
-    output = _image_ops_so.image_projective_transform_v2(
+    output = _image_ops_so.addons_image_projective_transform_v2(
         images=grad,
         transforms=transforms,
         output_shape=tf.shape(image_or_images)[1:3],

@@ -21,15 +21,16 @@ limitations under the License.
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
+namespace addons {
 
 using CPUDevice = Eigen::ThreadPoolDevice;
 
-#define REGISTER_GELU_KERNELS(type)                                  \
-  REGISTER_KERNEL_BUILDER(                                           \
-      Name("Gelu").Device(DEVICE_CPU).TypeConstraint<type>("T"),     \
-      GeluOp<CPUDevice, type>);                                      \
-  REGISTER_KERNEL_BUILDER(                                           \
-      Name("GeluGrad").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
+#define REGISTER_GELU_KERNELS(type)                                         \
+  REGISTER_KERNEL_BUILDER(                                                  \
+      Name("Addons>Gelu").Device(DEVICE_CPU).TypeConstraint<type>("T"),     \
+      GeluOp<CPUDevice, type>);                                             \
+  REGISTER_KERNEL_BUILDER(                                                  \
+      Name("Addons>GeluGrad").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
       GeluGradOp<CPUDevice, type>);
 
 // Gelu only makes sense with floating points.
@@ -61,12 +62,12 @@ TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
 }  // namespace functor
 
 // Registration of the GPU implementations.
-#define REGISTER_GELU_GPU_KERNELS(type)                              \
-  REGISTER_KERNEL_BUILDER(                                           \
-      Name("Gelu").Device(DEVICE_GPU).TypeConstraint<type>("T"),     \
-      GeluOp<GPUDevice, type>);                                      \
-  REGISTER_KERNEL_BUILDER(                                           \
-      Name("GeluGrad").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
+#define REGISTER_GELU_GPU_KERNELS(type)                                     \
+  REGISTER_KERNEL_BUILDER(                                                  \
+      Name("Addons>Gelu").Device(DEVICE_GPU).TypeConstraint<type>("T"),     \
+      GeluOp<GPUDevice, type>);                                             \
+  REGISTER_KERNEL_BUILDER(                                                  \
+      Name("Addons>GeluGrad").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
       GeluGradOp<GPUDevice, type>);
 
 TF_CALL_GPU_NUMBER_TYPES(REGISTER_GELU_GPU_KERNELS);
@@ -74,4 +75,5 @@ TF_CALL_GPU_NUMBER_TYPES(REGISTER_GELU_GPU_KERNELS);
 
 #endif  // GOOGLE_CUDA
 
+}  // end namespace addons
 }  // namespace tensorflow

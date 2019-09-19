@@ -21,16 +21,18 @@ limitations under the License.
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
+namespace addons {
 
 using CPUDevice = Eigen::ThreadPoolDevice;
 
-#define REGISTER_HARDSHRINK_KERNELS(type)                                  \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("Hardshrink").Device(DEVICE_CPU).TypeConstraint<type>("T"),     \
-      HardshrinkOp<CPUDevice, type>);                                      \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("HardshrinkGrad").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
-      HardshrinkGradOp<CPUDevice, type>);
+#define REGISTER_HARDSHRINK_KERNELS(type)                                     \
+  REGISTER_KERNEL_BUILDER(                                                    \
+      Name("Addons>Hardshrink").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
+      HardshrinkOp<CPUDevice, type>);                                         \
+  REGISTER_KERNEL_BUILDER(Name("Addons>HardshrinkGrad")                       \
+                              .Device(DEVICE_CPU)                             \
+                              .TypeConstraint<type>("T"),                     \
+                          HardshrinkGradOp<CPUDevice, type>);
 
 // Hardshrink only makes sense with floating points.
 TF_CALL_GPU_NUMBER_TYPES(REGISTER_HARDSHRINK_KERNELS);
@@ -61,17 +63,19 @@ TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
 }  // namespace functor
 
 // Registration of the GPU implementations.
-#define REGISTER_HARDSHRINK_GPU_KERNELS(type)                              \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("Hardshrink").Device(DEVICE_GPU).TypeConstraint<type>("T"),     \
-      HardshrinkOp<GPUDevice, type>);                                      \
-  REGISTER_KERNEL_BUILDER(                                                 \
-      Name("HardshrinkGrad").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
-      HardshrinkGradOp<GPUDevice, type>);
+#define REGISTER_HARDSHRINK_GPU_KERNELS(type)                                 \
+  REGISTER_KERNEL_BUILDER(                                                    \
+      Name("Addons>Hardshrink").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
+      HardshrinkOp<GPUDevice, type>);                                         \
+  REGISTER_KERNEL_BUILDER(Name("Addons>HardshrinkGrad")                       \
+                              .Device(DEVICE_GPU)                             \
+                              .TypeConstraint<type>("T"),                     \
+                          HardshrinkGradOp<GPUDevice, type>);
 
 TF_CALL_GPU_NUMBER_TYPES(REGISTER_HARDSHRINK_GPU_KERNELS);
 #undef REGISTER_HARDSHRINK_GPU_KERNELS
 
 #endif  // GOOGLE_CUDA
 
+}  // end namespace addons
 }  // namespace tensorflow

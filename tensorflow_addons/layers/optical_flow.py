@@ -83,7 +83,7 @@ def correlation_cost(input_a,
     """
 
     with tf.name_scope(name or "correlation_cost"):
-        op_call = _correlation_cost_op_so.correlation_cost
+        op_call = _correlation_cost_op_so.addons_correlation_cost
 
         if data_format == "channels_last":
             op_data_format = "NHWC"
@@ -109,7 +109,7 @@ def correlation_cost(input_a,
         return ret
 
 
-@tf.RegisterGradient("CorrelationCost")
+@tf.RegisterGradient("Addons>CorrelationCost")
 def _correlation_cost_grad(op, grad_output):
     kernel_size = op.get_attr("kernel_size")
     max_displacement = op.get_attr("max_displacement")
@@ -122,7 +122,7 @@ def _correlation_cost_grad(op, grad_output):
     input_b = tf.convert_to_tensor(op.inputs[1], name="input_b")
     grad_output_tensor = tf.convert_to_tensor(grad_output, name="grad_output")
 
-    op_call = _correlation_cost_op_so.correlation_cost_grad
+    op_call = _correlation_cost_op_so.addons_correlation_cost_grad
     grads = op_call(
         input_a,
         input_b,

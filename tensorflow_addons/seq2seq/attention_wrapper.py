@@ -140,8 +140,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
     @property
     def memory_initialized(self):
         """Returns `True` if this attention mechanism has been initialized with
-        a memory.
-        """
+        a memory."""
         return self._memory_initialized
 
     def build(self, input_shape):
