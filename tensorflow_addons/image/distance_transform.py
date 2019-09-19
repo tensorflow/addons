@@ -24,7 +24,7 @@ from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 _image_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/image/_image_ops.so"))
 
-tf.no_gradient("EuclideanDistanceTransform")
+tf.no_gradient("Addons>EuclideanDistanceTransform")
 
 
 @tf.function
@@ -65,6 +65,6 @@ def euclidean_dist_transform(images, dtype=tf.float32, name=None):
             raise TypeError("`dtype` must be float16, float32 or float64")
 
         images = tf.cast(images, dtype)
-        output = _image_ops_so.euclidean_distance_transform(images)
+        output = _image_ops_so.addons_euclidean_distance_transform(images)
 
         return img_utils.from_4D_image(output, original_ndims)

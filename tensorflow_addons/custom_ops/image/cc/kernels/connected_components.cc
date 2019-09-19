@@ -25,10 +25,12 @@ limitations under the License.
 
 namespace tensorflow {
 
-using tensorflow::functor::BlockedImageUnionFindFunctor;
-using tensorflow::functor::FindRootFunctor;
-using tensorflow::functor::ImageConnectedComponentsFunctor;
-using tensorflow::functor::TensorRangeFunctor;
+namespace addons {
+
+using tensorflow::addons::functor::BlockedImageUnionFindFunctor;
+using tensorflow::addons::functor::FindRootFunctor;
+using tensorflow::addons::functor::ImageConnectedComponentsFunctor;
+using tensorflow::addons::functor::TensorRangeFunctor;
 
 using OutputType = typename BlockedImageUnionFindFunctor<bool>::OutputType;
 
@@ -119,10 +121,10 @@ struct ImageConnectedComponentsFunctor<CPUDevice, T> {
 
 }  // end namespace functor
 
-#define REGISTER_IMAGE_CONNECTED_COMPONENTS(TYPE)             \
-  REGISTER_KERNEL_BUILDER(Name("ImageConnectedComponents")    \
-                              .Device(DEVICE_CPU)             \
-                              .TypeConstraint<TYPE>("dtype"), \
+#define REGISTER_IMAGE_CONNECTED_COMPONENTS(TYPE)                 \
+  REGISTER_KERNEL_BUILDER(Name("Addons>ImageConnectedComponents") \
+                              .Device(DEVICE_CPU)                 \
+                              .TypeConstraint<TYPE>("dtype"),     \
                           ImageConnectedComponents<CPUDevice, TYPE>)
 // Connected components (arguably) make sense for number, bool, and string types
 TF_CALL_NUMBER_TYPES(REGISTER_IMAGE_CONNECTED_COMPONENTS);
@@ -135,4 +137,5 @@ TF_CALL_string(REGISTER_IMAGE_CONNECTED_COMPONENTS);
 // shared memory in CUDA thread blocks, instead of starting with single-pixel
 // blocks).
 
+}  // end namespace addons
 }  // end namespace tensorflow
