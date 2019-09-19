@@ -101,8 +101,8 @@ class MatthewsCorrelationCoefficient(Metric):
 
         true_positive = tf.math.count_nonzero(y_true * y_pred, 0)
         # true_negative
-        true_negative = tf.math.count_nonzero(tf.math.not_equal(y_true,1.0))
-        true_negative = tf.reshape(true_negative, [-1])
+        true_negative = tf.math.count_nonzero(tf.math.not_equal(y_true,1.0), axis=0))
+        # true_negative = tf.reshape(true_negative, [-1])
 
         # predicted sum
         pred_sum = tf.math.count_nonzero(y_pred, 0)
