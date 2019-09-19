@@ -6,6 +6,7 @@
 | gelu      | @AakashKumarNain @WindQAQ | aakashnain@outlook.com windqaq@gmail.com |
 | hardshrink| @WindQAQ                  | windqaq@gmail.com
 | sparsemax | @AndreasMadsen            | amwwebdk+github@gmail.com                |
+| tanhshrink | @fsx950223            | fsx950223@gmail.com                |
 
 ## Contents
 | Submodule | Activation | Reference                        |
@@ -13,6 +14,7 @@
 | gelu      | gelu       | https://arxiv.org/abs/1606.08415 |
 | hardshrink| hardshrink |                                  |
 | sparsemax | Sparsemax  | https://arxiv.org/abs/1602.02068 |
+| tanhshrink | Tanhshrink  |  |
 
 
 ## Contribution Guidelines

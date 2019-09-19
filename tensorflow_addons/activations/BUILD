@@ -9,6 +9,7 @@ py_library(
         "gelu.py",
         "hardshrink.py",
         "sparsemax.py",
+        "tanhshrink.py",
     ],
     data = [
         "//tensorflow_addons/custom_ops/activations:_activation_ops.so",
@@ -50,6 +51,19 @@ py_test(
         "hardshrink_test.py",
     ],
     main = "hardshrink_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":activations",
+    ],
+)
+
+py_test(
+    name = "tanhshrink_test",
+    size = "medium",
+    srcs = [
+        "tanhshrink_test.py",
+    ],
+    main = "tanhshrink_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":activations",
