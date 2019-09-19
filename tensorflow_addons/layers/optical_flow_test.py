@@ -19,7 +19,7 @@ from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
-from tensorflow_addons.layers.optical_flow import correlation_cost, CorrelationCost
+from tensorflow_addons.layers.optical_flow import CorrelationCost
 from tensorflow_addons.utils import test_utils
 
 
@@ -31,15 +31,13 @@ class CorrelationCostTest(tf.test.TestCase):
         input_a_op = tf.convert_to_tensor(input_a, dtype=tf.float32)
         input_b_op = tf.convert_to_tensor(input_b, dtype=tf.float32)
 
-        output = correlation_cost(
-            input_a_op,
-            input_b_op,
+        output = CorrelationCost(
             kernel_size=kernel_size,
             max_displacement=max_displacement,
             stride_1=stride_1,
             stride_2=stride_2,
             pad=pad,
-            data_format=data_format)
+            data_format=data_format)([input_a_op, input_b_op])
 
         return output
 
@@ -117,15 +115,13 @@ class CorrelationCostTest(tf.test.TestCase):
             input_b_op = tf.convert_to_tensor(input_b)
 
             def correlation_fn(input_a, input_b):
-                return correlation_cost(
-                    input_a,
-                    input_b,
+                return CorrelationCost(
                     kernel_size=kernel_size,
                     max_displacement=max_displacement,
                     stride_1=stride_1,
                     stride_2=stride_2,
                     pad=pad,
-                    data_format=data_format)
+                    data_format=data_format)([input_a, input_b])
 
             theoretical, numerical = tf.test.compute_gradient(
                 correlation_fn, [input_a_op, input_b_op])
