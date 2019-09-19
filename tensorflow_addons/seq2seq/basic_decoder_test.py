@@ -22,6 +22,7 @@ import numpy as np
 
 import tensorflow as tf
 
+from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import basic_decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
 from tensorflow_addons.utils import test_utils
@@ -690,6 +691,18 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
                                 eval_result["step_finished"])
             self.assertAllEqual(expected_step_next_inputs,
                                 eval_result["step_next_inputs"])
+
+    def testBasicDecoderWithAttentionWrapper(self):
+        units = 32
+        vocab_size = 1000
+        attention_mechanism = attention_wrapper.LuongAttention(units)
+        cell = tf.keras.layers.LSTMCell(units)
+        cell = attention_wrapper.AttentionWrapper(cell, attention_mechanism)
+        output_layer = tf.keras.layers.Dense(vocab_size)
+        sampler = sampler_py.TrainingSampler()
+        # BasicDecoder should accept a non initialized AttentionWrapper.
+        decoder = basic_decoder.BasicDecoder(
+            cell, sampler, output_layer=output_layer)
 
 
 if __name__ == "__main__":

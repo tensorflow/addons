@@ -26,6 +26,7 @@ limitations under the License.
 #include "tensorflow/core/util/tensor_format.h"
 
 namespace tensorflow {
+namespace addons {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
@@ -319,13 +320,15 @@ class CorrelationCostGradOp : public OpKernel {
 };
 
 // Register the CPU kernels.
-#define REGISTER_CORRELATIONCOST_OP_CPU(T)                                   \
-  REGISTER_KERNEL_BUILDER(                                                   \
-      Name("CorrelationCost").Device(DEVICE_CPU).TypeConstraint<T>("T"),     \
-      CorrelationCostOp<CPUDevice, T>)                                       \
-  REGISTER_KERNEL_BUILDER(                                                   \
-      Name("CorrelationCostGrad").Device(DEVICE_CPU).TypeConstraint<T>("T"), \
-      CorrelationCostGradOp<CPUDevice, T>)
+#define REGISTER_CORRELATIONCOST_OP_CPU(T)                   \
+  REGISTER_KERNEL_BUILDER(Name("Addons>CorrelationCost")     \
+                              .Device(DEVICE_CPU)            \
+                              .TypeConstraint<T>("T"),       \
+                          CorrelationCostOp<CPUDevice, T>)   \
+  REGISTER_KERNEL_BUILDER(Name("Addons>CorrelationCostGrad") \
+                              .Device(DEVICE_CPU)            \
+                              .TypeConstraint<T>("T"),       \
+                          CorrelationCostGradOp<CPUDevice, T>)
 
 TF_CALL_float(REGISTER_CORRELATIONCOST_OP_CPU);
 #undef REGISTER_CORRELATIONCOST_OP_CPU
@@ -333,17 +336,20 @@ TF_CALL_float(REGISTER_CORRELATIONCOST_OP_CPU);
 // Register the GPU kernels.
 #if GOOGLE_CUDA
 
-#define REGISTER_CORRELATIONCOST_OP_GPU(T)                                   \
-  REGISTER_KERNEL_BUILDER(                                                   \
-      Name("CorrelationCost").Device(DEVICE_GPU).TypeConstraint<T>("T"),     \
-      CorrelationCostOp<GPUDevice, T>)                                       \
-  REGISTER_KERNEL_BUILDER(                                                   \
-      Name("CorrelationCostGrad").Device(DEVICE_GPU).TypeConstraint<T>("T"), \
-      CorrelationCostGradOp<GPUDevice, T>)
+#define REGISTER_CORRELATIONCOST_OP_GPU(T)                   \
+  REGISTER_KERNEL_BUILDER(Name("Addons>CorrelationCost")     \
+                              .Device(DEVICE_GPU)            \
+                              .TypeConstraint<T>("T"),       \
+                          CorrelationCostOp<GPUDevice, T>)   \
+  REGISTER_KERNEL_BUILDER(Name("Addons>CorrelationCostGrad") \
+                              .Device(DEVICE_GPU)            \
+                              .TypeConstraint<T>("T"),       \
+                          CorrelationCostGradOp<GPUDevice, T>)
 
 TF_CALL_float(REGISTER_CORRELATIONCOST_OP_GPU);
 #undef REGISTER_CORRELATIONCOST_OP_GPU
 
 #endif  // GOOGLE_CUDA
 
+}  // end namespace addons
 }  // end namespace tensorflow

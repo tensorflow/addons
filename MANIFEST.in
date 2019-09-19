@@ -1,1 +1,2 @@
 recursive-include tensorflow_addons/ *.so
+include docs/*
