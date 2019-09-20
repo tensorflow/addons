@@ -18,15 +18,16 @@ limitations under the License.
 #include "tensorflow/core/framework/shape_inference.h"
 
 namespace tensorflow {
+namespace addons {
 
-REGISTER_OP("Gelu")
+REGISTER_OP("Addons>Gelu")
     .Input("features: T")
     .Output("activations: T")
     .Attr("T: {half, float, double}")
     .Attr("approximate: bool = true")
     .SetShapeFn(shape_inference::UnchangedShape);
 
-REGISTER_OP("GeluGrad")
+REGISTER_OP("Addons>GeluGrad")
     .Input("gradients: T")
     .Input("features: T")
     .Output("backprops: T")
@@ -34,4 +35,5 @@ REGISTER_OP("GeluGrad")
     .Attr("approximate: bool = true")
     .SetShapeFn(shape_inference::MergeBothInputsShapeFn);
 
+}  // end namespace addons
 }  // namespace tensorflow

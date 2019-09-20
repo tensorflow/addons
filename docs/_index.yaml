@@ -1,0 +1,77 @@
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ==============================================================================
+book_path: /addons/_book.yaml
+project_path: /addons/_project.yaml
+description: <!--no description-->
+landing_page:
+  custom_css_path: /site-assets/css/style.css
+  rows:
+    - heading: TensorFlow Addons provides useful extra functionality for TensorFlow 2.0 maintained by SIG-addons
+      items:
+        - classname: devsite-landing-row-50
+          description: >
+            TensorFlow Addons is a repository of contributions that conform to
+            well-established API patterns, but implement new functionality
+            not available in core TensorFlow. TensorFlow natively supports
+            a large number of operators, layers, metrics, losses, and
+            optimizers. However, in a fast moving field like ML, there are many
+            interesting new developments that cannot be integrated into core
+            TensorFlow (because their broad applicability is not yet clear, or
+            it is mostly used by a smaller subset of the community).
+          code_block: |
+            <pre class = "prettyprint">
+            import tensorflow as tf
+            import tensorflow_addons as tfa
+
+            # Load MNIST dataset as NumPy arrays
+            dataset = {}
+            num_validation = 10000
+            (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
+
+            # Preprocess the data
+            x_train = x_train.reshape(-1, 784).astype('float32') / 255
+            x_test = x_test.reshape(-1, 784).astype('float32') / 255
+
+            # Compile the model
+            model.compile(
+                optimizer=tfa.optimizers.LazyAdam(0.001),  # Utilize TFA optimizer
+                loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+                metrics=['accuracy'])
+
+            # Train the network
+            history = model.fit(
+                x_train,
+                y_train,
+                batch_size=24,
+                epochs=10)
+            </pre>
+            {% dynamic if request.tld != 'cn' %}
+            <a class="colab-button" target="_blank" href="https://colab.research.google.com/github/tensorflow/addons/blob/master/docs/tutorials/optimizers_lazyadam.ipynb">Run in a <span>Notebook</span></a>
+            {% dynamic endif %}
+    - classname: devsite-landing-row-cards
+      items:
+        - heading: "Introducing TensorFlow Addons"
+          image_path: /resources/images/tf-logo-card-16x9.png
+          path: https://medium.com/tensorflow/introducing-tensorflow-addons-6131a50a3dcf
+          buttons:
+            - label: "Read on TensorFlow blog"
+              path: https://medium.com/tensorflow/introducing-tensorflow-addons-6131a50a3dcf
+        - heading: "TensorFlow Addons on GitHub"
+          image_path: /resources/images/github-card-16x9.png
+          path: https://github.com/tensorflow/addons
+          buttons:
+            - label: "View on GitHub"
+              path: https://github.com/tensorflow/addons

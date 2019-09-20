@@ -30,7 +30,7 @@ from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 _beam_search_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/seq2seq/_beam_search_ops.so"))
-gather_tree = _beam_search_ops_so.gather_tree
+gather_tree = _beam_search_ops_so.addons_gather_tree
 
 
 class BeamSearchDecoderState(
@@ -762,7 +762,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
             parent_ids=tf.int32)
 
     def call(self,
-             embeddning,
+             embedding,
              start_tokens,
              end_token,
              initial_state,
@@ -780,7 +780,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
             parallel_iterations=self.parallel_iterations,
             swap_memory=self.swap_memory,
             training=training,
-            decoder_init_input=embeddning,
+            decoder_init_input=embedding,
             decoder_init_kwargs=init_kwargs)
 
 

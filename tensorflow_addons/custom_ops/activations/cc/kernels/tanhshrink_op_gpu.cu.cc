@@ -13,27 +13,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/core/framework/common_shape_fns.h"
-#include "tensorflow/core/framework/op.h"
-#include "tensorflow/core/framework/shape_inference.h"
+#if GOOGLE_CUDA
+
+#define EIGEN_USE_GPU
+
+#include "tensorflow_addons/custom_ops/activations/cc/kernels/tanhshrink_op.h"
+#include "tensorflow/core/framework/register_types.h"
+#include "third_party/eigen3/Eigen/Core"
 
 namespace tensorflow {
+namespace addons {
 
-REGISTER_OP("Addons>Hardshrink")
-    .Input("features: T")
-    .Output("activations: T")
-    .Attr("T: {half, float, double}")
-    .Attr("lower: float = -1.0")
-    .Attr("upper: float = 1.0")
-    .SetShapeFn(shape_inference::UnchangedShape);
+using GPUDevice = Eigen::GpuDevice;
 
-REGISTER_OP("Addons>HardshrinkGrad")
-    .Input("gradients: T")
-    .Input("features: T")
-    .Output("backprops: T")
-    .Attr("T: {half, float, double}")
-    .Attr("lower: float = -1.0")
-    .Attr("upper: float = 1.0")
-    .SetShapeFn(shape_inference::MergeBothInputsShapeFn);
+#define DEFINE_GPU_KERNELS(T)                        \
+  template struct functor::Tanhshrink<GPUDevice, T>; \
+  template struct functor::TanhshrinkGrad<GPUDevice, T>;
 
+TF_CALL_GPU_NUMBER_TYPES(DEFINE_GPU_KERNELS);
+
+}  // namespace addons
 }  // namespace tensorflow
+
+#endif  // GOOGLE_CUDA

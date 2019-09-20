@@ -11,14 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 # ==============================================================================
-"""A module containing activation routines."""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-from tensorflow_addons.activations.gelu import gelu
-from tensorflow_addons.activations.hardshrink import hardshrink
-from tensorflow_addons.activations.sparsemax import sparsemax
-from tensorflow_addons.activations.tanhshrink import tanhshrink
+name: TensorFlow Addons
+breadcrumb_name: Addons
+home_url: /addons/
+parent_project_metadata_path: /_project.yaml
+description: >
+  "TensorFlow Addons is a library of useful extra functionality for
+  TensorFlow 2.0 maintained by SIG-addons"
+use_site_branding: true
+hide_from_products_list: true
+content_license: cc-apache
+include: /_project_included.yaml

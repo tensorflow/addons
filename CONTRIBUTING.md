@@ -17,9 +17,9 @@ let us give you advice on the proposed changes. If the changes are
 minor, then feel free to make them without discussion.
 
 Want to contribute but not sure of what? Here are a few suggestions:
-1. Add a new example or tutorial. Located in [`examples/`](examples),
+1. Add a new tutorial. Located in [`docs/tutorials/`](docs/tutorials),
   these are a great way to familiarize yourself and others with TF-Addons. See 
-  [the guidelines](examples/README.md) for more information on how to add 
+  [the guidelines](docs/tutorials/README.md) for more information on how to add 
   examples.
 2. Solve an [existing issue](https://github.com/tensorflow/addons/issues).
   These range from low-level software bugs to higher-level design problems.
