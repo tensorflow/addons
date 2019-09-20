@@ -40,7 +40,7 @@ Additional layers that conform to Keras API.
 
 ## Classes
 
-[`class CorrelationCost`](../tfa/layers/CorrelationCost.md)
+[`class CorrelationCost`](../tfa/layers/CorrelationCost.md): Correlation Cost Layer.
 
 [`class GeLU`](../tfa/layers/GeLU.md): Gaussian Error Linear Unit.
 

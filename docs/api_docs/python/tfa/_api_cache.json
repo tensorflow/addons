@@ -2253,7 +2253,6 @@
     "tfa.layers.optical_flow.CorrelationCost.weights": true, 
     "tfa.layers.optical_flow.CorrelationCost.with_name_scope": true, 
     "tfa.layers.optical_flow.absolute_import": true, 
-    "tfa.layers.optical_flow.correlation_cost": false, 
     "tfa.layers.optical_flow.division": true, 
     "tfa.layers.optical_flow.print_function": true, 
     "tfa.layers.poincare": false, 

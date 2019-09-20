@@ -24,9 +24,5 @@ Tensorflow op performing correlation cost operation.
 
 ## Classes
 
-[`class CorrelationCost`](../../tfa/layers/CorrelationCost.md)
-
-## Functions
-
-[`correlation_cost(...)`](../../tfa/layers/optical_flow/correlation_cost.md): Correlation Cost Volume computation.
+[`class CorrelationCost`](../../tfa/layers/CorrelationCost.md): Correlation Cost Layer.
 
