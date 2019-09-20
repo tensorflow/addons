@@ -155,7 +155,7 @@ class CorrelationCostTest(tf.test.TestCase):
 
             x = [input_a, input_b]
             y = layer(x)
-            model = tf.python.keras.models.Model(x, y)
+            model = tf.keras.models.Model(x, y)
             actual_output = model.predict([val_a, val_b])
 
             expected_output_type = 'float32'
