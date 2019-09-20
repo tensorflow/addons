@@ -26,10 +26,10 @@ namespace addons {
 using CPUDevice = Eigen::ThreadPoolDevice;
 
 #define REGISTER_LISHT_KERNELS(type)                                         \
-  REGISTER_KERNEL_BUILDER(                                                  \
+  REGISTER_KERNEL_BUILDER(                                                   \
       Name("Addons>Lisht").Device(DEVICE_CPU).TypeConstraint<type>("T"),     \
       LishtOp<CPUDevice, type>);                                             \
-  REGISTER_KERNEL_BUILDER(                                                  \
+  REGISTER_KERNEL_BUILDER(                                                   \
       Name("Addons>LishtGrad").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
       LishtGradOp<CPUDevice, type>);
 
@@ -45,15 +45,15 @@ using GPUDevice = Eigen::GpuDevice;
 namespace functor {
 #define DECLARE_GPU_SPEC(T)                                          \
   template <>                                                        \
-  void Lisht<GPUDevice, T>::operator()(                               \
+  void Lisht<GPUDevice, T>::operator()(                              \
       const GPUDevice& d, typename TTypes<T>::ConstTensor features,  \
-      typename TTypes<T>::Tensor activations);     \
-  extern template struct Lisht<GPUDevice, T>;                         \
+      typename TTypes<T>::Tensor activations);                       \
+  extern template struct Lisht<GPUDevice, T>;                        \
                                                                      \
   template <>                                                        \
-  void LishtGrad<GPUDevice, T>::operator()(                           \
+  void LishtGrad<GPUDevice, T>::operator()(                          \
       const GPUDevice& d, typename TTypes<T>::ConstTensor gradients, \
-      typename TTypes<T>::ConstTensor features,    \
+      typename TTypes<T>::ConstTensor features,                      \
       typename TTypes<T>::Tensor backprops);                         \
   extern template struct LishtGrad<GPUDevice, T>;
 
@@ -63,10 +63,10 @@ TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
 
 // Registration of the GPU implementations.
 #define REGISTER_LISHT_GPU_KERNELS(type)                                     \
-  REGISTER_KERNEL_BUILDER(                                                  \
+  REGISTER_KERNEL_BUILDER(                                                   \
       Name("Addons>Lisht").Device(DEVICE_GPU).TypeConstraint<type>("T"),     \
       LishtOp<GPUDevice, type>);                                             \
-  REGISTER_KERNEL_BUILDER(                                                  \
+  REGISTER_KERNEL_BUILDER(                                                   \
       Name("Addons>LishtGrad").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
       LishtGradOp<GPUDevice, type>);
 

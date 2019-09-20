@@ -61,8 +61,7 @@ class LishtTest(tf.test.TestCase, parameterized.TestCase):
         x = tf.constant([-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0], dtype=dtype)
 
         theoretical, numerical = tf.test.compute_gradient(lisht, [x])
-        self.assertAllCloseAccordingToType(
-            theoretical, numerical, atol=1e-4)
+        self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
 
     def test_unknown_shape(self):
         fn = lisht.get_concrete_function(

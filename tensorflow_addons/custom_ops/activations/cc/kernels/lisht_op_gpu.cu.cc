@@ -26,7 +26,7 @@ namespace addons {
 
 using GPUDevice = Eigen::GpuDevice;
 
-#define DEFINE_GPU_KERNELS(T)                  \
+#define DEFINE_GPU_KERNELS(T)                   \
   template struct functor::Lisht<GPUDevice, T>; \
   template struct functor::LishtGrad<GPUDevice, T>;
 

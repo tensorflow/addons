@@ -50,8 +50,8 @@ struct LishtGrad {
   void operator()(const Device& d, typename TTypes<T>::ConstTensor gradients,
                   typename TTypes<T>::ConstTensor features,
                   typename TTypes<T>::Tensor backprops) {
-      const auto g = features.tanh();
-      backprops.device(d) = gradients * (features + g - features * g.square());
+    const auto g = features.tanh();
+    backprops.device(d) = gradients * (features + g - features * g.square());
   }
 };
 
@@ -76,8 +76,7 @@ class LishtGradOp : public BinaryElementWiseOp<T, LishtGradOp<Device, T>> {
  public:
   explicit LishtGradOp(OpKernelConstruction* context)
       : BinaryElementWiseOp<T, LishtGradOp<Device, T>>::BinaryElementWiseOp(
-            context) {
-  }
+            context) {}
 
   void OperateNoTemplate(OpKernelContext* context, const Tensor& g,
                          const Tensor& a, Tensor* output);
@@ -91,8 +90,8 @@ class LishtGradOp : public BinaryElementWiseOp<T, LishtGradOp<Device, T>> {
 
 template <typename Device, typename T>
 void LishtGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
-                                              const Tensor& g, const Tensor& a,
-                                              Tensor* output) {
+                                               const Tensor& g, const Tensor& a,
+                                               Tensor* output) {
   functor::LishtGrad<Device, T> functor;
   functor(context->eigen_device<Device>(), g.flat<T>(), a.flat<T>(),
           output->flat<T>());
