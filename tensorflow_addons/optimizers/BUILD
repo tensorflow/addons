@@ -6,6 +6,7 @@ py_library(
     name = "optimizers",
     srcs = [
         "__init__.py",
+        "conditional_gradient.py",
         "lazy_adam.py",
         "lookahead.py",
         "moving_average.py",
@@ -15,6 +16,19 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/utils",
+    ],
+)
+
+py_test(
+    name = "conditional_gradient_test",
+    size = "small",
+    srcs = [
+        "conditional_gradient_test.py",
+    ],
+    main = "conditional_gradient_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":optimizers",
     ],
 )
 
