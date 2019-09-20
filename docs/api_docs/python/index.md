@@ -62,7 +62,6 @@
 *  <a href="./tfa/layers/InstanceNormalization.md"><code>tfa.layers.normalizations.InstanceNormalization</code></a>
 *  <a href="./tfa/layers/optical_flow.md"><code>tfa.layers.optical_flow</code></a>
 *  <a href="./tfa/layers/CorrelationCost.md"><code>tfa.layers.optical_flow.CorrelationCost</code></a>
-*  <a href="./tfa/layers/optical_flow/correlation_cost.md"><code>tfa.layers.optical_flow.correlation_cost</code></a>
 *  <a href="./tfa/layers/poincare.md"><code>tfa.layers.poincare</code></a>
 *  <a href="./tfa/layers/PoincareNormalize.md"><code>tfa.layers.poincare.PoincareNormalize</code></a>
 *  <a href="./tfa/layers/sparsemax.md"><code>tfa.layers.sparsemax</code></a>

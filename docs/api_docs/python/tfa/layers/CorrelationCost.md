@@ -51,7 +51,7 @@
 <table class="tfo-notebook-buttons tfo-api" align="left">
 
 <td>
-  <a target="_blank" href="https://github.com/tensorflow/addons/tree/r0.5/tensorflow_addons/layers/optical_flow.py#L143-L213">
+  <a target="_blank" href="https://github.com/tensorflow/addons/tree/r0.5/tensorflow_addons/layers/optical_flow.py#L143-L234">
     <img src="https://www.tensorflow.org/images/GitHub-Mark-32px.png" />
     View source on GitHub
   </a>
@@ -61,7 +61,7 @@
 
 ## Class `CorrelationCost`
 
-
+Correlation Cost Layer.
 
 
 
@@ -72,10 +72,29 @@
 
 <!-- Placeholder for "Used in" -->
 
+This layer implements the correlation operation from FlowNet Learning
+Optical Flow with Convolutional Networks (Fischer et al.):
+https://arxiv.org/abs/1504.06
+
+#### Args:
+
+
+* <b>`kernel_size`</b>: An integer specifying the height and width of the
+    patch used to compute the per-patch costs.
+* <b>`max_displacement`</b>: An integer specifying the maximum search radius
+    for each position.
+* <b>`stride_1`</b>: An integer specifying the stride length in the input.
+* <b>`stride_2`</b>: An integer specifying the stride length in the patch.
+* <b>`pad`</b>: An integer specifying the paddings in height and width.
+* <b>`data_format`</b>: Specifies the data format.
+    Possible values are:
+        "channels_last" float [batch, height, width, channels]
+        "channels_first" float [batch, channels, height, width]
+        Defaults to `"channels_last"`.
 
 <h2 id="__init__"><code>__init__</code></h2>
 
-<a target="_blank" href="https://github.com/tensorflow/addons/tree/r0.5/tensorflow_addons/layers/optical_flow.py#L144-L158">View source</a>
+<a target="_blank" href="https://github.com/tensorflow/addons/tree/r0.5/tensorflow_addons/layers/optical_flow.py#L165-L179">View source</a>
 
 ``` python
 __init__(
@@ -390,7 +409,7 @@ Output tensor(s).
 
 <h3 id="build"><code>build</code></h3>
 
-<a target="_blank" href="https://github.com/tensorflow/addons/tree/r0.5/tensorflow_addons/layers/optical_flow.py#L160-L163">View source</a>
+<a target="_blank" href="https://github.com/tensorflow/addons/tree/r0.5/tensorflow_addons/layers/optical_flow.py#L181-L184">View source</a>
 
 ``` python
 build(input_shape)
@@ -426,7 +445,7 @@ None or a tensor (or list of tensors,
 
 <h3 id="compute_output_shape"><code>compute_output_shape</code></h3>
 
-<a target="_blank" href="https://github.com/tensorflow/addons/tree/r0.5/tensorflow_addons/layers/optical_flow.py#L182-L200">View source</a>
+<a target="_blank" href="https://github.com/tensorflow/addons/tree/r0.5/tensorflow_addons/layers/optical_flow.py#L203-L221">View source</a>
 
 ``` python
 compute_output_shape(input_shape)
@@ -486,7 +505,7 @@ A layer instance.
 
 <h3 id="get_config"><code>get_config</code></h3>
 
-<a target="_blank" href="https://github.com/tensorflow/addons/tree/r0.5/tensorflow_addons/layers/optical_flow.py#L202-L213">View source</a>
+<a target="_blank" href="https://github.com/tensorflow/addons/tree/r0.5/tensorflow_addons/layers/optical_flow.py#L223-L234">View source</a>
 
 ``` python
 get_config()
