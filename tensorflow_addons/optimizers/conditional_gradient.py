@@ -32,13 +32,15 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
 
     ```
     variable -= (1-learning_rate)
-        * (variable + l_ambda * gradient / frobenius_norm(gradient))
+        * (variable + lambda_ * gradient / frobenius_norm(gradient))
     ```
+
+    Note that we choose "lambda_" here to refer to the constraint "lambda" in the paper.
     """
 
     def __init__(self,
                  learning_rate,
-                 l_ambda,
+                 lambda_,
                  use_locking=False,
                  name='ConditionalGradient',
                  **kwargs):
@@ -47,20 +49,20 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
         Args:
             learning_rate: A `Tensor` or a floating point value.
                         The learning rate.
-            l_ambda: A `Tensor` or a floating point value. The constraint.
+            lambda_: A `Tensor` or a floating point value. The constraint.
             use_locking: If `True` use locks for update operations.
             name: Optional name prefix for the operations created when
                 applying gradients.  Defaults to 'ConditionalGradient'
         """
         super(ConditionalGradient, self).__init__(name=name, **kwargs)
         self._set_hyper('learning_rate', kwargs.get('lr', learning_rate))
-        self._set_hyper('l_ambda', l_ambda)
+        self._set_hyper('lambda_', lambda_)
         self._set_hyper('use_locking', use_locking)
 
     def get_config(self):
         config = {
             'learning_rate': self._serialize_hyperparameter('learning_rate'),
-            'l_ambda': self._serialize_hyperparameter('l_ambda'),
+            'lambda_': self._serialize_hyperparameter('lambda_'),
             'use_locking': self._serialize_hyperparameter('use_locking')
         }
         base_config = super(ConditionalGradient, self).get_config()
@@ -75,8 +77,8 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
             var_device, var_dtype, apply_state)
         apply_state[(var_device, var_dtype)]['learning_rate'] = tf.identity(
             self._get_hyper('learning_rate', var_dtype))
-        apply_state[(var_device, var_dtype)]['l_ambda'] = tf.identity(
-            self._get_hyper('l_ambda', var_dtype))
+        apply_state[(var_device, var_dtype)]['lambda_'] = tf.identity(
+            self._get_hyper('lambda_', var_dtype))
 
     def _resource_apply_dense(self, grad, var, apply_state=None):
         def frobenius_norm(m):
@@ -88,14 +90,13 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
         norm = tf.convert_to_tensor(
             frobenius_norm(grad), name='norm', dtype=var.dtype.base_dtype)
         lr = coefficients['learning_rate']
-        l_ambda = coefficients['l_ambda']
+        lambda_ = coefficients['lambda_']
         var_update_tensor = (
-            tf.math.multiply(var, lr) - (1 - lr) * l_ambda * grad / norm)
+            tf.math.multiply(var, lr) - (1 - lr) * lambda_ * grad / norm)
         var_update_kwargs = {
             'resource': var.handle,
             'value': var_update_tensor,
         }
-
         var_update_op = tf.raw_ops.AssignVariableOp(**var_update_kwargs)
         return tf.group(var_update_op)
 
@@ -109,10 +110,10 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
         norm = tf.convert_to_tensor(
             frobenius_norm(grad), name='norm', dtype=var.dtype.base_dtype)
         lr = coefficients['learning_rate']
-        l_ambda = coefficients['l_ambda']
+        lambda_ = coefficients['lambda_']
         var_slice = tf.gather(var, indices)
         var_update_value = (
-            tf.math.multiply(var_slice, lr) - (1 - lr) * l_ambda * grad / norm)
+            tf.math.multiply(var_slice, lr) - (1 - lr) * lambda_ * grad / norm)
         var_update_kwargs = {
             'resource': var.handle,
             'indices': indices,

@@ -26,8 +26,8 @@ import conditional_gradient as cg_lib
 
 
 class ConditionalGradientTest(tf.test.TestCase):
-    def _update_conditional_gradient_numpy(self, var, norm, g, lr, l_ambda):
-        var = var * lr - (1 - lr) * l_ambda * g / norm
+    def _update_conditional_gradient_numpy(self, var, norm, g, lr, lambda_):
+        var = var * lr - (1 - lr) * lambda_ * g / norm
         return var
 
     def doTestBasic(self, use_resource=False, use_callable_params=False):
@@ -43,12 +43,12 @@ class ConditionalGradientTest(tf.test.TestCase):
             norm0 = tf.math.reduce_sum(grads0**2)**0.5
             norm1 = tf.math.reduce_sum(grads1**2)**0.5
             learning_rate = lambda: 0.5
-            l_ambda = lambda: 0.01
+            lambda_ = lambda: 0.01
             if not use_callable_params:
                 learning_rate = learning_rate()
-                l_ambda = l_ambda()
+                lambda_ = lambda_()
             cg_opt = cg_lib.ConditionalGradient(
-                learning_rate=learning_rate, l_ambda=l_ambda)
+                learning_rate=learning_rate, lambda_=lambda_)
             cg_update = cg_opt.apply_gradients(
                 zip([grads0, grads1], [var0, var1]))
 
@@ -176,9 +176,9 @@ class ConditionalGradientTest(tf.test.TestCase):
 
             # pylint: enable=cell-var-from-loop
             learning_rate = 0.1
-            l_ambda = 0.1
+            lambda_ = 0.1
             opt = cg_lib.ConditionalGradient(
-                learning_rate=learning_rate, l_ambda=l_ambda)
+                learning_rate=learning_rate, lambda_=lambda_)
             cg_op = opt.minimize(loss, var_list=[var0])
             self.evaluate(tf.compat.v1.global_variables_initializer())
 
@@ -189,9 +189,9 @@ class ConditionalGradientTest(tf.test.TestCase):
             norm0 = self.evaluate(norm0)
             self.assertAllCloseAccordingToType([[
                 1.0 * learning_rate -
-                (1 - learning_rate) * l_ambda * grads0_0 / norm0,
+                (1 - learning_rate) * lambda_ * grads0_0 / norm0,
                 2.0 * learning_rate -
-                (1 - learning_rate) * l_ambda * grads0_1 / norm0
+                (1 - learning_rate) * lambda_ * grads0_1 / norm0
             ]], self.evaluate(var0))
 
     @test_utils.run_in_graph_and_eager_modes(reset_test=True)
@@ -208,9 +208,9 @@ class ConditionalGradientTest(tf.test.TestCase):
         norm0 = tf.math.reduce_sum(grads0**2)**0.5
 
         learning_rate = 0.1
-        l_ambda = 0.1
+        lambda_ = 0.1
         opt = cg_lib.ConditionalGradient(
-            learning_rate=learning_rate, l_ambda=l_ambda)
+            learning_rate=learning_rate, lambda_=lambda_)
         cg_op = opt.minimize(loss, var_list=[var0])
         self.evaluate(tf.compat.v1.global_variables_initializer())
 
@@ -220,8 +220,8 @@ class ConditionalGradientTest(tf.test.TestCase):
         self.assertAllCloseAccordingToType(
             [[1, 1],
              [
-                 learning_rate * 1 - (1 - learning_rate) * l_ambda * 1 / norm0,
-                 learning_rate * 1 - (1 - learning_rate) * l_ambda * 1 / norm0
+                 learning_rate * 1 - (1 - learning_rate) * lambda_ * 1 / norm0,
+                 learning_rate * 1 - (1 - learning_rate) * lambda_ * 1 / norm0
              ]], self.evaluate(var0))
 
     @test_utils.run_in_graph_and_eager_modes(reset_test=True)
@@ -235,7 +235,7 @@ class ConditionalGradientTest(tf.test.TestCase):
                 norm0 = tf.math.reduce_sum(grads0**2)**0.5
                 norm1 = tf.math.reduce_sum(grads1**2)**0.5
                 cg_opt = cg_lib.ConditionalGradient(
-                    learning_rate=tf.constant(0.5), l_ambda=tf.constant(0.01))
+                    learning_rate=tf.constant(0.5), lambda_=tf.constant(0.01))
                 cg_update = cg_opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
                 if not tf.executing_eagerly():
@@ -299,7 +299,7 @@ class ConditionalGradientTest(tf.test.TestCase):
 
         Return values been generated from the dist-belief
         conditional_gradient unittest, running with a learning rate of 0.1
-        and a l_ambda of 0.1.
+        and a lambda_ of 0.1.
 
         These values record how a parameter vector of size 10, initialized
         with 0.0, gets updated with 10 consecutive conditional_gradient
@@ -404,7 +404,7 @@ class ConditionalGradientTest(tf.test.TestCase):
             num_samples = len(db_grad)
             var0 = tf.Variable([0.0] * num_samples)
             grads0 = tf.constant([0.0] * num_samples)
-            cg_opt = cg_lib.ConditionalGradient(learning_rate=0.1, l_ambda=0.1)
+            cg_opt = cg_lib.ConditionalGradient(learning_rate=0.1, lambda_=0.1)
             if not tf.executing_eagerly():
                 cg_update = cg_opt.apply_gradients(zip([grads0], [var0]))
                 self.evaluate(tf.compat.v1.global_variables_initializer())
@@ -436,9 +436,9 @@ class ConditionalGradientTest(tf.test.TestCase):
                 norm1 = tf.math.reduce_sum(tf.math.multiply(grads1,
                                                             grads1))**0.5
                 learning_rate = 0.1
-                l_ambda = 0.1
+                lambda_ = 0.1
                 cg_opt = cg_lib.ConditionalGradient(
-                    learning_rate=learning_rate, l_ambda=l_ambda)
+                    learning_rate=learning_rate, lambda_=lambda_)
                 cg_update = cg_opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
 
@@ -471,22 +471,22 @@ class ConditionalGradientTest(tf.test.TestCase):
                 norm1 = self.evaluate(norm1)
                 self.assertAllCloseAccordingToType(
                     np.array([
-                        0 - (1 - learning_rate) * l_ambda * 0 / norm0,
-                        0 - (1 - learning_rate) * l_ambda * 0 / norm0
+                        0 - (1 - learning_rate) * lambda_ * 0 / norm0,
+                        0 - (1 - learning_rate) * lambda_ * 0 / norm0
                     ]),
                     self.evaluate(var0)[0])
                 self.assertAllCloseAccordingToType(
                     np.array([
-                        0 - (1 - learning_rate) * l_ambda * 0.1 / norm0,
-                        0 - (1 - learning_rate) * l_ambda * 0.1 / norm0
+                        0 - (1 - learning_rate) * lambda_ * 0.1 / norm0,
+                        0 - (1 - learning_rate) * lambda_ * 0.1 / norm0
                     ]),
                     self.evaluate(var0)[1])
                 self.assertAllCloseAccordingToType(
                     np.array([
                         1.0 * learning_rate -
-                        (1 - learning_rate) * l_ambda * 0.01 / norm1,
+                        (1 - learning_rate) * lambda_ * 0.01 / norm1,
                         1.0 * learning_rate -
-                        (1 - learning_rate) * l_ambda * 0.01 / norm1
+                        (1 - learning_rate) * lambda_ * 0.01 / norm1
                     ]),
                     self.evaluate(var1)[2])
                 # Step 2: the conditional_gradient contain the
@@ -498,22 +498,22 @@ class ConditionalGradientTest(tf.test.TestCase):
                 # Check that the parameters have been updated.
                 self.assertAllClose(np.array([0, 0]), self.evaluate(var0)[0])
                 self.assertAllCloseAccordingToType(
-                    np.array([(0 - (1 - learning_rate) * l_ambda * 0.1 / norm0)
+                    np.array([(0 - (1 - learning_rate) * lambda_ * 0.1 / norm0)
                               * learning_rate -
-                              (1 - learning_rate) * l_ambda * 0.1 / norm0,
-                              (0 - (1 - learning_rate) * l_ambda * 0.1 / norm0)
+                              (1 - learning_rate) * lambda_ * 0.1 / norm0,
+                              (0 - (1 - learning_rate) * lambda_ * 0.1 / norm0)
                               * learning_rate -
-                              (1 - learning_rate) * l_ambda * 0.1 / norm0]),
+                              (1 - learning_rate) * lambda_ * 0.1 / norm0]),
                     self.evaluate(var0)[1])
                 self.assertAllCloseAccordingToType(
                     np.array([(1.0 * learning_rate -
-                               (1 - learning_rate) * l_ambda * 0.01 / norm1) *
+                               (1 - learning_rate) * lambda_ * 0.01 / norm1) *
                               learning_rate -
-                              (1 - learning_rate) * l_ambda * 0.01 / norm1,
+                              (1 - learning_rate) * lambda_ * 0.01 / norm1,
                               (1.0 * learning_rate -
-                               (1 - learning_rate) * l_ambda * 0.01 / norm1) *
+                               (1 - learning_rate) * lambda_ * 0.01 / norm1) *
                               learning_rate -
-                              (1 - learning_rate) * l_ambda * 0.01 / norm1]),
+                              (1 - learning_rate) * lambda_ * 0.01 / norm1]),
                     self.evaluate(var1)[2])
 
     @test_utils.run_in_graph_and_eager_modes(reset_test=True)
@@ -527,9 +527,9 @@ class ConditionalGradientTest(tf.test.TestCase):
                 norm0 = tf.math.reduce_sum(grads0**2)**0.5
                 norm1 = tf.math.reduce_sum(grads1**2)**0.5
                 learning_rate = 0.1
-                l_ambda = 0.1
+                lambda_ = 0.1
                 cg_opt = cg_lib.ConditionalGradient(
-                    learning_rate=learning_rate, l_ambda=l_ambda)
+                    learning_rate=learning_rate, lambda_=lambda_)
                 cg_update1 = cg_opt.apply_gradients(
                     zip([grads0, grads1], [var0, var1]))
                 cg_update2 = cg_opt.apply_gradients(
@@ -565,16 +565,16 @@ class ConditionalGradientTest(tf.test.TestCase):
                     self.assertAllCloseAccordingToType(
                         np.array([
                             1.0 * learning_rate -
-                            (1 - learning_rate) * l_ambda * 0.1 / norm0,
+                            (1 - learning_rate) * lambda_ * 0.1 / norm0,
                             2.0 * learning_rate -
-                            (1 - learning_rate) * l_ambda * 0.1 / norm0
+                            (1 - learning_rate) * lambda_ * 0.1 / norm0
                         ]), self.evaluate(var0))
                     self.assertAllCloseAccordingToType(
                         np.array([
                             3.0 * learning_rate -
-                            (1 - learning_rate) * l_ambda * 0.01 / norm1,
+                            (1 - learning_rate) * lambda_ * 0.01 / norm1,
                             4.0 * learning_rate -
-                            (1 - learning_rate) * l_ambda * 0.01 / norm1
+                            (1 - learning_rate) * lambda_ * 0.01 / norm1
                         ]), self.evaluate(var1))
 
                 # Step 2: the second conditional_gradient contain
@@ -584,23 +584,23 @@ class ConditionalGradientTest(tf.test.TestCase):
                 # Check that the parameters have been updated.
                 self.assertAllCloseAccordingToType(
                     np.array([(1.0 * learning_rate -
-                               (1 - learning_rate) * l_ambda * 0.1 / norm0) *
+                               (1 - learning_rate) * lambda_ * 0.1 / norm0) *
                               learning_rate -
-                              (1 - learning_rate) * l_ambda * 0.1 / norm0,
+                              (1 - learning_rate) * lambda_ * 0.1 / norm0,
                               (2.0 * learning_rate -
-                               (1 - learning_rate) * l_ambda * 0.1 / norm0) *
+                               (1 - learning_rate) * lambda_ * 0.1 / norm0) *
                               learning_rate -
-                              (1 - learning_rate) * l_ambda * 0.1 / norm0]),
+                              (1 - learning_rate) * lambda_ * 0.1 / norm0]),
                     self.evaluate(var0))
                 self.assertAllCloseAccordingToType(
                     np.array([(3.0 * learning_rate -
-                               (1 - learning_rate) * l_ambda * 0.01 / norm1) *
+                               (1 - learning_rate) * lambda_ * 0.01 / norm1) *
                               learning_rate -
-                              (1 - learning_rate) * l_ambda * 0.01 / norm1,
+                              (1 - learning_rate) * lambda_ * 0.01 / norm1,
                               (4.0 * learning_rate -
-                               (1 - learning_rate) * l_ambda * 0.01 / norm1) *
+                               (1 - learning_rate) * lambda_ * 0.01 / norm1) *
                               learning_rate -
-                              (1 - learning_rate) * l_ambda * 0.01 / norm1]),
+                              (1 - learning_rate) * lambda_ * 0.01 / norm1]),
                     self.evaluate(var1))
 
 

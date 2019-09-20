@@ -3,7 +3,7 @@
 ## Maintainers
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
-| conditional_gradient | Pengyu Kan | pkan2@wisc.edu |
+| conditional_gradient | Pengyu Kan, Vishnu Lokhande | pkan2@wisc.edu, lokhande@cs.wisc.edu |
 | lazy_adam | Saishruthi Swaminathan  | saishruthi.tn@gmail.com  |
 | moving_average | Dheeraj R. Reddy | dheeraj98reddy@gmail.com |
 | weight_decay_optimizers |  Phil Jund | ijund.phil@googlemail.com   |
