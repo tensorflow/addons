@@ -717,6 +717,13 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         self._start_tokens = tf.tile(
             tf.expand_dims(self._start_tokens, 1), [1, self._beam_width])
         self._start_inputs = self._embedding_fn(self._start_tokens)
+        
+        # We need to prevent the RNN cell from caching the dropout masks
+        # since they will have different shapes for a BasicDecoder
+        # and a BeamSearchDecoder sharing the same cell
+        if self._cell._cell.dropout > 0.0:
+            self._cell._cell.reset_dropout_mask()
+            self._cell._cell.reset_recurrent_dropout_mask()
 
         self._finished = tf.one_hot(
             tf.zeros([self._batch_size], dtype=tf.int32),
