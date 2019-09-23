@@ -25,40 +25,23 @@ from tensorflow_addons.activations import lisht
 from tensorflow_addons.utils import test_utils
 
 
-def _ref_lisht(x):
-    x = tf.convert_to_tensor(x)
-    return x * tf.tanh(x)
-
-
 @test_utils.run_all_in_graph_and_eager_modes
 class LishtTest(tf.test.TestCase, parameterized.TestCase):
     @parameterized.named_parameters(("float16", np.float16),
                                     ("float32", np.float32),
                                     ("float64", np.float64))
     def test_lisht(self, dtype):
-        x = (np.random.rand(2, 3, 4) * 5.0 - 2.5).astype(dtype)
-        self.assertAllCloseAccordingToType(lisht(x), _ref_lisht(x))
-
-    @parameterized.named_parameters(("float16", np.float16),
-                                    ("float32", np.float32),
-                                    ("float64", np.float64))
-    def test_gradients(self, dtype):
-        x = tf.constant([-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0], dtype=dtype)
-
-        with tf.GradientTape(persistent=True) as tape:
-            tape.watch(x)
-            y_ref = _ref_lisht(x)
-            y = lisht(x)
-        grad_ref = tape.gradient(y_ref, x)
-        grad = tape.gradient(y, x)
-        self.assertAllCloseAccordingToType(grad, grad_ref)
+        x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
+        expected_result = tf.constant(
+            [1.9280552, 0.7615942, 0.0, 0.7615942, 1.9280552], dtype=dtype)
+        self.assertAllCloseAccordingToType(lisht(x), expected_result)
 
     @parameterized.named_parameters(("float32", np.float32),
                                     ("float64", np.float64))
     def test_theoretical_gradients(self, dtype):
         # Only test theoretical gradients for float32 and float64
         # because of the instability of float16 while computing jacobian
-        x = tf.constant([-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0], dtype=dtype)
+        x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
 
         theoretical, numerical = tf.test.compute_gradient(lisht, [x])
         self.assertAllCloseAccordingToType(
@@ -73,10 +56,9 @@ class LishtTest(tf.test.TestCase, parameterized.TestCase):
             self.assertAllClose(fn(x), lisht(x))
 
     def test_serialization(self):
-        ref_fn = lisht
-        config = tf.keras.activations.serialize(ref_fn)
+        config = tf.keras.activations.serialize(lisht)
         fn = tf.keras.activations.deserialize(config)
-        self.assertEqual(fn, ref_fn)
+        self.assertEqual(fn, lisht)
 
     def test_serialization_with_layers(self):
         layer = tf.keras.layers.Dense(3, activation=lisht)
