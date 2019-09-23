@@ -51,7 +51,8 @@ struct LishtGrad {
                   typename TTypes<T>::ConstTensor features,
                   typename TTypes<T>::Tensor backprops) {
     const auto g = features.tanh();
-    backprops.device(d) = gradients * (g + features * (static_cast<T>(1.0) - g.square()));
+    backprops.device(d) =
+        gradients * (g + features * (static_cast<T>(1.0) - g.square()));
   }
 };
 
