@@ -12,14 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A module containing activation routines."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow_addons.activations.gelu import gelu
-from tensorflow_addons.activations.hardshrink import hardshrink
-from tensorflow_addons.activations.rrelu import rrelu
-from tensorflow_addons.activations.sparsemax import sparsemax
-from tensorflow_addons.activations.tanhshrink import tanhshrink
+import tensorflow as tf
+from tensorflow_addons.utils import keras_utils
+
+@keras_utils.register_keras_custom_object
+@tf.function
+def rrelu(x,lower=0.125, upper=0.3333333333333333):
+    """rrelu function.
+
+    Computes rrelu function:
+    `x if x > 0 else random(lower,upper)*x`.
+
+    Args:
+        x: A `Tensor`. Must be one of the following types:
+            `float16`, `float32`, `float64`.
+        lower: `float`, lower bound for random alpha.
+        upper: `float`, upper bound for random alpha.
+    Returns:
+        A `Tensor`. Has the same type as `x`.
+    """
+    x = tf.convert_to_tensor(x)
+    lower=tf.convert_to_tensor(x)
+    upper=tf.convert_to_tensor(x,dtype=lower.dtype)
+    alpha=tf.random.uniform([],lower,upper)
+    return tf.nn.leaky_relu(x,alpha,name='rrelu')

@@ -8,6 +8,7 @@ py_library(
         "__init__.py",
         "gelu.py",
         "hardshrink.py",
+        "rrelu.py",
         "sparsemax.py",
         "tanhshrink.py",
     ],
@@ -64,6 +65,19 @@ py_test(
         "tanhshrink_test.py",
     ],
     main = "tanhshrink_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":activations",
+    ],
+)
+
+py_test(
+    name = "rrelu_test",
+    size = "medium",
+    srcs = [
+        "rrelu_test.py",
+    ],
+    main = "rrelu_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":activations",
