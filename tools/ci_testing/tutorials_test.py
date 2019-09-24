@@ -17,7 +17,7 @@
 import testipynb
 import unittest
 
-NBDIR = 'examples'
+NBDIR = 'docs/tutorials'
 
 Test = testipynb.TestNotebooks(directory=NBDIR, timeout=2100)
 TestNotebooks = Test.get_tests()
