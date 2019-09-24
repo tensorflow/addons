@@ -46,10 +46,10 @@ def gelu(x, approximate=True):
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
-    return _activation_ops_so.gelu(x, approximate)
+    return _activation_ops_so.addons_gelu(x, approximate)
 
 
-@tf.RegisterGradient("Gelu")
+@tf.RegisterGradient("Addons>Gelu")
 def _gelu_grad(op, grad):
-    return _activation_ops_so.gelu_grad(grad, op.inputs[0],
-                                        op.get_attr("approximate"))
+    return _activation_ops_so.addons_gelu_grad(grad, op.inputs[0],
+                                               op.get_attr("approximate"))

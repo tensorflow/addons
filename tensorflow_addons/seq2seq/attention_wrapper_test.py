@@ -248,6 +248,28 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         self.decoder_sequence_length = np.random.randint(
             self.decoder_timestep, size=(self.batch,)).astype(np.int32)
 
+    def testCustomAttentionLayer(self):
+        attention_mechanism = wrapper.LuongAttention(self.units)
+        cell = tf.keras.layers.LSTMCell(self.units)
+        attention_layer = tf.keras.layers.Dense(
+            self.units * 2, use_bias=False, activation=tf.math.tanh)
+        attention_wrapper = wrapper.AttentionWrapper(
+            cell, attention_mechanism, attention_layer=attention_layer)
+        with self.assertRaises(ValueError):
+            # Should fail because the attention mechanism has not been
+            # initialized.
+            attention_wrapper.get_initial_state(
+                batch_size=self.batch, dtype=tf.float32)
+        attention_mechanism.setup_memory(
+            self.encoder_outputs.astype(np.float32),
+            memory_sequence_length=self.encoder_sequence_length)
+        initial_state = attention_wrapper.get_initial_state(
+            batch_size=self.batch, dtype=tf.float32)
+        self.assertEqual(initial_state.attention.shape[-1], self.units * 2)
+        first_input = self.decoder_inputs[:, 0].astype(np.float32)
+        output, next_state = attention_wrapper(first_input, initial_state)
+        self.assertEqual(output.shape[-1], self.units * 2)
+
     def _testWithAttention(self,
                            create_attention_mechanism,
                            expected_final_output,

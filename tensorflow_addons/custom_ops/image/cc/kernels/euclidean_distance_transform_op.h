@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_ADDONS_EUCLIDEAN_DISTANCE_OP_H_
-#define TENSORFLOW_ADDONS_EUCLIDEAN_DISTANCE_OP_H_
+#ifndef TENSORFLOW_ADDONS_IMAGE_KERNELS_EUCLIDEAN_DISTANCE_TRANSFORM_OP_H_
+#define TENSORFLOW_ADDONS_IMAGE_KERNELS_EUCLIDEAN_DISTANCE_TRANSFORM_OP_H_
 
 #define EIGEN_USE_THREADS
 
@@ -25,6 +25,7 @@ limitations under the License.
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
+namespace addons {
 
 namespace generator {
 
@@ -91,6 +92,7 @@ struct EuclideanDistanceTransformFunctor {
 
 }  // end namespace functor
 
+}  // end namespace addons
 }  // end namespace tensorflow
 
-#endif  // TENSORFLOW_ADDONS_EUCLIDEAN_DISTANCE_OP_H_
+#endif  // TENSORFLOW_ADDONS_IMAGE_KERNELS_EUCLIDEAN_DISTANCE_TRANSFORM_OP_H_

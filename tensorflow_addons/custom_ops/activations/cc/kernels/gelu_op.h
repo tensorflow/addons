@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_ADDONS_GELU_OP_H_
-#define TENSORFLOW_ADDONS_GELU_OP_H_
+#ifndef TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_GELU_OP_H_
+#define TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_GELU_OP_H_
 
 #define EIGEN_USE_THREADS
 
@@ -23,6 +23,7 @@ limitations under the License.
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
+namespace addons {
 namespace functor {
 
 // Functor used by GeluOp to do the computations.
@@ -137,8 +138,9 @@ void GeluGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
           approximate, output->flat<T>());
 }
 
+}  // end namespace addons
 }  // namespace tensorflow
 
 #undef EIGEN_USE_THREADS
 
-#endif  // TENSORFLOW_ADDONS_GELU_OP_H_
+#endif  // TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_GELU_OP_H_

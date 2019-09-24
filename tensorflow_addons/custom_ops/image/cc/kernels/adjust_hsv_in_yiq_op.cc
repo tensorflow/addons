@@ -28,6 +28,7 @@ limitations under the License.
 #include "tensorflow_addons/custom_ops/image/cc/kernels/adjust_hsv_in_yiq_op.h"
 
 namespace tensorflow {
+namespace addons {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
@@ -138,7 +139,7 @@ class AdjustHsvInYiqOp<CPUDevice> : public AdjustHsvInYiqOpBase {
 };
 
 REGISTER_KERNEL_BUILDER(
-    Name("AdjustHsvInYiq").Device(DEVICE_CPU).TypeConstraint<float>("T"),
+    Name("Addons>AdjustHsvInYiq").Device(DEVICE_CPU).TypeConstraint<float>("T"),
     AdjustHsvInYiqOp<CPUDevice>);
 
 #if GOOGLE_CUDA
@@ -162,8 +163,9 @@ class AdjustHsvInYiqOp<GPUDevice> : public AdjustHsvInYiqOpBase {
 };
 
 REGISTER_KERNEL_BUILDER(
-    Name("AdjustHsvInYiq").Device(DEVICE_GPU).TypeConstraint<float>("T"),
+    Name("Addons>AdjustHsvInYiq").Device(DEVICE_GPU).TypeConstraint<float>("T"),
     AdjustHsvInYiqOp<GPUDevice>);
 #endif
 
+}  // end namespace addons
 }  // namespace tensorflow
