@@ -19,8 +19,6 @@ from __future__ import print_function
 
 from absl.testing import parameterized
 
-import math
-
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.activations import mish
@@ -46,8 +44,7 @@ class MishTest(tf.test.TestCase, parameterized.TestCase):
         x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
 
         theoretical, numerical = tf.test.compute_gradient(mish, [x])
-        self.assertAllCloseAccordingToType(
-            theoretical, numerical, atol=1e-4)
+        self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
 
     def test_unknown_shape(self):
         fn = mish.get_concrete_function(

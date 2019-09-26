@@ -35,7 +35,7 @@ struct Mish {
   // activations: same shape as "features".
   void operator()(const Device& d, typename TTypes<T>::ConstTensor features,
                   typename TTypes<T>::Tensor activations) {
-      activations.device(d) = features * features.exp().log1p().tanh();
+    activations.device(d) = features * features.exp().log1p().tanh();
   }
 };
 
@@ -50,13 +50,13 @@ struct MishGrad {
   void operator()(const Device& d, typename TTypes<T>::ConstTensor gradients,
                   typename TTypes<T>::ConstTensor features,
                   typename TTypes<T>::Tensor backprops) {
-      auto& e = features.exp();
-      auto& es = e.square();
-      auto& omega = static_cast<T>(4) * (features + static_cast<T>(1)) +
-                    static_cast<T>(4) * es + e.cube() +
-                    e * (static_cast<T>(4) * features + static_cast<T>(6));
-      auto& delta = static_cast<T>(2) * e + es + static_cast<T>(2);
-      backprops.device(d) = gradients * e * omega / delta.square();
+    auto& e = features.exp();
+    auto& es = e.square();
+    auto& omega = static_cast<T>(4) * (features + static_cast<T>(1)) +
+                  static_cast<T>(4) * es + e.cube() +
+                  e * (static_cast<T>(4) * features + static_cast<T>(6));
+    auto& delta = static_cast<T>(2) * e + es + static_cast<T>(2);
+    backprops.device(d) = gradients * e * omega / delta.square();
   }
 };
 
@@ -66,12 +66,12 @@ template <typename Device, typename T>
 class MishOp : public UnaryElementWiseOp<T, MishOp<Device, T>> {
  public:
   explicit MishOp(OpKernelConstruction* context)
-      : UnaryElementWiseOp<T, MishOp<Device, T>>::UnaryElementWiseOp(context) {
-  }
+      : UnaryElementWiseOp<T, MishOp<Device, T>>::UnaryElementWiseOp(context) {}
 
   void Operate(OpKernelContext* context, const Tensor& input, Tensor* output) {
     functor::Mish<Device, T> functor;
-    functor(context->eigen_device<Device>(), input.flat<T>(), output->flat<T>());
+    functor(context->eigen_device<Device>(), input.flat<T>(),
+            output->flat<T>());
   }
 };
 
@@ -80,8 +80,7 @@ class MishGradOp : public BinaryElementWiseOp<T, MishGradOp<Device, T>> {
  public:
   explicit MishGradOp(OpKernelConstruction* context)
       : BinaryElementWiseOp<T, MishGradOp<Device, T>>::BinaryElementWiseOp(
-            context) {
-  }
+            context) {}
 
   void OperateNoTemplate(OpKernelContext* context, const Tensor& g,
                          const Tensor& a, Tensor* output);

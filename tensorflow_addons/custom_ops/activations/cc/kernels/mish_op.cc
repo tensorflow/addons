@@ -47,13 +47,13 @@ namespace functor {
   template <>                                                        \
   void Mish<GPUDevice, T>::operator()(                               \
       const GPUDevice& d, typename TTypes<T>::ConstTensor features,  \
-      typename TTypes<T>::Tensor activations);     \
+      typename TTypes<T>::Tensor activations);                       \
   extern template struct Mish<GPUDevice, T>;                         \
                                                                      \
   template <>                                                        \
   void MishGrad<GPUDevice, T>::operator()(                           \
       const GPUDevice& d, typename TTypes<T>::ConstTensor gradients, \
-      typename TTypes<T>::ConstTensor features,    \
+      typename TTypes<T>::ConstTensor features,                      \
       typename TTypes<T>::Tensor backprops);                         \
   extern template struct MishGrad<GPUDevice, T>;
 
