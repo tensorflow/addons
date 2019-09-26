@@ -92,6 +92,7 @@ DOCKER_CMD="${ENVIRONMENT_CMD} && ${COMMAND}"
 echo "Docker image: ${DOCKER_IMAGE}"
 echo "Docker command: ${DOCKER_CMD}"
 docker run ${DOCKER_OPTS}                   \
+    --user $(id -u):$(id -g)                \
     --network=host                          \
     --rm -v ${ROOT_DIR}:/addons -w /addons  \
     ${DOCKER_IMAGE}                         \
