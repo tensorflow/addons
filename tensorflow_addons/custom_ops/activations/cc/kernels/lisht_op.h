@@ -45,7 +45,7 @@ struct LishtGrad {
   // Computes LishtGrad backprops.
   //
   // gradients: gradients backpropagated to the Lisht op.
-  // features: the inputs that were passed to the Lisht op.
+  // features: inputs that were passed to the Lisht op.
   // backprops: gradients to backpropagate to the Lisht inputs.
   void operator()(const Device& d, typename TTypes<T>::ConstTensor gradients,
                   typename TTypes<T>::ConstTensor features,
