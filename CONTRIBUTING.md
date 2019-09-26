@@ -76,7 +76,7 @@ bash tools/run_docker.sh -c 'make unit-test'
 or run manually:
 
 ```bash
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-ubuntu16 /bin/bash
+docker run --user $(id -u):$(id -g) --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-ubuntu16 /bin/bash
 ./configure.sh  # Links project with TensorFlow dependency
 
 bazel test -c opt -k \
@@ -93,7 +93,7 @@ bash tools/run_docker.sh -d gpu -c 'make gpu-unit-test'
 or run manually:
 
 ```bash
-docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-gpu-ubuntu16 /bin/bash
+docker run --runtime=nvidia --user $(id -u):$(id -g) --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-gpu-ubuntu16 /bin/bash
 ./configure.sh  # Links project with TensorFlow dependency
 
 bazel test -c opt -k \
