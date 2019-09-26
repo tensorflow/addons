@@ -33,5 +33,5 @@ REGISTER_OP("Addons>LishtGrad")
     .Attr("T: {half, float, double}")
     .SetShapeFn(shape_inference::MergeBothInputsShapeFn);
 
-}  // end namespace addons
+}  // namespace addons
 }  // namespace tensorflow
