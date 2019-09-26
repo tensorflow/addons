@@ -83,7 +83,7 @@ class CohenKappa(Metric):
         super(CohenKappa, self).__init__(name=name, dtype=dtype)
 
         if weightage not in (None, 'linear', 'quadratic'):
-            raise ValueError("Unknown kappa weighting type.")
+            raise TypeError("Unknown kappa weighting type.")
         else:
             self.weightage = weightage
 
