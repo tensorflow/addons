@@ -8,6 +8,7 @@ py_library(
         "__init__.py",
         "gelu.py",
         "hardshrink.py",
+        "mish.py",
         "sparsemax.py",
         "tanhshrink.py",
     ],
@@ -51,6 +52,19 @@ py_test(
         "hardshrink_test.py",
     ],
     main = "hardshrink_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":activations",
+    ],
+)
+
+py_test(
+    name = "mish_test",
+    size = "medium",
+    srcs = [
+        "mish_test.py",
+    ],
+    main = "mish_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":activations",
