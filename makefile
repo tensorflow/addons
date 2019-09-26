@@ -32,4 +32,4 @@ gpu-unit-test:
 	bash tools/ci_testing/addons_gpu.sh
 
 tutorials-test: install-ci-dependency
-    python tools/ci_testing/tutorials_test.py
+	python tools/ci_testing/tutorials_test.py
