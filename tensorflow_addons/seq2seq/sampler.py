@@ -181,7 +181,8 @@ class TrainingSampler(Sampler):
             major. If `False` (default), they are assumed to be batch major.
 
         Raises:
-          ValueError: if `sequence_length` is not a 1D tensor.
+          ValueError: if `sequence_length` is not a 1D tensor or `mask` is
+            not a 2D boolean tensor.
         """
         self.time_major = time_major
         self._batch_size = None
@@ -201,12 +202,15 @@ class TrainingSampler(Sampler):
     def sample_ids_dtype(self):
         return tf.int32
 
-    def initialize(self, inputs, sequence_length=None):
+    def initialize(self, inputs, sequence_length=None, mask=None):
         """Initialize the TrainSampler.
 
         Args:
           inputs: A (structure of) input tensors.
-          sequence_length: An int32 vector tensor.
+          sequence_length: An int32 vector tensor. Note that the
+            sequence_length has higher priority than mask, so mask
+            will be ignored if both of them are provided.
+          mask: A boolean 2D tensor
 
         Returns:
           (finished, next_inputs), a tuple of two items. The first item is a
@@ -219,14 +223,30 @@ class TrainingSampler(Sampler):
             inputs = tf.nest.map_structure(_transpose_batch_time, inputs)
 
         self.input_tas = tf.nest.map_structure(_unstack_ta, inputs)
-        if sequence_length is None:
-            raise ValueError("sequence_length is required for TrainingSampler")
-        self.sequence_length = tf.convert_to_tensor(
-            sequence_length, name="sequence_length")
-        if self.sequence_length.get_shape().ndims != 1:
+        if sequence_length is None and mask is None:
             raise ValueError(
-                "Expected sequence_length to be vector, but received shape: %s"
-                % self.sequence_length.get_shape())
+                "At least, one of sequence_length or mask should be provided to TrainingSampler"
+            )
+        if sequence_length is not None:
+            self.sequence_length = tf.convert_to_tensor(
+                sequence_length, name="sequence_length")
+            if self.sequence_length.get_shape().ndims != 1:
+                raise ValueError(
+                    "Expected sequence_length to be vector, but received shape: %s"
+                    % self.sequence_length.get_shape())
+        else:
+            mask = tf.convert_to_tensor(mask)
+            if mask.get_shape().ndims != 2:
+                raise ValueError(
+                    "Expected mask to a 2D tensor, but received shape: %s" %
+                    mask)
+            if not mask.dtype.is_bool:
+                raise ValueError(
+                    "Expected mask to be a boolean tensor, but received dtype: %s"
+                    % repr(mask.dtype))
+
+            self.sequence_length = tf.math.reduce_sum(
+                tf.cast(mask, tf.int32), axis=1, name="sequence_length")
 
         self.zero_inputs = tf.nest.map_structure(
             lambda inp: tf.zeros_like(inp[0, :]), inputs)
@@ -305,7 +325,11 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
         super(ScheduledEmbeddingTrainingSampler,
               self).__init__(time_major=time_major)
 
-    def initialize(self, inputs, sequence_length=None, embedding=None):
+    def initialize(self,
+                   inputs,
+                   sequence_length=None,
+                   mask=None,
+                   embedding=None):
         if self.embedding_fn is None:
             if embedding is None:
                 raise ValueError(
@@ -314,7 +338,7 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
             self.embedding_fn = (
                 lambda ids: tf.nn.embedding_lookup(embedding, ids))
         return super(ScheduledEmbeddingTrainingSampler, self).initialize(
-            inputs, sequence_length=sequence_length)
+            inputs, sequence_length=sequence_length, mask=mask)
 
     def sample(self, time, outputs, state):
         del state
@@ -397,7 +421,11 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
         super(ScheduledOutputTrainingSampler,
               self).__init__(time_major=time_major)
 
-    def initialize(self, inputs, sequence_length=None, auxiliary_inputs=None):
+    def initialize(self,
+                   inputs,
+                   sequence_length=None,
+                   mask=None,
+                   auxiliary_inputs=None):
         if auxiliary_inputs is None:
             maybe_concatenated_inputs = inputs
         else:
@@ -415,7 +443,9 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
             self._auxiliary_input_tas = None
 
         return super(ScheduledOutputTrainingSampler, self).initialize(
-            maybe_concatenated_inputs, sequence_length=sequence_length)
+            maybe_concatenated_inputs,
+            sequence_length=sequence_length,
+            mask=mask)
 
     def sample(self, time, outputs, state):
         del state
