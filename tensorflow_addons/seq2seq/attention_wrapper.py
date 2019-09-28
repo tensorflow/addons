@@ -179,6 +179,10 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
           inputs: the inputs tensors.
           **kwargs: dict, other keyeword arguments for the `__call__()`
         """
+        # Allow manual memory reset
+        if kwargs.get('setup_memory', False):
+            self._memory_initialized = False
+
         if self._memory_initialized:
             if len(inputs) not in (2, 3):
                 raise ValueError(
@@ -188,6 +192,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
                 # We append the calculated memory here so that the graph will be
                 # connected.
                 inputs.append(self.values)
+
         return super(_BaseAttentionMechanism, self).__call__(inputs, **kwargs)
 
     def call(self, inputs, mask=None, setup_memory=False, **kwargs):
