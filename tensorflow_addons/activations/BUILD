@@ -21,7 +21,7 @@ py_library(
 
 py_test(
     name = "sparsemax_test",
-    size = "medium",
+    size = "small",
     srcs = [
         "sparsemax_test.py",
     ],
@@ -34,7 +34,7 @@ py_test(
 
 py_test(
     name = "gelu_test",
-    size = "medium",
+    size = "small",
     srcs = [
         "gelu_test.py",
     ],
@@ -47,7 +47,7 @@ py_test(
 
 py_test(
     name = "hardshrink_test",
-    size = "medium",
+    size = "small",
     srcs = [
         "hardshrink_test.py",
     ],
@@ -60,7 +60,7 @@ py_test(
 
 py_test(
     name = "lisht_test",
-    size = "medium",
+    size = "small",
     srcs = [
         "lisht_test.py",
     ],
@@ -73,7 +73,7 @@ py_test(
 
 py_test(
     name = "tanhshrink_test",
-    size = "medium",
+    size = "small",
     srcs = [
         "tanhshrink_test.py",
     ],
