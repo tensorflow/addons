@@ -224,16 +224,15 @@ class TrainingSampler(Sampler):
 
         self.input_tas = tf.nest.map_structure(_unstack_ta, inputs)
         if sequence_length is None and mask is None:
-            raise ValueError(
-                "At least, one of sequence_length or mask should be provided to TrainingSampler"
-            )
+            raise ValueError("At least, one of sequence_length or mask "
+                             "should be provided to TrainingSampler")
         if sequence_length is not None:
             self.sequence_length = tf.convert_to_tensor(
                 sequence_length, name="sequence_length")
             if self.sequence_length.get_shape().ndims != 1:
                 raise ValueError(
-                    "Expected sequence_length to be vector, but received shape: %s"
-                    % self.sequence_length.get_shape())
+                    "Expected sequence_length to be vector, but received"
+                    " shape: %s" % self.sequence_length.get_shape())
         else:
             mask = tf.convert_to_tensor(mask)
             if mask.get_shape().ndims != 2:
@@ -242,8 +241,8 @@ class TrainingSampler(Sampler):
                     mask)
             if not mask.dtype.is_bool:
                 raise ValueError(
-                    "Expected mask to be a boolean tensor, but received dtype: %s"
-                    % repr(mask.dtype))
+                    "Expected mask to be a boolean tensor, but received "
+                    "dtype: %s" % repr(mask.dtype))
 
             self.sequence_length = tf.math.reduce_sum(
                 tf.cast(mask, tf.int32), axis=1, name="sequence_length")
