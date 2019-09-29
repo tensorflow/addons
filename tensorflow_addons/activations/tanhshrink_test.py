@@ -47,19 +47,6 @@ class TanhshrinkTest(tf.test.TestCase, parameterized.TestCase):
         theoretical, numerical = tf.test.compute_gradient(tanhshrink, [x])
         self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
 
-    def test_serialization(self):
-        config = tf.keras.activations.serialize(tanhshrink)
-        fn = tf.keras.activations.deserialize(config)
-        self.assertEqual(fn, tanhshrink)
-
-    def test_serialization_with_layers(self):
-        layer = tf.keras.layers.Dense(3, activation=tanhshrink)
-        config = tf.keras.layers.serialize(layer)
-        deserialized_layer = tf.keras.layers.deserialize(config)
-        self.assertEqual(deserialized_layer.__class__.__name__,
-                         layer.__class__.__name__)
-        self.assertEqual(deserialized_layer.activation.__name__, "tanhshrink")
-
 
 if __name__ == "__main__":
     tf.test.main()
