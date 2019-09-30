@@ -217,13 +217,13 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
     )
     def test_memory_re_setup(self, attention_cls):
         class MyModel(tf.keras.models.Model):
-            def __init__(self):
+            def __init__(self, vocab, embedding_dim, memory_size, units):
                 super(MyModel, self).__init__()
                 self.emb = tf.keras.layers.Embedding(
                     vocab, embedding_dim, mask_zero=True)
                 self.encoder = tf.keras.layers.LSTM(
-                    test_class_self.memory_size, return_sequences=True)
-                self.attn_mch = attention_cls(test_class_self.units)
+                    memory_size, return_sequences=True)
+                self.attn_mch = attention_cls(units)
 
             def call(self, inputs):
                 enc_input, query, state = inputs
@@ -237,12 +237,11 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
                 score = self.attn_mch([query, state])
                 return score
 
-        test_class_self = self
         vocab = 20
         embedding_dim = 6
         num_batches = 5
 
-        model = MyModel()
+        model = MyModel(vocab, embedding_dim, self.memory_size, self.units)
         if tf.executing_eagerly():
             model.compile("rmsprop", "mse", run_eagerly=True)
         else:
@@ -259,8 +258,6 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
 
         model.fit([x, query, state], (y, y), batch_size=self.batch)
         model.predict_on_batch([x_test, query, state])
-
-    # TODO(scottzhu): Add tests for model.compile(run_eagerly=True)
 
 
 class ResultSummary(
