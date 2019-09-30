@@ -19,8 +19,6 @@ from __future__ import print_function
 
 from absl.testing import parameterized
 
-import math
-
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.activations import gelu
