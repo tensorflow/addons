@@ -67,19 +67,17 @@ class FBetaScoreTest(tf.test.TestCase):
         res = fbeta_score(act, pred, beta, average=avg)
         return res
 
-    def _test_fbeta_score(self, actuals, preds, threshold=None):
+    def _test_fbeta_score(self, actuals, preds, result, threshold=None):
         for avg in [None, 'micro', 'macro', 'weighted']:
             for beta_val in [0.5, 1.0, 2.0]:
                 tf_score = self._test_tf(avg, beta_val, actuals, preds,
                                          threshold)
-                sk_score = self._test_sk(avg, beta_val, actuals, preds,
-                                         threshold)
-                self.assertAllClose(tf_score, sk_score, atol=1e-5)
+                self.assertAllClose(tf_score, result, atol=1e-5)
 
     def test_fbeta_perfect_score(self):
         preds = [[0.7, 0.7, 0.7], [1, 0, 0], [0.9, 0.8, 0]]
         actuals = [[1, 1, 1], [1, 0, 0], [1, 1, 0]]
-        self._test_fbeta_score(actuals, preds, 0.66)
+        self._test_fbeta_score(actuals, preds, 0.0, 0.66)
 
     def test_fbeta_worst_score(self):
         preds = [[0.7, 0.7, 0.7], [1, 0, 0], [0.9, 0.8, 0]]
@@ -106,13 +104,15 @@ class FBetaScoreTest(tf.test.TestCase):
 @test_utils.run_all_in_graph_and_eager_modes
 class F1ScoreTest(tf.test.TestCase):
     def test_eq(self):
-        f1 = F1Score(4)
-        fbeta = FBetaScore(4, beta=1.0)
+        f1 = F1Score(3)
+        fbeta = FBetaScore(3, beta=1.0)
         self.evaluate(tf.compat.v1.variables_initializer(f1.variables))
         self.evaluate(tf.compat.v1.variables_initializer(fbeta.variables))
 
-        actuals = np.random.randint(2, size=(10, 4))
-        preds = np.random.uniform(size=(10, 4))
+        preds = [[0.9, 0.1, 0], [0.2, 0.6, 0.2], [0, 0, 1], [0.4, 0.3, 0.3],
+                 [0, 0.9, 0.1], [0, 0, 1]]
+        actuals = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [1, 0, 0],
+                   [0, 0, 1]]
 
         self.evaluate(fbeta.update_state(actuals, preds))
         self.evaluate(f1.update_state(actuals, preds))
@@ -122,6 +122,11 @@ class F1ScoreTest(tf.test.TestCase):
     def test_keras_model(self):
         f1 = F1Score(5)
         utils.test_keras_model(f1, 5)
+
+    def test_config(self):
+        f1 = F1Score(3)
+        config = f1.get_config()
+        self.assertFalse("beta" in config)
 
 
 if __name__ == '__main__':
