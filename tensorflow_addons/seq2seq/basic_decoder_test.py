@@ -830,6 +830,21 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
         decoder = basic_decoder.BasicDecoder(
             cell, sampler, output_layer=output_layer)
 
+    def testRightPaddedSequenceAssertion(self):
+        right_padded_sequence = [[True, True, False, False],
+                                 [True, True, True, False]]
+        left_padded_sequence = [[False, False, True, True],
+                                [False, True, True, True]]
+
+        assertion = sampler_py._check_sequence_is_right_padded(
+            right_padded_sequence, False)
+        self.evaluate(assertion)
+
+        with self.assertRaises(tf.errors.InvalidArgumentError):
+            assertion = sampler_py._check_sequence_is_right_padded(
+                left_padded_sequence, False)
+            self.evaluate(assertion)
+
 
 if __name__ == "__main__":
     tf.test.main()

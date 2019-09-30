@@ -244,8 +244,13 @@ class TrainingSampler(Sampler):
                     "Expected mask to be a boolean tensor, but received "
                     "dtype: %s" % repr(mask.dtype))
 
-            self.sequence_length = tf.math.reduce_sum(
-                tf.cast(mask, tf.int32), axis=1, name="sequence_length")
+            axis = 1 if not self.time_major else 0
+            with tf.control_dependencies([
+                    _check_sequence_is_right_padded(  # pylint: disable=bad-continuation
+                        mask, self.time_major)
+            ]):
+                self.sequence_length = tf.math.reduce_sum(
+                    tf.cast(mask, tf.int32), axis=axis, name="sequence_length")
 
         self.zero_inputs = tf.nest.map_structure(
             lambda inp: tf.zeros_like(inp[0, :]), inputs)
@@ -788,3 +793,20 @@ def _unstack_ta(inp):
         dtype=inp.dtype,
         size=tf.shape(inp)[0],
         element_shape=inp.get_shape()[1:]).unstack(inp)
+
+
+def _check_sequence_is_right_padded(mask, time_major):
+    """Returns an Assert operation checking that if the mask tensor is right
+    padded."""
+    if time_major:
+        mask = tf.transpose(mask)
+    sequence_length = tf.math.reduce_sum(tf.cast(mask, tf.int32), axis=1)
+    max_seq_length = tf.shape(mask)[1]
+    right_padded_mask = tf.sequence_mask(
+        sequence_length, maxlen=max_seq_length, dtype=tf.bool)
+    all_equal = tf.math.equal(mask, right_padded_mask)
+
+    condition = tf.math.reduce_all(all_equal)
+    error_message = "The input sequence should be right padded."
+
+    return tf.Assert(condition, [error_message])
