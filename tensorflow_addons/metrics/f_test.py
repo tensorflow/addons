@@ -67,17 +67,19 @@ class FBetaScoreTest(tf.test.TestCase):
         res = fbeta_score(act, pred, beta, average=avg)
         return res
 
-    def _test_fbeta_score(self, actuals, preds, result, threshold=None):
+    def _test_fbeta_score(self, actuals, preds, threshold=None):
         for avg in [None, 'micro', 'macro', 'weighted']:
             for beta_val in [0.5, 1.0, 2.0]:
                 tf_score = self._test_tf(avg, beta_val, actuals, preds,
                                          threshold)
-                self.assertAllClose(tf_score, result, atol=1e-5)
+                sk_score = self._test_sk(avg, beta_val, actuals, preds,
+                                         threshold)
+                self.assertAllClose(tf_score, sk_score, atol=1e-5)
 
     def test_fbeta_perfect_score(self):
         preds = [[0.7, 0.7, 0.7], [1, 0, 0], [0.9, 0.8, 0]]
         actuals = [[1, 1, 1], [1, 0, 0], [1, 1, 0]]
-        self._test_fbeta_score(actuals, preds, 0.0, 0.66)
+        self._test_fbeta_score(actuals, preds, 0.66)
 
     def test_fbeta_worst_score(self):
         preds = [[0.7, 0.7, 0.7], [1, 0, 0], [0.9, 0.8, 0]]
