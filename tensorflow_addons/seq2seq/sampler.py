@@ -245,10 +245,9 @@ class TrainingSampler(Sampler):
                     "dtype: %s" % repr(mask.dtype))
 
             axis = 1 if not self.time_major else 0
-            with tf.control_dependencies([
-                    _check_sequence_is_right_padded(  # pylint: disable=bad-continuation
-                        mask, self.time_major)
-            ]):
+            with tf.control_dependencies(
+                [_check_sequence_is_right_padded(mask, self.time_major)]  # pylint: disable=bad-continuation
+            ):
                 self.sequence_length = tf.math.reduce_sum(
                     tf.cast(mask, tf.int32), axis=axis, name="sequence_length")
 
