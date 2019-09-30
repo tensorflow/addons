@@ -17,7 +17,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-
 import tensorflow as tf
 from tensorflow_addons import activations
 from tensorflow_addons.utils import test_utils
@@ -26,20 +25,21 @@ from tensorflow_addons.utils import test_utils
 @test_utils.run_all_in_graph_and_eager_modes
 class ActivationsTest(tf.test.TestCase):
 
-    ALL_ACTIVATIONS = ["gelu", "hardshrink", "lisht", "sparsemax",
-                       "tanhshrink"]
+    ALL_ACTIVATIONS = [
+        "gelu", "hardshrink", "lisht", "sparsemax", "tanhshrink"
+    ]
 
     def test_serialization(self):
-        for name in ALL_ACTIVATIONS:
+        for name in self.ALL_ACTIVATIONS:
             fn = tf.keras.activations.get(name)
             ref_fn = getattr(activations, name)
             self.assertEqual(fn, ref_fn)
-            config = keras.activations.serialize(fn)
-            fn = keras.activations.deserialize(config)
+            config = tf.keras.activations.serialize(fn)
+            fn = tf.keras.activations.deserialize(config)
             self.assertEqual(fn, ref_fn)
 
     def test_serialization_with_layers(self):
-        for name in ALL_ACTIVATIONS:
+        for name in self.ALL_ACTIVATIONS:
             layer = tf.keras.layers.Dense(
                 3, activation=getattr(activations, name))
             config = tf.keras.layers.serialize(layer)
