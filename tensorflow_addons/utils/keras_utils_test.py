@@ -30,6 +30,8 @@ class NormalizeTupleTest(tf.test.TestCase):
                          keras_utils.normalize_tuple((2, 1, 2),
                                                      n=3,
                                                      name='strides'))
+        with self.assertRaises(TypeError):
+            keras_utils.normalize_tuple([2,1], n=3, name='strides')
 
         with self.assertRaises(ValueError):
             keras_utils.normalize_tuple((2, 1), n=3, name='strides')
