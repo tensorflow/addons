@@ -189,9 +189,8 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
             self.assertEqual((batch_size, cell_depth),
                              step_state[1].get_shape())
 
-            self.assertEqual(len(output_layer.variables), 1)
+            self.assertLen(output_layer.variables, 1)
 
-            self.evaluate(tf.compat.v1.global_variables_initializer())
             eval_result = self.evaluate({
                 "batch_size": batch_size_t,
                 "first_finished": first_finished,
