@@ -64,7 +64,7 @@ Please see our [Style Guide](STYLE_GUIDE.md) for more details.
 
 ## Code Testing
 #### CI Testing
-Nighly CI tests are ran and results can be found on the central README. To 
+Nightly CI tests are ran and results can be found on the central README. To 
 subscribe for alerts please join the [addons-testing mailing list](https://groups.google.com/a/tensorflow.org/forum/#!forum/addons-testing).
 
 #### Locally Testing CPU
