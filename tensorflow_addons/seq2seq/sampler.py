@@ -223,17 +223,17 @@ class TrainingSampler(Sampler):
             inputs = tf.nest.map_structure(_transpose_batch_time, inputs)
 
         self.input_tas = tf.nest.map_structure(_unstack_ta, inputs)
-        if sequence_length is None and mask is None:
-            raise ValueError("At least, one of sequence_length or mask "
-                             "should be provided to TrainingSampler")
+        if sequence_length is not None and mask is not None:
+            raise ValueError("sequence_length and mask can't be provided "
+                             "at the same time.")
         if sequence_length is not None:
             self.sequence_length = tf.convert_to_tensor(
                 sequence_length, name="sequence_length")
             if self.sequence_length.get_shape().ndims != 1:
                 raise ValueError(
-                    "Expected sequence_length to be vector, but received"
-                    " shape: %s" % self.sequence_length.get_shape())
-        else:
+                    "Expected sequence_length to be vector, but received "
+                    "shape: %s" % self.sequence_length.get_shape())
+        elif mask is not None:
             mask = tf.convert_to_tensor(mask)
             if mask.get_shape().ndims != 2:
                 raise ValueError(
@@ -250,6 +250,9 @@ class TrainingSampler(Sampler):
             ):
                 self.sequence_length = tf.math.reduce_sum(
                     tf.cast(mask, tf.int32), axis=axis, name="sequence_length")
+        else:
+            raise ValueError("At least, one of the sequence_length or mask "
+                             "should be provided to TrainingSampler")
 
         self.zero_inputs = tf.nest.map_structure(
             lambda inp: tf.zeros_like(inp[0, :]), inputs)
