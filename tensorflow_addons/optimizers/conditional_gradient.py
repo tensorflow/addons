@@ -36,10 +36,11 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
     ```
 
     Note that we choose "lambda_" here to refer to the constraint "lambda" in the paper.
-    And 'epsilon' is constant with tiny vlaue as compared to the value of frobenius_norm
+    And 'epsilon' is constant with tiny value as compared to the value of frobenius_norm
     of gradient. The purpose of 'epsilon' here is to avoid the case that the value of
-    frobenius_norm of gradient is 0. In this implementation, we choose 'epsilon' with value
-    of 10^-7.
+    frobenius_norm of gradient is 0.
+
+    In this implementation, we choose 'epsilon' with value of 10^-7.
     """
 
     def __init__(self,
