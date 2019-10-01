@@ -209,7 +209,55 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
         alignment = self.evaluate(alignment)
         self.assertEqual(np.sum(np.triu(alignment, k=1)), 0)
 
-    # TODO(scottzhu): Add tests for model.compile(run_eagerly=True)
+    @parameterized.named_parameters(
+        ("luong", wrapper.LuongAttention),
+        ("luong_monotonic", wrapper.LuongMonotonicAttention),
+        ("bahdanau", wrapper.BahdanauAttention),
+        ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttention),
+    )
+    def test_memory_re_setup(self, attention_cls):
+        class MyModel(tf.keras.models.Model):
+            def __init__(self, vocab, embedding_dim, memory_size, units):
+                super(MyModel, self).__init__()
+                self.emb = tf.keras.layers.Embedding(
+                    vocab, embedding_dim, mask_zero=True)
+                self.encoder = tf.keras.layers.LSTM(
+                    memory_size, return_sequences=True)
+                self.attn_mch = attention_cls(units)
+
+            def call(self, inputs):
+                enc_input, query, state = inputs
+                mask = self.emb.compute_mask(enc_input)
+                enc_input = self.emb(enc_input)
+                enc_output = self.encoder(enc_input, mask=mask)
+                # To ensure manual resetting also works in the graph mode,
+                # we call the attention mechanism twice.
+                self.attn_mch(enc_output, mask=mask, setup_memory=True)
+                self.attn_mch(enc_output, mask=mask, setup_memory=True)
+                score = self.attn_mch([query, state])
+                return score
+
+        vocab = 20
+        embedding_dim = 6
+        num_batches = 5
+
+        model = MyModel(vocab, embedding_dim, self.memory_size, self.units)
+        if tf.executing_eagerly():
+            model.compile("rmsprop", "mse", run_eagerly=True)
+        else:
+            model.compile("rmsprop", "mse")
+
+        x = np.random.randint(
+            vocab, size=(num_batches * self.batch, self.timestep))
+        x_test = np.random.randint(
+            vocab, size=(num_batches * self.batch, self.timestep))
+        y = np.random.randn(num_batches * self.batch, self.timestep)
+
+        query = np.tile(self.query, [num_batches, 1])
+        state = np.tile(self.state, [num_batches, 1])
+
+        model.fit([x, query, state], (y, y), batch_size=self.batch)
+        model.predict_on_batch([x_test, query, state])
 
 
 class ResultSummary(
@@ -247,6 +295,28 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             self.batch, self.decoder_timestep, self.units)
         self.decoder_sequence_length = np.random.randint(
             self.decoder_timestep, size=(self.batch,)).astype(np.int32)
+
+    def testCustomAttentionLayer(self):
+        attention_mechanism = wrapper.LuongAttention(self.units)
+        cell = tf.keras.layers.LSTMCell(self.units)
+        attention_layer = tf.keras.layers.Dense(
+            self.units * 2, use_bias=False, activation=tf.math.tanh)
+        attention_wrapper = wrapper.AttentionWrapper(
+            cell, attention_mechanism, attention_layer=attention_layer)
+        with self.assertRaises(ValueError):
+            # Should fail because the attention mechanism has not been
+            # initialized.
+            attention_wrapper.get_initial_state(
+                batch_size=self.batch, dtype=tf.float32)
+        attention_mechanism.setup_memory(
+            self.encoder_outputs.astype(np.float32),
+            memory_sequence_length=self.encoder_sequence_length)
+        initial_state = attention_wrapper.get_initial_state(
+            batch_size=self.batch, dtype=tf.float32)
+        self.assertEqual(initial_state.attention.shape[-1], self.units * 2)
+        first_input = self.decoder_inputs[:, 0].astype(np.float32)
+        output, next_state = attention_wrapper(first_input, initial_state)
+        self.assertEqual(output.shape[-1], self.units * 2)
 
     def _testWithAttention(self,
                            create_attention_mechanism,

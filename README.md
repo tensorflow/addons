@@ -74,6 +74,8 @@ cd addons
 
 # If building GPU Ops (Requires CUDA 10.0 and CuDNN 7)
 export TF_NEED_CUDA=1
+export CUDA_HOME="/path/to/cuda10" (default: /usr/local/cuda)
+export CUDNN_INSTALL_PATH="/path/to/cudnn" (default: /usr/lib/x86_64-linux-gnu)
 
 # This script links project with TensorFlow dependency
 ./configure.sh
@@ -84,8 +86,8 @@ bazel-bin/build_pip_pkg artifacts
 pip install artifacts/tensorflow_addons-*.whl
 ```
 
-## Examples
-See [`examples/`](examples/)
+## Tutorials
+See [`docs/tutorials/`](docs/tutorials/)
 for end-to-end examples of various addons.
 
 ## Core Concepts

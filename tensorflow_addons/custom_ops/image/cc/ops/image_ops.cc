@@ -18,6 +18,7 @@ limitations under the License.
 #include "tensorflow/core/framework/shape_inference.h"
 
 namespace tensorflow {
+namespace addons {
 
 using shape_inference::DimensionHandle;
 using shape_inference::InferenceContext;
@@ -120,7 +121,7 @@ components: Component ids for each pixel in "image". Same shape as "image". Zero
 
 }  // namespace
 
-REGISTER_OP("EuclideanDistanceTransform")
+REGISTER_OP("Addons>EuclideanDistanceTransform")
     .Input("images: dtype")
     .Attr("dtype: {float16, float32, float64}")
     .Output("transformed_images: dtype")
@@ -128,7 +129,7 @@ REGISTER_OP("EuclideanDistanceTransform")
     .Doc(EuclideanDistanceTransformDoc);
 
 // V2 op supports output_shape.
-REGISTER_OP("ImageProjectiveTransformV2")
+REGISTER_OP("Addons>ImageProjectiveTransformV2")
     .Input("images: dtype")
     .Input("transforms: float32")
     .Input("output_shape: int32")
@@ -138,7 +139,7 @@ REGISTER_OP("ImageProjectiveTransformV2")
     .SetShapeFn(ResizeShapeFn)
     .Doc(kImageProjectiveTransformDoc);
 
-REGISTER_OP("ImageConnectedComponents")
+REGISTER_OP("Addons>ImageConnectedComponents")
     .Input("image: dtype")
     .Output("components: int64")
     .Attr(
@@ -149,4 +150,5 @@ REGISTER_OP("ImageConnectedComponents")
     })
     .Doc(ImageConnectedComponentsDoc);
 
+}  // end namespace addons
 }  // namespace tensorflow

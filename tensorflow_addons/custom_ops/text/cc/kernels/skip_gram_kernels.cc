@@ -26,6 +26,7 @@ limitations under the License.
 #include "tensorflow/core/util/guarded_philox_random.h"
 
 namespace tensorflow {
+namespace addons {
 
 template <typename T>
 class SkipGramGenerateCandidatesOp : public OpKernel {
@@ -126,10 +127,10 @@ class SkipGramGenerateCandidatesOp : public OpKernel {
   GuardedPhiloxRandom generator_;
 };
 
-#define REGISTER_KERNEL(type)                                \
-  REGISTER_KERNEL_BUILDER(Name("SkipGramGenerateCandidates") \
-                              .Device(DEVICE_CPU)            \
-                              .TypeConstraint<type>("T"),    \
+#define REGISTER_KERNEL(type)                                       \
+  REGISTER_KERNEL_BUILDER(Name("Addons>SkipGramGenerateCandidates") \
+                              .Device(DEVICE_CPU)                   \
+                              .TypeConstraint<type>("T"),           \
                           SkipGramGenerateCandidatesOp<type>)
 
 REGISTER_KERNEL(string);
@@ -139,4 +140,5 @@ REGISTER_KERNEL(int16);
 
 #undef REGISTER_KERNEL
 
+}  // end namespace addons
 }  // namespace tensorflow

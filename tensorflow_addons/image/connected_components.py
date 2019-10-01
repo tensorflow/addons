@@ -62,7 +62,7 @@ def connected_components(images, name=None):
             raise TypeError(
                 "images should have rank 2 (HW) or 3 (NHW). Static shape is %s"
                 % image_or_images.get_shape())
-        components = _image_ops_so.image_connected_components(images)
+        components = _image_ops_so.addons_image_connected_components(images)
 
         # TODO(ringwalt): Component id renaming should be done in the op,
         # to avoid constructing multiple additional large tensors.

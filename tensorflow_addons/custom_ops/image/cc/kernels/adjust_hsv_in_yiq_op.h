@@ -11,8 +11,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-#ifndef TENSORFLOW_CONTRIB_IMAGE_KERNELS_ADJUST_HSV_IN_YIQ_OP_H_
-#define TENSORFLOW_CONTRIB_IMAGE_KERNELS_ADJUST_HSV_IN_YIQ_OP_H_
+#ifndef TENSORFLOW_ADDONS_IMAGE_KERNELS_ADJUST_HSV_IN_YIQ_OP_H_
+#define TENSORFLOW_ADDONS_IMAGE_KERNELS_ADJUST_HSV_IN_YIQ_OP_H_
 
 #if GOOGLE_CUDA
 #define EIGEN_USE_GPU
@@ -27,6 +27,7 @@ limitations under the License.
 #include "tensorflow/core/framework/types.h"
 
 namespace tensorflow {
+namespace addons {
 
 static constexpr int kChannelSize = 3;
 
@@ -82,6 +83,7 @@ struct AdjustHsvInYiqGPU {
 
 #endif  // GOOGLE_CUDA
 
+}  // end namespace addons
 }  // namespace tensorflow
 
-#endif  // TENSORFLOW_CONTRIB_IMAGE_KERNELS_ADJUST_HSV_IN_YIQ_OP_H_
+#endif  // TENSORFLOW_ADDONS_IMAGE_KERNELS_ADJUST_HSV_IN_YIQ_OP_H_
