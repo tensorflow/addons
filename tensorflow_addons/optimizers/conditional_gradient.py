@@ -32,10 +32,14 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
 
     ```
     variable -= (1-learning_rate)
-        * (variable + lambda_ * gradient / frobenius_norm(gradient))
+        * (variable + lambda_ * gradient / (frobenius_norm(gradient) + epsilon))
     ```
 
     Note that we choose "lambda_" here to refer to the constraint "lambda" in the paper.
+    And 'epsilon' is constant with tiny vlaue as compared to the value of frobenius_norm
+    of gradient. The purpose of 'epsilon' here is to avoid the case that the value of
+    frobenius_norm of gradient is 0. In this implementation, we choose 'epsilon' with value
+    of 10^-7.
     """
 
     def __init__(self,
@@ -89,10 +93,11 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
                         or self._fallback_apply_state(var_device, var_dtype))
         norm = tf.convert_to_tensor(
             frobenius_norm(grad), name='norm', dtype=var.dtype.base_dtype)
+        epsilon = tf.constant([10**(-7)], dtype=var.dtype.base_dtype)
         lr = coefficients['learning_rate']
         lambda_ = coefficients['lambda_']
-        var_update_tensor = (
-            tf.math.multiply(var, lr) - (1 - lr) * lambda_ * grad / norm)
+        var_update_tensor = (tf.math.multiply(var, lr) -
+                             (1 - lr) * lambda_ * grad / (norm + epsilon))
         var_update_kwargs = {
             'resource': var.handle,
             'value': var_update_tensor,
@@ -109,11 +114,12 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
                         or self._fallback_apply_state(var_device, var_dtype))
         norm = tf.convert_to_tensor(
             frobenius_norm(grad), name='norm', dtype=var.dtype.base_dtype)
+        epsilon = tf.constant([10**(-7)], dtype=var.dtype.base_dtype)
         lr = coefficients['learning_rate']
         lambda_ = coefficients['lambda_']
         var_slice = tf.gather(var, indices)
-        var_update_value = (
-            tf.math.multiply(var_slice, lr) - (1 - lr) * lambda_ * grad / norm)
+        var_update_value = (tf.math.multiply(var_slice, lr) -
+                            (1 - lr) * lambda_ * grad / (norm + epsilon))
         var_update_kwargs = {
             'resource': var.handle,
             'indices': indices,
