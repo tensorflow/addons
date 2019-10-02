@@ -726,8 +726,7 @@ def bernoulli_sample(probs=None,
     def _sample_n(n):
         """Sample vector of Bernoullis."""
         new_shape = tf.concat([[n], batch_shape_tensor], 0)
-        uniform = tf.compat.v1.random_uniform(
-            new_shape, seed=seed, dtype=probs.dtype)
+        uniform = tf.random.uniform(new_shape, seed=seed, dtype=probs.dtype)
         return tf.cast(tf.less(uniform, probs), dtype)
 
     return _call_sampler(_sample_n, sample_shape)
@@ -746,8 +745,8 @@ def categorical_sample(logits, dtype=tf.int32, sample_shape=(), seed=None):
         else:
             logits_2d = tf.reshape(logits, [-1, event_size])
         sample_dtype = tf.int64 if logits.dtype.size > 4 else tf.int32
-        draws = tf.compat.v1.multinomial(
-            logits_2d, n, seed=seed, output_dtype=sample_dtype)
+        draws = tf.random.categorical(
+            logits_2d, n, dtype=sample_dtype, seed=seed)
         draws = tf.reshape(
             tf.transpose(draws), tf.concat([[n], batch_shape_tensor], 0))
         return tf.cast(draws, dtype)

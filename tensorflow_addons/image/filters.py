@@ -107,7 +107,7 @@ def mean_filter2d(image,
         # has the value of 1 for each element.
         area = tf.constant(
             filter_shape[0] * filter_shape[1], dtype=image.dtype)
-        filter_shape = filter_shape + (tf.shape(image)[-1], 1)
+        filter_shape += (tf.shape(image)[-1], 1)
         kernel = tf.ones(shape=filter_shape, dtype=image.dtype)
 
         output = tf.nn.depthwise_conv2d(

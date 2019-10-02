@@ -24,6 +24,7 @@ limitations under the License.
 #include "tensorflow/core/util/tensor_format.h"
 
 namespace tensorflow {
+namespace addons {
 
 typedef Eigen::GpuDevice GPUDevice;
 
@@ -470,6 +471,7 @@ template struct CorrelationCostFunctor<GPUDevice, float>;
 template struct CorrelationCostGradFunctor<GPUDevice, float>;
 
 }  // end namespace functor
+}  // end namespace addons
 }  // namespace tensorflow
 
 #endif  // GOOGLE_CUDA

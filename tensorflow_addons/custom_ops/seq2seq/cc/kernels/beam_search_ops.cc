@@ -35,6 +35,7 @@ limitations under the License.
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
+namespace addons {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
@@ -91,9 +92,9 @@ class GatherTreeOp : public OpKernel {
   }
 };
 
-#define REGISTER_KERNEL(T)                                          \
-  REGISTER_KERNEL_BUILDER(                                          \
-      Name("GatherTree").Device(DEVICE_CPU).TypeConstraint<T>("T"), \
+#define REGISTER_KERNEL(T)                                                 \
+  REGISTER_KERNEL_BUILDER(                                                 \
+      Name("Addons>GatherTree").Device(DEVICE_CPU).TypeConstraint<T>("T"), \
       GatherTreeOp<CPUDevice, T>);
 REGISTER_KERNEL(int32);
 #undef REGISTER_KERNEL
@@ -181,7 +182,7 @@ DECLARE_GPU_SPEC(int32);
 }  // end namespace functor
 
 #define REGISTER_GPU_KERNEL(T)                          \
-  REGISTER_KERNEL_BUILDER(Name("GatherTree")            \
+  REGISTER_KERNEL_BUILDER(Name("Addons>GatherTree")     \
                               .Device(DEVICE_GPU)       \
                               .TypeConstraint<T>("T")   \
                               .HostMemory("end_token"), \
@@ -191,4 +192,5 @@ REGISTER_GPU_KERNEL(int32);
 #undef REGISTER_GPU_KERNEL
 #endif  // GOOGLE_CUDA
 
+}  // end namespace addons
 }  // end namespace tensorflow

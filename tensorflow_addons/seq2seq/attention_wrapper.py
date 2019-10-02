@@ -26,11 +26,10 @@ import numpy as np
 
 import tensorflow as tf
 
+from tensorflow_addons.utils import keras_utils
+
 # TODO: Find public API alternatives to these
 from tensorflow.python.keras.engine import base_layer_utils
-from tensorflow.python.ops import rnn_cell_impl
-
-_zero_state_tensors = rnn_cell_impl._zero_state_tensors  # pylint: disable=protected-access
 
 
 class AttentionMechanism(object):
@@ -138,6 +137,12 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
             self.values = super(_BaseAttentionMechanism, self).__call__(
                 inputs, setup_memory=True)
 
+    @property
+    def memory_initialized(self):
+        """Returns `True` if this attention mechanism has been initialized with
+        a memory."""
+        return self._memory_initialized
+
     def build(self, input_shape):
         if not self._memory_initialized:
             # This is for setting up the memory, which contains memory and
@@ -174,6 +179,10 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
           inputs: the inputs tensors.
           **kwargs: dict, other keyeword arguments for the `__call__()`
         """
+        # Allow manual memory reset
+        if kwargs.get('setup_memory', False):
+            self._memory_initialized = False
+
         if self._memory_initialized:
             if len(inputs) not in (2, 3):
                 raise ValueError(
@@ -183,6 +192,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
                 # We append the calculated memory here so that the graph will be
                 # connected.
                 inputs.append(self.values)
+
         return super(_BaseAttentionMechanism, self).__call__(inputs, **kwargs)
 
     def call(self, inputs, mask=None, setup_memory=False, **kwargs):
@@ -404,8 +414,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
           A `dtype` tensor shaped `[batch_size, alignments_size]`
           (`alignments_size` is the values' `max_time`).
         """
-        max_time = self._alignments_size
-        return _zero_state_tensors(max_time, batch_size, dtype)
+        return tf.zeros([batch_size, self._alignments_size], dtype=dtype)
 
     def initial_state(self, batch_size, dtype):
         """Creates the initial state values for the `AttentionWrapper` class.
@@ -740,7 +749,7 @@ class BahdanauAttention(_BaseAttentionMechanism):
                 and self.attention_b is None):
             self.attention_g = self.add_weight(
                 "attention_g",
-                initializer=tf.compat.v1.constant_initializer(
+                initializer=tf.constant_initializer(
                     math.sqrt((1. / self.units))),
                 shape=())
             self.attention_b = self.add_weight(
@@ -1098,14 +1107,13 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
                 "attention_score_bias",
                 shape=(),
                 dtype=self.dtype,
-                initializer=tf.compat.v1.constant_initializer(
-                    self.score_bias_init, dtype=self.dtype))
+                initializer=tf.constant_initializer(self.score_bias_init))
         if (self.normalize and self.attention_g is None
                 and self.attention_b is None):
             self.attention_g = self.add_weight(
                 "attention_g",
                 dtype=self.dtype,
-                initializer=tf.compat.v1.constant_initializer(
+                initializer=tf.constant_initializer(
                     math.sqrt((1. / self.units))),
                 shape=())
             self.attention_b = self.add_weight(
@@ -1258,8 +1266,7 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
             self.attention_score_bias = self.add_weight(
                 "attention_score_bias",
                 shape=(),
-                initializer=tf.compat.v1.constant_initializer(
-                    self.score_bias_init, self.dtype))
+                initializer=tf.constant_initializer(self.score_bias_init))
         self.built = True
 
     def _calculate_attention(self, query, state):
@@ -1357,12 +1364,9 @@ class AttentionWrapperState(
                 if not tf.executing_eagerly():
                     new_shape = tf.shape(new)
                     old_shape = tf.shape(old)
-                    with tf.control_dependencies([
-                            tf.compat.v1.assert_equal(  # pylint: disable=bad-continuation
-                                new_shape,
-                                old_shape,
-                                data=[new_shape, old_shape])
-                    ]):
+                    assert_equal = tf.debugging.assert_equal(
+                        new_shape, old_shape)
+                    with tf.control_dependencies([assert_equal]):
                         # Add an identity op so that control deps can kick in.
                         return tf.identity(new)
                 else:
@@ -1460,7 +1464,7 @@ def _maybe_mask_score(score,
         message = ("All values in memory_sequence_length must greater than "
                    "zero.")
         with tf.control_dependencies([
-                tf.compat.v1.assert_positive(  # pylint: disable=bad-continuation
+                tf.debugging.assert_positive(  # pylint: disable=bad-continuation
                     memory_sequence_length,
                     message=message)
         ]):
@@ -1538,7 +1542,8 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                  initial_cell_state=None,
                  name=None,
                  attention_layer=None,
-                 attention_fn=None):
+                 attention_fn=None,
+                 **kwargs):
         """Construct the `AttentionWrapper`.
 
         **NOTE** If you are using the `BeamSearchDecoder` with a cell wrapped
@@ -1619,6 +1624,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             attention_layer) and outputs (attention, alignments,
             next_attention_state). If provided, the attention_layer_size should
             be the size of the outputs of attention_fn.
+          **kwargs: Other keyword arguments for layer creation.
 
         Raises:
           TypeError: `attention_layer_size` is not None and
@@ -1629,8 +1635,8 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             of `attention_layer_size`; if `attention_layer_size` and
             `attention_layer` are set simultaneously.
         """
-        super(AttentionWrapper, self).__init__(name=name)
-        rnn_cell_impl.assert_like_rnncell("cell", cell)
+        super(AttentionWrapper, self).__init__(name=name, **kwargs)
+        keras_utils.assert_like_rnncell("cell", cell)
         if isinstance(attention_mechanism, (list, tuple)):
             self._is_multi = True
             attention_mechanisms = list(attention_mechanism)
@@ -1678,7 +1684,6 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                     use_bias=False,
                     dtype=attention_mechanisms[i].dtype) for i,
                 attention_layer_size in enumerate(attention_layer_sizes))
-            self._attention_layer_size = sum(attention_layer_sizes)
         elif attention_layer is not None:
             self._attention_layers = list(
                 attention_layer if isinstance(attention_layer, (
@@ -1688,22 +1693,13 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                     "If provided, attention_layer must contain exactly one "
                     "layer per attention_mechanism, saw: %d vs %d" % (len(
                         self._attention_layers), len(attention_mechanisms)))
-            self._attention_layer_size = sum(
-                tf.compat.dimension_value(
-                    layer.compute_output_shape([
-                        None, cell.output_size +
-                        tf.compat.dimension_value(mechanism.values.shape[-1])
-                    ])[-1]) for layer, mechanism in zip(
-                        self._attention_layers, attention_mechanisms))
         else:
             self._attention_layers = None
-            self._attention_layer_size = sum(
-                tf.compat.dimension_value(attention_mechanism.values.shape[-1])
-                for attention_mechanism in attention_mechanisms)
 
         if attention_fn is None:
             attention_fn = _compute_attention
         self._attention_fn = attention_fn
+        self._attention_layer_size = None
 
         self._cell = cell
         self._attention_mechanisms = attention_mechanisms
@@ -1733,14 +1729,44 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                             s, name="check_initial_cell_state"),
                         initial_cell_state)
 
+    def _attention_mechanisms_checks(self):
+        for attention_mechanism in self._attention_mechanisms:
+            if not attention_mechanism.memory_initialized:
+                raise ValueError("The AttentionMechanism instances passed to "
+                                 "this AttentionWrapper should be initialized "
+                                 "with a memory first, either by passing it "
+                                 "to the AttentionMechanism constructor or "
+                                 "calling attention_mechanism.setup_memory()")
+
     def _batch_size_checks(self, batch_size, error_message):
+        self._attention_mechanisms_checks()
         return [
-            tf.compat.v1.assert_equal(
+            tf.debugging.assert_equal(
                 batch_size,
                 attention_mechanism.batch_size,
                 message=error_message)
             for attention_mechanism in self._attention_mechanisms
         ]
+
+    def _get_attention_layer_size(self):
+        if self._attention_layer_size is not None:
+            return self._attention_layer_size
+        self._attention_mechanisms_checks()
+        attention_output_sizes = (
+            attention_mechanism.values.shape[-1]
+            for attention_mechanism in self._attention_mechanisms)
+        if self._attention_layers is None:
+            self._attention_layer_size = sum(attention_output_sizes)
+        else:
+            # Compute the layer output size from its input which is the
+            # concatenation of the cell output and the attention mechanism
+            # output.
+            self._attention_layer_size = sum(
+                layer.compute_output_shape(
+                    [None, self._cell.output_size + attention_output_size])[-1]
+                for layer, attention_output_size in zip(
+                    self._attention_layers, attention_output_sizes))
+        return self._attention_layer_size
 
     def _item_or_tuple(self, seq):
         """Returns `seq` as tuple or the singular element.
@@ -1765,7 +1791,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
     @property
     def output_size(self):
         if self._output_attention:
-            return self._attention_layer_size
+            return self._get_attention_layer_size()
         else:
             return self._cell.output_size
 
@@ -1780,7 +1806,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         return AttentionWrapperState(
             cell_state=self._cell.state_size,
             time=tf.TensorShape([]),
-            attention=self._attention_layer_size,
+            attention=self._get_attention_layer_size(),
             alignments=self._item_or_tuple(
                 a.alignments_size for a in self._attention_mechanisms),
             attention_state=self._item_or_tuple(
@@ -1839,8 +1865,9 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             return AttentionWrapperState(
                 cell_state=cell_state,
                 time=tf.zeros([], dtype=tf.int32),
-                attention=_zero_state_tensors(self._attention_layer_size,
-                                              batch_size, dtype),
+                attention=tf.zeros(
+                    [batch_size, self._get_attention_layer_size()],
+                    dtype=dtype),
                 alignments=self._item_or_tuple(initial_alignments),
                 attention_state=self._item_or_tuple(
                     attention_mechanism.initial_state(batch_size, dtype)

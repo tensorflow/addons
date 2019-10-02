@@ -28,10 +28,6 @@ from tensorflow_addons.seq2seq import attention_wrapper as wrapper
 from tensorflow_addons.seq2seq import basic_decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
 
-# TODO: Find public API alternatives to these
-from tensorflow.python import keras
-from tensorflow.python.keras import initializers
-
 
 @test_utils.run_all_in_graph_and_eager_modes
 class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
@@ -131,22 +127,22 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
     def test_save_load_layer(self, attention_cls):
         vocab = 20
         embedding_dim = 6
-        inputs = keras.layers.Input(shape=[self.timestep])
-        encoder_input = keras.layers.Embedding(
+        inputs = tf.keras.Input(shape=[self.timestep])
+        encoder_input = tf.keras.layers.Embedding(
             vocab, embedding_dim, mask_zero=True)(inputs)
-        encoder_output = keras.layers.LSTM(
+        encoder_output = tf.keras.layers.LSTM(
             self.memory_size, return_sequences=True)(encoder_input)
 
         attention = attention_cls(self.units, encoder_output)
-        query = keras.layers.Input(shape=[self.units])
-        state = keras.layers.Input(shape=[self.timestep])
+        query = tf.keras.Input(shape=[self.units])
+        state = tf.keras.Input(shape=[self.timestep])
 
         score = attention([query, state])
 
         x = np.random.randint(vocab, size=(self.batch, self.timestep))
         x_test = np.random.randint(vocab, size=(self.batch, self.timestep))
         y = np.random.randn(self.batch, self.timestep)
-        model = keras.models.Model([inputs, query, state], score)
+        model = tf.keras.Model([inputs, query, state], score)
         # Fall back to v1 style Keras training loop until issue with
         # using outputs of a layer in another layer's constructor.
         model.compile("rmsprop", "mse", experimental_run_tf_function=False)
@@ -155,7 +151,7 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
 
         config = model.get_config()
         weights = model.get_weights()
-        loaded_model = keras.models.Model.from_config(
+        loaded_model = tf.keras.Model.from_config(
             config, custom_objects={attention_cls.__name__: attention_cls})
         loaded_model.set_weights(weights)
 
@@ -213,7 +209,55 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
         alignment = self.evaluate(alignment)
         self.assertEqual(np.sum(np.triu(alignment, k=1)), 0)
 
-    # TODO(scottzhu): Add tests for model.compile(run_eagerly=True)
+    @parameterized.named_parameters(
+        ("luong", wrapper.LuongAttention),
+        ("luong_monotonic", wrapper.LuongMonotonicAttention),
+        ("bahdanau", wrapper.BahdanauAttention),
+        ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttention),
+    )
+    def test_memory_re_setup(self, attention_cls):
+        class MyModel(tf.keras.models.Model):
+            def __init__(self, vocab, embedding_dim, memory_size, units):
+                super(MyModel, self).__init__()
+                self.emb = tf.keras.layers.Embedding(
+                    vocab, embedding_dim, mask_zero=True)
+                self.encoder = tf.keras.layers.LSTM(
+                    memory_size, return_sequences=True)
+                self.attn_mch = attention_cls(units)
+
+            def call(self, inputs):
+                enc_input, query, state = inputs
+                mask = self.emb.compute_mask(enc_input)
+                enc_input = self.emb(enc_input)
+                enc_output = self.encoder(enc_input, mask=mask)
+                # To ensure manual resetting also works in the graph mode,
+                # we call the attention mechanism twice.
+                self.attn_mch(enc_output, mask=mask, setup_memory=True)
+                self.attn_mch(enc_output, mask=mask, setup_memory=True)
+                score = self.attn_mch([query, state])
+                return score
+
+        vocab = 20
+        embedding_dim = 6
+        num_batches = 5
+
+        model = MyModel(vocab, embedding_dim, self.memory_size, self.units)
+        if tf.executing_eagerly():
+            model.compile("rmsprop", "mse", run_eagerly=True)
+        else:
+            model.compile("rmsprop", "mse")
+
+        x = np.random.randint(
+            vocab, size=(num_batches * self.batch, self.timestep))
+        x_test = np.random.randint(
+            vocab, size=(num_batches * self.batch, self.timestep))
+        y = np.random.randn(num_batches * self.batch, self.timestep)
+
+        query = np.tile(self.query, [num_batches, 1])
+        state = np.tile(self.state, [num_batches, 1])
+
+        model.fit([x, query, state], (y, y), batch_size=self.batch)
+        model.predict_on_batch([x_test, query, state])
 
 
 class ResultSummary(
@@ -251,6 +295,28 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             self.batch, self.decoder_timestep, self.units)
         self.decoder_sequence_length = np.random.randint(
             self.decoder_timestep, size=(self.batch,)).astype(np.int32)
+
+    def testCustomAttentionLayer(self):
+        attention_mechanism = wrapper.LuongAttention(self.units)
+        cell = tf.keras.layers.LSTMCell(self.units)
+        attention_layer = tf.keras.layers.Dense(
+            self.units * 2, use_bias=False, activation=tf.math.tanh)
+        attention_wrapper = wrapper.AttentionWrapper(
+            cell, attention_mechanism, attention_layer=attention_layer)
+        with self.assertRaises(ValueError):
+            # Should fail because the attention mechanism has not been
+            # initialized.
+            attention_wrapper.get_initial_state(
+                batch_size=self.batch, dtype=tf.float32)
+        attention_mechanism.setup_memory(
+            self.encoder_outputs.astype(np.float32),
+            memory_sequence_length=self.encoder_sequence_length)
+        initial_state = attention_wrapper.get_initial_state(
+            batch_size=self.batch, dtype=tf.float32)
+        self.assertEqual(initial_state.attention.shape[-1], self.units * 2)
+        first_input = self.decoder_inputs[:, 0].astype(np.float32)
+        output, next_state = attention_wrapper(first_input, initial_state)
+        self.assertEqual(output.shape[-1], self.units * 2)
 
     def _testWithAttention(self,
                            create_attention_mechanism,
@@ -337,11 +403,12 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             # Create a memory layer with deterministic initializer to avoid
             # randomness in the test between graph and eager.
             if create_query_layer:
-                create_attention_kwargs["query_layer"] = keras.layers.Dense(
+                create_attention_kwargs["query_layer"] = tf.keras.layers.Dense(
                     depth, kernel_initializer="ones", use_bias=False)
             if create_memory_layer:
-                create_attention_kwargs["memory_layer"] = keras.layers.Dense(
-                    depth, kernel_initializer="ones", use_bias=False)
+                create_attention_kwargs["memory_layer"] = (
+                    tf.keras.layers.Dense(
+                        depth, kernel_initializer="ones", use_bias=False))
 
             attention_mechanisms.append(
                 creator(
@@ -358,7 +425,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
                     attention_layer_size = attention_layer_size[0]
                 if attention_layer is not None:
                     attention_layer = attention_layer[0]
-            cell = keras.layers.LSTMCell(
+            cell = tf.keras.layers.LSTMCell(
                 cell_depth,
                 recurrent_activation="sigmoid",
                 kernel_initializer="ones",
@@ -371,8 +438,9 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
                 attention_layer=attention_layer)
             if cell._attention_layers is not None:
                 for layer in cell._attention_layers:
-                    layer.kernel_initializer = initializers.glorot_uniform(
-                        seed=1337)
+                    layer.kernel_initializer = (
+                        tf.compat.v1.keras.initializers.glorot_uniform(
+                            seed=1337))
 
             sampler = sampler_py.TrainingSampler()
             my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
@@ -476,12 +544,13 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             memory_sequence_length=self.encoder_sequence_length,
             normalize=True,
             dtype=dtype)
-        cell = keras.layers.LSTMCell(
-            self.units, recurrent_activation="sigmoid")
-        cell = wrapper.AttentionWrapper(cell, attention_mechanism)
+        cell = tf.keras.layers.LSTMCell(
+            self.units, recurrent_activation="sigmoid", dtype=dtype)
+        cell = wrapper.AttentionWrapper(cell, attention_mechanism, dtype=dtype)
 
         sampler = sampler_py.TrainingSampler()
-        my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
+        my_decoder = basic_decoder.BasicDecoder(
+            cell=cell, sampler=sampler, dtype=dtype)
 
         final_outputs, final_state, _ = my_decoder(
             decoder_inputs,
@@ -504,12 +573,13 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             scale=True,
             dtype=dtype,
         )
-        cell = keras.layers.LSTMCell(
-            self.units, recurrent_activation="sigmoid")
-        cell = wrapper.AttentionWrapper(cell, attention_mechanism)
+        cell = tf.keras.layers.LSTMCell(
+            self.units, recurrent_activation="sigmoid", dtype=dtype)
+        cell = wrapper.AttentionWrapper(cell, attention_mechanism, dtype=dtype)
 
         sampler = sampler_py.TrainingSampler()
-        my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
+        my_decoder = basic_decoder.BasicDecoder(
+            cell=cell, sampler=sampler, dtype=dtype)
 
         final_outputs, final_state, _ = my_decoder(
             decoder_inputs,

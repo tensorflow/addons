@@ -89,12 +89,20 @@ def sequence_loss(logits,
     if len(logits.get_shape()) != 3:
         raise ValueError("Logits must be a "
                          "[batch_size x sequence_length x logits] tensor")
-    if len(targets.get_shape()) != 2:
+
+    targets_rank = len(targets.get_shape())
+    if targets_rank != 2 and targets_rank != 3:
         raise ValueError(
-            "Targets must be a [batch_size x sequence_length] tensor")
+            "Targets must be either a [batch_size x sequence_length] tensor " \
+            + "where each element contains the labels' index" \
+            + "or a [batch_size x sequence_length x num_classes] tensor " \
+            + "where the third axis is a one-hot representation of the labels"
+        )
+
     if len(weights.get_shape()) != 2:
         raise ValueError(
             "Weights must be a [batch_size x sequence_length] tensor")
+
     if average_across_timesteps and sum_over_timesteps:
         raise ValueError(
             "average_across_timesteps and sum_over_timesteps cannot "
@@ -114,11 +122,17 @@ def sequence_loss(logits,
     with tf.name_scope(name or "sequence_loss"):
         num_classes = tf.shape(input=logits)[2]
         logits_flat = tf.reshape(logits, [-1, num_classes])
-        targets = tf.reshape(targets, [-1])
         if softmax_loss_function is None:
-            crossent = tf.nn.sparse_softmax_cross_entropy_with_logits(
-                labels=targets, logits=logits_flat)
+            if targets_rank == 2:
+                targets = tf.reshape(targets, [-1])
+                crossent = tf.nn.sparse_softmax_cross_entropy_with_logits(
+                    labels=targets, logits=logits_flat)
+            else:
+                targets = tf.reshape(targets, [-1, num_classes])
+                crossent = tf.nn.softmax_cross_entropy_with_logits(
+                    labels=targets, logits=logits_flat)
         else:
+            targets = tf.reshape(targets, [-1])
             crossent = softmax_loss_function(
                 labels=targets, logits=logits_flat)
         crossent *= tf.reshape(weights, [-1])
@@ -167,6 +181,11 @@ class SequenceLoss(tf.keras.losses.Loss):
         self.sum_over_timesteps = sum_over_timesteps
         self.sum_over_batch = sum_over_batch
         self.softmax_loss_function = softmax_loss_function
+
+        # Delete the reduction attribute to inform Keras that it
+        # should call this class by the __call__(...) method.
+        if hasattr(self, 'reduction'):
+            delattr(self, 'reduction')
 
     def __call__(self, y_true, y_pred, sample_weight=None):
         """Override the parent __call__ to have a customized reduce

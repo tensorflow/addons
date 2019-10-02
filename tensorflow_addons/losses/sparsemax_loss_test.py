@@ -226,6 +226,12 @@ class SparsemaxTest(tf.test.TestCase):
             lambda logits: sparsemax_loss(logits, sparsemax(logits), q), [z])
         self.assertAllCloseAccordingToType(jacob_sym, jacob_num)
 
+    def test_serialization(self, dtype=None):
+        ref_fn = sparsemax_loss
+        config = tf.keras.losses.serialize(ref_fn)
+        fn = tf.keras.losses.deserialize(config)
+        self.assertEqual(ref_fn, fn)
+
 
 if __name__ == '__main__':
     tf.test.main()

@@ -21,8 +21,8 @@ cc_library(
         "@local_config_tf//:libtensorflow_framework",
         "@local_config_tf//:tf_header_lib",
     ] + if_cuda_is_configured([
-        "@local_config_cuda//cuda:cuda_libs",
         "@local_config_cuda//cuda:cuda_headers",
+        "@local_config_cuda//cuda:cudart_static",
     ]),
     alwayslink = 1,
 )
@@ -62,8 +62,30 @@ cc_library(
         "@local_config_tf//:libtensorflow_framework",
         "@local_config_tf//:tf_header_lib",
     ] + if_cuda_is_configured([
-        "@local_config_cuda//cuda:cuda_libs",
         "@local_config_cuda//cuda:cuda_headers",
+        "@local_config_cuda//cuda:cudart_static",
+    ]),
+    alwayslink = 1,
+)
+
+cc_library(
+    name = "euclidean_distance_transform_op_gpu",
+    srcs = [
+        "cc/kernels/euclidean_distance_transform_op.h",
+        "cc/kernels/euclidean_distance_transform_op_gpu.cu.cc",
+    ],
+    copts = if_cuda_is_configured([
+        "-DGOOGLE_CUDA=1",
+        "-x cuda",
+        "-nvcc_options=relaxed-constexpr",
+        "-nvcc_options=ftz=true",
+    ]),
+    deps = [
+        "@local_config_tf//:libtensorflow_framework",
+        "@local_config_tf//:tf_header_lib",
+    ] + if_cuda_is_configured([
+        "@local_config_cuda//cuda:cuda_headers",
+        "@local_config_cuda//cuda:cudart_static",
     ]),
     alwayslink = 1,
 )
@@ -71,6 +93,8 @@ cc_library(
 cc_binary(
     name = "_image_ops.so",
     srcs = [
+        "cc/kernels/connected_components.cc",
+        "cc/kernels/connected_components.h",
         "cc/kernels/euclidean_distance_transform_op.cc",
         "cc/kernels/euclidean_distance_transform_op.h",
         "cc/kernels/image_projective_transform_op.cc",
@@ -86,5 +110,8 @@ cc_binary(
     deps = [
         "@local_config_tf//:libtensorflow_framework",
         "@local_config_tf//:tf_header_lib",
-    ] + if_cuda_is_configured([":image_projective_transform_op_gpu"]),
+    ] + if_cuda_is_configured([
+        ":image_projective_transform_op_gpu",
+        ":euclidean_distance_transform_op_gpu",
+    ]),
 )
