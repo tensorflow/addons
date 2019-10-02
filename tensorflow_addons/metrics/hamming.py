@@ -68,6 +68,9 @@ def hamming_loss_fn(y_true, y_pred, threshold, mode):
 
         y_true: actual target value
         y_pred: predicted target value
+        threshold: Elements of `y_pred` greater than threshold are
+            converted to be 1, and the rest 0. If threshold is
+            None, the argmax is converted to 1, and the rest 0.
         mode: multi-class or multi-label
 
     Returns:

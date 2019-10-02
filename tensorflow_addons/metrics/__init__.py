@@ -24,6 +24,3 @@ from tensorflow_addons.metrics.hamming import HammingLoss, hamming_distance
 from tensorflow_addons.metrics.utils import MeanMetricWrapper
 from tensorflow_addons.metrics.multilabel_confusion_matrix import MultiLabelConfusionMatrix
 from tensorflow_addons.metrics.r_square import RSquare
-
-
-
