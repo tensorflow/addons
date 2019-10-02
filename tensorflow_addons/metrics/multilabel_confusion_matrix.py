@@ -108,6 +108,8 @@ class MultiLabelConfusionMatrix(Metric):
         true_sum = tf.math.count_nonzero(y_true, 0)
         false_positive = pred_sum - true_positive
         false_negative = true_sum - true_positive
+        y_true_negative = tf.math.not_equal(y_true,1)
+        y_pred_negative = tf.math.not_equal(y_pred,1)
         true_negative = tf.math.count_nonzero(
         tf.math.logical_and(y_true_negative,y_pred_negative), axis=0)
 
