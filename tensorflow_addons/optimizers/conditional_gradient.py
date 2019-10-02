@@ -65,7 +65,7 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
         super(ConditionalGradient, self).__init__(name=name, **kwargs)
         self._set_hyper('learning_rate', kwargs.get('lr', learning_rate))
         self._set_hyper('lambda_', lambda_)
-        self.epsilon = epsilon
+        self.epsilon = epsilon or tf.keras.backend.epsilon()
         self._set_hyper('use_locking', use_locking)
 
     def get_config(self):
