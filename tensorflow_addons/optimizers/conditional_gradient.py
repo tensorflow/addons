@@ -31,14 +31,15 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
     See https://arxiv.org/pdf/1803.06453.pdf
 
     ```
-    variable -= (1-learning_rate)
-        * (variable + lambda_ * gradient / (frobenius_norm(gradient) + epsilon))
+    variable -= (1-learning_rate) * (variable + lambda_ * gradient
+        / (frobenius_norm(gradient) + epsilon))
     ```
 
-    Note that we choose "lambda_" here to refer to the constraint "lambda" in the paper.
-    And 'epsilon' is constant with tiny value as compared to the value of frobenius_norm
-    of gradient. The purpose of 'epsilon' here is to avoid the case that the value of
-    frobenius_norm of gradient is 0.
+    Note that we choose "lambda_" here to refer to the constraint "lambda" in
+    the paper.
+    And 'epsilon' is constant with tiny value as compared to the value of
+    frobenius_norm of gradient. The purpose of 'epsilon' here is to avoid the
+    case that the value of frobenius_norm of gradient is 0.
 
     In this implementation, we choose 'epsilon' with value of 10^-7.
     """
@@ -56,8 +57,9 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
             learning_rate: A `Tensor` or a floating point value.
                         The learning rate.
             lambda_: A `Tensor` or a floating point value. The constraint.
-            epsilon: A `Tensor` or a floating point value. A small constant for numerical
-                    stability when handling the case of norm of gradient to be zero.
+            epsilon: A `Tensor` or a floating point value. A small constant
+                    for numerical stability when handling the case of norm of
+                    gradient to be zero.
             use_locking: If `True` use locks for update operations.
             name: Optional name prefix for the operations created when
                 applying gradients.  Defaults to 'ConditionalGradient'
