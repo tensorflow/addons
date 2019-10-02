@@ -3,9 +3,10 @@
 ## Maintainers
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:------------- |
-| maxout |  |  |
+| gelu       | @AakashKumarNain | aakashnain@outlook.com |  
+| maxout | @fsx950223 | fsx950223@gmail.com |
 | normalizations | @smokrow | moritz.kroeger@tu-dortmund.de |
-| opticalflow |  |  |
+| opticalflow | @fsx950223 | fsx950223@gmail.com |
 | poincare |  |  |
 | sparsemax | @AndreasMadsen | amwwebdk+github@gmail.com |
 | wrappers | @seanpmorgan | seanmorgan@outlook.com |
@@ -13,6 +14,7 @@
 ## Components
 | Submodule  | Layer |  Reference  |
 |:---------- |:----------- |:------------- |
+| gelu   | GeLU   | https://arxiv.org/abs/1606.08415 | 
 | maxout | Maxout | https://arxiv.org/abs/1302.4389    |
 | normalizations | GroupNormalization | https://arxiv.org/abs/1803.08494 |
 | normalizations | InstanceNormalization | https://arxiv.org/abs/1607.08022 |

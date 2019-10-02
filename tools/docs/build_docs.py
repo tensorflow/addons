@@ -49,31 +49,45 @@ FLAGS = flags.FLAGS
 
 flags.DEFINE_string(
     'git_branch',
-    default='master',
+    default=None,
     help='The name of the corresponding branch on github.')
 
-flags.DEFINE_string(
-    'output_dir',
-    default='docs/api_docs/python/',
-    help='Where to write the resulting docs to.')
+CODE_PREFIX_TEMPLATE = "https://github.com/tensorflow/addons/tree/{git_branch}/tensorflow_addons"
+flags.DEFINE_string("code_url_prefix", None,
+                    "The url prefix for links to the code.")
+flags.mark_flags_as_mutual_exclusive(['code_url_prefix', 'git_branch'])
+
+flags.DEFINE_string("output_dir", "/tmp/addons_api",
+                    "Where to output the docs")
+
+flags.DEFINE_bool("search_hints", True,
+                  "Include metadata search hints in the generated files")
+
+flags.DEFINE_string("site_path", "addons/api_docs/python",
+                    "Path prefix in the _toc.yaml")
 
 
 def main(argv):
     if argv[1:]:
         raise ValueError('Unrecognized arguments: {}'.format(argv[1:]))
 
-    code_url_prefix = ('https://github.com/tensorflow/addons/tree/'
-                       '{git_branch}/tensorflow_addons'.format(
-                           git_branch=FLAGS.git_branch))
+    if FLAGS.code_url_prefix:
+        code_url_prefix = FLAGS.code_url_prefix
+    elif FLAGS.git_branch:
+        code_url_prefix = CODE_PREFIX_TEMPLATE.format(
+            git_branch=FLAGS.git_branch)
+    else:
+        code_url_prefix = CODE_PREFIX_TEMPLATE.format(git_branch='master')
 
     doc_generator = generate_lib.DocGenerator(
         root_title=PROJECT_FULL_NAME,
-        # Replace `tensorflow_docs` with your module, here.
         py_modules=[(PROJECT_SHORT_NAME, tfa)],
         code_url_prefix=code_url_prefix,
         private_map={'tfa': ['__version__', 'utils', 'version']},
-        # This callback cleans up a lot of aliases caused by internal imports.
-        callbacks=[public_api.local_definitions_filter])
+        # This callback usually cleans up a lot of aliases caused by internal imports.
+        callbacks=[public_api.local_definitions_filter],
+        search_hints=FLAGS.search_hints,
+        site_path=FLAGS.site_path)
 
     doc_generator.build(FLAGS.output_dir)
 

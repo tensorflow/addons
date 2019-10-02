@@ -16,11 +16,21 @@ limitations under the License.
 #define EIGEN_USE_GPU
 
 #include "tensorflow_addons/custom_ops/image/cc/kernels/adjust_hsv_in_yiq_op.h"
-#include "tensorflow/core/kernels/gpu_utils.h"
 #include "tensorflow/core/platform/stream_executor.h"
-#include "tensorflow/core/util/cuda_kernel_helper.h"
+#include "tensorflow/core/util/gpu_kernel_helper.h"
 
 namespace tensorflow {
+namespace addons {
+
+namespace {
+
+template <typename T>
+inline se::DeviceMemory<T> AsDeviceMemory(const T* cuda_memory, uint64 size) {
+  se::DeviceMemoryBase wrapped(const_cast<T*>(cuda_memory), size * sizeof(T));
+  se::DeviceMemory<T> typed(wrapped);
+  return typed;
+}
+}  // namespace
 
 namespace internal {
 
@@ -81,5 +91,7 @@ void AdjustHsvInYiqGPU::operator()(OpKernelContext* ctx, int channel_count,
   }
 }
 }  // namespace functor
+}  // end namespace addons
 }  // namespace tensorflow
+
 #endif  // GOOGLE_CUDA

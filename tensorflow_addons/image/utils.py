@@ -35,12 +35,11 @@ def to_4D_image(image):
     Returns:
       4D tensor with the same type.
     """
-    # yapf:disable
     with tf.control_dependencies([
-        tf.debugging.assert_rank_in(
-            image, [2, 3, 4], message='`image` must be 2/3/4D tensor')
+            tf.debugging.assert_rank_in(  # pylint: disable=bad-continuation
+                image, [2, 3, 4],
+                message='`image` must be 2/3/4D tensor')
     ]):
-        # yapf: enable
         ndims = image.get_shape().ndims
         if ndims is None:
             return _dynamic_to_4D_image(image)
@@ -81,12 +80,12 @@ def from_4D_image(image, ndims):
     Returns:
       `ndims`-D tensor with the same type.
     """
-    # yapf:disable
     with tf.control_dependencies([
-        tf.debugging.assert_rank(
-            image, 4, message='`image` must be 4D tensor')
+            tf.debugging.assert_rank(  # pylint: disable=bad-continuation
+                image,
+                4,
+                message='`image` must be 4D tensor')
     ]):
-        # yapf:enable
         if isinstance(ndims, tf.Tensor):
             return _dynamic_from_4D_image(image, ndims)
         elif ndims == 2:
