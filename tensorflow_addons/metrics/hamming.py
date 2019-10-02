@@ -22,33 +22,38 @@ import tensorflow as tf
 from tensorflow_addons.metrics.utils import MeanMetricWrapper
 
 
-def hamming_distance(y_true, y_pred):
+def hamming_distance(actuals, predictions):
     """Computes hamming distance.
 
     Hamming distance is for comparing two binary strings.
     It is the number of bit positions in which two bits
     are different.
 
-    :param y_true: actual target value
-    :param y_pred: predicted value
-    :return: hamming distance
+    Args:
+        actuals: actual target value
+        predictions: predicted value
+
+    Returns:
+        hamming distance: float
+
+    Usage:
 
     ```python
-    y_true = tf.constant([1, 1, 0, 0, 1, 0, 1, 0, 0, 1],
+    actuals = tf.constant([1, 1, 0, 0, 1, 0, 1, 0, 0, 1],
                           dtype=tf.int32)
-    y_pred = tf.constant([1, 0, 0, 0, 1, 0, 0, 1, 0, 1],
+    predictions = tf.constant([1, 0, 0, 0, 1, 0, 0, 1, 0, 1],
                               dtype=tf.int32)
-    result = hamming_distance(y_true, y_pred)
+    result = hamming_distance(actuals, predictions)
     print('Hamming distance: ', result.numpy())
     ```
     """
-    result = tf.not_equal(y_true, y_pred)
+    result = tf.not_equal(actuals, predictions)
     not_eq = tf.reduce_sum(tf.cast(result, tf.float32))
     ham_distance = tf.math.divide_no_nan(not_eq, len(result))
     return ham_distance
 
 
-def hamming_loss_fn(y_true, y_pred, mode):
+def hamming_loss_fn(y_true, y_pred, threshold, mode):
     """Computes hamming loss.
 
     Hamming loss is the fraction of wrong labels to the total number
@@ -59,35 +64,57 @@ def hamming_loss_fn(y_true, y_pred, mode):
     In multi-label classification, hamming loss penalizes only the
     individual labels.
 
-    :param y_true: actual target value
-    :param y_pred: predicted target value
-    :param mode: multi-class or multi-label
-    :return: hamming loss
+    Args:
+
+        y_true: actual target value
+        y_pred: predicted target value
+        mode: multi-class or multi-label
+
+    Returns:
+
+        hamming loss: float
+
+    Usage:
 
     ```python
     # multi-class hamming loss
-    hl = HammingLoss(mode='multiclass')
+    hl = HammingLoss(mode='multiclass', threshold=0.6)
     actuals = tf.constant([[1, 0, 0, 0],[0, 0, 1, 0],
                        [0, 0, 0, 1],[0, 1, 0, 0]],
-                      dtype=np.int32)
-    predictions = tf.constant([[1, 0, 0, 0], [0, 0, 1, 0],
-                           [0, 0, 0, 1], [1, 0, 0, 0]],
-                          dtype=np.int32)
+                      dtype=tf.float32)
+    predictions = tf.constant([[0.8, 0.1, 0.1, 0],
+                               [0.2, 0, 0.8, 0],
+                               [0.05, 0.05, 0.1, 0.8],
+                               [1, 0, 0, 0]],
+                          dtype=tf.float32)
     hl.update_state(actuals, predictions)
     print('Hamming loss: ', hl.result().numpy()) # 0.25
 
     # multi-label hamming loss
-    hl = HammingLoss(mode='multilabel')
+    hl = HammingLoss(mode='multilabel', threshold=0.8)
     actuals = tf.constant([[1, 0, 1, 0],[0, 1, 0, 1],
                        [0, 0, 0,1]], dtype=tf.int32)
-    predictions = tf.constant([[1, 0, 1, 0],[0, 1, 0, 1],
-                           [1, 0, 0, 0]], dtype=tf.int32)
+    predictions = tf.constant([[0.82, 0.5, 0.90, 0],
+                               [0, 1, 0.4, 0.98],
+                               [0.89, 0.79, 0, 0.3]],
+                               dtype=tf.float32)
     hl.update_state(actuals, predictions)
     print('Hamming loss: ', hl.result().numpy()) # 0.16666667
     ```
     """
     if mode not in ['multiclass', 'multilabel']:
         raise TypeError('mode must be: [multiclass, multilabel]')
+
+    if threshold is None:
+        threshold = tf.reduce_max(y_pred, axis=-1, keepdims=True)
+        # make sure [0, 0, 0] doesn't become [1, 1, 1]
+        # Use abs(x) > eps, instead of x != 0 to check for zero
+        y_pred = tf.logical_and(y_pred >= threshold, tf.abs(y_pred) > 1e-12)
+    else:
+        y_pred = y_pred > threshold
+
+    y_true = tf.cast(y_true, tf.int32)
+    y_pred = tf.cast(y_pred, tf.int32)
 
     if mode == 'multiclass':
         nonzero = tf.cast(
@@ -101,6 +128,12 @@ def hamming_loss_fn(y_true, y_pred, mode):
 
 
 class HammingLoss(MeanMetricWrapper):
-    def __init__(self, mode, name='hamming_loss', dtype=tf.float32):
+    """Computes hamming loss."""
+
+    def __init__(self,
+                 mode,
+                 name='hamming_loss',
+                 threshold=None,
+                 dtype=tf.float32):
         super(HammingLoss, self).__init__(
-            hamming_loss_fn, name, dtype=dtype, mode=mode)
+            hamming_loss_fn, name, dtype=dtype, mode=mode, threshold=threshold)
