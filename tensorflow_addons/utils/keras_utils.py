@@ -51,8 +51,8 @@ def normalize_tuple(value, n, name):
             value_tuple = tuple(value)
         except TypeError:
             raise TypeError('The `' + name +
-                             '` argument must be a tuple of ' + str(n) +
-                             ' integers. Received: ' + str(value))
+                            '` argument must be a tuple of ' + str(n) +
+                            ' integers. Received: ' + str(value))
         if len(value_tuple) != n:
             raise ValueError('The `' + name +
                              '` argument must be a tuple of ' + str(n) +
