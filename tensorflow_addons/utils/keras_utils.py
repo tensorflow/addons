@@ -48,6 +48,11 @@ def normalize_tuple(value, n, name):
         return (value,) * n
     else:
         try:
+            try:
+                obj_value = iter(value)
+            except TypeError as te:
+                print (value, ' is not iterable')
+
             value_tuple = tuple(value)
         except TypeError:
             raise TypeError('The `' + name +

@@ -98,11 +98,11 @@ class MeanFilter2dTest(_Filter2dTest):
             with self.subTest(filter_shape=filter_shape):
                 with self.assertRaisesRegexp(ValueError, msg):
                     mean_filter2d(image, filter_shape=filter_shape)
-        
-        if filter_shape is None:  
-            with self.subTest(filter_shape=filter_shape):
-                with self.assertRaisesRegexp(TypeError, msg):
-                    mean_filter2d(image, filter_shape=filter_shape)                    
+
+        filter_shape = None
+        with self.subTest(filter_shape=filter_shape):
+            with self.assertRaisesRegexp(TypeError, msg):
+                mean_filter2d(image, filter_shape=filter_shape)                    
 
     def test_invalid_padding(self):
         msg = ("padding should be one of \"REFLECT\", \"CONSTANT\", "
@@ -223,11 +223,11 @@ class MedianFilter2dTest(_Filter2dTest):
             with self.subTest(filter_shape=filter_shape):
                 with self.assertRaisesRegexp(ValueError, msg):
                     median_filter2d(image, filter_shape=filter_shape)
-
-        if filter_shape is None:
-            with self.subTest(filter_shape=filter_shape):
-                with self.assertRaisesRegexp(TypeError, msg):
-                    mean_filter2d(image, filter_shape=filter_shape)                                        
+                    
+        filter_shape = None
+        with self.subTest(filter_shape=filter_shape):
+            with self.assertRaisesRegexp(TypeError, msg):
+                mean_filter2d(image, filter_shape=filter_shape)                                        
 
     def test_invalid_padding(self):
         msg = ("padding should be one of \"REFLECT\", \"CONSTANT\", "
