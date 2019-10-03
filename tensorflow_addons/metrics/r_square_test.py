@@ -20,8 +20,10 @@ from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow_addons.metrics import RSquare
+from tensorflow.keras import layers
+import numpy as np
 
-
+@test_utils.run_all_in_graph_and_eager_modes
 class RSquareTest(tf.test.TestCase):
     def test_config(self):
         r2_obj = RSquare(name='r_square')
@@ -80,6 +82,23 @@ class RSquareTest(tf.test.TestCase):
         # Check results
         self.check_results(r2_obj, 0.7376327)
 
+    def keras_test(self):
+        # build model
+        model = tf.keras.Sequential()
+        model.add(layers.Dense(64, activation='relu'))
+        model.add(layers.Dense(64, activation='relu'))
+        model.add(layers.Dense(1))
+        # initialize metric
+        r = RSquare()
+        # compile the model
+        model.compile(loss="mean_squared_error",
+                      optimizer="adam",
+                      metrics=[r])
 
-if __name__ == '__main__':
-    tf.test.main()
+        # generate sample data
+        data = np.random.random((50, 5))
+        data = tf.convert_to_tensor(data, dtype=tf.float32)
+        labels = np.random.random((50, 1))
+        labels = tf.convert_to_tensor(labels, dtype=tf.float32)
+        # train the model
+        model.fit(data, labels, epochs=5, batch_size=10, verbose=0)
