@@ -44,6 +44,18 @@ class MultiLabelConfusionMatrix(Metric):
     - false negatives for class i in M(1,0)
     - true positives for class i in M(1,1)
 
+    Args:
+        num_classes: number of unique classes in the dataset
+        threshold: Elements of `y_pred` greater than threshold are
+            converted to be 1, and the rest 0. If threshold is
+            None, the argmax is converted to 1, and the rest 0.
+
+    Returns:
+        Confusion matrix
+
+
+    Usage:
+
     ```python
     # multilabel confusion matrix
     y_true = tf.constant([[1, 0, 1], [0, 1, 0]],
@@ -72,12 +84,12 @@ class MultiLabelConfusionMatrix(Metric):
 
     def __init__(self,
                  num_classes,
-                 sample_weight=None,
+                 threshold=None,
                  name='Multilabel_confusion_matrix',
-                 dtype=tf.int32):
+                 dtype=tf.float32):
         super(MultiLabelConfusionMatrix, self).__init__(name=name, dtype=dtype)
         self.num_classes = num_classes
-        self.sample_weight = sample_weight
+        self.threshold = threshold
         self.true_positives = self.add_weight(
             'true_positives',
             shape=[self.num_classes],
@@ -100,9 +112,18 @@ class MultiLabelConfusionMatrix(Metric):
             dtype=self.dtype)
 
     def update_state(self, y_true, y_pred, sample_weight=None):
+
+        if self.threshold is None:
+            threshold = tf.reduce_max(y_pred, axis=-1, keepdims=True)
+            # make sure [0, 0, 0] doesn't become [1, 1, 1]
+            # Use abs(x) > eps, instead of x != 0 to check for zero
+            y_pred = tf.logical_and(y_pred >= threshold,
+                                    tf.abs(y_pred) > 1e-12)
+        else:
+            y_pred = y_pred > self.threshold
+
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred, tf.int32)
-        sample_weight = self.sample_weight
         true_positive = tf.math.count_nonzero(y_true * y_pred, 0)
         # predictions sum
         pred_sum = tf.math.count_nonzero(y_pred, 0)
@@ -110,8 +131,11 @@ class MultiLabelConfusionMatrix(Metric):
         true_sum = tf.math.count_nonzero(y_true, 0)
         false_positive = pred_sum - true_positive
         false_negative = true_sum - true_positive
-        true_negative = y_true.get_shape(
-        )[0] - true_positive - false_positive - false_negative
+
+        y_true_negative = tf.math.not_equal(y_true, 1)
+        y_pred_negative = tf.math.not_equal(y_pred, 1)
+        true_negative = tf.math.count_nonzero(
+            tf.math.logical_and(y_true_negative, y_pred_negative), axis=0)
 
         # true positive state update
         self.true_positives.assign_add(tf.cast(true_positive, self.dtype))
@@ -136,9 +160,7 @@ class MultiLabelConfusionMatrix(Metric):
     def get_config(self):
         """Returns the serializable config of the metric."""
 
-        config = {
-            "num_classes": self.num_classes,
-        }
+        config = {"num_classes": self.num_classes, "threshold": self.threshold}
         base_config = super(MultiLabelConfusionMatrix, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
