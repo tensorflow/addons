@@ -32,7 +32,7 @@ using GPUDevice = Eigen::GpuDevice;
 
 TF_CALL_GPU_NUMBER_TYPES(DEFINE_GPU_KERNELS);
 
-}  // end namespace addons
+}  // namespace addons
 }  // namespace tensorflow
 
 #endif  // GOOGLE_CUDA

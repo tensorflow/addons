@@ -51,7 +51,7 @@ struct HardshrinkGrad {
   // Computes HardshrinkGrad backprops.
   //
   // gradients: gradients backpropagated to the Hardshink op.
-  // features: the inputs that were passed to the Hardshrink op.
+  // features: inputs that were passed to the Hardshrink op.
   // lower: the lower bound for setting values to zeros.
   // upper: the upper bound for setting values to zeros.
   // backprops: gradients to backpropagate to the Hardshrink inputs.
@@ -136,7 +136,7 @@ void HardshrinkGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
           upper, output->flat<T>());
 }
 
-}  // end namespace addons
+}  // namespace addons
 }  // namespace tensorflow
 
 #undef EIGEN_USE_THREADS

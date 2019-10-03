@@ -59,7 +59,7 @@ struct GeluGrad {
   // Computes GeluGrad backprops.
   //
   // gradients: gradients backpropagated to the Gelu op.
-  // features: the inputs that were passed to the Gelu op.
+  // features: inputs that were passed to the Gelu op.
   // approximate: whether to enable approximation.
   // backprops: gradients to backpropagate to the Gelu inputs.
   void operator()(const Device& d, typename TTypes<T>::ConstTensor gradients,
@@ -138,7 +138,7 @@ void GeluGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
           approximate, output->flat<T>());
 }
 
-}  // end namespace addons
+}  // namespace addons
 }  // namespace tensorflow
 
 #undef EIGEN_USE_THREADS

@@ -20,6 +20,19 @@ py_library(
 )
 
 py_test(
+    name = "activations_test",
+    size = "small",
+    srcs = [
+        "activations_test.py",
+    ],
+    main = "activations_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":activations",
+    ],
+)
+
+py_test(
     name = "sparsemax_test",
     size = "small",
     srcs = [

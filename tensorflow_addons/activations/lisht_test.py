@@ -55,19 +55,6 @@ class LishtTest(tf.test.TestCase, parameterized.TestCase):
             x = tf.ones(shape=shape, dtype=tf.float32)
             self.assertAllClose(fn(x), lisht(x))
 
-    def test_serialization(self):
-        config = tf.keras.activations.serialize(lisht)
-        fn = tf.keras.activations.deserialize(config)
-        self.assertEqual(fn, lisht)
-
-    def test_serialization_with_layers(self):
-        layer = tf.keras.layers.Dense(3, activation=lisht)
-        config = tf.keras.layers.serialize(layer)
-        deserialized_layer = tf.keras.layers.deserialize(config)
-        self.assertEqual(deserialized_layer.__class__.__name__,
-                         layer.__class__.__name__)
-        self.assertEqual(deserialized_layer.activation.__name__, "lisht")
-
 
 if __name__ == "__main__":
     tf.test.main()
