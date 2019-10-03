@@ -100,7 +100,7 @@ class MultiLabelConfusionMatrix(Metric):
     def update_state(self, y_true, y_pred):
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred, tf.int32)
-
+        # true positive
         true_positive = tf.math.count_nonzero(y_true * y_pred, 0)
         # predictions sum
         pred_sum = tf.math.count_nonzero(y_pred, 0)
