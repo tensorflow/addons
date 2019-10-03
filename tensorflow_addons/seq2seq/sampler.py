@@ -207,10 +207,8 @@ class TrainingSampler(Sampler):
 
         Args:
           inputs: A (structure of) input tensors.
-          sequence_length: An int32 vector tensor. Note that the
-            sequence_length has higher priority than mask, so mask
-            will be ignored if both of them are provided.
-          mask: A boolean 2D tensor
+          sequence_length: An int32 vector tensor.
+          mask: A boolean 2D tensor.
 
         Returns:
           (finished, next_inputs), a tuple of two items. The first item is a
@@ -221,6 +219,8 @@ class TrainingSampler(Sampler):
         self.inputs = tf.convert_to_tensor(inputs, name="inputs")
         if not self.time_major:
             inputs = tf.nest.map_structure(_transpose_batch_time, inputs)
+
+        self._batch_size = tf.shape(tf.nest.flatten(inputs)[0])[1]
 
         self.input_tas = tf.nest.map_structure(_unstack_ta, inputs)
         if sequence_length is not None and mask is not None:
@@ -251,13 +251,13 @@ class TrainingSampler(Sampler):
                 self.sequence_length = tf.math.reduce_sum(
                     tf.cast(mask, tf.int32), axis=axis, name="sequence_length")
         else:
-            raise ValueError("At least, one of the sequence_length or mask "
-                             "should be provided to TrainingSampler")
+            max_seq_len = tf.shape(tf.nest.flatten(inputs)[0])[0]
+            self.sequence_length = tf.fill([self.batch_size],
+                                           max_seq_len,
+                                           name="sequence_length")
 
         self.zero_inputs = tf.nest.map_structure(
             lambda inp: tf.zeros_like(inp[0, :]), inputs)
-
-        self._batch_size = tf.size(self.sequence_length)
 
         finished = tf.equal(0, self.sequence_length)
         all_finished = tf.reduce_all(finished)

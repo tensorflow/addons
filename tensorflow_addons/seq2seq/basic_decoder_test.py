@@ -123,11 +123,13 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
                 eval_result["step_outputs"].sample_id)
 
     @parameterized.named_parameters(("sequence_length_only", False),
-                                    ("mask_only", True))
+                                    ("mask_only", True), ("no_mask", None))
     def testStepWithTrainingHelperMaskedInput(self, use_mask):
-        sequence_length = [3, 4, 3, 1, 0]
         batch_size = 5
         max_time = 8
+        sequence_length = [max_time] * batch_size if use_mask is None \
+            else [3, 4, 3, 1, 0]
+        sequence_length = np.array(sequence_length, dtype=np.int32)
         mask = [[True] * l + [False] * (max_time - l) for l in sequence_length]
         input_depth = 7
         cell_depth = 10
@@ -147,7 +149,11 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
             my_decoder = basic_decoder.BasicDecoder(
                 cell=cell, sampler=sampler, output_layer=output_layer)
 
-            if use_mask:
+            if use_mask is None:
+                (first_finished, first_inputs,
+                 first_state) = my_decoder.initialize(
+                     input_t, initial_state=initial_state)
+            elif use_mask:
                 (first_finished, first_inputs,
                  first_state) = my_decoder.initialize(
                      input_t, initial_state=initial_state, mask=mask)
@@ -202,9 +208,9 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
                 "step_finished": step_finished
             })
 
-            self.assertAllEqual([False, False, False, False, True],
+            self.assertAllEqual(sequence_length == 0,
                                 eval_result["first_finished"])
-            self.assertAllEqual([False, False, False, True, True],
+            self.assertAllEqual((np.maximum(sequence_length - 1, 0) == 0),
                                 eval_result["step_finished"])
             self.assertEqual(output_dtype.sample_id,
                              eval_result["step_outputs"].sample_id.dtype)
