@@ -15,7 +15,7 @@
 # ==============================================================================
 set -e -x
 
-PYTHON_VERSIONS="2.7.15 3.4.9 3.5.6 3.6.6"
+PYTHON_VERSIONS="2.7.15 3.5.6 3.6.6 3.7.4"
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
 
 # Install Bazel 0.24
@@ -24,6 +24,10 @@ chmod +x bazel-0.24.1-installer-darwin-x86_64.sh
 ./bazel-0.24.1-installer-darwin-x86_64.sh --user
 export PATH="$PATH:$HOME/bin"
 
+# Install delocate
+python3 -m pip install -q delocate
+
+brew update && brew upgrade pyenv
 eval "$(pyenv init -)"
 
 for version in ${PYTHON_VERSIONS}; do
@@ -31,13 +35,14 @@ for version in ${PYTHON_VERSIONS}; do
     pyenv install -s $PYENV_VERSION
 
     python get-pip.py -q
-    python -m pip install -q delocate
+    python -m pip --version
 
     #Link TF dependency
     yes 'y' | sudo ./configure.sh --quiet
 
     # Build
     bazel build \
+      -c opt \
       --noshow_progress \
       --noshow_loading_progress \
       --verbose_failures \
@@ -50,6 +55,9 @@ for version in ${PYTHON_VERSIONS}; do
     # Uncomment and use this command for release branches
     #bazel-bin/build_pip_pkg artifacts
 done
+
+# Clean up
+rm get-pip.py
 
 ## Verify Wheel
 ./tools/ci_build/builds/wheel_verify.sh

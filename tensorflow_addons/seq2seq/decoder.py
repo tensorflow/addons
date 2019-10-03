@@ -25,11 +25,6 @@ import tensorflow as tf
 
 # TODO: Find public API alternatives to these
 from tensorflow.python.ops import control_flow_util
-from tensorflow.python.ops import rnn
-from tensorflow.python.ops import rnn_cell_impl
-
-_transpose_batch_time = rnn._transpose_batch_time  # pylint: disable=protected-access
-_zero_state_tensors = rnn_cell_impl._zero_state_tensors  # pylint: disable=protected-access
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -43,6 +38,8 @@ class Decoder(object):
       RNNCell instance as the state.
     - `finished`: boolean tensor telling whether each sequence in the batch is
       finished.
+    - `training`: boolean whether it should behave in training mode or in
+      inference mode.
     - `outputs`: Instance of BasicDecoderOutput. Result of the decoding, at
       each time step.
     """
@@ -79,7 +76,7 @@ class Decoder(object):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def step(self, time, inputs, state, name=None):
+    def step(self, time, inputs, state, training=None, name=None):
         """Called per step of decoding (but only once for dynamic decoding).
 
         Args:
@@ -88,6 +85,9 @@ class Decoder(object):
             time step.
           state: RNNCell state (possibly nested tuple of) tensor[s] from
             previous time step.
+          training: Python boolean. Indicates whether the layer should behave
+            in training  mode or in inference mode. Only relevant
+            when `dropout` or `recurrent_dropout` is used.
           name: Name scope for any created operations.
 
         Returns:
@@ -136,6 +136,8 @@ class BaseDecoder(tf.keras.layers.Layer):
       encoder, which will be used for the attention wrapper for the RNNCell.
     - `finished`: boolean tensor telling whether each sequence in the batch is
       finished.
+    - `training`: boolean whether it should behave in training mode or in
+      inference mode.
     - `outputs`: Instance of BasicDecoderOutput. Result of the decoding, at
       each time step.
     """
@@ -154,7 +156,7 @@ class BaseDecoder(tf.keras.layers.Layer):
         self.swap_memory = swap_memory
         super(BaseDecoder, self).__init__(**kwargs)
 
-    def call(self, inputs, initial_state=None, **kwargs):
+    def call(self, inputs, initial_state=None, training=None, **kwargs):
         init_kwargs = kwargs
         init_kwargs["initial_state"] = initial_state
         return dynamic_decode(
@@ -164,6 +166,7 @@ class BaseDecoder(tf.keras.layers.Layer):
             maximum_iterations=self.maximum_iterations,
             parallel_iterations=self.parallel_iterations,
             swap_memory=self.swap_memory,
+            training=training,
             decoder_init_input=inputs,
             decoder_init_kwargs=init_kwargs)
 
@@ -204,7 +207,7 @@ class BaseDecoder(tf.keras.layers.Layer):
         """
         raise NotImplementedError
 
-    def step(self, time, inputs, state):
+    def step(self, time, inputs, state, training):
         """Called per step of decoding (but only once for dynamic decoding).
 
         Args:
@@ -213,6 +216,8 @@ class BaseDecoder(tf.keras.layers.Layer):
             time step.
           state: RNNCell state (possibly nested tuple of) tensor[s] from
             previous time step.
+          training: Python boolean. Indicates whether the layer should
+            behave in training mode or in inference mode.
 
         Returns:
           `(outputs, next_state, next_inputs, finished)`: `outputs` is an
@@ -250,21 +255,13 @@ class BaseDecoder(tf.keras.layers.Layer):
     # TODO(scottzhu): Add build/get_config/from_config and other layer methods.
 
 
-def _create_zero_outputs(size, dtype, batch_size):
-    """Create a zero outputs Tensor structure."""
-
-    def _create(s, d):
-        return _zero_state_tensors(s, batch_size, d)
-
-    return tf.nest.map_structure(_create, size, dtype)
-
-
 def dynamic_decode(decoder,
                    output_time_major=False,
                    impute_finished=False,
                    maximum_iterations=None,
                    parallel_iterations=32,
                    swap_memory=False,
+                   training=None,
                    scope=None,
                    **kwargs):
     """Perform dynamic decoding with `decoder`.
@@ -287,6 +284,9 @@ def dynamic_decode(decoder,
          steps.  Default is `None` (decode until the decoder is fully done).
       parallel_iterations: Argument passed to `tf.while_loop`.
       swap_memory: Argument passed to `tf.while_loop`.
+      training: Python boolean. Indicates whether the layer should behave
+          in training  mode or in inference mode. Only relevant
+          when `dropout` or `recurrent_dropout` is used.
       scope: Optional variable scope to use.
       **kwargs: dict, other keyword arguments for dynamic_decode. It might
         contain arguments for `BaseDecoder` to initialize, which takes all
@@ -334,8 +334,10 @@ def dynamic_decode(decoder,
             initial_finished, initial_inputs, initial_state = \
                 decoder.initialize(decoder_init_input, **decoder_init_kwargs)
 
-        zero_outputs = _create_zero_outputs(
-            decoder.output_size, decoder.output_dtype, decoder.batch_size)
+        zero_outputs = tf.nest.map_structure(
+            lambda shape, dtype: tf.zeros(
+                _prepend_batch(decoder.batch_size, shape), dtype=dtype),
+            decoder.output_size, decoder.output_dtype)
 
         if is_xla and maximum_iterations is None:
             raise ValueError(
@@ -389,15 +391,28 @@ def dynamic_decode(decoder,
               ```
             """
             (next_outputs, decoder_state, next_inputs,
-             decoder_finished) = decoder.step(time, inputs, state)
+             decoder_finished) = decoder.step(time, inputs, state, training)
+            decoder_state_sequence_lengths = False
             if decoder.tracks_own_finished:
                 next_finished = decoder_finished
+                lengths = getattr(decoder_state, "lengths", None)
+                if lengths is not None:
+                    # sequence lengths are provided by decoder_state.lengths;
+                    # overwrite our sequence lengths.
+                    decoder_state_sequence_lengths = True
+                    sequence_lengths = tf.cast(lengths, tf.int32)
             else:
                 next_finished = tf.logical_or(decoder_finished, finished)
-            next_sequence_lengths = tf.where(
-                tf.logical_not(finished),
-                tf.fill(tf.shape(sequence_lengths), time + 1),
-                sequence_lengths)
+
+            if decoder_state_sequence_lengths:
+                # Just pass something through the loop; at the next iteration
+                # we'll pull the sequence lengths from the decoder_state again.
+                next_sequence_lengths = sequence_lengths
+            else:
+                next_sequence_lengths = tf.where(
+                    tf.logical_not(finished),
+                    tf.fill(tf.shape(sequence_lengths), time + 1),
+                    sequence_lengths)
 
             tf.nest.assert_same_structure(state, decoder_state)
             tf.nest.assert_same_structure(outputs_ta, next_outputs)
@@ -427,10 +442,12 @@ def dynamic_decode(decoder,
                 else:
                     new.set_shape(cur.shape)
                     pass_through = (new.shape.ndims == 0)
-                broadcast_finished = tf.broadcast_to(
-                    tf.expand_dims(finished, axis=-1), new.shape)
-                return new if pass_through else tf.where(
-                    broadcast_finished, cur, new)
+                if not pass_through:
+                    broadcast_finished = tf.broadcast_to(
+                        tf.expand_dims(finished, axis=-1), new.shape)
+                    return tf.where(broadcast_finished, cur, new)
+                else:
+                    return new
 
             if impute_finished:
                 next_state = tf.nest.map_structure(_maybe_copy_state,
@@ -443,7 +460,7 @@ def dynamic_decode(decoder,
             return (time + 1, outputs_ta, next_state, next_inputs,
                     next_finished, next_sequence_lengths)
 
-        res = tf.compat.v1.while_loop(
+        res = tf.while_loop(
             condition,
             body,
             loop_vars=(
@@ -476,3 +493,28 @@ def dynamic_decode(decoder,
                                                   final_outputs)
 
     return final_outputs, final_state, final_sequence_lengths
+
+
+def _prepend_batch(batch_size, shape):
+    """Prepends the batch dimension to the shape.
+
+    If the batch_size value is known statically, this function returns a
+    TensorShape, otherwise a Tensor.
+    """
+    if isinstance(batch_size, tf.Tensor):
+        static_batch_size = tf.get_static_value(batch_size)
+    else:
+        static_batch_size = batch_size
+    if static_batch_size is None:
+        return tf.concat(([batch_size], shape), axis=0)
+    return [static_batch_size] + shape
+
+
+def _transpose_batch_time(tensor):
+    """Transposes the batch and time dimension of tensor if its rank is at
+    least 2."""
+    shape = tensor.shape
+    if shape.rank is not None and shape.rank < 2:
+        return tensor
+    perm = tf.concat(([1, 0], tf.range(2, tf.rank(tensor))), axis=0)
+    return tf.transpose(tensor, perm)

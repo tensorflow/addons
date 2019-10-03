@@ -17,9 +17,9 @@ let us give you advice on the proposed changes. If the changes are
 minor, then feel free to make them without discussion.
 
 Want to contribute but not sure of what? Here are a few suggestions:
-1. Add a new example or tutorial. Located in [`examples/`](examples),
+1. Add a new tutorial. Located in [`docs/tutorials/`](docs/tutorials),
   these are a great way to familiarize yourself and others with TF-Addons. See 
-  [the guidelines](examples/README.md) for more information on how to add 
+  [the guidelines](docs/tutorials/README.md) for more information on how to add 
   examples.
 2. Solve an [existing issue](https://github.com/tensorflow/addons/issues).
   These range from low-level software bugs to higher-level design problems.
@@ -46,20 +46,14 @@ process can take longer than typical commit reviews so please bare with
 us**
 
 
-## Development Environment
-It is recommended that development is done in the latest
-`nightly-custom-op` docker image.
+## Development Tips
+Try these useful commands below:
 
-```bash
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
-```
-
-Try these commands below:
-
-* Format code automatically: `make code-format`
-* Run sanity check: `make sanity-check`
-* Run unit tests: `make unit-test`
-* All of the above: `make`
+* Format code automatically: `bash tools/run_docker.sh -c 'make code-format'`
+* Run sanity check: `bash tools/run_docker.sh -c 'make sanity-check'`
+* Run CPU unit tests: `bash tools/run_docker.sh -c 'make unit-test'`
+* Run GPU unit tests: `bash tools/run_docker.sh -d gpu -c 'make gpu-unit-test'`
+* All of the above: `bash tools/run_docker.sh -d gpu -c 'make'`
 
 ## Coding style
 
@@ -70,25 +64,43 @@ Please see our [Style Guide](STYLE_GUIDE.md) for more details.
 
 ## Code Testing
 #### CI Testing
-Nighly CI tests are ran and results can be found on the central README. To 
+Nightly CI tests are ran and results can be found on the central README. To 
 subscribe for alerts please join the [addons-testing mailing list](https://groups.google.com/a/tensorflow.org/forum/#!forum/addons-testing).
 
-#### Locally Testing
+#### Locally Testing CPU
 
 ```bash
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op make unit-test
+bash tools/run_docker.sh -c 'make unit-test'
 ```
 
 or run manually:
 
 ```bash
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:nightly-custom-op /bin/bash
-
+docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-ubuntu16 /bin/bash
 ./configure.sh  # Links project with TensorFlow dependency
 
 bazel test -c opt -k \
 --test_timeout 300,450,1200,3600 \
---test_output=errors \
+--test_output=all \
+//tensorflow_addons/...
+```
+
+#### Locally Testing GPU
+```bash
+bash tools/run_docker.sh -d gpu -c 'make gpu-unit-test'
+```
+
+or run manually:
+
+```bash
+docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-gpu-ubuntu16 /bin/bash
+./configure.sh  # Links project with TensorFlow dependency
+
+bazel test -c opt -k \
+--test_timeout 300,450,1200,3600 \
+--crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.0:toolchain \
+--test_output=all \
+--jobs=1 \
 //tensorflow_addons/...
 ```
 

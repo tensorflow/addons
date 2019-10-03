@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for contrib.seq2seq.python.seq2seq.beam_search_decoder."""
+"""Tests for tfa.seq2seq.seq2seq.beam_search_decoder."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -28,7 +28,7 @@ from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 _beam_search_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/seq2seq/_beam_search_ops.so"))
-gather_tree = _beam_search_ops_so.gather_tree
+gather_tree = _beam_search_ops_so.addons_gather_tree
 
 
 class TestGatherTree(tf.test.TestCase):

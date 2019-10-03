@@ -25,15 +25,12 @@ import tensorflow as tf
 
 from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import decoder
+from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
-
-# TODO: Find public API alternatives to these
-from tensorflow.python.framework import tensor_shape
-from tensorflow.python.ops import rnn_cell_impl
 
 _beam_search_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/seq2seq/_beam_search_ops.so"))
-gather_tree = _beam_search_ops_so.gather_tree
+gather_tree = _beam_search_ops_so.addons_gather_tree
 
 
 class BeamSearchDecoderState(
@@ -225,6 +222,15 @@ def _check_batch_beam(t, batch_size, beam_width):
     return tf.Assert(condition, [error_message])
 
 
+def _as_shape(value):
+    """Converts the argument to a TensorShape if not already one."""
+    if not isinstance(value, tf.TensorShape):
+        if isinstance(value, tf.Tensor):
+            value = tf.get_static_value(value)
+        value = tf.TensorShape(value)
+    return value
+
+
 class BeamSearchDecoderMixin(object):
     """BeamSearchDecoderMixin contains the common methods for
     BeamSearchDecoder.
@@ -266,7 +272,7 @@ class BeamSearchDecoderMixin(object):
           TypeError: if `cell` is not an instance of `RNNCell`,
             or `output_layer` is not an instance of `tf.keras.layers.Layer`.
         """
-        rnn_cell_impl.assert_like_rnncell("cell", cell)  # pylint: disable=protected-access
+        keras_utils.assert_like_rnncell("cell", cell)
         if (output_layer is not None
                 and not isinstance(output_layer, tf.keras.layers.Layer)):
             raise TypeError("output_layer must be a Layer, received: %s" %
@@ -376,10 +382,7 @@ class BeamSearchDecoderMixin(object):
         Returns:
           A reshaped version of t with dimension [batch_size * beam_width, s].
         """
-        if isinstance(s, tf.Tensor):
-            s = tensor_shape.as_shape(tf.get_static_value(s))
-        else:
-            s = tf.TensorShape(s)
+        s = _as_shape(s)
         t_shape = tf.shape(t)
         static_batch_size = tf.get_static_value(self._batch_size)
         batch_size_beam_width = (None if static_batch_size is None else
@@ -409,10 +412,7 @@ class BeamSearchDecoderMixin(object):
             `[batch_size, beam_width, s]` (assuming batch_size and beam_width
             are known statically).
         """
-        if isinstance(s, tf.Tensor):
-            s = tf.TensorShape(tf.get_static_value(s))
-        else:
-            s = tf.TensorShape(s)
+        s = _as_shape(s)
         t_shape = tf.shape(t)
         reshaped_t = tf.reshape(
             t, tf.concat(([self._batch_size, self._beam_width], t_shape[1:]),
@@ -514,17 +514,25 @@ class BeamSearchDecoderMixin(object):
                 self._beam_width):
             return t
         t = t.stack()
+        # yapf:disable
         with tf.control_dependencies(
-            [_check_batch_beam(t, self._batch_size, self._beam_width)]):
+                [_check_batch_beam(  # pylint: disable=bad-continuation
+                    t,
+                    self._batch_size,
+                    self._beam_width)]):
+            # yapf:enable
             return gather_tree_from_array(t, parent_ids, sequence_length)
 
-    def step(self, time, inputs, state, name=None):
+    def step(self, time, inputs, state, training=None, name=None):
         """Perform a decoding step.
 
         Args:
           time: scalar `int32` tensor.
           inputs: A (structure of) input tensors.
           state: A (structure of) state tensors and TensorArrays.
+          training: Python boolean. Indicates whether the layer should
+              behave in training mode or in inference mode. Only relevant
+              when `dropout` or `recurrent_dropout` is used.
           name: Name scope for any created operations.
 
         Returns:
@@ -544,7 +552,8 @@ class BeamSearchDecoderMixin(object):
             cell_state = tf.nest.map_structure(self._maybe_merge_batch_beams,
                                                cell_state,
                                                self._cell.state_size)
-            cell_outputs, next_cell_state = self._cell(inputs, cell_state)
+            cell_outputs, next_cell_state = self._cell(
+                inputs, cell_state, training=training)
             cell_outputs = tf.nest.map_structure(
                 lambda out: self._split_batch_beams(out, out.shape[1:]),
                 cell_outputs)
@@ -586,7 +595,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
     `AttentionWrapper`, then you must ensure that:
 
     - The encoder output has been tiled to `beam_width` via
-      `tf.contrib.seq2seq.tile_batch` (NOT `tf.tile`).
+      `tfa.seq2seq.tile_batch` (NOT `tf.tile`).
     - The `batch_size` argument passed to the `get_initial_state` method of
       this wrapper is equal to `true_batch_size * beam_width`.
     - The initial state created with `get_initial_state` above contains a
@@ -596,11 +605,11 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
     An example:
 
     ```
-    tiled_encoder_outputs = tf.contrib.seq2seq.tile_batch(
+    tiled_encoder_outputs = tfa.seq2seq.tile_batch(
         encoder_outputs, multiplier=beam_width)
-    tiled_encoder_final_state = tf.contrib.seq2seq.tile_batch(
+    tiled_encoder_final_state = tfa.seq2seq.tile_batch(
         encoder_final_state, multiplier=beam_width)
-    tiled_sequence_length = tf.contrib.seq2seq.tile_batch(
+    tiled_sequence_length = tfa.seq2seq.tile_batch(
         sequence_length, multiplier=beam_width)
     attention_mechanism = MyFavoriteAttentionMechanism(
         num_units=attention_depth,
@@ -752,7 +761,12 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
             predicted_ids=tf.int32,
             parent_ids=tf.int32)
 
-    def call(self, embeddning, start_tokens, end_token, initial_state,
+    def call(self,
+             embedding,
+             start_tokens,
+             end_token,
+             initial_state,
+             training=None,
              **kwargs):
         init_kwargs = kwargs
         init_kwargs["start_tokens"] = start_tokens
@@ -765,7 +779,8 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
             maximum_iterations=self.maximum_iterations,
             parallel_iterations=self.parallel_iterations,
             swap_memory=self.swap_memory,
-            decoder_init_input=embeddning,
+            training=training,
+            decoder_init_input=embedding,
             decoder_init_kwargs=init_kwargs)
 
 

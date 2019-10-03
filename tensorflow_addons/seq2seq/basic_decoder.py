@@ -24,9 +24,7 @@ import tensorflow as tf
 
 from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
-
-# TODO: Find public API alternatives to this
-from tensorflow.python.ops import rnn_cell_impl
+from tensorflow_addons.utils import keras_utils
 
 
 class BasicDecoderOutput(
@@ -53,7 +51,7 @@ class BasicDecoder(decoder.BaseDecoder):
           TypeError: if `cell`, `helper` or `output_layer` have an incorrect
           type.
         """
-        rnn_cell_impl.assert_like_rnncell("cell", cell)
+        keras_utils.assert_like_rnncell("cell", cell)
         if not isinstance(sampler, sampler_py.Sampler):
             raise TypeError(
                 "sampler must be a Sampler, received: %s" % (sampler,))
@@ -111,18 +109,19 @@ class BasicDecoder(decoder.BaseDecoder):
             tf.nest.map_structure(lambda _: dtype, self._rnn_output_size()),
             self.sampler.sample_ids_dtype)
 
-    def step(self, time, inputs, state):
+    def step(self, time, inputs, state, training=None):
         """Perform a decoding step.
 
         Args:
           time: scalar `int32` tensor.
           inputs: A (structure of) input tensors.
           state: A (structure of) state tensors and TensorArrays.
+          training: Python boolean.
 
         Returns:
           `(outputs, next_state, next_inputs, finished)`.
         """
-        cell_outputs, cell_state = self.cell(inputs, state)
+        cell_outputs, cell_state = self.cell(inputs, state, training=training)
         if self.output_layer is not None:
             cell_outputs = self.output_layer(cell_outputs)
         sample_ids = self.sampler.sample(
