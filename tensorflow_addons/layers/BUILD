@@ -6,6 +6,7 @@ py_library(
     name = "layers",
     srcs = [
         "__init__.py",
+        "crf.py",
         "gelu.py",
         "maxout.py",
         "normalizations.py",
@@ -13,7 +14,6 @@ py_library(
         "poincare.py",
         "sparsemax.py",
         "wrappers.py",
-        "crf.py"
     ],
     data = [
         "//tensorflow_addons/custom_ops/layers:_correlation_cost_ops.so",
@@ -21,8 +21,8 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/activations",
-        "//tensorflow_addons/utils",
         "//tensorflow_addons/text",
+        "//tensorflow_addons/utils",
     ],
 )
 

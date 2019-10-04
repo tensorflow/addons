@@ -23,7 +23,6 @@ from __future__ import print_function
 import tensorflow as tf
 from tensorflow_addons.text.crf import crf_decode, crf_log_likelihood
 from tensorflow_addons.utils import keras_utils
-
 """
 TODO
 
@@ -32,6 +31,7 @@ TODO
 * not test yet if CRF is the first layer
 * Add docs
 """
+
 
 @keras_utils.register_keras_custom_object
 class CRF(tf.keras.layers.Layer):
@@ -132,7 +132,7 @@ class CRF(tf.keras.layers.Layer):
         # bias that works with self.kernel
         if self.use_bias:
             self.bias = self.add_weight(
-                shape=(self.units, ),
+                shape=(self.units,),
                 name="bias",
                 initializer=self.bias_initializer,
                 regularizer=self.bias_regularizer,
@@ -144,14 +144,14 @@ class CRF(tf.keras.layers.Layer):
         # weight of <START> to tag probability and tag to <END> probability
         if self.use_boundary:
             self.left_boundary = self.add_weight(
-                shape=(self.units, ),
+                shape=(self.units,),
                 name="left_boundary",
                 initializer=self.boundary_initializer,
                 regularizer=self.boundary_regularizer,
                 constraint=self.boundary_constraint,
             )
             self.right_boundary = self.add_weight(
-                shape=(self.units, ),
+                shape=(self.units,),
                 name="right_boundary",
                 initializer=self.boundary_initializer,
                 regularizer=self.boundary_regularizer,
@@ -241,9 +241,9 @@ class CRF(tf.keras.layers.Layer):
             energy = tf.keras.backend.concatenate(
                 [energy[:, :-1, :], energy[:, -1:, :] + end], axis=1)
         else:
-            mask = tf.keras.backend.expand_dims(tf.keras.backend.cast(
-                mask, tf.keras.backend.floatx()),
-                                                axis=-1)
+            mask = tf.keras.backend.expand_dims(
+                tf.keras.backend.cast(mask, tf.keras.backend.floatx()),
+                axis=-1)
             start_mask = tf.keras.backend.cast(
                 tf.keras.backend.greater(mask, self.shift_right(mask)),
                 tf.keras.backend.floatx(),
@@ -348,8 +348,8 @@ class CRF(tf.keras.layers.Layer):
         return -log_likelihood
 
     def get_accuracy(self, y_true, y_pred):
-        judge = tf.keras.backend.cast(tf.keras.backend.equal(y_pred, y_true),
-                                      tf.keras.backend.floatx())
+        judge = tf.keras.backend.cast(
+            tf.keras.backend.equal(y_pred, y_true), tf.keras.backend.floatx())
         if self.mask is None:
             return tf.keras.backend.mean(judge)
         else:
