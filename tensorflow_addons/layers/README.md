@@ -23,7 +23,7 @@
 | poincare | PoincareNormalize | https://arxiv.org/abs/1705.08039    |
 | sparsemax| Sparsemax | https://arxiv.org/abs/1602.02068 |
 | wrappers | WeightNormalization | https://arxiv.org/abs/1602.07868 |
-| crf | CRF | https://repository.upenn.edu/cgi/viewcontent.cgi?article=1162&context=cis_papers |
+| crf | CRF | https://en.wikipedia.org/wiki/Conditional_random_field |
 
 ## Contribution Guidelines
 #### Standard API

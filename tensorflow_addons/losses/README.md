@@ -22,7 +22,7 @@
 | npairs | NpairsMultilabelLoss | http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf |
 | sparsemax_loss | SparsemaxLoss |  https://arxiv.org/abs/1602.02068 |
 | triplet | TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
-| crf | CRF | https://repository.upenn.edu/cgi/viewcontent.cgi?article=1162&context=cis_papers |
+| crf_loss | ConditionalRandomFieldLoss | https://en.wikipedia.org/wiki/Conditional_random_field |
 
 
 ## Contribution Guidelines
