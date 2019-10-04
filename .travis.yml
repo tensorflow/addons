@@ -31,7 +31,7 @@ jobs:
       # Build GPU kernels without runtime=nvidia as there are no GPUs/Drivers
       - docker run -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-gpu-ubuntu16 tools/ci_build/builds/release_linux.sh
       after_success:
-        - twine upload --repository-url https://test.pypi.org/legacy/ -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
+        - twine upload -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
 
     # MacOS Builds
     - stage: build
@@ -41,7 +41,7 @@ jobs:
       script:
         - bash -x -e tools/ci_build/builds/release_macos.sh
       after_success:
-        - twine upload --repository-url https://test.pypi.org/legacy/ -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
+        - twine upload -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
 
 notifications:
   email:
