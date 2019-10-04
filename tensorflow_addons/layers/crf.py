@@ -39,6 +39,7 @@ class CRF(tf.keras.layers.Layer):
                  units,
                  use_boundary=False,
                  use_bias=True,
+                 use_kernel=True,
                  activation="linear",
                  kernel_initializer="glorot_uniform",
                  chain_initializer="orthogonal",
@@ -65,6 +66,7 @@ class CRF(tf.keras.layers.Layer):
 
         self.use_boundary = use_boundary
         self.use_bias = use_bias
+        self.use_kernel = use_kernel
 
         self.activation = tf.keras.activations.get(activation)
 
@@ -111,14 +113,15 @@ class CRF(tf.keras.layers.Layer):
 
         self.input_dim = input_shape[-1]
 
-        # weights that mapping arbitrary tensor to correct shape
-        self.kernel = self.add_weight(
-            shape=(self.input_dim, self.units),
-            name="kernel",
-            initializer=self.kernel_initializer,
-            regularizer=self.kernel_regularizer,
-            constraint=self.kernel_constraint,
-        )
+        if self.use_kernel:
+            # weights that mapping arbitrary tensor to correct shape
+            self.kernel = self.add_weight(
+                shape=(self.input_dim, self.units),
+                name="kernel",
+                initializer=self.kernel_initializer,
+                regularizer=self.kernel_regularizer,
+                constraint=self.kernel_constraint,
+            )
 
         # weights that work as transfer probability of each tags
         self.chain_kernel = self.add_weight(
@@ -130,9 +133,9 @@ class CRF(tf.keras.layers.Layer):
         )
 
         # bias that works with self.kernel
-        if self.use_bias:
+        if self.use_kernel and self.use_bias:
             self.bias = self.add_weight(
-                shape=(self.units,),
+                shape=(self.units, ),
                 name="bias",
                 initializer=self.bias_initializer,
                 regularizer=self.bias_regularizer,
@@ -144,14 +147,14 @@ class CRF(tf.keras.layers.Layer):
         # weight of <START> to tag probability and tag to <END> probability
         if self.use_boundary:
             self.left_boundary = self.add_weight(
-                shape=(self.units,),
+                shape=(self.units, ),
                 name="left_boundary",
                 initializer=self.boundary_initializer,
                 regularizer=self.boundary_regularizer,
                 constraint=self.boundary_constraint,
             )
             self.right_boundary = self.add_weight(
-                shape=(self.units,),
+                shape=(self.units, ),
                 name="right_boundary",
                 initializer=self.boundary_initializer,
                 regularizer=self.boundary_regularizer,
@@ -188,19 +191,19 @@ class CRF(tf.keras.layers.Layer):
 
         test_output = self.get_viterbi_decoding(logits, nwords)
 
-        # WHY: don't remove this line, useless but remote it will cause bug
-        test_output = tf.cast(test_output, tf.float32)
+        # WHY: don't remove this line, useless but remote it will cause bug, fix it later
+        # test_output = tf.cast(test_output, self.dtype or tf.keras.backend.floatx())
         out = test_output
 
         return out
 
-    def _get_nwords(self, input, mask):
+    def _get_nwords(self, input_, mask):
         if mask is not None:
             int_mask = tf.keras.backend.cast(mask, tf.int8)
             nwords = self.mask_to_nwords(int_mask)
         else:
             # make a mask tensor from input, then used to generate nwords
-            input_energy_shape = tf.shape(input)
+            input_energy_shape = tf.shape(input_)
             raw_input_shape = tf.slice(input_energy_shape, [0], [2])
             alt_mask = tf.ones(raw_input_shape)
 
@@ -242,11 +245,10 @@ class CRF(tf.keras.layers.Layer):
                 [energy[:, :-1, :], energy[:, -1:, :] + end], axis=1)
         else:
             mask = tf.keras.backend.expand_dims(
-                tf.keras.backend.cast(mask, tf.keras.backend.floatx()),
-                axis=-1)
+                tf.keras.backend.cast(mask, start.dtype), axis=-1)
             start_mask = tf.keras.backend.cast(
                 tf.keras.backend.greater(mask, self.shift_right(mask)),
-                tf.keras.backend.floatx(),
+                start.dtype,
             )
 
             # original code:
@@ -260,13 +262,14 @@ class CRF(tf.keras.layers.Layer):
             # patch applied here.
             end_mask = tf.keras.backend.cast(
                 tf.keras.backend.greater(mask, self.shift_left(mask)),
-                tf.keras.backend.floatx(),
+                end.dtype,
             )
             energy = energy + start_mask * start
             energy = energy + end_mask * end
         return energy
 
     def get_viterbi_decoding(self, input_energy, nwords):
+        # pred_ids: A [batch_size, max_seq_len] matrix, with dtype `tf.int32`
         pred_ids, _ = crf_decode(input_energy, self.chain_kernel, nwords)
 
         return pred_ids
@@ -280,6 +283,8 @@ class CRF(tf.keras.layers.Layer):
             self.use_boundary,
             "use_bias":
             self.use_bias,
+            "use_kernel":
+            self.use_kernel,
             "kernel_initializer":
             tf.keras.initializers.serialize(self.kernel_initializer),
             "chain_initializer":
@@ -316,7 +321,7 @@ class CRF(tf.keras.layers.Layer):
         output_shape = input_shape[:2]
         return output_shape
 
-    def compute_mask(self, input, mask=None):
+    def compute_mask(self, input_, mask=None):
         if mask is not None:
             # transform mask from shape (?, ?) to (?, )
             new_mask = tf.keras.backend.any(mask, axis=1)
@@ -358,5 +363,14 @@ class CRF(tf.keras.layers.Layer):
                     tf.keras.backend.sum(mask))
 
     def _dense_layer(self, input_):
-        return self.activation(
-            tf.keras.backend.dot(input_, self.kernel) + self.bias)
+        if self.use_kernel:
+            output = self.activation(
+                tf.keras.backend.dot(input_, self.kernel) + self.bias)
+        else:
+            output = input_
+
+        return tf.keras.backend.cast(output, self.chain_kernel.dtype)
+
+    @property
+    def _compute_dtype(self):
+        return tf.int32

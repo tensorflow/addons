@@ -103,3 +103,16 @@ py_test(
         ":layers",
     ],
 )
+
+py_test(
+    name = "crf_test",
+    size = "small",
+    srcs = [
+        "crf_test.py",
+    ],
+    main = "crf_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":layers",
+    ],
+)

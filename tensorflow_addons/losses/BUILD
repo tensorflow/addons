@@ -112,3 +112,16 @@ py_test(
         ":losses",
     ],
 )
+
+py_test(
+    name = "crf_loss_test",
+    size = "small",
+    srcs = [
+        "crf_loss.py",
+    ],
+    main = "crf_loss.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":losses",
+    ],
+)

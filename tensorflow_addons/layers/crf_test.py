@@ -29,16 +29,16 @@ class TestCRF(tf.test.TestCase):
     def test_unmasked_viterbi_decode(self):
         x = np.array([
             [
-            #    O     B-X    I-X    B-Y    I-Y
-                [0.,    1.,   0.,     0.,   0.],
-                [0.,    0.,   1.,     0.,   0.],
-                [0.,    0.,   1.,     0.,   0.]
+                # O   B-X  I-X  B-Y  I-Y
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0]
             ],
             [
-            #    O     B-X    I-X    B-Y    I-Y
-                [0.,    1.,   0.,     0.,   0.],
-                [0.,    1.,   0.,     0.,   0.],
-                [0.,    1.,   0.,     0.,   0.]
+                # O   B-X  I-X  B-Y  I-Y
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 0.0]
             ]
         ])  # yapf: disable
 
@@ -48,8 +48,7 @@ class TestCRF(tf.test.TestCase):
         ])  # yapf: disable
 
         transitions = np.ones([5, 5])
-        transitions_from_start = np.ones(5)
-        transitions_to_end = np.ones(5)
+        boundary_value = np.ones(5)
 
         test_utils.layer_test(
             CRF,
@@ -62,13 +61,13 @@ class TestCRF(tf.test.TestCase):
                 tf.keras.initializers.Constant(transitions),
                 "use_boundary":
                 True,
-                "left_boundary_initializer":
-                tf.keras.initializers.Constant(transitions_from_start),
-                "right_boundary_initializer":
-                tf.keras.initializers.Constant(transitions_to_end),
+                "boundary_initializer":
+                tf.keras.initializers.Constant(boundary_value)
             },
             input_data=x,
             expected_output=expected_y,
+            expected_output_dtype=tf.int32,
+            validate_training=False
         )
 
 
