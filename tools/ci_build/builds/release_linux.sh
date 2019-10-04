@@ -43,10 +43,10 @@ for version in ${PYTHON_VERSIONS}; do
       build_pip_pkg
 
     # Package Whl
-    bazel-bin/build_pip_pkg artifacts --nightly
+    #bazel-bin/build_pip_pkg artifacts --nightly
 
     # Uncomment and use this command for release branches
-    #bazel-bin/build_pip_pkg artifacts
+    bazel-bin/build_pip_pkg artifacts
 done
 
 # Clean up
