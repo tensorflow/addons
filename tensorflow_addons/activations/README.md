@@ -4,13 +4,9 @@
 | Submodule | Maintainers               | Contact Info                             |
 |:----------|:--------------------------|:-----------------------------------------|
 | gelu      | @AakashKumarNain @WindQAQ | aakashnain@outlook.com windqaq@gmail.com |
-<<<<<<< HEAD
-| hardshrink| @WindQAQ                  | windqaq@gmail.com
-| mish      | @WindQAQ                  | windqaq@gmail.com                        |
-=======
 | hardshrink| @WindQAQ                  | windqaq@gmail.com                        |
 | lisht     | @WindQAQ                  | windqaq@gmail.com                        |
->>>>>>> a603625227f0c39de7f68fde93ff0e23b602f284
+| mish      | @WindQAQ                  | windqaq@gmail.com                        |
 | sparsemax | @AndreasMadsen            | amwwebdk+github@gmail.com                |
 | tanhshrink| @fsx950223                | fsx950223@gmail.com                      |
 
@@ -19,16 +15,12 @@
 |:----------|:-----------|:---------------------------------|
 | gelu      | gelu       | https://arxiv.org/abs/1606.08415 |
 | hardshrink| hardshrink |                                  |
-<<<<<<< HEAD
-| mish      | mish       | https://arxiv.org/abs/1908.08681 |
-| sparsemax | Sparsemax  | https://arxiv.org/abs/1602.02068 |
-| tanhshrink | Tanhshrink  |  |
-=======
 | lisht     | lisht      | https://arxiv.org/abs/1901.05894 | 
+| mish      | mish       | https://arxiv.org/abs/1908.08681 |
 | sparsemax | sparsemax  | https://arxiv.org/abs/1602.02068 |
 | tanhshrink| tanhshrink |                                  |
->>>>>>> a603625227f0c39de7f68fde93ff0e23b602f284
-
+| sparsemax | sparsemax  | https://arxiv.org/abs/1602.02068 |
+| tanhshrink| tanhshrink |                                  |
 
 ## Contribution Guidelines
 #### Standard API
