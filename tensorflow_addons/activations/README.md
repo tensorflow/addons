@@ -19,8 +19,6 @@
 | mish      | mish       | https://arxiv.org/abs/1908.08681 |
 | sparsemax | sparsemax  | https://arxiv.org/abs/1602.02068 |
 | tanhshrink| tanhshrink |                                  |
-| sparsemax | sparsemax  | https://arxiv.org/abs/1602.02068 |
-| tanhshrink| tanhshrink |                                  |
 
 ## Contribution Guidelines
 #### Standard API
