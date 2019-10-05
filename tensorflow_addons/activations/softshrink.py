@@ -46,7 +46,7 @@ def softshrink(x, lower=-1.0, upper=1.0):
 
 
 @tf.RegisterGradient("Addons>Softshrink")
-def _hardshrink_grad(op, grad):
-    return _activation_ops_so.addons_hardshrink_grad(grad, op.inputs[0],
+def _softshrink_grad(op, grad):
+    return _activation_ops_so.addons_softshrink_grad(grad, op.inputs[0],
                                                      op.get_attr("lower"),
                                                      op.get_attr("upper"))
