@@ -54,19 +54,6 @@ class MishTest(tf.test.TestCase, parameterized.TestCase):
             x = tf.ones(shape=shape, dtype=tf.float32)
             self.assertAllClose(fn(x), mish(x))
 
-    def test_serialization(self):
-        config = tf.keras.activations.serialize(mish)
-        fn = tf.keras.activations.deserialize(config)
-        self.assertEqual(fn, mish)
-
-    def test_serialization_with_layers(self):
-        layer = tf.keras.layers.Dense(3, activation=mish)
-        config = tf.keras.layers.serialize(layer)
-        deserialized_layer = tf.keras.layers.deserialize(config)
-        self.assertEqual(deserialized_layer.__class__.__name__,
-                         layer.__class__.__name__)
-        self.assertEqual(deserialized_layer.activation.__name__, "mish")
-
 
 if __name__ == "__main__":
     tf.test.main()
