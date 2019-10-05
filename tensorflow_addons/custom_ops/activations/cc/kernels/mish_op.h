@@ -53,8 +53,8 @@ struct MishGrad {
     const auto& e = features.exp().eval();
     const auto& es = e.square().eval();
     const auto& omega = static_cast<T>(4) * (features + static_cast<T>(1)) +
-                  static_cast<T>(4) * es + e.cube() +
-                  e * (static_cast<T>(4) * features + static_cast<T>(6));
+                        static_cast<T>(4) * es + e.cube() +
+                        e * (static_cast<T>(4) * features + static_cast<T>(6));
     const auto& delta = static_cast<T>(2) * e + es + static_cast<T>(2);
     backprops.device(d) = gradients * e * omega / delta.square();
   }
