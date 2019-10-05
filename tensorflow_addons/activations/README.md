@@ -6,7 +6,7 @@
 | gelu      | @AakashKumarNain @WindQAQ | aakashnain@outlook.com windqaq@gmail.com |
 | hardshrink| @WindQAQ                  | windqaq@gmail.com                        |
 | lisht     | @WindQAQ                  | windqaq@gmail.com                        |
-| mish      | @WindQAQ                  | windqaq@gmail.com                        |
+| mish      | @digantamisra98 @WindQAQ  | mishradiganta91@gmail.com, windqaq@gmail.com |
 | sparsemax | @AndreasMadsen            | amwwebdk+github@gmail.com                |
 | tanhshrink| @fsx950223                | fsx950223@gmail.com                      |
 
