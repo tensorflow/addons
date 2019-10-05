@@ -18,6 +18,7 @@ limitations under the License.
 #include "tensorflow/core/framework/shape_inference.h"
 
 namespace tensorflow {
+namespace addons {
 
 REGISTER_OP("Addons>Hardshrink")
     .Input("features: T")
@@ -36,4 +37,5 @@ REGISTER_OP("Addons>HardshrinkGrad")
     .Attr("upper: float = 1.0")
     .SetShapeFn(shape_inference::MergeBothInputsShapeFn);
 
+}  // namespace addons
 }  // namespace tensorflow

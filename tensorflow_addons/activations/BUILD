@@ -8,6 +8,7 @@ py_library(
         "__init__.py",
         "gelu.py",
         "hardshrink.py",
+        "lisht.py",
         "mish.py",
         "sparsemax.py",
         "tanhshrink.py",
@@ -20,8 +21,21 @@ py_library(
 )
 
 py_test(
+    name = "activations_test",
+    size = "small",
+    srcs = [
+        "activations_test.py",
+    ],
+    main = "activations_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":activations",
+    ],
+)
+
+py_test(
     name = "sparsemax_test",
-    size = "medium",
+    size = "small",
     srcs = [
         "sparsemax_test.py",
     ],
@@ -34,7 +48,7 @@ py_test(
 
 py_test(
     name = "gelu_test",
-    size = "medium",
+    size = "small",
     srcs = [
         "gelu_test.py",
     ],
@@ -47,7 +61,7 @@ py_test(
 
 py_test(
     name = "hardshrink_test",
-    size = "medium",
+    size = "small",
     srcs = [
         "hardshrink_test.py",
     ],
@@ -59,8 +73,21 @@ py_test(
 )
 
 py_test(
+    name = "lisht_test",
+    size = "small",
+    srcs = [
+        "lisht_test.py",
+    ],
+    main = "lisht_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":activations",
+    ],
+)
+
+py_test(
     name = "mish_test",
-    size = "medium",
+    size = "small",
     srcs = [
         "mish_test.py",
     ],
@@ -73,7 +100,7 @@ py_test(
 
 py_test(
     name = "tanhshrink_test",
-    size = "medium",
+    size = "small",
     srcs = [
         "tanhshrink_test.py",
     ],

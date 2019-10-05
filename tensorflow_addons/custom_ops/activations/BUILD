@@ -21,8 +21,8 @@ cc_library(
         "@local_config_tf//:libtensorflow_framework",
         "@local_config_tf//:tf_header_lib",
     ] + if_cuda_is_configured([
-        "@local_config_cuda//cuda:cuda_libs",
         "@local_config_cuda//cuda:cuda_headers",
+        "@local_config_cuda//cuda:cudart_static",
     ]),
     alwayslink = 1,
 )
@@ -32,6 +32,28 @@ cc_library(
     srcs = [
         "cc/kernels/hardshrink_op.h",
         "cc/kernels/hardshrink_op_gpu.cu.cc",
+    ],
+    copts = if_cuda_is_configured([
+        "-DGOOGLE_CUDA=1",
+        "-x cuda",
+        "-nvcc_options=relaxed-constexpr",
+        "-nvcc_options=ftz=true",
+    ]),
+    deps = [
+        "@local_config_tf//:libtensorflow_framework",
+        "@local_config_tf//:tf_header_lib",
+    ] + if_cuda_is_configured([
+        "@local_config_cuda//cuda:cuda_headers",
+        "@local_config_cuda//cuda:cudart_static",
+    ]),
+    alwayslink = 1,
+)
+
+cc_library(
+    name = "lisht_op_gpu",
+    srcs = [
+        "cc/kernels/lisht_op.h",
+        "cc/kernels/lisht_op_gpu.cu.cc",
     ],
     copts = if_cuda_is_configured([
         "-DGOOGLE_CUDA=1",
@@ -87,8 +109,8 @@ cc_library(
         "@local_config_tf//:libtensorflow_framework",
         "@local_config_tf//:tf_header_lib",
     ] + if_cuda_is_configured([
-        "@local_config_cuda//cuda:cuda_libs",
         "@local_config_cuda//cuda:cuda_headers",
+        "@local_config_cuda//cuda:cudart_static",
     ]),
     alwayslink = 1,
 )
@@ -100,12 +122,15 @@ cc_binary(
         "cc/kernels/gelu_op.h",
         "cc/kernels/hardshrink_op.cc",
         "cc/kernels/hardshrink_op.h",
+        "cc/kernels/lisht_op.cc",
+        "cc/kernels/lisht_op.h",
         "cc/kernels/mish_op.cc",
         "cc/kernels/mish_op.h",
         "cc/kernels/tanhshrink_op.cc",
         "cc/kernels/tanhshrink_op.h",
         "cc/ops/gelu_op.cc",
         "cc/ops/hardshrink_op.cc",
+        "cc/ops/lisht_op.cc",
         "cc/ops/mish_op.cc",
         "cc/ops/tanhshrink_op.cc",
     ],
@@ -121,6 +146,7 @@ cc_binary(
     ] + if_cuda_is_configured([
         ":gelu_op_gpu",
         ":hardshrink_op_gpu",
+        ":lisht_op_gpu",
         ":mish_op_gpu",
         ":tanhshrink_op_gpu",
     ]),

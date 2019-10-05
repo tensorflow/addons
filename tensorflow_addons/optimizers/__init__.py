@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from tensorflow_addons.optimizers.conditional_gradient import ConditionalGradient
 from tensorflow_addons.optimizers.lazy_adam import LazyAdam
 from tensorflow_addons.optimizers.lookahead import Lookahead
 from tensorflow_addons.optimizers.moving_average import MovingAverage

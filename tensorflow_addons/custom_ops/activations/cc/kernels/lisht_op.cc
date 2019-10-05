@@ -15,7 +15,7 @@ limitations under the License.
 
 #define EIGEN_USE_THREADS
 
-#include "tensorflow_addons/custom_ops/activations/cc/kernels/gelu_op.h"
+#include "tensorflow_addons/custom_ops/activations/cc/kernels/lisht_op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
@@ -25,17 +25,17 @@ namespace addons {
 
 using CPUDevice = Eigen::ThreadPoolDevice;
 
-#define REGISTER_GELU_KERNELS(type)                                         \
-  REGISTER_KERNEL_BUILDER(                                                  \
-      Name("Addons>Gelu").Device(DEVICE_CPU).TypeConstraint<type>("T"),     \
-      GeluOp<CPUDevice, type>);                                             \
-  REGISTER_KERNEL_BUILDER(                                                  \
-      Name("Addons>GeluGrad").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
-      GeluGradOp<CPUDevice, type>);
+#define REGISTER_LISHT_KERNELS(type)                                         \
+  REGISTER_KERNEL_BUILDER(                                                   \
+      Name("Addons>Lisht").Device(DEVICE_CPU).TypeConstraint<type>("T"),     \
+      LishtOp<CPUDevice, type>);                                             \
+  REGISTER_KERNEL_BUILDER(                                                   \
+      Name("Addons>LishtGrad").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
+      LishtGradOp<CPUDevice, type>);
 
-// Gelu only makes sense with floating points.
-TF_CALL_GPU_NUMBER_TYPES(REGISTER_GELU_KERNELS);
-#undef REGISTER_GELU_KERNELS
+// Lisht only makes sense with floating points.
+TF_CALL_GPU_NUMBER_TYPES(REGISTER_LISHT_KERNELS);
+#undef REGISTER_LISHT_KERNELS
 
 #if GOOGLE_CUDA
 
@@ -45,33 +45,33 @@ using GPUDevice = Eigen::GpuDevice;
 namespace functor {
 #define DECLARE_GPU_SPEC(T)                                          \
   template <>                                                        \
-  void Gelu<GPUDevice, T>::operator()(                               \
+  void Lisht<GPUDevice, T>::operator()(                              \
       const GPUDevice& d, typename TTypes<T>::ConstTensor features,  \
-      bool approximate, typename TTypes<T>::Tensor activations);     \
-  extern template struct Gelu<GPUDevice, T>;                         \
+      typename TTypes<T>::Tensor activations);                       \
+  extern template struct Lisht<GPUDevice, T>;                        \
                                                                      \
   template <>                                                        \
-  void GeluGrad<GPUDevice, T>::operator()(                           \
+  void LishtGrad<GPUDevice, T>::operator()(                          \
       const GPUDevice& d, typename TTypes<T>::ConstTensor gradients, \
-      typename TTypes<T>::ConstTensor features, bool approximate,    \
+      typename TTypes<T>::ConstTensor features,                      \
       typename TTypes<T>::Tensor backprops);                         \
-  extern template struct GeluGrad<GPUDevice, T>;
+  extern template struct LishtGrad<GPUDevice, T>;
 
 TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
 #undef DECLARE_GPU_SPEC
 }  // namespace functor
 
 // Registration of the GPU implementations.
-#define REGISTER_GELU_GPU_KERNELS(type)                                     \
-  REGISTER_KERNEL_BUILDER(                                                  \
-      Name("Addons>Gelu").Device(DEVICE_GPU).TypeConstraint<type>("T"),     \
-      GeluOp<GPUDevice, type>);                                             \
-  REGISTER_KERNEL_BUILDER(                                                  \
-      Name("Addons>GeluGrad").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
-      GeluGradOp<GPUDevice, type>);
+#define REGISTER_LISHT_GPU_KERNELS(type)                                     \
+  REGISTER_KERNEL_BUILDER(                                                   \
+      Name("Addons>Lisht").Device(DEVICE_GPU).TypeConstraint<type>("T"),     \
+      LishtOp<GPUDevice, type>);                                             \
+  REGISTER_KERNEL_BUILDER(                                                   \
+      Name("Addons>LishtGrad").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
+      LishtGradOp<GPUDevice, type>);
 
-TF_CALL_GPU_NUMBER_TYPES(REGISTER_GELU_GPU_KERNELS);
-#undef REGISTER_GELU_GPU_KERNELS
+TF_CALL_GPU_NUMBER_TYPES(REGISTER_LISHT_GPU_KERNELS);
+#undef REGISTER_LISHT_GPU_KERNELS
 
 #endif  // GOOGLE_CUDA
 

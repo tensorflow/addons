@@ -963,14 +963,14 @@ def _tpl(repository_ctx, tpl, substitutions = {}, out = None):
         out = tpl.replace(":", "/")
     repository_ctx.template(
         out,
-        Label("//build_deps/gpu/%s.tpl" % tpl),
+        Label("//build_deps/toolchains/gpu/%s.tpl" % tpl),
         substitutions,
     )
 
 def _file(repository_ctx, label):
     repository_ctx.template(
         label.replace(":", "/"),
-        Label("//build_deps/gpu/%s.tpl" % label),
+        Label("//build_deps/tolchains/gpu/%s.tpl" % label),
         {},
     )
 
@@ -1198,7 +1198,7 @@ def _create_local_cuda_repository(repository_ctx):
         "cuda:build_defs.bzl",
         {
             "%{cuda_is_configured}": "True",
-             "%{cuda_extra_copts}": "[]",
+            "%{cuda_extra_copts}": "[]",
         },
     )
 
@@ -1223,12 +1223,13 @@ def _create_local_cuda_repository(repository_ctx):
         },
         "cuda/BUILD",
     )
-   
+
     # Set up crosstool/
     cc = find_cc(repository_ctx)
     cc_fullpath = cc
 
     host_compiler_includes = _host_compiler_includes(repository_ctx, cc_fullpath)
+
     cuda_defines = {}
 
     # Bazel sets '-B/usr/bin' flag to workaround build errors on RHEL (see
@@ -1241,7 +1242,6 @@ def _create_local_cuda_repository(repository_ctx):
     #       https://github.com/bazelbuild/bazel/issues/5634)
     cuda_defines["%{linker_bin_path_flag}"] = 'flag: "-B/usr/bin"'
 
-    
     cuda_defines["%{host_compiler_path}"] = "clang/bin/crosstool_wrapper_driver_is_not_gcc"
     cuda_defines["%{host_compiler_warnings}"] = ""
 
@@ -1271,11 +1271,18 @@ def _create_local_cuda_repository(repository_ctx):
             ".exe" if _is_windows(repository_ctx) else "",
         )),
     )
+
+    builtin_include_directories = []
+    for one_line in cuda_defines["%{host_compiler_includes}"].splitlines():
+        inc_dir = one_line.split(":")[1][2:-1]
+        builtin_include_directories.append(inc_dir)
+
     _tpl(
         repository_ctx,
         "crosstool:BUILD",
         {
             "%{linker_files}": ":crosstool_wrapper_driver_is_not_gcc",
+            "%{cxx_builtin_include_directories}": ",".join(builtin_include_directories),
             "%{win_linker_files}": ":windows_msvc_wrapper_files",
         },
     )
@@ -1289,11 +1296,18 @@ def _create_local_cuda_repository(repository_ctx):
         ),
         "%{nvcc_tmp_dir}": _get_nvcc_tmp_dir_for_windows(repository_ctx),
     }
+
+    _tpl(
+        repository_ctx,
+        "crosstool:cc_toolchain_config.bzl",
+        wrapper_defines,
+    )
     _tpl(
         repository_ctx,
         "crosstool:clang/bin/crosstool_wrapper_driver_is_not_gcc",
         wrapper_defines,
     )
+
     _tpl(
         repository_ctx,
         "crosstool:windows/msvc_wrapper_for_nvcc.py",

@@ -33,3 +33,6 @@ from tensorflow_addons.text.crf import viterbi_decode
 # Skip Gram Sampling
 from tensorflow_addons.text.skip_gram_ops import skip_gram_sample
 from tensorflow_addons.text.skip_gram_ops import skip_gram_sample_with_text_vocab
+
+# Parse Time
+from tensorflow_addons.text.parse_time_op import parse_time

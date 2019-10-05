@@ -13,26 +13,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#if GOOGLE_CUDA
-
-#define EIGEN_USE_GPU
-
-#include "tensorflow_addons/custom_ops/activations/cc/kernels/gelu_op.h"
-#include "tensorflow/core/framework/register_types.h"
-#include "third_party/eigen3/Eigen/Core"
+#include "tensorflow/core/framework/common_shape_fns.h"
+#include "tensorflow/core/framework/op.h"
+#include "tensorflow/core/framework/shape_inference.h"
 
 namespace tensorflow {
 namespace addons {
 
-using GPUDevice = Eigen::GpuDevice;
+REGISTER_OP("Addons>Lisht")
+    .Input("features: T")
+    .Output("activations: T")
+    .Attr("T: {half, float, double}")
+    .SetShapeFn(shape_inference::UnchangedShape);
 
-#define DEFINE_GPU_KERNELS(T)                  \
-  template struct functor::Gelu<GPUDevice, T>; \
-  template struct functor::GeluGrad<GPUDevice, T>;
-
-TF_CALL_GPU_NUMBER_TYPES(DEFINE_GPU_KERNELS);
+REGISTER_OP("Addons>LishtGrad")
+    .Input("gradients: T")
+    .Input("features: T")
+    .Output("backprops: T")
+    .Attr("T: {half, float, double}")
+    .SetShapeFn(shape_inference::MergeBothInputsShapeFn);
 
 }  // namespace addons
 }  // namespace tensorflow
-
-#endif  // GOOGLE_CUDA
