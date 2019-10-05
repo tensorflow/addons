@@ -50,12 +50,12 @@ struct MishGrad {
   void operator()(const Device& d, typename TTypes<T>::ConstTensor gradients,
                   typename TTypes<T>::ConstTensor features,
                   typename TTypes<T>::Tensor backprops) {
-    auto& e = features.exp();
-    auto& es = e.square();
-    auto& omega = static_cast<T>(4) * (features + static_cast<T>(1)) +
+    typename TTypes<T>::Tensor& e = features.exp();
+    typename TTypes<T>::Tensor& es = e.square();
+    typename TTypes<T>::Tensor& omega = static_cast<T>(4) * (features + static_cast<T>(1)) +
                   static_cast<T>(4) * es + e.cube() +
                   e * (static_cast<T>(4) * features + static_cast<T>(6));
-    auto& delta = static_cast<T>(2) * e + es + static_cast<T>(2);
+    typename TTypes<T>::Tensor& delta = static_cast<T>(2) * e + es + static_cast<T>(2);
     backprops.device(d) = gradients * e * omega / delta.square();
   }
 };
