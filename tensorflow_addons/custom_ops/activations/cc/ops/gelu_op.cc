@@ -35,5 +35,5 @@ REGISTER_OP("Addons>GeluGrad")
     .Attr("approximate: bool = true")
     .SetShapeFn(shape_inference::MergeBothInputsShapeFn);
 
-}  // end namespace addons
+}  // namespace addons
 }  // namespace tensorflow

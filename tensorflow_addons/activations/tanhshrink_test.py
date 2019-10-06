@@ -25,37 +25,27 @@ from tensorflow_addons.activations import tanhshrink
 from tensorflow_addons.utils import test_utils
 
 
-def _ref_tanhshrink(x):
-    return x - tf.tanh(x)
-
-
 @test_utils.run_all_in_graph_and_eager_modes
 class TanhshrinkTest(tf.test.TestCase, parameterized.TestCase):
     @parameterized.named_parameters(("float16", np.float16),
                                     ("float32", np.float32),
                                     ("float64", np.float64))
     def test_tanhshrink(self, dtype):
-        x = tf.constant([1.0, 2.0, 3.0], dtype=dtype)
-        self.assertAllCloseAccordingToType(tanhshrink(x), _ref_tanhshrink(x))
+        x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
+        expected_result = tf.constant(
+            [-1.0359724, -0.23840582, 0.0, 0.23840582, 1.0359724], dtype=dtype)
 
-    @parameterized.named_parameters(("float16", np.float16),
-                                    ("float32", np.float32),
+        self.assertAllCloseAccordingToType(tanhshrink(x), expected_result)
+
+    @parameterized.named_parameters(("float32", np.float32),
                                     ("float64", np.float64))
-    def test_gradients(self, dtype):
-        x = tf.constant([1.0, 2.0, 3.0], dtype=dtype)
-        with tf.GradientTape(persistent=True) as tape:
-            tape.watch(x)
-            y_ref = _ref_tanhshrink(x)
-            y = tanhshrink(x)
-        grad_ref = tape.gradient(y_ref, x)
-        grad = tape.gradient(y, x)
-        self.assertAllCloseAccordingToType(grad, grad_ref)
+    def test_theoretical_gradients(self, dtype):
+        # Only test theoretical gradients for float32 and float64
+        # because of the instability of float16 while computing jacobian
+        x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
 
-    def test_serialization(self):
-        ref_fn = tanhshrink
-        config = tf.keras.activations.serialize(ref_fn)
-        fn = tf.keras.activations.deserialize(config)
-        self.assertEqual(fn, ref_fn)
+        theoretical, numerical = tf.test.compute_gradient(tanhshrink, [x])
+        self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
 
 
 if __name__ == "__main__":

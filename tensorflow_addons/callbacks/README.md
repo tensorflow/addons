@@ -16,7 +16,7 @@
 In order to conform with the current API standard, all callbacks
 must:
  * Inherit from `tf.keras.callbacks.Callback`.
- * [Register as a keras global object](https://github.com/tensorflow/addons/blob/master/tensorflow_addons/utils/python/keras_utils.py)
+ * [Register as a keras global object](https://github.com/tensorflow/addons/blob/master/tensorflow_addons/utils/keras_utils.py)
   so it can be serialized properly.
  * Add the addon to the `py_library` in this sub-package's BUILD file.
 
