@@ -25,12 +25,12 @@ import numpy as np
 import tensorflow as tf
 from tensorflow_addons.activations import rrelu
 from tensorflow_addons.utils import test_utils
-import random 
+import random
 
-
-SEED=111111
+SEED = 111111
 tf.random.set_seed(SEED)
 random.seed(SEED)
+
 
 @test_utils.run_all_in_graph_and_eager_modes
 class RreluTest(tf.test.TestCase, parameterized.TestCase):

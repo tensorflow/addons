@@ -61,11 +61,11 @@ TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
 #undef DECLARE_GPU_SPEC
 }  // namespace functor
 
-#define REGISTER_RRELU_GPU_KERNELS(T) \
-  REGISTER_KERNEL_BUILDER(                                                   \
+#define REGISTER_RRELU_GPU_KERNELS(T)                                     \
+  REGISTER_KERNEL_BUILDER(                                                \
       Name("Addons>Rrelu").Device(DEVICE_GPU).TypeConstraint<T>("T"),     \
-      RreluOp<GPUDevice, T>);                                              \
-  REGISTER_KERNEL_BUILDER(                                                   \
+      RreluOp<GPUDevice, T>);                                             \
+  REGISTER_KERNEL_BUILDER(                                                \
       Name("Addons>RreluGrad").Device(DEVICE_GPU).TypeConstraint<T>("T"), \
       RreluGradOp<GPUDevice, T>);
 

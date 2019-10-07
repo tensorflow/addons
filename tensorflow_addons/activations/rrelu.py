@@ -53,4 +53,7 @@ def rrelu(x, lower=0.125, upper=0.3333333333333333, training=None):
 @tf.RegisterGradient("Addons>Rrelu")
 def _rrelu_grad(op, grad):
     return _activation_ops_so.addons_rrelu_grad(grad, op.inputs[0],
-                                                op.outputs[1],op.get_attr("lower"),op.get_attr("upper"),op.get_attr("training"))
+                                                op.outputs[1],
+                                                op.get_attr("lower"),
+                                                op.get_attr("upper"),
+                                                op.get_attr("training"))
