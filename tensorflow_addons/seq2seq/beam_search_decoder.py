@@ -130,7 +130,7 @@ def gather_tree_from_array(t, parent_ids, sequence_length):
     beam_width = parent_ids.shape.dims[2].value or tf.shape(parent_ids)[2]
 
     # Generate beam ids that will be reordered by gather_tree.
-    beam_ids = tf.expand_dims(tf.expand_dims(tf.range(beam_width), 0), 0)
+    beam_ids = tf.reshape(tf.range(beam_width), [1, 1, -1])
     beam_ids = tf.tile(beam_ids, [max_time, batch_size, 1])
 
     max_sequence_lengths = tf.cast(
@@ -146,22 +146,10 @@ def gather_tree_from_array(t, parent_ids, sequence_length):
         tf.sequence_mask(sequence_length, maxlen=max_time), perm=[2, 0, 1])
     sorted_beam_ids = tf.where(in_bound_steps, x=sorted_beam_ids, y=beam_ids)
 
-    # Generate indices for gather_nd.
-    time_ind = tf.tile(
-        tf.reshape(tf.range(max_time), [-1, 1, 1]),
-        [1, batch_size, beam_width])
-    batch_ind = tf.tile(
-        tf.reshape(tf.range(batch_size), [-1, 1, 1]),
-        [1, max_time, beam_width])
-    batch_ind = tf.transpose(batch_ind, perm=[1, 0, 2])
-    indices = tf.stack([time_ind, batch_ind, sorted_beam_ids], -1)
-
     # Gather from a tensor with collapsed additional dimensions.
-    gather_from = t
-    final_shape = tf.shape(gather_from)
-    gather_from = tf.reshape(gather_from,
-                             [max_time, batch_size, beam_width, -1])
-    ordered = tf.gather_nd(gather_from, indices)
+    final_shape = tf.shape(t)
+    gather_from = tf.reshape(t, [max_time, batch_size, beam_width, -1])
+    ordered = tf.gather(gather_from, sorted_beam_ids, axis=2, batch_dims=2)
     ordered = tf.reshape(ordered, final_shape)
 
     return ordered
