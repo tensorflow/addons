@@ -251,6 +251,9 @@ class TrainingSampler(Sampler):
                 self.sequence_length = tf.math.reduce_sum(
                     tf.cast(mask, tf.int32), axis=axis, name="sequence_length")
         else:
+            # As the input tensor has been converted to time major,
+            # the maximum sequence length should be inferred from
+            # the first dimension.
             max_seq_len = tf.shape(tf.nest.flatten(inputs)[0])[0]
             self.sequence_length = tf.fill([self.batch_size],
                                            max_seq_len,
