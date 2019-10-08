@@ -11,11 +11,11 @@ custom_op_library(
         "cc/kernels/correlation_cost_op.h",
         "cc/ops/correlation_cost_op.cc",
     ],
+    cuda_deps = [
+        "@cub_archive//:cub",
+    ],
     cuda_srcs = [
         "cc/kernels/correlation_cost_op.h",
         "cc/kernels/correlation_cost_op_gpu.cu.cc",
-    ],
-    cuda_deps = [
-        "@cub_archive//:cub",
     ],
 )
