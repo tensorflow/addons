@@ -56,11 +56,6 @@ esac
 
 BUILD_DEPS_DIR=build_deps
 REQUIREMENTS_TXT=$BUILD_DEPS_DIR/requirements.txt
-if [[ "$TF_NEED_CUDA" == "1" ]]; then
-    # TODO: delete it when tf2 standard package supports
-    # both cpu and gpu kernel.
-    REQUIREMENTS_TXT=$BUILD_DEPS_DIR/requirements_gpu.txt
-fi
 
 ${PYTHON_VERSION:=python} -m pip install $QUIET_FLAG -r $REQUIREMENTS_TXT
 
