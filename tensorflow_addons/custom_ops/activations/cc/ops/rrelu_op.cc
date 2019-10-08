@@ -28,6 +28,7 @@ REGISTER_OP("Addons>Rrelu")
     .Attr("lower: float")
     .Attr("upper: float")
     .Attr("training: bool")
+    // .Attr("seed: int")
     .SetShapeFn(shape_inference::UnchangedShape);
 
 REGISTER_OP("Addons>RreluGrad")
@@ -39,6 +40,7 @@ REGISTER_OP("Addons>RreluGrad")
     .Attr("lower: float")
     .Attr("upper: float")
     .Attr("training: bool")
+    // .Attr("seed: int")
     .SetShapeFn(shape_inference::MergeBothInputsShapeFn);
 
 }  // end namespace addons

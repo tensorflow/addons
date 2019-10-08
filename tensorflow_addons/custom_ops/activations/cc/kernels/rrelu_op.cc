@@ -73,5 +73,5 @@ TF_CALL_GPU_NUMBER_TYPES(REGISTER_RRELU_GPU_KERNELS);
 #undef REGISTER_RRELU_GPU_KERNELS
 
 #endif  // GOOGLE_CUDA
-}  // end namespace addons
+}  // namespace addons
 }  // namespace tensorflow

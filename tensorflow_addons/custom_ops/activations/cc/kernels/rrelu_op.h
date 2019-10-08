@@ -18,6 +18,7 @@ limitations under the License.
 
 #define EIGEN_USE_THREADS
 
+#include <cstdlib>
 #include "tensorflow/core/framework/numeric_op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/lib/core/errors.h"
@@ -43,8 +44,9 @@ struct Rrelu {
     } else {
       activations.device(d) =
           (features >= static_cast<T>(0))
-              .select(features, features.constant(static_cast<T>(2)) *
-                                    features / (lower + upper));
+              .select(features, features *
+                                    features.constant((lower + upper) /
+                                                      static_cast<T>(2)));
     }
   }
 };
@@ -65,7 +67,7 @@ struct RreluGrad {
           gradients *
           (features >= static_cast<T>(0))
               .select(features.constant(static_cast<T>(1)),
-                      features.constant(static_cast<T>(2) / (lower + upper)));
+                      features.constant((lower + upper) / static_cast<T>(2)));
     }
   }
 };
@@ -80,6 +82,7 @@ class RreluOp : public OpKernel {
     OP_REQUIRES_OK(context, context->GetAttr("lower", &lower));
     OP_REQUIRES_OK(context, context->GetAttr("upper", &upper));
     OP_REQUIRES_OK(context, context->GetAttr("training", &training_));
+    // OP_REQUIRES_OK(context, context->GetAttr("seed", &seed_));
     lower_ = static_cast<T>(lower);
     OP_REQUIRES(context, lower_ >= static_cast<T>(0),
                 errors::InvalidArgument("Need lower >= 0, got ", lower_));
@@ -98,7 +101,7 @@ class RreluOp : public OpKernel {
                                                      &output_tensor));
     OP_REQUIRES_OK(context, context->allocate_output(1, input_tensor.shape(),
                                                      &alpha_tensor));
-    // functor::Rrelu<Device, T> functor;
+    // std::srand(seed_);
     functor::Rrelu<Device, T>()(
         context->eigen_device<Device>(), input_tensor.flat<T>(), lower_, upper_,
         training_, output_tensor->flat<T>(), alpha_tensor->flat<T>());
@@ -108,6 +111,7 @@ class RreluOp : public OpKernel {
   T lower_;
   T upper_;
   bool training_;
+  int seed_;
 };
 
 template <typename Device, typename T>
@@ -135,7 +139,6 @@ class RreluGradOp : public OpKernel {
     Tensor* output_tensor = nullptr;
     OP_REQUIRES_OK(context, context->allocate_output(0, input_tensor.shape(),
                                                      &output_tensor));
-    // functor::RreluGrad<Device, T> functor;
     functor::RreluGrad<Device, T>()(context->eigen_device<Device>(),
                                     gradients.flat<T>(), input_tensor.flat<T>(),
                                     alpha_tensor.flat<T>(), lower_, upper_,
@@ -148,7 +151,7 @@ class RreluGradOp : public OpKernel {
   bool training_;
 };
 
-}  // end namespace addons
+}  // namespace addons
 }  // namespace tensorflow
 
 #undef EIGEN_USE_THREADS

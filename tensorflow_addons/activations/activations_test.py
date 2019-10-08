@@ -26,7 +26,8 @@ from tensorflow_addons.utils import test_utils
 class ActivationsTest(tf.test.TestCase):
 
     ALL_ACTIVATIONS = [
-        "gelu", "hardshrink", "lisht", "softshrink", "sparsemax","rrelu", "tanhshrink"
+        "gelu", "hardshrink", "lisht", "softshrink", "sparsemax", "rrelu",
+        "tanhshrink"
     ]
 
     def test_serialization(self):
