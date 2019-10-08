@@ -4,7 +4,7 @@
 
 -----------------
 
-### Official Builds
+# TensorFlow Addons
 
 **TensorFlow Addons** is a repository of contributions that conform to
 well-established API patterns, but implement new functionality
