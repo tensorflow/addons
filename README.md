@@ -56,8 +56,8 @@ import tensorflow_addons as tfa
 ```
 
 #### Nightly Builds
-There are also nightly builds of TensorFlow Addons under the pip package 
-`tfa-nightly`, which is built against `tf-nightly-2.0-preview`. Nightly builds 
+There are also nightly builds of TensorFlow Addons under the pip package
+`tfa-nightly`, which is built against `tf-nightly`. Nightly builds
 include newer features, but may be less stable than the versioned releases.
 
 ```
