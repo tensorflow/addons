@@ -12,7 +12,7 @@ this, follow the below steps:
 1. Create a new branch on your fork of TensorFlow Addons
 2. Goto [Google Colab](https://colab.research.google.com/) and start a new 
 notebook using addons example template:
-[docs/tutorials/template.ipynb](template.ipynb)
+[docs/tutorials/_template.ipynb](template.ipynb)
 3. Edit the the links for the "View source on GitHub" and "Run in Google Colab" 
 URL boxes so that they match the name of your new example notebook
 4. Follow the guidelines of the template
