@@ -470,8 +470,8 @@ struct CorrelationCostGradFunctor<GPUDevice, Dtype> {
 template struct CorrelationCostFunctor<GPUDevice, float>;
 template struct CorrelationCostGradFunctor<GPUDevice, float>;
 
-}  // end namespace functor
-}  // end namespace addons
+}  // namespace functor
+}  // namespace addons
 }  // namespace tensorflow
 
 #endif  // GOOGLE_CUDA
