@@ -43,13 +43,12 @@ class RreluTest(tf.test.TestCase, parameterized.TestCase):
         x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
         lower = 0.1
         upper = 0.2
-        result, alpha = rrelu(x, lower, upper, training=True, with_alpha=True)
-        expect_result = _ref_rrelu(x, alpha)
-        self.assertAllCloseAccordingToType(result, expect_result)
-
-        result, alpha = rrelu(x, lower, upper, training=False, with_alpha=True)
-        expect_result = _ref_rrelu(x, alpha)
-        self.assertAllCloseAccordingToType(result, expect_result)
+        for training in [True, False]:
+            with self.subTest(training=training):
+                result, alpha = rrelu(
+                    x, lower, upper, training=training, with_alpha=True)
+                expect_result = _ref_rrelu(x, alpha)
+                self.assertAllCloseAccordingToType(result, expect_result)
 
     @parameterized.named_parameters(("float32", np.float32),
                                     ("float64", np.float64))
@@ -58,13 +57,16 @@ class RreluTest(tf.test.TestCase, parameterized.TestCase):
         x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
         lower = 0.1
         upper = 0.2
-        with tf.GradientTape() as t:
-            t.watch(x)
-            result, alpha = rrelu(
-                x, lower, upper, training=True, with_alpha=True)
-        grad = t.gradient(result, x)
-        expect_grad = _ref_rrelu_grad(x, alpha, dtype)
-        self.assertAllCloseAccordingToType(grad, expect_grad, atol=1e-4)
+        for training in [True, False]:
+            with self.subTest(training=training):
+                with tf.GradientTape() as t:
+                    t.watch(x)
+                    result, alpha = rrelu(
+                        x, lower, upper, training=training, with_alpha=True)
+                grad = t.gradient(result, x)
+                expect_grad = _ref_rrelu_grad(x, alpha, dtype)
+                self.assertAllCloseAccordingToType(
+                    grad, expect_grad, atol=1e-4)
 
     def test_unknown_shape(self):
         fn = rrelu.get_concrete_function(
