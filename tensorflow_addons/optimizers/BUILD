@@ -27,7 +27,7 @@ py_test(
         "lamb_optimizer_test.py",
     ],
     main = "lamb_optimizer_test.py",
- srcs_version = "PY2AND3",
+    srcs_version = "PY2AND3",
     deps = [
         ":optimizers",
     ],
