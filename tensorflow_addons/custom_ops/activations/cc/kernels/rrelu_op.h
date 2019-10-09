@@ -18,7 +18,6 @@ limitations under the License.
 
 #define EIGEN_USE_THREADS
 
-#include <cstdlib>
 #include "tensorflow/core/framework/numeric_op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/lib/core/errors.h"
@@ -37,9 +36,7 @@ struct Rrelu {
                   typename TTypes<T>::Tensor alpha) {
     if (training) {
       alpha.device(d) = alpha.constant(lower) +
-                        (alpha.random() + alpha.constant(static_cast<T>(1))) *
-                            alpha.constant((upper - lower) / static_cast<T>(2));
-
+                        alpha.random() * alpha.constant(upper - lower);
     } else {
       alpha.device(d) = features.constant((lower + upper) / static_cast<T>(2));
     }
@@ -71,7 +68,6 @@ class RreluOp : public OpKernel {
     OP_REQUIRES_OK(context, context->GetAttr("lower", &lower));
     OP_REQUIRES_OK(context, context->GetAttr("upper", &upper));
     OP_REQUIRES_OK(context, context->GetAttr("training", &training_));
-    // OP_REQUIRES_OK(context, context->GetAttr("seed", &seed_));
     lower_ = static_cast<T>(lower);
     OP_REQUIRES(context, lower_ >= static_cast<T>(0),
                 errors::InvalidArgument("Need lower >= 0, got ", lower_));
@@ -90,7 +86,6 @@ class RreluOp : public OpKernel {
                                                      &output_tensor));
     OP_REQUIRES_OK(context, context->allocate_output(1, input_tensor.shape(),
                                                      &alpha_tensor));
-    // std::srand(seed_);
     functor::Rrelu<Device, T>()(
         context->eigen_device<Device>(), input_tensor.flat<T>(), lower_, upper_,
         training_, output_tensor->flat<T>(), alpha_tensor->flat<T>());
@@ -100,7 +95,6 @@ class RreluOp : public OpKernel {
   T lower_;
   T upper_;
   bool training_;
-  // int seed_;
 };
 
 template <typename Device, typename T>
