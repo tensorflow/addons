@@ -26,7 +26,6 @@ from tensorflow_addons.utils import keras_utils
 
 # TODO
 #
-# * decide input_dim should be keep or drop
 # * [future version should fix it] left padding of mask is not supported
 # * not test yet if CRF is the first layer
 
@@ -83,9 +82,6 @@ class CRF(tf.keras.layers.Layer):
         bias_regularizer: Regularizer function applied to the bias vector.
         bias_constraint: Constraint function applied to the bias vector.
         activation: default value is 'linear', Activation function to use.
-        input_dim: dimensionality of the input (integer).
-            This argument (or the keyword argument `input_shape`)
-            is required when using this layer as the first layer in a model.
 
     Input shape:
         3D tensor with shape: `(batch_size, sequence_length, feature_size)`.
@@ -128,7 +124,6 @@ class CRF(tf.keras.layers.Layer):
                  bias_regularizer=None,
                  bias_constraint=None,
                  activation="linear",
-                 input_dim=None,
                  **kwargs):
         super(CRF, self).__init__(**kwargs)
 
@@ -163,8 +158,6 @@ class CRF(tf.keras.layers.Layer):
             boundary_constraint)
         self.bias_constraint = tf.keras.constraints.get(bias_constraint)
 
-        self.input_dim = input_dim
-
         # values will be assigned in method
         self.input_spec = None
 
@@ -186,12 +179,12 @@ class CRF(tf.keras.layers.Layer):
         # see API docs of InputSpec for more detail
         self.input_spec = [tf.keras.layers.InputSpec(shape=input_shape)]
 
-        self.input_dim = input_shape[-1]
+        feature_size = input_shape[-1]
 
         if self.use_kernel:
             # weights that mapping arbitrary tensor to correct shape
             self.kernel = self.add_weight(
-                shape=(self.input_dim, self.units),
+                shape=(feature_size, self.units),
                 name="kernel",
                 initializer=self.kernel_initializer,
                 regularizer=self.kernel_regularizer,
@@ -385,9 +378,7 @@ class CRF(tf.keras.layers.Layer):
             "boundary_constraint":
             tf.keras.constraints.serialize(self.boundary_constraint),
             "bias_constraint":
-            tf.keras.constraints.serialize(self.bias_constraint),
-            "input_dim":
-            self.input_dim,
+            tf.keras.constraints.serialize(self.bias_constraint)
         }
         base_config = super(CRF, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
