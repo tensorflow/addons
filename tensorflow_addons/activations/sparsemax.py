@@ -24,7 +24,7 @@ from tensorflow_addons.utils import keras_utils
 
 @keras_utils.register_keras_custom_object
 @tf.function
-def sparsemax(logits, axis=-1, name=None):
+def sparsemax(logits, axis=-1):
     """Sparsemax activation function [1].
 
     For each batch `i` and class `j` we have
@@ -35,7 +35,6 @@ def sparsemax(logits, axis=-1, name=None):
     Args:
         logits: Input tensor.
         axis: Integer, axis along which the sparsemax operation is applied.
-        name: A name for the operation (optional).
     Returns:
         Tensor, output of sparsemax transformation. Has the same type and
         shape as `logits`.
@@ -50,7 +49,7 @@ def sparsemax(logits, axis=-1, name=None):
     is_last_axis = (axis == -1) or (axis == rank - 1)
 
     if is_last_axis:
-        output = _compute_2d_sparsemax(logits, name=name)
+        output = _compute_2d_sparsemax(logits)
         output.set_shape(shape)
         return output
 
@@ -64,8 +63,7 @@ def sparsemax(logits, axis=-1, name=None):
 
     # Do the actual softmax on its last dimension.
     output = _compute_2d_sparsemax(logits)
-    output = _swap_axis(
-        output, axis_norm, tf.math.subtract(rank_op, 1), name=name)
+    output = _swap_axis(output, axis_norm, tf.math.subtract(rank_op, 1))
 
     # Make shape inference work since transpose may erase its static shape.
     output.set_shape(shape)
@@ -82,7 +80,7 @@ def _swap_axis(logits, dim_index, last_index, **kwargs):
 
 
 @tf.function
-def _compute_2d_sparsemax(logits, name=None):
+def _compute_2d_sparsemax(logits):
     """Performs the sparsemax operation when axis=-1."""
     shape_op = tf.shape(logits)
     obs = tf.math.reduce_prod(shape_op[:-1])
@@ -134,5 +132,5 @@ def _compute_2d_sparsemax(logits, name=None):
                                                    logits.dtype)), p)
 
     # Reshape back to original size
-    p_safe = tf.reshape(p_safe, shape_op, name=name)
+    p_safe = tf.reshape(p_safe, shape_op)
     return p_safe

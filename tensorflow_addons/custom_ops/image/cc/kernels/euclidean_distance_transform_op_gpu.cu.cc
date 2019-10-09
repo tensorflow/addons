@@ -23,6 +23,7 @@ limitations under the License.
 #include "tensorflow/core/platform/types.h"
 
 namespace tensorflow {
+namespace addons {
 
 namespace functor {
 
@@ -35,6 +36,7 @@ template struct EuclideanDistanceTransformFunctor<GPUDevice, double>;
 
 }  // end namespace functor
 
+}  // end namespace addons
 }  // end namespace tensorflow
 
 #endif  // GOOGLE_CUDA

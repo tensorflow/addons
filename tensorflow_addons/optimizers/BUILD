@@ -7,8 +7,11 @@ py_library(
     srcs = [
         "__init__.py",
         "lamb_optimizer.py",
+        "conditional_gradient.py",
         "lazy_adam.py",
+        "lookahead.py",
         "moving_average.py",
+        "rectified_adam.py",
         "weight_decay_optimizers.py",
     ],
     srcs_version = "PY2AND3",
@@ -24,6 +27,19 @@ py_test(
         "lamb_optimizer_test.py",
     ],
     main = "lamb_optimizer_test.py",
+ srcs_version = "PY2AND3",
+    deps = [
+        ":optimizers",
+    ],
+)
+
+py_test(
+    name = "conditional_gradient_test",
+    size = "small",
+    srcs = [
+        "conditional_gradient_test.py",
+    ],
+    main = "conditional_gradient_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":optimizers",
@@ -44,12 +60,38 @@ py_test(
 )
 
 py_test(
+    name = "lookahead_test",
+    size = "small",
+    srcs = [
+        "lookahead_test.py",
+    ],
+    main = "lookahead_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":optimizers",
+    ],
+)
+
+py_test(
     name = "moving_average_test",
     size = "small",
     srcs = [
         "moving_average_test.py",
     ],
     main = "moving_average_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":optimizers",
+    ],
+)
+
+py_test(
+    name = "rectified_adam_test",
+    size = "small",
+    srcs = [
+        "rectified_adam_test.py",
+    ],
+    main = "rectified_adam_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":optimizers",

@@ -83,7 +83,7 @@ class FBetaScore(Metric):
     ```python
     actuals = tf.constant([[1, 1, 0],[1, 0, 0]],
               dtype=tf.int32)
-    predis = tf.constant([[1, 0, 0],[1, 0, 1]],
+    preds = tf.constant([[1, 0, 0],[1, 0, 1]],
              dtype=tf.int32)
     # F-Beta Micro
     fb_score = tfa.metrics.FBetaScore(num_classes=3,
@@ -271,7 +271,7 @@ class F1Score(FBetaScore):
                  Default value is None.
        beta : float
               Determines the weight of precision and recall in harmonic
-              mean. It's value is 1.0 for F1 score.
+              mean. Its value is 1.0 for F1 score.
 
     Returns:
        F1 Score: float

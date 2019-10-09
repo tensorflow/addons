@@ -22,6 +22,7 @@ import numpy as np
 
 import tensorflow as tf
 
+from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import basic_decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
 from tensorflow_addons.utils import test_utils
@@ -45,7 +46,7 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
             inputs = np.random.randn(batch_size, max_time,
                                      input_depth).astype(np.float32)
             input_t = tf.constant(inputs)
-            cell = tf.compat.v1.nn.rnn_cell.LSTMCell(cell_depth)
+            cell = tf.keras.layers.LSTMCell(cell_depth)
             sampler = sampler_py.TrainingSampler(time_major=False)
             if use_output_layer:
                 output_layer = tf.keras.layers.Dense(
@@ -54,8 +55,8 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
             else:
                 output_layer = None
                 expected_output_depth = cell_depth
-            initial_state = cell.zero_state(
-                dtype=tf.float32, batch_size=batch_size)
+            initial_state = cell.get_initial_state(
+                batch_size=batch_size, dtype=tf.float32)
             my_decoder = basic_decoder.BasicDecoder(
                 cell=cell, sampler=sampler, output_layer=output_layer)
 
@@ -79,10 +80,8 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
                  tf.constant(0), first_inputs, first_state)
             batch_size_t = my_decoder.batch_size
 
-            self.assertIsInstance(first_state,
-                                  tf.compat.v1.nn.rnn_cell.LSTMStateTuple)
-            self.assertIsInstance(step_state,
-                                  tf.compat.v1.nn.rnn_cell.LSTMStateTuple)
+            self.assertLen(first_state, 2)
+            self.assertLen(step_state, 2)
             self.assertIsInstance(step_outputs,
                                   basic_decoder.BasicDecoderOutput)
             self.assertEqual((batch_size, expected_output_depth),
@@ -123,6 +122,102 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
                 np.argmax(eval_result["step_outputs"].rnn_output, -1),
                 eval_result["step_outputs"].sample_id)
 
+    @parameterized.named_parameters(("sequence_length_only", False),
+                                    ("mask_only", True), ("no_mask", None))
+    def testStepWithTrainingHelperMaskedInput(self, use_mask):
+        batch_size = 5
+        max_time = 8
+        sequence_length = [max_time] * batch_size if use_mask is None \
+            else [3, 4, 3, 1, 0]
+        sequence_length = np.array(sequence_length, dtype=np.int32)
+        mask = [[True] * l + [False] * (max_time - l) for l in sequence_length]
+        input_depth = 7
+        cell_depth = 10
+        output_layer_depth = 3
+
+        with self.cached_session(use_gpu=True):
+            inputs = np.random.randn(batch_size, max_time,
+                                     input_depth).astype(np.float32)
+            input_t = tf.constant(inputs)
+            cell = tf.keras.layers.LSTMCell(cell_depth)
+            sampler = sampler_py.TrainingSampler(time_major=False)
+            output_layer = tf.keras.layers.Dense(
+                output_layer_depth, use_bias=False)
+            expected_output_depth = output_layer_depth
+            initial_state = cell.get_initial_state(
+                batch_size=batch_size, dtype=tf.float32)
+            my_decoder = basic_decoder.BasicDecoder(
+                cell=cell, sampler=sampler, output_layer=output_layer)
+
+            if use_mask is None:
+                (first_finished, first_inputs,
+                 first_state) = my_decoder.initialize(
+                     input_t, initial_state=initial_state)
+            elif use_mask:
+                (first_finished, first_inputs,
+                 first_state) = my_decoder.initialize(
+                     input_t, initial_state=initial_state, mask=mask)
+            else:
+                (first_finished, first_inputs,
+                 first_state) = my_decoder.initialize(
+                     input_t,
+                     initial_state=initial_state,
+                     sequence_length=sequence_length)
+
+            output_size = my_decoder.output_size
+            output_dtype = my_decoder.output_dtype
+            self.assertEqual(
+                basic_decoder.BasicDecoderOutput(expected_output_depth,
+                                                 tf.TensorShape([])),
+                output_size)
+            self.assertEqual(
+                basic_decoder.BasicDecoderOutput(tf.float32, tf.int32),
+                output_dtype)
+
+            (step_outputs, step_state, step_next_inputs,
+             step_finished) = my_decoder.step(
+                 tf.constant(0), first_inputs, first_state)
+            batch_size_t = my_decoder.batch_size
+
+            self.assertLen(first_state, 2)
+            self.assertLen(step_state, 2)
+            self.assertIsInstance(step_outputs,
+                                  basic_decoder.BasicDecoderOutput)
+            self.assertEqual((batch_size, expected_output_depth),
+                             step_outputs[0].get_shape())
+            self.assertEqual((batch_size,), step_outputs[1].get_shape())
+            self.assertEqual((batch_size, cell_depth),
+                             first_state[0].get_shape())
+            self.assertEqual((batch_size, cell_depth),
+                             first_state[1].get_shape())
+            self.assertEqual((batch_size, cell_depth),
+                             step_state[0].get_shape())
+            self.assertEqual((batch_size, cell_depth),
+                             step_state[1].get_shape())
+
+            self.assertLen(output_layer.variables, 1)
+
+            eval_result = self.evaluate({
+                "batch_size": batch_size_t,
+                "first_finished": first_finished,
+                "first_inputs": first_inputs,
+                "first_state": first_state,
+                "step_outputs": step_outputs,
+                "step_state": step_state,
+                "step_next_inputs": step_next_inputs,
+                "step_finished": step_finished
+            })
+
+            self.assertAllEqual(sequence_length == 0,
+                                eval_result["first_finished"])
+            self.assertAllEqual((np.maximum(sequence_length - 1, 0) == 0),
+                                eval_result["step_finished"])
+            self.assertEqual(output_dtype.sample_id,
+                             eval_result["step_outputs"].sample_id.dtype)
+            self.assertAllEqual(
+                np.argmax(eval_result["step_outputs"].rnn_output, -1),
+                eval_result["step_outputs"].sample_id)
+
     def testStepWithGreedyEmbeddingHelper(self):
         batch_size = 5
         vocabulary_size = 7
@@ -135,10 +230,10 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
             embeddings = np.random.randn(vocabulary_size,
                                          input_depth).astype(np.float32)
             embeddings_t = tf.constant(embeddings)
-            cell = tf.compat.v1.nn.rnn_cell.LSTMCell(vocabulary_size)
+            cell = tf.keras.layers.LSTMCell(vocabulary_size)
             sampler = sampler_py.GreedyEmbeddingSampler()
-            initial_state = cell.zero_state(
-                dtype=tf.float32, batch_size=batch_size)
+            initial_state = cell.get_initial_state(
+                batch_size=batch_size, dtype=tf.float32)
             my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
             (first_finished, first_inputs,
              first_state) = my_decoder.initialize(
@@ -160,12 +255,8 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
                  tf.constant(0), first_inputs, first_state)
             batch_size_t = my_decoder.batch_size
 
-            self.assertTrue(
-                isinstance(first_state,
-                           tf.compat.v1.nn.rnn_cell.LSTMStateTuple))
-            self.assertTrue(
-                isinstance(step_state,
-                           tf.compat.v1.nn.rnn_cell.LSTMStateTuple))
+            self.assertLen(first_state, 2)
+            self.assertLen(step_state, 2)
             self.assertTrue(
                 isinstance(step_outputs, basic_decoder.BasicDecoderOutput))
             self.assertEqual((batch_size, cell_depth),
@@ -220,10 +311,10 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
             embeddings = np.random.randn(vocabulary_size,
                                          input_depth).astype(np.float32)
             embeddings_t = tf.constant(embeddings)
-            cell = tf.compat.v1.nn.rnn_cell.LSTMCell(vocabulary_size)
+            cell = tf.keras.layers.LSTMCell(vocabulary_size)
             sampler = sampler_py.SampleEmbeddingSampler(seed=0)
-            initial_state = cell.zero_state(
-                dtype=tf.float32, batch_size=batch_size)
+            initial_state = cell.get_initial_state(
+                batch_size=batch_size, dtype=tf.float32)
             my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
             (first_finished, first_inputs,
              first_state) = my_decoder.initialize(
@@ -245,12 +336,8 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
                  tf.constant(0), first_inputs, first_state)
             batch_size_t = my_decoder.batch_size
 
-            self.assertTrue(
-                isinstance(first_state,
-                           tf.compat.v1.nn.rnn_cell.LSTMStateTuple))
-            self.assertTrue(
-                isinstance(step_state,
-                           tf.compat.v1.nn.rnn_cell.LSTMStateTuple))
+            self.assertLen(first_state, 2)
+            self.assertTrue(step_state, 2)
             self.assertTrue(
                 isinstance(step_outputs, basic_decoder.BasicDecoderOutput))
             self.assertEqual((batch_size, cell_depth),
@@ -300,11 +387,11 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
             embeddings = np.random.randn(vocabulary_size,
                                          input_depth).astype(np.float32)
             half = tf.constant(0.5)
-            cell = tf.compat.v1.nn.rnn_cell.LSTMCell(vocabulary_size)
+            cell = tf.keras.layers.LSTMCell(vocabulary_size)
             sampler = sampler_py.ScheduledEmbeddingTrainingSampler(
                 sampling_probability=half, time_major=False)
-            initial_state = cell.zero_state(
-                dtype=tf.float32, batch_size=batch_size)
+            initial_state = cell.get_initial_state(
+                batch_size=batch_size, dtype=tf.float32)
             my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
             (first_finished, first_inputs,
              first_state) = my_decoder.initialize(
@@ -327,12 +414,8 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
                  tf.constant(0), first_inputs, first_state)
             batch_size_t = my_decoder.batch_size
 
-            self.assertTrue(
-                isinstance(first_state,
-                           tf.compat.v1.nn.rnn_cell.LSTMStateTuple))
-            self.assertTrue(
-                isinstance(step_state,
-                           tf.compat.v1.nn.rnn_cell.LSTMStateTuple))
+            self.assertLen(first_state, 2)
+            self.assertLen(step_state, 2)
             self.assertTrue(
                 isinstance(step_outputs, basic_decoder.BasicDecoderOutput))
             self.assertEqual((batch_size, vocabulary_size),
@@ -395,7 +478,7 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
             inputs = np.random.randn(batch_size, max_time,
                                      input_depth).astype(np.float32)
             input_t = tf.constant(inputs)
-            cell = tf.compat.v1.nn.rnn_cell.LSTMCell(cell_depth)
+            cell = tf.keras.layers.LSTMCell(cell_depth)
             sampling_probability = tf.constant(sampling_probability)
 
             if use_next_inputs_fn:
@@ -411,8 +494,8 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
                 sampling_probability=sampling_probability,
                 time_major=False,
                 next_inputs_fn=next_inputs_fn)
-            initial_state = cell.zero_state(
-                dtype=tf.float32, batch_size=batch_size)
+            initial_state = cell.get_initial_state(
+                batch_size=batch_size, dtype=tf.float32)
 
             my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
 
@@ -441,12 +524,8 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
 
             batch_size_t = my_decoder.batch_size
 
-            self.assertTrue(
-                isinstance(first_state,
-                           tf.compat.v1.nn.rnn_cell.LSTMStateTuple))
-            self.assertTrue(
-                isinstance(step_state,
-                           tf.compat.v1.nn.rnn_cell.LSTMStateTuple))
+            self.assertLen(first_state, 2)
+            self.assertLen(step_state, 2)
             self.assertTrue(
                 isinstance(step_outputs, basic_decoder.BasicDecoderOutput))
             self.assertEqual((batch_size, cell_depth),
@@ -560,15 +639,15 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
         end_fn = lambda sample_ids: tf.equal(sample_ids, end_token)
 
         with self.cached_session(use_gpu=True):
-            cell = tf.compat.v1.nn.rnn_cell.LSTMCell(vocabulary_size)
+            cell = tf.keras.layers.LSTMCell(vocabulary_size)
             sampler = sampler_py.InferenceSampler(
                 sample_fn,
                 sample_shape=(),
                 sample_dtype=tf.int32,
                 end_fn=end_fn,
                 next_inputs_fn=next_inputs_fn)
-            initial_state = cell.zero_state(
-                dtype=tf.float32, batch_size=batch_size)
+            initial_state = cell.get_initial_state(
+                batch_size=batch_size, dtype=tf.float32)
             my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
             (first_finished, first_inputs,
              first_state) = my_decoder.initialize(
@@ -588,12 +667,8 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
                  tf.constant(0), first_inputs, first_state)
             batch_size_t = my_decoder.batch_size
 
-            self.assertTrue(
-                isinstance(first_state,
-                           tf.compat.v1.nn.rnn_cell.LSTMStateTuple))
-            self.assertTrue(
-                isinstance(step_state,
-                           tf.compat.v1.nn.rnn_cell.LSTMStateTuple))
+            self.assertLen(first_state, 2)
+            self.assertLen(step_state, 2)
             self.assertTrue(
                 isinstance(step_outputs, basic_decoder.BasicDecoderOutput))
             self.assertEqual((batch_size, cell_depth),
@@ -648,15 +723,15 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
         end_fn = lambda sample_ids: sample_ids[:, end_token]
 
         with self.cached_session(use_gpu=True):
-            cell = tf.compat.v1.nn.rnn_cell.LSTMCell(vocabulary_size)
+            cell = tf.keras.layers.LSTMCell(vocabulary_size)
             sampler = sampler_py.InferenceSampler(
                 sample_fn,
                 sample_shape=[cell_depth],
                 sample_dtype=tf.bool,
                 end_fn=end_fn,
                 next_inputs_fn=next_inputs_fn)
-            initial_state = cell.zero_state(
-                dtype=tf.float32, batch_size=batch_size)
+            initial_state = cell.get_initial_state(
+                batch_size=batch_size, dtype=tf.float32)
             my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
             (first_finished, first_inputs,
              first_state) = my_decoder.initialize(
@@ -675,12 +750,8 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
                  tf.constant(0), first_inputs, first_state)
             batch_size_t = my_decoder.batch_size
 
-            self.assertTrue(
-                isinstance(first_state,
-                           tf.compat.v1.nn.rnn_cell.LSTMStateTuple))
-            self.assertTrue(
-                isinstance(step_state,
-                           tf.compat.v1.nn.rnn_cell.LSTMStateTuple))
+            self.assertLen(first_state, 2)
+            self.assertLen(step_state, 2)
             self.assertTrue(
                 isinstance(step_outputs, basic_decoder.BasicDecoderOutput))
             self.assertEqual((batch_size, cell_depth),
@@ -716,6 +787,33 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
                                 eval_result["step_finished"])
             self.assertAllEqual(expected_step_next_inputs,
                                 eval_result["step_next_inputs"])
+
+    def testBasicDecoderWithAttentionWrapper(self):
+        units = 32
+        vocab_size = 1000
+        attention_mechanism = attention_wrapper.LuongAttention(units)
+        cell = tf.keras.layers.LSTMCell(units)
+        cell = attention_wrapper.AttentionWrapper(cell, attention_mechanism)
+        output_layer = tf.keras.layers.Dense(vocab_size)
+        sampler = sampler_py.TrainingSampler()
+        # BasicDecoder should accept a non initialized AttentionWrapper.
+        decoder = basic_decoder.BasicDecoder(
+            cell, sampler, output_layer=output_layer)
+
+    def testRightPaddedSequenceAssertion(self):
+        right_padded_sequence = [[True, True, False, False],
+                                 [True, True, True, False]]
+        left_padded_sequence = [[False, False, True, True],
+                                [False, True, True, True]]
+
+        assertion = sampler_py._check_sequence_is_right_padded(
+            right_padded_sequence, False)
+        self.evaluate(assertion)
+
+        with self.assertRaises(tf.errors.InvalidArgumentError):
+            assertion = sampler_py._check_sequence_is_right_padded(
+                left_padded_sequence, False)
+            self.evaluate(assertion)
 
 
 if __name__ == "__main__":

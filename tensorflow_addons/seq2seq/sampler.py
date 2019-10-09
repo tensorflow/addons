@@ -181,7 +181,8 @@ class TrainingSampler(Sampler):
             major. If `False` (default), they are assumed to be batch major.
 
         Raises:
-          ValueError: if `sequence_length` is not a 1D tensor.
+          ValueError: if `sequence_length` is not a 1D tensor or `mask` is
+            not a 2D boolean tensor.
         """
         self.time_major = time_major
         self._batch_size = None
@@ -201,12 +202,13 @@ class TrainingSampler(Sampler):
     def sample_ids_dtype(self):
         return tf.int32
 
-    def initialize(self, inputs, sequence_length=None):
+    def initialize(self, inputs, sequence_length=None, mask=None):
         """Initialize the TrainSampler.
 
         Args:
           inputs: A (structure of) input tensors.
           sequence_length: An int32 vector tensor.
+          mask: A boolean 2D tensor.
 
         Returns:
           (finished, next_inputs), a tuple of two items. The first item is a
@@ -218,20 +220,47 @@ class TrainingSampler(Sampler):
         if not self.time_major:
             inputs = tf.nest.map_structure(_transpose_batch_time, inputs)
 
+        self._batch_size = tf.shape(tf.nest.flatten(inputs)[0])[1]
+
         self.input_tas = tf.nest.map_structure(_unstack_ta, inputs)
-        if sequence_length is None:
-            raise ValueError("sequence_length is required for TrainingSampler")
-        self.sequence_length = tf.convert_to_tensor(
-            sequence_length, name="sequence_length")
-        if self.sequence_length.get_shape().ndims != 1:
-            raise ValueError(
-                "Expected sequence_length to be vector, but received shape: %s"
-                % self.sequence_length.get_shape())
+        if sequence_length is not None and mask is not None:
+            raise ValueError("sequence_length and mask can't be provided "
+                             "at the same time.")
+        if sequence_length is not None:
+            self.sequence_length = tf.convert_to_tensor(
+                sequence_length, name="sequence_length")
+            if self.sequence_length.get_shape().ndims != 1:
+                raise ValueError(
+                    "Expected sequence_length to be vector, but received "
+                    "shape: %s" % self.sequence_length.get_shape())
+        elif mask is not None:
+            mask = tf.convert_to_tensor(mask)
+            if mask.get_shape().ndims != 2:
+                raise ValueError(
+                    "Expected mask to a 2D tensor, but received shape: %s" %
+                    mask)
+            if not mask.dtype.is_bool:
+                raise ValueError(
+                    "Expected mask to be a boolean tensor, but received "
+                    "dtype: %s" % repr(mask.dtype))
+
+            axis = 1 if not self.time_major else 0
+            with tf.control_dependencies(
+                [_check_sequence_is_right_padded(mask, self.time_major)]  # pylint: disable=bad-continuation
+            ):
+                self.sequence_length = tf.math.reduce_sum(
+                    tf.cast(mask, tf.int32), axis=axis, name="sequence_length")
+        else:
+            # As the input tensor has been converted to time major,
+            # the maximum sequence length should be inferred from
+            # the first dimension.
+            max_seq_len = tf.shape(tf.nest.flatten(inputs)[0])[0]
+            self.sequence_length = tf.fill([self.batch_size],
+                                           max_seq_len,
+                                           name="sequence_length")
 
         self.zero_inputs = tf.nest.map_structure(
             lambda inp: tf.zeros_like(inp[0, :]), inputs)
-
-        self._batch_size = tf.size(self.sequence_length)
 
         finished = tf.equal(0, self.sequence_length)
         all_finished = tf.reduce_all(finished)
@@ -305,7 +334,11 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
         super(ScheduledEmbeddingTrainingSampler,
               self).__init__(time_major=time_major)
 
-    def initialize(self, inputs, sequence_length=None, embedding=None):
+    def initialize(self,
+                   inputs,
+                   sequence_length=None,
+                   mask=None,
+                   embedding=None):
         if self.embedding_fn is None:
             if embedding is None:
                 raise ValueError(
@@ -314,7 +347,7 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
             self.embedding_fn = (
                 lambda ids: tf.nn.embedding_lookup(embedding, ids))
         return super(ScheduledEmbeddingTrainingSampler, self).initialize(
-            inputs, sequence_length=sequence_length)
+            inputs, sequence_length=sequence_length, mask=mask)
 
     def sample(self, time, outputs, state):
         del state
@@ -397,7 +430,11 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
         super(ScheduledOutputTrainingSampler,
               self).__init__(time_major=time_major)
 
-    def initialize(self, inputs, sequence_length=None, auxiliary_inputs=None):
+    def initialize(self,
+                   inputs,
+                   sequence_length=None,
+                   mask=None,
+                   auxiliary_inputs=None):
         if auxiliary_inputs is None:
             maybe_concatenated_inputs = inputs
         else:
@@ -415,7 +452,9 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
             self._auxiliary_input_tas = None
 
         return super(ScheduledOutputTrainingSampler, self).initialize(
-            maybe_concatenated_inputs, sequence_length=sequence_length)
+            maybe_concatenated_inputs,
+            sequence_length=sequence_length,
+            mask=mask)
 
     def sample(self, time, outputs, state):
         del state
@@ -726,8 +765,7 @@ def bernoulli_sample(probs=None,
     def _sample_n(n):
         """Sample vector of Bernoullis."""
         new_shape = tf.concat([[n], batch_shape_tensor], 0)
-        uniform = tf.compat.v1.random_uniform(
-            new_shape, seed=seed, dtype=probs.dtype)
+        uniform = tf.random.uniform(new_shape, seed=seed, dtype=probs.dtype)
         return tf.cast(tf.less(uniform, probs), dtype)
 
     return _call_sampler(_sample_n, sample_shape)
@@ -746,8 +784,8 @@ def categorical_sample(logits, dtype=tf.int32, sample_shape=(), seed=None):
         else:
             logits_2d = tf.reshape(logits, [-1, event_size])
         sample_dtype = tf.int64 if logits.dtype.size > 4 else tf.int32
-        draws = tf.compat.v1.multinomial(
-            logits_2d, n, seed=seed, output_dtype=sample_dtype)
+        draws = tf.random.categorical(
+            logits_2d, n, dtype=sample_dtype, seed=seed)
         draws = tf.reshape(
             tf.transpose(draws), tf.concat([[n], batch_shape_tensor], 0))
         return tf.cast(draws, dtype)
@@ -760,3 +798,20 @@ def _unstack_ta(inp):
         dtype=inp.dtype,
         size=tf.shape(inp)[0],
         element_shape=inp.get_shape()[1:]).unstack(inp)
+
+
+def _check_sequence_is_right_padded(mask, time_major):
+    """Returns an Assert operation checking that if the mask tensor is right
+    padded."""
+    if time_major:
+        mask = tf.transpose(mask)
+    sequence_length = tf.math.reduce_sum(tf.cast(mask, tf.int32), axis=1)
+    max_seq_length = tf.shape(mask)[1]
+    right_padded_mask = tf.sequence_mask(
+        sequence_length, maxlen=max_seq_length, dtype=tf.bool)
+    all_equal = tf.math.equal(mask, right_padded_mask)
+
+    condition = tf.math.reduce_all(all_equal)
+    error_message = "The input sequence should be right padded."
+
+    return tf.Assert(condition, [error_message])

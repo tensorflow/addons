@@ -56,11 +56,6 @@ esac
 
 BUILD_DEPS_DIR=build_deps
 REQUIREMENTS_TXT=$BUILD_DEPS_DIR/requirements.txt
-if [[ "$TF_NEED_CUDA" == "1" ]]; then
-    # TODO: delete it when tf2 standard package supports
-    # both cpu and gpu kernel.
-    REQUIREMENTS_TXT=$BUILD_DEPS_DIR/requirements_gpu.txt
-fi
 
 ${PYTHON_VERSION:=python} -m pip install $QUIET_FLAG -r $REQUIREMENTS_TXT
 
@@ -81,7 +76,7 @@ write_action_env_to_bazelrc "TF_CXX11_ABI_FLAG" ${TF_CXX11_ABI_FLAG}
 
 if [[ "$TF_NEED_CUDA" == "1" ]]; then
     write_action_env_to_bazelrc "TF_NEED_CUDA" ${TF_NEED_CUDA}
-    write_action_env_to_bazelrc "CUDNN_INSTALL_PATH" "/usr/lib/x86_64-linux-gnu"
+    write_action_env_to_bazelrc "CUDNN_INSTALL_PATH" "${CUDNN_INSTALL_PATH:=/usr/lib/x86_64-linux-gnu}"
     write_action_env_to_bazelrc "TF_CUDA_VERSION" "10.0"
     write_action_env_to_bazelrc "TF_CUDNN_VERSION" "7"
     write_action_env_to_bazelrc "CUDA_TOOLKIT_PATH" "${CUDA_HOME:=/usr/local/cuda}"
@@ -91,5 +86,5 @@ if [[ "$TF_NEED_CUDA" == "1" ]]; then
     write_to_bazelrc "build --spawn_strategy=local"
     write_to_bazelrc "build --strategy=Genrule=local"
     write_to_bazelrc "build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true"
-
+    write_to_bazelrc "build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain"
 fi
