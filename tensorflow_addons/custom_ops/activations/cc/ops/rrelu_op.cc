@@ -37,11 +37,6 @@ REGISTER_OP("Addons>RreluGrad")
     .Input("alpha: T")
     .Output("backprops: T")
     .Attr("T: {half, float, double}")
-    .Attr("lower: float")
-    .Attr("upper: float")
-    .Attr("training: bool")
-    // .Attr("seed: int")
     .SetShapeFn(shape_inference::MergeBothInputsShapeFn);
-
-}  // end namespace addons
+}  // namespace addons
 }  // namespace tensorflow

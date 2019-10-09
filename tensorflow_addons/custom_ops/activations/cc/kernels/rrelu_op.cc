@@ -41,20 +41,20 @@ TF_CALL_GPU_NUMBER_TYPES(REGISTER_RRELU_KERNELS);
 using GPUDevice = Eigen::GpuDevice;
 
 namespace functor {
-#define DECLARE_GPU_SPEC(T)                                                   \
-  template <>                                                                 \
-  void Rrelu<GPUDevice, T>::operator()(                                       \
-      const GPUDevice& d, typename TTypes<T>::ConstTensor features, T lower,  \
-      T upper, bool training, typename TTypes<T>::Tensor activations,         \
-      typename TTypes<T>::Tensor alpha);                                      \
-  extern template struct Rrelu<GPUDevice, T>;                                 \
-                                                                              \
-  template <>                                                                 \
-  void RreluGrad<GPUDevice, T>::operator()(                                   \
-      const GPUDevice& d, typename TTypes<T>::ConstTensor gradients,          \
-      typename TTypes<T>::ConstTensor features,                               \
-      typename TTypes<T>::ConstTensor alpha, T lower, T upper, bool training, \
-      typename TTypes<T>::Tensor backprops);                                  \
+#define DECLARE_GPU_SPEC(T)                                                  \
+  template <>                                                                \
+  void Rrelu<GPUDevice, T>::operator()(                                      \
+      const GPUDevice& d, typename TTypes<T>::ConstTensor features, T lower, \
+      T upper, bool training, typename TTypes<T>::Tensor activations,        \
+      typename TTypes<T>::Tensor alpha);                                     \
+  extern template struct Rrelu<GPUDevice, T>;                                \
+                                                                             \
+  template <>                                                                \
+  void RreluGrad<GPUDevice, T>::operator()(                                  \
+      const GPUDevice& d, typename TTypes<T>::ConstTensor gradients,         \
+      typename TTypes<T>::ConstTensor features,                              \
+      typename TTypes<T>::ConstTensor alpha,                                 \
+      typename TTypes<T>::Tensor backprops);                                 \
   extern template struct RreluGrad<GPUDevice, T>;
 
 TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);

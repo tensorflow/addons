@@ -39,15 +39,12 @@ struct Rrelu {
       alpha.device(d) = alpha.constant(lower) +
                         (alpha.random() + alpha.constant(static_cast<T>(1))) *
                             alpha.constant((upper - lower) / static_cast<T>(2));
-      activations.device(d) =
-          (features >= static_cast<T>(0)).select(features, alpha * features);
+
     } else {
-      activations.device(d) =
-          (features >= static_cast<T>(0))
-              .select(features, features *
-                                    features.constant((lower + upper) /
-                                                      static_cast<T>(2)));
+      alpha.device(d) = features.constant((lower + upper) / static_cast<T>(2));
     }
+    activations.device(d) =
+        (features >= static_cast<T>(0)).select(features, alpha * features);
   }
 };
 
@@ -55,20 +52,12 @@ template <typename Device, typename T>
 struct RreluGrad {
   void operator()(const Device& d, typename TTypes<T>::ConstTensor gradients,
                   typename TTypes<T>::ConstTensor features,
-                  typename TTypes<T>::ConstTensor alpha, T lower, T upper,
-                  bool training, typename TTypes<T>::Tensor backprops) {
-    if (training) {
-      backprops.device(d) =
-          gradients *
-          (features >= static_cast<T>(0))
-              .select(features.constant(static_cast<T>(1)), alpha);
-    } else {
-      backprops.device(d) =
-          gradients *
-          (features >= static_cast<T>(0))
-              .select(features.constant(static_cast<T>(1)),
-                      features.constant((lower + upper) / static_cast<T>(2)));
-    }
+                  typename TTypes<T>::ConstTensor alpha,
+                  typename TTypes<T>::Tensor backprops) {
+    backprops.device(d) =
+        gradients *
+        (features >= static_cast<T>(0))
+            .select(features.constant(static_cast<T>(1)), alpha);
   }
 };
 
@@ -111,27 +100,14 @@ class RreluOp : public OpKernel {
   T lower_;
   T upper_;
   bool training_;
-  int seed_;
+  // int seed_;
 };
 
 template <typename Device, typename T>
 class RreluGradOp : public OpKernel {
  public:
-  explicit RreluGradOp(OpKernelConstruction* context) : OpKernel(context) {
-    float lower, upper;
-    OP_REQUIRES_OK(context, context->GetAttr("lower", &lower));
-    OP_REQUIRES_OK(context, context->GetAttr("upper", &upper));
-    OP_REQUIRES_OK(context, context->GetAttr("training", &training_));
-    lower_ = static_cast<T>(lower);
-    OP_REQUIRES(context, lower_ >= static_cast<T>(0),
-                errors::InvalidArgument("Need lower >= 0, got ", lower_));
-    upper_ = static_cast<T>(upper);
-    OP_REQUIRES(context, upper_ < static_cast<T>(1),
-                errors::InvalidArgument("Need upper < 1, got ", upper_));
-    OP_REQUIRES(
-        context, lower_ <= upper_,
-        errors::InvalidArgument("lower must be less than or equal to upper."));
-  }
+  explicit RreluGradOp(OpKernelConstruction* context) : OpKernel(context) {}
+
   void Compute(OpKernelContext* context) override {
     const Tensor& gradients = context->input(0);
     const Tensor& input_tensor = context->input(1);
@@ -141,14 +117,9 @@ class RreluGradOp : public OpKernel {
                                                      &output_tensor));
     functor::RreluGrad<Device, T>()(context->eigen_device<Device>(),
                                     gradients.flat<T>(), input_tensor.flat<T>(),
-                                    alpha_tensor.flat<T>(), lower_, upper_,
-                                    training_, output_tensor->flat<T>());
+                                    alpha_tensor.flat<T>(),
+                                    output_tensor->flat<T>());
   }
-
- private:
-  T lower_;
-  T upper_;
-  bool training_;
 };
 
 }  // namespace addons
