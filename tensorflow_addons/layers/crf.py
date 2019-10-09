@@ -23,36 +23,111 @@ from __future__ import print_function
 import tensorflow as tf
 from tensorflow_addons.text.crf import crf_decode, crf_log_likelihood
 from tensorflow_addons.utils import keras_utils
-"""
-TODO
 
-* decide input_dim should be keep or drop
-* left padding of mask is not supported (future version should fix it)
-* not test yet if CRF is the first layer
-* Add docs
-"""
+# TODO
+#
+# * decide input_dim should be keep or drop
+# * [future version should fix it] left padding of mask is not supported
+# * not test yet if CRF is the first layer
 
 
 @keras_utils.register_keras_custom_object
 class CRF(tf.keras.layers.Layer):
+    """Linear chain conditional random field (CRF).
+
+    Examples:
+
+    ```python
+        from tensorflow_addons.layers import CRF
+
+        model = Sequential()
+        model.add(Embedding(3001, 300, mask_zero=True)
+
+        crf = CRF(10, name='crf_layer')
+        model.add(crf)
+
+        model.compile('adam', loss={'crf_layer': crf.loss})
+
+        model.fit(x, y)
+    ```
+
+    Arguments:
+        units: Positive integer, dimensionality of the output space,
+            should equal to tag num.
+        chain_initializer: Initializer for the `chain_kernel` weights matrix,
+            used for the CRF chain energy.
+            (see [initializers](../initializers.md)).
+        chain_regularizer: Regularizer function applied to
+            the `chain_kernel` weights matrix.
+        chain_constraint: Constraint function applied to
+            the `chain_kernel` weights matrix.
+        use_boundary: Boolean (default True), indicating if trainable
+            start-end chain energies should be added to model.
+        boundary_initializer: Initializer for the `left_boundary`,
+            'right_boundary' weights vectors,
+            used for the start/left and end/right boundary energy.
+        boundary_regularizer: Regularizer function applied to
+            the 'left_boundary', 'right_boundary' weight vectors.
+        boundary_constraint: Constraint function applied to
+            the `left_boundary`, `right_boundary` weights vectors.
+        use_kernel: Boolean (default True), indicating if apply
+            a fully connected layer before CRF op.
+        kernel_initializer: Initializer for the `kernel` weights matrix,
+            used for the linear transformation of the inputs.
+        kernel_regularizer: Regularizer function applied to
+            the `kernel` weights matrix.
+        kernel_constraint: Constraint function applied to
+            the `kernel` weights matrix.
+        use_bias: Boolean (default True), whether the layer uses a bias vector.
+        bias_initializer: Initializer for the bias vector.
+        bias_regularizer: Regularizer function applied to the bias vector.
+        bias_constraint: Constraint function applied to the bias vector.
+        activation: default value is 'linear', Activation function to use.
+        input_dim: dimensionality of the input (integer).
+            This argument (or the keyword argument `input_shape`)
+            is required when using this layer as the first layer in a model.
+
+    Input shape:
+        3D tensor with shape: `(batch_size, sequence_length, feature_size)`.
+
+    Output shape:
+        2D tensor (dtype: int32) with shape: `(batch_size, sequence_length)`.
+
+    Masking:
+        This layer supports masking
+        (2D tensor, shape: `(batch_size, sequence_length)`)
+        for input data with a variable number of timesteps.
+        This layer output same make tensor,
+        NOTICE this may cause issue when you
+        use some keras loss and metrics function which usually expect 1D mask.
+
+    Loss function:
+        Due to the TF 2.0 version support eager execution be default,
+        there is no way can implement CRF loss as independent loss function.
+        Thus, user should use loss method of this layer.
+        See Examples (above) for detailed usage.
+
+    References:
+        - [Conditional Random Field](https://en.wikipedia.org/wiki/Conditional_random_field)
+    """
     def __init__(self,
                  units,
-                 use_boundary=False,
-                 use_bias=True,
-                 use_kernel=True,
-                 activation="linear",
-                 kernel_initializer="glorot_uniform",
                  chain_initializer="orthogonal",
-                 bias_initializer="zeros",
-                 boundary_initializer="zeros",
-                 kernel_regularizer=None,
                  chain_regularizer=None,
-                 boundary_regularizer=None,
-                 bias_regularizer=None,
-                 kernel_constraint=None,
                  chain_constraint=None,
+                 use_boundary=True,
+                 boundary_initializer="zeros",
+                 boundary_regularizer=None,
                  boundary_constraint=None,
+                 use_kernel=True,
+                 kernel_initializer="glorot_uniform",
+                 kernel_regularizer=None,
+                 kernel_constraint=None,
+                 use_bias=True,
+                 bias_initializer="zeros",
+                 bias_regularizer=None,
                  bias_constraint=None,
+                 activation="linear",
                  input_dim=None,
                  **kwargs):
         super(CRF, self).__init__(**kwargs)
@@ -135,7 +210,7 @@ class CRF(tf.keras.layers.Layer):
         # bias that works with self.kernel
         if self.use_kernel and self.use_bias:
             self.bias = self.add_weight(
-                shape=(self.units, ),
+                shape=(self.units,),
                 name="bias",
                 initializer=self.bias_initializer,
                 regularizer=self.bias_regularizer,
@@ -147,14 +222,14 @@ class CRF(tf.keras.layers.Layer):
         # weight of <START> to tag probability and tag to <END> probability
         if self.use_boundary:
             self.left_boundary = self.add_weight(
-                shape=(self.units, ),
+                shape=(self.units,),
                 name="left_boundary",
                 initializer=self.boundary_initializer,
                 regularizer=self.boundary_regularizer,
                 constraint=self.boundary_constraint,
             )
             self.right_boundary = self.add_weight(
-                shape=(self.units, ),
+                shape=(self.units,),
                 name="right_boundary",
                 initializer=self.boundary_initializer,
                 regularizer=self.boundary_regularizer,
@@ -337,20 +412,25 @@ class CRF(tf.keras.layers.Layer):
         return pred_ids
 
     def get_negative_log_likelihood(self, y_true):
-        y_preds = self.logits
+        # Note: this y_pred is different from y_pred from loss function
+        y_pred = self.logits
 
         nwords = self.nwords
 
-        y_preds = tf.keras.backend.cast(y_preds, tf.float32)
+        y_pred = tf.keras.backend.cast(y_pred, tf.float32)
         y_true = tf.keras.backend.cast(y_true, tf.int32)
         nwords = tf.keras.backend.cast(nwords, tf.int32)
         self.chain_kernel = tf.keras.backend.cast(self.chain_kernel,
                                                   tf.float32)
 
-        log_likelihood, _ = crf_log_likelihood(y_preds, y_true, nwords,
+        log_likelihood, _ = crf_log_likelihood(y_pred, y_true, nwords,
                                                self.chain_kernel)
 
         return -log_likelihood
+
+    def loss(self, y_true, y_pred):
+        # we don't use y_pred, but caller pass it anyway
+        return self.get_negative_log_likelihood(y_true)
 
     def get_accuracy(self, y_true, y_pred):
         judge = tf.keras.backend.cast(

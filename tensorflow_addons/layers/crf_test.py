@@ -67,8 +67,7 @@ class TestCRF(tf.test.TestCase):
             input_data=x,
             expected_output=expected_y,
             expected_output_dtype=tf.int32,
-            validate_training=False
-        )
+            validate_training=False)
 
 
 if __name__ == "__main__":
