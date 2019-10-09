@@ -65,8 +65,8 @@ def get_beta_accumulators(opt, dtype):
     return (beta_1_power, beta_2_power)
 
 
-@test_utils.run_all_in_graph_and_eager_modes
 class LambOptimizerTest(tf.test.TestCase):
+    @test_utils.run_in_graph_and_eager_modes(use_gpu=False)
     def testSparse(self):
         for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             with self.cached_session():
@@ -184,12 +184,15 @@ class LambOptimizerTest(tf.test.TestCase):
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
 
+    @test_utils.run_in_graph_and_eager_modes(use_gpu=False)
     def testResourceBasic(self):
         self.doTestBasic()
 
+    @test_utils.run_in_graph_and_eager_modes(use_gpu=False)
     def testBasicCallableParams(self):
         self.doTestBasic(use_callable_params=True)
 
+    @test_utils.run_in_graph_and_eager_modes(use_gpu=False)
     def testBasicWithLearningRateDecay(self):
         # yapf: disable
         for i, dtype in enumerate([tf.dtypes.half,
@@ -262,6 +265,7 @@ class LambOptimizerTest(tf.test.TestCase):
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
 
+    @test_utils.run_in_graph_and_eager_modes(use_gpu=False)
     def testBasicWithLearningRateInverseTimeDecay(self):
         # yapf: disable
         for i, dtype in enumerate([tf.dtypes.half,
@@ -321,6 +325,7 @@ class LambOptimizerTest(tf.test.TestCase):
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
 
+    @test_utils.run_in_graph_and_eager_modes(use_gpu=False)
     def testTensorLearningRate(self):
         for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             with self.cached_session():
@@ -371,6 +376,7 @@ class LambOptimizerTest(tf.test.TestCase):
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
 
+    @test_utils.run_in_graph_and_eager_modes(use_gpu=False)
     def testSharing(self):
         for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
             with self.cached_session():
@@ -427,6 +433,7 @@ class LambOptimizerTest(tf.test.TestCase):
                     self.assertAllCloseAccordingToType(var1_np,
                                                        self.evaluate(var1))
 
+    @test_utils.run_in_graph_and_eager_modes(use_gpu=False)
     def testMinimizeMeanSquareLossWithWeightDecay(self):
         with self.cached_session():
             w = tf.Variable([0.1, -0.2, -0.1])
