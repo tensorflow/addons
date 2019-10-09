@@ -131,5 +131,5 @@ REGISTER_OP("Addons>CorrelationCostGrad")
     })
     .Doc(R"doc(CorrelationCostGrad op.)doc");
 
-}  // end namespace addons
+}  // namespace addons
 }  // namespace tensorflow
