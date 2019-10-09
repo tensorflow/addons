@@ -42,8 +42,8 @@ struct CorrelationCostGradFunctor {
                     int stride_2, int pad, TensorFormat data_format);
 };
 
-}  // end namespace functor
-}  // end namespace addons
-}  // end namespace tensorflow
+}  // namespace functor
+}  // namespace addons
+}  // namespace tensorflow
 
 #endif  // TENSORFLOW_ADDONS_LAYERS_KERNELS_CORRELATION_COST_OP_H_
