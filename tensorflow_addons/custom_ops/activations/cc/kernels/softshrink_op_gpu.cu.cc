@@ -17,7 +17,7 @@ limitations under the License.
 
 #define EIGEN_USE_GPU
 
-#include "tensorflow_addons/custom_ops/activations/cc/kernels/gelu_op.h"
+#include "tensorflow_addons/custom_ops/activations/cc/kernels/softshrink_op.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "third_party/eigen3/Eigen/Core"
 
@@ -26,9 +26,9 @@ namespace addons {
 
 using GPUDevice = Eigen::GpuDevice;
 
-#define DEFINE_GPU_KERNELS(T)                  \
-  template struct functor::Gelu<GPUDevice, T>; \
-  template struct functor::GeluGrad<GPUDevice, T>;
+#define DEFINE_GPU_KERNELS(T)                        \
+  template struct functor::Softshrink<GPUDevice, T>; \
+  template struct functor::SoftshrinkGrad<GPUDevice, T>;
 
 TF_CALL_GPU_NUMBER_TYPES(DEFINE_GPU_KERNELS);
 

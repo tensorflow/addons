@@ -15,7 +15,7 @@ limitations under the License.
 
 #define EIGEN_USE_THREADS
 
-#include "tensorflow_addons/custom_ops/activations/cc/kernels/hardshrink_op.h"
+#include "tensorflow_addons/custom_ops/activations/cc/kernels/softshrink_op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
@@ -25,18 +25,18 @@ namespace addons {
 
 using CPUDevice = Eigen::ThreadPoolDevice;
 
-#define REGISTER_HARDSHRINK_KERNELS(type)                                     \
+#define REGISTER_SOFTSHRINK_KERNELS(type)                                     \
   REGISTER_KERNEL_BUILDER(                                                    \
-      Name("Addons>Hardshrink").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
-      HardshrinkOp<CPUDevice, type>);                                         \
-  REGISTER_KERNEL_BUILDER(Name("Addons>HardshrinkGrad")                       \
+      Name("Addons>Softshrink").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
+      SoftshrinkOp<CPUDevice, type>);                                         \
+  REGISTER_KERNEL_BUILDER(Name("Addons>SoftshrinkGrad")                       \
                               .Device(DEVICE_CPU)                             \
                               .TypeConstraint<type>("T"),                     \
-                          HardshrinkGradOp<CPUDevice, type>);
+                          SoftshrinkGradOp<CPUDevice, type>);
 
-// Hardshrink only makes sense with floating points.
-TF_CALL_GPU_NUMBER_TYPES(REGISTER_HARDSHRINK_KERNELS);
-#undef REGISTER_HARDSHRINK_KERNELS
+// Softshrink only makes sense with floating points.
+TF_CALL_GPU_NUMBER_TYPES(REGISTER_SOFTSHRINK_KERNELS);
+#undef REGISTER_SOFTSHRINK_KERNELS
 
 #if GOOGLE_CUDA
 
@@ -46,34 +46,34 @@ using GPUDevice = Eigen::GpuDevice;
 namespace functor {
 #define DECLARE_GPU_SPEC(T)                                                  \
   template <>                                                                \
-  void Hardshrink<GPUDevice, T>::operator()(                                 \
+  void Softshrink<GPUDevice, T>::operator()(                                 \
       const GPUDevice& d, typename TTypes<T>::ConstTensor features, T lower, \
       T upper, typename TTypes<T>::Tensor activations);                      \
-  extern template struct Hardshrink<GPUDevice, T>;                           \
+  extern template struct Softshrink<GPUDevice, T>;                           \
                                                                              \
   template <>                                                                \
-  void HardshrinkGrad<GPUDevice, T>::operator()(                             \
+  void SoftshrinkGrad<GPUDevice, T>::operator()(                             \
       const GPUDevice& d, typename TTypes<T>::ConstTensor gradients,         \
       typename TTypes<T>::ConstTensor features, T lower, T upper,            \
       typename TTypes<T>::Tensor backprops);                                 \
-  extern template struct HardshrinkGrad<GPUDevice, T>;
+  extern template struct SoftshrinkGrad<GPUDevice, T>;
 
 TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
 #undef DECLARE_GPU_SPEC
 }  // namespace functor
 
 // Registration of the GPU implementations.
-#define REGISTER_HARDSHRINK_GPU_KERNELS(type)                                 \
+#define REGISTER_SOFTSHRINK_GPU_KERNELS(type)                                 \
   REGISTER_KERNEL_BUILDER(                                                    \
-      Name("Addons>Hardshrink").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
-      HardshrinkOp<GPUDevice, type>);                                         \
-  REGISTER_KERNEL_BUILDER(Name("Addons>HardshrinkGrad")                       \
+      Name("Addons>Softshrink").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
+      SoftshrinkOp<GPUDevice, type>);                                         \
+  REGISTER_KERNEL_BUILDER(Name("Addons>SoftshrinkGrad")                       \
                               .Device(DEVICE_GPU)                             \
                               .TypeConstraint<type>("T"),                     \
-                          HardshrinkGradOp<GPUDevice, type>);
+                          SoftshrinkGradOp<GPUDevice, type>);
 
-TF_CALL_GPU_NUMBER_TYPES(REGISTER_HARDSHRINK_GPU_KERNELS);
-#undef REGISTER_HARDSHRINK_GPU_KERNELS
+TF_CALL_GPU_NUMBER_TYPES(REGISTER_SOFTSHRINK_GPU_KERNELS);
+#undef REGISTER_SOFTSHRINK_GPU_KERNELS
 
 #endif  // GOOGLE_CUDA
 

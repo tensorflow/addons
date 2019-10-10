@@ -27,7 +27,7 @@ from tensorflow_addons.utils import keras_utils
 class Sparsemax(tf.keras.layers.Layer):
     """Sparsemax activation function [1].
 
-    The ouput shape is the same as the input shape.
+    The output shape is the same as the input shape.
 
     [1]: https://arxiv.org/abs/1602.02068
 

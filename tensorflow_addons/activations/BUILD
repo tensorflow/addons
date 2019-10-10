@@ -9,6 +9,7 @@ py_library(
         "gelu.py",
         "hardshrink.py",
         "lisht.py",
+        "softshrink.py",
         "sparsemax.py",
         "tanhshrink.py",
     ],
@@ -17,6 +18,19 @@ py_library(
         "//tensorflow_addons/utils",
     ],
     srcs_version = "PY2AND3",
+)
+
+py_test(
+    name = "activations_test",
+    size = "small",
+    srcs = [
+        "activations_test.py",
+    ],
+    main = "activations_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":activations",
+    ],
 )
 
 py_test(
@@ -65,6 +79,19 @@ py_test(
         "lisht_test.py",
     ],
     main = "lisht_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":activations",
+    ],
+)
+
+py_test(
+    name = "softshrink_test",
+    size = "small",
+    srcs = [
+        "softshrink_test.py",
+    ],
+    main = "softshrink_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":activations",

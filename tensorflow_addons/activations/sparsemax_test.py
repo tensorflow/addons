@@ -274,20 +274,6 @@ class SparsemaxTest(tf.test.TestCase):
             lambda logits: sparsemax(logits), [z], delta=1e-6)
         self.assertAllCloseAccordingToType(jacob_sym, jacob_num)
 
-    def test_serialization(self, dtype=None):
-        ref_fn = sparsemax
-        config = tf.keras.activations.serialize(ref_fn)
-        fn = tf.keras.activations.deserialize(config)
-        self.assertEqual(fn, ref_fn)
-
-    def test_serialization_with_layers(self, dtype=None):
-        layer = tf.keras.layers.Dense(3, activation=sparsemax)
-        config = tf.keras.layers.serialize(layer)
-        deserialized_layer = tf.keras.layers.deserialize(config)
-        self.assertEqual(deserialized_layer.__class__.__name__,
-                         layer.__class__.__name__)
-        self.assertEqual(deserialized_layer.activation.__name__, "sparsemax")
-
 
 if __name__ == '__main__':
     tf.test.main()

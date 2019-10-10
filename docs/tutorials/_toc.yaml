@@ -1,0 +1,14 @@
+toc:
+- title: Overview
+  path: /addons/overview
+- heading: Tutorials
+- title: Triplet loss
+  path: /addons/tutorials/losses_triplet
+- title: Image Ops
+  path: /addons/tutorials/image_ops
+- title: Normalization layers
+  path: /addons/tutorials/layers_normalizations
+- title: Weight normalization layer
+  path: /addons/tutorials/layers_weightnormalization
+- title: LazyAdam optimizer
+  path: /addons/tutorials/optimizers_lazyadam

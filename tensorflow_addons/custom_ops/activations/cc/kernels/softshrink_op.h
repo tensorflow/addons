@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_HARDSHRINK_OP_H_
-#define TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_HARDSHRINK_OP_H_
+#ifndef TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_SOFTSHRINK_OP_H_
+#define TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_SOFTSHRINK_OP_H_
 
 #define EIGEN_USE_THREADS
 
@@ -28,10 +28,10 @@ namespace addons {
 
 namespace functor {
 
-// Functor used by HardshrinkOp to do the computations.
+// Functor used by SoftshrinkOp to do the computations.
 template <typename Device, typename T>
-struct Hardshrink {
-  // Computes Hardshrink activation.
+struct Softshrink {
+  // Computes Softshrink activation.
   //
   // features: any shape.
   // lower: the lower bound for setting values to zeros.
@@ -40,21 +40,24 @@ struct Hardshrink {
   void operator()(const Device& d, typename TTypes<T>::ConstTensor features,
                   T lower, T upper, typename TTypes<T>::Tensor activations) {
     activations.device(d) =
-        (features < lower || features > upper)
-            .select(features, features.constant(static_cast<T>(0)));
+        (features < lower)
+            .select(features - features.constant(lower),
+                    (features > upper)
+                        .select(features - features.constant(upper),
+                                features.constant(static_cast<T>(0))));
   }
 };
 
-// Functor used by HardshrinkGradOp to do the computations.
+// Functor used by SoftshrinkGradOp to do the computations.
 template <typename Device, typename T>
-struct HardshrinkGrad {
-  // Computes HardshrinkGrad backprops.
+struct SoftshrinkGrad {
+  // Computes SoftshrinkGrad backprops.
   //
-  // gradients: gradients backpropagated to the Hardshink op.
-  // features: inputs that were passed to the Hardshrink op.
+  // gradients: gradients backpropagated to the Softshink op.
+  // features: inputs that were passed to the Softshrink op.
   // lower: the lower bound for setting values to zeros.
   // upper: the upper bound for setting values to zeros.
-  // backprops: gradients to backpropagate to the Hardshrink inputs.
+  // backprops: gradients to backpropagate to the Softshrink inputs.
   void operator()(const Device& d, typename TTypes<T>::ConstTensor gradients,
                   typename TTypes<T>::ConstTensor features, T lower, T upper,
                   typename TTypes<T>::Tensor backprops) {
@@ -67,10 +70,10 @@ struct HardshrinkGrad {
 }  // namespace functor
 
 template <typename Device, typename T>
-class HardshrinkOp : public UnaryElementWiseOp<T, HardshrinkOp<Device, T>> {
+class SoftshrinkOp : public UnaryElementWiseOp<T, SoftshrinkOp<Device, T>> {
  public:
-  explicit HardshrinkOp(OpKernelConstruction* context)
-      : UnaryElementWiseOp<T, HardshrinkOp<Device, T>>::UnaryElementWiseOp(
+  explicit SoftshrinkOp(OpKernelConstruction* context)
+      : UnaryElementWiseOp<T, SoftshrinkOp<Device, T>>::UnaryElementWiseOp(
             context) {
     float lower, upper;
     OP_REQUIRES_OK(context, context->GetAttr("lower", &lower));
@@ -84,7 +87,7 @@ class HardshrinkOp : public UnaryElementWiseOp<T, HardshrinkOp<Device, T>> {
   }
 
   void Operate(OpKernelContext* context, const Tensor& input, Tensor* output) {
-    functor::Hardshrink<Device, T> functor;
+    functor::Softshrink<Device, T> functor;
     functor(context->eigen_device<Device>(), input.flat<T>(), lower_, upper_,
             output->flat<T>());
   }
@@ -95,12 +98,12 @@ class HardshrinkOp : public UnaryElementWiseOp<T, HardshrinkOp<Device, T>> {
 };
 
 template <typename Device, typename T>
-class HardshrinkGradOp
-    : public BinaryElementWiseOp<T, HardshrinkGradOp<Device, T>> {
+class SoftshrinkGradOp
+    : public BinaryElementWiseOp<T, SoftshrinkGradOp<Device, T>> {
  public:
-  explicit HardshrinkGradOp(OpKernelConstruction* context)
+  explicit SoftshrinkGradOp(OpKernelConstruction* context)
       : BinaryElementWiseOp<
-            T, HardshrinkGradOp<Device, T>>::BinaryElementWiseOp(context) {
+            T, SoftshrinkGradOp<Device, T>>::BinaryElementWiseOp(context) {
     float lower, upper;
     OP_REQUIRES_OK(context, context->GetAttr("lower", &lower));
     OP_REQUIRES_OK(context, context->GetAttr("upper", &upper));
@@ -127,11 +130,11 @@ class HardshrinkGradOp
 };
 
 template <typename Device, typename T>
-void HardshrinkGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
+void SoftshrinkGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
                                                     const Tensor& g,
                                                     const Tensor& a, T lower,
                                                     T upper, Tensor* output) {
-  functor::HardshrinkGrad<Device, T> functor;
+  functor::SoftshrinkGrad<Device, T> functor;
   functor(context->eigen_device<Device>(), g.flat<T>(), a.flat<T>(), lower,
           upper, output->flat<T>());
 }
@@ -141,4 +144,4 @@ void HardshrinkGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
 
 #undef EIGEN_USE_THREADS
 
-#endif  // TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_HARDSHRINK_OP_H_
+#endif  // TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_SOFTSHRINK_OP_H_
