@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import itertools
 import math
+import os
 
 import numpy as np
 import tensorflow as tf
@@ -48,7 +49,7 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
             [1.0, 1.0, 1.0, 1.0, 1.0],
         ])
 
-        self.boundary_values = np.ones((5,))
+        self.boundary_values = np.ones((5, ))
 
         # Use the CRF Module with fixed transitions to compute the log_likelihood
         self.crf = CRF(
@@ -96,12 +97,12 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
 
         return manual_log_likelihood
 
-    def test_loss_function_as_crf_method(self):
+    def test_loss_function(self):
+
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Input(shape=(3, 5)))
         model.add(self.crf)
-        model.compile("adam", loss={"crf_layer": self.crf.loss})
-        model.summary()
+        model.compile("adam", loss={"crf_layer": ConditionalRandomFieldLoss()})
 
         log_likelihood = model.train_on_batch(self.logits, self.tags)
 
@@ -112,23 +113,35 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
 
         self.assertAllClose(expected_log_likelihood, unbatched_log_likelihood)
 
-    def test_loss_function_as_layer(self):
+    def test_model_fit(self):
+        model = tf.keras.models.Sequential()
+        model.add(tf.keras.layers.Input(shape=(3, 5)))
+        model.add(self.crf)
+        model.compile("adam", loss={"crf_layer": ConditionalRandomFieldLoss()})
+
+        model.fit(self.logits, self.tags, epochs=10, batch_size=1)
+
+    def test_dump_and_load(self):
+        MODEL_PERSISTENCE_PATH = './test_saving_crf_model.h5'
 
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Input(shape=(3, 5)))
         model.add(self.crf)
-        crf_loss_instance = ConditionalRandomFieldLoss(model, "crf_layer")
-        model.compile("adam", loss={"crf_layer": crf_loss_instance})
-        model.summary()
+        model.compile("adam", loss={"crf_layer": ConditionalRandomFieldLoss()})
 
-        log_likelihood = model.train_on_batch(self.logits, self.tags)
+        model.fit(self.logits, self.tags, epochs=10, batch_size=1)
 
-        # The manually computed log likelihood should
-        # equal the result of crf.forward.
-        expected_log_likelihood = self.compute_log_likelihood()
-        unbatched_log_likelihood = -2 * log_likelihood
+        model.save(MODEL_PERSISTENCE_PATH)
+        new_model = tf.keras.models.load_model(MODEL_PERSISTENCE_PATH)
 
-        self.assertAllClose(expected_log_likelihood, unbatched_log_likelihood)
+        new_model.fit(self.logits, self.tags, epochs=10, batch_size=1)
+
+        tf.keras.models.load_model(MODEL_PERSISTENCE_PATH)
+
+        try:
+            os.remove(MODEL_PERSISTENCE_PATH)
+        except OSError:
+            pass
 
 
 if __name__ == "__main__":

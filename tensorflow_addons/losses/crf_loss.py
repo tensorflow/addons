@@ -24,15 +24,11 @@ from tensorflow_addons.utils import keras_utils
 
 @keras_utils.register_keras_custom_object
 class ConditionalRandomFieldLoss(object):
-    def __init__(self, keras_model, crf_layer_name):
-        self.keras_model = keras_model
-        self.crf_layer_name = crf_layer_name
-
     def get_config(self):
         return {}
 
     def __call__(self, y_true, y_pred, sample_weight=None):
-        crf_layer = self.keras_model.get_layer(name=self.crf_layer_name)
+        crf_layer = y_pred._keras_history[0]
         loss_vector = crf_layer.loss(y_true, y_pred)
 
         return tf.keras.backend.mean(loss_vector)

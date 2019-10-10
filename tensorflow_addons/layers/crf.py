@@ -162,8 +162,8 @@ class CRF(tf.keras.layers.Layer):
         self.input_spec = None
 
         # value remembered for loss/metrics function
-        self.logits = None
-        self.nwords = None
+        self.potentials = None
+        self.sequence_length = None
         self.mask = None
 
         # global variable
@@ -233,7 +233,7 @@ class CRF(tf.keras.layers.Layer):
         super(CRF, self).build(input_shape)
 
     def call(self, inputs, mask=None, **kwargs):
-        # mask: Tensor(shape=(?, ?), dtype=bool) or None
+        # mask: Tensor(shape=(batch_size, sequence_length), dtype=bool) or None
 
         if mask is not None:
             assert (tf.keras.backend.ndim(mask) == 2
@@ -242,63 +242,96 @@ class CRF(tf.keras.layers.Layer):
         # remember this value for later use
         self.mask = mask
 
-        logits = self._dense_layer(inputs)
+        self.potentials = self._dense_layer(inputs)
 
         # appending boundary probability info
         if self.use_boundary:
-            logits = self.add_boundary_energy(logits, mask, self.left_boundary,
-                                              self.right_boundary)
+            self.potentials = self.add_boundary_energy(
+                self.potentials,
+                mask,
+                self.left_boundary,
+                self.right_boundary
+            )
 
-        # remember this value for later use
-        self.logits = logits
+        self.sequence_length = self._get_sequence_length(inputs, mask)
 
-        nwords = self._get_nwords(inputs, mask)
+        decoded_sequence, _ = self.get_viterbi_decoding(self.potentials, self.sequence_length)
 
-        # remember this value for later use
-        self.nwords = nwords
+        return decoded_sequence
 
-        test_output = self.get_viterbi_decoding(logits, nwords)
+    def _get_sequence_length(self, input_, mask):
+        """
+        Currently underline CRF fucntion (provided by tensorflow_addons.text.crf)
+        do not support bi-direction masking (left padding / right padding),
+        it support right padding by tell it the sequence length.
 
-        # WHY: don't remove this line, useless but remote it will cause bug, fix it later
-        # test_output = tf.cast(test_output, self.dtype or tf.keras.backend.floatx())
-        out = test_output
-
-        return out
-
-    def _get_nwords(self, input_, mask):
+        this function is compute the sequence length from input and mask.
+        """
         if mask is not None:
             int_mask = tf.keras.backend.cast(mask, tf.int8)
-            nwords = self.mask_to_nwords(int_mask)
+            sequence_length = self.mask_to_sequence_length(int_mask)
         else:
-            # make a mask tensor from input, then used to generate nwords
+            # make a mask tensor from input, then used to generate sequence_length
             input_energy_shape = tf.shape(input_)
             raw_input_shape = tf.slice(input_energy_shape, [0], [2])
             alt_mask = tf.ones(raw_input_shape)
 
-            nwords = self.mask_to_nwords(alt_mask)
+            sequence_length = self.mask_to_sequence_length(alt_mask)
 
-        return nwords
+        return sequence_length
 
-    def mask_to_nwords(self, mask):
-        nwords = tf.keras.backend.cast(tf.keras.backend.sum(mask, 1), tf.int64)
-        return nwords
-
-    @staticmethod
-    def shift_left(x, offset=1):
-        assert offset > 0
-        return tf.keras.backend.concatenate(
-            [x[:, offset:],
-             tf.keras.backend.zeros_like(x[:, :offset])],
-            axis=1)
+    def mask_to_sequence_length(self, mask):
+        """
+        compute sequence length from mask
+        """
+        sequence_length = tf.keras.backend.cast(tf.keras.backend.sum(mask, 1), tf.int64)
+        return sequence_length
 
     @staticmethod
-    def shift_right(x, offset=1):
-        assert offset > 0
-        return tf.keras.backend.concatenate(
-            [tf.keras.backend.zeros_like(x[:, :offset]), x[:, :-offset]],
+    def _compute_mask_right_boundary(mask):
+        """
+        input mask: 0011100, output left_boundary: 0000100
+        """
+        # shift mask to left by 1: 0011100 => 0111000
+        offset = 1
+        left_shifted_mask = tf.keras.backend.concatenate(
+            [mask[:, offset:],
+             tf.keras.backend.zeros_like(mask[:, :offset])],
             axis=1)
 
-    def add_boundary_energy(self, energy, mask, start, end):
+        # TODO(howl-anderson): for below code
+        # Original code in keras_contrib:
+        # end_mask = K.cast(
+        #   K.greater(self.shift_left(mask), mask),
+        #   K.floatx()
+        # )
+        # May have a bug, it's better confirmed
+        # by the original keras_contrib maintainer
+        # Luiz Felix (github: lzfelix),
+        # mailed him already and waiting for reply.
+
+        # 0011100 > 0111000 => 0000100
+        right_boundary = tf.keras.backend.greater(mask, left_shifted_mask)
+
+        return right_boundary
+
+    @staticmethod
+    def _compute_mask_left_boundary(mask):
+        """
+        input mask: 0011100, output left_boundary: 0010000
+        """
+        # shift mask to right by 1: 0011100 => 0001110
+        offset = 1
+        right_shifted_mask = tf.keras.backend.concatenate(
+            [tf.keras.backend.zeros_like(mask[:, :offset]), mask[:, :-offset]],
+            axis=1)
+
+        # 0011100 > 0001110 => 0010000
+        left_boundary = tf.keras.backend.greater(mask, right_shifted_mask)
+
+        return left_boundary
+
+    def add_boundary_energy(self, potentials, mask, start, end):
         def expend_scalar_to_3d(x):
             # expend tensor from shape (x, ) to (1, 1, x)
             return tf.keras.backend.expand_dims(
@@ -307,40 +340,31 @@ class CRF(tf.keras.layers.Layer):
         start = expend_scalar_to_3d(start)
         end = expend_scalar_to_3d(end)
         if mask is None:
-            energy = tf.keras.backend.concatenate(
-                [energy[:, :1, :] + start, energy[:, 1:, :]], axis=1)
-            energy = tf.keras.backend.concatenate(
-                [energy[:, :-1, :], energy[:, -1:, :] + end], axis=1)
+            potentials = tf.keras.backend.concatenate(
+                [potentials[:, :1, :] + start, potentials[:, 1:, :]], axis=1)
+            potentials = tf.keras.backend.concatenate(
+                [potentials[:, :-1, :], potentials[:, -1:, :] + end], axis=1)
         else:
             mask = tf.keras.backend.expand_dims(
                 tf.keras.backend.cast(mask, start.dtype), axis=-1)
             start_mask = tf.keras.backend.cast(
-                tf.keras.backend.greater(mask, self.shift_right(mask)),
+                self._compute_mask_left_boundary(mask),
                 start.dtype,
             )
 
-            # original code:
-            # end_mask = K.cast(
-            #   K.greater(self.shift_left(mask), mask),
-            #   K.floatx()
-            # )
-            # Note: original code should have a bug,
-            # need confirmed with @lzfelix (Luiz Felix),
-            # mailed to him but no reply for months,
-            # patch applied here.
             end_mask = tf.keras.backend.cast(
-                tf.keras.backend.greater(mask, self.shift_left(mask)),
+                self._compute_mask_right_boundary(mask),
                 end.dtype,
             )
-            energy = energy + start_mask * start
-            energy = energy + end_mask * end
-        return energy
+            potentials = potentials + start_mask * start
+            potentials = potentials + end_mask * end
+        return potentials
 
-    def get_viterbi_decoding(self, input_energy, nwords):
-        # pred_ids: A [batch_size, max_seq_len] matrix, with dtype `tf.int32`
-        pred_ids, _ = crf_decode(input_energy, self.chain_kernel, nwords)
+    def get_viterbi_decoding(self, potentials, sequence_length):
+        # decode_tags: A [batch_size, max_seq_len] matrix, with dtype `tf.int32`
+        decode_tags, best_score = crf_decode(potentials, self.chain_kernel, sequence_length)
 
-        return pred_ids
+        return decode_tags, best_score
 
     def get_config(self):
         # used for loading model from disk
@@ -388,6 +412,13 @@ class CRF(tf.keras.layers.Layer):
         return output_shape
 
     def compute_mask(self, input_, mask=None):
+        """
+        Set output mask to be 1D tensor, so loss method of this class can work without error.
+        But there is big short come:
+        layer, loss and metrics after this layer
+        can not access meaningful mask. Which mean they can not work correctly.
+        User only can get correct loss and metrics value from methods of this layer.
+        """
         if mask is not None:
             # transform mask from shape (?, ?) to (?, )
             new_mask = tf.keras.backend.any(mask, axis=1)
@@ -395,35 +426,24 @@ class CRF(tf.keras.layers.Layer):
 
         return mask
 
-    def get_decode_result(self, logits, mask):
-        nwords = tf.keras.backend.cast(tf.keras.backend.sum(mask, 1), tf.int64)
-
-        pred_ids, _ = crf_decode(logits, self.chain_kernel, nwords)
-
-        return pred_ids
-
     def get_negative_log_likelihood(self, y_true):
-        # Note: this y_pred is different from y_pred from loss function
-        y_pred = self.logits
-
-        nwords = self.nwords
-
-        y_pred = tf.keras.backend.cast(y_pred, tf.float32)
+        # TODO: remove typing cast
+        self.potentials = tf.keras.backend.cast(self.potentials, tf.float32)
         y_true = tf.keras.backend.cast(y_true, tf.int32)
-        nwords = tf.keras.backend.cast(nwords, tf.int32)
-        self.chain_kernel = tf.keras.backend.cast(self.chain_kernel,
-                                                  tf.float32)
+        self.sequence_length = tf.keras.backend.cast(self.sequence_length, tf.int32)
+        # self.chain_kernel = tf.keras.backend.cast(self.chain_kernel,
+        #                                           tf.float32)
 
-        log_likelihood, _ = crf_log_likelihood(y_pred, y_true, nwords,
+        log_likelihood, _ = crf_log_likelihood(self.potentials, y_true, self.sequence_length,
                                                self.chain_kernel)
 
         return -log_likelihood
 
     def loss(self, y_true, y_pred):
-        # we don't use y_pred, but caller pass it anyway
+        # we don't use y_pred, but caller pass it anyway, ignore it
         return self.get_negative_log_likelihood(y_true)
 
-    def get_accuracy(self, y_true, y_pred):
+    def accuracy(self, y_true, y_pred):
         judge = tf.keras.backend.cast(
             tf.keras.backend.equal(y_pred, y_true), tf.keras.backend.floatx())
         if self.mask is None:
@@ -442,6 +462,17 @@ class CRF(tf.keras.layers.Layer):
 
         return tf.keras.backend.cast(output, self.chain_kernel.dtype)
 
+    def __call__(self, inputs, *args, **kwargs):
+        outputs = super(CRF, self).__call__(inputs, *args, **kwargs)
+
+        # A hack that add _keras_history to EagerTensor, make it more like normal Tensor
+        for tensor in tf.nest.flatten(outputs):
+            if not hasattr(tensor, '_keras_history'):
+                tensor._keras_history = (self, 0, 0)
+
+        return outputs
+
     @property
     def _compute_dtype(self):
+        # fixed output dtype from underline CRF functions
         return tf.int32
