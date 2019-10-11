@@ -25,8 +25,8 @@ from tensorflow_addons.activations import rrelu
 from tensorflow_addons.utils import test_utils
 
 
-def _ref_rrelu(x, alpha):
-    return tf.where(x >= 0, x, alpha * x)
+def _ref_rrelu(x, lower, upper):
+    return tf.where(x >= 0, x, (lower + upper) * x / 2)
 
 
 def _ref_rrelu_grad(x, alpha, dtype):
@@ -43,12 +43,9 @@ class RreluTest(tf.test.TestCase, parameterized.TestCase):
         x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
         lower = 0.1
         upper = 0.2
-        for training in [True, False]:
-            with self.subTest(training=training):
-                result, alpha = rrelu(
-                    x, lower, upper, training=training, with_alpha=True)
-                expect_result = _ref_rrelu(x, alpha)
-                self.assertAllCloseAccordingToType(result, expect_result)
+        result = rrelu(x, lower, upper, training=False)
+        expect_result = _ref_rrelu(x, lower, upper)
+        self.assertAllCloseAccordingToType(result, expect_result)
 
     @parameterized.named_parameters(("float32", np.float32),
                                     ("float64", np.float64))
