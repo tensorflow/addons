@@ -1,22 +1,10 @@
 <div align="center">
-  <img src="https://github.com/tensorflow/community/blob/master/sigs/logos/SIGAddons.png" width="60%"><br><br>
+  <img src="https://tensorflow.org/images/SIGAddons.png" width="60%"><br><br>
 </div>
 
 -----------------
 
-[![PyPI Status Badge](https://badge.fury.io/py/tensorflow-addons.svg)](https://pypi.org/project/tensorflow-addons/)
-[![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
-[![Documentation](https://img.shields.io/badge/api-reference-blue.svg)](https://www.tensorflow.org/addons/api_docs/python/tfa)
-
-### Official Builds
-
-| Build Type      | Status |
-| ---             | ---    |
-| **Linux Py2 CPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py2.html) |
-| **Linux Py3 CPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py3.html) |
-| **Linux Py2 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py2.html) |
-| **Linux Py3 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
-| **Linux Sanity Check**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-sanity.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-sanity.html) |
+# TensorFlow Addons
 
 **TensorFlow Addons** is a repository of contributions that conform to
 well-established API patterns, but implement new functionality
@@ -27,27 +15,15 @@ developments that cannot be integrated into core TensorFlow
 (because their broad applicability is not yet clear, or it is mostly
  used by a smaller subset of the community).
 
-## Maintainers
-| Subpackage    | Maintainers  | Contact Info                        |
-|:----------------------- |:----------- |:----------------------------|
-| [tfa.activations](tensorflow_addons/activations/README.md) | SIG-Addons | @facaiy @seanpmorgan | 
-| [tfa.callbacks](tensorflow_addons/callbacks/README.md) | SIG-Addons | @squadrick |
-| [tfa.image](tensorflow_addons/image/README.md) | SIG-Addons | @windqaq @facaiy |
-| [tfa.layers](tensorflow_addons/layers/README.md) | SIG-Addons | @seanpmorgan @facaiy |
-| [tfa.losses](tensorflow_addons/losses/README.md) | SIG-Addons | @facaiy @windqaq   |
-| [tfa.metrics](tensorflow_addons/metrics/README.md) | SIG-Addons | @squadrick | 
-| [tfa.optimizers](tensorflow_addons/optimizers/README.md) | SIG-Addons | @facaiy @windqaq @squadrick |
-| [tfa.rnn](tensorflow_addons/rnn/README.md) | Google | @qlzh727 |
-| [tfa.seq2seq](tensorflow_addons/seq2seq/README.md) | Google/SIG-Addons | @qlzh727 @guillaumekln |
-| [tfa.text](tensorflow_addons/text/README.md) |  SIG-Addons |  @seanpmorgan @facaiy |
 
 ## Installation
+
 #### Stable Builds
 To install the latest version, run the following:
+
 ```
 pip install tensorflow-addons
 ```
- 
 
 To use addons:
 
@@ -87,9 +63,6 @@ bazel-bin/build_pip_pkg artifacts
 pip install artifacts/tensorflow_addons-*.whl
 ```
 
-## Tutorials
-See [`docs/tutorials/`](docs/tutorials/)
-for end-to-end examples of various addons.
 
 ## Core Concepts
 

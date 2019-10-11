@@ -193,7 +193,7 @@ class BaseDecoder(tf.keras.layers.Layer):
 
         Args:
           inputs: (structure of) tensors that contains the input for the
-            decoder. In the normal case, its a tensor with shape
+            decoder. In the normal case, it's a tensor with shape
             [batch, timestep, embedding].
           initial_state: (structure of) tensors that contains the initial state
             for the RNNCell.
