@@ -10,6 +10,7 @@ py_library(
         "hardshrink.py",
         "lisht.py",
         "mish.py",
+        "softshrink.py",
         "sparsemax.py",
         "tanhshrink.py",
     ],
@@ -92,6 +93,19 @@ py_test(
         "mish_test.py",
     ],
     main = "mish_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":activations",
+    ],
+)
+
+py_test(
+    name = "softshrink_test",
+    size = "small",
+    srcs = [
+        "softshrink_test.py",
+    ],
+    main = "softshrink_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":activations",

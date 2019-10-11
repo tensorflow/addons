@@ -69,15 +69,11 @@ REQUIRED_PACKAGES = [
 if project_name == TFA_RELEASE:
     # TODO: remove if-else condition when tf supports package consolidation.
     if platform.system() == 'Linux':
-        REQUIRED_PACKAGES.append('tensorflow-gpu == 2.0.0-rc0')
+        REQUIRED_PACKAGES.append('tensorflow-gpu == 2.0.0')
     else:
-        REQUIRED_PACKAGES.append('tensorflow == 2.0.0-rc0')
+        REQUIRED_PACKAGES.append('tensorflow == 2.0.0')
 elif project_name == TFA_NIGHTLY:
-    # TODO: remove if-else condition when tf-nightly supports package consolidation.
-    if platform.system() == 'Linux':
-        REQUIRED_PACKAGES.append('tf-nightly-gpu-2.0-preview')
-    else:
-        REQUIRED_PACKAGES.append('tf-nightly-2.0-preview')
+    REQUIRED_PACKAGES.append('tf-nightly')
 
 
 class BinaryDistribution(Distribution):

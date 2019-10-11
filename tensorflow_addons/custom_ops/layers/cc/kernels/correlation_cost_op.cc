@@ -351,5 +351,5 @@ TF_CALL_float(REGISTER_CORRELATIONCOST_OP_GPU);
 
 #endif  // GOOGLE_CUDA
 
-}  // end namespace addons
-}  // end namespace tensorflow
+}  // namespace addons
+}  // namespace tensorflow
