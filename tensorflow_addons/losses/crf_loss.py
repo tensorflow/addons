@@ -19,6 +19,8 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+
+from tensorflow_addons.layers import CRF
 from tensorflow_addons.utils import keras_utils
 
 
@@ -29,6 +31,12 @@ class ConditionalRandomFieldLoss(object):
 
     def __call__(self, y_true, y_pred, sample_weight=None):
         crf_layer = y_pred._keras_history[0]
+
+        # check if last layer is CRF
+        if not isinstance(crf_layer, CRF):
+            raise ValueError('Last layer must be CRF for use {}.'.format(
+                self.__class__.__name__))
+
         loss_vector = crf_layer.get_loss(y_true, y_pred)
 
         return tf.keras.backend.mean(loss_vector)

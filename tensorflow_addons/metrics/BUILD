@@ -7,7 +7,6 @@ py_library(
     srcs = [
         "__init__.py",
         "cohens_kappa.py",
-        "crf_accuracy.py",
         "f_scores.py",
         "multilabel_confusion_matrix.py",
         "r_square.py",
@@ -81,20 +80,5 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
         ":metrics",
-    ],
-)
-
-py_test(
-    name = "crf_accuracy_test",
-    size = "small",
-    srcs = [
-        "crf_accuracy_test.py",
-    ],
-    main = "crf_accuracy_test.py",
-    srcs_version = "PY2AND3",
-    deps = [
-        ":metrics",
-        "//tensorflow_addons/layers",
-        "//tensorflow_addons/losses",
     ],
 )

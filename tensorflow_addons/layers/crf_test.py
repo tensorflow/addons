@@ -26,6 +26,12 @@ from tensorflow_addons.utils import test_utils
 
 @test_utils.run_all_in_graph_and_eager_modes
 class TestCRF(tf.test.TestCase):
+    # def test_left_padding(self):
+    #     test_utils.layer_test(
+    #         CRF,
+    #         kwargs={"units": 4, "mask": np.array([0, 1, 1])},
+    #         validate_training=False)
+
     def test_unmasked_viterbi_decode(self):
         x = np.array([
             [

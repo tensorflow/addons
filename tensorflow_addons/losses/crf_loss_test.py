@@ -29,6 +29,8 @@ from tensorflow_addons.layers.crf import CRF
 from tensorflow_addons.losses.crf_loss import ConditionalRandomFieldLoss
 from tensorflow_addons.utils import test_utils
 
+# TODO(howl-anderson):  test CRF as the first layer
+
 
 @test_utils.run_all_in_graph_and_eager_modes
 class ConditionalRandomFieldLossTest(tf.test.TestCase):
@@ -102,9 +104,12 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Input(shape=(3, 5)))
         model.add(self.crf)
-        model.compile("adam", loss={"crf_layer": ConditionalRandomFieldLoss()})
+        model.compile(
+            "adam",
+            loss={"crf_layer": ConditionalRandomFieldLoss()},
+            metrics=[tf.keras.metrics.Accuracy()])
 
-        log_likelihood = model.train_on_batch(self.logits, self.tags)
+        log_likelihood, _ = model.train_on_batch(self.logits, self.tags)
 
         # The manually computed log likelihood should
         # equal the result of crf.forward.
@@ -117,7 +122,10 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Input(shape=(3, 5)))
         model.add(self.crf)
-        model.compile("adam", loss={"crf_layer": ConditionalRandomFieldLoss()})
+        model.compile(
+            "adam",
+            loss={"crf_layer": ConditionalRandomFieldLoss()},
+            metrics=[tf.keras.metrics.Accuracy()])
 
         model.fit(self.logits, self.tags, epochs=10, batch_size=1)
 
@@ -127,7 +135,10 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Input(shape=(3, 5)))
         model.add(self.crf)
-        model.compile("adam", loss={"crf_layer": ConditionalRandomFieldLoss()})
+        model.compile(
+            "adam",
+            loss={"crf_layer": ConditionalRandomFieldLoss()},
+            metrics=[tf.keras.metrics.Accuracy()])
 
         model.fit(self.logits, self.tags, epochs=10, batch_size=1)
 

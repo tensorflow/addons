@@ -24,11 +24,6 @@ import tensorflow as tf
 from tensorflow_addons.text.crf import crf_decode, crf_log_likelihood
 from tensorflow_addons.utils import keras_utils
 
-# TODO
-#
-# * [future version should fix it] left padding of mask is not supported, detect it and report to user
-# * not test yet if CRF is the first layer
-
 
 @keras_utils.register_keras_custom_object
 class CRF(tf.keras.layers.Layer):
@@ -238,6 +233,15 @@ class CRF(tf.keras.layers.Layer):
         if mask is not None:
             assert (tf.keras.backend.ndim(mask) == 2
                     ), "Input mask to CRF must have dim 2 if not None"
+
+        # left padding of mask is not supported, due the underline CRF function
+        # detect it and report it to user
+        # if mask is not None:
+        #     left_boundary_mask = self._compute_mask_left_boundary(mask)
+        #     first_mask = left_boundary_mask[0]
+        #
+        #     if not first_mask:
+        #         raise ValueError("Currently, CRF layer don't support left padding")
 
         # remember this value for later use
         self.mask = mask
