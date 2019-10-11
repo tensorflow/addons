@@ -22,3 +22,4 @@ from tensorflow_addons.metrics.cohens_kappa import CohenKappa
 from tensorflow_addons.metrics.f_scores import F1Score, FBetaScore
 from tensorflow_addons.metrics.r_square import RSquare
 from tensorflow_addons.metrics.multilabel_confusion_matrix import MultiLabelConfusionMatrix
+from tensorflow_addons.metrics.crf_accuracy import _crf_accuracy

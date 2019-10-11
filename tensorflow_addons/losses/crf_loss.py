@@ -29,6 +29,6 @@ class ConditionalRandomFieldLoss(object):
 
     def __call__(self, y_true, y_pred, sample_weight=None):
         crf_layer = y_pred._keras_history[0]
-        loss_vector = crf_layer.loss(y_true, y_pred)
+        loss_vector = crf_layer.get_loss(y_true, y_pred)
 
         return tf.keras.backend.mean(loss_vector)

@@ -26,7 +26,7 @@ from tensorflow_addons.utils import keras_utils
 
 # TODO
 #
-# * [future version should fix it] left padding of mask is not supported
+# * [future version should fix it] left padding of mask is not supported, detect it and report to user
 # * not test yet if CRF is the first layer
 
 
@@ -412,17 +412,17 @@ class CRF(tf.keras.layers.Layer):
         return output_shape
 
     def compute_mask(self, input_, mask=None):
-        """
-        Set output mask to be 1D tensor, so loss method of this class can work without error.
-        But there is big short come:
-        layer, loss and metrics after this layer
-        can not access meaningful mask. Which mean they can not work correctly.
-        User only can get correct loss and metrics value from methods of this layer.
-        """
-        if mask is not None:
-            # transform mask from shape (?, ?) to (?, )
-            new_mask = tf.keras.backend.any(mask, axis=1)
-            return new_mask
+        # """
+        # Set output mask to be 1D tensor, so loss method of this class can work without error.
+        # But there is big short come:
+        # layer, loss and metrics after this layer
+        # can not access meaningful mask. Which mean they can not work correctly.
+        # User only can get correct loss and metrics value from methods of this layer.
+        # """
+        # if mask is not None:
+        #     # transform mask from shape (?, ?) to (?, )
+        #     new_mask = tf.keras.backend.any(mask, axis=1)
+        #     return new_mask
 
         return mask
 
@@ -439,11 +439,11 @@ class CRF(tf.keras.layers.Layer):
 
         return -log_likelihood
 
-    def loss(self, y_true, y_pred):
+    def get_loss(self, y_true, y_pred):
         # we don't use y_pred, but caller pass it anyway, ignore it
         return self.get_negative_log_likelihood(y_true)
 
-    def accuracy(self, y_true, y_pred):
+    def get_accuracy(self, y_true, y_pred):
         judge = tf.keras.backend.cast(
             tf.keras.backend.equal(y_pred, y_true), tf.keras.backend.floatx())
         if self.mask is None:

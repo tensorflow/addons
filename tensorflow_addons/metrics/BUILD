@@ -83,3 +83,18 @@ py_test(
         ":metrics",
     ],
 )
+
+py_test(
+    name = "crf_accuracy_test",
+    size = "small",
+    srcs = [
+        "crf_accuracy_test.py",
+    ],
+    main = "crf_accuracy_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":metrics",
+        "//tensorflow_addons/layers",
+        "//tensorflow_addons/losses",
+    ],
+)
