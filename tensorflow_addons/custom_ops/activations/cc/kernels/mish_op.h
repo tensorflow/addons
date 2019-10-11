@@ -35,7 +35,18 @@ struct Mish {
   // activations: same shape as "features".
   void operator()(const Device& d, typename TTypes<T>::ConstTensor features,
                   typename TTypes<T>::Tensor activations) {
-    activations.device(d) = features * features.exp().log1p().tanh();
+    // softplus implementation
+    // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/softplus_op.h
+    static const T threshold =
+        Eigen::numext::log(Eigen::NumTraits<T>::epsilon()) + T(2);
+    const auto& too_large = features > features.constant(-threshold);
+    const auto& too_small = features < features.constant(threshold);
+    const auto& features_exp = features.exp();
+    const auto& sp = too_large.select(
+        features,
+        too_small.select(features_exp,
+                         (features_exp + features.constant(T(1))).log()));
+    activations.device(d) = features * sp.tanh();
   }
 };
 
@@ -50,13 +61,23 @@ struct MishGrad {
   void operator()(const Device& d, typename TTypes<T>::ConstTensor gradients,
                   typename TTypes<T>::ConstTensor features,
                   typename TTypes<T>::Tensor backprops) {
-    const auto& e = features.exp().eval();
-    const auto& es = e.square().eval();
-    const auto& omega = static_cast<T>(4) * (features + static_cast<T>(1)) +
-                        static_cast<T>(4) * es + e.cube() +
-                        e * (static_cast<T>(4) * features + static_cast<T>(6));
-    const auto& delta = static_cast<T>(2) * e + es + static_cast<T>(2);
-    backprops.device(d) = gradients * e * omega / delta.square();
+    // softplus implementation
+    // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/softplus_op.h
+    static const T threshold =
+        Eigen::numext::log(Eigen::NumTraits<T>::epsilon()) + T(2);
+    const auto& too_large = features > features.constant(-threshold);
+    const auto& too_small = features < features.constant(threshold);
+    const auto& features_exp = features.exp();
+    const auto& sp = too_large.select(
+        features,
+        too_small.select(features_exp,
+                         (features_exp + features.constant(T(1))).log()));
+
+    const auto& grad_sp = static_cast<T>(1) - (-sp).exp();
+    const auto& tsp = sp.tanh();
+    const auto& grad_tsp = ((static_cast<T>(1) - tsp * tsp) * grad_sp);
+    const auto& grad = features * grad_tsp + tsp;
+    backprops.device(d) = gradients * grad;
   }
 };
 
