@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-from tensorflow_addons.layers import CRF
+from tensorflow_addons.layers.crf import CRF
 from tensorflow_addons.utils import keras_utils
 
 
