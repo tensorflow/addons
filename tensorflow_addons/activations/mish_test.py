@@ -41,7 +41,7 @@ class MishTest(tf.test.TestCase, parameterized.TestCase):
     def test_theoretical_gradients(self, dtype):
         # Only test theoretical gradients for float32 and float64
         # because of the instability of float16 while computing jacobian
-        x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
+        x = tf.constant([-1e-20, -2.0, -1.0, 0.0, 1.0, 2.0, 1e-20], dtype=dtype)
 
         theoretical, numerical = tf.test.compute_gradient(mish, [x])
         self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
