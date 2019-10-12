@@ -35,7 +35,8 @@ def rrelu(x,
     """rrelu function.
 
     Computes rrelu function:
-    `x if x > 0 else random(lower,upper) * x` or `x if x > 0 else x * (lower + upper) / 2`
+    `x if x > 0 else random(lower,upper) * x` or
+    `x if x > 0 else x * (lower + upper) / 2`
     depending on whether training is enabled.
 
     See [Empirical Evaluation of Rectified Activations in Convolutional Network](https://arxiv.org/abs/1505.00853).
@@ -45,11 +46,13 @@ def rrelu(x,
             `float16`, `float32`, `float64`.
         lower: `float`, lower bound for random alpha.
         upper: `float`, upper bound for random alpha.
-        training: `bool`, indicating whether the `call` is meant for training or inference.
+        training: `bool`, indicating whether the `call`
+        is meant for training or inference.
         with_alpha: `bool`, indicating whether return alpha.
     Returns:
         result: A `Tensor`. Has the same type as `x`.
-        alpha: A `Tensor`. Has the same type as `x`, alpha value which is generated in kernel.
+        alpha: A `Tensor`. Has the same type as `x`, alpha value
+        which is generated in kernel.
     """
     x = tf.convert_to_tensor(x)
     if training is None:
