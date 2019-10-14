@@ -26,32 +26,27 @@ from tensorflow_addons.utils import test_utils
 
 @test_utils.run_all_in_graph_and_eager_modes
 class TestCRF(tf.test.TestCase):
-    # def test_left_padding(self):
-    #     test_utils.layer_test(
-    #         CRF,
-    #         kwargs={"units": 4, "mask": np.array([0, 1, 1])},
-    #         validate_training=False)
-
     def test_unmasked_viterbi_decode(self):
-        x = np.array([
+        x = np.array(
             [
-                # O   B-X  I-X  B-Y  I-Y
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0, 0.0]
-            ],
-            [
-                # O   B-X  I-X  B-Y  I-Y
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0, 0.0, 0.0]
+                [
+                    # O   B-X  I-X  B-Y  I-Y
+                    [0.0, 1.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.0, 0.0],
+                ],
+                [
+                    # O   B-X  I-X  B-Y  I-Y
+                    [0.0, 1.0, 0.0, 0.0, 0.0],
+                    [0.0, 1.0, 0.0, 0.0, 0.0],
+                    [0.0, 1.0, 0.0, 0.0, 0.0],
+                ],
             ]
-        ])  # yapf: disable
+        )  # yapf: disable
 
-        expected_y = np.array([
-            [1, 2, 2],  # B-X  I-X  I-X
-            [1, 1, 1]   # B-X  B-X  B-X
-        ])  # yapf: disable
+        expected_y = np.array(
+            [[1, 2, 2], [1, 1, 1]]  # B-X  I-X  I-X  # B-X  B-X  B-X
+        )  # yapf: disable
 
         transitions = np.ones([5, 5])
         boundary_value = np.ones(5)
@@ -59,21 +54,17 @@ class TestCRF(tf.test.TestCase):
         test_utils.layer_test(
             CRF,
             kwargs={
-                "units":
-                5,
-                "use_kernel":
-                False,  # disable kernel transform
-                "chain_initializer":
-                tf.keras.initializers.Constant(transitions),
-                "use_boundary":
-                True,
-                "boundary_initializer":
-                tf.keras.initializers.Constant(boundary_value)
+                "units": 5,
+                "use_kernel": False,  # disable kernel transform
+                "chain_initializer": tf.keras.initializers.Constant(transitions),
+                "use_boundary": True,
+                "boundary_initializer": tf.keras.initializers.Constant(boundary_value),
             },
             input_data=x,
             expected_output=expected_y,
             expected_output_dtype=tf.int32,
-            validate_training=False)
+            validate_training=False,
+        )
 
 
 if __name__ == "__main__":

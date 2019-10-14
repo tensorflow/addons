@@ -240,7 +240,7 @@ class CRF(tf.keras.layers.Layer):
         first_mask = None
         if mask is not None:
             left_boundary_mask = self._compute_mask_left_boundary(mask)
-            first_mask = left_boundary_mask[0]
+            first_mask = left_boundary_mask[:, 0]
 
         # remember this value for later use
         self.mask = mask
@@ -248,10 +248,10 @@ class CRF(tf.keras.layers.Layer):
         if first_mask is not None:
             with tf.control_dependencies([
                     tf.debugging.assert_equal(
-                        first_mask,
-                        tf.constant(1),
-                        message=
-                        "Currently, CRF layer don't support left padding")
+                        tf.math.reduce_all(first_mask),
+                        tf.constant(True),
+                        message="Currently, CRF layer do not support left padding"
+                    )
             ]):
                 self.potentials = self._dense_layer(inputs)
         else:

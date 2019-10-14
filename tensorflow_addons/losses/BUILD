@@ -18,6 +18,7 @@ py_library(
     srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/activations",
+        "//tensorflow_addons/layers",
         "//tensorflow_addons/utils",
     ],
 )

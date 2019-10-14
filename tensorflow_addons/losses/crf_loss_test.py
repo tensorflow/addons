@@ -26,7 +26,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.layers.crf import CRF
-from tensorflow_addons.losses.crf_loss import ConditionalRandomFieldLoss
+from tensorflow_addons.losses import crf_loss
 from tensorflow_addons.utils import test_utils
 
 # TODO(howl-anderson):  test CRF as the first layer
@@ -106,7 +106,7 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         model.add(self.crf)
         model.compile(
             "adam",
-            loss={"crf_layer": ConditionalRandomFieldLoss()},
+            loss={"crf_layer": crf_loss.ConditionalRandomFieldLoss()},
             metrics=[tf.keras.metrics.Accuracy()])
 
         log_likelihood, _ = model.train_on_batch(self.logits, self.tags)
@@ -124,7 +124,7 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         model.add(self.crf)
         model.compile(
             "adam",
-            loss={"crf_layer": ConditionalRandomFieldLoss()},
+            loss={"crf_layer": crf_loss.ConditionalRandomFieldLoss()},
             metrics=[tf.keras.metrics.Accuracy()])
 
         model.fit(self.logits, self.tags, epochs=10, batch_size=1)
@@ -137,7 +137,7 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         model.add(self.crf)
         model.compile(
             "adam",
-            loss={"crf_layer": ConditionalRandomFieldLoss()},
+            loss={"crf_layer": crf_loss.ConditionalRandomFieldLoss()},
             metrics=[tf.keras.metrics.Accuracy()])
 
         model.fit(self.logits, self.tags, epochs=10, batch_size=1)
@@ -153,6 +153,78 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
             os.remove(MODEL_PERSISTENCE_PATH)
         except OSError:
             pass
+
+    def test_mask_left_padding(self):
+        train_x = np.array(
+            [
+                [
+                    # O   B-X  I-X  B-Y  I-Y
+                    [0.0, 1.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.0, 0.0],
+                ],
+                [
+                    # O   B-X  I-X  B-Y  I-Y
+                    [0.0, 1.0, 0.0, 0.0, 0.0],
+                    [0.0, 1.0, 0.0, 0.0, 0.0],
+                    [0.0, 1.0, 0.0, 0.0, 0.0],
+                ],
+            ]
+        )  # yapf: disable
+
+        train_y = np.array(
+            [[1, 2, 2], [1, 1, 1]]  # B-X  I-X  I-X  # B-X  B-X  B-X
+        )  # yapf: disable
+
+        mask = np.array([[0, 1, 1], [1, 1, 1]])
+
+        layer = CRF(5)
+
+        x = tf.keras.layers.Input(shape=(3, 5))
+        y = layer(x, mask=tf.constant(mask))
+
+        # check shape inference
+        model = tf.keras.models.Model(x, y)
+        model.compile('adam', crf_loss.ConditionalRandomFieldLoss())
+
+        with self.assertRaises(tf.errors.InvalidArgumentError) as context:
+            model.fit(train_x, train_y)
+
+        self.assertTrue("CRF layer do not support left padding" in context.exception.message)
+
+    def test_mask_right_padding(self):
+        train_x = np.array(
+            [
+                [
+                    # O   B-X  I-X  B-Y  I-Y
+                    [0.0, 1.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.0, 0.0],
+                ],
+                [
+                    # O   B-X  I-X  B-Y  I-Y
+                    [0.0, 1.0, 0.0, 0.0, 0.0],
+                    [0.0, 1.0, 0.0, 0.0, 0.0],
+                    [0.0, 1.0, 0.0, 0.0, 0.0],
+                ],
+            ]
+        )  # yapf: disable
+
+        train_y = np.array(
+            [[1, 2, 2], [1, 1, 1]]  # B-X  I-X  I-X  # B-X  B-X  B-X
+        )  # yapf: disable
+
+        mask = np.array([[1, 1, 1], [1, 1, 0]])
+
+        layer = CRF(5)
+
+        x = tf.keras.layers.Input(shape=(3, 5))
+        y = layer(x, mask=tf.constant(mask))
+
+        # check shape inference
+        model = tf.keras.models.Model(x, y)
+        model.compile('adam', crf_loss.ConditionalRandomFieldLoss())
+        model.fit(train_x, train_y)
 
 
 if __name__ == "__main__":
