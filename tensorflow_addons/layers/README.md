@@ -3,6 +3,7 @@
 ## Maintainers
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:------------- |
+| crf | @howl-anderson | u1mail2me@gmail.com |
 | gelu       | @AakashKumarNain | aakashnain@outlook.com |  
 | maxout | @fsx950223 | fsx950223@gmail.com |
 | normalizations | @smokrow | moritz.kroeger@tu-dortmund.de |
@@ -10,11 +11,11 @@
 | poincare |  |  |
 | sparsemax | @AndreasMadsen | amwwebdk+github@gmail.com |
 | wrappers | @seanpmorgan | seanmorgan@outlook.com |
-| crf | @howl-anderson | u1mail2me@gmail.com |
 
 ## Components
 | Submodule  | Layer |  Reference  |
 |:---------- |:----------- |:------------- |
+| crf | CRF | https://en.wikipedia.org/wiki/Conditional_random_field |
 | gelu   | GeLU   | https://arxiv.org/abs/1606.08415 | 
 | maxout | Maxout | https://arxiv.org/abs/1302.4389    |
 | normalizations | GroupNormalization | https://arxiv.org/abs/1803.08494 |
@@ -23,7 +24,6 @@
 | poincare | PoincareNormalize | https://arxiv.org/abs/1705.08039    |
 | sparsemax| Sparsemax | https://arxiv.org/abs/1602.02068 |
 | wrappers | WeightNormalization | https://arxiv.org/abs/1602.07868 |
-| crf | CRF | https://en.wikipedia.org/wiki/Conditional_random_field |
 
 ## Contribution Guidelines
 #### Standard API

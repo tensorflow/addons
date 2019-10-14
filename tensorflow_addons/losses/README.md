@@ -4,25 +4,25 @@
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:------------- |
 | contrastive |  @WindQAQ | windqaq@gmail.com |
+| crf | @howl-anderson | u1mail2me@gmail.com |
 | focal_loss | @SSaishruthi  | saishruthi.tn@gmail.com |
 | lifted |  |  |
 | npairs | @WindQAQ | windqaq@gmail.com |
 | sparsemax_loss | @AndreasMadsen | amwwebdk+github@gmail.com |
 | triplet |   |  |
-| crf | @howl-anderson | u1mail2me@gmail.com |
 
 
 ## Components
 | Submodule | Loss  | Reference               |
 |:----------------------- |:---------------------|:--------------------------|
 | contrastive | ContrastiveLoss | http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf |
+| crf_loss | ConditionalRandomFieldLoss | https://en.wikipedia.org/wiki/Conditional_random_field |
 | focal_loss | SigmoidFocalCrossEntropy | https://arxiv.org/abs/1708.02002  |
 | lifted | LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
 | npairs | NpairsLoss | http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf |
 | npairs | NpairsMultilabelLoss | http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf |
 | sparsemax_loss | SparsemaxLoss |  https://arxiv.org/abs/1602.02068 |
 | triplet | TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
-| crf_loss | ConditionalRandomFieldLoss | https://en.wikipedia.org/wiki/Conditional_random_field |
 
 
 ## Contribution Guidelines
