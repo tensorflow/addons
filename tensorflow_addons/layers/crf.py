@@ -101,6 +101,7 @@ class CRF(tf.keras.layers.Layer):
     References:
         - [Conditional Random Field](https://en.wikipedia.org/wiki/Conditional_random_field)
     """
+
     def __init__(self,
                  units,
                  chain_initializer="orthogonal",
@@ -198,7 +199,7 @@ class CRF(tf.keras.layers.Layer):
         # bias that works with self.kernel
         if self.use_kernel and self.use_bias:
             self.bias = self.add_weight(
-                shape=(self.units,),
+                shape=(self.units, ),
                 name="bias",
                 initializer=self.bias_initializer,
                 regularizer=self.bias_regularizer,
@@ -210,14 +211,14 @@ class CRF(tf.keras.layers.Layer):
         # weight of <START> to tag probability and tag to <END> probability
         if self.use_boundary:
             self.left_boundary = self.add_weight(
-                shape=(self.units,),
+                shape=(self.units, ),
                 name="left_boundary",
                 initializer=self.boundary_initializer,
                 regularizer=self.boundary_regularizer,
                 constraint=self.boundary_constraint,
             )
             self.right_boundary = self.add_weight(
-                shape=(self.units,),
+                shape=(self.units, ),
                 name="right_boundary",
                 initializer=self.boundary_initializer,
                 regularizer=self.boundary_regularizer,
@@ -236,30 +237,35 @@ class CRF(tf.keras.layers.Layer):
 
         # left padding of mask is not supported, due the underline CRF function
         # detect it and report it to user
-        # if mask is not None:
-        #     left_boundary_mask = self._compute_mask_left_boundary(mask)
-        #     first_mask = left_boundary_mask[0]
-        #
-        #     if not first_mask:
-        #         raise ValueError("Currently, CRF layer don't support left padding")
+        first_mask = None
+        if mask is not None:
+            left_boundary_mask = self._compute_mask_left_boundary(mask)
+            first_mask = left_boundary_mask[0]
 
         # remember this value for later use
         self.mask = mask
 
-        self.potentials = self._dense_layer(inputs)
+        if first_mask is not None:
+            with tf.control_dependencies([
+                    tf.debugging.assert_equal(
+                        first_mask,
+                        tf.constant(1),
+                        message=
+                        "Currently, CRF layer don't support left padding")
+            ]):
+                self.potentials = self._dense_layer(inputs)
+        else:
+            self.potentials = self._dense_layer(inputs)
 
         # appending boundary probability info
         if self.use_boundary:
             self.potentials = self.add_boundary_energy(
-                self.potentials,
-                mask,
-                self.left_boundary,
-                self.right_boundary
-            )
+                self.potentials, mask, self.left_boundary, self.right_boundary)
 
         self.sequence_length = self._get_sequence_length(inputs, mask)
 
-        decoded_sequence, _ = self.get_viterbi_decoding(self.potentials, self.sequence_length)
+        decoded_sequence, _ = self.get_viterbi_decoding(
+            self.potentials, self.sequence_length)
 
         return decoded_sequence
 
@@ -288,7 +294,8 @@ class CRF(tf.keras.layers.Layer):
         """
         compute sequence length from mask
         """
-        sequence_length = tf.keras.backend.cast(tf.keras.backend.sum(mask, 1), tf.int64)
+        sequence_length = tf.keras.backend.cast(
+            tf.keras.backend.sum(mask, 1), tf.int64)
         return sequence_length
 
     @staticmethod
@@ -366,7 +373,8 @@ class CRF(tf.keras.layers.Layer):
 
     def get_viterbi_decoding(self, potentials, sequence_length):
         # decode_tags: A [batch_size, max_seq_len] matrix, with dtype `tf.int32`
-        decode_tags, best_score = crf_decode(potentials, self.chain_kernel, sequence_length)
+        decode_tags, best_score = crf_decode(potentials, self.chain_kernel,
+                                             sequence_length)
 
         return decode_tags, best_score
 
@@ -434,12 +442,13 @@ class CRF(tf.keras.layers.Layer):
         # TODO: remove typing cast
         self.potentials = tf.keras.backend.cast(self.potentials, tf.float32)
         y_true = tf.keras.backend.cast(y_true, tf.int32)
-        self.sequence_length = tf.keras.backend.cast(self.sequence_length, tf.int32)
+        self.sequence_length = tf.keras.backend.cast(self.sequence_length,
+                                                     tf.int32)
         # self.chain_kernel = tf.keras.backend.cast(self.chain_kernel,
         #                                           tf.float32)
 
-        log_likelihood, _ = crf_log_likelihood(self.potentials, y_true, self.sequence_length,
-                                               self.chain_kernel)
+        log_likelihood, _ = crf_log_likelihood(
+            self.potentials, y_true, self.sequence_length, self.chain_kernel)
 
         return -log_likelihood
 
