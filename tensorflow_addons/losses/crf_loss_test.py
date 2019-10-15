@@ -107,7 +107,11 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         model.compile(
             "adam",
             loss={"crf_layer": crf_loss.ConditionalRandomFieldLoss()},
-            metrics=[tf.keras.metrics.Accuracy()])
+            metrics=[
+                tf.keras.metrics.Accuracy(),
+                tf.keras.metrics.Precision(),
+                tf.keras.metrics.Recall()
+            ])
 
         log_likelihood, _ = model.train_on_batch(self.logits, self.tags)
 
@@ -125,7 +129,11 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         model.compile(
             "adam",
             loss={"crf_layer": crf_loss.ConditionalRandomFieldLoss()},
-            metrics=[tf.keras.metrics.Accuracy()])
+            metrics=[
+                tf.keras.metrics.Accuracy(),
+                tf.keras.metrics.Precision(),
+                tf.keras.metrics.Recall()
+            ])
 
         model.fit(self.logits, self.tags, epochs=10, batch_size=1)
 
@@ -138,7 +146,11 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         model.compile(
             "adam",
             loss={"crf_layer": crf_loss.ConditionalRandomFieldLoss()},
-            metrics=[tf.keras.metrics.Accuracy()])
+            metrics=[
+                tf.keras.metrics.Accuracy(),
+                tf.keras.metrics.Precision(),
+                tf.keras.metrics.Recall()
+            ])
 
         model.fit(self.logits, self.tags, epochs=10, batch_size=1)
 
@@ -190,7 +202,8 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         with self.assertRaises(tf.errors.InvalidArgumentError) as context:
             model.fit(train_x, train_y)
 
-        self.assertTrue("CRF layer do not support left padding" in context.exception.message)
+        self.assertTrue("CRF layer do not support left padding" in
+                        context.exception.message)
 
     def test_mask_right_padding(self):
         train_x = np.array(
