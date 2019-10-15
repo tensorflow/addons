@@ -199,7 +199,7 @@ class CRF(tf.keras.layers.Layer):
         # bias that works with self.kernel
         if self.use_kernel and self.use_bias:
             self.bias = self.add_weight(
-                shape=(self.units, ),
+                shape=(self.units,),
                 name="bias",
                 initializer=self.bias_initializer,
                 regularizer=self.bias_regularizer,
@@ -211,14 +211,14 @@ class CRF(tf.keras.layers.Layer):
         # weight of <START> to tag probability and tag to <END> probability
         if self.use_boundary:
             self.left_boundary = self.add_weight(
-                shape=(self.units, ),
+                shape=(self.units,),
                 name="left_boundary",
                 initializer=self.boundary_initializer,
                 regularizer=self.boundary_regularizer,
                 constraint=self.boundary_constraint,
             )
             self.right_boundary = self.add_weight(
-                shape=(self.units, ),
+                shape=(self.units,),
                 name="right_boundary",
                 initializer=self.boundary_initializer,
                 regularizer=self.boundary_regularizer,
@@ -232,8 +232,9 @@ class CRF(tf.keras.layers.Layer):
         # mask: Tensor(shape=(batch_size, sequence_length), dtype=bool) or None
 
         if mask is not None:
-            assert (tf.keras.backend.ndim(mask) == 2
-                    ), "Input mask to CRF must have dim 2 if not None"
+            if tf.keras.backend.ndim(mask) != 2:
+                raise ValueError(
+                    "Input mask to CRF must have dim 2 if not None")
 
         # left padding of mask is not supported, due the underline CRF function
         # detect it and report it to user
@@ -246,12 +247,11 @@ class CRF(tf.keras.layers.Layer):
         self.mask = mask
 
         if first_mask is not None:
+            no_left_padding = tf.math.reduce_all(first_mask)
+            msg = "Currently, CRF layer do not support left padding"
             with tf.control_dependencies([
                     tf.debugging.assert_equal(
-                        tf.math.reduce_all(first_mask),
-                        tf.constant(True),
-                        message="Currently, CRF layer do not support left padding"
-                    )
+                        no_left_padding, tf.constant(True), message=msg)
             ]):
                 self.potentials = self._dense_layer(inputs)
         else:
@@ -270,12 +270,13 @@ class CRF(tf.keras.layers.Layer):
         return decoded_sequence
 
     def _get_sequence_length(self, input_, mask):
-        """
-        Currently underline CRF fucntion (provided by tensorflow_addons.text.crf)
-        do not support bi-direction masking (left padding / right padding),
-        it support right padding by tell it the sequence length.
+        """Currently underline CRF fucntion (provided by
+        tensorflow_addons.text.crf) do not support bi-direction masking (left
+        padding / right padding), it support right padding by tell it the
+        sequence length.
 
-        this function is compute the sequence length from input and mask.
+        this function is compute the sequence length from input and
+        mask.
         """
         if mask is not None:
             sequence_length = self.mask_to_sequence_length(mask)
@@ -290,18 +291,14 @@ class CRF(tf.keras.layers.Layer):
         return sequence_length
 
     def mask_to_sequence_length(self, mask):
-        """
-        compute sequence length from mask
-        """
+        """compute sequence length from mask."""
         sequence_length = tf.keras.backend.cast(
             tf.keras.backend.sum(mask, 1), tf.int64)
         return sequence_length
 
     @staticmethod
     def _compute_mask_right_boundary(mask):
-        """
-        input mask: 0011100, output left_boundary: 0000100
-        """
+        """input mask: 0011100, output left_boundary: 0000100."""
         # shift mask to left by 1: 0011100 => 0111000
         offset = 1
         left_shifted_mask = tf.keras.backend.concatenate(
@@ -327,9 +324,7 @@ class CRF(tf.keras.layers.Layer):
 
     @staticmethod
     def _compute_mask_left_boundary(mask):
-        """
-        input mask: 0011100, output left_boundary: 0010000
-        """
+        """input mask: 0011100, output left_boundary: 0010000."""
         # shift mask to right by 1: 0011100 => 0001110
         offset = 1
         right_shifted_mask = tf.keras.backend.concatenate(

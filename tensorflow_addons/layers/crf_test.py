@@ -54,11 +54,16 @@ class TestCRF(tf.test.TestCase):
         test_utils.layer_test(
             CRF,
             kwargs={
-                "units": 5,
-                "use_kernel": False,  # disable kernel transform
-                "chain_initializer": tf.keras.initializers.Constant(transitions),
-                "use_boundary": True,
-                "boundary_initializer": tf.keras.initializers.Constant(boundary_value),
+                "units":
+                5,
+                "use_kernel":
+                False,  # disable kernel transform
+                "chain_initializer":
+                tf.keras.initializers.Constant(transitions),
+                "use_boundary":
+                True,
+                "boundary_initializer":
+                tf.keras.initializers.Constant(boundary_value),
             },
             input_data=x,
             expected_output=expected_y,
