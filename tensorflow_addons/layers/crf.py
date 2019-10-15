@@ -278,8 +278,7 @@ class CRF(tf.keras.layers.Layer):
         this function is compute the sequence length from input and mask.
         """
         if mask is not None:
-            int_mask = tf.keras.backend.cast(mask, tf.int8)
-            sequence_length = self.mask_to_sequence_length(int_mask)
+            sequence_length = self.mask_to_sequence_length(mask)
         else:
             # make a mask tensor from input, then used to generate sequence_length
             input_energy_shape = tf.shape(input_)
