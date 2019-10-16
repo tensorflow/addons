@@ -7,7 +7,7 @@ py_library(
     srcs = [
         "__init__.py",
         "conditional_gradient.py",
-        "lamb_optimizer.py",
+        "lamb.py",
         "lazy_adam.py",
         "lookahead.py",
         "moving_average.py",
@@ -21,12 +21,12 @@ py_library(
 )
 
 py_test(
-    name = "lamb_optimizer_test",
+    name = "lamb_test",
     size = "small",
     srcs = [
-        "lamb_optimizer_test.py",
+        "lamb_test.py",
     ],
-    main = "lamb_optimizer_test.py",
+    main = "lamb_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":optimizers",
