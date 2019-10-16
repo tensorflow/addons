@@ -20,10 +20,8 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-# TODO: Wrap functions in @tf.function once
-# https://github.com/tensorflow/tensorflow/issues/29075 is resolved
 
-
+@tf.function
 def crf_sequence_score(inputs, tag_indices, sequence_lengths,
                        transition_params):
     """Computes the unnormalized score for a tag sequence.
@@ -68,6 +66,7 @@ def crf_sequence_score(inputs, tag_indices, sequence_lengths,
         return _multi_seq_fn()
 
 
+@tf.function
 def crf_multitag_sequence_score(inputs, tag_bitmap, sequence_lengths,
                                 transition_params):
     """Computes the unnormalized score of all tag sequences matching
@@ -116,6 +115,7 @@ def crf_multitag_sequence_score(inputs, tag_bitmap, sequence_lengths,
         return _multi_seq_fn()
 
 
+@tf.function
 def crf_log_norm(inputs, sequence_lengths, transition_params):
     """Computes the normalization for a CRF.
 
@@ -201,6 +201,7 @@ def crf_log_likelihood(inputs,
     return log_likelihood, transition_params
 
 
+@tf.function
 def crf_unary_score(tag_indices, sequence_lengths, inputs):
     """Computes the unary scores of tag sequences.
 
@@ -235,6 +236,7 @@ def crf_unary_score(tag_indices, sequence_lengths, inputs):
     return unary_scores
 
 
+@tf.function
 def crf_binary_score(tag_indices, sequence_lengths, transition_params):
     """Computes the binary scores of tag sequences.
 
@@ -256,7 +258,7 @@ def crf_binary_score(tag_indices, sequence_lengths, transition_params):
 
     # Encode the indices in a flattened representation.
     flattened_transition_indices = start_tag_indices * \
-        num_tags + end_tag_indices
+                                   num_tags + end_tag_indices
     flattened_transition_params = tf.reshape(transition_params, [-1])
 
     # Get the binary scores based on the flattened representation.
@@ -270,6 +272,7 @@ def crf_binary_score(tag_indices, sequence_lengths, transition_params):
     return binary_scores
 
 
+@tf.function
 def crf_forward(inputs, state, transition_params, sequence_lengths):
     """Computes the alpha values in a linear-chain CRF.
 
@@ -385,6 +388,7 @@ class CrfDecodeForwardRnnCell(tf.keras.layers.AbstractRNNCell):
         return backpointers, new_state
 
 
+@tf.function
 def crf_decode_forward(inputs, state, transition_params, sequence_lengths):
     """Computes forward decoding in a linear-chain CRF.
 
@@ -406,6 +410,7 @@ def crf_decode_forward(inputs, state, transition_params, sequence_lengths):
     return crf_fwd_layer(inputs, state, mask=mask)
 
 
+@tf.function
 def crf_decode_backward(inputs, state):
     """Computes backward decoding in a linear-chain CRF.
 
@@ -429,6 +434,7 @@ def crf_decode_backward(inputs, state):
     return tf.transpose(tf.scan(_scan_fn, inputs, state), [1, 0, 2])
 
 
+@tf.function
 def crf_decode(potentials, transition_params, sequence_length):
     """Decode the highest scoring sequence of tags in TensorFlow.
 
