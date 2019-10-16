@@ -51,7 +51,7 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
             [1.0, 1.0, 1.0, 1.0, 1.0],
         ])
 
-        self.boundary_values = np.ones((5,))
+        self.boundary_values = np.ones((5, ))
 
         # Use the CRF Module with fixed transitions to compute the log_likelihood
         self.crf = CRF(
@@ -107,11 +107,7 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         model.compile(
             "adam",
             loss={"crf_layer": crf_loss.ConditionalRandomFieldLoss()},
-            metrics=[
-                tf.keras.metrics.Accuracy(),
-                tf.keras.metrics.Precision(),
-                tf.keras.metrics.Recall()
-            ])
+            metrics=[tf.keras.metrics.Accuracy()])
 
         log_likelihood, _ = model.train_on_batch(self.logits, self.tags)
 
@@ -129,11 +125,7 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         model.compile(
             "adam",
             loss={"crf_layer": crf_loss.ConditionalRandomFieldLoss()},
-            metrics=[
-                tf.keras.metrics.Accuracy(),
-                tf.keras.metrics.Precision(),
-                tf.keras.metrics.Recall()
-            ])
+            metrics=[tf.keras.metrics.Accuracy()])
 
         model.fit(self.logits, self.tags, epochs=10, batch_size=1)
 
@@ -146,11 +138,7 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         model.compile(
             "adam",
             loss={"crf_layer": crf_loss.ConditionalRandomFieldLoss()},
-            metrics=[
-                tf.keras.metrics.Accuracy(),
-                tf.keras.metrics.Precision(),
-                tf.keras.metrics.Recall()
-            ])
+            metrics=[tf.keras.metrics.Accuracy()])
 
         model.fit(self.logits, self.tags, epochs=10, batch_size=1)
 
