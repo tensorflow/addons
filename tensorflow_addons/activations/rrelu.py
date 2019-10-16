@@ -27,11 +27,7 @@ _activation_ops_so = tf.load_op_library(
 
 @keras_utils.register_keras_custom_object
 @tf.function
-def rrelu(x,
-          lower=0.125,
-          upper=0.3333333333333333,
-          training=None,
-          with_alpha=False):
+def rrelu(x, lower=0.125, upper=0.3333333333333333, training=None):
     """rrelu function.
 
     Computes rrelu function:
@@ -48,21 +44,15 @@ def rrelu(x,
         upper: `float`, upper bound for random alpha.
         training: `bool`, indicating whether the `call`
         is meant for training or inference.
-        with_alpha: `bool`, indicating whether return alpha.
     Returns:
         result: A `Tensor`. Has the same type as `x`.
-        alpha: A `Tensor`. Has the same type as `x`, alpha value
-        which is generated in kernel.
     """
     x = tf.convert_to_tensor(x)
     if training is None:
         training = tf.keras.backend.learning_phase()
         training = bool(tf.keras.backend.get_value(training))
-    result, alpha = _activation_ops_so.addons_rrelu(x, lower, upper, training)
-    if with_alpha:
-        return result, alpha
-    else:
-        return result
+    result, _ = _activation_ops_so.addons_rrelu(x, lower, upper, training)
+    return result
 
 
 @tf.RegisterGradient("Addons>Rrelu")

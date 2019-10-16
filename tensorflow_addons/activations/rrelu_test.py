@@ -29,10 +29,6 @@ def _ref_rrelu(x, lower, upper):
     return tf.where(x >= 0, x, (lower + upper) * x / 2)
 
 
-def _ref_rrelu_grad(x, alpha, dtype):
-    return tf.where(x >= 0, tf.constant(1, dtype=dtype), alpha)
-
-
 @test_utils.run_all_in_graph_and_eager_modes
 class RreluTest(tf.test.TestCase, parameterized.TestCase):
     @parameterized.named_parameters(("float16", np.float16),
@@ -49,21 +45,15 @@ class RreluTest(tf.test.TestCase, parameterized.TestCase):
 
     @parameterized.named_parameters(("float32", np.float32),
                                     ("float64", np.float64))
-    @tf.function
     def test_theoretical_gradients(self, dtype):
-        x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
-        lower = 0.1
-        upper = 0.2
+        x = tf.constant([-3.0, -2.0, -1.0, 1.0, 2.0], dtype=dtype)
+        lower=0.1
+        upper=0.2
         for training in [True, False]:
             with self.subTest(training=training):
-                with tf.GradientTape() as t:
-                    t.watch(x)
-                    result, alpha = rrelu(
-                        x, lower, upper, training=training, with_alpha=True)
-                grad = t.gradient(result, x)
-                expect_grad = _ref_rrelu_grad(x, alpha, dtype)
+                theoretical, numerical = tf.test.compute_gradient(lambda x: rrelu(x,lower,upper,training=training), [x])
                 self.assertAllCloseAccordingToType(
-                    grad, expect_grad, atol=1e-4)
+                    theoretical, numerical, rtol=5e-4, atol=5e-4)
 
     def test_unknown_shape(self):
         fn = rrelu.get_concrete_function(
