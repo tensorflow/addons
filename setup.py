@@ -64,6 +64,7 @@ if project_name == TFA_NIGHTLY:
 # Dependencies
 REQUIRED_PACKAGES = [
     'six >= 1.10.0',
+    'protobuf >= 3.8.0',
 ]
 
 if project_name == TFA_RELEASE:
