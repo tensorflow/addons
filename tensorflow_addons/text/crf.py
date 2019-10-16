@@ -257,8 +257,7 @@ def crf_binary_score(tag_indices, sequence_lengths, transition_params):
     end_tag_indices = tf.slice(tag_indices, [0, 1], [-1, num_transitions])
 
     # Encode the indices in a flattened representation.
-    flattened_transition_indices = start_tag_indices * \
-                                   num_tags + end_tag_indices
+    flattened_transition_indices = start_tag_indices * num_tags + end_tag_indices
     flattened_transition_params = tf.reshape(transition_params, [-1])
 
     # Get the binary scores based on the flattened representation.
