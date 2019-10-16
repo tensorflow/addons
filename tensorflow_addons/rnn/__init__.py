@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Customized RNN cells."""
+"""Additional RNN cells that corform to Keras API."""
 
 from __future__ import absolute_import
 from __future__ import division
