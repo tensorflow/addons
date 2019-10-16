@@ -27,7 +27,7 @@ _activation_ops_so = tf.load_op_library(
 
 @keras_utils.register_keras_custom_object
 @tf.function
-def softshrink(x, lower=-1.0, upper=1.0):
+def softshrink(x, lower=-0.5, upper=0.5):
     """Soft shrink function.
 
     Computes soft shrink function:
