@@ -4,12 +4,12 @@
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
 | conditional_gradient | Pengyu Kan, Vishnu Lokhande | pkan2@wisc.edu, lokhande@cs.wisc.edu |
+| lamb_optimizer |  Junjie Ke | junjiek@google.com   |
 | lazy_adam | Saishruthi Swaminathan  | saishruthi.tn@gmail.com  |
 | lookahead | Zhao Hanguang | cyberzhg@gmail.com |
 | moving_average | Dheeraj R. Reddy | dheeraj98reddy@gmail.com |
 | rectified_adam | Zhao Hanguang | cyberzhg@gmail.com |
 | weight_decay_optimizers |  Phil Jund | ijund.phil@googlemail.com   |
-| lamb_optimizer |  Junjie Ke | junjiek@google.com   |
 
 
 ## Components

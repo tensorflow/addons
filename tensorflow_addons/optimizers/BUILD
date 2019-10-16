@@ -6,8 +6,8 @@ py_library(
     name = "optimizers",
     srcs = [
         "__init__.py",
-        "lamb_optimizer.py",
         "conditional_gradient.py",
+        "lamb_optimizer.py",
         "lazy_adam.py",
         "lookahead.py",
         "moving_average.py",
