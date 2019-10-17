@@ -249,6 +249,7 @@ def angles_to_projective_transforms(angles,
 @tf.RegisterGradient("Addons>ImageProjectiveTransformV2")
 def _image_projective_transform_grad(op, grad):
     """Computes the gradient for ImageProjectiveTransform."""
+    
     images = op.inputs[0]
     transforms = op.inputs[1]
     interpolation = op.get_attr("interpolation")
