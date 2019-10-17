@@ -33,8 +33,8 @@ class Lamb(tf.keras.optimizers.Optimizer):
     """Optimizer that implements the LAMB (Layer-wise Adaptive Moments)
     optimizer as TF2 tf.keras.optimizers.
 
-    See paper [Large Batch Optimization for Deep Learning: Training BERT in
-    76 minutes](https://arxiv.org/abs/1904.00962).
+    See paper [Large Batch Optimization for Deep Learning: Training BERT
+    in 76 minutes](https://arxiv.org/abs/1904.00962).
     """
 
     def __init__(self,
@@ -104,8 +104,7 @@ class Lamb(tf.keras.optimizers.Optimizer):
             self.add_slot(var, 'v')
 
     def _prepare_local(self, var_device, var_dtype, apply_state):
-        super(Lamb, self)._prepare_local(var_device, var_dtype,
-                                                  apply_state)
+        super(Lamb, self)._prepare_local(var_device, var_dtype, apply_state)
 
         local_step = tf.cast(self.iterations + 1, var_dtype)
         beta_1_t = tf.identity(self._get_hyper('beta_1', var_dtype))
