@@ -418,22 +418,11 @@ class CRF(tf.keras.layers.Layer):
         return output_shape
 
     def compute_mask(self, input_, mask=None):
-        # """
-        # Set output mask to be 1D tensor, so loss method of this class can work without error.
-        # But there is big short come:
-        # layer, loss and metrics after this layer
-        # can not access meaningful mask. Which mean they can not work correctly.
-        # User only can get correct loss and metrics value from methods of this layer.
-        # """
-        # if mask is not None:
-        #     # transform mask from shape (?, ?) to (?, )
-        #     new_mask = tf.keras.backend.any(mask, axis=1)
-        #     return new_mask
-
+        """ keep mask shape [batch_size, max_seq_len] """
         return mask
 
     def get_negative_log_likelihood(self, y_true):
-        # TODO: remove typing cast
+        # TODO(howl-anderson): remove unnecessary typing cast
         self.potentials = tf.keras.backend.cast(self.potentials, tf.float32)
         y_true = tf.keras.backend.cast(y_true, tf.int32)
         self.sequence_length = tf.keras.backend.cast(self.sequence_length,
