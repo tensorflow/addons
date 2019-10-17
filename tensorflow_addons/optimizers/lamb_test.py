@@ -23,7 +23,7 @@ from numpy import linalg
 
 import tensorflow as tf
 
-from tensorflow_addons.optimizers import lamb_optimizer
+from tensorflow_addons.optimizers import lamb
 from tensorflow_addons.utils import test_utils
 
 
@@ -98,7 +98,7 @@ class LambTest(tf.test.TestCase):
                 grads1 = tf.IndexedSlices(
                     tf.constant(grads1_np[grads1_np_indices]),
                     tf.constant(grads1_np_indices), tf.constant([3]))
-                opt = lamb_optimizer.Lamb()
+                opt = lamb.Lamb()
                 if not tf.executing_eagerly():
                     update = opt.apply_gradients(
                         zip([grads0, grads1], [var0, var1]))
@@ -161,7 +161,7 @@ class LambTest(tf.test.TestCase):
                     beta2 = beta2()
                     epsilon = epsilon()
 
-                opt = lamb_optimizer.Lamb(learning_rate=learning_rate)
+                opt = lamb.Lamb(learning_rate=learning_rate)
                 if not tf.executing_eagerly():
                     update = opt.apply_gradients(
                         zip([grads0, grads1], [var0, var1]))
@@ -223,7 +223,7 @@ class LambTest(tf.test.TestCase):
                 decay = 0.5
                 lamb_wd = 0.01
 
-                opt = lamb_optimizer.Lamb(
+                opt = lamb.Lamb(
                     learning_rate=learning_rate,
                     beta_1=beta_1,
                     beta_2=beta_2,
@@ -295,7 +295,7 @@ class LambTest(tf.test.TestCase):
                 beta_2 = 0.999
                 epsilon = 1e-7
 
-                opt = lamb_optimizer.Lamb(
+                opt = lamb.Lamb(
                     learning_rate=lr_schedule,
                     beta_1=beta_1,
                     beta_2=beta_2,
@@ -341,7 +341,7 @@ class LambTest(tf.test.TestCase):
                 var1 = tf.Variable(var1_np)
                 grads0 = tf.constant(grads0_np)
                 grads1 = tf.constant(grads1_np)
-                opt = lamb_optimizer.Lamb(tf.constant(0.001))
+                opt = lamb.Lamb(tf.constant(0.001))
 
                 if not tf.executing_eagerly():
                     update = opt.apply_gradients(
@@ -391,7 +391,7 @@ class LambTest(tf.test.TestCase):
                 var1 = tf.Variable(var1_np)
                 grads0 = tf.constant(grads0_np)
                 grads1 = tf.constant(grads1_np)
-                opt = lamb_optimizer.Lamb()
+                opt = lamb.Lamb()
 
                 if not tf.executing_eagerly():
                     update1 = opt.apply_gradients(
@@ -438,7 +438,7 @@ class LambTest(tf.test.TestCase):
             w = tf.Variable([0.1, -0.2, -0.1])
             x = tf.constant([0.4, 0.2, -0.5])
             loss = lambda: tf.reduce_mean(tf.square(x - w))  # pylint:disable=cell-var-from-loop
-            opt = lamb_optimizer.Lamb(0.02, weight_decay_rate=0.01)
+            opt = lamb.Lamb(0.02, weight_decay_rate=0.01)
 
             if not tf.executing_eagerly():
                 op = opt.minimize(loss, [w])
@@ -456,7 +456,7 @@ class LambTest(tf.test.TestCase):
                 self.evaluate(w), [0.4, 0.2, -0.5], rtol=1e-2, atol=1e-2)
 
     def test_get_config(self):
-        opt = lamb_optimizer.Lamb(1e-4)
+        opt = lamb.Lamb(1e-4)
         config = opt.get_config()
         self.assertEqual(config['learning_rate'], 1e-4)
         self.assertEqual(config['total_steps'], 0)
