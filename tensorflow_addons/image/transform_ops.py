@@ -94,7 +94,7 @@ def transform(images,
         elif len(transform_or_transforms.get_shape()) == 2:
             transforms = transform_or_transforms
         else:
-            raise TypeError("Transforms should have rank 1 or 2.")
+            raise ValueError("Transforms should have rank 1 or 2.")
 
         output = _image_ops_so.addons_image_projective_transform_v2(
             images,
@@ -223,7 +223,7 @@ def angles_to_projective_transforms(angles,
         elif len(angle_or_angles.get_shape()) == 1:
             angles = angle_or_angles
         else:
-            raise TypeError("Angles should have rank 0 or 1.")
+            raise ValueError("Angles should have rank 0 or 1.")
         # yapf: disable
         x_offset = ((image_width - 1) -
                     (tf.math.cos(angles) * (image_width - 1) -
@@ -264,7 +264,7 @@ def _image_projective_transform_grad(op, grad):
     elif len(transform_or_transforms.get_shape()) == 2:
         transforms = transform_or_transforms
     else:
-        raise TypeError("Transforms should have rank 1 or 2.")
+        raise ValueError("Transforms should have rank 1 or 2.")
 
     # Invert transformations
     transforms = flat_transforms_to_matrices(transforms=transforms)
