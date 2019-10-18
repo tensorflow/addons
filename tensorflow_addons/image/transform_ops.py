@@ -89,7 +89,7 @@ def transform(images,
         if len(transform_or_transforms.get_shape()) == 1:
             transforms = transform_or_transforms[None]
         elif transform_or_transforms.get_shape().ndims is None:
-            raise TypeError(
+            raise ValueError(
                 "transform_or_transforms rank must be statically known")
         elif len(transform_or_transforms.get_shape()) == 2:
             transforms = transform_or_transforms
@@ -259,7 +259,7 @@ def _image_projective_transform_grad(op, grad):
         transforms, name="transforms", dtype=tf.dtypes.float32)
 
     if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
-        raise TypeError("Invalid dtype %s." % image_or_images.dtype)
+        raise ValueError("Invalid dtype %s." % image_or_images.dtype)
     if len(transform_or_transforms.get_shape()) == 1:
         transforms = transform_or_transforms[None]
     elif len(transform_or_transforms.get_shape()) == 2:
