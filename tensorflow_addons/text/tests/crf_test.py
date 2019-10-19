@@ -34,6 +34,38 @@ def calculate_sequence_score(inputs, transition_params, tag_indices, sequence_le
     )
     return expected_unary_score + expected_binary_score
 
+@pytest.mark.parametrize("dtype", [np.float16, np.float32])
+def test_crf_filtered_inputs(dtype):
+    # Test both the length-1 and regular cases.
+    sequence_lengths_list = [
+        np.array(3, dtype=np.int32),
+        np.array(1, dtype=np.int32)
+    ]
+    inputs_list = [
+        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]],
+                    dtype=np.float32),
+        np.array([[4, 5, -3]], dtype=np.float32),
+    ]
+    tag_bitmap_list = [
+        np.array([[True, False, False], [False, True, True], [False, True, True], [False, True, True]],
+                    dtype=np.float32),
+        np.array([[False, True, True]], dtype=np.float32),
+    ]
+    neg_inf = float("-inf")
+    expected_filtered_inputs_list = [
+        np.array([[4, neg_inf, neg_inf], [neg_inf, -1, 3], [neg_inf, 2, 1], [neg_inf, 0, 0]],
+                    dtype=np.float32),
+        np.array([[4, neg_inf, neg_inf]], dtype=np.float32),
+    ]
+    for sequence_lengths, inputs, tag_bitmap, expected_filtered_inputs in zip(
+            sequence_lengths_list, inputs_list, tag_bitmap_list, expected_filtered_inputs_list):
+        filtered_inputs = text.crf_filtered_inputs(
+            inputs=tf.expand_dims(inputs, 0),
+            tag_bitmap=tf.expand_dims(tag_bitmap, 0))
+        filtered_inputs = tf.squeeze(filtered_inputs, [0])
+
+        self.assertAllClose(filtered_inputs, expected_filtered_inputs)
+
 
 @pytest.mark.parametrize("dtype", [np.float16, np.float32])
 def test_crf_sequence_score(dtype):
@@ -120,6 +152,70 @@ def test_crf_multi_tag_sequence_score(dtype):
         test_utils.assert_allclose_according_to_type(
             sequence_score, expected_log_sum_exp_sequence_scores
         )
+
+@pytest.mark.parametrize("dtype", [np.float16, np.float32])
+def test_crf_constrained_decode(dtype):
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]],
+                                    dtype=dtype)
+    # Test both the length-1 and regular cases.
+    sequence_lengths_list = [
+        np.array(3, dtype=np.int32),
+        np.array(1, dtype=np.int32)
+    ]
+    inputs_list = [
+        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]],
+                    dtype=dtype),
+        np.array([[4, 5, -3]], dtype=dtype),
+    ]
+    tag_bitmap_list = [
+        np.array([[True, False, False], [False, True, True], [False, True, True], [False, True, True]],
+                    dtype=dtype),
+        np.array([[False, True, True]], dtype=dtype),
+    ]
+    tag_indices_list = [
+        np.array([0, 2, 1, 0], dtype=np.int32),
+        np.array([2], dtype=np.int32)
+    ]
+    for sequence_lengths, inputs, tag_bitmap, tag_indices in zip(
+            sequence_lengths_list, inputs_list, tag_bitmap_list, tag_indices_list):
+        num_words = inputs.shape[0]
+        num_tags = inputs.shape[1]
+
+        all_sequence_scores = []
+        all_sequences = []
+        filtered_inputs = text.crf_filtered_inputs(
+            inputs=tf.expand_dims(inputs, 0),
+            tag_bitmap=tf.expand_dims(tag_bitmap, 0))
+
+        # Compare the dynamic program with brute force computation.
+        for tag_indices in itertools.product(
+                range(num_tags), repeat=sequence_lengths):
+            tag_indices = list(tag_indices)
+            tag_indices.extend([0] * (num_words - sequence_lengths))
+            all_sequences.append(tag_indices)
+            sequence_score = text.crf_sequence_score(
+                inputs=filtered_inputs,
+                tag_indices=tf.expand_dims(tag_indices, 0),
+                sequence_lengths=tf.expand_dims(sequence_lengths, 0),
+                transition_params=tf.constant(transition_params))
+            sequence_score = tf.squeeze(sequence_score, [0])
+            all_sequence_scores.append(sequence_score)
+
+        expected_max_sequence_index = np.argmax(all_sequence_scores)
+        expected_max_sequence = all_sequences[expected_max_sequence_index]
+        expected_max_score = all_sequence_scores[
+            expected_max_sequence_index]
+
+        actual_max_sequence, actual_max_score = text.crf_constrained_decode(
+            tf.expand_dims(inputs, 0), tf.expand_dims(tag_bitmap, 0), tf.constant(transition_params),
+            tf.expand_dims(sequence_lengths, 0))
+        actual_max_sequence = tf.squeeze(actual_max_sequence, [0])
+        actual_max_score = tf.squeeze(actual_max_score, [0])
+
+        test_utils.assert_allclose_according_to_type(actual_max_score, expected_max_score)
+        test_utils.assert_allclose_according_to_type(
+            list(actual_max_sequence[:sequence_lengths]),
+            expected_max_sequence[:sequence_lengths])
 
 
 @pytest.mark.parametrize("dtype", [np.float16, np.float32])
