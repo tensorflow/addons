@@ -41,7 +41,7 @@ def crf_filtered_inputs(inputs: TensorLike, tag_bitmap: TensorLike):
     """
     # set scores of filtered out inputs to be -inf.
     filtered_inputs = tf.where(tag_bitmap, inputs,
-                               tf.fill(tf.shape(inputs), float("-inf")))
+                               tf.fill(tf.shape(inputs), tf.cast(float("-inf"), inputs.dtype)))
     return filtered_inputs
 
 
@@ -128,11 +128,6 @@ def crf_multitag_sequence_score(
     """
     tag_bitmap = tf.cast(tag_bitmap, dtype=tf.bool)
     sequence_lengths = tf.cast(sequence_lengths, dtype=tf.int32)
-    filtered_inputs = tf.where(
-        tag_bitmap,
-        inputs,
-        tf.fill(tf.shape(inputs), tf.cast(float("-inf"), inputs.dtype)),
-    )
 
     # If max_seq_len is 1, we skip the score calculation and simply gather the
     # unary potentials of all active tags.
