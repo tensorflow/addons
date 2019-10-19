@@ -24,6 +24,27 @@ import tensorflow as tf
 # https://github.com/tensorflow/tensorflow/issues/29075 is resolved
 
 
+def crf_filtered_inputs(inputs, tag_bitmap):
+    """Constrains the inputs to filter out certain tags at each time step.
+    tag_bitmap limits the allowed tags at each input time step.
+    This is useful when an observed output at a given time step needs to be
+    constrained to a selected set of tags.
+
+    Args:
+      inputs: A [batch_size, max_seq_len, num_tags] tensor of unary potentials
+          to use as input to the CRF layer.
+      tag_bitmap: A [batch_size, max_seq_len, num_tags] boolean tensor
+          representing all active tags at each index for which to calculate the
+          unnormalized score.
+    Returns:
+      filtered_inputs: A [batch_size] vector of unnormalized sequence scores.
+    """
+    # set scores of filtered out inputs to be -inf.
+    filtered_inputs = tf.where(tag_bitmap, inputs,
+                               tf.fill(tf.shape(inputs), float("-inf")))
+    return filtered_inputs
+
+
 def crf_sequence_score(inputs, tag_indices, sequence_lengths,
                        transition_params):
     """Computes the unnormalized score for a tag sequence.
@@ -102,6 +123,7 @@ def crf_multitag_sequence_score(inputs, tag_bitmap, sequence_lengths,
 
     # If max_seq_len is 1, we skip the score calculation and simply gather the
     # unary potentials of all active tags.
+    filtered_inputs = crf_filtered_inputs(inputs, tag_bitmap)
     def _single_seq_fn():
         return tf.reduce_logsumexp(
             filtered_inputs, axis=[1, 2], keepdims=False)
@@ -503,3 +525,29 @@ def crf_decode(potentials, transition_params, sequence_length):
         return tf.cond(
             tf.equal(tf.shape(potentials)[1], 1), _single_seq_fn,
             _multi_seq_fn)
+
+
+def crf_constrained_decode(potentials, tag_bitmap, transition_params,
+        sequence_length):
+    """Decode the highest scoring sequence of tags under constraints.
+
+    This is a function for tensor.
+
+    Args:
+      potentials: A [batch_size, max_seq_len, num_tags] tensor of
+                unary potentials.
+      tag_bitmap: A [batch_size, max_seq_len, num_tags] boolean tensor
+          representing all active tags at each index for which to calculate the
+          unnormalized score.
+      transition_params: A [num_tags, num_tags] matrix of
+                binary potentials.
+      sequence_length: A [batch_size] vector of true sequence lengths.
+
+    Returns:
+      decode_tags: A [batch_size, max_seq_len] matrix, with dtype `tf.int32`.
+                  Contains the highest scoring tag indices.
+      best_score: A [batch_size] vector, containing the score of `decode_tags`.
+    """
+
+    filtered_potentials = crf_filtered_inputs(potentials, tag_bitmap)
+    return crf_decode(filtered_potentials, transition_params, sequence_length)
