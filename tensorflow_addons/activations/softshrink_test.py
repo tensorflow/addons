@@ -38,12 +38,12 @@ class SoftshrinkTest(tf.test.TestCase, parameterized.TestCase):
                                     ("float64", np.float64))
     def test_softshrink(self, dtype):
         x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
-        expected_result = tf.constant([-1.0, 0.0, 0.0, 0.0, 1.0], dtype=dtype)
+        expected_result = tf.constant([-1.5, -0.5, 0.0, 0.5, 1.5], dtype=dtype)
         self.assertAllCloseAccordingToType(softshrink(x), expected_result)
 
-        expected_result = tf.constant([-1.5, -0.5, 0.0, 0.5, 1.5], dtype=dtype)
+        expected_result = tf.constant([-1.0, 0.0, 0.0, 0.0, 1.0], dtype=dtype)
         self.assertAllCloseAccordingToType(
-            softshrink(x, lower=-0.5, upper=0.5), expected_result)
+            softshrink(x, lower=-1.0, upper=1.0), expected_result)
 
     @parameterized.named_parameters(("float32", np.float32),
                                     ("float64", np.float64))

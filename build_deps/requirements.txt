@@ -1,2 +1,3 @@
 # TensorFlow greater than this date is manylinux2010 compliant
 tf-nightly>=2.1.0.dev20191004
+protobuf >= 3.8.0
