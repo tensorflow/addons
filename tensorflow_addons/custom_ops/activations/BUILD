@@ -33,6 +33,8 @@ custom_op_library(
         "cc/kernels/hardshrink_op_gpu.cu.cc",
         "cc/kernels/lisht_op.h",
         "cc/kernels/lisht_op_gpu.cu.cc",
+        "cc/kernels/rrelu_op.h",
+        "cc/kernels/rrelu_op_gpu.cu.cc",
         "cc/kernels/softshrink_op.h",
         "cc/kernels/softshrink_op_gpu.cu.cc",
         "cc/kernels/tanhshrink_op.h",
