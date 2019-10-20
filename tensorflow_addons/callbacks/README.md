@@ -3,12 +3,12 @@
 ## Maintainers
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
-|  | | |
+|  tqdm_progress_bar | @shun-lin | shunlin@google.com |
 
 ## Contents
 | Submodule | Metric  | Reference                               |
 |:----------------------- |:-------------------|:---------------|
-| | | |
+| tqdm_progress_bar | N/A | https://tqdm.github.io/ |
 
 
 ## Contribution Guidelines
