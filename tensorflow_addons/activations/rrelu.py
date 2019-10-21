@@ -27,7 +27,7 @@ _activation_ops_so = tf.load_op_library(
 
 @keras_utils.register_keras_custom_object
 @tf.function
-def rrelu(x, lower=0.125, upper=0.3333333333333333, training=None):
+def rrelu(x, lower=0.125, upper=0.3333333333333333, training=None, seed=None):
     """rrelu function.
 
     Computes rrelu function:
@@ -51,7 +51,9 @@ def rrelu(x, lower=0.125, upper=0.3333333333333333, training=None):
     if training is None:
         training = tf.keras.backend.learning_phase()
         training = bool(tf.keras.backend.get_value(training))
-    result, _ = _activation_ops_so.addons_rrelu(x, lower, upper, training)
+    seed1, seed2 = tf.compat.v1.random.get_seed(seed)
+    result, _ = _activation_ops_so.addons_rrelu(x, lower, upper, training,
+                                                seed1, seed2)
     return result
 
 

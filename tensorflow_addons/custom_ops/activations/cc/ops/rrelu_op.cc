@@ -28,6 +28,8 @@ REGISTER_OP("Addons>Rrelu")
     .Attr("lower: float")
     .Attr("upper: float")
     .Attr("training: bool")
+    .Attr("seed: int = 0")
+    .Attr("seed2: int = 0")
     .SetShapeFn(shape_inference::UnchangedShape);
 
 REGISTER_OP("Addons>RreluGrad")

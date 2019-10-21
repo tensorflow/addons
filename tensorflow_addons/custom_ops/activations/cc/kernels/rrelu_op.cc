@@ -46,7 +46,8 @@ namespace functor {
   void Rrelu<GPUDevice, T>::operator()(                                      \
       const GPUDevice& d, typename TTypes<T>::ConstTensor features, T lower, \
       T upper, bool training, typename TTypes<T>::Tensor activations,        \
-      typename TTypes<T>::Tensor alpha);                                     \
+      typename TTypes<T>::Tensor alpha,                                      \
+      typename random::SimplePhilox& random);                                \
   extern template struct Rrelu<GPUDevice, T>;                                \
                                                                              \
   template <>                                                                \

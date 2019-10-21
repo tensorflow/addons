@@ -46,12 +46,13 @@ class RreluTest(tf.test.TestCase, parameterized.TestCase):
     @parameterized.named_parameters(("float32", np.float32),
                                     ("float64", np.float64))
     def test_theoretical_gradients(self, dtype):
-        x = tf.constant([-3.0, -2.0, -1.0, 1.0, 2.0], dtype=dtype)
-        lower=0.1
-        upper=0.2
+        x = tf.constant([-2.0, -1.0, -0.1, 0.1, 1.0, 2.0], dtype=dtype)
+        lower = 0.1
+        upper = 0.2
         for training in [True, False]:
             with self.subTest(training=training):
-                theoretical, numerical = tf.test.compute_gradient(lambda x: rrelu(x,lower,upper,training=training), [x])
+                theoretical, numerical = tf.test.compute_gradient(
+                    lambda x: rrelu(x, lower, upper, training=training), [x])
                 self.assertAllCloseAccordingToType(
                     theoretical, numerical, rtol=5e-4, atol=5e-4)
 
