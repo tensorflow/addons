@@ -158,7 +158,7 @@ class TQDMProgressBar(Callback):
                 # update the epoch progress bar
                 metrics = self.format_metrics(self.logs, self.seen)
                 self.epoch_progress_tqdm.desc = metrics
-                self.epoch_progress_tqdm.update(self.usteps_to_update)
+                self.epoch_progress_tqdm.update(self.steps_to_update)
 
                 # reset steps to update
                 self.steps_to_update = 0
