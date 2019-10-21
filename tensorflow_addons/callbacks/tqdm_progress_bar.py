@@ -16,7 +16,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-from sys import stderr
+import time
+from collections import defaultdict
 
 import numpy as np
 import six
@@ -30,96 +31,62 @@ class TQDMProgressBar(Callback):
     """TQDM Progress Bar for Tensorflow Keras.
 
     Arguments:
-        outer_description: string for outer progress bar
-        inner_description_initial: initial format for epoch ("Epoch: {epoch}")
-        inner_description_update: format after metrics collected ("Epoch: {epoch} - {metrics}")
-        metric_format: format for each metric name/value pair ("{name}: {value:0.3f}")
-        separator: separator between metrics (" - ")
-        leave_inner: True to leave inner bars
-        leave_outer: True to leave outer bars
-        show_inner: False to hide inner bars
-        show_outer: False to hide outer bar
+        metrics_separator (string): Custom separator between metrics.
+            Defaults to ' - '
+        overall_bar_format (string format): Custom bar format for overall
+            (outer) progress bar, see https://github.com/tqdm/tqdm#parameters
+            for more detail.
+        epoch_bar_format (string format): Custom bar format for epoch
+            (inner) progress bar, see https://github.com/tqdm/tqdm#parameters
+            for more detail.
+        update_per_second (int): Maximum number of updates in the epochs bar
+            per second, this is to prevent small batches from slowing down
+            training. Defaults to 10.
+        leave_epoch_progress (bool): True to leave epoch progress bars
+        leave_overall_progress (bool): True to leave overall progress bar
+        show_epoch_progress (bool): False to hide epoch progress bars
+        show_overall_progress (bool): False to hide overall progress bar
     """
 
-    def __init__(self, outer_description="Training",
-                 inner_description_initial="Epoch {epoch}/{num_epochs}",
-                 inner_description_update="{metrics}",
-                 metric_format="{name}: {value:0.4f}",
-                 separator=" - ",
-                 leave_inner=True,
-                 leave_outer=True,
-                 show_inner=True,
-                 show_outer=True):
+    def __init__(
+            self,
+            metrics_separator=" - ",
+            overall_bar_format='{l_bar}{bar} {n_fmt}/{total_fmt} ETA: {remaining}s,  {rate_fmt}{postfix}',
+            epoch_bar_format='{n_fmt}/{total_fmt}{bar} ETA: {remaining}s - {desc}',
+            update_per_second=10,
+            leave_epoch_progress=True,
+            leave_overall_progress=True,
+            show_epoch_progress=True,
+            show_overall_progress=True):
 
-        self.outer_description = outer_description
-        self.inner_description_initial = inner_description_initial
-        self.inner_description_update = inner_description_update
-        self.metric_format = metric_format
-        self.separator = separator
-        self.leave_inner = leave_inner
-        self.leave_outer = leave_outer
-        self.show_inner = show_inner
-        self.show_outer = show_outer
+        self.metrics_separator = metrics_separator
+        self.overall_bar_format = overall_bar_format
+        self.epoch_bar_format = epoch_bar_format
+        self.leave_epoch_progress = leave_epoch_progress
+        self.leave_overall_progress = leave_overall_progress
+        self.show_epoch_progress = show_epoch_progress
+        self.show_overall_progress = show_overall_progress
+        self.update_per_second = update_per_second
+        self.update_interval = 1 / update_per_second
 
-        self.tqdm_outer = None
-        self.tqdm_inner = None
-        self.epoch = None
+        self.last_update_time = time.time()
+        self.overall_progress_tqdm = None
+        self.epoch_progress_tqdm = None
         self.num_epochs = None
-        self.running_logs = None
-        self.inner_count = None
+        self.logs = None
 
-    def on_epoch_begin(self, epoch, logs={}):
-        self.epoch = epoch
-        desc = self.inner_description_initial.format(epoch=self.epoch + 1, num_epochs=self.num_epochs)
-        if self.mode == 'samples':
-            self.inner_total = self.params['samples']
-        else:
-            self.inner_total = self.params['steps']
-        if self.show_inner:
-            print(desc)
-            self.tqdm_inner = tqdm(
-                total=self.inner_total, leave=self.leave_inner, dynamic_ncols=True, unit=self.mode, bar_format='{r_bar}{bar}{l_bar}')
-        self.inner_count = 0
-        self.running_logs = {}
-
-    def on_epoch_end(self, epoch, logs={}):
-        metrics = self.format_metrics(logs)
-        # desc = self.inner_description_update.format(metrics=metrics)
-        desc = metrics
-        if self.show_inner:
-            self.tqdm_inner.desc = desc
-            # set miniters and mininterval to 0 so last update displays
-            self.tqdm_inner.miniters = 0
-            self.tqdm_inner.mininterval = 0
-            self.tqdm_inner.update(self.inner_total - self.tqdm_inner.n)
-            self.tqdm_inner.close()
-        if self.show_outer:
-            self.tqdm_outer.update(1)
-
-    def on_batch_begin(self, batch, logs={}):
-        pass
-
-    def on_batch_end(self, batch, logs={}):
-        if self.mode == "samples":
-            update = logs['size']
-        else:
-            update = 1
-        self.inner_count += update
-        if self.inner_count < self.inner_total:
-            self.append_logs(logs)
-            metrics = self.format_metrics(self.running_logs)
-            # desc = self.inner_description_update.format(
-            #   epoch=self.epoch, metrics=metrics)
-            desc = metrics
-            if self.show_inner:
-                self.tqdm_inner.desc = desc
-                self.tqdm_inner.update(update)
-
-    def on_train_begin(self, logs={}):
+    def on_train_begin(self, logs=None):
         self.num_epochs = self.params['epochs']
-        if self.show_outer:
-            self.tqdm_outer = tqdm(
-                desc=self.outer_description, total=self.num_epochs, leave=self.leave_outer, dynamic_ncols=True, unit="epochs")
+        self.metrics = self.params['metrics']
+
+        if self.show_overall_progress:
+            self.overall_progress_tqdm = tqdm(
+                desc='Training',
+                total=self.num_epochs,
+                bar_format=self.overall_bar_format,
+                leave=self.leave_overall_progress,
+                dynamic_ncols=True,
+                unit='epochs')
 
         # set counting mode
         if 'samples' in self.params:
@@ -128,36 +95,98 @@ class TQDMProgressBar(Callback):
             self.mode = 'steps'
 
     def on_train_end(self, logs={}):
-        if self.show_outer:
-            self.tqdm_outer.close()
+        if self.show_overall_progress:
+            self.overall_progress_tqdm.close()
 
-    def append_logs(self, logs):
-        """append logs seen in a batch to the running log to display updated 
-            metrics values in real time."""
-        metrics = self.params['metrics']
-        for metric, value in six.iteritems(logs):
-            if metric in metrics:
-                if metric in self.running_logs:
-                    self.running_logs[metric].append(value[()])
-                else:
-                    self.running_logs[metric] = [value[()]]
+    def on_epoch_begin(self, epoch, logs={}):
+        current_epoch_description = "Epoch {epoch}/{num_epochs}".format(
+            epoch=epoch + 1, num_epochs=self.num_epochs)
 
-    def format_metrics(self, logs):
+        if self.mode == 'samples':
+            self.total_steps = self.params['samples']
+        else:
+            self.total_steps = self.params['steps']
+        if self.show_epoch_progress:
+            print(current_epoch_description)
+            self.epoch_progress_tqdm = tqdm(
+                total=self.total_steps,
+                bar_format=self.epoch_bar_format,
+                leave=self.leave_epoch_progress,
+                dynamic_ncols=True,
+                unit=self.mode)
+
+        self.seen = 0
+        self.logs = defaultdict(float)
+        self.update = 0
+
+    def on_epoch_end(self, epoch, logs={}):
+        metrics = self.format_metrics(logs)
+        desc = metrics
+        if self.show_epoch_progress:
+            self.epoch_progress_tqdm.desc = desc
+            # set miniters and mininterval to 0 so last update displays
+            self.epoch_progress_tqdm.miniters = 0
+            self.epoch_progress_tqdm.mininterval = 0
+            self.epoch_progress_tqdm.update(
+                self.total_steps - self.epoch_progress_tqdm.n)
+            self.epoch_progress_tqdm.close()
+        if self.show_overall_progress:
+            self.overall_progress_tqdm.update(1)
+
+    def on_batch_end(self, batch, logs={}):
+        if self.mode == "samples":
+            batch_size = logs['size']
+        else:
+            batch_size = 1
+
+        # update logs
+
+        self.seen += batch_size
+        self.update += batch_size
+
+        if self.seen < self.total_steps:
+
+            for metric, value in logs.items():
+                self.logs[metric] += value * batch_size
+
+            now = time.time()
+            time_diff = now - self.last_update_time
+            if self.show_epoch_progress and time_diff >= self.update_interval:
+
+                # update the epoch progress bar
+                metrics = self.format_metrics(self.logs, self.seen)
+                self.epoch_progress_tqdm.desc = metrics
+                self.epoch_progress_tqdm.update(self.update)
+
+                # reset update
+                self.update = 0
+
+                # update timestamp for last update
+                self.last_update_time = now
+
+    def format_metrics(self, logs={}, factor=1):
         """Format metrics in logs into a string.
 
         Arguments:
-            logs: dictionary of metrics and their values.
+            logs: dictionary of metrics and their values. Defaults to
+                empty dictionary.
+            factor (int): The factor we want to divide the metrics in logs
+                by, useful when we are computing the logs after each batch.
+                Defaults to 1.
 
         Returns:
-            metrics_string: a string displaying metrics using the given 
+            metrics_string: a string displaying metrics using the given
             formators passed in through the constructor.
         """
+
+        metrics_format = "{name}: {value:0.4f}"
         metrics = self.params['metrics']
         metric_value_pairs = []
         for metric in metrics:
             if metric in logs:
-                pair = self.metric_format.format(
-                    name=metric, value=np.mean(logs[metric], axis=None))
+                value = logs[metric] / factor
+                pair = metrics_format.format(
+                    name=metric, value=value)
                 metric_value_pairs.append(pair)
-        metrics_string = self.separator.join(metric_value_pairs)
+        metrics_string = self.metrics_separator.join(metric_value_pairs)
         return metrics_string
