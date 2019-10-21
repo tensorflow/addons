@@ -44,18 +44,6 @@ class OneCycleLR(tf.keras.callbacks.Callback):
                 the half-cycle. Can only be used with SGD Optimizer.
             verbose: Bool. Whether to print the current learning rate after every
                 epoch.
-            ```python
-            # This function keeps the learning rate at 0.001 for the first ten epochs
-            # and decreases it exponentially after that.
-            def scheduler(epoch):
-                if epoch < 10:
-                return 0.001
-                else:
-                return 0.001 * tf.math.exp(0.1 * (10 - epoch))
-            callback = tf.keras.callbacks.LearningRateScheduler(scheduler)
-            model.fit(data, labels, epochs=100, callbacks=[callback],
-                        validation_data=(val_data, val_labels))
-            ```
         # Reference
             - [A disciplined approach to neural network hyper-parameters: Part 1 -- learning rate, batch size, weight_decay, and weight decay](https://arxiv.org/abs/1803.09820)
             - [Super-Convergence: Very Fast Training of Residual Networks Using Large Learning Rates](https://arxiv.org/abs/1708.07120)
