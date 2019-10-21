@@ -47,7 +47,7 @@ class OneCycleLRTest(tf.test.TestCase):
 
             self.assertAllClose(float(
                 tf.keras.backend.get_value(cbks[0].clr_iterations)),
-                                1e-5,
+                                0.0,
                                 atol=tf.keras.backend.epsilon())
 
             self.assertAllClose(float(
