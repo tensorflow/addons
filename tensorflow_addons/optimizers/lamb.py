@@ -29,7 +29,7 @@ from tensorflow_addons.utils import keras_utils
 
 
 @keras_utils.register_keras_custom_object
-class Lamb(tf.keras.optimizers.Optimizer):
+class LAMB(tf.keras.optimizers.Optimizer):
     """Optimizer that implements the LAMB (Layer-wise Adaptive Moments)
     optimizer as TF2 tf.keras.optimizers.
 
@@ -71,7 +71,7 @@ class Lamb(tf.keras.optimizers.Optimizer):
           is included for backward compatibility, recommended to use
           `learning_rate` instead.
         """
-        super(Lamb, self).__init__(name, **kwargs)
+        super(LAMB, self).__init__(name, **kwargs)
 
         # Just adding the square of the weights to the loss function is *not*
         # the correct way of using L2 regularization/weight decay with Adam,
@@ -104,7 +104,7 @@ class Lamb(tf.keras.optimizers.Optimizer):
             self.add_slot(var, 'v')
 
     def _prepare_local(self, var_device, var_dtype, apply_state):
-        super(Lamb, self)._prepare_local(var_device, var_dtype, apply_state)
+        super(LAMB, self)._prepare_local(var_device, var_dtype, apply_state)
 
         local_step = tf.cast(self.iterations + 1, var_dtype)
         beta_1_t = tf.identity(self._get_hyper('beta_1', var_dtype))
@@ -206,7 +206,7 @@ class Lamb(tf.keras.optimizers.Optimizer):
         return tf.group(*[var_update, m_t, v_t])
 
     def get_config(self):
-        config = super(Lamb, self).get_config()
+        config = super(LAMB, self).get_config()
         config.update({
             'learning_rate':
             self._serialize_hyperparameter('learning_rate'),
