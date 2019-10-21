@@ -13,4 +13,4 @@ toc:
 - title: LazyAdam optimizer
   path: /addons/tutorials/optimizers_lazyadam
 - title: ConditionalGradient Optimizer
-  path: addons/tutorials/optimizers_conditionalgradient
+  path: /addons/tutorials/optimizers_conditionalgradient
