@@ -66,7 +66,8 @@ class TQDMProgressBar(Callback):
         self.leave_overall_progress = leave_overall_progress
         self.show_epoch_progress = show_epoch_progress
         self.show_overall_progress = show_overall_progress
-        self.update_per_second = update_per_second
+
+        # compute update interval (inverse of update per second)
         self.update_interval = 1 / update_per_second
 
         self.last_update_time = time.time()
@@ -74,6 +75,7 @@ class TQDMProgressBar(Callback):
         self.epoch_progress_tqdm = None
         self.num_epochs = None
         self.logs = None
+        self.metrics = None
 
     def on_train_begin(self, logs=None):
         self.num_epochs = self.params['epochs']
@@ -91,8 +93,10 @@ class TQDMProgressBar(Callback):
         # set counting mode
         if 'samples' in self.params:
             self.mode = 'samples'
+            self.total_steps = self.params['samples']
         else:
             self.mode = 'steps'
+            self.total_steps = self.params['steps']
 
     def on_train_end(self, logs={}):
         if self.show_overall_progress:
@@ -102,10 +106,6 @@ class TQDMProgressBar(Callback):
         current_epoch_description = "Epoch {epoch}/{num_epochs}".format(
             epoch=epoch + 1, num_epochs=self.num_epochs)
 
-        if self.mode == 'samples':
-            self.total_steps = self.params['samples']
-        else:
-            self.total_steps = self.params['steps']
         if self.show_epoch_progress:
             print(current_epoch_description)
             self.epoch_progress_tqdm = tqdm(
@@ -116,20 +116,24 @@ class TQDMProgressBar(Callback):
                 unit=self.mode)
 
         self.seen = 0
+        self.steps_to_update = 0
         self.logs = defaultdict(float)
-        self.update = 0
 
     def on_epoch_end(self, epoch, logs={}):
-        metrics = self.format_metrics(logs)
-        desc = metrics
+
         if self.show_epoch_progress:
-            self.epoch_progress_tqdm.desc = desc
+            metrics = self.format_metrics(logs)
+            self.epoch_progress_tqdm.desc = metrics
+
             # set miniters and mininterval to 0 so last update displays
             self.epoch_progress_tqdm.miniters = 0
             self.epoch_progress_tqdm.mininterval = 0
+
+            # update the rest of the steps in epoch progress bar
             self.epoch_progress_tqdm.update(
                 self.total_steps - self.epoch_progress_tqdm.n)
             self.epoch_progress_tqdm.close()
+
         if self.show_overall_progress:
             self.overall_progress_tqdm.update(1)
 
@@ -139,10 +143,8 @@ class TQDMProgressBar(Callback):
         else:
             batch_size = 1
 
-        # update logs
-
         self.seen += batch_size
-        self.update += batch_size
+        self.steps_to_update += batch_size
 
         if self.seen < self.total_steps:
 
@@ -156,10 +158,10 @@ class TQDMProgressBar(Callback):
                 # update the epoch progress bar
                 metrics = self.format_metrics(self.logs, self.seen)
                 self.epoch_progress_tqdm.desc = metrics
-                self.epoch_progress_tqdm.update(self.update)
+                self.epoch_progress_tqdm.update(self.usteps_to_update)
 
-                # reset update
-                self.update = 0
+                # reset steps to update
+                self.steps_to_update = 0
 
                 # update timestamp for last update
                 self.last_update_time = now
@@ -179,14 +181,11 @@ class TQDMProgressBar(Callback):
             formators passed in through the constructor.
         """
 
-        metrics_format = "{name}: {value:0.4f}"
-        metrics = self.params['metrics']
         metric_value_pairs = []
-        for metric in metrics:
+        for metric in self.metrics:
             if metric in logs:
                 value = logs[metric] / factor
-                pair = metrics_format.format(
-                    name=metric, value=value)
+                pair = '{name}: {value:0.4f}'.format(name=metric, value=value)
                 metric_value_pairs.append(pair)
         metrics_string = self.metrics_separator.join(metric_value_pairs)
         return metrics_string
