@@ -96,7 +96,7 @@ def transform(images,
         else:
             transforms = transform_or_transforms
             raise ValueError(
-                "Transforms should have rank 1 or 2, but got rank %d" 
+                "transforms should have rank 1 or 2, but got rank %d" 
                 % len(transforms.get_shape()))
 
         output = _image_ops_so.addons_image_projective_transform_v2(
@@ -270,7 +270,7 @@ def _image_projective_transform_grad(op, grad):
     else:
         transforms = transform_or_transforms
         raise ValueError(
-            "Transforms should have rank 1 or 2, but got rank %d" 
+            "transforms should have rank 1 or 2, but got rank %d" 
             % len(transforms.get_shape()))
 
     # Invert transformations
