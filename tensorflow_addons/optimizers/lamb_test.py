@@ -422,7 +422,6 @@ class LAMBTest(tf.test.TestCase):
         opt = lamb.LAMB(1e-4)
         config = opt.get_config()
         self.assertEqual(config['learning_rate'], 1e-4)
-        self.assertEqual(config['total_steps'], 0)
 
 
 if __name__ == "__main__":

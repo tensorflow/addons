@@ -88,8 +88,8 @@ class LAMB(tf.keras.optimizers.Optimizer):
         self._set_hyper('beta_2', beta_2)
         self.epsilon = epsilon or tf.backend_config.epsilon()
         self.exclude_from_weight_decay = exclude_from_weight_decay
-        # exclude_from_layer_adaptation is set to exclude_from_weight_decay if the
-        # arg is None.
+        # exclude_from_layer_adaptation is set to exclude_from_weight_decay if
+        # the arg is None.
         if exclude_from_layer_adaptation:
             self.exclude_from_layer_adaptation = exclude_from_layer_adaptation
         else:
