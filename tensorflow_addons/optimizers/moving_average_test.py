@@ -108,24 +108,24 @@ class MovingAverageTest(tf.test.TestCase):
         self.assertAllClose(model.variables[0].read_value(), [[0.9]])
 
     def test_model_dynamic_lr(self):
-            grad = tf.Variable([[0.1]])
-            model = tf.keras.Sequential([
-                tf.keras.layers.Dense(
-                    1,
-                    kernel_initializer=tf.keras.initializers.Constant([[1.0]]),
-                    use_bias=False)
-            ])
-            model.build(input_shape=[1, 1])
+        grad = tf.Variable([[0.1]])
+        model = tf.keras.Sequential([
+            tf.keras.layers.Dense(
+                1,
+                kernel_initializer=tf.keras.initializers.Constant([[1.0]]),
+                use_bias=False)
+        ])
+        model.build(input_shape=[1, 1])
 
-            opt = MovingAverage(tf.keras.optimizers.SGD(lr=1e-3), 0.5)
-            update = opt.apply_gradients(list(zip([grad], model.variables)))
+        opt = MovingAverage(tf.keras.optimizers.SGD(lr=1e-3), 0.5)
+        update = opt.apply_gradients(list(zip([grad], model.variables)))
 
-            self.evaluate(tf.compat.v1.global_variables_initializer())
-            self.evaluate(update)
-            self.assertAllClose(opt.lr.read_value(), 1e-3)
+        self.evaluate(tf.compat.v1.global_variables_initializer())
+        self.evaluate(update)
+        self.assertAllClose(opt.lr.read_value(), 1e-3)
 
-            opt.lr = 1e-4
-            self.assertAllClose(opt.lr.read_value(), 1e-4)
+        opt.lr = 1e-4
+        self.assertAllClose(opt.lr.read_value(), 1e-4)
 
     def test_optimizer_string(self):
         _ = MovingAverage('adam')
