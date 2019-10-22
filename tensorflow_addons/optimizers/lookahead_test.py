@@ -128,6 +128,7 @@ class LookaheadTest(tf.test.TestCase):
         self.assertLess(max_abs_diff, 1e-4)
 
     def test_get_config(self):
+        self.skipTest('Wait #33614 to be fixed')
         opt = Lookahead('adam', sync_period=10, slow_step_size=0.4)
         opt = tf.keras.optimizers.deserialize(
             tf.keras.optimizers.serialize(opt))
