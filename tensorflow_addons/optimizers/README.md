@@ -4,7 +4,7 @@
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
 | conditional_gradient | Pengyu Kan, Vishnu Lokhande | pkan2@wisc.edu, lokhande@cs.wisc.edu |
-| lamb |  Junjie Ke | junjiek@google.com   |
+| lamb |  Junjie Ke | junjiek@google.com, jingli@google.com   |
 | lazy_adam | Saishruthi Swaminathan  | saishruthi.tn@gmail.com  |
 | lookahead | Zhao Hanguang | cyberzhg@gmail.com |
 | moving_average | Dheeraj R. Reddy | dheeraj98reddy@gmail.com |
