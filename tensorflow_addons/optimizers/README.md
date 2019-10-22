@@ -4,7 +4,7 @@
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
 | conditional_gradient | Pengyu Kan, Vishnu Lokhande | pkan2@wisc.edu, lokhande@cs.wisc.edu |
-| lamb_optimizer |  Junjie Ke | junjiek@google.com   |
+| lamb |  Junjie Ke | junjiek@google.com   |
 | lazy_adam | Saishruthi Swaminathan  | saishruthi.tn@gmail.com  |
 | lookahead | Zhao Hanguang | cyberzhg@gmail.com |
 | moving_average | Dheeraj R. Reddy | dheeraj98reddy@gmail.com |
@@ -16,7 +16,7 @@
 | Submodule | Optimizer  | Reference                                   |
 |:--------- |:---------- |:---------|
 | conditional_gradient | ConditionalGradient | https://arxiv.org/pdf/1803.06453.pdf |
-| lamb_optimizer | LAMBOptimizer | https://arxiv.org/abs/1904.00962      |
+| lamb | LAMB | https://arxiv.org/abs/1904.00962      |
 | lazy_adam | LazyAdam | https://arxiv.org/abs/1412.6980      |
 | lookahead | Lookahead | https://arxiv.org/abs/1907.08610v1 |
 | moving_average | MovingAverage | |
