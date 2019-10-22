@@ -60,8 +60,8 @@ class LAMB(tf.keras.optimizers.Optimizer):
           excluded from weight decay. Variables whose name contain a substring
           matching the pattern will be excluded.
         exclude_from_layer_adaptation: comma separated name patterns of
-          variables excluded from layer adaptation. Variables whose name contain
-          a substring matching the pattern will be excluded.
+          variables excluded from layer adaptation. Variables whose name
+          contain a substring matching the pattern will be excluded.
         name: Optional name for the operations created when applying
           gradients. Defaults to "LAMB".
         **kwargs: keyword arguments. Allowed to be {`clipnorm`, `clipvalue`,
