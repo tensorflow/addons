@@ -90,13 +90,14 @@ def transform(images,
             transforms = transform_or_transforms[None]
         elif transform_or_transforms.get_shape().ndims is None:
             raise ValueError(
-                "transform_or_transforms rank must be statically known")
+                "transforms rank must be statically known")
         elif len(transform_or_transforms.get_shape()) == 2:
             transforms = transform_or_transforms
         else:
+            transforms = transform_or_transforms
             raise ValueError(
                 "Transforms should have rank 1 or 2, but got rank %d" 
-                % len(transform_or_transforms.get_shape()))
+                % len(transforms.get_shape()))
 
         output = _image_ops_so.addons_image_projective_transform_v2(
             images,
@@ -225,7 +226,7 @@ def angles_to_projective_transforms(angles,
         elif len(angle_or_angles.get_shape()) == 1:
             angles = angle_or_angles
         else:
-            raise ValueError("Angles should have rank 0 or 1.")
+            raise ValueError("angles should have rank 0 or 1.")
         # yapf: disable
         x_offset = ((image_width - 1) -
                     (tf.math.cos(angles) * (image_width - 1) -
@@ -267,9 +268,10 @@ def _image_projective_transform_grad(op, grad):
     elif len(transform_or_transforms.get_shape()) == 2:
         transforms = transform_or_transforms
     else:
+        transforms = transform_or_transforms
         raise ValueError(
             "Transforms should have rank 1 or 2, but got rank %d" 
-            % len(transform_or_transforms.get_shape()))
+            % len(transforms.get_shape()))
 
     # Invert transformations
     transforms = flat_transforms_to_matrices(transforms=transforms)
