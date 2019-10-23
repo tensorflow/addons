@@ -19,8 +19,6 @@ from __future__ import absolute_import, division, print_function
 import time
 from collections import defaultdict
 
-import numpy as np
-import six
 from tensorflow.keras.callbacks import Callback
 from tensorflow_addons.utils import keras_utils
 from tqdm.auto import tqdm
@@ -48,16 +46,17 @@ class TQDMProgressBar(Callback):
         show_overall_progress (bool): False to hide overall progress bar
     """
 
-    def __init__(
-            self,
-            metrics_separator=" - ",
-            overall_bar_format='{l_bar}{bar} {n_fmt}/{total_fmt} ETA: {remaining}s,  {rate_fmt}{postfix}',
-            epoch_bar_format='{n_fmt}/{total_fmt}{bar} ETA: {remaining}s - {desc}',
-            update_per_second=10,
-            leave_epoch_progress=True,
-            leave_overall_progress=True,
-            show_epoch_progress=True,
-            show_overall_progress=True):
+    def __init__(self,
+                 metrics_separator=" - ",
+                 overall_bar_format='{l_bar}{bar} {n_fmt}/{total_fmt} ETA: '
+                 '{remaining}s,  {rate_fmt}{postfix}',
+                 epoch_bar_format='{n_fmt}/{total_fmt}{bar} ETA: '
+                 '{remaining}s - {desc}',
+                 update_per_second=10,
+                 leave_epoch_progress=True,
+                 leave_overall_progress=True,
+                 show_epoch_progress=True,
+                 show_overall_progress=True):
 
         self.metrics_separator = metrics_separator
         self.overall_bar_format = overall_bar_format
@@ -130,8 +129,8 @@ class TQDMProgressBar(Callback):
             self.epoch_progress_tqdm.mininterval = 0
 
             # update the rest of the steps in epoch progress bar
-            self.epoch_progress_tqdm.update(
-                self.total_steps - self.epoch_progress_tqdm.n)
+            self.epoch_progress_tqdm.update(self.total_steps -
+                                            self.epoch_progress_tqdm.n)
             self.epoch_progress_tqdm.close()
 
         if self.show_overall_progress:
