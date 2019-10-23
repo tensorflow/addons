@@ -89,15 +89,14 @@ def transform(images,
         if len(transform_or_transforms.get_shape()) == 1:
             transforms = transform_or_transforms[None]
         elif transform_or_transforms.get_shape().ndims is None:
-            raise ValueError(
-                "transforms rank must be statically known")
+            raise ValueError("transforms rank must be statically known")
         elif len(transform_or_transforms.get_shape()) == 2:
             transforms = transform_or_transforms
         else:
             transforms = transform_or_transforms
             raise ValueError(
-                "transforms should have rank 1 or 2, but got rank %d" 
-                % len(transforms.get_shape()))
+                "transforms should have rank 1 or 2, but got rank %d" % len(
+                    transforms.get_shape()))
 
         output = _image_ops_so.addons_image_projective_transform_v2(
             images,
@@ -268,9 +267,8 @@ def _image_projective_transform_grad(op, grad):
         transforms = transform_or_transforms
     else:
         transforms = transform_or_transforms
-        raise ValueError(
-            "transforms should have rank 1 or 2, but got rank %d" 
-            % len(transforms.get_shape()))
+        raise ValueError("transforms should have rank 1 or 2, but got rank %d"
+                         % len(transforms.get_shape()))
 
     # Invert transformations
     transforms = flat_transforms_to_matrices(transforms=transforms)
