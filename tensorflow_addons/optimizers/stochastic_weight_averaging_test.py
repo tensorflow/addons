@@ -105,7 +105,7 @@ class SWATest(tf.test.TestCase):
     def test_get_config(self):
         opt = SWAOptimizer('adam', average_period=10, start_averaging=0)
         opt = tf.keras.optimizers.deserialize(
-                tf.keras.optimizers.serialize(opt))
+            tf.keras.optimizers.serialize(opt))
         config = opt.get_config()
         self.assertEqual(config['average_period'], 10)
         self.assertEqual(config['start_averaging'], 0)
