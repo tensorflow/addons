@@ -13,6 +13,7 @@ py_library(
         "moving_average.py",
         "rectified_adam.py",
         "weight_decay_optimizers.py",
+        "stochastic_weight_averaging.py",
     ],
     srcs_version = "PY2AND3",
     deps = [
@@ -40,6 +41,19 @@ py_test(
         "conditional_gradient_test.py",
     ],
     main = "conditional_gradient_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":optimizers",
+    ],
+)
+
+py_test(
+    name = "stochastic_weight_averaging_test",
+    size = "small",
+    srcs = [
+        "stochastic_weight_averaging_test.py",
+    ],
+    main = "stochastic_weight_averaging_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":optimizers",
