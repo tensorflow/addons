@@ -54,22 +54,25 @@ class SWATest(tf.test.TestCase):
             self.evaluate(update)
             self.evaluate(update)
             self.evaluate(update)
-            update = optimizer.assign_average_vars([var_0, var_1])
-            self.evaluate(update)
+            
         else:
             optimizer.apply_gradients(grads_and_vars)
             optimizer.apply_gradients(grads_and_vars)
             optimizer.apply_gradients(grads_and_vars)
-            optimizer.assign_average_vars([var_0, var_1])
+            
             
         self.assertAllClose(var_1.read_value(), [1.7, 1.7])
         self.assertAllClose(var_0.read_value(), [0.7, 0.7])
         
-        optimizer.assign_average_vars([var_0, var_1])
+        if not tf.executing_eagerly():
+            update = optimizer.assign_average_vars([var_0, var_1])
+            self.evaluate(update)
+        else:
+            optimizer.assign_average_vars([var_0, var_1])
         
         # self.assertEqual(True, False, msg='{} | {}'.format(var_0, expected_var_0))
-        self.assertAllClose(var_0.read_value(), [0.85, 0.85], msg='{}'.format(var_0.read_value()))
-        self.assertAllClose(var_1.read_value(), [1.85, 1.85])
+        self.assertAllClose(var_0.read_value(), [0.8, 0.8])
+        self.assertAllClose(var_1.read_value(), [1.8, 1.8])
 
     def test_fit_simple_linear_model(self):
         np.random.seed(0x2019)
