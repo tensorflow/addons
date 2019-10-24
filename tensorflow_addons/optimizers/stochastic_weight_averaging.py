@@ -35,7 +35,7 @@ from tensorflow_addons.utils import keras_utils
 class SWA(tf.keras.optimizers.Optimizer):
     """This class extends optimizers with Stochastic Weight Averaging (SWA).
 
-    The Stochastic Weight Averaging mechanism was proposed by Pavel Izmailov 
+    The Stochastic Weight Averaging mechanism was proposed by Pavel Izmailov
     et. al in the paper [Averaging Weights Leads to Wider Optima and
     Better Generalization](https://arxiv.org/abs/1803.05407). The optimizer
     implements averaging of multiple points along the trajectory of SGD. The
@@ -51,17 +51,17 @@ class SWA(tf.keras.optimizers.Optimizer):
     `m + 2k` and so on. The assign_average_vars function can be called at the
     end of training to obtain the averaged_weights from the optimizer.
 
-    Note: If your model has batch-normalization layers you would need to run 
-    the final weights through the data to compute the running mean and 
-    variance corresponding to the activations for each layer of the network. 
-    From the paper: If the DNN uses batch normalization we run one 
-    additional pass over the data, to compute the running mean and standard 
-    deviation of the activations for each layer of the network with SWA 
+    Note: If your model has batch-normalization layers you would need to run
+    the final weights through the data to compute the running mean and
+    variance corresponding to the activations for each layer of the network.
+    From the paper: If the DNN uses batch normalization we run one
+    additional pass over the data, to compute the running mean and standard
+    deviation of the activations for each layer of the network with SWA
     weights after the training is finished, since these statistics are not
-    collected during training. For most deep learning libraries, such as 
-    PyTorch or Tensorflow, one can typically collect these statistics by 
-    making a forward pass over the data in training mode 
-    ([Averaging Weights Leads to Wider Optima and Better 
+    collected during training. For most deep learning libraries, such as
+    PyTorch or Tensorflow, one can typically collect these statistics by
+    making a forward pass over the data in training mode
+    ([Averaging Weights Leads to Wider Optima and Better
     Generalization](https://arxiv.org/abs/1803.05407))
 
     Example of usage:
