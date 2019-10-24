@@ -32,42 +32,26 @@ class SWATest(tf.test.TestCase):
 
     def test_averaging(self):
         
-        for start_averaging in [0, 1]:
-            for average_period in [1, 2]:
-                optimizer = SWA('adam', start_averaging, average_period)
+        start_averaging = 0
+        average_period = 1
+        optimizer = SWA('adam', start_averaging, average_period)
+              
+        val_0 = [1., 1.]
+        val_1 = [2., 2.]
+        var_0 = tf.Variable(val_0)
+        var_1 = tf.Variable(val_1)
+
+        grad_val_0 = [0.1, 0.1]
+        grad_val_1 = [0.1, 0.1]
+        grad_0 = tf.constant(grad_val_0)
+        grad_1 = tf.constant(grad_val_1)    
                 
-                val_0 = np.array([1., 1.])
-                val_1 = np.array([2., 2.])
-                
-                var_0 = tf.Variable(val_0)
-                var_1 = tf.Variable(val_1)
-                
-                grad_val_0 = np.array([0.1, 0.1])
-                grad_val_1 = np.array([0.1, 0.1])
-                
-                grad_0 = tf.constant(grad_val_0)
-                grad_1 = tf.constant(grad_val_1)
-                
-                for _ in range(start_averaging + 1):
-                    optimizer.apply_gradients(zip([grad_0, grad_1], [var_0, var_1]))
-                    
-                first_val_0 = val_0 - (grad_val_0 * (start_averaging + 1))
-                first_val_1 = val_1 - (grad_val_1 * (start_averaging + 1))
-                
-                for _ in range(average_period):
-                    optimizer.apply_gradients(zip([grad_0, grad_1], [var_0, var_1]))
-                
-                second_val_0 = first_val_0 - (grad_val_0 * average_period)
-                second_val_1 = first_val_1 - (grad_val_1 * average_period)
-                
-                optimizer.assign_average_vars([var_0, var_1])
-                
-                expected_val = [
-                    (first_val_0 + second_val_0) / 2.0,
-                    (first_val_1 + second_val_1) / 2.0
-                ]
-                msg = '{} | {}'.format([var_0, var_1], expected_val)
-                self.assertAllClose(expected_val, [var_0, var_1], msg=msg)
+        optimizer.apply_gradients(zip([grad_0, grad_1], [var_0, var_1]))
+        optimizer.apply_gradients(zip([grad_0, grad_1], [var_0, var_1]))
+
+        optimizer.assign_average_vars([var_0, var_1])
+        self.assertAllClose(var_0, [0.85, 0.85])
+        self.assertAllClose(var_1, [1.85, 1.85])
 
     def test_fit_simple_linear_model(self):
         np.random.seed(0x2019)
