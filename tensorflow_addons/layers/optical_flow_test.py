@@ -50,9 +50,9 @@ class CorrelationCostTest(tf.test.TestCase):
                     [[9, 3, 18, -13], [10, 4, 19, -15], [11, 5, 20, -17]]]]
 
             input_a = tf.constant(np.array(val), dtype=tf.float32)
-            # pylint: disable=too-many-arguments
+            # pylint: disable=too-many-function-args
             valb = np.array(val).transpose(2, 3, 0, 1).reshape(2, 2, 3, 4)
-            # pylint: enable=too-many-arguments
+            # pylint: enable=too-many-function-args
             input_b = tf.constant(valb, dtype=tf.float32)
 
             if data_format == 'channels_last':
@@ -139,9 +139,9 @@ class CorrelationCostTest(tf.test.TestCase):
                  [[[6, 0, 15, -7], [7, 1, 16, -9], [8, 2, 17, -11]],
                   [[9, 3, 18, -13], [10, 4, 19, -15], [11, 5, 20, -17]]]],
                 dtype=np.float32)
-            # pylint: disable=too-many-arguments
+            # pylint: disable=too-many-function-args
             val_b = val_a.transpose(2, 3, 0, 1).reshape(2, 2, 3, 4)
-            # pylint: enable=too-many-arguments
+            # pylint: enable=too-many-function-args
 
             # yapf: disable
             input_a = tf.keras.Input(shape=(2, 3, 4,))
