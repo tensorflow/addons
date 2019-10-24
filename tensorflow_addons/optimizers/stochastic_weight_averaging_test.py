@@ -53,8 +53,8 @@ class SWATest(tf.test.TestCase):
             for _ in range(iterations):
                 self.evaluate(update)
 
-        return [val_0, val_1], [grad_0, grad_1], [tf.Variable(self.evaluate(var_0)),
-                                                  tf.Variable(self.evaluate(var_1))]
+        return [val_0, val_1], [grad_0, grad_1], [self.evaluate(var_0)),
+                                                  self.evaluate(var_1)]
 
     def test_averaging(self):
         for start_averaging in [0]:
@@ -70,8 +70,12 @@ class SWATest(tf.test.TestCase):
                 ]
                 average_vals = [tf.Variable((first_vals[0] + final_vals[0]) / 2.0),
                                 tf.Variable((first_vals[1] + final_vals[1]) / 2.0)]
-                optimizer.assign_average_vars(final_vals)
                 msg = '{}'.format(final_vals)
+                try:
+                    optimizer.assign_average_vars(final_vals)
+                except:
+                    self.assertEqual(True, False, msg=msg)
+                
                 self.assertAllClose(average_vals, final_vals, msg=msg)
 
     def test_fit_simple_linear_model(self):
