@@ -1,4 +1,3 @@
-
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,16 +26,16 @@ from tensorflow_addons.utils import test_utils
 
 SWA = stochastic_weight_averaging.SWA
 
+
 @test_utils.run_all_in_graph_and_eager_modes
 class SWATest(tf.test.TestCase):
-
     def test_averaging(self):
-        
+
         start_averaging = 0
         average_period = 1
         sgd = tf.keras.optimizers.SGD(lr=1.)
         optimizer = SWA(sgd, start_averaging, average_period)
-              
+
         val_0 = [1., 1.]
         val_1 = [2., 2.]
         var_0 = tf.Variable(val_0)
@@ -45,31 +44,30 @@ class SWATest(tf.test.TestCase):
         grad_val_0 = [0.1, 0.1]
         grad_val_1 = [0.1, 0.1]
         grad_0 = tf.constant(grad_val_0)
-        grad_1 = tf.constant(grad_val_1)    
+        grad_1 = tf.constant(grad_val_1)
         grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
-       
+
         if not tf.executing_eagerly():
             update = optimizer.apply_gradients(grads_and_vars)
             self.evaluate(tf.compat.v1.global_variables_initializer())
             self.evaluate(update)
             self.evaluate(update)
             self.evaluate(update)
-            
+
         else:
             optimizer.apply_gradients(grads_and_vars)
             optimizer.apply_gradients(grads_and_vars)
             optimizer.apply_gradients(grads_and_vars)
-            
-            
+
         self.assertAllClose(var_1.read_value(), [1.7, 1.7])
         self.assertAllClose(var_0.read_value(), [0.7, 0.7])
-        
+
         if not tf.executing_eagerly():
             update = optimizer.assign_average_vars([var_0, var_1])
             self.evaluate(update)
         else:
             optimizer.assign_average_vars([var_0, var_1])
-        
+
         # self.assertEqual(True, False, msg='{} | {}'.format(var_0, expected_var_0))
         self.assertAllClose(var_0.read_value(), [0.8, 0.8])
         self.assertAllClose(var_1.read_value(), [1.8, 1.8])
@@ -84,13 +82,12 @@ class SWATest(tf.test.TestCase):
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
         # using num_examples - 1 since steps starts from 0.
-        optimizer = SWA('adam',
-                        start_averaging=num_examples // 32 - 1,
-                        average_period=100)
+        optimizer = SWA(
+            'adam', start_averaging=num_examples // 32 - 1, average_period=100)
         model.compile(optimizer, loss='mse')
         model.fit(x, y, epochs=3)
         optimizer.assign_average_vars(model.variables)
-      
+
         x = np.random.standard_normal((100, 3))
         y = np.dot(x, w)
 
