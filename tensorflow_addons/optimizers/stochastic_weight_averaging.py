@@ -32,7 +32,7 @@ from tensorflow_addons.utils import keras_utils
 
 
 @keras_utils.register_keras_custom_object
-class SWAOptimizer(tf.keras.optimizers.Optimizer):
+class SWA(tf.keras.optimizers.Optimizer):
     """This class extends optimizers with Stochastic Weight Averaging (SWA).
 
     The Stochastic Weight Averaging mechanism was proposed by Pavel Izmailov et.
@@ -68,7 +68,7 @@ class SWAOptimizer(tf.keras.optimizers.Optimizer):
 
     ```python
     opt = tf.keras.optimizers.SGD(learning_rate)
-    opt = tfa.optimizers.SWAOptimizer(opt, start_averaging=m, average_period=k)
+    opt = tfa.optimizers.SWA(opt, start_averaging=m, average_period=k)
     ```
     """
 
@@ -76,7 +76,7 @@ class SWAOptimizer(tf.keras.optimizers.Optimizer):
                  optimizer,
                  start_averaging=0,
                  average_period=10,
-                 name='SWAOptimizer',
+                 name='SWA',
                  **kwargs):
         r"""Wrap optimizer with the Stochastic Weight Averaging mechanism.
 
@@ -92,7 +92,7 @@ class SWAOptimizer(tf.keras.optimizers.Optimizer):
               averaging occurs every average_period steps. Averaging period
               needs to be >= 1.
             name: Optional name for the operations created when applying
-              gradients. Defaults to 'SWAOptimizer'.
+              gradients. Defaults to 'SWA'.
             **kwargs: keyword arguments. Allowed to be {`clipnorm`, `clipvalue`,
               `lr`, `decay`}. `clipnorm` is clip gradients by norm; `clipvalue`
               is clip gradients by value, `decay` is included for backward
@@ -100,7 +100,7 @@ class SWAOptimizer(tf.keras.optimizers.Optimizer):
               is included for backward compatibility, recommended to use
               `learning_rate` instead.
         """
-        super(SWAOptimizer, self).__init__(name, **kwargs)
+        super(SWA, self).__init__(name, **kwargs)
 
         if isinstance(optimizer, str):
             optimizer = tf.keras.optimizers.get(optimizer)
@@ -130,7 +130,7 @@ class SWAOptimizer(tf.keras.optimizers.Optimizer):
 
     def apply_gradients(self, grads_and_vars, name=None):
         self._optimizer._iterations = self.iterations    # pylint: disable=protected-access
-        return super(SWAOptimizer, self).apply_gradients(grads_and_vars, name)
+        return super(SWA, self).apply_gradients(grads_and_vars, name)
 
     def _average_op(self, var):
         average_var = self.get_slot(var, 'average')
@@ -192,7 +192,7 @@ class SWAOptimizer(tf.keras.optimizers.Optimizer):
         Example:
         ```python
         model = tf.Sequential([...])
-        opt = tfa.optimizers.SWAOptimizer(
+        opt = tfa.optimizers.SWA(
                 tf.keras.optimizers.SGD(lr=2.0), 100, 10)
         model.compile(opt, ...)
         model.fit(x, y, ...)
@@ -213,7 +213,7 @@ class SWAOptimizer(tf.keras.optimizers.Optimizer):
             'average_period': self._serialize_hyperparameter('average_period'),
             'start_averaging': self._serialize_hyperparameter('start_averaging')
         }
-        base_config = super(SWAOptimizer, self).get_config()
+        base_config = super(SWA, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
     @property
