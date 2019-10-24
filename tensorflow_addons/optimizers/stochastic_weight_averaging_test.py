@@ -63,13 +63,7 @@ class SWATest(tf.test.TestCase):
                     (first_val_1 + second_val_1) / 2.0
                 ]
                 msg = '{} | {}'.format([var_0, var_1], expected_val)
-                
-                try:
-                    optimizer.assign_average_vars(final_vals)
-                except:
-                    self.assertEqual(True, False, msg=msg)
-                
-                self.assertAllClose(average_vals, final_vals, msg=msg)
+                self.assertAllClose(expected_val, [var_0, var_1], msg=msg)
 
     def test_fit_simple_linear_model(self):
         np.random.seed(0x2019)
