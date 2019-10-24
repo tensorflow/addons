@@ -46,7 +46,7 @@ class SWATest(tf.test.TestCase):
         grad_val_1 = [0.1, 0.1]
         grad_0 = tf.constant(grad_val_0)
         grad_1 = tf.constant(grad_val_1)    
-        grads_and_vars = zip([grad_0, grad_1], [var_0, var_1])
+        grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
        
         if not tf.executing_eagerly():
             update = optimizer.apply_gradients(grads_and_vars)
