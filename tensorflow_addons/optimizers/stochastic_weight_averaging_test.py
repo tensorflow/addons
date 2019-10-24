@@ -34,7 +34,8 @@ class SWATest(tf.test.TestCase):
         
         start_averaging = 0
         average_period = 1
-        optimizer = SWA('adam', start_averaging, average_period)
+        adam = tf.keras.optimizers.Adam(learning_rate=1)
+        optimizer = SWA(adam, start_averaging, average_period)
               
         val_0 = [1., 1.]
         val_1 = [2., 2.]
