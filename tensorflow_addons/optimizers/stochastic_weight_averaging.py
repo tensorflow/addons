@@ -18,7 +18,7 @@ The Stochastic Weight Averaging mechanism was proposed by Pavel Izmailov et.
 al in the paper [Averaging Weights Leads to Wider Optima and
 Better Generalization](https://arxiv.org/abs/1803.05407). The optimizer
 implements averaging of multiple points along the trajectory of SGD. This
-averaging hias shown to improve model performance on validation/test sets 
+averaging has shown to improve model performance on validation/test sets 
 whilst possibly causing a small increase in loss on the training set.
 
 """
