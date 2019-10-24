@@ -53,7 +53,7 @@ class SWATest(tf.test.TestCase):
             for _ in range(iterations):
                 self.evaluate(update)
 
-        return [val_0, val_1], [grad_0, grad_1], [self.evaluate(var_0)),
+        return [val_0, val_1], [grad_0, grad_1], [self.evaluate(var_0),
                                                   self.evaluate(var_1)]
 
     def test_averaging(self):
