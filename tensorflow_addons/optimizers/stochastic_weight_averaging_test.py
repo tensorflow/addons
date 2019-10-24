@@ -36,14 +36,15 @@ class SWATest(tf.test.TestCase):
             for average_period in [1, 2]:
                 optimizer = SWA('adam', start_averaging, average_period)
                 
-                val_0 = [1., 1.]
-                val_1 = [2., 2.]
+                val_0 = np.array([1., 1.])
+                val_1 = np.array([2., 2.])
                 
                 var_0 = tf.Variable(val_0)
                 var_1 = tf.Variable(val_1)
                 
-                grad_val_0 = [0.1, 0.1]
-                grad_val_1 = [0.1, 0.1]
+                grad_val_0 = np.array([0.1, 0.1])
+                grad_val_1 = np.array([0.1, 0.1])
+                
                 grad_0 = tf.constant(grad_val_0)
                 grad_1 = tf.constant(grad_val_1)
                 
