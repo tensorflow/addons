@@ -66,8 +66,8 @@ class SWATest(tf.test.TestCase):
                     initial_vals[0] - (start_averaging + 1) * grads[0],
                     initial_vals[1] - (start_averaging + 1) * grads[1]
                 ]
-                average_vals = [(first_vals[0] + final_vals[0]) / 2.0,
-                                (first_vals[1] + final_vals[1]) / 2.0]
+                average_vals = [tf.Variable((first_vals[0] + final_vals[0]) / 2.0),
+                                tf.Variable((first_vals[1] + final_vals[1]) / 2.0)]
                 optimizer.assign_average_vars(final_vals)
                 self.assertAllClose(average_vals, final_vals)
 
@@ -86,7 +86,7 @@ class SWATest(tf.test.TestCase):
                         average_period=100)
         model.compile(optimizer, loss='mse')
         model.fit(x, y, epochs=3)
-        optimizer.assign_average_vars(model.variables)
+        # optimizer.assign_average_vars(model.variables)
       
         x = np.random.standard_normal((100, 3))
         y = np.dot(x, w)
