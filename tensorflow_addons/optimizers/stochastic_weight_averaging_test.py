@@ -50,7 +50,8 @@ class SWATest(tf.test.TestCase):
         optimizer.apply_gradients(zip([grad_0, grad_1], [var_0, var_1]))
 
         optimizer.assign_average_vars([var_0, var_1])
-        self.assertEqual(True, False, msg='{}'.format(var_0))
+        expected_var_0 = tf.constant([0.85, 0.85])
+        self.assertEqual(True, False, msg='{} | {}'.format(var_0, expected_var_0))
         self.assertAllClose(var_0, tf.constant([0.85, 0.85]), msg='{}'.format(var_0))
         self.assertAllClose(var_1, [1.85, 1.85])
 
