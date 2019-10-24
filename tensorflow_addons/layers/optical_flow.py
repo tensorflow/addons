@@ -210,12 +210,12 @@ class CorrelationCost(tf.keras.layers.Layer):
         if self.data_format == "channels_first":
             output_h = input_shape[0][1] + 2 * (self.pad - bd) / self.stride_1
             output_w = input_shape[0][2] + 2 * (self.pad - bd) / self.stride_1
-            return [n, output_c, output_h, output_w]
+            return [int(n), int(output_c), int(output_h), int(output_w)]
 
         elif self.data_format == "channels_last":
             output_h = input_shape[0][0] + 2 * (self.pad - bd) / self.stride_1
             output_w = input_shape[0][1] + 2 * (self.pad - bd) / self.stride_1
-            return [n, output_h, output_w, output_c]
+            return [int(n), int(output_h), int(output_w), int(output_c)]
         else:
             raise ValueError("`data_format` must be either `channels_last` or"
                              "`channels_first`")
