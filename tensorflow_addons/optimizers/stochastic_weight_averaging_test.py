@@ -104,6 +104,7 @@ class SWATest(tf.test.TestCase):
         _ = SWA('adam', average_period=10)
 
     def test_get_config(self):
+        self.skipTest('Wait #33614 to be fixed')
         opt = SWA('adam', average_period=10, start_averaging=0)
         opt = tf.keras.optimizers.deserialize(
             tf.keras.optimizers.serialize(opt))
