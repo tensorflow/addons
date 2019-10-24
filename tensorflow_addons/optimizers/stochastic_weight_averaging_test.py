@@ -22,9 +22,10 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from tensorflow_addons.optimizers import SWA
+from tensorflow_addons.optimizers import stochastic_weight_averaging
 from tensorflow_addons.utils import test_utils
 
+SWA = stochastic_weight_averaging.SWA
 
 @test_utils.run_all_in_graph_and_eager_modes
 class SWATest(tf.test.TestCase):
