@@ -42,22 +42,25 @@ class SWATest(tf.test.TestCase):
                 var_0 = tf.Variable(val_0)
                 var_1 = tf.Variable(val_1)
                 
-                grad_0 = tf.constant([0.1, 0.1])
-                grad_1 = tf.constant([0.1, 0.1])
+                grad_val_0 = [0.1, 0.1]
+                grad_val_1 = [0.1, 0.1]
+                grad_0 = tf.constant(grad_val_0)
+                grad_1 = tf.constant(grad_val_1)
                 
                 for _ in range(start_averaging + 1):
                     optimizer.apply_gradients(zip([grad_0, grad_1], [var_0, var_1]))
                     
-                first_val_0 = tf.identity(var_0)
-                first_val_1 = tf.identity(var_1)
+                first_val_0 = val_0 - (grad_val_0 * (start_averaging + 1))
+                first_val_1 = val_1 - (grad_val_1 * (start_averaging + 1))
                 
-                for _ in range(average_period + 1):
+                for _ in range(average_period):
                     optimizer.apply_gradients(zip([grad_0, grad_1], [var_0, var_1]))
                 
-                second_val_0 = tf.identity(var_0)
-                second_val_1 = tf.identity(var_1)
+                second_val_0 = first_val_0 - (grad_val_0 * average_period)
+                second_val_1 = first_val_1 - (grad_val_1 * average_period)
                 
                 optimizer.assign_average_vars([var_0, var_1])
+                
                 expected_val = [
                     (first_val_0 + second_val_0) / 2.0,
                     (first_val_1 + second_val_1) / 2.0
