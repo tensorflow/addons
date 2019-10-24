@@ -53,11 +53,13 @@ class SWATest(tf.test.TestCase):
             self.evaluate(tf.compat.v1.global_variables_initializer())
             self.evaluate(update)
             self.evaluate(update)
+            self.evaluate(update)
         else:
             optimizer.apply_gradients(grads_and_vars)
             optimizer.apply_gradients(grads_and_vars)
-        self.assertAllClose(var_1.read_value(), [1.8, 1.8])
-        self.assertAllClose(var_0.read_value(), [0.8, 0.8])
+            optimizer.apply_gradients(grads_and_vars)
+        self.assertAllClose(var_1.read_value(), [1.7, 1.7])
+        self.assertAllClose(var_0.read_value(), [0.7, 0.7])
         
         optimizer.assign_average_vars([var_0, var_1])
         
