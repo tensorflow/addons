@@ -141,9 +141,9 @@ class SWA(tf.keras.optimizers.Optimizer):
         # number of times snapshots of weights have been taken (using max to
         # avoid negative values of num_snapshots).
         num_snapshots = tf.math.maximum(
-            0, tf.math.floordiv(self.iterations - start_averaging,
-                                average_period)
-            )
+            tf.cast(0, tf.int64), tf.math.floordiv(self.iterations - start_averaging,
+                                                   average_period)
+        )
         # checks if the iteration is one in which a snapshot should be taken.
         sync_cond = tf.equal(start_averaging + num_snapshots * average_period,
                              self.iterations)
