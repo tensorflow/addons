@@ -56,7 +56,6 @@ def _np_sparsemax(z):
 class SparsemaxTest(tf.test.TestCase):
     def test_sparsemax_layer_against_numpy(self, dtype):
         """check sparsemax kernel against numpy."""
-        self.skipTest('Wait #33614 to be fixed')
         random = np.random.RandomState(1)
 
         z = random.uniform(low=-3, high=3, size=(test_obs, 10)).astype(dtype)
