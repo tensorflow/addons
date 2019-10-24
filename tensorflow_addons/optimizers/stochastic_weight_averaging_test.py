@@ -54,10 +54,14 @@ class SWATest(tf.test.TestCase):
             self.evaluate(update)
             self.evaluate(update)
             self.evaluate(update)
+            update = optimizer.assign_average_vars([var_0, var_1])
+            self.evaluate(update)
         else:
             optimizer.apply_gradients(grads_and_vars)
             optimizer.apply_gradients(grads_and_vars)
             optimizer.apply_gradients(grads_and_vars)
+            optimizer.assign_average_vars([var_0, var_1])
+            
         self.assertAllClose(var_1.read_value(), [1.7, 1.7])
         self.assertAllClose(var_0.read_value(), [0.7, 0.7])
         
