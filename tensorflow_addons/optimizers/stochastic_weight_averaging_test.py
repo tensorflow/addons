@@ -34,8 +34,8 @@ class SWATest(tf.test.TestCase):
         
         start_averaging = 0
         average_period = 1
-        adam = tf.keras.optimizers.Adam(learning_rate=1.)
-        optimizer = SWA(adam, start_averaging, average_period)
+        sgd = tf.keras.optimizers.SGD(lr=1.)
+        optimizer = SWA(sgd, start_averaging, average_period)
               
         val_0 = [1., 1.]
         val_1 = [2., 2.]
@@ -56,8 +56,9 @@ class SWATest(tf.test.TestCase):
         else:
             optimizer.apply_gradients(grads_and_vars)
             optimizer.apply_gradients(grads_and_vars)
-        self.assertAllClose(var_0.read_value(), [0.8, 0.8])
         self.assertAllClose(var_1.read_value(), [1.8, 1.8])
+        self.assertAllClose(var_0.read_value(), [0.8, 0.8])
+        
         optimizer.assign_average_vars([var_0, var_1])
         
         # self.assertEqual(True, False, msg='{} | {}'.format(var_0, expected_var_0))
