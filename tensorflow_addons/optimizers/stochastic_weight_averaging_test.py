@@ -59,7 +59,7 @@ class SWATest(tf.test.TestCase):
     def test_averaging(self):
         for start_averaging in [0, 1, 2]:
             for average_period in [5, 10, 100]:
-                optimizer = SWA('adam', average_period, start_averaging)
+                optimizer = SWA('adam', start_averagin, average_period)
                 initial_vals, grads, final_vals = self.run_dense_sample(
                     start_averaging + average_period + 1, optimizer)
                 first_vals = [
@@ -82,8 +82,8 @@ class SWATest(tf.test.TestCase):
         model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
         # using num_examples - 1 since steps starts from 0.
         optimizer = SWA('adam',
-                                 start_averaging=num_examples - 1,
-                                 average_period=100)
+                        start_averaging=num_examples - 1,
+                        average_period=100)
         model.compile(optimizer, loss='mse')
         model.fit(x, y, epochs=3)
         optimizer.assign_average_vars(model.variables)
