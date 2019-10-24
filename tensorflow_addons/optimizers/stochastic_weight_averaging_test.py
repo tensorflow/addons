@@ -59,7 +59,7 @@ class SWATest(tf.test.TestCase):
     def test_averaging(self):
         for start_averaging in [0, 1, 2]:
             for average_period in [5, 10, 100]:
-                optimizer = SWA('adam', start_averagin, average_period)
+                optimizer = SWA('adam', start_averaging, average_period)
                 initial_vals, grads, final_vals = self.run_dense_sample(
                     start_averaging + average_period + 1, optimizer)
                 first_vals = [
