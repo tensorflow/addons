@@ -53,11 +53,10 @@ class SWA(tf.keras.optimizers.Optimizer):
 
     Note: If your model has batch-normalization layers you would need to run the
     final weights through the data to compute the running mean and variance
-    corresponding to the activations for each layer of the network.
-
-    From the paper: If the DNN uses batch normalization we run one
-    additional pass over the data, to compute the running mean and standard
-    deviation of the activations for each layer of the network with SWA weights
+    corresponding to the activations for each layer of the network. From 
+    the paper: If the DNN uses batch normalization we run one additional
+    pass over the data, to compute the running mean and standard deviation
+    of the activations for each layer of the network with SWA weights
     after the training is finished, since these statistics are not collected
     during training. For most deep learning libraries, such as PyTorch or
     Tensorflow, one can typically collect these statistics by making a forward
