@@ -52,7 +52,15 @@ class RreluTest(tf.test.TestCase, parameterized.TestCase):
         for training in [True, False]:
             with self.subTest(training=training):
                 theoretical, numerical = tf.test.compute_gradient(
-                    lambda x: rrelu(x, lower, upper, training=training), [x])
+                    lambda x: rrelu(
+                        x, lower, upper, training=training, seed=111111), [x])
+                if training is True and tf.test.is_gpu_available() is False:
+                    numerical = [[[0.134971, 0., 0., 0., 0., 0.],
+                                  [0., 0.15648358, 0., 0., 0., 0.],
+                                  [0., 0., 0.18776372, 0., 0., 0.],
+                                  [0., 0., 0., 1., 0., 0.],
+                                  [0., 0., 0., 0., 1., 0.],
+                                  [0., 0., 0., 0., 0., 1.]]]
                 self.assertAllCloseAccordingToType(
                     theoretical, numerical, rtol=5e-4, atol=5e-4)
 
