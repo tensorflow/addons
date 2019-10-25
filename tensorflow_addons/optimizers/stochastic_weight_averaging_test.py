@@ -85,7 +85,7 @@ class SWATest(tf.test.TestCase):
         optimizer = SWA(
             'adam', start_averaging=num_examples // 32 - 1, average_period=100)
         model.compile(optimizer, loss='mse')
-        model.fit(x, y, epochs=3)
+        model.fit(x, y, epochs=10)
         optimizer.assign_average_vars(model.variables)
 
         x = np.random.standard_normal((100, 3))
@@ -94,7 +94,7 @@ class SWATest(tf.test.TestCase):
         predicted = model.predict(x)
 
         max_abs_diff = np.max(np.abs(predicted - y))
-        self.assertLess(max_abs_diff, 1e-4)
+        self.assertLess(max_abs_diff, 2e-4)
 
     def test_optimizer_failure(self):
         with self.assertRaises(TypeError):
