@@ -127,6 +127,26 @@ class LookaheadTest(tf.test.TestCase):
         max_abs_diff = np.max(np.abs(predicted - y))
         self.assertLess(max_abs_diff, 1e-4)
 
+    def test_model_dynamic_lr(self):
+        grad = tf.Variable([[0.1]])
+        model = tf.keras.Sequential([
+            tf.keras.layers.Dense(
+                1,
+                kernel_initializer=tf.keras.initializers.Constant([[1.0]]),
+                use_bias=False)
+        ])
+        model.build(input_shape=[1, 1])
+
+        opt = Lookahead('adam', sync_period=10, slow_step_size=0.4)
+        update = opt.apply_gradients(list(zip([grad], model.variables)))
+
+        self.evaluate(tf.compat.v1.global_variables_initializer())
+        self.evaluate(update)
+        self.assertAllClose(opt.lr.read_value(), 1e-3)
+
+        opt.lr = 1e-4
+        self.assertAllClose(opt.lr.read_value(), 1e-4)
+
     def test_get_config(self):
         self.skipTest('Wait #33614 to be fixed')
         opt = Lookahead('adam', sync_period=10, slow_step_size=0.4)
