@@ -163,3 +163,19 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
 
     def _resource_apply_sparse(self, grad, var, indices):
         return self._optimizer._resource_apply_sparse(grad, var, indices)  # pylint: disable=protected-access
+
+    @property
+    def lr(self):
+        return self._optimizer._get_hyper('learning_rate')
+
+    @lr.setter
+    def lr(self, lr):
+        self._optimizer._set_hyper('learning_rate', lr)
+
+    @property
+    def learning_rate(self):
+        return self._optimizer._get_hyper('learning_rate')
+
+    @learning_rate.setter
+    def learning_rate(self, learning_rate):
+        self._optimizer._set_hyper('learning_rate', learning_rate)
