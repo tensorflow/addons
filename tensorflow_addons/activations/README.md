@@ -9,6 +9,7 @@
 | softshrink| @WindQAQ                  | windqaq@gmail.com                        |
 | sparsemax | @AndreasMadsen            | amwwebdk+github@gmail.com                |
 | tanhshrink| @fsx950223                | fsx950223@gmail.com                      |
+| rrelu     | @fsx950223                | fsx950223@gmail.com                      |
 
 ## Contents
 | Submodule | Activation | Reference                        |
@@ -19,6 +20,7 @@
 | softshrink| softshrink |                                  |
 | sparsemax | sparsemax  | https://arxiv.org/abs/1602.02068 |
 | tanhshrink| tanhshrink |                                  |
+| rrelu     | rrelu      | https://arxiv.org/abs/1505.00853 |
 
 
 ## Contribution Guidelines
