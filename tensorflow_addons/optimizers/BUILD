@@ -12,8 +12,8 @@ py_library(
         "lookahead.py",
         "moving_average.py",
         "rectified_adam.py",
-        "weight_decay_optimizers.py",
         "stochastic_weight_averaging.py",
+        "weight_decay_optimizers.py",
     ],
     srcs_version = "PY2AND3",
     deps = [
