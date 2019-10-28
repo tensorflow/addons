@@ -12,3 +12,5 @@ toc:
   path: /addons/tutorials/layers_weightnormalization
 - title: LazyAdam optimizer
   path: /addons/tutorials/optimizers_lazyadam
+- title: ConditionalGradient Optimizer
+  path: /addons/tutorials/optimizers_conditionalgradient
