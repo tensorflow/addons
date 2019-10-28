@@ -215,7 +215,7 @@ class SWA(tf.keras.optimizers.Optimizer):
             self._serialize_hyperparameter('start_averaging')
         }
         base_config = super(SWA, self).get_config()
-        return { **base_config, **config }
+        return dict(list(base_config.items()) + list(config.items()))
 
     @property
     def lr(self):
