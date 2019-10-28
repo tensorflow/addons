@@ -93,7 +93,7 @@ class SWATest(tf.test.TestCase):
         predicted = model.predict(x)
 
         max_abs_diff = np.max(np.abs(predicted - y))
-        self.assertLess(max_abs_diff, 2e-4)
+        self.assertLess(max_abs_diff, 1e-3)
 
     def test_optimizer_failure(self):
         with self.assertRaises(TypeError):
