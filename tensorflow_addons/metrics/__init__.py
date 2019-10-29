@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A module containing metrics that conform to Keras API."""
+"""Additional metrics that conform to Keras API."""
 
 from __future__ import absolute_import
 from __future__ import division

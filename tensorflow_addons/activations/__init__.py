@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A module containing activation routines."""
+"""Addititonal activation functions."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,5 +23,6 @@ from tensorflow_addons.activations.hardshrink import hardshrink
 from tensorflow_addons.activations.lisht import lisht
 from tensorflow_addons.activations.mish import mish
 from tensorflow_addons.activations.softshrink import softshrink
+from tensorflow_addons.activations.rrelu import rrelu
 from tensorflow_addons.activations.sparsemax import sparsemax
 from tensorflow_addons.activations.tanhshrink import tanhshrink

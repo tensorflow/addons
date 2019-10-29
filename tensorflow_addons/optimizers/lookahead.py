@@ -162,6 +162,22 @@ class Lookahead(tf.keras.optimizers.Optimizer):
         base_config = super(Lookahead, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
+    @property
+    def learning_rate(self):
+        return self._optimizer._get_hyper('learning_rate')
+
+    @learning_rate.setter
+    def learning_rate(self, learning_rate):
+        self._optimizer._set_hyper('learning_rate', learning_rate)
+
+    @property
+    def lr(self):
+        return self.learning_rate
+
+    @lr.setter
+    def lr(self, lr):
+        self.learning_rate = lr
+
     @classmethod
     def from_config(cls, config, custom_objects=None):
         optimizer = tf.keras.optimizers.deserialize(
