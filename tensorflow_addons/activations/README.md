@@ -6,6 +6,7 @@
 | gelu      | @AakashKumarNain @WindQAQ | aakashnain@outlook.com windqaq@gmail.com |
 | hardshrink| @WindQAQ                  | windqaq@gmail.com                        |
 | lisht     | @WindQAQ                  | windqaq@gmail.com                        |
+| mish      | @digantamisra98 @WindQAQ  | mishradiganta91@gmail.com, windqaq@gmail.com |
 | softshrink| @WindQAQ                  | windqaq@gmail.com                        |
 | sparsemax | @AndreasMadsen            | amwwebdk+github@gmail.com                |
 | tanhshrink| @fsx950223                | fsx950223@gmail.com                      |
@@ -17,11 +18,11 @@
 | gelu      | gelu       | https://arxiv.org/abs/1606.08415 |
 | hardshrink| hardshrink |                                  |
 | lisht     | lisht      | https://arxiv.org/abs/1901.05894 | 
+| mish      | mish       | https://arxiv.org/abs/1908.08681 |
 | softshrink| softshrink |                                  |
 | sparsemax | sparsemax  | https://arxiv.org/abs/1602.02068 |
 | tanhshrink| tanhshrink |                                  |
 | rrelu     | rrelu      | https://arxiv.org/abs/1505.00853 |
-
 
 ## Contribution Guidelines
 #### Standard API
