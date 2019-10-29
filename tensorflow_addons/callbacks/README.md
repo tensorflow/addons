@@ -8,7 +8,7 @@
 ## Contents
 | Submodule | Callback  | Reference                               |
 |:----------------------- |:-------------------|:---------------|
-| tqdm_progress_bar | N/A | https://tqdm.github.io/ |
+| tqdm_progress_bar | TQDMProgressBar | https://tqdm.github.io/ |
 
 
 ## Contribution Guidelines
