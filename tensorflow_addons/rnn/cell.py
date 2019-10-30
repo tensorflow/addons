@@ -97,23 +97,23 @@ class NASCell(keras.layers.AbstractRNNCell):
         # Variables for the NAS cell. `recurrent_kernel` is all matrices
         # multiplying the hidden state and `kernel` is all matrices multiplying
         # the inputs.
-        self.recurrent_kernel = self.add_variable(
+        self.recurrent_kernel = self.add_weight(
             name="recurrent_kernel",
             shape=[self.output_size, self._NAS_BASE * self.units],
             initializer=self.recurrent_initializer)
-        self.kernel = self.add_variable(
+        self.kernel = self.add_weight(
             name="kernel",
             shape=[input_size, self._NAS_BASE * self.units],
             initializer=self.kernel_initializer)
 
         if self.use_bias:
-            self.bias = self.add_variable(
+            self.bias = self.add_weight(
                 name="bias",
                 shape=[self._NAS_BASE * self.units],
                 initializer=self.bias_initializer)
         # Projection layer if specified
         if self.projection is not None:
-            self.projection_weights = self.add_variable(
+            self.projection_weights = self.add_weight(
                 name="projection_weights",
                 shape=[self.units, self.projection],
                 initializer=self.projection_initializer)
