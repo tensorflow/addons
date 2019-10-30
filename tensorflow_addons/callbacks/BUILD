@@ -6,6 +6,7 @@ py_library(
     name = "callbacks",
     srcs = [
         "__init__.py",
+        "tqdm_progress_bar.py",
     ],
     srcs_version = "PY2AND3",
     deps = [
