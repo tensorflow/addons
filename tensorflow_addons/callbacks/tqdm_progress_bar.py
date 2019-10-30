@@ -22,11 +22,6 @@ from collections import defaultdict
 from tensorflow.keras.callbacks import Callback
 from tensorflow_addons.utils import keras_utils
 
-try:
-    from tqdm.auto import tqdm
-except ImportError:
-    raise ImportError("Please install tqdm via pip install tqdm")
-
 
 @keras_utils.register_keras_custom_object
 class TQDMProgressBar(Callback):
@@ -62,6 +57,19 @@ class TQDMProgressBar(Callback):
                  show_epoch_progress=True,
                  show_overall_progress=True):
 
+        try:
+            # import tqdm here because tqdm is not a required package
+            # for addons
+            import tqdm
+            version_message = 'Please update your TQDM version to >= 4.36.1, '
+            'you have version {}. To update, run !pip install -U tqdm'
+            assert tqdm.__version__ >= '4.36.1', version_message.format(
+                tqdm.__version__)
+            from tqdm.auto import tqdm
+            self.tqdm = tqdm
+        except ImportError:
+            raise ImportError("Please install tqdm via pip install tqdm")
+
         self.metrics_separator = metrics_separator
         self.overall_bar_format = overall_bar_format
         self.epoch_bar_format = epoch_bar_format
@@ -85,7 +93,7 @@ class TQDMProgressBar(Callback):
         self.metrics = self.params['metrics']
 
         if self.show_overall_progress:
-            self.overall_progress_tqdm = tqdm(
+            self.overall_progress_tqdm = self.tqdm(
                 desc='Training',
                 total=self.num_epochs,
                 bar_format=self.overall_bar_format,
@@ -111,7 +119,7 @@ class TQDMProgressBar(Callback):
 
         if self.show_epoch_progress:
             print(current_epoch_description)
-            self.epoch_progress_tqdm = tqdm(
+            self.epoch_progress_tqdm = self.tqdm(
                 total=self.total_steps,
                 bar_format=self.epoch_bar_format,
                 leave=self.leave_epoch_progress,
