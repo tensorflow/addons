@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""TQDM Progress Bar. """
+"""TQDM Progress Bar."""
 
 from __future__ import absolute_import, division, print_function
 
@@ -21,7 +21,11 @@ from collections import defaultdict
 
 from tensorflow.keras.callbacks import Callback
 from tensorflow_addons.utils import keras_utils
-from tqdm.auto import tqdm
+
+try:
+    from tqdm.auto import tqdm
+except ImportError:
+    raise ImportError("Please install tqdm via pip install tqdm")
 
 
 @keras_utils.register_keras_custom_object
