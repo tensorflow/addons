@@ -79,8 +79,8 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
                         "large that the linearized addresses used by "
                         "tf.gather may exceed the int32 limit.")
             ]):
-                # pylint: enable=bad-continuation
                 pass
+            # pylint: enable=bad-continuation
 
         # query_points shape checks
         query_static_shape = query_points.shape
@@ -92,6 +92,7 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
             if query_hw is not None and query_hw != 2:
                 raise ValueError("Query points last dimension must be 2.")
         else:
+            # pylint: disable=bad-continuation
             with tf.control_dependencies([
                     tf.debugging.assert_equal(
                         query_shape[2],
@@ -99,6 +100,7 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
                         message="Query points last dimension must be 2.")
             ]):
                 pass
+            # pylint: enable=bad-continuation
 
         batch_size, height, width, channels = (grid_shape[0], grid_shape[1],
                                                grid_shape[2], grid_shape[3])
