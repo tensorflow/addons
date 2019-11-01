@@ -202,20 +202,29 @@ class CorrelationCost(tf.keras.layers.Layer):
 
     def compute_output_shape(self, input_shape):
         assert isinstance(input_shape, list)
+
+        #  Input validation
+        if len(input_shape) != 2:
+            raise ValueError("Input must be a list of two shapes")
+
+        for idx in range(4):
+            if input_shape[0][idx] != input_shape[1][idx]:
+                raise ValueError("Input shapes must match")
+
         n = input_shape[0][0]
-        r = self.max_displacement / self.stride_2
-        bd = self.max_displacement + (self.kernel_size - 1) / 2
+        r = self.max_displacement // self.stride_2
+        bd = self.max_displacement + (self.kernel_size - 1) // 2
         output_c = (2 * r + 1)**2
 
         if self.data_format == "channels_first":
-            output_h = input_shape[0][1] + 2 * (self.pad - bd) / self.stride_1
-            output_w = input_shape[0][2] + 2 * (self.pad - bd) / self.stride_1
-            return [int(n), int(output_c), int(output_h), int(output_w)]
+            output_h = input_shape[0][2] + 2 * (self.pad - bd) // self.stride_1
+            output_w = input_shape[0][3] + 2 * (self.pad - bd) // self.stride_1
+            return [(n, output_c, output_h, output_w)]
 
         elif self.data_format == "channels_last":
-            output_h = input_shape[0][0] + 2 * (self.pad - bd) / self.stride_1
-            output_w = input_shape[0][1] + 2 * (self.pad - bd) / self.stride_1
-            return [int(n), int(output_h), int(output_w), int(output_c)]
+            output_h = input_shape[0][1] + 2 * (self.pad - bd) // self.stride_1
+            output_w = input_shape[0][2] + 2 * (self.pad - bd) // self.stride_1
+            return [(n, output_h, output_w, output_c)]
         else:
             raise ValueError("`data_format` must be either `channels_last` or"
                              "`channels_first`")
