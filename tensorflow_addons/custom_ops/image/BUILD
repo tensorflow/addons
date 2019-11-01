@@ -9,16 +9,11 @@ custom_op_library(
     srcs = [
         "cc/kernels/adjust_hsv_in_yiq_op.cc",
         "cc/kernels/adjust_hsv_in_yiq_op.h",
-        "cc/ops/distort_image_ops.cc",
-        "cc/kernels/resampler_ops.cc",
-        "cc/kernels/resampler_ops.h",
-        "cc/ops/resampler_ops.cc",        
+        "cc/ops/distort_image_ops.cc",       
     ],
     cuda_srcs = [
         "cc/kernels/adjust_hsv_in_yiq_op.h",
         "cc/kernels/adjust_hsv_in_yiq_op_gpu.cu.cc",
-        "cc/kernels/resampler_ops.h",
-        "cc/kernels/resampler_ops_gpu.cu.cc",
     ],
 )
 
