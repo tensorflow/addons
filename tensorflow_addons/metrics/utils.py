@@ -68,7 +68,7 @@ class MeanMetricWrapper(tf.keras.metrics.Mean):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-def test_keras_model(metric, num_output):
+def _get_model(metric, num_output):
     # Test API comptibility with tf.keras Model
     model = tf.keras.Sequential()
     model.add(tf.keras.layers.Dense(64, activation='relu'))

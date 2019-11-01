@@ -114,7 +114,7 @@ class FBetaScoreTest(tf.test.TestCase, parameterized.TestCase):
 
     def test_keras_model(self):
         fbeta = FBetaScore(5, 'micro', 1.0)
-        utils.test_keras_model(fbeta, 5)
+        utils._get_model(fbeta, 5)
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -137,7 +137,7 @@ class F1ScoreTest(tf.test.TestCase):
 
     def test_keras_model(self):
         f1 = F1Score(5)
-        utils.test_keras_model(f1, 5)
+        utils._get_model(f1, 5)
 
     def test_config(self):
         f1 = F1Score(3)
