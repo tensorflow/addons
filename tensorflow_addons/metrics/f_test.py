@@ -24,9 +24,6 @@ import tensorflow as tf
 from tensorflow_addons.metrics import FBetaScore, F1Score, utils
 from tensorflow_addons.utils import test_utils
 
-import numpy as np
-from sklearn.metrics import fbeta_score
-
 
 @test_utils.run_all_in_graph_and_eager_modes
 class FBetaScoreTest(tf.test.TestCase, parameterized.TestCase):
