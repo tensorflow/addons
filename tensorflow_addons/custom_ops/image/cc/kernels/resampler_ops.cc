@@ -1,4 +1,4 @@
-// Copyright 2017 The Sonnet Authors. All Rights Reserved.
+// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 
 #define EIGEN_USE_THREADS
 
-#include "tensorflow/contrib/resampler/kernels/resampler_ops.h"
-
 #include <algorithm>
 #include <cmath>
 #include <memory>
@@ -27,6 +25,7 @@
 #include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/util/work_sharder.h"
+#include "tensorflow_addons/custom_ops/image/cc/kernels/resampler_ops.h"
 
 namespace tensorflow {
 

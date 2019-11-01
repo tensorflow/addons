@@ -1,4 +1,4 @@
-# Copyright 2017 The Sonnet Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 from tensorflow_addons.custom_ops.image.cc.ops import gen_resampler_ops
 
 _distort_image_ops = tf.load_op_library(
-    get_path_to_datafile("custom_ops/image/_distort_image_ops.so"))
+    get_path_to_datafile("custom_ops/image/_resampler_ops.so"))
 
 
 @tf.function
