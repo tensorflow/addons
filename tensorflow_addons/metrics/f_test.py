@@ -18,6 +18,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from absl.testing import parameterized
+
 import tensorflow as tf
 from tensorflow_addons.metrics import FBetaScore, F1Score, utils
 from tensorflow_addons.utils import test_utils
@@ -27,7 +29,7 @@ from sklearn.metrics import fbeta_score
 
 
 @test_utils.run_all_in_graph_and_eager_modes
-class FBetaScoreTest(tf.test.TestCase):
+class FBetaScoreTest(tf.test.TestCase, parameterized.TestCase):
     def test_config(self):
         fbeta_obj = FBetaScore(
             num_classes=3, beta=0.5, threshold=0.3, average=None)
@@ -54,49 +56,64 @@ class FBetaScoreTest(tf.test.TestCase):
         self.evaluate(fbeta.update_state(act, pred))
         return self.evaluate(fbeta.result())
 
-    def _test_sk(self, avg, beta, act, pred, threshold):
-        act = np.array(act)
-        pred = np.array(pred)
-        if threshold is None:
-            threshold = np.max(pred, axis=-1, keepdims=True)
-            pred = np.logical_and(pred >= threshold,
-                                  pred - 0 > 1e-12).astype('int')
-        else:
-            pred = (pred >= threshold).astype('int')
-
-        res = fbeta_score(act, pred, beta, average=avg)
-        return res
-
-    def _test_fbeta_score(self, actuals, preds, threshold=None):
-        for avg in [None, 'micro', 'macro', 'weighted']:
-            for beta_val in [0.5, 1.0, 2.0]:
-                tf_score = self._test_tf(avg, beta_val, actuals, preds,
-                                         threshold)
-                sk_score = self._test_sk(avg, beta_val, actuals, preds,
-                                         threshold)
-                self.assertAllClose(tf_score, sk_score, atol=1e-5)
+    def _test_fbeta_score(self, actuals, preds, avg, beta_val, result,
+                          threshold):
+        tf_score = self._test_tf(avg, beta_val, actuals, preds, threshold)
+        self.assertAllClose(tf_score, result, atol=1e-7)
 
     def test_fbeta_perfect_score(self):
         preds = [[0.7, 0.7, 0.7], [1, 0, 0], [0.9, 0.8, 0]]
         actuals = [[1, 1, 1], [1, 0, 0], [1, 1, 0]]
-        self._test_fbeta_score(actuals, preds, 0.66)
+
+        for avg_val in ['micro', 'macro', 'weighted']:
+            for beta in [0.5, 1.0, 2.0]:
+                self._test_fbeta_score(actuals, preds, avg_val, beta, 1.0,
+                                       0.66)
 
     def test_fbeta_worst_score(self):
         preds = [[0.7, 0.7, 0.7], [1, 0, 0], [0.9, 0.8, 0]]
         actuals = [[0, 0, 0], [0, 1, 0], [0, 0, 1]]
-        self._test_fbeta_score(actuals, preds, 0.66)
 
-    def test_fbeta_random_score(self):
+        for avg_val in ['micro', 'macro', 'weighted']:
+            for beta in [0.5, 1.0, 2.0]:
+                self._test_fbeta_score(actuals, preds, avg_val, beta, 0.0,
+                                       0.66)
+
+    @parameterized.parameters([[None, 0.5, [0.71428573, 0.5, 0.833334]],
+                               [None, 1.0, [0.8, 0.5, 0.6666667]],
+                               [None, 2.0, [0.9090904, 0.5, 0.555556]],
+                               ['micro', 0.5, 0.6666667],
+                               ['micro', 1.0, 0.6666667],
+                               ['micro', 2.0, 0.6666667],
+                               ['macro', 0.5, 0.6825397],
+                               ['macro', 1.0, 0.6555555],
+                               ['macro', 2.0, 0.6548822],
+                               ['weighted', 0.5, 0.6825397],
+                               ['weighted', 1.0, 0.6555555],
+                               ['weighted', 2.0, 0.6548822]])
+    def test_fbeta_random_score(self, avg_val, beta, result):
         preds = [[0.7, 0.7, 0.7], [1, 0, 0], [0.9, 0.8, 0]]
         actuals = [[0, 0, 1], [1, 1, 0], [1, 1, 1]]
-        self._test_fbeta_score(actuals, preds, 0.66)
+        self._test_fbeta_score(actuals, preds, avg_val, beta, result, 0.66)
 
-    def test_fbeta_random_score_none(self):
+    @parameterized.parameters([[None, 0.5, [0.9090904, 0.555556, 1.0]],
+                               [None, 1.0, [0.8, 0.6666667, 1.0]],
+                               [None, 2.0, [0.71428573, 0.833334, 1.0]],
+                               ['micro', 0.5, 0.833334],
+                               ['micro', 1.0, 0.833334],
+                               ['micro', 2.0, 0.833334],
+                               ['macro', 0.5, 0.821549],
+                               ['macro', 1.0, 0.822222],
+                               ['macro', 2.0, 0.849206],
+                               ['weighted', 0.5, 0.880471],
+                               ['weighted', 1.0, 0.844445],
+                               ['weighted', 2.0, 0.829365]])
+    def test_fbeta_random_score_none(self, avg_val, beta, result):
         preds = [[0.9, 0.1, 0], [0.2, 0.6, 0.2], [0, 0, 1], [0.4, 0.3, 0.3],
                  [0, 0.9, 0.1], [0, 0, 1]]
         actuals = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [1, 0, 0],
                    [0, 0, 1]]
-        self._test_fbeta_score(actuals, preds, None)
+        self._test_fbeta_score(actuals, preds, avg_val, beta, result, None)
 
     def test_keras_model(self):
         fbeta = FBetaScore(5, 'micro', 1.0)
