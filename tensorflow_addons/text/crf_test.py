@@ -347,6 +347,16 @@ class CrfTest(tf.test.TestCase):
         self.assertEqual(len(tf_tags.shape), 2)
         self.assertEqual(len(tf_scores.shape), 1)
 
+    def testDifferentDtype(self):
+        inputs = np.ones([16, 20, 5], dtype=np.float32)
+        tags = tf.convert_to_tensor(np.ones([16, 20], dtype=np.int64))
+        seq_lens = np.ones([
+            16,
+        ], dtype=np.int64) * 20
+
+        loss, _ = text.crf_log_likelihood(
+            inputs=inputs, tag_indices=tags, sequence_lengths=seq_lens)
+
 
 if __name__ == "__main__":
     tf.test.main()
