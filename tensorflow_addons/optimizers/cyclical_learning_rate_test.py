@@ -28,14 +28,83 @@ import numpy as np
 import cyclical_learning_rate
 
 
+def _maybe_serialized(lr_decay, serialize_and_deserialize):
+  if serialize_and_deserialize:
+    serialized = tf.keras.optimizers.learning_rate_schedule.serialize(lr_decay)
+    return tf.keras.optimizers.learning_rate_schedule.deserialize(serialized)
+  else:
+    return lr_decay
+
+
 @parameterized.named_parameters(
     ("NotSerialized", False),
     ("Serialized", True))
-class CyclicalLearningRateTest(tf.test.TestCase):
-    def testCycleMode(self, serialize):
-        with self.cached_session():
-            self.assertEqual(cyclical_learning_rate.CyclicalLearningRate(name="toto").name, "toto")
+class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
+    def testTriangularCyclicalLearningRate(self, serialize):
+        initial_learning_rate = 0.1
+        maximal_learning_rate = 1
+        step_size = 4000
+        step = tf.resource_variable_ops.ResourceVariable(0)
+        triangular_cyclical_lr = cyclical_learning_rate.TriangularCyclicalLearningRate(
+            initial_learning_rate=initial_learning_rate,
+            maximal_learning_rate=maximal_learning_rate,
+            step_size=step_size,
+        )
+        triangular_cyclical_lr = _maybe_serialized(triangular_cyclical_lr, serialize)
 
-    def testNonCycleMode(self, serialize):
-        with self.cached_session():
-            self.assertEqual()
+        self.evaluate(tf.compat.v1.global_variables_initializer())
+        expected = np.concatenate([
+            np.linspace(initial_learning_rate, maximal_learning_rate, num=2001)[1:],
+            np.linspace(maximal_learning_rate, initial_learning_rate, num=2001)[1:]
+        ])
+
+        for expected_value in expected:
+            self.assertAllClose(self.evaluate(triangular_cyclical_lr(step)), expected_value, 1e-6)
+            self.evaluate(step.assign_add(1))
+
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
+    def testTriangular2CyclicalLearningRate(self, serialize):
+        initial_learning_rate = 0.1
+        maximal_learning_rate = 1
+        step_size = 4000
+        step = tf.resource_variable_ops.ResourceVariable(0)
+        triangular_cyclical_lr = cyclical_learning_rate.TriangularCyclicalLearningRate(
+            initial_learning_rate=initial_learning_rate,
+            maximal_learning_rate=maximal_learning_rate,
+            step_size=step_size,
+        )
+        triangular_cyclical_lr = _maybe_serialized(triangular_cyclical_lr, serialize)
+
+        self.evaluate(tf.compat.v1.global_variables_initializer())
+        expected = np.concatenate([
+            np.linspace(initial_learning_rate, maximal_learning_rate, num=2001)[1:],
+            np.linspace(maximal_learning_rate, initial_learning_rate, num=2001)[1:]
+        ])
+
+        for expected_value in expected:
+            self.assertAllClose(self.evaluate(triangular_cyclical_lr(step)), expected_value, 1e-6)
+            self.evaluate(step.assign_add(1))
+
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
+    def testExponentialCyclicalLearningRate(self, serialize):
+        initial_learning_rate = 0.1
+        maximal_learning_rate = 1
+        step_size = 4000
+        gamma = 0.996
+
+        step = tf.resource_variable_ops.ResourceVariable(0)
+        triangular2_cyclical_lr = cyclical_learning_rate.ExponentialCyclicalLearningRate(
+            initial_learning_rate=initial_learning_rate,
+            maximal_learning_rate=maximal_learning_rate,
+            step_size=step_size,
+            gamma=gamma,
+        )
+        triangular2_cyclical_lr = _maybe_serialized(triangular2_cyclical_lr, serialize)
+
+        self.evaluate(tf.compat.v1.global_variables_initializer())
+
+        for _ in range(8000):
+            expected = 0  # TODO
+            self.assertAllClose(self.evaluate(triangular2_cyclical_lr(step)), expected, 1e-6)
+            self.evaluate(step.assign_add(1))
