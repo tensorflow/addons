@@ -46,11 +46,11 @@ class GIoULoss(tf.keras.losses.Loss):
     model.compile('sgd', loss=tf.keras.losses.GIoULoss())
     ```
 
-    Args
+    Args:
       mode: one of ['giou', 'iou'], decided to calculate giou loss or iou loss.
 
     Returns:
-      GIoU loss double `Tensor`.
+      GIoU loss float `Tensor`.
     """
 
     def __init__(self,
@@ -73,14 +73,16 @@ class GIoULoss(tf.keras.losses.Loss):
 @tf.function
 def giou_loss(y_true, y_pred, mode='giou'):
     """
-    Args
+    Args:
         y_true: true targets tensor.
         y_pred: predictions tensor.
+        mode: one of ['giou', 'iou'], decided to calculate giou loss or iou loss.
 
     Returns:
-        GIoU loss double `Tensor`.
+        GIoU loss float `Tensor`.
     """
-
+    if mode not in ['giou', 'iou']:
+        raise ValueError("Value of mode should be 'iou' or 'giou'")
     y_pred = tf.convert_to_tensor(y_pred)
     y_true = tf.cast(y_true, y_pred.dtype)
     giou = do_giou_calculate(y_pred, y_true, mode)
@@ -91,13 +93,13 @@ def giou_loss(y_true, y_pred, mode='giou'):
 
 def do_giou_calculate(b1, b2, mode='giou'):
     """
-    Args
-        b1: bbox.
-        b2: the other bbox.
-        mode: one of ['giou', 'iou']
+    Args:
+        b1: bounding box.
+        b2: the other bounding box.
+        mode: one of ['giou', 'iou'], decided to calculate giou loss or iou loss.
 
     Returns:
-        GIoU loss double `Tensor`.
+        GIoU loss float `Tensor`.
     """
     zero = tf.convert_to_tensor(0., b1.dtype)
     b1_ymin = tf.minimum(b1[:, 0], b1[:, 2])
