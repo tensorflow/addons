@@ -130,3 +130,31 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
             self.assertAllClose(
                 self.evaluate(exponential_cyclical_lr(step)), expected, 1e-6)
             self.evaluate(step.assign_add(1))
+
+    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
+    def testCustomCyclicalLearningRate(self, serialize):
+        initial_learning_rate = 0.1
+        maximal_learning_rate = 1
+        step_size = 4000
+        scale_fn = lambda x: 1 / (5**(x * 0.0001))
+
+        step = tf.resource_variable_ops.ResourceVariable(0)
+        custom_cyclical_lr = cyclical_learning_rate.CyclicalLearningRate(
+            initial_learning_rate=initial_learning_rate,
+            maximal_learning_rate=maximal_learning_rate,
+            step_size=step_size,
+            scale_fn=scale_fn,
+        )
+        custom_cyclical_lr = _maybe_serialized(custom_cyclical_lr, serialize)
+
+        self.evaluate(tf.compat.v1.global_variables_initializer())
+
+        for i in range(1, 8001):
+            non_bounded_value = np.abs(i / 2000. -
+                                       2 * np.floor(1 + i / (2 * 2000)) + 1)
+            expected = initial_learning_rate + (
+                maximal_learning_rate - initial_learning_rate) * np.maximum(
+                    0, 1 - non_bounded_value) * scale_fn(i)
+            self.assertAllClose(
+                self.evaluate(custom_cyclical_lr(step)), expected, 1e-6)
+            self.evaluate(step.assign_add(1))
