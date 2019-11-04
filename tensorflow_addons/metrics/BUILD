@@ -8,10 +8,10 @@ py_library(
         "__init__.py",
         "cohens_kappa.py",
         "f_scores.py",
+        "matthews_correlation_coefficient.py",
         "multilabel_confusion_matrix.py",
         "r_square.py",
         "utils.py",
-        "matthews_correlation_coefficient.py"
     ],
     srcs_version = "PY2AND3",
     deps = [

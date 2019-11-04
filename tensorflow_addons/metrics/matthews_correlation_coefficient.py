@@ -60,7 +60,6 @@ class MatthewsCorrelationCoefficient(Metric):
     print('Matthews correlation coefficient is:',
     output.result().numpy())
     # Matthews correlation coefficient is : -0.33333334
-
     ```
     """
 
@@ -95,22 +94,22 @@ class MatthewsCorrelationCoefficient(Metric):
 
     # TODO: sample_weights
     def update_state(self, y_true, y_pred, sample_weight=None):
-        self.sample_weight = sample_weight
         y_true = tf.cast(y_true, tf.float32)
         y_pred = tf.cast(y_pred, tf.float32)
 
-        true_positive = tf.math.count_nonzero(y_true * y_pred, 0)        
-        # true_negative   
-        y_true_negative = tf.math.not_equal(y_true,1.0)
-        y_pred_negative = tf.math.not_equal(y_pred,1.0)
-        true_negative = tf.math.count_nonzero(tf.math.logical_and(y_true_negative,y_pred_negative), axis=0)
+        true_positive = tf.math.count_nonzero(y_true * y_pred, 0)
+        # true_negative
+        y_true_negative = tf.math.not_equal(y_true, 1.0)
+        y_pred_negative = tf.math.not_equal(y_pred, 1.0)
+        true_negative = tf.math.count_nonzero(
+            tf.math.logical_and(y_true_negative, y_pred_negative), axis=0)
         # predicted sum
         pred_sum = tf.math.count_nonzero(y_pred, 0)
         # Ground truth label sum
         true_sum = tf.math.count_nonzero(y_true, 0)
         false_positive = pred_sum - true_positive
         false_negative = true_sum - true_positive
-        
+
         # true positive state_update
         self.true_positives.assign_add(tf.cast(true_positive, self.dtype))
         # false positive state_update

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Matthews Correlation Coefficient Test"""
+"""Matthews Correlation Coefficient Test."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -51,20 +51,29 @@ class MatthewsCorrelationCoefficientTest(tf.test.TestCase):
         self.assertAllClose(value, self.evaluate(obj.result()), atol=1e-5)
 
     def test_binary_classes(self):
-        gt_label = tf.constant([[1.0], [1.0], [1.0], [0.0]],
-                            dtype=tf.flaot32)
-        preds = tf.constant([[1.0], [0.0], [1.0], [1.0]],
-                            dtype=tf.flaot32)
+        gt_label = tf.constant([[1.0], [1.0], [1.0], [0.0]], dtype=tf.float32)
+        preds = tf.constant([[1.0], [0.0], [1.0], [1.0]], dtype=tf.float32)
         # Initialize
-        mcc = self.initialize_vars(
-            n_classes=1, input_dtype=tf.flaot32)
+        mcc = self.initialize_vars(n_classes=1, input_dtype=tf.float32)
         # Update
         self.update_obj_states(mcc, gt_label, preds)
         # Check results
-        self.check_results(
-            mcc,
-            [-0.33333334])
-    
+        self.check_results(mcc, [-0.33333334])
+
+    def test_multiple_classes(self):
+        gt_label = tf.constant([[1.0, 0.0, 0.0], [1.0, 0.0, 0.0],
+                                [1.0, 0.0, 1.0], [0.0, 1.0, 1.0]],
+                               dtype=tf.float32)
+        preds = tf.constant([[1.0, 0.0, 0.0], [0.0, 0.0, 0.0], [1.0, 0.0, 1.0],
+                             [1.0, 1.0, 0.0]],
+                            dtype=tf.float32)
+        # Initialize
+        mcc = self.initialize_vars(n_classes=3, input_dtype=tf.float32)
+        # Update
+        self.update_obj_states(mcc, gt_label, preds)
+        # Check results
+        self.check_results(mcc, [-0.33333334, 1.0, 0.57735026])
+
     # Keras model API check
     def test_keras_model(self):
         model = tf.keras.Sequential()

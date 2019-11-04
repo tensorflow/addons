@@ -7,6 +7,7 @@
 |  f_scores| Saishruthi Swaminathan | saishruthi.tn@gmail.com|
 |  r_square| Saishruthi Swaminathan| saishruthi.tn@gmail.com|
 |  multilabel_confusion_matrix | Saishruthi Swaminathan | saishruthi.tn@gmail.com|
+|  matthews_correlation_coefficient | I-Hong Jhuo | ihibmjhuo@gmail.com|
 
 ## Contents
 | Submodule | Metric  | Reference                               |
@@ -14,7 +15,9 @@
 | cohens_kappa| CohenKappa|[Cohen's Kappa](https://en.wikipedia.org/wiki/Cohen%27s_kappa)|
 | f1_scores| F1 micro, macro and weighted| [F1 Score](https://en.wikipedia.org/wiki/F1_score)|
 | r_square| RSquare|[R-Sqaure](https://en.wikipedia.org/wiki/Coefficient_of_determination)|
-| multilabel_confusion_matrix | Multilabel Confusion Matrix | [mcm](https://en.wikipedia.org/wiki/Confusion_matrix)|
+| multilabel_confusion_matrix | Multilabel Confusion Matrix | [mcm](https://en.wikipedia.org/wiki/
+Confusion_matrix)|
+| matthews_correlation_coefficient | Matthews Correlation Coefficient | [MCC](https://en.wikipedia.org/wiki/Matthews_correlation_coefficient)|
 
 ## Contribution Guidelines
 #### Standard API
