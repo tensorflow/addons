@@ -13,6 +13,7 @@ py_library(
         "poincare.py",
         "sparsemax.py",
         "wrappers.py",
+        "tcn.py",
     ],
     data = [
         "//tensorflow_addons/custom_ops/layers:_correlation_cost_ops.so",
@@ -96,6 +97,19 @@ py_test(
         "optical_flow_test.py",
     ],
     main = "optical_flow_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "tcn_test",
+    size = "small",
+    srcs = [
+        "tcn_test.py",
+    ],
+    main = "tcn_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":layers",

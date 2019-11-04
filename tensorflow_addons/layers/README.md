@@ -10,6 +10,7 @@
 | poincare |  |  |
 | sparsemax | @AndreasMadsen | amwwebdk+github@gmail.com |
 | wrappers | @seanpmorgan | seanmorgan@outlook.com |
+| tcn | @shun-lin | shunlin@google.com |
 
 ## Components
 | Submodule  | Layer |  Reference  |
@@ -22,6 +23,7 @@
 | poincare | PoincareNormalize | https://arxiv.org/abs/1705.08039    |
 | sparsemax| Sparsemax | https://arxiv.org/abs/1602.02068 |
 | wrappers | WeightNormalization | https://arxiv.org/abs/1602.07868 |
+| tcn | TCN (Temporal Convolutional Network) | https://arxiv.org/pdf/1803.01271 |
 
 ## Contribution Guidelines
 #### Standard API
