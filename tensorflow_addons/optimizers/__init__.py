@@ -22,6 +22,7 @@ from tensorflow_addons.optimizers.conditional_gradient import ConditionalGradien
 from tensorflow_addons.optimizers.lazy_adam import LazyAdam
 from tensorflow_addons.optimizers.lookahead import Lookahead
 from tensorflow_addons.optimizers.moving_average import MovingAverage
+from tensorflow_addons.optimizers.proximal_adagrad import ProximalAdagrad
 from tensorflow_addons.optimizers.rectified_adam import RectifiedAdam
 from tensorflow_addons.optimizers.weight_decay_optimizers import AdamW
 from tensorflow_addons.optimizers.weight_decay_optimizers import SGDW

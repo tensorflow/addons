@@ -11,6 +11,7 @@ py_library(
         "lazy_adam.py",
         "lookahead.py",
         "moving_average.py",
+        "proximal_adagrad.py",
         "rectified_adam.py",
         "weight_decay_optimizers.py",
     ],
@@ -79,6 +80,19 @@ py_test(
         "moving_average_test.py",
     ],
     main = "moving_average_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":optimizers",
+    ],
+)
+
+py_test(
+    name = "proximal_adagrad_test",
+    size = "small",
+    srcs = [
+        "proximal_adagrad_test.py",
+    ],
+    main = "proximal_adagrad_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":optimizers",
