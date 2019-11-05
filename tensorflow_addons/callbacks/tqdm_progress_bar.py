@@ -20,10 +20,9 @@ import time
 from collections import defaultdict
 
 from tensorflow.keras.callbacks import Callback
-from tensorflow_addons.utils import keras_utils
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class TQDMProgressBar(Callback):
     """TQDM Progress Bar for Tensorflow Keras.
 
