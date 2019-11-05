@@ -48,23 +48,25 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
             scale_mode="cycle",
             name="MyCyclicScheduler")
 
-        model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=lr_schedule),
+        model.compile(optimizer=tf.keras.optimizers.SGD(
+                                                    learning_rate=lr_schedule),
                       loss='sparse_categorical_crossentropy',
                       metrics=['accuracy'])
 
         model.fit(data, labels, epochs=5)
         ```
 
-        You can pass this schedule directly into a `tf.keras.optimizers.Optimizer`
-        as the learning rate. The learning rate schedule is also serializable and
-        deserializable using `tf.keras.optimizers.schedules.serialize` and
+        You can pass this schedule directly into a
+        `tf.keras.optimizers.Optimizer` as the learning rate. The learning rate
+        schedule is also serializable and deserializable using
+        `tf.keras.optimizers.schedules.serialize` and
         `tf.keras.optimizers.schedules.deserialize`.
 
         Args:
-            initial_learning_rate: A scalar `float32` or `float64` `Tensor` or a
-                Python number.  The initial learning rate.
-            maximal_learning_rate: A scalar `float32` or `float64` `Tensor` or a
-                Python number.  The maximum learning rate.
+            initial_learning_rate: A scalar `float32` or `float64` `Tensor` or
+                a Python number.  The initial learning rate.
+            maximal_learning_rate: A scalar `float32` or `float64` `Tensor` or
+                a Python number.  The maximum learning rate.
             step_size: A scalar `float32` or `float64` `Tensor` or a
                 Python number. Step size.
             scale_fn: A function. Scheduling function applied in cycle
@@ -124,30 +126,34 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
 
 
         ```python
-        lr_schedule = tf.keras.optimizers.schedules.TriangularCyclicalLearningRate(
+        from tf.keras.optimizers import schedules
+
+        lr_schedule = schedules.TriangularCyclicalLearningRate(
             initial_learning_rate=1e-4,
             maximal_learning_rate=1e-2,
             step_size=2000,
             scale_mode="cycle",
             name="MyCyclicScheduler")
 
-        model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=lr_schedule),
+        model.compile(optimizer=tf.keras.optimizers.SGD(
+                                                    learning_rate=lr_schedule),
                       loss='sparse_categorical_crossentropy',
                       metrics=['accuracy'])
 
         model.fit(data, labels, epochs=5)
         ```
 
-        You can pass this schedule directly into a `tf.keras.optimizers.Optimizer`
-        as the learning rate. The learning rate schedule is also serializable and
-        deserializable using `tf.keras.optimizers.schedules.serialize` and
+        You can pass this schedule directly into a
+        `tf.keras.optimizers.Optimizer` as the learning rate. The learning rate
+        schedule is also serializable and deserializable using
+        `tf.keras.optimizers.schedules.serialize` and
         `tf.keras.optimizers.schedules.deserialize`.
 
         Args:
-            initial_learning_rate: A scalar `float32` or `float64` `Tensor` or a
-                Python number.  The initial learning rate.
-            maximal_learning_rate: A scalar `float32` or `float64` `Tensor` or a
-                Python number.  The maximum learning rate.
+            initial_learning_rate: A scalar `float32` or `float64` `Tensor` or
+                a Python number.  The initial learning rate.
+            maximal_learning_rate: A scalar `float32` or `float64` `Tensor` or
+                a Python number.  The maximum learning rate.
             step_size: A scalar `float32` or `float64` `Tensor` or a
                 Python number. Step size.
             scale_fn: A function. Scheduling function applied in cycle
@@ -184,30 +190,34 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
 
 
         ```python
-        lr_schedule = tf.keras.optimizers.schedules.Triangular2CyclicalLearningRate(
+        from tf.keras.optimizers import schedules
+
+        lr_schedule = schedules.Triangular2CyclicalLearningRate(
             initial_learning_rate=1e-4,
             maximal_learning_rate=1e-2,
             step_size=2000,
             scale_mode="cycle",
             name="MyCyclicScheduler")
 
-        model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=lr_schedule),
+        model.compile(optimizer=tf.keras.optimizers.SGD(
+                                                    learning_rate=lr_schedule),
                       loss='sparse_categorical_crossentropy',
                       metrics=['accuracy'])
 
         model.fit(data, labels, epochs=5)
         ```
 
-        You can pass this schedule directly into a `tf.keras.optimizers.Optimizer`
-        as the learning rate. The learning rate schedule is also serializable and
-        deserializable using `tf.keras.optimizers.schedules.serialize` and
+        You can pass this schedule directly into a
+        `tf.keras.optimizers.Optimizer` as the learning rate. The learning rate
+        schedule is also serializable and deserializable using
+        `tf.keras.optimizers.schedules.serialize` and
         `tf.keras.optimizers.schedules.deserialize`.
 
         Args:
-            initial_learning_rate: A scalar `float32` or `float64` `Tensor` or a
-                Python number.  The initial learning rate.
-            maximal_learning_rate: A scalar `float32` or `float64` `Tensor` or a
-                Python number.  The maximum learning rate.
+            initial_learning_rate: A scalar `float32` or `float64` `Tensor` or
+                a Python number.  The initial learning rate.
+            maximal_learning_rate: A scalar `float32` or `float64` `Tensor` or
+                a Python number.  The maximum learning rate.
             step_size: A scalar `float32` or `float64` `Tensor` or a
                 Python number. Step size.
             scale_fn: A function. Scheduling function applied in cycle
@@ -245,7 +255,9 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
 
 
         ```python
-        lr_schedule = tf.keras.optimizers.schedules.ExponentialCyclicalLearningRate(
+        from tf.keras.optimizers import schedules
+
+        lr_schedule = ExponentialCyclicalLearningRate(
             initial_learning_rate=1e-4,
             maximal_learning_rate=1e-2,
             step_size=2000,
@@ -253,23 +265,25 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
             gamma=0.96,
             name="MyCyclicScheduler")
 
-        model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=lr_schedule),
+        model.compile(optimizer=tf.keras.optimizers.SGD(
+                                                    learning_rate=lr_schedule),
                       loss='sparse_categorical_crossentropy',
                       metrics=['accuracy'])
 
         model.fit(data, labels, epochs=5)
         ```
 
-        You can pass this schedule directly into a `tf.keras.optimizers.Optimizer`
-        as the learning rate. The learning rate schedule is also serializable and
-        deserializable using `tf.keras.optimizers.schedules.serialize` and
+        You can pass this schedule directly into a
+        `tf.keras.optimizers.Optimizer` as the learning rate. The learning rate
+        schedule is also serializable and deserializable using
+        `tf.keras.optimizers.schedules.serialize` and
         `tf.keras.optimizers.schedules.deserialize`.
 
         Args:
-            initial_learning_rate: A scalar `float32` or `float64` `Tensor` or a
-                Python number.  The initial learning rate.
-            maximal_learning_rate: A scalar `float32` or `float64` `Tensor` or a
-                Python number.  The maximum learning rate.
+            initial_learning_rate: A scalar `float32` or `float64` `Tensor` or
+                a Python number.  The initial learning rate.
+            maximal_learning_rate: A scalar `float32` or `float64` `Tensor` or
+                a Python number.  The maximum learning rate.
             step_size: A scalar `float32` or `float64` `Tensor` or a
                 Python number. Step size.
             scale_fn: A function. Scheduling function applied in cycle

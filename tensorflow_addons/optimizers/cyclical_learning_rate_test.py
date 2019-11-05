@@ -46,11 +46,12 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
         maximal_learning_rate = 1
         step_size = 4000
         step = tf.resource_variable_ops.ResourceVariable(0)
-        triangular_cyclical_lr = cyclical_learning_rate.TriangularCyclicalLearningRate(
-            initial_learning_rate=initial_learning_rate,
-            maximal_learning_rate=maximal_learning_rate,
-            step_size=step_size,
-        )
+        triangular_cyclical_lr = (
+            cyclical_learning_rate.TriangularCyclicalLearningRate(
+                initial_learning_rate=initial_learning_rate,
+                maximal_learning_rate=maximal_learning_rate,
+                step_size=step_size,
+            ))
         triangular_cyclical_lr = _maybe_serialized(triangular_cyclical_lr,
                                                    serialize)
 
@@ -74,11 +75,12 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
         maximal_learning_rate = 1
         step_size = 4000
         step = tf.resource_variable_ops.ResourceVariable(0)
-        triangular2_cyclical_lr = cyclical_learning_rate.Triangular2CyclicalLearningRate(
-            initial_learning_rate=initial_learning_rate,
-            maximal_learning_rate=maximal_learning_rate,
-            step_size=step_size,
-        )
+        triangular2_cyclical_lr = (
+            cyclical_learning_rate.Triangular2CyclicalLearningRate(
+                initial_learning_rate=initial_learning_rate,
+                maximal_learning_rate=maximal_learning_rate,
+                step_size=step_size,
+            ))
         triangular2_cyclical_lr = _maybe_serialized(triangular2_cyclical_lr,
                                                     serialize)
 
@@ -110,12 +112,13 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
         gamma = 0.996
 
         step = tf.resource_variable_ops.ResourceVariable(0)
-        exponential_cyclical_lr = cyclical_learning_rate.ExponentialCyclicalLearningRate(
-            initial_learning_rate=initial_learning_rate,
-            maximal_learning_rate=maximal_learning_rate,
-            step_size=step_size,
-            gamma=gamma,
-        )
+        exponential_cyclical_lr = (
+            cyclical_learning_rate.ExponentialCyclicalLearningRate(
+                initial_learning_rate=initial_learning_rate,
+                maximal_learning_rate=maximal_learning_rate,
+                step_size=step_size,
+                gamma=gamma,
+            ))
         exponential_cyclical_lr = _maybe_serialized(exponential_cyclical_lr,
                                                     serialize)
 
