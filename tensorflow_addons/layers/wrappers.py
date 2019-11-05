@@ -75,7 +75,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         self.layer_depth = int(self.layer.kernel.shape[-1])
         self.kernel_norm_axes = list(range(self.layer.kernel.shape.rank - 1))
 
-        self.g = self.add_variable(
+        self.g = self.add_weight(
             name='g',
             shape=(self.layer_depth,),
             initializer='ones',
@@ -83,7 +83,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             trainable=True)
         self.v = self.layer.kernel
 
-        self._initialized = self.add_variable(
+        self._initialized = self.add_weight(
             name='initialized',
             shape=None,
             initializer='zeros',

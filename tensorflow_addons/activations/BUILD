@@ -9,6 +9,8 @@ py_library(
         "gelu.py",
         "hardshrink.py",
         "lisht.py",
+        "mish.py",
+        "rrelu.py",
         "softshrink.py",
         "sparsemax.py",
         "tanhshrink.py",
@@ -86,6 +88,19 @@ py_test(
 )
 
 py_test(
+    name = "mish_test",
+    size = "small",
+    srcs = [
+        "mish_test.py",
+    ],
+    main = "mish_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":activations",
+    ],
+)
+
+py_test(
     name = "softshrink_test",
     size = "small",
     srcs = [
@@ -105,6 +120,19 @@ py_test(
         "tanhshrink_test.py",
     ],
     main = "tanhshrink_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":activations",
+    ],
+)
+
+py_test(
+    name = "rrelu_test",
+    size = "small",
+    srcs = [
+        "rrelu_test.py",
+    ],
+    main = "rrelu_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":activations",
