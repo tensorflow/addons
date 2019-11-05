@@ -109,7 +109,7 @@ class TripletSemiHardLossTest(tf.test.TestCase):
             tf.keras.layers.Input(shape=(784,)),
             tf.keras.layers.Dense(10),
         ])
-        model.compile(loss="triplet_semihard_loss", optimizer="adam")
+        model.compile(loss="Addons>triplet_semihard_loss", optimizer="adam")
 
 
 if __name__ == '__main__':

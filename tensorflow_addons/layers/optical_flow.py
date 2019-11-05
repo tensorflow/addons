@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 _correlation_cost_op_so = tf.load_op_library(
@@ -139,7 +138,7 @@ def _correlation_cost_grad(op, grad_output):
     return [grad_input_a, grad_input_b]
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class CorrelationCost(tf.keras.layers.Layer):
     """Correlation Cost Layer.
 
