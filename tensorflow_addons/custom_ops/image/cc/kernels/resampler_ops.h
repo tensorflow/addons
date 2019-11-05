@@ -25,6 +25,7 @@ class OpKernelContext;
 }
 
 namespace tensorflow {
+namespace addons {  
 namespace functor {
 
 // Helper functor for the Resampler Op in 2D
@@ -49,6 +50,7 @@ struct ResamplerGrad2DFunctor {
 };
 
 }  // namespace functor
+}  // end namespace addons
 }  // namespace tensorflow
 
 #endif  // TENSORFLOW_CONTRIB_RESAMPLER_KERNELS_RESAMPLER_OPS_H_

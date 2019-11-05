@@ -21,11 +21,13 @@
 
 #include <cmath>
 
-#include "tensorflow/contrib/resampler/kernels/resampler_ops.h"
+// _op.h or #include "tensorflow_addons/custom_ops/image/cc/kernels/resampler_ops.h"
+#include "tensorflow_addons/custom_ops/image/cc/kernels/resampler_ops.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/util/gpu_kernel_helper.h"
 
 namespace tensorflow {
+namespace addons {
 
 using GPUDevice = Eigen::GpuDevice;
 
@@ -277,7 +279,7 @@ struct ResamplerGrad2DFunctor<GPUDevice, T> {
 template struct ResamplerGrad2DFunctor<GPUDevice, float>;
 
 }  // namespace functor
-
+}  // end namespace addons
 }  // namespace tensorflow
 
 #endif  // GOOGLE_CUDA

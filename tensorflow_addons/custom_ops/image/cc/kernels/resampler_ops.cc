@@ -28,6 +28,7 @@
 #include "tensorflow_addons/custom_ops/image/cc/kernels/resampler_ops.h"
 
 namespace tensorflow {
+namespace addons {
 
 using CPUDevice = Eigen::ThreadPoolDevice;
 using GPUDevice = Eigen::GpuDevice;
@@ -180,7 +181,7 @@ class ResamplerOp : public ::tensorflow::OpKernel {
 
 #define REGISTER(TYPE)                                                \
   REGISTER_KERNEL_BUILDER(                                            \
-      Name("Resampler").Device(DEVICE_CPU).TypeConstraint<TYPE>("T"), \
+      Name("Addons>Resampler").Device(DEVICE_CPU).TypeConstraint<TYPE>("T"), \
       ResamplerOp<CPUDevice, TYPE>);
 
 TF_CALL_half(REGISTER);
@@ -191,7 +192,7 @@ TF_CALL_double(REGISTER);
 #if GOOGLE_CUDA
 #define REGISTER(TYPE)                                                \
   REGISTER_KERNEL_BUILDER(                                            \
-      Name("Resampler").Device(DEVICE_GPU).TypeConstraint<TYPE>("T"), \
+      Name("Addons>Resampler").Device(DEVICE_GPU).TypeConstraint<TYPE>("T"), \
       ResamplerOp<GPUDevice, TYPE>)
 TF_CALL_float(REGISTER);
 TF_CALL_double(REGISTER);
@@ -391,7 +392,7 @@ class ResamplerGradOp : public ::tensorflow::OpKernel {
 
 #define REGISTER(TYPE)                                                    \
   REGISTER_KERNEL_BUILDER(                                                \
-      Name("ResamplerGrad").Device(DEVICE_CPU).TypeConstraint<TYPE>("T"), \
+      Name("Addons>ResamplerGrad").Device(DEVICE_CPU).TypeConstraint<TYPE>("T"), \
       ResamplerGradOp<CPUDevice, TYPE>);
 
 TF_CALL_half(REGISTER);
@@ -402,7 +403,7 @@ TF_CALL_double(REGISTER);
 #if GOOGLE_CUDA
 #define REGISTER(TYPE)                                                    \
   REGISTER_KERNEL_BUILDER(                                                \
-      Name("ResamplerGrad").Device(DEVICE_GPU).TypeConstraint<TYPE>("T"), \
+      Name("Addons>ResamplerGrad").Device(DEVICE_GPU).TypeConstraint<TYPE>("T"), \
       ResamplerGradOp<GPUDevice, TYPE>)
 // Disable half and double precision since atomicAdds are not supported
 // TF_CALL_half(REGISTER);
@@ -412,4 +413,5 @@ TF_CALL_float(REGISTER);
 #undef REGISTER
 #endif  // GOOGLE_CUDA
 
+}  // end namespace addons
 }  // namespace tensorflow

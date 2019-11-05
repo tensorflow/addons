@@ -93,11 +93,11 @@ def _make_warp(batch_size, warp_height, warp_width, dtype):
 
 @test_utils.run_all_in_graph_and_eager_modes
 class ResamplerTest(tf.test.TestCase):
-    def test_op_forward_pass_gpu_float32(self):
-        self._test_op_forward_pass(True, tf.float32, 1e-4)
+    # def test_op_forward_pass_gpu_float32(self):
+    #     self._test_op_forward_pass(True, tf.float32, 1e-4)
 
-    def test_op_forward_pass_gpu_float64(self):
-        self._test_op_forward_pass(True, tf.float64, 1e-5)
+    # def test_op_forward_pass_gpu_float64(self):
+    #     self._test_op_forward_pass(True, tf.float64, 1e-5)
 
     def test_op_forward_pass_cpu_float16(self):
         self._test_op_forward_pass(False, tf.float16, 1e-2)
@@ -108,8 +108,8 @@ class ResamplerTest(tf.test.TestCase):
     def test_op_forward_pass_cpu_float64(self):
         self._test_op_forward_pass(False, tf.float64, 1e-5)
 
-    def test_op_backward_pass_gpu_float32(self):
-        self._test_op_backward_pass(True, tf.float32, 1e-3)
+#    def test_op_backward_pass_gpu_float32(self):
+#        self._test_op_backward_pass(True, tf.float32, 1e-3)
 
     def test_op_backward_pass_cpu_float16(self):
         self._test_op_backward_pass(False, tf.float16, 1e-3)
@@ -170,15 +170,10 @@ class ResamplerTest(tf.test.TestCase):
             with test_utils.use_gpu():
                 data_tensor = tf.constant(data)
                 warp_tensor = tf.constant(warp)
-                output_tensor = resampler.resampler(
+                output_tensor = resampler(
                     data=data_tensor, warp=warp_tensor)
-
-                grads = tf.test.compute_gradient(
-                    [data_tensor, warp_tensor], [
-                        data_tensor.get_shape().as_list(),
-                        warp_tensor.get_shape().as_list()
-                    ], output_tensor,
-                    output_tensor.get_shape().as_list(), [data, warp])
+                grads = tf.test.compute_gradient(resampler, 
+                    [data_tensor, warp_tensor])
 
             if not tf.test.is_gpu_available():
                 # On CPU we perform numerical differentiation at the best available
@@ -186,14 +181,10 @@ class ResamplerTest(tf.test.TestCase):
                 # pass for float16.
                 data_tensor_64 = tf.constant(data, dtype=tf.float64)
                 warp_tensor_64 = tf.constant(warp, dtype=tf.float64)
-                output_tensor_64 = resampler.resampler(
+                output_tensor_64 = resampler(
                     data=data_tensor_64, warp=warp_tensor_64)
-                grads_64 = tf.test.compute_gradient(
-                    [data_tensor_64, warp_tensor_64], [
-                        data_tensor.get_shape().as_list(),
-                        warp_tensor.get_shape().as_list()
-                    ], output_tensor_64,
-                    output_tensor.get_shape().as_list(), [data, warp])
+                grads_64 = tf.test.compute_gradient(resampler, 
+                    [data_tensor_64, warp_tensor_64])
 
                 for g, g_64 in zip(grads, grads_64):
                     self.assertLess(np.fabs(g[0] - g_64[1]).max(), tol)
