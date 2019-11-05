@@ -17,6 +17,7 @@
 from __future__ import absolute_import, division, print_function
 
 import time
+import tensorflow as tf
 from collections import defaultdict
 
 from tensorflow.keras.callbacks import Callback
