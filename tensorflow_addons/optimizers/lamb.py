@@ -25,10 +25,9 @@ from __future__ import print_function
 import re
 
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class LAMB(tf.keras.optimizers.Optimizer):
     """Optimizer that implements the LAMB (Layer-wise Adaptive Moments)
     optimizer as TF2 tf.keras.optimizers.

@@ -19,10 +19,9 @@ from __future__ import print_function
 
 import tensorflow as tf
 import tensorflow.keras as keras
-from tensorflow_addons.utils import keras_utils
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class NASCell(keras.layers.AbstractRNNCell):
     """Neural Architecture Search (NAS) recurrent network cell.
 
@@ -210,7 +209,7 @@ class NASCell(keras.layers.AbstractRNNCell):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class LayerNormLSTMCell(keras.layers.LSTMCell):
     """LSTM cell with layer normalization and recurrent dropout.
 

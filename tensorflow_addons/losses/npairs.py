@@ -18,10 +18,9 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 @tf.function
 def npairs_loss(y_true, y_pred):
     """Computes the npairs loss between `y_true` and `y_pred`.
@@ -64,7 +63,7 @@ def npairs_loss(y_true, y_pred):
     return tf.math.reduce_mean(loss)
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 @tf.function
 def npairs_multilabel_loss(y_true, y_pred):
     """Computes the npairs loss between multilabel data `y_true` and `y_pred`.
@@ -129,7 +128,7 @@ def npairs_multilabel_loss(y_true, y_pred):
     return tf.math.reduce_mean(loss)
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class NpairsLoss(tf.keras.losses.Loss):
     """Computes the npairs loss between `y_true` and `y_pred`.
 
@@ -160,7 +159,7 @@ class NpairsLoss(tf.keras.losses.Loss):
         return npairs_loss(y_true, y_pred)
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class NpairsMultilabelLoss(tf.keras.losses.Loss):
     """Computes the npairs loss between multilabel data `y_true` and `y_pred`.
 

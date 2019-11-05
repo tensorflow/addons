@@ -63,8 +63,11 @@ class TripletSemiHardLossTest(tf.test.TestCase):
         labels = np.random.randint(0, num_classes, size=(num_data))
 
         # Reshape labels to compute adjacency matrix.
+        # TODO: https://github.com/PyCQA/pylint/issues/3139
+        # pylint: disable=E1136
         labels_reshaped = np.reshape(
             labels.astype(np.float32), (labels.shape[0], 1))
+        # pylint: enable=E1136
         # Compute the loss in NP.
         adjacency = np.equal(labels_reshaped, labels_reshaped.T)
 
@@ -109,7 +112,7 @@ class TripletSemiHardLossTest(tf.test.TestCase):
             tf.keras.layers.Input(shape=(784,)),
             tf.keras.layers.Dense(10),
         ])
-        model.compile(loss="triplet_semihard_loss", optimizer="adam")
+        model.compile(loss="Addons>triplet_semihard_loss", optimizer="adam")
 
 
 if __name__ == '__main__':
