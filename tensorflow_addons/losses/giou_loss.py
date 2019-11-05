@@ -26,9 +26,9 @@ from tensorflow_addons.utils import keras_utils
 class GIoULoss(tf.keras.losses.Loss):
     """Implements the GIoU loss function.
 
-    GIoU loss was first introduced in the Generalized Intersection over Union
-    paper (https://giou.stanford.edu/GIoU.pdf). GIoU is a enhance for model
-    which use IOU in object detection.
+    GIoU loss was first introduced in the
+    [Generalized Intersection over Union paper](https://giou.stanford.edu/GIoU.pdf).
+    GIoU is a enhance for model which use IOU in object detection.
 
     Usage:
 
