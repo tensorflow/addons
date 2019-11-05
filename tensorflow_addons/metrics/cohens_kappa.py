@@ -67,7 +67,7 @@ class CohenKappa(Metric):
                  num_classes,
                  name='cohen_kappa',
                  weightage=None,
-                 dtype=tf.float32):
+                 dtype=None):
         """Creates a `CohenKappa` instance.
 
         Args:
@@ -77,7 +77,7 @@ class CohenKappa(Metric):
             kappa statistics. A valid value is one of
             [None, 'linear', 'quadratic']. Defaults to None.
           dtype: (Optional) Data type of the metric result.
-            Defaults to `tf.float32`.
+            Defaults to `None`.
 
         Raises:
           ValueError: If the value passed for `weightage` is invalid
@@ -94,7 +94,7 @@ class CohenKappa(Metric):
             'conf_mtx',
             shape=(self.num_classes, self.num_classes),
             initializer=tf.keras.initializers.zeros,
-            dtype=self.dtype)
+            dtype=tf.int64)
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         """Accumulates the confusion matrix condition statistics.
@@ -113,8 +113,8 @@ class CohenKappa(Metric):
         Returns:
           Update op.
         """
-        y_true = tf.cast(y_true, dtype=self.dtype)
-        y_pred = tf.cast(y_pred, dtype=self.dtype)
+        y_true = tf.cast(y_true, dtype=tf.int64)
+        y_pred = tf.cast(y_pred, dtype=tf.int64)
 
         if y_true.shape != y_pred.shape:
             raise ValueError(
@@ -126,30 +126,29 @@ class CohenKappa(Metric):
             predictions=y_pred,
             num_classes=self.num_classes,
             weights=sample_weight,
-            dtype=self.dtype)
+            dtype=tf.int64)
 
         # update the values in the original confusion matrix
         return self.conf_mtx.assign_add(new_conf_mtx)
 
     def result(self):
         nb_ratings = tf.shape(self.conf_mtx)[0]
-        weight_mtx = tf.ones([nb_ratings, nb_ratings], dtype=self.dtype)
+        weight_mtx = tf.ones([nb_ratings, nb_ratings], dtype=tf.int64)
 
         # 2. Create a weight matrix
         if self.weightage is None:
-            diagonal = tf.zeros([nb_ratings], dtype=self.dtype)
+            diagonal = tf.zeros([nb_ratings], dtype=tf.int64)
             weight_mtx = tf.linalg.set_diag(weight_mtx, diagonal=diagonal)
-            weight_mtx = tf.cast(weight_mtx, dtype=self.dtype)
-
         else:
-            weight_mtx += tf.cast(tf.range(nb_ratings), dtype=self.dtype)
+            weight_mtx += tf.cast(tf.range(nb_ratings), dtype=tf.int64)
             weight_mtx = tf.cast(weight_mtx, dtype=self.dtype)
 
             if self.weightage == 'linear':
                 weight_mtx = tf.abs(weight_mtx - tf.transpose(weight_mtx))
             else:
                 weight_mtx = tf.pow((weight_mtx - tf.transpose(weight_mtx)), 2)
-            weight_mtx = tf.cast(weight_mtx, dtype=self.dtype)
+
+        weight_mtx = tf.cast(weight_mtx, dtype=self.dtype)
 
         # 3. Get counts
         actual_ratings_hist = tf.reduce_sum(self.conf_mtx, axis=1)
