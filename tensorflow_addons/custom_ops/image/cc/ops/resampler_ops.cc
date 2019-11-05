@@ -13,15 +13,19 @@
 // limitations under the License.
 // =============================================================================
 
+#include "tensorflow/core/framework/common_shape_fns.h"
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/shape_inference.h"
 
 namespace tensorflow {
+namespace addons {
 
-using ::tensorflow::shape_inference::InferenceContext;
-using ::tensorflow::shape_inference::ShapeHandle;
+using shape_inference::DimensionHandle;
+using shape_inference::InferenceContext;
+using shape_inference::ShapeHandle;
 
-REGISTER_OP("Resampler")
+// --------------------------------------------------------------------------
+REGISTER_OP("Addons>Resampler")
     .Input("data: T")
     .Input("warp: T")
     .Output("output: T")
@@ -42,7 +46,8 @@ REGISTER_OP("Resampler")
     })
     .Doc(R"doc(Resampler op.)doc");
 
-REGISTER_OP("ResamplerGrad")
+// --------------------------------------------------------------------------
+REGISTER_OP("Addons>ResamplerGrad")
     .Input("data: T")
     .Input("warp: T")
     .Input("grad_output: T")
@@ -56,4 +61,5 @@ REGISTER_OP("ResamplerGrad")
     })
     .Doc(R"doc(Resampler Grad op.)doc");
 
+} // namespace addon
 }  // namespace tensorflow
