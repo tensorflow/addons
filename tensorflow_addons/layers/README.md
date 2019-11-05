@@ -7,7 +7,7 @@
 | maxout | @fsx950223 | fsx950223@gmail.com |
 | normalizations | @smokrow | moritz.kroeger@tu-dortmund.de |
 | opticalflow | @fsx950223 | fsx950223@gmail.com |
-| poincare |  |  |
+| poincare | @rahulunair | rahulunair@gmail.com  |
 | sparsemax | @AndreasMadsen | amwwebdk+github@gmail.com |
 | wrappers | @seanpmorgan | seanmorgan@outlook.com |
 | tcn | @shun-lin | shunlin@google.com |
