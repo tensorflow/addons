@@ -94,12 +94,12 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
             self.add_slot(var, "accumulator", init)
 
     def _prepare_local(self, var_device, var_dtype, apply_state):
-        super(ProximalAdagrad, self)._prepare_local(
-            var_device, var_dtype, apply_state)
-        apply_state[(var_device, var_dtype)].update(dict(
-            neg_lr_t=-apply_state[(var_device, var_dtype)]["lr_t"],
-            zero=tf.zeros((), dtype=tf.int64)
-        ))
+        super(ProximalAdagrad, self)._prepare_local(var_device, var_dtype,
+                                                    apply_state)
+        apply_state[(var_device, var_dtype)].update(
+            dict(
+                neg_lr_t=-apply_state[(var_device, var_dtype)]["lr_t"],
+                zero=tf.zeros((), dtype=tf.int64)))
 
     def set_weights(self, weights):
         params = self.weights
@@ -140,10 +140,13 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
 
         acc = self.get_slot(var, "accumulator")
         return training_ops.resource_apply_proximal_adagrad(
-            var.handle, acc.handle, coefficients["lr_t"],
+            var.handle,
+            acc.handle,
+            coefficients["lr_t"],
             self._l1_regularization_strength,
             self._l2_regularization_strength,
-            grad, use_locking=self._use_locking)
+            grad,
+            use_locking=self._use_locking)
 
     def _resource_apply_sparse(self, grad, var, indices, apply_state=None):
         var_device, var_dtype = var.device, var.dtype.base_dtype
@@ -152,18 +155,27 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
 
         acc = self.get_slot(var, 'accumulator')
         return training_ops.resource_sparse_apply_proximal_adagrad(
-            var.handle, acc.handle, coefficients["lr_t"],
+            var.handle,
+            acc.handle,
+            coefficients["lr_t"],
             self._l1_regularization_strength,
             self._l2_regularization_strength,
-            grad, indices, use_locking=self._use_locking)
+            grad,
+            indices,
+            use_locking=self._use_locking)
 
     def get_config(self):
         config = super(ProximalAdagrad, self).get_config()
         config.update({
-            "learning_rate": self._serialize_hyperparameter("learning_rate"),
-            "decay": self._serialize_hyperparameter("decay"),
-            "l1_regularization_strength": self._l1_regularization_strength,
-            "l2_regularization_strength": self._l2_regularization_strength,
-            "initial_accumulator_value": self._initial_accumaltor_value,
+            "learning_rate":
+            self._serialize_hyperparameter("learning_rate"),
+            "decay":
+            self._serialize_hyperparameter("decay"),
+            "l1_regularization_strength":
+            self._l1_regularization_strength,
+            "l2_regularization_strength":
+            self._l2_regularization_strength,
+            "initial_accumulator_value":
+            self._initial_accumaltor_value,
         })
         return config
