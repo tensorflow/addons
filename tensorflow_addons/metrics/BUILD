@@ -45,25 +45,12 @@ py_test(
 )
 
 py_test(
-    name = "f1_test",
+    name = "f_test",
     size = "small",
     srcs = [
-        "f1_test.py",
+        "f_test.py",
     ],
-    main = "f1_test.py",
-    srcs_version = "PY2AND3",
-    deps = [
-        ":metrics",
-    ],
-)
-
-py_test(
-    name = "fbeta_test",
-    size = "small",
-    srcs = [
-        "fbeta_test.py",
-    ],
-    main = "fbeta_test.py",
+    main = "f_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":metrics",
