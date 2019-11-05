@@ -5,10 +5,10 @@
 |:---------- |:----------- |:------------- |
 | contrastive |  @WindQAQ | windqaq@gmail.com |
 | focal_loss | @SSaishruthi  | saishruthi.tn@gmail.com |
-| lifted |  |  |
+| lifted | @rahulunair | rahulunair@gmail.com  |
 | npairs | @WindQAQ | windqaq@gmail.com |
 | sparsemax_loss | @AndreasMadsen | amwwebdk+github@gmail.com |
-| triplet |   |  |
+| triplet |  @rahulunair | rahulunair@gmail.com  |
 
 ## Components
 | Submodule | Loss  | Reference               |
