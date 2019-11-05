@@ -75,7 +75,8 @@ def giou_loss(y_true, y_pred, mode='giou'):
     Args:
         y_true: true targets tensor.
         y_pred: predictions tensor.
-        mode: one of ['giou', 'iou'], decided to calculate giou loss or iou loss.
+        mode: one of ['giou', 'iou'],
+        decided to calculate giou loss or iou loss.
 
     Returns:
         GIoU loss float `Tensor`.
@@ -95,7 +96,8 @@ def do_giou_calculate(b1, b2, mode='giou'):
     Args:
         b1: bounding box.
         b2: the other bounding box.
-        mode: one of ['giou', 'iou'], decided to calculate giou loss or iou loss.
+        mode: one of ['giou', 'iou'],
+        decided to calculate giou loss or iou loss.
 
     Returns:
         GIoU loss float `Tensor`.
