@@ -209,8 +209,11 @@ class CrfTest(tf.test.TestCase):
         transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]],
                                      dtype=np.float32)
         sequence_lengths = np.array(3, dtype=np.int32)
+        # TODO: https://github.com/PyCQA/pylint/issues/3139
+        # pylint: disable=E1136
         num_words = inputs.shape[0]
         num_tags = inputs.shape[1]
+        # pylint: enable=E1136
         all_sequence_log_likelihoods = []
 
         # Make sure all probabilities sum to 1.
@@ -241,8 +244,11 @@ class CrfTest(tf.test.TestCase):
         transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]],
                                      dtype=np.float32)
         sequence_lengths = np.array(3, dtype=np.int32)
+        # TODO: https://github.com/PyCQA/pylint/issues/3139
+        # pylint: disable=E1136
         num_words = inputs.shape[0]
         num_tags = inputs.shape[1]
+        # pylint: enable=E1136
 
         all_sequence_scores = []
         all_sequences = []
