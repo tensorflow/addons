@@ -130,6 +130,16 @@ class CohenKappaTest(tf.test.TestCase):
         self.check_results([kp_obj1, kp_obj2, kp_obj3],
                            [-0.25473321, -0.38992332, -0.60695344])
 
+    def test_large_values(self):
+        y_true = [1] * 10000 + [0] * 20000 + [1] * 20000
+        y_pred = [0] * 20000 + [1] * 30000
+
+        obj = CohenKappa(num_classes=2)
+        self.evaluate(tf.compat.v1.variables_initializer(obj.variables))
+
+        self.evaluate(obj.update_state(y_true, y_pred))
+        self.assertAllClose(0.166666666, obj.result())
+
 
 if __name__ == '__main__':
     tf.test.main()
