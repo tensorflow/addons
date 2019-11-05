@@ -126,9 +126,9 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
         if "initial_accumulator_value" not in config:
             config["initial_accumulator_value"] = 0.0
         if "l1_regularization_strength" not in config:
-            config["l1_regularization_strength"] = l1_regularization_strength
+            config["l1_regularization_strength"] = 0.0
         if "l2_regularization_strength" not in config:
-            config["l2_regularization_strength"] = l2_regularization_strength
+            config["l2_regularization_strength"] = 0.0
         if "lr" in config:
             config["learning_rate"] = config.pop("lr")
         return cls(**config)
