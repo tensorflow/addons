@@ -75,7 +75,7 @@ class CohenKappa(Metric):
           name: (Optional) String name of the metric instance.
           weightage: (Optional) Weighting to be considered for calculating
             kappa statistics. A valid value is one of
-            [None, 'linear', 'quadratic']. Defaults to None.
+            [None, 'linear', 'quadratic']. Defaults to `None`.
           dtype: (Optional) Data type of the metric result.
             Defaults to `None`.
 
@@ -106,7 +106,7 @@ class CohenKappa(Metric):
             `[num_samples,]`. The kappa statistic is symmetric,
             so swapping `y_true` and `y_pred` doesn't change the value.
           sample_weight (optional): for weighting labels in confusion matrix
-            Default is None. The dtype for weights should be the same
+            Defaults to `None`. The dtype for weights should be the same
             as the dtype for confusion matrix. For more details,
             please check `tf.math.confusion_matrix`.
 
