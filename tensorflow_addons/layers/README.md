@@ -30,8 +30,7 @@
 In order to conform with the current API standard, all layers
 must:
  * Inherit from either `keras.layers.Layer` or its subclasses.
- * [Register as a keras global object](https://github.com/tensorflow/addons/blob/master/tensorflow_addons/utils/keras_utils.py)
-  so it can be serialized properly.
+ * Register as a keras global object so it can be serialized properly: `@tf.keras.utils.register_keras_serializable(package='Addons')`
  * Add the addon to the `py_library` in this sub-package's BUILD file.
 
 #### Testing Requirements

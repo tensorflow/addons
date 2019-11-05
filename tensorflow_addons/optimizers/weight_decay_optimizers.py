@@ -18,7 +18,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
 
 
 class DecoupledWeightDecayExtension(object):
@@ -263,7 +262,7 @@ def extend_with_decoupled_weight_decay(base_optimizer):
     return OptimizerWithDecoupledWeightDecay
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class SGDW(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
     """Optimizer that implements the Momentum algorithm with weight_decay.
 
@@ -337,7 +336,7 @@ class SGDW(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
             **kwargs)
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class AdamW(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
     """Optimizer that implements the Adam algorithm with weight decay.
 
