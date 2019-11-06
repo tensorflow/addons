@@ -18,10 +18,9 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
     """A LearningRateSchedule that uses cyclical schedule."""
 
@@ -110,7 +109,7 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
         }
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class TriangularCyclicalLearningRate(CyclicalLearningRate):
     def __init__(
             self,
@@ -174,7 +173,7 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
         )
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class Triangular2CyclicalLearningRate(CyclicalLearningRate):
     def __init__(
             self,
@@ -238,7 +237,7 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
         )
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class ExponentialCyclicalLearningRate(CyclicalLearningRate):
     def __init__(
             self,

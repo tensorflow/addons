@@ -23,8 +23,7 @@ from absl.testing import parameterized
 import tensorflow as tf
 from tensorflow_addons.utils import test_utils
 import numpy as np
-# from six.moves import xrange  # pylint: disable=redefined-builtin
-# import conditional_gradient as cg_lib
+
 import cyclical_learning_rate
 
 
