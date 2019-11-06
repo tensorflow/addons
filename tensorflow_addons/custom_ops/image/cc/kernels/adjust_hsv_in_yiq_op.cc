@@ -28,6 +28,7 @@ limitations under the License.
 #include "tensorflow_addons/custom_ops/image/cc/kernels/adjust_hsv_in_yiq_op.h"
 
 namespace tensorflow {
+
 namespace addons {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
