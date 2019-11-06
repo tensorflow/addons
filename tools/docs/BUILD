@@ -17,3 +17,18 @@ py_binary(
         "//tensorflow_addons",
     ],
 )
+
+py_test(
+    name = "tfa_doctest",
+    srcs = ["tfa_doctest.py"],
+    python_version = "PY3",
+    tags = [
+        "no_oss_py2",
+        "noasan",
+        "nomsan",
+        "notsan",
+    ],
+    deps = [
+        "//tensorflow_addons",
+    ],
+)
