@@ -209,11 +209,8 @@ class CrfTest(tf.test.TestCase):
         transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]],
                                      dtype=np.float32)
         sequence_lengths = np.array(3, dtype=np.int32)
-        # TODO: https://github.com/PyCQA/pylint/issues/3139
-        # pylint: disable=E1136
         num_words = inputs.shape[0]
         num_tags = inputs.shape[1]
-        # pylint: enable=E1136
         all_sequence_log_likelihoods = []
 
         # Make sure all probabilities sum to 1.
@@ -244,11 +241,8 @@ class CrfTest(tf.test.TestCase):
         transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]],
                                      dtype=np.float32)
         sequence_lengths = np.array(3, dtype=np.int32)
-        # TODO: https://github.com/PyCQA/pylint/issues/3139
-        # pylint: disable=E1136
         num_words = inputs.shape[0]
         num_tags = inputs.shape[1]
-        # pylint: enable=E1136
 
         all_sequence_scores = []
         all_sequences = []
@@ -352,16 +346,6 @@ class CrfTest(tf.test.TestCase):
         tf_tags, tf_scores = self.evaluate([tags, scores])
         self.assertEqual(len(tf_tags.shape), 2)
         self.assertEqual(len(tf_scores.shape), 1)
-
-    def testDifferentDtype(self):
-        inputs = np.ones([16, 20, 5], dtype=np.float32)
-        tags = tf.convert_to_tensor(np.ones([16, 20], dtype=np.int64))
-        seq_lens = np.ones([
-            16,
-        ], dtype=np.int64) * 20
-
-        loss, _ = text.crf_log_likelihood(
-            inputs=inputs, tag_indices=tags, sequence_lengths=seq_lens)
 
 
 if __name__ == "__main__":
