@@ -200,3 +200,17 @@ class TQDMProgressBar(Callback):
                 metric_value_pairs.append(pair)
         metrics_string = self.metrics_separator.join(metric_value_pairs)
         return metrics_string
+
+    def get_config(self):
+        config = {
+            'metrics_separator': self.metrics_separator,
+            'overall_bar_format': self.overall_bar_format,
+            'epoch_bar_format': self.epoch_bar_format,
+            'leave_epoch_progress': self.leave_epoch_progress,
+            'leave_overall_progress': self.leave_overall_progress,
+            'show_epoch_progress': self.show_epoch_progress,
+            'show_overall_progress': self.show_overall_progress,
+        }
+
+        base_config = super(TQDMProgressBar, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
