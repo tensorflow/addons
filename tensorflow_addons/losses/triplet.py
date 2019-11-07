@@ -19,6 +19,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow_addons.losses import metric_learning
+from tensorflow_addons.utils import keras_utils
 
 
 def _masked_maximum(data, mask, dim=1):
@@ -59,7 +60,7 @@ def _masked_minimum(data, mask, dim=1):
     return masked_minimums
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@keras_utils.register_keras_custom_object
 @tf.function
 def triplet_semihard_loss(y_true, y_pred, margin=1.0):
     """Computes the triplet loss with semi-hard negative mining.
@@ -130,7 +131,7 @@ def triplet_semihard_loss(y_true, y_pred, margin=1.0):
     return triplet_loss
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@keras_utils.register_keras_custom_object
 class TripletSemiHardLoss(tf.keras.losses.Loss):
     """Computes the triplet loss with semi-hard negative mining.
 

@@ -20,9 +20,11 @@ from __future__ import print_function
 import tensorflow as tf
 
 from tensorflow_addons.activations.sparsemax import sparsemax
+from tensorflow_addons.utils import keras_utils
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@keras_utils.register_keras_custom_object
+@tf.function
 def sparsemax_loss(logits, sparsemax, labels, name=None):
     """Sparsemax loss function [1].
 
@@ -77,14 +79,14 @@ def sparsemax_loss(logits, sparsemax, labels, name=None):
 
 
 @tf.function
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@keras_utils.register_keras_custom_object
 def sparsemax_loss_from_logits(y_true, logits_pred):
     y_pred = sparsemax(logits_pred)
     loss = sparsemax_loss(logits_pred, y_pred, y_true)
     return loss
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@keras_utils.register_keras_custom_object
 class SparsemaxLoss(tf.keras.losses.Loss):
     """Sparsemax loss function.
 

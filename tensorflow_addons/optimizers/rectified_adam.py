@@ -18,9 +18,10 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+from tensorflow_addons.utils import keras_utils
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@keras_utils.register_keras_custom_object
 class RectifiedAdam(tf.keras.optimizers.Optimizer):
     """Variant of the Adam optimizer whose adaptive learning rate is rectified
     so as to have a consistent variance.

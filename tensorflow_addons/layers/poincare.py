@@ -19,9 +19,10 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+from tensorflow_addons.utils import keras_utils
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@keras_utils.register_keras_custom_object
 class PoincareNormalize(tf.keras.layers.Layer):
     """Project into the Poincare ball with norm <= 1.0 - epsilon.
 

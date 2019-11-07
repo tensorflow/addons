@@ -17,6 +17,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import tensorflow as tf
+
+
+def register_keras_custom_object(cls):
+    tf.keras.utils.get_custom_objects()[cls.__name__] = cls
+    return cls
+
 
 def normalize_tuple(value, n, name):
     """Transforms an integer or iterable of integers into an integer tuple.

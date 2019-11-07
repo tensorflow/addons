@@ -18,9 +18,10 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+from tensorflow_addons.utils import keras_utils
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@keras_utils.register_keras_custom_object
 @tf.function
 def contrastive_loss(y_true, y_pred, margin=1.0):
     """Computes the contrastive loss between `y_true` and `y_pred`.
@@ -57,7 +58,7 @@ def contrastive_loss(y_true, y_pred, margin=1.0):
         (1. - y_true) * tf.math.square(tf.math.maximum(margin - y_pred, 0.)))
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@keras_utils.register_keras_custom_object
 class ContrastiveLoss(tf.keras.losses.Loss):
     """Computes the contrastive loss between `y_true` and `y_pred`.
 

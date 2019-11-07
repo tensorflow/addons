@@ -18,13 +18,14 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 _activation_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/activations/_activation_ops.so"))
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@keras_utils.register_keras_custom_object
 @tf.function
 def mish(x):
     """Mish: A Self Regularized Non-Monotonic Neural Activation Function.
