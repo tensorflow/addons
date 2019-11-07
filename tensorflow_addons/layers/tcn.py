@@ -23,7 +23,7 @@ from tensorflow.keras.layers import (Activation, BatchNormalization, Conv1D,
 from tensorflow_addons.utils import keras_utils
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@keras_utils.register_keras_custom_object
 class ResidualBlock(tf.keras.Layer):
     """Defines the residual block for the WaveNet TCN
         Arguments:
@@ -142,12 +142,6 @@ class ResidualBlock(tf.keras.Layer):
     def compute_output_shape(self, input_shape):
         return [self.res_output_shape, self.res_output_shape]
 
-    # TODO(shunlin): fix this get_config after finish fixing the APIs 
-    def get_config(self):
-        config = {}
-        base_config = super(ResidualBlock, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
-
 
 def process_dilations(dilations):
     def is_power_of_two(num):
@@ -161,7 +155,7 @@ def process_dilations(dilations):
         return new_dilations
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@keras_utils.register_keras_custom_object
 class TCN(tf.keras.Layer):
     """Creates a TCN layer.
         Input shape:
@@ -281,8 +275,11 @@ class TCN(tf.keras.Layer):
         return x
 
     def get_config(self):
-
-        config = dict()
+        """
+        Returns the config of a the layer. This is used for saving and loading from a model
+        :return: python dictionary with specs to rebuild layer
+        """
+        config = super(TCN, self).get_config()
         config['nb_filters'] = self.nb_filters
         config['kernel_size'] = self.kernel_size
         config['nb_stacks'] = self.nb_stacks
@@ -295,6 +292,4 @@ class TCN(tf.keras.Layer):
         config['use_batch_norm'] = self.use_batch_norm
         config['kernel_initializer'] = self.kernel_initializer
 
-        base_config = super(TCN, self).get_config()
-
-        return dict(list(base_config.items()) + list(config.items()))
+        return config
