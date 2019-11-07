@@ -37,9 +37,9 @@ class MatthewsCorrelationCoefficientTest(tf.test.TestCase):
         self.assertEqual(mcc2.num_classes, 1)
         self.assertEqual(mcc2.dtype, tf.float32)
 
-    def initialize_vars(self, n_classes, input_dtype):
+    def initialize_vars(self, n_classes):
         mcc = MatthewsCorrelationCoefficient(
-            num_classes=n_classes, dtype=input_dtype)
+            num_classes=n_classes)
         self.evaluate(tf.compat.v1.variables_initializer(mcc.variables))
         return mcc
 
@@ -54,7 +54,7 @@ class MatthewsCorrelationCoefficientTest(tf.test.TestCase):
         gt_label = tf.constant([[1.0], [1.0], [1.0], [0.0]], dtype=tf.float32)
         preds = tf.constant([[1.0], [0.0], [1.0], [1.0]], dtype=tf.float32)
         # Initialize
-        mcc = self.initialize_vars(n_classes=1, input_dtype=tf.float32)
+        mcc = self.initialize_vars(n_classes=1)
         # Update
         self.update_obj_states(mcc, gt_label, preds)
         # Check results
@@ -68,7 +68,7 @@ class MatthewsCorrelationCoefficientTest(tf.test.TestCase):
                              [1.0, 1.0, 0.0]],
                             dtype=tf.float32)
         # Initialize
-        mcc = self.initialize_vars(n_classes=3, input_dtype=tf.float32)
+        mcc = self.initialize_vars(n_classes=3)
         # Update
         self.update_obj_states(mcc, gt_label, preds)
         # Check results

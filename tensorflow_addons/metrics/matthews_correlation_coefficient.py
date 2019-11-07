@@ -18,11 +18,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
-import numpy as np
 
 
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class MatthewsCorrelationCoefficient(Metric):
     """Computes the Matthews Correlation Coefficient.
 
@@ -56,16 +57,15 @@ class MatthewsCorrelationCoefficient(Metric):
              dtype=tf.float32)
     # Matthews correlation coefficient
     mcc = MatthewsCorrelationCoefficient(num_classes=1)
-    output.update_state(actuals, preds)
+    mcc.update_state(actuals, preds)
     print('Matthews correlation coefficient is:',
-    output.result().numpy())
+    mcc.result().numpy())
     # Matthews correlation coefficient is : -0.33333334
     ```
     """
 
     def __init__(self,
                  num_classes=None,
-                 sample_weight=None,
                  name='MatthewsCorrelationCoefficient',
                  dtype=tf.float32):
         super(MatthewsCorrelationCoefficient, self).__init__(
