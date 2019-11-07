@@ -3,7 +3,7 @@
 ## Maintainers
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:------------- |
-| skip_gram_ops | @rahulunair | rahulunair@gmail.com  |
+| skip_gram_ops |  |  |
 | crf | Dheeraj R. Reddy | dheeraj98reddy@gmail.com |
 | parse_time_op | Helin Wang | helin@google.com |
 
