@@ -12,18 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Additional layers that conform to Keras API."""
+"""Tests for TCN layer."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow_addons.layers.gelu import GeLU
-from tensorflow_addons.layers.maxout import Maxout
-from tensorflow_addons.layers.normalizations import GroupNormalization
-from tensorflow_addons.layers.normalizations import InstanceNormalization
-from tensorflow_addons.layers.optical_flow import CorrelationCost
-from tensorflow_addons.layers.poincare import PoincareNormalize
-from tensorflow_addons.layers.sparsemax import Sparsemax
-from tensorflow_addons.layers.wrappers import WeightNormalization
-from tensorflow_addons.layers.tcn import TCN
+import numpy as np
+import tensorflow as tf
+from tensorflow_addons.utils import test_utils
+from tensorflow_addons.layers import TCN
+
+
+@test_utils.run_all_in_graph_and_eager_modes
+class TCNTest(tf.test.TestCase):
+    # TODO(shunlin): implment unit test
+    def test_simple(self):
+        pass
