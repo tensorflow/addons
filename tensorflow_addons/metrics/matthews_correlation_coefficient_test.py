@@ -38,8 +38,7 @@ class MatthewsCorrelationCoefficientTest(tf.test.TestCase):
         self.assertEqual(mcc2.dtype, tf.float32)
 
     def initialize_vars(self, n_classes):
-        mcc = MatthewsCorrelationCoefficient(
-            num_classes=n_classes)
+        mcc = MatthewsCorrelationCoefficient(num_classes=n_classes)
         self.evaluate(tf.compat.v1.variables_initializer(mcc.variables))
         return mcc
 

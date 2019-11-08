@@ -43,12 +43,6 @@ class MatthewsCorrelationCoefficient(Metric):
     MCC = (TP * TN) - (FP * FN) /
           ((TP + FP) * (TP + FN) * (TN + FP ) * (TN + FN))^(1/2)
 
-    Args:
-       num_classes : Number of unique classes in the dataset.
-
-    Returns:
-       mcc : float (the Matthews correlation coefficient)
-
     Usage:
     ```python
     actuals = tf.constant([[1.0], [1.0], [1.0], [0.0]],
@@ -91,6 +85,11 @@ class MatthewsCorrelationCoefficient(Metric):
             shape=[self.num_classes],
             initializer='zeros',
             dtype=self.dtype)
+        """Creates a Matthews Correlation Coefficient instanse.
+        
+        Args:
+            num_classes : Number of unique classes in the dataset.
+        """
 
     # TODO: sample_weights
     def update_state(self, y_true, y_pred, sample_weight=None):
