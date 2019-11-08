@@ -28,9 +28,8 @@ class ResidualBlock(tf.keras.Layer):
     """Defines the residual block for the WaveNet TCN
         Arguments:
             x: The previous layer in the model
-            training: boolean indicating whether the layer should behave in training mode or in inference mode
             dilation_rate: The dilation power of 2 we are using for this residual block
-            nb_filters: The number of convolutional filters to use in this block
+            filters: The number of convolutional filters to use in this block
             kernel_size: The size of the convolutional kernel
             padding: The padding used in the convolutional layers, 'same' or 'causal'.
             activation: The final activation used in o = Activation(x + F(x))
@@ -42,7 +41,7 @@ class ResidualBlock(tf.keras.Layer):
 
     def __init__(self,
                  dilation_rate,
-                 nb_filters,
+                 filters,
                  kernel_size,
                  padding,
                  activation = 'relu',
@@ -53,7 +52,7 @@ class ResidualBlock(tf.keras.Layer):
                  **kwargs):
 
         self.dilation_rate=dilation_rate
-        self.nb_filters=nb_filters
+        self.filters=filters
         self.kernel_size=kernel_size
         self.padding=padding
         self.activation=activation
@@ -86,7 +85,7 @@ class ResidualBlock(tf.keras.Layer):
                 name='conv1D_{}'.format(k)
                 # name scope used to make sure weights get unique names
                 with K.name_scope(name):
-                    self._add_and_activate_layer(Conv1D(filters=self.nb_filters,
+                    self._add_and_activate_layer(Conv1D(filters=self.filters,
                                                         kernel_size=self.kernel_size,
                                                         dilation_rate=self.dilation_rate,
                                                         padding=self.padding,
@@ -108,7 +107,7 @@ class ResidualBlock(tf.keras.Layer):
                 with K.name_scope(name):
                     # make and build this layer separately because it directly
                     # uses input_shape
-                    self.shape_match_conv= Conv1D(filters = self.nb_filters,
+                    self.shape_match_conv= Conv1D(filters = self.filters,
                                                    kernel_size = 1,
                                                    padding = 'same',
                                                    name = name,
@@ -176,10 +175,10 @@ class TCN(tf.keras.Layer):
         Input shape:
             A tensor of shape (batch_size, timesteps, input_dim).
         Args:
-            nb_filters: The number of filters to use in the convolutional layers.
+            filters: The number of filters to use in the convolutional layers.
             kernel_size: The size of the kernel to use in each convolutional layer.
             dilations: The list of the dilations. Example is: [1, 2, 4, 8, 16, 32, 64].
-            nb_stacks : The number of stacks of residual blocks to use.
+            stacks : The number of stacks of residual blocks to use.
             padding: The padding to use in the convolutional layers, 'causal' or 'same'.
             use_skip_connections: Boolean. If we want to add skip connections from input to each residual block.
             return_sequences: Boolean. Whether to return the last output in the output sequence, or the full sequence.
@@ -194,9 +193,9 @@ class TCN(tf.keras.Layer):
         """
 
     def __init__(self,
-                 nb_filters = 64,
+                 filters = 64,
                  kernel_size = 2,
-                 nb_stacks = 1,
+                 stacks = 1,
                  dilations = (1, 2, 4, 8, 16, 32),
                  padding = 'causal',
                  use_skip_connections = True,
@@ -211,9 +210,9 @@ class TCN(tf.keras.Layer):
         self.dropout_rate= dropout_rate
         self.use_skip_connections= use_skip_connections
         self.dilations= dilations
-        self.nb_stacks= nb_stacks
+        self.stacks= stacks
         self.kernel_size= kernel_size
-        self.nb_filters= nb_filters
+        self.filters= filters
         self.activation= activation
         self.padding= padding
         self.kernel_initializer= kernel_initializer
@@ -227,7 +226,7 @@ class TCN(tf.keras.Layer):
         super(TCN, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        self.main_conv1D = Conv1D(filters =self.nb_filters,
+        self.main_conv1D = Conv1D(filters =self.filters,
                                   kernel_size = 1,
                                   padding = self.padding,
                                   kernel_initializer =self.kernel_initializer)
@@ -239,14 +238,14 @@ class TCN(tf.keras.Layer):
 
         # list to hold all the member ResidualBlocks
         self.residual_blocks= list()
-        total_num_blocks= self.nb_stacks * len(self.dilations)
+        total_num_blocks= self.stacks * len(self.dilations)
         if not self.use_skip_connections:
             total_num_blocks += 1  # cheap way to do a false case for below
 
-        for _ in range(self.nb_stacks):
+        for _ in range(self.stacks):
             for d in self.dilations:
                 self.residual_blocks.append(ResidualBlock(dilation_rate=d,
-                                                          nb_filters=self.nb_filters,
+                                                          filters=self.filters,
                                                           kernel_size=self.kernel_size,
                                                           padding=self.padding,
                                                           activation=self.activation,
@@ -294,9 +293,9 @@ class TCN(tf.keras.Layer):
 
     def get_config(self):
         config = dict()
-        config['nb_filters']= self.nb_filters
+        config['filters']= self.filters
         config['kernel_size']= self.kernel_size
-        config['nb_stacks']= self.nb_stacks
+        config['stacks']= self.stacks
         config['dilations']= self.dilations
         config['padding']= self.padding
         config['use_skip_connections']= self.use_skip_connections
