@@ -73,6 +73,14 @@ class WeightNormalizationTest(tf.test.TestCase):
             wn_wrapper = wrappers.WeightNormalization(non_kernel_layer)
             wn_wrapper(images)
 
+    def test_weightnorm_with_time_dist(self):
+        batch_shape = (32, 16, 64, 64, 3)
+        inputs = tf.keras.layers.Input(batch_shape=batch_shape)
+        a = tf.keras.layers.Conv2D(3, 5)
+        b = wrappers.WeightNormalization(a)
+        out = tf.keras.layers.TimeDistributed(b)(inputs)
+        model = tf.keras.Model(inputs, out)
+
 
 if __name__ == "__main__":
     tf.test.main()
