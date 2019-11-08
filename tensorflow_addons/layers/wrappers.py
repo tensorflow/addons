@@ -62,7 +62,8 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     def build(self, input_shape):
         """Build `Layer`"""
         input_shape = tf.TensorShape(input_shape).as_list()
-        self.input_spec = tf.keras.layers.InputSpec(shape=input_shape)
+        self.input_spec = tf.keras.layers.InputSpec(
+            shape=[None] + input_shape[1:])
 
         if not self.layer.built:
             self.layer.build(input_shape)
