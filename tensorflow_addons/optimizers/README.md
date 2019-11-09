@@ -4,26 +4,26 @@
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
 | conditional_gradient | Pengyu Kan, Vishnu Lokhande | pkan2@wisc.edu, lokhande@cs.wisc.edu |
+| cyclical_learning_rate | Raphael Meudec | raphael.meudec@gmail.com |
 | lamb | Jing Li, Junjie Ke | jingli@google.com, junjiek@google.com |
 | lazy_adam | Saishruthi Swaminathan  | saishruthi.tn@gmail.com  |
 | lookahead | Zhao Hanguang | cyberzhg@gmail.com |
 | moving_average | Dheeraj R. Reddy | dheeraj98reddy@gmail.com |
 | rectified_adam | Zhao Hanguang | cyberzhg@gmail.com |
 | weight_decay_optimizers |  Phil Jund | ijund.phil@googlemail.com   |
-| cyclical_learning_rate | Raphael Meudec | raphael.meudec@gmail.com |
 
 
 ## Components
 | Submodule | Optimizer  | Reference                                   |
 |:--------- |:---------- |:---------|
 | conditional_gradient | ConditionalGradient | https://arxiv.org/pdf/1803.06453.pdf |
+| cyclical_learning_rate | Cyclical Learning Rate | https://arxiv.org/abs/1506.01186 |
 | lamb | LAMB | https://arxiv.org/abs/1904.00962      |
 | lazy_adam | LazyAdam | https://arxiv.org/abs/1412.6980      |
 | lookahead | Lookahead | https://arxiv.org/abs/1907.08610v1 |
 | moving_average | MovingAverage | |
 | rectified_adam | RectifiedAdam | https://arxiv.org/pdf/1908.03265v1.pdf |
 | weight_decay_optimizers | SGDW, AdamW, extend_with_decoupled_weight_decay | https://arxiv.org/pdf/1711.05101.pdf |
-| cyclical_learning_rate | Cyclical Learning Rate | https://arxiv.org/abs/1506.01186 |
 
 
 ## Contribution Guidelines
