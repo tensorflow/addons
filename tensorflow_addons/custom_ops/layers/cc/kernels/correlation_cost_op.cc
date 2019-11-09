@@ -20,10 +20,12 @@ limitations under the License.
 #endif  // GOOGLE_CUDA
 
 #include "tensorflow_addons/custom_ops/layers/cc/kernels/correlation_cost_op.h"
+#include "tensorflow/core/framework/bounds_check.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/util/tensor_format.h"
+#include "tensorflow/core/util/work_sharder.h"
 
 namespace tensorflow {
 namespace addons {
@@ -60,47 +62,59 @@ struct CorrelationCostFunctor<CPUDevice, Dtype> {
     const int displacement_size = 2 * displacement_rad + 1;
 
     const bool is_NCHW = (data_format == FORMAT_NCHW);
+    // estimate operations per pixel
+    const int64 cost_per_pixel =
+        iC * ((2 * displacement_rad + 1) * (2 * displacement_rad + 1)) *
+        ((2 * kernel_rad + 1) * (2 * kernel_rad + 1)) *
+        (Eigen::TensorOpCost::MulCost<Dtype>() +
+         Eigen::TensorOpCost::AddCost<Dtype>());
 
-    for (int n = 0; n < oN; ++n) {
-      for (int h = 0; h < oH; ++h) {
+    const auto work = [&](Eigen::Index start, Eigen::Index end) -> void {
+      for (Eigen::Index id = start; id < end; ++id) {
+        const int n = id / (oH * oW);
+        const int h = (id / oW) % oH;
+        const int w = id % oW;
         const int h1 = (h - pad) * stride_1 + max_displacement + kernel_rad;
-        for (int w = 0; w < oW; ++w) {
-          const int w1 = (w - pad) * stride_1 + max_displacement + kernel_rad;
+        const int w1 = (w - pad) * stride_1 + max_displacement + kernel_rad;
+        for (int tj = -displacement_rad; tj <= displacement_rad; ++tj) {
+          for (int ti = -displacement_rad; ti <= displacement_rad; ++ti) {
+            const int tc = (tj + displacement_rad) * displacement_size +
+                           (ti + displacement_rad);
 
-          for (int tj = -displacement_rad; tj <= displacement_rad; ++tj) {
-            for (int ti = -displacement_rad; ti <= displacement_rad; ++ti) {
-              const int tc = (tj + displacement_rad) * displacement_size +
-                             (ti + displacement_rad);
+            const int w2 = w1 + ti * stride_2;
+            const int h2 = h1 + tj * stride_2;
 
-              const int w2 = w1 + ti * stride_2;
-              const int h2 = h1 + tj * stride_2;
-
-              for (int j = -kernel_rad; j <= kernel_rad; ++j) {
-                // out-of-bound test
-                if ((h1 + j < 0) || (h1 + j >= iH)) continue;
-                if ((h2 + j < 0) || (h2 + j >= iH)) continue;
-                for (int i = -kernel_rad; i <= kernel_rad; ++i) {
-                  if ((w1 + i < 0) || (w1 + i >= iW)) continue;
-                  if ((w2 + i < 0) || (w2 + i >= iW)) continue;
-                  for (int c = 0; c < iC; ++c) {
-                    // eq. (1) in FlowNet: Learning Optical Flow with
-                    // Convolutional Networks
-                    if (is_NCHW) {
-                      output(n, tc, h, w) += input_a(n, c, h1 + j, w1 + i) *
-                                             input_b(n, c, h2 + j, w2 + i);
-                    } else {
-                      output(n, tc, h, w) += input_a(n, h1 + j, w1 + i, c) *
-                                             input_b(n, h2 + j, w2 + i, c);
-                    }
+            for (int j = -kernel_rad; j <= kernel_rad; ++j) {
+              // out-of-bound test
+              if (!FastBoundsCheck(h1 + j, iH) || !FastBoundsCheck(h2 + j, iH))
+                continue;
+              for (int i = -kernel_rad; i <= kernel_rad; ++i) {
+                if (!FastBoundsCheck(w1 + i, iW) ||
+                    !FastBoundsCheck(w2 + i, iW))
+                  continue;
+                for (int c = 0; c < iC; ++c) {
+                  // eq. (1) in FlowNet: Learning Optical Flow with
+                  // Convolutional Networks
+                  if (is_NCHW) {
+                    output(n, tc, h, w) += input_a(n, c, h1 + j, w1 + i) *
+                                           input_b(n, c, h2 + j, w2 + i);
+                  } else {
+                    output(n, tc, h, w) += input_a(n, h1 + j, w1 + i, c) *
+                                           input_b(n, h2 + j, w2 + i, c);
                   }
                 }
               }
-              output(n, tc, h, w) /= K;
             }
+            output(n, tc, h, w) /= K;
           }
         }
       }
-    }
+    };
+
+    auto worker_threads = *(context->device()->tensorflow_cpu_worker_threads());
+    Shard(worker_threads.num_threads, worker_threads.workers, oN * oH * oW,
+          cost_per_pixel, work);
+
     return Status::OK();
   }
 };
@@ -137,46 +151,54 @@ struct CorrelationCostGradFunctor<CPUDevice, Dtype> {
     const int K = kernel_size * kernel_size * iC;
 
     const bool is_NCHW = (data_format == FORMAT_NCHW);
+    // estimate operations per pixel
+    const int64 cost_per_pixel =
+        4 * iC * ((2 * displacement_rad + 1) * (2 * displacement_rad + 1)) *
+        ((2 * kernel_rad + 1) * (2 * kernel_rad + 1)) *
+        (Eigen::TensorOpCost::MulCost<Dtype>() +
+         Eigen::TensorOpCost::AddCost<Dtype>());
 
-    for (int n = 0; n < iN; ++n) {
-      for (int h = 0; h < oH; ++h) {
+    const auto work = [&](Eigen::Index start, Eigen::Index end) -> void {
+      for (Eigen::Index id = start; id < end; ++id) {
+        const int n = id / (oH * oW);
+        const int h = (id / oW) % oH;
+        const int w = id % oW;
         const int h1 = (h - pad) * stride_1 + max_displacement + kernel_rad;
-        for (int w = 0; w < oW; ++w) {
-          const int w1 = (w - pad) * stride_1 + max_displacement + kernel_rad;
+        const int w1 = (w - pad) * stride_1 + max_displacement + kernel_rad;
 
-          for (int tj = -displacement_rad; tj <= displacement_rad; ++tj) {
-            for (int ti = -displacement_rad; ti <= displacement_rad; ++ti) {
-              const int tc = (tj + displacement_rad) * displacement_size +
-                             (ti + displacement_rad);
+        for (int tj = -displacement_rad; tj <= displacement_rad; ++tj) {
+          for (int ti = -displacement_rad; ti <= displacement_rad; ++ti) {
+            const int tc = (tj + displacement_rad) * displacement_size +
+                           (ti + displacement_rad);
 
-              const int w2 = w1 + ti * stride_2;
-              const int h2 = h1 + tj * stride_2;
+            const int w2 = w1 + ti * stride_2;
+            const int h2 = h1 + tj * stride_2;
 
-              for (int j = -kernel_rad; j <= kernel_rad; ++j) {
-                // out-of-bound test
-                if ((h1 + j < 0) || (h1 + j >= iH)) continue;
-                if ((h2 + j < 0) || (h2 + j >= iH)) continue;
-                for (int i = -kernel_rad; i <= kernel_rad; ++i) {
-                  if ((w1 + i < 0) || (w1 + i >= iW)) continue;
-                  if ((w2 + i < 0) || (w2 + i >= iW)) continue;
-                  for (int c = 0; c < iC; ++c) {
-                    // eq. (1) in FlowNet: Learning Optical Flow with
-                    // Convolutional Networks
-                    if (is_NCHW) {
-                      output_a_gradient(n, c, h1 + j, w1 + i) +=
-                          topdiff(n, tc, h, w) * input_b(n, c, h2 + j, w2 + i) /
-                          K;
-                      output_b_gradient(n, c, h2 + j, w2 + i) +=
-                          topdiff(n, tc, h, w) * input_a(n, c, h1 + j, w1 + i) /
-                          K;
-                    } else {
-                      output_a_gradient(n, h1 + j, w1 + i, c) +=
-                          topdiff(n, tc, h, w) * input_b(n, h2 + j, w2 + i, c) /
-                          K;
-                      output_b_gradient(n, h2 + j, w2 + i, c) +=
-                          topdiff(n, tc, h, w) * input_a(n, h1 + j, w1 + i, c) /
-                          K;
-                    }
+            for (int j = -kernel_rad; j <= kernel_rad; ++j) {
+              // out-of-bound test
+              if (!FastBoundsCheck(h1 + j, iH) || !FastBoundsCheck(h2 + j, iH))
+                continue;
+              for (int i = -kernel_rad; i <= kernel_rad; ++i) {
+                if (!FastBoundsCheck(w1 + i, iW) ||
+                    !FastBoundsCheck(w2 + i, iW))
+                  continue;
+                for (int c = 0; c < iC; ++c) {
+                  // eq. (1) in FlowNet: Learning Optical Flow with
+                  // Convolutional Networks
+                  if (is_NCHW) {
+                    output_a_gradient(n, c, h1 + j, w1 + i) +=
+                        topdiff(n, tc, h, w) * input_b(n, c, h2 + j, w2 + i) /
+                        K;
+                    output_b_gradient(n, c, h2 + j, w2 + i) +=
+                        topdiff(n, tc, h, w) * input_a(n, c, h1 + j, w1 + i) /
+                        K;
+                  } else {
+                    output_a_gradient(n, h1 + j, w1 + i, c) +=
+                        topdiff(n, tc, h, w) * input_b(n, h2 + j, w2 + i, c) /
+                        K;
+                    output_b_gradient(n, h2 + j, w2 + i, c) +=
+                        topdiff(n, tc, h, w) * input_a(n, h1 + j, w1 + i, c) /
+                        K;
                   }
                 }
               }
@@ -184,7 +206,12 @@ struct CorrelationCostGradFunctor<CPUDevice, Dtype> {
           }
         }
       }
-    }
+    };
+
+    auto worker_threads = *(context->device()->tensorflow_cpu_worker_threads());
+    Shard(worker_threads.num_threads, worker_threads.workers, iN * oH * oW,
+          cost_per_pixel, work);
+
     return Status::OK();
   }
 };
