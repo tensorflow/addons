@@ -72,7 +72,10 @@ class SWATest(tf.test.TestCase):
         self.assertAllClose(var_1.read_value(), [1.8, 1.8])
 
     def test_fit_simple_linear_model(self):
-        np.random.seed(0x2019)
+        seed = 0x2019
+        np.random.seed(seed)
+        tf.random.set_seed(seed)
+        
         num_examples = 100000
         x = np.random.standard_normal((num_examples, 3))
         w = np.random.standard_normal((3, 1))
