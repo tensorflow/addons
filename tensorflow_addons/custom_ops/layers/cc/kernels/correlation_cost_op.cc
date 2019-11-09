@@ -153,7 +153,7 @@ struct CorrelationCostGradFunctor<CPUDevice, Dtype> {
     const bool is_NCHW = (data_format == FORMAT_NCHW);
     // estimate operations per pixel
     const int64 cost_per_pixel =
-        4 * iC * ((2 * displacement_rad + 1) * (2 * displacement_rad + 1)) *
+        2 * iC * ((2 * displacement_rad + 1) * (2 * displacement_rad + 1)) *
         ((2 * kernel_rad + 1) * (2 * kernel_rad + 1)) *
         (Eigen::TensorOpCost::MulCost<Dtype>() +
          Eigen::TensorOpCost::AddCost<Dtype>());
