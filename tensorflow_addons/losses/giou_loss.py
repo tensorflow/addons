@@ -73,8 +73,10 @@ class GIoULoss(tf.keras.losses.Loss):
 def giou_loss(y_true, y_pred, mode='giou'):
     """
     Args:
-        y_true: true targets tensor.
-        y_pred: predictions tensor.
+        y_true: true targets tensor. The coordinates of the each bounding box in
+        boxes are encoded as [y_min, x_min, y_max, x_max].
+        y_pred: predictions tensor. The coordinates of the each bounding box in
+        boxes are encoded as [y_min, x_min, y_max, x_max].
         mode: one of ['giou', 'iou'],
         decided to calculate giou loss or iou loss.
 
@@ -94,8 +96,10 @@ def giou_loss(y_true, y_pred, mode='giou'):
 def do_giou_calculate(b1, b2, mode='giou'):
     """
     Args:
-        b1: bounding box.
-        b2: the other bounding box.
+        b1: bounding box. The coordinates of the each bounding box in boxes are
+        encoded as [y_min, x_min, y_max, x_max].
+        b2: the other bounding box. The coordinates of the each bounding box 
+        in boxes are encoded as [y_min, x_min, y_max, x_max].
         mode: one of ['giou', 'iou'],
         decided to calculate giou loss or iou loss.
 
@@ -103,14 +107,8 @@ def do_giou_calculate(b1, b2, mode='giou'):
         GIoU loss float `Tensor`.
     """
     zero = tf.convert_to_tensor(0., b1.dtype)
-    b1_ymin = tf.minimum(b1[..., 0], b1[..., 2])
-    b1_xmin = tf.minimum(b1[..., 1], b1[..., 3])
-    b1_ymax = tf.maximum(b1[..., 0], b1[..., 2])
-    b1_xmax = tf.maximum(b1[..., 1], b1[..., 3])
-    b2_ymin = tf.minimum(b2[..., 0], b2[..., 2])
-    b2_xmin = tf.minimum(b2[..., 1], b2[..., 3])
-    b2_ymax = tf.maximum(b2[..., 0], b2[..., 2])
-    b2_xmax = tf.maximum(b2[..., 1], b2[..., 3])
+    b1_ymin, b1_xmin, b1_ymax, b1_xmax = tf.unstack(b1, axis=-1)
+    b2_ymin, b2_xmin, b2_ymax, b2_xmax = tf.unstack(b2, axis=-1)
     b1_width = tf.maximum(zero, b1_xmax - b1_xmin)
     b1_height = tf.maximum(zero, b1_ymax - b1_ymin)
     b2_width = tf.maximum(zero, b2_xmax - b2_xmin)
