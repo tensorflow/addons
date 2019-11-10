@@ -176,18 +176,6 @@ class ResidualBlock(tf.keras.Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-def process_dilations(dilations):
-    def is_power_of_two(num):
-        return num != 0 and ((num & (num - 1)) == 0)
-
-    if all([is_power_of_two(i) for i in dilations]):
-        return dilations
-
-    else:
-        new_dilations = [2 ** i for i in dilations]
-        return new_dilations
-
-
 @tf.keras.utils.register_keras_serializable(package='Addons')
 class TCN(tf.keras.Layer):
     """Creates a TCN layer.
@@ -200,8 +188,10 @@ class TCN(tf.keras.Layer):
                 Defaults to 64.
             kernel_size: The size of the kernel to use in each
                 convolutional layer. Defaults to 2.
-            dilations: The list-like input of the dilations.
-                Defults to (1, 2, 4, 8, 16, 32, 64).
+            dilations: The list-like input of the dilations. The size of this
+                input should be equal to the number of stacks. If None,
+                will defaults to power of 2 dilutions. For example, if
+                stacks = 3, will Defaults to [1,2,4].
             stacks : The number of stacks of residual blocks to use. Defaults
                 to 1.
             padding: The padding to use in the convolutional layers,
@@ -231,7 +221,7 @@ class TCN(tf.keras.Layer):
                  filters=64,
                  kernel_size=2,
                  stacks=1,
-                 dilations=(1, 2, 4, 8, 16, 32),
+                 dilations=None,
                  padding='causal',
                  use_skip_connections=True,
                  dropout_rate=0.0,
@@ -244,7 +234,6 @@ class TCN(tf.keras.Layer):
         self.return_sequences = return_sequences
         self.dropout_rate = dropout_rate
         self.use_skip_connections = use_skip_connections
-        self.dilations = dilations
         self.stacks = stacks
         self.kernel_size = kernel_size
         self.filters = filters
@@ -253,8 +242,14 @@ class TCN(tf.keras.Layer):
         self.kernel_initializer = kernel_initializer
         self.use_batch_norm = use_batch_norm
 
-        validate_paddings = ['causal', 'same']
+        # generate default dilations if custom dilations is not provided.
+        if not dilations:
+            self.dilations = [2 ** i for i in range(stacks)]
+        else:
+            self.dilations = dilations
 
+        # validate paddings
+        validate_paddings = ['causal', 'same']
         if padding not in validate_paddings:
             raise ValueError(
                 "Only 'causal' or 'same' padding are compatible for this layer")
