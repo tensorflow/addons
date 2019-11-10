@@ -253,9 +253,11 @@ class TCN(tf.keras.Layer):
         self.kernel_initializer = kernel_initializer
         self.use_batch_norm = use_batch_norm
 
-        if padding != 'causal' and padding != 'same':
+        validate_paddings = ['causal', 'same']
+
+        if padding not in validate_paddings:
             raise ValueError(
-                "Only 'causal' or 'same' padding are compatible for this layer.")
+                "Only 'causal' or 'same' padding are compatible for this layer")
 
         # initialize parent class
         super(TCN, self).__init__(**kwargs)
