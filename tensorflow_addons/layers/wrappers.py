@@ -96,7 +96,8 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             with tf.name_scope('data_dep_init'):
                 layer_config = tf.keras.layers.serialize(self.layer)
                 layer_config['config']['trainable'] = False
-                self._naked_clone_layer = tf.keras.layers.deserialize(layer_config)
+                self._naked_clone_layer = tf.keras.layers.deserialize(
+                    layer_config)
                 self._naked_clone_layer.build(input_shape)
                 self._naked_clone_layer.set_weights(self.layer.get_weights())
                 self._naked_clone_layer.activation = None
