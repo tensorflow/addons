@@ -29,21 +29,23 @@ class ResidualBlock(tf.keras.Layer):
 
         Arguments:
             dilation_rate (int): The dilation power of 2 we are using
-                for this residual block.
+                for this residual block. Defaults to 1.
             filters (int): The number of convolutional
-                filters to use in this block.
-            kernel_size (int): The size of the convolutional kernel.
+                filters to use in this block. Defaults to 64.
+            kernel_size (int): The size of the convolutional kernel. Defaults
+                to 2.
             padding (String): The padding used in the convolutional layers,
-                'same' or 'causal'.
+                'same' or 'causal'. Defaults to 'same'
             activation (String): The final activation used
-                in o = Activation(x + F(x)).
+                in o = Activation(x + F(x)). Defaults to 'relu'
             dropout_rate (Float): Float between 0 and 1. Fraction
-                of the input units to drop.
+                of the input units to drop. Defaults to 0.0.
             kernel_initializer (String): Initializer for the kernel weights
-                matrix (Conv1D).
+                matrix (Conv1D). Defaults to 'he_normal'
             use_batch_norm (bool): Whether to use batch normalization in the
-                residual layers or not.
-            last_block (bool):
+                residual layers or not. Defaults to False.
+            last_block (bool): Whether or not this block is the last residual
+                block of the network. Defaults to False.
             kwargs: Any initializers for Layer class.
 
         Returns:
@@ -54,12 +56,12 @@ class ResidualBlock(tf.keras.Layer):
                  dilation_rate=1,
                  filters=64,
                  kernel_size=2,
-                 padding=0,
+                 padding='same',
                  activation='relu',
-                 dropout_rate=0,
+                 dropout_rate=0.0,
                  kernel_initializer='he_normal',
                  use_batch_norm=False,
-                 last_block=True,
+                 last_block=False,
                  **kwargs):
 
         self.dilation_rate = dilation_rate
@@ -195,25 +197,29 @@ class TCN(tf.keras.Layer):
 
         Arguments:
             filters: The number of filters to use in the convolutional layers.
+                Defaults to 64.
             kernel_size: The size of the kernel to use in each
-                convolutional layer.
-            dilations: The list of the dilations.
-                Example is: [1, 2, 4, 8, 16, 32, 64].
-            stacks : The number of stacks of residual blocks to use.
+                convolutional layer. Defaults to 2.
+            dilations: The list-like input of the dilations.
+                Defults to (1, 2, 4, 8, 16, 32, 64).
+            stacks : The number of stacks of residual blocks to use. Defaults
+                to 1.
             padding: The padding to use in the convolutional layers,
-                'causal' or 'same'.
+                'causal' or 'same'. Defaults to 'causal'.
             use_skip_connections: Boolean. If we want to add skip
                 connections from input to each residual block.
+                Defaults to True.
             return_sequences: Boolean. Whether to return the last
                 output in the output sequence, or the full sequence.
+                Defaults to False.
             activation: The activation used in the residual
-                blocks o = Activation(x + F(x)).
+                blocks o = Activation(x + F(x)). Defaults to 'linear'
             dropout_rate: Float between 0 and 1. Fraction of the input
-                units to drop.
+                units to drop. Defaults to 0.0.
             kernel_initializer: Initializer for the kernel weights
-                matrix (Conv1D).
+                matrix (Conv1D). Defaulst to 'he_normal'
             use_batch_norm: Whether to use batch normalization in the
-                residual layers or not.
+                residual layers or not. Defaulst to False.
             kwargs: Any other arguments for configuring parent class Layer.
                 For example "name=str", Name of the model.
                 Use unique names when using multiple TCN.
