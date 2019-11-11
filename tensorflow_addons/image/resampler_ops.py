@@ -21,14 +21,13 @@ from __future__ import print_function
 import tensorflow as tf
 
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
-# from tensorflow_addons.custom_ops.image.cc.ops import gen_resampler_ops
 
 _resampler_ops = tf.load_op_library(
     get_path_to_datafile("custom_ops/image/_resampler_ops.so"))
 
 
 @tf.function
-def resampler(data, warp, name="resampler"):
+def resampler(data, warp, name=None):
     """Resamples input data at user defined coordinates.
 
     The resampler currently only supports bilinear interpolation of 2D data.
@@ -62,7 +61,6 @@ def resampler(data, warp, name="resampler"):
 def _resampler_grad(op, grad_output):
     data, warp = op.inputs
     grad_output_tensor = tf.convert_to_tensor(grad_output, name="grad_output")
-    # rspr_grad = _resampler_ops.resampler_grad(data, warp, grad_output_tensor)
     return _resampler_ops.addons_resampler_grad(data, warp, grad_output_tensor)
 
 

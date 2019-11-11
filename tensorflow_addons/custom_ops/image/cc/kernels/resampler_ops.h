@@ -13,16 +13,14 @@
 // limitations under the License.
 // =============================================================================
 
-#ifndef TENSORFLOW_CONTRIB_RESAMPLER_KERNELS_RESAMPLER_OPS_H_
-#define TENSORFLOW_CONTRIB_RESAMPLER_KERNELS_RESAMPLER_OPS_H_
+#ifndef TENSORFLOW_ADDONS_IMAGE_KERNELS_RESAMPLER_OPS_H_
+#define TENSORFLOW_ADDONS_IMAGE_KERNELS_RESAMPLER_OPS_H_
 
 #if PLATFORM_WINDOWS
 #define __restrict__ __restrict
 #endif
 
-namespace tensorflow {
-class OpKernelContext;
-}
+#include "tensorflow/core/framework/op_kernel.h"
 
 namespace tensorflow {
 namespace addons {  
@@ -50,7 +48,7 @@ struct ResamplerGrad2DFunctor {
 };
 
 }  // namespace functor
-}  // end namespace addons
+}  // namespace addons
 }  // namespace tensorflow
 
-#endif  // TENSORFLOW_CONTRIB_RESAMPLER_KERNELS_RESAMPLER_OPS_H_
+#endif  // TENSORFLOW_ADDONS_IMAGE_KERNELS_RESAMPLER_OPS_H_

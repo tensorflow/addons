@@ -278,7 +278,7 @@ struct ResamplerGrad2DFunctor<GPUDevice, T> {
 template struct ResamplerGrad2DFunctor<GPUDevice, float>;
 
 }  // namespace functor
-}  // end namespace addons
+}  // namespace addons
 }  // namespace tensorflow
 
 #endif  // GOOGLE_CUDA
