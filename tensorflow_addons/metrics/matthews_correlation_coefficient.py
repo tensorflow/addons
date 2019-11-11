@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import numpy as np
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
 
@@ -89,12 +88,15 @@ class MatthewsCorrelationCoefficient(Metric):
         
         Args:
             num_classes : Number of unique classes in the dataset.
+            name: (Optional) String name of the metric instance.
+            dtype: (Optional) Data type of the metric result. 
+            Defaults to `tf.float32`.
         """
 
     # TODO: sample_weights
     def update_state(self, y_true, y_pred, sample_weight=None):
-        y_true = tf.cast(y_true, tf.float32)
-        y_pred = tf.cast(y_pred, tf.float32)
+        y_true = tf.cast(y_true, dtype=self.dtype)
+        y_pred = tf.cast(y_pred, dtype=self.dtype)
 
         true_positive = tf.math.count_nonzero(y_true * y_pred, 0)
         # true_negative
@@ -144,7 +146,7 @@ class MatthewsCorrelationCoefficient(Metric):
 
     def reset_states(self):
         """Resets all of the metric state variables."""
-        self.true_positives.assign(np.zeros(self.num_classes), np.float32)
-        self.false_positives.assign(np.zeros(self.num_classes), np.float32)
-        self.false_negatives.assign(np.zeros(self.num_classes), np.float32)
-        self.true_negatives.assign(np.zeros(self.num_classes), np.float32)
+        self.true_positives.assign(tf.zeros((self.num_classes), self.dtype))
+        self.false_positives.assign(tf.zeros((self.num_classes), self.dtype))
+        self.false_negatives.assign(tf.zeros((self.num_classes), self.dtype))
+        self.true_negatives.assign(tf.zeros((self.num_classes), self.dtype))
