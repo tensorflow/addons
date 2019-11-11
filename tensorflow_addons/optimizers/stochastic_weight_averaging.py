@@ -30,7 +30,6 @@ from __future__ import print_function
 import tensorflow as tf
 
 
-
 @tf.keras.utils.register_keras_serializable(package='Addons')
 class SWA(tf.keras.optimizers.Optimizer):
     """This class extends optimizers with Stochastic Weight Averaging (SWA).
