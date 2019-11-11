@@ -188,10 +188,8 @@ class TCN(tf.keras.Layer):
                 Defaults to 64.
             kernel_size: The size of the kernel to use in each
                 convolutional layer. Defaults to 2.
-            dilations: The list-like input of the dilations. The size of this
-                input should be equal to the number of stacks. If None,
-                will defaults to power of 2 dilutions. For example, if
-                stacks = 3, will Defaults to [1,2,4].
+            dilations: The array-like input of the dilations.
+                Defaults to [1,2,4,8,16,32,64]
             stacks : The number of stacks of residual blocks to use. Defaults
                 to 1.
             padding: The padding to use in the convolutional layers,
@@ -221,7 +219,7 @@ class TCN(tf.keras.Layer):
                  filters=64,
                  kernel_size=2,
                  stacks=1,
-                 dilations=None,
+                 dilations=[1, 2, 4, 8, 16, 32, 64],
                  padding='causal',
                  use_skip_connections=True,
                  dropout_rate=0.0,
@@ -241,12 +239,6 @@ class TCN(tf.keras.Layer):
         self.padding = padding
         self.kernel_initializer = kernel_initializer
         self.use_batch_norm = use_batch_norm
-
-        # generate default dilations if custom dilations is not provided.
-        if not dilations:
-            self.dilations = [2 ** i for i in range(stacks)]
-        else:
-            self.dilations = dilations
 
         # validate paddings
         validate_paddings = ['causal', 'same']
@@ -307,9 +299,6 @@ class TCN(tf.keras.Layer):
             self.build_output_shape)
 
     def compute_output_shape(self, input_shape):
-        """
-        Overridden in case keras uses it somewhere... no idea. Just trying to avoid future errors.
-        """
         if not self.built:
             self.build(input_shape)
         if not self.return_sequences:
