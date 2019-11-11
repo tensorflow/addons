@@ -12,7 +12,8 @@
 | Submodule | Metric  | Reference                               |
 |:----------------------- |:-------------------|:---------------|
 | cohens_kappa| CohenKappa|[Cohen's Kappa](https://en.wikipedia.org/wiki/Cohen%27s_kappa)|
-| f1_scores| F1 micro, macro and weighted| [F1 Score](https://en.wikipedia.org/wiki/F1_score)|
+| f_scores| F1Score | [F1 Score](https://en.wikipedia.org/wiki/F1_score)|
+| f_scores| FBetaScore | |
 | r_square| RSquare|[R-Sqaure](https://en.wikipedia.org/wiki/Coefficient_of_determination)|
 | multilabel_confusion_matrix | Multilabel Confusion Matrix | [mcm](https://en.wikipedia.org/wiki/Confusion_matrix)|
 
@@ -21,8 +22,7 @@
 In order to conform with the current API standard, all metrics
 must:
  * Inherit from `tf.keras.metrics.Metric`.
- * [Register as a keras global object](https://github.com/tensorflow/addons/blob/master/tensorflow_addons/utils/keras_utils.py)
-  so it can be serialized properly.
+ * Register as a keras global object so it can be serialized properly: `@tf.keras.utils.register_keras_serializable(package='Addons')`
  * Add the addon to the `py_library` in this sub-package's BUILD file.
 
 #### Testing Requirements

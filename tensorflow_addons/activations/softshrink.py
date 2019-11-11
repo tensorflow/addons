@@ -18,16 +18,15 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 _activation_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/activations/_activation_ops.so"))
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 @tf.function
-def softshrink(x, lower=-1.0, upper=1.0):
+def softshrink(x, lower=-0.5, upper=0.5):
     """Soft shrink function.
 
     Computes soft shrink function:

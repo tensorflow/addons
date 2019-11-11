@@ -4,6 +4,7 @@
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
 | conditional_gradient | Pengyu Kan, Vishnu Lokhande | pkan2@wisc.edu, lokhande@cs.wisc.edu |
+| lamb | Jing Li, Junjie Ke | jingli@google.com, junjiek@google.com |
 | lazy_adam | Saishruthi Swaminathan  | saishruthi.tn@gmail.com  |
 | lookahead | Zhao Hanguang | cyberzhg@gmail.com |
 | moving_average | Dheeraj R. Reddy | dheeraj98reddy@gmail.com |
@@ -15,6 +16,7 @@
 | Submodule | Optimizer  | Reference                                   |
 |:--------- |:---------- |:---------|
 | conditional_gradient | ConditionalGradient | https://arxiv.org/pdf/1803.06453.pdf |
+| lamb | LAMB | https://arxiv.org/abs/1904.00962      |
 | lazy_adam | LazyAdam | https://arxiv.org/abs/1412.6980      |
 | lookahead | Lookahead | https://arxiv.org/abs/1907.08610v1 |
 | moving_average | MovingAverage | |
@@ -27,8 +29,7 @@
 In order to conform with the current API standard, all optimizers
 must:
  * Inherit from either `keras.optimizer_v2.OptimizerV2` or its subclasses.
- * [Register as a keras global object](https://github.com/tensorflow/addons/blob/master/tensorflow_addons/utils/keras_utils.py)
-  so it can be serialized properly.
+ * Register as a keras global object so it can be serialized properly: `@tf.keras.utils.register_keras_serializable(package='Addons')`
  * Add the addon to the `py_library` in this sub-package's BUILD file.
 
 #### Testing Requirements

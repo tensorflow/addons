@@ -24,8 +24,8 @@ REGISTER_OP("Addons>Softshrink")
     .Input("features: T")
     .Output("activations: T")
     .Attr("T: {half, float, double}")
-    .Attr("lower: float = -1.0")
-    .Attr("upper: float = 1.0")
+    .Attr("lower: float = -0.5")
+    .Attr("upper: float = 0.5")
     .SetShapeFn(shape_inference::UnchangedShape);
 
 REGISTER_OP("Addons>SoftshrinkGrad")
@@ -33,8 +33,8 @@ REGISTER_OP("Addons>SoftshrinkGrad")
     .Input("features: T")
     .Output("backprops: T")
     .Attr("T: {half, float, double}")
-    .Attr("lower: float = -1.0")
-    .Attr("upper: float = 1.0")
+    .Attr("lower: float = -0.5")
+    .Attr("upper: float = 0.5")
     .SetShapeFn(shape_inference::MergeBothInputsShapeFn);
 
 }  // namespace addons

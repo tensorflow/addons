@@ -17,10 +17,9 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class WeightNormalization(tf.keras.layers.Wrapper):
     """This wrapper reparameterizes a layer by decoupling the weight's
     magnitude and direction.
@@ -63,7 +62,8 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     def build(self, input_shape):
         """Build `Layer`"""
         input_shape = tf.TensorShape(input_shape).as_list()
-        self.input_spec = tf.keras.layers.InputSpec(shape=input_shape)
+        self.input_spec = tf.keras.layers.InputSpec(
+            shape=[None] + input_shape[1:])
 
         if not self.layer.built:
             self.layer.build(input_shape)
@@ -76,7 +76,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         self.layer_depth = int(self.layer.kernel.shape[-1])
         self.kernel_norm_axes = list(range(self.layer.kernel.shape.rank - 1))
 
-        self.g = self.add_variable(
+        self.g = self.add_weight(
             name='g',
             shape=(self.layer_depth,),
             initializer='ones',
@@ -84,7 +84,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             trainable=True)
         self.v = self.layer.kernel
 
-        self._initialized = self.add_variable(
+        self._initialized = self.add_weight(
             name='initialized',
             shape=None,
             initializer='zeros',

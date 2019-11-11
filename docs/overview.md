@@ -126,9 +126,9 @@ warning.
 
 ## Contributing
 TF-Addons is a community led open source project. As such, the project
-depends on public contributions, bug-fixes, and documentation. Please
-see [contribution guidelines](CONTRIBUTING.md) for a guide on how to
-contribute. This project adheres to [TensorFlow's code of conduct](CODE_OF_CONDUCT.md).
+depends on public contributions, bug-fixes, and documentation. Please see 
+[contribution guidelines](https://github.com/tensorflow/addons/blob/master/CONTRIBUTING.md) 
+for a guide on how to contribute. This project adheres to [TensorFlow's code of conduct](https://github.com/tensorflow/addons/blob/master/CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code.
 
 ## Community

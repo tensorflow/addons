@@ -6,10 +6,10 @@
 | contrastive |  @WindQAQ | windqaq@gmail.com |
 | crf | @howl-anderson | u1mail2me@gmail.com |
 | focal_loss | @SSaishruthi  | saishruthi.tn@gmail.com |
-| lifted |  |  |
+| lifted | @rahulunair | rahulunair@gmail.com  |
 | npairs | @WindQAQ | windqaq@gmail.com |
 | sparsemax_loss | @AndreasMadsen | amwwebdk+github@gmail.com |
-| triplet |   |  |
+| triplet |  @rahulunair | rahulunair@gmail.com  |
 
 
 ## Components
@@ -30,8 +30,7 @@
 In order to conform with the current API standard, all losses
 must:
  * Inherit from `keras.losses.Loss`.
- * [Register as a keras global object](https://github.com/tensorflow/addons/blob/master/tensorflow_addons/utils/keras_utils.py)
-  so it can be serialized properly.
+ * Register as a keras global object so it can be serialized properly: `@tf.keras.utils.register_keras_serializable(package='Addons')`
  * Add the addon to the `py_library` in this sub-package's BUILD file.
 
 #### Testing Requirements

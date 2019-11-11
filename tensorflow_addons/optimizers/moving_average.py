@@ -18,10 +18,9 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class MovingAverage(tf.keras.optimizers.Optimizer):
     """Optimizer that computes a moving average of the variables.
 
@@ -163,3 +162,19 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
 
     def _resource_apply_sparse(self, grad, var, indices):
         return self._optimizer._resource_apply_sparse(grad, var, indices)  # pylint: disable=protected-access
+
+    @property
+    def learning_rate(self):
+        return self._optimizer._get_hyper('learning_rate')
+
+    @learning_rate.setter
+    def learning_rate(self, learning_rate):
+        self._optimizer._set_hyper('learning_rate', learning_rate)
+
+    @property
+    def lr(self):
+        return self.learning_rate
+
+    @lr.setter
+    def lr(self, lr):
+        self.learning_rate = lr
