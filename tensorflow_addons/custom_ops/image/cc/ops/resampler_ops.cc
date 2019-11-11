@@ -61,5 +61,5 @@ REGISTER_OP("Addons>ResamplerGrad")
     })
     .Doc(R"doc(Resampler Grad op.)doc");
 
-} // namespace addon
+}  // namespace addon
 }  // namespace tensorflow

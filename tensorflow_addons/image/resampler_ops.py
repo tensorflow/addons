@@ -47,7 +47,7 @@ def resampler(data, warp, name=None):
       and warp of shape `[batch_size, dim_0, ... , dim_n, 2]` the output will
       be of shape `[batch_size, dim_0, ... , dim_n, data_num_channels]`.
     Raises:
-      ImportError: if the wrapper generated during compilation is not 
+      ImportError: if the wrapper generated during compilation is not
       present when the function is called.
     """
     with tf.name_scope(name or "resampler"):

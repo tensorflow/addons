@@ -19,10 +19,10 @@
 #include <cmath>
 #include <memory>
 
+#include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/tensor_shape.h"
-#include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/util/work_sharder.h"
 #include "tensorflow_addons/custom_ops/image/cc/kernels/resampler_ops.h"
@@ -180,8 +180,8 @@ class ResamplerOp : public ::tensorflow::OpKernel {
   TF_DISALLOW_COPY_AND_ASSIGN(ResamplerOp);
 };
 
-#define REGISTER(TYPE)                                                \
-  REGISTER_KERNEL_BUILDER(                                            \
+#define REGISTER(TYPE)                                                       \
+  REGISTER_KERNEL_BUILDER(                                                   \
       Name("Addons>Resampler").Device(DEVICE_CPU).TypeConstraint<TYPE>("T"), \
       ResamplerOp<CPUDevice, TYPE>);
 
@@ -191,8 +191,8 @@ TF_CALL_double(REGISTER);
 #undef REGISTER
 
 #if GOOGLE_CUDA
-#define REGISTER(TYPE)                                                \
-  REGISTER_KERNEL_BUILDER(                                            \
+#define REGISTER(TYPE)                                                       \
+  REGISTER_KERNEL_BUILDER(                                                   \
       Name("Addons>Resampler").Device(DEVICE_GPU).TypeConstraint<TYPE>("T"), \
       ResamplerOp<GPUDevice, TYPE>)
 TF_CALL_float(REGISTER);
@@ -391,10 +391,11 @@ class ResamplerGradOp : public ::tensorflow::OpKernel {
   TF_DISALLOW_COPY_AND_ASSIGN(ResamplerGradOp);
 };
 
-#define REGISTER(TYPE)                                                    \
-  REGISTER_KERNEL_BUILDER(                                                \
-      Name("Addons>ResamplerGrad").Device(DEVICE_CPU).TypeConstraint<TYPE>("T"), \
-      ResamplerGradOp<CPUDevice, TYPE>);
+#define REGISTER(TYPE)                                    \
+  REGISTER_KERNEL_BUILDER(Name("Addons>ResamplerGrad")    \
+                              .Device(DEVICE_CPU)         \
+                              .TypeConstraint<TYPE>("T"), \
+                          ResamplerGradOp<CPUDevice, TYPE>);
 
 TF_CALL_half(REGISTER);
 TF_CALL_float(REGISTER);
@@ -402,10 +403,11 @@ TF_CALL_double(REGISTER);
 #undef REGISTER
 
 #if GOOGLE_CUDA
-#define REGISTER(TYPE)                                                    \
-  REGISTER_KERNEL_BUILDER(                                                \
-      Name("Addons>ResamplerGrad").Device(DEVICE_GPU).TypeConstraint<TYPE>("T"), \
-      ResamplerGradOp<GPUDevice, TYPE>)
+#define REGISTER(TYPE)                                    \
+  REGISTER_KERNEL_BUILDER(Name("Addons>ResamplerGrad")    \
+                              .Device(DEVICE_GPU)         \
+                              .TypeConstraint<TYPE>("T"), \
+                          ResamplerGradOp<GPUDevice, TYPE>)
 // Disable half and double precision since atomicAdds are not supported
 // TF_CALL_half(REGISTER);
 // TF_CALL_double(REGISTER);

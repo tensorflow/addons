@@ -32,15 +32,15 @@ def _bilinearly_interpolate(data, x, y):
     This interpolation function:
       a) implicitly pads the input data with 0s.
       b) returns 0 when sampling outside the (padded) image.
-    The effect is that the sampled signal smoothly goes to 0 outside the 
+    The effect is that the sampled signal smoothly goes to 0 outside the
     original input domain, rather than producing a jump discontinuity at
     the image boundaries.
     Args:
       data: numpy array of shape `[data_height, data_width]` containing data
         samples assumed to be defined at the corresponding pixel coordinates.
-      x: numpy array of shape `[warp_height, warp_width]` containing 
+      x: numpy array of shape `[warp_height, warp_width]` containing
         x coordinates at which interpolation will be performed.
-      y: numpy array of shape `[warp_height, warp_width]` containing 
+      y: numpy array of shape `[warp_height, warp_width]` containing
         y coordinates at which interpolation will be performed.
     Returns:
       Numpy array of shape `[warp_height, warp_width]` containing interpolated
@@ -207,6 +207,7 @@ class ResamplerTest(tf.test.TestCase):
         warp = np.zeros(warp_shape)
         outputs = resampler(tf.constant(data), tf.constant(warp))
 
+        # pylint: disable=bad-continuation
         with self.assertRaisesRegexp(
                 tf.errors.UnimplementedError, "Only bilinear interpolation is "
                 "currently supported."):
@@ -242,6 +243,7 @@ class ResamplerTest(tf.test.TestCase):
         warp = np.zeros(warp_shape)
         outputs = resampler(tf.constant(data), tf.constant(warp))
 
+        # pylint: disable=bad-continuation
         with self.assertRaisesRegexp(
                 tf.errors.UnimplementedError, "Only bilinear interpolation is "
                 "supported warping"):

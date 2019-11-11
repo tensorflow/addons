@@ -23,7 +23,7 @@
 #include "tensorflow/core/framework/op_kernel.h"
 
 namespace tensorflow {
-namespace addons {  
+namespace addons {
 namespace functor {
 
 // Helper functor for the Resampler Op in 2D
