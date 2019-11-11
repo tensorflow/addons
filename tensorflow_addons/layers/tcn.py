@@ -24,7 +24,7 @@ from tensorflow_addons.utils import keras_utils
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-class ResidualBlock(tf.keras.Layer):
+class ResidualBlock(tf.keras.layers.Layer):
     """Defines the residual block for the WaveNet TCN
 
         Arguments:
@@ -151,8 +151,8 @@ class ResidualBlock(tf.keras.Layer):
 
     def call(self, inputs, training=None):
         """
-        Returns: A tuple where the first element is the residual model tensor, and the second
-                 is the skip connection tensor.
+        Returns: A tuple where the first element is the residual model tensor,
+                 and the second is the skip connection tensor.
         """
         x = inputs
         for layer in self.residual_layers:
@@ -168,16 +168,25 @@ class ResidualBlock(tf.keras.Layer):
     def compute_output_shape(self, input_shape):
         return [self.res_output_shape, self.res_output_shape]
 
-    # TODO(shunlin): fix this get_config after finish fixing the APIs
     def get_config(self):
         config = dict()
+
+        config['dilation_rate'] = self.dilation_rate
+        config['filters'] = self.filters
+        config['kernel_size'] = self.kernel_size
+        config['padding'] = self.padding
+        config['activation'] = self.activation
+        config['dropout_rate'] = self.dropout_rate
+        config['use_batch_norm'] = self.use_batch_norm
+        config['kernel_initializer'] = self.kernel_initializer
+        config['last_block'] = self.last_block
 
         base_config = super(ResidualBlock, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-class TCN(tf.keras.Layer):
+class TCN(tf.keras.layers.Layer):
     """Creates a TCN layer.
 
         Input shape:
@@ -235,6 +244,7 @@ class TCN(tf.keras.Layer):
         self.stacks = stacks
         self.kernel_size = kernel_size
         self.filters = filters
+        self.dilations = dilations
         self.activation = activation
         self.padding = padding
         self.kernel_initializer = kernel_initializer
