@@ -27,6 +27,7 @@ from tensorflow_addons.optimizers import weight_decay_optimizers
 WEIGHT_DECAY = 0.01
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class OptimizerTestBase(tf.test.TestCase):
     """Base class for optimizer tests.
 

@@ -25,6 +25,7 @@ from six.moves import xrange  # pylint: disable=redefined-builtin
 import conditional_gradient as cg_lib
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class ConditionalGradientTest(tf.test.TestCase):
     def _update_conditional_gradient_numpy(self, var, norm, g, lr, lambda_):
         var = var * lr - (1 - lr) * lambda_ * g / norm
@@ -104,20 +105,16 @@ class ConditionalGradientTest(tf.test.TestCase):
                           - (1 - 0.5) * 0.01 * 0.01 / norm1]),
                 self.evaluate(var1))
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testBasic(self):
         with self.cached_session():
             self.doTestBasic(use_resource=False)
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testResourceBasic(self):
         self.doTestBasic(use_resource=True)
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testBasicCallableParams(self):
         self.doTestBasic(use_resource=True, use_callable_params=True)
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testVariablesAcrossGraphs(self):
         optimizer = cg_lib.ConditionalGradient(0.01, 0.5)
         with tf.Graph().as_default():
@@ -148,7 +145,6 @@ class ConditionalGradientTest(tf.test.TestCase):
         else:
             return [tf.half, tf.float32, tf.float64]
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testMinimizeSparseResourceVariable(self):
         # This test invokes the ResourceSparseApplyConditionalGradient
         # operation. And it will call the 'ResourceScatterUpdate' OpKernel
@@ -194,7 +190,6 @@ class ConditionalGradientTest(tf.test.TestCase):
                 (1 - learning_rate) * lambda_ * grads0_1 / norm0
             ]], self.evaluate(var0))
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testMinimizeWith2DIndiciesForEmbeddingLookup(self):
         # This test invokes the ResourceSparseApplyConditionalGradient
         # operation.
@@ -224,7 +219,6 @@ class ConditionalGradientTest(tf.test.TestCase):
                  learning_rate * 1 - (1 - learning_rate) * lambda_ * 1 / norm0
              ]], self.evaluate(var0))
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testTensorLearningRateAndConditionalGradient(self):
         for dtype in [tf.half, tf.float32, tf.float64]:
             with self.cached_session():
@@ -397,7 +391,6 @@ class ConditionalGradientTest(tf.test.TestCase):
         # pylint: enable=line-too-long
         return db_grad, db_out
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testLikeDistBeliefCG01(self):
         with self.cached_session():
             db_grad, db_out = self._dbParamsCG01()
@@ -417,7 +410,6 @@ class ConditionalGradientTest(tf.test.TestCase):
                     cg_update.run(feed_dict={grads0: db_grad[i]})
                 self.assertAllClose(np.array(db_out[i]), self.evaluate(var0))
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testSparse(self):
         # TODO:
         #       To address the issue #347.
@@ -516,7 +508,6 @@ class ConditionalGradientTest(tf.test.TestCase):
                               (1 - learning_rate) * lambda_ * 0.01 / norm1]),
                     self.evaluate(var1)[2])
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testSharing(self):
         for dtype in [tf.half, tf.float32, tf.float64]:
             with self.cached_session():
