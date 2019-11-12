@@ -4,6 +4,7 @@
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
 | conditional_gradient | Pengyu Kan, Vishnu Lokhande | pkan2@wisc.edu, lokhande@cs.wisc.edu |
+| cyclical_learning_rate | Raphael Meudec | raphael.meudec@gmail.com |
 | lamb | Jing Li, Junjie Ke | jingli@google.com, junjiek@google.com |
 | lazy_adam | Saishruthi Swaminathan  | saishruthi.tn@gmail.com  |
 | lookahead | Zhao Hanguang | cyberzhg@gmail.com |
@@ -16,6 +17,7 @@
 | Submodule | Optimizer  | Reference                                   |
 |:--------- |:---------- |:---------|
 | conditional_gradient | ConditionalGradient | https://arxiv.org/pdf/1803.06453.pdf |
+| cyclical_learning_rate | Cyclical Learning Rate | https://arxiv.org/abs/1506.01186 |
 | lamb | LAMB | https://arxiv.org/abs/1904.00962      |
 | lazy_adam | LazyAdam | https://arxiv.org/abs/1412.6980      |
 | lookahead | Lookahead | https://arxiv.org/abs/1907.08610v1 |
