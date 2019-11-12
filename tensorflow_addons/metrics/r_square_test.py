@@ -20,8 +20,11 @@ from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow_addons.metrics import RSquare
+from tensorflow_addons.utils import test_utils
 
 
+@test_utils.run_all_in_graph_and_eager_modes
+@tf.function
 class RSquareTest(tf.test.TestCase):
     def test_config(self):
         r2_obj = RSquare(name='r_square')
