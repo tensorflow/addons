@@ -47,15 +47,14 @@ class GIoULoss(tf.keras.losses.Loss):
 
     Args:
       mode: one of ['giou', 'iou'], decided to calculate giou loss or iou loss.
-
-    Returns:
-      GIoU loss float `Tensor`.
     """
 
     def __init__(self,
                  mode='giou',
                  reduction=tf.keras.losses.Reduction.AUTO,
                  name='giou_loss'):
+        if mode not in ['giou', 'iou']:
+            raise ValueError("Value of mode should be 'iou' or 'giou'")
         super(GIoULoss, self).__init__(name=name, reduction=reduction)
         self.mode = mode
 
@@ -107,8 +106,8 @@ def do_giou_calculate(b1, b2, mode='giou'):
         GIoU loss float `Tensor`.
     """
     zero = tf.convert_to_tensor(0., b1.dtype)
-    b1_ymin, b1_xmin, b1_ymax, b1_xmax = tf.unstack(b1, axis=-1)
-    b2_ymin, b2_xmin, b2_ymax, b2_xmax = tf.unstack(b2, axis=-1)
+    b1_ymin, b1_xmin, b1_ymax, b1_xmax = tf.unstack(b1, 4, axis=-1)
+    b2_ymin, b2_xmin, b2_ymax, b2_xmax = tf.unstack(b2, 4, axis=-1)
     b1_width = tf.maximum(zero, b1_xmax - b1_xmin)
     b1_height = tf.maximum(zero, b1_ymax - b1_ymin)
     b2_width = tf.maximum(zero, b2_xmax - b2_xmin)
