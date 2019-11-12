@@ -17,40 +17,38 @@
 from __future__ import absolute_import, division, print_function
 
 import tensorflow as tf
-import tensorflow.keras.backend as K
 from tensorflow.keras.layers import (Activation, BatchNormalization, Conv1D,
-                                     Dense, Lambda, SpatialDropout1D, add)
-from tensorflow_addons.utils import keras_utils
+                                     Lambda, SpatialDropout1D, add)
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 class ResidualBlock(tf.keras.layers.Layer):
-    """Defines the residual block for the WaveNet TCN
+    """Defines the residual block for the WaveNet TCN.
 
-        Arguments:
-            dilation_rate (int): The dilation power of 2 we are using
-                for this residual block. Defaults to 1.
-            filters (int): The number of convolutional
-                filters to use in this block. Defaults to 64.
-            kernel_size (int): The size of the convolutional kernel. Defaults
-                to 2.
-            padding (String): The padding used in the convolutional layers,
-                'same' or 'causal'. Defaults to 'same'
-            activation (String): The final activation used
-                in o = Activation(x + F(x)). Defaults to 'relu'
-            dropout_rate (Float): Float between 0 and 1. Fraction
-                of the input units to drop. Defaults to 0.0.
-            kernel_initializer (String): Initializer for the kernel weights
-                matrix (Conv1D). Defaults to 'he_normal'
-            use_batch_norm (bool): Whether to use batch normalization in the
-                residual layers or not. Defaults to False.
-            last_block (bool): Whether or not this block is the last residual
-                block of the network. Defaults to False.
-            kwargs: Any initializers for Layer class.
+    Arguments:
+        dilation_rate (int): The dilation power of 2 we are using
+            for this residual block. Defaults to 1.
+        filters (int): The number of convolutional
+            filters to use in this block. Defaults to 64.
+        kernel_size (int): The size of the convolutional kernel. Defaults
+            to 2.
+        padding (String): The padding used in the convolutional layers,
+            'same' or 'causal'. Defaults to 'same'
+        activation (String): The final activation used
+            in o = Activation(x + F(x)). Defaults to 'relu'
+        dropout_rate (Float): Float between 0 and 1. Fraction
+            of the input units to drop. Defaults to 0.0.
+        kernel_initializer (String): Initializer for the kernel weights
+            matrix (Conv1D). Defaults to 'he_normal'
+        use_batch_norm (bool): Whether to use batch normalization in the
+            residual layers or not. Defaults to False.
+        last_block (bool): Whether or not this block is the last residual
+            block of the network. Defaults to False.
+        kwargs: Any initializers for Layer class.
 
-        Returns:
-            A Residual Blcok.
-        """
+    Returns:
+        A Residual Blcok.
+    """
 
     def __init__(self,
                  dilation_rate=1,
@@ -77,8 +75,9 @@ class ResidualBlock(tf.keras.layers.Layer):
         super(ResidualBlock, self).__init__(**kwargs)
 
     def _add_and_activate_layer(self, layer):
-        """Helper function for building layer
-        Args:
+        """Helper function for building layer.
+
+        Arguments:
             layer: Appends layer to internal layer list and builds it based on
                     the current output shape of ResidualBlock.
                     Updates current output shape.
@@ -91,14 +90,14 @@ class ResidualBlock(tf.keras.layers.Layer):
     def build(self, input_shape):
 
         # name scope used to make sure weights get unique names
-        with K.name_scope(self.name):
+        with tf.name_scope(self.name):
             self.residual_layers = list()
             self.res_output_shape = input_shape
 
             for k in range(2):
                 name = 'conv1D_{}'.format(k)
                 # name scope used to make sure weights get unique names
-                with K.name_scope(name):
+                with tf.name_scope(name):
                     self._add_and_activate_layer(
                         Conv1D(
                             filters=self.filters,
@@ -109,8 +108,6 @@ class ResidualBlock(tf.keras.layers.Layer):
                             kernel_initializer=self.kernel_initializer))
 
                 if self.use_batch_norm:
-                    # TODO should be WeightNorm here, but using batchNorm
-                    # instead
                     self._add_and_activate_layer(BatchNormalization())
 
                 self._add_and_activate_layer(Activation('relu'))
@@ -120,7 +117,7 @@ class ResidualBlock(tf.keras.layers.Layer):
             if not self.last_block:
                 # 1x1 conv to match the shapes (channel dimension).
                 name = 'conv1D_{}'.format(k + 1)
-                with K.name_scope(name):
+                with tf.name_scope(name):
                     # make and build this layer separately because it directly
                     # uses input_shape
                     self.shape_match_conv = Conv1D(
@@ -138,15 +135,12 @@ class ResidualBlock(tf.keras.layers.Layer):
                 input_shape)
 
             self.final_activation = Activation(self.activation)
-            self.final_activation.build(
-                self.res_output_shape)  # probably isn't necessary
 
             # this is done to force keras to add the layers in the list to
             # self._layers
             for layer in self.residual_layers:
                 self.__setattr__(layer.name, layer)
 
-            # done to make sure self.built is set True
             super(ResidualBlock, self).build(input_shape)
 
     def call(self, inputs, training=None):
@@ -189,40 +183,40 @@ class ResidualBlock(tf.keras.layers.Layer):
 class TCN(tf.keras.layers.Layer):
     """Creates a TCN layer.
 
-        Input shape:
-            A tensor of shape (batch_size, timesteps, input_dim).
+    Input shape:
+        A tensor of shape (batch_size, timesteps, input_dim).
 
-        Arguments:
-            filters: The number of filters to use in the convolutional layers.
-                Defaults to 64.
-            kernel_size: The size of the kernel to use in each
-                convolutional layer. Defaults to 2.
-            dilations: The array-like input of the dilations.
-                Defaults to [1,2,4,8,16,32,64]
-            stacks : The number of stacks of residual blocks to use. Defaults
-                to 1.
-            padding: The padding to use in the convolutional layers,
-                'causal' or 'same'. Defaults to 'causal'.
-            use_skip_connections: Boolean. If we want to add skip
-                connections from input to each residual block.
-                Defaults to True.
-            return_sequences: Boolean. Whether to return the last
-                output in the output sequence, or the full sequence.
-                Defaults to False.
-            activation: The activation used in the residual
-                blocks o = Activation(x + F(x)). Defaults to 'linear'
-            dropout_rate: Float between 0 and 1. Fraction of the input
-                units to drop. Defaults to 0.0.
-            kernel_initializer: Initializer for the kernel weights
-                matrix (Conv1D). Defaulst to 'he_normal'
-            use_batch_norm: Whether to use batch normalization in the
-                residual layers or not. Defaulst to False.
-            kwargs: Any other arguments for configuring parent class Layer.
-                For example "name=str", Name of the model.
-                Use unique names when using multiple TCN.
-        Returns:
-            A TCN layer.
-        """
+    Arguments:
+        filters: The number of filters to use in the convolutional layers.
+            Defaults to 64.
+        kernel_size: The size of the kernel to use in each
+            convolutional layer. Defaults to 2.
+        dilations: The array-like input of the dilations.
+            Defaults to [1,2,4,8,16,32,64]
+        stacks : The number of stacks of residual blocks to use. Defaults
+            to 1.
+        padding: The padding to use in the convolutional layers,
+            'causal' or 'same'. Defaults to 'causal'.
+        use_skip_connections: Boolean. If we want to add skip
+            connections from input to each residual block.
+            Defaults to True.
+        return_sequences: Boolean. Whether to return the last
+            output in the output sequence, or the full sequence.
+            Defaults to False.
+        activation: The activation used in the residual
+            blocks o = Activation(x + F(x)). Defaults to 'linear'
+        dropout_rate: Float between 0 and 1. Fraction of the input
+            units to drop. Defaults to 0.0.
+        kernel_initializer: Initializer for the kernel weights
+            matrix (Conv1D). Defaulst to 'he_normal'
+        use_batch_norm: Whether to use batch normalization in the
+            residual layers or not. Defaulst to False.
+        kwargs: Any other arguments for configuring parent class Layer.
+            For example "name=str", Name of the model.
+            Use unique names when using multiple TCN.
+    Returns:
+        A TCN layer.
+    """
 
     def __init__(self,
                  filters=64,
@@ -254,16 +248,18 @@ class TCN(tf.keras.layers.Layer):
         validate_paddings = ['causal', 'same']
         if padding not in validate_paddings:
             raise ValueError(
-                "Only 'causal' or 'same' padding are compatible for this layer")
+                "Only 'causal' or 'same' padding are compatible for this layer"
+            )
 
         # initialize parent class
         super(TCN, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        self.main_conv1D = Conv1D(filters=self.filters,
-                                  kernel_size=1,
-                                  padding=self.padding,
-                                  kernel_initializer=self.kernel_initializer)
+        self.main_conv1D = Conv1D(
+            filters=self.filters,
+            kernel_size=1,
+            padding=self.padding,
+            kernel_initializer=self.kernel_initializer)
         self.main_conv1D.build(input_shape)
 
         # member to hold current output shape of the layer for building
@@ -289,15 +285,14 @@ class TCN(tf.keras.layers.Layer):
                         dropout_rate=self.dropout_rate,
                         use_batch_norm=self.use_batch_norm,
                         kernel_initializer=self.kernel_initializer,
-                        last_block=len(
-                            self.residual_blocks) +
+                        last_block=len(self.residual_blocks) +
                         1 == total_num_blocks,
                         name='residual_block_{}'.format(
-                            len(
-                                self.residual_blocks))))
+                            len(self.residual_blocks))))
                 # build newest residual block
                 self.residual_blocks[-1].build(self.build_output_shape)
-                self.build_output_shape = self.residual_blocks[-1].res_output_shape
+                self.build_output_shape = self.residual_blocks[
+                    -1].res_output_shape
 
         # this is done to force keras to add the layers in the list to
         # self._layers

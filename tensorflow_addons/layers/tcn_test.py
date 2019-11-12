@@ -18,14 +18,17 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import numpy as np
 import tensorflow as tf
+
 from tensorflow_addons.utils import test_utils
 from tensorflow_addons.layers import TCN
 
 
 @test_utils.run_all_in_graph_and_eager_modes
 class TCNTest(tf.test.TestCase):
-    # TODO(shunlin): implment unit test
-    def test_simple(self):
-        pass
+    def test_tcn(self):
+        test_utils.layer_test(TCN, input_shape=(2, 4, 4, 3))
+
+
+if __name__ == "__main__":
+    tf.test.main()
