@@ -27,7 +27,7 @@ from tensorflow_addons.layers import TCN
 @test_utils.run_all_in_graph_and_eager_modes
 class TCNTest(tf.test.TestCase):
     def test_tcn(self):
-        test_utils.layer_test(TCN, input_shape=(2, 4, 4, 3))
+        test_utils.layer_test(TCN, input_shape=(2, 4, 4))
 
 
 if __name__ == "__main__":
