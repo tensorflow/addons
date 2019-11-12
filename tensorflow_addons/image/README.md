@@ -8,6 +8,7 @@
 | distance_transform_ops | @mels630 | mels630@gmail.com |
 | distort_image_ops | @WindQAQ | windqaq@gmail.com |
 | filters | @Mainak431 | mainakdutta76@gmail.com |
+| resampler_ops | @autoih	| ihjhuo@gmail.com |
 | transform_ops | @mels630 | mels630@gmail.com | 
 | translate_ops | @sayoojbk	| sayoojbk@gmail.com |
 
@@ -22,6 +23,7 @@
 | distort_image_ops | random_hsv_in_yiq |  |
 | filters | mean_filter2d |  |
 | filters | median_filter2d |  |
+| resampler_ops | resampler |  |
 | transform_ops | angles_to_projective_transforms | | 
 | transform_ops | compose_transforms | | 
 | transform_ops | matrices_to_flat_transforms | | 
