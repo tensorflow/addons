@@ -36,6 +36,7 @@ def _maybe_serialized(lr_decay, serialize_and_deserialize):
     else:
         return lr_decay
 
+
 @test_utils.run_all_in_graph_and_eager_modes
 @parameterized.named_parameters(("NotSerialized", False), ("Serialized", True))
 class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):

@@ -69,9 +69,7 @@ class ImageOpsTest(tf.test.TestCase):
     def test_transform_static_output_shape(self):
         image = tf.constant([[1., 2.], [3., 4.]])
         result = transform_ops.transform(
-            image,
-            tf.random.uniform([8], -1, 1),
-            output_shape=[3, 5])
+            image, tf.random.uniform([8], -1, 1), output_shape=[3, 5])
         self.assertAllEqual([3, 5], result.shape)
 
     def test_transform_unknown_shape(self):

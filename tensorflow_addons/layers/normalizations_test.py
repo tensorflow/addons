@@ -52,7 +52,9 @@ class NormalizationTest(tf.test.TestCase):
             reshaped_inputs, group_shape = group_layer._reshape_into_groups(
                 inputs, (10, 10, 10), tensor_input_shape)
             for i in range(len(expected_shape)):
-                tf.assertEqual(tf.cast(group_shape[i],tf.int32), tf.cast(expected_shape[i], tf.int32))
+                tf.assertEqual(
+                    tf.cast(group_shape[i], tf.int32),
+                    tf.cast(expected_shape[i], tf.int32))
 
         input_shape = (10, 10, 10)
         expected_shape = [10, 5, 10, 2]
