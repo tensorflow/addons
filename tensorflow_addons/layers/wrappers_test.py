@@ -34,6 +34,14 @@ class WeightNormalizationTest(tf.test.TestCase):
             },
             input_shape=(2, 4, 4, 3))
 
+    def test_weightnorm_no_bias(self):
+        test_utils.layer_test(
+            wrappers.WeightNormalization,
+            kwargs={
+                'layer': tf.keras.layers.Dense(5, use_bias=False),
+            },
+            input_shape=(2, 4))
+
     def _check_data_init(self, data_init, input_data, expected_output):
         layer = tf.keras.layers.Dense(
             input_data.shape[-1],

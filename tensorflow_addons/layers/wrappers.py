@@ -170,7 +170,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
             # Assign data dependent init values
             g_tensor = self.g.assign(self.g * scale_init)
-            if hasattr(self.layer, 'bias'):
+            if hasattr(self.layer, 'bias') and self.layer.bias is not None:
                 bias_tensor = self.layer.bias.assign(-m_init * scale_init)
                 return [g_tensor, bias_tensor]
             else:
