@@ -72,10 +72,10 @@ class GIoULoss(tf.keras.losses.Loss):
 def giou_loss(y_true, y_pred, mode='giou'):
     """
     Args:
-        y_true: true targets tensor. The coordinates of the each bounding box in
-        boxes are encoded as [y_min, x_min, y_max, x_max].
-        y_pred: predictions tensor. The coordinates of the each bounding box in
-        boxes are encoded as [y_min, x_min, y_max, x_max].
+        y_true: true targets tensor. The coordinates of the each bounding
+        box in boxes are encoded as [y_min, x_min, y_max, x_max].
+        y_pred: predictions tensor. The coordinates of the each bounding
+        box in boxes are encoded as [y_min, x_min, y_max, x_max].
         mode: one of ['giou', 'iou'],
         decided to calculate giou loss or iou loss.
 
@@ -98,7 +98,7 @@ def do_giou_calculate(b1, b2, mode='giou'):
     Args:
         b1: bounding box. The coordinates of the each bounding box in boxes are
         encoded as [y_min, x_min, y_max, x_max].
-        b2: the other bounding box. The coordinates of the each bounding box 
+        b2: the other bounding box. The coordinates of the each bounding box
         in boxes are encoded as [y_min, x_min, y_max, x_max].
         mode: one of ['giou', 'iou'],
         decided to calculate giou loss or iou loss.
