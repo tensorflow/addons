@@ -82,6 +82,7 @@ def giou_loss(y_true, y_pred, mode='giou'):
     Returns:
         GIoU loss float `Tensor`.
     """
+    # if y_true or y_pred:
     if mode not in ['giou', 'iou']:
         raise ValueError("Value of mode should be 'iou' or 'giou'")
     y_pred = tf.convert_to_tensor(y_pred)
