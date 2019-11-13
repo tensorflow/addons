@@ -6,7 +6,7 @@
 |  cohens_kappa| Aakash Nain   |  aakashnain@outlook.com|
 |  f_scores| Saishruthi Swaminathan | saishruthi.tn@gmail.com|
 |  r_square| Saishruthi Swaminathan| saishruthi.tn@gmail.com|
-|  matthews_correlation_coefficient | I-Hong Jhuo | ihibmjhuo@gmail.com|
+|  matthews_correlation_coefficient | I.H. Jhuo | ihibmjhuo@gmail.com|
 |  multilabel_confusion_matrix | Saishruthi Swaminathan | saishruthi.tn@gmail.com|
 
 ## Contents

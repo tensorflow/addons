@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tf.keras.layers import Dense
 
 import numpy as np
 from tensorflow_addons.utils import test_utils
@@ -77,9 +76,9 @@ class MatthewsCorrelationCoefficientTest(tf.test.TestCase):
     # Keras model API check
     def test_keras_model(self):
         model = tf.keras.Sequential()
-        model.add(Dense(64, activation='relu'))
-        model.add(Dense(64, activation='relu'))
-        model.add(Dense(1, activation='softmax'))
+        model.add(tf.keras.layers.Dense(64, activation='relu'))
+        model.add(tf.keras.layers.Dense(64, activation='relu'))
+        model.add(tf.keras.layers.Dense(1, activation='softmax'))
         mcc = MatthewsCorrelationCoefficient(num_classes=1)
         model.compile(
             optimizer='Adam',

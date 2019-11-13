@@ -19,11 +19,10 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tf.keras.metrics import Metric
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-class MatthewsCorrelationCoefficient(Metric):
+class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
     """Computes the Matthews Correlation Coefficient.
 
     The statistic is also known as the phi coefficient.
@@ -62,11 +61,11 @@ class MatthewsCorrelationCoefficient(Metric):
                  name='MatthewsCorrelationCoefficient',
                  dtype=tf.float32):
         """Creates a Matthews Correlation Coefficient instanse.
-        
+
         Args:
             num_classes : Number of unique classes in the dataset.
             name: (Optional) String name of the metric instance.
-            dtype: (Optional) Data type of the metric result. 
+            dtype: (Optional) Data type of the metric result.
             Defaults to `tf.float32`.
         """
         super(MatthewsCorrelationCoefficient, self).__init__(
