@@ -82,15 +82,12 @@ class WeightNormalizationTest(tf.test.TestCase):
         model = tf.keras.Model(inputs, out)
 
     def test_save_file_h5(self):
+        self.create_tempfile('wrapper_test_model.h5')
         conv = tf.keras.layers.Conv1D(1, 1)
         wn_conv = wrappers.WeightNormalization(conv)
         model = tf.keras.Sequential(layers=[wn_conv])
         model.build([1, 2, 3])
-        model.save_weights('/tmp/model.h5')
-
-        import os
-        os.remove('/tmp/model.h5')
-        # TODO: Find a better way to test this
+        model.save_weights('wrapper_test_model.h5')
 
 
 if __name__ == "__main__":
