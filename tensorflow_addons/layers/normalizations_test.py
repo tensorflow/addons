@@ -187,7 +187,6 @@ class NormalizationTest(tf.test.TestCase):
         with self.assertRaises(ValueError):
             GroupNormalization(axis=0)
 
-    # @test_utils.run_in_graph_and_eager_modes
     def test_groupnorm_flat(self):
         # Check basic usage of groupnorm_flat
         # Testing for 1 == LayerNorm, 16 == GroupNorm, -1 == InstanceNorm
@@ -200,7 +199,6 @@ class NormalizationTest(tf.test.TestCase):
             self.assertTrue(hasattr(model.layers[0], 'gamma'))
             self.assertTrue(hasattr(model.layers[0], 'beta'))
 
-    # @test_utils.run_in_graph_and_eager_modes
     def test_instancenorm_flat(self):
         # Check basic usage of instancenorm
 
@@ -209,7 +207,6 @@ class NormalizationTest(tf.test.TestCase):
         self.assertTrue(hasattr(model.layers[0], 'gamma'))
         self.assertTrue(hasattr(model.layers[0], 'beta'))
 
-    # @test_utils.run_in_graph_and_eager_modes
     def test_initializer(self):
         # Check if the initializer for gamma and beta is working correctly
 
@@ -226,7 +223,6 @@ class NormalizationTest(tf.test.TestCase):
         negativ = weights[weights < 0.0]
         self.assertTrue(len(negativ) == 0)
 
-    # @test_utils.run_in_graph_and_eager_modes
     def test_regularizations(self):
 
         layer = GroupNormalization(
@@ -240,7 +236,6 @@ class NormalizationTest(tf.test.TestCase):
         self.assertEqual(layer.gamma.constraint, max_norm)
         self.assertEqual(layer.beta.constraint, max_norm)
 
-    # @test_utils.run_in_graph_and_eager_modes
     def test_groupnorm_conv(self):
         # Check if Axis is working for CONV nets
         # Testing for 1 == LayerNorm, 5 == GroupNorm, -1 == InstanceNorm
