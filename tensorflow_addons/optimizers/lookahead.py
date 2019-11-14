@@ -18,10 +18,9 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class Lookahead(tf.keras.optimizers.Optimizer):
     """This class allows to extend optimizers with the lookahead mechanism.
 
@@ -161,6 +160,22 @@ class Lookahead(tf.keras.optimizers.Optimizer):
         }
         base_config = super(Lookahead, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+    @property
+    def learning_rate(self):
+        return self._optimizer._get_hyper('learning_rate')
+
+    @learning_rate.setter
+    def learning_rate(self, learning_rate):
+        self._optimizer._set_hyper('learning_rate', learning_rate)
+
+    @property
+    def lr(self):
+        return self.learning_rate
+
+    @lr.setter
+    def lr(self, lr):
+        self.learning_rate = lr
 
     @classmethod
     def from_config(cls, config, custom_objects=None):

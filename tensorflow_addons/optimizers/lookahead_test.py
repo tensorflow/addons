@@ -29,6 +29,7 @@ from tensorflow_addons.optimizers import Lookahead
 class LookaheadTest(tf.test.TestCase):
     def run_dense_sample(self, iterations, optimizer, seed=0x2019):
         np.random.seed(seed)
+        tf.random.set_seed(seed)
 
         val_0 = np.random.random((2,))
         val_1 = np.random.random((2,))
@@ -56,6 +57,7 @@ class LookaheadTest(tf.test.TestCase):
 
     def run_sparse_sample(self, iterations, optimizer, seed=0x2019):
         np.random.seed(seed)
+        tf.random.set_seed(seed)
 
         val_0 = np.random.random((2,))
         val_1 = np.random.random((2,))
@@ -109,6 +111,7 @@ class LookaheadTest(tf.test.TestCase):
 
     def test_fit_simple_linear_model(self):
         np.random.seed(0x2019)
+        tf.random.set_seed(0x2019)
 
         x = np.random.standard_normal((100000, 3))
         w = np.random.standard_normal((3, 1))
@@ -126,6 +129,26 @@ class LookaheadTest(tf.test.TestCase):
 
         max_abs_diff = np.max(np.abs(predicted - y))
         self.assertLess(max_abs_diff, 1e-4)
+
+    def test_model_dynamic_lr(self):
+        grad = tf.Variable([[0.1]])
+        model = tf.keras.Sequential([
+            tf.keras.layers.Dense(
+                1,
+                kernel_initializer=tf.keras.initializers.Constant([[1.0]]),
+                use_bias=False)
+        ])
+        model.build(input_shape=[1, 1])
+
+        opt = Lookahead('adam', sync_period=10, slow_step_size=0.4)
+        update = opt.apply_gradients(list(zip([grad], model.variables)))
+
+        self.evaluate(tf.compat.v1.global_variables_initializer())
+        self.evaluate(update)
+        self.assertAllClose(opt.lr.read_value(), 1e-3)
+
+        opt.lr = 1e-4
+        self.assertAllClose(opt.lr.read_value(), 1e-4)
 
     def test_get_config(self):
         opt = Lookahead('adam', sync_period=10, slow_step_size=0.4)

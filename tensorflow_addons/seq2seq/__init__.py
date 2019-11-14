@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Ops for building neural network sequence to sequence decoders and losses."""
+"""Additional ops for building neural network sequence to sequence decoders and
+losses."""
 
 from __future__ import absolute_import
 from __future__ import division

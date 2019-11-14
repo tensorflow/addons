@@ -39,9 +39,9 @@ function generate_shared_lib_name() {
   fi
 }
 
-QUIET_FLAG=""
+PIP_INSTALL_OPTS="--upgrade"
 if [[ $1 == "--quiet" ]]; then
-    QUIET_FLAG="--quiet"
+    PIP_INSTALL_OPTS="$PIP_INSTALL_OPTS --quiet"
 elif [[ ! -z "$1" ]]; then
     echo "Found unsupported args: $@"
     exit 1
@@ -56,13 +56,8 @@ esac
 
 BUILD_DEPS_DIR=build_deps
 REQUIREMENTS_TXT=$BUILD_DEPS_DIR/requirements.txt
-if [[ "$TF_NEED_CUDA" == "1" ]]; then
-    # TODO: delete it when tf2 standard package supports
-    # both cpu and gpu kernel.
-    REQUIREMENTS_TXT=$BUILD_DEPS_DIR/requirements_gpu.txt
-fi
 
-${PYTHON_VERSION:=python} -m pip install $QUIET_FLAG -r $REQUIREMENTS_TXT
+${PYTHON_VERSION:=python} -m pip install $PIP_INSTALL_OPTS -r $REQUIREMENTS_TXT
 
 [[ -f .bazelrc ]] && rm .bazelrc
 

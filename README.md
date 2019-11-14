@@ -6,6 +6,7 @@
 
 [![PyPI Status Badge](https://badge.fury.io/py/tensorflow-addons.svg)](https://pypi.org/project/tensorflow-addons/)
 [![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
+[![Documentation](https://img.shields.io/badge/api-reference-blue.svg)](https://www.tensorflow.org/addons/api_docs/python/tfa)
 
 ### Official Builds
 
@@ -56,8 +57,8 @@ import tensorflow_addons as tfa
 ```
 
 #### Nightly Builds
-There are also nightly builds of TensorFlow Addons under the pip package 
-`tfa-nightly`, which is built against `tf-nightly-2.0-preview`. Nightly builds 
+There are also nightly builds of TensorFlow Addons under the pip package
+`tfa-nightly`, which is built against `tf-nightly`. Nightly builds
 include newer features, but may be less stable than the versioned releases.
 
 ```

@@ -18,10 +18,9 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class ConditionalGradient(tf.keras.optimizers.Optimizer):
     """Optimizer that implements the Conditional Gradient optimization.
 

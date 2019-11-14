@@ -71,8 +71,8 @@ def run_all_with_types(dtypes):
 def run_with_types(dtypes):
     def decorator(f):
         if inspect.isclass(f):
-            raise ValueError("`run_with_types` only supports test methods. "
-                             "Did you mean to use `run_all_with_types`?")
+            raise TypeError("`run_with_types` only supports test methods. "
+                            "Did you mean to use `run_all_with_types`?")
 
         def decorated(self, *args, **kwargs):
             for t in dtypes:

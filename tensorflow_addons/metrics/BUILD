@@ -9,6 +9,7 @@ py_library(
         "cohens_kappa.py",
         "f_scores.py",
         "hamming.py",
+        "matthews_correlation_coefficient.py",
         "multilabel_confusion_matrix.py",
         "r_square.py",
         "utils.py",
@@ -46,25 +47,12 @@ py_test(
 )
 
 py_test(
-    name = "f1_test",
+    name = "f_test",
     size = "small",
     srcs = [
-        "f1_test.py",
+        "f_test.py",
     ],
-    main = "f1_test.py",
-    srcs_version = "PY2AND3",
-    deps = [
-        ":metrics",
-    ],
-)
-
-py_test(
-    name = "fbeta_test",
-    size = "small",
-    srcs = [
-        "fbeta_test.py",
-    ],
-    main = "fbeta_test.py",
+    main = "f_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":metrics",
@@ -78,6 +66,19 @@ py_test(
         "multilabel_confusion_matrix_test.py",
     ],
     main = "multilabel_confusion_matrix_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":metrics",
+    ],
+)
+
+py_test(
+    name = "matthews_correlation_coefficient_test",
+    size = "small",
+    srcs = [
+        "matthews_correlation_coefficient_test.py",
+    ],
+    main = "matthews_correlation_coefficient_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":metrics",

@@ -17,13 +17,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
-
-
-def register_keras_custom_object(cls):
-    tf.keras.utils.get_custom_objects()[cls.__name__] = cls
-    return cls
-
 
 def normalize_tuple(value, n, name):
     """Transforms an integer or iterable of integers into an integer tuple.
@@ -50,9 +43,8 @@ def normalize_tuple(value, n, name):
         try:
             value_tuple = tuple(value)
         except TypeError:
-            raise ValueError('The `' + name +
-                             '` argument must be a tuple of ' + str(n) +
-                             ' integers. Received: ' + str(value))
+            raise TypeError('The `' + name + '` argument must be a tuple of ' +
+                            str(n) + ' integers. Received: ' + str(value))
         if len(value_tuple) != n:
             raise ValueError('The `' + name +
                              '` argument must be a tuple of ' + str(n) +

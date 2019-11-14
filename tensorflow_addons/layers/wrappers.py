@@ -17,10 +17,9 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class WeightNormalization(tf.keras.layers.Wrapper):
     """This wrapper reparameterizes a layer by decoupling the weight's
     magnitude and direction.
@@ -63,7 +62,8 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     def build(self, input_shape):
         """Build `Layer`"""
         input_shape = tf.TensorShape(input_shape).as_list()
-        self.input_spec = tf.keras.layers.InputSpec(shape=input_shape)
+        self.input_spec = tf.keras.layers.InputSpec(
+            shape=[None] + input_shape[1:])
 
         if not self.layer.built:
             self.layer.build(input_shape)
@@ -76,7 +76,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         self.layer_depth = int(self.layer.kernel.shape[-1])
         self.kernel_norm_axes = list(range(self.layer.kernel.shape.rank - 1))
 
-        self.g = self.add_variable(
+        self.g = self.add_weight(
             name='g',
             shape=(self.layer_depth,),
             initializer='ones',
@@ -84,7 +84,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             trainable=True)
         self.v = self.layer.kernel
 
-        self._initialized = self.add_variable(
+        self._initialized = self.add_weight(
             name='initialized',
             shape=None,
             initializer='zeros',
@@ -93,12 +93,14 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
         if self.data_init:
             # Used for data initialization in self._data_dep_init.
-            layer_config = tf.keras.layers.serialize(self.layer)
-            layer_config['config']['trainable'] = False
-            self._naked_clone_layer = tf.keras.layers.deserialize(layer_config)
-            self._naked_clone_layer.build(input_shape)
-            self._naked_clone_layer.set_weights(self.layer.get_weights())
-            self._naked_clone_layer.activation = None
+            with tf.name_scope('data_dep_init'):
+                layer_config = tf.keras.layers.serialize(self.layer)
+                layer_config['config']['trainable'] = False
+                self._naked_clone_layer = tf.keras.layers.deserialize(
+                    layer_config)
+                self._naked_clone_layer.build(input_shape)
+                self._naked_clone_layer.set_weights(self.layer.get_weights())
+                self._naked_clone_layer.activation = None
 
         self.built = True
 
@@ -168,7 +170,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
             # Assign data dependent init values
             g_tensor = self.g.assign(self.g * scale_init)
-            if hasattr(self.layer, 'bias'):
+            if hasattr(self.layer, 'bias') and self.layer.bias is not None:
                 bias_tensor = self.layer.bias.assign(-m_init * scale_init)
                 return [g_tensor, bias_tensor]
             else:

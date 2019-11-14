@@ -18,13 +18,14 @@ limitations under the License.
 #include "tensorflow/core/framework/shape_inference.h"
 
 namespace tensorflow {
+namespace addons {
 
 REGISTER_OP("Addons>Hardshrink")
     .Input("features: T")
     .Output("activations: T")
     .Attr("T: {half, float, double}")
-    .Attr("lower: float = -1.0")
-    .Attr("upper: float = 1.0")
+    .Attr("lower: float = -0.5")
+    .Attr("upper: float = 0.5")
     .SetShapeFn(shape_inference::UnchangedShape);
 
 REGISTER_OP("Addons>HardshrinkGrad")
@@ -32,8 +33,9 @@ REGISTER_OP("Addons>HardshrinkGrad")
     .Input("features: T")
     .Output("backprops: T")
     .Attr("T: {half, float, double}")
-    .Attr("lower: float = -1.0")
-    .Attr("upper: float = 1.0")
+    .Attr("lower: float = -0.5")
+    .Attr("upper: float = 0.5")
     .SetShapeFn(shape_inference::MergeBothInputsShapeFn);
 
+}  // namespace addons
 }  // namespace tensorflow
