@@ -8,6 +8,7 @@ py_library(
         "__init__.py",
         "cohens_kappa.py",
         "f_scores.py",
+        "matthews_correlation_coefficient.py",
         "multilabel_confusion_matrix.py",
         "r_square.py",
         "utils.py",
@@ -64,6 +65,19 @@ py_test(
         "multilabel_confusion_matrix_test.py",
     ],
     main = "multilabel_confusion_matrix_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":metrics",
+    ],
+)
+
+py_test(
+    name = "matthews_correlation_coefficient_test",
+    size = "small",
+    srcs = [
+        "matthews_correlation_coefficient_test.py",
+    ],
+    main = "matthews_correlation_coefficient_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":metrics",
