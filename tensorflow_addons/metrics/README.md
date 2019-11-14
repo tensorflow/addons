@@ -20,7 +20,7 @@
 | matthews_correlation_coefficient | Matthews Correlation Coefficient | [MCC](https://en.wikipedia.org/wiki/Matthews_correlation_coefficient)|
 | multilabel_confusion_matrix | Multilabel Confusion Matrix | [mcm](https://en.wikipedia.org/wiki/Confusion_matrix)|
 | r_square| RSquare|[R-Sqaure](https://en.wikipedia.org/wiki/Coefficient_of_determination)|
-
+| hamming | HammingLoss and hamming_distance | [Hamming distance](https://en.wikipedia.org/wiki/Hamming_distance)|
 ## Contribution Guidelines
 #### Standard API
 In order to conform with the current API standard, all metrics
