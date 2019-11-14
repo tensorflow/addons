@@ -106,7 +106,7 @@ def hamming_loss_fn(y_true, y_pred, threshold, mode):
     ```
     """
     if mode not in ['multiclass', 'multilabel']:
-        raise TypeError('mode must be: [multiclass, multilabel]')
+        raise TypeError('mode must be either multiclass or multilabel]')
 
     if threshold is None:
         threshold = tf.reduce_max(y_pred, axis=-1, keepdims=True)
