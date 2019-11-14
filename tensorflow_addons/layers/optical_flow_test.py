@@ -60,9 +60,9 @@ class CorrelationCostTest(tf.test.TestCase):
 
         return val_a, val_b
 
-    def _forward_simple(self, data_format):
+    def _forward_simple(self, data_format, use_gpu=False):
         # We are just testing where the output has vanishing values.
-        with test_utils.use_gpu():
+        with test_utils.device(use_gpu):
             val_a, val_b = self._create_test_data(data_format)
             input_a = tf.constant(val_a, dtype=tf.float32)
             input_b = tf.constant(val_b, dtype=tf.float32)
@@ -103,8 +103,8 @@ class CorrelationCostTest(tf.test.TestCase):
                 tf.where(tf.equal(actual, 0))[:, 1], expected_ids)
             self.assertEqual(actual.shape, (2, 9, 7, 8))
 
-    def _gradients(self, data_format):
-        with test_utils.use_gpu():
+    def _gradients(self, data_format, use_gpu=False):
+        with test_utils.device(use_gpu):
             batch, channels, height, width = 2, 3, 5, 6
             input_a = np.random.randn(batch, channels, height,
                                       width).astype(np.float32)
@@ -138,9 +138,9 @@ class CorrelationCostTest(tf.test.TestCase):
 
             self.assertAllClose(theoretical[0], numerical[0], atol=1e-3)
 
-    def _keras(self, data_format):
+    def _keras(self, data_format, use_gpu=False):
         # Unable to use `layer_test` as this layer has multiple inputs.
-        with test_utils.use_gpu():
+        with test_utils.device(use_gpu):
             val_a, val_b = self._create_test_data(data_format)
 
             # yapf: disable
@@ -177,22 +177,34 @@ class CorrelationCostTest(tf.test.TestCase):
                     "%s" % (actual_output.shape, expected_output_shape[0]))
 
     def testForwardNCHW(self):
-        self._forward_simple(data_format='channels_first')
+        self._forward_simple(data_format='channels_first', use_gpu=False)
+        if tf.test.is_gpu_available():
+            self._forward_simple(data_format='channels_first', use_gpu=True)
 
     def testForwardNHWC(self):
-        self._forward_simple(data_format='channels_last')
+        self._forward_simple(data_format='channels_last', use_gpu=False)
+        if tf.test.is_gpu_available():
+            self._forward_simple(data_format='channels_last', use_gpu=True)
 
     def testBackwardNCHW(self):
-        self._gradients(data_format='channels_first')
+        self._gradients(data_format='channels_first', use_gpu=False)
+        if tf.test.is_gpu_available():
+            self._gradients(data_format='channels_first', use_gpu=True)
 
     def testBackwardNHWC(self):
-        self._gradients(data_format='channels_last')
+        self._gradients(data_format='channels_last', use_gpu=False)
+        if tf.test.is_gpu_available():
+            self._gradients(data_format='channels_last', use_gpu=True)
 
     def testKerasNCHW(self):
-        self._keras(data_format='channels_first')
+        self._keras(data_format='channels_first', use_gpu=False)
+        if tf.test.is_gpu_available():
+            self._keras(data_format='channels_first', use_gpu=True)
 
     def testKerasNHWC(self):
-        self._keras(data_format='channels_last')
+        self._keras(data_format='channels_last', use_gpu=False)
+        if tf.test.is_gpu_available():
+            self._keras(data_format='channels_last', use_gpu=True)
 
 
 if __name__ == "__main__":
