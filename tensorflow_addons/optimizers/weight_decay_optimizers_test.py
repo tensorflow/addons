@@ -27,7 +27,6 @@ from tensorflow_addons.optimizers import weight_decay_optimizers
 WEIGHT_DECAY = 0.01
 
 
-@test_utils.run_all_in_graph_and_eager_modes
 class OptimizerTestBase(tf.test.TestCase):
     """Base class for optimizer tests.
 
@@ -186,11 +185,11 @@ def sgdw_update_numpy(param, grad_t, slot_vars, learning_rate, momentum,
     return param_t, slot_vars
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class AdamWTest(OptimizerTestBase):
 
     optimizer = weight_decay_optimizers.AdamW
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testSparse(self):
         self.doTest(
             self.optimizer,
@@ -202,7 +201,6 @@ class AdamWTest(OptimizerTestBase):
             epsilon=1e-8,
             weight_decay=WEIGHT_DECAY)
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testSparseRepeatedIndices(self):
         self.doTestSparseRepeatedIndices(
             self.optimizer,
@@ -212,7 +210,6 @@ class AdamWTest(OptimizerTestBase):
             epsilon=1e-8,
             weight_decay=WEIGHT_DECAY)
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testBasic(self):
         self.doTest(
             self.optimizer,
@@ -234,11 +231,11 @@ class AdamWTest(OptimizerTestBase):
             weight_decay=lambda: WEIGHT_DECAY)
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class SGDWTest(OptimizerTestBase):
 
     optimizer = weight_decay_optimizers.SGDW
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testSparse(self):
         self.doTest(
             self.optimizer,
@@ -248,7 +245,6 @@ class SGDWTest(OptimizerTestBase):
             momentum=0.9,
             weight_decay=WEIGHT_DECAY)
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testSparseRepeatedIndices(self):
         self.doTestSparseRepeatedIndices(
             self.optimizer,
@@ -256,7 +252,6 @@ class SGDWTest(OptimizerTestBase):
             momentum=0.9,
             weight_decay=WEIGHT_DECAY)
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testBasic(self):
         self.doTest(
             self.optimizer,

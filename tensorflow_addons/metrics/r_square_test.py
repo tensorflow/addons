@@ -24,7 +24,6 @@ from tensorflow_addons.utils import test_utils
 
 
 @test_utils.run_all_in_graph_and_eager_modes
-@tf.function
 class RSquareTest(tf.test.TestCase):
     def test_config(self):
         r2_obj = RSquare(name='r_square')
@@ -50,8 +49,8 @@ class RSquareTest(tf.test.TestCase):
     def test_r2_perfect_score(self):
         actuals = tf.constant([100, 700, 40, 5.7], dtype=tf.float32)
         preds = tf.constant([100, 700, 40, 5.7], dtype=tf.float32)
-        actuals = tf.constant(actuals, dtype=tf.float32)
-        preds = tf.constant(preds, dtype=tf.float32)
+        actuals = tf.cast(actuals, dtype=tf.float32)
+        preds = tf.cast(preds, dtype=tf.float32)
         # Initialize
         r2_obj = self.initialize_vars()
         # Update
@@ -62,8 +61,8 @@ class RSquareTest(tf.test.TestCase):
     def test_r2_worst_score(self):
         actuals = tf.constant([10, 600, 4, 9.77], dtype=tf.float32)
         preds = tf.constant([1, 70, 40, 5.7], dtype=tf.float32)
-        actuals = tf.constant(actuals, dtype=tf.float32)
-        preds = tf.constant(preds, dtype=tf.float32)
+        actuals = tf.cast(actuals, dtype=tf.float32)
+        preds = tf.cast(preds, dtype=tf.float32)
         # Initialize
         r2_obj = self.initialize_vars()
         # Update
@@ -74,8 +73,8 @@ class RSquareTest(tf.test.TestCase):
     def test_r2_random_score(self):
         actuals = tf.constant([10, 600, 3, 9.77], dtype=tf.float32)
         preds = tf.constant([1, 340, 40, 5.7], dtype=tf.float32)
-        actuals = tf.constant(actuals, dtype=tf.float32)
-        preds = tf.constant(preds, dtype=tf.float32)
+        actuals = tf.cast(actuals, dtype=tf.float32)
+        preds = tf.cast(preds, dtype=tf.float32)
         # Initialize
         r2_obj = self.initialize_vars()
         # Update
