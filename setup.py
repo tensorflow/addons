@@ -73,7 +73,7 @@ if project_name == TFA_RELEASE:
     else:
         REQUIRED_PACKAGES.append('tensorflow >= 2.0.0')
 elif project_name == TFA_NIGHTLY:
-    REQUIRED_PACKAGES.append('tf-nightly')
+    REQUIRED_PACKAGES.append('tf-nightly==2.1.0.dev20191029')
 
 
 class BinaryDistribution(Distribution):
