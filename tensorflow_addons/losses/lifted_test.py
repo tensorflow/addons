@@ -64,7 +64,9 @@ class LiftedStructLossTest(tf.test.TestCase):
         labels = np.random.randint(
             0, num_classes, size=(num_data)).astype(np.float32)
         # Reshape labels to compute adjacency matrix.
+        # pylint: disable=E1136
         labels_reshaped = np.reshape(labels, (labels.shape[0], 1))
+        # pylint: enable=E1136
 
         # Compute the loss in NP
         # pylint: disable=E1111
