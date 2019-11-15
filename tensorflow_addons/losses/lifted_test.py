@@ -67,7 +67,9 @@ class LiftedStructLossTest(tf.test.TestCase):
         labels_reshaped = np.reshape(labels, (labels.shape[0], 1))
 
         # Compute the loss in NP
+        # pylint: disable=E1111
         adjacency = np.equal(labels_reshaped, labels_reshaped.T)
+        # pylint: enable=E1111
         pdist_matrix = pairwise_distance_np(embedding)
         loss_np = 0.0
         num_constraints = 0.0
@@ -101,6 +103,13 @@ class LiftedStructLossTest(tf.test.TestCase):
         cce_obj = lifted.LiftedStructLoss()
         loss = cce_obj(y_true, y_pred)
         self.assertAlmostEqual(self.evaluate(loss), loss_np, 3)
+
+    def test_keras_model_compile(self):
+        model = tf.keras.models.Sequential([
+            tf.keras.layers.Input(shape=(784,)),
+            tf.keras.layers.Dense(10),
+        ])
+        model.compile(loss="Addons>lifted_struct_loss", optimizer="adam")
 
 
 if __name__ == '__main__':
