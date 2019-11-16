@@ -17,8 +17,6 @@
 from __future__ import absolute_import, division, print_function
 
 import tensorflow as tf
-from tensorflow.keras.layers import (Activation, BatchNormalization, Conv1D,
-                                     Lambda, SpatialDropout1D, add)
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -99,7 +97,7 @@ class ResidualBlock(tf.keras.layers.Layer):
                 # name scope used to make sure weights get unique names
                 with tf.name_scope(name):
                     self._add_and_activate_layer(
-                        Conv1D(
+                        tf.keras.layers.Conv1D(
                             filters=self.filters,
                             kernel_size=self.kernel_size,
                             dilation_rate=self.dilation_rate,
@@ -108,11 +106,13 @@ class ResidualBlock(tf.keras.layers.Layer):
                             kernel_initializer=self.kernel_initializer))
 
                 if self.use_batch_norm:
-                    self._add_and_activate_layer(BatchNormalization())
+                    self._add_and_activate_layer(
+                        tf.keras.layers.BatchNormalization())
 
-                self._add_and_activate_layer(Activation('relu'))
                 self._add_and_activate_layer(
-                    SpatialDropout1D(rate=self.dropout_rate))
+                    tf.keras.layers.Activation('relu'))
+                self._add_and_activate_layer(
+                    tf.keras.layers.SpatialDropout1D(rate=self.dropout_rate))
 
             if not self.last_block:
                 # 1x1 conv to match the shapes (channel dimension).
@@ -120,7 +120,7 @@ class ResidualBlock(tf.keras.layers.Layer):
                 with tf.name_scope(name):
                     # make and build this layer separately because it directly
                     # uses input_shape
-                    self.shape_match_conv = Conv1D(
+                    self.shape_match_conv = tf.keras.layers.Conv1D(
                         filters=self.filters,
                         kernel_size=1,
                         padding='same',
@@ -128,7 +128,8 @@ class ResidualBlock(tf.keras.layers.Layer):
                         kernel_initializer=self.kernel_initializer)
 
             else:
-                self.shape_match_conv = Lambda(lambda x: x, name='identity')
+                self.shape_match_conv = tf.keras.layers.Lambda(
+                    lambda x: x, name='identity')
 
             self.shape_match_conv.build(input_shape)
             self.res_output_shape = self.shape_match_conv.compute_output_shape(
@@ -150,13 +151,13 @@ class ResidualBlock(tf.keras.layers.Layer):
         """
         x = inputs
         for layer in self.residual_layers:
-            if isinstance(layer, SpatialDropout1D):
+            if isinstance(layer, tf.keras.layers.SpatialDropout1D):
                 x = layer(x, training=training)
             else:
                 x = layer(x)
 
         x2 = self.shape_match_conv(inputs)
-        res_x = add([x2, x])
+        res_x = tf.keras.layers.add([x2, x])
         return [self.final_activation(res_x), x]
 
     def compute_output_shape(self, input_shape):
@@ -251,11 +252,10 @@ class TCN(tf.keras.layers.Layer):
                 "Only 'causal' or 'same' padding are compatible for this layer"
             )
 
-        # initialize parent class
         super(TCN, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        self.main_conv1D = Conv1D(
+        self.main_conv1D = tf.keras.layers.Conv1D(
             filters=self.filters,
             kernel_size=1,
             padding=self.padding,
@@ -299,7 +299,7 @@ class TCN(tf.keras.layers.Layer):
         for layer in self.residual_blocks:
             self.__setattr__(layer.name, layer)
 
-        self.lambda_layer = Lambda(lambda tt: tt[:, -1, :])
+        self.lambda_layer = tf.keras.layers.Lambda(lambda tt: tt[:, -1, :])
         self.lambda_ouput_shape = self.lambda_layer.compute_output_shape(
             self.build_output_shape)
 
@@ -320,7 +320,7 @@ class TCN(tf.keras.layers.Layer):
             skip_connections.append(skip_out)
 
         if self.use_skip_connections:
-            x = add(skip_connections)
+            x = tf.keras.layers.add(skip_connections)
         if not self.return_sequences:
             x = self.lambda_layer(x)
         return x
