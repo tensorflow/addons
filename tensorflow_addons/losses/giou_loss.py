@@ -26,8 +26,10 @@ class GIoULoss(tf.keras.losses.Loss):
     """Implements the GIoU loss function.
 
     GIoU loss was first introduced in the
-    [Generalized Intersection over Union paper](https://giou.stanford.edu/GIoU.pdf).
-    GIoU is a enhance for model which use IOU in object detection.
+    [Generalized Intersection over Union:
+    A Metric and A Loss for Bounding Box Regression]
+    (https://giou.stanford.edu/GIoU.pdf).
+    GIoU is a enhance for model which use IoU in object detection.
 
     Usage:
 
@@ -35,18 +37,18 @@ class GIoULoss(tf.keras.losses.Loss):
     gl = tfa.losses.GIoU()
     boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]])
     boxes2 = tf.constant([[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]])
-    loss = gl(boxes1,boxes2)
+    loss = gl(boxes1, boxes2)
     print('Loss: ', loss.numpy())  # Loss: [1.07500000298023224, 1.9333333373069763]
     ```
     Usage with tf.keras API:
 
     ```python
     model = tf.keras.Model(inputs, outputs)
-    model.compile('sgd', loss=tf.keras.losses.GIoULoss())
+    model.compile('sgd', loss=tfa.losses.GIoULoss())
     ```
 
     Args:
-      mode: one of ['giou', 'iou'], decided to calculate giou loss or iou loss.
+      mode: one of ['giou', 'iou'], decided to calculate GIoU or IoU loss.
     """
 
     def __init__(self,
@@ -76,8 +78,7 @@ def giou_loss(y_true, y_pred, mode='giou'):
         box in boxes are encoded as [y_min, x_min, y_max, x_max].
         y_pred: predictions tensor. The coordinates of the each bounding
         box in boxes are encoded as [y_min, x_min, y_max, x_max].
-        mode: one of ['giou', 'iou'],
-        decided to calculate giou loss or iou loss.
+        mode: one of ['giou', 'iou'], decided to calculate GIoU or IoU loss.
 
     Returns:
         GIoU loss float `Tensor`.
@@ -100,8 +101,7 @@ def do_giou_calculate(b1, b2, mode='giou'):
         encoded as [y_min, x_min, y_max, x_max].
         b2: the other bounding box. The coordinates of the each bounding box
         in boxes are encoded as [y_min, x_min, y_max, x_max].
-        mode: one of ['giou', 'iou'],
-        decided to calculate giou loss or iou loss.
+        mode: one of ['giou', 'iou'], decided to calculate GIoU or IoU loss.
 
     Returns:
         GIoU loss float `Tensor`.
