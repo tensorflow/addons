@@ -227,6 +227,8 @@ class TCN(tf.keras.layers.Layer):
                  use_batch_norm=False,
                  **kwargs):
 
+        super(TCN, self).__init__(**kwargs)
+
         self.return_sequences = return_sequences
         self.dropout_rate = dropout_rate
         self.use_skip_connections = use_skip_connections
@@ -252,16 +254,6 @@ class TCN(tf.keras.layers.Layer):
             padding=self.padding,
             kernel_initializer=self.kernel_initializer)
 
-        super(TCN, self).__init__(**kwargs)
-
-    def build(self, input_shape):
-        self.main_conv1D.build(input_shape)
-
-        # member to hold current output shape of the layer for building
-        # purposes
-        self.build_output_shape = self.main_conv1D.compute_output_shape(
-            input_shape)
-
         # list to hold all the member ResidualBlocks
         self.residual_blocks = list()
         total_num_blocks = self.stacks * len(self.dilations)
@@ -284,10 +276,6 @@ class TCN(tf.keras.layers.Layer):
                         1 == total_num_blocks,
                         name='residual_block_{}'.format(
                             len(self.residual_blocks))))
-                # build newest residual block
-                self.residual_blocks[-1].build(self.build_output_shape)
-                self.build_output_shape = self.residual_blocks[
-                    -1].res_output_shape
 
         # this is done to force keras to add the layers in the list to
         # self._layers
@@ -295,14 +283,23 @@ class TCN(tf.keras.layers.Layer):
             self.__setattr__(layer.name, layer)
 
         self.lambda_layer = tf.keras.layers.Lambda(lambda tt: tt[:, -1, :])
-        self.lambda_ouput_shape = self.lambda_layer.compute_output_shape(
-            self.build_output_shape)
+
+    def build(self, input_shape):
+        self.main_conv1D.build(input_shape)
+
+        self.build_output_shape = self.main_conv1D.compute_output_shape(
+            input_shape)
+
+        for residual_block in self.residual_blocks:
+            residual_block.build(self.build_output_shape)
+            self.build_output_shape = residual_block.res_output_shape
 
     def compute_output_shape(self, input_shape):
         if not self.built:
             self.build(input_shape)
         if not self.return_sequences:
-            return self.lambda_ouput_shape
+            return self.lambda_layer.compute_output_shape(
+                self.build_output_shape)
         else:
             return self.build_output_shape
 
