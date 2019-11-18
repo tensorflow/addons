@@ -39,7 +39,6 @@ def lifted_struct_loss(labels, embeddings, margin=1.0):
     """
     # Reshape [batch_size] label tensor to a [batch_size, 1] label tensor.
     lshape = tf.shape(labels)
-    assert lshape.shape == 1
     labels = tf.reshape(labels, [lshape[0], 1])
 
     # Build pairwise squared distance matrix.
