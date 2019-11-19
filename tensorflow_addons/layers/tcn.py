@@ -114,11 +114,6 @@ class ResidualBlock(tf.keras.layers.Layer):
 
             self.final_activation = tf.keras.layers.Activation(self.activation)
 
-            # this is done to force keras to add the layers in the list to
-            # self._layers
-            for layer in self.residual_layers:
-                self.__setattr__(layer.name, layer)
-
     def build(self, input_shape):
 
         # build residual layers
@@ -273,11 +268,6 @@ class TCN(tf.keras.layers.Layer):
                         1 == total_num_blocks,
                         name='residual_block_{}'.format(
                             len(self.residual_blocks))))
-
-        # this is done to force keras to add the layers in the list to
-        # self._layers
-        for layer in self.residual_blocks:
-            self.__setattr__(layer.name, layer)
 
         if not self.return_sequences:
             self.last_output_layer = tf.keras.layers.Lambda(
