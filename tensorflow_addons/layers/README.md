@@ -9,8 +9,8 @@
 | opticalflow | @fsx950223 | fsx950223@gmail.com |
 | poincare | @rahulunair | rahulunair@gmail.com  |
 | sparsemax | @AndreasMadsen | amwwebdk+github@gmail.com |
-| wrappers | @seanpmorgan | seanmorgan@outlook.com |
 | tcn | @shun-lin | shunlin@google.com |
+| wrappers | @seanpmorgan | seanmorgan@outlook.com |
 
 ## Components
 | Submodule  | Layer |  Reference  |
@@ -21,9 +21,9 @@
 | normalizations | InstanceNormalization | https://arxiv.org/abs/1607.08022 |
 | opticalflow | CorrelationCost | https://arxiv.org/abs/1504.06852   |
 | poincare | PoincareNormalize | https://arxiv.org/abs/1705.08039    |
-| sparsemax| Sparsemax | https://arxiv.org/abs/1602.02068 |
-| wrappers | WeightNormalization | https://arxiv.org/abs/1602.07868 |
+| sparsemax | Sparsemax | https://arxiv.org/abs/1602.02068 |
 | tcn | TCN (Temporal Convolutional Network) | https://arxiv.org/pdf/1803.01271 |
+| wrappers | WeightNormalization | https://arxiv.org/abs/1602.07868 |
 
 ## Contribution Guidelines
 #### Standard API

@@ -12,8 +12,8 @@ py_library(
         "optical_flow.py",
         "poincare.py",
         "sparsemax.py",
-        "wrappers.py",
         "tcn.py",
+        "wrappers.py",
     ],
     data = [
         "//tensorflow_addons/custom_ops/layers:_correlation_cost_ops.so",

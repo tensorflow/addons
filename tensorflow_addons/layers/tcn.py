@@ -145,13 +145,10 @@ class ResidualBlock(tf.keras.layers.Layer):
         """
         x = inputs
         for layer in self.residual_layers:
-            if isinstance(layer, tf.keras.layers.SpatialDropout1D):
-                x = layer(x, training=training)
-            else:
-                x = layer(x)
+            x = layer(x, training=training)
 
         x2 = self.shape_match_conv(inputs)
-        res_x = tf.keras.layers.add([x2, x])
+        res_x = x2 + x
         return [self.final_activation(res_x), x]
 
     def compute_output_shape(self, input_shape):
@@ -187,7 +184,7 @@ class TCN(tf.keras.layers.Layer):
         kernel_size: The size of the kernel to use in each
             convolutional layer. Defaults to 2.
         dilations: The array-like input of the dilations.
-            Defaults to [1,2,4,8,16,32,64]
+            Defaults to [1, 2, 4, 8, 16, 32, 64]
         stacks : The number of stacks of residual blocks to use. Defaults
             to 1.
         padding: The padding to use in the convolutional layers,
