@@ -83,18 +83,17 @@ def giou_loss(y_true, y_pred, mode='giou'):
     Returns:
         GIoU loss float `Tensor`.
     """
-    # if y_true or y_pred:
     if mode not in ['giou', 'iou']:
         raise ValueError("Value of mode should be 'iou' or 'giou'")
     y_pred = tf.convert_to_tensor(y_pred)
     y_true = tf.cast(y_true, y_pred.dtype)
-    giou = do_giou_calculate(y_pred, y_true, mode)
+    giou = _calculate_giou(y_pred, y_true, mode)
 
     # compute the final loss and return
     return 1 - giou
 
 
-def do_giou_calculate(b1, b2, mode='giou'):
+def _calculate_giou(b1, b2, mode='giou'):
     """
     Args:
         b1: bounding box. The coordinates of the each bounding box in boxes are
