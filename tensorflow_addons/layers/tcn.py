@@ -270,8 +270,8 @@ class TCN(tf.keras.layers.Layer):
                             len(self.residual_blocks))))
 
         if not self.return_sequences:
-            self.last_output_layer = tf.keras.layers.Lambda(
-                lambda tt: tt[:, -1, :])
+            self.last_output_layer = tf.keras.layers.Lambda(lambda x:
+                                                            x[:, -1, :])
 
     def build(self, input_shape):
         self.main_conv1D.build(input_shape)
