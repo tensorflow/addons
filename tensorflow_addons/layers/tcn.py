@@ -192,8 +192,8 @@ class TCN(tf.keras.layers.Layer):
         use_skip_connections: Boolean. If we want to add skip
             connections from input to each residual block.
             Defaults to True.
-        return_sequences: Boolean. Whether to return the last
-            output in the output sequence, or the full sequence.
+        return_sequences: Boolean. Whether to return the full sequence
+            (when True) or the last output in the output sequence (when False).
             Defaults to False.
         activation: The activation used in the residual
             blocks o = Activation(x + F(x)). Defaults to 'linear'
@@ -279,7 +279,9 @@ class TCN(tf.keras.layers.Layer):
         for layer in self.residual_blocks:
             self.__setattr__(layer.name, layer)
 
-        self.lambda_layer = tf.keras.layers.Lambda(lambda tt: tt[:, -1, :])
+        if not self.return_sequences:
+            self.last_output_layer = tf.keras.layers.Lambda(
+                lambda tt: tt[:, -1, :])
 
     def build(self, input_shape):
         self.main_conv1D.build(input_shape)
@@ -295,7 +297,7 @@ class TCN(tf.keras.layers.Layer):
         if not self.built:
             self.build(input_shape)
         if not self.return_sequences:
-            return self.lambda_layer.compute_output_shape(
+            return self.last_output_layer.compute_output_shape(
                 self.build_output_shape)
         else:
             return self.build_output_shape
@@ -311,7 +313,7 @@ class TCN(tf.keras.layers.Layer):
         if self.use_skip_connections:
             x = tf.keras.layers.add(skip_connections)
         if not self.return_sequences:
-            x = self.lambda_layer(x)
+            x = self.last_output_layer(x)
         return x
 
     def get_config(self):
