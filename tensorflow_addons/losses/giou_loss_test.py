@@ -62,10 +62,8 @@ class GIoULossTest(tf.test.TestCase, parameterized.TestCase):
         self.assertAllCloseAccordingToType(loss, expected_result)
 
     def test_with_integer(self):
-        boxes1 = tf.constant([[4, 3, 7, 5], [5, 6, 10, 7]],
-                             dtype=tf.int32)
-        boxes2 = tf.constant([[3, 4, 6, 8], [14, 14, 15, 15]],
-                             dtype=tf.int32)
+        boxes1 = tf.constant([[4, 3, 7, 5], [5, 6, 10, 7]], dtype=tf.int32)
+        boxes2 = tf.constant([[3, 4, 6, 8], [14, 14, 15, 15]], dtype=tf.int32)
         expected_result = tf.constant(
             [1.07500000298023224, 1.9333333373069763], dtype=tf.float32)
         loss = giou_loss(boxes1, boxes2)

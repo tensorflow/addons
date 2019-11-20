@@ -87,7 +87,7 @@ def giou_loss(y_true, y_pred, mode='giou'):
         raise ValueError("Value of mode should be 'iou' or 'giou'")
     y_pred = tf.convert_to_tensor(y_pred)
     if y_pred.dtype.is_floating is not True:
-        y_pred=tf.cast(y_pred,tf.float32)
+        y_pred = tf.cast(y_pred, tf.float32)
     y_true = tf.cast(y_true, y_pred.dtype)
     giou = _calculate_giou(y_pred, y_true, mode)
 
