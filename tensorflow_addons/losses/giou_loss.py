@@ -29,7 +29,7 @@ class GIoULoss(tf.keras.losses.Loss):
     [Generalized Intersection over Union:
     A Metric and A Loss for Bounding Box Regression]
     (https://giou.stanford.edu/GIoU.pdf).
-    GIoU is a enhance for model which use IoU in object detection.
+    GIoU is an enhancement for models which use IoU in object detection.
 
     Usage:
 
@@ -75,9 +75,9 @@ def giou_loss(y_true, y_pred, mode='giou'):
     """
     Args:
         y_true: true targets tensor. The coordinates of the each bounding
-        box in boxes are encoded as [y_min, x_min, y_max, x_max].
+            box in boxes are encoded as [y_min, x_min, y_max, x_max].
         y_pred: predictions tensor. The coordinates of the each bounding
-        box in boxes are encoded as [y_min, x_min, y_max, x_max].
+            box in boxes are encoded as [y_min, x_min, y_max, x_max].
         mode: one of ['giou', 'iou'], decided to calculate GIoU or IoU loss.
 
     Returns:
@@ -86,10 +86,11 @@ def giou_loss(y_true, y_pred, mode='giou'):
     if mode not in ['giou', 'iou']:
         raise ValueError("Value of mode should be 'iou' or 'giou'")
     y_pred = tf.convert_to_tensor(y_pred)
+    if y_pred.dtype.is_floating is not True:
+        y_pred=tf.cast(y_pred,tf.float32)
     y_true = tf.cast(y_true, y_pred.dtype)
     giou = _calculate_giou(y_pred, y_true, mode)
 
-    # compute the final loss and return
     return 1 - giou
 
 
@@ -97,9 +98,9 @@ def _calculate_giou(b1, b2, mode='giou'):
     """
     Args:
         b1: bounding box. The coordinates of the each bounding box in boxes are
-        encoded as [y_min, x_min, y_max, x_max].
+            encoded as [y_min, x_min, y_max, x_max].
         b2: the other bounding box. The coordinates of the each bounding box
-        in boxes are encoded as [y_min, x_min, y_max, x_max].
+            in boxes are encoded as [y_min, x_min, y_max, x_max].
         mode: one of ['giou', 'iou'], decided to calculate GIoU or IoU loss.
 
     Returns:

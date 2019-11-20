@@ -5,7 +5,7 @@
 |:---------- |:----------- |:------------- |
 | contrastive |  @WindQAQ | windqaq@gmail.com |
 | focal_loss | @SSaishruthi  | saishruthi.tn@gmail.com |
-| giou_loss | @who who who  | fsx950223@gmail.com |
+| giou_loss | @fsx950223  | fsx950223@gmail.com |
 | lifted | @rahulunair | rahulunair@gmail.com  |
 | npairs | @WindQAQ | windqaq@gmail.com |
 | sparsemax_loss | @AndreasMadsen | amwwebdk+github@gmail.com |
