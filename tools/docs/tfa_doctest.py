@@ -24,11 +24,12 @@ import sys
 import textwrap
 import numpy as np
 
+from absl import app
 from absl import flags
 from absl.testing import absltest
 
 # pylint: disable=unused-import
-import tensorflow_addons
+import tensorflow_addons as tfa
 import tensorflow.compat.v2 as tf
 tf.compat.v1.enable_v2_behavior()
 
@@ -95,10 +96,6 @@ def get_module_and_inject_docstring(file_path):
     file_path = os.path.abspath(file_path)
     mod_index = file_path.find(PACKAGE.replace('.', os.sep))
     file_mod_name, _ = os.path.splitext(file_path[mod_index:])
-    # print('?????????????????')
-    # with open("Output.txt", "w") as text_file:
-    #   print("Purchase Amount: {}".format(sys.modules.keys()), file=text_file)
-
     file_module = sys.modules[file_mod_name.replace(os.sep, '.')]
 
     with open(file_path, 'r') as f:
@@ -170,7 +167,8 @@ def load_tests(unused_loader, tests, unused_ignore):
                 extraglobs={
                     'tf': tf,
                     'np': np,
-                    'os': os
+                    'os': os,
+                    'tfa': tfa
                 },
                 setUp=testcase.set_up,
                 tearDown=testcase.tear_down,
