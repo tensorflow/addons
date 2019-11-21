@@ -2,16 +2,16 @@ licenses(["notice"])  # Apache 2.0
 
 package(default_visibility = ["//visibility:public"])
 
+# TODO: https://github.com/tensorflow/addons/issues/663
 py_library(
     name = "text",
     srcs = ([
         "__init__.py",
         "crf.py",
-        "parse_time_op.py",
+        # "parse_time_op.py",
         "skip_gram_ops.py",
     ]),
     data = [
-        # TODO: https://github.com/tensorflow/addons/issues/663
         # "//tensorflow_addons/custom_ops/text:_parse_time_op.so",
         "//tensorflow_addons/custom_ops/text:_skip_gram_ops.so",
         "//tensorflow_addons/utils",
