@@ -20,8 +20,7 @@ from __future__ import print_function
 import numpy as np
 
 import tensorflow as tf
-from tensorflow_addons.image.resampler_ops import resampler
-
+from tensorflow_addons.image import resampler_ops
 from tensorflow_addons.utils import test_utils
 
 
@@ -49,7 +48,7 @@ def _bilinearly_interpolate(data, x, y):
     shape = x.shape
     x = np.asarray(x) + 1
     y = np.asarray(y) + 1
-    data = np.lib.pad(data, 1, "constant", constant_values=0)
+    data = np.pad(data, 1, "constant", constant_values=0)
 
     x_0 = np.floor(x).astype(int)
     x_1 = x_0 + 1
@@ -72,7 +71,7 @@ def _bilinearly_interpolate(data, x, y):
     w_d = (x - x_0) * (y - y_0)
 
     samples = (w_a * i_a + w_b * i_b + w_c * i_c + w_d * i_d)
-    samples.reshape(shape)
+    samples = samples.reshape(shape)
 
     return samples
 
@@ -132,11 +131,12 @@ class ResamplerTest(tf.test.TestCase):
                           dtype.as_numpy_dtype)
         data_shape = (batch_size, data_height, data_width, data_channels)
         data = np.random.rand(*data_shape).astype(dtype.as_numpy_dtype)
-        if on_gpu:
-            with test_utils.use_gpu():
+        use_gpu = on_gpu
+        if use_gpu and tf.test.is_gpu_available():
+            with test_utils.device(use_gpu):
                 data_ph = tf.constant(data)
                 warp_ph = tf.constant(warp)
-                outputs = resampler(data=data_ph, warp=warp_ph)
+                outputs = resampler_ops.resampler(data=data_ph, warp=warp_ph)
                 self.assertEqual(
                     outputs.get_shape().as_list(),
                     [None, warp_height, warp_width, data_channels])
@@ -164,12 +164,14 @@ class ResamplerTest(tf.test.TestCase):
                           dtype.as_numpy_dtype)
         data_shape = (batch_size, data_height, data_width, data_channels)
         data = np.random.rand(*data_shape).astype(dtype.as_numpy_dtype)
-        if on_gpu:
+        use_gpu = on_gpu
+        if use_gpu and tf.test.is_gpu_available():
             with test_utils.use_gpu():
                 data_tensor = tf.constant(data)
                 warp_tensor = tf.constant(warp)
-                output_tensor = resampler(data=data_tensor, warp=warp_tensor)
-                grads = tf.test.compute_gradient(resampler,
+                output_tensor = resampler_ops.resampler(
+                    data=data_tensor, warp=warp_tensor)
+                grads = tf.test.compute_gradient(resampler_ops.resampler,
                                                  [data_tensor, warp_tensor])
             if not tf.test.is_gpu_available():
                 # On CPU we perform numerical differentiation at the best available
@@ -177,10 +179,10 @@ class ResamplerTest(tf.test.TestCase):
                 # pass for float16.
                 data_tensor_64 = tf.constant(data, dtype=tf.float64)
                 warp_tensor_64 = tf.constant(warp, dtype=tf.float64)
-                output_tensor_64 = resampler(
+                output_tensor_64 = resampler_ops.resampler(
                     data=data_tensor_64, warp=warp_tensor_64)
                 grads_64 = tf.test.compute_gradient(
-                    resampler, [data_tensor_64, warp_tensor_64])
+                    resampler_ops.resampler, [data_tensor_64, warp_tensor_64])
 
                 for g, g_64 in zip(grads, grads_64):
                     self.assertLess(np.fabs(g[0] - g_64[1]).max(), tol)
@@ -190,13 +192,13 @@ class ResamplerTest(tf.test.TestCase):
                     self.assertLess(np.fabs(g[0] - g[1]).max(), tol)
 
     def test_op_errors(self):
-        data_width = 7
+        batch_size = 10
         data_height = 9
+        data_width = 7
         data_depth = 3
         data_channels = 5
         warp_width = 4
         warp_height = 8
-        batch_size = 10
 
         # Input data shape is not defined over a 2D grid, i.e. its shape is not like
         # (batch_size, data_height, data_width, data_channels).
@@ -205,35 +207,35 @@ class ResamplerTest(tf.test.TestCase):
         data = np.zeros(data_shape)
         warp_shape = (batch_size, warp_height, warp_width, 2)
         warp = np.zeros(warp_shape)
-        outputs = resampler(tf.constant(data), tf.constant(warp))
 
         # pylint: disable=bad-continuation
         with self.assertRaisesRegexp(
                 tf.errors.UnimplementedError, "Only bilinear interpolation is "
                 "currently supported."):
-            outputs
+            self.evaluate(
+                resampler_ops.resampler(tf.constant(data), tf.constant(warp)))
 
         # Warp tensor must be at least a matrix, with shape [batch_size, 2].
         data_shape = (batch_size, data_height, data_width, data_channels)
         data = np.zeros(data_shape)
         warp_shape = (batch_size,)
         warp = np.zeros(warp_shape)
-        outputs = resampler(tf.constant(data), tf.constant(warp))
 
         with self.assertRaisesRegexp(tf.errors.InvalidArgumentError,
                                      "warp should be at least a matrix"):
-            outputs
+            self.evaluate(
+                resampler_ops.resampler(tf.constant(data), tf.constant(warp)))
 
         # The batch size of the data and warp tensors must be the same.
         data_shape = (batch_size, data_height, data_width, data_channels)
         data = np.zeros(data_shape)
         warp_shape = (batch_size + 1, warp_height, warp_width, 2)
         warp = np.zeros(warp_shape)
-        outputs = resampler(tf.constant(data), tf.constant(warp))
 
         with self.assertRaisesRegexp(tf.errors.InvalidArgumentError,
                                      "Batch size of data and warp tensor"):
-            outputs
+            self.evaluate(
+                resampler_ops.resampler(tf.constant(data), tf.constant(warp)))
 
         # The warp tensor must contain 2D coordinates, i.e. its shape last dimension
         # must be 2.
@@ -241,13 +243,13 @@ class ResamplerTest(tf.test.TestCase):
         data = np.zeros(data_shape)
         warp_shape = (batch_size, warp_height, warp_width, 3)
         warp = np.zeros(warp_shape)
-        outputs = resampler(tf.constant(data), tf.constant(warp))
 
         # pylint: disable=bad-continuation
         with self.assertRaisesRegexp(
                 tf.errors.UnimplementedError, "Only bilinear interpolation is "
                 "supported warping"):
-            outputs
+            self.evaluate(
+                resampler_ops.resampler(tf.constant(data), tf.constant(warp)))
 
 
 if __name__ == "__main__":

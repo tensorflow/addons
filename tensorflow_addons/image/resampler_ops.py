@@ -19,7 +19,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 _resampler_ops = tf.load_op_library(
@@ -57,7 +56,7 @@ def resampler(data, warp, name=None):
         return _resampler_ops.addons_resampler(data_tensor, warp_tensor)
 
 
-@tf.RegisterGradient("Resampler")
+@tf.RegisterGradient("Addons>Resampler")
 def _resampler_grad(op, grad_output):
     data, warp = op.inputs
     grad_output_tensor = tf.convert_to_tensor(grad_output, name="grad_output")
