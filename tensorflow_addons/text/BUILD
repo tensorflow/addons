@@ -2,22 +2,22 @@ licenses(["notice"])  # Apache 2.0
 
 package(default_visibility = ["//visibility:public"])
 
-# TODO: https://github.com/tensorflow/addons/pull/658
-# py_library(
-#     name = "text",
-#     srcs = ([
-#         "__init__.py",
-#         "crf.py",
-#         "parse_time_op.py",
-#         "skip_gram_ops.py",
-#     ]),
-#     data = [
-#         "//tensorflow_addons/custom_ops/text:_parse_time_op.so",
-#         "//tensorflow_addons/custom_ops/text:_skip_gram_ops.so",
-#         "//tensorflow_addons/utils",
-#     ],
-#     srcs_version = "PY2AND3",
-# )
+py_library(
+    name = "text",
+    srcs = ([
+        "__init__.py",
+        "crf.py",
+        "parse_time_op.py",
+        "skip_gram_ops.py",
+    ]),
+    data = [
+        # TODO: https://github.com/tensorflow/addons/issues/663
+        # "//tensorflow_addons/custom_ops/text:_parse_time_op.so",
+        "//tensorflow_addons/custom_ops/text:_skip_gram_ops.so",
+        "//tensorflow_addons/utils",
+    ],
+    srcs_version = "PY2AND3",
+)
 
 py_test(
     name = "crf_test",
@@ -45,7 +45,7 @@ py_test(
     ],
 )
 
-# TODO: https://github.com/tensorflow/addons/pull/658
+# TODO: https://github.com/tensorflow/addons/issues/663
 # py_test(
 #     name = "parse_time_op_test",
 #     size = "small",

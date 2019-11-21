@@ -12,7 +12,7 @@ custom_op_library(
     ],
 )
 
-# TODO: https://github.com/tensorflow/addons/pull/658
+# TODO: https://github.com/tensorflow/addons/issues/663
 # custom_op_library(
 #     name = "_parse_time_op.so",
 #     srcs = [
