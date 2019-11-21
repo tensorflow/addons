@@ -12,10 +12,11 @@ custom_op_library(
     ],
 )
 
-custom_op_library(
-    name = "_parse_time_op.so",
-    srcs = [
-        "cc/kernels/parse_time_kernel.cc",
-        "cc/ops/parse_time_op.cc",
-    ],
-)
+# TODO: https://github.com/tensorflow/addons/pull/658
+# custom_op_library(
+#     name = "_parse_time_op.so",
+#     srcs = [
+#         "cc/kernels/parse_time_kernel.cc",
+#         "cc/ops/parse_time_op.cc",
+#     ],
+# )
