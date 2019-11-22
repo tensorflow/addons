@@ -131,25 +131,24 @@ class ResamplerTest(tf.test.TestCase):
                           dtype.as_numpy_dtype)
         data_shape = (batch_size, data_height, data_width, data_channels)
         data = np.random.rand(*data_shape).astype(dtype.as_numpy_dtype)
-        use_gpu = on_gpu
-        if use_gpu and tf.test.is_gpu_available():
-            with test_utils.device(use_gpu):
-                data_ph = tf.constant(data)
-                warp_ph = tf.constant(warp)
-                outputs = resampler_ops.resampler(data=data_ph, warp=warp_ph)
-                self.assertEqual(
-                    outputs.get_shape().as_list(),
-                    [None, warp_height, warp_width, data_channels])
+        use_gpu = on_gpu and tf.test.is_gpu_available()
+        with test_utils.device(use_gpu):
+            data_ph = tf.constant(data)
+            warp_ph = tf.constant(warp)
+            outputs = resampler_ops.resampler(data=data_ph, warp=warp_ph)
+            self.assertEqual(
+                outputs.get_shape().as_list(),
+                [None, warp_height, warp_width, data_channels])
 
-            # Generate reference output via bilinear interpolation in numpy
-            reference_output = np.zeros_like(outputs)
-            for batch in range(batch_size):
-                for c in range(data_channels):
-                    reference_output[batch, :, :, c] = _bilinearly_interpolate(
-                        data[batch, :, :, c], warp[batch, :, :, 0],
-                        warp[batch, :, :, 1])
+        # Generate reference output via bilinear interpolation in numpy
+        reference_output = np.zeros_like(outputs)
+        for batch in range(batch_size):
+            for c in range(data_channels):
+                reference_output[batch, :, :, c] = _bilinearly_interpolate(
+                    data[batch, :, :, c], warp[batch, :, :, 0],
+                    warp[batch, :, :, 1])
 
-            self.assertAllClose(outputs, reference_output, rtol=tol, atol=tol)
+        self.assertAllClose(outputs, reference_output, rtol=tol, atol=tol)
 
     def _test_op_backward_pass(self, on_gpu, dtype, tol):
         np.random.seed(13)
@@ -164,15 +163,14 @@ class ResamplerTest(tf.test.TestCase):
                           dtype.as_numpy_dtype)
         data_shape = (batch_size, data_height, data_width, data_channels)
         data = np.random.rand(*data_shape).astype(dtype.as_numpy_dtype)
-        use_gpu = on_gpu
-        if use_gpu and tf.test.is_gpu_available():
-            with test_utils.use_gpu():
-                data_tensor = tf.constant(data)
-                warp_tensor = tf.constant(warp)
-                output_tensor = resampler_ops.resampler(
-                    data=data_tensor, warp=warp_tensor)
-                grads = tf.test.compute_gradient(resampler_ops.resampler,
-                                                 [data_tensor, warp_tensor])
+        use_gpu = on_gpu and tf.test.is_gpu_available()
+        with test_utils.device(use_gpu):
+            data_tensor = tf.constant(data)
+            warp_tensor = tf.constant(warp)
+            output_tensor = resampler_ops.resampler(
+                data=data_tensor, warp=warp_tensor)
+            grads = tf.test.compute_gradient(resampler_ops.resampler,
+                                             [data_tensor, warp_tensor])
             if not tf.test.is_gpu_available():
                 # On CPU we perform numerical differentiation at the best available
                 # precision, and compare against that. This is necessary for test to
