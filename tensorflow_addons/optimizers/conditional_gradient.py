@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Conditional Gradient method for TensorFlow."""
+"""Conditional Gradient optimizer."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -34,13 +34,13 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
         / (frobenius_norm(gradient) + epsilon))
     ```
 
-    Note that we choose "lambda_" here to refer to the constraint "lambda" in
-    the paper.
-    And 'epsilon' is constant with tiny value as compared to the value of
-    frobenius_norm of gradient. The purpose of 'epsilon' here is to avoid the
-    case that the value of frobenius_norm of gradient is 0.
+    Note that `lambda_` here refers to the constraint "lambda" in
+    the paper. `epsilon` is constant with tiny value as compared to
+    the value of frobenius norm of gradient. The purpose of `epsilon`
+    here is to avoid the case that the value of frobenius norm of
+    gradient is 0.
 
-    In this implementation, we choose 'epsilon' with value of 10^-7.
+    In this implementation, `epsilon` defaults to $10^{-7}$.
     """
 
     def __init__(self,
@@ -50,18 +50,25 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
                  use_locking=False,
                  name='ConditionalGradient',
                  **kwargs):
-        """Construct a conditional gradient optimizer.
+        """Construct a new conditional gradient optimizer.
 
         Args:
-            learning_rate: A `Tensor` or a floating point value.
-                        The learning rate.
+            learning_rate: A `Tensor` or a floating point value. or a schedule
+                that is a `tf.keras.optimizers.schedules.LearningRateSchedule`
+                The learning rate.
             lambda_: A `Tensor` or a floating point value. The constraint.
             epsilon: A `Tensor` or a floating point value. A small constant
-                    for numerical stability when handling the case of norm of
-                    gradient to be zero.
-            use_locking: If `True` use locks for update operations.
+                for numerical stability when handling the case of norm of
+                gradient to be zero.
+            use_locking: If `True`, use locks for update operations.
             name: Optional name prefix for the operations created when
-                applying gradients.  Defaults to 'ConditionalGradient'
+                applying gradients. Defaults to 'ConditionalGradient'.
+            **kwargs: keyword arguments. Allowed to be {`clipnorm`,
+                `clipvalue`, `lr`, `decay`}. `clipnorm` is clip gradients
+                by norm; `clipvalue` is clip gradients by value, `decay` is
+                included for backward compatibility to allow time inverse
+                decay of learning rate. `lr` is included for backward
+                compatibility, recommended to use `learning_rate` instead.
         """
         super(ConditionalGradient, self).__init__(name=name, **kwargs)
         self._set_hyper('learning_rate', kwargs.get('lr', learning_rate))
