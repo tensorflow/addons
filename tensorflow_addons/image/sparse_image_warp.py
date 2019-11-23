@@ -187,7 +187,7 @@ def sparse_image_warp(image,
                  dest_control_point_locations, control_point_flows,
                  image_height, image_width, boundary_points_per_edge)
 
-        flattened_flows = interpolate_spline.interpolate_spline(
+        flattened_flows = interpolate_spline(
             dest_control_point_locations, control_point_flows,
             flattened_grid_locations, interpolation_order,
             regularization_weight)

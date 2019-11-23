@@ -126,7 +126,7 @@ struct Resampler2DFunctor<CPUDevice, T> {
 template <typename Device, typename T>
 class ResamplerOp : public OpKernel {
  public:
-  explicit ResamplerOp(OpKernelConstruction* context) : OpKernel(context) {}  
+  explicit ResamplerOp(OpKernelConstruction* context) : OpKernel(context) {}
 
   void Compute(OpKernelContext* ctx) override {
     const Tensor& data = ctx->input(0);
