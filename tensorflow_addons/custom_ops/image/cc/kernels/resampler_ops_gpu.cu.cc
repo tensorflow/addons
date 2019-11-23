@@ -111,15 +111,14 @@ namespace functor {
 
 template <typename T>
 struct Resampler2DFunctor<GPUDevice, T> {
-  void operator()(::tensorflow::OpKernelContext* ctx, const GPUDevice& d,
+  void operator()(OpKernelContext* ctx, const GPUDevice& d,
                   const T* __restrict__ data, const T* __restrict__ warp,
                   T* __restrict__ output, const int batch_size,
                   const int data_height, const int data_width,
                   const int data_channels, const int num_sampling_points) {
     const int output_data_size =
         batch_size * num_sampling_points * data_channels;
-    ::tensorflow::GpuLaunchConfig config =
-        ::tensorflow::GetGpuLaunchConfig(output_data_size, d);
+    GpuLaunchConfig config = GetGpuLaunchConfig(output_data_size, d);
     TF_CHECK_OK(GpuLaunchKernel(
         Resampler2DKernel<T>, config.block_count, config.thread_per_block, 0,
         d.stream(), data, warp, output, batch_size, data_height, data_width,
@@ -241,7 +240,7 @@ namespace functor {
 
 template <typename T>
 struct ResamplerGrad2DFunctor<GPUDevice, T> {
-  void operator()(::tensorflow::OpKernelContext* ctx, const GPUDevice& d,
+  void operator()(OpKernelContext* ctx, const GPUDevice& d,
                   const T* __restrict__ data, const T* __restrict__ warp,
                   const T* __restrict__ grad_output, T* __restrict__ grad_data,
                   T* __restrict__ grad_warp, const int batch_size,
@@ -253,20 +252,19 @@ struct ResamplerGrad2DFunctor<GPUDevice, T> {
     const int grad_data_size =
         batch_size * data_height * data_width * data_channels;
 
-    ::tensorflow::GpuLaunchConfig config =
-        ::tensorflow::GetGpuLaunchConfig(grad_warp_size, d);
-    TF_CHECK_OK(::tensorflow::GpuLaunchKernel(
-        SetZero<T>, config.block_count, config.thread_per_block, 0, d.stream(),
-        grad_warp_size, grad_warp));
+    GpuLaunchConfig config = GetGpuLaunchConfig(grad_warp_size, d);
+    TF_CHECK_OK(GpuLaunchKernel(SetZero<T>, config.block_count,
+                                config.thread_per_block, 0, d.stream(),
+                                grad_warp_size, grad_warp));
 
-    config = ::tensorflow::GetGpuLaunchConfig(grad_data_size, d);
-    TF_CHECK_OK(::tensorflow::GpuLaunchKernel(
-        SetZero<T>, config.block_count, config.thread_per_block, 0, d.stream(),
-        grad_data_size, grad_data));
+    config = GetGpuLaunchConfig(grad_data_size, d);
+    TF_CHECK_OK(GpuLaunchKernel(SetZero<T>, config.block_count,
+                                config.thread_per_block, 0, d.stream(),
+                                grad_data_size, grad_data));
 
     const int resampler_output_size =
         batch_size * num_sampling_points * data_channels;
-    config = ::tensorflow::GetGpuLaunchConfig(resampler_output_size, d);
+    config = GetGpuLaunchConfig(resampler_output_size, d);
     TF_CHECK_OK(GpuLaunchKernel(ResamplerGrad2DKernel<T>, config.block_count,
                                 config.thread_per_block, 0, d.stream(), data,
                                 warp, grad_output, grad_data, grad_warp,
@@ -280,5 +278,4 @@ template struct ResamplerGrad2DFunctor<GPUDevice, float>;
 }  // namespace functor
 }  // namespace addons
 }  // namespace tensorflow
-
 #endif  // GOOGLE_CUDA

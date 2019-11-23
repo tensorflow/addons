@@ -38,7 +38,7 @@ namespace functor {
 
 template <typename T>
 struct Resampler2DFunctor<CPUDevice, T> {
-  void operator()(::tensorflow::OpKernelContext* ctx, const CPUDevice& d,
+  void operator()(OpKernelContext* ctx, const CPUDevice& d,
                   const T* __restrict__ data, const T* __restrict__ warp,
                   T* __restrict__ output, const int batch_size,
                   const int data_height, const int data_width,
@@ -116,44 +116,43 @@ struct Resampler2DFunctor<CPUDevice, T> {
     const int64 cost =
         static_cast<int64>(num_sampling_points) * data_channels * 1000;
     auto worker_threads = *(ctx->device()->tensorflow_cpu_worker_threads());
-    ::tensorflow::Shard(worker_threads.num_threads, worker_threads.workers,
-                        batch_size, cost, resample_batches);
+    Shard(worker_threads.num_threads, worker_threads.workers, batch_size, cost,
+          resample_batches);
   }
 };
 
 }  // namespace functor
 
 template <typename Device, typename T>
-class ResamplerOp : public ::tensorflow::OpKernel {
+class ResamplerOp : public OpKernel {
  public:
-  explicit ResamplerOp(::tensorflow::OpKernelConstruction* context)
-      : ::tensorflow::OpKernel(context) {}
+  explicit ResamplerOp(OpKernelConstruction* context) : OpKernel(context) {}  
 
-  void Compute(::tensorflow::OpKernelContext* ctx) override {
-    const ::tensorflow::Tensor& data = ctx->input(0);
-    const ::tensorflow::Tensor& warp = ctx->input(1);
+  void Compute(OpKernelContext* ctx) override {
+    const Tensor& data = ctx->input(0);
+    const Tensor& warp = ctx->input(1);
 
-    const ::tensorflow::TensorShape& data_shape = data.shape();
+    const TensorShape& data_shape = data.shape();
     OP_REQUIRES(ctx, data_shape.dims() == 4,
-                ::tensorflow::errors::Unimplemented(
+                errors::Unimplemented(
                     "Only bilinear interpolation is currently supported. The "
                     "input data shape must be [batch_size, data_height, "
                     "data_width, data_channels], but is: ",
                     data_shape.DebugString()));
-    const ::tensorflow::TensorShape& warp_shape = warp.shape();
-    OP_REQUIRES(ctx,
-                ::tensorflow::TensorShapeUtils::IsMatrixOrHigher(warp_shape),
-                ::tensorflow::errors::InvalidArgument(
-                    "warp should be at least a matrix, got shape ",
-                    warp_shape.DebugString()));
+    const TensorShape& warp_shape = warp.shape();
+    OP_REQUIRES(
+        ctx, TensorShapeUtils::IsMatrixOrHigher(warp_shape),
+        errors::InvalidArgument("warp should be at least a matrix, got shape ",
+                                "warp should be at least a matrix, got shape ",
+                                warp_shape.DebugString()));
     OP_REQUIRES(ctx, warp_shape.dim_size(warp_shape.dims() - 1) == 2,
-                ::tensorflow::errors::Unimplemented(
+                errors::Unimplemented(
                     "Only bilinear interpolation is supported, warping "
                     "coordinates must be 2D; warp shape last entry should be "
                     "2, but shape vector is: ",
                     warp_shape.DebugString()));
     OP_REQUIRES(ctx, data_shape.dim_size(0) == warp_shape.dim_size(0),
-                ::tensorflow::errors::InvalidArgument(
+                errors::InvalidArgument(
                     "Batch size of data and warp tensor must be the same, but "
                     "input shapes are: ",
                     data_shape.DebugString(), ", ", warp_shape.DebugString()));
@@ -161,10 +160,10 @@ class ResamplerOp : public ::tensorflow::OpKernel {
     const int data_height = data_shape.dim_size(1);
     const int data_width = data_shape.dim_size(2);
     const int data_channels = data_shape.dim_size(3);
-    ::tensorflow::TensorShape output_shape = warp.shape();
+    TensorShape output_shape = warp.shape();
     output_shape.set_dim(output_shape.dims() - 1, data_channels);
     const int num_sampling_points = warp.NumElements() / batch_size / 2;
-    ::tensorflow::Tensor* output = nullptr;
+    Tensor* output = nullptr;
     OP_REQUIRES_OK(ctx, ctx->allocate_output(0, output_shape, &output));
 
     // Execute kernel only for nonempty output; otherwise Eigen crashes on GPU.
@@ -204,7 +203,7 @@ namespace functor {
 
 template <typename T>
 struct ResamplerGrad2DFunctor<CPUDevice, T> {
-  void operator()(::tensorflow::OpKernelContext* ctx, const CPUDevice& d,
+  void operator()(OpKernelContext* ctx, const CPUDevice& d,
                   const T* __restrict__ data, const T* __restrict__ warp,
                   const T* __restrict__ grad_output, T* __restrict__ grad_data,
                   T* __restrict__ grad_warp, const int batch_size,
@@ -320,27 +319,26 @@ struct ResamplerGrad2DFunctor<CPUDevice, T> {
     auto worker_threads = *(ctx->device()->tensorflow_cpu_worker_threads());
     const int64 cost =
         static_cast<int64>(num_sampling_points) * data_channels * 1000;
-    ::tensorflow::Shard(worker_threads.num_threads, worker_threads.workers,
-                        batch_size, cost, update_grads_for_batches);
+    Shard(worker_threads.num_threads, worker_threads.workers, batch_size, cost,
+          update_grads_for_batches);
   }
 };
 
 }  // namespace functor
 
 template <typename Device, typename T>
-class ResamplerGradOp : public ::tensorflow::OpKernel {
+class ResamplerGradOp : public OpKernel {
  public:
-  explicit ResamplerGradOp(::tensorflow::OpKernelConstruction* context)
-      : ::tensorflow::OpKernel(context) {}
+  explicit ResamplerGradOp(OpKernelConstruction* context) : OpKernel(context) {}
 
-  void Compute(::tensorflow::OpKernelContext* ctx) override {
-    const ::tensorflow::Tensor& data = ctx->input(0);
-    const ::tensorflow::Tensor& warp = ctx->input(1);
-    const ::tensorflow::Tensor& grad_output = ctx->input(2);
+  void Compute(OpKernelContext* ctx) override {
+    const Tensor& data = ctx->input(0);
+    const Tensor& warp = ctx->input(1);
+    const Tensor& grad_output = ctx->input(2);
 
-    const ::tensorflow::TensorShape& data_shape = data.shape();
+    const TensorShape& data_shape = data.shape();
     OP_REQUIRES(ctx, data_shape.dims() == 4,
-                ::tensorflow::errors::Unimplemented(
+                errors::Unimplemented(
                     "Only bilinear interpolation is supported, the input data "
                     "tensor must be a batch of 2d data; data shape should have "
                     "4 entries corresponding to [batch_size, data_height, "
@@ -350,31 +348,30 @@ class ResamplerGradOp : public ::tensorflow::OpKernel {
     const int data_height = data_shape.dim_size(1);
     const int data_width = data_shape.dim_size(2);
     const int data_channels = data_shape.dim_size(3);
-    const ::tensorflow::TensorShape& warp_shape = warp.shape();
-    OP_REQUIRES(ctx,
-                ::tensorflow::TensorShapeUtils::IsMatrixOrHigher(warp_shape),
-                ::tensorflow::errors::InvalidArgument(
-                    "warp should be at least a matrix, got shape ",
-                    warp_shape.DebugString()));
+    const TensorShape& warp_shape = warp.shape();
+    OP_REQUIRES(
+        ctx, TensorShapeUtils::IsMatrixOrHigher(warp_shape),
+        errors::InvalidArgument("warp should be at least a matrix, got shape ",
+                                warp_shape.DebugString()));
     OP_REQUIRES(ctx, warp_shape.dim_size(warp_shape.dims() - 1) == 2,
-                ::tensorflow::errors::Unimplemented(
+                errors::Unimplemented(
                     "Only bilinear interpolation is supported, warping "
                     "coordinates must be 2D; warp shape last entry should be "
                     "2, but shape vector is: ",
                     warp_shape.DebugString()));
-    const ::tensorflow::TensorShape& grad_output_shape = grad_output.shape();
-    ::tensorflow::TensorShape resampler_output_shape = warp.shape();
+    const TensorShape& grad_output_shape = grad_output.shape();
+    TensorShape resampler_output_shape = warp.shape();
     resampler_output_shape.set_dim(resampler_output_shape.dims() - 1,
                                    data_channels);
     OP_REQUIRES(ctx, grad_output_shape == resampler_output_shape,
-                ::tensorflow::errors::InvalidArgument(
+                errors::InvalidArgument(
                     "grad_output shape is not consistent with data and warp "
                     "shapes; it should be ",
                     resampler_output_shape.DebugString(), " but is ",
                     grad_output_shape.DebugString()));
     const int num_sampling_points = warp.NumElements() / batch_size / 2;
-    ::tensorflow::Tensor* grad_data = nullptr;
-    ::tensorflow::Tensor* grad_warp = nullptr;
+    Tensor* grad_data = nullptr;
+    Tensor* grad_warp = nullptr;
     OP_REQUIRES_OK(ctx, ctx->allocate_output(0, data.shape(), &grad_data));
     OP_REQUIRES_OK(ctx, ctx->allocate_output(1, warp.shape(), &grad_warp));
     // Execute kernel only for nonempty output; otherwise Eigen crashes on GPU.

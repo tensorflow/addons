@@ -29,7 +29,7 @@ REGISTER_OP("Addons>Resampler")
     .Input("data: T")
     .Input("warp: T")
     .Output("output: T")
-    .Attr("T: {half, bfloat16, float, double}")
+    .Attr("T: {half, float, double}")
     .SetShapeFn([](InferenceContext* c) {
       ShapeHandle data;
       ShapeHandle warp;
@@ -42,7 +42,7 @@ REGISTER_OP("Addons>Resampler")
           c->Concatenate(output, c->Vector(c->Dim(data, -1)), &output));
 
       c->set_output(0, output);
-      return ::tensorflow::Status::OK();
+      return Status::OK();
     })
     .Doc(R"doc(Resampler op.)doc");
 
@@ -53,11 +53,11 @@ REGISTER_OP("Addons>ResamplerGrad")
     .Input("grad_output: T")
     .Output("grad_data: T")
     .Output("grad_warp: T")
-    .Attr("T: {half, bfloat16, float, double}")
+    .Attr("T: {half, float, double}")
     .SetShapeFn([](InferenceContext* c) {
       c->set_output(0, c->input(0));
       c->set_output(1, c->input(1));
-      return ::tensorflow::Status::OK();
+      return Status::OK();
     })
     .Doc(R"doc(Resampler Grad op.)doc");
 
