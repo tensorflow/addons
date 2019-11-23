@@ -84,7 +84,8 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         r"""Construct a new RAdam optimizer.
 
         Args:
-            learning_rate: A Tensor or a floating point value.
+            learning_rate: A `Tensor` or a floating point value. or a schedule
+                that is a `tf.keras.optimizers.schedules.LearningRateSchedule`
                 The learning rate.
             beta_1: A float value or a constant float tensor.
                 The exponential decay rate for the 1st moment estimates.
