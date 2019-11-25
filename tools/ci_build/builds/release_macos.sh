@@ -27,7 +27,7 @@ export PATH="$PATH:$HOME/bin"
 # Install delocate
 python3 -m pip install -q delocate
 
-brew update && brew upgrade pyenv
+brew update && brew outdated | grep -q pyenv && brew upgrade pyenv
 eval "$(pyenv init -)"
 
 for version in ${PYTHON_VERSIONS}; do
