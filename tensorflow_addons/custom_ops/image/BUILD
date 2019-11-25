@@ -35,3 +35,16 @@ custom_op_library(
         "cc/kernels/image_projective_transform_op_gpu.cu.cc",
     ],
 )
+
+custom_op_library(
+    name = "_resampler_ops.so",
+    srcs = [
+        "cc/kernels/resampler_ops.cc",
+        "cc/kernels/resampler_ops.h",
+        "cc/ops/resampler_ops.cc",
+    ],
+    cuda_srcs = [
+        "cc/kernels/resampler_ops.h",
+        "cc/kernels/resampler_ops_gpu.cu.cc",
+    ],
+)
