@@ -56,6 +56,11 @@ class CohenKappaTest(tf.test.TestCase):
         self.evaluate(update_op2)
         self.evaluate(update_op3)
 
+    def reset_obj_states(self, obj1, obj2, obj3):
+        obj1.reset_states()
+        obj2.reset_states()
+        obj3.reset_states()
+
     def check_results(self, objs, values):
         obj1, obj2, obj3 = objs
         val1, val2, val3 = values
@@ -129,6 +134,16 @@ class CohenKappaTest(tf.test.TestCase):
         # check results
         self.check_results([kp_obj1, kp_obj2, kp_obj3],
                            [-0.25473321, -0.38992332, -0.60695344])
+
+    def test_kappa_reset_states(self):
+        # Initialize
+        kp_obj1, kp_obj2, kp_obj3 = self.initialize_vars()
+
+        # reset states
+        self.reset_obj_states(kp_obj1, kp_obj2, kp_obj3)
+
+        # check results
+        self.check_results([kp_obj1, kp_obj2, kp_obj3], [0.0, 0.0, 0.0])
 
     def test_large_values(self):
         y_true = [1] * 10000 + [0] * 20000 + [1] * 20000
