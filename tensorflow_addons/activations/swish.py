@@ -12,18 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Addititonal activation functions."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow_addons.activations.gelu import gelu
-from tensorflow_addons.activations.hardshrink import hardshrink
-from tensorflow_addons.activations.lisht import lisht
-from tensorflow_addons.activations.mish import mish
-from tensorflow_addons.activations.softshrink import softshrink
-from tensorflow_addons.activations.rrelu import rrelu
-from tensorflow_addons.activations.sparsemax import sparsemax
-from tensorflow_addons.activations.swish import swish
-from tensorflow_addons.activations.tanhshrink import tanhshrink
+import tensorflow as tf
+from tensorflow.python.ops import math_ops
+
+
+@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.function
+def swish(x):
+    """Computes the Swish activation function: `x * sigmoid(x)`.
+
+    Source: "Searching for Activation Functions" (Ramachandran et al. 2017)
+    https://arxiv.org/abs/1710.05941
+    """
+    x = tf.convert_to_tensor(x)
+    return x * math_ops.sigmoid(x)
