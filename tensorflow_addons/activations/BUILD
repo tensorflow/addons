@@ -13,6 +13,7 @@ py_library(
         "rrelu.py",
         "softshrink.py",
         "sparsemax.py",
+        "swish.py",
         "tanhshrink.py",
     ],
     data = [
@@ -107,6 +108,19 @@ py_test(
         "softshrink_test.py",
     ],
     main = "softshrink_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":activations",
+    ],
+)
+
+py_test(
+    name = "swish_test",
+    size = "small",
+    srcs = [
+        "swish_test.py",
+    ],
+    main = "swish_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":activations",

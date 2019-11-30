@@ -27,7 +27,7 @@ class ActivationsTest(tf.test.TestCase):
 
     ALL_ACTIVATIONS = [
         "gelu", "hardshrink", "lisht", "mish", "rrelu", "softshrink",
-        "sparsemax", "tanhshrink"
+        "sparsemax", "swish", "tanhshrink"
     ]
 
     def test_serialization(self):
