@@ -37,9 +37,9 @@ def _maybe_serialized(lr_decay, serialize_and_deserialize):
         return lr_decay
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 @parameterized.named_parameters(("NotSerialized", False), ("Serialized", True))
 class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testTriangularCyclicalLearningRate(self, serialize):
         initial_learning_rate = 0.1
         maximal_learning_rate = 1
@@ -68,7 +68,6 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
                 1e-6)
             self.evaluate(step.assign_add(1))
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testTriangular2CyclicalLearningRate(self, serialize):
         initial_learning_rate = 0.1
         maximal_learning_rate = 1
@@ -103,7 +102,6 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
                 1e-6)
             self.evaluate(step.assign_add(1))
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testExponentialCyclicalLearningRate(self, serialize):
         initial_learning_rate = 0.1
         maximal_learning_rate = 1
@@ -133,7 +131,6 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
                 self.evaluate(exponential_cyclical_lr(step)), expected, 1e-6)
             self.evaluate(step.assign_add(1))
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
     def testCustomCyclicalLearningRate(self, serialize):
         initial_learning_rate = 0.1
         maximal_learning_rate = 1
