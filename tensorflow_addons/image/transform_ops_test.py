@@ -30,8 +30,8 @@ _DTYPES = set([
 ])
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class ImageOpsTest(tf.test.TestCase):
-    @test_utils.run_in_graph_and_eager_modes
     def test_compose(self):
         for dtype in _DTYPES:
             with test_utils.use_gpu():
@@ -52,7 +52,6 @@ class ImageOpsTest(tf.test.TestCase):
                     [[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 0, 1], [0, 1, 1, 1]],
                     image_transformed)
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_extreme_projective_transform(self):
         for dtype in _DTYPES:
             with test_utils.use_gpu():
@@ -70,12 +69,9 @@ class ImageOpsTest(tf.test.TestCase):
     def test_transform_static_output_shape(self):
         image = tf.constant([[1., 2.], [3., 4.]])
         result = transform_ops.transform(
-            image,
-            tf.random.uniform([8], -1, 1),
-            output_shape=tf.constant([3, 5]))
+            image, tf.random.uniform([8], -1, 1), output_shape=[3, 5])
         self.assertAllEqual([3, 5], result.shape)
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_transform_unknown_shape(self):
         fn = transform_ops.transform.get_concrete_function(
             tf.TensorSpec(shape=None, dtype=tf.float32),
@@ -113,7 +109,6 @@ class ImageOpsTest(tf.test.TestCase):
 
         self.assertAllClose(theoretical[0], numerical[0])
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_grad(self):
         self._test_grad([16, 16])
         self._test_grad([4, 12, 12])
@@ -122,7 +117,6 @@ class ImageOpsTest(tf.test.TestCase):
         self._test_grad([4, 12, 3], [8, 24, 3])
         self._test_grad([3, 4, 12, 3], [3, 8, 24, 3])
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_transform_data_types(self):
         for dtype in _DTYPES:
             image = tf.constant([[1, 2], [3, 4]], dtype=dtype)
@@ -130,7 +124,6 @@ class ImageOpsTest(tf.test.TestCase):
                 np.array([[4, 4], [4, 4]]).astype(dtype.as_numpy_dtype()),
                 transform_ops.transform(image, [1] * 8))
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_transform_eager(self):
         image = tf.constant([[1., 2.], [3., 4.]])
         self.assertAllEqual(

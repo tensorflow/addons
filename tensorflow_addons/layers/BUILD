@@ -77,7 +77,7 @@ py_test(
 )
 
 py_test(
-    name = "layers_normalizations_test",
+    name = "normalizations_test",
     size = "small",
     srcs = [
         "normalizations_test.py",
