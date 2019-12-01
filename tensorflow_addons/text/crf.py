@@ -39,18 +39,10 @@ def crf_filtered_inputs(inputs, tag_bitmap):
     Returns:
       filtered_inputs: A [batch_size] vector of unnormalized sequence scores.
     """
-    # If max_seq_len is 1, we skip the score calculation and simply gather the
-    # unary potentials of all active tags.
-    def _single_seq_fn():
-        filtered_inputs = tf.where(tag_bitmap, inputs,
-                                   tf.fill(tf.shape(inputs), float("-inf")))
-        return filtered_inputs
-
-    def _multi_seq_fn():
-        # Compute the logsumexp of all scores of sequences matching the given tags.
-        filtered_inputs = tf.where(tag_bitmap, inputs,
-                                   tf.fill(tf.shape(inputs), float("-inf")))
-        return filtered_inputs
+    # set scores of filtered out inputs to be -inf.
+    filtered_inputs = tf.where(tag_bitmap, inputs,
+                               tf.fill(tf.shape(inputs), float("-inf")))
+    return filtered_inputs
 
 
 def crf_sequence_score(inputs, tag_indices, sequence_lengths,
@@ -517,7 +509,7 @@ def crf_decode(potentials, transition_params, sequence_length):
 
 def crf_constrained_decode(potentials, tag_bitmap, transition_params,
         sequence_length):
-    """Decode the highest scoring sequence of tags in under constraints.
+    """Decode the highest scoring sequence of tags under constraints.
 
     This is a function for tensor.
 
