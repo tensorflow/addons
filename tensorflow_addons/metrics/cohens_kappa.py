@@ -93,7 +93,7 @@ class CohenKappa(Metric):
             'conf_mtx',
             shape=(self.num_classes, self.num_classes),
             initializer=tf.keras.initializers.zeros,
-            dtype=tf.int64)
+            dtype=tf.float32)
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         """Accumulates the confusion matrix condition statistics.
@@ -125,21 +125,21 @@ class CohenKappa(Metric):
             predictions=y_pred,
             num_classes=self.num_classes,
             weights=sample_weight,
-            dtype=tf.int64)
+            dtype=tf.float32)
 
         # update the values in the original confusion matrix
         return self.conf_mtx.assign_add(new_conf_mtx)
 
     def result(self):
         nb_ratings = tf.shape(self.conf_mtx)[0]
-        weight_mtx = tf.ones([nb_ratings, nb_ratings], dtype=tf.int64)
+        weight_mtx = tf.ones([nb_ratings, nb_ratings], dtype=tf.float32)
 
         # 2. Create a weight matrix
         if self.weightage is None:
-            diagonal = tf.zeros([nb_ratings], dtype=tf.int64)
+            diagonal = tf.zeros([nb_ratings], dtype=tf.float32)
             weight_mtx = tf.linalg.set_diag(weight_mtx, diagonal=diagonal)
         else:
-            weight_mtx += tf.cast(tf.range(nb_ratings), dtype=tf.int64)
+            weight_mtx += tf.cast(tf.range(nb_ratings), dtype=tf.float32)
             weight_mtx = tf.cast(weight_mtx, dtype=self.dtype)
 
             if self.weightage == 'linear':
@@ -167,8 +167,10 @@ class CohenKappa(Metric):
         # 6. Calculate Kappa score
         numerator = tf.reduce_sum(conf_mtx * weight_mtx)
         denominator = tf.reduce_sum(out_prod * weight_mtx)
-        kp = 1 - (numerator / denominator)
-        return kp
+        return tf.cond(
+            tf.math.is_nan(denominator),
+            true_fn=lambda: 0.0,
+            false_fn=lambda: 1 - (numerator / denominator))
 
     def get_config(self):
         """Returns the serializable config of the metric."""
