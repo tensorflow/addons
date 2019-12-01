@@ -167,9 +167,10 @@ class CohenKappa(Metric):
         # 6. Calculate Kappa score
         numerator = tf.reduce_sum(conf_mtx * weight_mtx)
         denominator = tf.reduce_sum(out_prod * weight_mtx)
-        return tf.cond(tf.math.is_nan(denominator),
-                       true_fn=lambda: 0.0,
-                       false_fn=lambda: 1 - (numerator / denominator))
+        return tf.cond(
+            tf.math.is_nan(denominator),
+            true_fn=lambda: 0.0,
+            false_fn=lambda: 1 - (numerator / denominator))
 
     def get_config(self):
         """Returns the serializable config of the metric."""
