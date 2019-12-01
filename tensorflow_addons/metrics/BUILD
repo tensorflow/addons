@@ -8,6 +8,7 @@ py_library(
         "__init__.py",
         "cohens_kappa.py",
         "f_scores.py",
+        "hamming.py",
         "matthews_correlation_coefficient.py",
         "multilabel_confusion_matrix.py",
         "r_square.py",
@@ -78,6 +79,19 @@ py_test(
         "matthews_correlation_coefficient_test.py",
     ],
     main = "matthews_correlation_coefficient_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":metrics",
+    ],
+)
+
+py_test(
+    name = "hamming_test",
+    size = "small",
+    srcs = [
+        "hamming_test.py",
+    ],
+    main = "hamming_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":metrics",
