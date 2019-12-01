@@ -62,10 +62,10 @@ fi
 DOCKER_OPTS=''
 case ${DEVICE} in
     cpu)
-        DOCKER_IMAGE=tensorflow/tensorflow:custom-op-ubuntu16
+        DOCKER_IMAGE=gcr.io/tensorflow-testing/nosla-ubuntu16.04-manylinux2010
         ;;
     gpu)
-        DOCKER_IMAGE=tensorflow/tensorflow:custom-op-gpu-ubuntu16
+        DOCKER_IMAGE=gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010
         DOCKER_OPTS="--runtime=nvidia ${DOCKER_OPTS}"
         ;;
     *)

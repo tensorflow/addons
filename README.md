@@ -67,22 +67,22 @@ pip install tfa-nightly
 
 #### Installing from Source
 You can also install from source. This requires the [Bazel](
-https://bazel.build/) build system.
+https://bazel.build/) build system (version >= 1.0.0)
 
 ```
 git clone https://github.com/tensorflow/addons.git
 cd addons
 
-# If building GPU Ops (Requires CUDA 10.0 and CuDNN 7)
+# If building GPU Ops (Requires CUDA 10.1 and CuDNN 7)
 export TF_NEED_CUDA=1
-export CUDA_HOME="/path/to/cuda10" (default: /usr/local/cuda)
+export CUDA_HOME="/path/to/cuda10.1" (default: /usr/local/cuda)
 export CUDNN_INSTALL_PATH="/path/to/cudnn" (default: /usr/lib/x86_64-linux-gnu)
 
 # This script links project with TensorFlow dependency
 ./configure.sh
 
 bazel build build_pip_pkg
-bazel-bin/build_pip_pkg artifacts
+bazel-bin/build_pip_pkg artifacts --nightly
 
 pip install artifacts/tensorflow_addons-*.whl
 ```

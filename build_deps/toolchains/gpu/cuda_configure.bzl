@@ -970,7 +970,7 @@ def _tpl(repository_ctx, tpl, substitutions = {}, out = None):
 def _file(repository_ctx, label):
     repository_ctx.template(
         label.replace(":", "/"),
-        Label("//build_deps/tolchains/gpu/%s.tpl" % label),
+        Label("//build_deps/toolchains/gpu/%s.tpl" % label),
         {},
     )
 
