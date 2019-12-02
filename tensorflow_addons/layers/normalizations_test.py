@@ -114,16 +114,12 @@ class NormalizationTest(tf.test.TestCase):
         group_reduction_axes = list(range(1, len(reshaped_dims)))
         axis = -2 if axis == -1 else axis - 1
         group_reduction_axes.pop(axis)
-        
+
         # Calculate mean and variance
         mean = np.mean(
-            reshaped_inputs,
-            axis=tuple(group_reduction_axes),
-            keepdims=True)
+            reshaped_inputs, axis=tuple(group_reduction_axes), keepdims=True)
         variance = np.var(
-            reshaped_inputs,
-            axis=tuple(group_reduction_axes),
-            keepdims=True)
+            reshaped_inputs, axis=tuple(group_reduction_axes), keepdims=True)
 
         # Get gamma and beta initalized by layer
         gamma, beta = layer._get_reshaped_weights(input_shape)
