@@ -67,11 +67,11 @@ REQUIRED_PACKAGES = [
 ]
 
 if project_name == TFA_RELEASE:
-    # TODO: remove if-else condition when tf supports package consolidation.
-    if platform.system() == 'Linux':
-        REQUIRED_PACKAGES.append('tensorflow-gpu >= 2.0.0')
-    else:
-        REQUIRED_PACKAGES.append('tensorflow >= 2.0.0')
+    # TODO: remove environment markers when tf supports package consolidation.
+    REQUIRED_PACKAGES += [
+        'tensorflow-gpu;sys_platform=="linux"',
+        'tensorflow;sys_platform!="linux"',
+    ]
 elif project_name == TFA_NIGHTLY:
     REQUIRED_PACKAGES.append('tf-nightly')
 
