@@ -160,7 +160,7 @@ class GroupNormalization(tf.keras.layers.Layer):
 
         group_shape = [tensor_input_shape[i] for i in range(len(input_shape))]
         group_shape[self.axis] = input_shape[self.axis] // self.groups
-        group_shape.insert(1, self.groups)
+        group_shape.insert(self.axis, self.groups)
         group_shape = tf.stack(group_shape)
         reshaped_inputs = tf.reshape(inputs, group_shape)
         return reshaped_inputs, group_shape
@@ -168,11 +168,12 @@ class GroupNormalization(tf.keras.layers.Layer):
     def _apply_normalization(self, reshaped_inputs, input_shape):
 
         group_shape = tf.keras.backend.int_shape(reshaped_inputs)
-        group_reduction_axes = list(range(len(group_shape)))
-        # Remember the ordering of the tensor is [batch, group , steps]. Jump
-        # the first 2 to calculate the variance and the mean
+        group_reduction_axes = list(range(1, len(group_shape)))
+        axis = -2 if self.axis == -1 else self.axis - 1
+        group_reduction_axes.pop(axis)
+
         mean, variance = tf.nn.moments(
-            reshaped_inputs, group_reduction_axes[2:], keepdims=True)
+            reshaped_inputs, group_reduction_axes, keepdims=True)
 
         gamma, beta = self._get_reshaped_weights(input_shape)
         normalized_inputs = tf.nn.batch_normalization(
@@ -268,7 +269,7 @@ class GroupNormalization(tf.keras.layers.Layer):
     def _create_broadcast_shape(self, input_shape):
         broadcast_shape = [1] * len(input_shape)
         broadcast_shape[self.axis] = input_shape[self.axis] // self.groups
-        broadcast_shape.insert(1, self.groups)
+        broadcast_shape.insert(self.axis, self.groups)
         return broadcast_shape
 
 
