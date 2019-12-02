@@ -55,7 +55,7 @@ class NormalizationTest(tf.test.TestCase):
                     self.evaluate(group_shape[i]), expected_shape[i])
 
         input_shape = (10, 10, 10)
-        expected_shape = [10, 5, 10, 2]
+        expected_shape = [10, 10, 5, 2]
         run_reshape_test(2, 5, input_shape, expected_shape)
 
         input_shape = (10, 10, 10)
@@ -110,18 +110,18 @@ class NormalizationTest(tf.test.TestCase):
         np_inputs = self.evaluate(inputs)
         reshaped_dims = list(np_inputs.shape)
         reshaped_dims[axis] = reshaped_dims[axis] // groups
-        reshaped_dims.insert(1, groups)
+        reshaped_dims.insert(axis, groups)
         reshaped_inputs = np.reshape(np_inputs, tuple(reshaped_dims))
+
+        group_reduction_axes = list(range(1, len(reshaped_dims)))
+        axis = -2 if axis == -1 else axis - 1
+        group_reduction_axes.pop(axis)
 
         # Calculate mean and variance
         mean = np.mean(
-            reshaped_inputs,
-            axis=tuple(range(2, len(reshaped_dims))),
-            keepdims=True)
+            reshaped_inputs, axis=tuple(group_reduction_axes), keepdims=True)
         variance = np.var(
-            reshaped_inputs,
-            axis=tuple(range(2, len(reshaped_dims))),
-            keepdims=True)
+            reshaped_inputs, axis=tuple(group_reduction_axes), keepdims=True)
 
         # Get gamma and beta initalized by layer
         gamma, beta = layer._get_reshaped_weights(input_shape)
