@@ -41,10 +41,10 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
     fl = tfa.losses.SigmoidFocalCrossEntropy()
     loss = fl(
       [[0.97], [0.91], [0.03]],
-      [[1], [1], [0])
-    print('Loss: ', loss.numpy())  # Loss: [[0.03045921]
-                                            [0.09431068]
-                                            [0.31471074]
+      [[1.0], [1.0], [0.0]])
+    print('Loss: ', loss.numpy())  # Loss: [[0.00010971]
+                                            [0.0032975]
+                                            [0.00030611]]
     ```
     Usage with tf.keras API:
 
