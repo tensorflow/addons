@@ -8,7 +8,6 @@ py_library(
         "__init__.py",
         "tqdm_progress_bar.py",
     ],
-    srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/utils",
     ],

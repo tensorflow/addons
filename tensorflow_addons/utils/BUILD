@@ -10,7 +10,6 @@ py_library(
         "test_utils.py",
         "resource_loader.py",
     ]),
-    srcs_version = "PY2AND3",
 )
 
 py_test(
@@ -20,7 +19,6 @@ py_test(
         "keras_utils_test.py",
     ],
     main = "keras_utils_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":utils",
     ],
