@@ -117,7 +117,7 @@ class SkipGramGenerateCandidatesOp : public OpKernel {
             ". This should never happen - contact ami-team@ if it does.")));
 
     // Copies results to output tensors.
-    for (int i = 0; i < tokens.size(); ++i) {
+    for (typename std::vector<T>::size_type i = 0; i < tokens.size(); ++i) {
       tokens_output->vec<T>()(i) = tokens[i];
       labels_output->vec<T>()(i) = labels[i];
     }
