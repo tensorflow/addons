@@ -26,14 +26,11 @@ def center_loss(feature, labels, num_classes):
     """Computes the center loss.
 
     Arguments:
-        feature: 
-        labels:
-        num_classes: 
+        feature: feature with shape (batch_size, feat_dim)
+        labels: ground truth labels with shape (batch_size)
     
     Return：
         loss: Tensor
-        centers: Tensor
-        centers_update_op:
     """
     len_features = feature.get_shape()[1]
     centers = tf.get_variable('centers', [num_classes, len_features], dtype=tf.float32,
@@ -66,14 +63,16 @@ class CenterLoss(tf.keras.losses.Loss):
     """
 
     def __init__(self,
-                 margin=1.0,
                  reduction=tf.keras.losses.Reduction.AUTO,
+                 feat_dim=3,
+                 num_classes=5,
                  name="center_loss"):
         super(CenterLoss, self).__init__(reduction=reduction, name=name)
-        self.margin = margin
+        self.feat_dim = feat_dim
+        self.num_classes = num_classes
 
     def call(self, y_true, y_pred):
-        return center_loss(y_true, y_pred, self.margin)
+        return center_loss(feature, labels, self.num_classes)
 
     def get_config(self):
         config = {
