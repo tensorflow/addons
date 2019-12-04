@@ -50,6 +50,7 @@ yes 'y' | ./configure.sh
 bazel test -c opt -k \
     --jobs=${N_JOBS} --test_timeout 300,450,1200,3600 \
     --test_output=errors --local_test_jobs=8 \
+    --extra_toolchains=@bazel_tools//tools/python:autodetecting_toolchain_nonstrict \
     //tensorflow_addons/...
 
 exit $?

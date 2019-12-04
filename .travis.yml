@@ -29,7 +29,7 @@ jobs:
       name: "Build on Ubuntu 16.04 for Python 2.7 3.5 3.6 3.7"
       script:
       # Build GPU kernels without runtime=nvidia as there are no GPUs/Drivers
-      - docker run -v ${PWD}:/addons -w /addons tensorflow/tensorflow:custom-op-gpu-ubuntu16 tools/ci_build/builds/release_linux.sh
+      - docker run -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010 tools/ci_build/builds/release_linux.sh
       after_success:
         - twine upload -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
 

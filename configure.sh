@@ -77,7 +77,7 @@ write_action_env_to_bazelrc "TF_CXX11_ABI_FLAG" ${TF_CXX11_ABI_FLAG}
 if [[ "$TF_NEED_CUDA" == "1" ]]; then
     write_action_env_to_bazelrc "TF_NEED_CUDA" ${TF_NEED_CUDA}
     write_action_env_to_bazelrc "CUDNN_INSTALL_PATH" "${CUDNN_INSTALL_PATH:=/usr/lib/x86_64-linux-gnu}"
-    write_action_env_to_bazelrc "TF_CUDA_VERSION" "10.0"
+    write_action_env_to_bazelrc "TF_CUDA_VERSION" "10.1"
     write_action_env_to_bazelrc "TF_CUDNN_VERSION" "7"
     write_action_env_to_bazelrc "CUDA_TOOLKIT_PATH" "${CUDA_HOME:=/usr/local/cuda}"
 

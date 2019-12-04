@@ -15,7 +15,6 @@ py_library(
         "//tensorflow_addons/custom_ops/text:_skip_gram_ops.so",
         "//tensorflow_addons/utils",
     ],
-    srcs_version = "PY2AND3",
 )
 
 py_test(
@@ -25,7 +24,6 @@ py_test(
         "crf_test.py",
     ],
     main = "crf_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":text",
     ],
@@ -38,7 +36,6 @@ py_test(
         "skip_gram_ops_test.py",
     ],
     main = "skip_gram_ops_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":text",
     ],
@@ -51,7 +48,6 @@ py_test(
         "parse_time_op_test.py",
     ],
     main = "parse_time_op_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":text",
     ],

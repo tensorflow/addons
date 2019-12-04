@@ -39,7 +39,7 @@ for version in ${PYTHON_VERSIONS}; do
       --noshow_loading_progress \
       --verbose_failures \
       --test_output=errors \
-      --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.0:toolchain \
+      --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.1:toolchain \
       build_pip_pkg
 
     # Package Whl
