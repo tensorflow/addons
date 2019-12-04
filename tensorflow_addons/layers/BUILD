@@ -17,7 +17,6 @@ py_library(
     data = [
         "//tensorflow_addons/custom_ops/layers:_correlation_cost_ops.so",
     ],
-    srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/activations",
         "//tensorflow_addons/utils",
@@ -31,7 +30,6 @@ py_test(
         "gelu_test.py",
     ],
     main = "gelu_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":layers",
     ],
@@ -44,7 +42,6 @@ py_test(
         "wrappers_test.py",
     ],
     main = "wrappers_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":layers",
     ],
@@ -57,7 +54,6 @@ py_test(
         "sparsemax_test.py",
     ],
     main = "sparsemax_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":layers",
     ],
@@ -70,7 +66,6 @@ py_test(
         "maxout_test.py",
     ],
     main = "maxout_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":layers",
     ],
@@ -83,7 +78,6 @@ py_test(
         "normalizations_test.py",
     ],
     main = "normalizations_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":layers",
     ],
@@ -96,7 +90,6 @@ py_test(
         "optical_flow_test.py",
     ],
     main = "optical_flow_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":layers",
     ],

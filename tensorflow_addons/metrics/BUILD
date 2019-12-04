@@ -14,7 +14,6 @@ py_library(
         "r_square.py",
         "utils.py",
     ],
-    srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/utils",
     ],
@@ -27,7 +26,6 @@ py_test(
         "cohens_kappa_test.py",
     ],
     main = "cohens_kappa_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":metrics",
     ],
@@ -40,7 +38,6 @@ py_test(
         "r_square_test.py",
     ],
     main = "r_square_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":metrics",
     ],
@@ -53,7 +50,6 @@ py_test(
         "f_test.py",
     ],
     main = "f_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":metrics",
     ],
@@ -66,7 +62,6 @@ py_test(
         "multilabel_confusion_matrix_test.py",
     ],
     main = "multilabel_confusion_matrix_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":metrics",
     ],
@@ -79,7 +74,6 @@ py_test(
         "matthews_correlation_coefficient_test.py",
     ],
     main = "matthews_correlation_coefficient_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":metrics",
     ],
@@ -92,7 +86,6 @@ py_test(
         "hamming_test.py",
     ],
     main = "hamming_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":metrics",
     ],
