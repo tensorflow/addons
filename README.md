@@ -67,7 +67,7 @@ pip install tfa-nightly
 
 #### Installing from Source
 You can also install from source. This requires the [Bazel](
-https://bazel.build/) build system (version >= 1.0.0)
+https://bazel.build/) build system (version >= 1.0.0).
 
 ```
 git clone https://github.com/tensorflow/addons.git
@@ -100,7 +100,7 @@ conform to established API patterns seen in core TensorFlow.
 
 #### GPU/CPU Custom-Ops
 A major benefit of TensorFlow Addons is that there are precompiled ops. Should 
-a CUDA 10 installation not be found then the op will automatically fall back to 
+a CUDA 10.1 installation not be found then the op will automatically fall back to 
 a CPU implementation.
 
 #### Proxy Maintainership
