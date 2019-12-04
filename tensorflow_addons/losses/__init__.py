@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorflow_addons.losses.contrastive import contrastive_loss, ContrastiveLoss
+from tensorflow_addons.losses.center_loss import center_loss, CenterLoss
 from tensorflow_addons.losses.focal_loss import sigmoid_focal_crossentropy, SigmoidFocalCrossEntropy
 from tensorflow_addons.losses.giou_loss import giou_loss, GIoULoss
 from tensorflow_addons.losses.lifted import lifted_struct_loss, LiftedStructLoss
