@@ -374,30 +374,28 @@ class YogiOptimizerTest(tf.test.TestCase):
       self.assertAllClose([1.0, 2.0], var0.eval())
       self.assertAllClose([3.0, 4.0], var1.eval())
         
-        
-
-        # Run 3 steps of intertwined Yogi1 and Yogi2.
-        for t in range(1, 4):
-          beta1_power, beta2_power = get_beta_accumulators()
-          self.assertAllCloseAccordingToType(0.9**t, self.evaluate(beta1_power))
-          self.assertAllCloseAccordingToType(0.999**t, self.evaluate(beta2_power))
-          if not tf.executing_eagerly():
-            if t % 2 == 0:
-              update1.run()
-            else:
-              update2.run()
+      # Run 3 steps of intertwined Yogi1 and Yogi2.
+      for t in range(1, 4):
+        beta1_power, beta2_power = get_beta_accumulators()
+        self.assertAllCloseAccordingToType(0.9**t, self.evaluate(beta1_power))
+        self.assertAllCloseAccordingToType(0.999**t, self.evaluate(beta2_power))
+        if not tf.executing_eagerly():
+          if t % 2 == 0:
+            update1.run()
           else:
-            opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+            update2.run()
+        else:
+          opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
 
-          var0_np, m0, v0 = yogi_update_numpy(
-              var0_np, grads0_np, t, m0, v0)
-          var1_np, m1, v1 = yogi_update_numpy(
-              var1_np, grads1_np, t, m1, v1)
+        var0_np, m0, v0 = yogi_update_numpy(
+            var0_np, grads0_np, t, m0, v0)
+        var1_np, m1, v1 = yogi_update_numpy(
+            var1_np, grads1_np, t, m1, v1)
 
-          # Validate updated params.
-          self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
-          self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
+        # Validate updated params.
+        self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
+        self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
 
   def test_get_config(self):
     opt = yogi.Yogi(1e-4)
