@@ -12,6 +12,7 @@
 | rectified_adam | Zhao Hanguang | cyberzhg@gmail.com |
 | stochastic_weight_averaging | Shreyash Patodia | patodiashreyash32@gmail.com |
 | weight_decay_optimizers |  Phil Jund | ijund.phil@googlemail.com   |
+| yogi | Manzil Zaheer | manzilz@google.com |
 
 
 
@@ -27,6 +28,7 @@
 | rectified_adam | RectifiedAdam | https://arxiv.org/pdf/1908.03265v1.pdf |
 | stochastic_weight_averaging | SWA | https://arxiv.org/abs/1803.05407.pdf |
 | weight_decay_optimizers | SGDW, AdamW, extend_with_decoupled_weight_decay | https://arxiv.org/pdf/1711.05101.pdf |
+| yogi | Yogi | https://papers.nips.cc/paper/8186-adaptive-methods-for-nonconvex-optimization.pdf      |
 
 
 
