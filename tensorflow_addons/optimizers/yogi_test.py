@@ -387,7 +387,6 @@ class YogiOptimizerTest(tf.test.TestCase):
         else:
           opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
-
         var0_np, m0, v0 = yogi_update_numpy(
             var0_np, grads0_np, t, m0, v0)
         var1_np, m1, v1 = yogi_update_numpy(
@@ -401,7 +400,6 @@ class YogiOptimizerTest(tf.test.TestCase):
     opt = yogi.Yogi(1e-4)
     config = opt.get_config()
     self.assertEqual(config['learning_rate'], 1e-4)
-
 
 
 if __name__ == "__main__":
