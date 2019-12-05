@@ -65,6 +65,15 @@ def yogi_update_numpy(param,
   return param_t, m_t, v_t
 
 
+def get_beta_accumulators(opt, dtype):
+    local_step = tf.cast(opt.iterations + 1, dtype)
+    beta_1_t = tf.cast(opt._get_hyper("beta_1"), dtype)
+    beta_1_power = tf.math.pow(beta_1_t, local_step)
+    beta_2_t = tf.cast(opt._get_hyper("beta_2"), dtype)
+    beta_2_power = tf.math.pow(beta_2_t, local_step)
+    return (beta_1_power, beta_2_power)
+
+  
 @test_utils.run_all_in_graph_and_eager_modes
 class YogiOptimizerTest(tf.test.TestCase):
   def _DtypesToTest(self, use_gpu):
@@ -342,38 +351,44 @@ class YogiOptimizerTest(tf.test.TestCase):
           self.assertAllCloseAccordingToType(var1_np, var1.eval())
 
   def testSharing(self):
-    for dtype in [dtypes.half, dtypes.float32, dtypes.float64]:
-      with self.test_session():
-        # Initialize variables for numpy implementation.
-        m0, v0, m1, v1 = 0.0, 1.0, 0.0, 1.0
-        var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
-        grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
-        var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
-        grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
+    for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
+      # Initialize variables for numpy implementation.
+      m0, v0, m1, v1 = 0.0, 1.0, 0.0, 1.0
+      var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
+      grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
+      var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
+      grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
 
-        var0 = variables.Variable(var0_np)
-        var1 = variables.Variable(var1_np)
-        grads0 = constant_op.constant(grads0_np)
-        grads1 = constant_op.constant(grads1_np)
-        opt = proximal_yogi.ProximalYogiOptimizer()
+      var0 = tf.Variable(var0_np)
+      var1 = tf.Variable(var1_np)
+      grads0 = tf.constant(grads0_np)
+      grads1 = tf.constant(grads1_np)
+      opt = yogi.Yogi()
+      
+      if not tf.executing_eagerly():
         update1 = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
         update2 = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-        variables.global_variables_initializer().run()
+        self.evaluate(tf.compat.v1.global_variables_initializer())
 
-        beta1_power, beta2_power = opt._get_beta_accumulators()
-
-        # Fetch params to validate initial values.
-        self.assertAllClose([1.0, 2.0], var0.eval())
-        self.assertAllClose([3.0, 4.0], var1.eval())
+      # Fetch params to validate initial values.
+      self.assertAllClose([1.0, 2.0], var0.eval())
+      self.assertAllClose([3.0, 4.0], var1.eval())
+        
+        
 
         # Run 3 steps of intertwined Yogi1 and Yogi2.
         for t in range(1, 4):
-          self.assertAllCloseAccordingToType(0.9**t, beta1_power.eval())
-          self.assertAllCloseAccordingToType(0.999**t, beta2_power.eval())
-          if t % 2 == 0:
-            update1.run()
+          beta1_power, beta2_power = get_beta_accumulators()
+          self.assertAllCloseAccordingToType(0.9**t, self.evaluate(beta1_power))
+          self.assertAllCloseAccordingToType(0.999**t, self.evaluate(beta2_power))
+          if not tf.executing_eagerly():
+            if t % 2 == 0:
+              update1.run()
+            else:
+              update2.run()
           else:
-            update2.run()
+            opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+
 
           var0_np, m0, v0 = yogi_update_numpy(
               var0_np, grads0_np, t, m0, v0)
@@ -381,8 +396,13 @@ class YogiOptimizerTest(tf.test.TestCase):
               var1_np, grads1_np, t, m1, v1)
 
           # Validate updated params.
-          self.assertAllCloseAccordingToType(var0_np, var0.eval())
-          self.assertAllCloseAccordingToType(var1_np, var1.eval())
+          self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
+          self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
+
+  def test_get_config(self):
+    opt = yogi.Yogi(1e-4)
+    config = opt.get_config()
+    self.assertEqual(config['learning_rate'], 1e-4)
 
 
 
