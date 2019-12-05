@@ -7,20 +7,6 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-
-# pylint: disable=g-direct-tensorflow-import
-from google3.third_party.tensorflow.python.client import session
-from google3.third_party.tensorflow.python.eager import context
-from google3.third_party.tensorflow.python.framework import constant_op
-from google3.third_party.tensorflow.python.framework import dtypes
-from google3.third_party.tensorflow.python.framework import ops
-from google3.third_party.tensorflow.python.framework import test_util
-from google3.third_party.tensorflow.python.ops import array_ops
-from google3.third_party.tensorflow.python.ops import math_ops
-from google3.third_party.tensorflow.python.ops import resource_variable_ops
-from google3.third_party.tensorflow.python.ops import variables
-from google3.third_party.tensorflow.python.platform import test
-
 from tensorflow_addons.optimizers import yogi
 from tensorflow_addons.utils import test_utils
 
@@ -79,6 +65,7 @@ def yogi_update_numpy(param,
   return param_t, m_t, v_t
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class YogiOptimizerTest(tf.test.TestCase):
   def _DtypesToTest(self, use_gpu):
     if use_gpu:
