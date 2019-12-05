@@ -24,6 +24,7 @@ import sys
 import textwrap
 import numpy as np
 
+# pylint: disable=unused-import
 from absl import app
 from absl import flags
 from absl.testing import absltest
