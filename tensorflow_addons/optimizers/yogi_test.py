@@ -53,7 +53,6 @@ def yogi_update_numpy(param,
     epsilon: A float of a small constant for numerical stability.
     l1reg: A float value of L1 regularization
     l2reg: A float value of L2 regularization
-
   Returns:
     A tuple of numpy ndarrays (param_t, m_t, v_t) representing the
     updated parameters for `param`, `m`, and `v` respectively.
@@ -91,6 +90,7 @@ def get_beta_accumulators(opt, dtype):
 
 @test_utils.run_all_in_graph_and_eager_modes
 class YogiOptimizerTest(tf.test.TestCase):
+
   def _DtypesToTest(self, use_gpu):
     if use_gpu:
       return [tf.float32, tf.float64]
@@ -116,7 +116,7 @@ class YogiOptimizerTest(tf.test.TestCase):
       grads1 = tf.IndexedSlices(
           tf.constant(grads1_np),
           tf.constant(grads1_np_indices), tf.constant([2]))
-      opt = yogi.Yogi(
+      opt = keras_yogi.Yogi(
           beta1=beta1,
           l1_regularization_strength=l1reg,
           l2_regularization_strength=l2reg)
@@ -185,16 +185,16 @@ class YogiOptimizerTest(tf.test.TestCase):
               [0.2], shape=[1, 1], dtype=dtype),
           tf.constant([1]),
           tf.constant([2, 1]))
-      opt1 = yogi.Yogi()
-      opt2 = yogi.Yogi()
-      
+      opt1 = keras_yogi.Yogi()
+      opt2 = keras_yogi.Yogi()
+
       if not tf.executing_eagerly():
         repeated_update = opt1.apply_gradients(
             [(grad_repeated_index, repeated_index_update_var)])
         aggregated_update = opt2.apply_gradients(
             [(grad_aggregated, aggregated_update_var)])
         self.evaluate(tf.compat.v1.global_variables_initializer())
-        
+
       self.assertAllClose(self.evaluate(aggregated_update_var),
                           self.evaluate(repeated_index_update_var))
       for _ in range(3):
@@ -203,12 +203,12 @@ class YogiOptimizerTest(tf.test.TestCase):
           self.evaluate(aggregated_update)
         else:
           opt1.apply_gradients(
-            [(grad_repeated_index, repeated_index_update_var)])
+              [(grad_repeated_index, repeated_index_update_var)])
           opt2.apply_gradients(
-            [(grad_aggregated, aggregated_update_var)])
-          
+              [(grad_aggregated, aggregated_update_var)])
+
         self.assertAllClose(self.evaluate(aggregated_update_var),
-                          self.evaluate(repeated_index_update_var))
+                            self.evaluate(repeated_index_update_var))
 
   def doTestBasic(self, beta1=0.0, l1reg=0.0, l2reg=0.0):
     for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
@@ -224,7 +224,7 @@ class YogiOptimizerTest(tf.test.TestCase):
       grads0 = tf.constant(grads0_np)
       grads1 = tf.constant(grads1_np)
 
-      opt = yogi.Yogi(
+      opt = keras_yogi.Yogi(
           beta1=beta1,
           l1_regularization_strength=l1reg,
           l2_regularization_strength=l2reg)
@@ -232,7 +232,7 @@ class YogiOptimizerTest(tf.test.TestCase):
       if not tf.executing_eagerly():
         update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
         self.evaluate(tf.compat.v1.global_variables_initializer())
-          
+
       # Fetch params to validate initial values.
       self.assertAllClose([1.0, 2.0], self.evaluate(var0))
       self.assertAllClose([3.0, 4.0], self.evaluate(var1))
@@ -244,7 +244,7 @@ class YogiOptimizerTest(tf.test.TestCase):
                                            self.evaluate(beta1_power))
         self.assertAllCloseAccordingToType(0.999**t,
                                            self.evaluate(beta2_power))
-        
+
         if not tf.executing_eagerly():
           self.evaluate(update)
         else:
@@ -274,7 +274,7 @@ class YogiOptimizerTest(tf.test.TestCase):
     self.doTestBasic(beta1=0.9, l1reg=0.1, l2reg=0.2)
 
   def testTensorLearningRate(self):
-    for dtype in [dtypes.half, dtypes.float32, dtypes.float64]:
+    for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
       with self.test_session():
         # Initialize variables for numpy implementation.
         m0, v0, m1, v1 = 0.0, 1.0, 0.0, 1.0
@@ -287,8 +287,8 @@ class YogiOptimizerTest(tf.test.TestCase):
         var1 = tf.Variable(var1_np)
         grads0 = tf.constant(grads0_np)
         grads1 = tf.constant(grads1_np)
-        opt = yogi.Yogi(tf.constant(0.01))
-        
+        opt = keras_yogi.Yogi(tf.constant(0.01))
+
         if not tf.executing_eagerly():
           update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
           self.evaluate(tf.compat.v1.global_variables_initializer())
@@ -302,7 +302,7 @@ class YogiOptimizerTest(tf.test.TestCase):
           beta1_power, beta2_power = get_beta_accumulators(opt, dtype)
           self.assertAllCloseAccordingToType(0.9**t, beta1_power.eval())
           self.assertAllCloseAccordingToType(0.999**t, beta2_power.eval())
-          
+
           if not tf.executing_eagerly():
             self.evaluate(update)
           else:
@@ -330,8 +330,8 @@ class YogiOptimizerTest(tf.test.TestCase):
       var1 = tf.Variable(var1_np)
       grads0 = tf.constant(grads0_np)
       grads1 = tf.constant(grads1_np)
-      opt = yogi.Yogi()
-      
+      opt = keras_yogi.Yogi()
+
       if not tf.executing_eagerly():
         update1 = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
         update2 = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
@@ -340,7 +340,7 @@ class YogiOptimizerTest(tf.test.TestCase):
       # Fetch params to validate initial values.
       self.assertAllClose([1.0, 2.0], var0.eval())
       self.assertAllClose([3.0, 4.0], var1.eval())
-        
+
       # Run 3 steps of intertwined Yogi1 and Yogi2.
       for t in range(1, 4):
         beta1_power, beta2_power = get_beta_accumulators(opt, dtype)
@@ -364,9 +364,9 @@ class YogiOptimizerTest(tf.test.TestCase):
         self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
 
   def test_get_config(self):
-    opt = yogi.Yogi(1e-4)
+    opt = keras_yogi.Yogi(1e-4)
     config = opt.get_config()
-    self.assertEqual(config['learning_rate'], 1e-4)
+    self.assertEqual(config["learning_rate"], 1e-4)
 
 
 if __name__ == "__main__":
