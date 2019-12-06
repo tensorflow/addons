@@ -30,21 +30,25 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     Training of Deep Neural Networks: https://arxiv.org/abs/1602.07868
     Tim Salimans, Diederik P. Kingma (2016)
     WeightNormalization wrapper works for keras and tf layers.
-    ```python
-      net = WeightNormalization(
-          tf.keras.layers.Conv2D(2, 2, activation='relu'),
-          input_shape=(32, 32, 3),
-          data_init=True)(x)
-      net = WeightNormalization(
-          tf.keras.layers.Conv2D(16, 5, activation='relu'),
-          data_init=True)(net)
-      net = WeightNormalization(
-          tf.keras.layers.Dense(120, activation='relu'),
-          data_init=True)(net)
-      net = WeightNormalization(
-          tf.keras.layers.Dense(n_classes),
-          data_init=True)(net)
-    ```
+
+    Usage: 
+
+    >>> net = tfa.layers.WeightNormalization(
+    ...   tf.keras.layers.Conv2D(2, 2, activation='relu'),
+    ...   input_shape=(32, 32, 3),
+    ...   data_init=True)(np.random.rand(32, 32, 3, 1).astype('f'))
+    >>> net = tfa.layers.WeightNormalization(
+    ...   tf.keras.layers.Conv2D(16, 2, activation='relu'),
+    ...   data_init=True)(net)
+    >>> net = tfa.layers.WeightNormalization(
+    ...   tf.keras.layers.Dense(120, activation='relu'),
+    ...   data_init=True)(net)
+    >>> net = tfa.layers.WeightNormalization(
+    ...   tf.keras.layers.Dense(2),
+    ...   data_init=True)(net)
+    >>> net.shape
+    TensorShape([32, 30, 1, 2])
+
     Arguments:
       layer: a layer instance.
       data_init: If `True` use data dependent variable initialization

@@ -35,10 +35,9 @@ class Lookahead(tf.keras.optimizers.Optimizer):
 
     Example of usage:
 
-    ```python
-    opt = tf.keras.optimizers.SGD(learning_rate)
-    opt = tfa.optimizers.Lookahead(opt)
-    ```
+    >>> opt = tf.keras.optimizers.SGD(learning_rate=0.01)
+    >>> opt = tfa.optimizers.Lookahead(opt)
+    
     """
 
     def __init__(self,

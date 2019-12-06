@@ -33,13 +33,13 @@ class GIoULoss(tf.keras.losses.Loss):
 
     Usage:
 
-    ```python
-    gl = tfa.losses.GIoULoss()
-    boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]])
-    boxes2 = tf.constant([[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]])
-    loss = gl(boxes1, boxes2)
-    print('Loss: ', loss.numpy())  # Loss: [1.07500000298023224, 1.9333333373069763]
-    ```
+    >>> gl = tfa.losses.GIoULoss()
+    >>> boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]])
+    >>> boxes2 = tf.constant([[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]])
+    >>> loss = gl(boxes1, boxes2)
+    >>> loss
+    <tf.Tensor: shape=(), dtype=float32, numpy=1.5041667>
+
     Usage with tf.keras API:
 
     ```python

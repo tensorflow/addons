@@ -54,18 +54,15 @@ class DecoupledWeightDecayExtension(object):
     Note: when applying a decay to the learning rate, be sure to manually apply
     the decay to the `weight_decay` as well. For example:
 
-    ```python
-    step = tf.Variable(0, trainable=False)
-    schedule = tf.optimizers.schedules.PiecewiseConstantDecay(
-        [10000, 15000], [1e-0, 1e-1, 1e-2])
-    # lr and wd can be a function or a tensor
-    lr = 1e-1 * schedule(step)
-    wd = lambda: 1e-4 * schedule(step)
+    Usage:
 
-    # ...
-
-    optimizer = tfa.optimizers.AdamW(learning_rate=lr, weight_decay=wd)
-    ```
+    >>> step = tf.Variable(0, trainable=False)
+    >>> schedule = tf.optimizers.schedules.PiecewiseConstantDecay(
+    ... [10000, 15000], [1e-0, 1e-1, 1e-2])
+    >>> lr = 1e-1 * schedule(step)
+    >>> wd = lambda: 1e-4 * schedule(step)
+    >>> optimizer = tfa.optimizers.AdamW(learning_rate=lr, weight_decay=wd)
+    
     """
 
     def __init__(self, weight_decay, **kwargs):
@@ -213,18 +210,15 @@ def extend_with_decoupled_weight_decay(base_optimizer):
     Note: when applying a decay to the learning rate, be sure to manually apply
     the decay to the `weight_decay` as well. For example:
 
-    ```python
-    step = tf.Variable(0, trainable=False)
-    schedule = tf.optimizers.schedules.PiecewiseConstantDecay(
-        [10000, 15000], [1e-0, 1e-1, 1e-2])
-    # lr and wd can be a function or a tensor
-    lr = 1e-1 * schedule(step)
-    wd = lambda: 1e-4 * schedule(step)
+    Usage: 
 
-    # ...
+    >>> step = tf.Variable(0, trainable=False)
+    >>> schedule = tf.optimizers.schedules.PiecewiseConstantDecay(
+    ... [10000, 15000], [1e-0, 1e-1, 1e-2])
+    >>> lr = 1e-1 * schedule(step)
+    >>> wd = lambda: 1e-4 * schedule(step)
+    >>> optimizer = tfa.optimizers.AdamW(learning_rate=lr, weight_decay=wd)
 
-    optimizer = tfa.optimizers.AdamW(learning_rate=lr, weight_decay=wd)
-    ```
 
     Note: you might want to register your own custom optimizer using
     `tf.keras.utils.get_custom_objects()`.
@@ -287,19 +281,16 @@ class SGDW(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
     Note: when applying a decay to the learning rate, be sure to manually apply
     the decay to the `weight_decay` as well. For example:
 
-    ```python
-    step = tf.Variable(0, trainable=False)
-    schedule = tf.optimizers.schedules.PiecewiseConstantDecay(
-        [10000, 15000], [1e-0, 1e-1, 1e-2])
-    # lr and wd can be a function or a tensor
-    lr = 1e-1 * schedule(step)
-    wd = lambda: 1e-4 * schedule(step)
+    Usage: 
 
-    # ...
-
-    optimizer = tfa.optimizers.SGDW(
-        learning_rate=lr, weight_decay=wd, momentum=0.9)
-    ```
+    >>> step = tf.Variable(0, trainable=False)
+    >>> schedule = tf.optimizers.schedules.PiecewiseConstantDecay(
+    ... [10000, 15000], [1e-0, 1e-1, 1e-2])
+    >>> lr = 1e-1 * schedule(step)
+    >>> wd = lambda: 1e-4 * schedule(step)
+    >>> optimizer = tfa.optimizers.SGDW(
+    ... learning_rate=lr, weight_decay=wd, momentum=0.9)
+    
     """
 
     def __init__(self,
@@ -362,18 +353,15 @@ class AdamW(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
     Note: when applying a decay to the learning rate, be sure to manually apply
     the decay to the `weight_decay` as well. For example:
 
-    ```python
-    step = tf.Variable(0, trainable=False)
-    schedule = tf.optimizers.schedules.PiecewiseConstantDecay(
-        [10000, 15000], [1e-0, 1e-1, 1e-2])
-    # lr and wd can be a function or a tensor
-    lr = 1e-1 * schedule(step)
-    wd = lambda: 1e-4 * schedule(step)
+    Usage: 
 
-    # ...
-
-    optimizer = tfa.optimizers.AdamW(learning_rate=lr, weight_decay=wd)
-    ```
+    >>> step = tf.Variable(0, trainable=False)
+    >>> schedule = tf.optimizers.schedules.PiecewiseConstantDecay(
+    ... [10000, 15000], [1e-0, 1e-1, 1e-2])
+    >>> lr = 1e-1 * schedule(step)
+    >>> wd = lambda: 1e-4 * schedule(step)
+    >>> optimizer = tfa.optimizers.AdamW(learning_rate=lr, weight_decay=wd)
+    
     """
 
     def __init__(self,

@@ -42,20 +42,16 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
           ((TP + FP) * (TP + FN) * (TN + FP ) * (TN + FN))^(1/2)
 
     Usage:
-    ```python
-    actuals = tf.constant([[1.0], [1.0], [1.0], [0.0]],
-             dtype=tf.float32)
-    preds = tf.constant([[1.0], [0.0], [1.0], [1.0]],
-             dtype=tf.float32)
-    # Matthews correlation coefficient
-    mcc = MatthewsCorrelationCoefficient(num_classes=1)
-    mcc.update_state(actuals, preds)
-    print('Matthews correlation coefficient is:',
-    mcc.result().numpy())
-    # Matthews correlation coefficient is : -0.33333334
-    ```
-    """
 
+    >>> actuals = tf.constant([[1.0], [1.0], [1.0], [0.0]], dtype=tf.float32)
+    >>> preds = tf.constant([[1.0], [0.0], [1.0], [1.0]], dtype=tf.float32)
+    >>> mcc = tfa.metrics.MatthewsCorrelationCoefficient(num_classes=1)
+    >>> mcc.update_state(actuals, preds)
+    >>> mcc.result()
+    <tf.Tensor: shape=(1,), dtype=float32, numpy=array([-0.33333334], dtype=float32)>
+
+    """
+    
     def __init__(self,
                  num_classes=None,
                  name='MatthewsCorrelationCoefficient',

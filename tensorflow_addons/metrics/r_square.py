@@ -35,15 +35,16 @@ class RSquare(Metric):
      - It can also be negative if the model is worse.
 
      Usage:
-     ```python
-     actuals = tf.constant([1, 4, 3], dtype=tf.float32)
-     preds = tf.constant([2, 4, 4], dtype=tf.float32)
-     result = tf.keras.metrics.RSquare()
-     result.update_state(actuals, preds)
-     print('R^2 score is: ', r1.result().numpy()) # 0.57142866
-    ```
-    """
 
+    >>> actuals = tf.constant([1, 4, 3], dtype=tf.float32)
+    >>> preds = tf.constant([2, 4, 4], dtype=tf.float32)
+    >>> ans = tfa.metrics.RSquare()
+    >>> ans.update_state(actuals, preds)
+    >>> ans.result()
+    <tf.Tensor: shape=(), dtype=float32, numpy=0.57142866>
+     
+    """
+    
     def __init__(self, name='r_square', dtype=tf.float32):
         super(RSquare, self).__init__(name=name, dtype=dtype)
         self.squared_sum = self.add_weight("squared_sum", initializer="zeros")

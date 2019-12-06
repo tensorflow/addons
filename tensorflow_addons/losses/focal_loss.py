@@ -37,15 +37,14 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
 
     Usage:
 
-    ```python
-    fl = tfa.losses.SigmoidFocalCrossEntropy()
-    loss = fl(
-      [[0.97], [0.91], [0.03]],
-      [[1.0], [1.0], [0.0]])
-    print('Loss: ', loss.numpy())  # Loss: [[0.00010971]
-                                            [0.0032975]
-                                            [0.00030611]]
-    ```
+    >>> fl = tfa.losses.SigmoidFocalCrossEntropy()
+    >>> loss = fl([[0.97], [0.91], [0.03]], [[1.0], [1.0], [0.0]])
+    >>> loss
+    <tf.Tensor: shape=(3, 1), dtype=float32, numpy=
+    array([[0.00010971],
+           [0.0032975 ],
+           [0.00030611]], dtype=float32)>
+
     Usage with tf.keras API:
 
     ```python
@@ -65,7 +64,7 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
         ValueError: If the shape of `sample_weight` is invalid or value of
           `gamma` is less than zero
     """
-
+    
     def __init__(self,
                  from_logits=False,
                  alpha=0.25,
