@@ -18,9 +18,9 @@
 Implementation of Additive Averaging.
 m_t+1 = beta1*m_t + (1-beta1)*g_t
 v_t+1 = v_t + sign(g_t-v_t)(g_t^2)
-
 Experiments show better performance across NLP and Vision tasks.
-Paper: https://papers.nips.cc/paper/8186-adaptive-methods-for-nonconvex-optimization.pdf
+Paper:
+https://papers.nips.cc/paper/8186-adaptive-methods-for-nonconvex-optimization.pdf
 """
 
 from __future__ import absolute_import
@@ -28,7 +28,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
 
 
 def _solve(a, b, c):
@@ -39,17 +38,15 @@ def _solve(a, b, c):
   we get optimal solution w*:
        w* = -(b - sign(b)*c)/a if |b| > c else w* = 0
   REQUIRES: Dimensionality of a and b must be same
-
   Args:
     a: A Tensor
     b: A Tensor
     c: A Tensor with one element.
-
   Returns:
     A Tensor w, which is solution for the equation
   """
   w = (c * tf.sign(b) - b) / a
-  w = math_ops.cast(tf.abs(b) > c, dtype=b.dtype) * w
+  w = tf.cast(tf.abs(b) > c, dtype=b.dtype) * w
   return w
 
 
@@ -57,7 +54,8 @@ def _solve(a, b, c):
 class Yogi(tf.keras.optimizers.Optimizer):
   """Optimizer that implements the Yogi algorithm in Keras.
 
-  See Algorithm 2 of https://papers.nips.cc/paper/8186-adaptive-methods-for-nonconvex-optimization.pdf.
+  See Algorithm 2 of
+  https://papers.nips.cc/paper/8186-adaptive-methods-for-nonconvex-optimization.pdf.
   """
 
   def __init__(self, learning_rate=0.01, beta1=0.9, beta2=0.999, epsilon=1e-3,
@@ -107,9 +105,8 @@ class Yogi(tf.keras.optimizers.Optimizer):
     """See `tf.train.Optimizer._create_slots()`."""
     # Create slots for the first and second moments, and maximum second moments.
     for var in var_list:
-      dtype = var.dtype.base_dtype
       init = tf.constant_initializer(
-          self._initial_accumulator_value, dtype=dtype)
+          self._initial_accumulator_value)
       self.add_slot(var, 'v', init)
       if self._beta1 > 0.0:
         self.add_slot(var, 'm')
@@ -140,8 +137,8 @@ class Yogi(tf.keras.optimizers.Optimizer):
         sign = tf.tanh(10*(grad2 - v))
       else:
         raise NotImplementedError('Activation function can be sign or tanh')
-      v_t = v.assign_add((1-beta2_t) * sign * grad2,
-                                 use_locking=self._use_locking)
+      v_t = v.assign_add(
+          (1 - beta2_t) * sign * grad2, use_locking=self._use_locking)
       v_sqrt = tf.sqrt(v_t)
 
       # Yogi effective LR
@@ -164,8 +161,8 @@ class Yogi(tf.keras.optimizers.Optimizer):
     else:
       # m_t = beta1 * m + (1 - beta1) * g_t
       m = self.get_slot(var, 'm')
-      m_t = m.assign(m * beta1_t + grad * (1 - beta1_t),
-                             use_locking=self._use_locking)
+      m_t = m.assign(
+          m * beta1_t + grad * (1 - beta1_t), use_locking=self._use_locking)
 
       # v_t = v + sign(g_t^2-v)(g_t^2)
       v = self.get_slot(var, 'v')
@@ -176,8 +173,8 @@ class Yogi(tf.keras.optimizers.Optimizer):
         sign = tf.tanh(10*(grad2 - v))
       else:
         raise NotImplementedError('Activation function can be sign or tanh')
-      v_t = v.assign_add((1-beta2_t) * sign * grad2,
-                                 use_locking=self._use_locking)
+      v_t = v.assign_add(
+          (1 - beta2_t) * sign * grad2, use_locking=self._use_locking)
       v_sqrt = tf.sqrt(v_t)
 
       # Yogi effective LR
@@ -207,7 +204,6 @@ class Yogi(tf.keras.optimizers.Optimizer):
       grad: A tensor for the `values` of `tf.IndexedSlices`.
       var: A `tf.Variable` object.
       indices: A tensor for the `indices` of `tf.IndexedSlices`.
-
     Returns:
       An op which updates `var` with `grad` and `indices`.
     """
@@ -263,9 +259,8 @@ class Yogi(tf.keras.optimizers.Optimizer):
       # m_t = beta1 * m + (1 - beta1) * g_t
       m = self.get_slot(var, 'm')
       m_scaled_g_values = grad * (1 - beta1_t)
-      m_t = m.assign(m * beta1_t,
-                             use_locking=self._use_locking)
-      with ops.control_dependencies([m_t]):
+      m_t = m.assign(m * beta1_t, use_locking=self._use_locking)
+      with tf.control_dependencies([m_t]):
         m_slice = tf.gather(m, indices) + m_scaled_g_values
         m_t = self._resource_scatter_update(m, indices, m_slice)
 
