@@ -1,3 +1,18 @@
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
 """Tests for Yogi optimizer."""
 
 from __future__ import absolute_import
@@ -66,14 +81,14 @@ def yogi_update_numpy(param,
 
 
 def get_beta_accumulators(opt, dtype):
-    local_step = tf.cast(opt.iterations + 1, dtype)
-    beta_1_t = tf.cast(opt._get_hyper("beta_1"), dtype)
-    beta_1_power = tf.math.pow(beta_1_t, local_step)
-    beta_2_t = tf.cast(opt._get_hyper("beta_2"), dtype)
-    beta_2_power = tf.math.pow(beta_2_t, local_step)
-    return (beta_1_power, beta_2_power)
+  local_step = tf.cast(opt.iterations + 1, dtype)
+  beta_1_t = tf.cast(opt._get_hyper("beta_1"), dtype)
+  beta_1_power = tf.math.pow(beta_1_t, local_step)
+  beta_2_t = tf.cast(opt._get_hyper("beta_2"), dtype)
+  beta_2_power = tf.math.pow(beta_2_t, local_step)
+  return (beta_1_power, beta_2_power)
 
-  
+
 @test_utils.run_all_in_graph_and_eager_modes
 class YogiOptimizerTest(tf.test.TestCase):
   def _DtypesToTest(self, use_gpu):
@@ -82,234 +97,181 @@ class YogiOptimizerTest(tf.test.TestCase):
     else:
       return [tf.half, tf.float32, tf.float64]
 
-  def doTestSparse(self, beta1=0.0, l1reg=0.0, l2reg=0.0, use_resource=False):
-    for dtype in [dtypes.half, dtypes.float32, dtypes.float64]:
-      with self.test_session():
-        # Initialize variables for numpy implementation.
-        m0, v0, m1, v1 = 0.0, 1.0, 0.0, 1.0
-        var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
-        grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
-        var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
-        grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
+  def doTestSparse(self, beta1=0.0, l1reg=0.0, l2reg=0.0):
+    for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
+      # Initialize variables for numpy implementation.
+      m0, v0, m1, v1 = 0.0, 1.0, 0.0, 1.0
+      var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
+      grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
+      var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
+      grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
 
-        if use_resource:
-          var0 = resource_variable_ops.ResourceVariable(var0_np)
-          var1 = resource_variable_ops.ResourceVariable(var1_np)
-        else:
-          var0 = variables.Variable(var0_np)
-          var1 = variables.Variable(var1_np)
-        grads0_np_indices = np.array([0, 1], dtype=np.int32)
-        grads0 = ops.IndexedSlices(
-            constant_op.constant(grads0_np),
-            constant_op.constant(grads0_np_indices), constant_op.constant([2]))
-        grads1_np_indices = np.array([0, 1], dtype=np.int32)
-        grads1 = ops.IndexedSlices(
-            constant_op.constant(grads1_np),
-            constant_op.constant(grads1_np_indices), constant_op.constant([2]))
-        opt = proximal_yogi.ProximalYogiOptimizer(
-            beta1=beta1,
-            l1_regularization_strength=l1reg,
-            l2_regularization_strength=l2reg)
+      var0 = tf.Variable(var0_np)
+      var1 = tf.Variable(var1_np)
+      grads0_np_indices = np.array([0, 1], dtype=np.int32)
+      grads0 = tf.IndexedSlices(
+          tf.constant(grads0_np),
+          tf.constant(grads0_np_indices), tf.constant([2]))
+      grads1_np_indices = np.array([0, 1], dtype=np.int32)
+      grads1 = tf.IndexedSlices(
+          tf.constant(grads1_np),
+          tf.constant(grads1_np_indices), tf.constant([2]))
+      opt = yogi.Yogi(
+          beta1=beta1,
+          l1_regularization_strength=l1reg,
+          l2_regularization_strength=l2reg)
+      if not tf.executing_eagerly():
         update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-        opt_variables = opt.variables()
-        beta1_power, beta2_power = opt._get_beta_accumulators()
-        self.assertIsNotNone(beta1_power)
-        self.assertIsNotNone(beta2_power)
-        self.assertIn(beta1_power, opt_variables)
-        self.assertIn(beta2_power, opt_variables)
+        self.evaluate(tf.compat.v1.global_variables_initializer())
 
-        if not context.executing_eagerly():
-          with ops.Graph().as_default():
-            # Shouldn't return non-slot variables from other graphs.
-            self.assertLen(opt.variables(), 0)
-          self.evaluate(variables.global_variables_initializer())
-          # Fetch params to validate initial values.
-          self.assertAllClose([1.0, 2.0], self.evaluate(var0))
-          self.assertAllClose([3.0, 4.0], self.evaluate(var1))
+      # Fetch params to validate initial values.
+      self.assertAllClose([1.0, 2.0], self.evaluate(var0))
+      self.assertAllClose([3.0, 4.0], self.evaluate(var1))
 
-        beta1_power, beta2_power = opt._get_beta_accumulators()
+      # Run 3 steps of Yogi.
+      for t in range(1, 4):
+        beta1_power, beta2_power = get_beta_accumulators(opt, dtype)
+        self.assertAllCloseAccordingToType(beta1**t,
+                                           self.evaluate(beta1_power))
+        self.assertAllCloseAccordingToType(0.999**t,
+                                           self.evaluate(beta2_power))
+        if not tf.executing_eagerly():
+          self.evaluate(update)
+        else:
+          opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
-        # Run 3 steps of Yogi.
-        for t in range(1, 4):
-          if not context.executing_eagerly():
-            self.evaluate(update)
-          elif t > 1:
-            opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+        var0_np, m0, v0 = yogi_update_numpy(
+            var0_np, grads0_np, t, m0, v0,
+            beta1=beta1, l1reg=l1reg, l2reg=l2reg)
+        var1_np, m1, v1 = yogi_update_numpy(
+            var1_np, grads1_np, t, m1, v1,
+            beta1=beta1, l1reg=l1reg, l2reg=l2reg)
 
-          self.assertAllCloseAccordingToType(beta1**(t+1),
-                                             self.evaluate(beta1_power))
-          self.assertAllCloseAccordingToType(0.999**(t+1),
-                                             self.evaluate(beta2_power))
-
-          var0_np, m0, v0 = yogi_update_numpy(
-              var0_np, grads0_np, t, m0, v0,
-              beta1=beta1, l1reg=l1reg, l2reg=l2reg)
-          var1_np, m1, v1 = yogi_update_numpy(
-              var1_np, grads1_np, t, m1, v1,
-              beta1=beta1, l1reg=l1reg, l2reg=l2reg)
-
-          # Validate updated params.
-          self.assertAllCloseAccordingToType(
-              var0_np,
-              self.evaluate(var0),
-              msg="Updated params 0 do not match in NP and TF")
-          self.assertAllCloseAccordingToType(
-              var1_np,
-              self.evaluate(var1),
-              msg="Updated params 1 do not match in NP and TF")
+        # Validate updated params.
+        self.assertAllCloseAccordingToType(
+            var0_np,
+            self.evaluate(var0),
+            msg="Updated params 0 do not match in NP and TF")
+        self.assertAllCloseAccordingToType(
+            var1_np,
+            self.evaluate(var1),
+            msg="Updated params 1 do not match in NP and TF")
 
   def testSparse(self):
-    self.doTestSparse(use_resource=False)
+    self.doTestSparse()
 
   def testSparseRegularization(self):
-    self.doTestSparse(l1reg=0.1, l2reg=0.2, use_resource=False)
+    self.doTestSparse(l1reg=0.1, l2reg=0.2)
 
   def testSparseMomentum(self):
-    self.doTestSparse(beta1=0.9, use_resource=False)
+    self.doTestSparse(beta1=0.9)
 
   def testSparseMomentumRegularization(self):
-    self.doTestSparse(beta1=0.9, l1reg=0.1, l2reg=0.2, use_resource=False)
-
-  @test_util.run_in_graph_and_eager_modes(reset_test=True)
-  def testResourceSparse(self):
-    self.doTestSparse(use_resource=True)
-
-  @test_util.run_in_graph_and_eager_modes(reset_test=True)
-  def testResourceSparseRegularization(self):
-    self.doTestSparse(l1reg=0.1, l2reg=0.2, use_resource=True)
-
-  @test_util.run_in_graph_and_eager_modes(reset_test=True)
-  def testResourceSparseMomentum(self):
-    self.doTestSparse(beta1=0.9, use_resource=True)
-
-  @test_util.run_in_graph_and_eager_modes(reset_test=True)
-  def testResourceSparseMomentumRegularization(self):
-    self.doTestSparse(beta1=0.9, l1reg=0.1, l2reg=0.2, use_resource=True)
-
-  def testSparseDevicePlacement(self):
-    for index_dtype in [dtypes.int32, dtypes.int64]:
-      with self.test_session(force_gpu=test.is_gpu_available()):
-        # If a GPU is available, tests that all optimizer ops can be placed on
-        # it (i.e. they have GPU kernels).
-        var = variables.Variable([[1.0], [2.0]])
-        indices = constant_op.constant([0, 1], dtype=index_dtype)
-        gathered_sum = math_ops.reduce_sum(array_ops.gather(var, indices))
-        optimizer = proximal_yogi.ProximalYogiOptimizer(3.0)
-        minimize_op = optimizer.minimize(gathered_sum)
-        variables.global_variables_initializer().run()
-        minimize_op.run()
+    self.doTestSparse(beta1=0.9, l1reg=0.1, l2reg=0.2)
 
   def testSparseRepeatedIndices(self):
-    for dtype in [dtypes.half, dtypes.float32, dtypes.float64]:
-      with self.test_session():
-        repeated_index_update_var = variables.Variable(
-            [[1.0], [2.0]], dtype=dtype)
-        aggregated_update_var = variables.Variable(
-            [[1.0], [2.0]], dtype=dtype)
-        grad_repeated_index = ops.IndexedSlices(
-            constant_op.constant(
-                [0.1, 0.1], shape=[2, 1], dtype=dtype),
-            constant_op.constant([1, 1]),
-            constant_op.constant([2, 1]))
-        grad_aggregated = ops.IndexedSlices(
-            constant_op.constant(
-                [0.2], shape=[1, 1], dtype=dtype),
-            constant_op.constant([1]),
-            constant_op.constant([2, 1]))
-        repeated_update = proximal_yogi.ProximalYogiOptimizer().apply_gradients(
+    for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
+      repeated_index_update_var = tf.Variable(
+          [[1.0], [2.0]], dtype=dtype)
+      aggregated_update_var = tf.Variable(
+          [[1.0], [2.0]], dtype=dtype)
+      grad_repeated_index = tf.IndexedSlices(
+          tf.constant(
+              [0.1, 0.1], shape=[2, 1], dtype=dtype),
+          tf.constant([1, 1]),
+          tf.constant([2, 1]))
+      grad_aggregated = tf.IndexedSlices(
+          tf.constant(
+              [0.2], shape=[1, 1], dtype=dtype),
+          tf.constant([1]),
+          tf.constant([2, 1]))
+      opt1 = yogi.Yogi()
+      opt2 = yogi.Yogi()
+      
+      if not tf.executing_eagerly():
+        repeated_update = opt1.apply_gradients(
             [(grad_repeated_index, repeated_index_update_var)])
-        aggregated_update = proximal_yogi.ProximalYogiOptimizer(
-            ).apply_gradients([(grad_aggregated, aggregated_update_var)])
-        variables.global_variables_initializer().run()
-        self.assertAllClose(aggregated_update_var.eval(),
-                            repeated_index_update_var.eval())
-        for _ in range(3):
-          repeated_update.run()
-          aggregated_update.run()
-          self.assertAllClose(aggregated_update_var.eval(),
-                              repeated_index_update_var.eval())
-
-  def doTestBasic(self, beta1=0.0, l1reg=0.0, l2reg=0.0, use_resource=False):
-    for i, dtype in enumerate([dtypes.half, dtypes.float32, dtypes.float64]):
-      with self.test_session(graph=ops.Graph()):
-        # Initialize variables for numpy implementation.
-        m0, v0, m1, v1 = 0.0, 1.0, 0.0, 1.0
-        var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
-        grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
-        var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
-        grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
-
-        if use_resource:
-          var0 = resource_variable_ops.ResourceVariable(
-              var0_np, name="var0_%d" % i)
-          var1 = resource_variable_ops.ResourceVariable(
-              var1_np, name="var1_%d" % i)
+        aggregated_update = opt2.apply_gradients(
+            [(grad_aggregated, aggregated_update_var)])
+        self.evaluate(tf.compat.v1.global_variables_initializer())
+        
+      self.assertAllClose(self.evaluate(aggregated_update_var),
+                          self.evaluate(repeated_index_update_var))
+      for _ in range(3):
+        if not tf.executing_eagerly():
+          self.evaluate(repeated_update)
+          self.evaluate(aggregated_update)
         else:
-          var0 = variables.Variable(var0_np)
-          var1 = variables.Variable(var1_np)
-        grads0 = constant_op.constant(grads0_np)
-        grads1 = constant_op.constant(grads1_np)
+          opt1.apply_gradients(
+            [(grad_repeated_index, repeated_index_update_var)])
+          opt2.apply_gradients(
+            [(grad_aggregated, aggregated_update_var)])
+          
+        self.assertAllClose(self.evaluate(aggregated_update_var),
+                          self.evaluate(repeated_index_update_var))
 
-        opt = proximal_yogi.ProximalYogiOptimizer(
-            beta1=beta1,
-            l1_regularization_strength=l1reg,
-            l2_regularization_strength=l2reg)
+  def doTestBasic(self, beta1=0.0, l1reg=0.0, l2reg=0.0):
+    for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
+      # Initialize variables for numpy implementation.
+      m0, v0, m1, v1 = 0.0, 1.0, 0.0, 1.0
+      var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
+      grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
+      var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
+      grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
+
+      var0 = tf.Variable(var0_np)
+      var1 = tf.Variable(var1_np)
+      grads0 = tf.constant(grads0_np)
+      grads1 = tf.constant(grads1_np)
+
+      opt = yogi.Yogi(
+          beta1=beta1,
+          l1_regularization_strength=l1reg,
+          l2_regularization_strength=l2reg)
+
+      if not tf.executing_eagerly():
         update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-        opt_variables = opt.variables()
-        beta1_power, beta2_power = opt._get_beta_accumulators()
-        self.assertIsNotNone(beta1_power)
-        self.assertIsNotNone(beta2_power)
-        self.assertIn(beta1_power, opt_variables)
-        self.assertIn(beta2_power, opt_variables)
+        self.evaluate(tf.compat.v1.global_variables_initializer())
+          
+      # Fetch params to validate initial values.
+      self.assertAllClose([1.0, 2.0], self.evaluate(var0))
+      self.assertAllClose([3.0, 4.0], self.evaluate(var1))
 
-        if not context.executing_eagerly():
-          with ops.Graph().as_default():
-            # Shouldn't return non-slot variables from other graphs.
-            self.assertEqual(0, len(opt.variables()))
-          self.evaluate(variables.global_variables_initializer())
-          # Fetch params to validate initial values.
-          self.assertAllClose([1.0, 2.0], self.evaluate(var0))
-          self.assertAllClose([3.0, 4.0], self.evaluate(var1))
+      # Run 3 steps of Yogi.
+      for t in range(1, 4):
+        beta1_power, beta2_power = get_beta_accumulators(opt, dtype)
+        self.assertAllCloseAccordingToType(beta1**t,
+                                           self.evaluate(beta1_power))
+        self.assertAllCloseAccordingToType(0.999**t,
+                                           self.evaluate(beta2_power))
+        
+        if not tf.executing_eagerly():
+          self.evaluate(update)
+        else:
+          opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
-        beta1_power, beta2_power = opt._get_beta_accumulators()
+        var0_np, m0, v0 = yogi_update_numpy(
+            var0_np, grads0_np, t, m0, v0,
+            beta1=beta1, l1reg=l1reg, l2reg=l2reg)
+        var1_np, m1, v1 = yogi_update_numpy(
+            var1_np, grads1_np, t, m1, v1,
+            beta1=beta1, l1reg=l1reg, l2reg=l2reg)
 
-        # Run 3 steps of Yogi.
-        for t in range(1, 4):
-          if not context.executing_eagerly():
-            self.evaluate(update)
-          elif t > 1:
-            opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-
-          self.assertAllCloseAccordingToType(beta1**(t + 1),
-                                             self.evaluate(beta1_power))
-          self.assertAllCloseAccordingToType(0.999**(t + 1),
-                                             self.evaluate(beta2_power))
-
-          var0_np, m0, v0 = yogi_update_numpy(
-              var0_np, grads0_np, t, m0, v0,
-              beta1=beta1, l1reg=l1reg, l2reg=l2reg)
-          var1_np, m1, v1 = yogi_update_numpy(
-              var1_np, grads1_np, t, m1, v1,
-              beta1=beta1, l1reg=l1reg, l2reg=l2reg)
-
-          # Validate updated params.
-          self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
-          self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
-          if use_resource:
-            self.assertEqual("var0_%d/ProximalYogi:0" % (i,),
-                             opt.get_slot(var=var0, name="v").name)
+        # Validate updated params.
+        self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
+        self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
 
   def testBasic(self):
-    self.doTestBasic(use_resource=False)
+    self.doTestBasic()
 
   def testBasicRegularization(self):
-    self.doTestBasic(l1reg=0.1, l2reg=0.2, use_resource=False)
+    self.doTestBasic(l1reg=0.1, l2reg=0.2)
 
   def testBasicMomentum(self):
-    self.doTestBasic(beta1=0.9, use_resource=False)
+    self.doTestBasic(beta1=0.9)
 
   def testBasicMomentumRegularization(self):
-    self.doTestBasic(beta1=0.9, l1reg=0.1, l2reg=0.2, use_resource=False)
+    self.doTestBasic(beta1=0.9, l1reg=0.1, l2reg=0.2)
 
   def testTensorLearningRate(self):
     for dtype in [dtypes.half, dtypes.float32, dtypes.float64]:
@@ -321,25 +283,30 @@ class YogiOptimizerTest(tf.test.TestCase):
         var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
         grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
 
-        var0 = variables.Variable(var0_np)
-        var1 = variables.Variable(var1_np)
-        grads0 = constant_op.constant(grads0_np)
-        grads1 = constant_op.constant(grads1_np)
-        opt = proximal_yogi.ProximalYogiOptimizer(constant_op.constant(0.01))
-        update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-        variables.global_variables_initializer().run()
+        var0 = tf.Variable(var0_np)
+        var1 = tf.Variable(var1_np)
+        grads0 = tf.constant(grads0_np)
+        grads1 = tf.constant(grads1_np)
+        opt = yogi.Yogi(tf.constant(0.01))
+        
+        if not tf.executing_eagerly():
+          update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+          self.evaluate(tf.compat.v1.global_variables_initializer())
 
         # Fetch params to validate initial values.
-        self.assertAllClose([1.0, 2.0], var0.eval())
-        self.assertAllClose([3.0, 4.0], var1.eval())
-
-        beta1_power, beta2_power = opt._get_beta_accumulators()
+        self.assertAllClose([1.0, 2.0], self.evaluate(var0))
+        self.assertAllClose([3.0, 4.0], self.evaluate(var1))
 
         # Run 3 steps of Yogi.
         for t in range(1, 4):
+          beta1_power, beta2_power = get_beta_accumulators(opt, dtype)
           self.assertAllCloseAccordingToType(0.9**t, beta1_power.eval())
           self.assertAllCloseAccordingToType(0.999**t, beta2_power.eval())
-          update.run()
+          
+          if not tf.executing_eagerly():
+            self.evaluate(update)
+          else:
+            opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
           var0_np, m0, v0 = yogi_update_numpy(
               var0_np, grads0_np, t, m0, v0)
@@ -376,7 +343,7 @@ class YogiOptimizerTest(tf.test.TestCase):
         
       # Run 3 steps of intertwined Yogi1 and Yogi2.
       for t in range(1, 4):
-        beta1_power, beta2_power = get_beta_accumulators()
+        beta1_power, beta2_power = get_beta_accumulators(opt, dtype)
         self.assertAllCloseAccordingToType(0.9**t, self.evaluate(beta1_power))
         self.assertAllCloseAccordingToType(0.999**t, self.evaluate(beta2_power))
         if not tf.executing_eagerly():
