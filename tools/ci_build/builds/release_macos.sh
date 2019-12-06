@@ -21,7 +21,7 @@ curl -sSOL https://bootstrap.pypa.io/get-pip.py
 # Install Bazel 0.24
 wget https://github.com/bazelbuild/bazel/releases/download/1.1.0/bazel-1.1.0-installer-darwin-x86_64.sh
 chmod +x bazel-1.1.0-installer-darwin-x86_64.sh
-./bazel-0.24.1-installer-darwin-x86_64.sh --user
+./bazel-1.1.0-installer-darwin-x86_64.sh --user
 export PATH="$PATH:$HOME/bin"
 
 # Install delocate
