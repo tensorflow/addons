@@ -301,8 +301,8 @@ class Yogi(tf.keras.optimizers.Optimizer):
             new_var = var_slice - per_coord_lr * m_slice
             # Step 2: Prox operator
             if self._l1_regularization_strength > 0:
-                new_var = _solve(1 + l2_t * per_coord_lr,
-                                 -new_var, l1_t * per_coord_lr)
+                new_var = _solve(1 + l2_t * per_coord_lr, -new_var,
+                                 l1_t * per_coord_lr)
             elif self._l2_regularization_strength > 0:
                 new_var = new_var / (1 + l2_t * per_coord_lr)
             # Step 3: Update
