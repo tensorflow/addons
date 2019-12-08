@@ -284,10 +284,11 @@ class Yogi(tf.keras.optimizers.Optimizer):
             if self._activation == 'sign':
                 sign = tf.sign(grad2 - tf.gather(v, indices))
             elif self._activation == 'tanh':
-                sign = tf.tanh(10*(grad2 - tf.gather(v, indices)))
+                sign = tf.tanh(10 * (grad2 - tf.gather(v, indices)))
             else:
-                raise NotImplementedError('Activation function can be sign or tanh')
-            v_scaled_g_values = v_slice + (1-beta2_t) * sign * grad2
+                raise NotImplementedError(
+                    'Activation function can be sign or tanh')
+            v_scaled_g_values = v_slice + (1 - beta2_t) * sign * grad2
             v_t = self._resource_scatter_update(v, indices, v_scaled_g_values)
             v_sqrt = tf.sqrt(v_scaled_g_values)
 
@@ -300,7 +301,8 @@ class Yogi(tf.keras.optimizers.Optimizer):
             new_var = var_slice - per_coord_lr * m_slice
             # Step 2: Prox operator
             if self._l1_regularization_strength > 0:
-                new_var = _solve(1 + l2_t * per_coord_lr, -new_var, l1_t * per_coord_lr)
+                new_var = _solve(1 + l2_t * per_coord_lr,
+                                 -new_var, l1_t * per_coord_lr)
             elif self._l2_regularization_strength > 0:
                 new_var = new_var / (1 + l2_t * per_coord_lr)
             # Step 3: Update
@@ -315,23 +317,23 @@ class Yogi(tf.keras.optimizers.Optimizer):
     def get_config(self):
         config = super(Yogi, self).get_config()
         config.update({
-            'learning_rate': 
+            'learning_rate':
             self._serialize_hyperparameter('learning_rate'),
-            'decay': 
+            'decay':
             self._serialize_hyperparameter('decay'),
-            'beta1': 
+            'beta1':
             self._serialize_hyperparameter('beta_1'),
-            'beta2': 
+            'beta2':
             self._serialize_hyperparameter('beta_2'),
-            'epsilon': 
+            'epsilon':
             self._serialize_hyperparameter('epsilon'),
-            'l1_t': 
+            'l1_t':
             self._serialize_hyperparameter('l1_regularization_strength'),
-            'l2_t': 
+            'l2_t':
             self._serialize_hyperparameter('l2_regularization_strength'),
-            'activation': 
+            'activation':
             self._activation,
-            'initial_accumulator_value': 
+            'initial_accumulator_value':
             self._initial_accumulator_value,
         })
         return config
