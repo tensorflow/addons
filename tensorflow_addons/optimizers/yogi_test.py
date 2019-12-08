@@ -182,7 +182,7 @@ class YogiOptimizerTest(tf.test.TestCase):
 
     def testSparseRepeatedIndices(self):
         for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
-            repeated_index_update_var = tf.Variable([[1.0], [2.0]], 
+            repeated_index_update_var = tf.Variable([[1.0], [2.0]],
                                                     dtype=dtype)
             aggregated_update_var = tf.Variable([[1.0], [2.0]], dtype=dtype)
             grad_repeated_index = tf.IndexedSlices(
@@ -204,7 +204,7 @@ class YogiOptimizerTest(tf.test.TestCase):
             self.assertAllClose(
                 self.evaluate(aggregated_update_var),
                 self.evaluate(repeated_index_update_var))
-            
+
             for _ in range(3):
                 if not tf.executing_eagerly():
                     self.evaluate(repeated_update)
@@ -334,9 +334,9 @@ class YogiOptimizerTest(tf.test.TestCase):
                 else:
                     opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
-                var0_np, m0, v0 = yogi_update_numpy(var0_np, grads0_np, t, m0, 
+                var0_np, m0, v0 = yogi_update_numpy(var0_np, grads0_np, t, m0,
                                                     v0)
-                var1_np, m1, v1 = yogi_update_numpy(var1_np, grads1_np, t, m1, 
+                var1_np, m1, v1 = yogi_update_numpy(var1_np, grads1_np, t, m1,
                                                     v1)
 
                 # Validate updated params.
