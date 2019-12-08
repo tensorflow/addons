@@ -31,7 +31,7 @@ jobs:
       # Build GPU kernels without runtime=nvidia as there are no GPUs/Drivers
       - docker run -e TF_NEED_CUDA=1 -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010 tools/ci_build/builds/release_linux.sh
       after_success:
-#        - twine upload -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
+        - twine upload -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
 
     # MacOS Builds
     - stage: build
@@ -41,7 +41,7 @@ jobs:
       script:
         - bash -x -e tools/ci_build/builds/release_macos.sh
       after_success:
-#        - twine upload -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
+        - twine upload -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
 
 notifications:
   email:
