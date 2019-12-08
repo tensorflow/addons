@@ -16,7 +16,7 @@
 set -e
 set -x
 
-PIP_FILE_PREFIX="bazel-bin/build_pip_pkg.runfiles/__main__/"
+PIP_FILE_PREFIX="bazel-bin/build_pip_pkg.runfiles/tensorflow_addons/"
 
 function abspath() {
   cd "$(dirname $1)"
