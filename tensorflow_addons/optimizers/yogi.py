@@ -71,7 +71,8 @@ class Yogi(tf.keras.optimizers.Optimizer):
         """Construct a new Yogi optimizer.
 
         Args:
-          learning_rate: A Tensor or a floating point value.  The learning rate.
+          learning_rate: A Tensor or a floating point value.
+            The learning rate.
           beta1: A float value or a constant float tensor.
             The exponential decay rate for the 1st moment estimates.
           beta2: A float value or a constant float tensor.
@@ -84,13 +85,14 @@ class Yogi(tf.keras.optimizers.Optimizer):
           initial_accumulator_value: The starting value for accumulators.
             Only positive values are allowed.
           activation: Use hard sign or soft tanh to determin sign.
-          name: Optional name for the operations created when applying gradients.
-            Defaults to "Yogi".
-          **kwargs: keyword arguments. Allowed to be {`clipnorm`, `clipvalue`, `lr`,
-            `decay`}. `clipnorm` is clip gradients by norm; `clipvalue` is clip
-            gradients by value, `decay` is included for backward compatibility to
-            allow time inverse decay of learning rate. `lr` is included for backward
-            compatibility, recommended to use `learning_rate` instead.
+          name: Optional name for the operations created when applying 
+            gradients. Defaults to "Yogi".
+          **kwargs: keyword arguments. Allowed to be {`clipnorm`, `clipvalue`,
+            `lr`, `decay`}. `clipnorm` is clip gradients by norm; `clipvalue`
+            is clip gradients by value, `decay` is included for backward
+            compatibility to allow time inverse decay of learning rate. `lr`
+            is included for backward compatibility, recommended to use
+            `learning_rate` instead.
         """
         super(Yogi, self).__init__(name, **kwargs)
         self._set_hyper('learning_rate', kwargs.get('lr', learning_rate))
