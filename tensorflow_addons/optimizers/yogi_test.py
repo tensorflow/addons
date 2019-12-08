@@ -139,22 +139,22 @@ class YogiOptimizerTest(tf.test.TestCase):
                 else:
                     opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
-              var0_np, m0, v0 = yogi_update_numpy(
-                  var0_np, grads0_np, t, m0, v0,
-                  beta1=beta1, l1reg=l1reg, l2reg=l2reg)
-              var1_np, m1, v1 = yogi_update_numpy(
-                  var1_np, grads1_np, t, m1, v1,
-                  beta1=beta1, l1reg=l1reg, l2reg=l2reg)
+                var0_np, m0, v0 = yogi_update_numpy(
+                    var0_np, grads0_np, t, m0, v0,
+                    beta1=beta1, l1reg=l1reg, l2reg=l2reg)
+                var1_np, m1, v1 = yogi_update_numpy(
+                    var1_np, grads1_np, t, m1, v1,
+                    beta1=beta1, l1reg=l1reg, l2reg=l2reg)
 
-              # Validate updated params.
-              self.assertAllCloseAccordingToType(
-                  var0_np,
-                  self.evaluate(var0),
-                  msg="Updated params 0 do not match in NP and TF")
-              self.assertAllCloseAccordingToType(
-                  var1_np,
-                  self.evaluate(var1),
-                  msg="Updated params 1 do not match in NP and TF")
+                # Validate updated params.
+                self.assertAllCloseAccordingToType(
+                    var0_np,
+                    self.evaluate(var0),
+                    msg="Updated params 0 do not match in NP and TF")
+                self.assertAllCloseAccordingToType(
+                    var1_np,
+                    self.evaluate(var1),
+                    msg="Updated params 1 do not match in NP and TF")
 
     def testSparse(self):
         self.doTestSparse()
