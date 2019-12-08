@@ -66,7 +66,7 @@ REQUIRED_PACKAGES = [
 ]
 
 if project_name == TFA_RELEASE:
-    REQUIRED_PACKAGES.append('tensorflow >= 2.1.0rc0')
+    REQUIRED_PACKAGES.append('tensorflow >= 2.1.0rc1')
 elif project_name == TFA_NIGHTLY:
     REQUIRED_PACKAGES.append('tf-nightly')
 
