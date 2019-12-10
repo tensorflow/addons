@@ -15,6 +15,7 @@ py_library(
         "rectified_adam.py",
         "stochastic_weight_averaging.py",
         "weight_decay_optimizers.py",
+        "yogi.py",
     ],
     deps = [
         "//tensorflow_addons/utils",
@@ -28,6 +29,18 @@ py_test(
         "lamb_test.py",
     ],
     main = "lamb_test.py",
+    deps = [
+        ":optimizers",
+    ],
+)
+
+py_test(
+    name = "yogi_test",
+    size = "small",
+    srcs = [
+        "yogi_test.py",
+    ],
+    main = "yogi_test.py",
     deps = [
         ":optimizers",
     ],
