@@ -39,18 +39,13 @@ ls -alh $PYTHON_BIN_PATH
 # Use default configuration here.
 yes 'y' | ./configure.sh
 
-wget https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/tools/ci_build/gpu_build/parallel_gpu_execute.sh
-chmod +x parallel_gpu_execute.sh
-
 ## Run bazel test command. Double test timeouts to avoid flakes.
 bazel test -c opt -k \
     --jobs=${N_JOBS} --test_timeout 300,450,1200,3600 \
     --test_output=errors --local_test_jobs=8 \
-    --run_under=$(readlink -f parallel_gpu_execute.sh) \
+    --run_under=$(readlink -f tools/ci_testing/parallel_gpu_execute.sh) \
     --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.1:toolchain \
     --extra_toolchains=@bazel_tools//tools/python:autodetecting_toolchain_nonstrict \
     //tensorflow_addons/...
-
-rm parallel_gpu_execute.sh
 
 exit $?
