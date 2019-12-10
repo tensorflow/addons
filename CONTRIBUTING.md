@@ -94,6 +94,7 @@ or run manually:
 
 ```bash
 docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010 /bin/bash
+
 export TF_NEED_CUDA=1
 ./configure.sh  # Links project with TensorFlow dependency
 
@@ -103,6 +104,14 @@ bazel test -c opt -k \
 --test_output=all \
 --jobs=1 \
 //tensorflow_addons/...
+```
+
+Note that the commands run with 4 GPUs with 8 tests per GPU by default.
+Please use the following variables to controll the hardware specifications:
+```
+export TF_GPU_COUNT=4 # Specify number of GPUs available
+export TF_TESTS_PER_GPU=8 # Specify number of tests per GPU
+export TF_PER_DEVICE_MEMORY_LIMIT_MB=1024 # Limit the memory used per test
 ```
 
 ## Code Reviews
