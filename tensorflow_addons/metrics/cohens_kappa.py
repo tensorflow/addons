@@ -44,12 +44,12 @@ class CohenKappa(Metric):
     >>> m = tfa.metrics.CohenKappa(num_classes=5)
     >>> m_update = m.update_state(actuals, preds)
     >>> m.result()
-    <tf.Tensor: id=203, shape=(), dtype=float32, numpy=0.61904764>
+    <tf.Tensor: shape=(), dtype=float32, numpy=0.61904764>
 
     >>> m = tfa.metrics.CohenKappa(num_classes=5)
     >>> m_update = m.update_state(actuals, preds, sample_weight=weights)
     >>> m.result()
-    <tf.Tensor: id=406, shape=(), dtype=float32, numpy=0.37209308>
+    <tf.Tensor: shape=(), dtype=float32, numpy=0.37209308>
 
     Usage with tf.keras API:
     
@@ -59,7 +59,7 @@ class CohenKappa(Metric):
     model.compile('sgd', loss='mse')
     ```
     """
-
+    
     def __init__(self,
                  num_classes,
                  name='cohen_kappa',
