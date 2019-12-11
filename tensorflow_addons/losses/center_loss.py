@@ -29,7 +29,7 @@ def center_loss(labels, feature, alpha):
         labels: ground truth labels with shape (batch_size)
         feature: feature with shape (batch_size, num_classes)
         alpha: a scalar between 0-1 to control the leanring rate of the centers
-        num_classes: an integer, the number of classes
+        num_classes: an `int`. The number of possible classes
     
     Return：
         loss: Tensor
@@ -63,12 +63,21 @@ class CenterLoss(tf.keras.losses.Loss):
 
     See: https://ydwen.github.io/papers/WenECCV16.pdf
 
-    
+    The loss was designed to develop an effectively improve the discriminative
+    power of the deep learned features. In fact, the key is to minimize the 
+    intra-class variations while keeping the features of different classes 
+    separable. Usually combining with softmax losss to jointly supervise the 
+    CNNs to have a better result. 
+
+    We expect labels `y_pred` must be the output of the last fully connected 
+    layer, which is 2-D float `Tensor` of l2 normalized embedding vectors and 
+    `y_true` to be provided as 1-D integer `Tensor` with shape [batch_size] 
+    of multi-class integer labels. 
+
     Args:
-      y_pred: the output of the last fully connected layer. 
+      name: Optional name for the op.    
       reduction: (Optional) Type of `tf.keras.losses.Reduction` to apply to
         loss. Default value is `SUM_OVER_BATCH_SIZE`.
-      name: Optional name for the op.
     """
 
     def __init__(self,
@@ -79,7 +88,7 @@ class CenterLoss(tf.keras.losses.Loss):
         self.alpha = alpha
 
     def call(self, y_true, y_pred, x):
-        return center_loss(labels, feature, self.alpha)
+        return center_loss(y_true, y_pred, self.alpha)`
 
     def get_config(self):
         config = {
