@@ -22,24 +22,24 @@ import tensorflow as tf
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 @tf.function
-def center_loss(feature, labels, alpha, num_classes):
+def center_loss(labels, feature, alpha):
     """Computes the center loss.
 
     Arguments:
-        feature: feature with shape (batch_size, feat_dim)
         labels: ground truth labels with shape (batch_size)
-        alpha: a scalar to control the leanring rate of the centers
-        num_classes: number of classes
+        feature: feature with shape (batch_size, num_classes)
+        alpha: a scalar between 0-1 to control the leanring rate of the centers
+        num_classes: an integer, the number of classes
     
     Return：
         loss: Tensor
     """
     len_features = feature.get_shape()[1]
+    num_classes = labels.shape[-1]
     centers = tf.get_variable('centers', [num_classes, len_features], dtype=tf.float32,
         initializer=tf.constant_initializer(0), trainable=False)
     labels = tf.reshape(labels, [-1])
     centers_batch = tf.gather(centers, labels)
-    loss = tf.nn.l2_loss(feature - centers_batch)
     diff = centers_batch - feature
     unique_label, unique_idx, unique_count = tf.unique_with_counts(labels)
     appear_times = tf.gather(unique_count, unique_idx)
@@ -49,7 +49,12 @@ def center_loss(feature, labels, alpha, num_classes):
     # update centers
     centers_update_op = tf.scatter_sub(centers, labels, diff)
 
-    return loss, centers, centers_update_op
+    # enforce computing centers before updating center loss
+    with tf.control_dependencies([centers_update_op]):
+        # compute center-loss
+        loss = tf.nn.l2_loss(features - centers_batch)
+
+    return loss
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -58,8 +63,9 @@ class CenterLoss(tf.keras.losses.Loss):
 
     See: https://ydwen.github.io/papers/WenECCV16.pdf
 
-
+    
     Args:
+      y_pred: the output of the last fully connected layer. 
       reduction: (Optional) Type of `tf.keras.losses.Reduction` to apply to
         loss. Default value is `SUM_OVER_BATCH_SIZE`.
       name: Optional name for the op.
@@ -72,8 +78,8 @@ class CenterLoss(tf.keras.losses.Loss):
         super(CenterLoss, self).__init__(reduction=reduction, name=name)
         self.alpha = alpha
 
-    def call(self, y_true, y_pred):
-        return center_loss(feature, labels, self.alpha, y_true.shape[-1])
+    def call(self, y_true, y_pred, x):
+        return center_loss(labels, feature, self.alpha)
 
     def get_config(self):
         config = {
