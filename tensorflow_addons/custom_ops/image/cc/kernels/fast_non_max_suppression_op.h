@@ -20,6 +20,7 @@ limitations under the License.
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/tensor_types.h"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
+#include "tensorflow/core/kernels/matrix_band_part_op.h"
 
 namespace tensorflow {
 namespace addons {
@@ -98,7 +99,7 @@ Eigen::Tensor<T, 3, Eigen::RowMajor> jaccard(
                                          intersect_h.dimension(2)}));
   auto area_a = (box_a_ymax - box_a_ymin) * (box_a_xmax - box_a_xmin);
   auto area_b = (box_b_ymax - box_b_ymin) * (box_b_xmax - box_b_xmin);
-  return (intersect_area / (area_a + area_b - intersect_area));
+  return std::move(intersect_area / (area_a + area_b - intersect_area));
 }
 
 template <typename Device, typename T>
@@ -106,9 +107,8 @@ void DoFastNonMaxSuppression(OpKernelContext* context,
                              typename TTypes<T, 3>::ConstTensor boxes,
                              typename TTypes<T, 2>::ConstTensor scores,
                              const T iou_threshold, const T score_threshold) {
-  // const int num_classes = scores.dimension(0);
   auto iou = jaccard<T>(boxes, boxes);
-
+  // TODO:band_part
   auto iou_max = iou.maximum(Eigen::array<int, 1>({1}));
   auto iou_mask = (iou_max <= iou_max.constant(iou_threshold))
                       .select(iou_max.constant(static_cast<T>(1)),
