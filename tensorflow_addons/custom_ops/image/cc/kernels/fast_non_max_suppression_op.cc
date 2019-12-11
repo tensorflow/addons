@@ -16,14 +16,8 @@ limitations under the License.
 #define EIGEN_USE_THREADS
 
 #include "tensorflow_addons/custom_ops/image/cc/kernels/fast_non_max_suppression_op.h"
-
-#include "tensorflow/core/framework/bounds_check.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
-#include "tensorflow/core/framework/tensor.h"
-#include "tensorflow/core/framework/tensor_shape.h"
-#include "tensorflow/core/framework/types.h"
-#include "tensorflow/core/lib/core/status.h"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {

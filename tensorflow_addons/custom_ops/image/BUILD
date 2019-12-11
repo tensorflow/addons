@@ -57,7 +57,7 @@ custom_op_library(
         "cc/ops/fast_non_max_suppression_op.cc",
     ],
     cuda_srcs = [
-        # "cc/kernels/resampler_ops.h",
-        # "cc/kernels/resampler_ops_gpu.cu.cc",
+        "cc/kernels/fast_non_max_suppression_op.h",
+        "cc/kernels/fast_non_max_suppression_op_gpu.cu.cc",
     ],
 )

@@ -13,6 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#if GOOGLE_CUDA
+
+#define EIGEN_USE_GPU
+
+#include "tensorflow_addons/custom_ops/image/cc/kernels/fast_non_max_suppression_op.h"
+#include "tensorflow/core/framework/op_kernel.h"
+#include "tensorflow/core/framework/register_types.h"
+#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
+
 namespace tensorflow {
 namespace addons {
 
@@ -26,3 +35,5 @@ TF_CALL_GPU_NUMBER_TYPES(REGISTER_FAST_NON_MAX_SUPPRESSION_GPU_KERNELS);
 #undef REGISTER_FAST_NON_MAX_SUPPRESSION_GPU_KERNELS
 }  // namespace addons
 }  // namespace tensorflow
+
+#endif
