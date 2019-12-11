@@ -22,12 +22,14 @@ import tensorflow as tf
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 @tf.function
-def center_loss(feature, labels, num_classes):
+def center_loss(feature, labels, alpha, num_classes):
     """Computes the center loss.
 
     Arguments:
         feature: feature with shape (batch_size, feat_dim)
         labels: ground truth labels with shape (batch_size)
+        alpha: a scalar to control the leanring rate of the centers
+        num_classes: number of classes
     
     Return：
         loss: Tensor
@@ -44,6 +46,7 @@ def center_loss(feature, labels, num_classes):
     appear_times = tf.reshape(appear_times, [-1, 1])
     diff = diff / tf.cast((1 + appear_times), tf.float32)
     diff = alpha * diff
+    # update centers
     centers_update_op = tf.scatter_sub(centers, labels, diff)
 
     return loss, centers, centers_update_op
@@ -64,19 +67,17 @@ class CenterLoss(tf.keras.losses.Loss):
 
     def __init__(self,
                  reduction=tf.keras.losses.Reduction.AUTO,
-                 feat_dim=3,
-                 num_classes=5,
+                 alpha=0.2,
                  name="center_loss"):
         super(CenterLoss, self).__init__(reduction=reduction, name=name)
-        self.feat_dim = feat_dim
-        self.num_classes = num_classes
+        self.alpha = alpha
 
     def call(self, y_true, y_pred):
-        return center_loss(feature, labels, self.num_classes)
+        return center_loss(feature, labels, self.alpha, y_true.shape[-1])
 
     def get_config(self):
         config = {
-            "margin": self.margin,
+            "alpha": self.alpha,
         }
         base_config = super(CenterLoss, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
