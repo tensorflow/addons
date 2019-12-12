@@ -90,7 +90,7 @@ bazel test -c opt -k \
 //tensorflow_addons/<package>:<py_test_name>
 ```
 
-`<package>` can be `metrics` or an other package name for example.
+`<package>` can any package name like `metrics` for example.
 `<py_test_name>` can be any test name given by the `BUILD` file or `*` for all tests of the given package.
 
 ### Locally Testing GPU
@@ -119,7 +119,7 @@ bazel test -c opt -k \
 //tensorflow_addons/<package>:<py_test_name>
 ```
 
-`<package>` can be `metrics` or an other package name for example.
+`<package>` can any package name like `metrics` for example.
 `<py_test_name>` can be any test name given by the `BUILD` file or `*` for all tests of the given package.
 
 ## Code Reviews
