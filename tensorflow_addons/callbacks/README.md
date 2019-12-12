@@ -4,12 +4,13 @@
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
 |  tqdm_progress_bar | @shun-lin | shunlin@google.com |
+|  time_stopping | @shun-lin | shunlin@google.com |
 
 ## Contents
 | Submodule | Callback  | Reference                               |
 |:----------------------- |:-------------------|:---------------|
 | tqdm_progress_bar | TQDMProgressBar | https://tqdm.github.io/ |
-
+| time_stopping | TimeStopping | N/A |
 
 ## Contribution Guidelines
 #### Standard API
