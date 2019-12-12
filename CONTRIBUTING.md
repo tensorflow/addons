@@ -79,19 +79,12 @@ or run manually:
 docker run --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-ubuntu16.04-manylinux2010 /bin/bash
 ./configure.sh  # Links project with TensorFlow dependency
 
-bazel test -c opt -k \
---test_timeout 300,450,1200,3600 \
---test_output=all \
-//tensorflow_addons/...
+bash tools/ci_testing/addons_cpu.sh
 ```
 
 #### Locally Testing GPU
 
 ```bash
-export TF_GPU_COUNT=4 # Specify number of GPUs available
-export TF_TESTS_PER_GPU=8 # Specify number of tests per GPU
-export TF_PER_DEVICE_MEMORY_LIMIT_MB=1024 # Limit the memory used per test
-
 bash tools/run_docker.sh -d gpu -c 'make gpu-unit-test'
 ```
 
@@ -100,15 +93,11 @@ or run manually:
 ```bash
 docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010 /bin/bash
 
-export TF_NEED_CUDA=1
-./configure.sh  # Links project with TensorFlow dependency
+export TF_GPU_COUNT=4 # Specify number of GPUs available
+export TF_TESTS_PER_GPU=8 # Specify number of tests per GPU
+export TF_PER_DEVICE_MEMORY_LIMIT_MB=1024 # Limit the memory used per test
 
-bazel test -c opt -k \
---test_timeout 300,450,1200,3600 \
---crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.1:toolchain \
---test_output=all \
---jobs=1 \
-//tensorflow_addons/...
+bash tools/ci_testing/addons_gpu.sh
 ```
 
 ## Code Reviews
