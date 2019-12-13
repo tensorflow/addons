@@ -91,7 +91,7 @@ bazel test -c opt -k \
 ```
 
 `<test_selection>` can be `...` for all tests or `<package>:<py_test_name>` for individual tests.
-`<package>` can any package name like `metrics` for example.
+`<package>` can be any package name like `metrics` for example.
 `<py_test_name>` can be any test name given by the `BUILD` file or `*` for all tests of the given package.
 
 ### Locally Testing GPU
@@ -121,7 +121,7 @@ bazel test -c opt -k \
 ```
 
 `<test_selection>` can be `...` for all tests or `<package>:<py_test_name>` for individual tests.
-`<package>` can any package name like `metrics` for example.
+`<package>` can be any package name like `metrics` for example.
 `<py_test_name>` can be any test name given by the `BUILD` file or `*` for all tests of the given package.
 
 ## Code Reviews
