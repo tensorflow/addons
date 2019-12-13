@@ -50,9 +50,9 @@ class TimeStopping(Callback):
     def on_train_end(self, logs=None):
         if self.verbose > 0:
             formatted_time = datetime.timedelta(seconds=self.seconds)
-            message = 'Timed stopping at epoch {} after training for {}'.format(
+            msg = 'Timed stopping at epoch {} after training for {}'.format(
                 self.stopped_epoch + 1, formatted_time)
-            print(message)
+            print(msg)
 
     def get_config(self):
         config = {
