@@ -37,9 +37,10 @@ class MovingAverageTest(tf.test.TestCase):
             grads_and_vars = list(zip([grads0, grads1], [var0, var1]))
             self.evaluate(tf.compat.v1.global_variables_initializer())
 
-            opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0),
-                                sequential_update=sequential_update,
-                                average_decay=0.5)
+            opt = MovingAverage(
+                tf.keras.optimizers.SGD(lr=2.0),
+                sequential_update=sequential_update,
+                average_decay=0.5)
 
             if not tf.executing_eagerly():
                 update = opt.apply_gradients(grads_and_vars)
@@ -119,8 +120,8 @@ class MovingAverageTest(tf.test.TestCase):
         model.build(input_shape=[1, 1])
         self.evaluate(tf.compat.v1.global_variables_initializer())
 
-        opt = MovingAverage(tf.keras.optimizers.SGD(lr=1e-3),
-                            average_decay=0.5)
+        opt = MovingAverage(
+            tf.keras.optimizers.SGD(lr=1e-3), average_decay=0.5)
         update = opt.apply_gradients(list(zip([grad], model.variables)))
 
         self.evaluate(tf.compat.v1.global_variables_initializer())
@@ -134,14 +135,13 @@ class MovingAverageTest(tf.test.TestCase):
         _ = MovingAverage('adam')
 
     def test_config(self):
-        sgd_opt = tf.keras.optimizers.SGD(lr=2.0,
-                                          nesterov=True,
-                                          momentum=0.3,
-                                          decay=0.1)
-        opt = MovingAverage(sgd_opt,
-                            average_decay=0.5,
-                            num_updates=None,
-                            sequential_update=False)
+        sgd_opt = tf.keras.optimizers.SGD(
+            lr=2.0, nesterov=True, momentum=0.3, decay=0.1)
+        opt = MovingAverage(
+            sgd_opt,
+            average_decay=0.5,
+            num_updates=None,
+            sequential_update=False)
         config = opt.get_config()
 
         self.assertEqual(config['average_decay'], 0.5)
@@ -165,7 +165,7 @@ class MovingAverageTest(tf.test.TestCase):
         y = np.dot(x, w) + np.random.standard_normal((num_examples, 1)) * 1e-4
 
         model = tf.keras.models.Sequential()
-        model.add(tf.keras.layers.Dense(input_shape=(3, ), units=1))
+        model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
         self.evaluate(tf.compat.v1.global_variables_initializer())
 
         opt = MovingAverage('adam')
