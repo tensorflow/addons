@@ -81,15 +81,16 @@ docker run --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla
 ./configure.sh  # Links project with TensorFlow dependency
 ```
 
-Run individual tests:
+Run selected tests:
 
 ```bash
 bazel test -c opt -k \
 --test_timeout 300,450,1200,3600 \
 --test_output=all \
-//tensorflow_addons/<package>:<py_test_name>
+//tensorflow_addons/<test_selection>
 ```
 
+`<test_selection>` can be `...` for all tests or `<package>:<py_test_name>` for individual tests.
 `<package>` can any package name like `metrics` for example.
 `<py_test_name>` can be any test name given by the `BUILD` file or `*` for all tests of the given package.
 
@@ -108,7 +109,7 @@ export TF_NEED_CUDA=1
 ./configure.sh  # Links project with TensorFlow dependency
 ```
 
-Run individual tests:
+Run selected tests:
 
 ```bash
 bazel test -c opt -k \
@@ -116,9 +117,10 @@ bazel test -c opt -k \
 --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.1:toolchain \
 --test_output=all \
 --jobs=1 \
-//tensorflow_addons/<package>:<py_test_name>
+//tensorflow_addons/<test_selection>
 ```
 
+`<test_selection>` can be `...` for all tests or `<package>:<py_test_name>` for individual tests.
 `<package>` can any package name like `metrics` for example.
 `<py_test_name>` can be any test name given by the `BUILD` file or `*` for all tests of the given package.
 
