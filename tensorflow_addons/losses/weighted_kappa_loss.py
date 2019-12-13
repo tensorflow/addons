@@ -24,6 +24,7 @@ import tensorflow as tf
 def _weighted_kappa_loss(y_true, y_pred, row_label_vec, col_label_vec,
                          weight_mat, eps=1e-6, weightage='quadratic',
                          dtype=tf.float32):
+    y_true = tf.cast(y_true, dtype=dtype)
     labels = tf.matmul(y_true, col_label_vec)
     if weightage == 'linear':
         weight = tf.abs(tf.tile(labels, [1, tf.shape(y_true)[1]]) - tf.tile(row_label_vec, [tf.shape(y_true)[0], 1]))
@@ -43,6 +44,7 @@ def _weighted_kappa_loss(y_true, y_pred, row_label_vec, col_label_vec,
     return tf.math.log(numerator / denominator + eps)
 
 
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class WeightedKappaLoss(tf.keras.losses.Loss):
     """Implements the Weighted Kappa loss function.
     This Weighted Kappa loss was introduced in the
@@ -52,13 +54,14 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
     Weighted Kappa is widely used in Ordinal Classification Problems
     The score lies in [-∞, log2], where log2 means the random prediction
     Usage:
-    ```python
 
-    qwk = tfa.losses.WeightedKappa(num_classes=4)
-    y_true = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]])
-    y_pred = tf.constant([[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]])
-    loss = qwk(y_true, y_pred)
-    print('Loss: ', loss.numpy())  # Loss: [1.07500000298023224]
+    ```python
+    kappa_loss = WeightedKappaLoss(num_classes=4)
+    y_true = tf.constant([[0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])
+    y_pred = tf.constant([[0.1, 0.2, 0.6, 0.1], [0.1, 0.5, 0.3, 0.1],
+                          [0.8, 0.05, 0.05, 0.1], [0.01, 0.09, 0.1, 0.8]])
+    loss = kappa_loss(y_true, y_pred)
+    print('Loss: ', loss.numpy())  # Loss: -1.1611923
     ```
 
     Usage with tf.keras API:
@@ -69,12 +72,9 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
     model.compile('sgd', loss=tfa.losses.WeightedKappa(num_classes=4))
     ```
     """
-
     def __init__(self,
-                 num_classes,
-                 weightage='quadratic',
-                 name='cohen_kappa_loss',
-                 eps=1e-6,
+                 num_classes, weightage='quadratic',
+                 name='cohen_kappa_loss', eps=1e-6,
                  dtype=tf.float32):
         """Creates a `WeightedKappa` instance.
         Args:
@@ -116,7 +116,6 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
         return _weighted_kappa_loss(
             y_true, y_pred, self.row_label_vec, self.col_label_vec, self.weight_mat, self.eps, self.weightage, self.dtype
         )
-
 
     def get_config(self):
         config = {
