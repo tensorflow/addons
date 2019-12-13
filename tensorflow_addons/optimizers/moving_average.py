@@ -41,7 +41,6 @@ class MovingAverage(AverageWrapper):
 
     ```
     """
-
     def __init__(self,
                  optimizer,
                  sequential_update=True,
@@ -73,13 +72,13 @@ class MovingAverage(AverageWrapper):
         """
         super(MovingAverage, self).__init__(optimizer, sequential_update, name,
                                             **kwargs)
-
         self._num_updates = num_updates
         if self._num_updates is not None:
-            num_updates = tf.cast(
-                self._num_updates, tf.float32, name="num_updates")
-            average_decay = tf.minimum(
-                average_decay, (1.0 + num_updates) / (10.0 + num_updates))
+            num_updates = tf.cast(self._num_updates,
+                                  tf.float32,
+                                  name="num_updates")
+            average_decay = tf.minimum(average_decay, (1.0 + num_updates) /
+                                       (10.0 + num_updates))
 
         self._set_hyper("average_decay", average_decay)
 
