@@ -316,3 +316,225 @@ class InstanceNormalization(GroupNormalization):
 
         kwargs["groups"] = -1
         super(InstanceNormalization, self).__init__(**kwargs)
+
+
+@tf.keras.utils.register_keras_serializable(package='Addons')
+class FilterResponseNormalization(tf.keras.layers.Layer):
+    """Filter response normalization layer.
+
+    Filter Response Normalization (FRN), a normalization
+    method that enables models trained with per-channel
+    normalization to achieve high accuracy. It performs better than
+    all other normalization techniques for small batches and is par
+    with Batch Normalization for big batch sizes.
+
+    The filter response normalization layer consists of two components:
+        1. FRN: Filter response normalization component
+        2. TLU: Thresholded Linear Unit (TLU) an activation function to
+        use with FRN resulting in a further improvement in accuracy
+        outperforming Batch Normalization even at large batch sizes
+        without any batch dependency.
+
+    Because FRN layer comes with own activation unit, hence no activation
+    function should be used in the previous layer and the next intermediate
+    layer to FRN layer.
+
+    Arguments
+        axis: List of axes that should be normalized.
+        epsilon: Small float added to variance to avoid dividing by zero.
+        beta_initializer: Initializer for the beta weight.
+        gamma_initializer: Initializer for the gamma weight.
+        tau_initializer: Initializer for the tau weight.
+        eps_var_initializer: Initializer for the extra trainable parameter
+        added to epsilon.
+        beta_regularizer: Optional regularizer for the beta weight.
+        gamma_regularizer: Optional regularizer for the gamma weight.
+        tau_regularizer: Optional regularizer for the tau weight.
+        beta_constraint: Optional constraint for the beta weight.
+        gamma_constraint: Optional constraint for the gamma weight.
+        tau_constraint: Optional constraint for the tau weight.
+        name: Optional name for the layer
+
+    Input shape
+        Arbitrary. Use the keyword argument `input_shape`
+        (tuple of integers, does not include the samples axis)
+        when using this layer as the first layer in a model.
+
+    Output shape
+        Same shape as input.
+
+    References
+        - [Filter Response Normalization Layer: Eliminating Batch Dependence
+        in the training of Deep Neural Networks]
+        (https://arxiv.org/abs/1911.09737)
+    """
+
+    def __init__(self,
+                 epsilon=1e-6,
+                 axis=[1, 2],
+                 beta_initializer='zeros',
+                 gamma_initializer='ones',
+                 tau_initializer='zeros',
+                 eps_var_initializer='zeros',
+                 beta_regularizer=None,
+                 gamma_regularizer=None,
+                 tau_regularizer=None,
+                 beta_constraint=None,
+                 gamma_constraint=None,
+                 tau_constraint=None,
+                 name=None,
+                 **kwargs):
+        super(FilterResponseNormalization, self).__init__(name=name, **kwargs)
+        self.epsilon = epsilon
+        self.beta_initializer = tf.keras.initializers.get(beta_initializer)
+        self.gamma_initializer = tf.keras.initializers.get(gamma_initializer)
+        self.tau_initializer = tf.keras.initializers.get(tau_initializer)
+        self.beta_regularizer = tf.keras.regularizers.get(beta_regularizer)
+        self.gamma_regularizer = tf.keras.regularizers.get(gamma_regularizer)
+        self.tau_regularizer = tf.keras.regularizers.get(tau_regularizer)
+        self.beta_constraint = tf.keras.constraints.get(beta_constraint)
+        self.gamma_constraint = tf.keras.constraints.get(gamma_constraint)
+        self.tau_constraint = tf.keras.constraints.get(tau_constraint)
+        self.eps_var_initializer = tf.keras.initializers.get(
+            eps_var_initializer)
+        self.supports_masking = True
+        if isinstance(axis, list):
+            self.axis = axis[:]
+        else:
+            raise TypeError('axis must be list, type given: %s' % type(axis))
+        self._check_axis()
+
+    def build(self, input_shape):
+        self._check_if_input_shape_is_none(input_shape)
+        self._create_input_spec(input_shape)
+        self._add_gamma_weight(input_shape)
+        self._add_beta_weight(input_shape)
+        self._add_tau_weight(input_shape)
+        self._add_eps_var_weight()
+        self.built = True
+        super(FilterResponseNormalization, self).build(input_shape)
+
+    def compute_output_shape(self, input_shape):
+        return input_shape
+
+    def get_config(self):
+        config = {
+            'axis':
+            self.axis,
+            'epsilon':
+            self.epsilon,
+            'beta_initializer':
+            tf.keras.initializers.serialize(self.beta_initializer),
+            'gamma_initializer':
+            tf.keras.initializers.serialize(self.gamma_initializer),
+            'tau_initializer':
+            tf.keras.initializers.serialize(self.tau_initializer),
+            'eps_var_initializer':
+            tf.keras.initializers.serialize(self.eps_var_initializer),
+            'beta_regularizer':
+            tf.keras.regularizers.serialize(self.beta_regularizer),
+            'gamma_regularizer':
+            tf.keras.regularizers.serialize(self.gamma_regularizer),
+            'tau_regularizer':
+            tf.keras.regularizers.serialize(self.tau_regularizer),
+            'beta_constraint':
+            tf.keras.constraints.serialize(self.beta_constraint),
+            'gamma_constraint':
+            tf.keras.constraints.serialize(self.gamma_constraint),
+            'tau_constraint':
+            tf.keras.constraints.serialize(self.tau_constraint)
+        }
+        base_config = super(FilterResponseNormalization, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
+
+    def call(self, inputs):
+        # Compute the mean norm of activations per channel.
+        nu2 = tf.reduce_mean(tf.square(inputs), axis=self.axis, keepdims=True)
+        # Perform FRN.
+        inputs = inputs * tf.math.rsqrt(nu2 + tf.math.abs(self.epsilon))
+        # Return after applying the Offset-ReLU non-linearity.
+        return tf.maximum(self.gamma * inputs + self.beta,
+                          self.tau + self.eps_var)
+
+    def _create_input_spec(self, input_shape):
+        ndims = len(input_shape.shape)
+        for idx, x in enumerate(self.axis):
+            if x < 0:
+                self.axis[idx] = ndims + x
+
+        # Validate axes
+        for x in self.axis:
+            if x < 0 or x >= ndims:
+                raise ValueError('Invalid axis: %d' % x)
+        if len(self.axis) != len(set(self.axis)):
+            raise ValueError('Duplicate axis: %s' % self.axis)
+        axis_to_dim = {x: input_shape[x] for x in self.axis}
+        self.input_spec = tf.keras.layers.InputSpec(
+            ndim=ndims, axes=axis_to_dim)
+
+    def _check_axis(self):
+        if self.axis == 0:
+            raise ValueError(
+                "You are trying to normalize your batch axis. Do you want to "
+                "use tf.layer.batch_normalization instead")
+        if self.axis == -1:
+            raise ValueError(
+                "You are trying to normalize your channel axis. You may want"
+                "to use GroupNormalization layer instead from tf_addons")
+        if self.axis != [1, 2]:
+            raise ValueError(
+                "FilterResponseNormalization operates on per-channel basis."
+                "Axis value should represent the spatial dimensions")
+
+    def _check_if_input_shape_is_none(self, input_shape):
+        dim1, dim2 = input_shape[self.axis[0]], input_shape[self.axis[1]]
+        if dim1 is None or dim2 is None:
+            raise ValueError('Axis ' + str(self.axis) + ' of '
+                             'input tensor should have a defined dimension '
+                             'but the layer received an input with shape ' +
+                             str(input_shape) + '.')
+
+    def _add_gamma_weight(self, input_shape):
+        # Get the channel dimension
+        dim = input_shape.shape[-1]
+        shape = [1, 1, 1, dim]
+        # Initialize gamma with shape (1, 1, 1, C)
+        self.gamma = self.add_weight(
+            shape=shape,
+            name='gamma',
+            initializer=self.gamma_initializer,
+            regularizer=self.gamma_regularizer,
+            constraint=self.gamma_constraint)
+
+    def _add_beta_weight(self, input_shape):
+        # Get the channel dimension
+        dim = input_shape.shape[-1]
+        shape = [1, 1, 1, dim]
+        # Initialize beta with shape (1, 1, 1, C)
+        self.beta = self.add_weight(
+            shape=shape,
+            name='beta',
+            initializer=self.beta_initializer,
+            regularizer=self.beta_regularizer,
+            constraint=self.beta_constraint)
+
+    def _add_tau_weight(self, input_shape):
+        # Get the channel dimension
+        dim = input_shape.shape[-1]
+        shape = [1, 1, 1, dim]
+        # Initialize tau with shape (1, 1, 1, C)
+        self.tau = self.add_weight(
+            shape=shape,
+            name='tau',
+            initializer=self.tau_initializer,
+            regularizer=self.tau_regularizer,
+            constraint=self.tau_constraint)
+
+    def _add_eps_var_weight(self):
+        shape = (1,)
+        self.eps_var = self.add_weight(
+            shape=shape,
+            name='eps_var',
+            initializer=self.eps_var_initializer,
+            regularizer=None,
+            constraint=tf.keras.constraints.non_neg)
