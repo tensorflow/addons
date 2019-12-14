@@ -18,8 +18,8 @@ minor, then feel free to make them without discussion.
 
 Want to contribute but not sure of what? Here are a few suggestions:
 1. Add a new tutorial. Located in [`docs/tutorials/`](docs/tutorials),
-  these are a great way to familiarize yourself and others with TF-Addons. See 
-  [the guidelines](docs/tutorials/README.md) for more information on how to add 
+  these are a great way to familiarize yourself and others with TF-Addons. See
+  [the guidelines](docs/tutorials/README.md) for more information on how to add
   examples.
 2. Solve an [existing issue](https://github.com/tensorflow/addons/issues).
   These range from low-level software bugs to higher-level design problems.
@@ -63,11 +63,12 @@ automatically, don't forget to use it before pushing your code.
 Please see our [Style Guide](STYLE_GUIDE.md) for more details.
 
 ## Code Testing
-#### CI Testing
-Nightly CI tests are ran and results can be found on the central README. To 
+### CI Testing
+Nightly CI tests are ran and results can be found on the central README. To
 subscribe for alerts please join the [addons-testing mailing list](https://groups.google.com/a/tensorflow.org/forum/#!forum/addons-testing).
 
-#### Locally Testing CPU
+### Locally Testing CPU
+Run all tests in docker:
 
 ```bash
 bash tools/run_docker.sh -c 'make unit-test'
@@ -78,11 +79,23 @@ or run manually:
 ```bash
 docker run --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-ubuntu16.04-manylinux2010 /bin/bash
 ./configure.sh  # Links project with TensorFlow dependency
-
-bash tools/ci_testing/addons_cpu.sh
 ```
 
-#### Locally Testing GPU
+Run selected tests:
+
+```bash
+bazel test -c opt -k \
+--test_timeout 300,450,1200,3600 \
+--test_output=all \
+//tensorflow_addons/<test_selection>
+```
+
+`<test_selection>` can be `...` for all tests or `<package>:<py_test_name>` for individual tests.
+`<package>` can be any package name like `metrics` for example.
+`<py_test_name>` can be any test name given by the `BUILD` file or `*` for all tests of the given package.
+
+### Locally Testing GPU
+Run all tests in docker:
 
 ```bash
 bash tools/run_docker.sh -d gpu -c 'make gpu-unit-test'
@@ -92,13 +105,24 @@ or run manually:
 
 ```bash
 docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010 /bin/bash
-
-export TF_GPU_COUNT=4 # Specify number of GPUs available
-export TF_TESTS_PER_GPU=8 # Specify number of tests per GPU
-export TF_PER_DEVICE_MEMORY_LIMIT_MB=1024 # Limit the memory used per test
-
-bash tools/ci_testing/addons_gpu.sh
+export TF_NEED_CUDA=1
+./configure.sh  # Links project with TensorFlow dependency
 ```
+
+Run selected tests:
+
+```bash
+bazel test -c opt -k \
+--test_timeout 300,450,1200,3600 \
+--crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.1:toolchain \
+--test_output=all \
+--jobs=1 \
+//tensorflow_addons/<test_selection>
+```
+
+`<test_selection>` can be `...` for all tests or `<package>:<py_test_name>` for individual tests.
+`<package>` can be any package name like `metrics` for example.
+`<py_test_name>` can be any test name given by the `BUILD` file or `*` for all tests of the given package.
 
 ## Code Reviews
 
