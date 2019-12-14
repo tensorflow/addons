@@ -249,7 +249,7 @@ class NormalizationTest(tf.test.TestCase):
             a = model.fit(x=x, y=y, epochs=1)
             self.assertTrue(hasattr(model.layers[0], 'gamma'))
 
-    def test_different_groups():
+    def test_different_groups(self):
         norm1 = GroupNormalization(axis=1, groups=2, input_shape=(10, 6))
         norm2 = GroupNormalization(axis=1, groups=1, input_shape=(10, 6))
         norm3 = GroupNormalization(axis=1, groups=10, input_shape=(10, 6))
@@ -259,39 +259,37 @@ class NormalizationTest(tf.test.TestCase):
         x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 10, 6))
         model.fit(x, x, epochs=5, verbose=0)
         out = model.predict(x)
-        out -= np.reshape(K.eval(norm1.beta), (1, 10, 1))
-        out /= np.reshape(K.eval(norm1.gamma), (1, 10, 1))
+        out -= np.reshape(self.evaluate(norm1.beta), (1, 10, 1))
+        out /= np.reshape(self.evaluate(norm1.gamma), (1, 10, 1))
 
-        self.assert_allclose(out.mean(axis=(0, 2)), 0.0, atol=1.1e-1)
-        self.assert_allclose(out.std(axis=(0, 2)), 1.0, atol=1.1e-1)
+        np.testing.assert_allclose(out.mean(axis=(0, 2)), 0.0, atol=1.1e-1)
+        np.testing.assert_allclose(out.std(axis=(0, 2)), 1.0, atol=1.1e-1)
 
         model = tf.keras.models.Sequential()
         model.add(norm2)
         model.compile(loss='mse', optimizer='rmsprop')
 
-        # centered on 5.0, variance 10.0
         x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 10, 6))
         model.fit(x, x, epochs=5, verbose=0)
         out = model.predict(x)
-        out -= np.reshape(K.eval(norm2.beta), (1, 10, 1))
-        out /= np.reshape(K.eval(norm2.gamma), (1, 10, 1))
+        out -= np.reshape(self.evaluate(norm2.beta), (1, 10, 1))
+        out /= np.reshape(self.evaluate(norm2.gamma), (1, 10, 1))
 
-        self.assert_allclose(out.mean(axis=(0, 2)), 0.0, atol=1.1e-1)
-        self.assert_allclose(out.std(axis=(0, 2)), 1.0, atol=1.1e-1)
+        np.testing.assert_allclose(out.mean(axis=(0, 2)), 0.0, atol=1.1e-1)
+        np.testing.assert_allclose(out.std(axis=(0, 2)), 1.0, atol=1.1e-1)
 
         model = tf.keras.models.Sequential()
         model.add(norm3)
         model.compile(loss='mse', optimizer='rmsprop')
 
-        # centered on 5.0, variance 10.0
         x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 10, 6))
         model.fit(x, x, epochs=5, verbose=0)
         out = model.predict(x)
-        out -= np.reshape(K.eval(norm3.beta), (1, 10, 1))
-        out /= np.reshape(K.eval(norm3.gamma), (1, 10, 1))
+        out -= np.reshape(self.evaluate(norm3.beta), (1, 10, 1))
+        out /= np.reshape(self.evaluate(norm3.gamma), (1, 10, 1))
 
-        self.assert_AllClose(out.mean(axis=(0, 2)), 0.0, atol=1.1e-1)
-        self.assert_Alllcose(out.std(axis=(0, 2)), 1.0, atol=1.1e-1)
+        np.testing.assert_allclose(out.mean(axis=(0, 2)), 0.0, atol=1.1e-1)
+        np.testing.assert_allclose(out.std(axis=(0, 2)), 1.0, atol=1.1e-1)
 
 if __name__ == "__main__":
     tf.test.main()
