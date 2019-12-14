@@ -8,7 +8,7 @@
 [![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
 [![Documentation](https://img.shields.io/badge/api-reference-blue.svg)](https://www.tensorflow.org/addons/api_docs/python/tfa)
 
-### Official Builds
+### Nightly Tests
 
 | Build Type      | Status |
 | ---             | ---    |
@@ -55,6 +55,13 @@ To use addons:
 import tensorflow as tf
 import tensorflow_addons as tfa
 ```
+
+#### Linux Build Matrix
+| Version    | Comtabile With |Python versions  | Compiler  | cuDNN | CUDA | 
+|:----------------------- |:---|:---------- |:---------|:---------|:---------|
+| tensorflow-addons-0.6.0 | tensorflow==2.0.0 <br> tensorflow-gpu==2.0.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
+| tensorflow-addons-0.5.2 | tensorflow==2.0.0 <br> tensorflow-gpu==2.0.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
+
 
 #### Nightly Builds
 There are also nightly builds of TensorFlow Addons under the pip package
