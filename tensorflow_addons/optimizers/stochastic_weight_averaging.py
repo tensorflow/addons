@@ -28,11 +28,11 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.optimizers.average_wrapper import AverageWrapper
+from tensorflow_addons.optimizers.average_wrapper import AveragedOptimizerWrapper
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-class SWA(AverageWrapper):
+class SWA(AveragedOptimizerWrapper):
     """This class extends optimizers with Stochastic Weight Averaging (SWA).
 
     The Stochastic Weight Averaging mechanism was proposed by Pavel Izmailov

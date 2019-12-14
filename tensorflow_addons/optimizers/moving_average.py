@@ -20,11 +20,11 @@ from __future__ import print_function
 import tensorflow as tf
 from tensorflow.python.training.moving_averages import assign_moving_average
 
-from tensorflow_addons.optimizers import AverageWrapper
+from tensorflow_addons.optimizers import AveragedOptimizerWrapper
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-class MovingAverage(AverageWrapper):
+class MovingAverage(AveragedOptimizerWrapper):
     """Optimizer that computes a moving average of the variables.
 
     Empirically it has been found that using the moving average of the trained

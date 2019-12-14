@@ -21,13 +21,13 @@ import tensorflow as tf
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-class AverageWrapper(tf.keras.optimizers.Optimizer):
+class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer):
     def __init__(self,
                  optimizer,
                  sequential_update=True,
                  name="AverageOptimizer",
                  **kwargs):
-        super(AverageWrapper, self).__init__(name, **kwargs)
+        super(AveragedOptimizerWrapper, self).__init__(name, **kwargs)
 
         if isinstance(optimizer, str):
             optimizer = tf.keras.optimizers.get(optimizer)
@@ -55,7 +55,7 @@ class AverageWrapper(tf.keras.optimizers.Optimizer):
 
     def apply_gradients(self, grads_and_vars, name=None):
         self._optimizer._iterations = self.iterations  # pylint: disable=protected-access
-        return super(AverageWrapper, self).apply_gradients(
+        return super(AveragedOptimizerWrapper, self).apply_gradients(
             grads_and_vars, name)
 
     def average_op(self, var, average_var):
@@ -121,7 +121,7 @@ class AverageWrapper(tf.keras.optimizers.Optimizer):
             'optimizer': tf.keras.optimizers.serialize(self._optimizer),
             'sequential_update': self._sequential_update
         }
-        base_config = super(AverageWrapper, self).get_config()
+        base_config = super(AveragedOptimizerWrapper, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
     @classmethod

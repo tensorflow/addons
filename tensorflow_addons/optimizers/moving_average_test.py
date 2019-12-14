@@ -97,6 +97,7 @@ class MovingAverageTest(tf.test.TestCase):
                 use_bias=False)
         ])
         model.build(input_shape=[1, 1])
+        self.evaluate(tf.compat.v1.global_variables_initializer())
 
         opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
         update = opt.apply_gradients(list(zip([grad], model.variables)))
