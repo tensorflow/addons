@@ -15,6 +15,12 @@
 #
 # ==============================================================================
 # Make sure we're in the project root path.
+
+# Optional environment variables for testing with multiple GPUs at once
+# export TF_GPU_COUNT=4 # Specify number of GPUs available
+# export TF_TESTS_PER_GPU=8 # Specify number of tests per GPU
+# export TF_PER_DEVICE_MEMORY_LIMIT_MB=1024 # Limit the memory used per test
+
 SCRIPT_DIR=$( cd ${0%/*} && pwd -P )
 ROOT_DIR=$( cd "$SCRIPT_DIR/../.." && pwd -P )
 cd $ROOT_DIR
