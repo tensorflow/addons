@@ -294,8 +294,12 @@ class NormalizationTest(tf.test.TestCase):
 
     def test_groupnorm_convnet_no_center_scale(self):
         model = tf.keras.models.Sequential()
-        norm = GroupNormalization(axis=-1, groups=2, center=False, 
-                                  scale=False, input_shape=(3, 4, 4))
+        norm = GroupNormalization(
+            axis=-1,
+            groups=2,
+            center=False,
+            scale=False,
+            input_shape=(3, 4, 4))
         model.add(norm)
         model.compile(loss='mse', optimizer='sgd')
         # centered and variance are  5.0 and 10.0, respectively
@@ -303,10 +307,10 @@ class NormalizationTest(tf.test.TestCase):
         model.fit(x, x, epochs=4, verbose=0)
         out = model.predict(x)
 
-        np.testing.assert_allclose(np.mean(out, axis=(0, 2, 3)), 
-                                  0.0, atol=1e-1)
-        np.testing.assert_allclose(np.std(out, axis=(0, 2, 3)), 
-                                  1.0, atol=1e-1)
+        np.testing.assert_allclose(
+            np.mean(out, axis=(0, 2, 3)), 0.0, atol=1e-1)
+        np.testing.assert_allclose(np.std(out, axis=(0, 2, 3)), 1.0, atol=1e-1)
+
 
 if __name__ == "__main__":
     tf.test.main()
