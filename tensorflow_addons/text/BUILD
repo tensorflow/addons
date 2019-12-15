@@ -51,10 +51,12 @@ py_test(
 py_test(
     name = "parse_time_op_test",
     size = "small",
-    srcs = [
-        "parse_time_op_test.py",
-    ],
-    main = "parse_time_op_test.py",
+    srcs = select({
+        "//tensorflow_addons:windows": [],
+        "//conditions:default": ["parse_time_op_test.py"]}),
+    main = select({
+        "//tensorflow_addons:windows": [],
+        "//conditions:default": ["parse_time_op_test.py"]}),
     deps = [
         ":text",
     ],
