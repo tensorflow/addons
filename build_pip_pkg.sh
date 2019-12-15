@@ -24,9 +24,9 @@ function is_windows() {
 }
 
 if is_windows; then
-  PIP_FILE_PREFIX="bazel-bin/build_pip_pkg.exe.runfiles/tensorflow_addons/"
+  PIP_FILE_PREFIX="bazel-bin/build_pip_pkg.exe.runfiles/__main__/"
 else
-  PIP_FILE_PREFIX="bazel-bin/build_pip_pkg.runfiles/tensorflow_addons/"
+  PIP_FILE_PREFIX="bazel-bin/build_pip_pkg.runfiles/__main__/"
 fi
 
 function abspath() {
