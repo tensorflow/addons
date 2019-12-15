@@ -1,2 +1,2 @@
 # TensorFlow greater than this date is manylinux2010 compliant
-tf-nightly>=2.1.0.dev20191004
+tensorflow==2.0.0
