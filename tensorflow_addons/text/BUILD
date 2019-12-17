@@ -48,15 +48,19 @@ py_test(
     ],
 )
 
+# Temporarily use dummy test for windows ParseTime
 py_test(
     name = "parse_time_op_test",
     size = "small",
     srcs = select({
-        "//tensorflow_addons:windows": [],
-        "//conditions:default": ["parse_time_op_test.py"]}),
+        "//tensorflow_addons:windows": ["parse_time_dummy_test.py"],
+        "//conditions:default": ["parse_time_op_test.py"],
+    }),
+
     main = select({
-        "//tensorflow_addons:windows": [],
-        "//conditions:default": ["parse_time_op_test.py"]}),
+        "//tensorflow_addons:windows": "parse_time_dummy_test.py",
+        "//conditions:default": "parse_time_op_test.py",
+    }),
     deps = [
         ":text",
     ],
