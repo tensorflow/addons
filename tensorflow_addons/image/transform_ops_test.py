@@ -121,7 +121,7 @@ class ImageOpsTest(tf.test.TestCase):
         for dtype in _DTYPES:
             image = tf.constant([[1, 2], [3, 4]], dtype=dtype)
             self.assertAllEqual(
-                np.array([[4, 4], [4, 4]]).astype(dtype.as_numpy_dtype()),
+                np.array([[4, 4], [4, 4]]).astype(dtype.as_numpy_dtype(0)),
                 transform_ops.transform(image, [1] * 8))
 
     def test_transform_eager(self):
@@ -140,7 +140,7 @@ class RotateOpTest(tf.test.TestCase):
                     image = tf.zeros(shape, dtype)
                     self.assertAllEqual(
                         transform_ops.rotate(image, angle),
-                        np.zeros(shape, dtype.as_numpy_dtype()))
+                        np.zeros(shape, dtype.as_numpy_dtype(0)))
 
     def test_rotate_even(self):
         for dtype in _DTYPES:
