@@ -36,4 +36,4 @@ def get_path_to_datafile(path):
       The path to the specified data file
     """
     root_dir = get_project_root()
-    return os.path.join(root_dir, path)
+    return os.path.join(root_dir, path.replace("/", os.sep))
