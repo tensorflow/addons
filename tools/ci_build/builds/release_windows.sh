@@ -19,7 +19,7 @@ mkdir -p artifacts/
 export BAZEL_VC=/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2017/BuildTools/VC/
 
 # Install Bazel 0.24
-wget --quiet https://github.com/bazelbuild/bazel/releases/download/1.1.0/bazel-1.1.0-windows-x86_64.exe
+wget --quiet -nc https://github.com/bazelbuild/bazel/releases/download/1.1.0/bazel-1.1.0-windows-x86_64.exe
 
 python --version
 python -m pip install --upgrade pip
@@ -37,5 +37,3 @@ yes 'y' | ./configure.sh --quiet
     build_pip_pkg
 
 bazel-bin/build_pip_pkg artifacts/
-
-exit 0
