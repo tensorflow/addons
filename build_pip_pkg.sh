@@ -58,7 +58,10 @@ function main() {
   touch ${TMPDIR}/stub.cc
 
   if is_windows; then
-    cp -R ${PIP_FILE_PREFIX}tensorflow_addons "${TMPDIR}"
+    from=$(cygpath -w ${PIP_FILE_PREFIX}tensorflow_addons)
+    to=$(cygpath -w "${TMPDIR}"/tensorflow_addons)
+    start robocopy //S "${from}" "${to}" //xf *_test.py
+    sleep 5
   else
     rsync -avm -L --exclude='*_test.py' ${PIP_FILE_PREFIX}tensorflow_addons "${TMPDIR}"
   fi
@@ -67,9 +70,10 @@ function main() {
   echo $(date) : "=== Building wheel"
 
   if [[ -z ${BUILD_FLAG} ]]; then
-    ${PYTHON_VERSION:=python} setup.py bdist_wheel
+    # Windows has issues with locking library files for deletion so do not fail here
+    ${PYTHON_VERSION:=python} setup.py bdist_wheel || true
   else
-    ${PYTHON_VERSION:=python} setup.py bdist_wheel "${2}"
+    ${PYTHON_VERSION:=python} setup.py bdist_wheel "${2}" || true
   fi
 
   cp dist/*.whl "${DEST}"
