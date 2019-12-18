@@ -37,3 +37,5 @@ yes 'y' | ./configure.sh --quiet
     build_pip_pkg
 
 bazel-bin/build_pip_pkg artifacts/
+
+exit 0
