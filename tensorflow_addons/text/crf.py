@@ -300,20 +300,22 @@ def crf_forward(inputs, state, transition_params, sequence_lengths):
     """
     sequence_lengths = tf.cast(sequence_lengths, dtype=tf.int32)
 
-    sequence_lengths = tf.maximum(
-        tf.constant(0, dtype=sequence_lengths.dtype), sequence_lengths - 2)
+    last_index = tf.maximum(
+        tf.constant(0, dtype=sequence_lengths.dtype), sequence_lengths - 1)
     inputs = tf.transpose(inputs, [1, 0, 2])
     transition_params = tf.expand_dims(transition_params, 0)
 
-    def _scan_fn(state, inputs):
-        state = tf.expand_dims(state, 2)
-        transition_scores = state + transition_params
-        new_alphas = inputs + tf.reduce_logsumexp(transition_scores, [1])
+    def _scan_fn(_state, _inputs):
+        _state = tf.expand_dims(_state, 2)
+        transition_scores = _state + transition_params
+        new_alphas = _inputs + tf.reduce_logsumexp(transition_scores, [1])
         return new_alphas
 
     all_alphas = tf.transpose(tf.scan(_scan_fn, inputs, state), [1, 0, 2])
+    # add first state for sequences of length 1
+    all_alphas = tf.concat([tf.expand_dims(state, 1), all_alphas], 1)
     idxs = tf.stack(
-        [tf.range(tf.shape(sequence_lengths)[0]), sequence_lengths], axis=1)
+        [tf.range(tf.shape(last_index)[0]), last_index], axis=1)
     return tf.gather_nd(all_alphas, idxs)
 
 
