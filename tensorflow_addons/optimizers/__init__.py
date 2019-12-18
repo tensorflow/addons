@@ -28,6 +28,7 @@ from tensorflow_addons.optimizers.cyclical_learning_rate import (
 from tensorflow_addons.optimizers.cyclical_learning_rate import (
     ExponentialCyclicalLearningRate)
 from tensorflow_addons.optimizers.lamb import LAMB
+from tensorflow_addons.optimizers.lars_optimizer import Lars
 from tensorflow_addons.optimizers.lazy_adam import LazyAdam
 from tensorflow_addons.optimizers.lookahead import Lookahead
 from tensorflow_addons.optimizers.moving_average import MovingAverage

@@ -9,6 +9,7 @@ py_library(
         "conditional_gradient.py",
         "cyclical_learning_rate.py",
         "lamb.py",
+        "lars_optimizer.py",
         "lazy_adam.py",
         "lookahead.py",
         "moving_average.py",
@@ -19,6 +20,17 @@ py_library(
     ],
     deps = [
         "//tensorflow_addons/utils",
+    ],
+)
+
+py_test(
+    name = "lars_optimizer_test",
+    size = "small",
+    srcs = ["lars_optimizer_test.py"],
+    python_version = "PY3",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":optimizers",
     ],
 )
 
