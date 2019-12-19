@@ -831,7 +831,8 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             create_attention_kwargs=create_attention_kwargs)
 
     def testLuongMonotonicNotNormalized(self):
-        self.skipTest("Resolve https://github.com/tensorflow/addons/issues/781")
+        self.skipTest(
+            "Resolve https://github.com/tensorflow/addons/issues/781")
         create_attention_mechanism = wrapper.LuongMonotonicAttention
 
         expected_final_output = basic_decoder.BasicDecoderOutput(
@@ -866,7 +867,8 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             expected_final_alignment_history=expected_final_alignment_history)
 
     def testLuongMonotonicScaled(self):
-        self.skipTest("Resolve https://github.com/tensorflow/addons/issues/781")
+        self.skipTest(
+            "Resolve https://github.com/tensorflow/addons/issues/781")
         create_attention_mechanism = wrapper.LuongMonotonicAttention
         create_attention_kwargs = {"scale": True}
 
