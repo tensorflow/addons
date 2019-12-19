@@ -18,7 +18,7 @@ set -e -x
 mkdir -p artifacts/
 export BAZEL_VC=/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2017/BuildTools/VC/
 
-# Install Bazel 0.24
+# Install Bazel 1.1.0
 wget --quiet -nc https://github.com/bazelbuild/bazel/releases/download/1.1.0/bazel-1.1.0-windows-x86_64.exe
 
 python --version
