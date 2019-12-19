@@ -3,6 +3,7 @@ licenses(["notice"])  # Apache 2.0
 package(default_visibility = ["//visibility:public"])
 
 # TODO: Once TF exports symbols in a DLL we can enable parse_time_op for windows
+# https://github.com/tensorflow/addons/issues/782
 py_library(
     name = "text",
     srcs = select({
