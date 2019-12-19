@@ -81,7 +81,7 @@ export CUDNN_INSTALL_PATH="/path/to/cudnn" (default: /usr/lib/x86_64-linux-gnu)
 # This script links project with TensorFlow dependency
 ./configure.sh
 
-bazel build build_pip_pkg
+bazel build --enable_runfiles build_pip_pkg 
 bazel-bin/build_pip_pkg artifacts --nightly
 
 pip install artifacts/tensorflow_addons-*.whl

@@ -6,21 +6,28 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "text",
     srcs = select({
-        "//tensorflow_addons:windows": ["__init__.py",
-                                        "crf.py",
-                                        "skip_gram_ops.py",],
-        "//conditions:default": ["__init__.py",
-                                 "crf.py",
-                                 "parse_time_op.py",
-                                 "skip_gram_ops.py",],
+        "//tensorflow_addons:windows": [
+            "__init__.py",
+            "crf.py",
+            "skip_gram_ops.py",
+        ],
+        "//conditions:default": [
+            "__init__.py",
+            "crf.py",
+            "parse_time_op.py",
+            "skip_gram_ops.py",
+        ],
     }),
     data = select({
-        "//tensorflow_addons:windows": ["//tensorflow_addons/custom_ops/text:_skip_gram_ops.so",
-                                        "//tensorflow_addons/utils"],
-
-        "//conditions:default": ["//tensorflow_addons/custom_ops/text:_parse_time_op.so",
-                                 "//tensorflow_addons/custom_ops/text:_skip_gram_ops.so",
-                                 "//tensorflow_addons/utils"],
+        "//tensorflow_addons:windows": [
+            "//tensorflow_addons/custom_ops/text:_skip_gram_ops.so",
+            "//tensorflow_addons/utils",
+        ],
+        "//conditions:default": [
+            "//tensorflow_addons/custom_ops/text:_parse_time_op.so",
+            "//tensorflow_addons/custom_ops/text:_skip_gram_ops.so",
+            "//tensorflow_addons/utils",
+        ],
     }),
 )
 
@@ -56,7 +63,6 @@ py_test(
         "//tensorflow_addons:windows": ["parse_time_dummy_test.py"],
         "//conditions:default": ["parse_time_op_test.py"],
     }),
-
     main = select({
         "//tensorflow_addons:windows": "parse_time_dummy_test.py",
         "//conditions:default": "parse_time_op_test.py",
