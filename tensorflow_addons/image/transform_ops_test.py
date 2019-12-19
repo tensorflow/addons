@@ -140,7 +140,7 @@ class RotateOpTest(tf.test.TestCase):
                     image = tf.zeros(shape, dtype)
                     self.assertAllEqual(
                         transform_ops.rotate(image, angle),
-                        np.zeros(shape, dtype.as_numpy_dtype(0)))
+                        np.zeros(shape, dtype.as_numpy_dtype))
 
     def test_rotate_even(self):
         for dtype in _DTYPES:
