@@ -70,6 +70,12 @@ if project_name == TFA_RELEASE:
 elif project_name == TFA_NIGHTLY:
     REQUIRED_PACKAGES.append('tf-nightly')
 
+# Manylinux2010 requires a patch for platlib
+if sys.platform.startswith('linux'):
+    ext_modules = [Extension('_foo', ['stub.cc'])]
+else:
+    ext_modules = []
+
 
 class BinaryDistribution(Distribution):
     """This class is needed in order to create OS specific wheels."""
@@ -86,7 +92,7 @@ setup(
     author='Google Inc.',
     author_email='opensource@google.com',
     packages=find_packages(),
-    ext_modules=[Extension('_foo', ['stub.cc'])],
+    ext_modules=ext_modules,
     install_requires=REQUIRED_PACKAGES,
     include_package_data=True,
     zip_safe=False,
