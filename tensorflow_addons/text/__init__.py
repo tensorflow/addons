@@ -36,7 +36,8 @@ from tensorflow_addons.text.skip_gram_ops import skip_gram_sample_with_text_voca
 
 # Parse Time
 
-# Temporarily disable for windwos
+# Temporarily disable for windows
+# Remove after: https://github.com/tensorflow/addons/issues/782
 import os
 if os.name != 'nt':
     from tensorflow_addons.text.parse_time_op import parse_time
