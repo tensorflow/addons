@@ -23,6 +23,7 @@ import tensorflow as tf
 from tensorflow_addons.losses.weighted_kappa_loss import WeightedKappaLoss
 from tensorflow_addons.utils import test_utils
 
+
 def weighted_kappa_loss_np(y_true, y_pred, weightage='quadratic', eps=1e-6):
     """
     Implemented in non-optimized python code to avoid mistakes
@@ -38,7 +39,7 @@ def weighted_kappa_loss_np(y_true, y_pred, weightage='quadratic', eps=1e-6):
             else:
                 w_ij = np.abs(j - true_class)
             numerator += w_ij * y_pred[i, j]
-    
+
     classes_count = y_true.sum(axis=0)
     prob_sum = y_pred.sum(axis=0)
 
@@ -54,37 +55,33 @@ def weighted_kappa_loss_np(y_true, y_pred, weightage='quadratic', eps=1e-6):
         denominator += inner_sum * classes_count[i] / num_samples
     return np.log(numerator / denominator + eps)
 
+
 @test_utils.run_all_in_graph_and_eager_modes
 class WeightedKappaLossTest(tf.test.TestCase):
     def test_linear_weighted_kappa_loss(self):
-        y_true = np.array([[0, 0, 1, 0],
-                           [0, 1, 0, 0],
-                           [1, 0, 0, 0],
+        y_true = np.array([[0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0],
                            [0, 0, 0, 1]])
 
-        y_pred = np.array([[0.1, 0.2, 0.6, 0.1],
-                           [0.1, 0.5, 0.3, 0.1],
-                           [0.8, 0.05, 0.05, 0.1],
-                           [0.01, 0.09, 0.1, 0.8]], dtype=np.float32)
+        y_pred = np.array([[0.1, 0.2, 0.6, 0.1], [0.1, 0.5, 0.3, 0.1],
+                           [0.8, 0.05, 0.05, 0.1], [0.01, 0.09, 0.1, 0.8]],
+                          dtype=np.float32)
         kappa_loss = WeightedKappaLoss(num_classes=4, weightage='linear')
         loss = kappa_loss(y_true, y_pred)
         loss_np = weighted_kappa_loss_np(y_true, y_pred, weightage='linear')
         self.assertAlmostEqual(self.evaluate(loss), loss_np, 5)
 
     def test_quadratic_weighted_kappa_loss(self):
-        y_true = np.array([[0, 0, 1, 0],
-                           [0, 1, 0, 0],
-                           [1, 0, 0, 0],
+        y_true = np.array([[0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0],
                            [0, 0, 0, 1]])
 
-        y_pred = np.array([[0.1, 0.2, 0.6, 0.1],
-                           [0.1, 0.5, 0.3, 0.1],
-                           [0.8, 0.05, 0.05, 0.1],
-                           [0.01, 0.09, 0.1, 0.8]], dtype=np.float32)
+        y_pred = np.array([[0.1, 0.2, 0.6, 0.1], [0.1, 0.5, 0.3, 0.1],
+                           [0.8, 0.05, 0.05, 0.1], [0.01, 0.09, 0.1, 0.8]],
+                          dtype=np.float32)
         kappa_loss = WeightedKappaLoss(num_classes=4)
         loss = kappa_loss(y_true, y_pred)
         loss_np = weighted_kappa_loss_np(y_true, y_pred)
         self.assertAlmostEqual(self.evaluate(loss), loss_np, 5)
+
 
 if __name__ == "__main__":
     tf.test.main()
