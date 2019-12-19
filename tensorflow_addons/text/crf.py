@@ -314,8 +314,8 @@ def crf_forward(inputs, state, transition_params, sequence_lengths):
     all_alphas = tf.transpose(tf.scan(_scan_fn, inputs, state), [1, 0, 2])
     # add first state for sequences of length 1
     all_alphas = tf.concat([tf.expand_dims(state, 1), all_alphas], 1)
-    idxs = tf.stack(
-        [tf.range(tf.shape(last_index)[0]), last_index], axis=1)
+
+    idxs = tf.stack([tf.range(tf.shape(last_index)[0]), last_index], axis=1)
     return tf.gather_nd(all_alphas, idxs)
 
 
