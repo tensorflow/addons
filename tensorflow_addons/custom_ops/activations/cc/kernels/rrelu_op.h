@@ -38,7 +38,7 @@ struct Rrelu {
                   typename TTypes<T>::Tensor alpha,
                   typename random::SimplePhilox& random) {
     if (training) {
-      T storage[alpha.size()];
+      T* storage = new T[alpha.size()];
       typename TTypes<T>::Tensor alpha_tensor(storage, alpha.size());
       for (int i = 0; i < alpha_tensor.size(); i++) {
         alpha_tensor(i) =
