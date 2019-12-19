@@ -40,6 +40,7 @@ jobs:
         - python -m pip install -q -U twine --ignore-installed six
         - twine upload -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
 
+# Windows nightlies for TensorFlow are not available
     # Windows Builds
 #    - stage: build
 #      name: "Build on Windows for Python 2.7 3.5 3.6 3.7"
