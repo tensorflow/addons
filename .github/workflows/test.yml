@@ -1,0 +1,34 @@
+name: GitHub CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+env:
+  BAZEL_VERSION: 1.1.0
+
+jobs:
+  macos-test:
+    name: Test macOS
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: ['3.7']
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Test on ${{ matrix.python-version }} macOS
+        run: |
+          set -x -e
+          python -m pip install wheel setuptools
+          python --version
+          wget --quiet -nc https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-darwin-x86_64.sh
+          chmod +x bazel-1.1.0-installer-darwin-x86_64.sh
+          ./bazel-1.1.0-installer-darwin-x86_64.sh --user
+          bash -x -e tools/ci_testing/addons_cpu.sh

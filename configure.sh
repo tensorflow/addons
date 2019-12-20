@@ -124,3 +124,5 @@ if [[ "$TF_NEED_CUDA" == "1" ]]; then
     write_to_bazelrc "build --config=cuda"
     write_to_bazelrc "build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain"
 fi
+
+echo "Finished donfigure...."

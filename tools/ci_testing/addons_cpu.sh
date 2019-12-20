@@ -44,7 +44,7 @@ export TF_NEED_CUDA=0
 export PYTHON_BIN_PATH=`which python`
 ls -alh $PYTHON_BIN_PATH
 # Use default configuration here.
-yes 'y' | ./configure.sh
+echo 'y' | ./configure.sh
 
 ## Run bazel test command. Double test timeouts to avoid flakes.
 bazel test -c opt -k \
