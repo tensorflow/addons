@@ -6,6 +6,7 @@ py_library(
     name = "losses",
     srcs = [
         "__init__.py",
+        "conter_loss.py",
         "contrastive.py",
         "focal_loss.py",
         "giou_loss.py",
@@ -19,6 +20,19 @@ py_library(
     deps = [
         "//tensorflow_addons/activations",
         "//tensorflow_addons/utils",
+    ],
+)
+
+py_test(
+    name = "conter_loss_test",
+    size = "small",
+    srcs = [
+        "conter_loss_test.py",
+    ],
+    main = "conter_loss_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":losses",
     ],
 )
 
