@@ -1,8 +1,0 @@
-name: WIP check
-on: [pull_request]
-
-jobs:
-  name: WIP check
-  runs-on: ubuntu-latest
-  steps:
-    - uses: wip/action@master
