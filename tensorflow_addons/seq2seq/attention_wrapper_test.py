@@ -125,7 +125,6 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
         ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttention),
     )
     def test_save_load_layer(self, attention_cls):
-        self.skipTest("Attention not working with single code path.")
         vocab = 20
         embedding_dim = 6
         inputs = tf.keras.Input(shape=[self.timestep])
@@ -146,7 +145,7 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
         model = tf.keras.Model([inputs, query, state], score)
         # Fall back to v1 style Keras training loop until issue with
         # using outputs of a layer in another layer's constructor.
-        model.compile("rmsprop", "mse", experimental_run_tf_function=False)
+        model.compile("rmsprop", "mse")
         model.fit([x, self.query, self.state], (y, y))
         y_ref = model.predict_on_batch([x_test, self.query, self.state])
 
@@ -158,8 +157,7 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
 
         # Fall back to v1 style Keras training loop until issue with
         # using outputs of a layer in another layer's constructor.
-        loaded_model.compile(
-            "rmsprop", "mse", experimental_run_tf_function=False)
+        loaded_model.compile("rmsprop", "mse")
 
         y = loaded_model.predict_on_batch([x_test, self.query, self.state])
 
