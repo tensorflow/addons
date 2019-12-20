@@ -26,6 +26,7 @@ _image_ops_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/image/_image_ops.so"))
 
 
+
 @tf.function
 def connected_components(images, name=None):
     """Labels the connected components in a batch of images.
