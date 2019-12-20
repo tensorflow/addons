@@ -831,8 +831,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             create_attention_kwargs=create_attention_kwargs)
 
     def testLuongMonotonicNotNormalized(self):
-        self.skipTest(
-            "Resolve https://github.com/tensorflow/addons/issues/781")
         create_attention_mechanism = wrapper.LuongMonotonicAttention
 
         expected_final_output = basic_decoder.BasicDecoderOutput(
@@ -848,15 +846,15 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
                     shape=(5, 9), dtype=np.dtype("float32"), mean=1.12592840)
             ],
             attention=ResultSummary(
-                shape=(5, 6), dtype=np.dtype("float32"), mean=0.059128221),
+                shape=(5, 6), dtype=np.dtype("float32"), mean=0.061826870),
             time=3,
             alignments=ResultSummary(
-                shape=(5, 8), dtype=np.dtype("float32"), mean=0.05112994),
+                shape=(5, 8), dtype=np.dtype("float32"), mean=0.06071945),
             attention_state=ResultSummary(
-                shape=(5, 8), dtype=np.dtype("float32"), mean=0.05112994),
+                shape=(5, 8), dtype=np.dtype("float32"), mean=0.06071945),
             alignment_history=())
         expected_final_alignment_history = ResultSummary(
-            shape=(3, 5, 8), dtype=np.dtype("float32"), mean=0.06994973868)
+            shape=(3, 5, 8), dtype=np.dtype("float32"), mean=0.07314623892)
 
         self._testWithAttention(
             create_attention_mechanism,
@@ -867,8 +865,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             expected_final_alignment_history=expected_final_alignment_history)
 
     def testLuongMonotonicScaled(self):
-        self.skipTest(
-            "Resolve https://github.com/tensorflow/addons/issues/781")
         create_attention_mechanism = wrapper.LuongMonotonicAttention
         create_attention_kwargs = {"scale": True}
 
@@ -885,15 +881,15 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
                     shape=(5, 9), dtype=np.dtype("float32"), mean=1.12592840)
             ],
             attention=ResultSummary(
-                shape=(5, 6), dtype=np.dtype("float32"), mean=0.059128221),
+                shape=(5, 6), dtype=np.dtype("float32"), mean=0.061826870),
             time=3,
             alignments=ResultSummary(
-                shape=(5, 8), dtype=np.dtype("float32"), mean=0.05112994),
+                shape=(5, 8), dtype=np.dtype("float32"), mean=0.06071945),
             attention_state=ResultSummary(
-                shape=(5, 8), dtype=np.dtype("float32"), mean=0.05112994),
+                shape=(5, 8), dtype=np.dtype("float32"), mean=0.06071945),
             alignment_history=())
         expected_final_alignment_history = ResultSummary(
-            shape=(3, 5, 8), dtype=np.dtype("float32"), mean=0.06994973868)
+            shape=(3, 5, 8), dtype=np.dtype("float32"), mean=0.07314623892)
 
         self._testWithAttention(
             create_attention_mechanism,
