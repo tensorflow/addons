@@ -2,8 +2,7 @@ name: WIP check
 on: [pull_request]
 
 jobs:
-  wip:
-  name: Verify PR status
+  name: WIP check
   runs-on: ubuntu-latest
   steps:
     - uses: wip/action@master
