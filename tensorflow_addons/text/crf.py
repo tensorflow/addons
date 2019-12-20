@@ -492,5 +492,14 @@ def crf_decode(potentials, transition_params, sequence_length):
         best_score = tf.reduce_max(last_score, axis=1)
         return decode_tags, best_score
 
-    return tf.cond(
-        tf.equal(tf.shape(potentials)[1], 1), _single_seq_fn, _multi_seq_fn)
+    if potentials.shape[1] is not None:
+        # shape is statically know, so we just execute
+        # the appropriate code path
+        if potentials.shape[1] == 1:
+            return _single_seq_fn()
+        else:
+            return _multi_seq_fn()
+    else:
+        return tf.cond(
+            tf.equal(tf.shape(potentials)[1], 1), _single_seq_fn,
+            _multi_seq_fn)
