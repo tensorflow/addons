@@ -74,11 +74,11 @@ py_test(
     srcs = [
         "filters_test.py",
     ],
+    flaky = True,
     main = "filters_test.py",
     deps = [
         ":image",
     ],
-    flaky=True,
 )
 
 py_test(
