@@ -78,6 +78,7 @@ py_test(
     deps = [
         ":image",
     ],
+    flaky=True,
 )
 
 py_test(
