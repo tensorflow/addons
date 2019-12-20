@@ -1,47 +1,47 @@
 # Subpackages
 activations:
-  /tensorflow_addons/activations/**/*
+  - tensorflow_addons/activations/**/*
 
 callbacks:
-  /tensorflow_addons/callbacks/**/*
+  - tensorflow_addons/callbacks/**/*
 
 image:
-  /tensorflow_addons/image/**/*
+  - tensorflow_addons/image/**/*
 
 layers:
-  /tensorflow_addons/layers/**/*
+  - tensorflow_addons/layers/**/*
 
 losses:
-  /tensorflow_addons/losses/**/*
+  - tensorflow_addons/losses/**/*
 
 metrics:
-  /tensorflow_addons/metrics/**/*
+  - tensorflow_addons/metrics/**/*
 
 optimizers:
-  /tensorflow_addons/optimizers/**/*
+  - tensorflow_addons/optimizers/**/*
 
 seq2seq:
-  /tensorflow_addons/seq2seq/**/*
+  - tensorflow_addons/seq2seq/**/*
 
 text:
-  /tensorflow_addons/text/**/*
+  - tensorflow_addons/text/**/*
 
 # Other labels
 build:
-  /build_deps/**/*
-  /tools/ci_build/**/*
+  - build_deps/**/*
+  - tools/ci_build/**/*
 
 documentation:
-  /docs/**/*
+  - docs/**/*
 
 tutorials:
-  /docs/tutorials/**/*
+  - docs/tutorials/**/*
 
 testing:
-  /tools/ci_testing/**/
+  - tools/ci_testing/**/
 
 style:
-  STYLE_GUIDE.md
+  - STYLE_GUIDE.md
 
 github:
-  /.github/**/*
+  - .github/**/*
