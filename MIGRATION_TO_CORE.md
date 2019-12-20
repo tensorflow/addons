@@ -18,7 +18,7 @@ the move with a larger community audience.
 5. After merging, the addition will be replaced with an alias to the core function 
 if possible.
 6. If an alias is not possible (e.g. large parameter changes), then a deprecation 
-warning will be added and eventual remove after 2 releases.
+warning will be added and eventual removed after 2 releases.
 
 
 ### Criteria for Migration
