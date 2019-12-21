@@ -78,6 +78,10 @@ or run manually:
 
 ```bash
 docker run --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-ubuntu16.04-manylinux2010 /bin/bash
+
+# Temporary until we remove py2 support
+ln -sf /usr/bin/python3.6 /usr/bin/python && rm /usr/bin/python2 
+
 ./configure.sh  # Links project with TensorFlow dependency
 ```
 
@@ -106,6 +110,10 @@ or run manually:
 ```bash
 docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010 /bin/bash
 export TF_NEED_CUDA=1
+
+# Temporary until we remove py2 support
+ln -sf /usr/bin/python3.6 /usr/bin/python && rm /usr/bin/python2 
+
 ./configure.sh  # Links project with TensorFlow dependency
 ```
 
