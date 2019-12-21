@@ -10,6 +10,7 @@
 | npairs | @WindQAQ | windqaq@gmail.com |
 | sparsemax_loss | @AndreasMadsen | amwwebdk+github@gmail.com |
 | triplet |  @rahulunair | rahulunair@gmail.com  |
+| kappa_loss | @wenmin-wu | wuwenmin1991@gmail.com |
 
 ## Components
 | Submodule | Loss  | Reference               |
@@ -22,6 +23,7 @@
 | npairs | NpairsMultilabelLoss | http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf |
 | sparsemax_loss | SparsemaxLoss |  https://arxiv.org/abs/1602.02068 |
 | triplet | TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
+| kappa_loss | WeightedKappaLoss | https://www.sciencedirect.com/science/article/abs/pii/S0167865517301666 |
 
 
 ## Contribution Guidelines

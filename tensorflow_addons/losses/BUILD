@@ -116,3 +116,15 @@ py_test(
         ":losses",
     ],
 )
+
+py_test(
+    name = "kappa_loss_test",
+    size = "small",
+    srcs = [
+        "kappa_loss_test.py"
+    ],
+    main = "kappa_loss_test.py",
+    deps = [
+        ":losses",
+    ],
+)

@@ -20,7 +20,7 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 
-from tensorflow_addons.losses.weighted_kappa_loss import WeightedKappaLoss
+from tensorflow_addons.losses.kappa_loss import WeightedKappaLoss
 from tensorflow_addons.utils import test_utils
 
 
