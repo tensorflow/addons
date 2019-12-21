@@ -44,13 +44,16 @@ def crf_sequence_score(inputs, tag_indices, sequence_lengths,
     # If max_seq_len is 1, we skip the score calculation and simply gather the
     # unary potentials of the single tag.
     def _single_seq_fn():
-        batch_size = tf.shape(inputs, out_type=tag_indices.dtype)[0]
+        batch_size = tf.shape(inputs, out_type=tf.int32)[0]
+        batch_inds = tf.reshape(tf.range(batch_size), [-1, 1])
+        indices = tf.concat([batch_inds, tf.zeros_like(batch_inds)], axis=1)
 
-        example_inds = tf.reshape(
-            tf.range(batch_size, dtype=tag_indices.dtype), [-1, 1])
-        sequence_scores = tf.gather_nd(
-            tf.squeeze(inputs, [1]),
-            tf.concat([example_inds, tag_indices], axis=1))
+        tag_inds = tf.gather_nd(tag_indices, indices)
+        tag_inds = tf.reshape(tag_inds, [-1, 1])
+        indices = tf.concat([indices, tag_inds], axis=1)
+
+        sequence_scores = tf.gather_nd(inputs, indices)
+
         sequence_scores = tf.where(
             tf.less_equal(sequence_lengths, 0), tf.zeros_like(sequence_scores),
             sequence_scores)
@@ -64,10 +67,8 @@ def crf_sequence_score(inputs, tag_indices, sequence_lengths,
         sequence_scores = unary_scores + binary_scores
         return sequence_scores
 
-    if inputs.shape[1] == 1:
-        return _single_seq_fn()
-    else:
-        return _multi_seq_fn()
+    return tf.cond(
+        tf.equal(tf.shape(inputs)[1], 1), _single_seq_fn, _multi_seq_fn)
 
 
 def crf_multitag_sequence_score(inputs, tag_bitmap, sequence_lengths,
@@ -106,16 +107,15 @@ def crf_multitag_sequence_score(inputs, tag_bitmap, sequence_lengths,
             filtered_inputs, axis=[1, 2], keepdims=False)
 
     def _multi_seq_fn():
-        # Compute the logsumexp of all scores of sequences matching the given tags.
+        # Compute the logsumexp of all scores of sequences
+        # matching the given tags.
         return crf_log_norm(
             inputs=filtered_inputs,
             sequence_lengths=sequence_lengths,
             transition_params=transition_params)
 
-    if inputs.shape[1] == 1:
-        return _single_seq_fn()
-    else:
-        return _multi_seq_fn()
+    return tf.cond(
+        tf.equal(tf.shape(inputs)[1], 1), _single_seq_fn, _multi_seq_fn)
 
 
 def crf_log_norm(inputs, sequence_lengths, transition_params):
@@ -135,8 +135,8 @@ def crf_log_norm(inputs, sequence_lengths, transition_params):
     first_input = tf.slice(inputs, [0, 0, 0], [-1, 1, -1])
     first_input = tf.squeeze(first_input, [1])
 
-    # If max_seq_len is 1, we skip the algorithm and simply reduce_logsumexp over
-    # the "initial state" (the unary potentials).
+    # If max_seq_len is 1, we skip the algorithm and simply reduce_logsumexp
+    # over the "initial state" (the unary potentials).
     def _single_seq_fn():
         log_norm = tf.reduce_logsumexp(first_input, [1])
         # Mask `log_norm` of the sequences with length <= zero.
@@ -160,10 +160,8 @@ def crf_log_norm(inputs, sequence_lengths, transition_params):
             log_norm)
         return log_norm
 
-    if inputs.shape[1] == 1:
-        return _single_seq_fn()
-    else:
-        return _multi_seq_fn()
+    return tf.cond(
+        tf.equal(tf.shape(inputs)[1], 1), _single_seq_fn, _multi_seq_fn)
 
 
 def crf_log_likelihood(inputs,
@@ -444,9 +442,7 @@ def crf_decode_backward(inputs, state):
 
 
 def crf_decode(potentials, transition_params, sequence_length):
-    """Decode the highest scoring sequence of tags in TensorFlow.
-
-    This is a function for tensor.
+    """Decode the highest scoring sequence of tags.
 
     Args:
       potentials: A [batch_size, max_seq_len, num_tags] tensor of
@@ -462,23 +458,21 @@ def crf_decode(potentials, transition_params, sequence_length):
     """
     sequence_length = tf.cast(sequence_length, dtype=tf.int32)
 
-    # If max_seq_len is 1, we skip the algorithm and simply return the argmax tag
-    # and the max activation.
+    # If max_seq_len is 1, we skip the algorithm and simply return the
+    # argmax tag and the max activation.
     def _single_seq_fn():
-        squeezed_potentials = tf.squeeze(potentials, [1])
-        decode_tags = tf.expand_dims(tf.argmax(squeezed_potentials, axis=1), 1)
-        best_score = tf.reduce_max(squeezed_potentials, axis=1)
-        return tf.cast(decode_tags, dtype=tf.int32), best_score
+        decode_tags = tf.cast(tf.argmax(potentials, axis=2), dtype=tf.int32)
+        best_score = tf.reshape(tf.reduce_max(potentials, axis=2), shape=[-1])
+        return decode_tags, best_score
 
     def _multi_seq_fn():
-        """Decoding of highest scoring sequence."""
         # Computes forward decoding. Get last score and backpointers.
         initial_state = tf.slice(potentials, [0, 0, 0], [-1, 1, -1])
         initial_state = tf.squeeze(initial_state, axis=[1])
         inputs = tf.slice(potentials, [0, 1, 0], [-1, -1, -1])
 
         sequence_length_less_one = tf.maximum(
-            tf.constant(0, dtype=sequence_length.dtype), sequence_length - 1)
+            tf.constant(0, dtype=tf.int32), sequence_length - 1)
 
         backpointers, last_score = crf_decode_forward(
             inputs, initial_state, transition_params, sequence_length_less_one)
@@ -498,7 +492,14 @@ def crf_decode(potentials, transition_params, sequence_length):
         best_score = tf.reduce_max(last_score, axis=1)
         return decode_tags, best_score
 
-    if potentials.shape[1] == 1:
-        return _single_seq_fn()
+    if potentials.shape[1] is not None:
+        # shape is statically know, so we just execute
+        # the appropriate code path
+        if potentials.shape[1] == 1:
+            return _single_seq_fn()
+        else:
+            return _multi_seq_fn()
     else:
-        return _multi_seq_fn()
+        return tf.cond(
+            tf.equal(tf.shape(potentials)[1], 1), _single_seq_fn,
+            _multi_seq_fn)
