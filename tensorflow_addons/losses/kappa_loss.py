@@ -67,7 +67,8 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
 
     ```python
     kappa_loss = WeightedKappaLoss(num_classes=4)
-    y_true = tf.constant([[0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])
+    y_true = tf.constant([[0, 0, 1, 0], [0, 1, 0, 0],
+                          [1, 0, 0, 0], [0, 0, 0, 1]])
     y_pred = tf.constant([[0.1, 0.2, 0.6, 0.1], [0.1, 0.5, 0.3, 0.1],
                           [0.8, 0.05, 0.05, 0.1], [0.01, 0.09, 0.1, 0.8]])
     loss = kappa_loss(y_true, y_pred)
@@ -77,7 +78,8 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
     Usage with tf.keras API:
     ```python
     # outputs should be softmax results
-    # if you want to weight the samples, just multiply the outputs by the sample weight.
+    # if you want to weight the samples, just multiply the outputs
+    # by the sample weight.
     model = tf.keras.Model(inputs, outputs)
     model.compile('sgd', loss=tfa.losses.WeightedKappa(num_classes=4))
     ```
@@ -94,7 +96,8 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
           num_classes: Number of unique classes in your dataset.
           weightage: (Optional) Weighting to be considered for calculating
             kappa statistics. A valid value is one of
-            ['linear', 'quadratic']. Defaults to `quadratic` since it's mostly used.
+            ['linear', 'quadratic']. Defaults to `quadratic` since it's
+            mostly used.
           name: (Optional) String name of the metric instance.
           dtype: (Optional) Data type of the metric result.
             Defaults to `tf.float32`.
