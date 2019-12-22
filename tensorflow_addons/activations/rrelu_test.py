@@ -54,14 +54,6 @@ class RreluTest(tf.test.TestCase, parameterized.TestCase):
                 theoretical, numerical = tf.test.compute_gradient(
                     lambda x: rrelu(
                         x, lower, upper, training=training, seed=111111), [x])
-                # TODO: investigate the difference between CPU and GPU
-                if training is True and tf.test.is_gpu_available() is False:
-                    numerical = [[[0.134971, 0., 0., 0., 0., 0.],
-                                  [0., 0.15648358, 0., 0., 0., 0.],
-                                  [0., 0., 0.18776372, 0., 0., 0.],
-                                  [0., 0., 0., 1., 0., 0.],
-                                  [0., 0., 0., 0., 1., 0.],
-                                  [0., 0., 0., 0., 0., 1.]]]
                 self.assertAllCloseAccordingToType(
                     theoretical, numerical, rtol=5e-4, atol=5e-4)
 
