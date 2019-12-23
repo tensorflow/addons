@@ -21,22 +21,46 @@ from __future__ import print_function
 import tensorflow as tf
 
 from tensorflow_addons.layers.crf import CRF
-from tensorflow_addons.utils import keras_utils
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class ConditionalRandomFieldLoss(object):
+    def __init__(self, name="crf_loss"):
+        self.name = name
+
     def get_config(self):
-        return {}
+        return {"name": self.name}
 
     def __call__(self, y_true, y_pred, sample_weight=None):
         crf_layer = y_pred._keras_history[0]
 
         # check if last layer is CRF
         if not isinstance(crf_layer, CRF):
-            raise ValueError('Last layer must be CRF for use {}.'.format(
+            raise ValueError("Last layer must be CRF for use {}.".format(
                 self.__class__.__name__))
 
         loss_vector = crf_layer.get_loss(y_true, y_pred)
 
         return tf.keras.backend.mean(loss_vector)
+
+
+@tf.keras.utils.register_keras_serializable(package="Addons")
+def crf_loss(y_true, y_pred):
+    """
+    Args
+        y_true: true targets tensor.
+        y_pred: predictions tensor.
+
+    Returns:
+        scalar.
+    """
+    crf_layer = y_pred._keras_history[0]
+
+    # check if last layer is CRF
+    if not isinstance(crf_layer, CRF):
+        raise ValueError(
+            "Last layer must be CRF for use {}.".format("crf_loss"))
+
+    loss_vector = crf_layer.get_loss(y_true, y_pred)
+
+    return tf.keras.backend.mean(loss_vector)

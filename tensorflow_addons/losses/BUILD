@@ -7,7 +7,7 @@ py_library(
     srcs = [
         "__init__.py",
         "contrastive.py",
-        "crf_loss.py",
+        "crf.py",
         "focal_loss.py",
         "giou_loss.py",
         "lifted.py",
@@ -120,12 +120,12 @@ py_test(
 )
 
 py_test(
-    name = "crf_loss_test",
+    name = "crf_test",
     size = "small",
     srcs = [
-        "crf_loss_test.py",
+        "crf_test.py",
     ],
-    main = "crf_loss_test.py",
+    main = "crf_test.py",
     srcs_version = "PY2AND3",
     deps = [
         ":losses",
