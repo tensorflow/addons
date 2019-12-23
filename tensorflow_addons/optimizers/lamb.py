@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""LAMB (Layer-wise Adaptive Moments) optimizer as TF2 tf.keras.optimizers.
+"""Layer-wise Adaptive Moments (LAMB) optimizer.
 
 See paper [Large Batch Optimization for Deep Learning: Training BERT in
 76 minutes](https://arxiv.org/abs/1904.00962).
 """
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -29,8 +28,7 @@ import tensorflow as tf
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 class LAMB(tf.keras.optimizers.Optimizer):
-    """Optimizer that implements the LAMB (Layer-wise Adaptive Moments)
-    optimizer as TF2 tf.keras.optimizers.
+    """Optimizer that implements the Layer-wise Adaptive Moments (LAMB).
 
     See paper [Large Batch Optimization for Deep Learning: Training BERT
     in 76 minutes](https://arxiv.org/abs/1904.00962).
@@ -46,29 +44,32 @@ class LAMB(tf.keras.optimizers.Optimizer):
                  exclude_from_layer_adaptation=None,
                  name='LAMB',
                  **kwargs):
-        """
-        learning_rate: A `Tensor` or a floating point value.
-          The learning rate.
-        beta_1: A `float` value or a constant `float` tensor.
-          The exponential decay rate for the 1st moment estimates.
-        beta_2: A `float` value or a constant `float` tensor.
-          The exponential decay rate for the 2nd moment estimates.
-        epsilon: A small constant for numerical stability.
-        weight_decay_rate: weight decay rate.
-        exclude_from_weight_decay: comma separated name patterns of variables
-          excluded from weight decay. Variables whose name contain a substring
-          matching the pattern will be excluded.
-        exclude_from_layer_adaptation: comma separated name patterns of
-          variables excluded from layer adaptation. Variables whose name
-          contain a substring matching the pattern will be excluded.
-        name: Optional name for the operations created when applying
-          gradients. Defaults to "LAMB".
-        **kwargs: keyword arguments. Allowed to be {`clipnorm`, `clipvalue`,
-          `lr`, `decay`}. `clipnorm` is clip gradients by norm; `clipvalue`
-          is clip gradients by value, `decay` is included for backward
-          compatibility to allow time inverse decay of learning rate. `lr`
-          is included for backward compatibility, recommended to use
-          `learning_rate` instead.
+        """Construct a new LAMB optimizer.
+
+        Args:
+            learning_rate: A `Tensor` or a floating point value. or a schedule
+                that is a `tf.keras.optimizers.schedules.LearningRateSchedule`
+                The learning rate.
+            beta_1: A `float` value or a constant `float` tensor.
+              The exponential decay rate for the 1st moment estimates.
+            beta_2: A `float` value or a constant `float` tensor.
+              The exponential decay rate for the 2nd moment estimates.
+            epsilon: A small constant for numerical stability.
+            weight_decay_rate: weight decay rate.
+            exclude_from_weight_decay: comma separated name patterns of
+              variables excluded from weight decay. Variables whose name
+              contain a substring matching the pattern will be excluded.
+            exclude_from_layer_adaptation: comma separated name patterns of
+              variables excluded from layer adaptation. Variables whose name
+              contain a substring matching the pattern will be excluded.
+            name: Optional name for the operations created when applying
+              gradients. Defaults to "LAMB".
+            **kwargs: keyword arguments. Allowed to be {`clipnorm`,
+              `clipvalue`, `lr`, `decay`}. `clipnorm` is clip gradients by
+              norm; `clipvalue` is clip gradients by value, `decay` is
+              included for backward compatibility to allow time inverse
+              decay of learning rate. `lr` is included for backward
+              compatibility, recommended to use `learning_rate` instead.
         """
         super(LAMB, self).__init__(name, **kwargs)
 

@@ -30,8 +30,6 @@ DESCRIPTION:
 
 from __future__ import print_function
 
-__author__ = 'keveman@google.com (Manjunath Kudlur)'
-
 from argparse import ArgumentParser
 import os
 import subprocess
@@ -43,9 +41,9 @@ import pipes
 CPU_COMPILER = ('/dt7/usr/bin/gcc')
 GCC_HOST_COMPILER_PATH = ('/dt7/usr/bin/gcc')
 
-NVCC_PATH = '/usr/local/cuda-10.0/bin/nvcc'
+NVCC_PATH = '/usr/local/cuda-10.1/bin/nvcc'
 PREFIX_DIR = os.path.dirname(GCC_HOST_COMPILER_PATH)
-NVCC_VERSION = '10.0'
+NVCC_VERSION = '10.1'
 
 
 def Log(s):

@@ -36,17 +36,25 @@ def custom_op_library(
         )
         deps = deps + if_cuda_is_configured([":" + basename + "_gpu"])
 
-    copts = copts + [
-        "-pthread",
-        "-std=c++11",
-        D_GLIBCXX_USE_CXX11_ABI,
-    ]
+    copts = copts + select({
+        "//tensorflow_addons:windows": ["/DEIGEN_STRONG_INLINE=inline",
+            "-DTENSORFLOW_MONOLITHIC_BUILD",
+             "/DPLATFORM_WINDOWS", "/DEIGEN_HAS_C99_MATH",
+             "/DTENSORFLOW_USE_EIGEN_THREADPOOL", "/DEIGEN_AVOID_STL_ARRAY",
+             "/Iexternal/gemmlowp", "/wd4018", "/wd4577", "/DNOGDI",
+             "/UTF_COMPILE_LIBRARY"],
+        "//conditions:default": ["-pthread", "-std=c++11", D_GLIBCXX_USE_CXX11_ABI],
+    })
 
     native.cc_binary(
         name = name,
         srcs = srcs,
         copts = copts,
         linkshared = 1,
+        features = select({
+            "//tensorflow_addons:windows": ["windows_export_all_symbols"],
+            "//conditions:default": [],
+        }),
         deps = deps,
         **kwargs
     )

@@ -34,6 +34,14 @@ class WeightNormalizationTest(tf.test.TestCase):
             },
             input_shape=(2, 4, 4, 3))
 
+    def test_weightnorm_no_bias(self):
+        test_utils.layer_test(
+            wrappers.WeightNormalization,
+            kwargs={
+                'layer': tf.keras.layers.Dense(5, use_bias=False),
+            },
+            input_shape=(2, 4))
+
     def _check_data_init(self, data_init, input_data, expected_output):
         layer = tf.keras.layers.Dense(
             input_data.shape[-1],
@@ -80,6 +88,21 @@ class WeightNormalizationTest(tf.test.TestCase):
         b = wrappers.WeightNormalization(a)
         out = tf.keras.layers.TimeDistributed(b)(inputs)
         model = tf.keras.Model(inputs, out)
+
+    def test_weightnorm_with_rnn(self):
+        inputs = tf.keras.layers.Input(shape=(None, 3))
+        rnn_layer = tf.keras.layers.SimpleRNN(4)
+        wt_rnn = wrappers.WeightNormalization(rnn_layer)
+        dense = tf.keras.layers.Dense(1)
+        model = tf.keras.models.Sequential(layers=[inputs, wt_rnn, dense])
+
+    def test_save_file_h5(self):
+        self.create_tempfile('wrapper_test_model.h5')
+        conv = tf.keras.layers.Conv1D(1, 1)
+        wn_conv = wrappers.WeightNormalization(conv)
+        model = tf.keras.Sequential(layers=[wn_conv])
+        model.build([1, 2, 3])
+        model.save_weights('wrapper_test_model.h5')
 
 
 if __name__ == "__main__":

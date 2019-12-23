@@ -6,6 +6,7 @@
 | contrastive |  @WindQAQ | windqaq@gmail.com |
 | crf | @howl-anderson | u1mail2me@gmail.com |
 | focal_loss | @SSaishruthi  | saishruthi.tn@gmail.com |
+| giou_loss | @fsx950223  | fsx950223@gmail.com |
 | lifted | @rahulunair | rahulunair@gmail.com  |
 | npairs | @WindQAQ | windqaq@gmail.com |
 | sparsemax_loss | @AndreasMadsen | amwwebdk+github@gmail.com |
@@ -18,6 +19,7 @@
 | contrastive | ContrastiveLoss | http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf |
 | crf_loss | ConditionalRandomFieldLoss | https://en.wikipedia.org/wiki/Conditional_random_field |
 | focal_loss | SigmoidFocalCrossEntropy | https://arxiv.org/abs/1708.02002  |
+| giou_loss | GIoULoss | https://giou.stanford.edu/GIoU.pdf       |
 | lifted | LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
 | npairs | NpairsLoss | http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf |
 | npairs | NpairsMultilabelLoss | http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf |

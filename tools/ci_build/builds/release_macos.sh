@@ -18,16 +18,16 @@ set -e -x
 PYTHON_VERSIONS="2.7.15 3.5.6 3.6.6 3.7.4"
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
 
-# Install Bazel 0.24
-wget https://github.com/bazelbuild/bazel/releases/download/0.24.1/bazel-0.24.1-installer-darwin-x86_64.sh
-chmod +x bazel-0.24.1-installer-darwin-x86_64.sh
-./bazel-0.24.1-installer-darwin-x86_64.sh --user
+# Install Bazel 1.1.0
+wget https://github.com/bazelbuild/bazel/releases/download/1.1.0/bazel-1.1.0-installer-darwin-x86_64.sh
+chmod +x bazel-1.1.0-installer-darwin-x86_64.sh
+./bazel-1.1.0-installer-darwin-x86_64.sh --user
 export PATH="$PATH:$HOME/bin"
 
 # Install delocate
 python3 -m pip install -q delocate
 
-brew update && brew upgrade pyenv
+brew update && brew outdated | grep -q pyenv && brew upgrade pyenv
 eval "$(pyenv init -)"
 
 for version in ${PYTHON_VERSIONS}; do

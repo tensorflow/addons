@@ -62,10 +62,10 @@ fi
 DOCKER_OPTS=''
 case ${DEVICE} in
     cpu)
-        DOCKER_IMAGE=tensorflow/tensorflow:custom-op-ubuntu16
+        DOCKER_IMAGE=gcr.io/tensorflow-testing/nosla-ubuntu16.04-manylinux2010
         ;;
     gpu)
-        DOCKER_IMAGE=tensorflow/tensorflow:custom-op-gpu-ubuntu16
+        DOCKER_IMAGE=gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010
         DOCKER_OPTS="--runtime=nvidia ${DOCKER_OPTS}"
         ;;
     *)
@@ -75,8 +75,11 @@ case ${DEVICE} in
 esac
 
 case ${PYTHON} in
-    py2) ENVIRONMENT_CMD="ln -sf /usr/bin/python2 /usr/bin/python && python -m pip install -U pip";;
-    py3) ENVIRONMENT_CMD="ln -sf /usr/bin/python3.6 /usr/bin/python && python -m pip install -U pip";;
+    # Since https://github.com/bazelbuild/bazel/issues/7899 default behavior will
+    # search python2 and python3, prior to checking default python. To work around this
+    # we'll remove the python2/python3 symlinks.
+    py2) ENVIRONMENT_CMD="ln -sf /usr/bin/python2 /usr/bin/python && rm /usr/bin/python3";;
+    py3) ENVIRONMENT_CMD="ln -sf /usr/bin/python3.6 /usr/bin/python && rm /usr/bin/python2";;
     *)
         echo "Invalid or missing python $OPTARG"
         exit 1

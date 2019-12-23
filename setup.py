@@ -29,7 +29,6 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-import platform
 import sys
 
 from datetime import datetime
@@ -67,13 +66,15 @@ REQUIRED_PACKAGES = [
 ]
 
 if project_name == TFA_RELEASE:
-    # TODO: remove if-else condition when tf supports package consolidation.
-    if platform.system() == 'Linux':
-        REQUIRED_PACKAGES.append('tensorflow-gpu >= 2.0.0')
-    else:
-        REQUIRED_PACKAGES.append('tensorflow >= 2.0.0')
+    REQUIRED_PACKAGES.append('tensorflow >= 2.1.0rc1')
 elif project_name == TFA_NIGHTLY:
     REQUIRED_PACKAGES.append('tf-nightly')
+
+# Manylinux2010 requires a patch for platlib
+if sys.platform.startswith('linux'):
+    ext_modules = [Extension('_foo', ['stub.cc'])]
+else:
+    ext_modules = []
 
 
 class BinaryDistribution(Distribution):
@@ -91,7 +92,7 @@ setup(
     author='Google Inc.',
     author_email='opensource@google.com',
     packages=find_packages(),
-    ext_modules=[Extension('_foo', ['stub.cc'])],
+    ext_modules=ext_modules,
     install_requires=REQUIRED_PACKAGES,
     include_package_data=True,
     zip_safe=False,

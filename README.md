@@ -8,7 +8,7 @@
 [![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
 [![Documentation](https://img.shields.io/badge/api-reference-blue.svg)](https://www.tensorflow.org/addons/api_docs/python/tfa)
 
-### Official Builds
+### Nightly Tests
 
 | Build Type      | Status |
 | ---             | ---    |
@@ -56,6 +56,13 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 ```
 
+#### Linux Build Matrix
+| Version    | Compatible With |Python versions  | Compiler  | cuDNN | CUDA | 
+|:----------------------- |:---|:---------- |:---------|:---------|:---------|
+| tensorflow-addons-0.6.0 | tensorflow==2.0.0 <br> tensorflow-gpu==2.0.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
+| tensorflow-addons-0.5.2 | tensorflow==2.0.0 <br> tensorflow-gpu==2.0.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
+
+
 #### Nightly Builds
 There are also nightly builds of TensorFlow Addons under the pip package
 `tfa-nightly`, which is built against `tf-nightly`. Nightly builds
@@ -67,22 +74,22 @@ pip install tfa-nightly
 
 #### Installing from Source
 You can also install from source. This requires the [Bazel](
-https://bazel.build/) build system.
+https://bazel.build/) build system (version >= 1.0.0).
 
 ```
 git clone https://github.com/tensorflow/addons.git
 cd addons
 
-# If building GPU Ops (Requires CUDA 10.0 and CuDNN 7)
+# If building GPU Ops (Requires CUDA 10.1 and CuDNN 7)
 export TF_NEED_CUDA=1
-export CUDA_HOME="/path/to/cuda10" (default: /usr/local/cuda)
+export CUDA_HOME="/path/to/cuda10.1" (default: /usr/local/cuda)
 export CUDNN_INSTALL_PATH="/path/to/cudnn" (default: /usr/lib/x86_64-linux-gnu)
 
 # This script links project with TensorFlow dependency
 ./configure.sh
 
-bazel build build_pip_pkg
-bazel-bin/build_pip_pkg artifacts
+bazel build --enable_runfiles build_pip_pkg
+bazel-bin/build_pip_pkg artifacts --nightly
 
 pip install artifacts/tensorflow_addons-*.whl
 ```
@@ -100,7 +107,7 @@ conform to established API patterns seen in core TensorFlow.
 
 #### GPU/CPU Custom-Ops
 A major benefit of TensorFlow Addons is that there are precompiled ops. Should 
-a CUDA 10 installation not be found then the op will automatically fall back to 
+a CUDA 10.1 installation not be found then the op will automatically fall back to 
 a CPU implementation.
 
 #### Proxy Maintainership

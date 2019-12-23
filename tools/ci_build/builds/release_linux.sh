@@ -15,6 +15,10 @@
 # ==============================================================================
 set -e -x
 
+# Remove the now private ppa. This can be removed after the docker image removes the
+# pre-installed python packages from this ppa.
+rm -f /etc/apt/sources.list.d/jonathonf-ubuntu-python-3_6-xenial.list
+
 PYTHON_VERSIONS="python2.7 python3.5 python3.6 python3.7"
 ln -sf /usr/bin/python3.5 /usr/bin/python3 # Py36 has issues with add-apt
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
@@ -39,7 +43,7 @@ for version in ${PYTHON_VERSIONS}; do
       --noshow_loading_progress \
       --verbose_failures \
       --test_output=errors \
-      --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.0:toolchain \
+      --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.1:toolchain \
       build_pip_pkg
 
     # Package Whl
