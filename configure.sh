@@ -19,6 +19,9 @@
 #  --quiet  Give less output.
 
 
+PLATFORM="$(uname -s | tr 'A-Z' 'a-z')"
+
+
 # Writes variables to bazelrc file
 function write_to_bazelrc() {
   echo "$1" >> .bazelrc
@@ -28,11 +31,30 @@ function write_action_env_to_bazelrc() {
   write_to_bazelrc "build --action_env $1=\"$2\""
 }
 
+function is_linux() {
+  [[ "${PLATFORM}" == "linux" ]]
+}
+
+function is_macos() {
+  [[ "${PLATFORM}" == "darwin" ]]
+}
+
+function is_windows() {
+  # On windows, the shell script is actually running in msys
+  [[ "${PLATFORM}" =~ msys_nt*|mingw*|cygwin*|uwin* ]]
+}
+
+function is_ppc64le() {
+  [[ "$(uname -m)" == "ppc64le" ]]
+}
+
 # Converts the linkflag namespec to the full shared library name
 function generate_shared_lib_name() {
-  if [[ $(uname) == "Darwin" ]]; then
+  if is_macos; then
     local namespec="$1"
     echo "lib"${namespec:2}".dylib"
+  elif is_windows; then
+    echo "_pywrap_tensorflow_internal.lib"
   else
     local namespec="$1"
     echo ${namespec:3}
@@ -65,14 +87,31 @@ TF_CFLAGS=( $(${PYTHON_VERSION} -c 'import tensorflow as tf; print(" ".join(tf.s
 TF_LFLAGS=( $(${PYTHON_VERSION} -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))') )
 TF_CXX11_ABI_FLAG=( $(${PYTHON_VERSION} -c 'import tensorflow as tf; print(tf.sysconfig.CXX11_ABI_FLAG)') )
 
-TF_SHARED_LIBRARY_DIR=${TF_LFLAGS[0]:2}
-TF_SHARED_LIBRARY_NAME=$(generate_shared_lib_name ${TF_LFLAGS[1]})
+if is_windows; then
+  # Use pywrap_tensorflow instead of tensorflow_framework on Windows
+  TF_SHARED_LIBRARY_DIR=${TF_CFLAGS:2:-7}"python"
+else
+  TF_SHARED_LIBRARY_DIR=${TF_LFLAGS[0]:2}
+fi
 
-write_action_env_to_bazelrc "TF_HEADER_DIR" ${TF_CFLAGS:2}
+TF_SHARED_LIBRARY_NAME=$(generate_shared_lib_name ${TF_LFLAGS[1]})
+TF_HEADER_DIR=${TF_CFLAGS:2}
+
+if is_windows; then
+  TF_SHARED_LIBRARY_DIR=${TF_SHARED_LIBRARY_DIR//\\//}
+  TF_SHARED_LIBRARY_NAME=${TF_SHARED_LIBRARY_NAME//\\//}
+  TF_HEADER_DIR=${TF_HEADER_DIR//\\//}
+fi
+
+write_action_env_to_bazelrc "TF_HEADER_DIR" ${TF_HEADER_DIR}
 write_action_env_to_bazelrc "TF_SHARED_LIBRARY_DIR" ${TF_SHARED_LIBRARY_DIR}
 write_action_env_to_bazelrc "TF_SHARED_LIBRARY_NAME" ${TF_SHARED_LIBRARY_NAME}
 write_action_env_to_bazelrc "TF_CXX11_ABI_FLAG" ${TF_CXX11_ABI_FLAG}
 
+write_to_bazelrc "build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true"
+write_to_bazelrc "build --spawn_strategy=standalone"
+write_to_bazelrc "build --strategy=Genrule=standalone"
+write_to_bazelrc "build -c opt"
 
 if [[ "$TF_NEED_CUDA" == "1" ]]; then
     write_action_env_to_bazelrc "TF_NEED_CUDA" ${TF_NEED_CUDA}
@@ -83,8 +122,5 @@ if [[ "$TF_NEED_CUDA" == "1" ]]; then
 
     write_to_bazelrc "test --config=cuda"
     write_to_bazelrc "build --config=cuda"
-    write_to_bazelrc "build --spawn_strategy=local"
-    write_to_bazelrc "build --strategy=Genrule=local"
-    write_to_bazelrc "build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true"
     write_to_bazelrc "build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain"
 fi

@@ -356,12 +356,23 @@ class CrfTest(tf.test.TestCase):
     def testDifferentDtype(self):
         inputs = np.ones([16, 20, 5], dtype=np.float32)
         tags = tf.convert_to_tensor(np.ones([16, 20], dtype=np.int64))
-        seq_lens = np.ones([
-            16,
-        ], dtype=np.int64) * 20
+        seq_lens = np.ones([16], dtype=np.int64) * 20
 
         loss, _ = text.crf_log_likelihood(
             inputs=inputs, tag_indices=tags, sequence_lengths=seq_lens)
+
+    def testTfFunction(self):
+        batch_size = 4
+        num_tags = 10
+        input_signature = (tf.TensorSpec([None, None, num_tags]),
+                           tf.TensorSpec([num_tags, num_tags]),
+                           tf.TensorSpec([None], dtype=tf.int32))
+        crf_decode = tf.function(input_signature=input_signature)(
+            text.crf_decode)
+        potentials = tf.random.uniform([batch_size, 1, num_tags])
+        transition_params = tf.random.uniform([num_tags, num_tags])
+        sequence_length = tf.ones([batch_size], dtype=tf.int32)
+        crf_decode(potentials, transition_params, sequence_length)
 
 
 if __name__ == "__main__":

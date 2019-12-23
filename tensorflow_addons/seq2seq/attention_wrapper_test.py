@@ -145,7 +145,7 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
         model = tf.keras.Model([inputs, query, state], score)
         # Fall back to v1 style Keras training loop until issue with
         # using outputs of a layer in another layer's constructor.
-        model.compile("rmsprop", "mse", experimental_run_tf_function=False)
+        model.compile("rmsprop", "mse")
         model.fit([x, self.query, self.state], (y, y))
         y_ref = model.predict_on_batch([x_test, self.query, self.state])
 
@@ -157,8 +157,7 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
 
         # Fall back to v1 style Keras training loop until issue with
         # using outputs of a layer in another layer's constructor.
-        loaded_model.compile(
-            "rmsprop", "mse", experimental_run_tf_function=False)
+        loaded_model.compile("rmsprop", "mse")
 
         y = loaded_model.predict_on_batch([x_test, self.query, self.state])
 
@@ -831,6 +830,8 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             create_attention_kwargs=create_attention_kwargs)
 
     def testLuongMonotonicNotNormalized(self):
+        self.skipTest(
+            "Resolve https://github.com/tensorflow/addons/issues/781")
         create_attention_mechanism = wrapper.LuongMonotonicAttention
 
         expected_final_output = basic_decoder.BasicDecoderOutput(
@@ -865,6 +866,8 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             expected_final_alignment_history=expected_final_alignment_history)
 
     def testLuongMonotonicScaled(self):
+        self.skipTest(
+            "Resolve https://github.com/tensorflow/addons/issues/781")
         create_attention_mechanism = wrapper.LuongMonotonicAttention
         create_attention_kwargs = {"scale": True}
 

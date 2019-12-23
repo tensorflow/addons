@@ -66,7 +66,7 @@ def npairs_loss(y_true, y_pred):
 @tf.keras.utils.register_keras_serializable(package='Addons')
 @tf.function
 def npairs_multilabel_loss(y_true, y_pred):
-    """Computes the npairs loss between multilabel data `y_true` and `y_pred`.
+    r"""Computes the npairs loss between multilabel data `y_true` and `y_pred`.
 
     Npairs loss expects paired data where a pair is composed of samples from
     the same labels and each pairs in the minibatch have different labels.
@@ -161,7 +161,7 @@ class NpairsLoss(tf.keras.losses.Loss):
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 class NpairsMultilabelLoss(tf.keras.losses.Loss):
-    """Computes the npairs loss between multilabel data `y_true` and `y_pred`.
+    r"""Computes the npairs loss between multilabel data `y_true` and `y_pred`.
 
     Npairs loss expects paired data where a pair is composed of samples from
     the same labels and each pairs in the minibatch have different labels.

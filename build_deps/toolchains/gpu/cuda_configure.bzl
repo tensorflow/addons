@@ -1031,7 +1031,7 @@ def find_cuda_config(repository_ctx, cuda_libraries):
     """Returns CUDA config dictionary from running find_cuda_config.py"""
     exec_result = repository_ctx.execute([
         _get_python_bin(repository_ctx),
-        repository_ctx.path(Label("@tensorflow_addons//build_deps/toolchains/gpu:find_cuda_config.py")),
+        repository_ctx.path(Label("//build_deps/toolchains/gpu:find_cuda_config.py")),
     ] + cuda_libraries)
     if exec_result.return_code:
         auto_configure_fail("Failed to run find_cuda_config.py: %s" % exec_result.stderr)

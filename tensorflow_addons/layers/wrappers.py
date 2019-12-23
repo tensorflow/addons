@@ -58,6 +58,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         super(WeightNormalization, self).__init__(layer, **kwargs)
         self.data_init = data_init
         self._track_trackable(layer, name='layer')
+        self._init_critical_section = tf.CriticalSection(name='init_mutex')
         self.is_rnn = isinstance(self.layer, tf.keras.layers.RNN)
 
     def build(self, input_shape):
@@ -121,7 +122,8 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             with tf.control_dependencies(self._initialize_weights(inputs)):
                 return tf.identity(self.g)
 
-        g = tf.cond(self._initialized, _do_nothing, _update_weights)
+        g = self._init_critical_section.execute(lambda: tf.cond(
+            self._initialized, _do_nothing, _update_weights))
 
         with tf.name_scope('compute_weights'):
             # Replace kernel by normalized weight variable.
