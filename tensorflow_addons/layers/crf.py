@@ -22,10 +22,9 @@ from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow_addons.text.crf import crf_decode, crf_log_likelihood
-from tensorflow_addons.utils import keras_utils
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class CRF(tf.keras.layers.Layer):
     """Linear chain conditional random field (CRF).
 
@@ -33,14 +32,15 @@ class CRF(tf.keras.layers.Layer):
 
     ```python
         from tensorflow_addons.layers import CRF
+        from tensorflow_addons.losses import crf_loss
 
         model = Sequential()
         model.add(Embedding(3001, 300, mask_zero=True)
 
-        crf = CRF(10, name='crf_layer')
+        crf = CRF(10)
         model.add(crf)
 
-        model.compile('adam', loss={'crf_layer': crf.loss})
+        model.compile('adam', loss=crf_loss)
 
         model.fit(x, y)
     ```
@@ -293,7 +293,8 @@ class CRF(tf.keras.layers.Layer):
     def mask_to_sequence_length(self, mask):
         """compute sequence length from mask."""
         sequence_length = tf.keras.backend.cast(
-            tf.keras.backend.sum(mask, 1), tf.int64)
+            tf.keras.backend.sum(tf.keras.backend.cast(mask, tf.int8), 1),
+            tf.int64)
         return sequence_length
 
     @staticmethod
@@ -332,7 +333,10 @@ class CRF(tf.keras.layers.Layer):
             axis=1)
 
         # 0011100 > 0001110 => 0010000
-        left_boundary = tf.keras.backend.greater(mask, right_shifted_mask)
+        left_boundary = tf.keras.backend.greater(
+            tf.dtypes.cast(mask, tf.int32),
+            tf.dtypes.cast(right_shifted_mask, tf.int32))
+        # left_boundary = tf.keras.backend.greater(mask, right_shifted_mask)
 
         return left_boundary
 
@@ -418,7 +422,7 @@ class CRF(tf.keras.layers.Layer):
         return output_shape
 
     def compute_mask(self, input_, mask=None):
-        """ keep mask shape [batch_size, max_seq_len] """
+        """keep mask shape [batch_size, max_seq_len]"""
         return mask
 
     def get_negative_log_likelihood(self, y_true):
