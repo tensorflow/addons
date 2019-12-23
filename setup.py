@@ -60,15 +60,8 @@ with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
 if project_name == TFA_NIGHTLY:
     version['__version__'] += datetime.strftime(datetime.today(), "%Y%m%d")
 
-# Dependencies
-REQUIRED_PACKAGES = [
-    'six >= 1.10.0',
-]
-
-if project_name == TFA_RELEASE:
-    REQUIRED_PACKAGES.append('tensorflow >= 2.1.0rc1')
-elif project_name == TFA_NIGHTLY:
-    REQUIRED_PACKAGES.append('tf-nightly')
+with open('build_deps/requirements.txt') as f:
+    required = f.read().splitlines()
 
 # Manylinux2010 requires a patch for platlib
 if sys.platform.startswith('linux'):

@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 # ==============================================================================
+set -x
+
 # Make sure we're in the project root path.
 SCRIPT_DIR=$( cd ${0%/*} && pwd -P )
 ROOT_DIR=$( cd "$SCRIPT_DIR/../.." && pwd -P )
@@ -22,8 +24,6 @@ if [[ ! -d "tensorflow_addons" ]]; then
     echo "ERROR: PWD: $PWD is not project root"
     exit 1
 fi
-
-set -x
 
 PLATFORM="$(uname -s | tr 'A-Z' 'a-z')"
 
@@ -40,10 +40,6 @@ echo ""
 
 export CC_OPT_FLAGS='-mavx'
 export TF_NEED_CUDA=0
-
-export PYTHON_BIN_PATH=`which python`
-ls -alh $PYTHON_BIN_PATH
-# Use default configuration here.
 yes 'y' | ./configure.sh
 
 ## Run bazel test command. Double test timeouts to avoid flakes.
