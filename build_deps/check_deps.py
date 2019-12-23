@@ -1,3 +1,7 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import sys
 import pkg_resources
 from pip._internal.req import parse_requirements
@@ -5,8 +9,8 @@ from pkg_resources import DistributionNotFound, VersionConflict
 
 
 def check_dependencies(requirement_file_name):
-    """
-    Checks to see if the python dependencies are fullfilled.
+    """Checks to see if the python dependencies are fullfilled.
+
     If check passes return 0. Otherwise print error and return 1
     """
     dependencies = []

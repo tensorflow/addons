@@ -61,7 +61,7 @@ if project_name == TFA_NIGHTLY:
     version['__version__'] += datetime.strftime(datetime.today(), "%Y%m%d")
 
 with open('build_deps/requirements.txt') as f:
-    required = f.read().splitlines()
+    required_pkgs = f.read().splitlines()
 
 # Manylinux2010 requires a patch for platlib
 if sys.platform.startswith('linux'):
@@ -86,7 +86,7 @@ setup(
     author_email='opensource@google.com',
     packages=find_packages(),
     ext_modules=ext_modules,
-    install_requires=REQUIRED_PACKAGES,
+    install_requires=required_pkgs,
     include_package_data=True,
     zip_safe=False,
     distclass=BinaryDistribution,
