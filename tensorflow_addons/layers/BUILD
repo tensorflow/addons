@@ -25,6 +25,30 @@ py_library(
     ],
 )
 
+py_library(
+    name = "crf",
+    srcs = [
+        "crf.py",
+    ],
+    deps = [
+        "//tensorflow_addons/text:crf",
+        "//tensorflow_addons/utils",
+    ],
+)
+
+py_test(
+    name = "crf_test",
+    size = "small",
+    srcs = [
+        "crf_test.py",
+    ],
+    main = "crf_test.py",
+    srcs_version = "PY2AND3",
+    deps = [
+        "//tensorflow_addons/layers:crf",
+    ],
+)
+
 py_test(
     name = "gelu_test",
     size = "small",
@@ -92,19 +116,6 @@ py_test(
         "optical_flow_test.py",
     ],
     main = "optical_flow_test.py",
-    deps = [
-        ":layers",
-    ],
-)
-
-py_test(
-    name = "crf_test",
-    size = "small",
-    srcs = [
-        "crf_test.py",
-    ],
-    main = "crf_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":layers",
     ],

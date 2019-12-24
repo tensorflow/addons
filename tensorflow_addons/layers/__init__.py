@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from tensorflow_addons.layers.crf import CRF
 from tensorflow_addons.layers.gelu import GeLU
 from tensorflow_addons.layers.maxout import Maxout
 from tensorflow_addons.layers.normalizations import GroupNormalization
@@ -26,4 +27,3 @@ from tensorflow_addons.layers.optical_flow import CorrelationCost
 from tensorflow_addons.layers.poincare import PoincareNormalize
 from tensorflow_addons.layers.sparsemax import Sparsemax
 from tensorflow_addons.layers.wrappers import WeightNormalization
-from tensorflow_addons.layers.crf import CRF

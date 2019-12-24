@@ -225,7 +225,6 @@ class CRF(tf.keras.layers.Layer):
                 constraint=self.boundary_constraint,
             )
 
-        # or directly call self.built = True
         super(CRF, self).build(input_shape)
 
     def call(self, inputs, mask=None, **kwargs):
@@ -250,8 +249,7 @@ class CRF(tf.keras.layers.Layer):
             no_left_padding = tf.math.reduce_all(first_mask)
             msg = "Currently, CRF layer do not support left padding"
             with tf.control_dependencies([
-                    tf.debugging.assert_equal(
-                        no_left_padding, tf.constant(True), message=msg)
+                tf.debugging.assert_equal(no_left_padding, tf.constant(True), message=msg)
             ]):
                 self.potentials = self._dense_layer(inputs)
         else:
@@ -292,9 +290,8 @@ class CRF(tf.keras.layers.Layer):
 
     def mask_to_sequence_length(self, mask):
         """compute sequence length from mask."""
-        sequence_length = tf.keras.backend.cast(
-            tf.keras.backend.sum(tf.keras.backend.cast(mask, tf.int8), 1),
-            tf.int64)
+        sequence_length = tf.cast(
+            tf.reduce_sum(tf.cast(mask, tf.int8), 1), tf.int64)
         return sequence_length
 
     @staticmethod
@@ -302,10 +299,9 @@ class CRF(tf.keras.layers.Layer):
         """input mask: 0011100, output left_boundary: 0000100."""
         # shift mask to left by 1: 0011100 => 0111000
         offset = 1
-        left_shifted_mask = tf.keras.backend.concatenate(
+        left_shifted_mask = tf.concat(
             [mask[:, offset:],
-             tf.keras.backend.zeros_like(mask[:, :offset])],
-            axis=1)
+             tf.zeros_like(mask[:, :offset])], axis=1)
 
         # TODO(howl-anderson): for below code
         # Original code in keras_contrib:
@@ -319,7 +315,7 @@ class CRF(tf.keras.layers.Layer):
         # mailed him already and waiting for reply.
 
         # 0011100 > 0111000 => 0000100
-        right_boundary = tf.keras.backend.greater(mask, left_shifted_mask)
+        right_boundary = tf.greater(mask, left_shifted_mask)
 
         return right_boundary
 
@@ -328,40 +324,37 @@ class CRF(tf.keras.layers.Layer):
         """input mask: 0011100, output left_boundary: 0010000."""
         # shift mask to right by 1: 0011100 => 0001110
         offset = 1
-        right_shifted_mask = tf.keras.backend.concatenate(
-            [tf.keras.backend.zeros_like(mask[:, :offset]), mask[:, :-offset]],
-            axis=1)
+        right_shifted_mask = tf.concat(
+            [tf.zeros_like(mask[:, :offset]), mask[:, :-offset]], axis=1)
 
         # 0011100 > 0001110 => 0010000
-        left_boundary = tf.keras.backend.greater(
-            tf.dtypes.cast(mask, tf.int32),
-            tf.dtypes.cast(right_shifted_mask, tf.int32))
-        # left_boundary = tf.keras.backend.greater(mask, right_shifted_mask)
+        left_boundary = tf.greater(
+            tf.cast(mask, tf.int32), tf.cast(right_shifted_mask, tf.int32))
+        # left_boundary = tf.greater(mask, right_shifted_mask)
 
         return left_boundary
 
     def add_boundary_energy(self, potentials, mask, start, end):
-        def expend_scalar_to_3d(x):
-            # expend tensor from shape (x, ) to (1, 1, x)
-            return tf.keras.backend.expand_dims(
-                tf.keras.backend.expand_dims(x, 0), 0)
+        def expand_scalar_to_3d(x):
+            # expand tensor from shape (x, ) to (1, 1, x)
+            return tf.reshape(x, (1, 1, -1))
 
-        start = expend_scalar_to_3d(start)
-        end = expend_scalar_to_3d(end)
+        start = expand_scalar_to_3d(start)
+        end = expand_scalar_to_3d(end)
         if mask is None:
-            potentials = tf.keras.backend.concatenate(
+            potentials = tf.concat(
                 [potentials[:, :1, :] + start, potentials[:, 1:, :]], axis=1)
-            potentials = tf.keras.backend.concatenate(
+            potentials = tf.concat(
                 [potentials[:, :-1, :], potentials[:, -1:, :] + end], axis=1)
         else:
             mask = tf.keras.backend.expand_dims(
-                tf.keras.backend.cast(mask, start.dtype), axis=-1)
-            start_mask = tf.keras.backend.cast(
+                tf.cast(mask, start.dtype), axis=-1)
+            start_mask = tf.cast(
                 self._compute_mask_left_boundary(mask),
                 start.dtype,
             )
 
-            end_mask = tf.keras.backend.cast(
+            end_mask = tf.cast(
                 self._compute_mask_right_boundary(mask),
                 end.dtype,
             )
@@ -427,11 +420,10 @@ class CRF(tf.keras.layers.Layer):
 
     def get_negative_log_likelihood(self, y_true):
         # TODO(howl-anderson): remove unnecessary typing cast
-        self.potentials = tf.keras.backend.cast(self.potentials, tf.float32)
-        y_true = tf.keras.backend.cast(y_true, tf.int32)
-        self.sequence_length = tf.keras.backend.cast(self.sequence_length,
-                                                     tf.int32)
-        # self.chain_kernel = tf.keras.backend.cast(self.chain_kernel,
+        self.potentials = tf.cast(self.potentials, tf.float32)
+        y_true = tf.cast(y_true, tf.int32)
+        self.sequence_length = tf.cast(self.sequence_length, tf.int32)
+        # self.chain_kernel = tf.cast(self.chain_kernel,
         #                                           tf.float32)
 
         log_likelihood, _ = crf_log_likelihood(
@@ -444,14 +436,12 @@ class CRF(tf.keras.layers.Layer):
         return self.get_negative_log_likelihood(y_true)
 
     def get_accuracy(self, y_true, y_pred):
-        judge = tf.keras.backend.cast(
-            tf.keras.backend.equal(y_pred, y_true), tf.keras.backend.floatx())
+        judge = tf.cast(tf.equal(y_pred, y_true), tf.keras.backend.floatx())
         if self.mask is None:
-            return tf.keras.backend.mean(judge)
+            return tf.reduce_mean(judge)
         else:
-            mask = tf.keras.backend.cast(self.mask, tf.keras.backend.floatx())
-            return (tf.keras.backend.sum(judge * mask) /
-                    tf.keras.backend.sum(mask))
+            mask = tf.cast(self.mask, tf.keras.backend.floatx())
+            return (tf.reduce_sum(judge * mask) / tf.reduce_sum(mask))
 
     def _dense_layer(self, input_):
         if self.use_kernel:
@@ -460,7 +450,7 @@ class CRF(tf.keras.layers.Layer):
         else:
             output = input_
 
-        return tf.keras.backend.cast(output, self.chain_kernel.dtype)
+        return tf.cast(output, self.chain_kernel.dtype)
 
     def __call__(self, inputs, *args, **kwargs):
         outputs = super(CRF, self).__call__(inputs, *args, **kwargs)

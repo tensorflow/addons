@@ -138,16 +138,16 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         model.fit(self.logits, self.tags, epochs=10, batch_size=1)
 
     def test_dump_and_load(self):
-        self.skipTest("don't work now")
-
-        MODEL_PERSISTENCE_PATH = './test_saving_crf_model.h5'
+        tmp_dir = self.get_temp_dir()
+        MODEL_PERSISTENCE_PATH = os.path.join(tmp_dir,
+                                              'test_saving_crf_model.h5')
 
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Input(shape=(3, 5)))
         model.add(self.crf)
         model.compile(
             "adam",
-            loss=crf.ConditionalRandomFieldLoss(),
+            loss="Addons>crf_loss",
             metrics=[tf.keras.metrics.Accuracy()])
 
         model.fit(self.logits, self.tags, epochs=10, batch_size=1)
