@@ -113,6 +113,11 @@ class LiftedStructLossTest(tf.test.TestCase):
         ])
         model.compile(loss="Addons>lifted_struct_loss", optimizer="adam")
 
+    def test_serialization(self):
+        loss = lifted.LiftedStructLoss()
+        new_loss = tf.keras.losses.deserialize(
+            tf.keras.losses.serialize(loss))
+
 
 if __name__ == '__main__':
     tf.test.main()
