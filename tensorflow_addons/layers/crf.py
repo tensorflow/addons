@@ -163,9 +163,8 @@ class CRF(tf.keras.layers.Layer):
         self.mask = None
 
         # global variable
-        self.kernel = None
         self.chain_kernel = None
-        self.bias = None
+        self._dense_layer = None
         self.left_boundary = None
         self.right_boundary = None
 
@@ -177,16 +176,6 @@ class CRF(tf.keras.layers.Layer):
 
         feature_size = input_shape[-1]
 
-        if self.use_kernel:
-            # weights that mapping arbitrary tensor to correct shape
-            self.kernel = self.add_weight(
-                shape=(feature_size, self.units),
-                name="kernel",
-                initializer=self.kernel_initializer,
-                regularizer=self.kernel_regularizer,
-                constraint=self.kernel_constraint,
-            )
-
         # weights that work as transfer probability of each tags
         self.chain_kernel = self.add_weight(
             shape=(self.units, self.units),
@@ -195,18 +184,6 @@ class CRF(tf.keras.layers.Layer):
             regularizer=self.chain_regularizer,
             constraint=self.chain_constraint,
         )
-
-        # bias that works with self.kernel
-        if self.use_kernel and self.use_bias:
-            self.bias = self.add_weight(
-                shape=(self.units,),
-                name="bias",
-                initializer=self.bias_initializer,
-                regularizer=self.bias_regularizer,
-                constraint=self.bias_constraint,
-            )
-        else:
-            self.bias = 0
 
         # weight of <START> to tag probability and tag to <END> probability
         if self.use_boundary:
@@ -224,6 +201,21 @@ class CRF(tf.keras.layers.Layer):
                 regularizer=self.boundary_regularizer,
                 constraint=self.boundary_constraint,
             )
+
+        if self.use_kernel:
+            self._dense_layer = tf.keras.layers.Dense(
+                    units=self.units,
+                    activation=self.activation,
+                    use_bias=self.use_bias,
+                    bias_initializer=self.bias_initializer,
+                    kernel_regularizer=self.kernel_regularizer,
+                    bias_regularizer=self.bias_regularizer,
+                    kernel_constraint=self.kernel_constraint,
+                    bias_constraint=self.bias_constraint,
+                    dtype=self.dtype
+                )
+        else:
+            self._dense_layer = lambda x: tf.cast(x, dtype=self.dtype)
 
         super(CRF, self).build(input_shape)
 
@@ -419,12 +411,8 @@ class CRF(tf.keras.layers.Layer):
         return mask
 
     def get_negative_log_likelihood(self, y_true):
-        # TODO(howl-anderson): remove unnecessary typing cast
-        self.potentials = tf.cast(self.potentials, tf.float32)
         y_true = tf.cast(y_true, tf.int32)
         self.sequence_length = tf.cast(self.sequence_length, tf.int32)
-        # self.chain_kernel = tf.cast(self.chain_kernel,
-        #                                           tf.float32)
 
         log_likelihood, _ = crf_log_likelihood(
             self.potentials, y_true, self.sequence_length, self.chain_kernel)
@@ -442,15 +430,6 @@ class CRF(tf.keras.layers.Layer):
         else:
             mask = tf.cast(self.mask, tf.keras.backend.floatx())
             return (tf.reduce_sum(judge * mask) / tf.reduce_sum(mask))
-
-    def _dense_layer(self, input_):
-        if self.use_kernel:
-            output = self.activation(
-                tf.keras.backend.dot(input_, self.kernel) + self.bias)
-        else:
-            output = input_
-
-        return tf.cast(output, self.chain_kernel.dtype)
 
     def __call__(self, inputs, *args, **kwargs):
         outputs = super(CRF, self).__call__(inputs, *args, **kwargs)
