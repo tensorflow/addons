@@ -4,7 +4,7 @@
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:------------- |
 | contrastive |  @WindQAQ | windqaq@gmail.com |
-| focal_loss | @SSaishruthi  | saishruthi.tn@gmail.com |
+| focal_loss | @AakashKumarNain @SSaishruthi  | aakashnain@outlook.com saishruthi.tn@gmail.com |
 | giou_loss | @fsx950223  | fsx950223@gmail.com |
 | lifted | @rahulunair | rahulunair@gmail.com  |
 | npairs | @WindQAQ | windqaq@gmail.com |
