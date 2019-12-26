@@ -59,8 +59,10 @@ class SigmoidFocalCrossEntropyTest(tf.test.TestCase):
             from_logits=True,
             alpha=None,
             gamma=None)
-        bce = K.binary_crossentropy(
-            target_tensor, prediction_tensor, from_logits=True)
+        bce = tf.reduce_sum(
+            K.binary_crossentropy(
+                target_tensor, prediction_tensor, from_logits=True),
+            axis=-1)
 
         # When alpha and gamma are None, it should be equal to BCE
         self.assertAllClose(fl, bce)
@@ -75,7 +77,7 @@ class SigmoidFocalCrossEntropyTest(tf.test.TestCase):
 
         # order_of_ratio = np.power(10, np.floor(np.log10(bce/FL)))
         order_of_ratio = tf.pow(10.0, tf.math.floor(self.log10(bce / fl)))
-        pow_values = tf.constant([[1000], [100], [10], [10], [100], [1000]])
+        pow_values = tf.constant([1000, 100, 10, 10, 100, 1000])
         self.assertAllClose(order_of_ratio, pow_values)
 
     # Test without logits
@@ -91,7 +93,8 @@ class SigmoidFocalCrossEntropyTest(tf.test.TestCase):
             y_pred=prediction_tensor,
             alpha=None,
             gamma=None)
-        bce = K.binary_crossentropy(target_tensor, prediction_tensor)
+        bce = tf.reduce_sum(
+            K.binary_crossentropy(target_tensor, prediction_tensor), axis=-1)
 
         # When alpha and gamma are None, it should be equal to BCE
         self.assertAllClose(fl, bce)
@@ -104,7 +107,7 @@ class SigmoidFocalCrossEntropyTest(tf.test.TestCase):
             gamma=2.0)
 
         order_of_ratio = tf.pow(10.0, tf.math.floor(self.log10(bce / fl)))
-        pow_values = tf.constant([[1000], [100], [10], [10], [100], [1000]])
+        pow_values = tf.constant([1000, 100, 10, 10, 100, 1000])
         self.assertAllClose(order_of_ratio, pow_values)
 
 
