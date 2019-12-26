@@ -116,7 +116,7 @@ class LiftedStructLoss(tf.keras.losses.Loss):
       name: Optional name for the op.
     """
 
-    def __init__(self, margin=1.0, name=None):
+    def __init__(self, margin=1.0, name=None, **kwargs):
         super(LiftedStructLoss, self).__init__(
             name=name, reduction=tf.keras.losses.Reduction.NONE)
         self.margin = margin
