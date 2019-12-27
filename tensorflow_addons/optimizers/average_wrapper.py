@@ -112,8 +112,10 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer):
         model.save('model.h5')
         ```
         """
-        assign_op = tf.group(
-            [var.assign(self.get_slot(var, 'average')) for var in var_list])
+        assign_op = tf.group([
+            var.assign(self.get_slot(var, 'average')) for var in var_list
+            if var.trainable
+        ])
         return assign_op
 
     def get_config(self):
