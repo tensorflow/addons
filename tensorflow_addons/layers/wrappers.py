@@ -58,31 +58,35 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         super(WeightNormalization, self).__init__(layer, **kwargs)
         self.data_init = data_init
         self._track_trackable(layer, name='layer')
+        self._init_critical_section = tf.CriticalSection(name='init_mutex')
+        self.is_rnn = isinstance(self.layer, tf.keras.layers.RNN)
 
     def build(self, input_shape):
         """Build `Layer`"""
-        input_shape = tf.TensorShape(input_shape).as_list()
+        input_shape = tf.TensorShape(input_shape)
         self.input_spec = tf.keras.layers.InputSpec(
             shape=[None] + input_shape[1:])
 
         if not self.layer.built:
             self.layer.build(input_shape)
 
-        if not hasattr(self.layer, 'kernel'):
+        kernel_layer = self.layer.cell if self.is_rnn else self.layer
+
+        if not hasattr(kernel_layer, 'kernel'):
             raise ValueError('`WeightNormalization` must wrap a layer that'
                              ' contains a `kernel` for weights')
 
         # The kernel's filter or unit dimension is -1
-        self.layer_depth = int(self.layer.kernel.shape[-1])
-        self.kernel_norm_axes = list(range(self.layer.kernel.shape.rank - 1))
+        self.layer_depth = int(kernel_layer.kernel.shape[-1])
+        self.kernel_norm_axes = list(range(kernel_layer.kernel.shape.rank - 1))
 
         self.g = self.add_weight(
             name='g',
             shape=(self.layer_depth,),
             initializer='ones',
-            dtype=self.layer.kernel.dtype,
+            dtype=kernel_layer.kernel.dtype,
             trainable=True)
-        self.v = self.layer.kernel
+        self.v = kernel_layer.kernel
 
         self._initialized = self.add_weight(
             name='initialized',
@@ -100,7 +104,10 @@ class WeightNormalization(tf.keras.layers.Wrapper):
                     layer_config)
                 self._naked_clone_layer.build(input_shape)
                 self._naked_clone_layer.set_weights(self.layer.get_weights())
-                self._naked_clone_layer.activation = None
+                if self.is_rnn:
+                    self._naked_clone_layer.cell.activation = None
+                else:
+                    self._naked_clone_layer.activation = None
 
         self.built = True
 
@@ -115,7 +122,8 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             with tf.control_dependencies(self._initialize_weights(inputs)):
                 return tf.identity(self.g)
 
-        g = tf.cond(self._initialized, _do_nothing, _update_weights)
+        g = self._init_critical_section.execute(lambda: tf.cond(
+            self._initialized, _do_nothing, _update_weights))
 
         with tf.name_scope('compute_weights'):
             # Replace kernel by normalized weight variable.

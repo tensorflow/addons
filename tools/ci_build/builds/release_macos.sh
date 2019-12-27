@@ -18,7 +18,7 @@ set -e -x
 PYTHON_VERSIONS="2.7.15 3.5.6 3.6.6 3.7.4"
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
 
-# Install Bazel 0.24
+# Install Bazel 1.1.0
 wget https://github.com/bazelbuild/bazel/releases/download/1.1.0/bazel-1.1.0-installer-darwin-x86_64.sh
 chmod +x bazel-1.1.0-installer-darwin-x86_64.sh
 ./bazel-1.1.0-installer-darwin-x86_64.sh --user

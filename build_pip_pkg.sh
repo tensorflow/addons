@@ -16,7 +16,18 @@
 set -e
 set -x
 
-PIP_FILE_PREFIX="bazel-bin/build_pip_pkg.runfiles/tensorflow_addons/"
+PLATFORM="$(uname -s | tr 'A-Z' 'a-z')"
+
+function is_windows() {
+  # On windows, the shell script is actually running in msys
+  [[ "${PLATFORM}" =~ msys_nt*|mingw*|cygwin*|uwin* ]]
+}
+
+if is_windows; then
+  PIP_FILE_PREFIX="bazel-bin/build_pip_pkg.exe.runfiles/__main__/"
+else
+  PIP_FILE_PREFIX="bazel-bin/build_pip_pkg.runfiles/__main__/"
+fi
 
 function abspath() {
   cd "$(dirname $1)"
@@ -45,15 +56,24 @@ function main() {
   cp ${PIP_FILE_PREFIX}MANIFEST.in "${TMPDIR}"
   cp ${PIP_FILE_PREFIX}LICENSE "${TMPDIR}"
   touch ${TMPDIR}/stub.cc
-  rsync -avm -L --exclude='*_test.py' ${PIP_FILE_PREFIX}tensorflow_addons "${TMPDIR}"
+
+  if is_windows; then
+    from=$(cygpath -w ${PIP_FILE_PREFIX}tensorflow_addons)
+    to=$(cygpath -w "${TMPDIR}"/tensorflow_addons)
+    start robocopy //S "${from}" "${to}" //xf *_test.py
+    sleep 5
+  else
+    rsync -avm -L --exclude='*_test.py' ${PIP_FILE_PREFIX}tensorflow_addons "${TMPDIR}"
+  fi
 
   pushd ${TMPDIR}
   echo $(date) : "=== Building wheel"
 
   if [[ -z ${BUILD_FLAG} ]]; then
-    ${PYTHON_VERSION:=python} setup.py bdist_wheel > /dev/null
+    # Windows has issues with locking library files for deletion so do not fail here
+    ${PYTHON_VERSION:=python} setup.py bdist_wheel || true
   else
-    ${PYTHON_VERSION:=python} setup.py bdist_wheel "${2}" > /dev/null
+    ${PYTHON_VERSION:=python} setup.py bdist_wheel "${2}" || true
   fi
 
   cp dist/*.whl "${DEST}"

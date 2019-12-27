@@ -42,9 +42,9 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
     loss = fl(
       [[0.97], [0.91], [0.03]],
       [[1.0], [1.0], [0.0]])
-    print('Loss: ', loss.numpy())  # Loss: [[0.00010971]
-                                            [0.0032975]
-                                            [0.00030611]]
+    print('Loss: ', loss.numpy())  # Loss: [0.00010971,
+                                            0.0032975,
+                                            0.00030611]
     ```
     Usage with tf.keras API:
 
@@ -110,9 +110,9 @@ def sigmoid_focal_crossentropy(y_true,
         y_pred: predictions tensor.
         alpha: balancing factor.
         gamma: modulating factor.
-    
+
     Returns:
-        Weighted loss float `Tensor`. If `reduction` is `NONE`,this has the 
+        Weighted loss float `Tensor`. If `reduction` is `NONE`,this has the
         same shape as `y_true`; otherwise, it is scalar.
     """
     if gamma and gamma < 0:
@@ -120,29 +120,32 @@ def sigmoid_focal_crossentropy(y_true,
             "Value of gamma should be greater than or equal to zero")
 
     y_pred = tf.convert_to_tensor(y_pred)
-    y_true = tf.cast(y_true, y_pred.dtype)
+    y_true = tf.convert_to_tensor(y_true, dtype=y_pred.dtype)
 
-    # Get the binary cross_entropy
-    bce = K.binary_crossentropy(y_true, y_pred, from_logits=from_logits)
+    if y_true.shape != y_pred.shape:
+        raise ValueError("Shape mismatch for y_true: {} and y_pred: {}".format(
+            tf.shape(y_true), tf.shape(y_pred)))
+
+    # Get the cross_entropy for each entry
+    ce = K.binary_crossentropy(y_true, y_pred, from_logits=from_logits)
 
     # If logits are provided then convert the predictions into probabilities
     if from_logits:
-        y_pred = K.sigmoid(y_pred)
+        pred_prob = tf.sigmoid(y_pred)
     else:
-        y_pred = K.clip(y_pred, K.epsilon(), 1. - K.epsilon())
+        pred_prob = y_pred
 
-    p_t = (y_true * y_pred) + ((1 - y_true) * (1 - y_pred))
-    alpha_factor = 1
-    modulating_factor = 1
+    p_t = (y_true * pred_prob) + ((1 - y_true) * (1 - pred_prob))
+    alpha_factor = 1.0
+    modulating_factor = 1.0
 
     if alpha:
         alpha = tf.convert_to_tensor(alpha, dtype=K.floatx())
-        alpha_factor = y_true * alpha + ((1 - alpha) * (1 - y_true))
+        alpha_factor = (y_true * alpha + (1 - y_true) * (1 - alpha))
 
     if gamma:
         gamma = tf.convert_to_tensor(gamma, dtype=K.floatx())
-        modulating_factor = K.pow((1 - p_t), gamma)
+        modulating_factor = tf.pow((1.0 - p_t), gamma)
 
     # compute the final loss and return
-    return K.mean(
-        alpha_factor * modulating_factor * bce, axis=-1, keepdims=True)
+    return tf.reduce_sum(alpha_factor * modulating_factor * ce, axis=-1)

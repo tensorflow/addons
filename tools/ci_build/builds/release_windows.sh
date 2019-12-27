@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Additional callbacks that conform to Keras API."""
+set -e -x
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+mkdir -p artifacts/
+export BAZEL_VC=/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2017/BuildTools/VC/
 
-from tensorflow_addons.callbacks.time_stopping import TimeStopping
-from tensorflow_addons.callbacks.tqdm_progress_bar import TQDMProgressBar
+# Install Bazel 1.1.0
+wget --quiet -nc https://github.com/bazelbuild/bazel/releases/download/1.1.0/bazel-1.1.0-windows-x86_64.exe
+
+python --version
+python -m pip install --upgrade pip
+
+#Link TF dependency
+yes 'y' | ./configure.sh --quiet
+
+./bazel-1.1.0-windows-x86_64.exe build \
+    -c opt \
+    --enable_runfiles \
+    --noshow_progress \
+    --noshow_loading_progress \
+    --verbose_failures \
+    --test_output=errors \
+    build_pip_pkg
+
+bazel-bin/build_pip_pkg artifacts/

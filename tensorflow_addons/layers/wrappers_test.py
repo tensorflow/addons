@@ -89,6 +89,13 @@ class WeightNormalizationTest(tf.test.TestCase):
         out = tf.keras.layers.TimeDistributed(b)(inputs)
         model = tf.keras.Model(inputs, out)
 
+    def test_weightnorm_with_rnn(self):
+        inputs = tf.keras.layers.Input(shape=(None, 3))
+        rnn_layer = tf.keras.layers.SimpleRNN(4)
+        wt_rnn = wrappers.WeightNormalization(rnn_layer)
+        dense = tf.keras.layers.Dense(1)
+        model = tf.keras.models.Sequential(layers=[inputs, wt_rnn, dense])
+
     def test_save_file_h5(self):
         self.create_tempfile('wrapper_test_model.h5')
         conv = tf.keras.layers.Conv1D(1, 1)
