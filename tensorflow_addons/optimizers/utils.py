@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Additional Utilities used for tfa.optimizers"""
+"""Additional Utilities used for tfa.optimizers."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -21,13 +21,11 @@ import tensorflow as tf
 
 
 def fit_bn(model, *args, **kwargs):
-    """
-    Resets batch normalization layers of model, and recalculates
-    the statistics for each batchnorm layer by running a pass on 
-    the data.
+    """Resets batch normalization layers of model, and recalculates the
+    statistics for each batchnorm layer by running a pass on the data.
 
     Args:
-        model: An instance of tf.keras.Model 
+        model: An instance of tf.keras.Model
         *args, **kwargs: Params that'll be passed to `.fit` method of model
     """
     kwargs['epochs'] = 1
@@ -36,20 +34,21 @@ def fit_bn(model, *args, **kwargs):
 
     if not model.built:
         raise ValueError("Call `fit_bn` after the model is built and trained")
-    
+
     assign_ops = []
     for layer in model.layers:
         if isinstance(layer, tf.keras.layers.BatchNormalization):
             if not layer.built:
                 continue
-            
+
             assign_ops.append([
-              layer.moving_mean.assign(tf.zeros_like(layer.moving_mean)),
-              layer.moving_variance.assign(tf.ones_like(layer.moving_variance))
+                layer.moving_mean.assign(tf.zeros_like(layer.moving_mean)),
+                layer.moving_variance.assign(
+                    tf.ones_like(layer.moving_variance))
             ])
-    
+
     assign_op = tf.group(assign_ops)
-    
+
     _trainable = model.trainable
     _metrics = model._metrics
     model.trainable = False
