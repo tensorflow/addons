@@ -15,6 +15,7 @@ py_library(
         "moving_average.py",
         "rectified_adam.py",
         "stochastic_weight_averaging.py",
+        "utils.py",
         "weight_decay_optimizers.py",
         "yogi.py",
     ],

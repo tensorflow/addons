@@ -22,6 +22,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.optimizers import stochastic_weight_averaging
+from tensorflow_addons.optimizers.utils import fit_bn
 from tensorflow_addons.utils import test_utils
 
 SWA = stochastic_weight_averaging.SWA
@@ -116,14 +117,16 @@ class SWATest(tf.test.TestCase):
         y = np.random.standard_normal((10, 1))
 
         model = tf.keras.Sequential()
-        model.add(tf.keras.layers.Dense(64, activation='relu'))
+        model.add(tf.keras.layers.Dense(16, activation='relu'))
         model.add(tf.keras.layers.BatchNormalization())
         model.add(tf.keras.layers.Dense(1))
 
         opt = SWA(tf.keras.optimizers.SGD())
         model.compile(optimizer=opt, loss='mean_squared_error')
         model.fit(x, y, epochs=1)
+
         opt.assign_average_vars(model.variables)
+        fit_bn(model, x, y)
 
 
 if __name__ == '__main__':
