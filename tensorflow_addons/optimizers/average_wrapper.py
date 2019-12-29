@@ -17,10 +17,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import abc
+import six
+
 import tensorflow as tf
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@six.add_metaclass(abc.ABCMeta)
 class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer):
     def __init__(self,
                  optimizer,
@@ -58,6 +61,7 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer):
         return super(AveragedOptimizerWrapper, self).apply_gradients(
             grads_and_vars, name)
 
+    @abc.abstractmethod
     def average_op(self, var, average_var):
         raise NotImplementedError
 

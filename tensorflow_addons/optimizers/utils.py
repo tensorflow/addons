@@ -38,10 +38,7 @@ def fit_bn(model, *args, **kwargs):
     assign_ops = []
     for layer in model.layers:
         if isinstance(layer, tf.keras.layers.BatchNormalization):
-            if not layer.built:
-                continue
-
-            assign_ops.append([
+            assign_ops.extend([
                 layer.moving_mean.assign(tf.zeros_like(layer.moving_mean)),
                 layer.moving_variance.assign(
                     tf.ones_like(layer.moving_variance))
