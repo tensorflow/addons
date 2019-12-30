@@ -76,17 +76,19 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             raise ValueError('`WeightNormalization` must wrap a layer that'
                              ' contains a `kernel` for weights')
 
+        kernel = self.layer.cell.recurrent_kernel if self.is_rnn else self.layer.kernel
+
         # The kernel's filter or unit dimension is -1
-        self.layer_depth = int(kernel_layer.kernel.shape[-1])
-        self.kernel_norm_axes = list(range(kernel_layer.kernel.shape.rank - 1))
+        self.layer_depth = int(kernel.shape[-1])
+        self.kernel_norm_axes = list(range(kernel.shape.rank - 1))
 
         self.g = self.add_weight(
             name='g',
             shape=(self.layer_depth,),
             initializer='ones',
-            dtype=kernel_layer.kernel.dtype,
+            dtype=kernel.dtype,
             trainable=True)
-        self.v = kernel_layer.kernel
+        self.v = kernel
 
         self._initialized = self.add_weight(
             name='initialized',
@@ -127,11 +129,17 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
         with tf.name_scope('compute_weights'):
             # Replace kernel by normalized weight variable.
-            self.layer.kernel = tf.nn.l2_normalize(
+            kernel = tf.nn.l2_normalize(
                 self.v, axis=self.kernel_norm_axes) * g
 
+            if self.is_rnn:
+                self.layer.cell.recurrent_kernel = kernel
+                update_kernel = tf.identity(self.layer.cell.recurrent_kernel)
+            else:
+                self.layer.kernel = kernel
+                update_kernel = tf.identity(self.layer.kernel)
+
             # Ensure we calculate result after updating kernel.
-            update_kernel = tf.identity(self.layer.kernel)
             with tf.control_dependencies([update_kernel]):
                 outputs = self.layer(inputs)
                 return outputs

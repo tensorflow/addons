@@ -95,6 +95,9 @@ class WeightNormalizationTest(tf.test.TestCase):
         wt_rnn = wrappers.WeightNormalization(rnn_layer)
         dense = tf.keras.layers.Dense(1)
         model = tf.keras.models.Sequential(layers=[inputs, wt_rnn, dense])
+        model.build()
+        sample_data = np.ones((1, 5, 3), dtype=np.float32)
+        model(sample_data)
 
     def test_save_file_h5(self):
         self.create_tempfile('wrapper_test_model.h5')
