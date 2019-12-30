@@ -61,6 +61,11 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         self._init_critical_section = tf.CriticalSection(name='init_mutex')
         self.is_rnn = isinstance(self.layer, tf.keras.layers.RNN)
 
+        if self.data_init and self.is_rnn:
+            print(
+                "WeightNormalization: Using data dependent initialization with RNNs is not advised"
+            )
+
     def build(self, input_shape):
         """Build `Layer`"""
         input_shape = tf.TensorShape(input_shape)
@@ -106,9 +111,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
                     layer_config)
                 self._naked_clone_layer.build(input_shape)
                 self._naked_clone_layer.set_weights(self.layer.get_weights())
-                if self.is_rnn:
-                    self._naked_clone_layer.cell.activation = None
-                else:
+                if not self.is_rnn:
                     self._naked_clone_layer.activation = None
 
         self.built = True
@@ -129,8 +132,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
         with tf.name_scope('compute_weights'):
             # Replace kernel by normalized weight variable.
-            kernel = tf.nn.l2_normalize(
-                self.v, axis=self.kernel_norm_axes) * g
+            kernel = tf.nn.l2_normalize(self.v, axis=self.kernel_norm_axes) * g
 
             if self.is_rnn:
                 self.layer.cell.recurrent_kernel = kernel
@@ -183,6 +185,14 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             data_norm_axes = list(range(x_init.shape.rank - 1))
             m_init, v_init = tf.nn.moments(x_init, data_norm_axes)
             scale_init = 1. / tf.math.sqrt(v_init + 1e-10)
+
+            # RNNs have fused kernels that are tiled
+            # Repeat scale_init to match the shape of fused kernel
+            # Note: This is only to support the operation,
+            # the paper advises against RNN+data_dep_init
+            if scale_init.shape[0] != self.g.shape[0]:
+                rep = int(self.g.shape[0] / scale_init.shape[0])
+                scale_init = tf.tile(scale_init, [rep])
 
             # Assign data dependent init values
             g_tensor = self.g.assign(self.g * scale_init)
