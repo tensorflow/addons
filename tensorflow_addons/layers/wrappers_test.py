@@ -116,10 +116,10 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
         ["SimpleRNN", lambda: tf.keras.layers.SimpleRNN(1), [None, 10]],
         ["Conv2D", lambda: tf.keras.layers.Conv2D(3, 1), [3, 3, 1]],
         ["LSTM", lambda: tf.keras.layers.LSTM(1), [10, 10]])
-    def test_model_build(self, base_layer, input_shape):
+    def test_model_build(self, base_layer_fn, input_shape):
         inputs = tf.keras.layers.Input(shape=input_shape)
-        base_layer = base_layer()
         for data_init in [True, False]:
+            base_layer = base_layer_fn()
             wt_layer = wrappers.WeightNormalization(base_layer, data_init)
             model = tf.keras.models.Sequential(layers=[inputs, wt_layer])
             model.build()
@@ -151,6 +151,28 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
         self.evaluate(tf.compat.v1.global_variables_initializer())
         self.assertAllClose(
             self.evaluate(base_output), self.evaluate(wn_output))
+
+    @parameterized.named_parameters(
+        ["Dense", lambda: tf.keras.layers.Dense(1), [25]],
+        ["SimpleRNN", lambda: tf.keras.layers.SimpleRNN(1), [10, 10]],
+        ["Conv2D", lambda: tf.keras.layers.Conv2D(3, 1), [3, 3, 1]],
+        ["LSTM", lambda: tf.keras.layers.LSTM(1), [10, 10]])
+    def test_removal(self, base_layer_fn, input_shape):
+        sample_data = np.ones([1] + input_shape, dtype=np.float32)
+
+        for data_init in [True, False]:
+            base_layer = base_layer_fn()
+            wn_layer = wrappers.WeightNormalization(base_layer, data_init)
+            wn_output = wn_layer(sample_data)
+            self.evaluate(tf.compat.v1.global_variables_initializer())
+            with tf.control_dependencies([wn_output]):
+                wn_removed_layer = wn_layer.remove()
+                wn_removed_output = wn_removed_layer(sample_data)
+
+            self.evaluate(tf.compat.v1.global_variables_initializer())
+            self.assertAllClose(
+                self.evaluate(wn_removed_output), self.evaluate(wn_output))
+            self.assertTrue(isinstance(wn_removed_layer, base_layer.__class__))
 
 
 if __name__ == "__main__":

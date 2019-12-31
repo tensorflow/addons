@@ -63,7 +63,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
         if self.data_init and self.is_rnn:
             print(
-                "WeightNormalization: Using data dependent initialization with RNNs is not advised"
+                "WeightNormalization: Using `data_init=True` with RNNs is not advised"
             )
 
     def build(self, input_shape):
@@ -206,3 +206,15 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         config = {'data_init': self.data_init}
         base_config = super(WeightNormalization, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+
+    def remove(self):
+        kernel = tf.Variable(
+            tf.nn.l2_normalize(self.v, axis=self.kernel_norm_axes) * self.g,
+            name='recurrent_kernel' if self.is_rnn else 'kernel')
+
+        if self.is_rnn:
+            self.layer.cell.recurrent_kernel = kernel
+        else:
+            self.layer.kernel = kernel
+
+        return self.layer
