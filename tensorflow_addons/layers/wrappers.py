@@ -16,6 +16,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import logging
+
 import tensorflow as tf
 
 
@@ -62,9 +64,9 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         self.is_rnn = isinstance(self.layer, tf.keras.layers.RNN)
 
         if self.data_init and self.is_rnn:
-            print(
-                "WeightNormalization: Using `data_init=True` with RNNs is not advised"
-            )
+            logging.warn(
+                "WeightNormalization: Using `data_init=True` with RNNs "
+                "is advised against by the paper. Use `data_init=False`.")
 
     def build(self, input_shape):
         """Build `Layer`"""
@@ -81,7 +83,10 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             raise ValueError('`WeightNormalization` must wrap a layer that'
                              ' contains a `kernel` for weights')
 
-        kernel = self.layer.cell.recurrent_kernel if self.is_rnn else self.layer.kernel
+        if self.is_rnn:
+            kernel = kernel_layer.recurrent_kernel
+        else:
+            kernel = kernel_layer.kernel
 
         # The kernel's filter or unit dimension is -1
         self.layer_depth = int(kernel.shape[-1])
