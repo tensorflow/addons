@@ -20,12 +20,8 @@ from __future__ import print_function
 import tensorflow as tf
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
-_activation_ops_so = tf.load_op_library(
-    get_path_to_datafile("custom_ops/activations/_activation_ops.so"))
-
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-@tf.function
 def rrelu(x, lower=0.125, upper=0.3333333333333333, training=None, seed=None):
     """rrelu function.
 
@@ -51,14 +47,11 @@ def rrelu(x, lower=0.125, upper=0.3333333333333333, training=None, seed=None):
     if training is None:
         training = tf.keras.backend.learning_phase()
         training = bool(tf.keras.backend.get_value(training))
-    # TODO: get rid of v1 API
-    seed1, seed2 = tf.compat.v1.random.get_seed(seed)
-    result, _ = _activation_ops_so.addons_rrelu(x, lower, upper, training,
-                                                seed1, seed2)
-    return result
 
+    if training:
+        alpha = tf.random.uniform(
+            tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype, seed=seed)
+    else:
+        alpha = tf.cast((lower + upper) / 2, x.dtype)
 
-@tf.RegisterGradient("Addons>Rrelu")
-def _rrelu_grad(op, *grad):
-    return _activation_ops_so.addons_rrelu_grad(grad[0], op.inputs[0],
-                                                op.outputs[1])
+    return tf.where(x >= 0, x, alpha * x)
