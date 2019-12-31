@@ -40,29 +40,28 @@ jobs:
         - python -m pip install -q -U twine --ignore-installed six
         - twine upload -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
 
-# Windows nightlies for TensorFlow are not available
     # Windows Builds
-#    - stage: build
-#      name: "Build on Windows for Python 2.7 3.5 3.6 3.7"
-#      os: windows
-#      language: shell
-#      before_install:
-#        - choco install python --version 2.7.11
-#        - choco install python --version 3.5.4
-#        - choco install python --version 3.6.8
-#        - choco install python --version 3.7.5
-#      script:
-#        - export PATH=/c/tools/python:/c/tools/python/Scripts:$PATH
-#        - bash -x -e tools/ci_build/builds/release_windows.sh
-#        - export PATH=/c/Python35:/c/Python35/Scripts:$PATH
-#        - bash -x -e tools/ci_build/builds/release_windows.sh
-#        - export PATH=/c/Python36:/c/Python36/Scripts:$PATH
-#        - bash -x -e tools/ci_build/builds/release_windows.sh
-#        - export PATH=/c/Python37:/c/Python37/Scripts:$PATH
-#        - bash -x -e tools/ci_build/builds/release_windows.sh
-#      after_success:
-#        - python -m pip install -q -U twine --ignore-installed six
-#        - twine upload -u $PYPI_USER -p $PYPI_PW artifacts/*.whl
+    - stage: build
+      name: "Build on Windows for Python 2.7 3.5 3.6 3.7"
+      os: windows
+      language: shell
+      before_install:
+        - choco install python --version 2.7.11
+        - choco install python --version 3.5.4
+        - choco install python --version 3.6.8
+        - choco install python --version 3.7.5
+      script:
+        - export PATH=/c/tools/python:/c/tools/python/Scripts:$PATH
+        - bash -x -e tools/ci_build/builds/release_windows.sh
+        - export PATH=/c/Python35:/c/Python35/Scripts:$PATH
+        - bash -x -e tools/ci_build/builds/release_windows.sh
+        - export PATH=/c/Python36:/c/Python36/Scripts:$PATH
+        - bash -x -e tools/ci_build/builds/release_windows.sh
+        - export PATH=/c/Python37:/c/Python37/Scripts:$PATH
+        - bash -x -e tools/ci_build/builds/release_windows.sh
+      after_success:
+        - python -m pip install -q -U twine --ignore-installed six
+        - twine upload -u $PYPI_USER -p $PYPI_PW artifacts/*.whl
 
 notifications:
   email:
