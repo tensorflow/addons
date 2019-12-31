@@ -22,6 +22,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.optimizers import stochastic_weight_averaging
+from tensorflow_addons.optimizers.utils import fit_bn
 from tensorflow_addons.utils import test_utils
 
 SWA = stochastic_weight_averaging.SWA
@@ -30,7 +31,6 @@ SWA = stochastic_weight_averaging.SWA
 @test_utils.run_all_in_graph_and_eager_modes
 class SWATest(tf.test.TestCase):
     def test_averaging(self):
-
         start_averaging = 0
         average_period = 1
         sgd = tf.keras.optimizers.SGD(lr=1.)
@@ -72,7 +72,6 @@ class SWATest(tf.test.TestCase):
         self.assertAllClose(var_1.read_value(), [1.8, 1.8])
 
     def test_fit_simple_linear_model(self):
-
         seed = 0x2019
         np.random.seed(seed)
         tf.random.set_seed(seed)
@@ -85,7 +84,7 @@ class SWATest(tf.test.TestCase):
         model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
         # using num_examples - 1 since steps starts from 0.
         optimizer = SWA(
-            'adam', start_averaging=num_examples // 32 - 1, average_period=100)
+            'sgd', start_averaging=num_examples // 32 - 1, average_period=100)
         model.compile(optimizer, loss='mse')
         model.fit(x, y, epochs=10)
         optimizer.assign_average_vars(model.variables)
@@ -106,13 +105,28 @@ class SWATest(tf.test.TestCase):
         _ = SWA('adam', average_period=10)
 
     def test_get_config(self):
-        self.skipTest('Wait #33614 to be fixed')
         opt = SWA('adam', average_period=10, start_averaging=0)
         opt = tf.keras.optimizers.deserialize(
             tf.keras.optimizers.serialize(opt))
         config = opt.get_config()
         self.assertEqual(config['average_period'], 10)
         self.assertEqual(config['start_averaging'], 0)
+
+    def test_assign_batchnorm(self):
+        x = np.random.standard_normal((10, 64))
+        y = np.random.standard_normal((10, 1))
+
+        model = tf.keras.Sequential()
+        model.add(tf.keras.layers.Dense(16, activation='relu'))
+        model.add(tf.keras.layers.BatchNormalization())
+        model.add(tf.keras.layers.Dense(1))
+
+        opt = SWA(tf.keras.optimizers.SGD())
+        model.compile(optimizer=opt, loss='mean_squared_error')
+        model.fit(x, y, epochs=1)
+
+        opt.assign_average_vars(model.variables)
+        fit_bn(model, x, y)
 
 
 if __name__ == '__main__':

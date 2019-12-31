@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from tensorflow_addons.optimizers.average_wrapper import AveragedOptimizerWrapper
 from tensorflow_addons.optimizers.conditional_gradient import ConditionalGradient
 from tensorflow_addons.optimizers.cyclical_learning_rate import (
     CyclicalLearningRate)
