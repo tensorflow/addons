@@ -80,16 +80,11 @@ https://bazel.build/) build system (version >= 1.0.0).
 git clone https://github.com/tensorflow/addons.git
 cd addons
 
-# If building GPU Ops (Requires CUDA 10.1 and CuDNN 7)
-export TF_NEED_CUDA=1
-export CUDA_HOME="/path/to/cuda10.1" (default: /usr/local/cuda)
-export CUDNN_INSTALL_PATH="/path/to/cudnn" (default: /usr/lib/x86_64-linux-gnu)
-
 # This script links project with TensorFlow dependency
 ./configure.sh
 
 bazel build --enable_runfiles build_pip_pkg
-bazel-bin/build_pip_pkg artifacts --nightly
+bazel-bin/build_pip_pkg artifacts
 
 pip install artifacts/tensorflow_addons-*.whl
 ```

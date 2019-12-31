@@ -67,56 +67,39 @@ Please see our [Style Guide](STYLE_GUIDE.md) for more details.
 Nightly CI tests are ran and results can be found on the central README. To
 subscribe for alerts please join the [addons-testing mailing list](https://groups.google.com/a/tensorflow.org/forum/#!forum/addons-testing).
 
-### Locally Testing CPU
-Run all tests in docker:
+### Locally Testing 
 
+#### CPU Testing Script
 ```bash
 bash tools/run_docker.sh -c 'make unit-test'
 ```
 
-or run manually:
-
-```bash
-docker run --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-ubuntu16.04-manylinux2010 /bin/bash
-./configure.sh  # Links project with TensorFlow dependency
-```
-
-Run selected tests:
-
-```bash
-bazel test -c opt -k \
---test_timeout 300,450,1200,3600 \
---test_output=all \
-//tensorflow_addons/<test_selection>
-```
-
-`<test_selection>` can be `...` for all tests or `<package>:<py_test_name>` for individual tests.
-`<package>` can be any package name like `metrics` for example.
-`<py_test_name>` can be any test name given by the `BUILD` file or `*` for all tests of the given package.
-
-### Locally Testing GPU
-Run all tests in docker:
-
+#### GPU Testing Script
 ```bash
 bash tools/run_docker.sh -d gpu -c 'make gpu-unit-test'
 ```
 
-or run manually:
+#### Run Manually
 
-```bash
-docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010 /bin/bash
-export TF_NEED_CUDA=1
+It is recommend that tests are ran within docker images, but should still work on host.
+
+CPU Docker: `docker run --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-ubuntu16.04-manylinux2010 /bin/bash`
+
+GPU Docker: `docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010 /bin/bash`
+
+Configure:
+```
+# Temporary until we remove py2 support
+ln -sf /usr/bin/python3.6 /usr/bin/python && rm /usr/bin/python2 
+
 ./configure.sh  # Links project with TensorFlow dependency
 ```
-
 Run selected tests:
-
 ```bash
 bazel test -c opt -k \
 --test_timeout 300,450,1200,3600 \
---crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.1:toolchain \
 --test_output=all \
---jobs=1 \
+--run_under=$(readlink -f tools/ci_testing/parallel_gpu_execute.sh) \
 //tensorflow_addons/<test_selection>
 ```
 
