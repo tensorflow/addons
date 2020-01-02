@@ -5,6 +5,7 @@ sh_binary(
         "LICENSE",
         "MANIFEST.in",
         "setup.py",
+        "requirements.txt",
         "//tensorflow_addons",
     ],
 )

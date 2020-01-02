@@ -1,1 +1,1 @@
-tf-nightly>=2.1.0.dev20191004
+tf-nightly
