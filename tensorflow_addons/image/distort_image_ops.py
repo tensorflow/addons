@@ -25,7 +25,6 @@ _distort_image_ops = tf.load_op_library(
 
 
 # pylint: disable=invalid-name
-@tf.function
 def random_hsv_in_yiq(image,
                       max_delta_hue=0,
                       lower_saturation=1,
@@ -106,7 +105,6 @@ def random_hsv_in_yiq(image,
             image, delta_hue, scale_saturation, scale_value, name=scope)
 
 
-@tf.function
 def adjust_hsv_in_yiq(image,
                       delta_hue=0,
                       scale_saturation=1,
