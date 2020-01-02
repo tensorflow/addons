@@ -94,10 +94,10 @@ def mean_filter2d(image,
                                                    "filter_shape")
 
         # Keep the precision if it's float;
-        # otherwise, convert to float32 for computing.
+        # otherwise, convert to float64 for computing.
         orig_dtype = image.dtype
         if not image.dtype.is_floating:
-            image = tf.dtypes.cast(image, tf.dtypes.float32)
+            image = tf.dtypes.cast(image, tf.dtypes.float64)
 
         # Explicitly pad the image
         image = _pad(

@@ -133,7 +133,7 @@ class MeanFilter2dTest(_Filter2dTest):
 
         for shape in [(3, 3), (3, 3, 3), (1, 3, 3, 3)]:
             image = tf.ones(shape=shape)
-            self.assertAllEqual(self.evaluate(image), self.evaluate(fn(image)))
+            self.assertAllClose(self.evaluate(image), self.evaluate(fn(image)))
 
     def test_reflect_padding_with_3x3_filter(self):
         expected_plane = tf.constant([[33. / 9., 36. / 9., 39. / 9.],
@@ -258,7 +258,7 @@ class MedianFilter2dTest(_Filter2dTest):
 
         for shape in [(3, 3), (3, 3, 3), (1, 3, 3, 3)]:
             image = tf.ones(shape=shape)
-            self.assertAllEqual(self.evaluate(image), self.evaluate(fn(image)))
+            self.assertAllClose(self.evaluate(image), self.evaluate(fn(image)))
 
     def test_reflect_padding_with_3x3_filter(self):
         expected_plane = tf.constant([[4, 4, 5], [5, 5, 5], [5, 6, 6]])
