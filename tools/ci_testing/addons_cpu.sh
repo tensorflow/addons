@@ -25,6 +25,8 @@ if [[ ! -d "tensorflow_addons" ]]; then
     exit 1
 fi
 
+set -x
+
 PLATFORM="$(uname -s | tr 'A-Z' 'a-z')"
 
 if [[ ${PLATFORM} == "darwin" ]]; then
@@ -40,7 +42,9 @@ echo ""
 
 export CC_OPT_FLAGS='-mavx'
 export TF_NEED_CUDA=0
-yes 'y' | ./configure.sh
+
+# Use default configuration here.
+echo 'y' | ./configure.sh
 
 ## Run bazel test command. Double test timeouts to avoid flakes.
 bazel test -c opt -k \
