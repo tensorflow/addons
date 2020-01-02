@@ -17,6 +17,9 @@ limitations under the License.
 #include <string>
 #include <vector>
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/types.h"
