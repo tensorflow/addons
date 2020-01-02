@@ -15,6 +15,9 @@
 # ==============================================================================
 set -e -x
 
+# No GPU support for Windows (See #784)
+export TF_NEED_CUDA="0"
+
 mkdir -p artifacts/
 export BAZEL_VC=/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2017/BuildTools/VC/
 
@@ -25,7 +28,7 @@ python --version
 python -m pip install --upgrade pip
 
 #Link TF dependency
-yes 'y' | ./configure.sh --quiet
+echo 'y' | ./configure.sh --quiet
 
 ./bazel-1.1.0-windows-x86_64.exe build \
     -c opt \
@@ -36,4 +39,4 @@ yes 'y' | ./configure.sh --quiet
     --test_output=errors \
     build_pip_pkg
 
-bazel-bin/build_pip_pkg artifacts/
+bazel-bin/build_pip_pkg artifacts --nightly

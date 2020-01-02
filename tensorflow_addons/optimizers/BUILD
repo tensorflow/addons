@@ -6,6 +6,7 @@ py_library(
     name = "optimizers",
     srcs = [
         "__init__.py",
+        "average_wrapper.py",
         "conditional_gradient.py",
         "cyclical_learning_rate.py",
         "lamb.py",
@@ -14,6 +15,7 @@ py_library(
         "moving_average.py",
         "rectified_adam.py",
         "stochastic_weight_averaging.py",
+        "utils.py",
         "weight_decay_optimizers.py",
         "yogi.py",
     ],

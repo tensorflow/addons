@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 # ==============================================================================
+set -x
+
 # Make sure we're in the project root path.
 SCRIPT_DIR=$( cd ${0%/*} && pwd -P )
 ROOT_DIR=$( cd "$SCRIPT_DIR/../.." && pwd -P )
@@ -41,8 +43,6 @@ echo ""
 export CC_OPT_FLAGS='-mavx'
 export TF_NEED_CUDA=0
 
-export PYTHON_BIN_PATH=`which python`
-ls -alh $PYTHON_BIN_PATH
 # Use default configuration here.
 echo 'y' | ./configure.sh
 

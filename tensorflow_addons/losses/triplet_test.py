@@ -114,6 +114,10 @@ class TripletSemiHardLossTest(tf.test.TestCase):
         ])
         model.compile(loss="Addons>triplet_semihard_loss", optimizer="adam")
 
+    def test_serialization(self):
+        loss = triplet.TripletSemiHardLoss()
+        new_loss = tf.keras.losses.deserialize(tf.keras.losses.serialize(loss))
+
 
 if __name__ == '__main__':
     tf.test.main()

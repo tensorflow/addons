@@ -123,6 +123,7 @@ py_test(
     srcs = [
         "rrelu_test.py",
     ],
+    flaky = True,
     main = "rrelu_test.py",
     deps = [
         ":activations",
