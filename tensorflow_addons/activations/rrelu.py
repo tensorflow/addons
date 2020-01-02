@@ -25,7 +25,6 @@ _activation_ops_so = tf.load_op_library(
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-@tf.function
 def rrelu(x, lower=0.125, upper=0.3333333333333333, training=None, seed=None):
     """rrelu function.
 
