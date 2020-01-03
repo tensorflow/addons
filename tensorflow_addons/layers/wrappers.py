@@ -64,7 +64,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         self.is_rnn = isinstance(self.layer, tf.keras.layers.RNN)
 
         if self.data_init and self.is_rnn:
-            logging.warn(
+            logging.warning(
                 "WeightNormalization: Using `data_init=True` with RNNs "
                 "is advised against by the paper. Use `data_init=False`.")
 
