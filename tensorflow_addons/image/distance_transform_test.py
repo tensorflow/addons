@@ -121,13 +121,6 @@ class DistanceOpsTest(tf.test.TestCase):
         expected_output = np.full([10, 10, 1], tf.float32.max)
         self.assertAllClose(output, expected_output)
 
-    def test_unknown_shape(self):
-        fn = dist_ops.euclidean_dist_transform.get_concrete_function(
-            tf.TensorSpec(None, tf.uint8))
-        for shape in [[5, 10], [10, 7, 1], [4, 10, 10, 1]]:
-            image = tf.zeros(shape, dtype=tf.uint8)
-            self.assertAllClose(image, fn(image))
-
 
 if __name__ == "__main__":
     tf.test.main()

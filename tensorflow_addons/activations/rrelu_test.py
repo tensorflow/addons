@@ -65,14 +65,6 @@ class RreluTest(tf.test.TestCase, parameterized.TestCase):
                 self.assertAllCloseAccordingToType(
                     theoretical, numerical, rtol=5e-4, atol=5e-4)
 
-    def test_unknown_shape(self):
-        fn = rrelu.get_concrete_function(
-            tf.TensorSpec(shape=None, dtype=tf.float32))
-
-        for shape in [(1,), (1, 2), (1, 2, 3), (1, 2, 3, 4)]:
-            x = tf.ones(shape=shape, dtype=tf.float32)
-            self.assertAllClose(fn(x), rrelu(x))
-
 
 if __name__ == "__main__":
     tf.test.main()

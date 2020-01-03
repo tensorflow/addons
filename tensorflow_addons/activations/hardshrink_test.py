@@ -58,14 +58,6 @@ class HardshrinkTest(tf.test.TestCase, parameterized.TestCase):
         theoretical, numerical = tf.test.compute_gradient(hardshrink, [x])
         self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
 
-    def test_unknown_shape(self):
-        fn = hardshrink.get_concrete_function(
-            tf.TensorSpec(shape=None, dtype=tf.float32))
-
-        for shape in [(1,), (1, 2), (1, 2, 3), (1, 2, 3, 4)]:
-            x = tf.ones(shape=shape, dtype=tf.float32)
-            self.assertAllClose(fn(x), hardshrink(x))
-
 
 if __name__ == "__main__":
     tf.test.main()
