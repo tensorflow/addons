@@ -18,7 +18,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
