@@ -41,6 +41,8 @@ py_test(
     srcs = [
         "wrappers_test.py",
     ],
+    # TODO: Investigate why flaky #830
+    flaky = True,
     main = "wrappers_test.py",
     deps = [
         ":layers",
