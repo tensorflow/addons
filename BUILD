@@ -4,8 +4,8 @@ sh_binary(
     data = [
         "LICENSE",
         "MANIFEST.in",
-        "setup.py",
         "requirements.txt",
+        "setup.py",
         "//tensorflow_addons",
     ],
 )
