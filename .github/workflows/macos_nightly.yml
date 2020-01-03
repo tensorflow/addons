@@ -1,4 +1,4 @@
-name: nightly-tests
+name: macos-nightly
 
 on:
   schedule:
