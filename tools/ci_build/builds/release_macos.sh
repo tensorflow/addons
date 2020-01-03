@@ -41,7 +41,7 @@ for version in ${PYTHON_VERSIONS}; do
     python -m pip --version
 
     #Link TF dependency
-    yes 'y' | sudo ./configure.sh --quiet
+    yes 'y' | ./configure.sh --quiet
 
     # Build
     bazel build \

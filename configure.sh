@@ -79,7 +79,7 @@ fi
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 PYTHON_PATH=$(which python)
-REQUIRED_PKG=$(cat build_deps/requirements.txt)
+REQUIRED_PKG=$(cat requirements.txt)
 
 if [[ ${BRANCH} == "master" ]]; then
   echo "WARN: You're building from master branch, please ensure that you want to build \
@@ -95,7 +95,7 @@ if [[ $? == 1 ]]; then
   read -r -p "Package ${REQUIRED_PKG} will be installed. Are You Sure? [y/n] " reply
   case $reply in
       [yY]*) echo "> Installing..."
-         python -m pip install $PIP_INSTALL_OPTS -r build_deps/requirements.txt;;
+         python -m pip install $PIP_INSTALL_OPTS -r requirements.txt;;
       * ) echo "> Exiting..."; exit;;
   esac
 else
