@@ -128,3 +128,15 @@ py_test(
         ":activations",
     ],
 )
+
+py_test(
+    name = "rrelu_benchmark",
+    size = "small",
+    srcs = [
+        "rrelu_benchmark.py",
+    ],
+    main = "rrelu_benchmark.py",
+    deps = [
+        ":activations",
+    ],
+)
