@@ -32,4 +32,4 @@ def check_dependencies(requirement_file_name):
 
 
 if __name__ == "__main__":
-    check_dependencies('build_deps/requirements.txt')
+    check_dependencies('requirements.txt')
