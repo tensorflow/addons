@@ -136,7 +136,7 @@ class Novograd(tf.keras.optimizers.Optimizer):
                        lambda: grad + weight_decay * var,
                        lambda: grad)
         m = self.get_slot(var, 'm')
-        return training_ops.resource_apply_sparse_momentum(
+        return training_ops.resource_sparse_apply_momentum(
             var.handle,
             m.handle,
             coefficients['lr'],
