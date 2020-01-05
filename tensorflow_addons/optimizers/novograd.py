@@ -69,6 +69,7 @@ class Novograd(tf.keras.optimizers.Optimizer):
                 beta_1_t=beta_1_t,
                 beta_2_t=beta_2_t,
                 one_minus_beta_2_t=1 - beta_2_t,
+                one_minus_beta_1_t=1 - beta_1_t,
             ))
 
     def set_weights(self, weights):
