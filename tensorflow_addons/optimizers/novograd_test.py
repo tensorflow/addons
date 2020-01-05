@@ -134,7 +134,7 @@ class NovogradTest(tf.test.TestCase):
         predicted = model.predict(x)
 
         max_abs_diff = np.max(np.abs(predicted - y))
-        self.assertLess(max_abs_diff, 1e-3)
+        self.assertLess(max_abs_diff, 2e-4)
 
     def test_get_config(self):
         opt = Novograd(lr=1e-4, weight_decay=0.0, grad_averaging=False)
