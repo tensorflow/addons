@@ -1,9 +1,24 @@
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
 """Novograd for TensorFlow."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+from tensorflow.python.training import training_ops
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -77,21 +92,16 @@ class Novograd(tf.keras.optimizer.Optimizer):
         v_t = v.assign(v_t, use_locking=self._use_locking)
 
         grad = grad / (tf.sqrt(v_t) + self.epsilon)
-
+        grad = tf.cond(grad_averaging, grad * coefficients['one_minus_beta_1_t'], grad)
+        grad = tf.cond(tf.greater(weight_decay, 0), grad + weight_decay * var, grad)
         m = self.get_slot(var, 'm')
-        m_t = tf.cond(tf.equal(self.iterations, 0),
-                      grad,
-                      tf.cond(grad_averaging,
-                              m * coefficients['beta_1_t'] + grad,
-                              m * coefficients['beta_1_t'] + grad * coefficients['one_minus_beta_1_t']))
-        m_t = tf.cond(tf.greater(weight_decay, 0),
-                      m_t + weight_decay * var,
-                      m_t)
-        m_t = m.assign(m_t, use_locking=self._use_locking)
-
-        var_update = var - coefficients['lr'] * m_t
-
-        return var.assign(var_update, use_locking=self._use_locking).op
+        return training_ops.resource_apply_momentum(var.handle,
+                                                    m.handle,
+                                                    coefficients['lr'],
+                                                    grad,
+                                                    coefficients['beta_1_t'],
+                                                    use_locking=self._use_locking,
+                                                    use_nesterov=False)
 
     def _resource_apply_sparse(self, grad, var, indices, apply_state=None):
         var_device, var_dtype = var.device, var.dtype.base_dtype
@@ -109,21 +119,17 @@ class Novograd(tf.keras.optimizer.Optimizer):
         v_t = v.assign(v_t, use_locking=self._use_locking)
 
         grad = grad / (tf.sqrt(v_t) + self.epsilon)
+        grad = tf.cond(grad_averaging, grad * coefficients['one_minus_beta_1_t'], grad)
+        grad = tf.cond(tf.greater(weight_decay, 0), self._resource_scatter_add(grad, indices, weight_decay * var))
         m = self.get_slot(var, 'm')
-        m_t = tf.cond(tf.equal(self.iterations, 0),
-                      grad,
-                      tf.cond(grad_averaging,
-                              self._resource_scatter_add(m * coefficients['beta_1_t'], indices, grad),
-                              self._resource_scatter_add(m * coefficients['beta_1_t'], indices,
-                                                         grad * coefficients['one_minus_beta_1_t'])))
-        m_t = tf.cond(tf.greater(weight_decay, 0),
-                      self._resource_scatter_add(m_t, indices, weight_decay * var),
-                      m_t)
-        m_t = m.assign(m_t, use_locking=self._use_locking)
-
-        var_update = self._resource_scatter_add(var, coefficients['lr_t'] * (-m_t))
-
-        return var.assign(var_update, use_locking=self._use_locking).op
+        return training_ops.resource_apply_sparse_momentum(var.handle,
+                                                           m.handle,
+                                                           coefficients['lr'],
+                                                           grad,
+                                                           indices,
+                                                           coefficients['beta_1_t'],
+                                                           use_locking=self._use_locking,
+                                                           use_nesterov=False)
 
     def get_config(self):
         config = super(Novograd, self).get_config()
