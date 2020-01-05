@@ -101,37 +101,28 @@ class AdjustHueInYiqTest(tf.test.TestCase):
                 self.assertAllClose(y_tf, y_np, rtol=2e-4, atol=1e-4)
 
     def test_invalid_rank(self):
-        msg = "Shape must be at least rank 3 but is rank 2"
         x_np = np.random.rand(2, 3) * 255.
         delta_h = np.random.rand() * 2.0 - 1.0
-        with self.assertRaisesRegex(ValueError, msg):
-            self.evaluate(self._adjust_hue_in_yiq_tf(x_np, delta_h))
+        if tf.executing_eagerly():
+            msg = "input must be at least 3-D"
+            with self.assertRaisesRegex(tf.errors.InvalidArgumentError, msg):
+                self.evaluate(self._adjust_hue_in_yiq_tf(x_np, delta_h))
+        else:
+            msg = "Shape must be at least rank 3 but is rank 2"
+            with self.assertRaisesRegex(ValueError, msg):
+                self.evaluate(self._adjust_hue_in_yiq_tf(x_np, delta_h))
 
     def test_invalid_channels(self):
-        msg = "Dimension must be 3 but is 4"
         x_np = np.random.rand(4, 2, 4) * 255.
         delta_h = np.random.rand() * 2.0 - 1.0
-        with self.assertRaisesRegex(ValueError, msg):
-            self.evaluate(self._adjust_hue_in_yiq_tf(x_np, delta_h))
-
-    def test_adjust_hsv_in_yiq_unknown_shape(self):
-        fn = distort_image_ops.adjust_hsv_in_yiq.get_concrete_function(
-            tf.TensorSpec(shape=None, dtype=tf.float64))
-        for shape in (2, 3, 3), (4, 2, 3, 3):
-            image_np = np.random.rand(*shape) * 255.
-            image_tf = tf.constant(image_np)
-            self.assertAllClose(
-                self._adjust_hue_in_yiq_np(image_np, 0),
-                self.evaluate(fn(image_tf)),
-                rtol=2e-4,
-                atol=1e-4)
-
-    def test_random_hsv_in_yiq_unknown_shape(self):
-        fn = distort_image_ops.random_hsv_in_yiq.get_concrete_function(
-            tf.TensorSpec(shape=None, dtype=tf.float32))
-        for shape in (2, 3, 3), (4, 2, 3, 3):
-            image_tf = tf.ones(shape)
-            self.assertAllEqual(fn(image_tf), fn(image_tf))
+        if tf.executing_eagerly():
+            msg = "input must have 3 channels but instead has 4"
+            with self.assertRaisesRegex(tf.errors.InvalidArgumentError, msg):
+                self.evaluate(self._adjust_hue_in_yiq_tf(x_np, delta_h))
+        else:
+            msg = "Dimension must be 3 but is 4"
+            with self.assertRaisesRegex(ValueError, msg):
+                self.evaluate(self._adjust_hue_in_yiq_tf(x_np, delta_h))
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -182,18 +173,28 @@ class AdjustValueInYiqTest(tf.test.TestCase):
                 self.assertAllClose(y_tf, y_np, rtol=2e-4, atol=1e-4)
 
     def test_invalid_rank(self):
-        msg = "Shape must be at least rank 3 but is rank 2"
         x_np = np.random.rand(2, 3) * 255.
         scale = np.random.rand() * 2.0 - 1.0
-        with self.assertRaisesRegex(ValueError, msg):
-            self.evaluate(self._adjust_value_in_yiq_tf(x_np, scale))
+        if tf.executing_eagerly():
+            msg = "input must be at least 3-D"
+            with self.assertRaisesRegex(tf.errors.InvalidArgumentError, msg):
+                self.evaluate(self._adjust_value_in_yiq_tf(x_np, scale))
+        else:
+            msg = "Shape must be at least rank 3 but is rank 2"
+            with self.assertRaisesRegex(ValueError, msg):
+                self.evaluate(self._adjust_value_in_yiq_tf(x_np, scale))
 
     def test_invalid_channels(self):
-        msg = "Dimension must be 3 but is 4"
         x_np = np.random.rand(4, 2, 4) * 255.
         scale = np.random.rand() * 2.0 - 1.0
-        with self.assertRaisesRegex(ValueError, msg):
-            self.evaluate(self._adjust_value_in_yiq_tf(x_np, scale))
+        if tf.executing_eagerly():
+            msg = "input must have 3 channels but instead has 4"
+            with self.assertRaisesRegex(tf.errors.InvalidArgumentError, msg):
+                self.evaluate(self._adjust_value_in_yiq_tf(x_np, scale))
+        else:
+            msg = "Dimension must be 3 but is 4"
+            with self.assertRaisesRegex(ValueError, msg):
+                self.evaluate(self._adjust_value_in_yiq_tf(x_np, scale))
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -248,18 +249,28 @@ class AdjustSaturationInYiqTest(tf.test.TestCase):
                 self.assertAllClose(y_tf, y_baseline, rtol=2e-4, atol=1e-4)
 
     def test_invalid_rank(self):
-        msg = "Shape must be at least rank 3 but is rank 2"
         x_np = np.random.rand(2, 3) * 255.
         scale = np.random.rand() * 2.0 - 1.0
-        with self.assertRaisesRegex(ValueError, msg):
-            self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
+        if tf.executing_eagerly():
+            msg = "input must be at least 3-D"
+            with self.assertRaisesRegex(tf.errors.InvalidArgumentError, msg):
+                self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
+        else:
+            msg = "Shape must be at least rank 3 but is rank 2"
+            with self.assertRaisesRegex(ValueError, msg):
+                self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
 
     def test_invalid_channels(self):
-        msg = "Dimension must be 3 but is 4"
         x_np = np.random.rand(4, 2, 4) * 255.
         scale = np.random.rand() * 2.0 - 1.0
-        with self.assertRaisesRegex(ValueError, msg):
-            self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
+        if tf.executing_eagerly():
+            msg = "input must have 3 channels but instead has 4 "
+            with self.assertRaisesRegex(tf.errors.InvalidArgumentError, msg):
+                self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
+        else:
+            msg = "Dimension must be 3 but is 4"
+            with self.assertRaisesRegex(ValueError, msg):
+                self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
 
 
 # TODO: get rid of sessions

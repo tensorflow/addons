@@ -64,12 +64,12 @@ class DistanceOpsTest(tf.test.TestCase):
                  [[0], [1], [1], [1], [0]],
                  [[0], [0], [0], [0], [0]]]
         expected_output = np.array([
-            0, 0, 0, 0, 0,
-            0, 1, 1, 1, 0,
-            0, 1, 2, 1, 0,
-            0, 1, 1, 1, 0,
-            0, 0, 0, 0, 0
-        ] * batch_size)
+                                       0, 0, 0, 0, 0,
+                                       0, 1, 1, 1, 0,
+                                       0, 1, 2, 1, 0,
+                                       0, 1, 1, 1, 0,
+                                       0, 0, 0, 0, 0
+                                   ] * batch_size)
         # yapf: enable
         images = tf.constant([image] * batch_size, dtype=tf.uint8)
         for output_dtype in [tf.float16, tf.float32, tf.float64]:
@@ -120,13 +120,6 @@ class DistanceOpsTest(tf.test.TestCase):
         output = dist_ops.euclidean_dist_transform(image)
         expected_output = np.full([10, 10, 1], tf.float32.max)
         self.assertAllClose(output, expected_output)
-
-    def test_unknown_shape(self):
-        fn = dist_ops.euclidean_dist_transform.get_concrete_function(
-            tf.TensorSpec(None, tf.uint8))
-        for shape in [[5, 10], [10, 7, 1], [4, 10, 10, 1]]:
-            image = tf.zeros(shape, dtype=tf.uint8)
-            self.assertAllClose(image, fn(image))
 
 
 if __name__ == "__main__":

@@ -25,7 +25,6 @@ def get_ndims(image):
     return image.get_shape().ndims or tf.rank(image)
 
 
-@tf.function
 def to_4D_image(image):
     """Convert 2/3/4D image to 4D image.
 
@@ -69,7 +68,6 @@ def _dynamic_to_4D_image(image):
     return tf.reshape(image, new_shape)
 
 
-@tf.function
 def from_4D_image(image, ndims):
     """Convert back to an image with `ndims` rank.
 
