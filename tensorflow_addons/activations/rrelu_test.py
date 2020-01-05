@@ -77,6 +77,7 @@ class RreluTest(tf.test.TestCase, parameterized.TestCase):
                     self.assertAllCloseAccordingToType(
                         theoretical, numerical, rtol=5e-4, atol=5e-4)
 
+
 class RreluBenchmarks(tf.test.Benchmark):
     def benchmarkRreluOp(self):
         with tf.compat.v1.Session(config=tf.test.benchmark_config()) as sess:
@@ -84,8 +85,7 @@ class RreluBenchmarks(tf.test.Benchmark):
             lower = 0.1
             upper = 0.2
             result = rrelu(x, lower, upper, training=True)
-            self.run_op_benchmark(
-                sess, result.op, min_iters=25)
+            self.run_op_benchmark(sess, result.op, min_iters=25)
 
 
 if __name__ == "__main__":
