@@ -71,8 +71,6 @@ class NovogradTest(tf.test.TestCase):
         self.assertAllClose(var_1.read_value(), expected[1], atol=2e-4)
 
     def test_dense_sample(self):
-        # Expected values are obtained from the official implementation
-        # m_1: 0.4472135755, 0.894427151
 
         self.run_dense_sample(
             iterations=1,
@@ -97,9 +95,10 @@ class NovogradTest(tf.test.TestCase):
     def test_dense_sample_with_weight_decay(self):
         # Expected values are obtained from the official implementation
         self.run_dense_sample(
-            iterations=2,
-            expected=[[0.9010044985, 1.802008997], [2.8506000024, ]],
-            optimizer=Novograd(lr=0.1, weight_decay=0.01))
+            iterations=1,
+            expected=[[0.7382827095, 1.7470177985], [2.8302943759, 3.7737258345]],
+            optimizer=Novograd(lr=0.1, weight_decay=0.01),
+        )
 
     def test_sparse_sample_with_weight_decay(self):
         # Expected values are obtained from the official implementation
