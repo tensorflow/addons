@@ -87,7 +87,7 @@ class SWATest(tf.test.TestCase):
         optimizer = SWA(
             'adam', start_averaging=num_examples // 32 - 1, average_period=100)
         model.compile(optimizer, loss='mse')
-        model.fit(x, y, epochs=20)
+        model.fit(x, y, epochs=10)
         optimizer.assign_average_vars(model.variables)
 
         x = np.random.standard_normal((100, 3))
