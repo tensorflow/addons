@@ -98,7 +98,7 @@ class NovogradTest(tf.test.TestCase):
         # Expected values are obtained from the official implementation
         self.run_dense_sample(
             iterations=2,
-            expected=[[1.9105572849, 0.9552786425], [2.9400000012, 3.9200000016]],
+            expected=[[0.9552786425, 1.9105572849], [2.9400000012, 3.9200000016]],
             optimizer=Novograd(lr=0.1, weight_decay=0.01))
 
     def test_sparse_sample_with_weight_decay(self):
