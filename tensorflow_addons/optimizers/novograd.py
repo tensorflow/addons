@@ -121,7 +121,7 @@ class Novograd(tf.keras.optimizers.Optimizer):
         grad_averaging = self._get_hyper('grad_averaging')
 
         v = self.get_slot(var, 'v')
-        g_2 = tf.sparse.reduce_sum(tf.square(tf.cast(grad, tf.float32)))
+        g_2 = tf.reduce_sum(tf.square(tf.cast(grad, tf.float32)))
         # v is just a scalar and does not need to involve sparse tensors.
         v_t = tf.cond(tf.equal(self.iterations, 0),
                       lambda: g_2,
@@ -133,7 +133,7 @@ class Novograd(tf.keras.optimizers.Optimizer):
                        lambda: grad * coefficients['one_minus_beta_1_t'],
                        lambda: grad)
         grad = tf.cond(tf.greater(weight_decay, 0),
-                       self._resource_scatter_add(grad, indices, weight_decay * var),
+                       grad + weight_decay * var,
                        grad)
         m = self.get_slot(var, 'm')
         return training_ops.resource_apply_sparse_momentum(
