@@ -22,7 +22,7 @@ from tensorflow.python.training import training_ops
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-class Novograd(tf.keras.optimizer.Optimizer):
+class Novograd(tf.keras.optimizers.Optimizer):
     def __init__(self,
                  learning_rate=1,
                  beta_1=0.95,
@@ -55,7 +55,7 @@ class Novograd(tf.keras.optimizer.Optimizer):
     def _prepare_local(self, var_device, var_dtype, apply_state):
         super(Novograd, self)._prepare_local(var_device, var_dtype,
                                              apply_state)
-        local_step = tf.cast(self.iterations + 1, var_device)
+        local_step = tf.cast(self.iterations + 1, var_dtype)
         beta_1_t = tf.identity(self._get_hyper('beta_1', var_dtype))
         beta_2_t = tf.identity(self._get_hyper('beta_2', var_dtype))
         beta_1_power = tf.pow(beta_1_t, local_step)
@@ -86,7 +86,7 @@ class Novograd(tf.keras.optimizer.Optimizer):
         coefficients = ((apply_state or {}).get((var_device, var_dtype))
                         or self._fallback_apply_state(var_device, var_dtype))
         weight_decay = self._get_hyper('weight_decay')
-        grad_averaging = self._get_hyper('weight_averaging')
+        grad_averaging = self._get_hyper('grad_averaging')
 
         v = self.get_slot(var, 'v')
         g_2 = tf.reduce_sum(tf.square(tf.cast(grad, tf.float32)))
