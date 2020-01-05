@@ -120,10 +120,10 @@ py_test(
 py_test(
     name = "rrelu_test",
     size = "small",
-    args = ["--benchmarks=all"],
     srcs = [
         "rrelu_test.py",
     ],
+    args = ["--benchmarks=all"],
     main = "rrelu_test.py",
     deps = [
         ":activations",
