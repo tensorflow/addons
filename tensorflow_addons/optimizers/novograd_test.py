@@ -106,7 +106,7 @@ class NovogradTest(tf.test.TestCase):
     def test_dense_sample_with_grad_averaging(self):
         self.run_dense_sample(
             iterations=1,
-            expected=[[0.993675445, 1.8041], [2.8041, 3.8041]],
+            expected=[[0.993675445, 1.9873508899], [2.8041, 3.8041]],
             optimizer=Novograd(lr=0.1, beta_1=0.95, beta_2=0.98, epsilon=1e-8, grad_averaging=True))
 
     def test_sparse_sample_with_grad_averaging(self):
@@ -116,8 +116,8 @@ class NovogradTest(tf.test.TestCase):
             optimizer=Novograd(lr=1e-3, grad_averaging=True))
 
     def test_fit_simple_linear_model(self):
-        np.random.seed(0x2019)
-        tf.random.set_seed(0x2019)
+        np.random.seed(0x2020)
+        tf.random.set_seed(0x2020)
 
         x = np.random.standard_normal((100000, 3))
         w = np.random.standard_normal((3, 1))
@@ -127,7 +127,7 @@ class NovogradTest(tf.test.TestCase):
         model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
         model.compile(Novograd(lr=0.001, beta_1=0.9, beta_2=0.999), loss='mse')
 
-        model.fit(x, y, epochs=10)
+        model.fit(x, y, epochs=20)
 
         x = np.random.standard_normal((100, 3))
         y = np.dot(x, w)
