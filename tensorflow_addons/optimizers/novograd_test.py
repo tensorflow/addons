@@ -81,15 +81,15 @@ class NovogradTest(tf.test.TestCase):
     def test_sparse_sample(self):
         self.run_sparse_sample(
             iterations=1,
-            expected=[[0.8735088993, 1.7470177985], [2.8302943759, 3.7737258345]],
+            expected=[[0.8706804722, 1.7470177985], [2.8302943759, 3.7737258345]],
             optimizer=Novograd(lr=0.1),
         )
 
     def test_dense_sample_with_weight_decay(self):
         # Expected values are obtained from the official implementation
         self.run_dense_sample(
-            iterations=2,
-            expected=[[0.7382827095, 1.7470177985], [2.8302943759, 3.7737258345]],
+            iterations=1,
+            expected=[[0.8706804722, 1.7413609443], [2.8218090945, 3.762412126]],
             optimizer=Novograd(lr=0.1, weight_decay=0.01),
         )
 
@@ -120,7 +120,7 @@ class NovogradTest(tf.test.TestCase):
             optimizer=Novograd(lr=1e-3, grad_averaging=True))
 
     def test_get_config(self):
-        opt = Novograd(lr=1e-4)
+        opt = Novograd(lr=1e-4, weight_decay=0.0, grad_averaging=False)
         config = opt.get_config()
         self.assertEqual(config['learning_rate'], 1e-4)
         self.assertEqual(config['weight_decay'], 0.0)

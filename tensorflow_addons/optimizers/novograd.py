@@ -95,6 +95,7 @@ class Novograd(tf.keras.optimizers.Optimizer):
                       lambda: g_2,
                       lambda: v * coefficients['beta_2_t'] + g_2 * coefficients['one_minus_beta_2_t'])
         v_t = v.assign(v_t, use_locking=self._use_locking)
+
         grad = grad / (tf.sqrt(v_t) + self.epsilon)
         grad = tf.cond(grad_averaging,
                        lambda: grad * coefficients['one_minus_beta_1_t'],
