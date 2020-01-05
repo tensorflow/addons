@@ -128,21 +128,13 @@ class NovogradTest(tf.test.TestCase):
         self.run_dense_sample(
             iterations=1,
             expected=[[0.8041, 1.8041], [2.8041, 3.8041]],
-            optimizer=Novograd(
-                lr=1e-3,
-                grad_averaging=True
-            )
-        )
+            optimizer=Novograd(lr=1e-3, grad_averaging=True))
 
     def test_sparse_sample_with_grad_averaging(self):
         self.run_sparse_sample(
             iterations=2,
             expected=[[0.4653, 2.0], [3.0, 3.4653]],
-            optimizer=Novograd(
-                lr=1e-3,
-                grad_averaging=True
-            )
-        )
+            optimizer=Novograd(lr=1e-3, grad_averaging=True))
 
     def test_get_config(self):
         opt = Novograd(lr=1e-4)

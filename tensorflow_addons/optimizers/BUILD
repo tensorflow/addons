@@ -12,7 +12,7 @@ py_library(
         "lazy_adam.py",
         "lookahead.py",
         "moving_average.py",
-        "novograd.py"
+        "novograd.py",
         "rectified_adam.py",
         "stochastic_weight_averaging.py",
         "weight_decay_optimizers.py",
