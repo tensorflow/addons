@@ -125,7 +125,7 @@ class NovogradTest(tf.test.TestCase):
 
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
-        model.compile(Novograd(lr=0.01, beta_1=0.9, beta_2=0.999), loss='mse')
+        model.compile(Novograd(lr=0.001, beta_1=0.9, beta_2=0.999), loss='mse')
 
         model.fit(x, y, epochs=10)
 
