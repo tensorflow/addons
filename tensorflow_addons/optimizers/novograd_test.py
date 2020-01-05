@@ -76,7 +76,7 @@ class NovogradTest(tf.test.TestCase):
 
         self.run_dense_sample(
             iterations=1,
-            expected=[[0.9552786425, 1.9105572849], [2.9400000012, 3.9200000016]],
+            expected=[[0.8735088993, 1.7470177985], [2.8302943759, 3.7737258345]],
             optimizer=Novograd(lr=0.1),
         )
 
