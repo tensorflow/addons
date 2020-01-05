@@ -31,7 +31,7 @@ class NovogradTest(tf.test.TestCase):
         var_1 = tf.Variable([3.0, 4.0], dtype=tf.dtypes.float32)
 
         grad_0 = tf.constant([0.1, 0.2], dtype=tf.dtypes.float32)
-        grad_1 = tf.constant([0.03, 0.04], dtype=tf.dtypes.float32)
+        grad_1 = tf.constant([0.3, 0.4], dtype=tf.dtypes.float32)
 
         grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
@@ -72,15 +72,12 @@ class NovogradTest(tf.test.TestCase):
 
     def test_dense_sample(self):
         # Expected values are obtained from the official implementation
+        # m_1: 0.4472135755, 0.894427151
+
         self.run_dense_sample(
             iterations=1,
-            expected=[[0.5554, 1.5549], [2.5557, 3.5557]],
-            optimizer=Novograd(lr=1e-3),
-        )
-        self.run_dense_sample(
-            iterations=1,
-            expected=[[0.5554, 1.5549], [2.5557, 3.5557]],
-            optimizer=Novograd(lr=1e-3),
+            expected=[[1.9105572849, 0.9552786425], [2.9400000012, 3.9200000016]],
+            optimizer=Novograd(lr=0.1),
         )
 
     def test_sparse_sample(self):
@@ -100,15 +97,9 @@ class NovogradTest(tf.test.TestCase):
     def test_dense_sample_with_weight_decay(self):
         # Expected values are obtained from the official implementation
         self.run_dense_sample(
-            iterations=1,
-            expected=[[0.5472, 1.5368], [2.5276, 3.5176]],
-            optimizer=Novograd(lr=1e-3, weight_decay=0.01),
-        )
-        self.run_dense_sample(
-            iterations=1,
-            expected=[[0.5472, 1.5368], [2.5276, 3.5176]],
-            optimizer=Novograd(lr=1e-3, weight_decay=0.01),
-        )
+            iterations=2,
+            expected=[[1.9105572849, 0.9552786425], [2.9400000012, 3.9200000016]],
+            optimizer=Novograd(lr=0.1, weight_decay=0.01))
 
     def test_sparse_sample_with_weight_decay(self):
         # Expected values are obtained from the official implementation

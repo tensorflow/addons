@@ -24,7 +24,7 @@ from tensorflow.python.training import training_ops
 @tf.keras.utils.register_keras_serializable(package='Addons')
 class Novograd(tf.keras.optimizers.Optimizer):
     def __init__(self,
-                 learning_rate=1,
+                 learning_rate=0.1,
                  beta_1=0.95,
                  beta_2=0.98,
                  epsilon=1e-8,
