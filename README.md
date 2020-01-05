@@ -13,9 +13,10 @@
 | Build Type      | Status |
 | ---             | ---    |
 | **Linux Py2 CPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py2.html) |
-| **Linux Py3 CPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py3.html) |
 | **Linux Py2 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py2.html) |
+| **Linux Py3 CPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py3.html) |
 | **Linux Py3 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
+| **MacOS Py3 CPU**   | [![Status](https://github.com/tensorflow/addons/workflows/macos-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Amacos-nightly) |
 | **Linux Sanity Check**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-sanity.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-sanity.html) |
 
 **TensorFlow Addons** is a repository of contributions that conform to

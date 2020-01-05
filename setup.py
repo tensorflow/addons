@@ -60,7 +60,7 @@ with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
 if project_name == TFA_NIGHTLY:
     version['__version__'] += datetime.strftime(datetime.today(), "%Y%m%d")
 
-with open('build_deps/requirements.txt') as f:
+with open('requirements.txt') as f:
     required_pkgs = f.read().splitlines()
 
 # Manylinux2010 requires a patch for platlib
