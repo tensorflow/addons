@@ -19,6 +19,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+import numpy as np
 
 from tensorflow_addons.utils import test_utils
 from tensorflow_addons.optimizers import Novograd
@@ -113,6 +114,27 @@ class NovogradTest(tf.test.TestCase):
             iterations=2,
             expected=[[0.4653, 2.0], [3.0, 3.4653]],
             optimizer=Novograd(lr=1e-3, grad_averaging=True))
+
+    def test_fit_simple_linear_model(self):
+        np.random.seed(0x2019)
+        tf.random.set_seed(0x2019)
+
+        x = np.random.standard_normal((100000, 3))
+        w = np.random.standard_normal((3, 1))
+        y = np.dot(x, w) + np.random.standard_normal((100000, 1)) * 1e-4
+
+        model = tf.keras.models.Sequential()
+        model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
+        model.compile(Novograd(lr=0.01, beta_1=0.9, beta_2=0.999), loss='mse')
+
+        model.fit(x, y, epochs=3)
+
+        x = np.random.standard_normal((100, 3))
+        y = np.dot(x, w)
+        predicted = model.predict(x)
+
+        max_abs_diff = np.max(np.abs(predicted - y))
+        self.assertLess(max_abs_diff, 1e-4)
 
     def test_get_config(self):
         opt = Novograd(lr=1e-4, weight_decay=0.0, grad_averaging=False)
