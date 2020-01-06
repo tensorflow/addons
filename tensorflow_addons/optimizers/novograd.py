@@ -196,8 +196,9 @@ class Novograd(tf.keras.optimizers.Optimizer):
         grad = tf.cond(
             tf.greater(weight_decay,
                        0), lambda: grad + weight_decay * var, lambda: grad)
-        grad = tf.cond(grad_averaging, lambda: grad * coefficients[
-            'one_minus_beta_1_t'], lambda: grad)
+        grad = tf.cond(tf.logical_and(grad_averaging, tf.not_equal(self.iterations, 0)),
+                       lambda: grad * coefficients['one_minus_beta_1_t'],
+                       lambda: grad)
         m = self.get_slot(var, 'm')
         return training_ops.resource_sparse_apply_momentum(
             var.handle,
