@@ -109,7 +109,7 @@ class NovogradTest(tf.test.TestCase):
                       [2.9100000012, 3.8800000016]],
             optimizer=Novograd(
                 lr=0.1,
-                weight_decay=0.01,
+                weight_decay=0.1,
                 epsilon=1e-8),
         )
 
