@@ -23,29 +23,36 @@ from tensorflow.python.training import training_ops
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 class Novograd(tf.keras.optimizers.Optimizer):
-    """
-    The Novograd Optimizer was first proposed in [Stochastic Gradient Methods with
-    Layerwise Adaptvie Moments for training of Deep Networks](https://arxiv.org/pdf/1905.11286.pdf)
+    """The Novograd Optimizer was first proposed in [Stochastic Gradient
+    Methods with Layerwise Adaptvie Moments for training of Deep
+    Networks](https://arxiv.org/pdf/1905.11286.pdf)
 
-    NovoGrad is a first-order SGD-based algorithm, which computes second moments per layer
-    instead of per weight as in Adam. Compared to Adam, NovoGrad takes less memory,
-    and has been found to be more numerically stable. More specifically we compute (for more information
-    on the computation please refer to this [link](https://nvidia.github.io/OpenSeq2Seq/html/optimizers.html):
+    NovoGrad is a first-order SGD-based algorithm, which computes second
+    moments per layer instead of per weight as in Adam. Compared to Adam,
+    NovoGrad takes less memory, and has been found to be more numerically
+    stable. More specifically we compute (for more information on the
+    computation please refer to this
+    [link](https://nvidia.github.io/OpenSeq2Seq/html/optimizers.html):
 
     ```
-    Second order moment = exponential moving average of Layer-wise square of grads:
+    Second order moment = exponential moving average of Layer-wise square
+    of grads:
         v_t <-- beta_2 * v_{t-1} + (1-beta_2) * (g_t)^2
     First order moment in one of four modes:
         1. moment of grads normalized by v_t:
             m_t <- beta_1 * m_{t-1} + [ g_t / (sqrt(v_t)+epsilon)]
-        2. moment similar to Adam: exponential moving average of grads normalized by v_t
-        (set grad_averaging = True to use this):
-            m_t <- beta_1 * m_{t-1} + [(1 - beta_1) * (g_t / (sqrt(v_t) + epsilon))]
-        3. weight decay adds a w_d term after grads are rescaled by 1/sqrt(v_t)
-        (set weight_decay > 0 to use this0:
-            m_t <- beta1*m_{t-1} + [(g_t / (sqrt(v_t) + epsilon)) + (w_d * w_{t-1})]
+        2. moment similar to Adam: exponential moving average of grads
+        normalized by v_t (set grad_averaging = True to use this):
+            m_t <- beta_1 * m_{t-1} +
+                   [(1 - beta_1) * (g_t / (sqrt(v_t) + epsilon))]
+        3. weight decay adds a w_d term after grads are rescaled by
+        1/sqrt(v_t) (set weight_decay > 0 to use this0:
+            m_t <- beta_1 * m_{t-1} +
+                   [(g_t / (sqrt(v_t) + epsilon)) + (w_d * w_{t-1})]
         4. weight decay + exponential moving average from Adam:
-            m_t <- beta_1 * m_{t-1} + [(1 - beta_1) * ((g_t / (sqrt(v_t + epsilon)) + (w_d * w_{t-1}))]
+            m_t <- beta_1 * m_{t-1} +
+                   [(1 - beta_1) * ((g_t / (sqrt(v_t + epsilon)) +
+                   (w_d * w_{t-1}))]
     Weight update:
         w_t <- w_{t-1} - lr_t * m_t
     ```
@@ -61,6 +68,7 @@ class Novograd(tf.keras.optimizers.Optimizer):
     )
     ```
     """
+
     def __init__(self,
                  learning_rate=0.1,
                  beta_1=0.95,
@@ -82,8 +90,8 @@ class Novograd(tf.keras.optimizers.Optimizer):
                 The exponential decay rate for the 2nd moment estimates.
             epsilon: A small constant for numerical stability.
             weight_decay: A floating point value. Weight decay for each param.
-            grad_averaging: determines whether to use Adam style exponential moving
-                averaging for the first order moments.
+            grad_averaging: determines whether to use Adam style exponential
+                moving averaging for the first order moments.
             **kwargs: keyword arguments. Allowed to be {`clipnorm`,
                 `clipvalue`, `lr`, `decay`}. `clipnorm` is clip gradients
                 by norm; `clipvalue` is clip gradients by value, `decay` is
@@ -152,18 +160,18 @@ class Novograd(tf.keras.optimizers.Optimizer):
 
         v = self.get_slot(var, 'v')
         g_2 = tf.reduce_sum(tf.square(tf.cast(grad, tf.float32)))
-        v_t = tf.cond(tf.equal(self.iterations, 0),
-                      lambda: g_2,
-                      lambda: v * coefficients['beta_2_t'] + g_2 * coefficients['one_minus_beta_2_t'])
+        v_t = tf.cond(
+            tf.equal(self.iterations,
+                     0), lambda: g_2, lambda: v * coefficients['beta_2_t'] +
+            g_2 * coefficients['one_minus_beta_2_t'])
         v_t = v.assign(v_t, use_locking=self._use_locking)
 
         grad = grad / (tf.sqrt(v_t) + self.epsilon)
-        grad = tf.cond(tf.greater(weight_decay, 0),
-                       lambda: grad + weight_decay * var,
-                       lambda: grad)
-        grad = tf.cond(grad_averaging,
-                       lambda: grad * coefficients['one_minus_beta_1_t'],
-                       lambda: grad)
+        grad = tf.cond(
+            tf.greater(weight_decay,
+                       0), lambda: grad + weight_decay * var, lambda: grad)
+        grad = tf.cond(grad_averaging, lambda: grad * coefficients[
+            'one_minus_beta_1_t'], lambda: grad)
         m = self.get_slot(var, 'm')
         return training_ops.resource_apply_momentum(
             var.handle,
@@ -184,18 +192,18 @@ class Novograd(tf.keras.optimizers.Optimizer):
         v = self.get_slot(var, 'v')
         g_2 = tf.reduce_sum(tf.square(tf.cast(grad, tf.float32)))
         # v is just a scalar and does not need to involve sparse tensors.
-        v_t = tf.cond(tf.equal(self.iterations, 0),
-                      lambda: g_2,
-                      lambda: v * coefficients['beta_2_t'] + g_2 * coefficients['one_minus_beta_2_t'])
+        v_t = tf.cond(
+            tf.equal(self.iterations,
+                     0), lambda: g_2, lambda: v * coefficients['beta_2_t'] +
+            g_2 * coefficients['one_minus_beta_2_t'])
         v_t = v.assign(v_t, use_locking=self._use_locking)
 
         grad = grad / (tf.sqrt(v_t) + self.epsilon)
-        grad = tf.cond(tf.greater(weight_decay, 0),
-                       lambda: grad + weight_decay * var,
-                       lambda: grad)
-        grad = tf.cond(grad_averaging,
-                       lambda: grad * coefficients['one_minus_beta_1_t'],
-                       lambda: grad)
+        grad = tf.cond(
+            tf.greater(weight_decay,
+                       0), lambda: grad + weight_decay * var, lambda: grad)
+        grad = tf.cond(grad_averaging, lambda: grad * coefficients[
+            'one_minus_beta_1_t'], lambda: grad)
         m = self.get_slot(var, 'm')
         return training_ops.resource_sparse_apply_momentum(
             var.handle,

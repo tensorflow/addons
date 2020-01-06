@@ -75,14 +75,16 @@ class NovogradTest(tf.test.TestCase):
 
         self.run_dense_sample(
             iterations=1,
-            expected=[[0.8735088993, 1.7470177985], [2.8302943759, 3.7737258345]],
+            expected=[[0.8735088993, 1.7470177985],
+                      [2.8302943759, 3.7737258345]],
             optimizer=Novograd(lr=0.1, beta_2=0.98, beta_1=0.95, epsilon=1e-8),
         )
 
     def test_sparse_sample(self):
         self.run_sparse_sample(
             iterations=1,
-            expected=[[0.8735088993, 1.7470177985], [2.8302943759, 3.7737258345]],
+            expected=[[0.8735088993, 1.7470177985],
+                      [2.8302943759, 3.7737258345]],
             optimizer=Novograd(lr=0.1, beta_2=0.98, beta_1=0.95, epsilon=1e-8),
         )
 
@@ -90,8 +92,14 @@ class NovogradTest(tf.test.TestCase):
         # Expected values are obtained from the official implementation
         self.run_dense_sample(
             iterations=1,
-            expected=[[0.8706804722, 1.7413609443], [2.8218090945, 3.762412126]],
-            optimizer=Novograd(lr=0.1, beta_1=0.95, beta_2=0.98, weight_decay=0.01, epsilon=1e-8),
+            expected=[[0.8706804722, 1.7413609443],
+                      [2.8218090945, 3.762412126]],
+            optimizer=Novograd(
+                lr=0.1,
+                beta_1=0.95,
+                beta_2=0.98,
+                weight_decay=0.01,
+                epsilon=1e-8),
         )
 
     def test_sparse_sample_with_weight_decay(self):
@@ -99,21 +107,39 @@ class NovogradTest(tf.test.TestCase):
         # Dense results should be: [-0.2029,  0.7768], [1.7578, 2.7380]
         self.run_sparse_sample(
             iterations=1,
-            expected=[[0.8706804722, 1.7413609443], [2.8218090945, 3.762412126]],
-            optimizer=Novograd(lr=0.1, beta_1=0.95, beta_2=0.98, weight_decay=0.01, epsilon=1e-8),
+            expected=[[0.8706804722, 1.7413609443],
+                      [2.8218090945, 3.762412126]],
+            optimizer=Novograd(
+                lr=0.1,
+                beta_1=0.95,
+                beta_2=0.98,
+                weight_decay=0.01,
+                epsilon=1e-8),
         )
 
     def test_dense_sample_with_grad_averaging(self):
         self.run_dense_sample(
             iterations=1,
-            expected=[[0.993675445, 1.9873508899], [2.9915147188, 3.9886862917]],
-            optimizer=Novograd(lr=0.1, beta_1=0.95, beta_2=0.98, epsilon=1e-8, grad_averaging=True))
+            expected=[[0.993675445, 1.9873508899],
+                      [2.9915147188, 3.9886862917]],
+            optimizer=Novograd(
+                lr=0.1,
+                beta_1=0.95,
+                beta_2=0.98,
+                epsilon=1e-8,
+                grad_averaging=True))
 
     def test_sparse_sample_with_grad_averaging(self):
         self.run_sparse_sample(
             iterations=1,
-            expected=[[0.993675445, 1.9873508899], [2.9915147188, 3.9886862917]],
-            optimizer=Novograd(lr=0.1, beta_1=0.95, beta_2=0.98, epsilon=1e-8, grad_averaging=True))
+            expected=[[0.993675445, 1.9873508899],
+                      [2.9915147188, 3.9886862917]],
+            optimizer=Novograd(
+                lr=0.1,
+                beta_1=0.95,
+                beta_2=0.98,
+                epsilon=1e-8,
+                grad_averaging=True))
 
     def test_fit_simple_linear_model(self):
         np.random.seed(0x2020)
