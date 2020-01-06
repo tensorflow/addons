@@ -29,8 +29,6 @@ py_library(
             "triplet.py",
         ],
     }),
-    srcs = [
-    ],
     deps = [
         "//tensorflow_addons/activations",
         "//tensorflow_addons/utils",
