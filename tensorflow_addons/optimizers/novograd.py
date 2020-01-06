@@ -70,9 +70,9 @@ class Novograd(tf.keras.optimizers.Optimizer):
     """
 
     def __init__(self,
-                 learning_rate=0.1,
-                 beta_1=0.95,
-                 beta_2=0.98,
+                 learning_rate=0.001,
+                 beta_1=0.9,
+                 beta_2=0.999,
                  epsilon=1e-8,
                  weight_decay=0.0,
                  grad_averaging=False,
