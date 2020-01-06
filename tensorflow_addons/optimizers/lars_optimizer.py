@@ -78,6 +78,7 @@ class LARSOptimizer(tf.keras.optimizers.Optimizer):
         with batch normalization, the skip_list is ['batch_normalization',
         'bias']
       use_nesterov: when set to True, nesterov momentum will be enabled
+      clip: when set to True, learning rate clipping will be enabled.
 
     Raises:
       ValueError: If a hyperparameter is set to a non-sensical value.
