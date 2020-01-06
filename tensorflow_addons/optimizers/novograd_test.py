@@ -119,7 +119,7 @@ class NovogradTest(tf.test.TestCase):
 
         x = np.random.standard_normal((100000, 3))
         w = np.random.standard_normal((3, 1))
-        y = np.dot(x, w) + np.random.standard_normal((100000, 1)) * 1e-4
+        y = np.dot(x, w) + np.random.standard_normal((100000, 1)) * 1e-5
 
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
