@@ -6,6 +6,9 @@ labelPRBasedOnFilePath:
   callbacks:
     - tensorflow_addons/callbacks/**/*
 
+  custom-ops:
+    - tensorflow_addons/custom_ops/**/*
+
   image:
     - tensorflow_addons/image/**/*
 
