@@ -64,13 +64,12 @@ class DistanceOpsTest(tf.test.TestCase):
                  [[0], [1], [1], [1], [0]],
                  [[0], [0], [0], [0], [0]]]
         expected_output = np.array([
-                                       0, 0, 0, 0, 0,
-                                       0, 1, 1, 1, 0,
-                                       0, 1, 2, 1, 0,
-                                       0, 1, 1, 1, 0,
-                                       0, 0, 0, 0, 0
-                                   ] * batch_size)
-        # yapf: enable
+           0, 0, 0, 0, 0,
+           0, 1, 1, 1, 0,
+           0, 1, 2, 1, 0,
+           0, 1, 1, 1, 0,
+           0, 0, 0, 0, 0
+        ] * batch_size)
         images = tf.constant([image] * batch_size, dtype=tf.uint8)
         for output_dtype in [tf.float16, tf.float32, tf.float64]:
             output = dist_ops.euclidean_dist_transform(
