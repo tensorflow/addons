@@ -124,16 +124,10 @@ class Novograd(tf.keras.optimizers.Optimizer):
     def _prepare_local(self, var_device, var_dtype, apply_state):
         super(Novograd, self)._prepare_local(var_device, var_dtype,
                                              apply_state)
-        local_step = tf.cast(self.iterations + 1, var_dtype)
         beta_1_t = tf.identity(self._get_hyper('beta_1', var_dtype))
         beta_2_t = tf.identity(self._get_hyper('beta_2', var_dtype))
-        beta_1_power = tf.pow(beta_1_t, local_step)
-        beta_2_power = tf.pow(beta_2_t, local_step)
-        lr = (apply_state[(var_device, var_dtype)]['lr_t'] *
-              (tf.sqrt(1 - beta_2_power) / (1 - beta_1_power)))
         apply_state[(var_device, var_dtype)].update(
             dict(
-                lr=lr,
                 epsilon=tf.convert_to_tensor(self.epsilon, var_dtype),
                 beta_1_t=beta_1_t,
                 beta_2_t=beta_2_t,
@@ -176,7 +170,7 @@ class Novograd(tf.keras.optimizers.Optimizer):
         return training_ops.resource_apply_momentum(
             var.handle,
             m.handle,
-            coefficients['lr'],
+            coefficients['lr_t'],
             grad,
             coefficients['beta_1_t'],
             use_locking=self._use_locking,
@@ -208,7 +202,7 @@ class Novograd(tf.keras.optimizers.Optimizer):
         return training_ops.resource_sparse_apply_momentum(
             var.handle,
             m.handle,
-            coefficients['lr'],
+            coefficients['lr_t'],
             tf.gather(grad, indices),
             indices,
             coefficients['beta_1_t'],
