@@ -119,7 +119,7 @@ class NovogradTest(tf.test.TestCase):
 
         x = np.random.standard_normal((100000, 3))
         w = np.random.standard_normal((3, 1))
-        y = np.dot(x, w) + np.random.standard_normal((100000, 1)) * 1e-6
+        y = np.dot(x, w) + np.random.standard_normal((100000, 1)) * 1e-4
 
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
@@ -132,7 +132,7 @@ class NovogradTest(tf.test.TestCase):
         predicted = model.predict(x)
 
         max_abs_diff = np.max(np.abs(predicted - y))
-        self.assertLess(max_abs_diff, 1e-2)
+        self.assertLess(max_abs_diff, 1e-3)
 
     def test_get_config(self):
         opt = Novograd(lr=1e-4, weight_decay=0.0, grad_averaging=False)
