@@ -106,7 +106,6 @@ def transform(images,
         return img_utils.from_4D_image(output, original_ndims)
 
 
-@tf.function
 def compose_transforms(transforms, name=None):
     """Composes the transforms tensors.
 
@@ -131,7 +130,6 @@ def compose_transforms(transforms, name=None):
         return matrices_to_flat_transforms(composed)
 
 
-@tf.function
 def flat_transforms_to_matrices(transforms, name=None):
     """Converts projective transforms to affine matrices.
 
@@ -165,7 +163,6 @@ def flat_transforms_to_matrices(transforms, name=None):
             tf.constant([-1, 3, 3]))
 
 
-@tf.function
 def matrices_to_flat_transforms(transform_matrices, name=None):
     """Converts affine matrices to projective transforms.
 
@@ -199,7 +196,6 @@ def matrices_to_flat_transforms(transform_matrices, name=None):
         return transforms[:, :8]
 
 
-@tf.function
 def angles_to_projective_transforms(angles,
                                     image_height,
                                     image_width,
@@ -282,7 +278,6 @@ def _image_projective_transform_grad(op, grad):
     return [output, None, None]
 
 
-@tf.function
 def rotate(images, angles, interpolation="NEAREST", name=None):
     """Rotate image(s) counterclockwise by the passed angle(s) in radians.
 

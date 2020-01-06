@@ -25,7 +25,6 @@ _correlation_cost_op_so = tf.load_op_library(
     get_path_to_datafile("custom_ops/layers/_correlation_cost_ops.so"))
 
 
-@tf.function
 def _correlation_cost(input_a,
                       input_b,
                       kernel_size,
