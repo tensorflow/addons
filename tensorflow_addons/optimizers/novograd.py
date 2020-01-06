@@ -76,6 +76,7 @@ class Novograd(tf.keras.optimizers.Optimizer):
                  epsilon=1e-8,
                  weight_decay=0.0,
                  grad_averaging=False,
+                 amsgrad=False,
                  name='Novograd',
                  **kwargs):
         r"""Construct a new RAdam optimizer.
@@ -108,6 +109,7 @@ class Novograd(tf.keras.optimizers.Optimizer):
         self._set_hyper('beta_2', beta_2)
         self._set_hyper('weight_decay', weight_decay)
         self._set_hyper('grad_averaging', grad_averaging)
+        self.amsgrad = amsgrad
         self.epsilon = epsilon or tf.keras.backend.epsilon()
 
     def _create_slots(self, var_list):
@@ -120,6 +122,9 @@ class Novograd(tf.keras.optimizers.Optimizer):
                 var=var,
                 slot_name='v',
                 initializer=tf.zeros(shape=[], dtype=var.dtype))
+        if self.amsgrad:
+            for var in var_list:
+                self.add_slot(var, 'vhat')
 
     def _prepare_local(self, var_device, var_dtype, apply_state):
         super(Novograd, self)._prepare_local(var_device, var_dtype,
@@ -160,7 +165,12 @@ class Novograd(tf.keras.optimizers.Optimizer):
             g_2 * coefficients['one_minus_beta_2_t'])
         v_t = v.assign(v_t, use_locking=self._use_locking)
 
-        grad = grad / (tf.sqrt(v_t) + self.epsilon)
+        if self.amsgrad:
+            vhat = self.get_slot(var, 'vhat')
+            vhat_t = vhat.assign(tf.maximum(vhat, v_t), use_locking=self._use_locking)
+            grad = grad / (tf.sqrt(vhat_t) + self.epsilon)
+        else:
+            grad = grad / (tf.sqrt(v_t) + self.epsilon)
         grad = tf.cond(
             tf.greater(weight_decay,
                        0), lambda: grad + weight_decay * var, lambda: grad)
@@ -192,7 +202,12 @@ class Novograd(tf.keras.optimizers.Optimizer):
             g_2 * coefficients['one_minus_beta_2_t'])
         v_t = v.assign(v_t, use_locking=self._use_locking)
 
-        grad = grad / (tf.sqrt(v_t) + self.epsilon)
+        if self.amsgrad:
+            vhat = self.get_slot(var, 'vhat')
+            vhat_t = vhat.assign(tf.maximum(vhat, v_t), use_locking=self._use_locking)
+            grad = grad / (tf.sqrt(vhat_t) + self.epsilon)
+        else:
+            grad = grad / (tf.sqrt(v_t) + self.epsilon)
         grad = tf.cond(
             tf.greater(weight_decay,
                        0), lambda: grad + weight_decay * var, lambda: grad)
