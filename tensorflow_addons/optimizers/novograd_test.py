@@ -85,20 +85,18 @@ class NovogradTest(tf.test.TestCase):
             iterations=1,
             expected=[[0.9552786425, 1.9105572849],
                       [2.9400000012, 3.9200000016]],
-            optimizer=Novograd(lr=0.1, beta_2=0.98, beta_1=0.95, epsilon=1e-8),
+            optimizer=Novograd(lr=0.1, epsilon=1e-8),
         )
 
     def test_dense_sample_with_weight_decay(self):
         # Expected values are obtained from the official implementation
         self.run_dense_sample(
             iterations=1,
-            expected=[[0.8706804722, 1.7413609443],
-                      [2.8218090945, 3.762412126]],
+            expected=[[0.945278642, 1.8905572849],
+                      [2.9100000012, 3.8800000016]],
             optimizer=Novograd(
                 lr=0.1,
-                beta_1=0.95,
-                beta_2=0.98,
-                weight_decay=0.01,
+                weight_decay=0.1,
                 epsilon=1e-8),
         )
 
@@ -107,12 +105,10 @@ class NovogradTest(tf.test.TestCase):
         # Dense results should be: [-0.2029,  0.7768], [1.7578, 2.7380]
         self.run_sparse_sample(
             iterations=1,
-            expected=[[0.8706804722, 1.7413609443],
-                      [2.8218090945, 3.762412126]],
+            expected=[[0.945278642, 1.8905572849],
+                      [2.9100000012, 3.8800000016]],
             optimizer=Novograd(
                 lr=0.1,
-                beta_1=0.95,
-                beta_2=0.98,
                 weight_decay=0.01,
                 epsilon=1e-8),
         )
@@ -124,8 +120,6 @@ class NovogradTest(tf.test.TestCase):
                       [2.9915147188, 3.9886862917]],
             optimizer=Novograd(
                 lr=0.1,
-                beta_1=0.95,
-                beta_2=0.98,
                 epsilon=1e-8,
                 grad_averaging=True))
 
@@ -136,8 +130,6 @@ class NovogradTest(tf.test.TestCase):
                       [2.9915147188, 3.9886862917]],
             optimizer=Novograd(
                 lr=0.1,
-                beta_1=0.95,
-                beta_2=0.98,
                 epsilon=1e-8,
                 grad_averaging=True))
 
