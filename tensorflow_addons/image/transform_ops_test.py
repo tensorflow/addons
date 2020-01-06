@@ -73,7 +73,7 @@ class ImageOpsTest(tf.test.TestCase):
         self.assertAllEqual([3, 5], result.shape)
 
     def test_transform_unknown_shape(self):
-        fn = transform_ops.transform.get_concrete_function(
+        fn = tf.function(transform_ops.transform).get_concrete_function(
             tf.TensorSpec(shape=None, dtype=tf.float32),
             [1, 0, 0, 0, 1, 0, 0, 0])
         for shape in (2, 4), (2, 4, 3), (1, 2, 4, 3):
@@ -276,7 +276,7 @@ class RotateOpTest(tf.test.TestCase):
         self.assertEqual(image.get_shape(), result.get_shape())
 
     def test_unknown_shape(self):
-        fn = transform_ops.rotate.get_concrete_function(
+        fn = tf.function(transform_ops.rotate).get_concrete_function(
             tf.TensorSpec(shape=None, dtype=tf.float32), 0)
         for shape in (2, 4), (2, 4, 3), (1, 2, 4, 3):
             image = tf.ones(shape=shape)

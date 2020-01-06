@@ -22,7 +22,6 @@ import tensorflow as tf
 from tensorflow_addons.image.transform_ops import transform
 
 
-@tf.function
 def translations_to_projective_transforms(translations, name=None):
     """Returns projective transform(s) for the given translation(s).
 
