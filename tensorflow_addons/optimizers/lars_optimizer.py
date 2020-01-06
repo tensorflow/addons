@@ -18,9 +18,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from google3.third_party.tensorflow.python.ops import array_ops
-from google3.third_party.tensorflow.python.ops import math_ops
-from google3.third_party.tensorflow.python.training import training_ops
+from tensorflow.python.ops import array_ops
+from tensorflow.python.ops import math_ops
+from tensorflow.python.training import training_ops
 
 import tensorflow.compat.v2 as tf
 from tensorflow_addons.utils import keras_utils
@@ -58,6 +58,7 @@ class LARSOptimizer(tf.keras.optimizers.Optimizer):
       # subset of variables to the optimizer.
       skip_list=(),
       use_nesterov=False,
+      clip=False,
       **kwargs):
     """Construct a new LARS Optimizer.
 
@@ -88,13 +89,13 @@ class LARSOptimizer(tf.keras.optimizers.Optimizer):
     super(LARSOptimizer, self).__init__(name=name, **kwargs)
 
     self._skip_list = skip_list
-    self._use_nesterov = use_nesterov
     self._set_hyper('learning_rate', learning_rate)
     self._set_hyper('momentum', momentum)
     self._set_hyper('weight_decay', weight_decay)
     self._set_hyper('eeta', eeta)
     self._set_hyper('epsilon', epsilon)
     self._set_hyper('use_nesterov', use_nesterov)
+    self._set_hyper('use_clipping', clip)
 
   def get_config(self):
     config = {
@@ -104,6 +105,7 @@ class LARSOptimizer(tf.keras.optimizers.Optimizer):
         'eeta': self._serialize_hyperparameter('eeta'),
         'epsilon': self._serialize_hyperparameter('epsilon'),
         'use_nesterov': self._serialize_hyperparameter('use_nesterov')
+        'clip': self._serialize_hyperparameter('use_clipping')
     }
     base_config = super(LARSOptimizer, self).get_config()
     return dict(list(base_config.items()) + list(config.items()))
@@ -113,7 +115,6 @@ class LARSOptimizer(tf.keras.optimizers.Optimizer):
       self.add_slot(var, 'momentum')
 
   def compute_lr(self, grad, var):
-    scaled_lr = self._serialize_hyperparameter('learning_rate')
     if self._skip_list is None or not any(v in var.name
                                           for v in self._skip_list):
       w_norm = tf.linalg.norm(var, ord=2)
@@ -129,6 +130,10 @@ class LARSOptimizer(tf.keras.optimizers.Optimizer):
                (g_norm + weight_decay * w_norm + epsilon)), 1.0),
           1.0)
       scaled_lr = self._serialize_hyperparameter('learning_rate') * trust_ratio
+      # clip learning rate for LARC.
+      if self._serialize_hyperparameter('use_clipping'):
+        scaled_lr = min(scaled_lr, self._serialize_hyperparameter('learning_rate'))
+
       # Add the weight regularization gradient
       grad = grad + weight_decay * var
     return scaled_lr, grad
