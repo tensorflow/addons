@@ -116,8 +116,8 @@ class NovogradTest(tf.test.TestCase):
     def test_dense_sample_with_grad_averaging(self):
         self.run_dense_sample(
             iterations=1,
-            expected=[[0.993675445, 1.9873508899],
-                      [2.9915147188, 3.9886862917]],
+            expected=[[0.9955278642, 1.9910557285],
+                      [2.9940000001, 3.9920000002]],
             optimizer=Novograd(
                 lr=0.1,
                 epsilon=1e-8,
@@ -126,8 +126,8 @@ class NovogradTest(tf.test.TestCase):
     def test_sparse_sample_with_grad_averaging(self):
         self.run_sparse_sample(
             iterations=1,
-            expected=[[0.993675445, 1.9873508899],
-                      [2.9915147188, 3.9886862917]],
+            expected=[[0.9955278642, 1.9910557285],
+                      [2.9940000001, 3.9920000002]],
             optimizer=Novograd(
                 lr=0.1,
                 epsilon=1e-8,
