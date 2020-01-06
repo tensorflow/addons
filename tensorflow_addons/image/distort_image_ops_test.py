@@ -124,6 +124,27 @@ class AdjustHueInYiqTest(tf.test.TestCase):
             with self.assertRaisesRegex(ValueError, msg):
                 self.evaluate(self._adjust_hue_in_yiq_tf(x_np, delta_h))
 
+    def test_adjust_hsv_in_yiq_unknown_shape(self):
+        fn = tf.function(
+            distort_image_ops.adjust_hsv_in_yiq).get_concrete_function(
+                tf.TensorSpec(shape=None, dtype=tf.float64))
+        for shape in (2, 3, 3), (4, 2, 3, 3):
+            image_np = np.random.rand(*shape) * 255.
+            image_tf = tf.constant(image_np)
+            self.assertAllClose(
+                self._adjust_hue_in_yiq_np(image_np, 0),
+                self.evaluate(fn(image_tf)),
+                rtol=2e-4,
+                atol=1e-4)
+
+    def test_random_hsv_in_yiq_unknown_shape(self):
+        fn = tf.function(
+            distort_image_ops.random_hsv_in_yiq).get_concrete_function(
+                tf.TensorSpec(shape=None, dtype=tf.float32))
+        for shape in (2, 3, 3), (4, 2, 3, 3):
+            image_tf = tf.ones(shape)
+            self.assertAllEqual(fn(image_tf), fn(image_tf))
+
 
 @test_utils.run_all_in_graph_and_eager_modes
 class AdjustValueInYiqTest(tf.test.TestCase):
