@@ -178,7 +178,7 @@ class Novograd(tf.keras.optimizers.Optimizer):
         grad = tf.cond(grad_averaging, lambda: grad * coefficients[
             'one_minus_beta_1_t'], lambda: grad)
         m = self.get_slot(var, 'm')
-        return training_ops.resource_apply_momentum(
+        return training_ops.resource_apply_keras_momentum(
             var.handle,
             m.handle,
             coefficients['lr_t'],
@@ -217,7 +217,7 @@ class Novograd(tf.keras.optimizers.Optimizer):
             tf.logical_and(grad_averaging, tf.not_equal(self.iterations, 0)),
             lambda: grad * coefficients['one_minus_beta_1_t'], lambda: grad)
         m = self.get_slot(var, 'm')
-        return training_ops.resource_sparse_apply_momentum(
+        return training_ops.resource_sparse_apply_keras_momentum(
             var.handle,
             m.handle,
             coefficients['lr_t'],
