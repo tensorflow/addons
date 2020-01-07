@@ -80,6 +80,7 @@ class RreluTest(tf.test.TestCase, parameterized.TestCase):
 
 class RreluBenchmarks(tf.test.Benchmark):
     def benchmarkRreluOp(self):
+        self.skipTest('Wait #839 to be fixed')
         with tf.compat.v1.Session(config=tf.test.benchmark_config()) as sess:
             x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=np.float32)
             lower = 0.1
