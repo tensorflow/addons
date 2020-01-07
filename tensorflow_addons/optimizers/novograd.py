@@ -167,7 +167,8 @@ class Novograd(tf.keras.optimizers.Optimizer):
 
         if self.amsgrad:
             vhat = self.get_slot(var, 'vhat')
-            vhat_t = vhat.assign(tf.maximum(vhat, v_t), use_locking=self._use_locking)
+            vhat_t = vhat.assign(tf.maximum(vhat, v_t),
+                                 use_locking=self._use_locking)
             grad = grad / (tf.sqrt(vhat_t) + self.epsilon)
         else:
             grad = grad / (tf.sqrt(v_t) + self.epsilon)
@@ -204,14 +205,16 @@ class Novograd(tf.keras.optimizers.Optimizer):
 
         if self.amsgrad:
             vhat = self.get_slot(var, 'vhat')
-            vhat_t = vhat.assign(tf.maximum(vhat, v_t), use_locking=self._use_locking)
+            vhat_t = vhat.assign(tf.maximum(vhat, v_t),
+                                 use_locking=self._use_locking)
             grad = grad / (tf.sqrt(vhat_t) + self.epsilon)
         else:
             grad = grad / (tf.sqrt(v_t) + self.epsilon)
         grad = tf.cond(
             tf.greater(weight_decay,
                        0), lambda: grad + weight_decay * var, lambda: grad)
-        grad = tf.cond(tf.logical_and(grad_averaging, tf.not_equal(self.iterations, 0)),
+        grad = tf.cond(tf.logical_and(grad_averaging,
+                                      tf.not_equal(self.iterations, 0)),
                        lambda: grad * coefficients['one_minus_beta_1_t'],
                        lambda: grad)
         m = self.get_slot(var, 'm')
