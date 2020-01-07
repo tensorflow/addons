@@ -9,7 +9,6 @@
 |  r_square| Saishruthi Swaminathan| saishruthi.tn@gmail.com|
 |  matthews_correlation_coefficient | I.H. Jhuo | ihibmjhuo@gmail.com|
 |  multilabel_confusion_matrix | Saishruthi Swaminathan | saishruthi.tn@gmail.com|
-|  quantiles | Romain Brault | mail@romainbrault.com |
 
 ## Contents
 | Submodule | Metric  | Reference                               |
