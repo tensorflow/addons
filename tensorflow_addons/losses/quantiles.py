@@ -79,7 +79,7 @@ class PinballLoss(tf.keras.losses.Loss):
         self.tau = tau
 
     def call(self, y_true, y_pred):
-        return pinball(y_true, y_pred, self.tau)
+        return pinball_loss(y_true, y_pred, self.tau)
 
     def get_config(self):
         config = {
