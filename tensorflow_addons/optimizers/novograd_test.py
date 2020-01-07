@@ -94,10 +94,7 @@ class NovogradTest(tf.test.TestCase):
             iterations=1,
             expected=[[0.945278642, 1.8905572849],
                       [2.9100000012, 3.8800000016]],
-            optimizer=Novograd(
-                lr=0.1,
-                weight_decay=0.1,
-                epsilon=1e-8),
+            optimizer=Novograd(lr=0.1, weight_decay=0.1, epsilon=1e-8),
         )
 
     def test_sparse_sample_with_weight_decay(self):
@@ -107,10 +104,7 @@ class NovogradTest(tf.test.TestCase):
             iterations=1,
             expected=[[0.945278642, 1.8905572849],
                       [2.9100000012, 3.8800000016]],
-            optimizer=Novograd(
-                lr=0.1,
-                weight_decay=0.1,
-                epsilon=1e-8),
+            optimizer=Novograd(lr=0.1, weight_decay=0.1, epsilon=1e-8),
         )
 
     def test_fit_simple_linear_model(self):
