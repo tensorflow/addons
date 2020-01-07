@@ -25,7 +25,6 @@ _activation_ops_so = tf.load_op_library(
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-@tf.function
 def lisht(x):
     """LiSHT: Non-Parameteric Linearly Scaled Hyperbolic Tangent Activation Function.
 

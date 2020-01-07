@@ -50,6 +50,10 @@ wget ${QUIET_FLAG} https://github.com/bazelbuild/buildtools/releases/download/0.
 chmod +x buildozer
 sudo mv buildozer /usr/local/bin/.
 
+# Remove the now private ppa. This can be removed after the docker image removes the
+# pre-installed python packages from this ppa.
+rm -f /etc/apt/sources.list.d/jonathonf-ubuntu-python-3_6-xenial.list
+
 # Install clang-format
 apt-get update -qq && apt-get install -y clang-format-3.8
 

@@ -22,7 +22,12 @@ from tensorflow_addons.losses.contrastive import contrastive_loss, ContrastiveLo
 from tensorflow_addons.losses.focal_loss import sigmoid_focal_crossentropy, SigmoidFocalCrossEntropy
 from tensorflow_addons.losses.giou_loss import giou_loss, GIoULoss
 from tensorflow_addons.losses.lifted import lifted_struct_loss, LiftedStructLoss
-from tensorflow_addons.losses.npairs import npairs_loss, NpairsLoss, npairs_multilabel_loss, NpairsMultilabelLoss
 from tensorflow_addons.losses.sparsemax_loss import sparsemax_loss, SparsemaxLoss
 from tensorflow_addons.losses.triplet import triplet_semihard_loss, TripletSemiHardLoss
 from tensorflow_addons.losses.kappa_loss import WeightedKappaLoss
+
+# Temporarily disable for windows
+# Remove after: https://github.com/tensorflow/addons/issues/838
+import os
+if os.name != 'nt':
+    from tensorflow_addons.losses.npairs import npairs_loss, NpairsLoss, npairs_multilabel_loss, NpairsMultilabelLoss

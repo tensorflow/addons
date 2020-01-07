@@ -73,7 +73,7 @@ class ImageOpsTest(tf.test.TestCase):
         self.assertAllEqual([3, 5], result.shape)
 
     def test_transform_unknown_shape(self):
-        fn = transform_ops.transform.get_concrete_function(
+        fn = tf.function(transform_ops.transform).get_concrete_function(
             tf.TensorSpec(shape=None, dtype=tf.float32),
             [1, 0, 0, 0, 1, 0, 0, 0])
         for shape in (2, 4), (2, 4, 3), (1, 2, 4, 3):
@@ -121,7 +121,7 @@ class ImageOpsTest(tf.test.TestCase):
         for dtype in _DTYPES:
             image = tf.constant([[1, 2], [3, 4]], dtype=dtype)
             self.assertAllEqual(
-                np.array([[4, 4], [4, 4]]).astype(dtype.as_numpy_dtype()),
+                np.array([[4, 4], [4, 4]]).astype(dtype.as_numpy_dtype),
                 transform_ops.transform(image, [1] * 8))
 
     def test_transform_eager(self):
@@ -140,7 +140,7 @@ class RotateOpTest(tf.test.TestCase):
                     image = tf.zeros(shape, dtype)
                     self.assertAllEqual(
                         transform_ops.rotate(image, angle),
-                        np.zeros(shape, dtype.as_numpy_dtype()))
+                        np.zeros(shape, dtype.as_numpy_dtype))
 
     def test_rotate_even(self):
         for dtype in _DTYPES:
@@ -276,7 +276,7 @@ class RotateOpTest(tf.test.TestCase):
         self.assertEqual(image.get_shape(), result.get_shape())
 
     def test_unknown_shape(self):
-        fn = transform_ops.rotate.get_concrete_function(
+        fn = tf.function(transform_ops.rotate).get_concrete_function(
             tf.TensorSpec(shape=None, dtype=tf.float32), 0)
         for shape in (2, 4), (2, 4, 3), (1, 2, 4, 3):
             image = tf.ones(shape=shape)

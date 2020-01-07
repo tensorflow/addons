@@ -126,8 +126,9 @@ class TQDMProgressBar(Callback):
                 dynamic_ncols=True,
                 unit=self.mode)
 
-        self.seen = 0
+        self.num_samples_seen = 0
         self.steps_to_update = 0
+        self.steps_so_far = 0
         self.logs = defaultdict(float)
 
     def on_epoch_end(self, epoch, logs={}):
@@ -154,10 +155,11 @@ class TQDMProgressBar(Callback):
         else:
             batch_size = 1
 
-        self.seen += batch_size
-        self.steps_to_update += batch_size
+        self.num_samples_seen += batch_size
+        self.steps_to_update += 1
+        self.steps_so_far += 1
 
-        if self.seen < self.total_steps:
+        if self.steps_so_far < self.total_steps:
 
             for metric, value in logs.items():
                 self.logs[metric] += value * batch_size
@@ -167,7 +169,7 @@ class TQDMProgressBar(Callback):
             if self.show_epoch_progress and time_diff >= self.update_interval:
 
                 # update the epoch progress bar
-                metrics = self.format_metrics(self.logs, self.seen)
+                metrics = self.format_metrics(self.logs, self.num_samples_seen)
                 self.epoch_progress_tqdm.desc = metrics
                 self.epoch_progress_tqdm.update(self.steps_to_update)
 

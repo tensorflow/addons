@@ -14,8 +14,11 @@ custom_op_library(
 
 custom_op_library(
     name = "_parse_time_op.so",
-    srcs = [
-        "cc/kernels/parse_time_kernel.cc",
-        "cc/ops/parse_time_op.cc",
-    ],
+    srcs = select({
+        "//tensorflow_addons:windows": [],
+        "//conditions:default": [
+            "cc/kernels/parse_time_kernel.cc",
+            "cc/ops/parse_time_op.cc",
+        ],
+    }),
 )

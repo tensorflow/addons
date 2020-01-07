@@ -18,10 +18,13 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+from tensorflow.python.training.moving_averages import assign_moving_average
+
+from tensorflow_addons.optimizers import AveragedOptimizerWrapper
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-class MovingAverage(tf.keras.optimizers.Optimizer):
+class MovingAverage(AveragedOptimizerWrapper):
     """Optimizer that computes a moving average of the variables.
 
     Empirically it has been found that using the moving average of the trained
@@ -41,25 +44,24 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
 
     def __init__(self,
                  optimizer,
-                 average_decay=0.1,
-                 num_updates=None,
                  sequential_update=True,
+                 average_decay=0.99,
+                 num_updates=None,
                  name="MovingAverage",
                  **kwargs):
-        """Construct a new MovingAverage optimizer.
+        r"""Construct a new MovingAverage optimizer.
 
         Args:
             optimizer: str or `tf.keras.optimizers.Optimizer` that will be
                 used to compute and apply gradients.
-            average_decay: float. Decay to use to maintain the moving averages
-                of trained variables. See `tf.train.ExponentialMovingAverage`
-                for details.
-            num_updates: Optional count of the number of updates applied to
-                variables. See `tf.train.ExponentialMovingAverage` for details.
             sequential_update: Bool. If False, will compute the moving average
                 at the same time as the model is updated, potentially doing
                 benign data races. If True, will update the moving average
                 after gradient updates.
+            average_decay: float. Decay to use to maintain the moving averages
+                of trained variables. 
+            num_updates: Optional count of the number of updates applied to
+                variables. 
             name: Optional name for the operations created when applying
                 gradients. Defaults to "MovingAverage".
             **kwargs: keyword arguments. Allowed to be {`clipnorm`,
@@ -69,112 +71,30 @@ class MovingAverage(tf.keras.optimizers.Optimizer):
                 decay of learning rate. `lr` is included for backward
                 compatibility, recommended to use `learning_rate` instead.
         """
-        super(MovingAverage, self).__init__(name, **kwargs)
-
-        if isinstance(optimizer, str):
-            optimizer = tf.keras.optimizers.get(optimizer)
-
-        if not isinstance(optimizer, tf.keras.optimizers.Optimizer):
-            raise TypeError(
-                "optimizer is not an object of tf.keras.optimizers.Optimizer")
-
-        if num_updates is not None and not isinstance(num_updates, int):
-            raise TypeError("num_updates must be None or of integer type")
-
-        if not isinstance(sequential_update, bool):
-            raise TypeError("sequential_update must be of bool type")
-
-        with tf.name_scope(name):
-            self._ema = tf.train.ExponentialMovingAverage(
-                average_decay, num_updates=num_updates)
-
-        self._optimizer = optimizer
-        self._set_hyper("average_decay", average_decay)
+        super(MovingAverage, self).__init__(optimizer, sequential_update, name,
+                                            **kwargs)
         self._num_updates = num_updates
-        self._sequential_update = sequential_update
-        self._initialized = False
+        if self._num_updates is not None:
+            num_updates = tf.cast(
+                self._num_updates, tf.float32, name="num_updates")
+            average_decay = tf.minimum(
+                average_decay, (1.0 + num_updates) / (10.0 + num_updates))
 
-    def apply_gradients(self, grads_and_vars, name=None):
-        var_list = [v for (_, v) in grads_and_vars]
+        self._set_hyper("average_decay", average_decay)
 
-        if tf.executing_eagerly() and not self._initialized:
-            # this to ensure that var_list is registered initially
-            self._ema.apply(var_list)
-            self._initialized = True
-
-        train_op = self._optimizer.apply_gradients(grads_and_vars, name=name)
-
-        if self._sequential_update:
-            with tf.control_dependencies([train_op]):
-                ma_op = self._ema.apply(var_list)
-        else:
-            ma_op = self._ema.apply(var_list)
-
-        return tf.group(train_op, ma_op, name="train_with_avg")
+    def average_op(self, var, average_var):
+        decay = self._get_hyper('average_decay', tf.dtypes.float32)
+        return assign_moving_average(average_var, var, decay, False)
 
     def get_config(self):
         config = {
-            'optimizer': tf.keras.optimizers.serialize(self._optimizer),
             'average_decay': self._serialize_hyperparameter('average_decay'),
             'num_updates': self._num_updates,
-            'sequential_update': self._sequential_update
         }
         base_config = super(MovingAverage, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
-    @classmethod
-    def from_config(cls, config, custom_objects=None):
-        optimizer = tf.keras.optimizers.deserialize(
-            config.pop('optimizer'), custom_objects=custom_objects)
-        return cls(optimizer, **config)
-
-    def assign_average_vars(self, var_list):
-        """Assign variables in var_list with their respective moving averages.
-
-        Example:
-        ```python
-        model = tf.Sequential([...])
-        opt = tfa.optimizers.MovingAverage(
-            tf.keras.optimizers.SGD(lr=2.0), 0.5)
-
-        model.compile(opt, ...)
-        model.fit(x, y, ...)
-
-        # Update the weights to their mean before saving
-        opt.assign_average_vars(model.variables)
-
-        model.save('model.h5')
-        ```
-        """
-        assign = tf.group([v.assign(self._ema.average(v)) for v in var_list])
-        return assign
-
-    @property
-    def weights(self):
-        return self._optimizer.weights
-
-    def _resource_apply_dense(self, grad, var):
-        return self._optimizer._resource_apply_dense(grad, var)  # pylint: disable=protected-access
-
-    def _resource_apply_sparse_duplicate_indices(self, grad, var, indices):
-        return self._optimizer._resource_apply_sparse_duplicate_indices(  # pylint: disable=protected-access
-            grad, var, indices)
-
-    def _resource_apply_sparse(self, grad, var, indices):
-        return self._optimizer._resource_apply_sparse(grad, var, indices)  # pylint: disable=protected-access
-
-    @property
-    def learning_rate(self):
-        return self._optimizer._get_hyper('learning_rate')
-
-    @learning_rate.setter
-    def learning_rate(self, learning_rate):
-        self._optimizer._set_hyper('learning_rate', learning_rate)
-
-    @property
-    def lr(self):
-        return self.learning_rate
-
-    @lr.setter
-    def lr(self, lr):
-        self.learning_rate = lr
+    def _create_slots(self, var_list):
+        self._optimizer._create_slots(var_list=var_list)  # pylint: disable=protected-access
+        for var in var_list:
+            self.add_slot(var, 'average', var.read_value())

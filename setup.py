@@ -60,15 +60,14 @@ with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
 if project_name == TFA_NIGHTLY:
     version['__version__'] += datetime.strftime(datetime.today(), "%Y%m%d")
 
-# Dependencies
-REQUIRED_PACKAGES = [
-    'six >= 1.10.0',
-]
+with open('requirements.txt') as f:
+    required_pkgs = f.read().splitlines()
 
-if project_name == TFA_RELEASE:
-    REQUIRED_PACKAGES.append('tensorflow >= 2.1.0rc1')
-elif project_name == TFA_NIGHTLY:
-    REQUIRED_PACKAGES.append('tf-nightly')
+# Manylinux2010 requires a patch for platlib
+if sys.platform.startswith('linux'):
+    ext_modules = [Extension('_foo', ['stub.cc'])]
+else:
+    ext_modules = []
 
 
 class BinaryDistribution(Distribution):
@@ -86,8 +85,8 @@ setup(
     author='Google Inc.',
     author_email='opensource@google.com',
     packages=find_packages(),
-    ext_modules=[Extension('_foo', ['stub.cc'])],
-    install_requires=REQUIRED_PACKAGES,
+    ext_modules=ext_modules,
+    install_requires=required_pkgs,
     include_package_data=True,
     zip_safe=False,
     distclass=BinaryDistribution,

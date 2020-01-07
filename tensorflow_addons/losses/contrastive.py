@@ -23,7 +23,7 @@ import tensorflow as tf
 @tf.keras.utils.register_keras_serializable(package='Addons')
 @tf.function
 def contrastive_loss(y_true, y_pred, margin=1.0):
-    """Computes the contrastive loss between `y_true` and `y_pred`.
+    r"""Computes the contrastive loss between `y_true` and `y_pred`.
 
     This loss encourages the embedding to be close to each other for
     the samples of the same label and the embedding to be far apart at least
@@ -59,7 +59,7 @@ def contrastive_loss(y_true, y_pred, margin=1.0):
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 class ContrastiveLoss(tf.keras.losses.Loss):
-    """Computes the contrastive loss between `y_true` and `y_pred`.
+    r"""Computes the contrastive loss between `y_true` and `y_pred`.
 
     This loss encourages the embedding to be close to each other for
     the samples of the same label and the embedding to be far apart at least

@@ -15,6 +15,17 @@
 # ==============================================================================
 set -e -x
 
+# Configs
+export TF_NEED_CUDA="1"
+export TF_CUDA_VERSION="10.1"
+export CUDA_TOOLKIT_PATH="/usr/local/cuda"
+export TF_CUDNN_VERSION="7"
+export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
+
+# Remove the now private ppa. This can be removed after the docker image removes the
+# pre-installed python packages from this ppa.
+rm -f /etc/apt/sources.list.d/jonathonf-ubuntu-python-3_6-xenial.list
+
 PYTHON_VERSIONS="python2.7 python3.5 python3.6 python3.7"
 ln -sf /usr/bin/python3.5 /usr/bin/python3 # Py36 has issues with add-apt
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
