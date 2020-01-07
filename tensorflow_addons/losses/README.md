@@ -23,7 +23,7 @@
 | npairs | NpairsMultilabelLoss | http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf |
 | sparsemax_loss | SparsemaxLoss |  https://arxiv.org/abs/1602.02068 |
 | triplet | TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
-| quantiles | Pinball | https://en.wikipedia.org/wiki/Quantile_regression |
+| quantiles | PinballLoss | https://en.wikipedia.org/wiki/Quantile_regression |
 
 
 ## Contribution Guidelines
