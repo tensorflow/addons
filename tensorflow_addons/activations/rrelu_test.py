@@ -88,6 +88,5 @@ class RreluTest(tf.test.TestCase, parameterized.TestCase):
 #             result = rrelu(x, lower, upper, training=True)
 #             self.run_op_benchmark(sess, result.op, min_iters=25)
 
-
 if __name__ == "__main__":
     tf.test.main()
