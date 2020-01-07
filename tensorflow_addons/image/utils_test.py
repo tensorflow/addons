@@ -35,7 +35,7 @@ class UtilsOpsTest(tf.test.TestCase):
             self.assertAllEqual(self.evaluate(exp), self.evaluate(res))
 
     def test_to_4D_image_with_unknown_shape(self):
-        fn = img_utils.to_4D_image.get_concrete_function(
+        fn = tf.function(img_utils.to_4D_image).get_concrete_function(
             tf.TensorSpec(shape=None, dtype=tf.float32))
         for shape in (2, 4), (2, 4, 1), (1, 2, 4, 1):
             exp = tf.ones(shape=(1, 2, 4, 1))
@@ -62,17 +62,17 @@ class UtilsOpsTest(tf.test.TestCase):
     def test_from_4D_image_with_unknown_shape(self):
         for shape in (2, 4), (2, 4, 1), (1, 2, 4, 1):
             exp = tf.ones(shape=shape)
-            fn = img_utils.from_4D_image.get_concrete_function(
+            fn = tf.function(img_utils.from_4D_image).get_concrete_function(
                 tf.TensorSpec(shape=None, dtype=tf.float32), tf.size(shape))
             res = fn(tf.ones(shape=(1, 2, 4, 1)), tf.size(shape))
             self.assertAllEqual(self.evaluate(exp), self.evaluate(res))
 
     def test_from_4D_image_with_invalid_data(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises((ValueError, tf.errors.InvalidArgumentError)):
             self.evaluate(
                 img_utils.from_4D_image(tf.ones(shape=(2, 2, 4, 1)), 2))
 
-        with self.assertRaises(tf.errors.InvalidArgumentError):
+        with self.assertRaises((ValueError, tf.errors.InvalidArgumentError)):
             self.evaluate(
                 img_utils.from_4D_image(
                     tf.ones(shape=(2, 2, 4, 1)), tf.constant(2)))

@@ -27,7 +27,6 @@ _image_ops_so = tf.load_op_library(
 tf.no_gradient("Addons>EuclideanDistanceTransform")
 
 
-@tf.function
 def euclidean_dist_transform(images, dtype=tf.float32, name=None):
     """Applies euclidean distance transform(s) to the image(s).
 
