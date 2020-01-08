@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Novograd for TensorFlow."""
+"""NovoGrad for TensorFlow."""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -22,8 +22,8 @@ from tensorflow.python.training import training_ops
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-class Novograd(tf.keras.optimizers.Optimizer):
-    """The Novograd Optimizer was first proposed in [Stochastic Gradient
+class NovoGrad(tf.keras.optimizers.Optimizer):
+    """The NovoGrad Optimizer was first proposed in [Stochastic Gradient
     Methods with Layerwise Adaptvie Moments for training of Deep
     Networks](https://arxiv.org/pdf/1905.11286.pdf)
 
@@ -34,7 +34,6 @@ class Novograd(tf.keras.optimizers.Optimizer):
     computation please refer to this
     [link](https://nvidia.github.io/OpenSeq2Seq/html/optimizers.html):
 
-    ```
     Second order moment = exponential moving average of Layer-wise square
     of grads:
         v_t <-- beta_2 * v_{t-1} + (1-beta_2) * (g_t)^2
@@ -55,11 +54,10 @@ class Novograd(tf.keras.optimizers.Optimizer):
                    (w_d * w_{t-1}))]
     Weight update:
         w_t <- w_{t-1} - lr_t * m_t
-    ```
 
     Example of usage:
     ```python
-    opt = tfa.optimizers.Novograd(
+    opt = tfa.optimizers.NovoGrad(
         lr=1e-3,
         beta_1=0.9,
         beta_2=0.999,
@@ -77,9 +75,9 @@ class Novograd(tf.keras.optimizers.Optimizer):
                  weight_decay=0.0,
                  grad_averaging=False,
                  amsgrad=False,
-                 name='Novograd',
+                 name='NovoGrad',
                  **kwargs):
-        r"""Construct a new RAdam optimizer.
+        r"""Construct a new NovoGrad optimizer.
 
         Args:
             learning_rate: A `Tensor` or a floating point value. or a schedule
@@ -100,7 +98,7 @@ class Novograd(tf.keras.optimizers.Optimizer):
                 decay of learning rate. `lr` is included for backward
                 compatibility, recommended to use `learning_rate` instead.
         """
-        super(Novograd, self).__init__(name, **kwargs)
+        super(NovoGrad, self).__init__(name, **kwargs)
         if weight_decay < 0.0:
             raise ValueError('Weight decay rate cannot be negative')
         self._set_hyper('learning_rate', kwargs.get('lr', learning_rate))
@@ -127,7 +125,7 @@ class Novograd(tf.keras.optimizers.Optimizer):
                 self.add_slot(var, 'vhat')
 
     def _prepare_local(self, var_device, var_dtype, apply_state):
-        super(Novograd, self)._prepare_local(var_device, var_dtype,
+        super(NovoGrad, self)._prepare_local(var_device, var_dtype,
                                              apply_state)
         beta_1_t = tf.identity(self._get_hyper('beta_1', var_dtype))
         beta_2_t = tf.identity(self._get_hyper('beta_2', var_dtype))
@@ -148,7 +146,7 @@ class Novograd(tf.keras.optimizers.Optimizer):
         num_vars = int((len(params) - 1) / 2)
         if len(weights) == 3 * num_vars + 1:
             weights = weights[:len(params)]
-        super(Novograd, self).set_weights(weights)
+        super(NovoGrad, self).set_weights(weights)
 
     def _resource_apply_dense(self, grad, var, apply_state=None):
         var_device, var_dtype = var.device, var.dtype.base_dtype
@@ -160,8 +158,9 @@ class Novograd(tf.keras.optimizers.Optimizer):
         v = self.get_slot(var, 'v')
         g_2 = tf.reduce_sum(tf.square(tf.cast(grad, tf.float32)))
         v_t = tf.cond(
-            tf.equal(self.iterations,
-                     0), lambda: g_2, lambda: v * coefficients['beta_2_t'] +
+            tf.equal(self.iterations, 0),
+            lambda: g_2,
+            lambda: v * coefficients['beta_2_t'] +
             g_2 * coefficients['one_minus_beta_2_t'])
         v_t = v.assign(v_t, use_locking=self._use_locking)
 
@@ -173,8 +172,9 @@ class Novograd(tf.keras.optimizers.Optimizer):
         else:
             grad = grad / (tf.sqrt(v_t) + self.epsilon)
         grad = tf.cond(
-            tf.greater(weight_decay,
-                       0), lambda: grad + weight_decay * var, lambda: grad)
+            tf.greater(weight_decay, 0),
+            lambda: grad + weight_decay * var,
+            lambda: grad)
         grad = tf.cond(grad_averaging, lambda: grad * coefficients[
             'one_minus_beta_1_t'], lambda: grad)
         m = self.get_slot(var, 'm')
@@ -198,8 +198,9 @@ class Novograd(tf.keras.optimizers.Optimizer):
         g_2 = tf.reduce_sum(tf.square(tf.cast(grad, tf.float32)))
         # v is just a scalar and does not need to involve sparse tensors.
         v_t = tf.cond(
-            tf.equal(self.iterations,
-                     0), lambda: g_2, lambda: v * coefficients['beta_2_t'] +
+            tf.equal(self.iterations, 0),
+            lambda: g_2,
+            lambda: v * coefficients['beta_2_t'] +
             g_2 * coefficients['one_minus_beta_2_t'])
         v_t = v.assign(v_t, use_locking=self._use_locking)
 
@@ -211,11 +212,13 @@ class Novograd(tf.keras.optimizers.Optimizer):
         else:
             grad = grad / (tf.sqrt(v_t) + self.epsilon)
         grad = tf.cond(
-            tf.greater(weight_decay,
-                       0), lambda: grad + weight_decay * var, lambda: grad)
+            tf.greater(weight_decay, 0),
+            lambda: grad + weight_decay * var,
+            lambda: grad)
         grad = tf.cond(
             tf.logical_and(grad_averaging, tf.not_equal(self.iterations, 0)),
-            lambda: grad * coefficients['one_minus_beta_1_t'], lambda: grad)
+            lambda: grad * coefficients['one_minus_beta_1_t'],
+            lambda: grad)
         m = self.get_slot(var, 'm')
         return training_ops.resource_sparse_apply_keras_momentum(
             var.handle,
@@ -228,7 +231,7 @@ class Novograd(tf.keras.optimizers.Optimizer):
             use_nesterov=False)
 
     def get_config(self):
-        config = super(Novograd, self).get_config()
+        config = super(NovoGrad, self).get_config()
         config.update({
             'learning_rate':
             self._serialize_hyperparameter('learning_rate'),

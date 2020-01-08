@@ -12,21 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for Novograd Optimizer."""
+"""Tests for NovoGrad Optimizer."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 
+from tensorflow_addons.optimizers import NovoGrad
 from tensorflow_addons.utils import test_utils
-from tensorflow_addons.optimizers import Novograd
 
 
 @test_utils.run_all_in_graph_and_eager_modes
-class NovogradTest(tf.test.TestCase):
+class NovoGradTest(tf.test.TestCase):
     def run_dense_sample(self, iterations, expected, optimizer):
         var_0 = tf.Variable([1.0, 2.0], dtype=tf.dtypes.float32)
         var_1 = tf.Variable([3.0, 4.0], dtype=tf.dtypes.float32)
@@ -72,12 +72,11 @@ class NovogradTest(tf.test.TestCase):
         self.assertAllClose(var_1.read_value(), expected[1], atol=2e-4)
 
     def test_dense_sample(self):
-
         self.run_dense_sample(
             iterations=1,
             expected=[[0.9552786425, 1.9105572849],
                       [2.9400000012, 3.9200000016]],
-            optimizer=Novograd(lr=0.1, epsilon=1e-8),
+            optimizer=NovoGrad(lr=0.1, epsilon=1e-8),
         )
 
     def test_sparse_sample(self):
@@ -85,26 +84,23 @@ class NovogradTest(tf.test.TestCase):
             iterations=1,
             expected=[[0.9552786425, 1.9105572849],
                       [2.9400000012, 3.9200000016]],
-            optimizer=Novograd(lr=0.1, epsilon=1e-8),
+            optimizer=NovoGrad(lr=0.1, epsilon=1e-8),
         )
 
     def test_dense_sample_with_weight_decay(self):
-        # Expected values are obtained from the official implementation
         self.run_dense_sample(
             iterations=1,
             expected=[[0.945278642, 1.8905572849],
                       [2.9100000012, 3.8800000016]],
-            optimizer=Novograd(lr=0.1, weight_decay=0.1, epsilon=1e-8),
+            optimizer=NovoGrad(lr=0.1, weight_decay=0.1, epsilon=1e-8),
         )
 
     def test_sparse_sample_with_weight_decay(self):
-        # Expected values are obtained from the official implementation
-        # Dense results should be: [-0.2029,  0.7768], [1.7578, 2.7380]
         self.run_sparse_sample(
             iterations=1,
             expected=[[0.945278642, 1.8905572849],
                       [2.9100000012, 3.8800000016]],
-            optimizer=Novograd(lr=0.1, weight_decay=0.1, epsilon=1e-8),
+            optimizer=NovoGrad(lr=0.1, weight_decay=0.1, epsilon=1e-8),
         )
 
     def test_fit_simple_linear_model(self):
@@ -117,7 +113,7 @@ class NovogradTest(tf.test.TestCase):
 
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
-        model.compile(Novograd(), loss='mse')
+        model.compile(NovoGrad(), loss='mse')
 
         model.fit(x, y, epochs=10)
 
@@ -129,7 +125,7 @@ class NovogradTest(tf.test.TestCase):
         self.assertLess(max_abs_diff, 1e-2)
 
     def test_get_config(self):
-        opt = Novograd(lr=1e-4, weight_decay=0.0, grad_averaging=False)
+        opt = NovoGrad(lr=1e-4, weight_decay=0.0, grad_averaging=False)
         config = opt.get_config()
         self.assertEqual(config['learning_rate'], 1e-4)
         self.assertEqual(config['weight_decay'], 0.0)
