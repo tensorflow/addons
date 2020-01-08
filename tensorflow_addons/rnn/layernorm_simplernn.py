@@ -122,27 +122,28 @@ class LayernormSimpleRNNCell(SimpleRNNCell):
     ```
     """
 
-    def __init__(self,
-                 units,
-                 activation='tanh',
-                 use_bias=True,
-                 use_layernorm=False,  # NEW(!)
-                 layernorm_epsilon=1e-05,  # NEW(!)
-                 kernel_initializer='glorot_uniform',
-                 recurrent_initializer='orthogonal',
-                 bias_initializer='zeros',
-                 gamma_initializer='ones',  # NEW(!)
-                 kernel_regularizer=None,
-                 recurrent_regularizer=None,
-                 bias_regularizer=None,
-                 gamma_regularizer=None,  # NEW(!)
-                 kernel_constraint=None,
-                 recurrent_constraint=None,
-                 bias_constraint=None,
-                 gamma_constraint=None,  # NEW(!)
-                 dropout=0.,
-                 recurrent_dropout=0.,
-                 **kwargs):
+    def __init__(
+            self,
+            units,
+            activation='tanh',
+            use_bias=True,
+            use_layernorm=False,  # NEW(!)
+            layernorm_epsilon=1e-05,  # NEW(!)
+            kernel_initializer='glorot_uniform',
+            recurrent_initializer='orthogonal',
+            bias_initializer='zeros',
+            gamma_initializer='ones',  # NEW(!)
+            kernel_regularizer=None,
+            recurrent_regularizer=None,
+            bias_regularizer=None,
+            gamma_regularizer=None,  # NEW(!)
+            kernel_constraint=None,
+            recurrent_constraint=None,
+            bias_constraint=None,
+            gamma_constraint=None,  # NEW(!)
+            dropout=0.,
+            recurrent_dropout=0.,
+            **kwargs):
         self.use_layernorm = use_layernorm
         SimpleRNNCell.__init__(
             self,
@@ -214,10 +215,7 @@ class LayernormSimpleRNNCell(SimpleRNNCell):
     # use SimpleRNNCell's get_initial_state method
 
     def get_config(self):
-        config = {
-            'use_layernorm':
-                self.use_layernorm
-        }
+        config = {'use_layernorm': self.use_layernorm}
         cell_config = SimpleRNNCell.get_config(self)
         del cell_config['name']
         if self.use_layernorm:
@@ -343,33 +341,34 @@ class LayernormSimpleRNN(SimpleRNN):
     ```
     """
 
-    def __init__(self,
-                 units,
-                 activation='tanh',
-                 use_bias=True,
-                 use_layernorm=False,  # NEW(!)
-                 layernorm_epsilon=1e-05,  # NEW(!)
-                 kernel_initializer='glorot_uniform',
-                 recurrent_initializer='orthogonal',
-                 bias_initializer='zeros',
-                 gamma_initializer='ones',  # NEW(!)
-                 kernel_regularizer=None,
-                 recurrent_regularizer=None,
-                 bias_regularizer=None,
-                 gamma_regularizer=None,  # NEW(!)
-                 activity_regularizer=None,
-                 kernel_constraint=None,
-                 recurrent_constraint=None,
-                 bias_constraint=None,
-                 gamma_constraint=None,  # NEW(!)
-                 dropout=0.,
-                 recurrent_dropout=0.,
-                 return_sequences=False,
-                 return_state=False,
-                 go_backwards=False,
-                 stateful=False,
-                 unroll=False,
-                 **kwargs):
+    def __init__(
+            self,
+            units,
+            activation='tanh',
+            use_bias=True,
+            use_layernorm=False,  # NEW(!)
+            layernorm_epsilon=1e-05,  # NEW(!)
+            kernel_initializer='glorot_uniform',
+            recurrent_initializer='orthogonal',
+            bias_initializer='zeros',
+            gamma_initializer='ones',  # NEW(!)
+            kernel_regularizer=None,
+            recurrent_regularizer=None,
+            bias_regularizer=None,
+            gamma_regularizer=None,  # NEW(!)
+            activity_regularizer=None,
+            kernel_constraint=None,
+            recurrent_constraint=None,
+            bias_constraint=None,
+            gamma_constraint=None,  # NEW(!)
+            dropout=0.,
+            recurrent_dropout=0.,
+            return_sequences=False,
+            return_state=False,
+            go_backwards=False,
+            stateful=False,
+            unroll=False,
+            **kwargs):
         # 'implementation' warning was never relevant for LayernormSimpleRNN
         cell = LayernormSimpleRNNCell(
             units,

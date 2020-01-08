@@ -33,7 +33,6 @@ import tensorflow_addons.rnn.layernorm_simplernn as lnrnn
 
 @test_utils.run_all_in_graph_and_eager_modes
 class LayernormSimpleRNNTest(tf.test.TestCase):
-
     def test_return_sequences_layernorm_rnn(self):
         num_samples = 2
         timesteps = 3
@@ -41,9 +40,11 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
         units = 2
         testing_utils.layer_test(
             lnrnn.LayernormSimpleRNN,
-            kwargs={'units': units,
-                    'use_layernorm': True,
-                    'return_sequences': True},
+            kwargs={
+                'units': units,
+                'use_layernorm': True,
+                'return_sequences': True
+            },
             input_shape=(num_samples, timesteps, embedding_dim))
 
     def test_float64_layernorm_rnn(self):
@@ -53,10 +54,12 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
         units = 2
         testing_utils.layer_test(
             lnrnn.LayernormSimpleRNN,
-            kwargs={'units': units,
-                    'use_layernorm': True,
-                    'return_sequences': True,
-                    'dtype': 'float64'},
+            kwargs={
+                'units': units,
+                'use_layernorm': True,
+                'return_sequences': True,
+                'dtype': 'float64'
+            },
             input_shape=(num_samples, timesteps, embedding_dim),
             input_dtype='float64')
 
@@ -66,9 +69,7 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
         embedding_dim = 4
         units = 2
         layer = lnrnn.LayernormSimpleRNN(
-            units,
-            use_layernorm=True,
-            input_shape=(None, embedding_dim))
+            units, use_layernorm=True, input_shape=(None, embedding_dim))
         model = keras.models.Sequential()
         model.add(layer)
         model.compile('rmsprop', 'mse')
@@ -85,10 +86,12 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
         units = 2
         testing_utils.layer_test(
             lnrnn.LayernormSimpleRNN,
-            kwargs={'units': units,
-                    'use_layernorm': True,
-                    'dropout': 0.1,
-                    'recurrent_dropout': 0.1},
+            kwargs={
+                'units': units,
+                'use_layernorm': True,
+                'dropout': 0.1,
+                'recurrent_dropout': 0.1
+            },
             input_shape=(num_samples, timesteps, embedding_dim))
 
     def test_constraints_layernorm_rnn(self):
@@ -121,21 +124,19 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
         targets /= targets.sum(axis=-1, keepdims=True)
         model = keras.models.Sequential()
         model.add(keras.layers.Masking(input_shape=(3, 4)))
-        model.add(layer_class(
-            units=5,
-            use_layernorm=True,
-            return_sequences=True,
-            unroll=False))
+        model.add(
+            layer_class(
+                units=5,
+                use_layernorm=True,
+                return_sequences=True,
+                unroll=False))
         model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
         model.fit(inputs, targets, epochs=1, batch_size=2, verbose=1)
 
     def test_from_config_layernorm_rnn(self):
         layer_class = lnrnn.LayernormSimpleRNN
         for stateful in (False, True):
-            l1 = layer_class(
-                units=1,
-                use_layernorm=True,
-                stateful=stateful)
+            l1 = layer_class(units=1, use_layernorm=True, stateful=stateful)
             l2 = layer_class.from_config(l1.get_config())
             assert l1.get_config() == l2.get_config()
 
@@ -152,7 +153,7 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
             recurrent_regularizer=keras.regularizers.l1(0.01),
             bias_regularizer='l2',
             gamma_regularizer='l2')
-            # activity_regularizer='l1'  # DOESN'T DO ANYTHING
+        # activity_regularizer='l1'  # DOESN'T DO ANYTHING
         layer.build((None, None, 2))
         self.assertEqual(len(layer.losses), 4)
 
@@ -162,6 +163,8 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
         #    self.assertEqual(len(layer.losses), 4)
         #else:
         #    self.assertEqual(len(layer.get_losses_for(x)), 1)
+
+
 """
 STILL FAILS
     def test_statefulness_layernorm_rnn(self):
