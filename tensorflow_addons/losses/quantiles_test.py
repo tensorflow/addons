@@ -21,8 +21,10 @@ from __future__ import print_function
 import tensorflow as tf
 import tensorflow_addons as tfa
 
+from tensorflow_addons import utils
 
-@tfa.utils.test_utils.run_all_in_graph_and_eager_modes
+
+@utils.test_utils.run_all_in_graph_and_eager_modes
 class PinballLossTest(tf.test.TestCase):
     def test_config(self):
         pin_obj = tfa.losses.PinballLoss(reduction=tf.keras.losses.Reduction.SUM, name='pin_1')
