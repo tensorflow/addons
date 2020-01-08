@@ -53,6 +53,53 @@ def use_gpu():
         yield
 
 
+def create_virtual_devices(num_devices, memory_limit_per_device=1024):
+    """Virtualize a the physical device into `num_devices` logical devices."""
+    is_gpu_available = len(tf.config.list_physical_devices('GPU'))
+    device_type = 'GPU' if is_gpu_available > 0 else 'CPU'
+    physical_devices = tf.config.list_physical_devices(device_type)
+
+    tf.config.experimental.set_virtual_device_configuration(
+        physical_devices[0], [
+            tf.config.experimental.VirtualDeviceConfiguration(
+                memory_limit=memory_limit_per_device
+                if is_gpu_available else None) for _ in range(num_devices)
+        ])
+
+    return tf.config.experimental.list_logical_devices(device_type)
+
+
+def run_all_distributed(num_devices):
+    base_decorator = run_distributed(num_devices)
+
+    def decorator(cls):
+        for name, method in cls.__dict__.copy().items():
+            if (callable(method)
+                    and name.startswith(unittest.TestLoader.testMethodPrefix)
+                    and name != "test_session"):
+                setattr(cls, name, base_decorator(method))
+        return cls
+
+    return decorator
+
+
+def run_distributed(num_devices):
+    def decorator(f):
+        if inspect.isclass(f):
+            raise TypeError("`run_distributed` only supports test methods. "
+                            "Did you mean to use `run_all_distributed`?")
+
+        def decorated(self, *args, **kwargs):
+            logical_devices = create_virtual_devices(num_devices)
+            strategy = tf.distribute.MirroredStrategy(logical_devices)
+            with strategy.scope():
+                f(self, *args, **kwargs)
+
+        return decorated
+
+    return decorator
+
+
 def run_all_with_types(dtypes):
     """Execute all test methods in the given class with and without eager."""
     base_decorator = run_with_types(dtypes)

@@ -175,5 +175,15 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
             self.assertTrue(isinstance(wn_removed_layer, base_layer.__class__))
 
 
+class WeightNormalizationDistributedTest(tf.test.TestCase):
+    @test_utils.run_distributed(4)
+    def test_multigpu(self):
+        base_layer = tf.keras.layers.Dense(1)
+        wn_layer = wrappers.WeightNormalization(base_layer, True)
+        input_data = np.ones([1, 10], dtype=np.float32)
+        output = wn_layer(input_data)
+        self.evaluate(output)
+
+
 if __name__ == "__main__":
     tf.test.main()
