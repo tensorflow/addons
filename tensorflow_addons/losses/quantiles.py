@@ -58,13 +58,16 @@ def pinball_loss(y_true, y_pred, tau):
     y_pred = tf.convert_to_tensor(y_pred)
     y_true = tf.cast(y_true, y_pred.dtype)
 
-	# broadcast the pinball slope along the batch dimension, and clip to
+    # broadcast the pinball slope along the batch dimension, and clip to
     # acceptable values
-    tau = tf.expand_dims(tf.cast(tf.keras.backend.clip(tau, 0., 1.), y_pred.dtype), 0)
+    tau = tf.expand_dims(
+        tf.cast(tf.keras.backend.clip(tau, 0., 1.), y_pred.dtype), 0)
 
     delta_y = y_true - y_pred
-    pinball = tf.math.maximum(tau * delta_y, (tau - cast(1, tau.dtype)) * delta_y)
-    return tf.keras.backend.mean(tf.keras.backend.batch_flatten(pinball), axis=-1)
+    pinball = tf.math.maximum(tau * delta_y,
+                              (tau - tf.cast(1, tau.dtype)) * delta_y)
+    return tf.keras.backend.mean(
+        tf.keras.backend.batch_flatten(pinball), axis=-1)
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
