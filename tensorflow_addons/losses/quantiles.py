@@ -28,7 +28,7 @@ def pinball_loss(y_true, y_pred, tau):
 
     `loss = maximum(tau * (y_true - y_pred), (tau - 1) * (y_true - y_pred))`
 
-    In the context of regression this loss yield an estimator of the tau
+    In the context of regression this loss yields an estimator of the tau
     conditional quantile.
 
     https://en.wikipedia.org/wiki/Quantile_regression
@@ -73,7 +73,7 @@ class PinballLoss(tf.keras.losses.Loss):
 
     `loss = maximum(tau * (y_true - y_pred), (tau - 1) * (y_true - y_pred))`
 
-    In the context of regression this loss yield an estimator of the tau
+    In the context of regression this loss yields an estimator of the tau
     conditional quantile.
 
     https://en.wikipedia.org/wiki/Quantile_regression
