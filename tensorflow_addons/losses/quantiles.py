@@ -51,9 +51,9 @@ def pinball_loss(y_true, y_pred, tau):
     y_pred: The predicted values. shape = `[batch_size, d0, .. dN]`
 	tau: Float in [0, 1] or a tensor taking values in [0, 1] and shape =
       `[d0,..., dn]`.  It defines the slope of the pinball loss. In the context
-      of quantile regression, the value of tau determines the conditional quantile
-      level. When tau = 0.5 this amounts to l1 regression, an estimator of the
-      conditional median (0.5 quantile).
+      of quantile regression, the value of tau determines the conditional
+      quantile level. When tau = 0.5 this amounts to l1 regression, an
+      estimator of the conditional median (0.5 quantile).
     """
     y_pred = tf.convert_to_tensor(y_pred)
     y_true = tf.cast(y_true, y_pred.dtype)
@@ -100,11 +100,11 @@ class PinballLoss(tf.keras.losses.Loss):
 
     Args:
 
-	tau: Float in [0, 1] or a tensor taking values in [0, 1] and shape =
+    tau: Float in [0, 1] or a tensor taking values in [0, 1] and shape =
       `[d0,..., dn]`.  It defines the slope of the pinball loss. In the context
-      of quantile regression, the value of tau determines the conditional quantile
-      level. When tau = 0.5 this amounts to l1 regression, an estimator of the
-      conditional median (0.5 quantile).
+      of quantile regression, the value of tau determines the conditional
+      quantile level. When tau = 0.5 this amounts to l1 regression, an
+      estimator of the conditional median (0.5 quantile).
     reduction: (Optional) Type of `tf.keras.losses.Reduction` to apply to loss.
       Default value is `AUTO`. `AUTO` indicates that the reduction option will
       be determined by the usage context. For almost all cases this defaults to
