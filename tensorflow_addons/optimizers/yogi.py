@@ -85,7 +85,7 @@ class Yogi(tf.keras.optimizers.Optimizer):
           initial_accumulator_value: The starting value for accumulators.
             Only positive values are allowed.
           activation: Use hard sign or soft tanh to determin sign.
-          name: Optional name for the operations created when applying
+          name: Optional name for the operations created when applying 
             gradients. Defaults to "Yogi".
           **kwargs: keyword arguments. Allowed to be {`clipnorm`, `clipvalue`,
             `lr`, `decay`}. `clipnorm` is clip gradients by norm; `clipvalue`

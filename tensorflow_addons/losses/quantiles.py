@@ -12,53 +12,99 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implements pinball loss."""
+"""Implements quantiles losses."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow.keras.backend as K
 import tensorflow as tf
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.function
 def pinball_loss(y_true, y_pred, tau):
     """Computes the pinball loss between `y_true` and `y_pred`.
 
+    `loss = maximum(tau * (y_true - y_pred), (tau - 1) * (y_true - y_pred))`
+
+    In the context of regression this loss yield an estimator of the tau
+    conditional quantile.
+
+    https://en.wikipedia.org/wiki/Quantile_regression
+    https://projecteuclid.org/download/pdfview_1/euclid.bj/1297173840
+
     Usage:
+
     ```python
     loss = pinball_loss([0., 0., 1., 1.], [1., 1., 1., 0.], tau=.1)
-    print('Loss: ', loss.numpy())  # Loss:
+
+    # loss = max(0.1 * (y_true - y_pred), (0.1 - 1) * (y_true - y_pred))
+    #      = (0.9 + 0.9 + 0 + 0.1) / 4
+
+    print('Loss: ', loss.numpy())  # Loss: 0.475
     ```
+
     Args:
-    tau: a float between 0 and 1 the slope of the pinball loss. In the context
-    of quantile regression, the value of tau determines the conditional
-    quantile level.
+
+    y_true: Ground truth values. shape = `[batch_size, d0, .. dN]`
+    y_pred: The predicted values. shape = `[batch_size, d0, .. dN]`
+	tau: Float in [0, 1] or a tensor taking values in [0, 1] and shape =
+      `[d0,..., dn]`.  It defines the slope of the pinball loss. In the context
+      of quantile regression, the value of tau determines the conditional quantile
+      level. When tau = 0.5 this amounts to l1 regression, an estimator of the
+      conditional median (0.5 quantile).
     """
+    y_pred = tf.convert_to_tensor(y_pred)
+    y_true = tf.cast(y_true, y_pred.dtype)
+
+	# broadcast the pinball slope along the batch dimension, and clip to
+    # acceptable values
+    tau = tf.expand_dims(tf.cast(tf.keras.backend.clip(tau, 0., 1.), y_pred.dtype), 0)
+
     delta_y = y_true - y_pred
-    return K.maximum(tau * delta_y, (tau - 1) * delta_y)
+    pinball = tf.math.maximum(tau * delta_y, (tau - cast(1, tau.dtype)) * delta_y)
+    return tf.keras.backend.mean(tf.keras.backend.batch_flatten(pinball), axis=-1)
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 class PinballLoss(tf.keras.losses.Loss):
     """Computes the pinball loss between `y_true` and `y_pred`.
 
+    `loss = maximum(tau * (y_true - y_pred), (tau - 1) * (y_true - y_pred))`
+
+    In the context of regression this loss yield an estimator of the tau
+    conditional quantile.
+
+    https://en.wikipedia.org/wiki/Quantile_regression
+    https://projecteuclid.org/download/pdfview_1/euclid.bj/1297173840
+
     Usage:
+
     ```python
-    pinball = tfa.losses.PinballLoss(tau=.1, axis=1)
+    pinball = tfa.losses.PinballLoss(tau=.1)
     loss = pinball([0., 0., 1., 1.], [1., 1., 1., 0.])
-    print('Loss: ', loss.numpy())  # Loss:
+
+    # loss = max(0.1 * (y_true - y_pred), (0.1 - 1) * (y_true - y_pred))
+    #      = (0.9 + 0.9 + 0 + 0.1) / 4
+
+    print('Loss: ', loss.numpy())  # Loss: 0.475
     ```
+
     Usage with the `compile` API:
+
     ```python
     model = tf.keras.Model(inputs, outputs)
-    model.compile('sgd', loss=tfa.losses.PinballLoss(tau=.9))
+    model.compile('sgd', loss=tfa.losses.PinballLoss(tau=.1))
     ```
+
     Args:
-    tau: a float between 0 and 1 the slope of the pinball loss. In the context
-      of quantile regression, the value of tau determines the conditional
-      quantile level.
+
+	tau: Float in [0, 1] or a tensor taking values in [0, 1] and shape =
+      `[d0,..., dn]`.  It defines the slope of the pinball loss. In the context
+      of quantile regression, the value of tau determines the conditional quantile
+      level. When tau = 0.5 this amounts to l1 regression, an estimator of the
+      conditional median (0.5 quantile).
     reduction: (Optional) Type of `tf.keras.losses.Reduction` to apply to loss.
       Default value is `AUTO`. `AUTO` indicates that the reduction option will
       be determined by the usage context. For almost all cases this defaults to
