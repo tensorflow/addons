@@ -26,7 +26,7 @@
 | lazy_adam | LazyAdam | https://arxiv.org/abs/1412.6980      |
 | lookahead | Lookahead | https://arxiv.org/abs/1907.08610v1 |
 | moving_average | MovingAverage | |
-| novograd | Novograd | https://nvidia.github.io/OpenSeq2Seq/html/optimizers.html |
+| novograd | NovoGrad | https://nvidia.github.io/OpenSeq2Seq/html/optimizers.html |
 | rectified_adam | RectifiedAdam | https://arxiv.org/pdf/1908.03265v1.pdf |
 | stochastic_weight_averaging | SWA | https://arxiv.org/abs/1803.05407.pdf |
 | weight_decay_optimizers | SGDW, AdamW, extend_with_decoupled_weight_decay | https://arxiv.org/pdf/1711.05101.pdf |
