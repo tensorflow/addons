@@ -53,8 +53,8 @@ class LayernormSimpleRNNCell(SimpleRNNCell):
         If you pass `None`, no activation is applied
         (ie. "linear" activation: `a(x) = x`).
       use_bias: Boolean, (default `True`), whether the layer uses a bias vector.
-      use_layernorm: Boolean, (default `False`), whether layer uses layer
-        normalization instead of a bias vector.
+      use_layernorm: Boolean, (default `True`), whether to apply layer normalization
+        (scaling only).
       layernorm_epsilon: Float, (default `1e-5`), Small float added to variance
         to avoid dividing by zero.
       kernel_initializer: Initializer for the `kernel` weights matrix,
@@ -127,7 +127,7 @@ class LayernormSimpleRNNCell(SimpleRNNCell):
             units,
             activation='tanh',
             use_bias=True,
-            use_layernorm=False,  # NEW(!)
+            use_layernorm=True,  # NEW(!)
             layernorm_epsilon=1e-05,  # NEW(!)
             kernel_initializer='glorot_uniform',
             recurrent_initializer='orthogonal',
@@ -306,8 +306,8 @@ class LayernormSimpleRNN(SimpleRNN):
         If you pass None, no activation is applied
         (ie. "linear" activation: `a(x) = x`).
       use_bias: Boolean, (default `True`), whether the layer uses a bias vector.
-      use_layernorm: Boolean, (default `False`), whether layer uses layer
-        normalization instead of a bias vector.
+      use_layernorm: Boolean, (default `True`), whether to apply layer normalization
+        (scaling only).
       layernorm_epsilon: Float, (default `1e-5`), Small float added to variance
         to avoid dividing by zero.
       kernel_initializer: Initializer for the `kernel` weights matrix,
@@ -381,12 +381,12 @@ class LayernormSimpleRNN(SimpleRNN):
 
     ```python
     inputs = np.random.random([32, 10, 8]).astype(np.float32)
-    model = tf.keras.layers.LayernormSimpleRNN(4, use_layernorm=True)
+    model = tf.keras.layers.LayernormSimpleRNN(4)
 
     output = model(inputs)  # The output has shape `[32, 4]`.
 
     model = tf.keras.layers.LayernormSimpleRNN(
-        4, use_layernorm=True, return_sequences=True, return_state=True)
+        4, return_sequences=True, return_state=True)
 
     # whole_sequence_output has shape `[32, 10, 4]`.
     # final_state has shape `[32, 4]`.
@@ -399,7 +399,7 @@ class LayernormSimpleRNN(SimpleRNN):
             units,
             activation='tanh',
             use_bias=True,
-            use_layernorm=False,  # NEW(!)
+            use_layernorm=True,  # NEW(!)
             layernorm_epsilon=1e-05,  # NEW(!)
             kernel_initializer='glorot_uniform',
             recurrent_initializer='orthogonal',
