@@ -71,7 +71,7 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
                  learning_rate=0.001,
                  beta_1=0.9,
                  beta_2=0.999,
-                 epsilon=1e-8,
+                 epsilon=1e-7,
                  weight_decay=0.0,
                  grad_averaging=False,
                  amsgrad=False,
