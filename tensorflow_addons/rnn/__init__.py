@@ -20,5 +20,5 @@ from __future__ import print_function
 
 from tensorflow_addons.rnn.cell import LayerNormLSTMCell
 from tensorflow_addons.rnn.cell import NASCell
-from tensorflow_addons.rnn.layernorm_simplernn import (LayernormSimpleRNN,
-                                                       LayernormSimpleRNNCell)
+from tensorflow_addons.rnn.cell import (LayernormSimpleRNN,
+                                        LayernormSimpleRNNCell)
