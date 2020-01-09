@@ -105,17 +105,17 @@ class NovoGradTest(tf.test.TestCase):
 
     def test_dense_sample_with_grad_averaging(self):
         self.run_dense_sample(
-            iterations=1,
-            expected=[[0.9955278642, 1.9910557285],
-                      [2.9940000001, 3.9920000002]],
+            iterations=2,
+            expected=[[0.9508087044, 1.9016174088],
+                      [2.9340000013, 3.9120000018]],
             optimizer=NovoGrad(lr=0.1, grad_averaging=True, epsilon=1e-8),
         )
 
     def test_sparse_sample_with_grad_averaging(self):
         self.run_sparse_sample(
-            iterations=1,
-            expected=[[0.9955278642, 1.9910557285],
-                      [2.9940000001, 3.9920000002]],
+            iterations=2,
+            expected=[[0.9508087044, 1.9016174088],
+                      [2.9340000013, 3.9120000018]],
             optimizer=NovoGrad(lr=0.1, grad_averaging=True, epsilon=1e-8),
         )
 
