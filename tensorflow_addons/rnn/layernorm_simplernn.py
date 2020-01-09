@@ -17,34 +17,24 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
-
-import numpy as np
 import tensorflow as tf
-from tensorflow.keras.layers import SimpleRNN, SimpleRNNCell
-from tensorflow.keras.layers import LayerNormalization
-
-from tensorflow.python.keras import backend as K  # for SimpleRNNCell.call()
-# from tensorflow.python.keras import regularizers  # for activity_regularizer
-# from tensorflow.python.keras.engine.input_spec import InputSpec  # for SimpleRNN.__init__()
-# from tensorflow.python.keras.utils import tf_utils  # for shape_type_conversion
+import tensorflow.keras as keras
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 # class LayernormSimpleRNNCell(SimpleRNNCell, LayerNormalization):
-class LayernormSimpleRNNCell(SimpleRNNCell):
-    """Cell class for LayernormSimpleRNN.
+class LayernormSimpleRNNCell(keras.layers.SimpleRNNCell):
+    """Cell class for LayernormSimpleRNN
 
     Motivation:
     - Drop-In Replacement for keras.layers.SimpleRNNCell
-    - demonstrate how to add LayerNormalization to all RNNs as option
-    - see Ba et al. (2016), and tf.keras.layers.LayerNormalization
+    - demonstrate how to add keras.layers.LayerNormalization 
+       to all RNNs by introducing the `use_layernorm` argument
 
-    See [the Keras RNN API guide](https://www.tensorflow.org/guide/keras/rnn)
-    for details about the usage of RNN API.
-
-    This class processes one step within the whole time sequence input, whereas
-    `tf.keras.layer.LayernormSimpleRNN` processes the whole sequence.
+    References:
+    [1] Ba, Jimmy Lei, Jamie Ryan Kiros, and Geoffrey E. Hinton. 
+        “Layer Normalization.” ArXiv:1607.06450 [Cs, Stat], 
+        July 21, 2016. http://arxiv.org/abs/1607.06450
 
     Arguments:
       units: Positive integer, dimensionality of the output space.
@@ -105,14 +95,17 @@ class LayernormSimpleRNNCell(SimpleRNNCell):
     Examples:
 
     ```python
+    import numpy as np
+    import tensorflow.keras as keras
+    import tensorflow_addons as tfa
+
     inputs = np.random.random([32, 10, 8]).astype(np.float32)
-    rnn = tf.keras.layers.RNN(
-      tf.keras.layers.LayernormSimpleRNNCell(4, use_layernorm=True))
+    rnn = keras.layers.RNN(tfa.rnn.LayernormSimpleRNNCell(4))
 
     output = rnn(inputs)  # The output has shape `[32, 4]`.
 
-    rnn = tf.keras.layers.RNN(
-        tf.keras.layers.LayernormSimpleRNNCell(4, use_layernorm=True),
+    rnn = keras.layers.RNN(
+        tfa.rnn.LayernormSimpleRNNCell(4),
         return_sequences=True,
         return_state=True)
 
@@ -145,7 +138,7 @@ class LayernormSimpleRNNCell(SimpleRNNCell):
             recurrent_dropout=0.,
             **kwargs):
         self.use_layernorm = use_layernorm
-        SimpleRNNCell.__init__(
+        keras.layers.SimpleRNNCell.__init__(
             self,
             units,
             activation=activation,
@@ -165,7 +158,7 @@ class LayernormSimpleRNNCell(SimpleRNNCell):
             trainable=kwargs.get('trainable', True))
         if use_layernorm:
             # LayerNormalization.__init__(self,
-            self.layernorm = LayerNormalization(
+            self.layernorm = keras.layers.LayerNormalization(
                 axis=-1,
                 epsilon=layernorm_epsilon,
                 center=False,
@@ -242,23 +235,23 @@ class LayernormSimpleRNNCell(SimpleRNNCell):
             prev_output, training)
 
         if dp_mask is not None:
-            h = K.dot(inputs * dp_mask, self.kernel)
+            h = keras.backend.dot(inputs * dp_mask, self.kernel)
         else:
-            h = K.dot(inputs, self.kernel)
+            h = keras.backend.dot(inputs, self.kernel)
 
         # don't add bias to "h" here
         # add bias after scaling with layer normalization to "output"
 
         if rec_dp_mask is not None:
             prev_output = prev_output * rec_dp_mask
-        output = h + K.dot(prev_output, self.recurrent_kernel)  # "net"
+        output = h + keras.backend.dot(prev_output, self.recurrent_kernel)  # "net"
 
         if self.use_layernorm:
             # output = LayerNormalization.call(self, output)
             output = self.layernorm(output)
 
         if self.bias is not None:
-            output = K.bias_add(output, self.bias)
+            output = keras.backend.bias_add(output, self.bias)
 
         if self.activation is not None:
             output = self.activation(output)
@@ -269,7 +262,7 @@ class LayernormSimpleRNNCell(SimpleRNNCell):
 
     def get_config(self):
         config = {'use_layernorm': self.use_layernorm}
-        cell_config = SimpleRNNCell.get_config(self)
+        cell_config = keras.layers.SimpleRNNCell.get_config(self)
         del cell_config['name']
         if self.use_layernorm:
             # ln_config = LayerNormalization.get_config(self)
@@ -288,16 +281,18 @@ class LayernormSimpleRNNCell(SimpleRNNCell):
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-class LayernormSimpleRNN(SimpleRNN):
-    """Fully-connected RNN where the output is to be fed back to input.
+class LayernormSimpleRNN(keras.layers.SimpleRNN):
+    """Fully-connected RNN with Layer Normalization.
 
     Motivation:
     - Drop-In Replacement for keras.layers.SimpleRNN
-    - demonstrate how to add LayerNormalization to all RNNs as option
-    - see Ba et al. (2016), and tf.keras.layers.LayerNormalization
+    - demonstrate how to add keras.layers.LayerNormalization 
+       to all RNNs by introducing the `use_layernorm` argument
 
-    See [the Keras RNN API guide](https://www.tensorflow.org/guide/keras/rnn)
-    for details about the usage of RNN API.
+    References:
+    [1] Ba, Jimmy Lei, Jamie Ryan Kiros, and Geoffrey E. Hinton. 
+        “Layer Normalization.” ArXiv:1607.06450 [Cs, Stat], 
+        July 21, 2016. http://arxiv.org/abs/1607.06450
 
     Arguments:
       units: Positive integer, dimensionality of the output space.
@@ -380,12 +375,15 @@ class LayernormSimpleRNN(SimpleRNN):
     Examples:
 
     ```python
+    import numpy as np
+    import tensorflow_addons as tfa
+
     inputs = np.random.random([32, 10, 8]).astype(np.float32)
-    model = tf.keras.layers.LayernormSimpleRNN(4)
+    model = tfa.rnn.LayernormSimpleRNN(4)
 
     output = model(inputs)  # The output has shape `[32, 4]`.
 
-    model = tf.keras.layers.LayernormSimpleRNN(
+    model = tfa.rnn.LayernormSimpleRNN(
         4, return_sequences=True, return_state=True)
 
     # whole_sequence_output has shape `[32, 10, 4]`.
@@ -446,7 +444,7 @@ class LayernormSimpleRNN(SimpleRNN):
             recurrent_dropout=recurrent_dropout,
             dtype=kwargs.get('dtype'),
             trainable=kwargs.get('trainable', True))
-        super(SimpleRNN, self).__init__(  # call RNN's init
+        super(keras.layers.SimpleRNN, self).__init__(  # call RNN's init
             cell,
             return_sequences=return_sequences,
             return_state=return_state,
@@ -481,7 +479,7 @@ class LayernormSimpleRNN(SimpleRNN):
         return self.cell.gamma_constraint
 
     def get_config(self):
-        base_config = super(SimpleRNN, self).get_config()  # get RNN's config
+        base_config = super(keras.layers.SimpleRNN, self).get_config()  # get RNN's config
         del base_config['cell']
         cell_config = self.cell.get_config()
         return {**base_config, **cell_config}
