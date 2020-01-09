@@ -30,35 +30,24 @@ from tensorflow_addons.utils import test_utils
 @test_utils.run_all_in_graph_and_eager_modes
 class InterpolateBilinearTest(tf.test.TestCase):
     def test_interpolate_small_grid_ij(self):
-        grid = tf.constant([[0., 1., 2.], [3., 4., 5.], [6., 7., 8.]],
-                           shape=[1, 3, 3, 1])
-        query_points = tf.constant([[0., 0.], [1., 0.], [2., 0.5], [1.5, 1.5]],
-                                   shape=[1, 4, 2])
-        expected_results = np.reshape(np.array([0., 3., 6.5, 6.]), [1, 4, 1])
+        grid = tf.constant([[0., 1., 2.], [3., 4., 5.], [6., 7., 8.], [9., 10., 11.]],
+                           shape=[1, 4, 3, 1])
+        query_points = tf.constant([[0., 0.], [1., 0.], [2., 0.5], [1.5, 1.5], [3., 2.]],
+                                   shape=[1, 5, 2])
+        expected_results = np.reshape(np.array([0., 3., 6.5, 6., 11.]), [1, 5, 1])
 
         interp = interpolate_bilinear(grid, query_points)
 
         self.assertAllClose(expected_results, interp)
 
     def test_interpolate_small_grid_xy(self):
-        grid = tf.constant([[0., 1., 2.], [3., 4., 5.], [6., 7., 8.]],
-                           shape=[1, 3, 3, 1])
+        grid = tf.constant([[0., 1., 2.], [3., 4., 5.], [6., 7., 8.], [9., 10., 11.]],
+                           shape=[1, 4, 3, 1])
         query_points = tf.constant(
-            [[0., 0.], [0., 1.], [0.5, 2.0], [1.5, 1.5]], shape=[1, 4, 2])
-        expected_results = np.reshape(np.array([0., 3., 6.5, 6.]), [1, 4, 1])
+            [[0., 0.], [0., 1.], [0.5, 2.0], [1.5, 1.5], [2., 3.]], shape=[1, 5, 2])
+        expected_results = np.reshape(np.array([0., 3., 6.5, 6., 11.]), [1, 5, 1])
 
         interp = interpolate_bilinear(grid, query_points, indexing="xy")
-
-        self.assertAllClose(expected_results, interp)
-
-    def test_interpolate_small_non_square_grid_xy(self):
-        grid = tf.constant([[0., 1., 2.], [3., 4., 5.]],
-                           shape=[1, 2, 3, 1])
-        query_points = tf.constant([[0., 0.], [1., 0.], [2., 0.], [0., 1.], [1., 1.], [2., 1.]],
-                                   shape=[1, 6, 2])
-        expected_results = np.reshape(np.array([0., 1., 2., 3., 4., 5.]), [1, 6, 1])
-
-        interp = interpolate_bilinear(grid, query_points)
 
         self.assertAllClose(expected_results, interp)
 
