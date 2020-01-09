@@ -53,18 +53,39 @@ def use_gpu():
         yield
 
 
-def create_virtual_devices(num_devices, memory_limit_per_device=1024):
-    """Virtualize a the physical device into `num_devices` logical devices."""
-    is_gpu_available = len(tf.config.list_physical_devices('GPU'))
-    device_type = 'GPU' if is_gpu_available > 0 else 'CPU'
+def create_virtual_devices(num_devices,
+                           force_device=None,
+                           memory_limit_per_device=1024):
+    """Virtualize a the physical device into logical devices.
+
+    Args:
+        num_devices: The number of virtual devices needed.
+        force_device: 'CPU'/'GPU'. Defaults to None, where the
+            devices is selected based on the system.
+        memory_limit_per_device: Specify memory for each
+            virtual GPU. Only for GPUs.
+
+    Returns:
+        virtual_devices: A list of virtual devices which can be passed to
+            tf.distribute.MirroredStrategy()
+    """
+    if force_device is None:
+        device_type = 'GPU' if len(
+            tf.config.list_physical_devices('GPU')) > 0 else 'CPU'
+    else:
+        assert (force_device in ['CPU', 'GPU'])
+        device_type = force_device
+
     physical_devices = tf.config.list_physical_devices(device_type)
+
+    if device_type == 'CPU':
+        memory_limit_per_device = None
 
     tf.config.experimental.set_virtual_device_configuration(
         physical_devices[0], [
             tf.config.experimental.VirtualDeviceConfiguration(
-                memory_limit=memory_limit_per_device
-                if is_gpu_available else None) for _ in range(num_devices)
-        ])
+                memory_limit=memory_limit_per_device)
+        ] * num_devices)
 
     return tf.config.experimental.list_logical_devices(device_type)
 
