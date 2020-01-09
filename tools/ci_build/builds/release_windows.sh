@@ -39,4 +39,4 @@ echo 'y' | ./configure.sh --quiet
     --test_output=errors \
     build_pip_pkg
 
-bazel-bin/build_pip_pkg artifacts --nightly
+bazel-bin/build_pip_pkg artifacts
