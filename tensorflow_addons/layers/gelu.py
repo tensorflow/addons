@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implements GeLU activation."""
+"""Implements GELU activation."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -23,7 +23,7 @@ from tensorflow_addons.activations import gelu
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-class GeLU(tf.keras.layers.Layer):
+class GELU(tf.keras.layers.Layer):
     """Gaussian Error Linear Unit.
 
     A smoother version of ReLU generally used
@@ -40,7 +40,7 @@ class GeLU(tf.keras.layers.Layer):
     """
 
     def __init__(self, approximate=True, **kwargs):
-        super(GeLU, self).__init__(**kwargs)
+        super(GELU, self).__init__(**kwargs)
         self.approximate = approximate
         self.supports_masking = True
 
