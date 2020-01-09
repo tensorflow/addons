@@ -389,9 +389,10 @@ class LayernormSimpleRNNCell(keras.layers.SimpleRNNCell):
         Default: hyperbolic tangent (`tanh`).
         If you pass `None`, no activation is applied
         (ie. "linear" activation: `a(x) = x`).
-      use_bias: Boolean, (default `True`), whether the layer uses a bias vector.
-      use_layernorm: Boolean, (default `True`), whether to apply layer normalization
-        (scaling only).
+      use_bias: Boolean, (default `True`), whether the layer uses a bias
+        vector.
+      use_layernorm: Boolean, (default `True`), whether to apply layer
+        normalization (scaling only).
       layernorm_epsilon: Float, (default `1e-5`), Small float added to variance
         to avoid dividing by zero.
       kernel_initializer: Initializer for the `kernel` weights matrix,
@@ -417,8 +418,8 @@ class LayernormSimpleRNNCell(keras.layers.SimpleRNNCell):
          Default: `None`.
       kernel_constraint: Constraint function applied to the `kernel` weights
         matrix. Default: `None`.
-      recurrent_constraint: Constraint function applied to the `recurrent_kernel`
-        weights matrix. Default: `None`.
+      recurrent_constraint: Constraint function applied to the
+        `recurrent_kernel` weights matrix. Default: `None`.
       bias_constraint: Constraint function applied to the bias vector
          (`use_bias=True`) or for the beta vector of the layer normalization
          layer (`use_layernorm=True`). Default: `None`.
@@ -427,8 +428,8 @@ class LayernormSimpleRNNCell(keras.layers.SimpleRNNCell):
          Default: `None`.
       dropout: Float between 0 and 1. Fraction of the units to drop for the
         linear transformation of the inputs. Default: 0.
-      recurrent_dropout: Float between 0 and 1. Fraction of the units to drop for
-        the linear transformation of the recurrent state. Default: 0.
+      recurrent_dropout: Float between 0 and 1. Fraction of the units to drop
+        for the linear transformation of the recurrent state. Default: 0.
 
     Call arguments:
       inputs: A 2D tensor, with shape of `[batch, feature]`.
@@ -648,9 +649,10 @@ class LayernormSimpleRNN(keras.layers.SimpleRNN):
         Default: hyperbolic tangent (`tanh`).
         If you pass None, no activation is applied
         (ie. "linear" activation: `a(x) = x`).
-      use_bias: Boolean, (default `True`), whether the layer uses a bias vector.
-      use_layernorm: Boolean, (default `True`), whether to apply layer normalization
-        (scaling only).
+      use_bias: Boolean, (default `True`), whether the layer uses a bias
+        vector.
+      use_layernorm: Boolean, (default `True`), whether to apply layer
+        normalization (scaling only).
       layernorm_epsilon: Float, (default `1e-5`), Small float added to variance
         to avoid dividing by zero.
       kernel_initializer: Initializer for the `kernel` weights matrix,
@@ -678,8 +680,8 @@ class LayernormSimpleRNN(keras.layers.SimpleRNN):
         layer (its "activation"). Default: `None`.
       kernel_constraint: Constraint function applied to the `kernel` weights
         matrix. Default: `None`.
-      recurrent_constraint: Constraint function applied to the `recurrent_kernel`
-        weights matrix.  Default: `None`.
+      recurrent_constraint: Constraint function applied to the
+        `recurrent_kernel` weights matrix.  Default: `None`.
       bias_constraint: Constraint function applied to the bias vector
          (`use_bias=True`) or for the beta vector of the layer normalization
          layer (`use_layernorm=True`). Default: `None`.
