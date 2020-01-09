@@ -175,14 +175,22 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
             self.assertTrue(isinstance(wn_removed_layer, base_layer.__class__))
 
 
-class WeightNormalizationDistributedTest(tf.test.TestCase):
-    @test_utils.run_distributed(4)
-    def test_multigpu(self):
-        base_layer = tf.keras.layers.Dense(1)
-        wn_layer = wrappers.WeightNormalization(base_layer, True)
-        input_data = np.ones([1, 10], dtype=np.float32)
-        output = wn_layer(input_data)
-        self.evaluate(output)
+@test_utils.run_all_distributed(4)
+class WeightNormalizationDistributedTest(tf.test.TestCase, parameterized.TestCase):
+    @parameterized.named_parameters(
+        ["Dense", lambda: tf.keras.layers.Dense(1), [25]],
+        ["SimpleRNN", lambda: tf.keras.layers.SimpleRNN(1), [10, 10]],
+        ["Conv2D", lambda: tf.keras.layers.Conv2D(3, 1), [3, 3, 1]],
+        ["LSTM", lambda: tf.keras.layers.LSTM(1), [10, 10]])
+    def test_fit(self, base_layer_fn, input_shape):
+        input_data = np.ones([1] + input_shape, dtype=np.float32)
+        for data_init in [True, False]:
+            base_layer = base_layer_fn()
+            inputs = tf.keras.layers.Input(shape=input_shape)
+            wn_layer = wrappers.WeightNormalization(base_layer, True)
+            model = tf.keras.models.Sequential(layers=[inputs, wn_layer])
+            model.compile('sgd', 'mse')
+            model.fit(input_data, epochs=1)
 
 
 if __name__ == "__main__":
