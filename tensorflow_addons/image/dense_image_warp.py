@@ -114,6 +114,7 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
         floors = []
         ceils = []
         index_order = [0, 1] if indexing == "ij" else [1, 0]
+        x_axis_width = width if indexing == "ij" else height
         unstacked_query_points = tf.unstack(query_points, axis=2, num=2)
 
         for dim in index_order:
@@ -160,7 +161,7 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
         def gather(y_coords, x_coords, name):
             with tf.name_scope("gather-" + name):
                 linear_coordinates = (
-                    batch_offsets + y_coords * width + x_coords)
+                    batch_offsets + y_coords * x_axis_width + x_coords)
                 gathered_values = tf.gather(flattened_grid, linear_coordinates)
                 return tf.reshape(gathered_values,
                                   [batch_size, num_queries, channels])
