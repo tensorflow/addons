@@ -85,7 +85,8 @@ def create_virtual_devices(num_devices,
         physical_devices[0], [
             tf.config.experimental.VirtualDeviceConfiguration(
                 memory_limit=memory_limit_per_device)
-        ] * num_devices)
+            for _ in range(num_devices)
+        ])
 
     return tf.config.experimental.list_logical_devices(device_type)
 
