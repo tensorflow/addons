@@ -181,7 +181,8 @@ class LayernormSimpleRNNCell(SimpleRNNCell):
 
     # @tf_utils.shape_type_conversion
     def build(self, input_shape):
-        SimpleRNNCell.build(self, input_shape)
+        # SimpleRNNCell.build(self, input_shape)
+        super(LayernormSimpleRNNCell, self).build(input_shape)
         if self.use_layernorm:
             # LayerNormalization.build(self, (None, self.units))
             self.layernorm.build((None, self.units))
