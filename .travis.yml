@@ -27,7 +27,7 @@ jobs:
       - docker run -e TF_NEED_CUDA=1 -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010 tools/ci_build/builds/release_linux.sh
       after_success:
         - python -m pip install --user -q -U twine --ignore-installed six
-        - twine upload -u $PYPI_USER -p $PYPI_PW --repository-url https://test.pypi.org/legacy/ wheelhouse/*.whl
+        - twine upload -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
 
     # MacOS Builds
     - stage: build
@@ -38,7 +38,7 @@ jobs:
         - bash -x -e tools/ci_build/builds/release_macos.sh
       after_success:
         - python -m pip install -q -U twine --ignore-installed six
-        - twine upload -u $PYPI_USER -p $PYPI_PW --repository-url https://test.pypi.org/legacy/ wheelhouse/*.whl
+        - twine upload -u $PYPI_USER -p $PYPI_PW wheelhouse/*.whl
 
     # Windows Builds
     - stage: build
@@ -61,7 +61,7 @@ jobs:
         - bash -x -e tools/ci_build/builds/release_windows.sh
       after_success:
         - python -m pip install -q -U twine --ignore-installed six
-        - twine upload -u $PYPI_USER -p $PYPI_PW --repository-url https://test.pypi.org/legacy/ artifacts/*.whl
+        - twine upload -u $PYPI_USER -p $PYPI_PW artifacts/*.whl
 
 notifications:
   email:
