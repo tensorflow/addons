@@ -51,6 +51,17 @@ class InterpolateBilinearTest(tf.test.TestCase):
 
         self.assertAllClose(expected_results, interp)
 
+    def test_interpolate_small_non_square_grid_xy(self):
+        grid = tf.constant([[0., 1., 2.], [3., 4., 5.]],
+                           shape=[1, 2, 3, 1])
+        query_points = tf.constant([[0., 0.], [1., 0.], [2., 0.], [0., 1.], [1., 1.], [2., 1.]],
+                                   shape=[1, 6, 2])
+        expected_results = np.reshape(np.array([0., 1., 2., 3., 4., 5.]), [1, 6, 1])
+
+        interp = interpolate_bilinear(grid, query_points)
+
+        self.assertAllClose(expected_results, interp)
+
     def test_interpolate_small_grid_batched(self):
         grid = tf.constant([[[0., 1.], [3., 4.]], [[5., 6.], [7., 8.]]],
                            shape=[2, 2, 2, 1])
