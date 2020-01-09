@@ -158,9 +158,8 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
         v = self.get_slot(var, 'v')
         g_2 = tf.reduce_sum(tf.square(tf.cast(grad, tf.float32)))
         v_t = tf.cond(
-            tf.equal(self.iterations, 0),
-            lambda: g_2,
-            lambda: v * coefficients['beta_2_t'] +
+            tf.equal(self.iterations,
+                     0), lambda: g_2, lambda: v * coefficients['beta_2_t'] +
             g_2 * coefficients['one_minus_beta_2_t'])
         v_t = v.assign(v_t, use_locking=self._use_locking)
 
@@ -172,13 +171,11 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
         else:
             grad = grad / (tf.sqrt(v_t) + self.epsilon)
         grad = tf.cond(
-            tf.greater(weight_decay, 0),
-            lambda: grad + weight_decay * var,
-            lambda: grad)
+            tf.greater(weight_decay,
+                       0), lambda: grad + weight_decay * var, lambda: grad)
         grad = tf.cond(
             tf.logical_and(grad_averaging, tf.not_equal(self.iterations, 0)),
-            lambda: grad * coefficients['one_minus_beta_1_t'],
-            lambda: grad)
+            lambda: grad * coefficients['one_minus_beta_1_t'], lambda: grad)
         m = self.get_slot(var, 'm')
         return training_ops.resource_apply_keras_momentum(
             var.handle,
@@ -200,9 +197,8 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
         g_2 = tf.reduce_sum(tf.square(tf.cast(grad, tf.float32)))
         # v is just a scalar and does not need to involve sparse tensors.
         v_t = tf.cond(
-            tf.equal(self.iterations, 0),
-            lambda: g_2,
-            lambda: v * coefficients['beta_2_t'] +
+            tf.equal(self.iterations,
+                     0), lambda: g_2, lambda: v * coefficients['beta_2_t'] +
             g_2 * coefficients['one_minus_beta_2_t'])
         v_t = v.assign(v_t, use_locking=self._use_locking)
 
@@ -214,13 +210,11 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
         else:
             grad = grad / (tf.sqrt(v_t) + self.epsilon)
         grad = tf.cond(
-            tf.greater(weight_decay, 0),
-            lambda: grad + weight_decay * var,
-            lambda: grad)
+            tf.greater(weight_decay,
+                       0), lambda: grad + weight_decay * var, lambda: grad)
         grad = tf.cond(
             tf.logical_and(grad_averaging, tf.not_equal(self.iterations, 0)),
-            lambda: grad * coefficients['one_minus_beta_1_t'],
-            lambda: grad)
+            lambda: grad * coefficients['one_minus_beta_1_t'], lambda: grad)
         m = self.get_slot(var, 'm')
         return training_ops.resource_sparse_apply_keras_momentum(
             var.handle,
