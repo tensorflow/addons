@@ -23,7 +23,7 @@ import tensorflow as tf
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 @tf.function
-def pinball_loss(y_true, y_pred, tau):
+def pinball_loss(y_true, y_pred, tau=.5):
     """Computes the pinball loss between `y_true` and `y_pred`.
 
     `loss = maximum(tau * (y_true - y_pred), (tau - 1) * (y_true - y_pred))`
@@ -60,14 +60,18 @@ def pinball_loss(y_true, y_pred, tau):
 
     # broadcast the pinball slope along the batch dimension, and clip to
     # acceptable values
-    tau = tf.expand_dims(
-        tf.cast(tf.keras.backend.clip(tau, 0., 1.), y_pred.dtype), 0)
+    tau = tf.expand_dims(tf.cast(tau, y_pred.dtype), 0)
+    one = tf.cast(1, tau.dtype)
+    tf.debugging.assert_non_negative(tau,
+                                     message="`tau` must be a valid probability"
+                                             " in range [0.0, 1.0]")
+    tf.debugging.assert_less_equal(tau, one,
+                                   message="`tau` must be a valid probability"
+                                           " in range [0.0, 1.0]")
 
     delta_y = y_true - y_pred
-    pinball = tf.math.maximum(tau * delta_y,
-                              (tau - tf.cast(1, tau.dtype)) * delta_y)
-    return tf.keras.backend.mean(
-        tf.keras.backend.batch_flatten(pinball), axis=-1)
+    pinball = tf.math.maximum(tau * delta_y, (tau - one) * delta_y)
+    return tf.reduce_mean(tf.keras.backend.batch_flatten(pinball), axis=-1)
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')

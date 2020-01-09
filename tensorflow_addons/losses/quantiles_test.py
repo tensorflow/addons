@@ -27,7 +27,8 @@ from tensorflow_addons.utils import test_utils
 @test_utils.run_all_in_graph_and_eager_modes
 class PinballLossTest(tf.test.TestCase):
     def test_config(self):
-        pin_obj = tfa.losses.PinballLoss(reduction=tf.keras.losses.Reduction.SUM, name='pin_1')
+        pin_obj = tfa.losses.PinballLoss(
+            reduction=tf.keras.losses.Reduction.SUM, name='pin_1')
         self.assertEqual(pin_obj.name, 'pin_1')
         self.assertEqual(pin_obj.reduction, tf.keras.losses.Reduction.SUM)
 
@@ -130,7 +131,8 @@ class PinballLossTest(tf.test.TestCase):
             pin_obj(y_true, y_pred, sample_weight=sample_weight)
 
     def test_no_reduction(self):
-        pin_obj = tfa.losses.PinballLoss(reduction=tf.keras.losses.Reduction.NONE)
+        pin_obj = tfa.losses.PinballLoss(
+            reduction=tf.keras.losses.Reduction.NONE)
         y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
         y_pred = tf.constant([4, 8, 12, 8, 1, 3],
                              shape=(2, 3),
@@ -140,7 +142,8 @@ class PinballLossTest(tf.test.TestCase):
         self.assertArrayNear(loss, [5.3666, 7.28333], 1e-3)
 
     def test_sum_reduction(self):
-        pin_obj = tfa.losses.PinballLoss(reduction=tf.keras.losses.Reduction.SUM)
+        pin_obj = tfa.losses.PinballLoss(
+            reduction=tf.keras.losses.Reduction.SUM)
         y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
         y_pred = tf.constant([4, 8, 12, 8, 1, 3],
                              shape=(2, 3),
