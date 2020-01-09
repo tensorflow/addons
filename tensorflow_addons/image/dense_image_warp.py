@@ -116,11 +116,11 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
         index_order = [0, 1] if indexing == "ij" else [1, 0]
         unstacked_query_points = tf.unstack(query_points, axis=2, num=2)
 
-        for dim in index_order:
+        for i, dim in enumerate(index_order):
             with tf.name_scope("dim-" + str(dim)):
                 queries = unstacked_query_points[dim]
 
-                size_in_indexing_dimension = grid_shape[dim + 1]
+                size_in_indexing_dimension = grid_shape[i + 1]
 
                 # max_floor is size_in_indexing_dimension - 2 so that max_floor + 1
                 # is still a valid index into the grid.
