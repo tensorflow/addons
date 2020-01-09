@@ -149,16 +149,16 @@ class LayernormSimpleRNNCell(SimpleRNNCell):
             self,
             units,
             activation=activation,
-            use_bias=False if use_layernorm else use_bias,
+            use_bias=use_bias,
             kernel_initializer=kernel_initializer,
             recurrent_initializer=recurrent_initializer,
-            bias_initializer=None if use_layernorm else bias_initializer,
+            bias_initializer=bias_initializer,
             kernel_regularizer=kernel_regularizer,
             recurrent_regularizer=recurrent_regularizer,
-            bias_regularizer=None if use_layernorm else bias_regularizer,
+            bias_regularizer=bias_regularizer,
             kernel_constraint=kernel_constraint,
             recurrent_constraint=recurrent_constraint,
-            bias_constraint=None if use_layernorm else bias_constraint,
+            bias_constraint=bias_constraint,
             dropout=dropout,
             recurrent_dropout=recurrent_dropout,
             dtype=kwargs.get('dtype'),
@@ -168,13 +168,13 @@ class LayernormSimpleRNNCell(SimpleRNNCell):
             self.layernorm = LayerNormalization(
                 axis=-1,
                 epsilon=layernorm_epsilon,
-                center=True,
+                center=False,
                 scale=True,
-                beta_initializer=bias_initializer,
+                beta_initializer=None,
                 gamma_initializer=gamma_initializer,
-                beta_regularizer=bias_regularizer,
+                beta_regularizer=None,
                 gamma_regularizer=gamma_regularizer,
-                beta_constraint=bias_constraint,
+                beta_constraint=None,
                 gamma_constraint=gamma_constraint,
                 dtype=kwargs.get('dtype'),
                 trainable=kwargs.get('trainable', True))
@@ -188,6 +188,54 @@ class LayernormSimpleRNNCell(SimpleRNNCell):
             self.layernorm.build((None, self.units))
 
     def call(self, inputs, states, training=None):
+        """Formulas.
+
+        Notation:
+            y_t : Cell output at t (`output`)
+            y_{t-1} : Previous cell output at t-1 (`prev_output`)
+            x_t : The new input at t (`inputs`)
+            W_xh : Weight matrix for inputs x_t (`self.kernel`)
+            W_hh : Weights for prev. outputs y_{t-1} (`self.recurrent_kernel`)
+            b : Bias term for centering (`self.bias`)
+            d1 : Dropout function for x_t (`inputs * dp_mask`)
+            d2 : Dropout function for y_{t-1} (`prev_output * rec_dp_mask`)
+            ln : Scaling function from layer normalization (`self.layernorm`)
+            f : Activation function (`self.activation`)
+
+        Case 1:
+            Simple RNN, only with bias and activation
+              y_t = f(x_t * W_xh + y_{t-1} * W_hh + b)
+            or
+              net = x_t * W_xh + y_{t-1} * W_hh
+              y_t = f(net + b)
+
+        Case 2:
+            RNN with, layer normalization (only scaling), bias and activation.
+              y_t = f(ln(x_t * W_xh + y_{t-1} * W_hh) + b)
+            or
+              net = x_t * W_xh + y_{t-1} * W_hh
+              y_t = f(ln(net) + b)
+
+            Layer normalization with scaling and centering in one go (see Ba et
+            al (2016), page 3, formula 4, https://arxiv.org/abs/1607.06450)
+            is the same as layer normalization only with scaling, and
+            centering directly afterwards.
+
+        Case 3:
+            RNN, with dropout, bias, and activation (no scaling from LN)
+              y_t = f(d1(x_t) * W_xh + d2(y_{t-1}) * W_hh + b)
+            or
+              net = d1(x_t) * W_xh + d2(y_{t-1}) * W_hh
+              y_t = f(net + b)
+
+        Case 4:
+            Everyting is used, i.e. all dropouts, layer normalization
+            (only scaling), bias, and activation
+              y_t = f(ln(d1(x_t) * W_xh + d2(y_{t-1}) * W_hh) + b)
+            or
+              net = d1(x_t) * W_xh + d2(y_{t-1}) * W_hh
+              y_t = f(ln(net) + b)
+        """
         prev_output = states[0]
         dp_mask = self.get_dropout_mask_for_cell(inputs, training)
         rec_dp_mask = self.get_recurrent_dropout_mask_for_cell(
@@ -197,16 +245,20 @@ class LayernormSimpleRNNCell(SimpleRNNCell):
             h = K.dot(inputs * dp_mask, self.kernel)
         else:
             h = K.dot(inputs, self.kernel)
-        if self.bias is not None:
-            h = K.bias_add(h, self.bias)
+
+        # don't add bias to "h" here
+        # add bias after scaling with layer normalization to "output"
 
         if rec_dp_mask is not None:
             prev_output = prev_output * rec_dp_mask
-        output = h + K.dot(prev_output, self.recurrent_kernel)
+        output = h + K.dot(prev_output, self.recurrent_kernel)  # "net"
 
         if self.use_layernorm:
             # output = LayerNormalization.call(self, output)
             output = self.layernorm(output)
+
+        if self.bias is not None:
+            output = K.bias_add(output, self.bias)
 
         if self.activation is not None:
             output = self.activation(output)
@@ -222,14 +274,14 @@ class LayernormSimpleRNNCell(SimpleRNNCell):
         if self.use_layernorm:
             # ln_config = LayerNormalization.get_config(self)
             ln_config = self.layernorm.get_config()
-            ln_config['bias_initializer'] = ln_config.pop("beta_initializer")
-            ln_config['bias_regularizer'] = ln_config.pop("beta_regularizer")
-            ln_config['bias_constraint'] = ln_config.pop("beta_constraint")
+            ln_config = {
+                key: ln_config[key]
+                for key in [
+                    "epsilon", "gamma_initializer", "gamma_regularizer",
+                    "gamma_constraint"
+                ] if key in ln_config
+            }
             ln_config['layernorm_epsilon'] = ln_config.pop("epsilon")
-            del ln_config['axis']
-            del ln_config['center']
-            del ln_config['scale']
-            del ln_config['name']
         else:
             ln_config = {}
         return {**config, **cell_config, **ln_config}

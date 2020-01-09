@@ -109,12 +109,12 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
             input_shape=(None, embedding_dim),
             kernel_constraint=k_constraint,
             recurrent_constraint=r_constraint,
-            bias_constraint=b_constraint,  # Will be beta!
+            bias_constraint=b_constraint,
             gamma_constraint=g_constraint)
         layer.build((None, None, embedding_dim))
         self.assertEqual(layer.cell.kernel.constraint, k_constraint)
         self.assertEqual(layer.cell.recurrent_kernel.constraint, r_constraint)
-        self.assertEqual(layer.cell.layernorm.beta.constraint, b_constraint)
+        self.assertEqual(layer.cell.bias.constraint, b_constraint)
         self.assertEqual(layer.cell.layernorm.gamma.constraint, g_constraint)
 
     def test_with_masking_layer_layernorm_rnn(self):
