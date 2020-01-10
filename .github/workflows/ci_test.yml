@@ -63,7 +63,6 @@ jobs:
       - uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
-    steps:
       - name: CI sanity check py${{ matrix.python-version }}
         run: |
           set -x -e
