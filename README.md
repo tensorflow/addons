@@ -45,7 +45,8 @@ developments that cannot be integrated into core TensorFlow
 
 ## Installation
 #### Stable Builds
-To install the latest version, run the following:
+TFA is available on PyPi for Linux/MacOS/Windows. To install the latest version, 
+run the following:
 ```
 pip install tensorflow-addons
 ```
@@ -61,6 +62,7 @@ import tensorflow_addons as tfa
 #### Linux Build Matrix
 | Version    | Compatible With |Python versions  | Compiler  | cuDNN | CUDA | 
 |:----------------------- |:---|:---------- |:---------|:---------|:---------|
+| tensorflow-addons-0.7.0 | tensorflow>=2.1.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.6.0 | tensorflow==2.0.0 <br> tensorflow-gpu==2.0.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
 | tensorflow-addons-0.5.2 | tensorflow==2.0.0 <br> tensorflow-gpu==2.0.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
 
