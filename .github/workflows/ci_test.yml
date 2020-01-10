@@ -54,22 +54,15 @@ jobs:
             msys2do ./tools/ci_testing/addons_cpu.sh
   sanity-cpu:
     name: Python3 CPU sanity-check
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        python-version: ['3.7.5']
+    runs-on: 3.7.5-slim-buster
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
+      - name: Install docker
+        run: apt-get install -y docker-ce
       - name: CI sanity check py${{ matrix.python-version }}
         run: |
           set -x -e
           python -m pip install wheel setuptools
-          curl -L https://github.com/docker/machine/releases/download/v0.13.0/docker-machine-`uname -s`-`uname -m` >/usr/local/bin/docker-machine && chmod +x /usr/local/bin/docker-machine
           wget --quiet -nc https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-darwin-x86_64.sh
           chmod +x bazel-${BAZEL_VERSION}-installer-darwin-x86_64.sh
           ./bazel-${BAZEL_VERSION}-installer-darwin-x86_64.sh --user
-          source /Users/runner/.bazel/bin/bazel-complete.bash
           bash tools/run_docker.sh -c 'make sanity-check'
