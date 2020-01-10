@@ -54,10 +54,8 @@ jobs:
             msys2do ./tools/ci_testing/addons_cpu.sh
   sanity-cpu:
     name: Python3 CPU sanity-check
-    runs-on: 3.7.5-slim-buster
+    runs-on: ubuntu-18.04
     steps:
-      - name: Install docker
-        run: apt-get install -y docker-ce
       - name: CI sanity check py${{ matrix.python-version }}
         run: |
           set -x -e
