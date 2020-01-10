@@ -62,12 +62,6 @@ def pinball_loss(y_true, y_pred, tau=.5):
     # acceptable values
     tau = tf.expand_dims(tf.cast(tau, y_pred.dtype), 0)
     one = tf.cast(1, tau.dtype)
-    tf.debugging.assert_non_negative(tau,
-                                     message="`tau` must be a valid probability"
-                                             " in range [0.0, 1.0]")
-    tf.debugging.assert_less_equal(tau, one,
-                                   message="`tau` must be a valid probability"
-                                           " in range [0.0, 1.0]")
 
     delta_y = y_true - y_pred
     pinball = tf.math.maximum(tau * delta_y, (tau - one) * delta_y)
