@@ -20,7 +20,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.keras import backend as K
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -90,25 +89,29 @@ class TLU(tf.keras.layers.Layer):
 
     def call(self, inputs):
         if self.affine:
-            pos = K.relu(inputs)
-            neg = -self.alpha * K.relu(-inputs)
-            return pos + neg + self.tau
+            return tf.maximum(inputs, self.alpha * inputs + self.tau)
         else:
-            return K.relu(inputs, alpha=self.tau)
+            return tf.maximum(inputs, self.tau)
 
 
     def get_config(self):
         config = {
-            'tau_initializer': self.tau_initializer,
-            'tau_regularizer': self.tau_regularizer,
-            'tau_constraint': self.tau_constraint,
+            'tau_initializer': tf.keras.initializers.serialize(
+                self.tau_initializer),
+            'tau_regularizer': tf.keras.regularizers.serialize(
+                self.tau_regularizer),
+            'tau_constraint': tf.keras.constraints.serialize(
+                self.tau_constraint),
             'affine': self.affine
         }
 
         if self.affine:
-            config['alpha_initializer'] = self.alpha_initializer
-            config['alpha_regularizer'] = self.alpha_regularizer
-            config['alpha_constraint'] = self.alpha_constraint
+            config['alpha_initializer'] = tf.keras.initializers.serialize(
+                self.alpha_initializer)
+            config['alpha_regularizer'] = tf.keras.regularizers.serialize(
+                self.alpha_regularizer)
+            config['alpha_constraint'] = tf.keras.constraints.serialize(
+                self.alpha_constraint)
 
         base_config = super(TLU, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
