@@ -54,14 +54,20 @@ jobs:
             msys2do ./tools/ci_testing/addons_cpu.sh
   sanity-cpu:
     name: Python3 CPU sanity-check
-    runs-on: docker://gcr.io/tensorflow-testing/nosla-ubuntu16.04-manylinux2010:latest
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: ['3.7.5']
     steps:
-      - name: CI sanity-check py${{ matrix.python-version }}
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: CI sanity check py${{ matrix.python-version }}
         run: |
           set -x -e
-          ln -sf /usr/bin/python3.6 /usr/bin/python && rm /usr/bin/python2
           python -m pip install wheel setuptools
           wget --quiet -nc https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-darwin-x86_64.sh
           chmod +x bazel-${BAZEL_VERSION}-installer-darwin-x86_64.sh
           ./bazel-${BAZEL_VERSION}-installer-darwin-x86_64.sh --user
-          bash -x -e tools/ci_build/ci_sanity.sh
+          bash tools/run_docker.sh -c 'make sanity-check'
