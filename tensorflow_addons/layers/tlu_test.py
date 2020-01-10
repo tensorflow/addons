@@ -39,11 +39,12 @@ class TestTLU(tf.test.TestCase):
         val = np.array([[-1.5, 1.0, 1.3]]).astype(dtype)
         test_utils.layer_test(
             TLU,
-            kwargs={'affine': True,
-                    'dtype': dtype,
-                    'alpha_initializer': 'ones',
-                    'tau_initializer': 'ones'
-                   },
+            kwargs={
+                'affine': True,
+                'dtype': dtype,
+                'alpha_initializer': 'ones',
+                'tau_initializer': 'ones'
+            },
             input_data=x,
             expected_output=val)
 

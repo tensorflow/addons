@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implements Thresholded Linear Unit"""
-
+"""Implements Thresholded Linear Unit."""
 
 from __future__ import absolute_import
 from __future__ import division
@@ -24,11 +23,9 @@ import tensorflow as tf
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 class TLU(tf.keras.layers.Layer):
-    """Thresholded Linear Unit.
-    An activation function which is similar to ReLU
-    but with a learned threshold that benefits models
-    using FRN(Filter Response Normalization).
-    Original paper: https://arxiv.org/pdf/1911.09737
+    """Thresholded Linear Unit. An activation function which is similar to ReLU
+    but with a learned threshold that benefits models using FRN(Filter Response
+    Normalization). Original paper: https://arxiv.org/pdf/1911.09737.
 
     Input shape:
         Arbitrary. Use the keyword argument `input_shape`
@@ -41,7 +38,6 @@ class TLU(tf.keras.layers.Layer):
     Arguments:
         affine: bool. Whether to make it TLU-Affine or not
         which has the form `max(x, alpha*x + tau)`
-
     """
 
     def __init__(self,
@@ -64,28 +60,28 @@ class TLU(tf.keras.layers.Layer):
                 alpha_initializer)
             self.alpha_regularizer = tf.keras.regularizers.get(
                 alpha_regularizer)
-            self.alpha_constraint = tf.keras.constraints.get(
-                alpha_constraint)
+            self.alpha_constraint = tf.keras.constraints.get(alpha_constraint)
 
     def build(self, input_shape):
         param_shape = list(input_shape[1:])
-        self.tau = self.add_weight(shape=param_shape,
-                                   name='tau',
-                                   initializer=self.tau_initializer,
-                                   regularizer=self.tau_regularizer,
-                                   constraint=self.tau_constraint)
+        self.tau = self.add_weight(
+            shape=param_shape,
+            name='tau',
+            initializer=self.tau_initializer,
+            regularizer=self.tau_regularizer,
+            constraint=self.tau_constraint)
         if self.affine:
-            self.alpha = self.add_weight(shape=param_shape,
-                                         name='alpha',
-                                         initializer=self.alpha_initializer,
-                                         regularizer=self.alpha_regularizer,
-                                         constraint=self.alpha_constraint)
+            self.alpha = self.add_weight(
+                shape=param_shape,
+                name='alpha',
+                initializer=self.alpha_initializer,
+                regularizer=self.alpha_regularizer,
+                constraint=self.alpha_constraint)
 
         axes = {i: input_shape[i] for i in range(1, len(input_shape))}
-        self.input_spec = tf.keras.layers.InputSpec(ndim=len(input_shape),
-                                                    axes=axes)
+        self.input_spec = tf.keras.layers.InputSpec(
+            ndim=len(input_shape), axes=axes)
         self.built = True
-
 
     def call(self, inputs):
         if self.affine:
@@ -93,16 +89,16 @@ class TLU(tf.keras.layers.Layer):
         else:
             return tf.maximum(inputs, self.tau)
 
-
     def get_config(self):
         config = {
-            'tau_initializer': tf.keras.initializers.serialize(
-                self.tau_initializer),
-            'tau_regularizer': tf.keras.regularizers.serialize(
-                self.tau_regularizer),
-            'tau_constraint': tf.keras.constraints.serialize(
-                self.tau_constraint),
-            'affine': self.affine
+            'tau_initializer':
+            tf.keras.initializers.serialize(self.tau_initializer),
+            'tau_regularizer':
+            tf.keras.regularizers.serialize(self.tau_regularizer),
+            'tau_constraint':
+            tf.keras.constraints.serialize(self.tau_constraint),
+            'affine':
+            self.affine
         }
 
         if self.affine:
