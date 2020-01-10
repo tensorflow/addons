@@ -54,7 +54,7 @@ jobs:
             msys2do ./tools/ci_testing/addons_cpu.sh
   sanity-cpu:
     name: Python3 CPU sanity-check
-    runs-on: gcr.io/tensorflow-testing/nosla-ubuntu16.04-manylinux2010
+    runs-on: docker://gcr.io/tensorflow-testing/nosla-ubuntu16.04-manylinux2010
     steps:
       - name: CI sanity-check py${{ matrix.python-version }}
         run: |
