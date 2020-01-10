@@ -1,0 +1,29 @@
+<div itemscope itemtype="http://developers.google.com/ReferenceObject">
+<meta itemprop="name" content="tfa.layers.gelu" />
+<meta itemprop="path" content="Stable" />
+</div>
+
+# Module: tfa.layers.gelu
+
+
+<table class="tfo-notebook-buttons tfo-api" align="left">
+
+<td>
+  <a target="_blank" href="https://github.com/tensorflow/addons/tree/r0.7/tensorflow_addons/layers/gelu.py">
+    <img src="https://www.tensorflow.org/images/GitHub-Mark-32px.png" />
+    View source on GitHub
+  </a>
+</td></table>
+
+
+
+Implements GELU activation.
+
+
+
+## Classes
+
+[`class GELU`](../../tfa/layers/GELU.md): Gaussian Error Linear Unit.
+
+
+
