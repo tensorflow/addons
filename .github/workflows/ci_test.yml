@@ -70,4 +70,5 @@ jobs:
           wget --quiet -nc https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-darwin-x86_64.sh
           chmod +x bazel-${BAZEL_VERSION}-installer-darwin-x86_64.sh
           ./bazel-${BAZEL_VERSION}-installer-darwin-x86_64.sh --user
+          source /Users/runner/.bazel/bin/bazel-complete.bash
           bash tools/run_docker.sh -c 'make sanity-check'
