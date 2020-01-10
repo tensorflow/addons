@@ -12,6 +12,7 @@ py_library(
         "optical_flow.py",
         "poincare.py",
         "sparsemax.py",
+        "tlu.py",
         "wrappers.py",
     ],
     data = [
@@ -30,6 +31,18 @@ py_test(
         "gelu_test.py",
     ],
     main = "gelu_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "tlu_test",
+    size = "small",
+    srcs = [
+        "tlu_test.py",
+    ],
+    main = "tlu_test.py",
     deps = [
         ":layers",
     ],
