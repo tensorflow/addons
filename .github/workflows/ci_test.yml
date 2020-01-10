@@ -55,6 +55,14 @@ jobs:
   sanity-cpu:
     name: Python3 CPU sanity-check
     runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        python-version: ['3.7.5']
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
     steps:
       - name: CI sanity check py${{ matrix.python-version }}
         run: |
