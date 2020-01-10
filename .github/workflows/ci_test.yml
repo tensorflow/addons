@@ -67,6 +67,7 @@ jobs:
         run: |
           set -x -e
           python -m pip install wheel setuptools
+          curl -L https://github.com/docker/machine/releases/download/v0.13.0/docker-machine-`uname -s`-`uname -m` >/usr/local/bin/docker-machine && chmod +x /usr/local/bin/docker-machine
           wget --quiet -nc https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-darwin-x86_64.sh
           chmod +x bazel-${BAZEL_VERSION}-installer-darwin-x86_64.sh
           ./bazel-${BAZEL_VERSION}-installer-darwin-x86_64.sh --user
