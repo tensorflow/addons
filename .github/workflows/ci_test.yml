@@ -13,7 +13,7 @@ env:
 
 jobs:
   macos-test:
-    name: MacOS CPU Python3 unit-test
+    name: MacOS CPU Python3
     runs-on: macos-latest
     strategy:
       matrix:
@@ -32,7 +32,7 @@ jobs:
           ./bazel-${BAZEL_VERSION}-installer-darwin-x86_64.sh --user
           bash -x -e tools/ci_testing/addons_cpu.sh
   windows-test:
-    name: Windows CPU Python3 unit-test
+    name: Windows CPU Python3
     runs-on: windows-latest
     strategy:
       matrix:
@@ -53,7 +53,7 @@ jobs:
             echo export PATH=/c/hostedtoolcache/windows/Python/${{ matrix.python-version }}/x64/:$PATH  >>D:\a\_temp\msys\msys64\home\runneradmin\.bash_profile
             msys2do ./tools/ci_testing/addons_cpu.sh
   sanity-cpu:
-    name: Python3 CPU sanity-check
+    name: Sanity Check
     runs-on: ubuntu-18.04
     strategy:
       matrix:
