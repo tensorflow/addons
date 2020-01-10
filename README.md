@@ -18,7 +18,6 @@
 | **Linux Py3 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
 | **MacOS Py3 CPU**   | [![Status](https://github.com/tensorflow/addons/workflows/macos-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Amacos-nightly) |
 | **Windows Py3 CPU**   | [![Status](https://github.com/tensorflow/addons/workflows/windows-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Awindows-nightly) |
-| **Linux Sanity Check**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-sanity.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-sanity.html) |
 
 **TensorFlow Addons** is a repository of contributions that conform to
 well-established API patterns, but implement new functionality
