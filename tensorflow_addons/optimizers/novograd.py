@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+# TODO: Find public API alternatives to these
 from tensorflow.python.training import training_ops
 
 
