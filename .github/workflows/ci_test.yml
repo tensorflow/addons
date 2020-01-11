@@ -60,14 +60,7 @@ jobs:
         python-version: ['3.7.5']
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
       - name: CI sanity check py${{ matrix.python-version }}
         run: |
           set -x -e
-          python -m pip install wheel setuptools
-          wget --quiet -nc https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh
-          chmod +x bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh
-          ./bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh --user
           bash tools/run_docker.sh -c 'make sanity-check'
