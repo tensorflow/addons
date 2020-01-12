@@ -19,6 +19,8 @@ from __future__ import print_function
 
 import os
 
+import tensorflow as tf
+
 
 def get_project_root():
     """Returns project root folder."""
@@ -37,3 +39,14 @@ def get_path_to_datafile(path):
     """
     root_dir = get_project_root()
     return os.path.join(root_dir, path.replace("/", os.sep))
+
+
+class LazyOpLoader:
+    def __init__(self, relative_path):
+        self.relative_path = relative_path
+        self.op = None
+
+    def get(self):
+        if self.op is None:
+            self.op = tf.load_op_library(get_path_to_datafile(self.relative_path))
+        return self.op
