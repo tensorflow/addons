@@ -71,6 +71,8 @@ case ${DEVICE} in
         ;;
 esac
 
+ENVIRONMENT_CMD="ln -sf /usr/bin/python3.6 /usr/bin/python && rm /usr/bin/python2"
+
 if [[ -z "${COMMAND}" ]]; then
     echo "command string cannot be empty"
     exit 1
