@@ -226,11 +226,6 @@ do_bazel_nobuild() {
     cmd_status "This is due to invalid BUILD files."
 }
 
-do_check_futures_test() {
-    cd "$ROOT_DIR/tools/ci_build/verify"
-    python check_futures.py
-}
-
 do_check_file_name_test() {
     cd "$ROOT_DIR/tools/ci_build/verify"
     python check_file_name.py
@@ -242,8 +237,8 @@ do_check_code_format_test() {
 }
 
 # Supply all sanity step commands and descriptions
-SANITY_STEPS=("do_check_code_format_test" "do_pylint PYTHON2" "do_pylint PYTHON3" "do_check_futures_test" "do_bazel_nobuild" "do_check_file_name_test")
-SANITY_STEPS_DESC=("Check code style" "Python 2 pylint" "Python 3 pylint" "Check that python files have certain __future__ imports" "bazel nobuild" "Check file names for cases")
+SANITY_STEPS=("do_check_code_format_test" "do_pylint PYTHON3" "do_bazel_nobuild" "do_check_file_name_test")
+SANITY_STEPS_DESC=("Check code style" "Python 3 pylint" "bazel nobuild" "Check file names for cases")
 
 INCREMENTAL_FLAG=""
 DEFAULT_BAZEL_CONFIGS=""
