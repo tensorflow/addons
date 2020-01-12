@@ -24,21 +24,18 @@ fi
 
 SYSTEM=linux
 DEVICE=cpu
-PYTHON=py3
 
-while getopts ":s:d:p:c:h" opt; do
+while getopts ":s:d:c:h" opt; do
     case ${opt} in
         s) SYSTEM=$OPTARG;;
         d) DEVICE=$OPTARG;;
-        p) PYTHON=$OPTARG;;
         c) COMMAND=$OPTARG;;
         h)
             echo -n "usage: run_docker.sh [-s SYSTEM] [-d DEVICE] "
-            echo "[-p PYTHON] -c string"
+            echo " -c string"
             echo "available commands:"
             echo "    -s    select operating system: 'linux'"
             echo "    -d    select device: 'cpu', 'gpu'"
-            echo "    -p    select python version: 'py2', 'py3'"
             echo "    -c    command string, eg: 'make unit-test'"
             echo "    -h    print this help and exit"
             exit 0
@@ -70,18 +67,6 @@ case ${DEVICE} in
         ;;
     *)
         echo "Invalid or missing device $OPTARG"
-        exit 1
-        ;;
-esac
-
-case ${PYTHON} in
-    # Since https://github.com/bazelbuild/bazel/issues/7899 default behavior will
-    # search python2 and python3, prior to checking default python. To work around this
-    # we'll remove the python2/python3 symlinks.
-    py2) ENVIRONMENT_CMD="ln -sf /usr/bin/python2 /usr/bin/python && rm /usr/bin/python3";;
-    py3) ENVIRONMENT_CMD="ln -sf /usr/bin/python3.6 /usr/bin/python && rm /usr/bin/python2";;
-    *)
-        echo "Invalid or missing python $OPTARG"
         exit 1
         ;;
 esac

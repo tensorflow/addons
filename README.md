@@ -12,8 +12,6 @@
 
 | Build Type      | Status |
 | ---             | ---    |
-| **Linux Py2 CPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py2.html) |
-| **Linux Py2 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py2.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py2.html) |
 | **Linux Py3 CPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-py3.html) |
 | **Linux Py3 GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
 | **MacOS Py3 CPU**   | [![Status](https://github.com/tensorflow/addons/workflows/macos-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Amacos-nightly) |
@@ -61,9 +59,9 @@ import tensorflow_addons as tfa
 #### Linux Build Matrix
 | Version    | Compatible With |Python versions  | Compiler  | cuDNN | CUDA | 
 |:----------------------- |:---|:---------- |:---------|:---------|:---------|
-| tensorflow-addons-0.7.0 | tensorflow>=2.1.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
-| tensorflow-addons-0.6.0 | tensorflow==2.0.0 <br> tensorflow-gpu==2.0.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
-| tensorflow-addons-0.5.2 | tensorflow==2.0.0 <br> tensorflow-gpu==2.0.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
+| tensorflow-addons-0.7.0 | tensorflow>=2.1.0 | 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.6.0 | tensorflow==2.0.0 <br> tensorflow-gpu==2.0.0 | 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
+| tensorflow-addons-0.5.2 | tensorflow==2.0.0 <br> tensorflow-gpu==2.0.0 | 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
 
 
 #### Nightly Builds
