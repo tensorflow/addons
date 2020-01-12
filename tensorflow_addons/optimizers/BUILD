@@ -13,6 +13,7 @@ py_library(
         "lazy_adam.py",
         "lookahead.py",
         "moving_average.py",
+        "novograd.py",
         "rectified_adam.py",
         "stochastic_weight_averaging.py",
         "utils.py",
@@ -103,6 +104,18 @@ py_test(
         "moving_average_test.py",
     ],
     main = "moving_average_test.py",
+    deps = [
+        ":optimizers",
+    ],
+)
+
+py_test(
+    name = "novograd_test",
+    size = "small",
+    srcs = [
+        "novograd_test.py",
+    ],
+    main = "novograd_test.py",
     deps = [
         ":optimizers",
     ],
