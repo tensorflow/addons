@@ -50,8 +50,6 @@ jobs:
         - choco install python --version 3.6.8
         - choco install python --version 3.7.5
       script:
-#        - export PATH=/c/tools/python:/c/tools/python/Scripts:$PATH
-#        - bash -x -e tools/ci_build/builds/release_windows.sh
         - export PATH=/c/Python35:/c/Python35/Scripts:$PATH
         - bash -x -e tools/ci_build/builds/release_windows.sh
         - export PATH=/c/Python36:/c/Python36/Scripts:$PATH
