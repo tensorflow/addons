@@ -53,11 +53,11 @@ jobs:
             echo export PATH=/c/hostedtoolcache/windows/Python/${{ matrix.python-version }}/x64/:$PATH  >>D:\a\_temp\msys\msys64\home\runneradmin\.bash_profile
             msys2do ./tools/ci_testing/addons_cpu.sh
   sanity-check:
-    name: CI Sanity Check
+    name: Sanity Check
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
-      - name: CI sanity check py${{ matrix.python-version }}
+      - name: Sanity check
         run: |
           set -x -e
           bash tools/run_docker.sh -c 'make sanity-check'
