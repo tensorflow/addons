@@ -230,7 +230,7 @@ do_check_code_format_test() {
 }
 
 # Supply all sanity step commands and descriptions
-SANITY_STEPS=("do_check_code_format_test" "do_pylint PYTHON3" "do_bazel_nobuild" "do_check_file_name_test")
+SANITY_STEPS=("do_check_code_format_test" "do_pylint" "do_bazel_nobuild" "do_check_file_name_test")
 SANITY_STEPS_DESC=("Check code style" "Python 3 pylint" "bazel nobuild" "Check file names for cases")
 
 INCREMENTAL_FLAG=""
