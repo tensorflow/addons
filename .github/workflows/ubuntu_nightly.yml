@@ -11,7 +11,7 @@ env:
 
 jobs:
   ubuntu-cpu-nightly:
-    name: Test nightly on macOS
+    name: Test nightly on Ubuntu
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
