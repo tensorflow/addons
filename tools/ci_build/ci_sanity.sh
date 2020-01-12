@@ -34,7 +34,7 @@ fi
 
 # Run pylint
 do_pylint() {
-    # Usage: do_pylint (PYTHON2 | PYTHON3) [--incremental]
+    # Usage: do_pylint [--incremental]
     #
     # Options:
     #   --incremental  Performs check on only the python files changed in the
@@ -45,22 +45,15 @@ do_pylint() {
 
     echo "ERROR_WHITELIST=\"${ERROR_WHITELIST}\""
 
-    if [[ $# != "1" ]] && [[ $# != "2" ]]; then
+    if [[ $# != "0" ]] && [[ $# != "1" ]]; then
         echo "Invalid syntax when invoking do_pylint"
-        echo "Usage: do_pylint (PYTHON2 | PYTHON3) [--incremental]"
+        echo "Usage: do_pylint [--incremental]"
         return 1
     fi
 
-    if [[ $1 == "PYTHON2" ]]; then
-        PYLINT_BIN="python2 -m pylint"
-    elif [[ $1 == "PYTHON3" ]]; then
-        PYLINT_BIN="python3 -m pylint"
-    else
-        echo "Unrecognized python version (PYTHON2 | PYTHON3): $1"
-        return 1
-    fi
+    PYLINT_BIN="python3 -m pylint"
 
-    PYTHON_SRC_FILES=$(get_py_files_to_check $2)
+    PYTHON_SRC_FILES=$(get_py_files_to_check $1)
     if [[ -z ${PYTHON_SRC_FILES} ]]; then
         echo "do_pylint found no Python files to check. Returning."
         return 0
