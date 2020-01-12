@@ -380,7 +380,7 @@ class LayernormSimpleRNNCell(keras.layers.SimpleRNNCell):
 
     References:
     [1] Ba, Jimmy Lei, Jamie Ryan Kiros, and Geoffrey E. Hinton.
-        “Layer Normalization.” ArXiv:1607.06450 [Cs, Stat],
+        "Layer Normalization." ArXiv:1607.06450 [Cs, Stat],
         July 21, 2016. http://arxiv.org/abs/1607.06450
 
     Arguments:
@@ -640,7 +640,7 @@ class LayernormSimpleRNN(keras.layers.SimpleRNN):
 
     References:
     [1] Ba, Jimmy Lei, Jamie Ryan Kiros, and Geoffrey E. Hinton.
-        “Layer Normalization.” ArXiv:1607.06450 [Cs, Stat],
+        "Layer Normalization." ArXiv:1607.06450 [Cs, Stat],
         July 21, 2016. http://arxiv.org/abs/1607.06450
 
     Arguments:
