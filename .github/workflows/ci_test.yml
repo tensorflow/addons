@@ -12,6 +12,15 @@ env:
   BAZEL_VERSION: 1.1.0
 
 jobs:
+  linux-test:
+    name: Ubuntu CPU Python3
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: CI test Ubuntu CPU
+        run: |
+          set -x -e
+          bash tools/run_docker.sh -d cpu -c 'make unit-test'
   macos-test:
     name: MacOS CPU Python3
     runs-on: macos-latest
