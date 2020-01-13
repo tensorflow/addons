@@ -451,7 +451,7 @@ class LayerNormSimpleRNNTest(tf.test.TestCase):
         x = 0.5 * np.ones((1, timesteps, embedding_dim))
         y_pred1 = model1.predict(x)
         y_pred2 = model2.predict(x)
-        self.assertEqual(y_pred1, y_pred2)
+        self.assertAllEqual(y_pred1, y_pred2)
 
 
 if __name__ == "__main__":
