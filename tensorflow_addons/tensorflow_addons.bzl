@@ -39,6 +39,7 @@ def custom_op_library(
     copts = copts + select({
         "//tensorflow_addons:windows": ["/DEIGEN_STRONG_INLINE=inline",
             "-DTENSORFLOW_MONOLITHIC_BUILD",
+            "/D_USE_MATH_DEFINES",
              "/DPLATFORM_WINDOWS", "/DEIGEN_HAS_C99_MATH",
              "/DTENSORFLOW_USE_EIGEN_THREADPOOL", "/DEIGEN_AVOID_STL_ARRAY",
              "/Iexternal/gemmlowp", "/wd4018", "/wd4577", "/DNOGDI",
