@@ -501,8 +501,7 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
             bias_constraint=bias_constraint,
             dropout=dropout,
             recurrent_dropout=recurrent_dropout,
-            dtype=kwargs.get('dtype'),
-            trainable=kwargs.get('trainable', True))
+            **kwargs)
         if use_layernorm:
             self.layernorm = keras.layers.LayerNormalization(
                 axis=-1,
