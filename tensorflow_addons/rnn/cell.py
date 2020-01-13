@@ -626,7 +626,9 @@ class LayernormSimpleRNNCell(keras.layers.SimpleRNNCell):
             ln_config['layernorm_epsilon'] = ln_config.pop("epsilon")
         else:
             ln_config = {}
-        return {**config, **cell_config, **ln_config}
+        return dict(
+            list(config.items()) + list(cell_config.items()) +
+            list(ln_config.items()))
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -833,4 +835,4 @@ class LayernormSimpleRNN(keras.layers.SimpleRNN):
                             self).get_config()  # get RNN's config
         del base_config['cell']
         cell_config = self.cell.get_config()
-        return {**base_config, **cell_config}
+        return dict(list(base_config.items()) + list(cell_config.items()))
