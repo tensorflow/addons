@@ -105,7 +105,7 @@ class MomentumLARS(tf.keras.optimizers.Optimizer):
         'weight_decay': self._serialize_hyperparameter('weight_decay'),
         'eeta': self._serialize_hyperparameter('eeta'),
         'epsilon': self._serialize_hyperparameter('epsilon'),
-        'use_nesterov': self._serialize_hyperparameter('use_nesterov')
+        'use_nesterov': self._serialize_hyperparameter('use_nesterov'),
         'clip': self._serialize_hyperparameter('use_clipping')
     }
     base_config = super(LARSOptimizer, self).get_config()
