@@ -797,7 +797,8 @@ class LayerNormSimpleRNN(keras.layers.SimpleRNN):
             stateful=stateful,
             unroll=unroll,
             **kwargs)
-        self.activity_regularizer = keras.regularizers.get(activity_regularizer)
+        self.activity_regularizer = keras.regularizers.get(
+            activity_regularizer)
         # self.input_spec = [InputSpec(ndim=3)]
 
     # use SimpleRNN's call() method
