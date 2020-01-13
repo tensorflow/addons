@@ -32,7 +32,6 @@ def pinball_loss(y_true, y_pred, tau=.5):
     conditional quantile.
 
     See: https://en.wikipedia.org/wiki/Quantile_regression
-         https://projecteuclid.org/download/pdfview_1/euclid.bj/1297173840
 
     Usage:
       ```python
@@ -55,6 +54,10 @@ def pinball_loss(y_true, y_pred, tau=.5):
 
     Returns:
         pinball_loss: 1-D float `Tensor` with shape [batch_size].
+
+    References:
+      - https://en.wikipedia.org/wiki/Quantile_regression
+      - https://projecteuclid.org/download/pdfview_1/euclid.bj/1297173840
     """
     y_pred = tf.convert_to_tensor(y_pred)
     y_true = tf.cast(y_true, y_pred.dtype)
@@ -79,7 +82,6 @@ class PinballLoss(tf.keras.losses.Loss):
     conditional quantile.
 
     See: https://en.wikipedia.org/wiki/Quantile_regression
-         https://projecteuclid.org/download/pdfview_1/euclid.bj/1297173840
 
     Usage:
       ```python
@@ -115,6 +117,10 @@ class PinballLoss(tf.keras.losses.Loss):
         https://www.tensorflow.org/alpha/tutorials/distribute/training_loops
         for more details on this.
       name: Optional name for the op.
+
+    References:
+      - https://en.wikipedia.org/wiki/Quantile_regression
+      - https://projecteuclid.org/download/pdfview_1/euclid.bj/1297173840
     """
 
     def __init__(self,
