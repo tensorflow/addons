@@ -21,9 +21,7 @@ import itertools
 import numpy as np
 import tensorflow as tf
 
-from tensorflow_addons.utils.resource_loader import LazySO
-
-_beam_search_so = LazySO("custom_ops/seq2seq/_beam_search_ops.so")
+from tensorflow_addons.seq2seq import gather_tree
 
 
 def _transpose_batch_time(x):
@@ -41,7 +39,7 @@ class GatherTreeTest(tf.test.TestCase):
         max_sequence_lengths = [3]
         expected_result = _transpose_batch_time([[[2, 2, 2], [6, 5, 6],
                                                   [7, 8, 9], [10, 10, 10]]])
-        beams = _beam_search_so.ops.addons_gather_tree(
+        beams = gather_tree(
             step_ids=step_ids,
             parent_ids=parent_ids,
             max_sequence_lengths=max_sequence_lengths,
@@ -61,7 +59,7 @@ class GatherTreeTest(tf.test.TestCase):
         with tf.device("/cpu:0"):
             msg = r"parent id -1 at \(batch, time, beam\) == \(0, 0, 1\)"
             with self.assertRaisesOpError(msg):
-                beams = _beam_search_so.ops.addons_gather_tree(
+                beams = gather_tree(
                     step_ids=step_ids,
                     parent_ids=parent_ids,
                     max_sequence_lengths=max_sequence_lengths,
@@ -84,7 +82,7 @@ class GatherTreeTest(tf.test.TestCase):
         expected_result = _transpose_batch_time([[[2, -1, 2], [6, 5, 6],
                                                   [7, 8, 9], [10, 10, 10]]])
         with tf.device("/device:GPU:0"):
-            beams = _beam_search_so.ops.addons_gather_tree(
+            beams = gather_tree(
                 step_ids=step_ids,
                 parent_ids=parent_ids,
                 max_sequence_lengths=max_sequence_lengths,
@@ -106,7 +104,7 @@ class GatherTreeTest(tf.test.TestCase):
                 high=beam_width - 1,
                 size=(max_time, batch_size, beam_width))
 
-            beams = _beam_search_so.ops.addons_gather_tree(
+            beams = gather_tree(
                 step_ids=step_ids.astype(np.int32),
                 parent_ids=parent_ids.astype(np.int32),
                 max_sequence_lengths=max_sequence_lengths,
