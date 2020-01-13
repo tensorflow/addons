@@ -47,7 +47,7 @@ def pinball_loss(y_true, y_pred, tau=.5):
     Args:
       y_true: Ground truth values. shape = `[batch_size, d0, .. dN]`
       y_pred: The predicted values. shape = `[batch_size, d0, .. dN]`
-	  tau: Float in [0, 1] or a tensor taking values in [0, 1] and shape =
+      tau: Float in [0, 1] or a tensor taking values in [0, 1] and shape =
         `[d0,..., dn]`.  It defines the slope of the pinball loss. In the
         context of quantile regression, the value of tau determines the
         conditional quantile level. When tau = 0.5, this amounts to l1
