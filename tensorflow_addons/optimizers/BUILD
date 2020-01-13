@@ -9,7 +9,7 @@ py_library(
         "conditional_gradient.py",
         "cyclical_learning_rate.py",
         "lamb.py",
-        "lars_optimizer.py",
+        "momentum_lars.py",
         "lazy_adam.py",
         "lookahead.py",
         "moving_average.py",

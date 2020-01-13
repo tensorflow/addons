@@ -26,7 +26,7 @@ import tensorflow.compat.v2 as tf
 from tensorflow_addons.utils import keras_utils
 
 @keras_utils.register_keras_custom_object
-class LARSOptimizer(tf.keras.optimizers.Optimizer):
+class MomentumLARS(tf.keras.optimizers.Optimizer):
   """Layer-wise Adaptive Rate Scaling for large batch training.
 
   Introduced by "Large Batch Training of Convolutional Networks" by Y. You,

@@ -21,11 +21,11 @@ from __future__ import print_function
 import tensorflow.compat.v2 as tf
 from tensorflow_addons.utils import test_utils
 import numpy as np
-from tensorflow_addons.optimizers import lars_optimizer as lo
+from tensorflow_addons.optimizers import momentum_lars as lo
 import tensorflow_addons.optimizers.conditional_gradient as cg_lib
 
 @test_utils.run_all_in_graph_and_eager_modes
-class LARSOptimizerTest(tf.test.TestCase):
+class MomentumLARSTest(tf.test.TestCase):
 
   def testLARSGradientOneStep(self, use_resource=False, use_callable_params=False):
       for dtype in [tf.float16, tf.float32, tf.float64]:
