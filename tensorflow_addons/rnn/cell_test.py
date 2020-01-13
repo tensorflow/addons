@@ -431,6 +431,26 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
 
     # REQUIRES TRAINING - WILL TIMEOUT: test_statefulness_layernorm_rnn()
 
+    def test_versus_simplernn(self):
+        embedding_dim = 4
+        timesteps = 2
+        settings = {
+            'units': 3,
+            'bias_initializer': 'ones',
+            'kernel_initializer': 'ones',
+            'recurrent_initializer': 'ones'
+        }
+        model1 = keras.Sequential([
+            keras.layers.SimpleRNN(**settings)])
+        model2 = keras.Sequential([
+            LayernormSimpleRNN(**settings, use_layernorm=False)])
+        model1.build((None, None, embedding_dim))
+        model2.build((None, None, embedding_dim))
+        x = 0.5 * np.ones((1, timesteps, embedding_dim))
+        y_pred1 = model1.predict(x)
+        y_pred2 = model2.predict(x)
+        self.assertEqual(y_pred1, y_pred2)
+
 
 if __name__ == "__main__":
     tf.test.main()
