@@ -21,9 +21,9 @@ import itertools
 import numpy as np
 import tensorflow as tf
 
-from tensorflow_addons.utils.resource_loader import LazyOpLoader
+from tensorflow_addons.utils.resource_loader import LazySO
 
-_beam_search_so = LazyOpLoader("custom_ops/seq2seq/_beam_search_ops.so")
+_beam_search_so = LazySO("custom_ops/seq2seq/_beam_search_ops.so")
 
 
 def _transpose_batch_time(x):

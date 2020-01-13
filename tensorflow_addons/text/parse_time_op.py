@@ -19,9 +19,9 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-from tensorflow_addons.utils.resource_loader import LazyOpLoader
+from tensorflow_addons.utils.resource_loader import LazySO
 
-_parse_time_so = LazyOpLoader("custom_ops/text/_parse_time_op.so")
+_parse_time_so = LazySO("custom_ops/text/_parse_time_op.so")
 
 tf.no_gradient("Addons>ParseTime")
 

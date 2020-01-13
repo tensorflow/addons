@@ -20,9 +20,9 @@ from __future__ import print_function
 import csv
 import tensorflow as tf
 
-from tensorflow_addons.utils.resource_loader import LazyOpLoader
+from tensorflow_addons.utils.resource_loader import LazySO
 
-_skip_gram_so = LazyOpLoader("custom_ops/text/_skip_gram_ops.so")
+_skip_gram_so = LazySO("custom_ops/text/_skip_gram_ops.so")
 
 tf.no_gradient("Addons>SkipGramGenerateCandidates")
 

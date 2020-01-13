@@ -24,9 +24,9 @@ import tensorflow as tf
 from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import beam_search_decoder
 from tensorflow_addons.utils import test_utils
-from tensorflow_addons.utils.resource_loader import LazyOpLoader
+from tensorflow_addons.utils.resource_loader import LazySO
 
-_beam_search_so = LazyOpLoader("custom_ops/seq2seq/_beam_search_ops.so")
+_beam_search_so = LazySO("custom_ops/seq2seq/_beam_search_ops.so")
 
 
 class TestGatherTree(tf.test.TestCase):

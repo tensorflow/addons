@@ -20,9 +20,9 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-from tensorflow_addons.utils.resource_loader import LazyOpLoader
+from tensorflow_addons.utils.resource_loader import LazySO
 
-_image_so = LazyOpLoader("custom_ops/image/_image_ops.so")
+_image_so = LazySO("custom_ops/image/_image_ops.so")
 
 
 @tf.function

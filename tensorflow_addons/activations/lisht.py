@@ -18,9 +18,9 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils.resource_loader import LazyOpLoader
+from tensorflow_addons.utils.resource_loader import LazySO
 
-_activation_so = LazyOpLoader("custom_ops/activations/_activation_ops.so")
+_activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')

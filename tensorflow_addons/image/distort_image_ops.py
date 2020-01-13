@@ -18,9 +18,9 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils.resource_loader import LazyOpLoader
+from tensorflow_addons.utils.resource_loader import LazySO
 
-_distort_image_so = LazyOpLoader("custom_ops/image/_distort_image_ops.so")
+_distort_image_so = LazySO("custom_ops/image/_distort_image_ops.so")
 
 
 # pylint: disable=invalid-name

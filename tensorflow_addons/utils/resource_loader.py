@@ -41,7 +41,7 @@ def get_path_to_datafile(path):
     return os.path.join(root_dir, path.replace("/", os.sep))
 
 
-class LazyOpLoader:
+class LazySO:
     def __init__(self, relative_path):
         self.relative_path = relative_path
         self._ops = None

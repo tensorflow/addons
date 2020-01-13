@@ -19,9 +19,9 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils.resource_loader import LazyOpLoader
+from tensorflow_addons.utils.resource_loader import LazySO
 
-_resampler_so = LazyOpLoader("custom_ops/image/_resampler_ops.so")
+_resampler_so = LazySO("custom_ops/image/_resampler_ops.so")
 
 
 @tf.function
