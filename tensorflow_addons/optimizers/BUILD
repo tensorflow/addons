@@ -9,9 +9,9 @@ py_library(
         "conditional_gradient.py",
         "cyclical_learning_rate.py",
         "lamb.py",
-        "momentum_lars.py",
         "lazy_adam.py",
         "lookahead.py",
+        "momentum_lars.py",
         "moving_average.py",
         "rectified_adam.py",
         "stochastic_weight_averaging.py",
@@ -24,9 +24,9 @@ py_library(
 )
 
 py_test(
-    name = "lars_optimizer_test",
+    name = "momentum_lars_test",
     size = "small",
-    srcs = ["lars_optimizer_test.py"],
+    srcs = ["momentum_lars_test.py"],
     python_version = "PY3",
     srcs_version = "PY2AND3",
     deps = [
