@@ -485,7 +485,7 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
             recurrent_dropout=0.,
             **kwargs):
         self.use_layernorm = use_layernorm
-        keras.layers.SimpleRNNCell.__init__(
+        super(LayerNormSimpleRNNCell, self).__init__(
             self,
             units,
             activation=activation,
@@ -605,7 +605,7 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
 
     def get_config(self):
         config = {'use_layernorm': self.use_layernorm}
-        cell_config = keras.layers.SimpleRNNCell.get_config(self)
+        cell_config = super(LayerNormSimpleRNNCell, self).get_config(self)
         del cell_config['name']
         if self.use_layernorm:
             ln_config = self.layernorm.get_config()
