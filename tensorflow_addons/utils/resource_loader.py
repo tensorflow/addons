@@ -44,9 +44,11 @@ def get_path_to_datafile(path):
 class LazyOpLoader:
     def __init__(self, relative_path):
         self.relative_path = relative_path
-        self.op = None
+        self._ops = None
 
-    def get(self):
-        if self.op is None:
-            self.op = tf.load_op_library(get_path_to_datafile(self.relative_path))
-        return self.op
+    @property
+    def ops(self):
+        if self._ops is None:
+            self._ops = tf.load_op_library(
+                get_path_to_datafile(self.relative_path))
+        return self._ops

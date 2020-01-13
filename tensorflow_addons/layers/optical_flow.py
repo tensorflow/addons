@@ -19,10 +19,10 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+from tensorflow_addons.utils.resource_loader import LazyOpLoader
 
-_correlation_cost_op_so = tf.load_op_library(
-    get_path_to_datafile("custom_ops/layers/_correlation_cost_ops.so"))
+_correlation_cost_so = LazyOpLoader(
+    "custom_ops/layers/_correlation_cost_ops.so")
 
 
 def _correlation_cost(input_a,
@@ -81,7 +81,7 @@ def _correlation_cost(input_a,
     """
 
     with tf.name_scope(name or "correlation_cost"):
-        op_call = _correlation_cost_op_so.addons_correlation_cost
+        op_call = _correlation_cost_so.ops.addons_correlation_cost
 
         if data_format == "channels_last":
             op_data_format = "NHWC"
@@ -120,7 +120,7 @@ def _correlation_cost_grad(op, grad_output):
     input_b = tf.convert_to_tensor(op.inputs[1], name="input_b")
     grad_output_tensor = tf.convert_to_tensor(grad_output, name="grad_output")
 
-    op_call = _correlation_cost_op_so.addons_correlation_cost_grad
+    op_call = _correlation_cost_so.ops.addons_correlation_cost_grad
     grads = op_call(
         input_a,
         input_b,

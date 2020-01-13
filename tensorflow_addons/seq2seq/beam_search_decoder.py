@@ -26,11 +26,9 @@ import tensorflow as tf
 from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.utils import keras_utils
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+from tensorflow_addons.utils.resource_loader import LazyOpLoader
 
-_beam_search_ops_so = tf.load_op_library(
-    get_path_to_datafile("custom_ops/seq2seq/_beam_search_ops.so"))
-gather_tree = _beam_search_ops_so.addons_gather_tree
+_beam_search_so = LazyOpLoader("custom_ops/seq2seq/_beam_search_ops.so")
 
 
 class BeamSearchDecoderState(
@@ -135,7 +133,7 @@ def gather_tree_from_array(t, parent_ids, sequence_length):
 
     max_sequence_lengths = tf.cast(
         tf.reduce_max(sequence_length, axis=1), tf.int32)
-    sorted_beam_ids = gather_tree(
+    sorted_beam_ids = _beam_search_so.ops.addons_gather_tree(
         step_ids=beam_ids,
         parent_ids=parent_ids,
         max_sequence_lengths=max_sequence_lengths,
@@ -342,7 +340,7 @@ class BeamSearchDecoderMixin(object):
         # Get max_sequence_length across all beams for each batch.
         max_sequence_lengths = tf.cast(
             tf.reduce_max(final_state.lengths, axis=1), tf.int32)
-        predicted_ids = gather_tree(
+        predicted_ids = _beam_search_so.ops.addons_gather_tree(
             outputs.predicted_ids,
             outputs.parent_ids,
             max_sequence_lengths=max_sequence_lengths,

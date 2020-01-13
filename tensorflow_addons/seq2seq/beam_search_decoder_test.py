@@ -24,11 +24,9 @@ import tensorflow as tf
 from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import beam_search_decoder
 from tensorflow_addons.utils import test_utils
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+from tensorflow_addons.utils.resource_loader import LazyOpLoader
 
-_beam_search_ops_so = tf.load_op_library(
-    get_path_to_datafile("custom_ops/seq2seq/_beam_search_ops.so"))
-gather_tree = _beam_search_ops_so.addons_gather_tree
+_beam_search_so = LazyOpLoader("custom_ops/seq2seq/_beam_search_ops.so")
 
 
 class TestGatherTree(tf.test.TestCase):
@@ -52,7 +50,7 @@ class TestGatherTree(tf.test.TestCase):
                                     [[2, 4, 4], [7, 6, 6],
                                      [8, 9, 10]]]).transpose([1, 0, 2])
 
-        res = gather_tree(
+        res = _beam_search_so.ops.addons_gather_tree(
             predicted_ids,
             parent_ids,
             max_sequence_lengths=max_sequence_lengths,

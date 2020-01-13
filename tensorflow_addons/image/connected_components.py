@@ -20,10 +20,9 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+from tensorflow_addons.utils.resource_loader import LazyOpLoader
 
-_image_ops_so = tf.load_op_library(
-    get_path_to_datafile("custom_ops/image/_image_ops.so"))
+_image_so = LazyOpLoader("custom_ops/image/_image_ops.so")
 
 
 @tf.function
@@ -62,7 +61,7 @@ def connected_components(images, name=None):
             raise TypeError(
                 "images should have rank 2 (HW) or 3 (NHW). Static shape is %s"
                 % image_or_images.get_shape())
-        components = _image_ops_so.addons_image_connected_components(images)
+        components = _image_so.ops.addons_image_connected_components(images)
 
         # TODO(ringwalt): Component id renaming should be done in the op,
         # to avoid constructing multiple additional large tensors.
