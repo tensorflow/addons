@@ -369,9 +369,8 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-# class LayernormSimpleRNNCell(SimpleRNNCell, LayerNormalization):
-class LayernormSimpleRNNCell(keras.layers.SimpleRNNCell):
-    """Cell class for LayernormSimpleRNN.
+class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
+    """Cell class for LayerNormSimpleRNN.
 
     Motivation:
     - Drop-In Replacement for keras.layers.SimpleRNNCell
@@ -448,12 +447,12 @@ class LayernormSimpleRNNCell(keras.layers.SimpleRNNCell):
     import tensorflow_addons as tfa
 
     inputs = np.random.random([32, 10, 8]).astype(np.float32)
-    rnn = keras.layers.RNN(tfa.rnn.LayernormSimpleRNNCell(4))
+    rnn = keras.layers.RNN(tfa.rnn.LayerNormSimpleRNNCell(4))
 
     output = rnn(inputs)  # The output has shape `[32, 4]`.
 
     rnn = keras.layers.RNN(
-        tfa.rnn.LayernormSimpleRNNCell(4),
+        tfa.rnn.LayerNormSimpleRNNCell(4),
         return_sequences=True,
         return_state=True)
 
@@ -505,7 +504,6 @@ class LayernormSimpleRNNCell(keras.layers.SimpleRNNCell):
             dtype=kwargs.get('dtype'),
             trainable=kwargs.get('trainable', True))
         if use_layernorm:
-            # LayerNormalization.__init__(self,
             self.layernorm = keras.layers.LayerNormalization(
                 axis=-1,
                 epsilon=layernorm_epsilon,
@@ -520,12 +518,9 @@ class LayernormSimpleRNNCell(keras.layers.SimpleRNNCell):
                 dtype=kwargs.get('dtype'),
                 trainable=kwargs.get('trainable', True))
 
-    # @tf_utils.shape_type_conversion
     def build(self, input_shape):
-        # SimpleRNNCell.build(self, input_shape)
-        super(LayernormSimpleRNNCell, self).build(input_shape)
+        super(LayerNormSimpleRNNCell, self).build(input_shape)
         if self.use_layernorm:
-            # LayerNormalization.build(self, (None, self.units))
             self.layernorm.build((None, self.units))
 
     def call(self, inputs, states, training=None):
@@ -596,7 +591,6 @@ class LayernormSimpleRNNCell(keras.layers.SimpleRNNCell):
                                        self.recurrent_kernel)  # "net"
 
         if self.use_layernorm:
-            # output = LayerNormalization.call(self, output)
             output = self.layernorm(output)
 
         if self.bias is not None:
@@ -614,7 +608,6 @@ class LayernormSimpleRNNCell(keras.layers.SimpleRNNCell):
         cell_config = keras.layers.SimpleRNNCell.get_config(self)
         del cell_config['name']
         if self.use_layernorm:
-            # ln_config = LayerNormalization.get_config(self)
             ln_config = self.layernorm.get_config()
             ln_config = {
                 key: ln_config[key]
@@ -632,7 +625,7 @@ class LayernormSimpleRNNCell(keras.layers.SimpleRNNCell):
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-class LayernormSimpleRNN(keras.layers.SimpleRNN):
+class LayerNormSimpleRNN(keras.layers.SimpleRNN):
     """Fully-connected RNN with Layer Normalization.
 
     Motivation:
@@ -731,11 +724,11 @@ class LayernormSimpleRNN(keras.layers.SimpleRNN):
     import tensorflow_addons as tfa
 
     inputs = np.random.random([32, 10, 8]).astype(np.float32)
-    model = tfa.rnn.LayernormSimpleRNN(4)
+    model = tfa.rnn.LayerNormSimpleRNN(4)
 
     output = model(inputs)  # The output has shape `[32, 4]`.
 
-    model = tfa.rnn.LayernormSimpleRNN(
+    model = tfa.rnn.LayerNormSimpleRNN(
         4, return_sequences=True, return_state=True)
 
     # whole_sequence_output has shape `[32, 10, 4]`.
@@ -772,8 +765,8 @@ class LayernormSimpleRNN(keras.layers.SimpleRNN):
             stateful=False,
             unroll=False,
             **kwargs):
-        # 'implementation' warning was never relevant for LayernormSimpleRNN
-        cell = LayernormSimpleRNNCell(
+        # 'implementation' warning was never relevant for LayerNormSimpleRNN
+        cell = LayerNormSimpleRNNCell(
             units,
             activation=activation,
             use_bias=use_bias,
@@ -804,8 +797,7 @@ class LayernormSimpleRNN(keras.layers.SimpleRNN):
             stateful=stateful,
             unroll=unroll,
             **kwargs)
-        # IT'S NOT USED ANYWHERE(!):
-        # self.activity_regularizer = regularizers.get(activity_regularizer)
+        self.activity_regularizer = regularizers.get(activity_regularizer)
         # self.input_spec = [InputSpec(ndim=3)]
 
     # use SimpleRNN's call() method
