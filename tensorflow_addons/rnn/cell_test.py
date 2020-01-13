@@ -24,7 +24,7 @@ import tensorflow.keras as keras
 
 from tensorflow_addons.utils import test_utils
 from tensorflow_addons.rnn import cell as rnn_cell
-from tensorflow_addons.rnn import LayernormSimpleRNN
+from tensorflow_addons.rnn import LayerNormSimpleRNN
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -295,14 +295,14 @@ class LayerNormLSTMCellTest(tf.test.TestCase):
 
 
 @test_utils.run_all_in_graph_and_eager_modes
-class LayernormSimpleRNNTest(tf.test.TestCase):
+class LayerNormSimpleRNNTest(tf.test.TestCase):
     def test_return_sequences_layernorm_rnn(self):
         num_samples = 2
         timesteps = 3
         embedding_dim = 4
         units = 2
         test_utils.layer_test(
-            LayernormSimpleRNN,
+            LayerNormSimpleRNN,
             kwargs={
                 'units': units,
                 'use_layernorm': True,
@@ -316,7 +316,7 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
         embedding_dim = 4
         units = 2
         test_utils.layer_test(
-            LayernormSimpleRNN,
+            LayerNormSimpleRNN,
             kwargs={
                 'units': units,
                 'use_layernorm': True,
@@ -332,7 +332,7 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
         timesteps = 3
         embedding_dim = 4
         units = 2
-        layer = LayernormSimpleRNN(
+        layer = LayerNormSimpleRNN(
             units, use_layernorm=True, input_shape=(None, embedding_dim))
         model = keras.models.Sequential()
         model.add(layer)
@@ -350,7 +350,7 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
         embedding_dim = 4
         units = 2
         test_utils.layer_test(
-            LayernormSimpleRNN,
+            LayerNormSimpleRNN,
             kwargs={
                 'units': units,
                 'use_layernorm': True,
@@ -361,7 +361,7 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
 
     def test_constraints_layernorm_rnn(self):
         embedding_dim = 4
-        layer_class = LayernormSimpleRNN
+        layer_class = LayerNormSimpleRNN
         k_constraint = keras.constraints.max_norm(0.01)
         r_constraint = keras.constraints.max_norm(0.01)
         b_constraint = keras.constraints.max_norm(0.01)
@@ -383,7 +383,7 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
         self.assertEqual(layer.cell.layernorm.gamma.constraint, g_constraint)
 
     def test_with_masking_layer_layernorm_rnn(self):
-        layer_class = LayernormSimpleRNN
+        layer_class = LayerNormSimpleRNN
         inputs = np.random.random((2, 3, 4))
         targets = np.abs(np.random.random((2, 3, 5)))
         targets /= targets.sum(axis=-1, keepdims=True)
@@ -399,7 +399,7 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
         model.fit(inputs, targets, epochs=1, batch_size=2, verbose=1)
 
     def test_from_config_layernorm_rnn(self):
-        layer_class = LayernormSimpleRNN
+        layer_class = LayerNormSimpleRNN
         for stateful in (False, True):
             l1 = layer_class(units=1, use_layernorm=True, stateful=stateful)
             l2 = layer_class.from_config(l1.get_config())
@@ -407,7 +407,7 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
 
     def test_regularizers_layernorm_rnn(self):
         embedding_dim = 4
-        layer_class = LayernormSimpleRNN
+        layer_class = LayerNormSimpleRNN
         layer = layer_class(
             5,
             use_layernorm=True,
@@ -440,10 +440,9 @@ class LayernormSimpleRNNTest(tf.test.TestCase):
             'kernel_initializer': 'ones',
             'recurrent_initializer': 'ones'
         }
-        model1 = keras.Sequential([
-            keras.layers.SimpleRNN(**settings)])
-        model2 = keras.Sequential([
-            LayernormSimpleRNN(**settings, use_layernorm=False)])
+        model1 = keras.Sequential([keras.layers.SimpleRNN(**settings)])
+        model2 = keras.Sequential(
+            [LayerNormSimpleRNN(**settings, use_layernorm=False)])
         model1.build((None, None, embedding_dim))
         model2.build((None, None, embedding_dim))
         x = 0.5 * np.ones((1, timesteps, embedding_dim))
