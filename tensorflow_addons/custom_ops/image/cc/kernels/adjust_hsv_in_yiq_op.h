@@ -18,7 +18,6 @@ limitations under the License.
 #define EIGEN_USE_GPU
 #endif  // GOOGLE_CUDA
 
-#define _USE_MATH_DEFINES
 #include <cmath>
 
 #include "third_party/eigen3/Eigen/Core"
