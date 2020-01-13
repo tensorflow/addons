@@ -48,6 +48,16 @@ class TestTLU(tf.test.TestCase):
             input_data=x,
             expected_output=val)
 
+    def test_serialization(self, dtype):
+        tlu = TLU(
+            affine=True,
+            alpha_initializer='ones',
+            tau_initializer='ones',
+            dtype=dtype)
+        serialized_tlu = tf.keras.layers.serialize(tlu)
+        new_layer = tf.keras.layers.deserialize(serialized_tlu)
+        self.assertEqual(tlu.get_config(), new_layer.get_config())
+
 
 if __name__ == '__main__':
     tf.test.main()

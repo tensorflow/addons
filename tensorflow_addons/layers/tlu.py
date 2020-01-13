@@ -69,14 +69,18 @@ class TLU(tf.keras.layers.Layer):
             name='tau',
             initializer=self.tau_initializer,
             regularizer=self.tau_regularizer,
-            constraint=self.tau_constraint)
+            constraint=self.tau_constraint,
+            synchronization=tf.VariableSynchronization.AUTO,
+            aggregation=tf.VariableAggregation.MEAN)
         if self.affine:
             self.alpha = self.add_weight(
                 shape=param_shape,
                 name='alpha',
                 initializer=self.alpha_initializer,
                 regularizer=self.alpha_regularizer,
-                constraint=self.alpha_constraint)
+                constraint=self.alpha_constraint,
+                synchronization=tf.VariableSynchronization.AUTO,
+                aggregation=tf.VariableAggregation.MEAN)
 
         axes = {i: input_shape[i] for i in range(1, len(input_shape))}
         self.input_spec = tf.keras.layers.InputSpec(
