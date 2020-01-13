@@ -105,6 +105,7 @@ def run_all_distributed(num_devices):
     return decorator
 
 
+# TODO: Add support for other distribution strategies
 def run_distributed(num_devices):
     def decorator(f):
         if inspect.isclass(f):
