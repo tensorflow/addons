@@ -440,11 +440,14 @@ class LayerNormSimpleRNNTest(tf.test.TestCase):
             'kernel_initializer': 'ones',
             'recurrent_initializer': 'ones'
         }
-        model1 = keras.Sequential([keras.layers.SimpleRNN(**settings)])
-        model2 = keras.Sequential(
-            [LayerNormSimpleRNN(**settings, use_layernorm=False)])
+        model1 = keras.Sequential()
+        model1.add(keras.layers.SimpleRNN(**settings))
         model1.build((None, None, embedding_dim))
+
+        model2 = keras.Sequential()
+        model2.add(LayerNormSimpleRNN(use_layernorm=False, **settings))
         model2.build((None, None, embedding_dim))
+
         x = 0.5 * np.ones((1, timesteps, embedding_dim))
         y_pred1 = model1.predict(x)
         y_pred2 = model2.predict(x)

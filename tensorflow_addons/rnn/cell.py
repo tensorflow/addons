@@ -486,7 +486,6 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
             **kwargs):
         self.use_layernorm = use_layernorm
         super(LayerNormSimpleRNNCell, self).__init__(
-            self,
             units,
             activation=activation,
             use_bias=use_bias,
@@ -501,7 +500,8 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
             bias_constraint=bias_constraint,
             dropout=dropout,
             recurrent_dropout=recurrent_dropout,
-            **kwargs)
+            dtype=kwargs.get('dtype'),
+            trainable=kwargs.get('trainable', True))
         if use_layernorm:
             self.layernorm = keras.layers.LayerNormalization(
                 axis=-1,
@@ -604,7 +604,7 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
 
     def get_config(self):
         config = {'use_layernorm': self.use_layernorm}
-        cell_config = super(LayerNormSimpleRNNCell, self).get_config(self)
+        cell_config = super(LayerNormSimpleRNNCell, self).get_config()
         del cell_config['name']
         if self.use_layernorm:
             ln_config = self.layernorm.get_config()
