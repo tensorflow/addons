@@ -25,4 +25,5 @@ from tensorflow_addons.layers.normalizations import InstanceNormalization
 from tensorflow_addons.layers.optical_flow import CorrelationCost
 from tensorflow_addons.layers.poincare import PoincareNormalize
 from tensorflow_addons.layers.sparsemax import Sparsemax
+from tensorflow_addons.layers.tlu import TLU
 from tensorflow_addons.layers.wrappers import WeightNormalization
