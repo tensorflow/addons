@@ -18,7 +18,7 @@ set -e -x
 # No GPU support for MacOS
 export TF_NEED_CUDA="0"
 
-PYTHON_VERSIONS="2.7.15 3.5.6 3.6.6 3.7.4"
+PYTHON_VERSIONS="3.5.6 3.6.6 3.7.4"
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
 
 # Install Bazel 1.1.0

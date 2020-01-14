@@ -21,7 +21,7 @@ jobs:
 
     # Linux Builds
     - stage: build
-      name: "Build on Ubuntu 16.04 for Python 2.7 3.5 3.6 3.7"
+      name: "Build on Ubuntu 16.04 for Python 3.5 3.6 3.7"
       script:
       # Build GPU kernels without runtime=nvidia as there are no GPUs/Drivers
       - docker run -e TF_NEED_CUDA=1 -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010 tools/ci_build/builds/release_linux.sh
@@ -31,7 +31,7 @@ jobs:
 
     # MacOS Builds
     - stage: build
-      name: "Build on MacOS for Python 2.7 3.5 3.6 3.7"
+      name: "Build on MacOS for Python 3.5 3.6 3.7"
       os: osx
       osx_image: xcode10
       script:
@@ -42,17 +42,14 @@ jobs:
 
     # Windows Builds
     - stage: build
-      name: "Build on Windows for Python 2.7 3.5 3.6 3.7"
+      name: "Build on Windows for Python 3.5 3.6 3.7"
       os: windows
       language: shell
       before_install:
-        - choco install python --version 2.7.11
         - choco install python --version 3.5.4
         - choco install python --version 3.6.8
         - choco install python --version 3.7.5
       script:
-#        - export PATH=/c/tools/python:/c/tools/python/Scripts:$PATH
-#        - bash -x -e tools/ci_build/builds/release_windows.sh
         - export PATH=/c/Python35:/c/Python35/Scripts:$PATH
         - bash -x -e tools/ci_build/builds/release_windows.sh
         - export PATH=/c/Python36:/c/Python36/Scripts:$PATH

@@ -34,7 +34,7 @@ fi
 
 # Run pylint
 do_pylint() {
-    # Usage: do_pylint (PYTHON2 | PYTHON3) [--incremental]
+    # Usage: do_pylint [--incremental]
     #
     # Options:
     #   --incremental  Performs check on only the python files changed in the
@@ -45,22 +45,15 @@ do_pylint() {
 
     echo "ERROR_WHITELIST=\"${ERROR_WHITELIST}\""
 
-    if [[ $# != "1" ]] && [[ $# != "2" ]]; then
+    if [[ $# != "0" ]] && [[ $# != "1" ]]; then
         echo "Invalid syntax when invoking do_pylint"
-        echo "Usage: do_pylint (PYTHON2 | PYTHON3) [--incremental]"
+        echo "Usage: do_pylint [--incremental]"
         return 1
     fi
 
-    if [[ $1 == "PYTHON2" ]]; then
-        PYLINT_BIN="python2 -m pylint"
-    elif [[ $1 == "PYTHON3" ]]; then
-        PYLINT_BIN="python3 -m pylint"
-    else
-        echo "Unrecognized python version (PYTHON2 | PYTHON3): $1"
-        return 1
-    fi
+    PYLINT_BIN="python3 -m pylint"
 
-    PYTHON_SRC_FILES=$(get_py_files_to_check $2)
+    PYTHON_SRC_FILES=$(get_py_files_to_check $1)
     if [[ -z ${PYTHON_SRC_FILES} ]]; then
         echo "do_pylint found no Python files to check. Returning."
         return 0
@@ -226,11 +219,6 @@ do_bazel_nobuild() {
     cmd_status "This is due to invalid BUILD files."
 }
 
-do_check_futures_test() {
-    cd "$ROOT_DIR/tools/ci_build/verify"
-    python check_futures.py
-}
-
 do_check_file_name_test() {
     cd "$ROOT_DIR/tools/ci_build/verify"
     python check_file_name.py
@@ -242,8 +230,8 @@ do_check_code_format_test() {
 }
 
 # Supply all sanity step commands and descriptions
-SANITY_STEPS=("do_check_code_format_test" "do_pylint PYTHON2" "do_pylint PYTHON3" "do_check_futures_test" "do_bazel_nobuild" "do_check_file_name_test")
-SANITY_STEPS_DESC=("Check code style" "Python 2 pylint" "Python 3 pylint" "Check that python files have certain __future__ imports" "bazel nobuild" "Check file names for cases")
+SANITY_STEPS=("do_check_code_format_test" "do_pylint" "do_bazel_nobuild" "do_check_file_name_test")
+SANITY_STEPS_DESC=("Check code style" "Python 3 pylint" "bazel nobuild" "Check file names for cases")
 
 INCREMENTAL_FLAG=""
 DEFAULT_BAZEL_CONFIGS=""
