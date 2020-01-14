@@ -26,7 +26,7 @@ export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 # pre-installed python packages from this ppa.
 rm -f /etc/apt/sources.list.d/jonathonf-ubuntu-python-3_6-xenial.list
 
-PYTHON_VERSIONS="python2.7 python3.5 python3.6 python3.7"
+PYTHON_VERSIONS="python3.5 python3.6 python3.7"
 ln -sf /usr/bin/python3.5 /usr/bin/python3 # Py36 has issues with add-apt
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
 add-apt-repository -y ppa:deadsnakes/ppa
