@@ -34,14 +34,14 @@ def pinball_loss(y_true, y_pred, tau=.5):
     See: https://en.wikipedia.org/wiki/Quantile_regression
 
     Usage:
-      ```python
-      loss = pinball_loss([0., 0., 1., 1.], [1., 1., 1., 0.], tau=.1)
+    ```python
+    loss = pinball_loss([0., 0., 1., 1.], [1., 1., 1., 0.], tau=.1)
 
-      # loss = max(0.1 * (y_true - y_pred), (0.1 - 1) * (y_true - y_pred))
-      #      = (0.9 + 0.9 + 0 + 0.1) / 4
+    # loss = max(0.1 * (y_true - y_pred), (0.1 - 1) * (y_true - y_pred))
+    #      = (0.9 + 0.9 + 0 + 0.1) / 4
 
-      print('Loss: ', loss.numpy())  # Loss: 0.475
-      ```
+    print('Loss: ', loss.numpy())  # Loss: 0.475
+    ```
 
     Args:
       y_true: Ground truth values. shape = `[batch_size, d0, .. dN]`
@@ -84,22 +84,22 @@ class PinballLoss(tf.keras.losses.Loss):
     See: https://en.wikipedia.org/wiki/Quantile_regression
 
     Usage:
-      ```python
-      pinball = tfa.losses.PinballLoss(tau=.1)
-      loss = pinball([0., 0., 1., 1.], [1., 1., 1., 0.])
+    ```python
+    pinball = tfa.losses.PinballLoss(tau=.1)
+    loss = pinball([0., 0., 1., 1.], [1., 1., 1., 0.])
 
-      # loss = max(0.1 * (y_true - y_pred), (0.1 - 1) * (y_true - y_pred))
-      #      = (0.9 + 0.9 + 0 + 0.1) / 4
+    # loss = max(0.1 * (y_true - y_pred), (0.1 - 1) * (y_true - y_pred))
+    #      = (0.9 + 0.9 + 0 + 0.1) / 4
 
-      print('Loss: ', loss.numpy())  # Loss: 0.475
-      ```
+    print('Loss: ', loss.numpy())  # Loss: 0.475
+    ```
 
-      Usage with the `compile` API:
+    Usage with the `compile` API:
 
-      ```python
-      model = tf.keras.Model(inputs, outputs)
-      model.compile('sgd', loss=tfa.losses.PinballLoss(tau=.1))
-      ```
+    ```python
+    model = tf.keras.Model(inputs, outputs)
+    model.compile('sgd', loss=tfa.losses.PinballLoss(tau=.1))
+    ```
 
     Args:
       tau: (Optional) Float in [0, 1] or a tensor taking values in [0, 1] and
