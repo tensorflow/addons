@@ -41,7 +41,7 @@ labelPRBasedOnFilePath:
   tutorials:
     - docs/tutorials/**/*
 
-  testing:
+  test-cases:
     - tools/ci_testing/**/
 
   style:
