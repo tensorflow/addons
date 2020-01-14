@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Rectified Adam (RAdam) optimizer."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
 
@@ -112,7 +109,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
                 decay of learning rate. `lr` is included for backward
                 compatibility, recommended to use `learning_rate` instead.
         """
-        super(RectifiedAdam, self).__init__(name, **kwargs)
+        super().__init__(name, **kwargs)
         self._set_hyper('learning_rate', kwargs.get('lr', learning_rate))
         self._set_hyper('beta_1', beta_1)
         self._set_hyper('beta_2', beta_2)
@@ -141,7 +138,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         num_vars = int((len(params) - 1) / 2)
         if len(weights) == 3 * num_vars + 1:
             weights = weights[:len(params)]
-        super(RectifiedAdam, self).set_weights(weights)
+        super().set_weights(weights)
 
     def _resource_apply_dense(self, grad, var):
         var_dtype = var.dtype.base_dtype
@@ -278,7 +275,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         return tf.group(*updates)
 
     def get_config(self):
-        config = super(RectifiedAdam, self).get_config()
+        config = super().get_config()
         config.update({
             'learning_rate':
             self._serialize_hyperparameter('learning_rate'),

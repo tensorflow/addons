@@ -17,9 +17,6 @@
 See paper [Large Batch Optimization for Deep Learning: Training BERT in
 76 minutes](https://arxiv.org/abs/1904.00962).
 """
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import re
 
@@ -71,7 +68,7 @@ class LAMB(tf.keras.optimizers.Optimizer):
               decay of learning rate. `lr` is included for backward
               compatibility, recommended to use `learning_rate` instead.
         """
-        super(LAMB, self).__init__(name, **kwargs)
+        super().__init__(name, **kwargs)
 
         # Just adding the square of the weights to the loss function is *not*
         # the correct way of using L2 regularization/weight decay with Adam,
@@ -104,7 +101,7 @@ class LAMB(tf.keras.optimizers.Optimizer):
             self.add_slot(var, 'v')
 
     def _prepare_local(self, var_device, var_dtype, apply_state):
-        super(LAMB, self)._prepare_local(var_device, var_dtype, apply_state)
+        super()._prepare_local(var_device, var_dtype, apply_state)
 
         local_step = tf.cast(self.iterations + 1, var_dtype)
         beta_1_t = tf.identity(self._get_hyper('beta_1', var_dtype))
@@ -206,7 +203,7 @@ class LAMB(tf.keras.optimizers.Optimizer):
         return tf.group(*[var_update, m_t, v_t])
 
     def get_config(self):
-        config = super(LAMB, self).get_config()
+        config = super().get_config()
         config.update({
             'learning_rate':
             self._serialize_hyperparameter('learning_rate'),
