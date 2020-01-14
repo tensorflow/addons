@@ -14,6 +14,7 @@ py_library(
             "giou_loss.py",
             "lifted.py",
             "metric_learning.py",
+            "quantiles.py",
             "sparsemax_loss.py",
             "triplet.py",
         ],
@@ -25,6 +26,7 @@ py_library(
             "lifted.py",
             "metric_learning.py",
             "npairs.py",
+            "quantiles.py",
             "sparsemax_loss.py",
             "triplet.py",
         ],
@@ -83,6 +85,18 @@ py_test(
         "//tensorflow_addons:windows": "npairs_dummy_test.py",
         "//conditions:default": "npairs_test.py",
     }),
+    deps = [
+        ":losses",
+    ],
+)
+
+py_test(
+    name = "quantiles_test",
+    size = "small",
+    srcs = [
+        "quantiles_test.py",
+    ],
+    main = "quantiles_test.py",
     deps = [
         ":losses",
     ],
