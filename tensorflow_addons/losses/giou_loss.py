@@ -14,10 +14,6 @@
 # ==============================================================================
 """Implements GIoU loss."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
 
@@ -57,11 +53,11 @@ class GIoULoss(tf.keras.losses.Loss):
                  name='giou_loss'):
         if mode not in ['giou', 'iou']:
             raise ValueError("Value of mode should be 'iou' or 'giou'")
-        super(GIoULoss, self).__init__(name=name, reduction=reduction)
+        super().__init__(name=name, reduction=reduction)
         self.mode = mode
 
     def get_config(self):
-        base_config = super(GIoULoss, self).get_config()
+        base_config = super().get_config()
         base_config['mode'] = self.mode
         return base_config
 
