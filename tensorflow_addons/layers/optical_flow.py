@@ -14,15 +14,10 @@
 # ============================================================================
 """Tensorflow op performing correlation cost operation."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow_addons.utils.resource_loader import LazySO
 
-_correlation_cost_so = LazySO(
-    "custom_ops/layers/_correlation_cost_ops.so")
+_correlation_cost_so = LazySO("custom_ops/layers/_correlation_cost_ops.so")
 
 
 def _correlation_cost(input_a,
@@ -174,12 +169,12 @@ class CorrelationCost(tf.keras.layers.Layer):
 
         self.data_format = data_format
 
-        super(CorrelationCost, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def build(self, input_shape):
         if not isinstance(input_shape, list):
             raise ValueError("Input must be a list of two Tensors to process")
-        super(CorrelationCost, self).build(input_shape)
+        super().build(input_shape)
 
     def call(self, inputs):
         if not isinstance(inputs, list):
@@ -237,5 +232,5 @@ class CorrelationCost(tf.keras.layers.Layer):
             'data_format': self.data_format
         }
 
-        base_config = super(CorrelationCost, self).get_config()
+        base_config = super().get_config()
         return dict(list(base_config.items()) + list(config.items()))

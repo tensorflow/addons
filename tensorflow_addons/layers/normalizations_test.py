@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # =============================================================================
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
@@ -88,7 +85,7 @@ class NormalizationTest(tf.test.TestCase):
 
     def _test_random_shape_on_all_axis_except_batch(self, shape, groups,
                                                     center, scale):
-        inputs = tf.random.normal((shape))
+        inputs = tf.random.normal(shape)
         for axis in range(1, len(shape)):
             self._test_specific_layer(inputs, axis, groups, center, scale)
 
