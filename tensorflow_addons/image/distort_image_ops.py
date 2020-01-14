@@ -18,10 +18,9 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+from tensorflow_addons.utils.resource_loader import LazySO
 
-_distort_image_ops = tf.load_op_library(
-    get_path_to_datafile("custom_ops/image/_distort_image_ops.so"))
+_distort_image_so = LazySO("custom_ops/image/_distort_image_ops.so")
 
 
 # pylint: disable=invalid-name
@@ -141,7 +140,7 @@ def adjust_hsv_in_yiq(image,
         orig_dtype = image.dtype
         flt_image = tf.image.convert_image_dtype(image, tf.dtypes.float32)
 
-        rgb_altered = _distort_image_ops.addons_adjust_hsv_in_yiq(
+        rgb_altered = _distort_image_so.ops.addons_adjust_hsv_in_yiq(
             flt_image, delta_hue, scale_saturation, scale_value)
 
         return tf.image.convert_image_dtype(rgb_altered, orig_dtype)

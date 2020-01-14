@@ -19,10 +19,9 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+from tensorflow_addons.utils.resource_loader import LazySO
 
-_resampler_ops = tf.load_op_library(
-    get_path_to_datafile("custom_ops/image/_resampler_ops.so"))
+_resampler_so = LazySO("custom_ops/image/_resampler_ops.so")
 
 
 @tf.function
@@ -52,14 +51,15 @@ def resampler(data, warp, name=None):
     with tf.name_scope(name or "resampler"):
         data_tensor = tf.convert_to_tensor(data, name="data")
         warp_tensor = tf.convert_to_tensor(warp, name="warp")
-        return _resampler_ops.addons_resampler(data_tensor, warp_tensor)
+        return _resampler_so.ops.addons_resampler(data_tensor, warp_tensor)
 
 
 @tf.RegisterGradient("Addons>Resampler")
 def _resampler_grad(op, grad_output):
     data, warp = op.inputs
     grad_output_tensor = tf.convert_to_tensor(grad_output, name="grad_output")
-    return _resampler_ops.addons_resampler_grad(data, warp, grad_output_tensor)
+    return _resampler_so.ops.addons_resampler_grad(data, warp,
+                                                   grad_output_tensor)
 
 
 tf.no_gradient("Addons>ResamplerGrad")

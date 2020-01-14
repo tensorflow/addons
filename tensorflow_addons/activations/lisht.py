@@ -18,10 +18,9 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+from tensorflow_addons.utils.resource_loader import LazySO
 
-_activation_ops_so = tf.load_op_library(
-    get_path_to_datafile("custom_ops/activations/_activation_ops.so"))
+_activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -39,9 +38,9 @@ def lisht(x):
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
-    return _activation_ops_so.addons_lisht(x)
+    return _activation_so.ops.addons_lisht(x)
 
 
 @tf.RegisterGradient("Addons>Lisht")
 def _lisht_grad(op, grad):
-    return _activation_ops_so.addons_lisht_grad(grad, op.inputs[0])
+    return _activation_so.ops.addons_lisht_grad(grad, op.inputs[0])
