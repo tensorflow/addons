@@ -71,15 +71,19 @@ case ${DEVICE} in
         ;;
 esac
 
+# Temporary until /usr/bin/python default to py3 on ubuntu.
+ENVIRONMENT_CMD="ln -sf /usr/bin/python3.6 /usr/bin/python && rm /usr/bin/python2"
+
 if [[ -z "${COMMAND}" ]]; then
     echo "command string cannot be empty"
     exit 1
 fi
 
+DOCKER_CMD="${ENVIRONMENT_CMD} && ${COMMAND}"
 echo "Docker image: ${DOCKER_IMAGE}"
-echo "Docker command: ${COMMAND}"
+echo "Docker command: ${DOCKER_CMD}"
 docker run ${DOCKER_OPTS}                   \
     --network=host                          \
     --rm -v ${ROOT_DIR}:/addons -w /addons  \
     ${DOCKER_IMAGE}                         \
-    /bin/bash -c "${COMMAND}"
+    /bin/bash -c "${DOCKER_CMD}"
