@@ -19,10 +19,9 @@ from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow_addons.image import utils as img_utils
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+from tensorflow_addons.utils.resource_loader import LazySO
 
-_image_ops_so = tf.load_op_library(
-    get_path_to_datafile("custom_ops/image/_image_ops.so"))
+_image_so = LazySO("custom_ops/image/_image_ops.so")
 
 _IMAGE_DTYPES = set([
     tf.dtypes.uint8, tf.dtypes.int32, tf.dtypes.int64, tf.dtypes.float16,
@@ -98,7 +97,7 @@ def transform(images,
                 "transforms should have rank 1 or 2, but got rank %d" % len(
                     transforms.get_shape()))
 
-        output = _image_ops_so.addons_image_projective_transform_v2(
+        output = _image_so.ops.addons_image_projective_transform_v2(
             images,
             output_shape=output_shape,
             transforms=transforms,
@@ -270,7 +269,7 @@ def _image_projective_transform_grad(op, grad):
     transforms = flat_transforms_to_matrices(transforms=transforms)
     inverse = tf.linalg.inv(transforms)
     transforms = matrices_to_flat_transforms(inverse)
-    output = _image_ops_so.addons_image_projective_transform_v2(
+    output = _image_so.ops.addons_image_projective_transform_v2(
         images=grad,
         transforms=transforms,
         output_shape=tf.shape(image_or_images)[1:3],
