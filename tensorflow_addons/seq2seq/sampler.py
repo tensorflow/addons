@@ -14,10 +14,6 @@
 # ==============================================================================
 """A library of sampler for use with SamplingDecoders."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import abc
 
 import six
@@ -29,8 +25,7 @@ from tensorflow_addons.seq2seq import decoder
 _transpose_batch_time = decoder._transpose_batch_time  # pylint: disable=protected-access
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Sampler(object):
+class Sampler(metaclass=abc.ABCMeta):
     """Interface for implementing sampling in seq2seq decoders.
 
     Sampler instances are used by `BasicDecoder`. The normal usage of a sampler
@@ -331,8 +326,7 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
                 "saw shape: %s" % (self.sampling_probability.get_shape()))
         self.seed = seed
         self.scheduling_seed = scheduling_seed
-        super(ScheduledEmbeddingTrainingSampler,
-              self).__init__(time_major=time_major)
+        super().__init__(time_major=time_major)
 
     def initialize(self,
                    inputs,
@@ -346,7 +340,7 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
                     "ScheduledEmbeddingTrainingSampler")
             self.embedding_fn = (
                 lambda ids: tf.nn.embedding_lookup(embedding, ids))
-        return super(ScheduledEmbeddingTrainingSampler, self).initialize(
+        return super().initialize(
             inputs, sequence_length=sequence_length, mask=mask)
 
     def sample(self, time, outputs, state):
@@ -362,9 +356,8 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
                         tf.fill([self.batch_size], -1))
 
     def next_inputs(self, time, outputs, state, sample_ids):
-        (finished, base_next_inputs,
-         state) = (super(ScheduledEmbeddingTrainingSampler, self).next_inputs(
-             time=time, outputs=outputs, state=state, sample_ids=sample_ids))
+        (finished, base_next_inputs, state) = (super().next_inputs(
+            time=time, outputs=outputs, state=state, sample_ids=sample_ids))
 
         def maybe_sample():
             """Perform scheduled sampling."""
@@ -427,8 +420,7 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
         self.seed = seed
         self.next_inputs_fn = next_inputs_fn
 
-        super(ScheduledOutputTrainingSampler,
-              self).__init__(time_major=time_major)
+        super().__init__(time_major=time_major)
 
     def initialize(self,
                    inputs,
@@ -451,7 +443,7 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
         else:
             self._auxiliary_input_tas = None
 
-        return super(ScheduledOutputTrainingSampler, self).initialize(
+        return super().initialize(
             maybe_concatenated_inputs,
             sequence_length=sequence_length,
             mask=mask)
@@ -464,9 +456,8 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
             seed=self.seed)
 
     def next_inputs(self, time, outputs, state, sample_ids):
-        (finished, base_next_inputs,
-         state) = (super(ScheduledOutputTrainingSampler, self).next_inputs(
-             time=time, outputs=outputs, state=state, sample_ids=sample_ids))
+        (finished, base_next_inputs, state) = (super().next_inputs(
+            time=time, outputs=outputs, state=state, sample_ids=sample_ids))
         sample_ids = tf.cast(sample_ids, tf.bool)
 
         def maybe_sample():
@@ -643,7 +634,7 @@ class SampleEmbeddingSampler(GreedyEmbeddingSampler):
           ValueError: if `start_tokens` is not a 1D tensor or `end_token` is
             not a scalar.
         """
-        super(SampleEmbeddingSampler, self).__init__(embedding_fn)
+        super().__init__(embedding_fn)
         self.softmax_temperature = softmax_temperature
         self.seed = seed
 

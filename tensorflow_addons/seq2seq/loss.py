@@ -14,10 +14,6 @@
 # ==============================================================================
 """Seq2seq loss operations for use in sequence models."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
 
@@ -175,7 +171,7 @@ class SequenceLoss(tf.keras.losses.Loss):
                  sum_over_batch=True,
                  softmax_loss_function=None,
                  name=None):
-        super(SequenceLoss, self).__init__(name=name)
+        super().__init__(name=name)
         self.average_across_timesteps = average_across_timesteps
         self.average_across_batch = average_across_batch
         self.sum_over_timesteps = sum_over_timesteps

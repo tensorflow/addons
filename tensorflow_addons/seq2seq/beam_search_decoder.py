@@ -14,10 +14,6 @@
 # ==============================================================================
 """A decoder that performs beam search."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import collections
 import numpy as np
 
@@ -221,7 +217,7 @@ def _as_shape(value):
     return value
 
 
-class BeamSearchDecoderMixin(object):
+class BeamSearchDecoderMixin:
     """BeamSearchDecoderMixin contains the common methods for
     BeamSearchDecoder.
 
@@ -277,7 +273,7 @@ class BeamSearchDecoderMixin(object):
         self._beam_width = beam_width
         self._length_penalty_weight = length_penalty_weight
         self._coverage_penalty_weight = coverage_penalty_weight
-        super(BeamSearchDecoderMixin, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     @property
     def batch_size(self):
@@ -381,7 +377,7 @@ class BeamSearchDecoderMixin(object):
             t,
             tf.concat(([self._batch_size * self._beam_width], t_shape[2:]), 0))
         reshaped_t.set_shape(
-            (tf.TensorShape([batch_size_beam_width]).concatenate(s)))
+            tf.TensorShape([batch_size_beam_width]).concatenate(s))
         return reshaped_t
 
     def _split_batch_beams(self, t, s=None):
@@ -652,7 +648,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
           TypeError: if `cell` is not an instance of `RNNCell`,
             or `output_layer` is not an instance of `tf.keras.layers.Layer`.
         """
-        super(BeamSearchDecoder, self).__init__(
+        super().__init__(
             cell,
             beam_width,
             output_layer=output_layer,

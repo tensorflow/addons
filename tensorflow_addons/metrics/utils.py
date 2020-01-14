@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Utilities for metrics."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import six
 import numpy as np
@@ -34,7 +31,7 @@ class MeanMetricWrapper(tf.keras.metrics.Mean):
           dtype: (Optional) data type of the metric result.
           **kwargs: The keyword arguments that are passed on to `fn`.
         """
-        super(MeanMetricWrapper, self).__init__(name=name, dtype=dtype)
+        super().__init__(name=name, dtype=dtype)
         self._fn = fn
         self._fn_kwargs = kwargs
 
@@ -57,14 +54,13 @@ class MeanMetricWrapper(tf.keras.metrics.Mean):
         #   `ragged_assert_compatible_and_get_flat_values`
         #   and `squeeze_or_expand_dimensions`
         matches = self._fn(y_true, y_pred, **self._fn_kwargs)
-        return super(MeanMetricWrapper, self).update_state(
-            matches, sample_weight=sample_weight)
+        return super().update_state(matches, sample_weight=sample_weight)
 
     def get_config(self):
         config = {}
-        for k, v in six.iteritems(self._fn_kwargs):
+        for k, v in self._fn_kwargs.items():
             config[k] = v
-        base_config = super(MeanMetricWrapper, self).get_config()
+        base_config = super().get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
 
