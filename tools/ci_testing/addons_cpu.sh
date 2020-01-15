@@ -14,11 +14,10 @@
 # limitations under the License.
 #
 # ==============================================================================
-set -x
+set -x -e
 
-# Make sure we're in the project root path.
-SCRIPT_DIR=$( cd ${0%/*} && pwd -P )
-ROOT_DIR=$( cd "$SCRIPT_DIR/../.." && pwd -P )
+SCRIPT_DIR=$(dirname "$BASH_SOURCE")
+ROOT_DIR=$(dirname "$SCRIPT_DIR/../..")
 cd $ROOT_DIR
 if [[ ! -d "tensorflow_addons" ]]; then
     echo "ERROR: PWD: $PWD is not project root"
