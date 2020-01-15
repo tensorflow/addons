@@ -55,9 +55,9 @@ jobs:
         shell: bash
         run: |
             python -m pip install wheel setuptools
-            curl -sSOL https://github.com/bazelbuild/bazel/releases/download/%BAZEL_VERSION%/bazel-%BAZEL_VERSION%-windows-x86_64.exe
+            curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
             export BAZEL_VC=/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2019/Enterprise/VC/
-            export BAZEL_PATH=/d/a/addons/addons/bazel-%BAZEL_VERSION%-windows-x86_64.exe
+            export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
             export PATH=/c/hostedtoolcache/windows/Python/${{ matrix.python-version }}/x64/:$PATH
             source ./tools/ci_testing/addons_cpu.sh
   sanity-check:
