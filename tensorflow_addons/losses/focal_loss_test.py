@@ -106,6 +106,12 @@ class SigmoidFocalCrossEntropyTest(tf.test.TestCase):
         pow_values = tf.constant([1000, 100, 10, 10, 100, 1000])
         self.assertAllClose(order_of_ratio, pow_values)
 
+    def test_keras_model_compile(self):
+        model = tf.keras.models.Sequential([
+            tf.keras.layers.Input(shape=(100,)),
+            tf.keras.layers.Dense(5, activation="softmax")
+        ])
+        model.compile(loss="Addons>sigmoid_focal_crossentropy")
 
 if __name__ == '__main__':
     tf.test.main()
