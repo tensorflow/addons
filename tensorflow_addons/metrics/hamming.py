@@ -14,10 +14,6 @@
 # ==============================================================================
 """Implements Hamming distance and loss."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow_addons.metrics.utils import MeanMetricWrapper
 
@@ -138,5 +134,5 @@ class HammingLoss(MeanMetricWrapper):
                  name='hamming_loss',
                  threshold=None,
                  dtype=tf.float32):
-        super(HammingLoss, self).__init__(
+        super().__init__(
             hamming_loss_fn, name, dtype=dtype, mode=mode, threshold=threshold)

@@ -14,10 +14,6 @@
 # ==============================================================================
 """Seq2seq layer operations for use in neural networks."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import abc
 import six
 
@@ -27,8 +23,7 @@ import tensorflow as tf
 from tensorflow.python.ops import control_flow_util
 
 
-@six.add_metaclass(abc.ABCMeta)
-class Decoder(object):
+class Decoder(metaclass=abc.ABCMeta):
     """An RNN Decoder abstract interface object.
 
     Concepts used by this interface:
@@ -154,7 +149,7 @@ class BaseDecoder(tf.keras.layers.Layer):
         self.maximum_iterations = maximum_iterations
         self.parallel_iterations = parallel_iterations
         self.swap_memory = swap_memory
-        super(BaseDecoder, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def call(self, inputs, initial_state=None, training=None, **kwargs):
         init_kwargs = kwargs

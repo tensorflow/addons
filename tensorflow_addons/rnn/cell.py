@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Module for RNN Cells."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -62,7 +59,7 @@ class NASCell(keras.layers.AbstractRNNCell):
           bias_initializer: Initializer for bias, used when use_bias is True.
           **kwargs: Additional keyword arguments.
         """
-        super(NASCell, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.units = units
         self.projection = projection
         self.use_bias = use_bias
@@ -205,7 +202,7 @@ class NASCell(keras.layers.AbstractRNNCell):
             "bias_initializer": self.bias_initializer,
             "projection_initializer": self.projection_initializer,
         }
-        base_config = super(NASCell, self).get_config()
+        base_config = super().get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
 
@@ -291,7 +288,7 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
           norm_epsilon: Float, the epsilon value for normalization layers.
           **kwargs: Dict, the other keyword arguments for layer creation.
         """
-        super(LayerNormLSTMCell, self).__init__(
+        super().__init__(
             units,
             activation=activation,
             recurrent_activation=recurrent_activation,
@@ -319,7 +316,7 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
         self.state_norm = self._create_norm_layer('state_norm')
 
     def build(self, input_shape):
-        super(LayerNormLSTMCell, self).build(input_shape)
+        super().build(input_shape)
         self.kernel_norm.build([input_shape[0], self.units * 4])
         self.recurrent_norm.build([input_shape[0], self.units * 4])
         self.state_norm.build([input_shape[0], self.units])
@@ -357,7 +354,7 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
             'norm_epsilon':
             self.norm_epsilon,
         }
-        base_config = super(LayerNormLSTMCell, self).get_config()
+        base_config = super().get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
     def _create_norm_layer(self, name):
