@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Useful extra functionality for TensorFlow maintained by SIG-addons."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 # Local project imports
 from tensorflow_addons import activations
