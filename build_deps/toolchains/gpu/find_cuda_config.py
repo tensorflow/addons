@@ -53,7 +53,6 @@ tf_<library>_header_dir: ...
 tf_<library>_library_dir: ...
 """
 
-import io
 import os
 import glob
 import platform
