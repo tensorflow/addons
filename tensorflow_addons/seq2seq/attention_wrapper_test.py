@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for tfa.seq2seq.attention_wrapper."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import collections
 
@@ -32,7 +29,7 @@ from tensorflow_addons.seq2seq import sampler as sampler_py
 @test_utils.run_all_in_graph_and_eager_modes
 class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
     def setUp(self):
-        super(AttentionMechanismTest, self).setUp()
+        super().setUp()
         self.batch = 10
         self.timestep = 5
         self.memory_size = 6
@@ -217,7 +214,7 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
     def test_memory_re_setup(self, attention_cls):
         class MyModel(tf.keras.models.Model):
             def __init__(self, vocab, embedding_dim, memory_size, units):
-                super(MyModel, self).__init__()
+                super().__init__()
                 self.emb = tf.keras.layers.Embedding(
                     vocab, embedding_dim, mask_zero=True)
                 self.encoder = tf.keras.layers.LSTM(
@@ -274,13 +271,12 @@ def get_result_summary(x):
 class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
     def assertAllCloseOrEqual(self, x, y, **kwargs):
         if isinstance(x, np.ndarray) or isinstance(x, float):
-            return super(AttentionWrapperTest, self).assertAllClose(
-                x, y, atol=1e-3, **kwargs)
+            return super().assertAllClose(x, y, atol=1e-3, **kwargs)
         else:
             self.assertAllEqual(x, y, **kwargs)
 
     def setUp(self):
-        super(AttentionWrapperTest, self).setUp()
+        super().setUp()
         self.batch = 64
         self.units = 128
         self.encoder_timestep = 10

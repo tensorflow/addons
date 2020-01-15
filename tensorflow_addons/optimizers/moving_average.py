@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow.python.training.moving_averages import assign_moving_average
 
@@ -71,8 +67,7 @@ class MovingAverage(AveragedOptimizerWrapper):
                 decay of learning rate. `lr` is included for backward
                 compatibility, recommended to use `learning_rate` instead.
         """
-        super(MovingAverage, self).__init__(optimizer, sequential_update, name,
-                                            **kwargs)
+        super().__init__(optimizer, sequential_update, name, **kwargs)
         self._num_updates = num_updates
         if self._num_updates is not None:
             num_updates = tf.cast(
@@ -91,7 +86,7 @@ class MovingAverage(AveragedOptimizerWrapper):
             'average_decay': self._serialize_hyperparameter('average_decay'),
             'num_updates': self._num_updates,
         }
-        base_config = super(MovingAverage, self).get_config()
+        base_config = super().get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
     def _create_slots(self, var_list):

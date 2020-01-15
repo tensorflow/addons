@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for interpolate_spline."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 from scipy import interpolate as sc_interpolate
@@ -25,7 +22,7 @@ from tensorflow_addons.image import interpolate_spline
 from tensorflow_addons.utils import test_utils
 
 
-class _InterpolationProblem(object):
+class _InterpolationProblem:
     """Abstract class for interpolation problem descriptions."""
 
     def get_problem(self, optimizable=False, extrapolate=True,

@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow_addons.activations.sparsemax import sparsemax
 
@@ -34,7 +30,7 @@ class Sparsemax(tf.keras.layers.Layer):
     """
 
     def __init__(self, axis=-1, **kwargs):
-        super(Sparsemax, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.supports_masking = True
         self.axis = axis
 
@@ -43,7 +39,7 @@ class Sparsemax(tf.keras.layers.Layer):
 
     def get_config(self):
         config = {'axis': self.axis}
-        base_config = super(Sparsemax, self).get_config()
+        base_config = super().get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
     def compute_output_shape(self, input_shape):

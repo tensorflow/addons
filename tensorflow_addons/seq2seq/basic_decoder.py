@@ -14,10 +14,6 @@
 # ==============================================================================
 """A class of Decoders that may sample to generate the next input."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import collections
 
 import tensorflow as tf
@@ -54,15 +50,16 @@ class BasicDecoder(decoder.BaseDecoder):
         keras_utils.assert_like_rnncell("cell", cell)
         if not isinstance(sampler, sampler_py.Sampler):
             raise TypeError(
-                "sampler must be a Sampler, received: %s" % (sampler,))
+                "sampler must be a Sampler, received: {}".format(sampler))
         if (output_layer is not None
                 and not isinstance(output_layer, tf.keras.layers.Layer)):
             raise TypeError(
-                "output_layer must be a Layer, received: %s" % (output_layer,))
+                "output_layer must be a Layer, received: {}".format(
+                    output_layer))
         self.cell = cell
         self.sampler = sampler
         self.output_layer = output_layer
-        super(BasicDecoder, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def initialize(self, inputs, initial_state=None, **kwargs):
         """Initialize the decoder."""

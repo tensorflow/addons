@@ -14,19 +14,15 @@
 # ==============================================================================
 """Tests for translate ops."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
 from tensorflow_addons.image import translate_ops
 from tensorflow_addons.utils import test_utils
 
-_DTYPES = set([
+_DTYPES = {
     tf.dtypes.uint8, tf.dtypes.int32, tf.dtypes.int64, tf.dtypes.float16,
     tf.dtypes.float32, tf.dtypes.float64
-])
+}
 
 
 @test_utils.run_all_in_graph_and_eager_modes
