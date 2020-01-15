@@ -14,8 +14,6 @@
 # ==============================================================================
 """TQDM Progress Bar."""
 
-from __future__ import absolute_import, division, print_function
-
 import time
 import tensorflow as tf
 from collections import defaultdict
@@ -214,5 +212,5 @@ class TQDMProgressBar(Callback):
             'show_overall_progress': self.show_overall_progress,
         }
 
-        base_config = super(TQDMProgressBar, self).get_config()
+        base_config = super().get_config()
         return dict(list(base_config.items()) + list(config.items()))
