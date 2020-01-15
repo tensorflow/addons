@@ -61,4 +61,4 @@ class PoincareNormalize(tf.keras.layers.Layer):
     def get_config(self):
         config = {'axis': self.axis, 'epsilon': self.epsilon}
         base_config = super().get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}

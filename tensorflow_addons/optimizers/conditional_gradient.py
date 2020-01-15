@@ -81,7 +81,7 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
             'use_locking': self._serialize_hyperparameter('use_locking')
         }
         base_config = super().get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
     def _create_slots(self, var_list):
         for v in var_list:

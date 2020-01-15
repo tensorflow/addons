@@ -46,7 +46,7 @@ class GELU(tf.keras.layers.Layer):
     def get_config(self):
         config = {'approximate': self.approximate}
         base_config = super().get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
     def compute_output_shape(self, input_shape):
         return input_shape

@@ -89,7 +89,7 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
             "gamma": self.gamma,
         }
         base_config = super().get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
