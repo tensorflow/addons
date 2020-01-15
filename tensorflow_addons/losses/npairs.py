@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Implements npairs loss."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
 
@@ -152,8 +149,7 @@ class NpairsLoss(tf.keras.losses.Loss):
     """
 
     def __init__(self, name="npairs_loss"):
-        super(NpairsLoss, self).__init__(
-            reduction=tf.keras.losses.Reduction.NONE, name=name)
+        super().__init__(reduction=tf.keras.losses.Reduction.NONE, name=name)
 
     def call(self, y_true, y_pred):
         return npairs_loss(y_true, y_pred)
@@ -197,8 +193,7 @@ class NpairsMultilabelLoss(tf.keras.losses.Loss):
     """
 
     def __init__(self, name="npairs_multilabel_loss"):
-        super(NpairsMultilabelLoss, self).__init__(
-            reduction=tf.keras.losses.Reduction.NONE, name=name)
+        super().__init__(reduction=tf.keras.losses.Reduction.NONE, name=name)
 
     def call(self, y_true, y_pred):
         return npairs_multilabel_loss(y_true, y_pred)

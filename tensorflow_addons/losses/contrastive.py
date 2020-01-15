@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Implements contrastive loss."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
 
@@ -93,7 +90,7 @@ class ContrastiveLoss(tf.keras.losses.Loss):
                  margin=1.0,
                  reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
                  name="contrasitve_loss"):
-        super(ContrastiveLoss, self).__init__(reduction=reduction, name=name)
+        super().__init__(reduction=reduction, name=name)
         self.margin = margin
 
     def call(self, y_true, y_pred):
@@ -103,5 +100,5 @@ class ContrastiveLoss(tf.keras.losses.Loss):
         config = {
             "margin": self.margin,
         }
-        base_config = super(ContrastiveLoss, self).get_config()
+        base_config = super().get_config()
         return dict(list(base_config.items()) + list(config.items()))

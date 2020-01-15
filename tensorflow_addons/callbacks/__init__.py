@@ -14,9 +14,5 @@
 # ==============================================================================
 """Additional callbacks that conform to Keras API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow_addons.callbacks.time_stopping import TimeStopping
 from tensorflow_addons.callbacks.tqdm_progress_bar import TQDMProgressBar

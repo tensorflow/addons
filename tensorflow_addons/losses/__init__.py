@@ -14,10 +14,6 @@
 # ==============================================================================
 """Additional losses that conform to Keras API."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from tensorflow_addons.losses.contrastive import contrastive_loss, ContrastiveLoss
 from tensorflow_addons.losses.focal_loss import sigmoid_focal_crossentropy, SigmoidFocalCrossEntropy
 from tensorflow_addons.losses.giou_loss import giou_loss, GIoULoss
