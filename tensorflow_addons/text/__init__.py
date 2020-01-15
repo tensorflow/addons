@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Additional text-processing ops."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 # Conditional Random Field
 from tensorflow_addons.text.crf import crf_binary_score
