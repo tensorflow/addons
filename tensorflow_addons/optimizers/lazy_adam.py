@@ -20,10 +20,6 @@ applications. However, it provides slightly different semantics than the
 original Adam algorithm, and may lead to different empirical results.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
 
@@ -82,7 +78,7 @@ class LazyAdam(tf.keras.optimizers.Adam):
             is included for backward compatibility, recommended to use
             `learning_rate` instead.
         """
-        super(LazyAdam, self).__init__(
+        super().__init__(
             learning_rate=learning_rate,
             beta_1=beta_1,
             beta_2=beta_2,

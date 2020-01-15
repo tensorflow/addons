@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Cyclical Learning Rate Schedule policies for TensorFlow."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
 
@@ -73,7 +70,7 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
         Returns:
             Updated learning rate value.
         """
-        super(CyclicalLearningRate, self).__init__()
+        super().__init__()
         self.initial_learning_rate = initial_learning_rate
         self.maximal_learning_rate = maximal_learning_rate
         self.step_size = step_size
@@ -157,7 +154,7 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
         Returns:
             Updated learning rate value.
         """
-        super(TriangularCyclicalLearningRate, self).__init__(
+        super().__init__(
             initial_learning_rate=initial_learning_rate,
             maximal_learning_rate=maximal_learning_rate,
             step_size=step_size,
@@ -218,7 +215,7 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
         Returns:
             Updated learning rate value.
         """
-        super(Triangular2CyclicalLearningRate, self).__init__(
+        super().__init__(
             initial_learning_rate=initial_learning_rate,
             maximal_learning_rate=maximal_learning_rate,
             step_size=step_size,
@@ -283,7 +280,7 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
         Returns:
             Updated learning rate value.
         """
-        super(ExponentialCyclicalLearningRate, self).__init__(
+        super().__init__(
             initial_learning_rate=initial_learning_rate,
             maximal_learning_rate=maximal_learning_rate,
             step_size=step_size,
