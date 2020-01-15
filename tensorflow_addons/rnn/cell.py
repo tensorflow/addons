@@ -372,11 +372,6 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
 class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
     """Cell class for LayerNormSimpleRNN.
 
-    Motivation:
-    - Drop-In Replacement for keras.layers.SimpleRNNCell
-    - demonstrate how to add keras.layers.LayerNormalization
-       to all RNNs by introducing the `use_layernorm` argument
-
     References:
     [1] Ba, Jimmy Lei, Jamie Ryan Kiros, and Geoffrey E. Hinton.
         "Layer Normalization." ArXiv:1607.06450 [Cs, Stat],
@@ -390,8 +385,6 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
         (ie. "linear" activation: `a(x) = x`).
       use_bias: Boolean, (default `True`), whether the layer uses a bias
         vector.
-      use_layernorm: Boolean, (default `True`), whether to apply layer
-        normalization (scaling only).
       layernorm_epsilon: Float, (default `1e-5`), Small float added to variance
         to avoid dividing by zero.
       kernel_initializer: Initializer for the `kernel` weights matrix,
@@ -400,31 +393,26 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
       recurrent_initializer: Initializer for the `recurrent_kernel`
         weights matrix, used for the linear transformation of the recurrent
         state. Default: `orthogonal`.
-      bias_initializer: Initializer for the bias vector (`use_bias=True`) or
-         for the beta vector in layer normalization (`use_layernorm=True`).
+      bias_initializer: Initializer for the bias vector (`use_bias=True`).
          Default: `zeros`.
       gamma_initializer: Initializer for the gamma vector of the layer
-         normalization layer (`use_layernorm=True`). Default: `ones`.
+         normalization layer. Default: `ones`.
       kernel_regularizer: Regularizer function applied to the `kernel` weights
         matrix. Default: `None`.
       recurrent_regularizer: Regularizer function applied to the
         `recurrent_kernel` weights matrix. Default: `None`.
       bias_regularizer: Regularizer function applied to the bias vector
-         (`use_bias=True`) or for the beta vector of the layer normalization
-         layer (`use_layernorm=True`). Default: `None`.
+         (`use_bias=True`). Default: `None`.
       gamma_regularizer: Regularizer function applied to the gamma vector
-         of the layer normalization layer (`use_layernorm=True`).
-         Default: `None`.
+         of the layer normalization layer. Default: `None`.
       kernel_constraint: Constraint function applied to the `kernel` weights
         matrix. Default: `None`.
       recurrent_constraint: Constraint function applied to the
         `recurrent_kernel` weights matrix. Default: `None`.
       bias_constraint: Constraint function applied to the bias vector
-         (`use_bias=True`) or for the beta vector of the layer normalization
-         layer (`use_layernorm=True`). Default: `None`.
+         (`use_bias=True`). Default: `None`.
       gamma_constraint: Constraint function applied to the gamma vector
-         of the layer normalization layer (`use_layernorm=True`).
-         Default: `None`.
+         of the layer normalization layer. Default: `None`.
       dropout: Float between 0 and 1. Fraction of the units to drop for the
         linear transformation of the inputs. Default: 0.
       recurrent_dropout: Float between 0 and 1. Fraction of the units to drop
@@ -467,7 +455,6 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
             units,
             activation='tanh',
             use_bias=True,
-            use_layernorm=True,  # NEW(!)
             layernorm_epsilon=1e-05,  # NEW(!)
             kernel_initializer='glorot_uniform',
             recurrent_initializer='orthogonal',
@@ -484,7 +471,6 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
             dropout=0.,
             recurrent_dropout=0.,
             **kwargs):
-        self.use_layernorm = use_layernorm
         super(LayerNormSimpleRNNCell, self).__init__(
             units,
             activation=activation,
@@ -502,25 +488,23 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
             recurrent_dropout=recurrent_dropout,
             dtype=kwargs.get('dtype'),
             trainable=kwargs.get('trainable', True))
-        if use_layernorm:
-            self.layernorm = keras.layers.LayerNormalization(
-                axis=-1,
-                epsilon=layernorm_epsilon,
-                center=False,
-                scale=True,
-                beta_initializer=None,
-                gamma_initializer=gamma_initializer,
-                beta_regularizer=None,
-                gamma_regularizer=gamma_regularizer,
-                beta_constraint=None,
-                gamma_constraint=gamma_constraint,
-                dtype=kwargs.get('dtype'),
-                trainable=kwargs.get('trainable', True))
+        self.layernorm = keras.layers.LayerNormalization(
+            axis=-1,
+            epsilon=layernorm_epsilon,
+            center=False,
+            scale=True,
+            beta_initializer=None,
+            gamma_initializer=gamma_initializer,
+            beta_regularizer=None,
+            gamma_regularizer=gamma_regularizer,
+            beta_constraint=None,
+            gamma_constraint=gamma_constraint,
+            dtype=kwargs.get('dtype'),
+            trainable=kwargs.get('trainable', True))
 
     def build(self, input_shape):
         super(LayerNormSimpleRNNCell, self).build(input_shape)
-        if self.use_layernorm:
-            self.layernorm.build((None, self.units))
+        self.layernorm.build((None, self.units))
 
     def call(self, inputs, states, training=None):
         """Formulas.
@@ -589,8 +573,7 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
         output = h + keras.backend.dot(prev_output,
                                        self.recurrent_kernel)  # "net"
 
-        if self.use_layernorm:
-            output = self.layernorm(output)
+        output = self.layernorm(output)
 
         if self.bias is not None:
             output = keras.backend.bias_add(output, self.bias)
@@ -603,21 +586,19 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
     # use SimpleRNNCell's get_initial_state method
 
     def get_config(self):
-        config = {'use_layernorm': self.use_layernorm}
         cell_config = super(LayerNormSimpleRNNCell, self).get_config()
         del cell_config['name']
-        if self.use_layernorm:
-            ln_config = self.layernorm.get_config()
-            ln_config = {
+
+        ln_config = self.layernorm.get_config()
+        ln_config = {
                 key: ln_config[key]
                 for key in [
                     "epsilon", "gamma_initializer", "gamma_regularizer",
                     "gamma_constraint"
                 ] if key in ln_config
-            }
-            ln_config['layernorm_epsilon'] = ln_config.pop("epsilon")
-        else:
-            ln_config = {}
+        }
+        ln_config['layernorm_epsilon'] = ln_config.pop("epsilon")
+
         return dict(
             list(config.items()) + list(cell_config.items()) +
             list(ln_config.items()))
@@ -626,11 +607,6 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
 @tf.keras.utils.register_keras_serializable(package='Addons')
 class LayerNormSimpleRNN(keras.layers.SimpleRNN):
     """Fully-connected RNN with Layer Normalization.
-
-    Motivation:
-    - Drop-In Replacement for keras.layers.SimpleRNN
-    - demonstrate how to add keras.layers.LayerNormalization
-       to all RNNs by introducing the `use_layernorm` argument
 
     References:
     [1] Ba, Jimmy Lei, Jamie Ryan Kiros, and Geoffrey E. Hinton.
@@ -645,8 +621,6 @@ class LayerNormSimpleRNN(keras.layers.SimpleRNN):
         (ie. "linear" activation: `a(x) = x`).
       use_bias: Boolean, (default `True`), whether the layer uses a bias
         vector.
-      use_layernorm: Boolean, (default `True`), whether to apply layer
-        normalization (scaling only).
       layernorm_epsilon: Float, (default `1e-5`), Small float added to variance
         to avoid dividing by zero.
       kernel_initializer: Initializer for the `kernel` weights matrix,
@@ -655,21 +629,18 @@ class LayerNormSimpleRNN(keras.layers.SimpleRNN):
       recurrent_initializer: Initializer for the `recurrent_kernel`
         weights matrix, used for the linear transformation of the recurrent
         state. Default: `orthogonal`.
-      bias_initializer: Initializer for the bias vector (`use_bias=True`) or
-         for the beta vector in layer normalization (`use_layernorm=True`).
+      bias_initializer: Initializer for the bias vector (`use_bias=True`).
          Default: `zeros`.
       gamma_initializer: Initializer for the gamma vector of the layer
-         normalization layer (`use_layernorm=True`). Default: `ones`.
+         normalization layer. Default: `ones`.
       kernel_regularizer: Regularizer function applied to the `kernel` weights
         matrix. Default: `None`.
       recurrent_regularizer: Regularizer function applied to the
         `recurrent_kernel` weights matrix. Default: `None`.
       bias_regularizer: Regularizer function applied to the bias vector
-         (`use_bias=True`) or for the beta vector of the layer normalization
-         layer (`use_layernorm=True`). Default: `None`.
+         (`use_bias=True`). Default: `None`.
       gamma_regularizer: Regularizer function applied to the gamma vector
-         of the layer normalization layer (`use_layernorm=True`).
-         Default: `None`.
+         of the layer normalization layer. Default: `None`.
       activity_regularizer: Regularizer function applied to the output of the
         layer (its "activation"). Default: `None`.
       kernel_constraint: Constraint function applied to the `kernel` weights
@@ -677,11 +648,9 @@ class LayerNormSimpleRNN(keras.layers.SimpleRNN):
       recurrent_constraint: Constraint function applied to the
         `recurrent_kernel` weights matrix.  Default: `None`.
       bias_constraint: Constraint function applied to the bias vector
-         (`use_bias=True`) or for the beta vector of the layer normalization
-         layer (`use_layernorm=True`). Default: `None`.
+         (`use_bias=True`). Default: `None`.
       gamma_constraint: Constraint function applied to the gamma vector
-         of the layer normalization layer (`use_layernorm=True`).
-         Default: `None`.
+         of the layer normalization layer. Default: `None`.
       dropout: Float between 0 and 1.
         Fraction of the units to drop for the linear transformation of the
         inputs. Default: 0.
@@ -741,7 +710,6 @@ class LayerNormSimpleRNN(keras.layers.SimpleRNN):
             units,
             activation='tanh',
             use_bias=True,
-            use_layernorm=True,  # NEW(!)
             layernorm_epsilon=1e-05,  # NEW(!)
             kernel_initializer='glorot_uniform',
             recurrent_initializer='orthogonal',
@@ -769,7 +737,6 @@ class LayerNormSimpleRNN(keras.layers.SimpleRNN):
             units,
             activation=activation,
             use_bias=use_bias,
-            use_layernorm=use_layernorm,  # NEW(!)
             layernorm_epsilon=layernorm_epsilon,  # NEW(!)
             kernel_initializer=kernel_initializer,
             recurrent_initializer=recurrent_initializer,
@@ -801,10 +768,6 @@ class LayerNormSimpleRNN(keras.layers.SimpleRNN):
         # self.input_spec = [InputSpec(ndim=3)]
 
     # use SimpleRNN's call() method
-
-    @property
-    def use_layernorm(self):
-        return self.cell.use_layernorm
 
     @property
     def layernorm_epsilon(self):

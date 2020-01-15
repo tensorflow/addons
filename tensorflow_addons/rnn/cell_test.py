@@ -305,7 +305,6 @@ class LayerNormSimpleRNNTest(tf.test.TestCase):
             LayerNormSimpleRNN,
             kwargs={
                 'units': units,
-                'use_layernorm': True,
                 'return_sequences': True
             },
             input_shape=(num_samples, timesteps, embedding_dim))
@@ -319,30 +318,11 @@ class LayerNormSimpleRNNTest(tf.test.TestCase):
             LayerNormSimpleRNN,
             kwargs={
                 'units': units,
-                'use_layernorm': True,
                 'return_sequences': True,
                 'dtype': 'float64'
             },
             input_shape=(num_samples, timesteps, embedding_dim),
             input_dtype='float64')
-
-    """ REQUIRES TRAINING - WILL TIMEOUT
-    def test_dynamic_behavior_layernorm_rnn(self):
-        num_samples = 2
-        timesteps = 3
-        embedding_dim = 4
-        units = 2
-        layer = LayerNormSimpleRNN(
-            units, use_layernorm=True, input_shape=(None, embedding_dim))
-        model = keras.models.Sequential()
-        model.add(layer)
-        model.compile('rmsprop', 'mse')
-        x = np.random.random((num_samples, timesteps, embedding_dim))
-        y = np.random.random((num_samples, units))
-        model.train_on_batch(x, y)
-    """
-
-    # DELETED TEST: test_implementation_mode_layernorm_rnn
 
     def test_dropout_layernorm_rnn(self):
         num_samples = 2
@@ -353,7 +333,6 @@ class LayerNormSimpleRNNTest(tf.test.TestCase):
             LayerNormSimpleRNN,
             kwargs={
                 'units': units,
-                'use_layernorm': True,
                 'dropout': 0.1,
                 'recurrent_dropout': 0.1
             },
@@ -368,7 +347,6 @@ class LayerNormSimpleRNNTest(tf.test.TestCase):
         g_constraint = keras.constraints.max_norm(0.01)
         layer = layer_class(
             5,
-            use_layernorm=True,
             return_sequences=False,
             weights=None,
             input_shape=(None, embedding_dim),
@@ -392,7 +370,6 @@ class LayerNormSimpleRNNTest(tf.test.TestCase):
         model.add(
             layer_class(
                 units=5,
-                use_layernorm=True,
                 return_sequences=True,
                 unroll=False))
         model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
@@ -401,7 +378,7 @@ class LayerNormSimpleRNNTest(tf.test.TestCase):
     def test_from_config_layernorm_rnn(self):
         layer_class = LayerNormSimpleRNN
         for stateful in (False, True):
-            l1 = layer_class(units=1, use_layernorm=True, stateful=stateful)
+            l1 = layer_class(units=1, stateful=stateful)
             l2 = layer_class.from_config(l1.get_config())
             assert l1.get_config() == l2.get_config()
 
@@ -410,7 +387,6 @@ class LayerNormSimpleRNNTest(tf.test.TestCase):
         layer_class = LayerNormSimpleRNN
         layer = layer_class(
             5,
-            use_layernorm=True,
             return_sequences=False,
             weights=None,
             input_shape=(None, embedding_dim),
@@ -421,37 +397,6 @@ class LayerNormSimpleRNNTest(tf.test.TestCase):
         # activity_regularizer='l1'  # DOESN'T DO ANYTHING
         layer.build((None, None, 2))
         self.assertEqual(len(layer.losses), 4)
-
-        #x = keras.backend.variable(np.ones((2, 3, 2)))
-        #layer(x)
-        #if context.executing_eagerly():
-        #    self.assertEqual(len(layer.losses), 4)
-        #else:
-        #    self.assertEqual(len(layer.get_losses_for(x)), 1)
-
-    # REQUIRES TRAINING - WILL TIMEOUT: test_statefulness_layernorm_rnn()
-
-    def test_versus_simplernn(self):
-        embedding_dim = 4
-        timesteps = 2
-        settings = {
-            'units': 3,
-            'bias_initializer': 'ones',
-            'kernel_initializer': 'ones',
-            'recurrent_initializer': 'ones'
-        }
-        model1 = keras.Sequential()
-        model1.add(keras.layers.SimpleRNN(**settings))
-        model1.build((None, None, embedding_dim))
-
-        model2 = keras.Sequential()
-        model2.add(LayerNormSimpleRNN(use_layernorm=False, **settings))
-        model2.build((None, None, embedding_dim))
-
-        x = 0.5 * np.ones((1, timesteps, embedding_dim))
-        y_pred1 = model1.predict(x)
-        y_pred2 = model2.predict(x)
-        self.assertAllEqual(y_pred1, y_pred2)
 
 
 if __name__ == "__main__":
