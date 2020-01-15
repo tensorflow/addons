@@ -16,7 +16,6 @@
 
 from typing import Union, Callable
 
-
 Initializer = Union[None, dict, str, Callable]
 Regularizer = Union[None, dict, str, Callable]
 Constraint = Union[None, dict, str, Callable]
