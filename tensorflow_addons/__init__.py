@@ -27,8 +27,3 @@ from tensorflow_addons import seq2seq
 from tensorflow_addons import text
 
 from tensorflow_addons.version import __version__
-
-# Cleanup symbols to avoid polluting namespace.
-del absolute_import
-del division
-del print_function
