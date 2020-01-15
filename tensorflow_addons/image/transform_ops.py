@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Image transform ops."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow_addons.image import utils as img_utils
@@ -23,10 +20,10 @@ from tensorflow_addons.utils.resource_loader import LazySO
 
 _image_so = LazySO("custom_ops/image/_image_ops.so")
 
-_IMAGE_DTYPES = set([
+_IMAGE_DTYPES = {
     tf.dtypes.uint8, tf.dtypes.int32, tf.dtypes.int64, tf.dtypes.float16,
     tf.dtypes.float32, tf.dtypes.float64
-])
+}
 
 
 @tf.function
