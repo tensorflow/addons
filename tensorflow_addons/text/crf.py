@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 import tensorflow as tf
 
@@ -361,7 +357,7 @@ class CrfDecodeForwardRnnCell(tf.keras.layers.AbstractRNNCell):
             [1, num_tags, num_tags] in preparation for the broadcast
             summation occurring within the cell.
         """
-        super(CrfDecodeForwardRnnCell, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._transition_params = tf.expand_dims(transition_params, 0)
         self._num_tags = transition_params.shape[0]
 
@@ -374,7 +370,7 @@ class CrfDecodeForwardRnnCell(tf.keras.layers.AbstractRNNCell):
         return self._num_tags
 
     def build(self, input_shape):
-        super(CrfDecodeForwardRnnCell, self).build(input_shape)
+        super().build(input_shape)
 
     def call(self, inputs, state):
         """Build the CrfDecodeForwardRnnCell.

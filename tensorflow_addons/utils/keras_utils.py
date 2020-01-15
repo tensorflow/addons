@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Utilities for tf.keras."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 
 def normalize_tuple(value, n, name):
