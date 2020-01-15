@@ -42,3 +42,5 @@ wheels/
 /.bazelrc
 /bazel-*
 /artifacts
+
+buildifier.*
