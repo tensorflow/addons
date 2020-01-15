@@ -598,10 +598,7 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
                 ] if key in ln_config
         }
         ln_config['layernorm_epsilon'] = ln_config.pop("epsilon")
-
-        return dict(
-            list(config.items()) + list(cell_config.items()) +
-            list(ln_config.items()))
+        return dict(list(cell_config.items()) + list(ln_config.items()))
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
