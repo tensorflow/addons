@@ -14,10 +14,6 @@
 # ==============================================================================
 """Implements F scores."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
 
@@ -75,7 +71,7 @@ class FBetaScore(tf.keras.metrics.Metric):
                  threshold=None,
                  name='fbeta_score',
                  dtype=tf.float32):
-        super(FBetaScore, self).__init__(name=name)
+        super().__init__(name=name)
 
         if average not in (None, 'micro', 'macro', 'weighted'):
             raise ValueError("Unknown average type. Acceptable values "
@@ -175,7 +171,7 @@ class FBetaScore(tf.keras.metrics.Metric):
         if self.threshold is not None:
             config["threshold"] = self.threshold
 
-        base_config = super(FBetaScore, self).get_config()
+        base_config = super().get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
     def reset_states(self):
@@ -232,10 +228,10 @@ class F1Score(FBetaScore):
                  threshold=None,
                  name='f1_score',
                  dtype=tf.float32):
-        super(F1Score, self).__init__(
+        super().__init__(
             num_classes, average, 1.0, threshold, name=name, dtype=dtype)
 
     def get_config(self):
-        base_config = super(F1Score, self).get_config()
+        base_config = super().get_config()
         del base_config["beta"]
         return base_config

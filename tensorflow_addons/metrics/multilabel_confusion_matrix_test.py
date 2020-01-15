@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for Multilabel Confusion Matrix Metric."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow_addons.metrics import MultiLabelConfusionMatrix
 from tensorflow_addons.utils import test_utils

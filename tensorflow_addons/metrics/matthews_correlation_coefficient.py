@@ -14,10 +14,6 @@
 # ==============================================================================
 """Matthews Correlation Coefficient Implementation."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
 
@@ -68,8 +64,7 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
             dtype: (Optional) Data type of the metric result.
             Defaults to `tf.float32`.
         """
-        super(MatthewsCorrelationCoefficient, self).__init__(
-            name=name, dtype=dtype)
+        super().__init__(name=name, dtype=dtype)
         self.num_classes = num_classes
         self.true_positives = self.add_weight(
             'true_positives',
@@ -140,7 +135,7 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
         config = {
             "num_classes": self.num_classes,
         }
-        base_config = super(MatthewsCorrelationCoefficient, self).get_config()
+        base_config = super().get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
     def reset_states(self):
