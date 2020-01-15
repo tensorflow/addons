@@ -134,4 +134,4 @@ class PinballLoss(tf.keras.losses.Loss):
             'tau': self.tau,
         }
         base_config = super().get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}

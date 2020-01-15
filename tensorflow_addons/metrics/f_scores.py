@@ -172,7 +172,7 @@ class FBetaScore(tf.keras.metrics.Metric):
             config["threshold"] = self.threshold
 
         base_config = super().get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
     def reset_states(self):
         self.true_positives.assign(tf.zeros(self.init_shape, self.dtype))

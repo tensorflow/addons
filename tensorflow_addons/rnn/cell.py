@@ -203,7 +203,7 @@ class NASCell(keras.layers.AbstractRNNCell):
             "projection_initializer": self.projection_initializer,
         }
         base_config = super().get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -355,7 +355,7 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
             self.norm_epsilon,
         }
         base_config = super().get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
     def _create_norm_layer(self, name):
         return keras.layers.LayerNormalization(
