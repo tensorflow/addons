@@ -159,7 +159,7 @@ class Lookahead(tf.keras.optimizers.Optimizer):
             'slow_step_size': self._serialize_hyperparameter('slow_step_size'),
         }
         base_config = super(Lookahead, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
     @property
     def learning_rate(self):

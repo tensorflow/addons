@@ -65,7 +65,7 @@ class MeanMetricWrapper(tf.keras.metrics.Mean):
         for k, v in six.iteritems(self._fn_kwargs):
             config[k] = v
         base_config = super(MeanMetricWrapper, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
 
 def _get_model(metric, num_output):

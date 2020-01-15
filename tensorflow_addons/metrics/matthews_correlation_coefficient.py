@@ -141,7 +141,7 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
             "num_classes": self.num_classes,
         }
         base_config = super(MatthewsCorrelationCoefficient, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
     def reset_states(self):
         """Resets all of the metric state variables."""

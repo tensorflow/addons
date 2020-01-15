@@ -343,7 +343,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
         # serialized to config, so we put a placeholder for it.
         config["memory"] = None
         base_config = super(_BaseAttentionMechanism, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
     def _process_probability_fn(self, func_name):
         """Helper method to retrieve the probably function by string input."""
@@ -598,7 +598,7 @@ class LuongAttention(_BaseAttentionMechanism):
             "probability_fn": self.probability_fn_name,
         }
         base_config = super(LuongAttention, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
     @classmethod
     def from_config(cls, config, custom_objects=None):
@@ -798,7 +798,7 @@ class BahdanauAttention(_BaseAttentionMechanism):
         # yapf: enable
 
         base_config = super(BahdanauAttention, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
     @classmethod
     def from_config(cls, config, custom_objects=None):
@@ -1166,7 +1166,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
         # yapf: enable
 
         base_config = super(BahdanauMonotonicAttention, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
     @classmethod
     def from_config(cls, config, custom_objects=None):
@@ -1301,7 +1301,7 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
             "mode": self.mode,
         }
         base_config = super(LuongMonotonicAttention, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
     @classmethod
     def from_config(cls, config, custom_objects=None):

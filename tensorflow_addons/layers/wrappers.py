@@ -210,7 +210,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     def get_config(self):
         config = {'data_init': self.data_init}
         base_config = super(WeightNormalization, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
     def remove(self):
         kernel = tf.Variable(

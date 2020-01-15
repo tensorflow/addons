@@ -123,4 +123,4 @@ class SparsemaxLoss(tf.keras.losses.Loss):
             "from_logits": self.from_logits,
         }
         base_config = super(SparsemaxLoss, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}

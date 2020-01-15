@@ -129,4 +129,4 @@ class LiftedStructLoss(tf.keras.losses.Loss):
             "margin": self.margin,
         }
         base_config = super(LiftedStructLoss, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}

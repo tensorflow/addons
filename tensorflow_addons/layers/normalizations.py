@@ -151,7 +151,7 @@ class GroupNormalization(tf.keras.layers.Layer):
             tf.keras.constraints.serialize(self.gamma_constraint)
         }
         base_config = super(GroupNormalization, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
     def compute_output_shape(self, input_shape):
         return input_shape

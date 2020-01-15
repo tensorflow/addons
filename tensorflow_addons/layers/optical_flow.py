@@ -21,8 +21,7 @@ from __future__ import print_function
 import tensorflow as tf
 from tensorflow_addons.utils.resource_loader import LazySO
 
-_correlation_cost_so = LazySO(
-    "custom_ops/layers/_correlation_cost_ops.so")
+_correlation_cost_so = LazySO("custom_ops/layers/_correlation_cost_ops.so")
 
 
 def _correlation_cost(input_a,
@@ -238,4 +237,4 @@ class CorrelationCost(tf.keras.layers.Layer):
         }
 
         base_config = super(CorrelationCost, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}

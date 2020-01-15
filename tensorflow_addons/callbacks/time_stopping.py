@@ -61,4 +61,4 @@ class TimeStopping(Callback):
         }
 
         base_config = super(TimeStopping, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}

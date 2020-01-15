@@ -114,7 +114,7 @@ class TLU(tf.keras.layers.Layer):
                 self.alpha_constraint)
 
         base_config = super(TLU, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
     def compute_output_shape(self, input_shape):
         return input_shape
