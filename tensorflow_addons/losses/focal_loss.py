@@ -117,10 +117,6 @@ def sigmoid_focal_crossentropy(y_true,
     y_pred = tf.convert_to_tensor(y_pred)
     y_true = tf.convert_to_tensor(y_true, dtype=y_pred.dtype)
 
-    if y_true.shape != y_pred.shape:
-        raise ValueError("Shape mismatch for y_true: {} and y_pred: {}".format(
-            tf.shape(y_true), tf.shape(y_pred)))
-
     # Get the cross_entropy for each entry
     ce = K.binary_crossentropy(y_true, y_pred, from_logits=from_logits)
 
