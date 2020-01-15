@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for tf.addons.seq2seq.python.loss_ops."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 
@@ -274,7 +271,7 @@ class LossTest(tf.test.TestCase):
                 average_across_timesteps=False,
                 average_across_batch=True)
             res = self.evaluate(average_loss_per_sequence)
-            compare_per_sequence = np.zeros((self.sequence_length))
+            compare_per_sequence = np.zeros(self.sequence_length)
             self.assertAllClose(compare_per_sequence, res)
 
             average_loss_per_batch = loss.sequence_loss(
@@ -284,7 +281,7 @@ class LossTest(tf.test.TestCase):
                 average_across_timesteps=True,
                 average_across_batch=False)
             res = self.evaluate(average_loss_per_batch)
-            compare_per_batch = np.zeros((self.batch_size))
+            compare_per_batch = np.zeros(self.batch_size)
             self.assertAllClose(compare_per_batch, res)
 
             total_loss = loss.sequence_loss(
@@ -313,7 +310,7 @@ class LossTest(tf.test.TestCase):
 @test_utils.run_all_in_graph_and_eager_modes
 class DenseTargetLossTest(LossTest):
     def setup(self):
-        super(DenseTargetLossTest, self).setup()
+        super().setup()
         self.targets = tf.one_hot(self.targets, depth=self.number_of_classes)
 
     def testKerasCompatibility(self):

@@ -14,10 +14,6 @@
 # ==============================================================================
 """Implementing PoincareNormalize layer."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
 
@@ -46,7 +42,7 @@ class PoincareNormalize(tf.keras.layers.Layer):
     """
 
     def __init__(self, axis=1, epsilon=1e-5, **kwargs):
-        super(PoincareNormalize, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.axis = axis
         self.epsilon = epsilon
 
@@ -64,5 +60,5 @@ class PoincareNormalize(tf.keras.layers.Layer):
 
     def get_config(self):
         config = {'axis': self.axis, 'epsilon': self.epsilon}
-        base_config = super(PoincareNormalize, self).get_config()
+        base_config = super().get_config()
         return {**base_config, **config}

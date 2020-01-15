@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow_addons.image import mean_filter2d
 from tensorflow_addons.image import median_filter2d
@@ -31,7 +27,7 @@ class _Filter2dTest(tf.test.TestCase):
         ]
         self._image_shapes_to_test = [(3, 3, 1), (3, 3, 3), (1, 3, 3, 1),
                                       (1, 3, 3, 3), (2, 3, 3, 1), (2, 3, 3, 3)]
-        super(_Filter2dTest, self).setUp()
+        super().setUp()
 
     def _tile_image(self, plane, image_shape):
         """Tile a 2-D image `plane` into 3-D or 4-D as per `image_shape`."""
@@ -79,7 +75,7 @@ class _Filter2dTest(tf.test.TestCase):
 class MeanFilter2dTest(_Filter2dTest):
     def setUp(self):
         self._filter2d_fn = mean_filter2d
-        super(MeanFilter2dTest, self).setUp()
+        super().setUp()
 
     def test_invalid_image(self):
         msg = "`image` must be 2/3/4D tensor"
@@ -204,7 +200,7 @@ class MeanFilter2dTest(_Filter2dTest):
 class MedianFilter2dTest(_Filter2dTest):
     def setUp(self):
         self._filter2d_fn = median_filter2d
-        super(MedianFilter2dTest, self).setUp()
+        super().setUp()
 
     def test_invalid_image(self):
         msg = "`image` must be 2/3/4D tensor"

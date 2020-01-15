@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
 from tensorflow_addons.activations.sparsemax import sparsemax
@@ -112,7 +108,7 @@ class SparsemaxLoss(tf.keras.losses.Loss):
         if from_logits is not True:
             raise ValueError('from_logits must be True')
 
-        super(SparsemaxLoss, self).__init__(name=name, reduction=reduction)
+        super().__init__(name=name, reduction=reduction)
         self.from_logits = from_logits
 
     def call(self, y_true, y_pred):
@@ -122,5 +118,5 @@ class SparsemaxLoss(tf.keras.losses.Loss):
         config = {
             "from_logits": self.from_logits,
         }
-        base_config = super(SparsemaxLoss, self).get_config()
+        base_config = super().get_config()
         return {**base_config, **config}

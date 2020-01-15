@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Conditional Gradient optimizer."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
 
@@ -70,7 +67,7 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
                 decay of learning rate. `lr` is included for backward
                 compatibility, recommended to use `learning_rate` instead.
         """
-        super(ConditionalGradient, self).__init__(name=name, **kwargs)
+        super().__init__(name=name, **kwargs)
         self._set_hyper('learning_rate', kwargs.get('lr', learning_rate))
         self._set_hyper('lambda_', lambda_)
         self.epsilon = epsilon or tf.keras.backend.epsilon()
@@ -83,7 +80,7 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
             'epsilon': self.epsilon,
             'use_locking': self._serialize_hyperparameter('use_locking')
         }
-        base_config = super(ConditionalGradient, self).get_config()
+        base_config = super().get_config()
         return {**base_config, **config}
 
     def _create_slots(self, var_list):
@@ -91,8 +88,7 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
             self.add_slot(v, 'conditional_gradient')
 
     def _prepare_local(self, var_device, var_dtype, apply_state):
-        super(ConditionalGradient, self)._prepare_local(
-            var_device, var_dtype, apply_state)
+        super()._prepare_local(var_device, var_dtype, apply_state)
         apply_state[(var_device, var_dtype)]['learning_rate'] = tf.identity(
             self._get_hyper('learning_rate', var_dtype))
         apply_state[(var_device, var_dtype)]['lambda_'] = tf.identity(

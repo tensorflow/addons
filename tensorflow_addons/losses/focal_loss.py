@@ -14,10 +14,6 @@
 # ==============================================================================
 """Implements Focal loss."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 import tensorflow.keras.backend as K
 
@@ -72,8 +68,7 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
                  gamma=2.0,
                  reduction=tf.keras.losses.Reduction.NONE,
                  name='sigmoid_focal_crossentropy'):
-        super(SigmoidFocalCrossEntropy, self).__init__(
-            name=name, reduction=reduction)
+        super().__init__(name=name, reduction=reduction)
 
         self.from_logits = from_logits
         self.alpha = alpha
@@ -93,7 +88,7 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
             "alpha": self.alpha,
             "gamma": self.gamma,
         }
-        base_config = super(SigmoidFocalCrossEntropy, self).get_config()
+        base_config = super().get_config()
         return {**base_config, **config}
 
 

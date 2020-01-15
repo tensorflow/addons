@@ -14,10 +14,6 @@
 # ==============================================================================
 """A powerful dynamic attention wrapper object."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import collections
 import functools
 import math
@@ -32,7 +28,7 @@ from tensorflow_addons.utils import keras_utils
 from tensorflow.python.keras.engine import base_layer_utils
 
 
-class AttentionMechanism(object):
+class AttentionMechanism:
     @property
     def alignments_size(self):
         raise NotImplementedError
@@ -111,7 +107,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
         self.memory_layer = memory_layer
         if self.memory_layer is not None and "dtype" not in kwargs:
             kwargs["dtype"] = self.memory_layer.dtype
-        super(_BaseAttentionMechanism, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         if not callable(probability_fn):
             raise TypeError("probability_fn must be callable, saw type: %s" %
                             type(probability_fn).__name__)
@@ -134,8 +130,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
             else:
                 inputs = [memory, memory_sequence_length]
 
-            self.values = super(_BaseAttentionMechanism, self).__call__(
-                inputs, setup_memory=True)
+            self.values = super().__call__(inputs, setup_memory=True)
 
     @property
     def memory_initialized(self):
@@ -193,7 +188,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
                 # connected.
                 inputs.append(self.values)
 
-        return super(_BaseAttentionMechanism, self).__call__(inputs, **kwargs)
+        return super().__call__(inputs, **kwargs)
 
     def call(self, inputs, mask=None, setup_memory=False, **kwargs):
         """Setup the memory or query the attention.
@@ -342,7 +337,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
         # memory is a required init parameter and its a tensor. It cannot be
         # serialized to config, so we put a placeholder for it.
         config["memory"] = None
-        base_config = super(_BaseAttentionMechanism, self).get_config()
+        base_config = super().get_config()
         return {**base_config, **config}
 
     def _process_probability_fn(self, func_name):
@@ -553,7 +548,7 @@ class LuongAttention(_BaseAttentionMechanism):
         self.units = units
         self.scale = scale
         self.scale_weight = None
-        super(LuongAttention, self).__init__(
+        super().__init__(
             memory=memory,
             memory_sequence_length=memory_sequence_length,
             query_layer=None,
@@ -564,7 +559,7 @@ class LuongAttention(_BaseAttentionMechanism):
             **kwargs)
 
     def build(self, input_shape):
-        super(LuongAttention, self).build(input_shape)
+        super().build(input_shape)
         if self.scale and self.scale_weight is None:
             self.scale_weight = self.add_weight(
                 "attention_g", initializer=tf.ones_initializer, shape=())
@@ -597,7 +592,7 @@ class LuongAttention(_BaseAttentionMechanism):
             "scale": self.scale,
             "probability_fn": self.probability_fn_name,
         }
-        base_config = super(LuongAttention, self).get_config()
+        base_config = super().get_config()
         return {**base_config, **config}
 
     @classmethod
@@ -728,7 +723,7 @@ class BahdanauAttention(_BaseAttentionMechanism):
         self.attention_v = None
         self.attention_g = None
         self.attention_b = None
-        super(BahdanauAttention, self).__init__(
+        super().__init__(
             memory=memory,
             memory_sequence_length=memory_sequence_length,
             query_layer=query_layer,
@@ -739,7 +734,7 @@ class BahdanauAttention(_BaseAttentionMechanism):
             **kwargs)
 
     def build(self, input_shape):
-        super(BahdanauAttention, self).build(input_shape)
+        super().build(input_shape)
         if self.attention_v is None:
             self.attention_v = self.add_weight(
                 "attention_v", [self.units],
@@ -750,7 +745,7 @@ class BahdanauAttention(_BaseAttentionMechanism):
             self.attention_g = self.add_weight(
                 "attention_g",
                 initializer=tf.constant_initializer(
-                    math.sqrt((1. / self.units))),
+                    math.sqrt(1. / self.units)),
                 shape=())
             self.attention_b = self.add_weight(
                 "attention_b",
@@ -797,7 +792,7 @@ class BahdanauAttention(_BaseAttentionMechanism):
         }
         # yapf: enable
 
-        base_config = super(BahdanauAttention, self).get_config()
+        base_config = super().get_config()
         return {**base_config, **config}
 
     @classmethod
@@ -1085,7 +1080,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
         self.attention_score_bias = None
         self.attention_g = None
         self.attention_b = None
-        super(BahdanauMonotonicAttention, self).__init__(
+        super().__init__(
             memory=memory,
             memory_sequence_length=memory_sequence_length,
             query_layer=query_layer,
@@ -1096,7 +1091,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
             **kwargs)
 
     def build(self, input_shape):
-        super(BahdanauMonotonicAttention, self).build(input_shape)
+        super().build(input_shape)
         if self.attention_v is None:
             self.attention_v = self.add_weight(
                 "attention_v", [self.units],
@@ -1114,7 +1109,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
                 "attention_g",
                 dtype=self.dtype,
                 initializer=tf.constant_initializer(
-                    math.sqrt((1. / self.units))),
+                    math.sqrt(1. / self.units)),
                 shape=())
             self.attention_b = self.add_weight(
                 "attention_b", [self.units],
@@ -1165,7 +1160,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
         }
         # yapf: enable
 
-        base_config = super(BahdanauMonotonicAttention, self).get_config()
+        base_config = super().get_config()
         return {**base_config, **config}
 
     @classmethod
@@ -1247,7 +1242,7 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
         self.mode = mode
         self.attention_g = None
         self.attention_score_bias = None
-        super(LuongMonotonicAttention, self).__init__(
+        super().__init__(
             memory=memory,
             memory_sequence_length=memory_sequence_length,
             query_layer=None,
@@ -1258,7 +1253,7 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
             **kwargs)
 
     def build(self, input_shape):
-        super(LuongMonotonicAttention, self).build(input_shape)
+        super().build(input_shape)
         if self.scale and self.attention_g is None:
             self.attention_g = self.add_weight(
                 "attention_g", initializer=tf.ones_initializer, shape=())
@@ -1300,7 +1295,7 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
             "score_bias_init": self.score_bias_init,
             "mode": self.mode,
         }
-        base_config = super(LuongMonotonicAttention, self).get_config()
+        base_config = super().get_config()
         return {**base_config, **config}
 
     @classmethod
@@ -1379,9 +1374,8 @@ class AttentionWrapperState(
                     return new
             return new
 
-        return tf.nest.map_structure(
-            with_same_shape, self,
-            super(AttentionWrapperState, self)._replace(**kwargs))
+        return tf.nest.map_structure(with_same_shape, self,
+                                     super()._replace(**kwargs))
 
 
 def _prepare_memory(memory,
@@ -1635,7 +1629,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             of `attention_layer_size`; if `attention_layer_size` and
             `attention_layer` are set simultaneously.
         """
-        super(AttentionWrapper, self).__init__(name=name, **kwargs)
+        super().__init__(name=name, **kwargs)
         keras_utils.assert_like_rnncell("cell", cell)
         if isinstance(attention_mechanism, (list, tuple)):
             self._is_multi = True

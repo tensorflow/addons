@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for tfa.seq2seq.seq2seq.beam_search_decoder."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 
@@ -262,7 +259,7 @@ class TestBeamStep(tf.test.TestCase):
     """Tests a single step of beam search."""
 
     def setUp(self):
-        super(TestBeamStep, self).setUp()
+        super().setUp()
         self.batch_size = 2
         self.beam_width = 3
         self.vocab_size = 5
@@ -391,7 +388,7 @@ class TestLargeBeamStep(tf.test.TestCase):
     """
 
     def setUp(self):
-        super(TestLargeBeamStep, self).setUp()
+        super().setUp()
         self.batch_size = 2
         self.beam_width = 8
         self.vocab_size = 5

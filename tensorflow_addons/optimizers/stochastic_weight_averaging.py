@@ -23,10 +23,6 @@ sets whilst possibly causing a small increase in loss on the training
 set.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow_addons.optimizers.average_wrapper import AveragedOptimizerWrapper
 
@@ -105,7 +101,7 @@ class SWA(AveragedOptimizerWrapper):
                 decay of learning rate. `lr` is included for backward 
                 compatibility, recommended to use `learning_rate` instead.
         """
-        super(SWA, self).__init__(optimizer, sequential_update, name, **kwargs)
+        super().__init__(optimizer, sequential_update, name, **kwargs)
 
         if average_period < 1:
             raise ValueError('average_period must be >= 1')
@@ -150,5 +146,5 @@ class SWA(AveragedOptimizerWrapper):
             'start_averaging':
             self._serialize_hyperparameter('start_averaging')
         }
-        base_config = super(SWA, self).get_config()
+        base_config = super().get_config()
         return {**base_config, **config}

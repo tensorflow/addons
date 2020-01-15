@@ -14,10 +14,6 @@
 # ==============================================================================
 """Implements Thresholded Linear Unit."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
 
@@ -49,7 +45,7 @@ class TLU(tf.keras.layers.Layer):
                  alpha_regularizer=None,
                  alpha_constraint=None,
                  **kwargs):
-        super(TLU, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.supports_masking = True
         self.affine = affine
         self.tau_initializer = tf.keras.initializers.get(tau_initializer)
@@ -113,7 +109,7 @@ class TLU(tf.keras.layers.Layer):
             config['alpha_constraint'] = tf.keras.constraints.serialize(
                 self.alpha_constraint)
 
-        base_config = super(TLU, self).get_config()
+        base_config = super().get_config()
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shape):

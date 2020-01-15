@@ -14,10 +14,6 @@
 # ==============================================================================
 """Implements quantiles losses."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
 
@@ -127,7 +123,7 @@ class PinballLoss(tf.keras.losses.Loss):
                  tau=.5,
                  reduction=tf.keras.losses.Reduction.AUTO,
                  name='pinball_loss'):
-        super(PinballLoss, self).__init__(reduction=reduction, name=name)
+        super().__init__(reduction=reduction, name=name)
         self.tau = tau
 
     def call(self, y_true, y_pred):
@@ -137,5 +133,5 @@ class PinballLoss(tf.keras.losses.Loss):
         config = {
             'tau': self.tau,
         }
-        base_config = super(PinballLoss, self).get_config()
+        base_config = super().get_config()
         return {**base_config, **config}

@@ -14,10 +14,6 @@
 # ==============================================================================
 """Implements R^2 scores."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
 
@@ -45,7 +41,7 @@ class RSquare(Metric):
     """
 
     def __init__(self, name='r_square', dtype=tf.float32):
-        super(RSquare, self).__init__(name=name, dtype=dtype)
+        super().__init__(name=name, dtype=dtype)
         self.squared_sum = self.add_weight("squared_sum", initializer="zeros")
         self.sum = self.add_weight("sum", initializer="zeros")
         self.res = self.add_weight("residual", initializer="zeros")

@@ -22,10 +22,6 @@ Paper:
 https://papers.nips.cc/paper/8186-adaptive-methods-for-nonconvex-optimization.pdf
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
 
@@ -85,7 +81,7 @@ class Yogi(tf.keras.optimizers.Optimizer):
           initial_accumulator_value: The starting value for accumulators.
             Only positive values are allowed.
           activation: Use hard sign or soft tanh to determin sign.
-          name: Optional name for the operations created when applying 
+          name: Optional name for the operations created when applying
             gradients. Defaults to "Yogi".
           **kwargs: keyword arguments. Allowed to be {`clipnorm`, `clipvalue`,
             `lr`, `decay`}. `clipnorm` is clip gradients by norm; `clipvalue`
@@ -94,7 +90,7 @@ class Yogi(tf.keras.optimizers.Optimizer):
             is included for backward compatibility, recommended to use
             `learning_rate` instead.
         """
-        super(Yogi, self).__init__(name, **kwargs)
+        super().__init__(name, **kwargs)
         self._set_hyper('learning_rate', kwargs.get('lr', learning_rate))
         self._set_hyper('decay', self._initial_decay)
         self._set_hyper('beta_1', beta1)
@@ -317,7 +313,7 @@ class Yogi(tf.keras.optimizers.Optimizer):
         return tf.group(*update_vs)
 
     def get_config(self):
-        config = super(Yogi, self).get_config()
+        config = super().get_config()
         config.update({
             'learning_rate':
             self._serialize_hyperparameter('learning_rate'),

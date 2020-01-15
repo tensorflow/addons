@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # =============================================================================
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import logging
 
@@ -57,7 +54,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     """
 
     def __init__(self, layer, data_init=True, **kwargs):
-        super(WeightNormalization, self).__init__(layer, **kwargs)
+        super().__init__(layer, **kwargs)
         self.data_init = data_init
         self._track_trackable(layer, name='layer')
         self._init_critical_section = tf.CriticalSection(name='init_mutex')
@@ -209,7 +206,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
     def get_config(self):
         config = {'data_init': self.data_init}
-        base_config = super(WeightNormalization, self).get_config()
+        base_config = super().get_config()
         return {**base_config, **config}
 
     def remove(self):

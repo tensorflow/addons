@@ -14,10 +14,6 @@
 # ==============================================================================
 """Implements lifted_struct_loss."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow_addons.losses import metric_learning
 
@@ -117,8 +113,7 @@ class LiftedStructLoss(tf.keras.losses.Loss):
     """
 
     def __init__(self, margin=1.0, name=None, **kwargs):
-        super(LiftedStructLoss, self).__init__(
-            name=name, reduction=tf.keras.losses.Reduction.NONE)
+        super().__init__(name=name, reduction=tf.keras.losses.Reduction.NONE)
         self.margin = margin
 
     def call(self, y_true, y_pred):
@@ -128,5 +123,5 @@ class LiftedStructLoss(tf.keras.losses.Loss):
         config = {
             "margin": self.margin,
         }
-        base_config = super(LiftedStructLoss, self).get_config()
+        base_config = super().get_config()
         return {**base_config, **config}

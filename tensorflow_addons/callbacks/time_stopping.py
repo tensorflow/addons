@@ -14,8 +14,6 @@
 # ==============================================================================
 """Callback that stops training when a specified amount of time has passed."""
 
-from __future__ import absolute_import, division, print_function
-
 import datetime
 import time
 
@@ -34,7 +32,7 @@ class TimeStopping(Callback):
     """
 
     def __init__(self, seconds=86400, verbose=0):
-        super(TimeStopping, self).__init__()
+        super().__init__()
 
         self.seconds = seconds
         self.verbose = verbose
@@ -60,5 +58,5 @@ class TimeStopping(Callback):
             'verbose': self.verbose,
         }
 
-        base_config = super(TimeStopping, self).get_config()
+        base_config = super().get_config()
         return {**base_config, **config}

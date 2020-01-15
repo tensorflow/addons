@@ -13,24 +13,20 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import abc
 import six
 
 import tensorflow as tf
 
 
-@six.add_metaclass(abc.ABCMeta)
-class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer):
+class AveragedOptimizerWrapper(
+        tf.keras.optimizers.Optimizer, metaclass=abc.ABCMeta):
     def __init__(self,
                  optimizer,
                  sequential_update=True,
                  name="AverageOptimizer",
                  **kwargs):
-        super(AveragedOptimizerWrapper, self).__init__(name, **kwargs)
+        super().__init__(name, **kwargs)
 
         if isinstance(optimizer, str):
             optimizer = tf.keras.optimizers.get(optimizer)
@@ -58,8 +54,7 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer):
 
     def apply_gradients(self, grads_and_vars, name=None):
         self._optimizer._iterations = self.iterations  # pylint: disable=protected-access
-        return super(AveragedOptimizerWrapper, self).apply_gradients(
-            grads_and_vars, name)
+        return super().apply_gradients(grads_and_vars, name)
 
     @abc.abstractmethod
     def average_op(self, var, average_var):
@@ -127,7 +122,7 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer):
             'optimizer': tf.keras.optimizers.serialize(self._optimizer),
             'sequential_update': self._sequential_update
         }
-        base_config = super(AveragedOptimizerWrapper, self).get_config()
+        base_config = super().get_config()
         return {**base_config, **config}
 
     @classmethod
