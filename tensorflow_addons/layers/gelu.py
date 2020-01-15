@@ -14,10 +14,6 @@
 # ==============================================================================
 """Implements GELU activation."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow_addons.activations import gelu
 
@@ -40,7 +36,7 @@ class GELU(tf.keras.layers.Layer):
     """
 
     def __init__(self, approximate=True, **kwargs):
-        super(GELU, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.approximate = approximate
         self.supports_masking = True
 
@@ -49,7 +45,7 @@ class GELU(tf.keras.layers.Layer):
 
     def get_config(self):
         config = {'approximate': self.approximate}
-        base_config = super(GELU, self).get_config()
+        base_config = super().get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
     def compute_output_shape(self, input_shape):
