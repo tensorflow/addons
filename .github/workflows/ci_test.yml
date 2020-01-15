@@ -54,7 +54,6 @@ jobs:
       - name: CI test windows py${{ matrix.python-version }}
         shell: bash
         run: |
-            python -m pip install wheel setuptools
             bash ./tools/ci_testing/install_bazel_windows.sh $BAZEL_VERSION ${{ matrix.python-version }}
             bash ./tools/ci_testing/addons_cpu.sh
   sanity-check:
