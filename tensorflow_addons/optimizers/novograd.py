@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """NovoGrad for TensorFlow."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
 # TODO: Find public API alternatives to these
@@ -99,7 +96,7 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
                 decay of learning rate. `lr` is included for backward
                 compatibility, recommended to use `learning_rate` instead.
         """
-        super(NovoGrad, self).__init__(name, **kwargs)
+        super().__init__(name, **kwargs)
         if weight_decay < 0.0:
             raise ValueError('Weight decay rate cannot be negative')
         self._set_hyper('learning_rate', kwargs.get('lr', learning_rate))
@@ -126,8 +123,7 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
                 self.add_slot(var, 'vhat')
 
     def _prepare_local(self, var_device, var_dtype, apply_state):
-        super(NovoGrad, self)._prepare_local(var_device, var_dtype,
-                                             apply_state)
+        super()._prepare_local(var_device, var_dtype, apply_state)
         beta_1_t = tf.identity(self._get_hyper('beta_1', var_dtype))
         beta_2_t = tf.identity(self._get_hyper('beta_2', var_dtype))
         apply_state[(var_device, var_dtype)].update(
@@ -147,7 +143,7 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
         num_vars = int((len(params) - 1) / 2)
         if len(weights) == 3 * num_vars + 1:
             weights = weights[:len(params)]
-        super(NovoGrad, self).set_weights(weights)
+        super().set_weights(weights)
 
     def _resource_apply_dense(self, grad, var, apply_state=None):
         var_device, var_dtype = var.device, var.dtype.base_dtype
@@ -228,7 +224,7 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
             use_nesterov=False)
 
     def get_config(self):
-        config = super(NovoGrad, self).get_config()
+        config = super().get_config()
         config.update({
             'learning_rate':
             self._serialize_hyperparameter('learning_rate'),
