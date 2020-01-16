@@ -168,8 +168,8 @@ do_clang_format_check() {
 }
 
 # Supply all auto format step commands and descriptions
-FORMAT_STEPS=("do_bazel_config_format_check" "do_python_format_check" "do_clang_format_check")
-FORMAT_STEPS_DESC=("Check Bazel file format" "Check python file format" "Check  C++ file format")
+FORMAT_STEPS=("do_bazel_config_format_check" "do_clang_format_check")
+FORMAT_STEPS_DESC=("Check Bazel file format" "Check  C++ file format")
 
 FAIL_COUNTER=0
 PASS_COUNTER=0

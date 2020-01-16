@@ -60,6 +60,8 @@ Try these useful commands below:
 Addons provides `make code-format` command to format your changes
 automatically, don't forget to use it before pushing your code.
 
+We don't enforce 
+
 Please see our [Style Guide](STYLE_GUIDE.md) for more details.
 
 ## Code Testing

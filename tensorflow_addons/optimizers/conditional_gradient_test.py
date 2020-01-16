@@ -120,7 +120,7 @@ class ConditionalGradientTest(tf.test.TestCase):
             optimizer.minimize(loss, var_list=[var0, var1])
             optimizer_variables = optimizer.variables()
             # There should be three items. The first item is iteration,
-            #and one item for each variable.
+            # and one item for each variable.
             self.assertStartsWith(optimizer_variables[1].name,
                                   "ConditionalGradient/var0")
             self.assertStartsWith(optimizer_variables[2].name,
@@ -160,7 +160,7 @@ class ConditionalGradientTest(tf.test.TestCase):
                 pred = tf.matmul(tf.nn.embedding_lookup([var0], [0]), x)
                 return pred * pred
 
-            #the gradient based on the current loss function
+            # the gradient based on the current loss function
             grads0_0 = 32 * 1.0 + 40 * 2.0
             grads0_1 = 40 * 1.0 + 50 * 2.0
             grads0 = tf.constant([[grads0_0, grads0_1]], dtype=dtype)

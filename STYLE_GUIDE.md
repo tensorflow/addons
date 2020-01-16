@@ -17,28 +17,21 @@ void formatted_code_again;
 #### Python
 Python code should conform to [PEP8](https://www.python.org/dev/peps/pep-0008/).
 
-Addons uses [yapf](https://github.com/google/yapf) to format code,
-and [pylint](https://www.pylint.org/) for code analysis.
-You can disable them locally like this:
+Addons uses [flake8](http://flake8.pycqa.org/en/latest/) check pep8 compliance and 
+code smells.
 
-```python
-# yapf: disable
-FOO = {
-    # ... some very large, complex data literal.
-}
+If you encounter a pep8 error, you can either fix it manually or 
+install [autopep8](https://github.com/hhatto/autopep8) and do:
 
-BAR = [
-    # ... another large data literal.
-]
-# yapf: enable
+```bash
+autopep8 -i --select <errors> <FILENAME>
 ```
 
-```python
-# pylint: disable=protected-access
-foo._protected_member
-# pylint: enable=protected-access
-```
+for example:
 
+```bash
+autopep8 -i --select E128 tensorflow_addons/rnn/cell.py
+```
 
 #### TensorFlow Conventions
 
