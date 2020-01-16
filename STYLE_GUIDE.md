@@ -18,7 +18,7 @@ void formatted_code_again;
 Python code should conform to [PEP8](https://www.python.org/dev/peps/pep-0008/).
 
 Addons uses [flake8](http://flake8.pycqa.org/en/latest/) check pep8 compliance and 
-code smells.
+code analysis.
 
 If you encounter a pep8 error, you can either fix it manually or 
 install [autopep8](https://github.com/hhatto/autopep8) and do:
