@@ -14,11 +14,10 @@
 # limitations under the License.
 # ==============================================================================
 #
-# Usage: ci_sanity.sh [--flake8] [--incremental] [bazel flags]
+# Usage: ci_sanity.sh [--incremental] [bazel flags]
 #
 # Options:
 #           run sanity checks: python 2&3 pylint checks and bazel nobuild
-#  --flake8   run flake8 test only
 #  --incremental  Performs checks incrementally, by using the files changed in
 #                 the latest commit
 
@@ -83,11 +82,7 @@ DEFAULT_BAZEL_CONFIGS=""
 # Parse command-line arguments
 BAZEL_FLAGS=${DEFAULT_BAZEL_CONFIGS}
 for arg in "$@"; do
-    if [[ "${arg}" == "--pep8" ]]; then
-        # Only run pep8 test if "--pep8" option supplied
-        SANITY_STEPS=("do_pep8")
-        SANITY_STEPS_DESC=("pep8 test")
-    elif [[ "${arg}" == "--incremental" ]]; then
+    if [[ "${arg}" == "--incremental" ]]; then
         INCREMENTAL_FLAG="--incremental"
     else
         BAZEL_FLAGS="${BAZEL_FLAGS} ${arg}"
