@@ -14,19 +14,20 @@
 # ==============================================================================
 
 import tensorflow as tf
-from tensorflow_addons.utils.types import Number
-from tensorflow_addons.utils import types
-from typing import Optional
+
+try:
+    tf.no_gradient('StatefulUniform')
+except:
+    pass
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
-def rrelu(
-    x: types.TensorLike,
-    lower: Number = 0.125,
-    upper: Number = 0.3333333333333333,
-    training: Optional[bool] = None,
-    seed: Optional[int] = None,
-) -> tf.Tensor:
+@tf.keras.utils.register_keras_serializable(package='Addons')
+def rrelu(x,
+          lower=0.125,
+          upper=0.3333333333333333,
+          training=None,
+          seed=None,
+          gs=None):
     """rrelu function.
 
     Computes rrelu function:
@@ -44,18 +45,25 @@ def rrelu(
         training: `bool`, indicating whether the `call`
         is meant for training or inference.
         seed: `int`, this sets the operation-level seed.
+        gs: A `Generator`. Default value is tf.random.get_global_generator().
     Returns:
         result: A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
+    lower = tf.convert_to_tensor(lower)
+    upper = tf.convert_to_tensor(upper)
+    if gs is None:
+        gs = tf.random.get_global_generator()
+
     if training is None:
         training = tf.keras.backend.learning_phase()
         training = bool(tf.keras.backend.get_value(training))
 
     if training:
-        alpha = tf.random.uniform(
-            tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype, seed=seed
-        )
+        if seed is not None:
+            gs.reset_from_seed(seed)
+        alpha = gs.uniform(
+            tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype)
     else:
         alpha = tf.cast((lower + upper) / 2, x.dtype)
 
