@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Implements center loss."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
 
@@ -36,8 +32,8 @@ def center_loss(labels, feature, alpha):
     """
     len_features = feature.get_shape()[1]
     num_classes = labels.shape[-1]
-    centers = tf.get_variable('centers', [num_classes, len_features], dtype=tf.float32,
-        initializer=tf.constant_initializer(0), trainable=False)
+    centers = tf.Variable(tf.constant(0.0, shape=[num_classes, len_features]), name='centers', 
+        dtype=tf.float32)
     labels = tf.reshape(labels, [-1])
     centers_batch = tf.gather(centers, labels)
     diff = centers_batch - feature
