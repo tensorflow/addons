@@ -13,7 +13,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: ['3.7.5']
+        python-version: ['3.7']
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
