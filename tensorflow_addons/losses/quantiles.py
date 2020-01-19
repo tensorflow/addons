@@ -21,7 +21,9 @@ from tensorflow_addons.utils.types import TensorLike
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
-def pinball_loss(y_true: TensorLike, y_pred: TensorLike, tau: float = 0.5) -> tf.Tensor:
+def pinball_loss(
+    y_true: TensorLike, y_pred: TensorLike, tau: FloatTensorLike = 0.5
+) -> tf.Tensor:
     """Computes the pinball loss between `y_true` and `y_pred`.
 
     `loss = maximum(tau * (y_true - y_pred), (tau - 1) * (y_true - y_pred))`
@@ -124,7 +126,7 @@ class PinballLoss(tf.keras.losses.Loss):
     @typechecked
     def __init__(
         self,
-        tau: float = 0.5,
+        tau: FloatTensorLike = 0.5,
         reduction: tf.keras.losses.Reduction = tf.keras.losses.Reduction.AUTO,
         name: str = "pinball_loss",
     ):
