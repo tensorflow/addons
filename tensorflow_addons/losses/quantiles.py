@@ -127,7 +127,7 @@ class PinballLoss(tf.keras.losses.Loss):
     def __init__(
         self,
         tau: FloatTensorLike = 0.5,
-        reduction: tf.keras.losses.Reduction = tf.keras.losses.Reduction.AUTO,
+        reduction: str = tf.keras.losses.Reduction.AUTO,
         name: str = "pinball_loss",
     ):
         super().__init__(reduction=reduction, name=name)
