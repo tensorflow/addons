@@ -51,7 +51,7 @@ class IoULoss(tf.keras.losses.Loss):
     """
 
     @typechecked
-    def __init__(*args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def call(
@@ -94,7 +94,7 @@ class CIoULoss(tf.keras.losses.Loss):
     """
 
     @typechecked
-    def __init__(*args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def call(
@@ -140,7 +140,7 @@ class DIoULoss(tf.keras.losses.Loss):
     """
 
     @typechecked
-    def __init__(*args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def call(
@@ -187,7 +187,7 @@ class GIoULoss(tf.keras.losses.Loss):
     """
 
     @typechecked
-    def __init__(*args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def call(
