@@ -18,6 +18,7 @@ import tensorflow as tf
 from tensorflow_addons.image import iou, ciou, diou, giou
 from tensorflow_addons.image.iou_ops import CompatibleFloatTensorLike
 from typing import Callable
+from typeguard import typechecked
 
 
 def _common_loss(
@@ -48,6 +49,10 @@ class IoULoss(tf.keras.losses.Loss):
     model.compile('sgd', loss=tfa.losses.IoULoss())
     ```
     """
+
+    @typechecked
+    def __init__(*args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def call(
         self, y_true: CompatibleFloatTensorLike, y_pred: CompatibleFloatTensorLike
@@ -87,6 +92,10 @@ class CIoULoss(tf.keras.losses.Loss):
     model.compile('sgd', loss=tfa.losses.CIoULoss())
     ```
     """
+
+    @typechecked
+    def __init__(*args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def call(
         self, y_true: CompatibleFloatTensorLike, y_pred: CompatibleFloatTensorLike
@@ -130,6 +139,10 @@ class DIoULoss(tf.keras.losses.Loss):
       mode: one of ['giou', 'iou'], decided to calculate GIoU or IoU loss.
     """
 
+    @typechecked
+    def __init__(*args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def call(
         self, y_true: CompatibleFloatTensorLike, y_pred: CompatibleFloatTensorLike
     ) -> tf.Tensor:
@@ -172,6 +185,10 @@ class GIoULoss(tf.keras.losses.Loss):
     Args:
       mode: one of ['giou', 'iou'], decided to calculate GIoU or IoU loss.
     """
+
+    @typechecked
+    def __init__(*args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def call(
         self, y_true: CompatibleFloatTensorLike, y_pred: CompatibleFloatTensorLike
