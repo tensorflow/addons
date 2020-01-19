@@ -16,13 +16,19 @@
 
 import tensorflow as tf
 from tensorflow_addons.image import iou, ciou, diou, giou
+from tensorflow_addons.image.iou_ops import CompatibleFloatTensorLike
+from typing import Callable
 
 
-def _common_loss(y_pred, y_true, iou_fn):
+def _common_loss(
+    y_pred: CompatibleFloatTensorLike,
+    y_true: CompatibleFloatTensorLike,
+    iou_fn: Callable,
+) -> tf.Tensor:
     return 1 - iou_fn(y_pred, y_true)
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class IoULoss(tf.keras.losses.Loss):
     """Implements the IoU loss function.
 
@@ -43,16 +49,20 @@ class IoULoss(tf.keras.losses.Loss):
     ```
     """
 
-    def call(self, y_true, y_pred):
+    def call(
+        self, y_true: CompatibleFloatTensorLike, y_pred: CompatibleFloatTensorLike
+    ) -> tf.Tensor:
         return iou_loss(y_true, y_pred)
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
-def iou_loss(y_pred, y_true):
+@tf.keras.utils.register_keras_serializable(package="Addons")
+def iou_loss(
+    y_pred: CompatibleFloatTensorLike, y_true: CompatibleFloatTensorLike
+) -> tf.Tensor:
     return _common_loss(y_pred, y_true, iou)
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class CIoULoss(tf.keras.losses.Loss):
     """Implements the CIoU loss function.
 
@@ -78,16 +88,20 @@ class CIoULoss(tf.keras.losses.Loss):
     ```
     """
 
-    def call(self, y_true, y_pred):
+    def call(
+        self, y_true: CompatibleFloatTensorLike, y_pred: CompatibleFloatTensorLike
+    ) -> tf.Tensor:
         return ciou_loss(y_pred, y_true)
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
-def ciou_loss(y_pred, y_true):
+@tf.keras.utils.register_keras_serializable(package="Addons")
+def ciou_loss(
+    y_pred: CompatibleFloatTensorLike, y_true: CompatibleFloatTensorLike
+) -> tf.Tensor:
     return _common_loss(y_pred, y_true, ciou)
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class DIoULoss(tf.keras.losses.Loss):
     """Implements the DIoU loss function.
 
@@ -116,16 +130,20 @@ class DIoULoss(tf.keras.losses.Loss):
       mode: one of ['giou', 'iou'], decided to calculate GIoU or IoU loss.
     """
 
-    def call(self, y_true, y_pred):
+    def call(
+        self, y_true: CompatibleFloatTensorLike, y_pred: CompatibleFloatTensorLike
+    ) -> tf.Tensor:
         return diou_loss(y_pred, y_true)
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
-def diou_loss(y_pred, y_true):
+@tf.keras.utils.register_keras_serializable(package="Addons")
+def diou_loss(
+    y_pred: CompatibleFloatTensorLike, y_true: CompatibleFloatTensorLike
+) -> tf.Tensor:
     return _common_loss(y_pred, y_true, diou)
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class GIoULoss(tf.keras.losses.Loss):
     """Implements the GIoU loss function.
 
@@ -155,10 +173,14 @@ class GIoULoss(tf.keras.losses.Loss):
       mode: one of ['giou', 'iou'], decided to calculate GIoU or IoU loss.
     """
 
-    def call(self, y_true, y_pred):
+    def call(
+        self, y_true: CompatibleFloatTensorLike, y_pred: CompatibleFloatTensorLike
+    ) -> tf.Tensor:
         return giou_loss(y_pred, y_true)
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
-def giou_loss(y_pred, y_true):
+@tf.keras.utils.register_keras_serializable(package="Addons")
+def giou_loss(
+    y_pred: CompatibleFloatTensorLike, y_true: CompatibleFloatTensorLike
+) -> tf.Tensor:
     return _common_loss(y_pred, y_true, giou)
