@@ -14,9 +14,33 @@
 # ==============================================================================
 
 import tensorflow as tf
-from tensorflow_addons.utils.resource_loader import LazySO
 
-_activation_so = LazySO("custom_ops/activations/_activation_ops.so")
+
+def _hardshrink(x, lower, upper):
+    mask_lower = x < lower
+    mask_upper = upper < x
+    mask = tf.logical_or(mask_lower, mask_upper)
+    mask = tf.cast(mask, tf.float32)
+    return x * mask
+
+
+def compile_with_xla(func, dtype):
+    compiled = tf.function(
+        func,
+        input_signature=(tf.TensorSpec(shape=None, dtype=dtype),
+                         tf.TensorSpec(shape=tuple(), dtype=dtype),
+                         tf.TensorSpec(shape=tuple(), dtype=dtype)),
+        autograph=False,
+        experimental_compile=True
+    )
+    return compiled
+
+
+supported_dtypes = [tf.float16, tf.float32, tf.float64]
+
+function_dispatch = {}
+for dtype in supported_dtypes:
+    function_dispatch[dtype] = compile_with_xla(_hardshrink, dtype)
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -35,11 +59,4 @@ def hardshrink(x, lower=-0.5, upper=0.5):
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
-    return _activation_so.ops.addons_hardshrink(x, lower, upper)
-
-
-@tf.RegisterGradient("Addons>Hardshrink")
-def _hardshrink_grad(op, grad):
-    return _activation_so.ops.addons_hardshrink_grad(grad, op.inputs[0],
-                                                     op.get_attr("lower"),
-                                                     op.get_attr("upper"))
+    return function_dispatch[x.dtype](x, lower, upper)

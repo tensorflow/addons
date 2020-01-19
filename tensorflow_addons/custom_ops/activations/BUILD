@@ -9,8 +9,6 @@ custom_op_library(
     srcs = [
         "cc/kernels/gelu_op.cc",
         "cc/kernels/gelu_op.h",
-        "cc/kernels/hardshrink_op.cc",
-        "cc/kernels/hardshrink_op.h",
         "cc/kernels/lisht_op.cc",
         "cc/kernels/lisht_op.h",
         "cc/kernels/mish_op.cc",
@@ -29,8 +27,6 @@ custom_op_library(
     cuda_srcs = [
         "cc/kernels/gelu_op.h",
         "cc/kernels/gelu_op_gpu.cu.cc",
-        "cc/kernels/hardshrink_op.h",
-        "cc/kernels/hardshrink_op_gpu.cu.cc",
         "cc/kernels/lisht_op.h",
         "cc/kernels/lisht_op_gpu.cu.cc",
         "cc/kernels/mish_op.h",
