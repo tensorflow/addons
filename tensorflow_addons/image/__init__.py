@@ -32,3 +32,7 @@ from tensorflow_addons.image.transform_ops import shear_y
 from tensorflow_addons.image.translate_ops import translate
 from tensorflow_addons.image.translate_ops import translate_xy
 from tensorflow_addons.image.compose_ops import blend
+from tensorflow_addons.image.iou_ops import iou
+from tensorflow_addons.image.iou_ops import ciou
+from tensorflow_addons.image.iou_ops import diou
+from tensorflow_addons.image.iou_ops import giou

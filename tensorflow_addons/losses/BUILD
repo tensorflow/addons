@@ -8,7 +8,7 @@ py_library(
         "__init__.py",
         "contrastive.py",
         "focal_loss.py",
-        "giou_loss.py",
+        "iou_loss.py",
         "lifted.py",
         "metric_learning.py",
         "npairs.py",
@@ -18,6 +18,7 @@ py_library(
     ],
     deps = [
         "//tensorflow_addons/activations",
+        "//tensorflow_addons/image",
         "//tensorflow_addons/utils",
     ],
 )
@@ -47,12 +48,12 @@ py_test(
 )
 
 py_test(
-    name = "giou_loss_test",
+    name = "iou_loss_test",
     size = "small",
     srcs = [
-        "giou_loss_test.py",
+        "iou_loss_test.py",
     ],
-    main = "giou_loss_test.py",
+    main = "iou_loss_test.py",
     deps = [
         ":losses",
     ],

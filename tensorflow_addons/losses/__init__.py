@@ -19,7 +19,10 @@ from tensorflow_addons.losses.focal_loss import (
     sigmoid_focal_crossentropy,
     SigmoidFocalCrossEntropy,
 )
-from tensorflow_addons.losses.giou_loss import giou_loss, GIoULoss
+from tensorflow_addons.losses.iou_loss import iou_loss, IoULoss
+from tensorflow_addons.losses.iou_loss import ciou_loss, CIoULoss
+from tensorflow_addons.losses.iou_loss import diou_loss, DIoULoss
+from tensorflow_addons.losses.iou_loss import giou_loss, GIoULoss
 from tensorflow_addons.losses.lifted import lifted_struct_loss, LiftedStructLoss
 from tensorflow_addons.losses.sparsemax_loss import sparsemax_loss, SparsemaxLoss
 from tensorflow_addons.losses.triplet import (
