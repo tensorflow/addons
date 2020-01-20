@@ -58,5 +58,9 @@ def hardshrink(x, lower=-0.5, upper=0.5):
     Returns:
         A `Tensor`. Has the same type as `x`.
     """
+    if lower > upper:
+        raise ValueError("The value of lower is {} and should"
+                         " not be higher than the value "
+                         "variable upper, which is {} .".format(lower, upper))
     x = tf.convert_to_tensor(x)
     return function_dispatch[x.dtype](x, lower, upper)
