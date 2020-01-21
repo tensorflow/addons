@@ -18,7 +18,6 @@ custom_op_library(
         "cc/kernels/tanhshrink_op.cc",
         "cc/kernels/tanhshrink_op.h",
         "cc/ops/gelu_op.cc",
-        "cc/ops/hardshrink_op.cc",
         "cc/ops/lisht_op.cc",
         "cc/ops/mish_op.cc",
         "cc/ops/softshrink_op.cc",

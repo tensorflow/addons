@@ -20,7 +20,7 @@ def _hardshrink(x, lower, upper):
     mask_lower = x < lower
     mask_upper = upper < x
     mask = tf.logical_or(mask_lower, mask_upper)
-    mask = tf.cast(mask, tf.float32)
+    mask = tf.cast(mask, x.dtype)
     return x * mask
 
 
@@ -58,5 +58,9 @@ def hardshrink(x, lower=-0.5, upper=0.5):
     Returns:
         A `Tensor`. Has the same type as `x`.
     """
+    if lower > upper:
+        raise ValueError("The value of lower is {} and should"
+                         " not be higher than the value "
+                         "variable upper, which is {} .".format(lower, upper))
     x = tf.convert_to_tensor(x)
     return function_dispatch[x.dtype](x, lower, upper)
