@@ -34,11 +34,11 @@ add-apt-repository -y ppa:deadsnakes/ppa
 apt-get -y -qq update
 
 for version in ${PYTHON_VERSIONS}; do
-    export PYTHON_VERSION=${version}
-    apt-get -y -qq install ${PYTHON_VERSION}
+    apt-get -y -qq install ${version}
+    ln -sf /usr/bin/${version} /usr/bin/python
 
-    ${PYTHON_VERSION} get-pip.py -q
-    ${PYTHON_VERSION} -m pip --version
+    python get-pip.py -q
+    python -m pip --version
 
     #Link TF dependency
     yes 'y' | ./configure.sh --quiet
