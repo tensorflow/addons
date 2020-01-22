@@ -37,6 +37,8 @@ class TQDMProgressBar(Callback):
         update_per_second (int): Maximum number of updates in the epochs bar
             per second, this is to prevent small batches from slowing down
             training. Defaults to 10.
+        metrics_format (string): Custom format for how metrics are formatted.
+            See https://github.com/tqdm/tqdm#parameters for more detail.
         leave_epoch_progress (bool): True to leave epoch progress bars
         leave_overall_progress (bool): True to leave overall progress bar
         show_epoch_progress (bool): False to hide epoch progress bars
@@ -49,6 +51,7 @@ class TQDMProgressBar(Callback):
                  '{remaining}s,  {rate_fmt}{postfix}',
                  epoch_bar_format='{n_fmt}/{total_fmt}{bar} ETA: '
                  '{remaining}s - {desc}',
+                 metrics_format='{name}: {value:0.4f}',
                  update_per_second=10,
                  leave_epoch_progress=True,
                  leave_overall_progress=True,
@@ -75,6 +78,7 @@ class TQDMProgressBar(Callback):
         self.leave_overall_progress = leave_overall_progress
         self.show_epoch_progress = show_epoch_progress
         self.show_overall_progress = show_overall_progress
+        self.metrics_format = metrics_format
 
         # compute update interval (inverse of update per second)
         self.update_interval = 1 / update_per_second
@@ -196,7 +200,7 @@ class TQDMProgressBar(Callback):
         for metric in self.metrics:
             if metric in logs:
                 value = logs[metric] / factor
-                pair = '{name}: {value:0.4f}'.format(name=metric, value=value)
+                pair = self.metrics_format.format(name=metric, value=value)
                 metric_value_pairs.append(pair)
         metrics_string = self.metrics_separator.join(metric_value_pairs)
         return metrics_string
