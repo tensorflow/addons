@@ -16,8 +16,8 @@
 # =============================================================================
 
 import logging
-from typeguard import typechecked
 import tensorflow as tf
+from typeguard import typechecked
 
 from tensorflow_addons.utils import types
 
