@@ -589,11 +589,9 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
 
         ln_config = self.layernorm.get_config()
         ln_config = {
-            key: ln_config[key]
-            for key in [
-                "epsilon", "gamma_initializer", "gamma_regularizer",
-                "gamma_constraint"
-            ] if key in ln_config
-        }
+          k:v for k, v in ln_config.items()
+          if k in ["epsilon", "gamma_initializer",
+                   "gamma_regularizer", "gamma_constraint"]}
+
         ln_config['layernorm_epsilon'] = ln_config.pop("epsilon")
         return dict(list(cell_config.items()) + list(ln_config.items()))
