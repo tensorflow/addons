@@ -484,8 +484,8 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
             recurrent_constraint=recurrent_constraint,
             bias_constraint=bias_constraint,
             dropout=dropout,
-            recurrent_dropout=recurrent_dropout)
-        #**kwargs)
+            recurrent_dropout=recurrent_dropout,
+            **kwargs)
         self.layernorm = keras.layers.LayerNormalization(
             axis=-1,
             epsilon=layernorm_epsilon,
@@ -497,8 +497,7 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
             gamma_regularizer=gamma_regularizer,
             beta_constraint=None,
             gamma_constraint=gamma_constraint,
-            dtype=kwargs.get('dtype'),
-            trainable=kwargs.get('trainable', True))
+            **kwargs)
 
     def build(self, input_shape):
         super(LayerNormSimpleRNNCell, self).build(input_shape)
