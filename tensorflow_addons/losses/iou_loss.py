@@ -19,10 +19,6 @@ from tensorflow_addons.image import iou, ciou, diou, giou
 
 
 def _common_loss(y_pred, y_true, iou_fn):
-    y_pred = tf.convert_to_tensor(y_pred)
-    if not y_pred.dtype.is_floating:
-        y_pred = tf.cast(y_pred, tf.float32)
-    y_true = tf.cast(y_true, y_pred.dtype)
     return 1 - iou_fn(y_pred, y_true)
 
 
