@@ -16,33 +16,6 @@
 import tensorflow as tf
 
 
-def _hardshrink(x, lower, upper):
-    mask_lower = x < lower
-    mask_upper = upper < x
-    mask = tf.logical_or(mask_lower, mask_upper)
-    mask = tf.cast(mask, x.dtype)
-    return x * mask
-
-
-def compile_with_xla(func, dtype):
-    compiled = tf.function(
-        func,
-        input_signature=(tf.TensorSpec(shape=None, dtype=dtype),
-                         tf.TensorSpec(shape=tuple(), dtype=dtype),
-                         tf.TensorSpec(shape=tuple(), dtype=dtype)),
-        autograph=False,
-        experimental_compile=True
-    )
-    return compiled
-
-
-supported_dtypes = [tf.float16, tf.float32, tf.float64]
-
-function_dispatch = {}
-for dtype in supported_dtypes:
-    function_dispatch[dtype] = compile_with_xla(_hardshrink, dtype)
-
-
 @tf.keras.utils.register_keras_serializable(package='Addons')
 def hardshrink(x, lower=-0.5, upper=0.5):
     """Hard shrink function.
@@ -63,4 +36,8 @@ def hardshrink(x, lower=-0.5, upper=0.5):
                          " not be higher than the value "
                          "variable upper, which is {} .".format(lower, upper))
     x = tf.convert_to_tensor(x)
-    return function_dispatch[x.dtype](x, lower, upper)
+    mask_lower = x < lower
+    mask_upper = upper < x
+    mask = tf.logical_or(mask_lower, mask_upper)
+    mask = tf.cast(mask, x.dtype)
+    return x * mask
