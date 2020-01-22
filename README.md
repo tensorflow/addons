@@ -30,7 +30,7 @@ developments that cannot be integrated into core TensorFlow
 | Subpackage    | Maintainers  | Contact Info                        |
 |:----------------------- |:----------- |:----------------------------|
 | [tfa.activations](tensorflow_addons/activations/README.md) | SIG-Addons | @facaiy @seanpmorgan | 
-| [tfa.callbacks](tensorflow_addons/callbacks/README.md) | SIG-Addons | @squadrick |
+| [tfa.callbacks](tensorflow_addons/callbacks/README.md) | SIG-Addons | @squadrick @shun-lin |
 | [tfa.image](tensorflow_addons/image/README.md) | SIG-Addons | @windqaq @facaiy |
 | [tfa.layers](tensorflow_addons/layers/README.md) | SIG-Addons | @seanpmorgan @facaiy |
 | [tfa.losses](tensorflow_addons/losses/README.md) | SIG-Addons | @facaiy @windqaq   |
