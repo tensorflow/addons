@@ -450,27 +450,26 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
     ```
     """
 
-    def __init__(
-            self,
-            units,
-            activation='tanh',
-            use_bias=True,
-            layernorm_epsilon=1e-05,  # NEW(!)
-            kernel_initializer='glorot_uniform',
-            recurrent_initializer='orthogonal',
-            bias_initializer='zeros',
-            gamma_initializer='ones',  # NEW(!)
-            kernel_regularizer=None,
-            recurrent_regularizer=None,
-            bias_regularizer=None,
-            gamma_regularizer=None,  # NEW(!)
-            kernel_constraint=None,
-            recurrent_constraint=None,
-            bias_constraint=None,
-            gamma_constraint=None,  # NEW(!)
-            dropout=0.,
-            recurrent_dropout=0.,
-            **kwargs):
+    def __init__(self,
+                 units,
+                 activation='tanh',
+                 use_bias=True,
+                 layernorm_epsilon=1e-05,
+                 kernel_initializer='glorot_uniform',
+                 recurrent_initializer='orthogonal',
+                 bias_initializer='zeros',
+                 gamma_initializer='ones',
+                 kernel_regularizer=None,
+                 recurrent_regularizer=None,
+                 bias_regularizer=None,
+                 gamma_regularizer=None,
+                 kernel_constraint=None,
+                 recurrent_constraint=None,
+                 bias_constraint=None,
+                 gamma_constraint=None,
+                 dropout=0.,
+                 recurrent_dropout=0.,
+                 **kwargs):
         super(LayerNormSimpleRNNCell, self).__init__(
             units,
             activation=activation,
@@ -485,9 +484,8 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
             recurrent_constraint=recurrent_constraint,
             bias_constraint=bias_constraint,
             dropout=dropout,
-            recurrent_dropout=recurrent_dropout,
-            dtype=kwargs.get('dtype'),
-            trainable=kwargs.get('trainable', True))
+            recurrent_dropout=recurrent_dropout)
+        #**kwargs)
         self.layernorm = keras.layers.LayerNormalization(
             axis=-1,
             epsilon=layernorm_epsilon,
@@ -522,14 +520,15 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
             f : Activation function (`self.activation`)
 
         Case 1:
-            Simple RNN, only with bias and activation
+            Keras' SimpleRNN. Only with bias and activation
               y_t = f(x_t * W_xh + y_{t-1} * W_hh + b)
             or
               net = x_t * W_xh + y_{t-1} * W_hh
               y_t = f(net + b)
 
         Case 2:
-            RNN with, layer normalization (only scaling), bias and activation.
+            addons' LayerNormSimpleRNNCell. Like case 1 but with layer
+            normalization (only scaling).
               y_t = f(ln(x_t * W_xh + y_{t-1} * W_hh) + b)
             or
               net = x_t * W_xh + y_{t-1} * W_hh
@@ -541,15 +540,15 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
             centering directly afterwards.
 
         Case 3:
-            RNN, with dropout, bias, and activation (no scaling from LN)
+            Keras' SimpleRNN. with dropout, bias, and activation
               y_t = f(d1(x_t) * W_xh + d2(y_{t-1}) * W_hh + b)
             or
               net = d1(x_t) * W_xh + d2(y_{t-1}) * W_hh
               y_t = f(net + b)
 
         Case 4:
-            Everyting is used, i.e. all dropouts, layer normalization
-            (only scaling), bias, and activation
+            addons' LayerNormSimpleRNNCell. Like case 3 but with layer
+            normalization (only scaling).
               y_t = f(ln(d1(x_t) * W_xh + d2(y_{t-1}) * W_hh) + b)
             or
               net = d1(x_t) * W_xh + d2(y_{t-1}) * W_hh
@@ -591,200 +590,11 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
 
         ln_config = self.layernorm.get_config()
         ln_config = {
-                key: ln_config[key]
-                for key in [
-                    "epsilon", "gamma_initializer", "gamma_regularizer",
-                    "gamma_constraint"
-                ] if key in ln_config
+            key: ln_config[key]
+            for key in [
+                "epsilon", "gamma_initializer", "gamma_regularizer",
+                "gamma_constraint"
+            ] if key in ln_config
         }
         ln_config['layernorm_epsilon'] = ln_config.pop("epsilon")
         return dict(list(cell_config.items()) + list(ln_config.items()))
-
-
-@tf.keras.utils.register_keras_serializable(package='Addons')
-class LayerNormSimpleRNN(keras.layers.SimpleRNN):
-    """Fully-connected RNN with Layer Normalization.
-
-    References:
-    [1] Ba, Jimmy Lei, Jamie Ryan Kiros, and Geoffrey E. Hinton.
-        "Layer Normalization." ArXiv:1607.06450 [Cs, Stat],
-        July 21, 2016. http://arxiv.org/abs/1607.06450
-
-    Arguments:
-      units: Positive integer, dimensionality of the output space.
-      activation: Activation function to use.
-        Default: hyperbolic tangent (`tanh`).
-        If you pass None, no activation is applied
-        (ie. "linear" activation: `a(x) = x`).
-      use_bias: Boolean, (default `True`), whether the layer uses a bias
-        vector.
-      layernorm_epsilon: Float, (default `1e-5`), Small float added to variance
-        to avoid dividing by zero.
-      kernel_initializer: Initializer for the `kernel` weights matrix,
-        used for the linear transformation of the inputs. Default:
-        `glorot_uniform`.
-      recurrent_initializer: Initializer for the `recurrent_kernel`
-        weights matrix, used for the linear transformation of the recurrent
-        state. Default: `orthogonal`.
-      bias_initializer: Initializer for the bias vector (`use_bias=True`).
-         Default: `zeros`.
-      gamma_initializer: Initializer for the gamma vector of the layer
-         normalization layer. Default: `ones`.
-      kernel_regularizer: Regularizer function applied to the `kernel` weights
-        matrix. Default: `None`.
-      recurrent_regularizer: Regularizer function applied to the
-        `recurrent_kernel` weights matrix. Default: `None`.
-      bias_regularizer: Regularizer function applied to the bias vector
-         (`use_bias=True`). Default: `None`.
-      gamma_regularizer: Regularizer function applied to the gamma vector
-         of the layer normalization layer. Default: `None`.
-      activity_regularizer: Regularizer function applied to the output of the
-        layer (its "activation"). Default: `None`.
-      kernel_constraint: Constraint function applied to the `kernel` weights
-        matrix. Default: `None`.
-      recurrent_constraint: Constraint function applied to the
-        `recurrent_kernel` weights matrix.  Default: `None`.
-      bias_constraint: Constraint function applied to the bias vector
-         (`use_bias=True`). Default: `None`.
-      gamma_constraint: Constraint function applied to the gamma vector
-         of the layer normalization layer. Default: `None`.
-      dropout: Float between 0 and 1.
-        Fraction of the units to drop for the linear transformation of the
-        inputs. Default: 0.
-      recurrent_dropout: Float between 0 and 1.
-        Fraction of the units to drop for the linear transformation of the
-        recurrent state. Default: 0.
-      return_sequences: Boolean. Whether to return the last output
-        in the output sequence, or the full sequence. Default: `False`.
-      return_state: Boolean. Whether to return the last state
-        in addition to the output. Default: `False`
-      go_backwards: Boolean (default False).
-        If True, process the input sequence backwards and return the
-        reversed sequence.
-      stateful: Boolean (default False). If True, the last state
-        for each sample at index i in a batch will be used as initial
-        state for the sample of index i in the following batch.
-      unroll: Boolean (default False).
-        If True, the network will be unrolled,
-        else a symbolic loop will be used.
-        Unrolling can speed-up a RNN,
-        although it tends to be more memory-intensive.
-        Unrolling is only suitable for short sequences.
-
-    Call arguments:
-      inputs: A 3D tensor, with shape `[batch, timesteps, feature]`.
-      mask: Binary tensor of shape `[batch, timesteps]` indicating whether
-        a given timestep should be masked.
-      training: Python boolean indicating whether the layer should behave in
-        training mode or in inference mode. This argument is passed to the cell
-        when calling it. This is only relevant if `dropout` or
-        `recurrent_dropout` is used.
-      initial_state: List of initial state tensors to be passed to the first
-        call of the cell.
-
-    Examples:
-
-    ```python
-    import numpy as np
-    import tensorflow_addons as tfa
-
-    inputs = np.random.random([32, 10, 8]).astype(np.float32)
-    model = tfa.rnn.LayerNormSimpleRNN(4)
-
-    output = model(inputs)  # The output has shape `[32, 4]`.
-
-    model = tfa.rnn.LayerNormSimpleRNN(
-        4, return_sequences=True, return_state=True)
-
-    # whole_sequence_output has shape `[32, 10, 4]`.
-    # final_state has shape `[32, 4]`.
-    whole_sequence_output, final_state = model(inputs)
-    ```
-    """
-
-    def __init__(
-            self,
-            units,
-            activation='tanh',
-            use_bias=True,
-            layernorm_epsilon=1e-05,  # NEW(!)
-            kernel_initializer='glorot_uniform',
-            recurrent_initializer='orthogonal',
-            bias_initializer='zeros',
-            gamma_initializer='ones',  # NEW(!)
-            kernel_regularizer=None,
-            recurrent_regularizer=None,
-            bias_regularizer=None,
-            gamma_regularizer=None,  # NEW(!)
-            activity_regularizer=None,
-            kernel_constraint=None,
-            recurrent_constraint=None,
-            bias_constraint=None,
-            gamma_constraint=None,  # NEW(!)
-            dropout=0.,
-            recurrent_dropout=0.,
-            return_sequences=False,
-            return_state=False,
-            go_backwards=False,
-            stateful=False,
-            unroll=False,
-            **kwargs):
-        # 'implementation' warning was never relevant for LayerNormSimpleRNN
-        cell = LayerNormSimpleRNNCell(
-            units,
-            activation=activation,
-            use_bias=use_bias,
-            layernorm_epsilon=layernorm_epsilon,  # NEW(!)
-            kernel_initializer=kernel_initializer,
-            recurrent_initializer=recurrent_initializer,
-            bias_initializer=bias_initializer,
-            gamma_initializer=gamma_initializer,  # NEW(!)
-            kernel_regularizer=kernel_regularizer,
-            recurrent_regularizer=recurrent_regularizer,
-            bias_regularizer=bias_regularizer,
-            gamma_regularizer=gamma_regularizer,  # NEW(!)
-            activity_regularizer=activity_regularizer,
-            kernel_constraint=kernel_constraint,
-            recurrent_constraint=recurrent_constraint,
-            bias_constraint=bias_constraint,
-            gamma_constraint=gamma_constraint,  # NEW(!)
-            dropout=dropout,
-            recurrent_dropout=recurrent_dropout,
-            dtype=kwargs.get('dtype'),
-            trainable=kwargs.get('trainable', True))
-        super(keras.layers.SimpleRNN, self).__init__(  # call RNN's init
-            cell,
-            return_sequences=return_sequences,
-            return_state=return_state,
-            go_backwards=go_backwards,
-            stateful=stateful,
-            unroll=unroll,
-            **kwargs)
-        self.activity_regularizer = keras.regularizers.get(
-            activity_regularizer)
-        # self.input_spec = [InputSpec(ndim=3)]
-
-    # use SimpleRNN's call() method
-
-    @property
-    def layernorm_epsilon(self):
-        return self.cell.layernorm_epsilon
-
-    @property
-    def gamma_initializer(self):
-        return self.cell.gamma_initializer
-
-    @property
-    def gamma_regularizer(self):
-        return self.cell.gamma_regularizer
-
-    @property
-    def gamma_constraint(self):
-        return self.cell.gamma_constraint
-
-    def get_config(self):
-        base_config = super(keras.layers.SimpleRNN,
-                            self).get_config()  # get RNN's config
-        del base_config['cell']
-        cell_config = self.cell.get_config()
-        return dict(list(base_config.items()) + list(cell_config.items()))
