@@ -1,6 +1,6 @@
 sh_binary(
     name = "build_pip_pkg",
-    srcs = ["build_pip_pkg.sh"],
+    srcs = ["build_deps/build_pip_pkg.sh"],
     data = [
         "LICENSE",
         "MANIFEST.in",
