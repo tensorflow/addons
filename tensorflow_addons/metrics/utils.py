@@ -14,7 +14,6 @@
 # ==============================================================================
 """Utilities for metrics."""
 
-import six
 import numpy as np
 import tensorflow as tf
 
