@@ -15,7 +15,6 @@
 """Seq2seq layer operations for use in neural networks."""
 
 import abc
-import six
 
 import tensorflow as tf
 
