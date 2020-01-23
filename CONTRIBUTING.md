@@ -11,6 +11,11 @@ contributing.
 We gladly welcome [pull requests](
 https://help.github.com/articles/about-pull-requests/).
 
+Have you ever done a pull request with GitHub? 
+If not we recommend you to read 
+[this guide](https://github.com/gabrieldemarmiesse/getting_started_open_source) 
+to get your started.
+
 Before making any changes, we recommend opening an issue (if it
 doesn't already exist) and discussing your proposed changes. This will
 let us give you advice on the proposed changes. If the changes are
