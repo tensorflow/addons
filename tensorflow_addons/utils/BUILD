@@ -9,6 +9,7 @@ py_library(
         "keras_utils.py",
         "test_utils.py",
         "resource_loader.py",
+        "types.py",
     ]),
 )
 

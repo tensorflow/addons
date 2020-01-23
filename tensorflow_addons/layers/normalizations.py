@@ -17,6 +17,9 @@
 
 import logging
 import tensorflow as tf
+from typeguard import typechecked
+
+from tensorflow_addons.utils import types
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -67,18 +70,19 @@ class GroupNormalization(tf.keras.layers.Layer):
         - [Group Normalization](https://arxiv.org/abs/1803.08494)
     """
 
+    @typechecked
     def __init__(self,
-                 groups=2,
-                 axis=-1,
-                 epsilon=1e-3,
-                 center=True,
-                 scale=True,
-                 beta_initializer='zeros',
-                 gamma_initializer='ones',
-                 beta_regularizer=None,
-                 gamma_regularizer=None,
-                 beta_constraint=None,
-                 gamma_constraint=None,
+                 groups: int = 2,
+                 axis: int = -1,
+                 epsilon: int = 1e-3,
+                 center: bool = True,
+                 scale: bool = True,
+                 beta_initializer: types.Initializer = 'zeros',
+                 gamma_initializer: types.Initializer = 'ones',
+                 beta_regularizer: types.Regularizer = None,
+                 gamma_regularizer: types.Regularizer = None,
+                 beta_constraint: types.Constraint = None,
+                 gamma_constraint: types.Constraint = None,
                  **kwargs):
         super().__init__(**kwargs)
         self.supports_masking = True
