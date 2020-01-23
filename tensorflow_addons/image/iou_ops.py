@@ -30,10 +30,10 @@ def _common_iou(b1, b2, mode='iou'):
     Returns:
         IoU loss float `Tensor`.
     """
-    y_pred = tf.convert_to_tensor(y_pred)
-    if not y_pred.dtype.is_floating:
-        y_pred = tf.cast(y_pred, tf.float32)
-    y_true = tf.cast(y_true, y_pred.dtype)
+    b1 = tf.convert_to_tensor(b1)
+    if not b1.dtype.is_floating:
+        b1 = tf.cast(b1, tf.float32)
+    b2 = tf.cast(b2, b1.dtype)
 
     def _inner():
         zero = tf.convert_to_tensor(0., b1.dtype)
