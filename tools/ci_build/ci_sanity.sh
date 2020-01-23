@@ -31,9 +31,6 @@ if [[ ! -d "tensorflow_addons" ]]; then
     exit 1
 fi
 
-set -e
-python -m flake8
-set +e
 
 #Check for the bazel cmd status (First arg is error message)
 cmd_status(){
