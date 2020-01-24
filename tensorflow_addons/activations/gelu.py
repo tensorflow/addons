@@ -14,13 +14,17 @@
 # ==============================================================================
 
 import tensorflow as tf
+from typeguard import typechecked
+
+from tensorflow_addons.utils import types
 from tensorflow_addons.utils.resource_loader import LazySO
 
 _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
-def gelu(x, approximate=True):
+@typechecked
+def gelu(x: types.TensorLike, approximate: bool = True):
     """Gaussian Error Linear Unit.
 
     Computes gaussian error linear:

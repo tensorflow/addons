@@ -14,8 +14,13 @@
 # ==============================================================================
 """Types for typing functions signatures."""
 
-from typing import Union, Callable
+from typing import Union, Callable, List
+
+import numpy as np
+import tensorflow as tf
 
 Initializer = Union[None, dict, str, Callable]
 Regularizer = Union[None, dict, str, Callable]
 Constraint = Union[None, dict, str, Callable]
+
+TensorLike = Union[List[Union[float, int]], np.ndarray, tf.Tensor]

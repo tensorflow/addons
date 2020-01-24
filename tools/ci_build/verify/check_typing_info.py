@@ -38,19 +38,20 @@ def check_module_is_typed(module):
 
 def check_function_is_typed(func, class_=None):
     """ If class_ is not None, func is the __init__ of the class."""
+    func = inspect.unwrap(func)  # if the real function is hidden behind a decorator.
     list_args = inspect.getfullargspec(func).args
     if class_ is not None:
         list_args.pop(0) # we remove 'self'
-    if len(list_args) != len(func.__annotations__):
+    if len(list_args) != len(get_list_of_annotated_args(func)):
         if class_ is None:
             function_name = func.__name__
         else:
             function_name = class_.__name__ + '.__init__'
-        raise NotImplementedError(
-            "The function {} has not complete type annotations "
+        raise NotTypedError(
+            "The function '{}' has not complete type annotations "
             "in its signature. We would like all the functions and "
             "class constructors in the public API to be typed and have "
-            "the typechecked decorator. \n"
+            "the @typechecked decorator. \n"
             "If you are not familiar with adding type hints in "
             "functions, you can look at functions already typed in"
             "the codebase. For example: {}. \n"
@@ -59,11 +60,37 @@ def check_function_is_typed(func, class_=None):
                                                              TUTORIAL_URL)
         )
 
+    if class_ is None:
+        check_return_type(func)
+
+
+def check_return_type(func):
+    if 'return' not in func.__annotations__:
+        raise NotTypedError(
+            'The function {} has no return type. Please add one. '
+            'You can take a look at the gelu activation function '
+            'in tensorflow_addons/activations/gelu.py '
+            'if you want an example.'.format(func.__name__)
+        )
+
+
+def get_list_of_annotated_args(func):
+    args_with_annotations = list(func.__annotations__.keys())
+    try:
+        args_with_annotations.remove('return')
+    except ValueError:
+        pass
+    return args_with_annotations
+
 
 def get_attributes(module):
     for attr_name in dir(module):
         attr = getattr(module, attr_name)
         yield attr
+
+
+class NotTypedError(Exception):
+    pass
 
 
 if __name__ == '__main__':
