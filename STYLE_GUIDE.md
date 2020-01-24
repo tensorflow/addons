@@ -17,7 +17,7 @@ void formatted_code_again;
 #### Python
 Python code should conform to [PEP8](https://www.python.org/dev/peps/pep-0008/).
 
-Addons uses [flake8](http://flake8.pycqa.org/en/latest/) check pep8 compliance and 
+Addons uses [flake8](http://flake8.pycqa.org/en/latest/) to check pep8 compliance and 
 code analysis.
 
 #### TensorFlow Conventions
