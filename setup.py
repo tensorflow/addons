@@ -60,7 +60,7 @@ with open('requirements.txt') as f:
     required_pkgs = f.read().splitlines()
 
 # Manylinux2010 requires a patch for platlib
-if sys.platform.startswith('linux') and os.environ.get('TF_ADDONS_NO_BUILD', '0') =='0':
+if sys.platform.startswith('linux'):
     ext_modules = [Extension('_foo', ['stub.cc'])]
 else:
     ext_modules = []
