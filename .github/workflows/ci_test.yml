@@ -77,4 +77,4 @@ jobs:
       - name: install tensorflow
         run: pip install tensorflow-cpu
       - name: Run type check
-        run: python tools/ci_buld/verify/check_typing_info.py
+        run: python tools/ci_build/verify/check_typing_info.py
