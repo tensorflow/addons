@@ -17,7 +17,6 @@
 import tensorflow as tf
 from tensorflow_addons.utils import test_utils
 import numpy as np
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import conditional_gradient as cg_lib
 
 
@@ -398,7 +397,7 @@ class ConditionalGradientTest(tf.test.TestCase):
                 cg_update = cg_opt.apply_gradients(zip([grads0], [var0]))
                 self.evaluate(tf.compat.v1.global_variables_initializer())
 
-            for i in xrange(num_samples):
+            for i in range(num_samples):
                 if tf.executing_eagerly():
                     grads0 = tf.constant(db_grad[i])
                     cg_opt.apply_gradients(zip([grads0], [var0]))

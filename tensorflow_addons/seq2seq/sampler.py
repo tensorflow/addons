@@ -16,8 +16,6 @@
 
 import abc
 
-import six
-
 import tensorflow as tf
 
 from tensorflow_addons.seq2seq import decoder
