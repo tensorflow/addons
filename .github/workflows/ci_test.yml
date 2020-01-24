@@ -77,6 +77,6 @@ jobs:
       - name: install tensorflow
         run: pip install tensorflow-cpu
       - name: install tf addons
-          run: pip install -e --no-deps .
+        run: pip install -e --no-deps .
       - name: Run type check
         run: python tools/ci_build/verify/check_typing_info.py
