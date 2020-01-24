@@ -147,7 +147,7 @@ EXCEPTION_LIST = [
     tensorflow_addons.text.crf_unary_score,
     tensorflow_addons.text.viterbi_decode,
     tensorflow_addons.text.skip_gram_sample,
-    #tensorflow_addons.text.skip_gram_sample_with_text_vocab,
+    tensorflow_addons.text.skip_gram_sample_with_text_vocab,
     tensorflow_addons.text.parse_time,
 ]
 
@@ -182,7 +182,7 @@ def check_function_is_typed(func, class_=None):
             function_name = class_.__name__ + '.__init__'
         raise NotTypedError(
             "The function '{}' has not complete type annotations "
-            "in its signature (it's missing type hind for '{}'). "
+            "in its signature (it's missing the type hint for '{}'). "
             "We would like all the functions and "
             "class constructors in the public API to be typed and have "
             "the @typechecked decorator. \n"
