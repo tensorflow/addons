@@ -20,19 +20,6 @@ Python code should conform to [PEP8](https://www.python.org/dev/peps/pep-0008/).
 Addons uses [flake8](http://flake8.pycqa.org/en/latest/) check pep8 compliance and 
 code analysis.
 
-If you encounter a pep8 error, you can either fix it manually or 
-install [autopep8](https://github.com/hhatto/autopep8) and do:
-
-```bash
-autopep8 -i --select <errors> <FILENAME>
-```
-
-for example:
-
-```bash
-autopep8 -i --select E128 tensorflow_addons/rnn/cell.py
-```
-
 #### TensorFlow Conventions
 
 Follow the guidance in the [TensorFlow Style Guide - Conventions](https://www.tensorflow.org/community/contribute/code_style#tensorflow_conventions_and_special_uses).
