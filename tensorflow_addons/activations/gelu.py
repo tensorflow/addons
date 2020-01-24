@@ -23,6 +23,7 @@ _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.autograph.experimental.do_not_convert
 @typechecked
 def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
     """Gaussian Error Linear Unit.
