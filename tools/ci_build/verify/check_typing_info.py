@@ -204,15 +204,6 @@ def check_function_is_typed(func, class_=None):
         )
 
 
-def get_list_of_annotated_args(func):
-    args_with_annotations = list(func.__annotations__.keys())
-    try:
-        args_with_annotations.remove('return')
-    except ValueError:
-        pass
-    return args_with_annotations
-
-
 def get_attributes(module):
     for attr_name in dir(module):
         attr = getattr(module, attr_name)
