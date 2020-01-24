@@ -134,7 +134,20 @@ EXCEPTION_LIST = [
     tensorflow_addons.seq2seq.Sampler,
     tensorflow_addons.seq2seq.ScheduledEmbeddingTrainingSampler,
     tensorflow_addons.seq2seq.ScheduledOutputTrainingSampler,
-    #tensorflow_addons.seq2seq.TrainingSampler,
+    tensorflow_addons.seq2seq.TrainingSampler,
+    tensorflow_addons.text.crf_binary_score,
+    tensorflow_addons.text.crf_decode,
+    tensorflow_addons.text.crf_decode_backward,
+    tensorflow_addons.text.crf_decode_forward,
+    tensorflow_addons.text.crf_forward,
+    tensorflow_addons.text.crf_log_likelihood,
+    tensorflow_addons.text.crf_log_norm,
+    tensorflow_addons.text.crf_multitag_sequence_score,
+    tensorflow_addons.text.crf_sequence_score,
+    tensorflow_addons.text.crf_unary_score,
+    tensorflow_addons.text.viterbi_decode,
+    tensorflow_addons.text.skip_gram_sample,
+    #tensorflow_addons.text.skip_gram_sample_with_text_vocab,
     tensorflow_addons.text.parse_time,
 ]
 
@@ -157,34 +170,32 @@ def check_module_is_typed(module):
 
 def check_function_is_typed(func, class_=None):
     """ If class_ is not None, func is the __init__ of the class."""
-    func = inspect.unwrap(func)  # if the real function is hidden behind a decorator.
-    list_args = inspect.getfullargspec(func).args
-    if class_ is not None:
-        list_args.pop(0) # we remove 'self'
-    if len(list_args) != len(get_list_of_annotated_args(func)):
+    signature = inspect.signature(func)
+    for parameter_name, parameter in signature.parameters.items():
+        if parameter.annotation != inspect.Signature.empty:
+            continue
+        if parameter_name in ('args', 'kwargs', 'self'):
+            continue
         if class_ is None:
             function_name = func.__name__
         else:
             function_name = class_.__name__ + '.__init__'
         raise NotTypedError(
             "The function '{}' has not complete type annotations "
-            "in its signature. We would like all the functions and "
+            "in its signature (it's missing type hind for '{}'). "
+            "We would like all the functions and "
             "class constructors in the public API to be typed and have "
             "the @typechecked decorator. \n"
             "If you are not familiar with adding type hints in "
             "functions, you can look at functions already typed in"
             "the codebase. For example: {}. \n"
-            "You can also look at this tutorial: {}.".format(function_name,
-                                                             EXAMPLE_URL,
-                                                             TUTORIAL_URL)
+            "You can also look at this tutorial: "
+            "{}.".format(function_name, parameter_name, EXAMPLE_URL, TUTORIAL_URL)
         )
 
     if class_ is None:
-        check_return_type(func)
-
-
-def check_return_type(func):
-    if 'return' not in func.__annotations__:
+        if signature.return_annotation != inspect.Signature.empty:
+            return
         raise NotTypedError(
             'The function {} has no return type. Please add one. '
             'You can take a look at the gelu activation function '
