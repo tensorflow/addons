@@ -25,7 +25,7 @@ from tensorflow.python.training import training_ops
 import tensorflow.compat.v2 as tf
 from tensorflow_addons.utils import keras_utils
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class MomentumLARS(tf.keras.optimizers.Optimizer):
     """Layer-wise Adaptive Rate Scaling for large batch training.
 
@@ -133,6 +133,8 @@ class MomentumLARS(tf.keras.optimizers.Optimizer):
           scaled_lr = min(scaled_lr, self._serialize_hyperparameter('learning_rate'))
 
         # Add the weight regularization gradient
+        # Note that the weight decay is being handled by the optimizer here
+        # and not added to loss.
         grad = grad + weight_decay * var
       return scaled_lr, grad
 
