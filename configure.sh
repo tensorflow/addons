@@ -81,11 +81,6 @@ BRANCH=$(git rev-parse --abbrev-ref HEAD)
 PYTHON_PATH=$(which python)
 REQUIRED_PKG=$(cat requirements.txt)
 
-if [[ ${BRANCH} == "master" ]]; then
-  echo "WARN: You're building from master branch, please ensure that you want to build \
-against tf-nightly. Otherwise please checkout a recent stable release branch."
-fi
-
 echo ""
 echo "> TensorFlow Addons will link to the framework in a pre-installed TF pacakge..."
 echo "> Checking installed packages in ${PYTHON_PATH}"
