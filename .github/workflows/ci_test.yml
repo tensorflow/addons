@@ -66,3 +66,13 @@ jobs:
         run: |
           set -x -e
           bash tools/run_docker.sh -c 'make sanity-check'
+  public-api-typed:
+    name: Check that the public API is typed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+      - name: install tensorflow
+        run: pip install tensorflow-cpu
+      - name: Run type check
+        run: python tools/ci_bulds/verify/check_typing_info.py
