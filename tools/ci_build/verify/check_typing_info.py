@@ -26,6 +26,7 @@ TUTORIAL_URL = 'https://docs.python.org/3/library/typing.html'
 # the exception list.
 EXCEPTION_LIST = [
     tensorflow_addons.activations.hardshrink,
+    tensorflow_addons.activations.gelu,
     tensorflow_addons.activations.lisht,
     tensorflow_addons.activations.mish,
     tensorflow_addons.activations.tanhshrink,
