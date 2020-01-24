@@ -45,8 +45,6 @@ if '--nightly' in sys.argv:
 else:
     project_name = TFA_RELEASE
 
-build = ()
-
 # Version
 version = {}
 base_dir = os.path.dirname(os.path.abspath(__file__))
