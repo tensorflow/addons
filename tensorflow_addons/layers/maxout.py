@@ -15,7 +15,7 @@
 """Implementing Maxout layer."""
 
 import tensorflow as tf
-
+from typeguard import typechecked
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 class Maxout(tf.keras.layers.Layer):
@@ -41,7 +41,8 @@ class Maxout(tf.keras.layers.Layer):
       nD tensor with shape: `(batch_size, ..., num_units, ...)`.
     """
 
-    def __init__(self, num_units, axis=-1, **kwargs):
+    @typechecked
+    def __init__(self, num_units: int, axis: int = -1, **kwargs):
         super().__init__(**kwargs)
         self.num_units = num_units
         self.axis = axis

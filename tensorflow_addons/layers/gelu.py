@@ -16,6 +16,7 @@
 
 import tensorflow as tf
 from tensorflow_addons.activations import gelu
+from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -35,7 +36,8 @@ class GELU(tf.keras.layers.Layer):
         Same shape as the input.
     """
 
-    def __init__(self, approximate=True, **kwargs):
+    @typechecked
+    def __init__(self, approximate: bool = True, **kwargs):
         super().__init__(**kwargs)
         self.approximate = approximate
         self.supports_masking = True
