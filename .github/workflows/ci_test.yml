@@ -74,8 +74,8 @@ jobs:
       - uses: actions/setup-python@v1
         with:
           python-version: '3.7'
-      - name: install tensorflow
-        run: pip install tensorflow-cpu
+      - name: install tensorflow and typeguard
+        run: pip install tensorflow-cpu typeguard
       - name: install tf addons
         run: TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
       - name: Run type check
