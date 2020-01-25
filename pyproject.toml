@@ -1,8 +1,8 @@
 [tool.black]
 target-version = ['py35']
 exclude = '''
-(
-  | setup.py
+/(
+    setup.py
   | build_deps/check_deps.py
   | tensorflow_addons/__init__.py
   | tensorflow_addons/version.py
@@ -159,5 +159,5 @@ exclude = '''
   | tools/docs/build_docs.py
   | build_deps/toolchains/gpu/find_cuda_config.py
   | tools/ci_build/verify/check_file_name.py
-)
+)/
 '''
