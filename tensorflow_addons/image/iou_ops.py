@@ -74,8 +74,8 @@ def _common_iou(b1, b2, mode='iou'):
                 [enclose_ymax - enclose_ymin, enclose_xmax - enclose_xmin])
             diou = iou - (euclidean**2) / (diag_length**2)
             if mode == 'ciou':
-                ver = 4 * (((tf.atan(b1_width / b1_height) - tf.atan(
-                    b2_width / b2_height)) / math.pi)**2)
+                ver = 4 * (((tf.atan(tf.math.divide_no_nan(b1_width , b1_height)) - tf.atan(
+                    tf.math.divide_no_nan(b2_width , b2_height))) / math.pi)**2)
                 alpha = tf.math.divide_no_nan(ver, ((1 - iou) + ver))
                 return diou - alpha * ver
 
