@@ -1,3 +1,4 @@
+fail_fast: true
 repos:
   - repo: https://github.com/psf/black
     rev: stable

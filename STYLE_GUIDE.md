@@ -19,31 +19,23 @@ void formatted_code_again;
 Addons uses [flake8](http://flake8.pycqa.org/en/latest/) to check pep8 compliance and 
 code analysis.
 
-We use [Black]() to format our code.
+Addon use [Black](https://black.readthedocs.io/en/stable/) to format our code.
+The continuous integration check will fail if you do not use it.
 
-Install both with:
 
+It's very useful to have a pre-commit hook that will run them both before 
+each of your commits. To do that:
 ```bash
-pip install flake8 black
+pip install pre-commit
+pre-commit install
 ```
 
-We recommend running them as pre-commit. For that, open (or create) the file
-```
-.git/hooks/pre-commit
-```
+When making a commit, black and flake8 will run.
 
-and write inside:
+* If Black makes the pre-commit fail, you'll just have to run `git add` and `git commit`
+again (black makes the hook fail and modify your files, you need to redo the commit).
 
-```bash
-python -m black ./ && python -m flake8
-```
-
-or with bash:
-
-```bash
-echo "python -m black ./ && python -m flake8" >> .git/hooks/pre-commit
-```
-
+* If flake8 makes the pre-commit fail, you need to fix it yourself before committing again.
 
 #### TensorFlow Conventions
 
