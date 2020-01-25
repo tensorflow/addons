@@ -15,10 +15,30 @@ void formatted_code_again;
 ```
 
 #### Python
-Python code should conform to [PEP8](https://www.python.org/dev/peps/pep-0008/).
 
 Addons uses [flake8](http://flake8.pycqa.org/en/latest/) to check pep8 compliance and 
 code analysis.
+
+We use [Black]() to format our code.
+
+Install both with:
+
+```bash
+pip install flake8 black
+```
+
+We recommend running them as pre-commit. For that, open (or create) the file
+```
+.git/hooks/pre-commit
+```
+
+and write inside:
+
+```bash
+python -m black ./
+python -m flake8
+```
+
 
 #### TensorFlow Conventions
 
