@@ -35,8 +35,13 @@ We recommend running them as pre-commit. For that, open (or create) the file
 and write inside:
 
 ```bash
-python -m black ./
-python -m flake8
+python -m black ./ && python -m flake8
+```
+
+or with bash:
+
+```bash
+echo "python -m black ./ && python -m flake8" >> .git/hooks/pre-commit
 ```
 
 
