@@ -3,6 +3,7 @@
 
 # Include travis.yml
 \!.travis.yml
+\!.flake8
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -42,5 +43,6 @@ wheels/
 /.bazelrc
 /bazel-*
 /artifacts
+.bazelrc
 
 buildifier.*
