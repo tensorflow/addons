@@ -4,6 +4,12 @@ repos:
     hooks:
       - id: black
         language_version: python3.6
+        exclude: |
+            (?x)(
+                ^tools/docs/build_docs.py|
+                ^tensorflow_addons/text/skip_gram_ops_test.py|
+                ^build_deps/toolchains/gpu/find_cuda_config.py
+            )
   - repo: https://gitlab.com/pycqa/flake8
     rev: '3.7.9'
     hooks:
