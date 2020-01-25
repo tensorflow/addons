@@ -4,6 +4,7 @@
 # Include travis.yml
 \!.travis.yml
 \!.flake8
+\!.pre-commit-config.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
