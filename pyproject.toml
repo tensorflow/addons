@@ -16,6 +16,6 @@ exclude = '''
     | dist
   )/
   | tensorflow_addons/text/skip_gram_ops_test.py
-                     # the root of the project
+  | tools/docs/build_docs.py
 )
 '''
