@@ -150,8 +150,7 @@ class CohenKappa(Metric):
         pred_ratings_hist = tf.reduce_sum(self.conf_mtx, axis=0)
 
         # 4. Get the outer product
-        out_prod = pred_ratings_hist[..., None] * \
-                    actual_ratings_hist[None, ...]
+        out_prod = pred_ratings_hist[..., None] * actual_ratings_hist[None, ...]
 
         # 5. Normalize the confusion matrix and outer product
         conf_mtx = self.conf_mtx / tf.reduce_sum(self.conf_mtx)
