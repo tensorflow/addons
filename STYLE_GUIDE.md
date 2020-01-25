@@ -22,20 +22,17 @@ code analysis.
 Addon use [Black](https://black.readthedocs.io/en/stable/) to format our code.
 The continuous integration check will fail if you do not use it.
 
-
-It's very useful to have a pre-commit hook that will run them both before 
-each of your commits. To do that:
-```bash
-pip install pre-commit
-pre-commit install
+Install them with:
+```
+pip install flake8 black
 ```
 
-When making a commit, black and flake8 will run.
+Be sure to run them both before you push your commits, otherwise the CI will fail!
 
-* If Black makes the pre-commit fail, you'll just have to run `git add` and `git commit`
-again (black makes the hook fail and modify your files, you need to redo the commit).
-
-* If flake8 makes the pre-commit fail, you need to fix it yourself before committing again.
+```
+python -m black ./
+python -m flake8
+```
 
 #### TensorFlow Conventions
 
