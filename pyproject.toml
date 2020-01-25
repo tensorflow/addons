@@ -160,5 +160,7 @@ exclude = '''
   | tensorflow_addons/utils/test_utils.py
   | tensorflow_addons/version.py
   | tools/ci_build/verify/check_file_name.py
+  | tensorflow_addons/image/distance_transform_test.py
+  | tensorflow_addons/optimizers/lazy_adam_test.py
 )
 '''
