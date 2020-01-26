@@ -56,7 +56,8 @@ def connected_components(images, name=None):
         else:
             raise TypeError(
                 "images should have rank 2 (HW) or 3 (NHW). Static shape is %s"
-                % image_or_images.get_shape())
+                % image_or_images.get_shape()
+            )
         components = _image_so.ops.addons_image_connected_components(images)
 
         # TODO(ringwalt): Component id renaming should be done in the op,
@@ -65,8 +66,9 @@ def connected_components(images, name=None):
         unique_ids, id_index = tf.unique(components_flat)
         id_is_zero = tf.where(tf.equal(unique_ids, 0))[:, 0]
         # Map each nonzero id to consecutive values.
-        nonzero_consecutive_ids = tf.range(
-            tf.shape(unique_ids)[0] - tf.shape(id_is_zero)[0]) + 1
+        nonzero_consecutive_ids = (
+            tf.range(tf.shape(unique_ids)[0] - tf.shape(id_is_zero)[0]) + 1
+        )
 
         def no_zero():
             # No need to insert a zero into the ids.
@@ -81,10 +83,8 @@ def connected_components(images, name=None):
             ids_after = nonzero_consecutive_ids[zero_id_ind:]
             return tf.concat([ids_before, [0], ids_after], axis=0)
 
-        new_ids = tf.cond(
-            tf.equal(tf.shape(id_is_zero)[0], 0), no_zero, has_zero)
-        components = tf.reshape(
-            tf.gather(new_ids, id_index), tf.shape(components))
+        new_ids = tf.cond(tf.equal(tf.shape(id_is_zero)[0], 0), no_zero, has_zero)
+        components = tf.reshape(tf.gather(new_ids, id_index), tf.shape(components))
         if len(image_or_images.get_shape()) == 2:
             return components[0, :, :]
         else:

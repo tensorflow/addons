@@ -21,8 +21,12 @@ from tensorflow_addons.image import transform_ops
 from tensorflow_addons.utils import test_utils
 
 _DTYPES = {
-    tf.dtypes.uint8, tf.dtypes.int32, tf.dtypes.int64, tf.dtypes.float16,
-    tf.dtypes.float32, tf.dtypes.float64
+    tf.dtypes.uint8,
+    tf.dtypes.int32,
+    tf.dtypes.int64,
+    tf.dtypes.float16,
+    tf.dtypes.float32,
+    tf.dtypes.float64,
 }
 
 
@@ -33,45 +37,51 @@ class ImageOpsTest(tf.test.TestCase):
             with test_utils.use_gpu():
                 image = tf.constant(
                     [[1, 1, 1, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]],
-                    dtype=dtype)
+                    dtype=dtype,
+                )
                 # Rotate counter-clockwise by pi / 2.
                 rotation = transform_ops.angles_to_projective_transforms(
-                    np.pi / 2, 4, 4)
+                    np.pi / 2, 4, 4
+                )
                 # Translate right by 1 (the transformation matrix is always inverted,
                 # hence the -1).
-                translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0],
-                                          dtype=tf.dtypes.float32)
-                composed = transform_ops.compose_transforms(
-                    [rotation, translation])
+                translation = tf.constant(
+                    [1, 0, -1, 0, 1, 0, 0, 0], dtype=tf.dtypes.float32
+                )
+                composed = transform_ops.compose_transforms([rotation, translation])
                 image_transformed = transform_ops.transform(image, composed)
                 self.assertAllEqual(
                     [[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 0, 1], [0, 1, 1, 1]],
-                    image_transformed)
+                    image_transformed,
+                )
 
     def test_extreme_projective_transform(self):
         for dtype in _DTYPES:
             with test_utils.use_gpu():
                 image = tf.constant(
                     [[1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1]],
-                    dtype=dtype)
-                transformation = tf.constant([1, 0, 0, 0, 1, 0, -1, 0],
-                                             tf.dtypes.float32)
-                image_transformed = transform_ops.transform(
-                    image, transformation)
+                    dtype=dtype,
+                )
+                transformation = tf.constant(
+                    [1, 0, 0, 0, 1, 0, -1, 0], tf.dtypes.float32
+                )
+                image_transformed = transform_ops.transform(image, transformation)
                 self.assertAllEqual(
                     [[1, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0], [0, 0, 0, 0]],
-                    image_transformed)
+                    image_transformed,
+                )
 
     def test_transform_static_output_shape(self):
-        image = tf.constant([[1., 2.], [3., 4.]])
+        image = tf.constant([[1.0, 2.0], [3.0, 4.0]])
         result = transform_ops.transform(
-            image, tf.random.uniform([8], -1, 1), output_shape=[3, 5])
+            image, tf.random.uniform([8], -1, 1), output_shape=[3, 5]
+        )
         self.assertAllEqual([3, 5], result.shape)
 
     def test_transform_unknown_shape(self):
         fn = tf.function(transform_ops.transform).get_concrete_function(
-            tf.TensorSpec(shape=None, dtype=tf.float32),
-            [1, 0, 0, 0, 1, 0, 0, 0])
+            tf.TensorSpec(shape=None, dtype=tf.float32), [1, 0, 0, 0, 1, 0, 0, 0]
+        )
         for shape in (2, 4), (2, 4, 3), (1, 2, 4, 3):
             image = tf.ones(shape=shape)
             self.assertAllEqual(self.evaluate(image), self.evaluate(fn(image)))
@@ -79,8 +89,7 @@ class ImageOpsTest(tf.test.TestCase):
     def _test_grad(self, input_shape, output_shape=None):
         image_size = tf.math.cumprod(input_shape)[-1]
         image_size = tf.cast(image_size, tf.float32)
-        test_image = tf.reshape(
-            tf.range(0, image_size, dtype=tf.float32), input_shape)
+        test_image = tf.reshape(tf.range(0, image_size, dtype=tf.float32), input_shape)
         # Scale test image to range [0, 0.01]
         test_image = (test_image / image_size) * 0.01
 
@@ -95,13 +104,12 @@ class ImageOpsTest(tf.test.TestCase):
 
         def transform_fn(x):
             x.set_shape(input_shape)
-            transform = transform_ops.angles_to_projective_transforms(
-                np.pi / 2, 4, 4)
+            transform = transform_ops.angles_to_projective_transforms(np.pi / 2, 4, 4)
             return transform_ops.transform(
-                images=x, transforms=transform, output_shape=resize_shape)
+                images=x, transforms=transform, output_shape=resize_shape
+            )
 
-        theoretical, numerical = tf.test.compute_gradient(
-            transform_fn, [test_image])
+        theoretical, numerical = tf.test.compute_gradient(transform_fn, [test_image])
 
         self.assertAllClose(theoretical[0], numerical[0])
 
@@ -118,13 +126,14 @@ class ImageOpsTest(tf.test.TestCase):
             image = tf.constant([[1, 2], [3, 4]], dtype=dtype)
             self.assertAllEqual(
                 np.array([[4, 4], [4, 4]]).astype(dtype.as_numpy_dtype),
-                transform_ops.transform(image, [1] * 8))
+                transform_ops.transform(image, [1] * 8),
+            )
 
     def test_transform_eager(self):
-        image = tf.constant([[1., 2.], [3., 4.]])
+        image = tf.constant([[1.0, 2.0], [3.0, 4.0]])
         self.assertAllEqual(
-            np.array([[4, 4], [4, 4]]), transform_ops.transform(
-                image, [1] * 8))
+            np.array([[4, 4], [4, 4]]), transform_ops.transform(image, [1] * 8)
+        )
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -136,7 +145,8 @@ class RotateOpTest(tf.test.TestCase):
                     image = tf.zeros(shape, dtype)
                     self.assertAllEqual(
                         transform_ops.rotate(image, angle),
-                        np.zeros(shape, dtype.as_numpy_dtype))
+                        np.zeros(shape, dtype.as_numpy_dtype),
+                    )
 
     def test_rotate_even(self):
         for dtype in _DTYPES:
@@ -196,21 +206,19 @@ class RotateOpTest(tf.test.TestCase):
     def test_compose_rotate(self):
         for dtype in _DTYPES:
             image = tf.constant(
-                [[1, 1, 1, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]],
-                dtype=dtype)
+                [[1, 1, 1, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]], dtype=dtype
+            )
             # Rotate counter-clockwise by pi / 2.
-            rotation = transform_ops.angles_to_projective_transforms(
-                np.pi / 2, 4, 4)
+            rotation = transform_ops.angles_to_projective_transforms(np.pi / 2, 4, 4)
             # Translate right by 1 (the transformation matrix is always inverted,
             # hence the -1).
-            translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0],
-                                      dtype=tf.float32)
-            composed = transform_ops.compose_transforms(
-                [rotation, translation])
+            translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0], dtype=tf.float32)
+            composed = transform_ops.compose_transforms([rotation, translation])
             image_transformed = transform_ops.transform(image, composed)
             self.assertAllEqual(
                 image_transformed,
-                [[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 0, 1], [0, 1, 1, 1]])
+                [[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 0, 1], [0, 1, 1, 1]],
+            )
 
     def test_bilinear(self):
         image = tf.constant(
@@ -218,7 +226,8 @@ class RotateOpTest(tf.test.TestCase):
             [[0, 0, 0, 0, 0], [0, 1, 1, 1, 0], [0, 1, 0, 1, 0],
              [0, 1, 1, 1, 0], [0, 0, 0, 0, 0]],
             # yapf: enable
-            tf.float32)
+            tf.float32
+        )
         # The following result matches:
         # >>> scipy.ndimage.rotate(image, 45, order=1, reshape=False)
         # which uses spline interpolation of order 1, equivalent to bilinear
@@ -232,7 +241,8 @@ class RotateOpTest(tf.test.TestCase):
              [0.000, 0.586, 0.914, 0.586, 0.000],
              [0.000, 0.000, 0.343, 0.000, 0.000]],
             # yapf: enable
-            atol=0.001)
+            atol=0.001,
+        )
         # yapf: disable
         self.assertAllClose(
             transform_ops.rotate(
@@ -266,14 +276,16 @@ class RotateOpTest(tf.test.TestCase):
         # yapf: enable
 
     def test_rotate_static_shape(self):
-        image = tf.linalg.diag([1., 2., 3.])
+        image = tf.linalg.diag([1.0, 2.0, 3.0])
         result = transform_ops.rotate(
-            image, tf.random.uniform((), -1, 1), interpolation="BILINEAR")
+            image, tf.random.uniform((), -1, 1), interpolation="BILINEAR"
+        )
         self.assertEqual(image.get_shape(), result.get_shape())
 
     def test_unknown_shape(self):
         fn = tf.function(transform_ops.rotate).get_concrete_function(
-            tf.TensorSpec(shape=None, dtype=tf.float32), 0)
+            tf.TensorSpec(shape=None, dtype=tf.float32), 0
+        )
         for shape in (2, 4), (2, 4, 3), (1, 2, 4, 3):
             image = tf.ones(shape=shape)
             self.assertAllEqual(self.evaluate(image), self.evaluate(fn(image)))

@@ -40,21 +40,41 @@ def normalize_tuple(value, n, name):
         try:
             value_tuple = tuple(value)
         except TypeError:
-            raise TypeError('The `' + name + '` argument must be a tuple of ' +
-                            str(n) + ' integers. Received: ' + str(value))
+            raise TypeError(
+                "The `"
+                + name
+                + "` argument must be a tuple of "
+                + str(n)
+                + " integers. Received: "
+                + str(value)
+            )
         if len(value_tuple) != n:
-            raise ValueError('The `' + name +
-                             '` argument must be a tuple of ' + str(n) +
-                             ' integers. Received: ' + str(value))
+            raise ValueError(
+                "The `"
+                + name
+                + "` argument must be a tuple of "
+                + str(n)
+                + " integers. Received: "
+                + str(value)
+            )
         for single_value in value_tuple:
             try:
                 int(single_value)
             except (ValueError, TypeError):
-                raise ValueError('The `' + name +
-                                 '` argument must be a tuple of ' + str(n) +
-                                 ' integers. Received: ' + str(value) + ' '
-                                 'including element ' + str(single_value) +
-                                 ' of type' + ' ' + str(type(single_value)))
+                raise ValueError(
+                    "The `"
+                    + name
+                    + "` argument must be a tuple of "
+                    + str(n)
+                    + " integers. Received: "
+                    + str(value)
+                    + " "
+                    "including element "
+                    + str(single_value)
+                    + " of type"
+                    + " "
+                    + str(type(single_value))
+                )
         return value_tuple
 
 
@@ -94,10 +114,14 @@ def assert_like_rnncell(cell_name, cell):
     errors = [
         "'output_size' property is missing",
         "'state_size' property is missing",
-        "'get_initial_state' method is required", "is not callable"
+        "'get_initial_state' method is required",
+        "is not callable",
     ]
 
     if not all(conditions):
         errors = [error for error, cond in zip(errors, conditions) if not cond]
-        raise TypeError("The argument {!r} ({}) is not an RNNCell: {}.".format(
-            cell_name, cell, ", ".join(errors)))
+        raise TypeError(
+            "The argument {!r} ({}) is not an RNNCell: {}.".format(
+                cell_name, cell, ", ".join(errors)
+            )
+        )
