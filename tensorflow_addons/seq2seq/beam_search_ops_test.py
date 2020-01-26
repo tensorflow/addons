@@ -29,18 +29,22 @@ class GatherTreeTest(tf.test.TestCase):
     def testGatherTreeOne(self):
         # (max_time = 4, batch_size = 1, beams = 3)
         end_token = 10
-        step_ids = _transpose_batch_time([[[1, 2, 3], [4, 5, 6], [7, 8, 9],
-                                           [-1, -1, -1]]])
-        parent_ids = _transpose_batch_time([[[0, 0, 0], [0, 1, 1], [2, 1, 2],
-                                             [-1, -1, -1]]])
+        step_ids = _transpose_batch_time(
+            [[[1, 2, 3], [4, 5, 6], [7, 8, 9], [-1, -1, -1]]]
+        )
+        parent_ids = _transpose_batch_time(
+            [[[0, 0, 0], [0, 1, 1], [2, 1, 2], [-1, -1, -1]]]
+        )
         max_sequence_lengths = [3]
-        expected_result = _transpose_batch_time([[[2, 2, 2], [6, 5, 6],
-                                                  [7, 8, 9], [10, 10, 10]]])
+        expected_result = _transpose_batch_time(
+            [[[2, 2, 2], [6, 5, 6], [7, 8, 9], [10, 10, 10]]]
+        )
         beams = gather_tree(
             step_ids=step_ids,
             parent_ids=parent_ids,
             max_sequence_lengths=max_sequence_lengths,
-            end_token=end_token)
+            end_token=end_token,
+        )
         with self.cached_session(use_gpu=True):
             self.assertAllEqual(expected_result, self.evaluate(beams))
 
@@ -48,10 +52,12 @@ class GatherTreeTest(tf.test.TestCase):
         # (batch_size = 1, max_time = 4, beams = 3)
         # bad parent in beam 1 time 1
         end_token = 10
-        step_ids = _transpose_batch_time([[[1, 2, 3], [4, 5, 6], [7, 8, 9],
-                                           [-1, -1, -1]]])
-        parent_ids = _transpose_batch_time([[[0, 0, 0], [0, -1, 1], [2, 1, 2],
-                                             [-1, -1, -1]]])
+        step_ids = _transpose_batch_time(
+            [[[1, 2, 3], [4, 5, 6], [7, 8, 9], [-1, -1, -1]]]
+        )
+        parent_ids = _transpose_batch_time(
+            [[[0, 0, 0], [0, -1, 1], [2, 1, 2], [-1, -1, -1]]]
+        )
         max_sequence_lengths = [3]
         with tf.device("/cpu:0"):
             msg = r"parent id -1 at \(batch, time, beam\) == \(0, 0, 1\)"
@@ -60,7 +66,8 @@ class GatherTreeTest(tf.test.TestCase):
                     step_ids=step_ids,
                     parent_ids=parent_ids,
                     max_sequence_lengths=max_sequence_lengths,
-                    end_token=end_token)
+                    end_token=end_token,
+                )
                 self.evaluate(beams)
 
     def testBadParentValuesOnGPU(self):
@@ -71,19 +78,23 @@ class GatherTreeTest(tf.test.TestCase):
         # (max_time = 4, batch_size = 1, beams = 3)
         # bad parent in beam 1 time 1; appears as a negative index at time 0
         end_token = 10
-        step_ids = _transpose_batch_time([[[1, 2, 3], [4, 5, 6], [7, 8, 9],
-                                           [-1, -1, -1]]])
-        parent_ids = _transpose_batch_time([[[0, 0, 0], [0, -1, 1], [2, 1, 2],
-                                             [-1, -1, -1]]])
+        step_ids = _transpose_batch_time(
+            [[[1, 2, 3], [4, 5, 6], [7, 8, 9], [-1, -1, -1]]]
+        )
+        parent_ids = _transpose_batch_time(
+            [[[0, 0, 0], [0, -1, 1], [2, 1, 2], [-1, -1, -1]]]
+        )
         max_sequence_lengths = [3]
-        expected_result = _transpose_batch_time([[[2, -1, 2], [6, 5, 6],
-                                                  [7, 8, 9], [10, 10, 10]]])
+        expected_result = _transpose_batch_time(
+            [[[2, -1, 2], [6, 5, 6], [7, 8, 9], [10, 10, 10]]]
+        )
         with tf.device("/device:GPU:0"):
             beams = gather_tree(
                 step_ids=step_ids,
                 parent_ids=parent_ids,
                 max_sequence_lengths=max_sequence_lengths,
-                end_token=end_token)
+                end_token=end_token,
+            )
             self.assertAllEqual(expected_result, self.evaluate(beams))
 
     def testGatherTreeBatch(self):
@@ -95,26 +106,26 @@ class GatherTreeTest(tf.test.TestCase):
 
         with self.cached_session(use_gpu=True):
             step_ids = np.random.randint(
-                0, high=end_token + 1, size=(max_time, batch_size, beam_width))
+                0, high=end_token + 1, size=(max_time, batch_size, beam_width)
+            )
             parent_ids = np.random.randint(
-                0,
-                high=beam_width - 1,
-                size=(max_time, batch_size, beam_width))
+                0, high=beam_width - 1, size=(max_time, batch_size, beam_width)
+            )
 
             beams = gather_tree(
                 step_ids=step_ids.astype(np.int32),
                 parent_ids=parent_ids.astype(np.int32),
                 max_sequence_lengths=max_sequence_lengths,
-                end_token=end_token)
+                end_token=end_token,
+            )
 
             self.assertEqual((max_time, batch_size, beam_width), beams.shape)
             beams_value = self.evaluate(beams)
             for b in range(batch_size):
                 # Past max_sequence_lengths[b], we emit all end tokens.
-                b_value = beams_value[max_sequence_lengths[b]:, b, :]
+                b_value = beams_value[max_sequence_lengths[b] :, b, :]
                 self.assertAllClose(b_value, end_token * np.ones_like(b_value))
-            for batch, beam in itertools.product(
-                    range(batch_size), range(beam_width)):
+            for batch, beam in itertools.product(range(batch_size), range(beam_width)):
                 v = np.squeeze(beams_value[:, batch, beam])
                 if end_token in v:
                     found_bad = np.where(v == -1)[0]
@@ -125,10 +136,12 @@ class GatherTreeTest(tf.test.TestCase):
                     # valid id and everything after it should be -1.
                     if found > 0:
                         self.assertAllEqual(
-                            v[:found - 1] >= 0,
-                            np.ones_like(v[:found - 1], dtype=bool))
+                            v[: found - 1] >= 0,
+                            np.ones_like(v[: found - 1], dtype=bool),
+                        )
                     self.assertAllClose(
-                        v[found + 1:], end_token * np.ones_like(v[found + 1:]))
+                        v[found + 1 :], end_token * np.ones_like(v[found + 1 :])
+                    )
 
 
 if __name__ == "__main__":

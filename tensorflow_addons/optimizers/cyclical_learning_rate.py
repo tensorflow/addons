@@ -17,18 +17,18 @@
 import tensorflow as tf
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
     """A LearningRateSchedule that uses cyclical schedule."""
 
     def __init__(
-            self,
-            initial_learning_rate,
-            maximal_learning_rate,
-            step_size,
-            scale_fn,
-            scale_mode="cycle",
-            name=None,
+        self,
+        initial_learning_rate,
+        maximal_learning_rate,
+        step_size,
+        scale_fn,
+        scale_mode="cycle",
+        name=None,
     ):
         """Applies cyclical schedule to the learning rate.
 
@@ -81,7 +81,8 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
     def __call__(self, step):
         with tf.name_scope(self.name or "CyclicalLearningRate"):
             initial_learning_rate = tf.convert_to_tensor(
-                self.initial_learning_rate, name="initial_learning_rate")
+                self.initial_learning_rate, name="initial_learning_rate"
+            )
             dtype = initial_learning_rate.dtype
             maximal_learning_rate = tf.cast(self.maximal_learning_rate, dtype)
             step_size = tf.cast(self.step_size, dtype)
@@ -91,8 +92,8 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
             mode_step = cycle if self.scale_mode == "cycle" else step
 
             return initial_learning_rate + (
-                maximal_learning_rate - initial_learning_rate) * tf.maximum(
-                    tf.cast(0, dtype), (1 - x)) * self.scale_fn(mode_step)
+                maximal_learning_rate - initial_learning_rate
+            ) * tf.maximum(tf.cast(0, dtype), (1 - x)) * self.scale_fn(mode_step)
 
     def get_config(self):
         return {
@@ -103,15 +104,15 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
         }
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class TriangularCyclicalLearningRate(CyclicalLearningRate):
     def __init__(
-            self,
-            initial_learning_rate,
-            maximal_learning_rate,
-            step_size,
-            scale_mode="cycle",
-            name="TriangularCyclicalLearningRate",
+        self,
+        initial_learning_rate,
+        maximal_learning_rate,
+        step_size,
+        scale_mode="cycle",
+        name="TriangularCyclicalLearningRate",
     ):
         """Applies triangular cyclical schedule to the learning rate.
 
@@ -158,21 +159,21 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
             initial_learning_rate=initial_learning_rate,
             maximal_learning_rate=maximal_learning_rate,
             step_size=step_size,
-            scale_fn=lambda x: 1.,
+            scale_fn=lambda x: 1.0,
             scale_mode=scale_mode,
             name=name,
         )
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class Triangular2CyclicalLearningRate(CyclicalLearningRate):
     def __init__(
-            self,
-            initial_learning_rate,
-            maximal_learning_rate,
-            step_size,
-            scale_mode="cycle",
-            name="Triangular2CyclicalLearningRate",
+        self,
+        initial_learning_rate,
+        maximal_learning_rate,
+        step_size,
+        scale_mode="cycle",
+        name="Triangular2CyclicalLearningRate",
     ):
         """Applies triangular2 cyclical schedule to the learning rate.
 
@@ -219,22 +220,22 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
             initial_learning_rate=initial_learning_rate,
             maximal_learning_rate=maximal_learning_rate,
             step_size=step_size,
-            scale_fn=lambda x: 1 / (2.**(x - 1)),
+            scale_fn=lambda x: 1 / (2.0 ** (x - 1)),
             scale_mode=scale_mode,
             name=name,
         )
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class ExponentialCyclicalLearningRate(CyclicalLearningRate):
     def __init__(
-            self,
-            initial_learning_rate,
-            maximal_learning_rate,
-            step_size,
-            scale_mode="iterations",
-            gamma=1.,
-            name="ExponentialCyclicalLearningRate",
+        self,
+        initial_learning_rate,
+        maximal_learning_rate,
+        step_size,
+        scale_mode="iterations",
+        gamma=1.0,
+        name="ExponentialCyclicalLearningRate",
     ):
         """Applies exponential cyclical schedule to the learning rate.
 
@@ -284,7 +285,7 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
             initial_learning_rate=initial_learning_rate,
             maximal_learning_rate=maximal_learning_rate,
             step_size=step_size,
-            scale_fn=lambda x: gamma**x,
+            scale_fn=lambda x: gamma ** x,
             scale_mode=scale_mode,
             name=name,
         )

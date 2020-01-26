@@ -23,17 +23,17 @@ from tensorflow_addons.utils import test_utils
 
 @test_utils.run_all_in_graph_and_eager_modes
 class MishTest(tf.test.TestCase, parameterized.TestCase):
-    @parameterized.named_parameters(("float16", np.float16),
-                                    ("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(
+        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
+    )
     def test_mish(self, dtype):
         x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
         expected_result = tf.constant(
-            [-0.2525015, -0.30340144, 0.0, 0.86509836, 1.943959], dtype=dtype)
+            [-0.2525015, -0.30340144, 0.0, 0.86509836, 1.943959], dtype=dtype
+        )
         self.assertAllCloseAccordingToType(mish(x), expected_result)
 
-    @parameterized.named_parameters(("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
     def test_theoretical_gradients(self, dtype):
         # Only test theoretical gradients for float32 and float64
         # because of the instability of float16 while computing jacobian
