@@ -76,3 +76,13 @@ jobs:
         run: pip install flake8
       - name: Run flake8
         run: flake8
+  black-test:
+    name: Black Python code format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+      - name: install black
+        run: pip install black
+      - name: Ensure contributor used ("black ./") before commit
+        run: black --check ./
