@@ -39,10 +39,10 @@ class TQDMProgressBar(Callback):
             training. Defaults to 10.
         metrics_format: Custom format for how metrics are formatted.
             See https://github.com/tqdm/tqdm#parameters for more detail.
-        leave_epoch_progress (bool): True to leave epoch progress bars.
-        leave_overall_progress (bool): True to leave overall progress bar.
-        show_epoch_progress (bool): False to hide epoch progress bars.
-        show_overall_progress (bool): False to hide overall progress bar.
+        leave_epoch_progress: True to leave epoch progress bars.
+        leave_overall_progress: True to leave overall progress bar.
+        show_epoch_progress: False to hide epoch progress bars.
+        show_overall_progress: False to hide overall progress bar.
     """
 
     def __init__(self,
