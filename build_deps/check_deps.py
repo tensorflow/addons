@@ -5,7 +5,7 @@ from pkg_resources import DistributionNotFound, VersionConflict
 
 
 def check_dependencies(requirement_file_name):
-    """Checks to see if the python dependencies are fullfilled.
+    """Checks to see if the python dependencies are fulfilled.
 
     If check passes return 0. Otherwise print error and return 1
     """

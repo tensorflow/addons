@@ -35,7 +35,7 @@ static constexpr int kChannelSize = 3;
 namespace internal {
 
 template <int MATRIX_SIZE>
-EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void compute_tranformation_matrix(
+EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void compute_transformation_matrix(
     const float delta_h, const float scale_s, const float scale_v,
     float* matrix) {
   static_assert(MATRIX_SIZE == kChannelSize * kChannelSize,
