@@ -30,10 +30,10 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Cache stuff
-          uses: actions/cache@v1
-          with:
-            path: ~/.cache
-            key: ${{ runner.os }}
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{ runner.os }}
       - uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
@@ -51,10 +51,10 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Cache stuff
-          uses: actions/cache@v1
-          with:
-            path: ~/.cache
-            key: ${{ runner.os }}
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{ runner.os }}
       - uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
