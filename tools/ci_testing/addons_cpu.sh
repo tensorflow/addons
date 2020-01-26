@@ -52,7 +52,7 @@ ${BAZEL_PATH:=bazel} test -c opt -k \
 
 
 # running all the tests in tests/
-bazel build --enable_runfiles build_pip_pkg
+${BAZEL_PATH:=bazel} build --enable_runfiles build_pip_pkg
 bazel-bin/build_pip_pkg artifacts
 
 pip install artifacts/tensorflow_addons-*.whl
