@@ -40,7 +40,7 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
         inputs invalid.
     """
     if indexing != "ij" and indexing != "xy":
-        raise ValueError("Indexing mode must be \'ij\' or \'xy\'")
+        raise ValueError("Indexing mode must be 'ij' or 'xy'")
 
     with tf.name_scope(name or "interpolate_bilinear"):
         grid = tf.convert_to_tensor(grid)
@@ -58,24 +58,26 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
                 raise ValueError("Grid width must be at least 2.")
         else:
             # pylint: disable=bad-continuation
-            with tf.control_dependencies([
+            with tf.control_dependencies(
+                [
                     tf.debugging.assert_greater_equal(
-                        grid_shape[1],
-                        2,
-                        message="Grid height must be at least 2."),
+                        grid_shape[1], 2, message="Grid height must be at least 2."
+                    ),
                     tf.debugging.assert_greater_equal(
-                        grid_shape[2],
-                        2,
-                        message="Grid width must be at least 2."),
+                        grid_shape[2], 2, message="Grid width must be at least 2."
+                    ),
                     tf.debugging.assert_less_equal(
                         tf.cast(
                             grid_shape[0] * grid_shape[1] * grid_shape[2],
-                            dtype=tf.dtypes.float32),
+                            dtype=tf.dtypes.float32,
+                        ),
                         np.iinfo(np.int32).max / 8.0,
                         message="The image size or batch size is sufficiently "
                         "large that the linearized addresses used by "
-                        "tf.gather may exceed the int32 limit.")
-            ]):
+                        "tf.gather may exceed the int32 limit.",
+                    ),
+                ]
+            ):
                 pass
             # pylint: enable=bad-continuation
 
@@ -90,17 +92,24 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
                 raise ValueError("Query points last dimension must be 2.")
         else:
             # pylint: disable=bad-continuation
-            with tf.control_dependencies([
+            with tf.control_dependencies(
+                [
                     tf.debugging.assert_equal(
                         query_shape[2],
                         2,
-                        message="Query points last dimension must be 2.")
-            ]):
+                        message="Query points last dimension must be 2.",
+                    )
+                ]
+            ):
                 pass
             # pylint: enable=bad-continuation
 
-        batch_size, height, width, channels = (grid_shape[0], grid_shape[1],
-                                               grid_shape[2], grid_shape[3])
+        batch_size, height, width, channels = (
+            grid_shape[0],
+            grid_shape[1],
+            grid_shape[2],
+            grid_shape[3],
+        )
 
         num_queries = query_shape[1]
 
@@ -124,8 +133,8 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
                 max_floor = tf.cast(size_in_indexing_dimension - 2, query_type)
                 min_floor = tf.constant(0.0, dtype=query_type)
                 floor = tf.math.minimum(
-                    tf.math.maximum(min_floor, tf.math.floor(queries)),
-                    max_floor)
+                    tf.math.maximum(min_floor, tf.math.floor(queries)), max_floor
+                )
                 int_floor = tf.cast(floor, tf.dtypes.int32)
                 floors.append(int_floor)
                 ceil = int_floor + 1
@@ -136,18 +145,17 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
                 alpha = tf.cast(queries - floor, grid_type)
                 min_alpha = tf.constant(0.0, dtype=grid_type)
                 max_alpha = tf.constant(1.0, dtype=grid_type)
-                alpha = tf.math.minimum(
-                    tf.math.maximum(min_alpha, alpha), max_alpha)
+                alpha = tf.math.minimum(tf.math.maximum(min_alpha, alpha), max_alpha)
 
                 # Expand alpha to [b, n, 1] so we can use broadcasting
                 # (since the alpha values don't depend on the channel).
                 alpha = tf.expand_dims(alpha, 2)
                 alphas.append(alpha)
 
-            flattened_grid = tf.reshape(
-                grid, [batch_size * height * width, channels])
+            flattened_grid = tf.reshape(grid, [batch_size * height * width, channels])
             batch_offsets = tf.reshape(
-                tf.range(batch_size) * height * width, [batch_size, 1])
+                tf.range(batch_size) * height * width, [batch_size, 1]
+            )
         # pylint: enable=bad-continuation
 
         # This wraps tf.gather. We reshape the image data such that the
@@ -156,11 +164,9 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
         # code would be made simpler by using tf.gather_nd.
         def gather(y_coords, x_coords, name):
             with tf.name_scope("gather-" + name):
-                linear_coordinates = (
-                    batch_offsets + y_coords * width + x_coords)
+                linear_coordinates = batch_offsets + y_coords * width + x_coords
                 gathered_values = tf.gather(flattened_grid, linear_coordinates)
-                return tf.reshape(gathered_values,
-                                  [batch_size, num_queries, channels])
+                return tf.reshape(gathered_values, [batch_size, num_queries, channels])
 
         # grab the pixel values in the 4 corners around each query point
         top_left = gather(floors[0], floors[1], "top_left")
@@ -171,8 +177,7 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
         # now, do the actual interpolation
         with tf.name_scope("interpolate"):
             interp_top = alphas[1] * (top_right - top_left) + top_left
-            interp_bottom = alphas[1] * (
-                bottom_right - bottom_left) + bottom_left
+            interp_bottom = alphas[1] * (bottom_right - bottom_left) + bottom_left
             interp = alphas[0] * (interp_bottom - interp_top) + interp_top
 
         return interp
@@ -213,10 +218,12 @@ def dense_image_warp(image, flow, name=None):
     with tf.name_scope(name or "dense_image_warp"):
         image = tf.convert_to_tensor(image)
         flow = tf.convert_to_tensor(flow)
-        batch_size, height, width, channels = (tf.shape(image)[0],
-                                               tf.shape(image)[1],
-                                               tf.shape(image)[2],
-                                               tf.shape(image)[3])
+        batch_size, height, width, channels = (
+            tf.shape(image)[0],
+            tf.shape(image)[1],
+            tf.shape(image)[2],
+            tf.shape(image)[3],
+        )
 
         # The flow is defined on the image grid. Turn the flow into a list of query
         # points in the grid space.
@@ -224,11 +231,11 @@ def dense_image_warp(image, flow, name=None):
         stacked_grid = tf.cast(tf.stack([grid_y, grid_x], axis=2), flow.dtype)
         batched_grid = tf.expand_dims(stacked_grid, axis=0)
         query_points_on_grid = batched_grid - flow
-        query_points_flattened = tf.reshape(query_points_on_grid,
-                                            [batch_size, height * width, 2])
+        query_points_flattened = tf.reshape(
+            query_points_on_grid, [batch_size, height * width, 2]
+        )
         # Compute values at the query points, then reshape the result back to the
         # image grid.
         interpolated = interpolate_bilinear(image, query_points_flattened)
-        interpolated = tf.reshape(interpolated,
-                                  [batch_size, height, width, channels])
+        interpolated = tf.reshape(interpolated, [batch_size, height, width, channels])
         return interpolated

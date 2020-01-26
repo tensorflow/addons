@@ -54,8 +54,7 @@ def resampler(data, warp, name=None):
 def _resampler_grad(op, grad_output):
     data, warp = op.inputs
     grad_output_tensor = tf.convert_to_tensor(grad_output, name="grad_output")
-    return _resampler_so.ops.addons_resampler_grad(data, warp,
-                                                   grad_output_tensor)
+    return _resampler_so.ops.addons_resampler_grad(data, warp, grad_output_tensor)
 
 
 tf.no_gradient("Addons>ResamplerGrad")

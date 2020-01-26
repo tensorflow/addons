@@ -43,8 +43,7 @@ def pairwise_distance(feature, squared=False):
     # yapf: enable
 
     # Deal with numerical inaccuracies. Set small negatives to zero.
-    pairwise_distances_squared = tf.math.maximum(pairwise_distances_squared,
-                                                 0.0)
+    pairwise_distances_squared = tf.math.maximum(pairwise_distances_squared, 0.0)
     # Get the mask where the zero distances are at.
     error_mask = tf.math.less_equal(pairwise_distances_squared, 0.0)
 
@@ -53,18 +52,20 @@ def pairwise_distance(feature, squared=False):
         pairwise_distances = pairwise_distances_squared
     else:
         pairwise_distances = tf.math.sqrt(
-            pairwise_distances_squared +
-            tf.cast(error_mask, dtype=tf.dtypes.float32) * 1e-16)
+            pairwise_distances_squared
+            + tf.cast(error_mask, dtype=tf.dtypes.float32) * 1e-16
+        )
 
     # Undo conditionally adding 1e-16.
     pairwise_distances = tf.math.multiply(
         pairwise_distances,
-        tf.cast(tf.math.logical_not(error_mask), dtype=tf.dtypes.float32))
+        tf.cast(tf.math.logical_not(error_mask), dtype=tf.dtypes.float32),
+    )
 
     num_data = tf.shape(feature)[0]
     # Explicitly set diagonals to zero.
     mask_offdiagonals = tf.ones_like(pairwise_distances) - tf.linalg.diag(
-        tf.ones([num_data]))
-    pairwise_distances = tf.math.multiply(pairwise_distances,
-                                          mask_offdiagonals)
+        tf.ones([num_data])
+    )
+    pairwise_distances = tf.math.multiply(pairwise_distances, mask_offdiagonals)
     return pairwise_distances
