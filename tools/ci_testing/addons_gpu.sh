@@ -20,7 +20,7 @@
 # export TF_GPU_COUNT=4 # Specify number of GPUs available
 # export TF_TESTS_PER_GPU=8 # Specify number of tests per GPU
 # export TF_PER_DEVICE_MEMORY_LIMIT_MB=1024 # Limit the memory used per test
-set -x
+set -x -e
 
 SCRIPT_DIR=$( cd ${0%/*} && pwd -P )
 ROOT_DIR=$( cd "$SCRIPT_DIR/../.." && pwd -P )
@@ -54,4 +54,12 @@ bazel test -c opt -k \
     --extra_toolchains=@bazel_tools//tools/python:autodetecting_toolchain_nonstrict \
     //tensorflow_addons/...
 
-exit $?
+
+# running all the tests in tests/
+bazel build --enable_runfiles build_pip_pkg
+bazel-bin/build_pip_pkg artifacts
+
+pip install artifacts/tensorflow_addons-*.whl
+
+# we need to move in the directory to avoid import issues
+cd tests/tensorflow_addons && python -m unittest discover -s ./ -p '*_test.py'

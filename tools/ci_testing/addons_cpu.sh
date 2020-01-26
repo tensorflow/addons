@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # ==============================================================================
-set -x
+set -x -e
 
 # Make sure we're in the project root path.
 SCRIPT_DIR=$( cd ${0%/*} && pwd -P )
@@ -50,4 +50,12 @@ ${BAZEL_PATH:=bazel} test -c opt -k \
     --extra_toolchains=@bazel_tools//tools/python:autodetecting_toolchain_nonstrict \
     //tensorflow_addons/...
 
-exit $?
+
+# running all the tests in tests/
+bazel build --enable_runfiles build_pip_pkg
+bazel-bin/build_pip_pkg artifacts
+
+pip install artifacts/tensorflow_addons-*.whl
+
+# we need to move in the directory to avoid import issues
+cd tests/tensorflow_addons && python -m unittest discover -s ./ -p '*_test.py'
