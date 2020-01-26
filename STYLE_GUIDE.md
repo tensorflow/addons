@@ -19,7 +19,7 @@ void formatted_code_again;
 Addons uses [flake8](http://flake8.pycqa.org/en/latest/) to check pep8 compliance and 
 code analysis.
 
-Addon use [Black](https://black.readthedocs.io/en/stable/) to format our code.
+Addons use [Black](https://black.readthedocs.io/en/stable/) to format our code.
 The continuous integration check will fail if you do not use it.
 
 Install them with:
