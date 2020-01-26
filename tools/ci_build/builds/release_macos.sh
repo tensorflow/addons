@@ -21,12 +21,6 @@ export TF_NEED_CUDA="0"
 PYTHON_VERSIONS="3.5.6 3.6.6 3.7.4"
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
 
-# Install Bazel 1.1.0
-wget https://github.com/bazelbuild/bazel/releases/download/1.1.0/bazel-1.1.0-installer-darwin-x86_64.sh
-chmod +x bazel-1.1.0-installer-darwin-x86_64.sh
-./bazel-1.1.0-installer-darwin-x86_64.sh --user
-export PATH="$PATH:$HOME/bin"
-
 # Install delocate
 python3 -m pip install -q delocate
 

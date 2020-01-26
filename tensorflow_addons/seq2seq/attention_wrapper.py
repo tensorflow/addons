@@ -912,7 +912,7 @@ def monotonic_attention(p_choose_i, previous_attention, mode):
         # p_choose_i = [0, 0, 0, 1, 1, 0, 1, 1]
         # cumprod(1 - p_choose_i, exclusive=True) = [1, 1, 1, 1, 0, 0, 0, 0]
         # Product of above: [0, 0, 0, 1, 0, 0, 0, 0]
-        attention = p_choose_i * tf.cumprod(
+        attention = p_choose_i * tf.math.cumprod(
             1 - p_choose_i, axis=1, exclusive=True)
     else:
         raise ValueError("mode must be 'recursive', 'parallel', or 'hard'.")
