@@ -262,8 +262,6 @@ class LAMBTest(tf.test.TestCase):
             beta_2 = 0.999
             epsilon = 1e-7
 
-            raise IndexError
-
             opt = lamb.LAMB(
                 learning_rate=lr_schedule,
                 beta_1=beta_1,
