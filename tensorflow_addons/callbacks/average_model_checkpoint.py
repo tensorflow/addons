@@ -19,7 +19,7 @@ from tensorflow_addons.optimizers.average_wrapper import AveragedOptimizerWrappe
 
 class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
     def __init__(self,
-                 optimizer,
+                 update_weights,
                  filepath,
                  monitor='val_loss',
                  verbose=0,
@@ -28,13 +28,49 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
                  mode='auto',
                  save_freq='epoch',
                  **kwargs):
-        if not isinstance(optimizer, AveragedOptimizerWrapper):
-            raise TypeError(
-                "AverageModelCheckpoint is only used when training with MovingAverage or StochasticAverage optimizers")
+        r"""The callback that should be used with optimizers that extend
+        AverageWrapper, i.e., MovingAverage and StochasticAverage optimizers.
+        It saves and, optionally, assigns the averaged weights.
 
-        self.optimizer = optimizer
-        super().__init__(filepath, monitor, verbose, save_best_only, save_weights_only, mode, save_freq, **kwargs)
+        Args:
+            update_weights: If True, assign the moving average weights
+                to the model, and save them. If False, keep the old
+                non-averaged weights, but the saved model uses the
+                average weights.
+
+            See `tf.keras.callbacks.ModelCheckpoint` for the other args.
+
+        Raises:
+            TypeError: If the optimizer isn't a MovingAverage or
+                StochasticAverage optimizers
+        """
+
+        if not isinstance(update_weights, bool):
+            raise TypeError("update_weight must be a boolean")
+
+        self.update_weights = update_weights
+        super().__init__(filepath, monitor, verbose, save_best_only,
+                         save_weights_only, mode, save_freq, **kwargs)
+
+    def set_model(self, model):
+        if not isinstance(model.optimizer, AveragedOptimizerWrapper):
+            raise TypeError("AverageModelCheckpoint is only used when training"
+                            "with MovingAverage or StochasticAverage")
+        return super().set_model(model)
 
     def _save_model(self, epoch, logs):
-        self.optimizer.assign_average_vars(self.model.variables)
-        return super()._save_model(epoch, logs)
+        assert (isinstance(self.model.optimizer, AveragedOptimizerWrapper))
+
+        if self.update_weights:
+            self.model.optimizer.assign_average_vars(self.model.variables)
+            return super()._save_model(epoch, logs)
+        else:
+            # Note: `model.get_weights()` gives us the weights (non-ref)
+            # whereas `model.variables` returns references to the variables.
+            non_avg_weights = self.model.get_weights()
+            self.model.optimizer.assign_average_vars(self.model.variables)
+            # result is currently None, since `super._save_model` doesn't
+            # return anything, but this may change in the future.
+            result = super()._save_model(epoch, logs)
+            self.model.set_weights(non_avg_weights)
+            return result
