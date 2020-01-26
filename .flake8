@@ -6,6 +6,10 @@ ignore =
     # whitespace before ':'
     # https://black.readthedocs.io/en/stable/the_black_code_style.html#slices
     E203
+    # missing whitespace after ','
+    # black takes care of that. Sometimes it may
+    # add a comma at the end of lists.
+    E231
     # Line too long
     # We use black, no need to enforce line length
     E501
