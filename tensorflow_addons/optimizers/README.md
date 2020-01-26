@@ -47,7 +47,6 @@ must:
    `@run_in_graph_and_eager_modes` (for test method)
    or `run_all_in_graph_and_eager_modes` (for TestCase subclass)
    decorator.
- * Add a `py_test` to this sub-package's BUILD file.
 
 #### Documentation Requirements
  * Update the table of contents in this sub-packages's README.
