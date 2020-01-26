@@ -41,7 +41,7 @@ class BasicDecoder(decoder.BaseDecoder):
           output_layer: (Optional) An instance of `tf.layers.Layer`, i.e.,
             `tf.layers.Dense`. Optional layer to apply to the RNN output prior
              to storing the result or sampling.
-          **kwargs: Other keyward arguments for layer creation.
+          **kwargs: Other keyword arguments for layer creation.
 
         Raises:
           TypeError: if `cell`, `helper` or `output_layer` have an incorrect
