@@ -27,7 +27,7 @@ class TQDMProgressBar(Callback):
 
     Args:
         metrics_separator: Custom separator between metrics.
-            Defaults to ' - '
+            Defaults to ' - '.
         overall_bar_format: Custom bar format for overall
             (outer) progress bar, see https://github.com/tqdm/tqdm#parameters
             for more detail.
