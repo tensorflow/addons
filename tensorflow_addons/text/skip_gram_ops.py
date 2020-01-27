@@ -161,10 +161,8 @@ def skip_gram_sample(
             )
         )
 
-    # pylint: disable=bad-continuation
     with tf.name_scope(name or "skip_gram_sample"):
 
-        # pylint: enable=bad-continuation
         input_tensor = _filter_input(
             input_tensor=input_tensor,
             vocab_freq_table=vocab_freq_table,
@@ -195,12 +193,11 @@ def skip_gram_sample(
         # Batches the (tokens, labels) outputs so that they will be of deterministic
         # batch_size, to facilitate feeding them into the rest of the network.
         if batch_size is not None and batch_size > 0:
-            # yapf: disable
             batch_capacity = (
                 batch_capacity
                 if (batch_capacity is not None and batch_capacity > 0)
-                else 100 * batch_size)
-            # yapf: enable
+                else 100 * batch_size
+            )
             return tf.train.batch(
                 [tokens, labels], batch_size, capacity=batch_capacity, enqueue_many=True
             )
@@ -424,9 +421,7 @@ def _filter_input(
             "{}.".format(type(vocab_freq_table))
         )
 
-    # pylint: disable=bad-continuation
     with tf.name_scope("filter_vocab"):
-        # pylint: enable=bad-continuation
         freq = vocab_freq_table.lookup(input_tensor)
         # Filters out elements in input_tensor that are not found in
         # vocab_freq_table (table returns a default value of -1 specified above when

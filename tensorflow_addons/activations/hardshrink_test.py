@@ -24,9 +24,7 @@ from tensorflow_addons.utils import test_utils
 @test_utils.run_all_in_graph_and_eager_modes
 class HardshrinkTest(tf.test.TestCase, parameterized.TestCase):
     def test_invalid(self):
-        with self.assertRaisesOpError(
-            "lower must be less than or equal to upper."
-        ):  # pylint: disable=bad-continuation
+        with self.assertRaisesOpError("lower must be less than or equal to upper."):
             y = hardshrink(tf.ones(shape=(1, 2, 3)), lower=2.0, upper=-2.0)
             self.evaluate(y)
 

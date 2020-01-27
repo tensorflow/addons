@@ -225,14 +225,20 @@ def angles_to_projective_transforms(angles, image_height, image_width, name=None
             angles = angle_or_angles
         else:
             raise ValueError("angles should have rank 0 or 1.")
-        # yapf: disable
-        x_offset = ((image_width - 1) -
-                    (tf.math.cos(angles) * (image_width - 1) -
-                     tf.math.sin(angles) * (image_height - 1))) / 2.0
-        y_offset = ((image_height - 1) -
-                    (tf.math.sin(angles) * (image_width - 1) +
-                     tf.math.cos(angles) * (image_height - 1))) / 2.0
-        # yapf: enable
+        x_offset = (
+            (image_width - 1)
+            - (
+                tf.math.cos(angles) * (image_width - 1)
+                - tf.math.sin(angles) * (image_height - 1)
+            )
+        ) / 2.0
+        y_offset = (
+            (image_height - 1)
+            - (
+                tf.math.sin(angles) * (image_width - 1)
+                + tf.math.cos(angles) * (image_height - 1)
+            )
+        ) / 2.0
         num_angles = tf.shape(angles)[0]
         return tf.concat(
             values=[

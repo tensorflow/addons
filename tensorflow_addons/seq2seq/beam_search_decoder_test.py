@@ -192,7 +192,6 @@ class TestArrayShapeChecks(tf.test.TestCase):
         batch_size = tf.constant(batch_size)
 
         def _test_body():
-            # pylint: disable=protected-access
             if tf.executing_eagerly():
                 beam_search_decoder._check_batch_beam(t, batch_size, beam_width)
             else:
@@ -201,7 +200,6 @@ class TestArrayShapeChecks(tf.test.TestCase):
                         t, batch_size, beam_width
                     )
                     self.evaluate(check_op)
-            # pylint: enable=protected-access
 
         if is_valid:
             _test_body()
@@ -469,7 +467,6 @@ class TestLargeBeamStep(tf.test.TestCase):
         log_probs = get_probs()
         dummy_cell_state = tf.zeros([self.batch_size, self.beam_width])
 
-        # pylint: disable=invalid-name
         _finished = tf.one_hot(
             tf.zeros([self.batch_size], dtype=tf.int32),
             depth=self.beam_width,

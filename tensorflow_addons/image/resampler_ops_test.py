@@ -206,12 +206,10 @@ class ResamplerTest(tf.test.TestCase, parameterized.TestCase):
         warp_shape = (batch_size, warp_height, warp_width, 2)
         warp = np.zeros(warp_shape)
 
-        # pylint: disable=bad-continuation
         with self.assertRaisesRegexp(
             tf.errors.UnimplementedError,
             "Only bilinear interpolation is currently supported.",
         ):
-            # pylint: enable=bad-continuation
             self.evaluate(resampler_ops.resampler(data, warp))
 
         # Warp tensor must be at least a matrix, with shape [batch_size, 2].
@@ -243,12 +241,10 @@ class ResamplerTest(tf.test.TestCase, parameterized.TestCase):
         warp_shape = (batch_size, warp_height, warp_width, 3)
         warp = np.zeros(warp_shape)
 
-        # pylint: disable=bad-continuation
         with self.assertRaisesRegexp(
             tf.errors.UnimplementedError,
             "Only bilinear interpolation is supported, warping",
         ):
-            # pylint: enable=bad-continuation
             self.evaluate(resampler_ops.resampler(data, warp))
 
 

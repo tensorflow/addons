@@ -305,9 +305,7 @@ def dynamic_decode(
 
     with tf.compat.v1.variable_scope(scope, "decoder") as varscope:
         # Determine context types.
-        ctxt = (
-            tf.compat.v1.get_default_graph()._get_control_flow_context()
-        )  # pylint: disable=protected-access
+        ctxt = tf.compat.v1.get_default_graph()._get_control_flow_context()
         is_xla = control_flow_util.GetContainingXLAContext(ctxt) is not None
         in_while_loop = control_flow_util.GetContainingWhileContext(ctxt) is not None
         # Properly cache variable values inside the while_loop.
