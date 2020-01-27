@@ -14,7 +14,6 @@
 # ==============================================================================
 
 import tensorflow as tf
-from typeguard import typechecked
 
 from tensorflow_addons.utils import types
 from tensorflow_addons.utils.resource_loader import LazySO
