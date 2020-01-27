@@ -47,8 +47,7 @@ def euclidean_dist_transform(images, dtype=tf.float32, name=None):
         image_or_images = tf.convert_to_tensor(images, name="images")
 
         if image_or_images.dtype.base_dtype != tf.uint8:
-            raise TypeError(
-                "Invalid dtype %s. Expected uint8." % image_or_images.dtype)
+            raise TypeError("Invalid dtype %s. Expected uint8." % image_or_images.dtype)
 
         images = img_utils.to_4D_image(image_or_images)
         original_ndims = img_utils.get_ndims(image_or_images)

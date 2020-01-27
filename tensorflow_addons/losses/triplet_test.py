@@ -35,16 +35,18 @@ def pairwise_distance_np(feature, squared=False):
         [number of data, number of data].
     """
     triu = np.triu_indices(feature.shape[0], 1)
-    upper_tri_pdists = np.linalg.norm(
-        feature[triu[1]] - feature[triu[0]], axis=1)
+    upper_tri_pdists = np.linalg.norm(feature[triu[1]] - feature[triu[0]], axis=1)
     if squared:
-        upper_tri_pdists **= 2.
+        upper_tri_pdists **= 2.0
     num_data = feature.shape[0]
     pairwise_distances = np.zeros((num_data, num_data))
     pairwise_distances[np.triu_indices(num_data, 1)] = upper_tri_pdists
     # Make symmetrical.
-    pairwise_distances = pairwise_distances + pairwise_distances.T - np.diag(
-        pairwise_distances.diagonal())
+    pairwise_distances = (
+        pairwise_distances
+        + pairwise_distances.T
+        - np.diag(pairwise_distances.diagonal())
+    )
     return pairwise_distances
 
 
@@ -60,11 +62,7 @@ class TripletSemiHardLossTest(tf.test.TestCase):
         labels = np.random.randint(0, num_classes, size=(num_data))
 
         # Reshape labels to compute adjacency matrix.
-        # TODO: https://github.com/PyCQA/pylint/issues/3139
-        # pylint: disable=E1136
-        labels_reshaped = np.reshape(
-            labels.astype(np.float32), (labels.shape[0], 1))
-        # pylint: enable=E1136
+        labels_reshaped = np.reshape(labels.astype(np.float32), (labels.shape[0], 1))
         # Compute the loss in NP.
         adjacency = np.equal(labels_reshaped, labels_reshaped.T)
 
@@ -93,7 +91,8 @@ class TripletSemiHardLossTest(tf.test.TestCase):
                             break
 
                     loss_np += np.maximum(
-                        0.0, margin - chosen_neg_distance + pos_distance)
+                        0.0, margin - chosen_neg_distance + pos_distance
+                    )
 
         loss_np /= num_positives
 
@@ -105,10 +104,9 @@ class TripletSemiHardLossTest(tf.test.TestCase):
         self.assertAlmostEqual(self.evaluate(loss), loss_np, 3)
 
     def test_keras_model_compile(self):
-        model = tf.keras.models.Sequential([
-            tf.keras.layers.Input(shape=(784,)),
-            tf.keras.layers.Dense(10),
-        ])
+        model = tf.keras.models.Sequential(
+            [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10),]
+        )
         model.compile(loss="Addons>triplet_semihard_loss", optimizer="adam")
 
     def test_serialization(self):
@@ -116,5 +114,5 @@ class TripletSemiHardLossTest(tf.test.TestCase):
         new_loss = tf.keras.losses.deserialize(tf.keras.losses.serialize(loss))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.test.main()

@@ -17,9 +17,9 @@
 import tensorflow as tf
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
-def pinball_loss(y_true, y_pred, tau=.5):
+def pinball_loss(y_true, y_pred, tau=0.5):
     """Computes the pinball loss between `y_true` and `y_pred`.
 
     `loss = maximum(tau * (y_true - y_pred), (tau - 1) * (y_true - y_pred))`
@@ -68,7 +68,7 @@ def pinball_loss(y_true, y_pred, tau=.5):
     return tf.reduce_mean(tf.keras.backend.batch_flatten(pinball), axis=-1)
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class PinballLoss(tf.keras.losses.Loss):
     """Computes the pinball loss between `y_true` and `y_pred`.
 
@@ -119,10 +119,9 @@ class PinballLoss(tf.keras.losses.Loss):
       - https://projecteuclid.org/download/pdfview_1/euclid.bj/1297173840
     """
 
-    def __init__(self,
-                 tau=.5,
-                 reduction=tf.keras.losses.Reduction.AUTO,
-                 name='pinball_loss'):
+    def __init__(
+        self, tau=0.5, reduction=tf.keras.losses.Reduction.AUTO, name="pinball_loss"
+    ):
         super().__init__(reduction=reduction, name=name)
         self.tau = tau
 
@@ -131,7 +130,7 @@ class PinballLoss(tf.keras.losses.Loss):
 
     def get_config(self):
         config = {
-            'tau': self.tau,
+            "tau": self.tau,
         }
         base_config = super().get_config()
         return {**base_config, **config}

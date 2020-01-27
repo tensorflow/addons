@@ -41,6 +41,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Nightly build and release for Windows
+        shell: bash
         run: |
           python -m pip install wheel setuptools
           curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
@@ -51,5 +52,5 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@master
         with:
           user: __token__
-          password: ${{ secrets.pypi_token }}
+          password: ${{ secrets.pypi_password }}
           packages_dir: artifacts/

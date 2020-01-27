@@ -136,13 +136,15 @@ class BaseDecoder(tf.keras.layers.Layer):
       each time step.
     """
 
-    def __init__(self,
-                 output_time_major=False,
-                 impute_finished=False,
-                 maximum_iterations=None,
-                 parallel_iterations=32,
-                 swap_memory=False,
-                 **kwargs):
+    def __init__(
+        self,
+        output_time_major=False,
+        impute_finished=False,
+        maximum_iterations=None,
+        parallel_iterations=32,
+        swap_memory=False,
+        **kwargs
+    ):
         self.output_time_major = output_time_major
         self.impute_finished = impute_finished
         self.maximum_iterations = maximum_iterations
@@ -162,7 +164,8 @@ class BaseDecoder(tf.keras.layers.Layer):
             swap_memory=self.swap_memory,
             training=training,
             decoder_init_input=inputs,
-            decoder_init_kwargs=init_kwargs)
+            decoder_init_kwargs=init_kwargs,
+        )
 
     @property
     def batch_size(self):
@@ -249,15 +252,17 @@ class BaseDecoder(tf.keras.layers.Layer):
     # TODO(scottzhu): Add build/get_config/from_config and other layer methods.
 
 
-def dynamic_decode(decoder,
-                   output_time_major=False,
-                   impute_finished=False,
-                   maximum_iterations=None,
-                   parallel_iterations=32,
-                   swap_memory=False,
-                   training=None,
-                   scope=None,
-                   **kwargs):
+def dynamic_decode(
+    decoder,
+    output_time_major=False,
+    impute_finished=False,
+    maximum_iterations=None,
+    parallel_iterations=32,
+    swap_memory=False,
+    training=None,
+    scope=None,
+    **kwargs
+):
     """Perform dynamic decoding with `decoder`.
 
     Calls initialize() once and step() repeatedly on the Decoder object.
@@ -295,14 +300,14 @@ def dynamic_decode(decoder,
     """
     if not isinstance(decoder, (Decoder, BaseDecoder)):
         raise TypeError(
-            "Expected decoder to be type Decoder, but saw: %s" % type(decoder))
+            "Expected decoder to be type Decoder, but saw: %s" % type(decoder)
+        )
 
     with tf.compat.v1.variable_scope(scope, "decoder") as varscope:
         # Determine context types.
-        ctxt = tf.compat.v1.get_default_graph()._get_control_flow_context()  # pylint: disable=protected-access
+        ctxt = tf.compat.v1.get_default_graph()._get_control_flow_context()
         is_xla = control_flow_util.GetContainingXLAContext(ctxt) is not None
-        in_while_loop = (control_flow_util.GetContainingWhileContext(ctxt) is
-                         not None)
+        in_while_loop = control_flow_util.GetContainingWhileContext(ctxt) is not None
         # Properly cache variable values inside the while_loop.
         # Don't set a caching device when running in a loop, since it is
         # possible that train steps could be wrapped in a tf.while_loop. In that
@@ -314,42 +319,43 @@ def dynamic_decode(decoder,
 
         if maximum_iterations is not None:
             maximum_iterations = tf.convert_to_tensor(
-                maximum_iterations, dtype=tf.int32, name="maximum_iterations")
+                maximum_iterations, dtype=tf.int32, name="maximum_iterations"
+            )
             if maximum_iterations.get_shape().ndims != 0:
                 raise ValueError("maximum_iterations must be a scalar")
 
         if isinstance(decoder, Decoder):
-            initial_finished, initial_inputs, initial_state = \
-                decoder.initialize()
+            initial_finished, initial_inputs, initial_state = decoder.initialize()
         else:
             # For BaseDecoder that takes tensor inputs during call.
             decoder_init_input = kwargs.pop("decoder_init_input", None)
             decoder_init_kwargs = kwargs.pop("decoder_init_kwargs", {})
-            initial_finished, initial_inputs, initial_state = \
-                decoder.initialize(decoder_init_input, **decoder_init_kwargs)
+            initial_finished, initial_inputs, initial_state = decoder.initialize(
+                decoder_init_input, **decoder_init_kwargs
+            )
 
         zero_outputs = tf.nest.map_structure(
             lambda shape, dtype: tf.zeros(
-                _prepend_batch(decoder.batch_size, shape), dtype=dtype),
-            decoder.output_size, decoder.output_dtype)
+                _prepend_batch(decoder.batch_size, shape), dtype=dtype
+            ),
+            decoder.output_size,
+            decoder.output_dtype,
+        )
 
         if is_xla and maximum_iterations is None:
-            raise ValueError(
-                "maximum_iterations is required for XLA compilation.")
+            raise ValueError("maximum_iterations is required for XLA compilation.")
         if maximum_iterations is not None:
-            initial_finished = tf.logical_or(initial_finished,
-                                             0 >= maximum_iterations)
-        initial_sequence_lengths = tf.zeros_like(
-            initial_finished, dtype=tf.int32)
+            initial_finished = tf.logical_or(initial_finished, 0 >= maximum_iterations)
+        initial_sequence_lengths = tf.zeros_like(initial_finished, dtype=tf.int32)
         initial_time = tf.constant(0, dtype=tf.int32)
 
         def _shape(batch_size, from_shape):
-            if (not isinstance(from_shape, tf.TensorShape)
-                    or from_shape.ndims == 0):
+            if not isinstance(from_shape, tf.TensorShape) or from_shape.ndims == 0:
                 return None
             else:
                 batch_size = tf.get_static_value(
-                    tf.convert_to_tensor(batch_size, name="batch_size"))
+                    tf.convert_to_tensor(batch_size, name="batch_size")
+                )
                 return tf.TensorShape([batch_size]).concatenate(from_shape)
 
         dynamic_size = maximum_iterations is None or not is_xla
@@ -359,13 +365,21 @@ def dynamic_decode(decoder,
                 dtype=d,
                 size=0 if dynamic_size else maximum_iterations,
                 dynamic_size=dynamic_size,
-                element_shape=_shape(decoder.batch_size, s))
+                element_shape=_shape(decoder.batch_size, s),
+            )
 
         initial_outputs_ta = tf.nest.map_structure(
-            _create_ta, decoder.output_size, decoder.output_dtype)
+            _create_ta, decoder.output_size, decoder.output_dtype
+        )
 
-        def condition(unused_time, unused_outputs_ta, unused_state,
-                      unused_inputs, finished, unused_sequence_lengths):
+        def condition(
+            unused_time,
+            unused_outputs_ta,
+            unused_state,
+            unused_inputs,
+            finished,
+            unused_sequence_lengths,
+        ):
             return tf.logical_not(tf.reduce_all(finished))
 
         def body(time, outputs_ta, state, inputs, finished, sequence_lengths):
@@ -384,8 +398,9 @@ def dynamic_decode(decoder,
                 next_sequence_lengths)`.
               ```
             """
-            (next_outputs, decoder_state, next_inputs,
-             decoder_finished) = decoder.step(time, inputs, state, training)
+            (next_outputs, decoder_state, next_inputs, decoder_finished) = decoder.step(
+                time, inputs, state, training
+            )
             decoder_state_sequence_lengths = False
             if decoder.tracks_own_finished:
                 next_finished = decoder_finished
@@ -406,7 +421,8 @@ def dynamic_decode(decoder,
                 next_sequence_lengths = tf.where(
                     tf.logical_not(finished),
                     tf.fill(tf.shape(sequence_lengths), time + 1),
-                    sequence_lengths)
+                    sequence_lengths,
+                )
 
             tf.nest.assert_same_structure(state, decoder_state)
             tf.nest.assert_same_structure(outputs_ta, next_outputs)
@@ -418,13 +434,15 @@ def dynamic_decode(decoder,
                 def zero_out_finished(out, zero):
                     if finished.shape.rank < zero.shape.rank:
                         broadcast_finished = tf.broadcast_to(
-                            tf.expand_dims(finished, axis=-1), zero.shape)
+                            tf.expand_dims(finished, axis=-1), zero.shape
+                        )
                         return tf.where(broadcast_finished, zero, out)
                     else:
                         return tf.where(finished, zero, out)
 
-                emit = tf.nest.map_structure(zero_out_finished, next_outputs,
-                                             zero_outputs)
+                emit = tf.nest.map_structure(
+                    zero_out_finished, next_outputs, zero_outputs
+                )
             else:
                 emit = next_outputs
 
@@ -435,24 +453,33 @@ def dynamic_decode(decoder,
                     pass_through = True
                 else:
                     new.set_shape(cur.shape)
-                    pass_through = (new.shape.ndims == 0)
+                    pass_through = new.shape.ndims == 0
                 if not pass_through:
                     broadcast_finished = tf.broadcast_to(
-                        tf.expand_dims(finished, axis=-1), new.shape)
+                        tf.expand_dims(finished, axis=-1), new.shape
+                    )
                     return tf.where(broadcast_finished, cur, new)
                 else:
                     return new
 
             if impute_finished:
-                next_state = tf.nest.map_structure(_maybe_copy_state,
-                                                   decoder_state, state)
+                next_state = tf.nest.map_structure(
+                    _maybe_copy_state, decoder_state, state
+                )
             else:
                 next_state = decoder_state
 
             outputs_ta = tf.nest.map_structure(
-                lambda ta, out: ta.write(time, out), outputs_ta, emit)
-            return (time + 1, outputs_ta, next_state, next_inputs,
-                    next_finished, next_sequence_lengths)
+                lambda ta, out: ta.write(time, out), outputs_ta, emit
+            )
+            return (
+                time + 1,
+                outputs_ta,
+                next_state,
+                next_inputs,
+                next_finished,
+                next_sequence_lengths,
+            )
 
         res = tf.while_loop(
             condition,
@@ -467,24 +494,24 @@ def dynamic_decode(decoder,
             ),
             parallel_iterations=parallel_iterations,
             maximum_iterations=maximum_iterations,
-            swap_memory=swap_memory)
+            swap_memory=swap_memory,
+        )
 
         final_outputs_ta = res[1]
         final_state = res[2]
         final_sequence_lengths = res[5]
 
-        final_outputs = tf.nest.map_structure(lambda ta: ta.stack(),
-                                              final_outputs_ta)
+        final_outputs = tf.nest.map_structure(lambda ta: ta.stack(), final_outputs_ta)
 
         try:
             final_outputs, final_state = decoder.finalize(
-                final_outputs, final_state, final_sequence_lengths)
+                final_outputs, final_state, final_sequence_lengths
+            )
         except NotImplementedError:
             pass
 
         if not output_time_major:
-            final_outputs = tf.nest.map_structure(_transpose_batch_time,
-                                                  final_outputs)
+            final_outputs = tf.nest.map_structure(_transpose_batch_time, final_outputs)
 
     return final_outputs, final_state, final_sequence_lengths
 

@@ -24,14 +24,13 @@ from tensorflow_addons.utils import test_utils
 @test_utils.run_all_in_graph_and_eager_modes
 class SoftshrinkTest(tf.test.TestCase, parameterized.TestCase):
     def test_invalid(self):
-        with self.assertRaisesOpError(
-                "lower must be less than or equal to upper."):  # pylint: disable=bad-continuation
+        with self.assertRaisesOpError("lower must be less than or equal to upper."):
             y = softshrink(tf.ones(shape=(1, 2, 3)), lower=2.0, upper=-2.0)
             self.evaluate(y)
 
-    @parameterized.named_parameters(("float16", np.float16),
-                                    ("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(
+        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
+    )
     def test_softshrink(self, dtype):
         x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
         expected_result = tf.constant([-1.5, -0.5, 0.0, 0.5, 1.5], dtype=dtype)
@@ -39,10 +38,10 @@ class SoftshrinkTest(tf.test.TestCase, parameterized.TestCase):
 
         expected_result = tf.constant([-1.0, 0.0, 0.0, 0.0, 1.0], dtype=dtype)
         self.assertAllCloseAccordingToType(
-            softshrink(x, lower=-1.0, upper=1.0), expected_result)
+            softshrink(x, lower=-1.0, upper=1.0), expected_result
+        )
 
-    @parameterized.named_parameters(("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
     def test_theoretical_gradients(self, dtype):
         # Only test theoretical gradients for float32 and float64
         # because of the instability of float16 while computing jacobian
