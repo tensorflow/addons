@@ -144,7 +144,7 @@ def triplet_semihard_loss(y_true, y_pred, margin=1.0):
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
-def triplet_hard_loss(y_true, y_pred, margin=1.0):
+def triplet_hard_loss(y_true, y_pred, margin=1.0, soft=False):
     """Computes the triplet loss with hard negative mining.
 
     Args:
@@ -153,6 +153,7 @@ def triplet_hard_loss(y_true, y_pred, margin=1.0):
       y_pred: 2-D float `Tensor` of embedding vectors. Embeddings should
         be l2 normalized.
       margin: Float, margin term in the loss definition.
+      soft: Boolean, if set, use the soft margin version.
     """
     labels, embeddings = y_true, y_pred
     # Reshape label tensor to [batch_size, 1].
@@ -181,7 +182,10 @@ def triplet_hard_loss(y_true, y_pred, margin=1.0):
     # hard positives: largest D_ap.
     hard_positives = _masked_maximum(pdist_matrix, mask_positives)
 
-    triplet_loss = tf.maximum(hard_positives - hard_negatives + margin, 0.0)
+    if soft:
+        triplet_loss = tf.math.log1p(tf.math.exp(hard_positives - hard_negatives))
+    else:
+        triplet_loss = tf.maximum(hard_positives - hard_negatives + margin, 0.0)
 
     # Get final mean triplet loss
     triplet_loss = tf.reduce_mean(triplet_loss)
@@ -233,7 +237,7 @@ class TripletHardLoss(tf.keras.losses.Loss):
     margin constant in the mini-batch.
     The loss selects the hardest positive and the hardest negative samples
     within the batch when forming the triplets for computing the loss.
-    See: https://arxiv.org/abs/1503.03832
+    See: https://arxiv.org/pdf/1703.07737.
 
     We expect labels `y_true` to be provided as 1-D integer `Tensor` with shape
     [batch_size] of multi-class integer labels. And embeddings `y_pred` must be
@@ -241,15 +245,17 @@ class TripletHardLoss(tf.keras.losses.Loss):
 
     Args:
       margin: Float, margin term in the loss definition. Default value is 1.0.
+      soft: Boolean, if set, use the soft margin version. Default value is False.
       name: Optional name for the op.
     """
 
-    def __init__(self, margin=1.0, name=None, **kwargs):
+    def __init__(self, margin=1.0, soft=False, name=None, **kwargs):
         super().__init__(name=name, reduction=tf.keras.losses.Reduction.NONE)
         self.margin = margin
+        self.soft = soft
 
     def call(self, y_true, y_pred):
-        return triplet_hard_loss(y_true, y_pred, self.margin)
+        return triplet_hard_loss(y_true, y_pred, self.margin, self.soft)
 
     def get_config(self):
         config = {
