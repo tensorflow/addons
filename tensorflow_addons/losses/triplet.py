@@ -233,7 +233,7 @@ class TripletHardLoss(tf.keras.losses.Loss):
     margin constant in the mini-batch.
     The loss selects the hardest positive and the hardest negative samples
     within the batch when forming the triplets for computing the loss.
-    See: https://arxiv.org/pdf/1703.07737.pdf
+    See: https://arxiv.org/abs/1503.03832
 
     We expect labels `y_true` to be provided as 1-D integer `Tensor` with shape
     [batch_size] of multi-class integer labels. And embeddings `y_pred` must be
