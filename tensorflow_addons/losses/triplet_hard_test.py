@@ -20,6 +20,7 @@ import tensorflow as tf
 from tensorflow_addons.losses import triplet
 from tensorflow_addons.utils import test_utils
 
+
 def pairwise_distance_np(feature, squared=False):
     """Computes the pairwise distance matrix in numpy.
 
@@ -48,6 +49,7 @@ def pairwise_distance_np(feature, squared=False):
     )
     return pairwise_distances
 
+
 @test_utils.run_all_in_graph_and_eager_modes
 class TripletHardLossTest(tf.test.TestCase):
     def test_unweighted(self):
@@ -60,8 +62,7 @@ class TripletHardLossTest(tf.test.TestCase):
         labels = np.random.randint(0, num_classes, size=(num_data))
 
         # Reshape labels to compute adjacency matrix.
-        labels_reshaped = np.reshape(
-            labels.astype(np.float32), (labels.shape[0], 1))
+        labels_reshaped = np.reshape(labels.astype(np.float32), (labels.shape[0], 1))
         # Compute the loss in NP.
         adjacency = np.equal(labels_reshaped, labels_reshaped.T)
 
@@ -86,8 +87,7 @@ class TripletHardLossTest(tf.test.TestCase):
             pos_distances.sort(reverse=True)
             max_pos_distance = pos_distances[0]
 
-            loss_np += np.maximum(
-                0.0, margin - min_neg_distance + max_pos_distance)
+            loss_np += np.maximum(0.0, margin - min_neg_distance + max_pos_distance)
 
         loss_np /= num_data
 
@@ -99,10 +99,9 @@ class TripletHardLossTest(tf.test.TestCase):
         self.assertAlmostEqual(self.evaluate(loss), loss_np, 3)
 
     def test_keras_model_compile(self):
-        model = tf.keras.models.Sequential([
-            tf.keras.layers.Input(shape=(784,)),
-            tf.keras.layers.Dense(10),
-        ])
+        model = tf.keras.models.Sequential(
+            [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10),]
+        )
         model.compile(loss="Addons>triplet_hard_loss", optimizer="adam")
 
     def test_serialization(self):
@@ -110,5 +109,5 @@ class TripletHardLossTest(tf.test.TestCase):
         new_loss = tf.keras.losses.deserialize(tf.keras.losses.serialize(loss))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.test.main()

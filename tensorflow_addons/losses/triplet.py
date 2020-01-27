@@ -142,7 +142,6 @@ def triplet_semihard_loss(y_true, y_pred, margin=1.0):
     return triplet_loss
 
 
-
 @tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def triplet_hard_loss(y_true, y_pred, margin=1.0):
@@ -175,9 +174,9 @@ def triplet_hard_loss(y_true, y_pred, margin=1.0):
 
     adjacency = tf.cast(adjacency, dtype=tf.dtypes.float32)
 
-    mask_positives = tf.cast(
-        adjacency, dtype=tf.dtypes.float32) - tf.linalg.diag(
-            tf.ones([batch_size]))
+    mask_positives = tf.cast(adjacency, dtype=tf.dtypes.float32) - tf.linalg.diag(
+        tf.ones([batch_size])
+    )
 
     # hard positives: largest D_ap.
     hard_positives = _masked_maximum(pdist_matrix, mask_positives)
@@ -225,7 +224,7 @@ class TripletSemiHardLoss(tf.keras.losses.Loss):
         return {**base_config, **config}
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class TripletHardLoss(tf.keras.losses.Loss):
     """Computes the triplet loss with hard negative and hard positive mining.
 
