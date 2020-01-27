@@ -77,7 +77,7 @@ class TripletHardLossTest(tf.test.TestCase):
                 if adjacency[i][j] > 0.0 and i != j:
                     pos_distances.append(pdist_matrix[i][j])
 
-            # if their are no positive pairs, distance is 0
+            # if there are no positive pairs, distance is 0
             if len(pos_distances) == 0:
                 pos_distances.append(0)
 
