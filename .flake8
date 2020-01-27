@@ -25,8 +25,6 @@ ignore =
     E502
     # do not assign a lambda expression, use a def
     E731
-    # local variable is assigned to but never used
-    F841
     # trailing whitespace
     W291
     # expected 2 blank lines after class or function definition, found 1

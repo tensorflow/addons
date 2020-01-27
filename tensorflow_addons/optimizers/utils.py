@@ -42,8 +42,6 @@ def fit_bn(model, *args, **kwargs):
                 ]
             )
 
-    assign_op = tf.group(assign_ops)
-
     _trainable = model.trainable
     _metrics = model._metrics
     model.trainable = False
