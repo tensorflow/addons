@@ -21,11 +21,15 @@ import unittest
 import tensorflow as tf
 
 # TODO: find public API alternative to these
-from tensorflow.python.framework.test_util import run_all_in_graph_and_eager_modes
-from tensorflow.python.framework.test_util import run_deprecated_v1
-from tensorflow.python.framework.test_util import run_in_graph_and_eager_modes
-from tensorflow.python.keras.testing_utils import layer_test
-from tensorflow.python.keras import keras_parameterized
+from tensorflow.python.framework.test_util import (  # noqa: F401
+    run_all_in_graph_and_eager_modes,
+)
+from tensorflow.python.framework.test_util import run_deprecated_v1  # noqa: F401
+from tensorflow.python.framework.test_util import (  # noqa: F401
+    run_in_graph_and_eager_modes,
+)
+from tensorflow.python.keras.testing_utils import layer_test  # noqa: F401
+from tensorflow.python.keras import keras_parameterized  # noqa: F401
 
 
 @contextlib.contextmanager
