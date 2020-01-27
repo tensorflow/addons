@@ -27,7 +27,7 @@ import tensorflow as tf
 from tensorflow_addons.optimizers.average_wrapper import AveragedOptimizerWrapper
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class SWA(AveragedOptimizerWrapper):
     """This class extends optimizers with Stochastic Weight Averaging (SWA).
 
@@ -68,13 +68,15 @@ class SWA(AveragedOptimizerWrapper):
     ```
     """
 
-    def __init__(self,
-                 optimizer,
-                 start_averaging=0,
-                 average_period=10,
-                 name='SWA',
-                 sequential_update=True,
-                 **kwargs):
+    def __init__(
+        self,
+        optimizer,
+        start_averaging=0,
+        average_period=10,
+        name="SWA",
+        sequential_update=True,
+        **kwargs
+    ):
         r"""Wrap optimizer with the Stochastic Weight Averaging mechanism.
 
         Args:
@@ -104,16 +106,16 @@ class SWA(AveragedOptimizerWrapper):
         super().__init__(optimizer, sequential_update, name, **kwargs)
 
         if average_period < 1:
-            raise ValueError('average_period must be >= 1')
+            raise ValueError("average_period must be >= 1")
         if start_averaging < 0:
-            raise ValueError('start_averaging must be >= 0')
+            raise ValueError("start_averaging must be >= 0")
 
-        self._set_hyper('average_period', average_period)
-        self._set_hyper('start_averaging', start_averaging)
+        self._set_hyper("average_period", average_period)
+        self._set_hyper("start_averaging", start_averaging)
 
     def average_op(self, var, average_var):
-        average_period = self._get_hyper('average_period', tf.dtypes.int64)
-        start_averaging = self._get_hyper('start_averaging', tf.dtypes.int64)
+        average_period = self._get_hyper("average_period", tf.dtypes.int64)
+        start_averaging = self._get_hyper("start_averaging", tf.dtypes.int64)
         # check if the correct number of iterations has taken place to start
         # averaging.
         thresold_cond = tf.greater_equal(self.iterations, start_averaging)
@@ -121,30 +123,26 @@ class SWA(AveragedOptimizerWrapper):
         # avoid negative values of num_snapshots).
         num_snapshots = tf.math.maximum(
             tf.cast(0, tf.int64),
-            tf.math.floordiv(self.iterations - start_averaging,
-                             average_period))
+            tf.math.floordiv(self.iterations - start_averaging, average_period),
+        )
         # checks if the iteration is one in which a snapshot should be taken.
-        sync_cond = tf.equal(start_averaging + num_snapshots * average_period,
-                             self.iterations)
+        sync_cond = tf.equal(
+            start_averaging + num_snapshots * average_period, self.iterations
+        )
         num_snapshots = tf.cast(num_snapshots, tf.float32)
-        average_value = (
-            (average_var * num_snapshots + var) / (num_snapshots + 1.))
+        average_value = (average_var * num_snapshots + var) / (num_snapshots + 1.0)
         average_cond = tf.reduce_all([thresold_cond, sync_cond])
         with tf.control_dependencies([average_value]):
             average_update = average_var.assign(
-                tf.where(
-                    average_cond,
-                    average_value,
-                    average_var,
-                ),
-                use_locking=self._use_locking)
+                tf.where(average_cond, average_value, average_var,),
+                use_locking=self._use_locking,
+            )
         return average_update
 
     def get_config(self):
         config = {
-            'average_period': self._serialize_hyperparameter('average_period'),
-            'start_averaging':
-            self._serialize_hyperparameter('start_averaging')
+            "average_period": self._serialize_hyperparameter("average_period"),
+            "start_averaging": self._serialize_hyperparameter("start_averaging"),
         }
         base_config = super().get_config()
         return {**base_config, **config}

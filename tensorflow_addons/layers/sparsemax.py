@@ -17,7 +17,7 @@ import tensorflow as tf
 from tensorflow_addons.activations.sparsemax import sparsemax
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class Sparsemax(tf.keras.layers.Layer):
     """Sparsemax activation function [1].
 
@@ -38,7 +38,7 @@ class Sparsemax(tf.keras.layers.Layer):
         return sparsemax(inputs, axis=self.axis)
 
     def get_config(self):
-        config = {'axis': self.axis}
+        config = {"axis": self.axis}
         base_config = super().get_config()
         return {**base_config, **config}
 

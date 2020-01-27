@@ -28,13 +28,14 @@ from tensorflow_addons.utils import test_utils
 class InterpolateBilinearTest(tf.test.TestCase):
     def test_interpolate_small_grid_ij(self):
         grid = tf.constant(
-            [[0., 1., 2.], [3., 4., 5.], [6., 7., 8.], [9., 10., 11.]],
-            shape=[1, 4, 3, 1])
+            [[0.0, 1.0, 2.0], [3.0, 4.0, 5.0], [6.0, 7.0, 8.0], [9.0, 10.0, 11.0]],
+            shape=[1, 4, 3, 1],
+        )
         query_points = tf.constant(
-            [[0., 0.], [1., 0.], [2., 0.5], [1.5, 1.5], [3., 2.]],
-            shape=[1, 5, 2])
-        expected_results = np.reshape(
-            np.array([0., 3., 6.5, 6., 11.]), [1, 5, 1])
+            [[0.0, 0.0], [1.0, 0.0], [2.0, 0.5], [1.5, 1.5], [3.0, 2.0]],
+            shape=[1, 5, 2],
+        )
+        expected_results = np.reshape(np.array([0.0, 3.0, 6.5, 6.0, 11.0]), [1, 5, 1])
 
         interp = interpolate_bilinear(grid, query_points)
 
@@ -42,25 +43,29 @@ class InterpolateBilinearTest(tf.test.TestCase):
 
     def test_interpolate_small_grid_xy(self):
         grid = tf.constant(
-            [[0., 1., 2.], [3., 4., 5.], [6., 7., 8.], [9., 10., 11.]],
-            shape=[1, 4, 3, 1])
+            [[0.0, 1.0, 2.0], [3.0, 4.0, 5.0], [6.0, 7.0, 8.0], [9.0, 10.0, 11.0]],
+            shape=[1, 4, 3, 1],
+        )
         query_points = tf.constant(
-            [[0., 0.], [0., 1.], [0.5, 2.0], [1.5, 1.5], [2., 3.]],
-            shape=[1, 5, 2])
-        expected_results = np.reshape(
-            np.array([0., 3., 6.5, 6., 11.]), [1, 5, 1])
+            [[0.0, 0.0], [0.0, 1.0], [0.5, 2.0], [1.5, 1.5], [2.0, 3.0]],
+            shape=[1, 5, 2],
+        )
+        expected_results = np.reshape(np.array([0.0, 3.0, 6.5, 6.0, 11.0]), [1, 5, 1])
 
         interp = interpolate_bilinear(grid, query_points, indexing="xy")
 
         self.assertAllClose(expected_results, interp)
 
     def test_interpolate_small_grid_batched(self):
-        grid = tf.constant([[[0., 1.], [3., 4.]], [[5., 6.], [7., 8.]]],
-                           shape=[2, 2, 2, 1])
-        query_points = tf.constant([[[0., 0.], [1., 0.], [0.5, 0.5]],
-                                    [[0.5, 0.], [1., 0.], [1., 1.]]])
+        grid = tf.constant(
+            [[[0.0, 1.0], [3.0, 4.0]], [[5.0, 6.0], [7.0, 8.0]]], shape=[2, 2, 2, 1]
+        )
+        query_points = tf.constant(
+            [[[0.0, 0.0], [1.0, 0.0], [0.5, 0.5]], [[0.5, 0.0], [1.0, 0.0], [1.0, 1.0]]]
+        )
         expected_results = np.reshape(
-            np.array([[0., 3., 2.], [6., 7., 8.]]), [2, 3, 1])
+            np.array([[0.0, 3.0, 2.0], [6.0, 7.0, 8.0]]), [2, 3, 1]
+        )
 
         interp = interpolate_bilinear(grid, query_points)
 
@@ -68,10 +73,12 @@ class InterpolateBilinearTest(tf.test.TestCase):
 
     def test_unknown_shape(self):
         query_points = tf.constant(
-            [[0., 0.], [0., 1.], [0.5, 2.0], [1.5, 1.5]], shape=[1, 4, 2])
+            [[0.0, 0.0], [0.0, 1.0], [0.5, 2.0], [1.5, 1.5]], shape=[1, 4, 2]
+        )
         fn = interpolate_bilinear.get_concrete_function(
             tf.TensorSpec(shape=None, dtype=tf.float32),
-            tf.TensorSpec(shape=None, dtype=tf.float32))
+            tf.TensorSpec(shape=None, dtype=tf.float32),
+        )
         for shape in (2, 4, 3, 6), (6, 2, 4, 3), (1, 2, 4, 3):
             image = tf.ones(shape=shape)
             res = fn(image, query_points)
@@ -88,14 +95,16 @@ class DenseImageWarpTest(tf.test.TestCase):
         flows = np.random.normal(size=flow_shape) * 3
         return image.astype(image_type), flows.astype(flow_type)
 
-    def _assert_correct_interpolation_value(self,
-                                            image,
-                                            flows,
-                                            pred_interpolation,
-                                            batch_index,
-                                            y_index,
-                                            x_index,
-                                            low_precision=False):
+    def _assert_correct_interpolation_value(
+        self,
+        image,
+        flows,
+        pred_interpolation,
+        batch_index,
+        y_index,
+        x_index,
+        low_precision=False,
+    ):
         """Assert that the tf interpolation matches hand-computed value."""
         height = image.shape[1]
         width = image.shape[2]
@@ -132,17 +141,20 @@ class DenseImageWarpTest(tf.test.TestCase):
             interp,
             pred_interpolation[batch_index, y_index, x_index, :],
             atol=atol,
-            rtol=rtol)
+            rtol=rtol,
+        )
 
     def _check_zero_flow_correctness(self, shape, image_type, flow_type):
         """Assert using zero flows doesn't change the input image."""
         rand_image, rand_flows = self._get_random_image_and_flows(
-            shape, image_type, flow_type)
+            shape, image_type, flow_type
+        )
         rand_flows *= 0
 
         interp = dense_image_warp(
             image=tf.convert_to_tensor(rand_image),
-            flow=tf.convert_to_tensor(rand_flows))
+            flow=tf.convert_to_tensor(rand_flows),
+        )
 
         self.assertAllClose(rand_image, interp)
 
@@ -151,31 +163,33 @@ class DenseImageWarpTest(tf.test.TestCase):
         shapes_to_try = [[3, 4, 5, 6], [1, 2, 2, 1]]
         for shape in shapes_to_try:
             self._check_zero_flow_correctness(
-                shape, image_type="float32", flow_type="float32")
+                shape, image_type="float32", flow_type="float32"
+            )
 
-    def _check_interpolation_correctness(self,
-                                         shape,
-                                         image_type,
-                                         flow_type,
-                                         call_with_unknown_shapes=False,
-                                         num_probes=5):
+    def _check_interpolation_correctness(
+        self, shape, image_type, flow_type, call_with_unknown_shapes=False, num_probes=5
+    ):
         """Interpolate, and then assert correctness for a few query
         locations."""
         low_precision = image_type == "float16" or flow_type == "float16"
         rand_image, rand_flows = self._get_random_image_and_flows(
-            shape, image_type, flow_type)
+            shape, image_type, flow_type
+        )
 
         if call_with_unknown_shapes:
             fn = dense_image_warp.get_concrete_function(
                 tf.TensorSpec(shape=None, dtype=image_type),
-                tf.TensorSpec(shape=None, dtype=flow_type))
+                tf.TensorSpec(shape=None, dtype=flow_type),
+            )
             interp = fn(
                 image=tf.convert_to_tensor(rand_image),
-                flow=tf.convert_to_tensor(rand_flows))
+                flow=tf.convert_to_tensor(rand_flows),
+            )
         else:
             interp = dense_image_warp(
                 image=tf.convert_to_tensor(rand_image),
-                flow=tf.convert_to_tensor(rand_flows))
+                flow=tf.convert_to_tensor(rand_flows),
+            )
 
         for _ in range(num_probes):
             batch_index = np.random.randint(0, shape[0])
@@ -189,7 +203,8 @@ class DenseImageWarpTest(tf.test.TestCase):
                 batch_index,
                 y_index,
                 x_index,
-                low_precision=low_precision)
+                low_precision=low_precision,
+            )
 
     def test_interpolation(self):
         """Apply _check_interpolation_correctness() for a few sizes and
@@ -198,16 +213,14 @@ class DenseImageWarpTest(tf.test.TestCase):
         for im_type in ["float32", "float64", "float16"]:
             for flow_type in ["float32", "float64", "float16"]:
                 for shape in shapes_to_try:
-                    self._check_interpolation_correctness(
-                        shape, im_type, flow_type)
+                    self._check_interpolation_correctness(shape, im_type, flow_type)
 
     def test_unknown_shapes(self):
         """Apply _check_interpolation_correctness() for a few sizes and check
         for tf.Dataset compatibility."""
         shapes_to_try = [[3, 4, 5, 6], [1, 5, 5, 3], [1, 2, 2, 1]]
         for shape in shapes_to_try:
-            self._check_interpolation_correctness(shape, "float32", "float32",
-                                                  True)
+            self._check_interpolation_correctness(shape, "float32", "float32", True)
 
     def test_gradients_exist(self):
         """Check that backprop can run.
@@ -223,8 +236,7 @@ class DenseImageWarpTest(tf.test.TestCase):
         image_shape = [batch_size, height, width, num_channels]
         image = tf.random.normal(image_shape)
         flow_shape = [batch_size, height, width, 2]
-        flows = tf.Variable(
-            tf.random.normal(shape=flow_shape) * 0.25, dtype=tf.float32)
+        flows = tf.Variable(tf.random.normal(shape=flow_shape) * 0.25, dtype=tf.float32)
 
         def loss():
             interp = dense_image_warp(image, flows)

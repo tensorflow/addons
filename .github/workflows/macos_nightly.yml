@@ -21,7 +21,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Nightly test macOS py${{ matrix.python-version }}
         run: |
-          python -m pip install wheel setuptools
           python --version
           bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
           bash -x -e tools/ci_testing/addons_cpu.sh
@@ -29,17 +28,21 @@ jobs:
     name: Build and release nightly for macOS
     needs: [macos-nightly]
     runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: ['3.5', '3.6', '3.7']
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
         with:
-          python-version: '3.7'
+          python-version: ${{ matrix.python-version }}
       - name: Nightly build and release for macOS
         run: |
+          python --version
           bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
           bash -x -e tools/ci_build/builds/release_macos.sh
       - uses: pypa/gh-action-pypi-publish@master
         with:
           user: __token__
-          password: ${{ secrets.pypi_token }}
+          password: ${{ secrets.pypi_password }}
           packages_dir: wheelhouse/
