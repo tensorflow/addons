@@ -25,24 +25,24 @@ from tensorflow.keras.callbacks import Callback
 class TQDMProgressBar(Callback):
     """TQDM Progress Bar for Tensorflow Keras.
 
-    Arguments:
-        metrics_separator (string): Custom separator between metrics.
-            Defaults to ' - '
-        overall_bar_format (string format): Custom bar format for overall
+    Args:
+        metrics_separator: Custom separator between metrics.
+            Defaults to ' - '.
+        overall_bar_format: Custom bar format for overall
             (outer) progress bar, see https://github.com/tqdm/tqdm#parameters
             for more detail.
-        epoch_bar_format (string format): Custom bar format for epoch
+        epoch_bar_format: Custom bar format for epoch
             (inner) progress bar, see https://github.com/tqdm/tqdm#parameters
             for more detail.
-        update_per_second (int): Maximum number of updates in the epochs bar
+        update_per_second: Maximum number of updates in the epochs bar
             per second, this is to prevent small batches from slowing down
             training. Defaults to 10.
-        metrics_format (string): Custom format for how metrics are formatted.
+        metrics_format: Custom format for how metrics are formatted.
             See https://github.com/tqdm/tqdm#parameters for more detail.
-        leave_epoch_progress (bool): True to leave epoch progress bars
-        leave_overall_progress (bool): True to leave overall progress bar
-        show_epoch_progress (bool): False to hide epoch progress bars
-        show_overall_progress (bool): False to hide overall progress bar
+        leave_epoch_progress: True to leave epoch progress bars.
+        leave_overall_progress: True to leave overall progress bar.
+        show_epoch_progress: False to hide epoch progress bars.
+        show_overall_progress: False to hide overall progress bar.
     """
 
     def __init__(self,

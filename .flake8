@@ -19,8 +19,6 @@ ignore =
     # TODO: remove all the exceptions below
     # do not use bare 'except'
     E722
-    # Imported but unused
-    F401
     # do not assign a lambda expression, use a def
     E731
     # local variable is assigned to but never used
