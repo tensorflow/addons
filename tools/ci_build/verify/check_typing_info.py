@@ -18,8 +18,8 @@ import inspect
 
 import tensorflow_addons
 
-EXAMPLE_URL = 'https://github.com/tensorflow/addons/blob/fa8e966d987fd9b0d20551a666e44e2790fdf9c7/tensorflow_addons/layers/normalizations.py#L73'
-TUTORIAL_URL = 'https://docs.python.org/3/library/typing.html'
+EXAMPLE_URL = "https://github.com/tensorflow/addons/blob/fa8e966d987fd9b0d20551a666e44e2790fdf9c7/tensorflow_addons/layers/normalizations.py#L73"
+TUTORIAL_URL = "https://docs.python.org/3/library/typing.html"
 
 
 # TODO: add types and remove all elements from
@@ -175,12 +175,12 @@ def check_function_is_typed(func, class_=None):
     for parameter_name, parameter in signature.parameters.items():
         if parameter.annotation != inspect.Signature.empty:
             continue
-        if parameter_name in ('args', 'kwargs', 'self'):
+        if parameter_name in ("args", "kwargs", "self"):
             continue
         if class_ is None:
             function_name = func.__name__
         else:
-            function_name = class_.__name__ + '.__init__'
+            function_name = class_.__name__ + ".__init__"
         raise NotTypedError(
             "The function '{}' has not complete type annotations "
             "in its signature (it's missing the type hint for '{}'). "
@@ -198,10 +198,10 @@ def check_function_is_typed(func, class_=None):
         if signature.return_annotation != inspect.Signature.empty:
             return
         raise NotTypedError(
-            'The function {} has no return type. Please add one. '
-            'You can take a look at the gelu activation function '
-            'in tensorflow_addons/activations/gelu.py '
-            'if you want an example.'.format(func.__name__)
+            "The function {} has no return type. Please add one. "
+            "You can take a look at the gelu activation function "
+            "in tensorflow_addons/activations/gelu.py "
+            "if you want an example.".format(func.__name__)
         )
 
 
@@ -215,5 +215,5 @@ class NotTypedError(Exception):
     pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     check_public_api_has_typing_information()
