@@ -145,7 +145,7 @@ def triplet_semihard_loss(y_true, y_pred, margin=1.0):
 @tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def triplet_hard_loss(y_true, y_pred, margin=1.0, soft=False):
-    """Computes the triplet loss with hard negative mining.
+    """Computes the triplet loss with hard negative and hard positive mining.
 
     Args:
       y_true: 1-D integer `Tensor` with shape [batch_size] of
