@@ -17,6 +17,7 @@
 import tensorflow as tf
 from typeguard import typechecked
 
+
 @tf.keras.utils.register_keras_serializable(package='Addons')
 class Maxout(tf.keras.layers.Layer):
     """Applies Maxout to the input.
