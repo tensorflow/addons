@@ -1,12 +1,8 @@
-
 name: ubuntu-cpu-nightly
 
 on:
   schedule:
-    - cron:  '0 11 * * *'
-
-env:
-  BAZEL_VERSION: 1.1.0
+    - cron:  '0 0 * * *'
 
 jobs:
   ubuntu-cpu-nightly:
@@ -14,8 +10,21 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
       - name: Nightly test Ubuntu
         run: |
           set -x -e
           bash tools/run_docker.sh -d cpu -c 'make unit-test'
+  manylinux-nightly-release:
+    name: Build and release nightly for manylinux2010
+    needs: [ubuntu-cpu-nightly]
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: Nightly build and release for Linux
+        run: |
+          docker run -e TF_NEED_CUDA=1 -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010 tools/ci_build/builds/release_linux.sh
+      - uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_password }}
+          packages_dir: wheelhouse/

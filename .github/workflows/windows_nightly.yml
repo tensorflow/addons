@@ -2,17 +2,18 @@ name: windows-nightly
 
 on:
   schedule:
-    - cron:  '0 11 * * *'
+    - cron:  '0 0 * * *'
 
 env:
   BAZEL_VERSION: 1.1.0
 
 jobs:
   windows-nightly:
+    name: Test nightly on Windows
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: ['3.7']
+        python-version: ['3.5', '3.6', '3.7']
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -27,3 +28,29 @@ jobs:
           export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
           export PATH=/c/hostedtoolcache/windows/Python/${{ matrix.python-version }}/x64/:$PATH
           bash -x -e ./tools/ci_testing/addons_cpu.sh
+  windows-nightly-release:
+    name: Build and release nightly for Windows
+    needs: [windows-nightly]
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ['3.5', '3.6', '3.7']
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Nightly build and release for Windows
+        shell: bash
+        run: |
+          python -m pip install wheel setuptools
+          curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
+          export BAZEL_VC=/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2019/Enterprise/VC/
+          export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
+          export PATH=/c/hostedtoolcache/windows/Python/${{ matrix.python-version }}/x64/:$PATH
+          bash -x -e tools/ci_build/builds/release_windows.sh
+      - uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_password }}
+          packages_dir: artifacts/

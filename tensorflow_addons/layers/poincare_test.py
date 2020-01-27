@@ -28,11 +28,10 @@ class PoincareNormalizeTest(tf.test.TestCase):
             norm = np.linalg.norm(x, axis=tuple(dim))
             for d in dim:
                 norm = np.expand_dims(norm, d)
-            norm_x = ((1. - epsilon) * x) / norm
+            norm_x = ((1.0 - epsilon) * x) / norm
         else:
-            norm = np.expand_dims(
-                np.apply_along_axis(np.linalg.norm, dim, x), dim)
-            norm_x = ((1. - epsilon) * x) / norm
+            norm = np.expand_dims(np.apply_along_axis(np.linalg.norm, dim, x), dim)
+            norm_x = ((1.0 - epsilon) * x) / norm
         return np.where(norm > 1.0 - epsilon, norm_x, x)
 
     def testPoincareNormalize(self):
@@ -47,15 +46,13 @@ class PoincareNormalizeTest(tf.test.TestCase):
 
             outputs = test_utils.layer_test(
                 PoincareNormalize,
-                kwargs={
-                    'axis': dim,
-                    'epsilon': epsilon
-                },
+                kwargs={"axis": dim, "epsilon": epsilon},
                 input_data=inputs,
-                expected_output=outputs_expected)
+                expected_output=outputs_expected,
+            )
             for y in outputs_expected, outputs:
                 norm = np.linalg.norm(y, axis=dim)
-                self.assertLessEqual(norm.max(), 1. - epsilon + tol)
+                self.assertLessEqual(norm.max(), 1.0 - epsilon + tol)
 
     def testPoincareNormalizeDimArray(self):
         x_shape = [20, 7, 3]
@@ -69,16 +66,14 @@ class PoincareNormalizeTest(tf.test.TestCase):
 
         outputs = test_utils.layer_test(
             PoincareNormalize,
-            kwargs={
-                'axis': dim,
-                'epsilon': epsilon
-            },
+            kwargs={"axis": dim, "epsilon": epsilon},
             input_data=inputs,
-            expected_output=outputs_expected)
+            expected_output=outputs_expected,
+        )
         for y in outputs_expected, outputs:
             norm = np.linalg.norm(y, axis=tuple(dim))
-            self.assertLessEqual(norm.max(), 1. - epsilon + tol)
+            self.assertLessEqual(norm.max(), 1.0 - epsilon + tol)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.test.main()

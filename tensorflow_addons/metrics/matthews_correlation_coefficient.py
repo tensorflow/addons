@@ -56,7 +56,7 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
                  num_classes=None,
                  name='MatthewsCorrelationCoefficient',
                  dtype=tf.float32):
-        """Creates a Matthews Correlation Coefficient instanse.
+        """Creates a Matthews Correlation Coefficient instance.
 
         Args:
             num_classes : Number of unique classes in the dataset.
