@@ -51,7 +51,8 @@ jobs:
       - name: CPU test Windows py${{ matrix.python-version }}
         shell: bash
         run: |
-          python -m pip install wheel setuptools
+          cp /c/hostedtoolcache/windows/Python/${{ matrix.python-version }}/x64/python /c/hostedtoolcache/windows/Python/${{ matrix.python-version }}/x64/python3
+          python3 -m pip install wheel setuptools
           curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
           export BAZEL_VC=/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2019/Enterprise/VC/
           export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
@@ -106,7 +107,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Build and release for Windows
         run: |
-          python -m pip install wheel setuptools
+          cp /c/hostedtoolcache/windows/Python/${{ matrix.python-version }}/x64/python /c/hostedtoolcache/windows/Python/${{ matrix.python-version }}/x64/python3
+          python3 -m pip install wheel setuptools
           curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
           export BAZEL_VC=/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2019/Enterprise/VC/
           export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
