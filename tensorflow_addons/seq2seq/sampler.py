@@ -20,9 +20,7 @@ import tensorflow as tf
 
 from tensorflow_addons.seq2seq import decoder
 
-_transpose_batch_time = (
-    decoder._transpose_batch_time
-)  # pylint: disable=protected-access
+_transpose_batch_time = decoder._transpose_batch_time
 
 
 class Sampler(metaclass=abc.ABCMeta):
@@ -246,9 +244,7 @@ class TrainingSampler(Sampler):
 
             axis = 1 if not self.time_major else 0
             with tf.control_dependencies(
-                [
-                    _check_sequence_is_right_padded(mask, self.time_major)
-                ]  # pylint: disable=bad-continuation
+                [_check_sequence_is_right_padded(mask, self.time_major)]
             ):
                 self.sequence_length = tf.math.reduce_sum(
                     tf.cast(mask, tf.int32), axis=axis, name="sequence_length"

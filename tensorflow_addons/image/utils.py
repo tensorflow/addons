@@ -32,7 +32,7 @@ def to_4D_image(image):
     """
     with tf.control_dependencies(
         [
-            tf.debugging.assert_rank_in(  # pylint: disable=bad-continuation
+            tf.debugging.assert_rank_in(
                 image, [2, 3, 4], message="`image` must be 2/3/4D tensor"
             )
         ]
@@ -56,13 +56,14 @@ def _dynamic_to_4D_image(image):
     # 2D image => [1, H, W, 1]
     left_pad = tf.cast(tf.less_equal(original_rank, 3), dtype=tf.int32)
     right_pad = tf.cast(tf.equal(original_rank, 2), dtype=tf.int32)
-    # yapf: disable
     new_shape = tf.concat(
-        [tf.ones(shape=left_pad, dtype=tf.int32),
-         shape,
-         tf.ones(shape=right_pad, dtype=tf.int32)],
-        axis=0)
-    # yapf: enable
+        [
+            tf.ones(shape=left_pad, dtype=tf.int32),
+            shape,
+            tf.ones(shape=right_pad, dtype=tf.int32),
+        ],
+        axis=0,
+    )
     return tf.reshape(image, new_shape)
 
 
@@ -77,11 +78,7 @@ def from_4D_image(image, ndims):
       `ndims`-D tensor with the same type.
     """
     with tf.control_dependencies(
-        [
-            tf.debugging.assert_rank(  # pylint: disable=bad-continuation
-                image, 4, message="`image` must be 4D tensor"
-            )
-        ]
+        [tf.debugging.assert_rank(image, 4, message="`image` must be 4D tensor")]
     ):
         if isinstance(ndims, tf.Tensor):
             return _dynamic_from_4D_image(image, ndims)

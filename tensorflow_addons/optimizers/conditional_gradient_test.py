@@ -173,7 +173,6 @@ class ConditionalGradientTest(tf.test.TestCase):
         for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
             var0 = tf.Variable([[1.0, 2.0]], dtype=dtype)
 
-            # pylint: disable=cell-var-from-loop
             def loss():
                 x = tf.constant([[4.0], [5.0]], dtype=dtype)
                 pred = tf.matmul(tf.nn.embedding_lookup([var0], [0]), x)
@@ -185,7 +184,6 @@ class ConditionalGradientTest(tf.test.TestCase):
             grads0 = tf.constant([[grads0_0, grads0_1]], dtype=dtype)
             norm0 = tf.math.reduce_sum(grads0 ** 2) ** 0.5
 
-            # pylint: enable=cell-var-from-loop
             learning_rate = 0.1
             lambda_ = 0.1
             opt = cg_lib.ConditionalGradient(
@@ -344,7 +342,6 @@ class ConditionalGradientTest(tf.test.TestCase):
         """
         db_grad = [[]] * 10
         db_out = [[]] * 10
-        # pylint: disable=line-too-long
         db_grad[0] = [
             0.00096264342,
             0.17914793,
@@ -585,7 +582,6 @@ class ConditionalGradientTest(tf.test.TestCase):
             -0.01207165,
             -0.00736567,
         ]
-        # pylint: enable=line-too-long
         return db_grad, db_out
 
     def testLikeDistBeliefCG01(self):

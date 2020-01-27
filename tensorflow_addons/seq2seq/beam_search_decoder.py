@@ -534,15 +534,9 @@ class BeamSearchDecoderMixin:
         ):
             return t
         t = t.stack()
-        # yapf:disable
         with tf.control_dependencies(
-            [
-                _check_batch_beam(  # pylint: disable=bad-continuation
-                    t, self._batch_size, self._beam_width
-                )
-            ]
+            [_check_batch_beam(t, self._batch_size, self._beam_width)]
         ):
-            # yapf:enable
             return gather_tree_from_array(t, parent_ids, sequence_length)
 
     def step(self, time, inputs, state, training=None, name=None):

@@ -57,7 +57,6 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
             if grid_static_shape[2] is not None and grid_static_shape[2] < 2:
                 raise ValueError("Grid width must be at least 2.")
         else:
-            # pylint: disable=bad-continuation
             with tf.control_dependencies(
                 [
                     tf.debugging.assert_greater_equal(
@@ -79,7 +78,6 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
                 ]
             ):
                 pass
-            # pylint: enable=bad-continuation
 
         # query_points shape checks
         query_static_shape = query_points.shape
@@ -91,7 +89,6 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
             if query_hw is not None and query_hw != 2:
                 raise ValueError("Query points last dimension must be 2.")
         else:
-            # pylint: disable=bad-continuation
             with tf.control_dependencies(
                 [
                     tf.debugging.assert_equal(
@@ -102,7 +99,6 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
                 ]
             ):
                 pass
-            # pylint: enable=bad-continuation
 
         batch_size, height, width, channels = (
             grid_shape[0],
@@ -156,7 +152,6 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
             batch_offsets = tf.reshape(
                 tf.range(batch_size) * height * width, [batch_size, 1]
             )
-        # pylint: enable=bad-continuation
 
         # This wraps tf.gather. We reshape the image data such that the
         # batch, y, and x coordinates are pulled into the first dimension.

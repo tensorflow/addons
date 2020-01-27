@@ -57,11 +57,7 @@ class DecodeRNNTest(test_utils.keras_parameterized.TestCase, tf.test.TestCase):
             initial_state = cell.get_initial_state(
                 batch_size=batch_size, dtype=tf.float32
             )
-            (
-                final_outputs,
-                unused_final_state,
-                final_sequence_length,
-            ) = my_decoder(  # pylint: disable=not-callable
+            (final_outputs, unused_final_state, final_sequence_length,) = my_decoder(
                 input_t, initial_state=initial_state, sequence_length=sequence_length
             )
 
@@ -138,11 +134,7 @@ class DecodeRNNTest(test_utils.keras_parameterized.TestCase, tf.test.TestCase):
                 cell=cell, sampler=sampler, impute_finished=use_sequence_length
             )
 
-            (
-                final_decoder_outputs,
-                final_decoder_state,
-                _,
-            ) = my_decoder(  # pylint: disable=not-callable
+            (final_decoder_outputs, final_decoder_state, _,) = my_decoder(
                 inputs, initial_state=zero_state, sequence_length=sequence_length
             )
 
