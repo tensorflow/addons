@@ -142,6 +142,54 @@ def triplet_semihard_loss(y_true, y_pred, margin=1.0):
     return triplet_loss
 
 
+
+@tf.keras.utils.register_keras_serializable(package="Addons")
+@tf.function
+def triplet_hard_loss(y_true, y_pred, margin=1.0):
+    """Computes the triplet loss with hard negative mining.
+
+    Args:
+      y_true: 1-D integer `Tensor` with shape [batch_size] of
+        multiclass integer labels.
+      y_pred: 2-D float `Tensor` of embedding vectors. Embeddings should
+        be l2 normalized.
+      margin: Float, margin term in the loss definition.
+    """
+    labels, embeddings = y_true, y_pred
+    # Reshape label tensor to [batch_size, 1].
+    lshape = tf.shape(labels)
+    labels = tf.reshape(labels, [lshape[0], 1])
+
+    # Build pairwise squared distance matrix.
+    pdist_matrix = metric_learning.pairwise_distance(embeddings, squared=True)
+    # Build pairwise binary adjacency matrix.
+    adjacency = tf.math.equal(labels, tf.transpose(labels))
+    # Invert so we can select negatives only.
+    adjacency_not = tf.math.logical_not(adjacency)
+
+    adjacency_not = tf.cast(adjacency_not, dtype=tf.dtypes.float32)
+    # hard negatives: smallest D_an.
+    hard_negatives = _masked_minimum(pdist_matrix, adjacency_not)
+
+    batch_size = tf.size(labels)
+
+    adjacency = tf.cast(adjacency, dtype=tf.dtypes.float32)
+
+    mask_positives = tf.cast(
+        adjacency, dtype=tf.dtypes.float32) - tf.linalg.diag(
+            tf.ones([batch_size]))
+
+    # hard positives: largest D_ap.
+    hard_positives = _masked_maximum(pdist_matrix, mask_positives)
+
+    triplet_loss = tf.maximum(hard_positives - hard_negatives + margin, 0.0)
+
+    # Get final mean triplet loss
+    triplet_loss = tf.reduce_mean(triplet_loss)
+
+    return triplet_loss
+
+
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class TripletSemiHardLoss(tf.keras.losses.Loss):
     """Computes the triplet loss with semi-hard negative mining.
@@ -168,6 +216,41 @@ class TripletSemiHardLoss(tf.keras.losses.Loss):
 
     def call(self, y_true, y_pred):
         return triplet_semihard_loss(y_true, y_pred, self.margin)
+
+    def get_config(self):
+        config = {
+            "margin": self.margin,
+        }
+        base_config = super().get_config()
+        return {**base_config, **config}
+
+
+@tf.keras.utils.register_keras_serializable(package='Addons')
+class TripletHardLoss(tf.keras.losses.Loss):
+    """Computes the triplet loss with hard negative and hard positive mining.
+
+    The loss encourages the maximum positive distance (between a pair of embeddings
+    with the same labels) to be smaller than the minimum negative distance plus the
+    margin constant in the mini-batch.
+    The loss selects the hardest positive and the hardest negative samples
+    within the batch when forming the triplets for computing the loss.
+    See: https://arxiv.org/pdf/1703.07737.pdf
+
+    We expect labels `y_true` to be provided as 1-D integer `Tensor` with shape
+    [batch_size] of multi-class integer labels. And embeddings `y_pred` must be
+    2-D float `Tensor` of l2 normalized embedding vectors.
+
+    Args:
+      margin: Float, margin term in the loss definition. Default value is 1.0.
+      name: Optional name for the op.
+    """
+
+    def __init__(self, margin=1.0, name=None, **kwargs):
+        super().__init__(name=name, reduction=tf.keras.losses.Reduction.NONE)
+        self.margin = margin
+
+    def call(self, y_true, y_pred):
+        return triplet_hard_loss(y_true, y_pred, self.margin)
 
     def get_config(self):
         config = {
