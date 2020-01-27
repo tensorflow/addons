@@ -58,10 +58,11 @@ class SparsemaxTest(tf.test.TestCase):
 
         test_utils.layer_test(
             Sparsemax,
-            kwargs={'dtype': dtype},
+            kwargs={"dtype": dtype},
             input_data=z,
-            expected_output=_np_sparsemax(z).astype(dtype))
+            expected_output=_np_sparsemax(z).astype(dtype),
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.test.main()

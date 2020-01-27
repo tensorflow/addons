@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Addititonal activation functions."""
+"""Additional activation functions."""
 
 from tensorflow_addons.activations.gelu import gelu
 from tensorflow_addons.activations.hardshrink import hardshrink

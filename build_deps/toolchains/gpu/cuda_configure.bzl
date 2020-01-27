@@ -374,7 +374,7 @@ def find_cuda_define(repository_ctx, header_dir, header_file, define):
     if not h_path.exists:
         auto_configure_fail("Cannot find %s at %s" % (header_file, str(h_path)))
     result = repository_ctx.execute(
-        # Grep one more lines as some #defines are splitted into two lines.
+        # Grep one more lines as some #defines are split into two lines.
         [
             "grep",
             "--color=never",

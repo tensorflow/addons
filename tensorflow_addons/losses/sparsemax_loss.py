@@ -18,7 +18,7 @@ import tensorflow as tf
 from tensorflow_addons.activations.sparsemax import sparsemax
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 def sparsemax_loss(logits, sparsemax, labels, name=None):
     """Sparsemax loss function [1].
 
@@ -55,7 +55,9 @@ def sparsemax_loss(logits, sparsemax, labels, name=None):
     # would cause 0 * -inf = nan, which is not correct in this case.
     sum_s = tf.where(
         tf.math.logical_or(sparsemax > 0, tf.math.is_nan(sparsemax)),
-        sparsemax * (z - 0.5 * sparsemax), tf.zeros_like(sparsemax))
+        sparsemax * (z - 0.5 * sparsemax),
+        tf.zeros_like(sparsemax),
+    )
 
     # - z_k + ||q||^2
     q_part = labels * (0.5 * labels - z)
@@ -67,20 +69,22 @@ def sparsemax_loss(logits, sparsemax, labels, name=None):
     # therefor this case doesn't need addtional special treatment.
     q_part_safe = tf.where(
         tf.math.logical_and(tf.math.equal(labels, 0), tf.math.is_inf(z)),
-        tf.zeros_like(z), q_part)
+        tf.zeros_like(z),
+        q_part,
+    )
 
     return tf.math.reduce_sum(sum_s + q_part_safe, axis=1)
 
 
 @tf.function
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 def sparsemax_loss_from_logits(y_true, logits_pred):
     y_pred = sparsemax(logits_pred)
     loss = sparsemax_loss(logits_pred, y_pred, y_true)
     return loss
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class SparsemaxLoss(tf.keras.losses.Loss):
     """Sparsemax loss function.
 
@@ -101,12 +105,14 @@ class SparsemaxLoss(tf.keras.losses.Loss):
       name: Optional name for the op.
     """
 
-    def __init__(self,
-                 from_logits=True,
-                 reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
-                 name='sparsemax_loss'):
+    def __init__(
+        self,
+        from_logits=True,
+        reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
+        name="sparsemax_loss",
+    ):
         if from_logits is not True:
-            raise ValueError('from_logits must be True')
+            raise ValueError("from_logits must be True")
 
         super().__init__(name=name, reduction=reduction)
         self.from_logits = from_logits

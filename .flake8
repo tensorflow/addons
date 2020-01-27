@@ -1,0 +1,37 @@
+[flake8]
+
+ignore =
+    # defaults flake8 ignores
+    E121,E123,E126,E226,E24,E704,W503,W504
+    # whitespace before ':'
+    # https://black.readthedocs.io/en/stable/the_black_code_style.html#slices
+    E203
+    # missing whitespace after ','
+    # black takes care of that. Sometimes it may
+    # add a comma at the end of lists.
+    E231
+    # Line too long
+    # We use black, no need to enforce line length
+    E501
+    # lowercase ... imported as non lowercase
+    # Useful to ignore for "import keras.backend as K"
+    N812
+    # TODO: remove all the exceptions below
+    # do not use bare 'except'
+    E722
+    # Imported but unused
+    F401
+    # the backslash is redundant between brackets
+    E502
+    # do not assign a lambda expression, use a def
+    E731
+    # local variable is assigned to but never used
+    F841
+    # trailing whitespace
+    W291
+    # expected 2 blank lines after class or function definition, found 1
+    E305
+
+
+#imported but unused in __init__.py, that's ok.
+per-file-ignores = **/__init__.py:F401
