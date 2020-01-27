@@ -46,7 +46,7 @@ def _np_sparsemax(z):
     return np.maximum(0, z - tau_z)
 
 
-@test_utils.run_all_with_types(['float32', 'float64'])
+@test_utils.run_all_with_types(["float32", "float64"])
 @test_utils.run_all_in_graph_and_eager_modes
 class SparsemaxTest(tf.test.TestCase):
     def _tf_sparsemax(self, z, dtype, **kwargs):
@@ -73,10 +73,8 @@ class SparsemaxTest(tf.test.TestCase):
 
         z = random.uniform(low=-3, high=3, size=(test_obs, 10))
 
-        tf_sparsemax_op, tf_sparsemax_out = self._tf_sparsemax(
-            z, dtype, axis=0)
-        np_sparsemax = np.transpose(_np_sparsemax(
-            np.transpose(z))).astype(dtype)
+        tf_sparsemax_op, tf_sparsemax_out = self._tf_sparsemax(z, dtype, axis=0)
+        np_sparsemax = np.transpose(_np_sparsemax(np.transpose(z))).astype(dtype)
 
         self.assertAllCloseAccordingToType(np_sparsemax, tf_sparsemax_out)
         self.assertShapeEqual(np_sparsemax, tf_sparsemax_op)
@@ -88,8 +86,9 @@ class SparsemaxTest(tf.test.TestCase):
         z = random.uniform(low=-3, high=3, size=(10))
 
         tf_sparsemax_op, tf_sparsemax_out = self._tf_sparsemax(z, dtype)
-        np_sparsemax = np.reshape(_np_sparsemax(np.reshape(z, [1, 10])),
-                                  [10]).astype(dtype)
+        np_sparsemax = np.reshape(_np_sparsemax(np.reshape(z, [1, 10])), [10]).astype(
+            dtype
+        )
 
         self.assertAllCloseAccordingToType(np_sparsemax, tf_sparsemax_out)
         self.assertShapeEqual(np_sparsemax, tf_sparsemax_op)
@@ -103,7 +102,8 @@ class SparsemaxTest(tf.test.TestCase):
         tf_sparsemax_op, tf_sparsemax_out = self._tf_sparsemax(z, dtype)
         np_sparsemax = np.reshape(
             _np_sparsemax(np.reshape(z, [test_obs * test_obs, 10])),
-            [test_obs, test_obs, 10]).astype(dtype)
+            [test_obs, test_obs, 10],
+        ).astype(dtype)
 
         self.assertAllCloseAccordingToType(np_sparsemax, tf_sparsemax_out)
         self.assertShapeEqual(np_sparsemax, tf_sparsemax_op)
@@ -112,45 +112,58 @@ class SparsemaxTest(tf.test.TestCase):
         """check sparsemax transfers nan."""
         random = np.random.RandomState(2)
 
-        z_nan = np.asarray([
-            [0, np.nan, 0],
-            [0, np.nan, np.nan],
-            [np.nan, np.nan, np.nan],
-        ]).astype(dtype)
+        z_nan = np.asarray(
+            [[0, np.nan, 0], [0, np.nan, np.nan], [np.nan, np.nan, np.nan],]
+        ).astype(dtype)
 
         _, tf_sparsemax_nan = self._tf_sparsemax(z_nan, dtype)
         self.assertAllEqual(
-            [[np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan],
-             [np.nan, np.nan, np.nan]], tf_sparsemax_nan)
+            [
+                [np.nan, np.nan, np.nan],
+                [np.nan, np.nan, np.nan],
+                [np.nan, np.nan, np.nan],
+            ],
+            tf_sparsemax_nan,
+        )
 
     def test_sparsemax_of_inf(self, dtype=None):
         """check sparsemax is infinity safe."""
         random = np.random.RandomState(3)
 
-        z_neg = np.asarray([
-            [0, -np.inf, 0],
-            [0, -np.inf, -np.inf],
-            [-np.inf, -np.inf, -np.inf],
-        ]).astype(dtype)
-        z_pos = np.asarray([[0, np.inf, 0], [0, np.inf, np.inf],
-                            [np.inf, np.inf, np.inf]]).astype(dtype)
-        z_mix = np.asarray([[0, np.inf, 0], [0, np.inf, -np.inf],
-                            [-np.inf, np.inf, -np.inf]]).astype(dtype)
+        z_neg = np.asarray(
+            [[0, -np.inf, 0], [0, -np.inf, -np.inf], [-np.inf, -np.inf, -np.inf],]
+        ).astype(dtype)
+        z_pos = np.asarray(
+            [[0, np.inf, 0], [0, np.inf, np.inf], [np.inf, np.inf, np.inf]]
+        ).astype(dtype)
+        z_mix = np.asarray(
+            [[0, np.inf, 0], [0, np.inf, -np.inf], [-np.inf, np.inf, -np.inf]]
+        ).astype(dtype)
 
         _, tf_sparsemax_neg = self._tf_sparsemax(z_neg, dtype)
         self.assertAllEqual(
-            [[0.5, 0, 0.5], [1, 0, 0], [np.nan, np.nan, np.nan]],
-            tf_sparsemax_neg)
+            [[0.5, 0, 0.5], [1, 0, 0], [np.nan, np.nan, np.nan]], tf_sparsemax_neg
+        )
 
         _, tf_sparsemax_pos = self._tf_sparsemax(z_pos, dtype)
         self.assertAllEqual(
-            [[np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan],
-             [np.nan, np.nan, np.nan]], tf_sparsemax_pos)
+            [
+                [np.nan, np.nan, np.nan],
+                [np.nan, np.nan, np.nan],
+                [np.nan, np.nan, np.nan],
+            ],
+            tf_sparsemax_pos,
+        )
 
         _, tf_sparsemax_mix = self._tf_sparsemax(z_mix, dtype)
         self.assertAllEqual(
-            [[np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan],
-             [np.nan, np.nan, np.nan]], tf_sparsemax_mix)
+            [
+                [np.nan, np.nan, np.nan],
+                [np.nan, np.nan, np.nan],
+                [np.nan, np.nan, np.nan],
+            ],
+            tf_sparsemax_mix,
+        )
 
     def test_sparsemax_of_zero(self, dtype=None):
         """check sparsemax proposition 1, part 1."""
@@ -180,8 +193,7 @@ class SparsemaxTest(tf.test.TestCase):
         p_expected = np.zeros((test_obs, 10), dtype=dtype)
         p_expected[np.arange(0, test_obs), z_sort_arg[:, 0]] = 1
 
-        tf_sparsemax_op, tf_sparsemax_out = self._tf_sparsemax(
-            (1 / epsilon) * z, dtype)
+        tf_sparsemax_op, tf_sparsemax_out = self._tf_sparsemax((1 / epsilon) * z, dtype)
 
         self.assertAllCloseAccordingToType(p_expected, tf_sparsemax_out)
         self.assertShapeEqual(p_expected, tf_sparsemax_op)
@@ -198,7 +210,8 @@ class SparsemaxTest(tf.test.TestCase):
         _, tf_sparsemax_z = self._tf_sparsemax(z, dtype)
 
         self.assertAllCloseAccordingToType(
-            tf_sparsemax_zpc, tf_sparsemax_z, half_atol=5e-3)
+            tf_sparsemax_zpc, tf_sparsemax_z, half_atol=5e-3
+        )
 
     def test_permutation(self, dtype=None):
         """check sparsemax proposition 3."""
@@ -211,11 +224,13 @@ class SparsemaxTest(tf.test.TestCase):
             per = random.permutation(10)
 
             tf_sparsemax_op, tf_sparsemax_out = self._tf_sparsemax(
-                z[i, per].reshape(1, -1), dtype)
+                z[i, per].reshape(1, -1), dtype
+            )
             p_expected = p[i, per].reshape(1, -1)
 
             self.assertAllCloseAccordingToType(
-                p_expected, tf_sparsemax_out, half_atol=5e-3)
+                p_expected, tf_sparsemax_out, half_atol=5e-3
+            )
             self.assertShapeEqual(p_expected, tf_sparsemax_op)
 
     def test_diffrence(self, dtype=None):
@@ -225,7 +240,7 @@ class SparsemaxTest(tf.test.TestCase):
         z = random.uniform(low=-3, high=3, size=(test_obs, 10))
         _, p = self._tf_sparsemax(z, dtype)
 
-        etol = {'float16': 1e-2, 'float32': 1e-6, 'float64': 1e-9}[dtype]
+        etol = {"float16": 1e-2, "float32": 1e-6, "float64": 1e-9}[dtype]
 
         for val in range(0, test_obs):
             for i in range(0, 10):
@@ -235,9 +250,10 @@ class SparsemaxTest(tf.test.TestCase):
                         continue
 
                     self.assertTrue(
-                        0 <= p[val, j] - p[val, i] <=
-                        z[val, j] - z[val, i] + etol, '0 <= %.10f <= %.10f' %
-                        (p[val, j] - p[val, i], z[val, j] - z[val, i] + etol))
+                        0 <= p[val, j] - p[val, i] <= z[val, j] - z[val, i] + etol,
+                        "0 <= %.10f <= %.10f"
+                        % (p[val, j] - p[val, i], z[val, j] - z[val, i] + etol),
+                    )
 
     def test_two_dimentional(self, dtype=None):
         """check two dimentation sparsemax case."""
@@ -251,8 +267,7 @@ class SparsemaxTest(tf.test.TestCase):
         p0_expected = np.select([t < -1, t <= 1, t > 1], [0, (t + 1) / 2, 1])
 
         self.assertAllCloseAccordingToType(p0_expected, tf_sparsemax_out[:, 0])
-        self.assertAllCloseAccordingToType(1 - p0_expected,
-                                           tf_sparsemax_out[:, 1])
+        self.assertAllCloseAccordingToType(1 - p0_expected, tf_sparsemax_out[:, 1])
         self.assertShapeEqual(z, tf_sparsemax_op)
 
     def test_gradient_against_estimate(self, dtype=None):
@@ -261,15 +276,16 @@ class SparsemaxTest(tf.test.TestCase):
 
         # sparsemax is not a smooth function so gradient estimation is only
         # possible for float64.
-        if dtype != 'float64':
+        if dtype != "float64":
             return
 
         z = random.uniform(low=-1, high=1, size=(test_obs, 10)).astype(dtype)
 
         (jacob_sym,), (jacob_num,) = tf.test.compute_gradient(
-            lambda logits: sparsemax(logits), [z], delta=1e-6)
+            lambda logits: sparsemax(logits), [z], delta=1e-6
+        )
         self.assertAllCloseAccordingToType(jacob_sym, jacob_num)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.test.main()

@@ -17,7 +17,7 @@
 import tensorflow as tf
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class PoincareNormalize(tf.keras.layers.Layer):
     """Project into the Poincare ball with norm <= 1.0 - epsilon.
 
@@ -48,10 +48,9 @@ class PoincareNormalize(tf.keras.layers.Layer):
 
     def call(self, inputs):
         x = tf.convert_to_tensor(inputs)
-        square_sum = tf.math.reduce_sum(
-            tf.math.square(x), self.axis, keepdims=True)
+        square_sum = tf.math.reduce_sum(tf.math.square(x), self.axis, keepdims=True)
         x_inv_norm = tf.math.rsqrt(square_sum)
-        x_inv_norm = tf.math.minimum((1. - self.epsilon) * x_inv_norm, 1.)
+        x_inv_norm = tf.math.minimum((1.0 - self.epsilon) * x_inv_norm, 1.0)
         outputs = tf.math.multiply(x, x_inv_norm)
         return outputs
 
@@ -59,6 +58,6 @@ class PoincareNormalize(tf.keras.layers.Layer):
         return input_shape
 
     def get_config(self):
-        config = {'axis': self.axis, 'epsilon': self.epsilon}
+        config = {"axis": self.axis, "epsilon": self.epsilon}
         base_config = super().get_config()
         return {**base_config, **config}

@@ -49,9 +49,7 @@ else:
 version = {}
 base_dir = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
-    # yapf: disable
     exec(fp.read(), version)
-    # yapf: enable
 
 if project_name == TFA_NIGHTLY:
     version['__version__'] += datetime.strftime(datetime.today(), "%Y%m%d")

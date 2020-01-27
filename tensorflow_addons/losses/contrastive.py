@@ -17,7 +17,7 @@
 import tensorflow as tf
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def contrastive_loss(y_true, y_pred, margin=1.0):
     r"""Computes the contrastive loss between `y_true` and `y_pred`.
@@ -49,12 +49,12 @@ def contrastive_loss(y_true, y_pred, margin=1.0):
     """
     y_pred = tf.convert_to_tensor(y_pred)
     y_true = tf.dtypes.cast(y_true, y_pred.dtype)
-    return (
-        y_true * tf.math.square(y_pred) +
-        (1. - y_true) * tf.math.square(tf.math.maximum(margin - y_pred, 0.)))
+    return y_true * tf.math.square(y_pred) + (1.0 - y_true) * tf.math.square(
+        tf.math.maximum(margin - y_pred, 0.0)
+    )
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class ContrastiveLoss(tf.keras.losses.Loss):
     r"""Computes the contrastive loss between `y_true` and `y_pred`.
 
@@ -86,10 +86,12 @@ class ContrastiveLoss(tf.keras.losses.Loss):
       name: (Optional) name for the loss.
     """
 
-    def __init__(self,
-                 margin=1.0,
-                 reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
-                 name="contrasitve_loss"):
+    def __init__(
+        self,
+        margin=1.0,
+        reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
+        name="contrasitve_loss",
+    ):
         super().__init__(reduction=reduction, name=name)
         self.margin = margin
 

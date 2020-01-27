@@ -32,7 +32,8 @@ class UtilsOpsTest(tf.test.TestCase):
 
     def test_to_4D_image_with_unknown_shape(self):
         fn = tf.function(img_utils.to_4D_image).get_concrete_function(
-            tf.TensorSpec(shape=None, dtype=tf.float32))
+            tf.TensorSpec(shape=None, dtype=tf.float32)
+        )
         for shape in (2, 4), (2, 4, 1), (1, 2, 4, 1):
             exp = tf.ones(shape=(1, 2, 4, 1))
             res = fn(tf.ones(shape=shape))
@@ -40,17 +41,16 @@ class UtilsOpsTest(tf.test.TestCase):
 
     def test_to_4D_image_with_invalid_shape(self):
         errors = (ValueError, tf.errors.InvalidArgumentError)
-        with self.assertRaisesRegexp(errors, '`image` must be 2/3/4D tensor'):
+        with self.assertRaisesRegexp(errors, "`image` must be 2/3/4D tensor"):
             img_utils.to_4D_image(tf.ones(shape=(1,)))
 
-        with self.assertRaisesRegexp(errors, '`image` must be 2/3/4D tensor'):
+        with self.assertRaisesRegexp(errors, "`image` must be 2/3/4D tensor"):
             img_utils.to_4D_image(tf.ones(shape=(1, 2, 4, 3, 2)))
 
     def test_from_4D_image(self):
         for shape in (2, 4), (2, 4, 1), (1, 2, 4, 1):
             exp = tf.ones(shape=shape)
-            res = img_utils.from_4D_image(
-                tf.ones(shape=(1, 2, 4, 1)), len(shape))
+            res = img_utils.from_4D_image(tf.ones(shape=(1, 2, 4, 1)), len(shape))
             # static shape:
             self.assertAllEqual(exp.get_shape(), res.get_shape())
             self.assertAllEqual(self.evaluate(exp), self.evaluate(res))
@@ -59,36 +59,32 @@ class UtilsOpsTest(tf.test.TestCase):
         for shape in (2, 4), (2, 4, 1), (1, 2, 4, 1):
             exp = tf.ones(shape=shape)
             fn = tf.function(img_utils.from_4D_image).get_concrete_function(
-                tf.TensorSpec(shape=None, dtype=tf.float32), tf.size(shape))
+                tf.TensorSpec(shape=None, dtype=tf.float32), tf.size(shape)
+            )
             res = fn(tf.ones(shape=(1, 2, 4, 1)), tf.size(shape))
             self.assertAllEqual(self.evaluate(exp), self.evaluate(res))
 
     def test_from_4D_image_with_invalid_data(self):
         with self.assertRaises((ValueError, tf.errors.InvalidArgumentError)):
-            self.evaluate(
-                img_utils.from_4D_image(tf.ones(shape=(2, 2, 4, 1)), 2))
+            self.evaluate(img_utils.from_4D_image(tf.ones(shape=(2, 2, 4, 1)), 2))
 
         with self.assertRaises((ValueError, tf.errors.InvalidArgumentError)):
             self.evaluate(
-                img_utils.from_4D_image(
-                    tf.ones(shape=(2, 2, 4, 1)), tf.constant(2)))
+                img_utils.from_4D_image(tf.ones(shape=(2, 2, 4, 1)), tf.constant(2))
+            )
 
     def test_from_4D_image_with_invalid_shape(self):
         errors = (ValueError, tf.errors.InvalidArgumentError)
         for rank in 2, tf.constant(2):
             with self.subTest(rank=rank):
-                with self.assertRaisesRegexp(errors,
-                                             '`image` must be 4D tensor'):
+                with self.assertRaisesRegexp(errors, "`image` must be 4D tensor"):
                     img_utils.from_4D_image(tf.ones(shape=(2, 4)), rank)
 
-                with self.assertRaisesRegexp(errors,
-                                             '`image` must be 4D tensor'):
+                with self.assertRaisesRegexp(errors, "`image` must be 4D tensor"):
                     img_utils.from_4D_image(tf.ones(shape=(2, 4, 1)), rank)
 
-                with self.assertRaisesRegexp(errors,
-                                             '`image` must be 4D tensor'):
-                    img_utils.from_4D_image(
-                        tf.ones(shape=(1, 2, 4, 1, 1)), rank)
+                with self.assertRaisesRegexp(errors, "`image` must be 4D tensor"):
+                    img_utils.from_4D_image(tf.ones(shape=(1, 2, 4, 1, 1)), rank)
 
 
 if __name__ == "__main__":
