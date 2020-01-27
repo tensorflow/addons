@@ -34,7 +34,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: CI test macOS py${{ matrix.python-version }}
         run: |
-          python -m pip install wheel setuptools
+          python --version
           bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
           bash -x -e tools/ci_testing/addons_cpu.sh
   windows-test:
