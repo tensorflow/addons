@@ -35,7 +35,7 @@ SNAKE = np.asarray(
         [0, 1, 1, 1, 1, 1, 1, 1, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0],
     ]
-)  # pylint: disable
+)
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -50,14 +50,14 @@ class ConnectedComponentsTest(tf.test.TestCase):
                 [0, 0, 1, 0, 0, 0, 0, 0, 0],
             ],
             tf.bool,
-        )  # pylint: disable
+        )
         expected = [
             [1, 0, 0, 2, 0, 0, 0, 0, 3],
             [0, 4, 0, 0, 0, 5, 0, 6, 0],
             [7, 0, 8, 0, 0, 0, 9, 0, 0],
             [0, 0, 0, 0, 10, 0, 0, 0, 0],
             [0, 0, 11, 0, 0, 0, 0, 0, 0],
-        ]  # pylint: disable
+        ]
         self.assertAllEqual(self.evaluate(connected_components(arr)), expected)
 
     def testSimple(self):
@@ -101,12 +101,12 @@ class ConnectedComponentsTest(tf.test.TestCase):
             [[1, 1, 1, 1], [1, 0, 0, 1], [1, 0, 0, 1], [1, 1, 1, 1]],
             [[1, 0, 0, 1], [0, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 1]],
             [[1, 1, 0, 1], [0, 1, 1, 0], [1, 0, 1, 0], [0, 0, 1, 1]],
-        ]  # pylint: disable
+        ]
         expected = [
             [[1, 1, 1, 1], [1, 0, 0, 1], [1, 0, 0, 1], [1, 1, 1, 1]],
             [[2, 0, 0, 3], [0, 0, 0, 0], [0, 0, 0, 0], [4, 0, 0, 5]],
             [[6, 6, 0, 7], [0, 6, 6, 0], [8, 0, 6, 0], [0, 0, 6, 6]],
-        ]  # pylint: disable
+        ]
 
         self.assertAllEqual(
             self.evaluate(connected_components(tf.cast(images, tf.bool))), expected
@@ -145,7 +145,6 @@ class ConnectedComponentsTest(tf.test.TestCase):
 
 def connected_components_reference_implementation(images):
     try:
-        # pylint disable=g-import-not-at-top
         from scipy.ndimage import measurements
     except ImportError:
         logging.exception("Skipping test method because scipy could not be loaded")

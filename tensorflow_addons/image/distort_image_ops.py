@@ -20,7 +20,6 @@ from tensorflow_addons.utils.resource_loader import LazySO
 _distort_image_so = LazySO("custom_ops/image/_distort_image_ops.so")
 
 
-# pylint: disable=invalid-name
 def random_hsv_in_yiq(
     image,
     max_delta_hue=0,

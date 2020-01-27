@@ -60,12 +60,10 @@ import re
 import subprocess
 import sys
 
-# pylint: disable=E0012
 try:
     from shutil import which
 except ImportError:
     from distutils.spawn import find_executable as which
-# pylint: enable=E0012
 
 
 class ConfigError(Exception):

@@ -20,17 +20,12 @@ import unittest
 
 import tensorflow as tf
 
-# yapf: disable
-# pylint: disable=unused-import
 # TODO: find public API alternative to these
 from tensorflow.python.framework.test_util import run_all_in_graph_and_eager_modes
 from tensorflow.python.framework.test_util import run_deprecated_v1
 from tensorflow.python.framework.test_util import run_in_graph_and_eager_modes
 from tensorflow.python.keras.testing_utils import layer_test
 from tensorflow.python.keras import keras_parameterized
-
-# pylint: enable=unused-import
-# yapf: enable
 
 
 @contextlib.contextmanager

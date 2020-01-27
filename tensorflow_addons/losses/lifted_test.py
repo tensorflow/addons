@@ -61,14 +61,10 @@ class LiftedStructLossTest(tf.test.TestCase):
         embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
         labels = np.random.randint(0, num_classes, size=(num_data)).astype(np.float32)
         # Reshape labels to compute adjacency matrix.
-        # pylint: disable=E1136
         labels_reshaped = np.reshape(labels, (labels.shape[0], 1))
-        # pylint: enable=E1136
 
         # Compute the loss in NP
-        # pylint: disable=E1111
         adjacency = np.equal(labels_reshaped, labels_reshaped.T)
-        # pylint: enable=E1111
         pdist_matrix = pairwise_distance_np(embedding)
         loss_np = 0.0
         num_constraints = 0.0
