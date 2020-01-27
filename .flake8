@@ -23,8 +23,6 @@ ignore =
     F401
     # the backslash is redundant between brackets
     E502
-    # do not assign a lambda expression, use a def
-    E731
     # local variable is assigned to but never used
     F841
     # trailing whitespace

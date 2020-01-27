@@ -671,10 +671,15 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
         )
 
         # The sample function samples categorically from the logits.
-        sample_fn = lambda x: sampler_py.categorical_sample(logits=x)
+        def sample_fn(x):
+            return sampler_py.categorical_sample(logits=x)
+
         # The next inputs are a one-hot encoding of the sampled labels.
-        next_inputs_fn = lambda x: tf.one_hot(x, vocabulary_size, dtype=tf.float32)
-        end_fn = lambda sample_ids: tf.equal(sample_ids, end_token)
+        def next_inputs_fn(x):
+            return tf.one_hot(x, vocabulary_size, dtype=tf.float32)
+
+        def end_fn(sample_ids):
+            return tf.equal(sample_ids, end_token)
 
         with self.cached_session(use_gpu=True):
             cell = tf.keras.layers.LSTMCell(vocabulary_size)
@@ -757,10 +762,15 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
         )
 
         # The sample function samples independent bernoullis from the logits.
-        sample_fn = lambda x: sampler_py.bernoulli_sample(logits=x, dtype=tf.bool)
+        def sample_fn(x):
+            return sampler_py.bernoulli_sample(logits=x, dtype=tf.bool)
+
         # The next inputs are a one-hot encoding of the sampled labels.
-        next_inputs_fn = lambda x: tf.cast(x, tf.float32)
-        end_fn = lambda sample_ids: sample_ids[:, end_token]
+        def next_inputs_fn(x):
+            return tf.cast(x, tf.float32)
+
+        def end_fn(sample_ids):
+            return sample_ids[:, end_token]
 
         with self.cached_session(use_gpu=True):
             cell = tf.keras.layers.LSTMCell(vocabulary_size)
