@@ -19,11 +19,10 @@ See paper [Large Batch Optimization for Deep Learning: Training BERT in
 """
 
 import re
-from typing import Optional, Union
+from typing import Optional, Union, Callable
 from typeguard import typechecked
 
 import tensorflow as tf
-from tensorflow.keras.optimizers.schedules import LearningRateSchedule
 from tensorflow_addons.utils.types import FloatTensorLike
 
 
@@ -37,7 +36,7 @@ class LAMB(tf.keras.optimizers.Optimizer):
 
     @typechecked
     def __init__(self,
-                 learning_rate: Union[FloatTensorLike, LearningRateSchedule] = 0.001,
+                 learning_rate: Union[FloatTensorLike, Callable] = 0.001,
                  beta_1: FloatTensorLike = 0.9,
                  beta_2: FloatTensorLike = 0.999,
                  epsilon: FloatTensorLike = 1e-6,
