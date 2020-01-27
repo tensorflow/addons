@@ -36,7 +36,7 @@ python -m flake8
 
 If you want those tools to run automatically before each commit, run:
 ```bash
-cat pre-commit.sh > .git/hooks/pre-commit
+cat tools/pre-commit.sh > .git/hooks/pre-commit
 ```
 
 #### TensorFlow Conventions
