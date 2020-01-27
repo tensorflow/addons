@@ -55,9 +55,9 @@ class MovingAverage(AveragedOptimizerWrapper):
                 benign data races. If True, will update the moving average
                 after gradient updates.
             average_decay: float. Decay to use to maintain the moving averages
-                of trained variables. 
+                of trained variables.
             num_updates: Optional count of the number of updates applied to
-                variables. 
+                variables.
             name: Optional name for the operations created when applying
                 gradients. Defaults to "MovingAverage".
             **kwargs: keyword arguments. Allowed to be {`clipnorm`,

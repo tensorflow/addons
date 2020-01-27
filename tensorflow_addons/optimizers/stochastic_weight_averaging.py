@@ -82,9 +82,9 @@ class SWA(AveragedOptimizerWrapper):
         Args:
             optimizer: The original optimizer that will be used to compute and
                 apply the gradients.
-            start_averaging: An integer. Threshold to start averaging using 
+            start_averaging: An integer. Threshold to start averaging using
                 SWA. Averaging only occurs at `start_averaging` iters, must
-                be >= 0. If start_averaging = m, the first snapshot will be 
+                be >= 0. If start_averaging = m, the first snapshot will be
                 taken after the mth application of gradients (where the first
                 iteration is iteration 0).
             average_period: An integer. The synchronization period of SWA. The
@@ -96,11 +96,11 @@ class SWA(AveragedOptimizerWrapper):
                 at the same time as the model is updated, potentially doing
                 benign data races. If True, will update the moving average
                 after gradient updates.
-            **kwargs: keyword arguments. Allowed to be {`clipnorm`, 
-                `clipvalue`, `lr`, `decay`}. `clipnorm` is clip gradients by 
-                norm; `clipvalue` is clip gradients by value, `decay` is 
-                included for backward compatibility to allow time inverse 
-                decay of learning rate. `lr` is included for backward 
+            **kwargs: keyword arguments. Allowed to be {`clipnorm`,
+                `clipvalue`, `lr`, `decay`}. `clipnorm` is clip gradients by
+                norm; `clipvalue` is clip gradients by value, `decay` is
+                included for backward compatibility to allow time inverse
+                decay of learning rate. `lr` is included for backward
                 compatibility, recommended to use `learning_rate` instead.
         """
         super().__init__(optimizer, sequential_update, name, **kwargs)
