@@ -17,15 +17,8 @@ ignore =
     # Useful to ignore for "import keras.backend as K"
     N812
     # TODO: remove all the exceptions below
-    # the backslash is redundant between brackets
-    E502
     # do not assign a lambda expression, use a def
     E731
-    # trailing whitespace
-    W291
-    # expected 2 blank lines after class or function definition, found 1
-    E305
-
 
 #imported but unused in __init__.py, that's ok.
 per-file-ignores = **/__init__.py:F401
