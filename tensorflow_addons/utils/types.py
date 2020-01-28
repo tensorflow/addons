@@ -36,9 +36,6 @@ Number = Union[
     np.uint64,
 ]
 
-import numpy as np
-import tensorflow as tf
-
 Initializer = Union[None, dict, str, Callable]
 Regularizer = Union[None, dict, str, Callable]
 Constraint = Union[None, dict, str, Callable]
