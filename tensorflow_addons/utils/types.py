@@ -16,6 +16,11 @@
 
 from typing import Union, Callable
 
+import numpy as np
+import tensorflow as tf
+
 Initializer = Union[None, dict, str, Callable]
 Regularizer = Union[None, dict, str, Callable]
 Constraint = Union[None, dict, str, Callable]
+
+FloatTensorLike = Union[tf.Tensor, float, np.float16, np.float32, np.float64]
