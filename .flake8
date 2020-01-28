@@ -17,8 +17,6 @@ ignore =
     # Useful to ignore for "import keras.backend as K"
     N812
     # TODO: remove all the exceptions below
-    # do not use bare 'except'
-    E722
     # do not assign a lambda expression, use a def
     E731
 
