@@ -2,7 +2,7 @@ name: macos-nightly
 
 on:
   schedule:
-    - cron:  '0 0 * * *'
+    - cron:  '0 2 * * *'
 
 env:
   BAZEL_VERSION: 1.1.0
