@@ -116,7 +116,6 @@ def tile_batch(t, multiplier, name=None):
       ValueError: if tensor(s) `t` do not have a statically known rank or
       the rank is < 1.
     """
-    flat_t = tf.nest.flatten(t)
     with tf.name_scope(name or "tile_batch"):
         return tf.nest.map_structure(lambda t_: _tile_batch(t_, multiplier), t)
 
