@@ -847,7 +847,7 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
         output_layer = tf.keras.layers.Dense(vocab_size)
         sampler = sampler_py.TrainingSampler()
         # BasicDecoder should accept a non initialized AttentionWrapper.
-        decoder = basic_decoder.BasicDecoder(cell, sampler, output_layer=output_layer)
+        basic_decoder.BasicDecoder(cell, sampler, output_layer=output_layer)
 
     def testRightPaddedSequenceAssertion(self):
         right_padded_sequence = [[True, True, False, False], [True, True, True, False]]

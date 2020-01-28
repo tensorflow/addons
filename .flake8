@@ -17,14 +17,8 @@ ignore =
     # Useful to ignore for "import keras.backend as K"
     N812
     # TODO: remove all the exceptions below
-    # do not use bare 'except'
-    E722
-    # Imported but unused
-    F401
     # the backslash is redundant between brackets
     E502
-    # local variable is assigned to but never used
-    F841
     # trailing whitespace
     W291
     # expected 2 blank lines after class or function definition, found 1
