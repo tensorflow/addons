@@ -53,6 +53,9 @@ rm -f /etc/apt/sources.list.d/jonathonf-ubuntu-python-3_6-xenial.list
 # Install clang-format
 apt-get update -qq && apt-get install -y clang-format-3.8
 
+# Install black
+python3 -m pip install black
+
 # Check clang-format:
 CLANG_FORMAT=${CLANG_FORMAT:-clang-format-3.8}
 which ${CLANG_FORMAT} > /dev/null
