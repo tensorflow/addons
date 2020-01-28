@@ -14,52 +14,59 @@
 # =============================================================================
 
 import tensorflow as tf
+from typeguard import typechecked
 from tensorflow_addons.optimizers.average_wrapper import AveragedOptimizerWrapper
 
 
 class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
-    def __init__(self,
-                 update_weights,
-                 filepath,
-                 monitor='val_loss',
-                 verbose=0,
-                 save_best_only=False,
-                 save_weights_only=False,
-                 mode='auto',
-                 save_freq='epoch',
-                 **kwargs):
-        r"""The callback that should be used with optimizers that extend
-        AverageWrapper, i.e., MovingAverage and StochasticAverage optimizers.
-        It saves and, optionally, assigns the averaged weights.
+    r"""The callback that should be used with optimizers that extend
+    AverageWrapper, i.e., MovingAverage and StochasticAverage optimizers.
+    It saves and, optionally, assigns the averaged weights.
 
-        Args:
-            update_weights: If True, assign the moving average weights
-                to the model, and save them. If False, keep the old
-                non-averaged weights, but the saved model uses the
-                average weights.
+    Args:
+        update_weights: If True, assign the moving average weights
+            to the model, and save them. If False, keep the old
+            non-averaged weights, but the saved model uses the
+            average weights.
 
-            See `tf.keras.callbacks.ModelCheckpoint` for the other args.
+        See `tf.keras.callbacks.ModelCheckpoint` for the other args.
+    """
 
-        Raises:
-            TypeError: If the optimizer isn't a MovingAverage or
-                StochasticAverage optimizers
-        """
-
-        if not isinstance(update_weights, bool):
-            raise TypeError("update_weight must be a boolean")
-
+    @typechecked
+    def __init__(
+        self,
+        update_weights: bool,
+        filepath: str,
+        monitor: str = "val_loss",
+        verbose: int = 0,
+        save_best_only: bool = False,
+        save_weights_only: bool = False,
+        mode: str = "auto",
+        save_freq: str = "epoch",
+        **kwargs
+    ):
         self.update_weights = update_weights
-        super().__init__(filepath, monitor, verbose, save_best_only,
-                         save_weights_only, mode, save_freq, **kwargs)
+        super().__init__(
+            filepath,
+            monitor,
+            verbose,
+            save_best_only,
+            save_weights_only,
+            mode,
+            save_freq,
+            **kwargs,
+        )
 
     def set_model(self, model):
         if not isinstance(model.optimizer, AveragedOptimizerWrapper):
-            raise TypeError("AverageModelCheckpoint is only used when training"
-                            "with MovingAverage or StochasticAverage")
+            raise TypeError(
+                "AverageModelCheckpoint is only used when training"
+                "with MovingAverage or StochasticAverage"
+            )
         return super().set_model(model)
 
     def _save_model(self, epoch, logs):
-        assert (isinstance(self.model.optimizer, AveragedOptimizerWrapper))
+        assert isinstance(self.model.optimizer, AveragedOptimizerWrapper)
 
         if self.update_weights:
             self.model.optimizer.assign_average_vars(self.model.variables)
