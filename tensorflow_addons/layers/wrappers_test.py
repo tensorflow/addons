@@ -85,7 +85,7 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
         a = tf.keras.layers.Conv2D(3, 5)
         b = wrappers.WeightNormalization(a)
         out = tf.keras.layers.TimeDistributed(b)(inputs)
-        model = tf.keras.Model(inputs, out)
+        tf.keras.Model(inputs, out)
 
     @parameterized.named_parameters(
         ["Dense", lambda: tf.keras.layers.Dense(1), False],
