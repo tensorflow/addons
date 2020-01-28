@@ -16,6 +16,8 @@ jobs:
           bash tools/run_docker.sh -d cpu -c 'make unit-test'
   manylinux-nightly-release:
     name: Build and release nightly for manylinux2010
+    env:
+      PYPI_PW: ${{ secrets.pypi_password }}
     needs: [ubuntu-cpu-nightly]
     runs-on: ubuntu-18.04
     steps:
@@ -23,8 +25,5 @@ jobs:
       - name: Nightly build and release for Linux
         run: |
           docker run -e TF_NEED_CUDA=1 -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010 tools/ci_build/builds/release_linux.sh
-      - uses: pypa/gh-action-pypi-publish@master
-        with:
-          user: __token__
-          password: ${{ secrets.pypi_password }}
-          packages_dir: wheelhouse/
+          python -m pip install -U twine
+          twine upload -u __token__ -p $PYPI_PW wheelhouse/*.whl
