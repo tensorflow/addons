@@ -26,6 +26,8 @@ jobs:
           bash -x -e tools/ci_testing/addons_cpu.sh
   macos-nightly-release:
     name: Build and release nightly for macOS
+    env:
+      PYPI_PW: ${{ secrets.pypi_password }}
     needs: [macos-nightly]
     runs-on: macos-latest
     strategy:
@@ -41,8 +43,5 @@ jobs:
           python --version
           bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
           bash -x -e tools/ci_build/builds/release_macos.sh
-      - uses: pypa/gh-action-pypi-publish@master
-        with:
-          user: __token__
-          password: ${{ secrets.pypi_password }}
-          packages_dir: wheelhouse/
+          python -m pip install -U twine
+          twine upload -u __token__ -p $PYPI_PW wheelhouse/*.whl

@@ -30,6 +30,8 @@ jobs:
           bash -x -e ./tools/ci_testing/addons_cpu.sh
   windows-nightly-release:
     name: Build and release nightly for Windows
+    env:
+      PYPI_PW: ${{ secrets.pypi_password }}
     needs: [windows-nightly]
     runs-on: windows-latest
     strategy:
@@ -49,8 +51,5 @@ jobs:
           export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
           export PATH=/c/hostedtoolcache/windows/Python/${{ matrix.python-version }}/x64/:$PATH
           bash -x -e tools/ci_build/builds/release_windows.sh
-      - uses: pypa/gh-action-pypi-publish@master
-        with:
-          user: __token__
-          password: ${{ secrets.pypi_password }}
-          packages_dir: artifacts/
+          python -m pip install -U twine
+          twine upload -u __token__ -p $PYPI_PW artifacts/*.whl
