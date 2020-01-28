@@ -122,7 +122,9 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
         initial_learning_rate = 0.1
         maximal_learning_rate = 1
         step_size = 4000
-        scale_fn = lambda x: 1 / (5 ** (x * 0.0001))
+
+        def scale_fn(x):
+            return 1 / (5 ** (x * 0.0001))
 
         step = tf.resource_variable_ops.ResourceVariable(0)
         custom_cyclical_lr = cyclical_learning_rate.CyclicalLearningRate(
