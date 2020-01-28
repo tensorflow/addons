@@ -2,7 +2,7 @@ name: macos-nightly
 
 on:
   schedule:
-    - cron:  '0 11 * * *'
+    - cron:  '0 2 * * *'
 
 env:
   BAZEL_VERSION: 1.1.0
@@ -13,7 +13,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        python-version: ['3.7']
+        python-version: ['3.5', '3.6', '3.7']
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -21,8 +21,27 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Nightly test macOS py${{ matrix.python-version }}
         run: |
-          set -x -e
-          python -m pip install wheel setuptools
           python --version
           bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
           bash -x -e tools/ci_testing/addons_cpu.sh
+  macos-nightly-release:
+    name: Build and release nightly for macOS
+    env:
+      PYPI_PW: ${{ secrets.pypi_password }}
+    needs: [macos-nightly]
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: ['3.5', '3.6', '3.7']
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Nightly build and release for macOS
+        run: |
+          python --version
+          bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
+          bash -x -e tools/ci_build/builds/release_macos.sh
+          python -m pip install -U twine
+          twine upload -u __token__ -p $PYPI_PW wheelhouse/*.whl

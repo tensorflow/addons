@@ -19,7 +19,7 @@ from tensorflow_addons.utils.resource_loader import LazySO
 _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 def hardshrink(x, lower=-0.5, upper=0.5):
     """Hard shrink function.
 
@@ -40,6 +40,6 @@ def hardshrink(x, lower=-0.5, upper=0.5):
 
 @tf.RegisterGradient("Addons>Hardshrink")
 def _hardshrink_grad(op, grad):
-    return _activation_so.ops.addons_hardshrink_grad(grad, op.inputs[0],
-                                                     op.get_attr("lower"),
-                                                     op.get_attr("upper"))
+    return _activation_so.ops.addons_hardshrink_grad(
+        grad, op.inputs[0], op.get_attr("lower"), op.get_attr("upper")
+    )

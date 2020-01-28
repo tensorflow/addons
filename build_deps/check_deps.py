@@ -5,7 +5,7 @@ from pkg_resources import DistributionNotFound, VersionConflict
 
 
 def check_dependencies(requirement_file_name):
-    """Checks to see if the python dependencies are fullfilled.
+    """Checks to see if the python dependencies are fulfilled.
 
     If check passes return 0. Otherwise print error and return 1
     """
@@ -16,8 +16,10 @@ def check_dependencies(requirement_file_name):
         pkg_resources.working_set.require(dependencies)
     except VersionConflict as e:
         try:
-            print("{} was found on your system, "
-                  "but {} is required for this build.\n".format(e.dist, e.req))
+            print(
+                "{} was found on your system, "
+                "but {} is required for this build.\n".format(e.dist, e.req)
+            )
             sys.exit(1)
         except AttributeError:
             sys.exit(1)
@@ -28,4 +30,4 @@ def check_dependencies(requirement_file_name):
 
 
 if __name__ == "__main__":
-    check_dependencies('requirements.txt')
+    check_dependencies("requirements.txt")

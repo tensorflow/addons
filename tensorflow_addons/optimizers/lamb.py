@@ -19,8 +19,11 @@ See paper [Large Batch Optimization for Deep Learning: Training BERT in
 """
 
 import re
+from typing import Optional, Union, Callable
+from typeguard import typechecked
 
 import tensorflow as tf
+from tensorflow_addons.utils.types import FloatTensorLike
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -31,15 +34,16 @@ class LAMB(tf.keras.optimizers.Optimizer):
     in 76 minutes](https://arxiv.org/abs/1904.00962).
     """
 
+    @typechecked
     def __init__(self,
-                 learning_rate=0.001,
-                 beta_1=0.9,
-                 beta_2=0.999,
-                 epsilon=1e-6,
-                 weight_decay_rate=0.0,
-                 exclude_from_weight_decay=None,
-                 exclude_from_layer_adaptation=None,
-                 name='LAMB',
+                 learning_rate: Union[FloatTensorLike, Callable] = 0.001,
+                 beta_1: FloatTensorLike = 0.9,
+                 beta_2: FloatTensorLike = 0.999,
+                 epsilon: FloatTensorLike = 1e-6,
+                 weight_decay_rate: FloatTensorLike = 0.0,
+                 exclude_from_weight_decay: Optional[str] = None,
+                 exclude_from_layer_adaptation: Optional[str] = None,
+                 name: str = 'LAMB',
                  **kwargs):
         """Construct a new LAMB optimizer.
 

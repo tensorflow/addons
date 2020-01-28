@@ -18,49 +18,27 @@ set -e -x
 # No GPU support for MacOS
 export TF_NEED_CUDA="0"
 
-PYTHON_VERSIONS="3.5.6 3.6.6 3.7.4"
-curl -sSOL https://bootstrap.pypa.io/get-pip.py
-
-# Install Bazel 1.1.0
-wget https://github.com/bazelbuild/bazel/releases/download/1.1.0/bazel-1.1.0-installer-darwin-x86_64.sh
-chmod +x bazel-1.1.0-installer-darwin-x86_64.sh
-./bazel-1.1.0-installer-darwin-x86_64.sh --user
-export PATH="$PATH:$HOME/bin"
-
 # Install delocate
 python3 -m pip install -q delocate
 
-brew update && brew outdated | grep -q pyenv && brew upgrade pyenv
-eval "$(pyenv init -)"
+#Link TF dependency
+yes 'y' | ./configure.sh --quiet
 
-for version in ${PYTHON_VERSIONS}; do
-    export PYENV_VERSION=${version}
-    pyenv install -s $PYENV_VERSION
+# Build
+bazel build \
+  -c opt \
+  --noshow_progress \
+  --noshow_loading_progress \
+  --verbose_failures \
+  --test_output=errors \
+  build_pip_pkg
 
-    python get-pip.py -q
-    python -m pip --version
+# Package Whl
+bazel-bin/build_pip_pkg artifacts --nightly
 
-    #Link TF dependency
-    yes 'y' | ./configure.sh --quiet
+# Uncomment and use this command for release branches
+#bazel-bin/build_pip_pkg artifacts
 
-    # Build
-    bazel build \
-      -c opt \
-      --noshow_progress \
-      --noshow_loading_progress \
-      --verbose_failures \
-      --test_output=errors \
-      build_pip_pkg
-
-    # Package Whl
-    bazel-bin/build_pip_pkg artifacts --nightly
-
-    # Uncomment and use this command for release branches
-    #bazel-bin/build_pip_pkg artifacts
-done
-
-# Clean up
-rm get-pip.py
 
 ## Verify Wheel
 ./tools/ci_build/builds/wheel_verify.sh

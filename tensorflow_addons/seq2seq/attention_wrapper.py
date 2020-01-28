@@ -538,7 +538,9 @@ class LuongAttention(_BaseAttentionMechanism):
         # num_units **must** match expected the query depth.
         self.probability_fn_name = probability_fn
         probability_fn = self._process_probability_fn(self.probability_fn_name)
-        wrapped_probability_fn = lambda score, _: probability_fn(score)
+
+        def wrapped_probability_fn(score, _):
+            return probability_fn(score)
         if dtype is None:
             dtype = tf.float32
         memory_layer = kwargs.pop("memory_layer", None)
@@ -706,7 +708,9 @@ class BahdanauAttention(_BaseAttentionMechanism):
         """
         self.probability_fn_name = probability_fn
         probability_fn = self._process_probability_fn(self.probability_fn_name)
-        wrapped_probability_fn = lambda score, _: probability_fn(score)
+
+        def wrapped_probability_fn(score, _):
+            return probability_fn(score)
         if dtype is None:
             dtype = tf.float32
         query_layer = kwargs.pop("query_layer", None)
@@ -912,7 +916,7 @@ def monotonic_attention(p_choose_i, previous_attention, mode):
         # p_choose_i = [0, 0, 0, 1, 1, 0, 1, 1]
         # cumprod(1 - p_choose_i, exclusive=True) = [1, 1, 1, 1, 0, 0, 0, 0]
         # Product of above: [0, 0, 0, 1, 0, 0, 0, 0]
-        attention = p_choose_i * tf.cumprod(
+        attention = p_choose_i * tf.math.cumprod(
             1 - p_choose_i, axis=1, exclusive=True)
     else:
         raise ValueError("mode must be 'recursive', 'parallel', or 'hard'.")

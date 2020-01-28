@@ -93,41 +93,6 @@ do_bazel_config_format_check() {
     fi
 }
 
-do_python_format_check() {
-    PYTHON_SRC_FILES=$(get_py_files_to_check $INCREMENTAL_FLAG)
-    if [[ -z $PYTHON_SRC_FILES ]]; then
-        echo "do_python_format_check will NOT run due to"\
-             "the absence of code changes."
-        return 0
-    fi
-
-    NUM_BUILD_FILES=$(echo ${PYTHON_SRC_FILES} | wc -w)
-    echo "Running do_python_format_check on ${NUM_BUILD_FILES} files"
-    echo ""
-
-    YAPFRC_FILE="${SCRIPT_DIR}/yapfrc"
-    if [[ ! -f "${YAPFRC_FILE}" ]]; then
-        die "ERROR: Cannot find yapf rc file at ${YAPFRC_FILE}"
-    fi
-    YAPF_OPTS="--style=$YAPFRC_FILE --parallel"
-
-    if [[ ! -z $IN_PLACE_FLAG ]]; then
-        echo "Auto format..."
-        yapf $YAPF_OPTS --in-place --verbose $PYTHON_SRC_FILES
-        docformatter --wrap-summaries 79 --wrap-descriptions 72 --in-place $PYTHON_SRC_FILES
-    fi
-
-    UNFORMATTED_CODES=$(yapf $YAPF_OPTS --diff $PYTHON_SRC_FILES)
-    if [[ $? != "0" || ! -z "$UNFORMATTED_CODES" ]]; then
-        echo "Find unformatted codes:"
-        echo "$UNFORMATTED_CODES"
-        echo "Python format check fails."
-        return 1
-    else
-        echo "Python format check success."
-        return 0
-    fi
-}
 
 do_clang_format_check() {
     CLANG_SRC_FILES=$(get_clang_files_to_check $INCREMENTAL_FLAG)
@@ -168,8 +133,8 @@ do_clang_format_check() {
 }
 
 # Supply all auto format step commands and descriptions
-FORMAT_STEPS=("do_bazel_config_format_check" "do_python_format_check" "do_clang_format_check")
-FORMAT_STEPS_DESC=("Check Bazel file format" "Check python file format" "Check  C++ file format")
+FORMAT_STEPS=("do_bazel_config_format_check" "do_clang_format_check")
+FORMAT_STEPS_DESC=("Check Bazel file format" "Check  C++ file format")
 
 FAIL_COUNTER=0
 PASS_COUNTER=0

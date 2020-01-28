@@ -21,7 +21,7 @@ import tensorflow as tf
 from tensorflow.keras.callbacks import Callback
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class TimeStopping(Callback):
     """Stop training when a specified amount of time has passed.
 
@@ -48,14 +48,15 @@ class TimeStopping(Callback):
     def on_train_end(self, logs=None):
         if self.verbose > 0:
             formatted_time = datetime.timedelta(seconds=self.seconds)
-            msg = 'Timed stopping at epoch {} after training for {}'.format(
-                self.stopped_epoch + 1, formatted_time)
+            msg = "Timed stopping at epoch {} after training for {}".format(
+                self.stopped_epoch + 1, formatted_time
+            )
             print(msg)
 
     def get_config(self):
         config = {
-            'seconds': self.seconds,
-            'verbose': self.verbose,
+            "seconds": self.seconds,
+            "verbose": self.verbose,
         }
 
         base_config = super().get_config()

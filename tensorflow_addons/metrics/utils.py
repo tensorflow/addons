@@ -66,12 +66,11 @@ class MeanMetricWrapper(tf.keras.metrics.Mean):
 def _get_model(metric, num_output):
     # Test API comptibility with tf.keras Model
     model = tf.keras.Sequential()
-    model.add(tf.keras.layers.Dense(64, activation='relu'))
-    model.add(tf.keras.layers.Dense(num_output, activation='softmax'))
+    model.add(tf.keras.layers.Dense(64, activation="relu"))
+    model.add(tf.keras.layers.Dense(num_output, activation="softmax"))
     model.compile(
-        optimizer='adam',
-        loss='categorical_crossentropy',
-        metrics=['acc', metric])
+        optimizer="adam", loss="categorical_crossentropy", metrics=["acc", metric]
+    )
 
     data = np.random.random((10, 3))
     labels = np.random.random((10, num_output))

@@ -78,5 +78,4 @@ def parse_time(time_string, time_format, output_unit):
       ValueError: If `output_unit` is not a valid value,
         if parsing `time_string` according to `time_format` failed.
     """
-    return _parse_time_so.ops.addons_parse_time(time_string, time_format,
-                                                output_unit)
+    return _parse_time_so.ops.addons_parse_time(time_string, time_format, output_unit)
