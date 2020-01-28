@@ -112,6 +112,58 @@ bazel test -c opt -k \
 `<package>` can be any package name like `metrics` for example.
 `<py_test_name>` can be any test name given by the `BUILD` file or `*` for all tests of the given package.
 
+### Install in editable mode without compiling
+
+If you're just modifying Python code (as opposed to C++/CUDA code), 
+then you don't need to use Bazel to run your tests.
+Just run from the root:
+
+```
+TF_ADDONS_NO_BUILD=1 pip install -e ./
+```
+
+It's going to install Addons in editable mode without compiling anything.
+You can modify source files and changes will be seen at the next Python 
+interpreter startup.
+
+You can then just run your tests by running Unittests. For example:
+```bash
+python -m unittest tensorflow_addons/rnn/cell_test.py
+```
+
+## About type hints
+
+Ideally, we would like all the functions and classes constructors exposed in 
+the public API to be have type hints (adding the return type for class 
+constructors is not necessary).
+
+We do so to improve the user experience. Some users might use IDEs or static
+type checking, and having types greatly improve productivity with those tools.
+
+If you are not familiar with type hints, you can read 
+the [PEP 484](https://www.python.org/dev/peps/pep-0484/).
+
+We also have a runtime type check that we do 
+using [typeguard](https://typeguard.readthedocs.io/en/latest/).
+For an example, see the [normalizations.py file](tensorflow_addons/layers/normalizations.py).
+Please add it if you type a class constructor (Note that the decorator doesn't 
+play nice with autograph at the moment, this is why we don't add it to functions. For more
+context, see [this pull request](https://github.com/tensorflow/addons/pull/928)).
+
+You can import some common types 
+from [tensorflow_addons/utils/types.py](tensorflow_addons/utils/types.py).
+
+We recommend adding types if you add a new class/function to Addons' public API, 
+but we don't enforce it.
+
+Since adding type hints can be hard, especially for people who are not
+familiar with it, we made a big todo-list of functions/class constructors that 
+need typing. If you want to add a feature to the public API and 
+don't want to bother adding type hints, please add your feature to the todo-list 
+in [tools/ci_build/verify/check_typing_info.py](tools/ci_build/verify/check_typing_info.py).
+
+Help is welcome to make this TODO list smaller!
+
 ## Code Reviews
 
 All submissions, including submissions by project members, require review. We
