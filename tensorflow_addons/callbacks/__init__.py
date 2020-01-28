@@ -14,5 +14,6 @@
 # ==============================================================================
 """Additional callbacks that conform to Keras API."""
 
+from tensorflow_addons.callbacks.average_model_checkpoint import AverageModelCheckpoint
 from tensorflow_addons.callbacks.time_stopping import TimeStopping
 from tensorflow_addons.callbacks.tqdm_progress_bar import TQDMProgressBar
