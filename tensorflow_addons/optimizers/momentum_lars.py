@@ -62,7 +62,12 @@ class MomentumLARS(tf.keras.optimizers.Optimizer):
       Args:
           learning_rate: A `Tensor` or floating point value. The base learning rate.
           momentum: A floating point value. Momentum hyperparameter.
-          weight_decay: A floating point value. Weight decay hyperparameter.
+          weight_decay: A floating point value. Weight decay hyperparameter. Adding an
+             L2 regularizer to a Keras variable is not equivalent to how the LARS paper
+             handles weight decay. In the LARS paper, when computing the "trust"
+             coefficient, the magnitude of the gradient and the magnitude weights
+             are added together. But if an L2 regularizer is added to a Keras variable,
+             the gradient and weights are first added together, and then the magnitude is taken
           eeta: LARS coefficient as used in the paper. Default set to LARS
             coefficient from the paper. (eeta / weight_decay) determines the highest
             scaling factor in LARS.
@@ -133,8 +138,6 @@ class MomentumLARS(tf.keras.optimizers.Optimizer):
           scaled_lr = min(scaled_lr, self._serialize_hyperparameter('learning_rate'))
 
         # Add the weight regularization gradient
-        # Note that the weight decay is being handled by the optimizer here
-        # and not added to loss.
         grad = grad + weight_decay * var
       return scaled_lr, grad
 
