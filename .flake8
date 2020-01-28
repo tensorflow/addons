@@ -16,9 +16,6 @@ ignore =
     # lowercase ... imported as non lowercase
     # Useful to ignore for "import keras.backend as K"
     N812
-    # TODO: remove all the exceptions below
-    # do not assign a lambda expression, use a def
-    E731
 
 #imported but unused in __init__.py, that's ok.
 per-file-ignores = **/__init__.py:F401

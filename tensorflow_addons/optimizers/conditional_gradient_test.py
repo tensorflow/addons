@@ -38,8 +38,13 @@ class ConditionalGradientTest(tf.test.TestCase):
             grads1 = tf.constant([0.01, 0.01], dtype=dtype)
             norm0 = tf.math.reduce_sum(grads0 ** 2) ** 0.5
             norm1 = tf.math.reduce_sum(grads1 ** 2) ** 0.5
-            learning_rate = lambda: 0.5
-            lambda_ = lambda: 0.01
+
+            def learning_rate():
+                return 0.5
+
+            def lambda_():
+                return 0.01
+
             if not use_callable_params:
                 learning_rate = learning_rate()
                 lambda_ = lambda_()
@@ -133,7 +138,10 @@ class ConditionalGradientTest(tf.test.TestCase):
         with tf.Graph().as_default():
             var0 = tf.Variable([1.0, 2.0], dtype=tf.float32, name="var0")
             var1 = tf.Variable([3.0, 4.0], dtype=tf.float32, name="var1")
-            loss = lambda: tf.math.reduce_sum(var0 + var1)
+
+            def loss():
+                return tf.math.reduce_sum(var0 + var1)
+
             optimizer.minimize(loss, var_list=[var0, var1])
             optimizer_variables = optimizer.variables()
             # There should be three items. The first item is iteration,

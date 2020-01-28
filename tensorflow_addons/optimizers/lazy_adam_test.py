@@ -111,7 +111,9 @@ class LazyAdamTest(tf.test.TestCase):
                 # it (i.e. they have GPU kernels).
                 var = tf.Variable([[1.0], [2.0]])
                 indices = tf.constant([0, 1], dtype=index_dtype)
-                g_sum = lambda: tf.math.reduce_sum(tf.gather(var, indices))
+
+                def g_sum():
+                    return tf.math.reduce_sum(tf.gather(var, indices))
                 optimizer = lazy_adam.LazyAdam(3.0)
                 minimize_op = optimizer.minimize(g_sum, var_list=[var])
                 self.evaluate(tf.compat.v1.global_variables_initializer())
@@ -163,15 +165,10 @@ class LazyAdamTest(tf.test.TestCase):
                 grads0 = tf.constant(grads0_np)
                 grads1 = tf.constant(grads1_np)
 
-                learning_rate = lambda: 0.001
-                beta1 = lambda: 0.9
-                beta2 = lambda: 0.999
-                epsilon = lambda: 1e-8
+                def learning_rate():
+                    return 0.001
                 if not use_callable_params:
                     learning_rate = learning_rate()
-                    beta1 = beta1()
-                    beta2 = beta2()
-                    epsilon = epsilon()
 
                 opt = lazy_adam.LazyAdam(learning_rate=learning_rate)
                 if not tf.executing_eagerly():
