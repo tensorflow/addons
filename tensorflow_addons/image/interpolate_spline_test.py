@@ -244,7 +244,7 @@ class InterpolateSplineTest(tf.test.TestCase):
         # Get concrete functions such that the batch size, number of train points,
         # and number of query points are not known at graph construction time.
         with self.assertRaises(ValueError):
-            fn = tf.function(interpolate_spline).get_concrete_function(
+            tf.function(interpolate_spline).get_concrete_function(
                 tf.TensorSpec(shape=[None, None, None], dtype=train_points.dtype),
                 tf.TensorSpec(shape=[None, None, value_dim], dtype=train_values.dtype),
                 tf.TensorSpec(
@@ -255,7 +255,7 @@ class InterpolateSplineTest(tf.test.TestCase):
             )
 
         with self.assertRaises(ValueError):
-            fn = tf.function(interpolate_spline).get_concrete_function(
+            tf.function(interpolate_spline).get_concrete_function(
                 tf.TensorSpec(
                     shape=[None, None, feature_dim], dtype=train_points.dtype
                 ),

@@ -110,8 +110,6 @@ class SparsemaxTest(tf.test.TestCase):
 
     def test_sparsemax_of_nan(self, dtype=None):
         """check sparsemax transfers nan."""
-        random = np.random.RandomState(2)
-
         z_nan = np.asarray(
             [[0, np.nan, 0], [0, np.nan, np.nan], [np.nan, np.nan, np.nan],]
         ).astype(dtype)
@@ -128,8 +126,6 @@ class SparsemaxTest(tf.test.TestCase):
 
     def test_sparsemax_of_inf(self, dtype=None):
         """check sparsemax is infinity safe."""
-        random = np.random.RandomState(3)
-
         z_neg = np.asarray(
             [[0, -np.inf, 0], [0, -np.inf, -np.inf], [-np.inf, -np.inf, -np.inf],]
         ).astype(dtype)
@@ -167,8 +163,6 @@ class SparsemaxTest(tf.test.TestCase):
 
     def test_sparsemax_of_zero(self, dtype=None):
         """check sparsemax proposition 1, part 1."""
-        random = np.random.RandomState(3)
-
         z = np.zeros((1, 10))
 
         tf_sparsemax_op, tf_sparsemax_out = self._tf_sparsemax(z, dtype)
@@ -257,8 +251,6 @@ class SparsemaxTest(tf.test.TestCase):
 
     def test_two_dimentional(self, dtype=None):
         """check two dimentation sparsemax case."""
-        random = np.random.RandomState(8)
-
         t = np.linspace(-2, 2, test_obs, dtype=dtype)
         z = np.vstack([t, np.zeros(test_obs, dtype=dtype)]).T
 
