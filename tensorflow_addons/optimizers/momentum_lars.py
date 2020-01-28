@@ -23,7 +23,6 @@ from tensorflow.python.ops import math_ops
 from tensorflow.python.training import training_ops
 
 import tensorflow.compat.v2 as tf
-from tensorflow_addons.utils import keras_utils
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -53,7 +52,7 @@ class MomentumLARS(tf.keras.optimizers.Optimizer):
         # The LARS coefficient is a hyperparameter
         eeta=0.001,
         epsilon=0.0,
-        name="LARSOptimizer",
+        name="MomentumLARS",
         # Enable skipping variables from LARS scaling.
         skip_list=(),
         use_nesterov=False,
@@ -76,7 +75,7 @@ class MomentumLARS(tf.keras.optimizers.Optimizer):
             scaling factor in LARS.
           epsilon: Optional epsilon parameter to be set in models that have very
           small gradients. Default set to 0.0.
-          name: Optional name prefix for variables and ops created by LARSOptimizer.
+          name: Optional name prefix for variables and ops created by LARS Optimizer.
           skip_list: List of strings to enable skipping variables from LARS scaling.
             If any of the strings in skip_list is a subset of var.name, variable
             'var' is skipped from LARS scaling. For a typical classification model
@@ -92,7 +91,7 @@ class MomentumLARS(tf.keras.optimizers.Optimizer):
             raise ValueError("momentum should be positive: %s" % momentum)
         if weight_decay < 0.0:
             raise ValueError("weight_decay should be positive: %s" % weight_decay)
-        super(LARSOptimizer, self).__init__(name=name, **kwargs)
+        super(MomentumLARS, self).__init__(name=name, **kwargs)
 
         self._skip_list = skip_list
         self._set_hyper("learning_rate", learning_rate)
@@ -113,7 +112,7 @@ class MomentumLARS(tf.keras.optimizers.Optimizer):
             "use_nesterov": self._serialize_hyperparameter("use_nesterov"),
             "clip": self._serialize_hyperparameter("use_clipping"),
         }
-        base_config = super(LARSOptimizer, self).get_config()
+        base_config = super(MomentumLARS, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
     def _create_slots(self, var_list):

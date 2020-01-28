@@ -22,7 +22,6 @@ import tensorflow.compat.v2 as tf
 from tensorflow_addons.utils import test_utils
 import numpy as np
 from tensorflow_addons.optimizers import momentum_lars as lo
-import tensorflow_addons.optimizers.conditional_gradient as cg_lib
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -41,7 +40,7 @@ class MomentumLARSTest(tf.test.TestCase):
 
             var = tf.Variable(var_np, dtype=dtype)
             grad = tf.constant(grad_np, dtype=dtype)
-            opt = lo.LARSOptimizer(
+            opt = lo.MomentumLARS(
                 learning_rate=lr_np,
                 momentum=m_np,
                 weight_decay=wd_np,
@@ -94,7 +93,7 @@ class MomentumLARSTest(tf.test.TestCase):
 
             var = tf.Variable(var_np, dtype=dtype)
             grad = tf.Variable(grad_np, dtype=dtype)
-            opt = lo.LARSOptimizer(
+            opt = lo.MomentumLARS(
                 learning_rate=lr_np,
                 momentum=m_np,
                 eeta=eeta,
@@ -145,7 +144,7 @@ class MomentumLARSTest(tf.test.TestCase):
         eeta = 0.1
         wd_np = 0.1
         ep_np = 1e-5
-        opt = lo.LARSOptimizer(
+        opt = lo.MomentumLARS(
             learning_rate=lr_np,
             momentum=m_np,
             eeta=eeta,
