@@ -16,6 +16,7 @@
 
 import tensorflow as tf
 from tensorflow_addons.losses import metric_learning
+from typeguard import typechecked
 
 
 def _masked_maximum(data, mask, dim=1):
@@ -249,7 +250,10 @@ class TripletHardLoss(tf.keras.losses.Loss):
       name: Optional name for the op.
     """
 
-    def __init__(self, margin=1.0, soft=False, name=None, **kwargs):
+    @typechecked
+    def __init__(
+        self, margin: float = 1.0, soft: bool = False, name: str = None, **kwargs
+    ):
         super().__init__(name=name, reduction=tf.keras.losses.Reduction.NONE)
         self.margin = margin
         self.soft = soft
