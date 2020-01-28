@@ -120,8 +120,6 @@ class SparsemaxTest(tf.test.TestCase):
 
     def test_sparsemax_loss_of_nan(self, dtype=None):
         """check sparsemax-loss transfers nan."""
-        random = np.random.RandomState(2)
-
         q = np.asarray([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
         z_nan = np.asarray(
             [[0, np.nan, 0], [0, np.nan, np.nan], [np.nan, np.nan, np.nan]]
@@ -132,8 +130,6 @@ class SparsemaxTest(tf.test.TestCase):
 
     def test_sparsemax_loss_of_inf(self, dtype=None):
         """check sparsemax-loss is infinity safe."""
-        random = np.random.RandomState(3)
-
         q = np.asarray([[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]])
         z_neg = np.asarray(
             [
