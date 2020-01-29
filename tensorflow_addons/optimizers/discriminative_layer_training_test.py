@@ -113,7 +113,8 @@ def get_losses(hist):
 @test_utils.run_all_in_graph_and_eager_modes
 class DiscriminativeLearningTest(tf.test.TestCase):
     def test_same_results_when_no_lr_mult_specified(self):
-
+        """Results for training with no lr mult specified
+        should be the same as training without the discriminative learning"""
         for model_fn, loss, opt in zipped_permutes():
             model = model_fn()
             model.compile(loss=loss(), optimizer=opt())
@@ -127,6 +128,8 @@ class DiscriminativeLearningTest(tf.test.TestCase):
             self.assertAllClose(get_losses(hist), get_losses(hist_lr))
 
     def test_same_results_when_lr_mult_is_1(self):
+        """Results for training with no lr mult specified
+                should be the same as training with the discriminative learning and all layers with lr_mult set to 1"""
 
         for model_fn, loss, opt in zipped_permutes():
             model = model_fn()
