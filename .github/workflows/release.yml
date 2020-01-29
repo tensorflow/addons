@@ -172,7 +172,7 @@ jobs:
           done
       - uses: actions/upload-artifact@v1
         with:
-          name: ${{ runner.os }}-${{ matrix.python }}-wheel
+          name: ${{ runner.os }}-wheels
           path: wheelhouse
 
   windows-release-wheel:
@@ -199,7 +199,7 @@ jobs:
           bazel-bin/build_pip_pkg artifacts
       - uses: actions/upload-artifact@v1
         with:
-          name: ${{ runner.os }}-${{ matrix.python }}-wheel
+          name: ${{ runner.os }}-wheels
           path: artifacts
 
   upload-wheels:
@@ -213,38 +213,18 @@ jobs:
           path: Linux-wheels
       - uses: actions/download-artifact@v1
         with:
-          name: macOS-3.5-wheel
-          path: macOS-3.5-wheel
+          name: macOS-wheels
+          path: macOS-wheels
       - uses: actions/download-artifact@v1
         with:
-          name: macOS-3.6-wheel
-          path: macOS-3.6-wheel
-      - uses: actions/download-artifact@v1
-        with:
-          name: macOS-3.7-wheel
-          path: macOS-3.7-wheel
-      - uses: actions/download-artifact@v1
-        with:
-          name: Windows-3.5-wheel
-          path: Windows-3.5-wheel
-      - uses: actions/download-artifact@v1
-        with:
-          name: Windows-3.6-wheel
-          path: Windows-3.6-wheel
-      - uses: actions/download-artifact@v1
-        with:
-          name: Windows-3.7-wheel
-          path: Windows-3.7-wheel
+          name: Windows-wheels
+          path: Windows-wheels
       - run: |
           set -e -x
           mkdir -p dist
           cp Linux-wheels/*.whl dist/
-          cp macOS-3.5-wheel/*.whl dist/
-          cp macOS-3.6-wheel/*.whl dist/
-          cp macOS-3.7-wheel/*.whl dist/
-          cp Windows-3.5-wheel/*.whl dist/
-          cp Windows-3.6-wheel/*.whl dist/
-          cp Windows-3.7-wheel/*.whl dist/
+          cp macOS-wheels/*.whl dist/
+          cp Windows-wheels/*.whl dist/
           ls -la dist/
           sha256sum dist/*.whl
       - uses: pypa/gh-action-pypi-publish@master

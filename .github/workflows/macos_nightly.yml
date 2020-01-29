@@ -85,7 +85,7 @@ jobs:
           done
       - uses: actions/upload-artifact@v1
         with:
-          name: ${{ runner.os }}-${{ matrix.python }}-wheel
+          name: ${{ runner.os }}-wheels
           path: wheelhouse
 
   upload-wheels:
@@ -95,22 +95,12 @@ jobs:
     steps:
       - uses: actions/download-artifact@v1
         with:
-          name: macOS-3.5-wheel
-          path: macOS-3.5-wheel
-      - uses: actions/download-artifact@v1
-        with:
-          name: macOS-3.6-wheel
-          path: macOS-3.6-wheel
-      - uses: actions/download-artifact@v1
-        with:
-          name: macOS-3.7-wheel
-          path: macOS-3.7-wheel
+          name: macOS-wheels
+          path: macOS-wheels
       - run: |
           set -e -x
           mkdir -p dist
-          cp macOS-3.5-wheel/*.whl dist/
-          cp macOS-3.6-wheel/*.whl dist/
-          cp macOS-3.7-wheel/*.whl dist/
+          cp macOS-wheels/*.whl dist/
           ls -la dist/
           sha256sum dist/*.whl
       - uses: pypa/gh-action-pypi-publish@master
