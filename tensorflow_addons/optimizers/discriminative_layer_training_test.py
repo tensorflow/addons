@@ -21,6 +21,7 @@ import tensorflow as tf
 from tensorflow_addons.utils import test_utils
 import numpy as np
 from tensorflow_addons.optimizers.discriminative_layer_training import DiscriminativeLearning
+import itertools
 
 #:TODO create tests
 def toy_cnn():
@@ -76,7 +77,7 @@ def get_train_results(model, loss, opt):
     '''
     tf.random.set_seed(1)
 
-    model.compile(loss=loss(), optimizer=opt)
+    model.compile(loss=loss(), optimizer=opt())
 
     x = np.ones(shape=(32, 32, 32, 3), dtype=np.float32)
     y = np.zeros(shape=(32, 5), dtype=np.float32)
@@ -90,6 +91,13 @@ def opt_list():
 
 def loss_list():
     return [tf.keras.losses.BinaryCrossentropy, tf.keras.losses.CategoricalCrossentropy, tf.keras.losses.MSE]
+
+def zipped_permutes():
+    return itertools.product([[toy_cnn, toy_rnn]
+                                 , opt_list()
+                                 , loss_list()])
+
+
 
 @test_utils.run_all_in_graph_and_eager_modes
 class DiscriminativeLearningTest(tf.test.TestCase):
