@@ -21,6 +21,10 @@ original Adam algorithm, and may lead to different empirical results.
 """
 
 import tensorflow as tf
+from tensorflow_addons.utils.types import FloatTensorLike
+
+from typeguard import typechecked
+from typing import Optional, Union, Callable
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -42,14 +46,15 @@ class LazyAdam(tf.keras.optimizers.Adam):
     False.
     """
 
+    @typechecked
     def __init__(
         self,
-        learning_rate=0.001,
-        beta_1=0.9,
-        beta_2=0.999,
-        epsilon=1e-7,
-        amsgrad=False,
-        name="LazyAdam",
+        learning_rate: Union[FloatTensorLike, Callable] = 0.001,
+        beta_1: FloatTensorLike = 0.9,
+        beta_2: FloatTensorLike = 0.999,
+        epsilon: FloatTensorLike = 1e-7,
+        amsgrad: bool = False,
+        name: str = "LazyAdam",
         **kwargs
     ):
         """Constructs a new LazyAdam optimizer.
