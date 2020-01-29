@@ -19,17 +19,17 @@ import inspect
 import unittest
 
 import tensorflow as tf
-# yapf: disable
-# pylint: disable=unused-import
-# TODO: find public API alternative to these
-from tensorflow.python.framework.test_util import run_all_in_graph_and_eager_modes
-from tensorflow.python.framework.test_util import run_deprecated_v1
-from tensorflow.python.framework.test_util import run_in_graph_and_eager_modes
-from tensorflow.python.keras.testing_utils import layer_test
-from tensorflow.python.keras import keras_parameterized
 
-# pylint: enable=unused-import
-# yapf: enable
+# TODO: find public API alternative to these
+from tensorflow.python.framework.test_util import (  # noqa: F401
+    run_all_in_graph_and_eager_modes,
+)
+from tensorflow.python.framework.test_util import run_deprecated_v1  # noqa: F401
+from tensorflow.python.framework.test_util import (  # noqa: F401
+    run_in_graph_and_eager_modes,
+)
+from tensorflow.python.keras.testing_utils import layer_test  # noqa: F401
+from tensorflow.python.keras import keras_parameterized  # noqa: F401
 
 
 @contextlib.contextmanager
@@ -50,9 +50,9 @@ def use_gpu():
         yield
 
 
-def create_virtual_devices(num_devices,
-                           force_device=None,
-                           memory_limit_per_device=1024):
+def create_virtual_devices(
+    num_devices, force_device=None, memory_limit_per_device=1024
+):
     """Virtualize a the physical device into logical devices.
 
     Args:
@@ -67,23 +67,27 @@ def create_virtual_devices(num_devices,
             tf.distribute.MirroredStrategy()
     """
     if force_device is None:
-        device_type = 'GPU' if len(
-            tf.config.list_physical_devices('GPU')) > 0 else 'CPU'
+        device_type = (
+            "GPU" if len(tf.config.list_physical_devices("GPU")) > 0 else "CPU"
+        )
     else:
-        assert (force_device in ['CPU', 'GPU'])
+        assert force_device in ["CPU", "GPU"]
         device_type = force_device
 
     physical_devices = tf.config.list_physical_devices(device_type)
 
-    if device_type == 'CPU':
+    if device_type == "CPU":
         memory_limit_per_device = None
 
     tf.config.experimental.set_virtual_device_configuration(
-        physical_devices[0], [
+        physical_devices[0],
+        [
             tf.config.experimental.VirtualDeviceConfiguration(
-                memory_limit=memory_limit_per_device)
+                memory_limit=memory_limit_per_device
+            )
             for _ in range(num_devices)
-        ])
+        ],
+    )
 
     return tf.config.experimental.list_logical_devices(device_type)
 
@@ -93,9 +97,11 @@ def run_all_distributed(num_devices):
 
     def decorator(cls):
         for name, method in cls.__dict__.copy().items():
-            if (callable(method)
-                    and name.startswith(unittest.TestLoader.testMethodPrefix)
-                    and name != "test_session"):
+            if (
+                callable(method)
+                and name.startswith(unittest.TestLoader.testMethodPrefix)
+                and name != "test_session"
+            ):
                 setattr(cls, name, base_decorator(method))
         return cls
 
@@ -106,8 +112,10 @@ def run_all_distributed(num_devices):
 def run_distributed(num_devices):
     def decorator(f):
         if inspect.isclass(f):
-            raise TypeError("`run_distributed` only supports test methods. "
-                            "Did you mean to use `run_all_distributed`?")
+            raise TypeError(
+                "`run_distributed` only supports test methods. "
+                "Did you mean to use `run_all_distributed`?"
+            )
 
         def decorated(self, *args, **kwargs):
             logical_devices = create_virtual_devices(num_devices)
@@ -126,9 +134,11 @@ def run_all_with_types(dtypes):
 
     def decorator(cls):
         for name, method in cls.__dict__.copy().items():
-            if (callable(method)
-                    and name.startswith(unittest.TestLoader.testMethodPrefix)
-                    and name != "test_session"):
+            if (
+                callable(method)
+                and name.startswith(unittest.TestLoader.testMethodPrefix)
+                and name != "test_session"
+            ):
                 setattr(cls, name, base_decorator(method))
         return cls
 
@@ -138,8 +148,10 @@ def run_all_with_types(dtypes):
 def run_with_types(dtypes):
     def decorator(f):
         if inspect.isclass(f):
-            raise TypeError("`run_with_types` only supports test methods. "
-                            "Did you mean to use `run_all_with_types`?")
+            raise TypeError(
+                "`run_with_types` only supports test methods. "
+                "Did you mean to use `run_all_with_types`?"
+            )
 
         def decorated(self, *args, **kwargs):
             for t in dtypes:

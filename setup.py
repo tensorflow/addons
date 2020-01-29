@@ -49,9 +49,7 @@ else:
 version = {}
 base_dir = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
-    # yapf: disable
     exec(fp.read(), version)
-    # yapf: enable
 
 if project_name == TFA_NIGHTLY:
     version['__version__'] += datetime.strftime(datetime.today(), "%Y%m%d")
@@ -60,7 +58,7 @@ with open('requirements.txt') as f:
     required_pkgs = f.read().splitlines()
 
 # Manylinux2010 requires a patch for platlib
-if sys.platform.startswith('linux'):
+if sys.platform.startswith('linux') and os.environ.get('TF_ADDONS_NO_BUILD', '0') == '0':
     ext_modules = [Extension('_foo', ['stub.cc'])]
 else:
     ext_modules = []

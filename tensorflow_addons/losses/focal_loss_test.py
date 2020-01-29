@@ -113,5 +113,6 @@ class SigmoidFocalCrossEntropyTest(tf.test.TestCase):
         ])
         model.compile(loss="Addons>sigmoid_focal_crossentropy")
 
+
 if __name__ == '__main__':
     tf.test.main()

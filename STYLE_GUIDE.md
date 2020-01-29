@@ -15,10 +15,29 @@ void formatted_code_again;
 ```
 
 #### Python
-Python code should conform to [PEP8](https://www.python.org/dev/peps/pep-0008/).
 
 Addons uses [flake8](http://flake8.pycqa.org/en/latest/) to check pep8 compliance and 
 code analysis.
+
+Addons use [Black](https://black.readthedocs.io/en/stable/) to format our code.
+The continuous integration check will fail if you do not use it.
+
+Install them with:
+```
+pip install flake8 black
+```
+
+Be sure to run them both before you push your commits, otherwise the CI will fail!
+
+```
+python -m black ./
+python -m flake8
+```
+
+If you want those tools to run automatically before each commit, run:
+```bash
+cd .git/hooks && ln -s -f ../../tools/pre-commit.sh pre-commit
+```
 
 #### TensorFlow Conventions
 

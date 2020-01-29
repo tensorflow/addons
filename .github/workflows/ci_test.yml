@@ -34,7 +34,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: CI test macOS py${{ matrix.python-version }}
         run: |
-          python -m pip install wheel setuptools
+          python --version
           bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
           bash -x -e tools/ci_testing/addons_cpu.sh
   windows-test:
@@ -49,13 +49,13 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: CI test windows py${{ matrix.python-version }}
+        env:
+          BAZEL_VC: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/"
         shell: bash
         run: |
             python -m pip install wheel setuptools
             curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
-            export BAZEL_VC=/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2019/Enterprise/VC/
             export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
-            export PATH=/c/hostedtoolcache/windows/Python/${{ matrix.python-version }}/x64/:$PATH
             bash -x -e ./tools/ci_testing/addons_cpu.sh
   sanity-check:
     name: Sanity Check
@@ -76,3 +76,27 @@ jobs:
         run: pip install flake8
       - name: Run flake8
         run: flake8
+  black-test:
+    name: Black Python code format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+      - name: install black
+        run: pip install black
+      - name: Ensure contributor used ("black ./") before commit
+        run: black --check ./
+  public-api-typed:
+    name: Check that the public API is typed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.7'
+      - name: install tensorflow and typeguard
+        run: pip install tensorflow-cpu typeguard
+      - name: install tf addons
+        run: TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
+      - name: Run type check
+        run: python tools/ci_build/verify/check_typing_info.py

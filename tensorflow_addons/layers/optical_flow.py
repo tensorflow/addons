@@ -15,6 +15,7 @@
 """Tensorflow op performing correlation cost operation."""
 
 import tensorflow as tf
+from typeguard import typechecked
 from tensorflow_addons.utils.resource_loader import LazySO
 
 _correlation_cost_so = LazySO("custom_ops/layers/_correlation_cost_ops.so")
@@ -155,8 +156,15 @@ class CorrelationCost(tf.keras.layers.Layer):
                 Defaults to `"channels_last"`.
     """
 
-    def __init__(self, kernel_size, max_displacement, stride_1, stride_2, pad,
-                 data_format, **kwargs):
+    @typechecked
+    def __init__(self,
+                 kernel_size: int,
+                 max_displacement: int,
+                 stride_1: int,
+                 stride_2: int,
+                 pad: int,
+                 data_format: str,
+                 **kwargs):
         self.kernel_size = kernel_size
         self.max_displacement = max_displacement
         self.stride_1 = stride_1

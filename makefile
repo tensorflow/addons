@@ -21,6 +21,7 @@ install-ci-dependency:
 
 code-format: install-ci-dependency
 	bash tools/ci_build/code_format.sh --incremental --in-place
+	black ./
 
 sanity-check: install-ci-dependency
 	bash tools/ci_build/ci_sanity.sh --incremental

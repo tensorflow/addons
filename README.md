@@ -7,6 +7,7 @@
 [![PyPI Status Badge](https://badge.fury.io/py/tensorflow-addons.svg)](https://pypi.org/project/tensorflow-addons/)
 [![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
 [![Documentation](https://img.shields.io/badge/api-reference-blue.svg)](https://www.tensorflow.org/addons/api_docs/python/tfa)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ### Nightly Tests
 
@@ -14,7 +15,7 @@
 | ---             | ---    |
 | **MacOS CPU**   | [![Status](https://github.com/tensorflow/addons/workflows/macos-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Amacos-nightly) |
 | **Windows CPU**   | [![Status](https://github.com/tensorflow/addons/workflows/windows-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Awindows-nightly) |
-| **Ubuntu CPU**   | [![Status](https://github.com/tensorflow/addons/workflows/ubuntu-cpu-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Aubuntu-cpu-nightly) |
+| **Ubuntu CPU**   | [![Status](https://github.com/tensorflow/addons/workflows/manylinux-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Amanylinux-nightly) |
 | **Ubuntu GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
 
 **TensorFlow Addons** is a repository of contributions that conform to
@@ -59,7 +60,7 @@ import tensorflow_addons as tfa
 #### Linux Build Matrix
 | Version    | Compatible With |Python versions  | Compiler  | cuDNN | CUDA | 
 |:----------------------- |:---|:---------- |:---------|:---------|:---------|
-| tfa-nightly | tf-nightly | 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
+| tfa-nightly | tensorflow>=2.1.0 | 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.7.0 | tensorflow>=2.1.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.6.0 | tensorflow==2.0.0 <br> tensorflow-gpu==2.0.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
 | tensorflow-addons-0.5.2 | tensorflow==2.0.0 <br> tensorflow-gpu==2.0.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
