@@ -112,6 +112,25 @@ def get_losses(hist):
 @test_utils.run_all_distributed
 @test_utils.run_all_in_graph_and_eager_modes
 class DiscriminativeLearningTest(tf.test.TestCase):
+
+    # TODO: create test generator
+    # def __init__(self, *args, **kwargs):
+    #     super(DiscriminativeLearningTest, self).__init__(*args, **kwargs)
+    #
+    #     for model_fn, loss, opt in zipped_permutes():
+
+    # def _test_same_results_when_no_lr_mult_specified(self, model_fn, loss, opt):
+    #     model = model_fn()
+    #     model.compile(loss=loss(), optimizer=opt())
+    #     hist = get_train_results(model)
+    #
+    #     model_lr = model_fn()
+    #     model_lr.compile(loss=loss(), optimizer=opt())
+    #     DiscriminativeLearning(model_lr)
+    #     hist_lr = get_train_results(model_lr)
+    #
+    #     self.assertAllClose(get_losses(hist), get_losses(hist_lr))
+
     def test_same_results_when_no_lr_mult_specified(self):
         """Results for training with no lr mult specified
         should be the same as training without the discriminative learning"""
@@ -146,5 +165,4 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    d = DiscriminativeLearningTest()
-    d.test_same_results_when_no_lr_mult_specified()
+    tf.test.main()
