@@ -109,7 +109,7 @@ def get_losses(hist):
     return np.array(hist.__dict__["history"]["loss"])
 
 
-@test_utils.run_all_distributed
+# @test_utils.run_all_distributed
 @test_utils.run_all_in_graph_and_eager_modes
 class DiscriminativeLearningTest(tf.test.TestCase):
 
