@@ -50,7 +50,6 @@ jobs:
       - name: Release test Windows py${{ matrix.python-version }}
         env:
           BAZEL_VC: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/"
-          BAZEL_PATH: /d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
         shell: bash
         run: |
           python -m pip install wheel setuptools

@@ -2,7 +2,7 @@ name: manylinux-nightly
 
 on:
   schedule:
-    - cron:  '0 11 * * *'
+    - cron:  '0 0 * * *'
 
 jobs:
   manylinux-cpu-nightly-test:
