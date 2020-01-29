@@ -12,165 +12,141 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for Rectified Adam optimizer."""
+"""Tests for Discriminative Layer Training Manager for TensorFlow."""
+
+# python -m black tensorflow_addons/optimizers/discriminative_layer_training_test.py
+
 
 import tensorflow as tf
-
 from tensorflow_addons.utils import test_utils
-from tensorflow_addons.optimizers import RectifiedAdam, Lookahead
+import numpy as np
+from tensorflow_addons.optimizers.discriminative_layer_training import DiscriminativeLearning
+import itertools
+
+
+def toy_cnn():
+    '''Consistently create model with same random weights
+    skip head activation to allow both bce with logits and cce with logits
+    intended to work with
+    x = np.ones(shape = (None, 32, 32, 3), dtype = np.float32)
+    y = np.zeros(shape = (None, 5), dtype = np.float32)
+    y[:, 0] = 1.
+    '''
+
+    tf.random.set_seed(1)
+
+    bignet = tf.keras.applications.mobilenet_v2.MobileNetV2(include_top=False
+                                                            , weights=None
+                                                            , input_shape=(32, 32, 3)
+                                                            , pooling='avg')
+
+    net = tf.keras.models.Model(inputs=bignet.input, outputs=bignet.get_layer('block_2_add').output)
+
+    model = tf.keras.Sequential([net
+                                    , tf.keras.layers.GlobalAveragePooling2D()
+                                    , tf.keras.layers.Dropout(0.5)
+                                    , tf.keras.layers.Dense(5, name='head')])
+
+    return model
+
+
+def toy_rnn():
+    '''Consistently create model with same random weights
+    skip head activation to allow both bce with logits and cce with logits
+    intended to work with
+
+    x = np.ones(shape = (None, 32, 32, 3), dtype = np.float32)
+    y = np.zeros(shape = (None, 5), dtype = np.float32)
+    y[:, 0] = 1.
+    '''
+
+    tf.random.set_seed(1)
+
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Input(shape=(32, 32, 3)))
+    model.add(tf.keras.layers.Reshape(target_shape=(32, 96)))
+    model.add(tf.keras.layers.Cropping1D(cropping=(0, 24)))
+    model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(8)))
+    model.add(tf.keras.layers.Dropout(0.5))
+    model.add(tf.keras.layers.Dense(5))
+
+    return model
+
+
+def get_train_results(model):
+    '''Run a traininng loop and return the results for analysis
+    model must be compiled first
+    '''
+    tf.random.set_seed(1)
+    x = np.ones(shape=(32, 32, 32, 3), dtype=np.float32)
+    y = np.zeros(shape=(32, 5), dtype=np.float32)
+    y[:, 0] = 1.
+
+    return model.fit(x, y, epochs=10, batch_size=16, verbose=0)
+
+
+def opt_list():
+    return [tf.keras.optimizers.Adam, tf.keras.optimizers.SGD]
+
+
+def loss_list():
+    return [tf.keras.losses.BinaryCrossentropy, tf.keras.losses.CategoricalCrossentropy,
+            tf.keras.losses.MeanSquaredError]
+
+
+def zipped_permutes():
+    return list(itertools.product([toy_cnn, toy_rnn]
+                                  , loss_list()
+                                  , opt_list()
+                                  ))
+
+
+def get_losses(hist):
+    return np.array(hist.__dict__['history']['loss'])
 
 
 @test_utils.run_all_in_graph_and_eager_modes
-class RectifiedAdamTest(tf.test.TestCase):
-    def run_dense_sample(self, iterations, expected, optimizer):
-        var_0 = tf.Variable([1.0, 2.0], dtype=tf.dtypes.float32)
-        var_1 = tf.Variable([3.0, 4.0], dtype=tf.dtypes.float32)
+class DiscriminativeLearningTest(tf.test.TestCase):
 
-        grad_0 = tf.constant([0.1, 0.2], dtype=tf.dtypes.float32)
-        grad_1 = tf.constant([0.03, 0.04], dtype=tf.dtypes.float32)
+    def test_same_results_when_no_lr_mult_specified(self):
 
-        grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
+        model_fns = [toy_cnn, toy_rnn]
 
-        if tf.executing_eagerly():
-            for _ in range(iterations):
-                optimizer.apply_gradients(grads_and_vars)
-        else:
-            update = optimizer.apply_gradients(grads_and_vars)
-            self.evaluate(tf.compat.v1.global_variables_initializer())
-            for _ in range(iterations):
-                self.evaluate(update)
+        for model_fn, loss, opt in zipped_permutes():
+            model = model_fn()
+            model.compile(loss=loss(), optimizer=opt())
+            hist = get_train_results(model)
 
-        self.assertAllClose(var_0.read_value(), expected[0], atol=2e-4)
-        self.assertAllClose(var_1.read_value(), expected[1], atol=2e-4)
+            model_lr = model_fn()
+            model_lr.compile(loss=loss(), optimizer=opt())
+            DiscriminativeLearning(model_lr)
+            hist_lr = get_train_results(model_lr)
 
-    def run_sparse_sample(self, iterations, expected, optimizer):
-        var_0 = tf.Variable([1.0, 2.0])
-        var_1 = tf.Variable([3.0, 4.0])
+            self.assertAllClose(get_losses(hist), get_losses(hist_lr))
 
-        grad_0 = tf.IndexedSlices(
-            tf.constant([0.1]), tf.constant([0]), tf.constant([2])
-        )
-        grad_1 = tf.IndexedSlices(
-            tf.constant([0.04]), tf.constant([1]), tf.constant([2])
-        )
+    def test_same_results_when_lr_mult_is_1(self):
 
-        grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
+        model_fns = [toy_cnn, toy_rnn]
 
-        if tf.executing_eagerly():
-            for _ in range(iterations):
-                optimizer.apply_gradients(grads_and_vars)
-        else:
-            update = optimizer.apply_gradients(grads_and_vars)
-            self.evaluate(tf.compat.v1.global_variables_initializer())
-            for _ in range(iterations):
-                self.evaluate(update)
+        for model_fn, loss, opt in zipped_permutes():
+            model = model_fn()
+            model.compile(loss=loss(), optimizer=opt())
+            hist = get_train_results(model)
 
-        self.assertAllClose(var_0.read_value(), expected[0], atol=2e-4)
-        self.assertAllClose(var_1.read_value(), expected[1], atol=2e-4)
+            model_lr = model_fn()
+            model_lr.compile(loss=loss(), optimizer=opt())
+            DiscriminativeLearning(model_lr)
+            hist_lr = get_train_results(model_lr)
 
-    def test_dense_sample(self):
-        # Expected values are obtained from the official implementation
-        self.run_dense_sample(
-            iterations=1000,
-            expected=[[0.5554, 1.5549], [2.5557, 3.5557]],
-            optimizer=RectifiedAdam(lr=1e-3),
-        )
-
-    def test_sparse_sample(self):
-        # Expected values are obtained from the official implementation
-        # Dense results should be: [-0.1929,  0.8066], [1.8075, 2.8074]
-        self.run_sparse_sample(
-            iterations=2000,
-            expected=[[-0.1929, 2.0], [3.0, 2.8074]],
-            optimizer=RectifiedAdam(lr=1e-3),
-        )
-
-    def test_dense_sample_with_amsgrad(self):
-        # Expected values are obtained from the official implementation
-        # `amsgrad` has no effect because the gradient is fixed
-        self.run_dense_sample(
-            iterations=1000,
-            expected=[[0.5554, 1.5549], [2.5557, 3.5557]],
-            optimizer=RectifiedAdam(lr=1e-3, amsgrad=True),
-        )
-
-    def test_sparse_sample_with_amsgrad(self):
-        # Expected values are obtained from the official implementation
-        # `amsgrad` has no effect because the gradient is fixed
-        self.run_sparse_sample(
-            iterations=2000,
-            expected=[[-0.1929, 2.0], [3.0, 2.8074]],
-            optimizer=RectifiedAdam(lr=1e-3, amsgrad=True),
-        )
-
-    def test_dense_sample_with_weight_decay(self):
-        # Expected values are obtained from the official implementation
-        self.run_dense_sample(
-            iterations=1000,
-            expected=[[0.5472, 1.5368], [2.5276, 3.5176]],
-            optimizer=RectifiedAdam(lr=1e-3, weight_decay=0.01),
-        )
-
-    def test_sparse_sample_with_weight_decay(self):
-        # Expected values are obtained from the official implementation
-        # Dense results should be: [-0.2029,  0.7768], [1.7578, 2.7380]
-        self.run_sparse_sample(
-            iterations=2000,
-            expected=[[-0.2029, 2.0], [3.0, 2.7380]],
-            optimizer=RectifiedAdam(lr=1e-3, weight_decay=0.01),
-        )
-
-    def test_dense_sample_with_warmup(self):
-        self.run_dense_sample(
-            iterations=1000,
-            expected=[[0.8041, 1.8041], [2.8041, 3.8041]],
-            optimizer=RectifiedAdam(
-                lr=1e-3, total_steps=1000, warmup_proportion=0.1, min_lr=1e-5,
-            ),
-        )
-
-    def test_sparse_sample_with_warmup(self):
-        self.run_sparse_sample(
-            iterations=2000,
-            expected=[[0.4653, 2.0], [3.0, 3.4653]],
-            optimizer=RectifiedAdam(
-                lr=1e-3, total_steps=2000, warmup_proportion=0.1, min_lr=1e-5,
-            ),
-        )
-
-    def test_dense_sample_with_lookahead(self):
-        # Expected values are obtained from the original implementation
-        # of Ranger
-        self.run_dense_sample(
-            iterations=1000,
-            expected=[[0.7985, 1.7983], [2.7987, 3.7986]],
-            optimizer=Lookahead(
-                RectifiedAdam(lr=1e-3, beta_1=0.95,),
-                sync_period=6,
-                slow_step_size=0.45,
-            ),
-        )
-
-    def test_sparse_sample_with_lookahead(self):
-        # Expected values are obtained from the original implementation
-        # of Ranger.
-        # Dense results should be: [0.6417,  1.6415], [2.6419, 3.6418]
-        self.run_sparse_sample(
-            iterations=1500,
-            expected=[[0.6417, 2.0], [3.0, 3.6418]],
-            optimizer=Lookahead(
-                RectifiedAdam(lr=1e-3, beta_1=0.95,),
-                sync_period=6,
-                slow_step_size=0.45,
-            ),
-        )
-
-    def test_get_config(self):
-        opt = RectifiedAdam(lr=1e-4)
-        config = opt.get_config()
-        self.assertEqual(config["learning_rate"], 1e-4)
-        self.assertEqual(config["total_steps"], 0)
+            self.assertAllClose(get_losses(hist), get_losses(hist_lr))
 
 
-if __name__ == "__main__":
-    tf.test.main()
+if __name__ == '__main__':
+    d = DiscriminativeLearningTest()
+    d.test_same_results_when_no_lr_mult_specified()
+
+
+
+
+
+
