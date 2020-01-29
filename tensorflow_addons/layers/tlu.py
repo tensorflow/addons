@@ -43,10 +43,10 @@ class TLU(tf.keras.layers.Layer):
     def __init__(
         self,
         affine=False,
-        tau_initializer: types.Initializer = 'zeros',
+        tau_initializer: types.Initializer = "zeros",
         tau_regularizer: types.Regularizer = None,
         tau_constraint: types.Constraint = None,
-        alpha_initializer: types.Initializer = 'zeros',
+        alpha_initializer: types.Initializer = "zeros",
         alpha_regularizer: types.Regularizer = None,
         alpha_constraint: types.Constraint = None,
         **kwargs
