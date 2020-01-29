@@ -23,7 +23,7 @@ import numpy as np
 from tensorflow_addons.optimizers.discriminative_layer_training import DiscriminativeLearning
 import itertools
 
-#:TODO create tests
+
 def toy_cnn():
     '''Consistently create model with same random weights
     skip head activation to allow both bce with logits and cce with logits
@@ -49,6 +49,7 @@ def toy_cnn():
 
     return model
 
+
 def toy_rnn():
     '''Consistently create model with same random weights
     skip head activation to allow both bce with logits and cce with logits
@@ -71,14 +72,12 @@ def toy_rnn():
 
     return model
 
-def get_train_results(model, loss, opt):
+
+def get_train_results(model):
     '''Run a traininng loop and return the results for analysis
-    Accepts loss classes and optimizer classes as defined in tf.keras.losses and tf.keras.optimizers
+    model must be compiled first
     '''
     tf.random.set_seed(1)
-
-    model.compile(loss=loss(), optimizer=opt())
-
     x = np.ones(shape=(32, 32, 32, 3), dtype=np.float32)
     y = np.zeros(shape=(32, 5), dtype=np.float32)
     y[:, 0] = 1.
@@ -89,14 +88,21 @@ def get_train_results(model, loss, opt):
 def opt_list():
     return [tf.keras.optimizers.Adam, tf.keras.optimizers.SGD]
 
+
 def loss_list():
-    return [tf.keras.losses.BinaryCrossentropy, tf.keras.losses.CategoricalCrossentropy, tf.keras.losses.MSE]
+    return [tf.keras.losses.BinaryCrossentropy, tf.keras.losses.CategoricalCrossentropy,
+            tf.keras.losses.MeanSquaredError]
+
 
 def zipped_permutes():
-    return itertools.product([[toy_cnn, toy_rnn]
-                                 , opt_list()
-                                 , loss_list()])
+    return list(itertools.product([toy_cnn, toy_rnn]
+                                  , loss_list()
+                                  , opt_list()
+                                  ))
 
+
+def get_losses(hist):
+    return np.array(hist.__dict__['history']['loss'])
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -106,30 +112,40 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         model_fns = [toy_cnn, toy_rnn]
 
-        for model_fn in model_fns:
-            for loss in loss_list():
-                for opt in opt_list():
-                    model = model_fn()
-                    hist = get_train_results(model, loss, opt)
+        for model_fn, loss, opt in zipped_permutes():
+            model = model_fn()
+            model.compile(loss=loss(), optimizer=opt())
+            hist = get_train_results(model)
 
-                    model_lr = model_fn()
-                    DiscriminativeLearning(model_lr)
-                    hist_lr = get_train_results(model_lr, loss, opt)
+            model_lr = model_fn()
+            model_lr.compile(loss=loss(), optimizer=opt())
+            DiscriminativeLearning(model_lr)
+            hist_lr = get_train_results(model_lr)
 
-                    print(hist)
-                    print(hist_lr)
-                    break
-                break
-            break
+            self.assertAllClose(get_losses(hist), get_losses(hist_lr))
 
-        return
+    def test_same_results_when_lr_mult_is_1(self):
+
+        model_fns = [toy_cnn, toy_rnn]
+
+        for model_fn, loss, opt in zipped_permutes():
+            model = model_fn()
+            model.compile(loss=loss(), optimizer=opt())
+            hist = get_train_results(model)
+
+            model_lr = model_fn()
+            model_lr.compile(loss=loss(), optimizer=opt())
+            DiscriminativeLearning(model_lr)
+            hist_lr = get_train_results(model_lr)
+
+            self.assertAllClose(get_losses(hist), get_losses(hist_lr))
 
 
 if __name__ == '__main__':
     d = DiscriminativeLearningTest()
     d.test_same_results_when_no_lr_mult_specified()
 
-    pass
+
 
 
 
