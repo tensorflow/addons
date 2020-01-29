@@ -94,10 +94,7 @@ GPU Docker: `docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons g
 
 Configure:
 ```
-# Temporary until /usr/bin/python is py3 by default on ubuntu.
-ln -sf /usr/bin/python3.6 /usr/bin/python && rm /usr/bin/python2 
-
-./configure.sh  # Links project with TensorFlow dependency
+python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 Run selected tests:
 ```bash

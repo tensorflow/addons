@@ -86,16 +86,13 @@ def generate_shared_lib_name(namespec):
 print()
 print("Configuring TensorFlow Addons to be built from source...")
 
-_PIP_INSTALL_OPTS = "--upgrade"
+_PIP_INSTALL_OPTS = ["--upgrade"]
 parser = argparse.ArgumentParser()
 parser.add_argument("--quiet", action="store_true", help="Give less output.")
 args = parser.parse_args()
 if args.quiet:
-    _PIP_INSTALL_OPTS += " --quiet"
+    _PIP_INSTALL_OPTS.append("--quiet")
 
-# Any python git package would be preferable
-# _BRANCH=subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode('UTF-8').strip()
-# There are no references to the BRANCH, by the way
 _PYTHON_PATH = sys.executable
 with open("requirements.txt") as f:
     _REQUIRED_PKG = f.read().splitlines()
@@ -112,17 +109,10 @@ if returncode == 1:
     )
     if reply in ("y", "Y"):
         print("> Installing...")
-        subprocess.check_call(
-            [
-                _PYTHON_PATH,
-                "-m",
-                "pip",
-                "install",
-                _PIP_INSTALL_OPTS,
-                "-r",
-                "requirements.txt",
-            ]
-        )
+        install_cmd = [_PYTHON_PATH, "-m", "pip", "install"]
+        install_cmd.extend(_PIP_INSTALL_OPTS)
+        install_cmd.extend(["-r", "requirements.txt"])
+        subprocess.check_call(install_cmd)
     else:
         print("> Exiting...")
         sys.exit()

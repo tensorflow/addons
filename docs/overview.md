@@ -55,7 +55,7 @@ export CUDA_HOME="/path/to/cuda10" (default: /usr/local/cuda)
 export CUDNN_INSTALL_PATH="/path/to/cudnn" (default: /usr/lib/x86_64-linux-gnu)
 
 # This script links project with TensorFlow dependency
-./configure.sh
+python3 ./configure.py
 
 bazel build build_pip_pkg
 bazel-bin/build_pip_pkg artifacts
