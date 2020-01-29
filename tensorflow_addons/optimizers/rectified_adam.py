@@ -17,7 +17,7 @@
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
-from typing import Optional, Union, Callable
+from typing import Union, Callable
 from typeguard import typechecked
 
 
