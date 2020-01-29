@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,13 @@
 # limitations under the License.
 # ==============================================================================
 set -e -x
+
+if [[ $1 == "--nightly" ]]; then
+    PKG_OPS="--nightly"
+elif [[ -n "$1" ]]; then
+    echo "Found unsupported args: $@"
+    exit 1
+fi
 
 # Configs
 export TF_NEED_CUDA="1"
@@ -54,14 +61,8 @@ for version in ${PYTHON_VERSIONS}; do
       build_pip_pkg
 
     # Package Whl
-    bazel-bin/build_pip_pkg artifacts --nightly
-
-    # Uncomment and use this command for release branches
-    #bazel-bin/build_pip_pkg artifacts
+    bazel-bin/build_pip_pkg artifacts ${PKG_OPS}
 done
 
 # Clean up
 rm get-pip.py
-
-# Verify Wheels
-./tools/ci_build/builds/wheel_verify.sh
