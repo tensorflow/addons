@@ -19,7 +19,7 @@ from tensorflow_addons.utils.types import FloatTensorLike
 
 # TODO: Find public API alternatives to these
 from tensorflow.python.training import training_ops
-from typing import Optional, Union, Callable
+from typing import Union, Callable
 from typeguard import typechecked
 
 
