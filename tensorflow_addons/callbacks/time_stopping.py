@@ -36,14 +36,15 @@ class TimeStopping(Callback):
 
         self.seconds = seconds
         self.verbose = verbose
+        self.stopped_epoch = 0
 
     def on_train_begin(self, logs=None):
         self.stopping_time = time.time() + self.seconds
 
     def on_epoch_end(self, epoch, logs={}):
+        self.stopped_epoch = epoch
         if time.time() >= self.stopping_time:
             self.model.stop_training = True
-            self.stopped_epoch = epoch
 
     def on_train_end(self, logs=None):
         if self.verbose > 0:
