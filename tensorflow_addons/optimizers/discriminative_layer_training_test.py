@@ -14,51 +14,56 @@
 # ==============================================================================
 """Tests for Discriminative Layer Training Manager for TensorFlow."""
 
-# python -m black tensorflow_addons/optimizers/discriminative_layer_training_test.py
-
 
 import tensorflow as tf
 from tensorflow_addons.utils import test_utils
 import numpy as np
-from tensorflow_addons.optimizers.discriminative_layer_training import DiscriminativeLearning
+from tensorflow_addons.optimizers.discriminative_layer_training import (
+    DiscriminativeLearning,
+)
 import itertools
 
 
 def toy_cnn():
-    '''Consistently create model with same random weights
+    """Consistently create model with same random weights
     skip head activation to allow both bce with logits and cce with logits
     intended to work with
     x = np.ones(shape = (None, 32, 32, 3), dtype = np.float32)
     y = np.zeros(shape = (None, 5), dtype = np.float32)
     y[:, 0] = 1.
-    '''
+    """
 
     tf.random.set_seed(1)
 
-    bignet = tf.keras.applications.mobilenet_v2.MobileNetV2(include_top=False
-                                                            , weights=None
-                                                            , input_shape=(32, 32, 3)
-                                                            , pooling='avg')
+    bignet = tf.keras.applications.mobilenet_v2.MobileNetV2(
+        include_top=False, weights=None, input_shape=(32, 32, 3), pooling="avg"
+    )
 
-    net = tf.keras.models.Model(inputs=bignet.input, outputs=bignet.get_layer('block_2_add').output)
+    net = tf.keras.models.Model(
+        inputs=bignet.input, outputs=bignet.get_layer("block_2_add").output
+    )
 
-    model = tf.keras.Sequential([net
-                                    , tf.keras.layers.GlobalAveragePooling2D()
-                                    , tf.keras.layers.Dropout(0.5)
-                                    , tf.keras.layers.Dense(5, name='head')])
+    model = tf.keras.Sequential(
+        [
+            net,
+            tf.keras.layers.GlobalAveragePooling2D(),
+            tf.keras.layers.Dropout(0.5),
+            tf.keras.layers.Dense(5, name="head"),
+        ]
+    )
 
     return model
 
 
 def toy_rnn():
-    '''Consistently create model with same random weights
+    """Consistently create model with same random weights
     skip head activation to allow both bce with logits and cce with logits
     intended to work with
 
     x = np.ones(shape = (None, 32, 32, 3), dtype = np.float32)
     y = np.zeros(shape = (None, 5), dtype = np.float32)
     y[:, 0] = 1.
-    '''
+    """
 
     tf.random.set_seed(1)
 
@@ -74,13 +79,13 @@ def toy_rnn():
 
 
 def get_train_results(model):
-    '''Run a traininng loop and return the results for analysis
+    """Run a traininng loop and return the results for analysis
     model must be compiled first
-    '''
+    """
     tf.random.set_seed(1)
     x = np.ones(shape=(32, 32, 32, 3), dtype=np.float32)
     y = np.zeros(shape=(32, 5), dtype=np.float32)
-    y[:, 0] = 1.
+    y[:, 0] = 1.0
 
     return model.fit(x, y, epochs=10, batch_size=16, verbose=0)
 
@@ -90,27 +95,24 @@ def opt_list():
 
 
 def loss_list():
-    return [tf.keras.losses.BinaryCrossentropy, tf.keras.losses.CategoricalCrossentropy,
-            tf.keras.losses.MeanSquaredError]
+    return [
+        tf.keras.losses.BinaryCrossentropy,
+        tf.keras.losses.CategoricalCrossentropy,
+        tf.keras.losses.MeanSquaredError,
+    ]
 
 
 def zipped_permutes():
-    return list(itertools.product([toy_cnn, toy_rnn]
-                                  , loss_list()
-                                  , opt_list()
-                                  ))
+    return list(itertools.product([toy_cnn, toy_rnn], loss_list(), opt_list()))
 
 
 def get_losses(hist):
-    return np.array(hist.__dict__['history']['loss'])
+    return np.array(hist.__dict__["history"]["loss"])
 
 
 @test_utils.run_all_in_graph_and_eager_modes
 class DiscriminativeLearningTest(tf.test.TestCase):
-
     def test_same_results_when_no_lr_mult_specified(self):
-
-        model_fns = [toy_cnn, toy_rnn]
 
         for model_fn, loss, opt in zipped_permutes():
             model = model_fn()
@@ -126,14 +128,13 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
     def test_same_results_when_lr_mult_is_1(self):
 
-        model_fns = [toy_cnn, toy_rnn]
-
         for model_fn, loss, opt in zipped_permutes():
             model = model_fn()
             model.compile(loss=loss(), optimizer=opt())
             hist = get_train_results(model)
 
             model_lr = model_fn()
+            model_lr.lr_mult = 1.0
             model_lr.compile(loss=loss(), optimizer=opt())
             DiscriminativeLearning(model_lr)
             hist_lr = get_train_results(model_lr)
@@ -141,12 +142,6 @@ class DiscriminativeLearningTest(tf.test.TestCase):
             self.assertAllClose(get_losses(hist), get_losses(hist_lr))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     d = DiscriminativeLearningTest()
     d.test_same_results_when_no_lr_mult_specified()
-
-
-
-
-
-

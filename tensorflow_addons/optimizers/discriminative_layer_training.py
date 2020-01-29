@@ -14,10 +14,6 @@
 # ==============================================================================
 """Discriminative Layer Training Manager for TensorFlow."""
 
-# python -m black tensorflow_addons/optimizers/discriminative_layer_training.py
-# python -m black tensorflow_addons/optimizers/discriminative_layer_training_test.py
-# python -m flake8
-
 import tensorflow as tf
 import numpy as np
 
@@ -142,7 +138,7 @@ class DiscriminativeLearning(object):
         layers_with_lr_mult = []
 
         for sub_layer in self._get_lowest_layers(
-                layer, propagate_lr_mult_to_sub_layers=propagate
+            layer, propagate_lr_mult_to_sub_layers=propagate
         ):
             lr_mult = self._get_lr_mult(sub_layer)
             if lr_mult != 1.0:
