@@ -16,6 +16,7 @@
 
 import tensorflow as tf
 import numpy as np
+from typeguard import typechecked
 
 
 def apply_gradients(self, grads_and_vars, *args, **kwargs):
@@ -46,7 +47,38 @@ def apply_gradients(self, grads_and_vars, *args, **kwargs):
 
 # @tf.keras.utils.register_keras_serializable(package="Addons") :TODO figure out why other classes have this wrapper
 class DiscriminativeLearning(object):
-    def __init__(self, model, verbose=True):
+    """Discriminative Learning Model Modifier.
+
+    Discriminative Learning is a technique that applies different learning rates to
+    different layers in a model. Generally, a lower learning rate is applied to the
+    layers closest to the input and a higher learning rate is applied to layers closer
+    to the output. This method helps in transfer learning by quickly calibrating the head
+    of a model while preserving the useful weights in the main part of the model.
+
+    Example usage
+        model = tf.keras.Sequential()
+        model.add(tf.keras.applications.resnet.ResNet50(include_top = False, pooling = 'avg'))
+        model.add(tf.keras.layers.Dense(1, activation = 'sigmoid'))
+        DiscriminativeLearning(model)
+        model.fit(x, y)
+
+    Arguments
+        model: tf.keras.Model, The model to be used for discriminative learning.
+            It should have at least 1 layer with the attribute lr_mult. The lr_mult should
+            be set to a value not equal to 1. Otherwise, you will have the exact same
+            result as not using discriminative learning.
+
+        verbose: Bool, to generate a report on how many parameters are affected
+
+    Returns
+        None - The model object passed to in the arguments will be modified
+
+    References
+        - [Universal Language Model Fine-tuning for Text Classification](https://arxiv.org/pdf/1801.06146.pdf)
+    """
+
+    @typechecked
+    def __init__(self, model: tf.keras.Model, verbose: bool = True):
         """Apply logic for discriminative learning to a compiled model
         :TODO finish docstring
         """
