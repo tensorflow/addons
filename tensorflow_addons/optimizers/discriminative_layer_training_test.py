@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests for Discriminative Layer Training Manager for TensorFlow."""
 
-
 import tensorflow as tf
 from tensorflow_addons.utils import test_utils
 import numpy as np
@@ -108,6 +107,7 @@ def zipped_permutes():
 
 def get_losses(hist):
     return np.array(hist.__dict__["history"]["loss"])
+
 
 @test_utils.run_all_distributed
 @test_utils.run_all_in_graph_and_eager_modes
