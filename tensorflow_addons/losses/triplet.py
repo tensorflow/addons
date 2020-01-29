@@ -264,6 +264,7 @@ class TripletHardLoss(tf.keras.losses.Loss):
     def get_config(self):
         config = {
             "margin": self.margin,
+            "soft": self.soft,
         }
         base_config = super().get_config()
         return {**base_config, **config}
