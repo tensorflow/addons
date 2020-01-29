@@ -15,6 +15,7 @@
 """Implementing PoincareNormalize layer."""
 
 import tensorflow as tf
+from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -41,7 +42,8 @@ class PoincareNormalize(tf.keras.layers.Layer):
         numerical stability.
     """
 
-    def __init__(self, axis=1, epsilon=1e-5, **kwargs):
+    @typechecked
+    def __init__(self, axis: int = 1, epsilon: int = 1e-5, **kwargs):
         super().__init__(**kwargs)
         self.axis = axis
         self.epsilon = epsilon
