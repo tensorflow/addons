@@ -17,7 +17,7 @@
 import tensorflow as tf
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class ConditionalGradient(tf.keras.optimizers.Optimizer):
     """Optimizer that implements the Conditional Gradient optimization.
 
@@ -40,13 +40,15 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
     In this implementation, `epsilon` defaults to $10^{-7}$.
     """
 
-    def __init__(self,
-                 learning_rate,
-                 lambda_,
-                 epsilon=1e-7,
-                 use_locking=False,
-                 name='ConditionalGradient',
-                 **kwargs):
+    def __init__(
+        self,
+        learning_rate,
+        lambda_,
+        epsilon=1e-7,
+        use_locking=False,
+        name="ConditionalGradient",
+        **kwargs
+    ):
         """Construct a new conditional gradient optimizer.
 
         Args:
@@ -68,74 +70,83 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
                 compatibility, recommended to use `learning_rate` instead.
         """
         super().__init__(name=name, **kwargs)
-        self._set_hyper('learning_rate', kwargs.get('lr', learning_rate))
-        self._set_hyper('lambda_', lambda_)
+        self._set_hyper("learning_rate", kwargs.get("lr", learning_rate))
+        self._set_hyper("lambda_", lambda_)
         self.epsilon = epsilon or tf.keras.backend.epsilon()
-        self._set_hyper('use_locking', use_locking)
+        self._set_hyper("use_locking", use_locking)
 
     def get_config(self):
         config = {
-            'learning_rate': self._serialize_hyperparameter('learning_rate'),
-            'lambda_': self._serialize_hyperparameter('lambda_'),
-            'epsilon': self.epsilon,
-            'use_locking': self._serialize_hyperparameter('use_locking')
+            "learning_rate": self._serialize_hyperparameter("learning_rate"),
+            "lambda_": self._serialize_hyperparameter("lambda_"),
+            "epsilon": self.epsilon,
+            "use_locking": self._serialize_hyperparameter("use_locking"),
         }
         base_config = super().get_config()
         return {**base_config, **config}
 
     def _create_slots(self, var_list):
         for v in var_list:
-            self.add_slot(v, 'conditional_gradient')
+            self.add_slot(v, "conditional_gradient")
 
     def _prepare_local(self, var_device, var_dtype, apply_state):
         super()._prepare_local(var_device, var_dtype, apply_state)
-        apply_state[(var_device, var_dtype)]['learning_rate'] = tf.identity(
-            self._get_hyper('learning_rate', var_dtype))
-        apply_state[(var_device, var_dtype)]['lambda_'] = tf.identity(
-            self._get_hyper('lambda_', var_dtype))
-        apply_state[(var_device, var_dtype)]['epsilon'] = tf.convert_to_tensor(
-            self.epsilon, var_dtype)
+        apply_state[(var_device, var_dtype)]["learning_rate"] = tf.identity(
+            self._get_hyper("learning_rate", var_dtype)
+        )
+        apply_state[(var_device, var_dtype)]["lambda_"] = tf.identity(
+            self._get_hyper("lambda_", var_dtype)
+        )
+        apply_state[(var_device, var_dtype)]["epsilon"] = tf.convert_to_tensor(
+            self.epsilon, var_dtype
+        )
 
     def _resource_apply_dense(self, grad, var, apply_state=None):
         def frobenius_norm(m):
-            return tf.math.reduce_sum(m**2)**0.5
+            return tf.math.reduce_sum(m ** 2) ** 0.5
 
         var_device, var_dtype = var.device, var.dtype.base_dtype
-        coefficients = ((apply_state or {}).get((var_device, var_dtype))
-                        or self._fallback_apply_state(var_device, var_dtype))
+        coefficients = (apply_state or {}).get(
+            (var_device, var_dtype)
+        ) or self._fallback_apply_state(var_device, var_dtype)
         norm = tf.convert_to_tensor(
-            frobenius_norm(grad), name='norm', dtype=var.dtype.base_dtype)
-        lr = coefficients['learning_rate']
-        lambda_ = coefficients['lambda_']
-        epsilon = coefficients['epsilon']
-        var_update_tensor = (tf.math.multiply(var, lr) -
-                             (1 - lr) * lambda_ * grad / (norm + epsilon))
+            frobenius_norm(grad), name="norm", dtype=var.dtype.base_dtype
+        )
+        lr = coefficients["learning_rate"]
+        lambda_ = coefficients["lambda_"]
+        epsilon = coefficients["epsilon"]
+        var_update_tensor = tf.math.multiply(var, lr) - (1 - lr) * lambda_ * grad / (
+            norm + epsilon
+        )
         var_update_kwargs = {
-            'resource': var.handle,
-            'value': var_update_tensor,
+            "resource": var.handle,
+            "value": var_update_tensor,
         }
         var_update_op = tf.raw_ops.AssignVariableOp(**var_update_kwargs)
         return tf.group(var_update_op)
 
     def _resource_apply_sparse(self, grad, var, indices, apply_state=None):
         def frobenius_norm(m):
-            return tf.reduce_sum(m**2)**0.5
+            return tf.reduce_sum(m ** 2) ** 0.5
 
         var_device, var_dtype = var.device, var.dtype.base_dtype
-        coefficients = ((apply_state or {}).get((var_device, var_dtype))
-                        or self._fallback_apply_state(var_device, var_dtype))
+        coefficients = (apply_state or {}).get(
+            (var_device, var_dtype)
+        ) or self._fallback_apply_state(var_device, var_dtype)
         norm = tf.convert_to_tensor(
-            frobenius_norm(grad), name='norm', dtype=var.dtype.base_dtype)
-        lr = coefficients['learning_rate']
-        lambda_ = coefficients['lambda_']
-        epsilon = coefficients['epsilon']
+            frobenius_norm(grad), name="norm", dtype=var.dtype.base_dtype
+        )
+        lr = coefficients["learning_rate"]
+        lambda_ = coefficients["lambda_"]
+        epsilon = coefficients["epsilon"]
         var_slice = tf.gather(var, indices)
-        var_update_value = (tf.math.multiply(var_slice, lr) -
-                            (1 - lr) * lambda_ * grad / (norm + epsilon))
+        var_update_value = tf.math.multiply(var_slice, lr) - (
+            1 - lr
+        ) * lambda_ * grad / (norm + epsilon)
         var_update_kwargs = {
-            'resource': var.handle,
-            'indices': indices,
-            'updates': var_update_value
+            "resource": var.handle,
+            "indices": indices,
+            "updates": var_update_value,
         }
         var_update_op = tf.raw_ops.ResourceScatterUpdate(**var_update_kwargs)
         return tf.group(var_update_op)

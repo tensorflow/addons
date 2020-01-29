@@ -6,6 +6,7 @@ py_library(
     name = "callbacks",
     srcs = [
         "__init__.py",
+        "average_model_checkpoint.py",
         "time_stopping.py",
         "tqdm_progress_bar.py",
     ],
