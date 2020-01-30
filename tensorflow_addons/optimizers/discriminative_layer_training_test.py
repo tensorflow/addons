@@ -126,13 +126,11 @@ def get_losses(hist):
     return np.array(hist.__dict__["history"]["loss"])
 
 
-# @test_utils.run_all_distributed
-@test_utils.run_all_in_graph_and_eager_modes
 class DiscriminativeLearningTest(tf.test.TestCase):
     def _assert_losses_are_close(self, hist, hist_lr):
         """higher tolerance for graph due to non determinism"""
         if tf.executing_eagerly():
-            rtol, atol = 1e-6, 1e-6
+            rtol, atol = 0.01, 0.01
         else:
             rtol, atol = 0.05, 1.00
 
@@ -151,7 +149,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         model_lr = model_fn()
         model_lr.compile(loss=loss, optimizer=opt())
-        DiscriminativeLearning(model_lr)
+        DiscriminativeLearning(model_lr, verbose=False)
 
         self._assert_training_losses_are_close(model, model_lr)
 
@@ -163,21 +161,19 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         model_lr = model_fn()
         model_lr.lr_mult = 0.0
         model_lr.compile(loss=loss, optimizer=opt())
-        DiscriminativeLearning(model_lr)
+        DiscriminativeLearning(model_lr, verbose=False)
 
         self._assert_training_losses_are_close(model, model_lr)
 
-    def _test_equal_layer_lr_to_opt_lr(self, model_fn, loss, opt):
-        lr = 0.001
-        model = model_fn()
-        model.compile(loss=loss, optimizer=opt(learning_rate=lr * 0.5))
+    def _test_loss_changes_over_time(self, model_fn, loss, opt):
 
         model_lr = model_fn()
-        model_lr.lr_mult = 0.5
-        model_lr.compile(loss=loss, optimizer=opt(learning_rate=lr))
-        DiscriminativeLearning(model_lr)
+        model_lr.layers[0].lr_mult = 0.01
+        model_lr.compile(loss=loss, optimizer=opt())
+        DiscriminativeLearning(model_lr, verbose=False)
 
-        self._assert_training_losses_are_close(model, model_lr)
+        loss_values = get_losses(get_train_results(model_lr))
+        self.assertLess(loss_values[-1], loss_values[0])
 
     def _run_tests_in_notebook(self):
         for name, method in DiscriminativeLearningTest.__dict__.items():
@@ -186,40 +182,60 @@ class DiscriminativeLearningTest(tf.test.TestCase):
                 method(self)
 
 
-def test_wrap(method, **kwargs):
+def run_distributed(devices):
+    def decorator(f):
+        def decorated(self, *args, **kwargs):
+            logical_devices = devices
+            strategy = tf.distribute.MirroredStrategy(logical_devices)
+            with strategy.scope():
+                f(self, *args, **kwargs)
+
+        return decorated
+
+    return decorator
+
+
+def test_wrap(method, devices, **kwargs):
     @test_utils.run_in_graph_and_eager_modes
-    def test(self):
+    def single(self):
         return method(self, **kwargs)
 
-    return test
+    @test_utils.run_in_graph_and_eager_modes
+    @run_distributed(devices)
+    def distributed(self):
+        return method(self, **kwargs)
+
+    return single, distributed
 
 
-def generate_tests():
-    distributed_dec = test_utils.run_distributed(2)
-
+def generate_tests(devices):
     for name, method in DiscriminativeLearningTest.__dict__.copy().items():
         if callable(method) and name[:5] == "_test":
-            for model_fn, loss, opt in zipped_permutes()[:2]:
+            for model_fn, loss, opt in zipped_permutes():
                 testmethodname = name[1:] + "_%s_%s_%s" % (
                     model_fn.__name__,
                     loss.name,
                     opt.__name__,
                 )
-                testmethod = test_wrap(
-                    method=method, model_fn=model_fn, loss=loss, opt=opt
+                testmethod, testmethod_dist = test_wrap(
+                    method=method,
+                    devices=devices,
+                    model_fn=model_fn,
+                    loss=loss,
+                    opt=opt,
                 )
-                setattr(DiscriminativeLearningTest, testmethodname, testmethod)
 
-                # setattr(
-                #     DiscriminativeLearningTest,
-                #     testmethodname + "_distributed",
-                #     distributed_dec(testmethod),
-                # )
+                setattr(DiscriminativeLearningTest, testmethodname, testmethod)
+                setattr(
+                    DiscriminativeLearningTest,
+                    testmethodname + "_distributed",
+                    testmethod_dist,
+                )
 
 
 if __name__ == "__main__":
-    generate_tests()
-
-    # DiscriminativeLearningTest()._run_tests_in_notebook()
-    # print("done")
+    devices = test_utils.create_virtual_devices(2)
+    generate_tests(devices)
+    #     DiscriminativeLearningTest()._run_tests_in_notebook()
+    #     print("done")
     tf.test.main()
