@@ -129,10 +129,11 @@ def get_losses(hist):
 class DiscriminativeLearningTest(tf.test.TestCase):
     def _assert_losses_are_close(self, hist, hist_lr):
         """higher tolerance for graph and distributed bc unable to run deterministically"""
-        if tf.executing_eagerly() and not tf.distribute.has_strategy():
-            rtol, atol = 0.01, 0.01
-        else:
+        if not tf.executing_eagerly() or tf.distribute.has_strategy():
             rtol, atol = 0.05, 1.00
+            # print('graph or dist')
+        else:
+            rtol, atol = 0.01, 0.01
 
         return self.assertAllClose(
             get_losses(hist), get_losses(hist_lr), rtol=rtol, atol=atol
@@ -240,6 +241,6 @@ def generate_tests(devices):
 if __name__ == "__main__":
     devices = test_utils.create_virtual_devices(2)
     generate_tests(devices)
-    #     DiscriminativeLearningTest()._run_tests_in_notebook()
+    # DiscriminativeLearningTest()._run_tests_in_notebook()
     #     print("done")
     tf.test.main()
