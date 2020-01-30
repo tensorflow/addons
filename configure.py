@@ -66,13 +66,9 @@ def is_ppc64le():
 
 def get_input(question):
     try:
-        try:
-            answer = raw_input(question)
-        except NameError:
-            answer = input(question)  # pylint: disable=bad-builtin
+        return input(question)
     except EOFError:
-        answer = ""
-    return answer
+        return ""
 
 
 # Converts the linkflag namespec to the full shared library name
@@ -91,41 +87,41 @@ def generate_shared_lib_name(namespec):
 print()
 print("Configuring TensorFlow Addons to be built from source...")
 
-_PIP_INSTALL_OPTS = ["--upgrade"]
+pip_install_options = ["--upgrade"]
 parser = argparse.ArgumentParser()
 parser.add_argument("--quiet", action="store_true", help="Give less output.")
 args = parser.parse_args()
 if args.quiet:
-    _PIP_INSTALL_OPTS.append("--quiet")
+    pip_install_options.append("--quiet")
 
-_PYTHON_PATH = sys.executable
+python_path = sys.executable
 with open("requirements.txt") as f:
-    _REQUIRED_PKG = f.read().splitlines()
+    required_packages = f.read().splitlines()
 
 with open("build_deps/build-requirements.txt") as f:
-    _REQUIRED_PKG.extend(f.read().splitlines())
+    required_packages.extend(f.read().splitlines())
 
 print()
 print("> TensorFlow Addons will link to the framework in a pre-installed TF pacakge...")
-print("> Checking installed packages in {}".format(_PYTHON_PATH))
+print("> Checking installed packages in {}".format(python_path))
 # We can not just import check_deps.py because it calls sys.exit()
-returncode = subprocess.run([_PYTHON_PATH, "build_deps/check_deps.py"]).returncode
+returncode = subprocess.run([python_path, "build_deps/check_deps.py"]).returncode
 
 if returncode == 1:
     reply = get_input(
-        "Package {} will be installed. Are You Sure? [y/n] ".format(_REQUIRED_PKG)
+        "Package {} will be installed. Are You Sure? [y/n] ".format(required_packages)
     )
     if reply in ("y", "Y"):
         print("> Installing...")
-        install_cmd = [_PYTHON_PATH, "-m", "pip", "install"]
-        install_cmd.extend(_PIP_INSTALL_OPTS)
-        install_cmd.extend(_REQUIRED_PKG)
+        install_cmd = [python_path, "-m", "pip", "install"]
+        install_cmd.extend(pip_install_options)
+        install_cmd.extend(required_packages)
         subprocess.check_call(install_cmd)
     else:
         print("> Exiting...")
         sys.exit()
 else:
-    print("> Using pre-installed {}...".format(_REQUIRED_PKG))
+    print("> Using pre-installed {}...".format(required_packages))
 
 if os.path.isfile(_TFA_BAZELRC):
     os.remove(_TFA_BAZELRC)
