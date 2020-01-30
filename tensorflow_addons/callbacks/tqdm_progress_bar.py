@@ -17,6 +17,7 @@
 import time
 import tensorflow as tf
 from collections import defaultdict
+from typeguard import typechecked
 
 from tensorflow.keras.callbacks import Callback
 
@@ -45,18 +46,19 @@ class TQDMProgressBar(Callback):
         show_overall_progress: False to hide overall progress bar.
     """
 
+    @typechecked
     def __init__(self,
-                 metrics_separator=" - ",
-                 overall_bar_format='{l_bar}{bar} {n_fmt}/{total_fmt} ETA: '
+                 metrics_separator: str = " - ",
+                 overall_bar_format: str = '{l_bar}{bar} {n_fmt}/{total_fmt} ETA: '
                  '{remaining}s,  {rate_fmt}{postfix}',
-                 epoch_bar_format='{n_fmt}/{total_fmt}{bar} ETA: '
+                 epoch_bar_format: str = '{n_fmt}/{total_fmt}{bar} ETA: '
                  '{remaining}s - {desc}',
-                 metrics_format='{name}: {value:0.4f}',
-                 update_per_second=10,
-                 leave_epoch_progress=True,
-                 leave_overall_progress=True,
-                 show_epoch_progress=True,
-                 show_overall_progress=True):
+                 metrics_format: str = '{name}: {value:0.4f}',
+                 update_per_second: int = 10,
+                 leave_epoch_progress: bool = True,
+                 leave_overall_progress: bool = True,
+                 show_epoch_progress: bool = True,
+                 show_overall_progress: bool = True):
 
         try:
             # import tqdm here because tqdm is not a required package
