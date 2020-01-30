@@ -18,7 +18,7 @@ import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
 from typeguard import typechecked
-from typing import Union, Callable
+from typing import Optional, Union, Callable
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -33,7 +33,7 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
         step_size: FloatTensorLike,
         scale_fn: Callable,
         scale_mode: str = "cycle",
-        name=None,
+        name: str = "CyclicalLearningRate",
     ):
         """Applies cyclical schedule to the learning rate.
 
