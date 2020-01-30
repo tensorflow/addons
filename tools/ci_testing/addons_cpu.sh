@@ -40,14 +40,18 @@ echo ""
 export CC_OPT_FLAGS='-mavx'
 export TF_NEED_CUDA=0
 
-# Use default configuration here.
-echo 'y' | ./configure.sh
+if [ -x "$(command -v python3)" ]; then
+    echo 'y' | python3 ./configure.py
+  else
+    echo 'y' | python ./configure.py
+fi
+
+cat ./.bazelrc
 
 ## Run bazel test command. Double test timeouts to avoid flakes.
 ${BAZEL_PATH:=bazel} test -c opt -k \
     --jobs=${N_JOBS} --test_timeout 300,450,1200,3600 \
     --test_output=errors --local_test_jobs=8 \
-    --extra_toolchains=@bazel_tools//tools/python:autodetecting_toolchain_nonstrict \
     //tensorflow_addons/...
 
 exit $?

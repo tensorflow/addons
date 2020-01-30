@@ -72,7 +72,7 @@ jobs:
         run: |
           python --version
           bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
-          echo 'y' | ./configure.sh --quiet
+          echo 'y' | python3 ./configure.py --quiet
           bazel build \
             -c opt \
             --noshow_progress \
@@ -102,7 +102,7 @@ jobs:
         run: |
           python --version
           curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
-          echo 'y' | ./configure.sh --quiet
+          echo 'y' | python ./configure.py --quiet
           ./bazel-${BAZEL_VERSION}-windows-x86_64.exe build \
             -c opt \
             --enable_runfiles \
