@@ -134,9 +134,8 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         if tf.executing_eagerly():
             rtol, atol = 1e-6, 1e-6
         else:
-            # atol isn't important.
             rtol, atol = 0.05, 1.00
-        rtol, atol = 0.01, 0.01
+
         return self.assertAllClose(
             get_losses(hist), get_losses(hist_lr), rtol=rtol, atol=atol
         )
@@ -188,7 +187,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
 
 def test_wrap(method, **kwargs):
-    #     @test_utils.run_in_graph_and_eager_modes
+    @test_utils.run_in_graph_and_eager_modes
     def test(self):
         return method(self, **kwargs)
 
@@ -196,6 +195,8 @@ def test_wrap(method, **kwargs):
 
 
 def generate_tests():
+    distributed_dec = test_utils.run_distributed(2)
+
     for name, method in DiscriminativeLearningTest.__dict__.copy().items():
         if callable(method) and name[:5] == "_test":
             for model_fn, loss, opt in zipped_permutes()[:2]:
@@ -208,6 +209,12 @@ def generate_tests():
                     method=method, model_fn=model_fn, loss=loss, opt=opt
                 )
                 setattr(DiscriminativeLearningTest, testmethodname, testmethod)
+
+                setattr(
+                    DiscriminativeLearningTest,
+                    testmethodname + "_distributed",
+                    distributed_dec(testmethod),
+                )
 
 
 if __name__ == "__main__":
