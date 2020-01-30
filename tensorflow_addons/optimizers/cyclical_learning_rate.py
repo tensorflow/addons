@@ -31,7 +31,6 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
         initial_learning_rate: Union[FloatTensorLike, Callable],
         maximal_learning_rate: Union[FloatTensorLike, Callable],
         step_size: FloatTensorLike,
-        scale_fn,
         scale_mode: str = "cycle",
         name=None,
     ):
