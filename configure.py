@@ -31,6 +31,7 @@ _DEFAULT_CUDNN_VERSION = "7"
 _DEFAULT_CUDNN_PATH = "/usr/lib/x86_64-linux-gnu"
 
 _TFA_BAZELRC = ".bazelrc"
+_TF_NEED_CUDA = os.getenv("TF_NEED_CUDA")
 
 
 # Writes variables to bazelrc file
@@ -74,13 +75,13 @@ def get_input(question):
 def generate_shared_lib_name(namespec):
     if is_macos():
         # MacOS
-        return "lib" + namespec[2:] + ".dylib"
+        return "lib" + namespec[1][2:] + ".dylib"
     elif is_windows():
         # Windows
         return "_pywrap_tensorflow_internal.lib"
     else:
         # Linux
-        return namespec[3:]
+        return namespec[1][3:]
 
 
 print()
@@ -130,7 +131,7 @@ _TF_CFLAGS = tf.sysconfig.get_compile_flags()
 _TF_LFLAGS = tf.sysconfig.get_link_flags()
 _TF_CXX11_ABI_FLAG = tf.sysconfig.CXX11_ABI_FLAG
 
-_TF_SHARED_LIBRARY_NAME = generate_shared_lib_name(_TF_LFLAGS[1])
+_TF_SHARED_LIBRARY_NAME = generate_shared_lib_name(_TF_LFLAGS)
 _TF_HEADER_DIR = _TF_CFLAGS[0][2:]
 
 # OS Specific parsing
@@ -152,7 +153,8 @@ write_to_bazelrc("build --spawn_strategy=standalone")
 write_to_bazelrc("build --strategy=Genrule=standalone")
 write_to_bazelrc("build -c opt")
 
-while "_TF_NEED_CUDA" not in vars():
+
+while _TF_NEED_CUDA is None:
     print()
     INPUT = get_input("Do you want to build GPU ops? [y/N] ")
     if INPUT in ("Y", "y"):
