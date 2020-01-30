@@ -25,8 +25,6 @@ TUTORIAL_URL = "https://docs.python.org/3/library/typing.html"
 # TODO: add types and remove all elements from
 # the exception list.
 EXCEPTION_LIST = [
-    tensorflow_addons.callbacks.TQDMProgressBar,
-    tensorflow_addons.callbacks.TimeStopping,
     tensorflow_addons.image.connected_components,
     tensorflow_addons.image.dense_image_warp,
     tensorflow_addons.image.interpolate_bilinear,
