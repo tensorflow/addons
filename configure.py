@@ -100,9 +100,6 @@ parser.add_argument(
     action="store_true",
     help="Do not check and install Python dependencies.",
 )
-parser.add_argument(
-    "--only-cpu", action="store_true", help="Only build for cpu.",
-)
 args = parser.parse_args()
 if args.quiet:
     _PIP_INSTALL_OPTS.append("--quiet")
@@ -115,8 +112,6 @@ with open("build_deps/build-requirements.txt") as f:
     _REQUIRED_PKG.extend(f.read().splitlines())
 
 print()
-print("> TensorFlow Addons will link to the framework in a pre-installed TF package...")
-
 if args.no_deps:
     print("> Using pre-installed Tensorflow.")
 else:
@@ -159,8 +154,17 @@ write_to_bazelrc("build --strategy=Genrule=standalone")
 write_to_bazelrc("build -c opt")
 
 
-_TF_NEED_CUDA = _TF_NEED_CUDA and not args.only_cpu
-
+while _TF_NEED_CUDA is None:
+    print()
+    INPUT = get_input("Do you want to build GPU ops? [y/N] ")
+    if INPUT in ("Y", "y"):
+        print("> Building GPU & CPU ops")
+        _TF_NEED_CUDA = "1"
+    elif INPUT in ("N", "n", ""):
+        print("> Building only CPU ops")
+        _TF_NEED_CUDA = "0"
+    else:
+        print("Invalid selection: {}".format(INPUT))
 
 if _TF_NEED_CUDA == "1":
     print()
@@ -220,8 +224,6 @@ if _TF_NEED_CUDA == "1":
     write_to_bazelrc(
         "build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain"
     )
-else:
-    print("> Building only CPU ops")
 
 print()
 print("Build configurations successfully written to {}".format(_TFA_BAZELRC))

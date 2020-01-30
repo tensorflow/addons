@@ -46,7 +46,7 @@ jobs:
         run: |
           python --version
           curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
-          python ./configure.py --quiet
+          echo 'y' | python ./configure.py --quiet
           ./bazel-${BAZEL_VERSION}-windows-x86_64.exe build \
             -c opt \
             --enable_runfiles \
