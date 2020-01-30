@@ -102,6 +102,9 @@ _PYTHON_PATH = sys.executable
 with open("requirements.txt") as f:
     _REQUIRED_PKG = f.read().splitlines()
 
+with open("build_deps/build-requirements.txt") as f:
+    _REQUIRED_PKG.extend(f.read().splitlines())
+
 print()
 print("> TensorFlow Addons will link to the framework in a pre-installed TF pacakge...")
 print("> Checking installed packages in {}".format(_PYTHON_PATH))
@@ -116,7 +119,7 @@ if returncode == 1:
         print("> Installing...")
         install_cmd = [_PYTHON_PATH, "-m", "pip", "install"]
         install_cmd.extend(_PIP_INSTALL_OPTS)
-        install_cmd.extend(["-r", "requirements.txt"])
+        install_cmd.extend(_REQUIRED_PKG)
         subprocess.check_call(install_cmd)
     else:
         print("> Exiting...")
