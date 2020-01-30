@@ -23,7 +23,9 @@ _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def hardshrink(x: types.TensorLike, lower: Number = -0.5, upper: Number = 0.5) -> tf.Tensor :
+def hardshrink(
+    x: types.TensorLike, lower: Number = -0.5, upper: Number = 0.5
+) -> tf.Tensor:
     """Hard shrink function.
 
     Computes hard shrink function:

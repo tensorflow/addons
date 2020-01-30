@@ -22,7 +22,7 @@ _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def lisht(x: types.TensorLike) -> tf.Tensor :
+def lisht(x: types.TensorLike) -> tf.Tensor:
     """LiSHT: Non-Parameteric Linearly Scaled Hyperbolic Tangent Activation Function.
 
     Computes linearly scaled hyperbolic tangent (LiSHT): `x * tanh(x)`

@@ -22,7 +22,7 @@ _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def tanhshrink(x: types.TensorLike) -> tf.Tensor :
+def tanhshrink(x: types.TensorLike) -> tf.Tensor:
     """Applies the element-wise function: x - tanh(x)
 
     Args:
