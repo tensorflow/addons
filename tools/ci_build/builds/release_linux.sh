@@ -42,13 +42,13 @@ apt-get -y -qq update
 
 for version in ${PYTHON_VERSIONS}; do
     apt-get -y -qq install ${version}
-    ln -sf /usr/bin/${version} /usr/bin/python
+    ln -sf /usr/bin/${version} /usr/bin/python3
 
-    python get-pip.py -q
-    python -m pip --version
+    python3 get-pip.py -q
+    python3 -m pip --version
 
     #Link TF dependency
-    yes 'y' | ./configure.sh --quiet
+    echo 'y' | python3 ./configure.py --quiet
 
     # Build
     bazel build \
