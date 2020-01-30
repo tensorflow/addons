@@ -26,8 +26,9 @@ def check_dependencies(requirement_file_name):
     except DistributionNotFound as e:
         print(e)
         sys.exit(1)
-    sys.exit(0)
 
 
 if __name__ == "__main__":
     check_dependencies("requirements.txt")
+    check_dependencies("build_deps/build-requirements.txt")
+    sys.exit(0)
