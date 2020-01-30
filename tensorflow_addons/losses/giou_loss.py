@@ -17,7 +17,7 @@
 import tensorflow as tf
 
 from tensorflow_addons.utils.types import TensorLike
-from typing import List, Optional
+from typing import Optional
 from typeguard import typechecked
 
 
