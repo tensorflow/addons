@@ -66,13 +66,9 @@ def is_ppc64le():
 
 def get_input(question):
     try:
-        try:
-            answer = raw_input(question)
-        except NameError:
-            answer = input(question)  # pylint: disable=bad-builtin
+        return input(question)
     except EOFError:
-        answer = ""
-    return answer
+        return ""
 
 
 # Converts the linkflag namespec to the full shared library name
