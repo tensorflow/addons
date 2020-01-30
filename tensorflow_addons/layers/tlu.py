@@ -42,7 +42,7 @@ class TLU(tf.keras.layers.Layer):
     @typechecked
     def __init__(
         self,
-        affine=False,
+        affine: bool = False,
         tau_initializer: types.Initializer = "zeros",
         tau_regularizer: types.Regularizer = None,
         tau_constraint: types.Constraint = None,
