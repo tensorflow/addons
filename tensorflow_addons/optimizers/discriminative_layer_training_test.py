@@ -162,7 +162,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         model.compile(loss=loss, optimizer=opt())
 
         model_lr = model_fn()
-        model_lr.lr_mult = 0.
+        model_lr.lr_mult = 0.0
         model_lr.compile(loss=loss, optimizer=opt())
         DiscriminativeLearning(model_lr)
 
