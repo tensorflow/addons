@@ -42,7 +42,7 @@ class Lookahead(tf.keras.optimizers.Optimizer):
 
     @typechecked
     def __init__(self,
-                 optimizer,
+                 optimizer: tf.keras.optimizers.Optimizer,
                  sync_period: int = 6,
                  slow_step_size: FloatTensorLike = 0.5,
                  name: str = "Lookahead",

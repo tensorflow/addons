@@ -43,7 +43,7 @@ class MovingAverage(AveragedOptimizerWrapper):
 
     @typechecked
     def __init__(self,
-                 optimizer,
+                 optimizer: tf.keras.optimizers.Optimizer,
                  sequential_update: bool = True,
                  average_decay: FloatTensorLike = 0.99,
                  num_updates: Optional[str] = None,

@@ -23,7 +23,7 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
     @typechecked
     def __init__(
         self,
-        optimizer,
+        optimizer: tf.keras.optimizers.Optimizer,
         sequential_update: bool = True,
         name: str = "AverageOptimizer",
         **kwargs

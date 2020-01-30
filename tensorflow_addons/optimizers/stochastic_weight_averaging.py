@@ -73,7 +73,7 @@ class SWA(AveragedOptimizerWrapper):
     @typechecked
     def __init__(
         self,
-        optimizer,
+        optimizer: tf.keras.optimizers.Optimizer,
         start_averaging: int = 0,
         average_period: int = 10,
         name: str = "SWA",
