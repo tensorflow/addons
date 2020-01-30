@@ -44,19 +44,20 @@ class MomentumLARS(tf.keras.optimizers.Optimizer):
     tensors use the default momentum optimizer.
     """
 
+    @typechecked
     def __init__(
         self,
-        learning_rate=0.001,
-        momentum=0.9,
-        weight_decay=0.0001,
+        learning_rate: float = 0.001,
+        momentum: float = 0.9,
+        weight_decay: float = 0.0001,
         # The LARS coefficient is a hyperparameter
-        eeta=0.001,
-        epsilon=0.0,
-        name="MomentumLARS",
+        eeta: float = 0.001,
+        epsilon: float = 0.0,
+        name: str = "MomentumLARS",
         # Enable skipping variables from LARS scaling.
         skip_list=(),
-        use_nesterov=False,
-        clip=False,
+        use_nesterov: bool = False,
+        clip: bool = False,
         **kwargs
     ):
         """Construct a new LARS Optimizer.
