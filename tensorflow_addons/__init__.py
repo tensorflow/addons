@@ -39,7 +39,7 @@ def _ensure_tf_install():
     #
     # Update this whenever we need to depend on a newer TensorFlow release.
     #
-    required_tensorflow_version = "2"
+    required_tensorflow_version = "2.1.0"
 
     if distutils.version.LooseVersion(tf.__version__) < distutils.version.LooseVersion(
         required_tensorflow_version
