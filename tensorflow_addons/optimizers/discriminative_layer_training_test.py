@@ -128,8 +128,8 @@ def get_losses(hist):
 
 class DiscriminativeLearningTest(tf.test.TestCase):
     def _assert_losses_are_close(self, hist, hist_lr):
-        """higher tolerance for graph due to non determinism"""
-        if tf.executing_eagerly():
+        """higher tolerance for graph and distributed bc unable to run deterministically"""
+        if tf.executing_eagerly() and not tf.distribute.has_strategy():
             rtol, atol = 0.01, 0.01
         else:
             rtol, atol = 0.05, 1.00
@@ -144,6 +144,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         self._assert_losses_are_close(hist, hist_lr)
 
     def _test_equal_with_no_layer_lr(self, model_fn, loss, opt):
+        """confirm that discriminative learning is almost the same as regular learning"""
         model = model_fn()
         model.compile(loss=loss, optimizer=opt())
 
@@ -154,6 +155,8 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         self._assert_training_losses_are_close(model, model_lr)
 
     def _test_equal_0_layer_lr_to_trainable_false(self, model_fn, loss, opt):
+        """confirm 0 lr for the model is the same as model not trainable"""
+
         model = model_fn()
         model.trainable = False
         model.compile(loss=loss, optimizer=opt())
@@ -166,6 +169,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         self._assert_training_losses_are_close(model, model_lr)
 
     def _test_loss_changes_over_time(self, model_fn, loss, opt):
+        """confirm that model trains with lower lr on specific layer"""
 
         model_lr = model_fn()
         model_lr.layers[0].lr_mult = 0.01
