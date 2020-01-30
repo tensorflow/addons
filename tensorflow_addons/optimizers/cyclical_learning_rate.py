@@ -15,19 +15,24 @@
 """Cyclical Learning Rate Schedule policies for TensorFlow."""
 
 import tensorflow as tf
+from tensorflow_addons.utils.types import FloatTensorLike
+
+from typeguard import typechecked
+from typing import Union, Callable
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
     """A LearningRateSchedule that uses cyclical schedule."""
 
+    @typechecked
     def __init__(
         self,
-        initial_learning_rate,
-        maximal_learning_rate,
-        step_size,
+        initial_learning_rate: Union[FloatTensorLike, Callable],
+        maximal_learning_rate: Union[FloatTensorLike, Callable],
+        step_size: FloatTensorLike,
         scale_fn,
-        scale_mode="cycle",
+        scale_mode: str = "cycle",
         name=None,
     ):
         """Applies cyclical schedule to the learning rate.
@@ -106,13 +111,14 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class TriangularCyclicalLearningRate(CyclicalLearningRate):
+    @typechecked
     def __init__(
         self,
-        initial_learning_rate,
-        maximal_learning_rate,
-        step_size,
-        scale_mode="cycle",
-        name="TriangularCyclicalLearningRate",
+        initial_learning_rate: Union[FloatTensorLike, Callable],
+        maximal_learning_rate: Union[FloatTensorLike, Callable],
+        step_size: FloatTensorLike,
+        scale_mode: str = "cycle",
+        name: str = "TriangularCyclicalLearningRate",
     ):
         """Applies triangular cyclical schedule to the learning rate.
 
@@ -167,13 +173,14 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class Triangular2CyclicalLearningRate(CyclicalLearningRate):
+    @typechecked
     def __init__(
         self,
-        initial_learning_rate,
-        maximal_learning_rate,
-        step_size,
-        scale_mode="cycle",
-        name="Triangular2CyclicalLearningRate",
+        initial_learning_rate: Union[FloatTensorLike, Callable],
+        maximal_learning_rate: Union[FloatTensorLike, Callable],
+        step_size: FloatTensorLike,
+        scale_mode: str = "cycle",
+        name: str = "Triangular2CyclicalLearningRate",
     ):
         """Applies triangular2 cyclical schedule to the learning rate.
 
@@ -228,14 +235,15 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class ExponentialCyclicalLearningRate(CyclicalLearningRate):
+    @typechecked
     def __init__(
         self,
-        initial_learning_rate,
-        maximal_learning_rate,
-        step_size,
-        scale_mode="iterations",
-        gamma=1.0,
-        name="ExponentialCyclicalLearningRate",
+        initial_learning_rate: Union[FloatTensorLike, Callable],
+        maximal_learning_rate: Union[FloatTensorLike, Callable],
+        step_size: FloatTensorLike,
+        scale_mode: str = "iterations",
+        gamma: FloatTensorLike = 1.0,
+        name: str = "ExponentialCyclicalLearningRate",
     ):
         """Applies exponential cyclical schedule to the learning rate.
 

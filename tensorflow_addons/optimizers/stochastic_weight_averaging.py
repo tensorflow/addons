@@ -26,6 +26,8 @@ set.
 import tensorflow as tf
 from tensorflow_addons.optimizers.average_wrapper import AveragedOptimizerWrapper
 
+from typeguard import typechecked
+
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class SWA(AveragedOptimizerWrapper):
@@ -68,13 +70,14 @@ class SWA(AveragedOptimizerWrapper):
     ```
     """
 
+    @typechecked
     def __init__(
         self,
         optimizer,
-        start_averaging=0,
-        average_period=10,
-        name="SWA",
-        sequential_update=True,
+        start_averaging: int = 0,
+        average_period: int = 10,
+        name: str = "SWA",
+        sequential_update: bool = True,
         **kwargs
     ):
         r"""Wrap optimizer with the Stochastic Weight Averaging mechanism.

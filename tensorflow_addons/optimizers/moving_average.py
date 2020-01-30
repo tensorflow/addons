@@ -15,7 +15,10 @@
 
 import tensorflow as tf
 from tensorflow.python.training.moving_averages import assign_moving_average
+from tensorflow_addons.utils.types import FloatTensorLike
 
+from typing import Optional
+from typeguard import typechecked
 from tensorflow_addons.optimizers import AveragedOptimizerWrapper
 
 
@@ -38,12 +41,13 @@ class MovingAverage(AveragedOptimizerWrapper):
     ```
     """
 
+    @typechecked
     def __init__(self,
                  optimizer,
-                 sequential_update=True,
-                 average_decay=0.99,
-                 num_updates=None,
-                 name="MovingAverage",
+                 sequential_update: bool = True,
+                 average_decay: FloatTensorLike = 0.99,
+                 num_updates: Optional[str] = None,
+                 name: str = "MovingAverage",
                  **kwargs):
         r"""Construct a new MovingAverage optimizer.
 

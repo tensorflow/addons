@@ -15,6 +15,10 @@
 """Base class to make optimizers weight decay ready."""
 
 import tensorflow as tf
+from tensorflow_addons.utils.types import FloatTensorLike
+
+from typeguard import typechecked
+from typing import Union, Callable
 
 
 class DecoupledWeightDecayExtension:
@@ -65,7 +69,8 @@ class DecoupledWeightDecayExtension:
     ```
     """
 
-    def __init__(self, weight_decay, **kwargs):
+    @typechecked
+    def __init__(self, weight_decay: FloatTensorLike, **kwargs):
         """Extension class that adds weight decay to an optimizer.
 
         Args:
@@ -244,7 +249,8 @@ def extend_with_decoupled_weight_decay(base_optimizer):
         training loss and generalization error in the paper above.
         """
 
-        def __init__(self, weight_decay, *args, **kwargs):
+        @typechecked
+        def __init__(self, weight_decay: FloatTensorLike, *args, **kwargs):
             # super delegation is necessary here
             super().__init__(weight_decay, *args, **kwargs)
 
@@ -291,12 +297,13 @@ class SGDW(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
     ```
     """
 
+    @typechecked
     def __init__(self,
-                 weight_decay,
-                 learning_rate=0.001,
-                 momentum=0.0,
-                 nesterov=False,
-                 name='SGDW',
+                 weight_decay: FloatTensorLike,
+                 learning_rate: Union[FloatTensorLike, Callable] = 0.001,
+                 momentum: FloatTensorLike = 0.0,
+                 nesterov: bool = False,
+                 name: str = 'SGDW',
                  **kwargs):
         """Construct a new SGDW optimizer.
 
@@ -365,14 +372,15 @@ class AdamW(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
     ```
     """
 
+    @typechecked
     def __init__(self,
-                 weight_decay,
-                 learning_rate=0.001,
-                 beta_1=0.9,
-                 beta_2=0.999,
-                 epsilon=1e-07,
-                 amsgrad=False,
-                 name="AdamW",
+                 weight_decay: FloatTensorLike,
+                 learning_rate: Union[FloatTensorLike, Callable] = 0.001,
+                 beta_1: FloatTensorLike = 0.9,
+                 beta_2: FloatTensorLike = 0.999,
+                 epsilon: FloatTensorLike = 1e-07,
+                 amsgrad: bool = False,
+                 name: str = "AdamW",
                  **kwargs):
         """Construct a new AdamW optimizer.
 

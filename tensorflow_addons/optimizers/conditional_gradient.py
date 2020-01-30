@@ -15,6 +15,10 @@
 """Conditional Gradient optimizer."""
 
 import tensorflow as tf
+from tensorflow_addons.utils.types import FloatTensorLike
+
+from typeguard import typechecked
+from typing import Union, Callable
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -40,13 +44,14 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
     In this implementation, `epsilon` defaults to $10^{-7}$.
     """
 
+    @typechecked
     def __init__(
         self,
-        learning_rate,
-        lambda_,
-        epsilon=1e-7,
-        use_locking=False,
-        name="ConditionalGradient",
+        learning_rate: Union[FloatTensorLike, Callable],
+        lambda_: FloatTensorLike,
+        epsilon: FloatTensorLike = 1e-7,
+        use_locking: bool = False,
+        name: str = "ConditionalGradient",
         **kwargs
     ):
         """Construct a new conditional gradient optimizer.
