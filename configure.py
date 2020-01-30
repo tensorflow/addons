@@ -87,41 +87,41 @@ def generate_shared_lib_name(namespec):
 print()
 print("Configuring TensorFlow Addons to be built from source...")
 
-pip_install_options = ["--upgrade"]
+_PIP_INSTALL_OPTS = ["--upgrade"]
 parser = argparse.ArgumentParser()
 parser.add_argument("--quiet", action="store_true", help="Give less output.")
 args = parser.parse_args()
 if args.quiet:
-    pip_install_options.append("--quiet")
+    _PIP_INSTALL_OPTS.append("--quiet")
 
-python_path = sys.executable
+_PYTHON_PATH = sys.executable
 with open("requirements.txt") as f:
-    required_packages = f.read().splitlines()
+    _REQUIRED_PKG = f.read().splitlines()
 
 with open("build_deps/build-requirements.txt") as f:
-    required_packages.extend(f.read().splitlines())
+    _REQUIRED_PKG.extend(f.read().splitlines())
 
 print()
 print("> TensorFlow Addons will link to the framework in a pre-installed TF pacakge...")
-print("> Checking installed packages in {}".format(python_path))
+print("> Checking installed packages in {}".format(_PYTHON_PATH))
 # We can not just import check_deps.py because it calls sys.exit()
-returncode = subprocess.run([python_path, "build_deps/check_deps.py"]).returncode
+returncode = subprocess.run([_PYTHON_PATH, "build_deps/check_deps.py"]).returncode
 
 if returncode == 1:
     reply = get_input(
-        "Package {} will be installed. Are You Sure? [y/n] ".format(required_packages)
+        "Package {} will be installed. Are You Sure? [y/n] ".format(_REQUIRED_PKG)
     )
     if reply in ("y", "Y"):
         print("> Installing...")
-        install_cmd = [python_path, "-m", "pip", "install"]
-        install_cmd.extend(pip_install_options)
-        install_cmd.extend(required_packages)
+        install_cmd = [_PYTHON_PATH, "-m", "pip", "install"]
+        install_cmd.extend(_PIP_INSTALL_OPTS)
+        install_cmd.extend(_REQUIRED_PKG)
         subprocess.check_call(install_cmd)
     else:
         print("> Exiting...")
         sys.exit()
 else:
-    print("> Using pre-installed {}...".format(required_packages))
+    print("> Using pre-installed {}...".format(_REQUIRED_PKG))
 
 if os.path.isfile(_TFA_BAZELRC):
     os.remove(_TFA_BAZELRC)
