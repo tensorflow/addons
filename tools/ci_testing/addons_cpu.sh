@@ -42,9 +42,9 @@ export TF_NEED_CUDA=0
 
 # Check if python3 is available. On Windows VM it is not.
 if [ -x "$(command -v python3)" ]; then
-    echo 'y' | python3 ./configure.py
+    python3 ./configure.py
   else
-    echo 'y' | python ./configure.py
+    python ./configure.py
 fi
 
 cat ./.bazelrc
