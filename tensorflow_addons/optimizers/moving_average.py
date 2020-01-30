@@ -15,11 +15,11 @@
 
 import tensorflow as tf
 from tensorflow.python.training.moving_averages import assign_moving_average
+from tensorflow_addons.optimizers import AveragedOptimizerWrapper
 from tensorflow_addons.utils.types import FloatTensorLike
 
 from typing import Optional
 from typeguard import typechecked
-from tensorflow_addons.optimizers import AveragedOptimizerWrapper
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
