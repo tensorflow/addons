@@ -48,7 +48,7 @@ cmd_status(){
 
 # Run bazel build --nobuild to test the validity of the BUILD files
 do_bazel_nobuild() {
-    echo 'y' | python3 ./configure.py --quiet
+    python3 ./configure.py --quiet
 
     # Check
     BUILD_TARGET="//tensorflow_addons/..."
