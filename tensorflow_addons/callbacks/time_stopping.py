@@ -16,6 +16,7 @@
 
 import datetime
 import time
+from typeguard import typechecked
 
 import tensorflow as tf
 from tensorflow.keras.callbacks import Callback
@@ -31,7 +32,8 @@ class TimeStopping(Callback):
         verbose: verbosity mode. Defaults to 0.
     """
 
-    def __init__(self, seconds=86400, verbose=0):
+    @typechecked
+    def __init__(self, seconds: int = 86400, verbose: int = 0):
         super().__init__()
 
         self.seconds = seconds
