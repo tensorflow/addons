@@ -21,41 +21,60 @@ from tensorflow_addons.optimizers.discriminative_layer_training import (
     DiscriminativeLearning,
 )
 import itertools
+import os
+from tensorflow.python.eager import context
 
 
 def toy_cnn():
     """Consistently create model with same random weights
     skip head activation to allow both bce with logits and cce with logits
-    intended to work with
+
+    The model returned by this function should have identical weights to all
+    other models returned by this function, for the duration of that
+    continuous integration run
+
+    model is intended to work with
     x = np.ones(shape = (None, 32, 32, 3), dtype = np.float32)
     y = np.zeros(shape = (None, 5), dtype = np.float32)
     y[:, 0] = 1.
     """
 
-    tf.random.set_seed(1)
+    cnn_model_path = "cnn.h5"
 
-    bignet = tf.keras.applications.mobilenet_v2.MobileNetV2(
-        include_top=False, weights=None, input_shape=(32, 32, 3), pooling="avg"
-    )
+    if not os.path.exists(cnn_model_path):
+        # force eager mode for simple initialization of vars
+        with context.eager_mode():
+            tf.random.set_seed(1)
+            bignet = tf.keras.applications.mobilenet_v2.MobileNetV2(
+                include_top=False, weights=None, input_shape=(32, 32, 3), pooling="avg"
+            )
 
-    net = tf.keras.models.Model(
-        inputs=bignet.input, outputs=bignet.get_layer("block_2_add").output
-    )
+            # take the first few layers so we cover BN, Conv, Pooling ops for testing
+            net = tf.keras.models.Model(
+                inputs=bignet.input, outputs=bignet.get_layer("block_2_add").output
+            )
+            model = tf.keras.Sequential(
+                [
+                    net,
+                    tf.keras.layers.GlobalAveragePooling2D(),
+                    tf.keras.layers.Dropout(0.5),
+                    tf.keras.layers.Dense(5, name="head"),
+                ]
+            )
+            # always save and never return initialized model from memory
+            # it seems you cannot pass variables from a nested eager context to its parent graph context
 
-    model = tf.keras.Sequential(
-        [
-            net,
-            tf.keras.layers.GlobalAveragePooling2D(),
-            tf.keras.layers.Dropout(0.5),
-            tf.keras.layers.Dense(5, name="head"),
-        ]
-    )
+            model.save(cnn_model_path)
 
-    return model
+    # load the initialized model from the disk
+    return tf.keras.models.load_model(cnn_model_path)
 
 
+# TODO: get toy_run to work
 def toy_rnn():
-    """Consistently create model with same random weights
+    """
+
+    Consistently create model with same random weights
     skip head activation to allow both bce with logits and cce with logits
     intended to work with
 
@@ -86,23 +105,21 @@ def get_train_results(model):
     y = np.zeros(shape=(32, 5), dtype=np.float32)
     y[:, 0] = 1.0
 
-    return model.fit(x, y, epochs=10, batch_size=16, verbose=0)
-
-
-def opt_list():
-    return [tf.keras.optimizers.Adam, tf.keras.optimizers.SGD]
-
-
-def loss_list():
-    return [
-        tf.keras.losses.BinaryCrossentropy,
-        tf.keras.losses.CategoricalCrossentropy,
-        tf.keras.losses.MeanSquaredError,
-    ]
+    return model.fit(x, y, epochs=10, batch_size=16, verbose=0, shuffle=False)
 
 
 def zipped_permutes():
-    return list(itertools.product([toy_cnn, toy_rnn], loss_list(), opt_list()))
+    model_fns = [toy_cnn]
+    losses = [
+        tf.keras.losses.BinaryCrossentropy(from_logits=True),
+        tf.keras.losses.CategoricalCrossentropy(from_logits=True),
+        tf.keras.losses.MeanSquaredError(),
+    ]
+    optimzers = [
+        tf.keras.optimizers.SGD
+        # , tf.keras.optimizers.Adam
+    ]
+    return list(itertools.product(model_fns, losses, optimzers))
 
 
 def get_losses(hist):
@@ -112,57 +129,90 @@ def get_losses(hist):
 # @test_utils.run_all_distributed
 @test_utils.run_all_in_graph_and_eager_modes
 class DiscriminativeLearningTest(tf.test.TestCase):
+    def _assert_losses_are_close(self, hist, hist_lr):
+        """higher tolerance for graph due to non determinism"""
+        if tf.executing_eagerly():
+            rtol, atol = 1e-6, 1e-6
+        else:
+            # atol isn't important.
+            rtol, atol = 0.05, 1.00
+        rtol, atol = 0.01, 0.01
+        return self.assertAllClose(
+            get_losses(hist), get_losses(hist_lr), rtol=rtol, atol=atol
+        )
 
-    # TODO: create test generator
-    # def __init__(self, *args, **kwargs):
-    #     super(DiscriminativeLearningTest, self).__init__(*args, **kwargs)
-    #
-    #     for model_fn, loss, opt in zipped_permutes():
+    def _assert_training_losses_are_close(self, model, model_lr):
+        hist = get_train_results(model)
+        hist_lr = get_train_results(model_lr)
+        self._assert_losses_are_close(hist, hist_lr)
 
-    # def _test_same_results_when_no_lr_mult_specified(self, model_fn, loss, opt):
-    #     model = model_fn()
-    #     model.compile(loss=loss(), optimizer=opt())
-    #     hist = get_train_results(model)
-    #
-    #     model_lr = model_fn()
-    #     model_lr.compile(loss=loss(), optimizer=opt())
-    #     DiscriminativeLearning(model_lr)
-    #     hist_lr = get_train_results(model_lr)
-    #
-    #     self.assertAllClose(get_losses(hist), get_losses(hist_lr))
+    def _test_equal_with_no_layer_lr(self, model_fn, loss, opt):
+        model = model_fn()
+        model.compile(loss=loss, optimizer=opt())
 
-    def test_same_results_when_no_lr_mult_specified(self):
-        """Results for training with no lr mult specified
-        should be the same as training without the discriminative learning"""
-        for model_fn, loss, opt in zipped_permutes():
-            model = model_fn()
-            model.compile(loss=loss(), optimizer=opt())
-            hist = get_train_results(model)
+        model_lr = model_fn()
+        model_lr.compile(loss=loss, optimizer=opt())
+        DiscriminativeLearning(model_lr)
 
-            model_lr = model_fn()
-            model_lr.compile(loss=loss(), optimizer=opt())
-            DiscriminativeLearning(model_lr)
-            hist_lr = get_train_results(model_lr)
+        self._assert_training_losses_are_close(model, model_lr)
 
-            self.assertAllClose(get_losses(hist), get_losses(hist_lr))
+    def _test_equal_0_layer_lr_to_trainable_false(self, model_fn, loss, opt):
+        model = model_fn()
+        model.trainable = False
+        model.compile(loss=loss, optimizer=opt())
 
-    def test_same_results_when_lr_mult_is_1(self):
-        """Results for training with no lr mult specified
-                should be the same as training with the discriminative learning and all layers with lr_mult set to 1"""
+        model_lr = model_fn()
+        model_lr.lr_mult = 0.
+        model_lr.compile(loss=loss, optimizer=opt())
+        DiscriminativeLearning(model_lr)
 
-        for model_fn, loss, opt in zipped_permutes():
-            model = model_fn()
-            model.compile(loss=loss(), optimizer=opt())
-            hist = get_train_results(model)
+        self._assert_training_losses_are_close(model, model_lr)
 
-            model_lr = model_fn()
-            model_lr.lr_mult = 1.0
-            model_lr.compile(loss=loss(), optimizer=opt())
-            DiscriminativeLearning(model_lr)
-            hist_lr = get_train_results(model_lr)
+    def _test_equal_layer_lr_to_opt_lr(self, model_fn, loss, opt):
+        lr = 0.001
+        model = model_fn()
+        model.compile(loss=loss, optimizer=opt(learning_rate=lr * 0.5))
 
-            self.assertAllClose(get_losses(hist), get_losses(hist_lr))
+        model_lr = model_fn()
+        model_lr.lr_mult = 0.5
+        model_lr.compile(loss=loss, optimizer=opt(learning_rate=lr))
+        DiscriminativeLearning(model_lr)
+
+        self._assert_training_losses_are_close(model, model_lr)
+
+    def _run_tests_in_notebook(self):
+        for name, method in DiscriminativeLearningTest.__dict__.items():
+            if callable(method) and name[:4] == "test":
+                print("running test %s" % name)
+                method(self)
+
+
+def test_wrap(method, **kwargs):
+    #     @test_utils.run_in_graph_and_eager_modes
+    def test(self):
+        return method(self, **kwargs)
+
+    return test
+
+
+def generate_tests():
+    for name, method in DiscriminativeLearningTest.__dict__.copy().items():
+        if callable(method) and name[:5] == "_test":
+            for model_fn, loss, opt in zipped_permutes()[:2]:
+                testmethodname = name[1:] + "_%s_%s_%s" % (
+                    model_fn.__name__,
+                    loss.name,
+                    opt.__name__,
+                )
+                testmethod = test_wrap(
+                    method=method, model_fn=model_fn, loss=loss, opt=opt
+                )
+                setattr(DiscriminativeLearningTest, testmethodname, testmethod)
 
 
 if __name__ == "__main__":
+    generate_tests()
+
+    # DiscriminativeLearningTest()._run_tests_in_notebook()
+    # print("done")
     tf.test.main()

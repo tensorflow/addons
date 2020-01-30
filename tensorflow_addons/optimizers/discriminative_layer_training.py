@@ -19,6 +19,23 @@ import numpy as np
 from typeguard import typechecked
 
 
+def _compute_gradients(self, loss, var_list, grad_loss=None):
+    grads_and_vars = self.__compute_gradients(loss, var_list, grad_loss)
+
+    grads = []
+    var_list = []
+
+    # scale each grad based on var's lr_mult
+    for grad, var in grads_and_vars:
+        grad = tf.math.scalar_mul(var.lr_mult, grad)
+        grads.append(grad)
+        var_list.append(var)
+
+    grads_and_vars = list(zip(grads, var_list))
+
+    return grads_and_vars
+
+
 def apply_gradients(self, grads_and_vars, *args, **kwargs):
     """New apply gradients function.
     This intercepts the grads and vars, scales them, then passes them to the old apply gradients function
@@ -212,8 +229,9 @@ class DiscriminativeLearning(object):
         # get opt, move the original apply fn to a safe place, assign new apply fn
 
         opt = model.optimizer
-        opt._apply_gradients = opt.apply_gradients
-        opt.apply_gradients = apply_gradients.__get__(opt)
+        opt.__compute_gradients = opt._compute_gradients
+        opt._compute_gradients = _compute_gradients.__get__(opt)
+
         opt.testing_flag = True
         vars_with_lr_mult = [
             var for var in model.trainable_variables if var.lr_mult_value != 1.0
