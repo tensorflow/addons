@@ -43,7 +43,7 @@ export CUDA_TOOLKIT_PATH="/usr/local/cuda"
 export TF_CUDNN_VERSION="7"
 export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 
-# Check if python3 is available. On Windows it is not.
+# Check if python3 is available. On Windows VM it is not.
 if [ -x "$(command -v python3)" ]; then
     echo 'y' | python3 ./configure.py
   else

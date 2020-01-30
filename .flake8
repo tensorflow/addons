@@ -17,5 +17,8 @@ ignore =
     # Useful to ignore for "import keras.backend as K"
     N812
 
-#imported but unused in __init__.py, that's ok.
-per-file-ignores = **/__init__.py:F401
+per-file-ignores =
+    # imported but unused in __init__.py, that's ok.
+    **/__init__.py:F401
+    # import not at top okay due to TF installation check
+    tensorflow_addons/__init__.py:F401,E402

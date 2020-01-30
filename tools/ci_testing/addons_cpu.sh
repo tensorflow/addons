@@ -40,6 +40,7 @@ echo ""
 export CC_OPT_FLAGS='-mavx'
 export TF_NEED_CUDA=0
 
+# Check if python3 is available. On Windows VM it is not.
 if [ -x "$(command -v python3)" ]; then
     echo 'y' | python3 ./configure.py
   else

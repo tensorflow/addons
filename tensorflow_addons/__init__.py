@@ -13,6 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 """Useful extra functionality for TensorFlow maintained by SIG-addons."""
+from tensorflow_addons.utils.ensure_tf_install import _ensure_tf_install
+
+_ensure_tf_install()
 
 # Local project imports
 from tensorflow_addons import activations
