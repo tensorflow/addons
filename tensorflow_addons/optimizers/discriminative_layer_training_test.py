@@ -210,11 +210,11 @@ def generate_tests():
                 )
                 setattr(DiscriminativeLearningTest, testmethodname, testmethod)
 
-                setattr(
-                    DiscriminativeLearningTest,
-                    testmethodname + "_distributed",
-                    distributed_dec(testmethod),
-                )
+                # setattr(
+                #     DiscriminativeLearningTest,
+                #     testmethodname + "_distributed",
+                #     distributed_dec(testmethod),
+                # )
 
 
 if __name__ == "__main__":
