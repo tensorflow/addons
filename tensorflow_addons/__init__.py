@@ -13,36 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Useful extra functionality for TensorFlow maintained by SIG-addons."""
-
-
-# Ensure TensorFlow is importable and its version is sufficiently recent. This
-# needs to happen before anything else, since the imports below will try to
-# import tensorflow, too.
-def _ensure_tf_install():
-    """Attempt to import tensorflow, and ensure its version is sufficient.
-    Raises:
-      ImportError: if either tensorflow is not importable or its version is
-      inadequate.
-    """
-    import tensorflow as tf
-    import distutils.version
-
-    #
-    # Update this whenever we need to depend on a newer TensorFlow release.
-    #
-    required_tensorflow_version = "2.1.0"
-
-    if distutils.version.LooseVersion(tf.__version__) < distutils.version.LooseVersion(
-        required_tensorflow_version
-    ):
-        raise ImportError(
-            "This version of TensorFlow Addons requires TensorFlow "
-            "version >= {required}; Detected an installation of version "
-            "{present}. Please upgrade TensorFlow to proceed.".format(
-                required=required_tensorflow_version, present=tf.__version__
-            )
-        )
-
+from tensorflow_addons.utils.ensure_tf_install import _ensure_tf_install
 
 _ensure_tf_install()
 
