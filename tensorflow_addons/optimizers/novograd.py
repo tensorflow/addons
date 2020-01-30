@@ -17,10 +17,11 @@
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
-# TODO: Find public API alternatives to these
-from tensorflow.python.training import training_ops
 from typing import Union, Callable
 from typeguard import typechecked
+
+# TODO: Find public API alternatives to these
+from tensorflow.python.training import training_ops
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")

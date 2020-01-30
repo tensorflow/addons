@@ -79,7 +79,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         weight_decay: FloatTensorLike = 0.0,
         amsgrad: bool = False,
         sma_threshold: FloatTensorLike = 5.0,
-        total_steps: FloatTensorLike = 0,
+        total_steps: int = 0,
         warmup_proportion: FloatTensorLike = 0.1,
         min_lr: FloatTensorLike = 0.0,
         name: str = "RectifiedAdam",
