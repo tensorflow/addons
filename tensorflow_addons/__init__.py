@@ -24,16 +24,7 @@ def _ensure_tf_install():
       ImportError: if either tensorflow is not importable or its version is
       inadequate.
     """
-    try:
-        import tensorflow as tf
-    except ImportError:
-        # Print more informative error message, then reraise.
-        print(
-            "\n\nFailed to import TensorFlow. Please note that TensorFlow is"
-            " not installed by default when you install TensorFlow Addons.\n\n"
-        )
-        raise
-
+    import tensorflow as tf
     import distutils.version
 
     #

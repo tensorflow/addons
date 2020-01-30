@@ -102,6 +102,9 @@ _PYTHON_PATH = sys.executable
 with open("requirements.txt") as f:
     _REQUIRED_PKG = f.read().splitlines()
 
+with open("build_deps/build-requirements.txt") as f:
+    _REQUIRED_PKG.extend(f.read().splitlines())
+
 print()
 print("> TensorFlow Addons will link to the framework in a pre-installed TF pacakge...")
 print("> Checking installed packages in {}".format(_PYTHON_PATH))
