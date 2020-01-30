@@ -43,7 +43,7 @@ class PoincareNormalize(tf.keras.layers.Layer):
     """
 
     @typechecked
-    def __init__(self, axis: int = 1, epsilon: int = 1e-5, **kwargs):
+    def __init__(self, axis: int = 1, epsilon: float = 1e-5, **kwargs):
         super().__init__(**kwargs)
         self.axis = axis
         self.epsilon = epsilon
