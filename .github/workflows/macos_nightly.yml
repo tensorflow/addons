@@ -40,7 +40,7 @@ jobs:
         run: |
           python --version
           bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
-          echo 'y' | python3 ./configure.py --quiet
+          python3 ./configure.py --quiet
           bazel build \
             -c opt \
             --noshow_progress \

@@ -48,7 +48,7 @@ for version in ${PYTHON_VERSIONS}; do
     python3 -m pip --version
 
     #Link TF dependency
-    echo 'y' | python3 ./configure.py --quiet
+    python3 ./configure.py --quiet
 
     # Build
     bazel build \

@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# Usage: configure.py [--quiet]
+# Usage: configure.py [--quiet] [--no-deps]
 #
 # Options:
 #  --quiet  Give less output.
+#  --no-deps  Don't install Python dependencies
 
 
 import argparse
@@ -90,6 +91,11 @@ print("Configuring TensorFlow Addons to be built from source...")
 _PIP_INSTALL_OPTS = ["--upgrade"]
 parser = argparse.ArgumentParser()
 parser.add_argument("--quiet", action="store_true", help="Give less output.")
+parser.add_argument(
+    "--no-deps",
+    action="store_true",
+    help="Do not check and install Python dependencies.",
+)
 args = parser.parse_args()
 if args.quiet:
     _PIP_INSTALL_OPTS.append("--quiet")
@@ -102,26 +108,14 @@ with open("build_deps/build-requirements.txt") as f:
     _REQUIRED_PKG.extend(f.read().splitlines())
 
 print()
-print("> TensorFlow Addons will link to the framework in a pre-installed TF pacakge...")
-print("> Checking installed packages in {}".format(_PYTHON_PATH))
-# We can not just import check_deps.py because it calls sys.exit()
-returncode = subprocess.run([_PYTHON_PATH, "build_deps/check_deps.py"]).returncode
-
-if returncode == 1:
-    reply = get_input(
-        "Package {} will be installed. Are You Sure? [y/n] ".format(_REQUIRED_PKG)
-    )
-    if reply in ("y", "Y"):
-        print("> Installing...")
-        install_cmd = [_PYTHON_PATH, "-m", "pip", "install"]
-        install_cmd.extend(_PIP_INSTALL_OPTS)
-        install_cmd.extend(_REQUIRED_PKG)
-        subprocess.check_call(install_cmd)
-    else:
-        print("> Exiting...")
-        sys.exit()
+if args.no_deps:
+    print("> Using pre-installed Tensorflow.")
 else:
-    print("> Using pre-installed {}...".format(_REQUIRED_PKG))
+    print("> Installing", _REQUIRED_PKG)
+    install_cmd = [_PYTHON_PATH, "-m", "pip", "install"]
+    install_cmd.extend(_PIP_INSTALL_OPTS)
+    install_cmd.extend(_REQUIRED_PKG)
+    subprocess.check_call(install_cmd)
 
 if os.path.isfile(_TFA_BAZELRC):
     os.remove(_TFA_BAZELRC)
