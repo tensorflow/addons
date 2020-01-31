@@ -18,7 +18,7 @@ import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
 from typeguard import typechecked
-from typing import Union, Callable
+from typing import Union, Callable, Type
 
 
 class DecoupledWeightDecayExtension:
@@ -177,7 +177,7 @@ class DecoupledWeightDecayExtension:
 
 @typechecked
 def extend_with_decoupled_weight_decay(
-        base_optimizer: tf.keras.optimizers.Optimizer) -> tf.keras.optimizers.Optimizer:
+        base_optimizer: Type[tf.keras.optimizers.Optimizer]) -> Type[tf.keras.optimizers.Optimizer]:
     """Factory function returning an optimizer class with decoupled weight
     decay.
 
