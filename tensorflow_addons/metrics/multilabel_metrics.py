@@ -1,32 +1,34 @@
 import tensorflow as tf
 
+
 class MultiLabelMacroRecall(tf.keras.metrics.Metric):
     """Computes the Macro-averaged Recall of the given tensors."""
 
     def __init__(
         self,
-        name:str="multi_label_macro_recall",
-        threshold:float=0.5,
-        from_logits:bool=True,
-        activation:str="sigmoid",
+        name: str = "multi_label_macro_recall",
+        threshold: float = 0.5,
+        from_logits: bool = True,
+        activation: str = "sigmoid",
         **kwargs
     ):
         """Creates a `MultiLabelMacroRecall` instance.
 
         Args:
-            name (str): (Optional) string name of the metric instance. Defaults to
+            name: (Optional) string name of the metric instance. Defaults to
                 `"multi_label_macro_recall"`.
-            threshold (float): (Optional) float value to use to binarize labels and
+            threshold: (Optional) float value to use to binarize labels and
                 predictions. Values greater than `threshold` will set to `1`.
                 Defaults to `0.5`.
-            from_logits (bool): (Optional) boolean value to specifiy whether or not
+            from_logits: (Optional) boolean value to specifiy whether or not
                 `y_pred` are logits or have not yet been transformed via a final
                 activation function. If `from_logits` is `False`, `activation`
                 will be applied to `y_pred` prior to metric calculation. Defaults
                 to `True`.
-            activation (str): (Optional) string value of the activation function
-                to apply to `y_pred` if `from_logits=False`. Defaults to `"sigmoid"`
-                . Options include `["sigmoid"]`.
+            activation: (Optional) string value of the activation function
+                to apply to `y_pred` if `from_logits=False`, e.g. `"sigmoid"`
+                [default] will apply the sigmoid function to `y_pred`.
+                Options include `["sigmoid"]`.
         """
         super(MultiLabelMacroRecall, self).__init__(name=name, **kwargs)
         self._threshold = threshold
@@ -36,19 +38,19 @@ class MultiLabelMacroRecall(tf.keras.metrics.Metric):
 
         # NOTE: could be replaced  with tf confusion_matrix utils
         # whether or not the overhead of that is worth is needs to be tested.
-        self._true_positives  = self.add_weight(name="tp", initializer="zeros")
+        self._true_positives = self.add_weight(name="tp", initializer="zeros")
         self._false_positives = self.add_weight(name="fp", initializer="zeros")
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         # apply activation if needed
         y_pred = tf.cond(
             tf.equal(self._from_logits, True),
+            lambda: y_pred,
+            lambda: tf.cond(
+                tf.equal(self._activation, "sigmoid"),
+                lambda: tf.sigmoid(y_pred),
                 lambda: y_pred,
-                lambda: tf.cond(
-                    tf.equal(self._activation, 'sigmoid'),
-                    lambda: tf.sigmoid(y_pred),
-                    lambda: y_pred
-            )
+            ),
         )
 
         # Compare predictions and threshold.
@@ -90,28 +92,29 @@ class MultiLabelMacroSpecificity(tf.keras.metrics.Metric):
 
     def __init__(
         self,
-        name:str="multi_label_macro_specificity",
-        threshold:float=0.5,
-        from_logits:bool=True,
-        activation:str="sigmoid",
+        name: str = "multi_label_macro_specificity",
+        threshold: float = 0.5,
+        from_logits: bool = True,
+        activation: str = "sigmoid",
         **kwargs
     ):
         """Creates a `MultiLabelMacroSpecificity` instance.
 
         Args:
-          name (str): (Optional) string name of the metric instance. Defaults to
+          name: (Optional) string name of the metric instance. Defaults to
               `"multi_label_macro_specificity"`.
-          threshold (float): (Optional) float value to use to binarize labels and
+          threshold: (Optional) float value to use to binarize labels and
               predictions. Values greater than `threshold` will set to `1`.
               Defaults to `0.5`.
-          from_logits (bool): (Optional) boolean value to specifiy whether or not
+          from_logits: (Optional) boolean value to specifiy whether or not
               `y_pred` are logits or have not yet been transformed via a final
               activation function. If `from_logits` is `False`, `activation`
               will be applied to `y_pred` prior to metric calculation. Defaults
               to `True`.
-          activation (str): (Optional) string value of the activation function
-              to apply to `y_pred` if `from_logits=False`. Defaults to `"sigmoid"`
-              . Options include `["sigmoid"]`.
+          activation: (Optional) string value of the activation function
+              to apply to `y_pred` if `from_logits=False`, e.g. `"sigmoid"`
+              [default] will apply the sigmoid function to `y_pred`.
+              Options include `["sigmoid"]`.
         """
         super(MultiLabelMacroSpecificity, self).__init__(name=name, **kwargs)
         self._threshold = tf.constant(threshold)
@@ -129,15 +132,15 @@ class MultiLabelMacroSpecificity(tf.keras.metrics.Metric):
             tf.equal(self._from_logits, True),
             lambda: y_pred,
             lambda: tf.cond(
-                tf.equal(self._activation, 'sigmoid'),
+                tf.equal(self._activation, "sigmoid"),
                 lambda: tf.sigmoid(y_pred),
-                lambda: y_pred
-            )
+                lambda: y_pred,
+            ),
         )
 
         # Compare predictions and threshold.
-        pred_is_pos  = tf.greater(tf.cast(y_pred, tf.float32), self._threshold)
-        pred_is_neg  = tf.logical_not(tf.cast(pred_is_pos, tf.bool))
+        pred_is_pos = tf.greater(tf.cast(y_pred, tf.float32), self._threshold)
+        pred_is_neg = tf.logical_not(tf.cast(pred_is_pos, tf.bool))
         label_is_pos = tf.greater(tf.cast(y_true, tf.float32), self._threshold)
         label_is_neg = tf.logical_not(tf.cast(label_is_pos, tf.bool))
 
@@ -165,30 +168,32 @@ class MultiLabelMacroSpecificity(tf.keras.metrics.Metric):
 
 class MultiLabelMacroSensitivity(tf.keras.metrics.Metric):
     """Computes the Macro-averaged Sensitivity of the given tensors."""
+
     def __init__(
         self,
-        name:str='multi_label_macro_sensitivity',
-        threshold:float=0.5,
-        from_logits:bool=True,
-        activation:str='sigmoid',
+        name: str = "multi_label_macro_sensitivity",
+        threshold: float = 0.5,
+        from_logits: bool = True,
+        activation: str = "sigmoid",
         **kwargs
     ):
         """Creates a `MultiLabelMacroSensitivity` instance.
 
         Args:
-        name (str): (Optional) string name of the metric instance. Defaults to
+        name: (Optional) string name of the metric instance. Defaults to
             `"multi_label_macro_sensitivity"`.
-        threshold (float): (Optional) float value to use to binarize labels and
+        threshold: (Optional) float value to use to binarize labels and
             predictions. Values greater than `threshold` will set to `1`.
             Defaults to `0.5`.
-        from_logits (bool): (Optional) boolean value to specifiy whether or not
+        from_logits: (Optional) boolean value to specifiy whether or not
             `y_pred` are logits or have not yet been transformed via a final
             activation function. If `from_logits` is `False`, `activation`
             will be applied to `y_pred` prior to metric calculation. Defaults
             to `True`.
-        activation (str): (Optional) string value of the activation function
-            to apply to `y_pred` if `from_logits=False`. Defaults to `"sigmoid"`
-            . Options include `["sigmoid"]`.
+        activation: (Optional) string value of the activation function
+            to apply to `y_pred` if `from_logits=False`, e.g. `"sigmoid"`
+            [default] will apply the sigmoid function to `y_pred`.
+            Options include `["sigmoid"]`..
         """
         super(MultiLabelMacroSensitivity, self).__init__(name=name, **kwargs)
         self._threshold = tf.constant(threshold)
@@ -197,7 +202,7 @@ class MultiLabelMacroSensitivity(tf.keras.metrics.Metric):
 
         self._sensitivity = self.add_weight(name="mlm_sens", initializer="zeros")
         # NOTE: could be replaced  with tf confusion_matrix utils
-        self._true_positives  = self.add_weight(name="tp", initializer="zeros")
+        self._true_positives = self.add_weight(name="tp", initializer="zeros")
         self._false_negatives = self.add_weight(name="fn", initializer="zeros")
 
     def update_state(self, y_true, y_pred, sample_weight=None):
@@ -206,17 +211,17 @@ class MultiLabelMacroSensitivity(tf.keras.metrics.Metric):
             tf.equal(self._from_logits, True),
             lambda: y_pred,
             lambda: tf.cond(
-                tf.equal(self._activation, 'sigmoid'),
+                tf.equal(self._activation, "sigmoid"),
                 lambda: tf.sigmoid(y_pred),
-                lambda: y_pred
-            )
+                lambda: y_pred,
+            ),
         )
 
         # Compare predictions and threshold.
-        pred_is_pos  = tf.greater(tf.cast(y_pred, tf.float32), self._threshold)
+        pred_is_pos = tf.greater(tf.cast(y_pred, tf.float32), self._threshold)
         label_is_pos = tf.greater(tf.cast(y_true, tf.float32), self._threshold)
 
-        pred_is_neg  = tf.logical_not(tf.cast(pred_is_pos, tf.bool))
+        pred_is_neg = tf.logical_not(tf.cast(pred_is_pos, tf.bool))
         label_is_neg = tf.logical_not(tf.cast(label_is_pos, tf.bool))
 
         self._true_positives.assign_add(
