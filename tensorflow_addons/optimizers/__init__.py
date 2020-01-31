@@ -38,5 +38,5 @@ from tensorflow_addons.optimizers.weight_decay_optimizers import (
 from tensorflow_addons.optimizers.yogi import Yogi
 
 from tensorflow_addons.optimizers.discriminative_layer_training import (
-    DiscriminativeLearning,
+    DiscriminativeWrapper,
 )

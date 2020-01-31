@@ -18,7 +18,7 @@ import tensorflow as tf
 from tensorflow_addons.utils import test_utils
 import numpy as np
 from tensorflow_addons.optimizers.discriminative_layer_training import (
-    DiscriminativeLearning,
+    DiscriminativeWrapper,
 )
 import itertools
 import os
@@ -96,7 +96,7 @@ def toy_rnn():
     return model
 
 
-def get_train_results(model):
+def get_train_results(model, verbose=False):
     """Run a traininng loop and return the results for analysis
     model must be compiled first
     """
@@ -105,19 +105,19 @@ def get_train_results(model):
     y = np.zeros(shape=(32, 5), dtype=np.float32)
     y[:, 0] = 1.0
 
-    return model.fit(x, y, epochs=10, batch_size=16, verbose=0, shuffle=False)
+    return model.fit(x, y, epochs=10, batch_size=16, verbose=verbose, shuffle=False)
 
 
 def zipped_permutes():
     model_fns = [toy_cnn]
     losses = [
-        tf.keras.losses.BinaryCrossentropy(from_logits=True),
+        # tf.keras.losses.BinaryCrossentropy(from_logits=True),
         tf.keras.losses.CategoricalCrossentropy(from_logits=True),
-        tf.keras.losses.MeanSquaredError(),
+        #         tf.keras.losses.MeanSquaredError(),
     ]
     optimzers = [
-        tf.keras.optimizers.SGD
-        # , tf.keras.optimizers.Adam
+        #         tf.keras.optimizers.SGD,
+        tf.keras.optimizers.Adam,
     ]
     return list(itertools.product(model_fns, losses, optimzers))
 
@@ -140,42 +140,67 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
 
     def _assert_training_losses_are_close(self, model, model_lr):
-        hist = get_train_results(model)
-        hist_lr = get_train_results(model_lr)
+        hist = get_train_results(model, verbose=False)
+        hist_lr = get_train_results(model_lr, verbose=False)
         self._assert_losses_are_close(hist, hist_lr)
 
     def _test_equal_with_no_layer_lr(self, model_fn, loss, opt):
         """confirm that discriminative learning is almost the same as regular learning"""
+        learning_rate = 0.01
         model = model_fn()
-        model.compile(loss=loss, optimizer=opt())
+        model.compile(loss=loss, optimizer=opt(learning_rate))
 
         model_lr = model_fn()
-        model_lr.compile(loss=loss, optimizer=opt())
-        DiscriminativeLearning(model_lr, verbose=False)
+        d_opt = DiscriminativeWrapper(
+            opt, model_lr, verbose=False, learning_rate=learning_rate
+        )
+        model_lr.compile(loss=loss, optimizer=d_opt)
 
         self._assert_training_losses_are_close(model, model_lr)
 
     def _test_equal_0_layer_lr_to_trainable_false(self, model_fn, loss, opt):
-        """confirm 0 lr for the model is the same as model not trainable"""
-
+        """confirm 0 lr_mult for the model is the same as model not trainable"""
+        learning_rate = 0.01
         model = model_fn()
         model.trainable = False
-        model.compile(loss=loss, optimizer=opt())
+        model.compile(loss=loss, optimizer=opt(learning_rate))
 
         model_lr = model_fn()
         model_lr.lr_mult = 0.0
-        model_lr.compile(loss=loss, optimizer=opt())
-        DiscriminativeLearning(model_lr, verbose=False)
+        d_opt = DiscriminativeWrapper(
+            opt, model_lr, verbose=False, learning_rate=learning_rate
+        )
+        model_lr.compile(loss=loss, optimizer=d_opt)
+
+        self._assert_training_losses_are_close(model, model_lr)
+
+    def _test_equal_half_layer_lr_to_half_lr_of_opt(self, model_fn, loss, opt):
+        """confirm 0.5 lr_mult for the model is the same as optim with 0.5 lr"""
+
+        mult = 0.5
+        learning_rate = 0.01
+        model = model_fn()
+        model.compile(loss=loss, optimizer=opt(learning_rate * mult))
+
+        model_lr = model_fn()
+        model_lr.lr_mult = mult
+        d_opt = DiscriminativeWrapper(
+            opt, model_lr, verbose=False, learning_rate=learning_rate
+        )
+        model_lr.compile(loss=loss, optimizer=d_opt)
 
         self._assert_training_losses_are_close(model, model_lr)
 
     def _test_loss_changes_over_time(self, model_fn, loss, opt):
         """confirm that model trains with lower lr on specific layer"""
 
+        learning_rate = 0.01
         model_lr = model_fn()
         model_lr.layers[0].lr_mult = 0.01
-        model_lr.compile(loss=loss, optimizer=opt())
-        DiscriminativeLearning(model_lr, verbose=False)
+        d_opt = DiscriminativeWrapper(
+            opt, model_lr, verbose=False, learning_rate=learning_rate
+        )
+        model_lr.compile(loss=loss, optimizer=d_opt)
 
         loss_values = get_losses(get_train_results(model_lr))
         self.assertLess(loss_values[-1], loss_values[0])
@@ -230,7 +255,7 @@ def generate_tests(devices):
                     opt=opt,
                 )
 
-                setattr(DiscriminativeLearningTest, testmethodname, testmethod)
+                #                 setattr(DiscriminativeLearningTest, testmethodname, testmethod)
                 setattr(
                     DiscriminativeLearningTest,
                     testmethodname + "_distributed",
@@ -241,6 +266,6 @@ def generate_tests(devices):
 if __name__ == "__main__":
     devices = test_utils.create_virtual_devices(2)
     generate_tests(devices)
-    # DiscriminativeLearningTest()._run_tests_in_notebook()
+    #     DiscriminativeLearningTest()._run_tests_in_notebook()
     #     print("done")
     tf.test.main()
