@@ -14,17 +14,14 @@
 # ==============================================================================
 """Layer-wise Adaptive Rate Scaling optimizer for large-batch training."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+import tensorflow.compat.v2 as tf
 
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.training import training_ops
+
 from typeguard import typechecked
 from typing import Optional
-
-import tensorflow.compat.v2 as tf
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
