@@ -17,6 +17,9 @@
 import tensorflow as tf
 from tensorflow_addons.image import utils as img_utils
 from tensorflow_addons.utils.resource_loader import LazySO
+from tensorflow_addons.utils.types import TensorLike
+
+from typing import Optional
 
 _image_so = LazySO("custom_ops/image/_image_ops.so")
 
@@ -32,8 +35,12 @@ _IMAGE_DTYPES = {
 
 @tf.function
 def transform(
-    images, transforms, interpolation="NEAREST", output_shape=None, name=None
-):
+    images: TensorLike,
+    transforms: TensorLike,
+    interpolation: str = "NEAREST",
+    output_shape: Optional[str] = None,
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Applies the given transform(s) to the image(s).
 
     Args:
@@ -109,7 +116,7 @@ def transform(
         return img_utils.from_4D_image(output, original_ndims)
 
 
-def compose_transforms(transforms, name=None):
+def compose_transforms(transforms: TensorLike, name: Optional[str] = None) -> tf.Tensor:
     """Composes the transforms tensors.
 
     Args:
@@ -133,7 +140,7 @@ def compose_transforms(transforms, name=None):
         return matrices_to_flat_transforms(composed)
 
 
-def flat_transforms_to_matrices(transforms, name=None):
+def flat_transforms_to_matrices(transforms: TensorLike, name: Optional[str] = None) -> tf.Tensor:
     """Converts projective transforms to affine matrices.
 
     Note that the output matrices map output coordinates to input coordinates.
@@ -166,7 +173,7 @@ def flat_transforms_to_matrices(transforms, name=None):
         )
 
 
-def matrices_to_flat_transforms(transform_matrices, name=None):
+def matrices_to_flat_transforms(transform_matrices: TensorLike, name: Optional[str] = None) -> tf.Tensor:
     """Converts affine matrices to projective transforms.
 
     Note that we expect matrices that map output coordinates to input
@@ -201,7 +208,12 @@ def matrices_to_flat_transforms(transform_matrices, name=None):
         return transforms[:, :8]
 
 
-def angles_to_projective_transforms(angles, image_height, image_width, name=None):
+def angles_to_projective_transforms(
+    angles: TensorLike,
+    image_height: TensorLike,
+    image_width: TensorLike, 
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Returns projective transform(s) for the given angle(s).
 
     Args:
@@ -255,7 +267,7 @@ def angles_to_projective_transforms(angles, image_height, image_width, name=None
 
 
 @tf.RegisterGradient("Addons>ImageProjectiveTransformV2")
-def _image_projective_transform_grad(op, grad):
+def _image_projective_transform_grad(op: TensorLike, grad:TensorLike) -> tf.Tensor:
     """Computes the gradient for ImageProjectiveTransform."""
     images = op.inputs[0]
     transforms = op.inputs[1]
@@ -292,7 +304,12 @@ def _image_projective_transform_grad(op, grad):
     return [output, None, None]
 
 
-def rotate(images, angles, interpolation="NEAREST", name=None):
+def rotate(
+    images: TensorLike,
+    angles: TensorLike,
+    interpolation: str = "NEAREST",
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Rotate image(s) counterclockwise by the passed angle(s) in radians.
 
     Args:
