@@ -175,8 +175,9 @@ class DecoupledWeightDecayExtension:
             return super()._resource_apply_sparse(grad, var, indices)
 
 
+@typechecked
 def extend_with_decoupled_weight_decay(
-        base_optimizer: tf.keras.optimizers) -> tf.keras.optimizers:
+        base_optimizer: tf.keras.optimizers.Optimizer) -> tf.keras.optimizers.Optimizer:
     """Factory function returning an optimizer class with decoupled weight
     decay.
 
