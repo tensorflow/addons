@@ -59,7 +59,7 @@ class MomentumLARS(tf.keras.optimizers.Optimizer):
         epsilon: float = 0.0,
         name: str = "MomentumLARS",
         # Enable skipping variables from LARS scaling.
-        skip_list: List[str] = (),
+        skip_list: Optional[str] = (),
         use_nesterov: bool = False,
         clip: bool = False,
         **kwargs
