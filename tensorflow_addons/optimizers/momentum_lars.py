@@ -21,7 +21,6 @@ from __future__ import print_function
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.training import training_ops
-from tensorflow_addons.utils import types
 from typeguard import typechecked
 from typing import Optional
 
