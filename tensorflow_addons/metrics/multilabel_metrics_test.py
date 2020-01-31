@@ -8,9 +8,9 @@ from tensorflow_addons.metrics import (
 )
 from tensorflow_addons.utils import test_utils
 
+
 @test_utils.run_all_in_graph_and_eager_modes
 class MultiLabelMacroRecallTest(tf.test.TestCase):
-
     def test_config(self):
         _class = MultiLabelMacroRecall
         _name = "multi_label_macro_recall"
