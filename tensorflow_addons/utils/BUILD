@@ -6,6 +6,7 @@ py_library(
     name = "utils",
     srcs = ([
         "__init__.py",
+        "ensure_tf_install",
         "keras_utils.py",
         "test_utils.py",
         "resource_loader.py",
