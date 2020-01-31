@@ -88,7 +88,7 @@ def generate_shared_lib_name(namespec):
 print()
 print("Configuring TensorFlow Addons to be built from source...")
 
-_PIP_INSTALL_OPTS = ["--upgrade"]
+pip_install_options = ["--upgrade"]
 parser = argparse.ArgumentParser()
 parser.add_argument("--quiet", action="store_true", help="Give less output.")
 parser.add_argument(
@@ -98,23 +98,23 @@ parser.add_argument(
 )
 args = parser.parse_args()
 if args.quiet:
-    _PIP_INSTALL_OPTS.append("--quiet")
+    pip_install_options.append("--quiet")
 
-_PYTHON_PATH = sys.executable
+python_path = sys.executable
 with open("requirements.txt") as f:
-    _REQUIRED_PKG = f.read().splitlines()
+    required_packages = f.read().splitlines()
 
 with open("build_deps/build-requirements.txt") as f:
-    _REQUIRED_PKG.extend(f.read().splitlines())
+    required_packages.extend(f.read().splitlines())
 
 print()
 if args.no_deps:
     print("> Using pre-installed Tensorflow.")
 else:
-    print("> Installing", _REQUIRED_PKG)
-    install_cmd = [_PYTHON_PATH, "-m", "pip", "install"]
-    install_cmd.extend(_PIP_INSTALL_OPTS)
-    install_cmd.extend(_REQUIRED_PKG)
+    print("> Installing", required_packages)
+    install_cmd = [python_path, "-m", "pip", "install"]
+    install_cmd.extend(pip_install_options)
+    install_cmd.extend(required_packages)
     subprocess.check_call(install_cmd)
 
 if os.path.isfile(_TFA_BAZELRC):
@@ -152,58 +152,58 @@ write_to_bazelrc("build -c opt")
 
 while _TF_NEED_CUDA is None:
     print()
-    INPUT = get_input("Do you want to build GPU ops? [y/N] ")
-    if INPUT in ("Y", "y"):
+    answer = get_input("Do you want to build GPU ops? [y/N] ")
+    if answer in ("Y", "y"):
         print("> Building GPU & CPU ops")
         _TF_NEED_CUDA = "1"
-    elif INPUT in ("N", "n", ""):
+    elif answer in ("N", "n", ""):
         print("> Building only CPU ops")
         _TF_NEED_CUDA = "0"
     else:
-        print("Invalid selection: {}".format(INPUT))
+        print("Invalid selection:", answer)
 
 if _TF_NEED_CUDA == "1":
     print()
     print("Configuring GPU setup...")
 
     if _TF_CUDA_VERSION is None:
-        INPUT = get_input(
+        answer = get_input(
             "Please specify the CUDA version [Default is {}]: ".format(
                 _DEFAULT_CUDA_VERISON
             )
         )
-        _TF_CUDA_VERSION = INPUT if INPUT else _DEFAULT_CUDA_VERISON
-    print("> Using CUDA version: {}".format(_TF_CUDA_VERSION))
+        _TF_CUDA_VERSION = answer or _DEFAULT_CUDA_VERISON
+    print("> Using CUDA version:", _TF_CUDA_VERSION)
     print()
 
     if _CUDA_TOOLKIT_PATH is None:
-        INPUT = get_input(
+        answer = get_input(
             "Please specify the location of CUDA. [Default is {}]: ".format(
                 _DEFAULT_CUDA_PATH
             )
         )
-        _CUDA_TOOLKIT_PATH = INPUT if INPUT else _DEFAULT_CUDA_PATH
-    print("> CUDA installation path: {}".format(_CUDA_TOOLKIT_PATH))
+        _CUDA_TOOLKIT_PATH = answer or _DEFAULT_CUDA_PATH
+    print("> CUDA installation path:", _CUDA_TOOLKIT_PATH)
     print()
 
     if _TF_CUDNN_VERSION is None:
-        INPUT = get_input(
+        answer = get_input(
             "Please specify the cuDNN major version [Default is {}]: ".format(
                 _DEFAULT_CUDNN_VERSION
             )
         )
-        _TF_CUDNN_VERSION = INPUT if INPUT else _DEFAULT_CUDNN_VERSION
-    print("> Using cuDNN version: {}".format(_TF_CUDNN_VERSION))
+        _TF_CUDNN_VERSION = answer or _DEFAULT_CUDNN_VERSION
+    print("> Using cuDNN version:", _TF_CUDNN_VERSION)
     print()
 
     if _CUDNN_INSTALL_PATH is None:
-        INPUT = get_input(
+        answer = get_input(
             "Please specify the location of cuDNN installation. [Default is {}]: ".format(
                 _DEFAULT_CUDNN_PATH
             )
         )
-        _CUDNN_INSTALL_PATH = INPUT if INPUT else _DEFAULT_CUDNN_PATH
-    print("> cuDNN installation path: {}".format(_CUDNN_INSTALL_PATH))
+        _CUDNN_INSTALL_PATH = answer or _DEFAULT_CUDNN_PATH
+    print("> cuDNN installation path:", _CUDNN_INSTALL_PATH)
     print()
 
     write_action_env_to_bazelrc("TF_NEED_CUDA", _TF_NEED_CUDA)
@@ -222,7 +222,7 @@ if _TF_NEED_CUDA == "1":
     )
 
 print()
-print("Build configurations successfully written to {}".format(_TFA_BAZELRC))
+print("Build configurations successfully written to", _TFA_BAZELRC)
 print()
 
 
