@@ -16,6 +16,10 @@
 
 import tensorflow as tf
 import tensorflow.keras as keras
+from typeguard import typechecked
+
+from tensorflow_addons.utils import types
+from typing import Union
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -35,14 +39,15 @@ class NASCell(keras.layers.AbstractRNNCell):
     # NAS cell's architecture base.
     _NAS_BASE = 8
 
+    @typechecked
     def __init__(self,
-                 units,
-                 projection=None,
-                 use_bias=False,
-                 kernel_initializer="glorot_uniform",
-                 recurrent_initializer="glorot_uniform",
-                 projection_initializer="glorot_uniform",
-                 bias_initializer="zeros",
+                 units: int,
+                 projection: Union[int, str] = None,
+                 use_bias: bool = False,
+                 kernel_initializer: types.Initializer = "glorot_uniform",
+                 recurrent_initializer: types.Initializer = "glorot_uniform",
+                 projection_initializer: types.Initializer = "glorot_uniform",
+                 bias_initializer: types.Initializer = "zeros",
                  **kwargs):
         """Initialize the parameters for a NAS cell.
 
@@ -226,26 +231,27 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
     Stanislau Semeniuta, Aliaksei Severyn, Erhardt Barth.
     """
 
+    @typechecked
     def __init__(self,
-                 units,
-                 activation='tanh',
-                 recurrent_activation='sigmoid',
-                 use_bias=True,
-                 kernel_initializer='glorot_uniform',
-                 recurrent_initializer='orthogonal',
-                 bias_initializer='zeros',
-                 unit_forget_bias=True,
-                 kernel_regularizer=None,
-                 recurrent_regularizer=None,
-                 bias_regularizer=None,
-                 kernel_constraint=None,
-                 recurrent_constraint=None,
-                 bias_constraint=None,
-                 dropout=0.,
-                 recurrent_dropout=0.,
-                 norm_gamma_initializer='ones',
-                 norm_beta_initializer='zeros',
-                 norm_epsilon=1e-3,
+                 units: int,
+                 activation: str = 'tanh',
+                 recurrent_activation: str = 'sigmoid',
+                 use_bias: bool = True,
+                 kernel_initializer: types.Initializer = 'glorot_uniform',
+                 recurrent_initializer: types.Initializer = 'orthogonal',
+                 bias_initializer: types.Initializer = 'zeros',
+                 unit_forget_bias: bool = True,
+                 kernel_regularizer: types.Regularizer = None,
+                 recurrent_regularizer: types.Regularizer = None,
+                 bias_regularizer: types.Regularizer = None,
+                 kernel_constraint: types.Constraint = None,
+                 recurrent_constraint: types.Constraint = None,
+                 bias_constraint: types.Constraint = None,
+                 dropout: float = 0.,
+                 recurrent_dropout: float = 0.,
+                 norm_gamma_initializer: types.Initializer = 'ones',
+                 norm_beta_initializer: types.Initializer = 'zeros',
+                 norm_epsilon: float = 1e-3,
                  **kwargs):
         """Initializes the LSTM cell.
 

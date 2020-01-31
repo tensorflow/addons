@@ -83,8 +83,6 @@ EXCEPTION_LIST = [
     tensorflow_addons.optimizers.SGDW,
     tensorflow_addons.optimizers.extend_with_decoupled_weight_decay,
     tensorflow_addons.optimizers.Yogi,
-    tensorflow_addons.rnn.LayerNormLSTMCell,
-    tensorflow_addons.rnn.NASCell,
     tensorflow_addons.seq2seq.AttentionMechanism,
     tensorflow_addons.seq2seq.AttentionWrapper,
     tensorflow_addons.seq2seq.AttentionWrapperState,
