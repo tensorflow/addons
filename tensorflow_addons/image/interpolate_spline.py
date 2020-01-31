@@ -15,11 +15,14 @@
 """Polyharmonic spline interpolation."""
 
 import tensorflow as tf
+from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
+
+from typing import List
 
 EPSILON = 0.0000000001
 
 
-def _cross_squared_distance_matrix(x, y):
+def _cross_squared_distance_matrix(x: TensorLike, y: TensorLike) -> tf.Tensor:
     """Pairwise squared distance between two (batch) matrices' rows (2nd dim).
 
     Computes the pairwise distances between rows of x and rows of y
@@ -47,7 +50,7 @@ def _cross_squared_distance_matrix(x, y):
     return squared_dists
 
 
-def _pairwise_squared_distance_matrix(x):
+def _pairwise_squared_distance_matrix(x: TensorLike) -> tf.Tensor:
     """Pairwise squared distance among a (batch) matrix's rows (2nd dim).
 
     This saves a bit of computation vs. using
@@ -76,7 +79,8 @@ def _pairwise_squared_distance_matrix(x):
     return squared_dists
 
 
-def _solve_interpolation(train_points, train_values, order, regularization_weight):
+def _solve_interpolation(train_points: TensorLike, train_values: TensorLike, order: int,
+                         regularization_weight: FloatTensorLike) -> TensorLike:
     """Solve for interpolation coefficients.
 
     Computes the coefficients of the polyharmonic interpolant for the
@@ -154,7 +158,8 @@ def _solve_interpolation(train_points, train_values, order, regularization_weigh
     return w, v
 
 
-def _apply_interpolation(query_points, train_points, w, v, order):
+def _apply_interpolation(query_points: TensorLike, train_points: TensorLike, w: TensorLike,
+                         v: TensorLike, order: int) -> TensorLike:
     """Apply polyharmonic interpolation model to data.
 
     Given coefficients w and v for the interpolation model, we evaluate
@@ -188,7 +193,7 @@ def _apply_interpolation(query_points, train_points, w, v, order):
     return rbf_term + linear_term
 
 
-def _phi(r, order):
+def _phi(r: FloatTensorLike, order: int) -> FloatTensorLike:
     """Coordinate-wise nonlinearity used to define the order of the
     interpolation.
 
@@ -222,13 +227,13 @@ def _phi(r, order):
 
 
 def interpolate_spline(
-    train_points,
-    train_values,
-    query_points,
-    order,
-    regularization_weight=0.0,
-    name="interpolate_spline",
-):
+    train_points: TensorLike,
+    train_values: TensorLike,
+    query_points: TensorLike,
+    order: int,
+    regularization_weight: FloatTensorLike = 0.0,
+    name: str = "interpolate_spline",
+) -> tf.Tensor:
     r"""Interpolate signal using polyharmonic interpolation.
 
     The interpolant has the form

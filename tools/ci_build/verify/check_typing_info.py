@@ -27,7 +27,6 @@ TUTORIAL_URL = "https://docs.python.org/3/library/typing.html"
 EXCEPTION_LIST = [
     tensorflow_addons.image.mean_filter2d,
     tensorflow_addons.image.median_filter2d,
-    tensorflow_addons.image.interpolate_spline,
     tensorflow_addons.image.resampler,
     tensorflow_addons.image.sparse_image_warp,
     tensorflow_addons.image.rotate,
