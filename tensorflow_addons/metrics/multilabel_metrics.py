@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-class MultiLabelMacroRecall(tensorflow.keras.metrics.Metric):
+class MultiLabelMacroRecall(tf.keras.metrics.Metric):
     """Computes the Macro-averaged Recall of the given tensors."""
 
     def __init__(
@@ -78,7 +78,7 @@ class MultiLabelMacroRecall(tensorflow.keras.metrics.Metric):
     def result(self):
         return self._recall
 
-class MultiLabelMacroSpecificity(tensorflow.keras.metrics.Metric):
+class MultiLabelMacroSpecificity(tf.keras.metrics.Metric):
     """Computes the Macro-averaged Specificity of the given tensors."""
 
     def __init__(
@@ -156,7 +156,7 @@ class MultiLabelMacroSpecificity(tensorflow.keras.metrics.Metric):
         return self._specificity
 
 
-class MultiLabelMacroSensitivity(tensorflow.keras.metrics.Metric):
+class MultiLabelMacroSensitivity(tf.keras.metrics.Metric):
     """Computes the Macro-averaged Sensitivity of the given tensors."""
     def __init__(
         self,
