@@ -25,8 +25,9 @@ _resampler_so = LazySO("custom_ops/image/_resampler_ops.so")
 
 
 @tf.function
-def resampler(data: types.TensorLike, warp: types.TensorLike,
-              name: Optional[str] = None) -> tf.Tensor:
+def resampler(
+    data: types.TensorLike, warp: types.TensorLike, name: Optional[str] = None
+) -> tf.Tensor:
     """Resamples input data at user defined coordinates.
 
     The resampler currently only supports bilinear interpolation of 2D data.

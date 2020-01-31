@@ -140,7 +140,9 @@ def compose_transforms(transforms: TensorLike, name: Optional[str] = None) -> tf
         return matrices_to_flat_transforms(composed)
 
 
-def flat_transforms_to_matrices(transforms: TensorLike, name: Optional[str] = None) -> tf.Tensor:
+def flat_transforms_to_matrices(
+    transforms: TensorLike, name: Optional[str] = None
+) -> tf.Tensor:
     """Converts projective transforms to affine matrices.
 
     Note that the output matrices map output coordinates to input coordinates.
@@ -173,7 +175,9 @@ def flat_transforms_to_matrices(transforms: TensorLike, name: Optional[str] = No
         )
 
 
-def matrices_to_flat_transforms(transform_matrices: TensorLike, name: Optional[str] = None) -> tf.Tensor:
+def matrices_to_flat_transforms(
+    transform_matrices: TensorLike, name: Optional[str] = None
+) -> tf.Tensor:
     """Converts affine matrices to projective transforms.
 
     Note that we expect matrices that map output coordinates to input
@@ -211,7 +215,7 @@ def matrices_to_flat_transforms(transform_matrices: TensorLike, name: Optional[s
 def angles_to_projective_transforms(
     angles: TensorLike,
     image_height: TensorLike,
-    image_width: TensorLike, 
+    image_width: TensorLike,
     name: Optional[str] = None,
 ) -> tf.Tensor:
     """Returns projective transform(s) for the given angle(s).
@@ -267,7 +271,7 @@ def angles_to_projective_transforms(
 
 
 @tf.RegisterGradient("Addons>ImageProjectiveTransformV2")
-def _image_projective_transform_grad(op: TensorLike, grad:TensorLike) -> tf.Tensor:
+def _image_projective_transform_grad(op: TensorLike, grad: TensorLike) -> tf.Tensor:
     """Computes the gradient for ImageProjectiveTransform."""
     images = op.inputs[0]
     transforms = op.inputs[1]
