@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
 
@@ -65,7 +61,7 @@ class Lookahead(tf.keras.optimizers.Optimizer):
                 decay of learning rate. `lr` is included for backward
                 compatibility, recommended to use `learning_rate` instead.
         """
-        super(Lookahead, self).__init__(name, **kwargs)
+        super().__init__(name, **kwargs)
 
         if isinstance(optimizer, str):
             optimizer = tf.keras.optimizers.get(optimizer)
@@ -91,7 +87,7 @@ class Lookahead(tf.keras.optimizers.Optimizer):
 
     def apply_gradients(self, grads_and_vars, name=None):
         self._optimizer._iterations = self.iterations  # pylint: disable=protected-access
-        return super(Lookahead, self).apply_gradients(grads_and_vars, name)
+        return super().apply_gradients(grads_and_vars, name)
 
     def _init_op(self, var):
         slow_var = self.get_slot(var, 'slow')
@@ -158,8 +154,8 @@ class Lookahead(tf.keras.optimizers.Optimizer):
             'sync_period': self._serialize_hyperparameter('sync_period'),
             'slow_step_size': self._serialize_hyperparameter('slow_step_size'),
         }
-        base_config = super(Lookahead, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}
 
     @property
     def learning_rate(self):

@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for Rectified Adam optimizer."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
 from tensorflow_addons.utils import test_utils
@@ -52,9 +48,11 @@ class RectifiedAdamTest(tf.test.TestCase):
         var_1 = tf.Variable([3.0, 4.0])
 
         grad_0 = tf.IndexedSlices(
-            tf.constant([0.1]), tf.constant([0]), tf.constant([2]))
+            tf.constant([0.1]), tf.constant([0]), tf.constant([2])
+        )
         grad_1 = tf.IndexedSlices(
-            tf.constant([0.04]), tf.constant([1]), tf.constant([2]))
+            tf.constant([0.04]), tf.constant([1]), tf.constant([2])
+        )
 
         grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
@@ -127,10 +125,7 @@ class RectifiedAdamTest(tf.test.TestCase):
             iterations=1000,
             expected=[[0.8041, 1.8041], [2.8041, 3.8041]],
             optimizer=RectifiedAdam(
-                lr=1e-3,
-                total_steps=1000,
-                warmup_proportion=0.1,
-                min_lr=1e-5,
+                lr=1e-3, total_steps=1000, warmup_proportion=0.1, min_lr=1e-5,
             ),
         )
 
@@ -139,10 +134,7 @@ class RectifiedAdamTest(tf.test.TestCase):
             iterations=2000,
             expected=[[0.4653, 2.0], [3.0, 3.4653]],
             optimizer=RectifiedAdam(
-                lr=1e-3,
-                total_steps=2000,
-                warmup_proportion=0.1,
-                min_lr=1e-5,
+                lr=1e-3, total_steps=2000, warmup_proportion=0.1, min_lr=1e-5,
             ),
         )
 
@@ -153,10 +145,7 @@ class RectifiedAdamTest(tf.test.TestCase):
             iterations=1000,
             expected=[[0.7985, 1.7983], [2.7987, 3.7986]],
             optimizer=Lookahead(
-                RectifiedAdam(
-                    lr=1e-3,
-                    beta_1=0.95,
-                ),
+                RectifiedAdam(lr=1e-3, beta_1=0.95,),
                 sync_period=6,
                 slow_step_size=0.45,
             ),
@@ -170,10 +159,7 @@ class RectifiedAdamTest(tf.test.TestCase):
             iterations=1500,
             expected=[[0.6417, 2.0], [3.0, 3.6418]],
             optimizer=Lookahead(
-                RectifiedAdam(
-                    lr=1e-3,
-                    beta_1=0.95,
-                ),
+                RectifiedAdam(lr=1e-3, beta_1=0.95,),
                 sync_period=6,
                 slow_step_size=0.45,
             ),
@@ -182,9 +168,9 @@ class RectifiedAdamTest(tf.test.TestCase):
     def test_get_config(self):
         opt = RectifiedAdam(lr=1e-4)
         config = opt.get_config()
-        self.assertEqual(config['learning_rate'], 1e-4)
-        self.assertEqual(config['total_steps'], 0)
+        self.assertEqual(config["learning_rate"], 1e-4)
+        self.assertEqual(config["total_steps"], 0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.test.main()

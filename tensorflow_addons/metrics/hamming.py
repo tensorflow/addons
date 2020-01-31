@@ -14,10 +14,6 @@
 # ==============================================================================
 """Implements Hamming distance and loss."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow_addons.metrics.utils import MeanMetricWrapper
 
@@ -105,8 +101,8 @@ def hamming_loss_fn(y_true, y_pred, threshold, mode):
     print('Hamming loss: ', hl.result().numpy()) # 0.16666667
     ```
     """
-    if mode not in ['multiclass', 'multilabel']:
-        raise TypeError('mode must be either multiclass or multilabel]')
+    if mode not in ["multiclass", "multilabel"]:
+        raise TypeError("mode must be either multiclass or multilabel]")
 
     if threshold is None:
         threshold = tf.reduce_max(y_pred, axis=-1, keepdims=True)
@@ -119,24 +115,19 @@ def hamming_loss_fn(y_true, y_pred, threshold, mode):
     y_true = tf.cast(y_true, tf.int32)
     y_pred = tf.cast(y_pred, tf.int32)
 
-    if mode == 'multiclass':
-        nonzero = tf.cast(
-            tf.math.count_nonzero(y_true * y_pred, axis=-1), tf.float32)
+    if mode == "multiclass":
+        nonzero = tf.cast(tf.math.count_nonzero(y_true * y_pred, axis=-1), tf.float32)
         return 1.0 - nonzero
 
     else:
-        nonzero = tf.cast(
-            tf.math.count_nonzero(y_true - y_pred, axis=-1), tf.float32)
+        nonzero = tf.cast(tf.math.count_nonzero(y_true - y_pred, axis=-1), tf.float32)
         return nonzero / y_true.get_shape()[-1]
 
 
 class HammingLoss(MeanMetricWrapper):
     """Computes hamming loss."""
 
-    def __init__(self,
-                 mode,
-                 name='hamming_loss',
-                 threshold=None,
-                 dtype=tf.float32):
-        super(HammingLoss, self).__init__(
-            hamming_loss_fn, name, dtype=dtype, mode=mode, threshold=threshold)
+    def __init__(self, mode, name="hamming_loss", threshold=None, dtype=tf.float32):
+        super().__init__(
+            hamming_loss_fn, name, dtype=dtype, mode=mode, threshold=threshold
+        )

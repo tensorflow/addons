@@ -13,9 +13,7 @@
 # limitations under the License.
 # =============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from absl.testing import parameterized
 
 import numpy as np
 import tensorflow as tf
@@ -25,8 +23,8 @@ from tensorflow_addons.utils import test_utils
 
 
 @test_utils.run_all_in_graph_and_eager_modes
-class WeightNormalizationTest(tf.test.TestCase):
-    def test_weightnorm(self):
+class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
+    def test_basic(self):
         test_utils.layer_test(
             wrappers.WeightNormalization,
             kwargs={
@@ -34,7 +32,7 @@ class WeightNormalizationTest(tf.test.TestCase):
             },
             input_shape=(2, 4, 4, 3))
 
-    def test_weightnorm_no_bias(self):
+    def test_no_bias(self):
         test_utils.layer_test(
             wrappers.WeightNormalization,
             kwargs={
@@ -57,52 +55,120 @@ class WeightNormalizationTest(tf.test.TestCase):
             input_data=input_data,
             expected_output=expected_output)
 
-    def test_weightnorm_with_data_init_is_false(self):
+    def test_with_data_init_is_false(self):
         input_data = np.array([[[-4, -4], [4, 4]]], dtype=np.float32)
         self._check_data_init(
             data_init=False, input_data=input_data, expected_output=input_data)
 
-    def test_weightnorm_with_data_init_is_true(self):
+    def test_with_data_init_is_true(self):
         input_data = np.array([[[-4, -4], [4, 4]]], dtype=np.float32)
         self._check_data_init(
             data_init=True,
             input_data=input_data,
             expected_output=input_data / 4)
 
-    def test_weightnorm_non_layer(self):
+    def test_non_layer(self):
         images = tf.random.uniform((2, 4, 43))
         with self.assertRaises(AssertionError):
             wrappers.WeightNormalization(images)
 
-    def test_weightnorm_non_kernel_layer(self):
+    def test_non_kernel_layer(self):
         images = tf.random.uniform((2, 2, 2))
         with self.assertRaisesRegexp(ValueError, 'contains a `kernel`'):
             non_kernel_layer = tf.keras.layers.MaxPooling2D(2, 2)
             wn_wrapper = wrappers.WeightNormalization(non_kernel_layer)
             wn_wrapper(images)
 
-    def test_weightnorm_with_time_dist(self):
+    def test_with_time_dist(self):
         batch_shape = (32, 16, 64, 64, 3)
         inputs = tf.keras.layers.Input(batch_shape=batch_shape)
         a = tf.keras.layers.Conv2D(3, 5)
         b = wrappers.WeightNormalization(a)
         out = tf.keras.layers.TimeDistributed(b)(inputs)
-        model = tf.keras.Model(inputs, out)
+        tf.keras.Model(inputs, out)
 
-    def test_weightnorm_with_rnn(self):
-        inputs = tf.keras.layers.Input(shape=(None, 3))
-        rnn_layer = tf.keras.layers.SimpleRNN(4)
-        wt_rnn = wrappers.WeightNormalization(rnn_layer)
-        dense = tf.keras.layers.Dense(1)
-        model = tf.keras.models.Sequential(layers=[inputs, wt_rnn, dense])
+    @parameterized.named_parameters(
+        ["Dense", lambda: tf.keras.layers.Dense(1), False],
+        ["SimpleRNN", lambda: tf.keras.layers.SimpleRNN(1), True],
+        ["Conv2D", lambda: tf.keras.layers.Conv2D(3, 1), False],
+        ["LSTM", lambda: tf.keras.layers.LSTM(1), True])
+    def test_serialization(self, base_layer, rnn):
+        base_layer = base_layer()
+        wn_layer = wrappers.WeightNormalization(base_layer, not rnn)
+        new_wn_layer = tf.keras.layers.deserialize(
+            tf.keras.layers.serialize(wn_layer))
+        self.assertEqual(wn_layer.data_init, new_wn_layer.data_init)
+        self.assertEqual(wn_layer.is_rnn, new_wn_layer.is_rnn)
+        self.assertEqual(wn_layer.is_rnn, rnn)
+        if not isinstance(base_layer, tf.keras.layers.LSTM):
+            # Issue with LSTM serialization, check with TF-core
+            # Before serialization: tensorflow.python.keras.layers.recurrent_v2.LSTM
+            # After serialization: tensorflow.python.keras.layers.recurrent.LSTM
+            self.assertTrue(
+                isinstance(new_wn_layer.layer, base_layer.__class__))
 
-    def test_save_file_h5(self):
+    @parameterized.named_parameters(
+        ["Dense", lambda: tf.keras.layers.Dense(1), [25]],
+        ["SimpleRNN", lambda: tf.keras.layers.SimpleRNN(1), [None, 10]],
+        ["Conv2D", lambda: tf.keras.layers.Conv2D(3, 1), [3, 3, 1]],
+        ["LSTM", lambda: tf.keras.layers.LSTM(1), [10, 10]])
+    def test_model_build(self, base_layer_fn, input_shape):
+        inputs = tf.keras.layers.Input(shape=input_shape)
+        for data_init in [True, False]:
+            base_layer = base_layer_fn()
+            wt_layer = wrappers.WeightNormalization(base_layer, data_init)
+            model = tf.keras.models.Sequential(layers=[inputs, wt_layer])
+            model.build()
+
+    @parameterized.named_parameters(
+        ["Dense", lambda: tf.keras.layers.Dense(1), [25]],
+        ["SimpleRNN", lambda: tf.keras.layers.SimpleRNN(1), [10, 10]],
+        ["Conv2D", lambda: tf.keras.layers.Conv2D(3, 1), [3, 3, 1]],
+        ["LSTM", lambda: tf.keras.layers.LSTM(1), [10, 10]])
+    def test_save_file_h5(self, base_layer, input_shape):
         self.create_tempfile('wrapper_test_model.h5')
-        conv = tf.keras.layers.Conv1D(1, 1)
-        wn_conv = wrappers.WeightNormalization(conv)
+        base_layer = base_layer()
+        wn_conv = wrappers.WeightNormalization(base_layer)
         model = tf.keras.Sequential(layers=[wn_conv])
-        model.build([1, 2, 3])
+        model.build([None] + input_shape)
         model.save_weights('wrapper_test_model.h5')
+
+    @parameterized.named_parameters(
+        ["Dense", lambda: tf.keras.layers.Dense(1), [25]],
+        ["SimpleRNN", lambda: tf.keras.layers.SimpleRNN(1), [10, 10]],
+        ["Conv2D", lambda: tf.keras.layers.Conv2D(3, 1), [3, 3, 1]],
+        ["LSTM", lambda: tf.keras.layers.LSTM(1), [10, 10]])
+    def test_forward_pass(self, base_layer, input_shape):
+        sample_data = np.ones([1] + input_shape, dtype=np.float32)
+        base_layer = base_layer()
+        base_output = base_layer(sample_data)
+        wn_layer = wrappers.WeightNormalization(base_layer, False)
+        wn_output = wn_layer(sample_data)
+        self.evaluate(tf.compat.v1.global_variables_initializer())
+        self.assertAllClose(
+            self.evaluate(base_output), self.evaluate(wn_output))
+
+    @parameterized.named_parameters(
+        ["Dense", lambda: tf.keras.layers.Dense(1), [25]],
+        ["SimpleRNN", lambda: tf.keras.layers.SimpleRNN(1), [10, 10]],
+        ["Conv2D", lambda: tf.keras.layers.Conv2D(3, 1), [3, 3, 1]],
+        ["LSTM", lambda: tf.keras.layers.LSTM(1), [10, 10]])
+    def test_removal(self, base_layer_fn, input_shape):
+        sample_data = np.ones([1] + input_shape, dtype=np.float32)
+
+        for data_init in [True, False]:
+            base_layer = base_layer_fn()
+            wn_layer = wrappers.WeightNormalization(base_layer, data_init)
+            wn_output = wn_layer(sample_data)
+            self.evaluate(tf.compat.v1.global_variables_initializer())
+            with tf.control_dependencies([wn_output]):
+                wn_removed_layer = wn_layer.remove()
+                wn_removed_output = wn_removed_layer(sample_data)
+
+            self.evaluate(tf.compat.v1.global_variables_initializer())
+            self.assertAllClose(
+                self.evaluate(wn_removed_output), self.evaluate(wn_output))
+            self.assertTrue(isinstance(wn_removed_layer, base_layer.__class__))
 
 
 if __name__ == "__main__":

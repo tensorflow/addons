@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for distance transform ops."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 import tensorflow as tf
 
@@ -28,20 +24,17 @@ from tensorflow_addons.utils import test_utils
 @test_utils.run_all_in_graph_and_eager_modes
 class DistanceOpsTest(tf.test.TestCase):
     def test_single_binary_image(self):
-        # yapf: disable
         image = [[[1], [1], [1], [1], [1]],
                  [[1], [1], [1], [1], [1]],
                  [[0], [1], [0], [1], [0]],
                  [[1], [0], [1], [0], [1]],
                  [[0], [1], [0], [1], [0]]]
-        # pylint: disable=bad-whitespace
         expected_output = np.array([
             2, 2.23606801, 2, 2.23606801, 2,
             1, 1.41421354, 1, 1.41421354, 1,
             0, 1,          0, 1,          0,
             1, 0,          1, 0,          1,
             0, 1,          0, 1,          0])
-        # yapf: enable
         image = tf.constant(image, dtype=tf.uint8)
 
         for output_dtype in [tf.float16, tf.float32, tf.float64]:
@@ -57,7 +50,6 @@ class DistanceOpsTest(tf.test.TestCase):
 
     def test_batch_binary_images(self):
         batch_size = 3
-        # yapf: disable
         image = [[[0], [0], [0], [0], [0]],
                  [[0], [1], [1], [1], [0]],
                  [[0], [1], [1], [1], [0]],
@@ -70,7 +62,6 @@ class DistanceOpsTest(tf.test.TestCase):
             0, 1, 1, 1, 0,
             0, 0, 0, 0, 0
         ] * batch_size)
-        # yapf: enable
         images = tf.constant([image] * batch_size, dtype=tf.uint8)
         for output_dtype in [tf.float16, tf.float32, tf.float64]:
             output = dist_ops.euclidean_dist_transform(
@@ -84,17 +75,14 @@ class DistanceOpsTest(tf.test.TestCase):
                                                    expected_output)
 
     def test_image_with_invalid_dtype(self):
-        # yapf: disable
         image = [[[1], [1], [1], [1], [1]],
                  [[1], [1], [1], [1], [1]],
                  [[0], [1], [0], [1], [0]],
                  [[1], [0], [1], [0], [1]],
                  [[0], [1], [0], [1], [0]]]
-        # yapf: enable
         image = tf.constant(image, dtype=tf.uint8)
 
         for output_dtype in [tf.uint8, tf.int32, tf.int64]:
-            # pylint: disable=bad-continuation
             with self.assertRaisesRegex(
                     TypeError, "`dtype` must be float16, float32 or float64"):
                 _ = dist_ops.euclidean_dist_transform(
@@ -120,13 +108,6 @@ class DistanceOpsTest(tf.test.TestCase):
         output = dist_ops.euclidean_dist_transform(image)
         expected_output = np.full([10, 10, 1], tf.float32.max)
         self.assertAllClose(output, expected_output)
-
-    def test_unknown_shape(self):
-        fn = dist_ops.euclidean_dist_transform.get_concrete_function(
-            tf.TensorSpec(None, tf.uint8))
-        for shape in [[5, 10], [10, 7, 1], [4, 10, 10, 1]]:
-            image = tf.zeros(shape, dtype=tf.uint8)
-            self.assertAllClose(image, fn(image))
 
 
 if __name__ == "__main__":

@@ -13,14 +13,11 @@
 # limitations under the License.
 # ==============================================================================
 """Implements npairs loss."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def npairs_loss(y_true, y_pred):
     """Computes the npairs loss between `y_true` and `y_pred`.
@@ -57,13 +54,12 @@ def npairs_loss(y_true, y_pred):
     y_true = tf.cast(tf.equal(y_true, tf.transpose(y_true)), y_pred.dtype)
     y_true /= tf.math.reduce_sum(y_true, 1, keepdims=True)
 
-    loss = tf.nn.softmax_cross_entropy_with_logits(
-        logits=y_pred, labels=y_true)
+    loss = tf.nn.softmax_cross_entropy_with_logits(logits=y_pred, labels=y_true)
 
     return tf.math.reduce_mean(loss)
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def npairs_multilabel_loss(y_true, y_pred):
     r"""Computes the npairs loss between multilabel data `y_true` and `y_pred`.
@@ -119,16 +115,16 @@ def npairs_multilabel_loss(y_true, y_pred):
     # Enable efficient multiplication because y_true contains lots of zeros
     # https://www.tensorflow.org/api_docs/python/tf/linalg/matmul
     y_true = tf.linalg.matmul(
-        y_true, y_true, transpose_b=True, a_is_sparse=True, b_is_sparse=True)
+        y_true, y_true, transpose_b=True, a_is_sparse=True, b_is_sparse=True
+    )
     y_true /= tf.math.reduce_sum(y_true, 1, keepdims=True)
 
-    loss = tf.nn.softmax_cross_entropy_with_logits(
-        logits=y_pred, labels=y_true)
+    loss = tf.nn.softmax_cross_entropy_with_logits(logits=y_pred, labels=y_true)
 
     return tf.math.reduce_mean(loss)
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class NpairsLoss(tf.keras.losses.Loss):
     """Computes the npairs loss between `y_true` and `y_pred`.
 
@@ -152,14 +148,13 @@ class NpairsLoss(tf.keras.losses.Loss):
     """
 
     def __init__(self, name="npairs_loss"):
-        super(NpairsLoss, self).__init__(
-            reduction=tf.keras.losses.Reduction.NONE, name=name)
+        super().__init__(reduction=tf.keras.losses.Reduction.NONE, name=name)
 
     def call(self, y_true, y_pred):
         return npairs_loss(y_true, y_pred)
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class NpairsMultilabelLoss(tf.keras.losses.Loss):
     r"""Computes the npairs loss between multilabel data `y_true` and `y_pred`.
 
@@ -197,8 +192,7 @@ class NpairsMultilabelLoss(tf.keras.losses.Loss):
     """
 
     def __init__(self, name="npairs_multilabel_loss"):
-        super(NpairsMultilabelLoss, self).__init__(
-            reduction=tf.keras.losses.Reduction.NONE, name=name)
+        super().__init__(reduction=tf.keras.losses.Reduction.NONE, name=name)
 
     def call(self, y_true, y_pred):
         return npairs_multilabel_loss(y_true, y_pred)

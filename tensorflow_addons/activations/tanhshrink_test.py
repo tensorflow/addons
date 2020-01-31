@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 
 import numpy as np
@@ -27,18 +23,18 @@ from tensorflow_addons.utils import test_utils
 
 @test_utils.run_all_in_graph_and_eager_modes
 class TanhshrinkTest(tf.test.TestCase, parameterized.TestCase):
-    @parameterized.named_parameters(("float16", np.float16),
-                                    ("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(
+        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
+    )
     def test_tanhshrink(self, dtype):
         x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
         expected_result = tf.constant(
-            [-1.0359724, -0.23840582, 0.0, 0.23840582, 1.0359724], dtype=dtype)
+            [-1.0359724, -0.23840582, 0.0, 0.23840582, 1.0359724], dtype=dtype
+        )
 
         self.assertAllCloseAccordingToType(tanhshrink(x), expected_result)
 
-    @parameterized.named_parameters(("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
     def test_theoretical_gradients(self, dtype):
         # Only test theoretical gradients for float32 and float64
         # because of the instability of float16 while computing jacobian

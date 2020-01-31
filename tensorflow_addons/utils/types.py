@@ -1,4 +1,3 @@
-#!/bin/bash
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,20 +12,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+"""Types for typing functions signatures."""
 
-set -e -x
+from typing import Union, Callable, List
 
-if [[ $(uname) == "Darwin" ]]; then
-    CMD="delocate-wheel -w wheelhouse"
-elif [[ $(uname) == "Linux" ]]; then
-    apt-get -y -qq update && apt-get install patchelf
-    pip3.6 install -U auditwheel==2.0.0
-    tools/ci_build/builds/tf_auditwheel_patch.sh
-    CMD="auditwheel repair --plat manylinux2010_x86_64"
-fi
+import numpy as np
+import tensorflow as tf
 
-ls artifacts/*
-for f in artifacts/*.whl; do
-    $CMD $f
-done
-ls wheelhouse/*
+
+Number = Union[
+    float,
+    int,
+    np.float16,
+    np.float32,
+    np.float64,
+    np.int8,
+    np.int16,
+    np.int32,
+    np.int64,
+    np.uint8,
+    np.uint16,
+    np.uint32,
+    np.uint64,
+]
+
+Initializer = Union[None, dict, str, Callable]
+Regularizer = Union[None, dict, str, Callable]
+Constraint = Union[None, dict, str, Callable]
+
+TensorLike = Union[List[Union[Number, list]], Number, np.ndarray, tf.Tensor]
+FloatTensorLike = Union[tf.Tensor, float, np.float16, np.float32, np.float64]

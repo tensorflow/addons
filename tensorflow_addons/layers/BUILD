@@ -13,6 +13,7 @@ py_library(
         "optical_flow.py",
         "poincare.py",
         "sparsemax.py",
+        "tlu.py",
         "wrappers.py",
     ],
     data = [
@@ -62,11 +63,25 @@ py_test(
 )
 
 py_test(
+    name = "tlu_test",
+    size = "small",
+    srcs = [
+        "tlu_test.py",
+    ],
+    main = "tlu_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
     name = "layers_wrappers_test",
     size = "small",
     srcs = [
         "wrappers_test.py",
     ],
+    # TODO: Investigate why flaky #830
+    flaky = True,
     main = "wrappers_test.py",
     deps = [
         ":layers",

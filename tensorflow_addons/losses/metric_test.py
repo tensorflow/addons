@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for metric learning."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
@@ -45,8 +42,7 @@ class PairWiseDistance(tf.test.TestCase):
         """Compare against numpy caluclation."""
         tf_embeddings = tf.constant([[0.5, 0.5], [1.0, 1.0]])
 
-        expected_distance = np.array([[0, np.sqrt(2) / 2], [np.sqrt(2) / 2,
-                                                            0]])
+        expected_distance = np.array([[0, np.sqrt(2) / 2], [np.sqrt(2) / 2, 0]])
 
         distances = pairwise_distance(tf_embeddings, squared=False)
         self.assertAllClose(expected_distance, distances)

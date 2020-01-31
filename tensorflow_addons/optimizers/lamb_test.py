@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for LAMB Optimizer."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 from numpy import linalg
 
@@ -143,15 +139,10 @@ class LAMBTest(tf.test.TestCase):
             grads0 = tf.constant(grads0_np)
             grads1 = tf.constant(grads1_np)
 
-            learning_rate = lambda: 0.001
-            beta1 = lambda: 0.9
-            beta2 = lambda: 0.999
-            epsilon = lambda: 1e-8
+            def learning_rate():
+                return 0.001
             if not use_callable_params:
                 learning_rate = learning_rate()
-                beta1 = beta1()
-                beta2 = beta2()
-                epsilon = epsilon()
 
             opt = lamb.LAMB(learning_rate=learning_rate)
             if not tf.executing_eagerly():
@@ -400,7 +391,9 @@ class LAMBTest(tf.test.TestCase):
     def testMinimizeMeanSquareLossWithWeightDecay(self):
         w = tf.Variable([0.1, -0.2, -0.1])
         x = tf.constant([0.4, 0.2, -0.5])
-        loss = lambda: tf.reduce_mean(tf.square(x - w))  # pylint:disable=cell-var-from-loop
+
+        def loss():
+            return tf.reduce_mean(tf.square(x - w))
         opt = lamb.LAMB(0.02, weight_decay_rate=0.01)
 
         if not tf.executing_eagerly():

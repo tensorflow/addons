@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # =============================================================================
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
@@ -88,7 +85,7 @@ class NormalizationTest(tf.test.TestCase):
 
     def _test_random_shape_on_all_axis_except_batch(self, shape, groups,
                                                     center, scale):
-        inputs = tf.random.normal((shape))
+        inputs = tf.random.normal(shape)
         for axis in range(1, len(shape)):
             self._test_specific_layer(inputs, axis, groups, center, scale)
 
@@ -170,7 +167,6 @@ class NormalizationTest(tf.test.TestCase):
 
     def test_apply_normalization(self):
         input_shape = (1, 4)
-        expected_shape = (1, 2, 2)
         reshaped_inputs = tf.constant([[[2.0, 2.0], [3.0, 3.0]]])
         layer = GroupNormalization(groups=2, axis=1, scale=False, center=False)
         normalized_input = layer._apply_normalization(reshaped_inputs,
@@ -246,7 +242,7 @@ class NormalizationTest(tf.test.TestCase):
                 optimizer=tf.keras.optimizers.RMSprop(0.01), loss='mse')
             x = np.random.randint(1000, size=(10, 20, 20, 3))
             y = np.random.randint(1000, size=(10, 1))
-            a = model.fit(x=x, y=y, epochs=1)
+            model.fit(x=x, y=y, epochs=1)
             self.assertTrue(hasattr(model.layers[0], 'gamma'))
 
 

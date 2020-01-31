@@ -14,8 +14,6 @@
 # ==============================================================================
 """TQDM Progress Bar."""
 
-from __future__ import absolute_import, division, print_function
-
 import time
 import tensorflow as tf
 from collections import defaultdict
@@ -27,22 +25,24 @@ from tensorflow.keras.callbacks import Callback
 class TQDMProgressBar(Callback):
     """TQDM Progress Bar for Tensorflow Keras.
 
-    Arguments:
-        metrics_separator (string): Custom separator between metrics.
-            Defaults to ' - '
-        overall_bar_format (string format): Custom bar format for overall
+    Args:
+        metrics_separator: Custom separator between metrics.
+            Defaults to ' - '.
+        overall_bar_format: Custom bar format for overall
             (outer) progress bar, see https://github.com/tqdm/tqdm#parameters
             for more detail.
-        epoch_bar_format (string format): Custom bar format for epoch
+        epoch_bar_format: Custom bar format for epoch
             (inner) progress bar, see https://github.com/tqdm/tqdm#parameters
             for more detail.
-        update_per_second (int): Maximum number of updates in the epochs bar
+        update_per_second: Maximum number of updates in the epochs bar
             per second, this is to prevent small batches from slowing down
             training. Defaults to 10.
-        leave_epoch_progress (bool): True to leave epoch progress bars
-        leave_overall_progress (bool): True to leave overall progress bar
-        show_epoch_progress (bool): False to hide epoch progress bars
-        show_overall_progress (bool): False to hide overall progress bar
+        metrics_format: Custom format for how metrics are formatted.
+            See https://github.com/tqdm/tqdm#parameters for more detail.
+        leave_epoch_progress: True to leave epoch progress bars.
+        leave_overall_progress: True to leave overall progress bar.
+        show_epoch_progress: False to hide epoch progress bars.
+        show_overall_progress: False to hide overall progress bar.
     """
 
     def __init__(self,
@@ -51,6 +51,7 @@ class TQDMProgressBar(Callback):
                  '{remaining}s,  {rate_fmt}{postfix}',
                  epoch_bar_format='{n_fmt}/{total_fmt}{bar} ETA: '
                  '{remaining}s - {desc}',
+                 metrics_format='{name}: {value:0.4f}',
                  update_per_second=10,
                  leave_epoch_progress=True,
                  leave_overall_progress=True,
@@ -77,6 +78,7 @@ class TQDMProgressBar(Callback):
         self.leave_overall_progress = leave_overall_progress
         self.show_epoch_progress = show_epoch_progress
         self.show_overall_progress = show_overall_progress
+        self.metrics_format = metrics_format
 
         # compute update interval (inverse of update per second)
         self.update_interval = 1 / update_per_second
@@ -126,8 +128,9 @@ class TQDMProgressBar(Callback):
                 dynamic_ncols=True,
                 unit=self.mode)
 
-        self.seen = 0
+        self.num_samples_seen = 0
         self.steps_to_update = 0
+        self.steps_so_far = 0
         self.logs = defaultdict(float)
 
     def on_epoch_end(self, epoch, logs={}):
@@ -154,10 +157,11 @@ class TQDMProgressBar(Callback):
         else:
             batch_size = 1
 
-        self.seen += batch_size
-        self.steps_to_update += batch_size
+        self.num_samples_seen += batch_size
+        self.steps_to_update += 1
+        self.steps_so_far += 1
 
-        if self.seen < self.total_steps:
+        if self.steps_so_far < self.total_steps:
 
             for metric, value in logs.items():
                 self.logs[metric] += value * batch_size
@@ -167,7 +171,7 @@ class TQDMProgressBar(Callback):
             if self.show_epoch_progress and time_diff >= self.update_interval:
 
                 # update the epoch progress bar
-                metrics = self.format_metrics(self.logs, self.seen)
+                metrics = self.format_metrics(self.logs, self.num_samples_seen)
                 self.epoch_progress_tqdm.desc = metrics
                 self.epoch_progress_tqdm.update(self.steps_to_update)
 
@@ -196,7 +200,7 @@ class TQDMProgressBar(Callback):
         for metric in self.metrics:
             if metric in logs:
                 value = logs[metric] / factor
-                pair = '{name}: {value:0.4f}'.format(name=metric, value=value)
+                pair = self.metrics_format.format(name=metric, value=value)
                 metric_value_pairs.append(pair)
         metrics_string = self.metrics_separator.join(metric_value_pairs)
         return metrics_string
@@ -212,5 +216,5 @@ class TQDMProgressBar(Callback):
             'show_overall_progress': self.show_overall_progress,
         }
 
-        base_config = super(TQDMProgressBar, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}

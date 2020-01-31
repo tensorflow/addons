@@ -14,11 +14,8 @@
 # ==============================================================================
 """Implementing Maxout layer."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
+from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -45,8 +42,9 @@ class Maxout(tf.keras.layers.Layer):
       nD tensor with shape: `(batch_size, ..., num_units, ...)`.
     """
 
-    def __init__(self, num_units, axis=-1, **kwargs):
-        super(Maxout, self).__init__(**kwargs)
+    @typechecked
+    def __init__(self, num_units: int, axis: int = -1, **kwargs):
+        super().__init__(**kwargs)
         self.num_units = num_units
         self.axis = axis
 
@@ -87,5 +85,5 @@ class Maxout(tf.keras.layers.Layer):
 
     def get_config(self):
         config = {'num_units': self.num_units, 'axis': self.axis}
-        base_config = super(Maxout, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}

@@ -14,18 +14,13 @@
 # ============================================================================
 """Tensorflow op performing correlation cost operation."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+from typeguard import typechecked
+from tensorflow_addons.utils.resource_loader import LazySO
 
-_correlation_cost_op_so = tf.load_op_library(
-    get_path_to_datafile("custom_ops/layers/_correlation_cost_ops.so"))
+_correlation_cost_so = LazySO("custom_ops/layers/_correlation_cost_ops.so")
 
 
-@tf.function
 def _correlation_cost(input_a,
                       input_b,
                       kernel_size,
@@ -82,7 +77,7 @@ def _correlation_cost(input_a,
     """
 
     with tf.name_scope(name or "correlation_cost"):
-        op_call = _correlation_cost_op_so.addons_correlation_cost
+        op_call = _correlation_cost_so.ops.addons_correlation_cost
 
         if data_format == "channels_last":
             op_data_format = "NHWC"
@@ -121,7 +116,7 @@ def _correlation_cost_grad(op, grad_output):
     input_b = tf.convert_to_tensor(op.inputs[1], name="input_b")
     grad_output_tensor = tf.convert_to_tensor(grad_output, name="grad_output")
 
-    op_call = _correlation_cost_op_so.addons_correlation_cost_grad
+    op_call = _correlation_cost_so.ops.addons_correlation_cost_grad
     grads = op_call(
         input_a,
         input_b,
@@ -161,8 +156,15 @@ class CorrelationCost(tf.keras.layers.Layer):
                 Defaults to `"channels_last"`.
     """
 
-    def __init__(self, kernel_size, max_displacement, stride_1, stride_2, pad,
-                 data_format, **kwargs):
+    @typechecked
+    def __init__(self,
+                 kernel_size: int,
+                 max_displacement: int,
+                 stride_1: int,
+                 stride_2: int,
+                 pad: int,
+                 data_format: str,
+                 **kwargs):
         self.kernel_size = kernel_size
         self.max_displacement = max_displacement
         self.stride_1 = stride_1
@@ -175,12 +177,12 @@ class CorrelationCost(tf.keras.layers.Layer):
 
         self.data_format = data_format
 
-        super(CorrelationCost, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def build(self, input_shape):
         if not isinstance(input_shape, list):
             raise ValueError("Input must be a list of two Tensors to process")
-        super(CorrelationCost, self).build(input_shape)
+        super().build(input_shape)
 
     def call(self, inputs):
         if not isinstance(inputs, list):
@@ -238,5 +240,5 @@ class CorrelationCost(tf.keras.layers.Layer):
             'data_format': self.data_format
         }
 
-        base_config = super(CorrelationCost, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}

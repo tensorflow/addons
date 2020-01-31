@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Polyharmonic spline interpolation."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
 
@@ -45,8 +42,7 @@ def _cross_squared_distance_matrix(x, y):
 
     # squared_dists[b,i,j] = ||x_bi - y_bj||^2 =
     # x_bi'x_bi- 2x_bi'x_bj + x_bj'x_bj
-    squared_dists = (
-        x_norm_squared_tile - 2 * x_y_transpose + y_norm_squared_tile)
+    squared_dists = x_norm_squared_tile - 2 * x_y_transpose + y_norm_squared_tile
 
     return squared_dists
 
@@ -71,14 +67,16 @@ def _pairwise_squared_distance_matrix(x):
 
     # squared_dists[b,i,j] = ||x_bi - x_bj||^2 =
     # = x_bi'x_bi- 2x_bi'x_bj + x_bj'x_bj
-    squared_dists = x_norm_squared_tile - 2 * x_x_transpose + tf.transpose(
-        x_norm_squared_tile, [0, 2, 1])
+    squared_dists = (
+        x_norm_squared_tile
+        - 2 * x_x_transpose
+        + tf.transpose(x_norm_squared_tile, [0, 2, 1])
+    )
 
     return squared_dists
 
 
-def _solve_interpolation(train_points, train_values, order,
-                         regularization_weight):
+def _solve_interpolation(train_points, train_values, order, regularization_weight):
     """Solve for interpolation coefficients.
 
     Computes the coefficients of the polyharmonic interpolant for the
@@ -103,13 +101,17 @@ def _solve_interpolation(train_points, train_values, order,
 
     d = train_points.shape[-1]
     if d is None:
-        raise ValueError('The dimensionality of the input points (d) must be '
-                         'statically-inferrable.')
+        raise ValueError(
+            "The dimensionality of the input points (d) must be "
+            "statically-inferrable."
+        )
 
     k = train_values.shape[-1]
     if k is None:
-        raise ValueError('The dimensionality of the output values (k) must be '
-                         'statically-inferrable.')
+        raise ValueError(
+            "The dimensionality of the output values (k) must be "
+            "statically-inferrable."
+        )
 
     # First, rename variables so that the notation (c, f, w, v, A, B, etc.)
     # follows https://en.wikipedia.org/wiki/Polyharmonic_spline.
@@ -120,10 +122,9 @@ def _solve_interpolation(train_points, train_values, order,
     f = train_values
 
     # Next, construct the linear system.
-    with tf.name_scope('construct_linear_system'):
+    with tf.name_scope("construct_linear_system"):
 
-        matrix_a = _phi(_pairwise_squared_distance_matrix(c),
-                        order)  # [b, n, n]
+        matrix_a = _phi(_pairwise_squared_distance_matrix(c), order)  # [b, n, n]
         if regularization_weight > 0:
             batch_identity_matrix = tf.expand_dims(tf.eye(n, dtype=c.dtype), 0)
             matrix_a += regularization_weight * batch_identity_matrix
@@ -134,21 +135,18 @@ def _solve_interpolation(train_points, train_values, order,
         matrix_b = tf.concat([c, ones], 2)  # [b, n, d + 1]
 
         # [b, n + d + 1, n]
-        left_block = tf.concat(
-            [matrix_a, tf.transpose(matrix_b, [0, 2, 1])], 1)
+        left_block = tf.concat([matrix_a, tf.transpose(matrix_b, [0, 2, 1])], 1)
 
         num_b_cols = matrix_b.get_shape()[2]  # d + 1
         lhs_zeros = tf.zeros([b, num_b_cols, num_b_cols], train_points.dtype)
-        right_block = tf.concat([matrix_b, lhs_zeros],
-                                1)  # [b, n + d + 1, d + 1]
-        lhs = tf.concat([left_block, right_block],
-                        2)  # [b, n + d + 1, n + d + 1]
+        right_block = tf.concat([matrix_b, lhs_zeros], 1)  # [b, n + d + 1, d + 1]
+        lhs = tf.concat([left_block, right_block], 2)  # [b, n + d + 1, n + d + 1]
 
         rhs_zeros = tf.zeros([b, d + 1, k], train_points.dtype)
         rhs = tf.concat([f, rhs_zeros], 1)  # [b, n + d + 1, k]
 
     # Then, solve the linear system and unpack the results.
-    with tf.name_scope('solve_linear_system'):
+    with tf.name_scope("solve_linear_system"):
         w_v = tf.linalg.solve(lhs, rhs)
         w = w_v[:, :n, :]
         v = w_v[:, n:, :]
@@ -182,10 +180,9 @@ def _apply_interpolation(query_points, train_points, w, v, order):
 
     # Then, compute the contribution from the linear term.
     # Pad query_points with ones, for the bias term in the linear model.
-    query_points_pad = tf.concat([
-        query_points,
-        tf.ones_like(query_points[..., :1], train_points.dtype)
-    ], 2)
+    query_points_pad = tf.concat(
+        [query_points, tf.ones_like(query_points[..., :1], train_points.dtype)], 2
+    )
     linear_term = tf.matmul(query_points_pad, v)
 
     return rbf_term + linear_term
@@ -207,7 +204,7 @@ def _phi(r, order):
 
     # using EPSILON prevents log(0), sqrt0), etc.
     # sqrt(0) is well-defined, but its gradient is not
-    with tf.name_scope('phi'):
+    with tf.name_scope("phi"):
         if order == 1:
             r = tf.maximum(r, EPSILON)
             r = tf.sqrt(r)
@@ -224,12 +221,14 @@ def _phi(r, order):
             return tf.pow(r, 0.5 * order)
 
 
-def interpolate_spline(train_points,
-                       train_values,
-                       query_points,
-                       order,
-                       regularization_weight=0.0,
-                       name='interpolate_spline'):
+def interpolate_spline(
+    train_points,
+    train_values,
+    query_points,
+    order,
+    regularization_weight=0.0,
+    name="interpolate_spline",
+):
     r"""Interpolate signal using polyharmonic interpolation.
 
     The interpolant has the form
@@ -291,13 +290,13 @@ def interpolate_spline(train_points,
         query_points = tf.convert_to_tensor(query_points)
 
         # First, fit the spline to the observed data.
-        with tf.name_scope('solve'):
-            w, v = _solve_interpolation(train_points, train_values, order,
-                                        regularization_weight)
+        with tf.name_scope("solve"):
+            w, v = _solve_interpolation(
+                train_points, train_values, order, regularization_weight
+            )
 
         # Then, evaluate the spline at the query locations.
-        with tf.name_scope('predict'):
-            query_values = _apply_interpolation(query_points, train_points, w,
-                                                v, order)
+        with tf.name_scope("predict"):
+            query_values = _apply_interpolation(query_points, train_points, w, v, order)
 
     return query_values
