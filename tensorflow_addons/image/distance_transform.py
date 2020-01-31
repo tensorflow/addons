@@ -17,13 +17,17 @@
 import tensorflow as tf
 from tensorflow_addons.image import utils as img_utils
 from tensorflow_addons.utils.resource_loader import LazySO
+from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
+
+from typing import Optional
 
 _image_so = LazySO("custom_ops/image/_image_ops.so")
 
 tf.no_gradient("Addons>EuclideanDistanceTransform")
 
 
-def euclidean_dist_transform(images, dtype=tf.float32, name=None):
+def euclidean_dist_transform(images: TensorLike, dtype: FloatTensorLike = tf.float32,
+                             name: Optional[str] = None) -> tf.Tensor:
     """Applies euclidean distance transform(s) to the image(s).
 
     Args:
