@@ -57,7 +57,7 @@ class MomentumLARS(tf.keras.optimizers.Optimizer):
         # The LARS coefficient is a hyperparameter
         eeta: float = 0.001,
         epsilon: float = 0.0,
-        name="MomentumLARS",
+        name: str = "MomentumLARS",
         # Enable skipping variables from LARS scaling.
         skip_list=(),
         use_nesterov: bool = False,
