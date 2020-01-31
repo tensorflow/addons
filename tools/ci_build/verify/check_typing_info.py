@@ -39,8 +39,6 @@ EXCEPTION_LIST = [
     tensorflow_addons.image.rotate,
     tensorflow_addons.image.transform,
     tensorflow_addons.image.translate,
-    tensorflow_addons.layers.InstanceNormalization,
-    tensorflow_addons.layers.WeightNormalization,
     tensorflow_addons.losses.contrastive_loss,
     tensorflow_addons.losses.sigmoid_focal_crossentropy,
     tensorflow_addons.losses.giou_loss,

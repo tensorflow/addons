@@ -311,6 +311,7 @@ class InstanceNormalization(GroupNormalization):
         (https://arxiv.org/abs/1607.08022)
     """
 
+    @typechecked
     def __init__(self, **kwargs):
         if "groups" in kwargs:
             logging.warning("The given value for groups will be overwritten.")
