@@ -18,7 +18,8 @@ from tensorflow_addons.image import utils as img_utils
 from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils.types import TensorLike
 
-from typing import Optional, Union
+from typing import Optional
+
 
 def _pad(image: TensorLike, filter_shape: TensorLike, mode: str = "CONSTANT",
          constant_values: TensorLike = 0) -> tf.Tensor:
