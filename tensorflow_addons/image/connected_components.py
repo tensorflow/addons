@@ -25,7 +25,9 @@ _image_so = LazySO("custom_ops/image/_image_ops.so")
 
 
 @tf.function
-def connected_components(images: types.TensorLike, name: Optional[str] = None) -> tf.Tensor:
+def connected_components(
+    images: types.TensorLike, name: Optional[str] = None
+) -> tf.Tensor:
     """Labels the connected components in a batch of images.
 
     A component is a set of pixels in a single input image, which are

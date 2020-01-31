@@ -17,8 +17,6 @@
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 
-from typing import List
-
 EPSILON = 0.0000000001
 
 
@@ -79,8 +77,12 @@ def _pairwise_squared_distance_matrix(x: TensorLike) -> tf.Tensor:
     return squared_dists
 
 
-def _solve_interpolation(train_points: TensorLike, train_values: TensorLike, order: int,
-                         regularization_weight: FloatTensorLike) -> TensorLike:
+def _solve_interpolation(
+    train_points: TensorLike,
+    train_values: TensorLike,
+    order: int,
+    regularization_weight: FloatTensorLike,
+) -> TensorLike:
     """Solve for interpolation coefficients.
 
     Computes the coefficients of the polyharmonic interpolant for the
@@ -158,8 +160,13 @@ def _solve_interpolation(train_points: TensorLike, train_values: TensorLike, ord
     return w, v
 
 
-def _apply_interpolation(query_points: TensorLike, train_points: TensorLike, w: TensorLike,
-                         v: TensorLike, order: int) -> TensorLike:
+def _apply_interpolation(
+    query_points: TensorLike,
+    train_points: TensorLike,
+    w: TensorLike,
+    v: TensorLike,
+    order: int,
+) -> TensorLike:
     """Apply polyharmonic interpolation model to data.
 
     Given coefficients w and v for the interpolation model, we evaluate

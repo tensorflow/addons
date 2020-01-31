@@ -26,8 +26,9 @@ _image_so = LazySO("custom_ops/image/_image_ops.so")
 tf.no_gradient("Addons>EuclideanDistanceTransform")
 
 
-def euclidean_dist_transform(images: TensorLike, dtype: FloatTensorLike = tf.float32,
-                             name: Optional[str] = None) -> tf.Tensor:
+def euclidean_dist_transform(
+    images: TensorLike, dtype: FloatTensorLike = tf.float32, name: Optional[str] = None
+) -> tf.Tensor:
     """Applies euclidean distance transform(s) to the image(s).
 
     Args:
