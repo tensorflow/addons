@@ -18,7 +18,7 @@ from tensorflow.python.training.moving_averages import assign_moving_average
 from tensorflow_addons.optimizers import AveragedOptimizerWrapper
 from tensorflow_addons.utils.types import FloatTensorLike
 
-from typing import Optional
+from typing import Optional, Union
 from typeguard import typechecked
 
 
@@ -43,7 +43,7 @@ class MovingAverage(AveragedOptimizerWrapper):
 
     @typechecked
     def __init__(self,
-                 optimizer: tf.keras.optimizers.Optimizer,
+                 optimizer: Union[tf.keras.optimizers.Optimizer, str],
                  sequential_update: bool = True,
                  average_decay: FloatTensorLike = 0.99,
                  num_updates: Optional[str] = None,

@@ -70,7 +70,7 @@ class DecoupledWeightDecayExtension:
     """
 
     @typechecked
-    def __init__(self, weight_decay: FloatTensorLike, **kwargs):
+    def __init__(self, weight_decay: Union[FloatTensorLike, Callable], **kwargs):
         """Extension class that adds weight decay to an optimizer.
 
         Args:
@@ -175,7 +175,8 @@ class DecoupledWeightDecayExtension:
             return super()._resource_apply_sparse(grad, var, indices)
 
 
-def extend_with_decoupled_weight_decay(base_optimizer):
+def extend_with_decoupled_weight_decay(
+        base_optimizer: tf.keras.optimizers) -> tf.keras.optimizers:
     """Factory function returning an optimizer class with decoupled weight
     decay.
 
@@ -250,7 +251,7 @@ def extend_with_decoupled_weight_decay(base_optimizer):
         """
 
         @typechecked
-        def __init__(self, weight_decay: FloatTensorLike, *args, **kwargs):
+        def __init__(self, weight_decay: Union[FloatTensorLike, Callable], *args, **kwargs):
             # super delegation is necessary here
             super().__init__(weight_decay, *args, **kwargs)
 
@@ -299,9 +300,9 @@ class SGDW(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
 
     @typechecked
     def __init__(self,
-                 weight_decay: FloatTensorLike,
+                 weight_decay: Union[FloatTensorLike, Callable],
                  learning_rate: Union[FloatTensorLike, Callable] = 0.001,
-                 momentum: FloatTensorLike = 0.0,
+                 momentum: Union[FloatTensorLike, Callable] = 0.0,
                  nesterov: bool = False,
                  name: str = 'SGDW',
                  **kwargs):
@@ -374,10 +375,10 @@ class AdamW(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
 
     @typechecked
     def __init__(self,
-                 weight_decay: FloatTensorLike,
+                 weight_decay: Union[FloatTensorLike, Callable],
                  learning_rate: Union[FloatTensorLike, Callable] = 0.001,
-                 beta_1: FloatTensorLike = 0.9,
-                 beta_2: FloatTensorLike = 0.999,
+                 beta_1: Union[FloatTensorLike, Callable] = 0.9,
+                 beta_2: Union[FloatTensorLike, Callable] = 0.999,
                  epsilon: FloatTensorLike = 1e-07,
                  amsgrad: bool = False,
                  name: str = "AdamW",

@@ -48,7 +48,7 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
     def __init__(
         self,
         learning_rate: Union[FloatTensorLike, Callable],
-        lambda_: FloatTensorLike,
+        lambda_: Union[FloatTensorLike, Callable] = 0.01,
         epsilon: FloatTensorLike = 1e-7,
         use_locking: bool = False,
         name: str = "ConditionalGradient",

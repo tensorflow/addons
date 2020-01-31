@@ -17,6 +17,7 @@ import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
 from typeguard import typechecked
+from typing import Union
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -42,7 +43,7 @@ class Lookahead(tf.keras.optimizers.Optimizer):
 
     @typechecked
     def __init__(self,
-                 optimizer: tf.keras.optimizers.Optimizer,
+                 optimizer: Union[tf.keras.optimizers.Optimizer, str],
                  sync_period: int = 6,
                  slow_step_size: FloatTensorLike = 0.5,
                  name: str = "Lookahead",
