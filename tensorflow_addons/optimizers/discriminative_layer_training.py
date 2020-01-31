@@ -219,14 +219,14 @@ class DiscriminativeWrapper(tf.keras.optimizers.Optimizer):
 
     @typechecked
     def __init__(
-            self,
-            base_optimizer,
-            model: tf.keras.Model,
-            learning_rate: float,
-            verbose: bool = True,
-            name="discrim_opt",
-            *args,
-            **kwargs
+        self,
+        base_optimizer,
+        model: tf.keras.Model,
+        learning_rate: float,
+        verbose: bool = True,
+        name="discrim_opt",
+        *args,
+        **kwargs
     ):
 
         super().__init__(lr=learning_rate, name=name, *args, **kwargs)
