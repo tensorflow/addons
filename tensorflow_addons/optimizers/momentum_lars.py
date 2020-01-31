@@ -18,9 +18,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from typeguard import typechecked
+
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.training import training_ops
+from tensorflow_addons.utils import types
+from typeguard import typechecked
 
 import tensorflow.compat.v2 as tf
 
@@ -53,7 +57,7 @@ class MomentumLARS(tf.keras.optimizers.Optimizer):
         # The LARS coefficient is a hyperparameter
         eeta: float = 0.001,
         epsilon: float = 0.0,
-        name: str = "MomentumLARS",
+        name="MomentumLARS",
         # Enable skipping variables from LARS scaling.
         skip_list=(),
         use_nesterov: bool = False,
