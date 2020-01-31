@@ -11,6 +11,7 @@ py_library(
         "hamming.py",
         "matthews_correlation_coefficient.py",
         "multilabel_confusion_matrix.py",
+        "multilabel_metrics.py",
         "r_square.py",
         "utils.py",
     ],
@@ -86,6 +87,18 @@ py_test(
         "hamming_test.py",
     ],
     main = "hamming_test.py",
+    deps = [
+        ":metrics",
+    ],
+)
+
+py_test(
+    name = "multilabel_metrics_test",
+    size = "small",
+    srcs = [
+        "multilabel_metrics_test.py",
+    ],
+    main = "multilabel_metrics_test.py",
     deps = [
         ":metrics",
     ],
