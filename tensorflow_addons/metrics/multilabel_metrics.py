@@ -2,7 +2,32 @@ import tensorflow as tf
 
 
 class MultiLabelMacroRecall(tf.keras.metrics.Metric):
-    """Computes the Macro-averaged Recall of the given tensors."""
+    """
+    Computes the Macro-averaged Recall of the given tensors.
+    Notes:
+        - The inputs `y_true` and `y_pred` have an assumed structure. Namely,
+            given a tensor of shape `(x, y, z)`, then `x` would correspond to
+            the batch size, `y` would correspond to the number of labels you
+            have and `z` would correspond to examples e.g. the following tensor
+            ```
+                [
+                    [
+                        [1, 1, 1, 0],
+                        [0, 1, 1, 0],
+                        [0, 0, 1, 0],
+                    ]
+                ]
+            ```
+            has a batch size of 1, three label classes and four examples, where
+            the first example has one label, the second two, the third three,
+            and fourth has zero labels.
+
+        - This metric works as well with batchless input i.e. shape `(y, z)`.
+        - Use of `activation` in this metric may cause unexpected effects if
+            using shape of 4D or if your input is structured differently.
+            In that case set `activation` to `None` and transform `y_pred`
+            prior to passing.
+    """
 
     def __init__(
         self,
@@ -88,7 +113,11 @@ class MultiLabelMacroRecall(tf.keras.metrics.Metric):
 
 
 class MultiLabelMacroSpecificity(tf.keras.metrics.Metric):
-    """Computes the Macro-averaged Specificity of the given tensors."""
+    """
+    Computes the Macro-averaged Specificity of the given tensors.
+    Notes:
+        - see MultiLabelMacroRecall for shape assumptions
+    """
 
     def __init__(
         self,
@@ -167,7 +196,11 @@ class MultiLabelMacroSpecificity(tf.keras.metrics.Metric):
 
 
 class MultiLabelMacroSensitivity(tf.keras.metrics.Metric):
-    """Computes the Macro-averaged Sensitivity of the given tensors."""
+    """
+    Computes the Macro-averaged Sensitivity of the given tensors.
+    Notes:
+        - see MultiLabelMacroRecall for shape assumptions
+    """
 
     def __init__(
         self,
