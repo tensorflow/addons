@@ -78,6 +78,13 @@ class MultiLabelMacroRecall(tf.keras.metrics.Metric):
     def result(self):
         return self._recall
 
+    def reset_states(self):
+        # The state of the metric will be reset at the start of each epoch.
+        self._recall.assign(0.0)
+        self._true_positives.assign(0.0)
+        self._false_positives.assign(0.0)
+
+
 class MultiLabelMacroSpecificity(tf.keras.metrics.Metric):
     """Computes the Macro-averaged Specificity of the given tensors."""
 
