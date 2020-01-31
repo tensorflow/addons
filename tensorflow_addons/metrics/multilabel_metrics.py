@@ -203,10 +203,10 @@ class MultiLabelMacroSensitivity(tf.keras.metrics.Metric):
     def update_state(self, y_true, y_pred, sample_weight=None):
         # apply activation if needed
         y_pred = tf.cond(
-            tf.equal(self.from_logits, True),
+            tf.equal(self._from_logits, True),
             lambda: y_pred,
             lambda: tf.cond(
-                tf.equal(self.activation, 'sigmoid'),
+                tf.equal(self._activation, 'sigmoid'),
                 lambda: tf.sigmoid(y_pred),
                 lambda: y_pred
             )
