@@ -17,9 +17,17 @@
 import numpy as np
 import tensorflow as tf
 
+from tensorflow_addons.utils import types
+from typing import Optional
+
 
 @tf.function
-def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
+def interpolate_bilinear(
+    grid: types.TensorLike,
+    query_points: types.TensorLike,
+    indexing: str = "ij",
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Similar to Matlab's interp2 function.
 
     Finds values for query points on a grid using bilinear interpolation.
@@ -179,7 +187,9 @@ def interpolate_bilinear(grid, query_points, indexing="ij", name=None):
 
 
 @tf.function
-def dense_image_warp(image, flow, name=None):
+def dense_image_warp(
+    image: types.TensorLike, flow: types.TensorLike, name: Optional[str] = None
+) -> tf.Tensor:
     """Image warping using per-pixel flow vectors.
 
     Apply a non-linear warp to the image, where the warp is specified by a
