@@ -17,6 +17,9 @@
 import abc
 
 import tensorflow as tf
+from tensorflow_addons.utils.types import Number
+from typeguard import typechecked
+from typing import Optional, Type
 
 # TODO: Find public API alternatives to these
 from tensorflow.python.ops import control_flow_util
@@ -136,13 +139,14 @@ class BaseDecoder(tf.keras.layers.Layer):
       each time step.
     """
 
+    @typechecked
     def __init__(
         self,
-        output_time_major=False,
-        impute_finished=False,
-        maximum_iterations=None,
-        parallel_iterations=32,
-        swap_memory=False,
+        output_time_major: bool = False,
+        impute_finished: bool = False,
+        maximum_iterations: Optional[Number] = None,
+        parallel_iterations: int = 32,
+        swap_memory: bool = False,
         **kwargs
     ):
         self.output_time_major = output_time_major
@@ -253,14 +257,14 @@ class BaseDecoder(tf.keras.layers.Layer):
 
 
 def dynamic_decode(
-    decoder,
-    output_time_major=False,
-    impute_finished=False,
-    maximum_iterations=None,
-    parallel_iterations=32,
-    swap_memory=False,
-    training=None,
-    scope=None,
+    decoder: Type[Decoder],
+    output_time_major: bool = False,
+    impute_finished: bool = False,
+    maximum_iterations: Optional[Number] = None,
+    parallel_iterations: int = 32,
+    swap_memory: bool = False,
+    training: Optional[bool] = None,
+    scope: Optional[str] = None,
     **kwargs
 ):
     """Perform dynamic decoding with `decoder`.
