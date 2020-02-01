@@ -15,6 +15,10 @@
 """Base class to make optimizers weight decay ready."""
 
 import tensorflow as tf
+from tensorflow_addons.utils.types import FloatTensorLike
+
+from typeguard import typechecked
+from typing import Union, Callable, Type
 
 
 class DecoupledWeightDecayExtension:
@@ -65,7 +69,8 @@ class DecoupledWeightDecayExtension:
     ```
     """
 
-    def __init__(self, weight_decay, **kwargs):
+    @typechecked
+    def __init__(self, weight_decay: Union[FloatTensorLike, Callable], **kwargs):
         """Extension class that adds weight decay to an optimizer.
 
         Args:
@@ -170,7 +175,9 @@ class DecoupledWeightDecayExtension:
             return super()._resource_apply_sparse(grad, var, indices)
 
 
-def extend_with_decoupled_weight_decay(base_optimizer):
+@typechecked
+def extend_with_decoupled_weight_decay(
+        base_optimizer: Type[tf.keras.optimizers.Optimizer]) -> Type[tf.keras.optimizers.Optimizer]:
     """Factory function returning an optimizer class with decoupled weight
     decay.
 
@@ -244,7 +251,8 @@ def extend_with_decoupled_weight_decay(base_optimizer):
         training loss and generalization error in the paper above.
         """
 
-        def __init__(self, weight_decay, *args, **kwargs):
+        @typechecked
+        def __init__(self, weight_decay: Union[FloatTensorLike, Callable], *args, **kwargs):
             # super delegation is necessary here
             super().__init__(weight_decay, *args, **kwargs)
 
@@ -291,12 +299,13 @@ class SGDW(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
     ```
     """
 
+    @typechecked
     def __init__(self,
-                 weight_decay,
-                 learning_rate=0.001,
-                 momentum=0.0,
-                 nesterov=False,
-                 name='SGDW',
+                 weight_decay: Union[FloatTensorLike, Callable],
+                 learning_rate: Union[FloatTensorLike, Callable] = 0.001,
+                 momentum: Union[FloatTensorLike, Callable] = 0.0,
+                 nesterov: bool = False,
+                 name: str = 'SGDW',
                  **kwargs):
         """Construct a new SGDW optimizer.
 
@@ -365,14 +374,15 @@ class AdamW(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
     ```
     """
 
+    @typechecked
     def __init__(self,
-                 weight_decay,
-                 learning_rate=0.001,
-                 beta_1=0.9,
-                 beta_2=0.999,
-                 epsilon=1e-07,
-                 amsgrad=False,
-                 name="AdamW",
+                 weight_decay: Union[FloatTensorLike, Callable],
+                 learning_rate: Union[FloatTensorLike, Callable] = 0.001,
+                 beta_1: Union[FloatTensorLike, Callable] = 0.9,
+                 beta_2: Union[FloatTensorLike, Callable] = 0.999,
+                 epsilon: FloatTensorLike = 1e-07,
+                 amsgrad: bool = False,
+                 name: str = "AdamW",
                  **kwargs):
         """Construct a new AdamW optimizer.
 

@@ -16,20 +16,23 @@
 
 import tensorflow as tf
 from tensorflow_addons.utils.resource_loader import LazySO
+from tensorflow_addons.utils.types import Number, TensorLike
+
+from typing import Optional
 
 _distort_image_so = LazySO("custom_ops/image/_distort_image_ops.so")
 
 
 def random_hsv_in_yiq(
-    image,
-    max_delta_hue=0,
-    lower_saturation=1,
-    upper_saturation=1,
-    lower_value=1,
-    upper_value=1,
-    seed=None,
-    name=None,
-):
+    image: TensorLike,
+    max_delta_hue: Number = 0,
+    lower_saturation: Number = 1,
+    upper_saturation: Number = 1,
+    lower_value: Number = 1,
+    upper_value: Number = 1,
+    seed: Optional[int] = None,
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Adjust hue, saturation, value of an RGB image randomly in YIQ color
     space.
 
@@ -97,7 +100,13 @@ def random_hsv_in_yiq(
         )
 
 
-def adjust_hsv_in_yiq(image, delta_hue=0, scale_saturation=1, scale_value=1, name=None):
+def adjust_hsv_in_yiq(
+    image: TensorLike,
+    delta_hue: Number = 0,
+    scale_saturation: Number = 1,
+    scale_value: Number = 1,
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Adjust hue, saturation, value of an RGB image in YIQ color space.
 
     This is a convenience method that converts an RGB image to float

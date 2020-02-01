@@ -15,6 +15,7 @@
 
 import tensorflow as tf
 from tensorflow_addons.activations.sparsemax import sparsemax
+from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -29,7 +30,8 @@ class Sparsemax(tf.keras.layers.Layer):
         axis: Integer, axis along which the sparsemax normalization is applied.
     """
 
-    def __init__(self, axis=-1, **kwargs):
+    @typechecked
+    def __init__(self, axis: int = -1, **kwargs):
         super().__init__(**kwargs)
         self.supports_masking = True
         self.axis = axis
