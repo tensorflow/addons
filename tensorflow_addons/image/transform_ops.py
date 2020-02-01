@@ -271,7 +271,7 @@ def angles_to_projective_transforms(
 
 
 @tf.RegisterGradient("Addons>ImageProjectiveTransformV2")
-def _image_projective_transform_grad(op: TensorLike, grad: TensorLike) -> tf.Tensor:
+def _image_projective_transform_grad(op, grad):
     """Computes the gradient for ImageProjectiveTransform."""
     images = op.inputs[0]
     transforms = op.inputs[1]
