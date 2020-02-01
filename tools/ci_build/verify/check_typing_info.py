@@ -25,13 +25,6 @@ TUTORIAL_URL = "https://docs.python.org/3/library/typing.html"
 # TODO: add types and remove all elements from
 # the exception list.
 EXCEPTION_LIST = [
-    tensorflow_addons.image.mean_filter2d,
-    tensorflow_addons.image.median_filter2d,
-    tensorflow_addons.image.resampler,
-    tensorflow_addons.image.sparse_image_warp,
-    tensorflow_addons.image.rotate,
-    tensorflow_addons.image.transform,
-    tensorflow_addons.image.translate,
     tensorflow_addons.losses.contrastive_loss,
     tensorflow_addons.losses.sigmoid_focal_crossentropy,
     tensorflow_addons.losses.giou_loss,
