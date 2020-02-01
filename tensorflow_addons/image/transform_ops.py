@@ -38,7 +38,7 @@ def transform(
     images: TensorLike,
     transforms: TensorLike,
     interpolation: str = "NEAREST",
-    output_shape: Optional[str] = None,
+    output_shape: Optional[list] = None,
     name: Optional[str] = None,
 ) -> tf.Tensor:
     """Applies the given transform(s) to the image(s).

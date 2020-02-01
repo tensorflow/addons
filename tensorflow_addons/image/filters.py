@@ -16,12 +16,12 @@
 import tensorflow as tf
 from tensorflow_addons.image import utils as img_utils
 from tensorflow_addons.utils import keras_utils
-from tensorflow_addons.utils.types import TensorLike
+from tensorflow_addons.utils.types import TensorLike, FloatTensorLike
 
-from typing import Optional
+from typing import Optional, Union, List, Tuple
 
 
-def _pad(image: TensorLike, filter_shape: TensorLike, mode: str = "CONSTANT",
+def _pad(image: TensorLike, filter_shape: Union[List[int], Tuple[int]], mode: str = "CONSTANT",
          constant_values: TensorLike = 0) -> tf.Tensor:
     """Explicitly pad a 4-D image.
 
@@ -53,7 +53,7 @@ def _pad(image: TensorLike, filter_shape: TensorLike, mode: str = "CONSTANT",
 
 @tf.function
 def mean_filter2d(image: TensorLike,
-                  filter_shape: TensorLike = [3, 3],
+                  filter_shape: Union[List[int], Tuple[int]] = [3, 3],
                   padding: str = "REFLECT",
                   constant_values: TensorLike = 0,
                   name: Optional[str] = None) -> tf.Tensor:
@@ -121,9 +121,9 @@ def mean_filter2d(image: TensorLike,
 
 @tf.function
 def median_filter2d(image: TensorLike,
-                    filter_shape: TensorLike = [3, 3],
+                    filter_shape: Union[List[int], Tuple[int]] = [3, 3],
                     padding: str = "REFLECT",
-                    constant_values: TensorLike = 0,
+                    constant_values: FloatTensorLike = 0,
                     name: Optional[str] = None) -> tf.Tensor:
     """Perform median filtering on image(s).
 
