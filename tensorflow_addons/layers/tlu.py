@@ -15,6 +15,9 @@
 """Implements Thresholded Linear Unit."""
 
 import tensorflow as tf
+from typeguard import typechecked
+
+from tensorflow_addons.utils import types
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -36,15 +39,16 @@ class TLU(tf.keras.layers.Layer):
         which has the form `max(x, alpha*x + tau)`
     """
 
+    @typechecked
     def __init__(
         self,
-        affine=False,
-        tau_initializer="zeros",
-        tau_regularizer=None,
-        tau_constraint=None,
-        alpha_initializer="zeros",
-        alpha_regularizer=None,
-        alpha_constraint=None,
+        affine: bool = False,
+        tau_initializer: types.Initializer = "zeros",
+        tau_regularizer: types.Regularizer = None,
+        tau_constraint: types.Constraint = None,
+        alpha_initializer: types.Initializer = "zeros",
+        alpha_regularizer: types.Regularizer = None,
+        alpha_constraint: types.Constraint = None,
         **kwargs
     ):
         super().__init__(**kwargs)

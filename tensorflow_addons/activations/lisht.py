@@ -14,13 +14,15 @@
 # ==============================================================================
 
 import tensorflow as tf
+
+from tensorflow_addons.utils import types
 from tensorflow_addons.utils.resource_loader import LazySO
 
 _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def lisht(x):
+def lisht(x: types.TensorLike) -> tf.Tensor:
     """LiSHT: Non-Parameteric Linearly Scaled Hyperbolic Tangent Activation Function.
 
     Computes linearly scaled hyperbolic tangent (LiSHT): `x * tanh(x)`

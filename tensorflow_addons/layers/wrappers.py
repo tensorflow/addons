@@ -16,6 +16,7 @@
 import logging
 
 import tensorflow as tf
+from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -53,7 +54,8 @@ class WeightNormalization(tf.keras.layers.Wrapper):
       NotImplementedError: If `data_init` is True and running graph execution
     """
 
-    def __init__(self, layer, data_init=True, **kwargs):
+    @typechecked
+    def __init__(self, layer: tf.keras.layers, data_init: bool = True, **kwargs):
         super().__init__(layer, **kwargs)
         self.data_init = data_init
         self._track_trackable(layer, name='layer')

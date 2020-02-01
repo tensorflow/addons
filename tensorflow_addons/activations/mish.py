@@ -14,13 +14,15 @@
 # ==============================================================================
 
 import tensorflow as tf
+
+from tensorflow_addons.utils import types
 from tensorflow_addons.utils.resource_loader import LazySO
 
 _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def mish(x):
+def mish(x: types.TensorLike) -> tf.Tensor:
     """Mish: A Self Regularized Non-Monotonic Neural Activation Function.
 
     Computes mish activation: x * tanh(softplus(x))

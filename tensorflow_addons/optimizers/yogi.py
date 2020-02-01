@@ -23,6 +23,10 @@ https://papers.nips.cc/paper/8186-adaptive-methods-for-nonconvex-optimization.pd
 """
 
 import tensorflow as tf
+from tensorflow_addons.utils.types import FloatTensorLike
+
+from typeguard import typechecked
+from typing import Union, Callable
 
 
 def _solve(a, b, c):
@@ -53,17 +57,18 @@ class Yogi(tf.keras.optimizers.Optimizer):
     https://papers.nips.cc/paper/8186-adaptive-methods-for-nonconvex-optimization.pdf.
     """
 
+    @typechecked
     def __init__(
         self,
-        learning_rate=0.01,
-        beta1=0.9,
-        beta2=0.999,
-        epsilon=1e-3,
-        l1_regularization_strength=0.0,
-        l2_regularization_strength=0.0,
-        initial_accumulator_value=1.0,
-        activation="sign",
-        name="Yogi",
+        learning_rate: Union[FloatTensorLike, Callable] = 0.01,
+        beta1: FloatTensorLike = 0.9,
+        beta2: FloatTensorLike = 0.999,
+        epsilon: FloatTensorLike = 1e-3,
+        l1_regularization_strength: FloatTensorLike = 0.0,
+        l2_regularization_strength: FloatTensorLike = 0.0,
+        initial_accumulator_value: FloatTensorLike = 1.0,
+        activation: str = "sign",
+        name: str = "Yogi",
         **kwargs
     ):
         """Construct a new Yogi optimizer.

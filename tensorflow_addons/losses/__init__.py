@@ -19,7 +19,12 @@ from tensorflow_addons.losses.focal_loss import sigmoid_focal_crossentropy, Sigm
 from tensorflow_addons.losses.giou_loss import giou_loss, GIoULoss
 from tensorflow_addons.losses.lifted import lifted_struct_loss, LiftedStructLoss
 from tensorflow_addons.losses.sparsemax_loss import sparsemax_loss, SparsemaxLoss
-from tensorflow_addons.losses.triplet import triplet_semihard_loss, TripletSemiHardLoss
+from tensorflow_addons.losses.triplet import (
+    triplet_semihard_loss,
+    triplet_hard_loss,
+    TripletSemiHardLoss,
+    TripletHardLoss,
+)
 from tensorflow_addons.losses.quantiles import pinball_loss, PinballLoss
 
 # Temporarily disable for windows

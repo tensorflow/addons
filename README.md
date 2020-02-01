@@ -84,7 +84,7 @@ git clone https://github.com/tensorflow/addons.git
 cd addons
 
 # This script links project with TensorFlow dependency
-./configure.sh
+python3 ./configure.py
 
 bazel build --enable_runfiles build_pip_pkg
 bazel-bin/build_pip_pkg artifacts
