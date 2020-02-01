@@ -25,9 +25,9 @@ def _get_v(b1_height, b1_width, b2_height, b2_width):
             tf.math.divide_no_nan(width, height))
         v = 4 * ((arctan / math.pi)**2)
 
-        def _grad_v(dy):
-            gdw = dy * 8 * arctan * height / (math.pi**2)
-            gdh = -dy * 8 * arctan * width / (math.pi**2)
+        def _grad_v(dv):
+            gdw = dv * 8 * arctan * height / (math.pi**2)
+            gdh = -dv * 8 * arctan * width / (math.pi**2)
             return [gdh, gdw]
 
         return v, _grad_v
@@ -91,8 +91,6 @@ def _common_iou(b1, b2, mode='iou'):
                 [enclose_ymax - enclose_ymin, enclose_xmax - enclose_xmin])
             diou = iou - (euclidean**2) / (diag_length**2)
             if mode == 'ciou':
-                # ver = 4 * (((tf.atan(tf.math.divide_no_nan(b1_width , b1_height)) - tf.atan(
-                #     tf.math.divide_no_nan(b2_width , b2_height))) / math.pi)**2)
                 v = _get_v(b1_height, b1_width, b2_height, b2_width)
                 alpha = tf.math.divide_no_nan(v, ((1 - iou) + v))
                 return diou - alpha * v
