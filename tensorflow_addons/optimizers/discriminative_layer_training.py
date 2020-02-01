@@ -152,7 +152,7 @@ class DiscriminativeWrapper(tf.keras.optimizers.Optimizer):
         model: tf.keras.Model,
         learning_rate: float,
         verbose: bool = True,
-        name="discrim_opt",
+        name: str = "discrim_opt",
         *args,
         **kwargs
     ):
