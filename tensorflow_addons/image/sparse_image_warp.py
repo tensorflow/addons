@@ -18,9 +18,10 @@ import numpy as np
 import tensorflow as tf
 from tensorflow_addons.image import dense_image_warp
 from tensorflow_addons.image import interpolate_spline
+from tensorflow_addons.utils.types import TensorLike, FloatTensorLike
 
 
-def _get_grid_locations(image_height, image_width):
+def _get_grid_locations(image_height: TensorLike, image_width: TensorLike) -> TensorLike:
     """Wrapper for np.meshgrid."""
 
     y_range = np.linspace(0, image_height - 1, image_height)
@@ -29,13 +30,17 @@ def _get_grid_locations(image_height, image_width):
     return np.stack((y_grid, x_grid), -1)
 
 
-def _expand_to_minibatch(np_array, batch_size):
+def _expand_to_minibatch(np_array: TensorLike, batch_size: TensorLike) -> TensorLike:
     """Tile arbitrarily-sized np_array to include new batch dimension."""
     tiles = [batch_size] + [1] * np_array.ndim
     return np.tile(np.expand_dims(np_array, 0), tiles)
 
 
-def _get_boundary_locations(image_height, image_width, num_points_per_edge):
+def _get_boundary_locations(
+  image_height: TensorLike,
+  image_width: TensorLike,
+  num_points_per_edge: TensorLike,
+) -> TensorLike:
     """Compute evenly-spaced indices along edge of image."""
     y_range = np.linspace(0, image_height - 1, num_points_per_edge + 2)
     x_range = np.linspace(0, image_width - 1, num_points_per_edge + 2)
@@ -46,9 +51,13 @@ def _get_boundary_locations(image_height, image_width, num_points_per_edge):
     return np.stack([ys[is_boundary], xs[is_boundary]], axis=-1)
 
 
-def _add_zero_flow_controls_at_boundary(control_point_locations,
-                                        control_point_flows, image_height,
-                                        image_width, boundary_points_per_edge):
+def _add_zero_flow_controls_at_boundary(
+  control_point_locations: TensorLike,
+  control_point_flows: TensorLike,
+  image_height: TensorLike,
+  image_width: TensorLike,
+  boundary_points_per_edge: TensorLike,
+) -> tf.Tensor:
     """Add control points for zero-flow boundary conditions.
 
     Augment the set of control points with extra points on the
@@ -94,13 +103,13 @@ def _add_zero_flow_controls_at_boundary(control_point_locations,
     return merged_control_point_locations, merged_control_point_flows
 
 
-def sparse_image_warp(image,
-                      source_control_point_locations,
-                      dest_control_point_locations,
-                      interpolation_order=2,
-                      regularization_weight=0.0,
-                      num_boundary_points=0,
-                      name='sparse_image_warp'):
+def sparse_image_warp(image: TensorLike,
+                      source_control_point_locations: TensorLike,
+                      dest_control_point_locations: TensorLike,
+                      interpolation_order: int = 2,
+                      regularization_weight: FloatTensorLike = 0.0,
+                      num_boundary_points: int = 0,
+                      name: str = 'sparse_image_warp') -> tf.Tensor:
     """Image warping using correspondences between sparse control points.
 
     Apply a non-linear warp to the image, where the warp is specified by
