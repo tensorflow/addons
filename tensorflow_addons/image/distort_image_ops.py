@@ -30,7 +30,7 @@ def random_hsv_in_yiq(
     upper_saturation: Number = 1,
     lower_value: Number = 1,
     upper_value: Number = 1,
-    seed: Optional[str] = None,
+    seed: Optional[int] = None,
     name: Optional[str] = None,
 ) -> tf.Tensor:
     """Adjust hue, saturation, value of an RGB image randomly in YIQ color
