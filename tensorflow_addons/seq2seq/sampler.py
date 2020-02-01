@@ -17,7 +17,7 @@
 import abc
 
 import tensorflow as tf
-from tensorflow_addons.seq2seq import decoder   
+from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.utils.types import Initializer, TensorLike
 
 from typeguard import typechecked
@@ -109,8 +109,8 @@ class CustomSampler(Sampler):
         initialize_fn: Initializer,
         sample_fn: Union[TensorLike, Callable],
         next_inputs_fn: Union[TensorLike, Callable],
-        sample_ids_shape: Optional [TensorLike] = None,
-        sample_ids_dtype: Optional [TensorLike] = None,
+        sample_ids_shape: Optional[TensorLike] = None,
+        sample_ids_dtype: Optional[TensorLike] = None,
     ):
         """Initializer.
 
@@ -311,7 +311,7 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
         sampling_probability: TensorLike,
         embedding_fn: Union[TensorLike, Callable] = None,
         time_major: bool = False,
-        seed: Optional[TensorLike] = None,
+        seed: Optional[int] = None,
         scheduling_seed: Optional[TensorLike] = None,
     ):
         """Initializer.
@@ -411,8 +411,8 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
         self,
         sampling_probability: TensorLike,
         time_major: bool = False,
-        seed: Optional[TensorLike] = None,
-        next_inputs_fn: Optional[Callable] = None
+        seed: Optional[int] = None,
+        next_inputs_fn: Optional[Callable] = None,
     ):
         """Initializer.
 
@@ -650,8 +650,8 @@ class SampleEmbeddingSampler(GreedyEmbeddingSampler):
         self,
         embedding_fn: Union[TensorLike, Callable] = None,
         softmax_temperature: Optional[TensorLike] = None,
-        seed: Optional[TensorLike] = None
-        ):
+        seed: Optional[TensorLike] = None,
+    ):
         """Initializer.
 
         Args:
@@ -700,7 +700,7 @@ class InferenceSampler(Sampler):
         sample_shape: tf.int32,
         sample_dtype: tf.int32,
         end_fn: Callable,
-        next_inputs_fn: Optional[Callable] = None
+        next_inputs_fn: Optional[Callable] = None,
     ):
         """Initializer.
 

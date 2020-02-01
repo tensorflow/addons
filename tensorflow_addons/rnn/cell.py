@@ -19,7 +19,8 @@ import tensorflow.keras as keras
 from typeguard import typechecked
 
 from tensorflow_addons.utils import types
-from typing import Union
+from typing import Optional
+from tensorflow_addons.utils.types import Activation
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -42,7 +43,7 @@ class NASCell(keras.layers.AbstractRNNCell):
     @typechecked
     def __init__(self,
                  units: int,
-                 projection: Union[int, str] = None,
+                 projection: Optional[int] = None,
                  use_bias: bool = False,
                  kernel_initializer: types.Initializer = "glorot_uniform",
                  recurrent_initializer: types.Initializer = "glorot_uniform",
@@ -234,8 +235,8 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
     @typechecked
     def __init__(self,
                  units: int,
-                 activation: str = 'tanh',
-                 recurrent_activation: str = 'sigmoid',
+                 activation: Activation = 'tanh',
+                 recurrent_activation: Activation = 'sigmoid',
                  use_bias: bool = True,
                  kernel_initializer: types.Initializer = 'glorot_uniform',
                  recurrent_initializer: types.Initializer = 'orthogonal',

@@ -96,7 +96,9 @@ def _tile_batch(t, multiplier):
     return tiled
 
 
-def tile_batch(t: FloatTensorLike, multiplier: int, name: Optional[str] = None) -> tf.Tensor:
+def tile_batch(
+    t: FloatTensorLike, multiplier: int, name: Optional[str] = None
+) -> tf.Tensor:
     """Tile the batch dimension of a (possibly nested structure of) tensor(s)
     t.
 
@@ -125,9 +127,8 @@ def tile_batch(t: FloatTensorLike, multiplier: int, name: Optional[str] = None) 
 
 
 def gather_tree_from_array(
-    t:FloatTensorLike,
-    parent_ids: List[int],
-    sequence_length: List[int]) -> tf.Tensor:
+    t: FloatTensorLike, parent_ids: List[int], sequence_length: List[int]
+) -> tf.Tensor:
     """Calculates the full beams for `TensorArray`s.
 
     Args:

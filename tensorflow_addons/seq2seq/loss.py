@@ -15,16 +15,16 @@
 """Seq2seq loss operations for use in sequence models."""
 
 import tensorflow as tf
-from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
+from tensorflow_addons.utils.types import TensorLike
 
 from typeguard import typechecked
 from typing import Callable, Optional
 
 
 def sequence_loss(
-    logits: FloatTensorLike,
+    logits: TensorLike,
     targets: TensorLike,
-    weights: FloatTensorLike,
+    weights: TensorLike,
     average_across_timesteps: bool = True,
     average_across_batch: bool = True,
     sum_over_timesteps: bool = False,
