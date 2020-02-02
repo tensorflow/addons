@@ -266,7 +266,7 @@ def dynamic_decode(
     training: Optional[bool] = None,
     scope: Optional[str] = None,
     **kwargs
-):
+) -> tf.Tensor:
     """Perform dynamic decoding with `decoder`.
 
     Calls initialize() once and step() repeatedly on the Decoder object.

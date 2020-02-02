@@ -22,6 +22,9 @@ from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
 from tensorflow_addons.utils import keras_utils
 
+from typeguard import typechecked
+from typing import Optional, ClassVar
+
 
 class BasicDecoderOutput(
     collections.namedtuple("BasicDecoderOutput", ("rnn_output", "sample_id"))
@@ -32,7 +35,14 @@ class BasicDecoderOutput(
 class BasicDecoder(decoder.BaseDecoder):
     """Basic sampling decoder."""
 
-    def __init__(self, cell, sampler, output_layer=None, **kwargs):
+    @typechecked
+    def __init__(
+        self,
+        cell: ClassVar[tf.keras.layers.RNN],
+        sampler: sampler_py.Sampler,
+        output_layer: Optional[tf.keras.layers.Layer] = None,
+        **kwargs
+    ):
         """Initialize BasicDecoder.
 
         Args:

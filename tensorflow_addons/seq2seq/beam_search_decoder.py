@@ -655,6 +655,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
     the decoding to cover all inputs.
     """
 
+    @typechecked
     def __init__(
         self,
         cell: ClassVar[tf.keras.layers.RNN],
