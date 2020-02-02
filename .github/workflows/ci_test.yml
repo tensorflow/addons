@@ -109,5 +109,10 @@ jobs:
         uses: abhinavsingh/setup-bazel@v3
         with:
           version: $BAZEL_VERSION
+      - uses: actions/setup-python@v1
+          with:
+            python-version: '3.7'
+      - name: Setup the environement
+        run: python3 ./configure.py
       - name: Check the validity of build files
         run: bazel build --nobuild -- //tensorflow_addons/...
