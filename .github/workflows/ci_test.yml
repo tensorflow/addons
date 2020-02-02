@@ -113,6 +113,8 @@ jobs:
         with:
           python-version: '3.7'
       - name: Setup the environement
-        run: python3 ./configure.py
+        run: |
+          pip install tensorflow-cpu
+          python3 ./configure.py --no-deps
       - name: Check the validity of build files
         run: bazel build --nobuild -- //tensorflow_addons/...
