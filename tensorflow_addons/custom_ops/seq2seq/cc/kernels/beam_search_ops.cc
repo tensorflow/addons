@@ -19,6 +19,8 @@ limitations under the License.
 #define EIGEN_USE_GPU
 #endif  // GOOGLE_CUDA
 
+#include "tensorflow_addons/custom_ops/seq2seq/cc/kernels/beam_search_ops.h"
+
 #include <memory>
 #include <vector>
 
@@ -31,7 +33,6 @@ limitations under the License.
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/platform/macros.h"
 #include "tensorflow/core/util/work_sharder.h"
-#include "tensorflow_addons/custom_ops/seq2seq/cc/kernels/beam_search_ops.h"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {

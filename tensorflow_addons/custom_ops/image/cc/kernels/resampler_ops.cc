@@ -15,6 +15,8 @@
 
 #define EIGEN_USE_THREADS
 
+#include "tensorflow_addons/custom_ops/image/cc/kernels/resampler_ops.h"
+
 #include <algorithm>
 #include <cmath>
 #include <memory>
@@ -25,7 +27,6 @@
 #include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/util/work_sharder.h"
-#include "tensorflow_addons/custom_ops/image/cc/kernels/resampler_ops.h"
 
 namespace tensorflow {
 
