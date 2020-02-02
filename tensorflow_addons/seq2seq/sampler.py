@@ -697,7 +697,7 @@ class InferenceSampler(Sampler):
     def __init__(
         self,
         sample_fn: Union[TensorLike, Callable],
-        sample_shape: tf.int32,
+        sample_shape: TensorLike,
         sample_dtype: tf.int32,
         end_fn: Callable,
         next_inputs_fn: Optional[Callable] = None,
