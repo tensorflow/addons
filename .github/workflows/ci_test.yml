@@ -100,3 +100,13 @@ jobs:
         run: TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
       - name: Run type check
         run: python tools/ci_build/verify/check_typing_info.py
+  check-bazel-format:
+    name: Bazel code format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: install buildifier
+        run: |
+          wget -O /usr/local/bin/buildifier https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier
+      - name: Check that the Bazel files are formatted with buildifier
+        run: buildifier -mode=check -r ./
