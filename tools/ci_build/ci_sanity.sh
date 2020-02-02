@@ -58,14 +58,9 @@ do_bazel_nobuild() {
     cmd_status "This is due to invalid BUILD files."
 }
 
-do_check_code_format_test() {
-    CHECK_CMD="$SCRIPT_DIR/code_format.sh $1"
-    ${CHECK_CMD}
-}
-
 # Supply all sanity step commands and descriptions
-SANITY_STEPS=("do_check_code_format_test" "do_bazel_nobuild")
-SANITY_STEPS_DESC=("Check code style" "bazel nobuild")
+SANITY_STEPS=("do_bazel_nobuild")
+SANITY_STEPS_DESC=("bazel nobuild")
 
 INCREMENTAL_FLAG=""
 DEFAULT_BAZEL_CONFIGS=""

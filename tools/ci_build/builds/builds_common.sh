@@ -37,16 +37,3 @@ get_changed_files_from_master_branch() {
     ANCESTOR=$(git merge-base HEAD master origin/master)
     git diff ${ANCESTOR} --diff-filter=d --name-only "$@"
 }
-
-# List .h|.cc files changed that still exist,
-# i.e., not removed.
-# Usage: get_clang_files_to_check [--incremental]
-get_clang_files_to_check() {
-    if [[ "$1" == "--incremental" ]]; then
-        get_changed_files_from_master_branch -- '*.h' '*.cc'
-    elif [[ -z "$1" ]]; then
-        find . -name '*.h' -o -name '*.cc'
-    else
-        die "Found unsupported args: $@ for get_clang_files_to_check."
-    fi
-}
