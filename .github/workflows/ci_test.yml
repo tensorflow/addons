@@ -118,3 +118,14 @@ jobs:
           python3 ./configure.py --no-deps
       - name: Check the validity of build files
         run: bazel build --nobuild -- //tensorflow_addons/...
+  check-bazel-format:
+    name: Bazel code format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: install buildifier
+        run: |
+          sudo wget -O /usr/local/bin/buildifier https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier
+          sudo chmod +x /usr/local/bin/buildifier
+      - name: Ensure contributor used "buildifier -r ./" before commit
+        run: buildifier -mode=check -r ./

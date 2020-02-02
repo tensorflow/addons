@@ -50,50 +50,6 @@ if [[ ! -z "$UNRESOLVED_ARGS" ]]; then
     die "ERROR: Found unsupported args: $UNRESOLVED_ARGS"
 fi
 
-do_bazel_config_format_check() {
-    BUILD_FILES=$(get_bazel_files_to_check $INCREMENTAL_FLAG)
-    if [[ -z $BUILD_FILES ]]; then
-        echo "do_bazel_config_format_check will NOT run due to"\
-             "the absence of code changes."
-        return 0
-    fi
-
-    NUM_BUILD_FILES=$(echo ${BUILD_FILES} | wc -w)
-    echo "Running do_buildifier on ${NUM_BUILD_FILES} files"
-    echo ""
-
-    if [[ ! -z $IN_PLACE_FLAG ]]; then
-        echo "Auto format..."
-        buildifier -v -mode=fix ${BUILD_FILES}
-    fi
-
-    BUILDIFIER_START_TIME=$(date +'%s')
-    BUILDIFIER_OUTPUT_FILE="$(mktemp)_buildifier_output.log"
-
-    rm -rf ${BUILDIFIER_OUTPUT_FILE}
-
-    buildifier -showlog -v -mode=check \
-        ${BUILD_FILES} 2>&1 | tee ${BUILDIFIER_OUTPUT_FILE}
-    BUILDIFIER_END_TIME=$(date +'%s')
-
-    echo ""
-    echo "buildifier took $((BUILDIFIER_END_TIME - BUILDIFIER_START_TIME)) s"
-    echo ""
-
-    if [[ -s ${BUILDIFIER_OUTPUT_FILE} ]]; then
-        echo "FAIL: buildifier found errors and/or warnings in above BUILD files."
-        echo "buildifier suggested the following changes:"
-        buildifier -showlog -v -mode=diff ${BUILD_FILES}
-        echo "Please fix manually or run buildifier <file> to auto-fix."
-        echo "Bazel configuration format check fails."
-        return 1
-    else
-        echo "Bazel configuration format check success."
-        return 0
-    fi
-}
-
-
 do_clang_format_check() {
     CLANG_SRC_FILES=$(get_clang_files_to_check $INCREMENTAL_FLAG)
     if [[ -z $CLANG_SRC_FILES ]]; then
@@ -133,8 +89,8 @@ do_clang_format_check() {
 }
 
 # Supply all auto format step commands and descriptions
-FORMAT_STEPS=("do_bazel_config_format_check" "do_clang_format_check")
-FORMAT_STEPS_DESC=("Check Bazel file format" "Check  C++ file format")
+FORMAT_STEPS=("do_clang_format_check")
+FORMAT_STEPS_DESC=("Check  C++ file format")
 
 FAIL_COUNTER=0
 PASS_COUNTER=0
