@@ -31,7 +31,7 @@ from typing import Callable, List, Optional, ClassVar, Union
 _beam_search_so = LazySO("custom_ops/seq2seq/_beam_search_ops.so")
 
 
-def gather_tree(*args, **kwargs) -> dict:
+def gather_tree(*args, **kwargs) -> tf.Tensor:
     return _beam_search_so.ops.addons_gather_tree(*args, **kwargs)
 
 

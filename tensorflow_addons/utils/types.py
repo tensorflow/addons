@@ -39,6 +39,7 @@ Number = Union[
 Initializer = Union[None, dict, str, Callable]
 Regularizer = Union[None, dict, str, Callable]
 Constraint = Union[None, dict, str, Callable]
+Activation = Union[None, str, Callable]
 
 TensorLike = Union[List[Union[Number, list]], Number, np.ndarray, tf.Tensor]
 FloatTensorLike = Union[tf.Tensor, float, np.float16, np.float32, np.float64]
