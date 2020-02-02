@@ -50,16 +50,3 @@ get_bazel_files_to_check() {
         die "Found unsupported args: $@ for get_bazel_files_to_check."
     fi
 }
-
-# List .h|.cc files changed that still exist,
-# i.e., not removed.
-# Usage: get_clang_files_to_check [--incremental]
-get_clang_files_to_check() {
-    if [[ "$1" == "--incremental" ]]; then
-        get_changed_files_from_master_branch -- '*.h' '*.cc'
-    elif [[ -z "$1" ]]; then
-        find . -name '*.h' -o -name '*.cc'
-    else
-        die "Found unsupported args: $@ for get_clang_files_to_check."
-    fi
-}
