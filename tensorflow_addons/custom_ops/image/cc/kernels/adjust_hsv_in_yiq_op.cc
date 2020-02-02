@@ -114,27 +114,28 @@ class AdjustHsvInYiqOp<CPUDevice> : public AdjustHsvInYiqOpBase {
     internal::compute_transformation_matrix<kChannelSize * kChannelSize>(
         delta_h, scale_s, scale_v, transformation_matrix);
     const int kCostPerChannel = 10;
-    const DeviceBase::CpuWorkerThreads& worker_threads =
-        *context->device()->tensorflow_cpu_worker_threads();
-    Shard(worker_threads.num_threads, worker_threads.workers, channel_count,
-          kCostPerChannel, [&input_data, &output_data, &transformation_matrix](
-                               int64 start_channel, int64 end_channel) {
-            // Applying projection matrix to input RGB vectors.
-            const float* p = input_data.data() + start_channel * kChannelSize;
-            float* q = output_data.data() + start_channel * kChannelSize;
-            for (int i = start_channel; i < end_channel; i++) {
-              for (int q_index = 0; q_index < kChannelSize; q_index++) {
-                q[q_index] = 0;
-                for (int p_index = 0; p_index < kChannelSize; p_index++) {
-                  q[q_index] +=
-                      p[p_index] *
-                      transformation_matrix[q_index + kChannelSize * p_index];
-                }
+    auto thread_pool =
+        context->device()->tensorflow_cpu_worker_threads()->workers;
+    thread_pool->ParallelFor(
+        channel_count, kCostPerChannel,
+        [&input_data, &output_data, &transformation_matrix](int64 start_channel,
+                                                            int64 end_channel) {
+          // Applying projection matrix to input RGB vectors.
+          const float* p = input_data.data() + start_channel * kChannelSize;
+          float* q = output_data.data() + start_channel * kChannelSize;
+          for (int i = start_channel; i < end_channel; i++) {
+            for (int q_index = 0; q_index < kChannelSize; q_index++) {
+              q[q_index] = 0;
+              for (int p_index = 0; p_index < kChannelSize; p_index++) {
+                q[q_index] +=
+                    p[p_index] *
+                    transformation_matrix[q_index + kChannelSize * p_index];
               }
-              p += kChannelSize;
-              q += kChannelSize;
             }
-          });
+            p += kChannelSize;
+            q += kChannelSize;
+          }
+        });
   }
 };
 
