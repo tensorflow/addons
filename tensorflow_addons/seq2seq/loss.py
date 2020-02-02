@@ -31,7 +31,7 @@ def sequence_loss(
     sum_over_batch: bool = False,
     softmax_loss_function: Optional[Callable] = None,
     name: Optional[str] = None,
-):
+) -> tf.Tensor:
     """Weighted cross-entropy loss for a sequence of logits.
 
     Depending on the values of `average_across_timesteps` /
