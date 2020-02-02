@@ -112,3 +112,14 @@ jobs:
         with:
           clangFormatVersion: 9
           cliArgs: --style=google
+  check-bazel-format:
+    name: Bazel code format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: install buildifier
+        run: |
+          sudo wget -O /usr/local/bin/buildifier https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier
+          sudo chmod +x /usr/local/bin/buildifier
+      - name: Ensure contributor used "buildifier -r ./" before commit
+        run: buildifier -mode=check -r ./

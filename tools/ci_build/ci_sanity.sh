@@ -69,8 +69,8 @@ do_check_code_format_test() {
 }
 
 # Supply all sanity step commands and descriptions
-SANITY_STEPS=("do_check_code_format_test" "do_bazel_nobuild" "do_check_file_name_test")
-SANITY_STEPS_DESC=("Check code style" "bazel nobuild" "Check file names for cases")
+SANITY_STEPS=("do_bazel_nobuild" "do_check_file_name_test")
+SANITY_STEPS_DESC=("bazel nobuild" "Check file names for cases")
 
 INCREMENTAL_FLAG=""
 DEFAULT_BAZEL_CONFIGS=""

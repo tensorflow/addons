@@ -14,12 +14,8 @@ exclude = '''
     | build
     | dist
   )/
-  | setup.py
-  | tensorflow_addons/activations/gelu.py
-  | tensorflow_addons/activations/gelu_test.py
   | tensorflow_addons/activations/rrelu.py
   | tensorflow_addons/activations/rrelu_test.py
-  | tensorflow_addons/callbacks/tqdm_progress_bar.py
   | tensorflow_addons/image/filters.py
   | tensorflow_addons/image/filters_test.py
   | tensorflow_addons/image/sparse_image_warp.py
