@@ -94,47 +94,9 @@ do_bazel_config_format_check() {
 }
 
 
-do_clang_format_check() {
-    CLANG_SRC_FILES=$(get_clang_files_to_check $INCREMENTAL_FLAG)
-    if [[ -z $CLANG_SRC_FILES ]]; then
-        echo "do_clang_format_check will NOT run due to"\
-             "the absence of code changes."
-        return 0
-    fi
-
-    NUM_BUILD_FILES=$(echo ${CLANG_SRC_FILES} | wc -w)
-    echo "Running do_clang_format_check on ${NUM_BUILD_FILES} files"
-    echo ""
-
-    CLANG_FORMAT=${CLANG_FORMAT:-clang-format-3.8}
-    CLANG_FORMAT_OPTS="--style=google"
-
-    if [[ ! -z $IN_PLACE_FLAG ]]; then
-        echo "Auto format..."
-        $CLANG_FORMAT $CLANG_FORMAT_OPTS -i $CLANG_SRC_FILES
-    fi
-
-    success=1
-    for filename in $CLANG_SRC_FILES; do
-        $CLANG_FORMAT $CLANG_FORMAT_OPTS $filename | diff $filename - > /dev/null
-        if [ ! $? -eq 0 ]; then
-            success=0
-            echo "File $filename is not properly formatted with clang-format --style=google"
-        fi
-    done
-
-    if [ $success == 0 ]; then
-        echo "Clang format check fails."
-        return 1
-    else
-        echo "Clang format check success."
-        return 0
-    fi
-}
-
 # Supply all auto format step commands and descriptions
-FORMAT_STEPS=("do_bazel_config_format_check" "do_clang_format_check")
-FORMAT_STEPS_DESC=("Check Bazel file format" "Check  C++ file format")
+FORMAT_STEPS=("do_bazel_config_format_check")
+FORMAT_STEPS_DESC=("Check Bazel file format")
 
 FAIL_COUNTER=0
 PASS_COUNTER=0
