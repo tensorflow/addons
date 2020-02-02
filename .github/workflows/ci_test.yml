@@ -107,4 +107,4 @@ jobs:
       - uses: actions/checkout@v1
       - uses: DoozyX/clang-format-lint-action@v0.5
         with:
-          clangFormatVersion: 5
+          clangFormatVersion: 9
