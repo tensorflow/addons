@@ -87,7 +87,7 @@ struct ImageConnectedComponentsFunctor<CPUDevice, T> {
     if (num_elements == 0) {
       return;
     }
-    auto worker_threads = ctx->device()->tensorflow_cpu_worker_threads();
+    auto thread_pool = ctx->device()->tensorflow_cpu_worker_threads()->workers;
     BlockedImageUnionFindFunctor<T> union_find(
         images.data(), num_rows, num_cols, forest.data(), rank.data());
     while (union_find.can_merge()) {
@@ -100,19 +100,20 @@ struct ImageConnectedComponentsFunctor<CPUDevice, T> {
       // loop more while searching for the root, but this should not be very
       // significant.
       int cost = (union_find.block_height() + union_find.block_width()) * 20;
-      Shard(worker_threads->num_threads, worker_threads->workers,
-            num_images * num_blocks_vertically * num_blocks_horizontally, cost,
-            [&union_find, num_blocks_vertically, num_blocks_horizontally](
-                int64 start_block, int64 limit_block) {
-              for (int64 i = start_block; i < limit_block; i++) {
-                int64 block_x = i % num_blocks_horizontally;
-                int64 block_y =
-                    (i / num_blocks_horizontally) % num_blocks_vertically;
-                int64 image =
-                    i / (num_blocks_horizontally * num_blocks_vertically);
-                union_find.merge_internal_block_edges(image, block_y, block_x);
-              }
-            });
+
+      thread_pool->ParallelFor(
+          num_images * num_blocks_vertically * num_blocks_horizontally, cost,
+          [&union_find, num_blocks_vertically, num_blocks_horizontally](
+              int64 start_block, int64 limit_block) {
+            for (int64 i = start_block; i < limit_block; i++) {
+              int64 block_x = i % num_blocks_horizontally;
+              int64 block_y =
+                  (i / num_blocks_horizontally) % num_blocks_vertically;
+              int64 image =
+                  i / (num_blocks_horizontally * num_blocks_vertically);
+              union_find.merge_internal_block_edges(image, block_y, block_x);
+            }
+          });
     }
     FindRootFunctor<CPUDevice, T>()(ctx->eigen_device<CPUDevice>(), output,
                                     images.data(), union_find);
