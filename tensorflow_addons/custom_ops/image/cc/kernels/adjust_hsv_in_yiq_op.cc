@@ -24,7 +24,7 @@ limitations under the License.
 #include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/lib/core/status.h"
 #include "tensorflow/core/platform/logging.h"
-#include "tensorflow/core/util/work_sharder.h"
+#include "tensorflow/core/util/work_threadpool->ParallelForer.h"
 #include "tensorflow_addons/custom_ops/image/cc/kernels/adjust_hsv_in_yiq_op.h"
 
 namespace tensorflow {
@@ -116,7 +116,7 @@ class AdjustHsvInYiqOp<CPUDevice> : public AdjustHsvInYiqOpBase {
     const int kCostPerChannel = 10;
     const DeviceBase::CpuWorkerThreads& worker_threads =
         *context->device()->tensorflow_cpu_worker_threads();
-    Shard(worker_threads.num_threads, worker_threads.workers, channel_count,
+    threadpool->ParallelFor(worker_threads.num_threads, worker_threads.workers, channel_count,
           kCostPerChannel, [&input_data, &output_data, &transformation_matrix](
                                int64 start_channel, int64 end_channel) {
             // Applying projection matrix to input RGB vectors.

@@ -30,7 +30,7 @@ limitations under the License.
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/platform/macros.h"
-#include "tensorflow/core/util/work_sharder.h"
+#include "tensorflow/core/util/work_threadpool->ParallelForer.h"
 #include "tensorflow_addons/custom_ops/seq2seq/cc/kernels/beam_search_ops.h"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
@@ -158,7 +158,7 @@ struct GatherTree<CPUDevice, int32> {
         6 * Eigen::TensorOpCost::AddCost<int32>() +
         2 * max_time * (5 * Eigen::TensorOpCost::AddCost<int32>());
     auto worker_threads = *(ctx->device()->tensorflow_cpu_worker_threads());
-    Shard(worker_threads.num_threads, worker_threads.workers,
+    threadpool->ParallelFor(worker_threads.num_threads, worker_threads.workers,
           batch_size * beam_width, batch_beam_cost, DoWork);
   }
 };

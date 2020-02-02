@@ -100,7 +100,7 @@ struct ImageConnectedComponentsFunctor<CPUDevice, T> {
       // loop more while searching for the root, but this should not be very
       // significant.
       int cost = (union_find.block_height() + union_find.block_width()) * 20;
-      Shard(worker_threads->num_threads, worker_threads->workers,
+      threadpool->ParallelFor(worker_threads->num_threads, worker_threads->workers,
             num_images * num_blocks_vertically * num_blocks_horizontally, cost,
             [&union_find, num_blocks_vertically, num_blocks_horizontally](
                 int64 start_block, int64 limit_block) {

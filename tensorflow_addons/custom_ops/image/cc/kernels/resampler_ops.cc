@@ -24,7 +24,7 @@
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/framework/types.h"
-#include "tensorflow/core/util/work_sharder.h"
+#include "tensorflow/core/util/work_threadpool->ParallelForer.h"
 #include "tensorflow_addons/custom_ops/image/cc/kernels/resampler_ops.h"
 
 namespace tensorflow {
@@ -109,14 +109,14 @@ struct Resampler2DFunctor<CPUDevice, T> {
       }
     };
     // Rough estimate of work for each batch entry.
-    // From third_party/tensorflow/core/util/work_sharder.cc we gather that an
-    // estimate of the cost of each work unit is needed to correctly shard the
-    // workload. Shard assumes each cost unit is 1ns, minimum cost per shard
+    // From third_party/tensorflow/core/util/work_threadpool->ParallelForer.cc we gather that an
+    // estimate of the cost of each work unit is needed to correctly threadpool->ParallelFor the
+    // workload. threadpool->ParallelFor assumes each cost unit is 1ns, minimum cost per threadpool->ParallelFor
     // being 10us.
     const int64 cost =
         static_cast<int64>(num_sampling_points) * data_channels * 1000;
     auto worker_threads = *(ctx->device()->tensorflow_cpu_worker_threads());
-    Shard(worker_threads.num_threads, worker_threads.workers, batch_size, cost,
+    threadpool->ParallelFor(worker_threads.num_threads, worker_threads.workers, batch_size, cost,
           resample_batches);
   }
 };
@@ -311,15 +311,15 @@ struct ResamplerGrad2DFunctor<CPUDevice, T> {
       }
     };
     // Rough estimate of work for each batch entry.
-    // From third_party/tensorflow/core/util/work_sharder.cc we gather that an
-    // estimate of the cost of each work unit is needed to correctly shard the
-    // workload. Shard assumes each cost unit is 1ns, minimum cost per shard
+    // From third_party/tensorflow/core/util/work_threadpool->ParallelForer.cc we gather that an
+    // estimate of the cost of each work unit is needed to correctly threadpool->ParallelFor the
+    // workload. threadpool->ParallelFor assumes each cost unit is 1ns, minimum cost per threadpool->ParallelFor
     // being 10us.
     // TODO(fviola): Check out if there is a better way of doing this.
     auto worker_threads = *(ctx->device()->tensorflow_cpu_worker_threads());
     const int64 cost =
         static_cast<int64>(num_sampling_points) * data_channels * 1000;
-    Shard(worker_threads.num_threads, worker_threads.workers, batch_size, cost,
+    threadpool->ParallelFor(worker_threads.num_threads, worker_threads.workers, batch_size, cost,
           update_grads_for_batches);
   }
 };

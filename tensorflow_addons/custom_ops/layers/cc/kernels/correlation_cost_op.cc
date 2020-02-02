@@ -25,7 +25,7 @@ limitations under the License.
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/util/tensor_format.h"
-#include "tensorflow/core/util/work_sharder.h"
+#include "tensorflow/core/util/work_threadpool->ParallelForer.h"
 
 namespace tensorflow {
 namespace addons {
@@ -112,7 +112,7 @@ struct CorrelationCostFunctor<CPUDevice, Dtype> {
     };
 
     auto worker_threads = *(context->device()->tensorflow_cpu_worker_threads());
-    Shard(worker_threads.num_threads, worker_threads.workers, oN * oH * oW,
+    threadpool->ParallelFor(worker_threads.num_threads, worker_threads.workers, oN * oH * oW,
           cost_per_pixel, work);
 
     return Status::OK();
@@ -209,7 +209,7 @@ struct CorrelationCostGradFunctor<CPUDevice, Dtype> {
     };
 
     auto worker_threads = *(context->device()->tensorflow_cpu_worker_threads());
-    Shard(worker_threads.num_threads, worker_threads.workers, iN * oH * oW,
+    threadpool->ParallelFor(worker_threads.num_threads, worker_threads.workers, iN * oH * oW,
           cost_per_pixel, work);
 
     return Status::OK();
