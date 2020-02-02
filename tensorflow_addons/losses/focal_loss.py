@@ -17,6 +17,7 @@
 import tensorflow as tf
 import tensorflow.keras.backend as K
 
+from tensorflow_addons.utils.types import TensorLike, Number
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
@@ -63,18 +64,20 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
     """
 
     def __init__(self,
-                 from_logits=False,
-                 alpha=0.25,
-                 gamma=2.0,
-                 reduction=tf.keras.losses.Reduction.NONE,
-                 name='sigmoid_focal_crossentropy'):
+                 from_logits: bool = False,
+                 alpha: Number = 0.25,
+                 gamma: Number = 2.0,
+                 reduction: tf.keras.losses.Reduction = tf.keras.losses.Reduction.NONE,
+                 name: str = 'sigmoid_focal_crossentropy') -> None:
         super().__init__(name=name, reduction=reduction)
 
         self.from_logits = from_logits
         self.alpha = alpha
         self.gamma = gamma
 
-    def call(self, y_true, y_pred):
+    def call(self, 
+             y_true: TensorLike, 
+             y_pred: TensorLike) -> tf.Tensor:
         return sigmoid_focal_crossentropy(
             y_true,
             y_pred,
@@ -82,7 +85,7 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
             gamma=self.gamma,
             from_logits=self.from_logits)
 
-    def get_config(self):
+    def get_config(self) -> dict:
         config = {
             "from_logits": self.from_logits,
             "alpha": self.alpha,
@@ -94,11 +97,11 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 @tf.function
-def sigmoid_focal_crossentropy(y_true,
-                               y_pred,
-                               alpha=0.25,
-                               gamma=2.0,
-                               from_logits=False):
+def sigmoid_focal_crossentropy(y_true: TensorLike,
+                               y_pred: TensorLike,
+                               alpha: Number = 0.25,
+                               gamma: Number = 2.0,
+                               from_logits: bool = False) -> tf.Tensor:
     """
     Args
         y_true: true targets tensor.

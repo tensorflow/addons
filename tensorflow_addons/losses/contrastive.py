@@ -16,10 +16,14 @@
 
 import tensorflow as tf
 
+from tensorflow_addons.utils.types import TensorLike, Number
+
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
-def contrastive_loss(y_true, y_pred, margin=1.0):
+def contrastive_loss(y_true: TensorLike, 
+                     y_pred: TensorLike, 
+                     margin: Number = 1.0) -> tf.Tensor:
     r"""Computes the contrastive loss between `y_true` and `y_pred`.
 
     This loss encourages the embedding to be close to each other for
@@ -88,17 +92,19 @@ class ContrastiveLoss(tf.keras.losses.Loss):
 
     def __init__(
         self,
-        margin=1.0,
-        reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
-        name="contrasitve_loss",
-    ):
+        margin: Number = 1.0,
+        reduction: tf.keras.losses.Reduction = tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
+        name:str = "contrasitve_loss",
+    ) -> None:
         super().__init__(reduction=reduction, name=name)
         self.margin = margin
 
-    def call(self, y_true, y_pred):
+    def call(self, 
+             y_true: TensorLike, 
+             y_pred: TensorLike) -> tf.Tensor:
         return contrastive_loss(y_true, y_pred, self.margin)
 
-    def get_config(self):
+    def get_config(self) -> dict:
         config = {
             "margin": self.margin,
         }
