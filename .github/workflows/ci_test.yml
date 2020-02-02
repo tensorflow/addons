@@ -100,6 +100,18 @@ jobs:
         run: TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
       - name: Run type check
         run: python tools/ci_build/verify/check_typing_info.py
+  clang-format:
+    name: Clang C++ code format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      # TODO: use DoozyX/clang-format-lint-action when
+      # https://github.com/DoozyX/clang-format-lint-action/pull/5 is merged
+      # and the new version is out
+      - uses: gabrieldemarmiesse/clang-format-lint-action@1044fee
+        with:
+          clangFormatVersion: 9
+          cliArgs: --style=google
   check-bazel-format:
     name: Bazel code format
     runs-on: ubuntu-latest

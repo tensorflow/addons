@@ -20,6 +20,7 @@ limitations under the License.
 #endif  // GOOGLE_CUDA
 
 #include "tensorflow_addons/custom_ops/image/cc/kernels/euclidean_distance_transform_op.h"
+
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/framework/types.h"
