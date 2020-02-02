@@ -61,7 +61,6 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         self._track_trackable(layer, name="layer")
         self._init_critical_section = tf.CriticalSection(name="init_mutex")
         self.is_rnn = isinstance(self.layer, tf.keras.layers.RNN)
-        self.temp_kernel = None
         if self.data_init and self.is_rnn:
             logging.warning(
                 "WeightNormalization: Using `data_init=True` with RNNs "
