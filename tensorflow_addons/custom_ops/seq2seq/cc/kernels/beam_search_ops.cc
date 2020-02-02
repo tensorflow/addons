@@ -157,9 +157,8 @@ struct GatherTree<CPUDevice, int32> {
         Eigen::TensorOpCost::DivCost<int32>() +
         6 * Eigen::TensorOpCost::AddCost<int32>() +
         2 * max_time * (5 * Eigen::TensorOpCost::AddCost<int32>());
-    auto worker_threads = *(ctx->device()->tensorflow_cpu_worker_threads());
-    Shard(worker_threads.num_threads, worker_threads.workers,
-          batch_size * beam_width, batch_beam_cost, DoWork);
+    auto thread_pool = ctx->device()->tensorflow_cpu_worker_threads()->workers;
+    thread_pool->ParallelFor(batch_size * beam_width, batch_beam_cost, DoWork);
   }
 };
 
