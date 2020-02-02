@@ -20,7 +20,6 @@ install-ci-dependency:
 	bash tools/ci_build/install/install_ci_dependency.sh --quiet
 
 code-format: install-ci-dependency
-	bash tools/ci_build/code_format.sh --incremental --in-place
 	black ./
 
 sanity-check: install-ci-dependency
