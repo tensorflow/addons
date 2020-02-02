@@ -109,5 +109,5 @@ jobs:
         run: |
           sudo wget -O /usr/local/bin/buildifier https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier
           sudo chmod +x /usr/local/bin/buildifier
-      - name: Check that the Bazel files are formatted with buildifier
+      - name: Ensure contributor used "buildifier -r ./" before commit
         run: buildifier -mode=check -r ./
