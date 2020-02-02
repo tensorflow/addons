@@ -18,6 +18,7 @@ import tensorflow as tf
 
 from tensorflow_addons.utils.types import TensorLike
 from typing import List
+from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -49,31 +50,31 @@ class GIoULoss(tf.keras.losses.Loss):
     Args:
       mode: one of ['giou', 'iou'], decided to calculate GIoU or IoU loss.
     """
-
+    @typechecked
     def __init__(self,
                  mode: str = 'giou',
                  reduction: tf.keras.losses.Reduction = tf.keras.losses.Reduction.AUTO,
-                 name: str = 'giou_loss') -> None:
+                 name: str = 'giou_loss'):
         if mode not in ['giou', 'iou']:
             raise ValueError("Value of mode should be 'iou' or 'giou'")
         super().__init__(name=name, reduction=reduction)
         self.mode = mode
 
-    def get_config(self) -> None:
+    def get_config(self):
         base_config = super().get_config()
         base_config['mode'] = self.mode
         return base_config
 
-    def call(self, 
-             y_true: TensorLike, 
-             y_pred: TensorLike) -> tf.Tensor:
+    def call(self,
+             y_true,
+             y_pred):
         return giou_loss(y_true, y_pred, mode=self.mode)
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 @tf.function
-def giou_loss(y_true: TensorLike, 
-              y_pred: TensorLike, 
+def giou_loss(y_true: TensorLike,
+              y_pred: TensorLike,
               mode: str = 'giou') -> tf.Tensor:
     """
     Args:
@@ -97,8 +98,8 @@ def giou_loss(y_true: TensorLike,
     return 1 - giou
 
 
-def _calculate_giou(b1: List[int], 
-                    b2: List[int], 
+def _calculate_giou(b1: List[int],
+                    b2: List[int],
                     mode: str = 'giou') -> tf.Tensor:
     """
     Args:
