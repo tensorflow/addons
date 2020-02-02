@@ -38,19 +38,6 @@ get_changed_files_from_master_branch() {
     git diff ${ANCESTOR} --diff-filter=d --name-only "$@"
 }
 
-# List bazel files changed that still exist,
-# i.e., not removed.
-# Usage: get_bazel_files_to_check [--incremental]
-get_bazel_files_to_check() {
-    if [[ "$1" == "--incremental" ]]; then
-        get_changed_files_from_master_branch -- '*BUILD' '*.bazel' '*.bzl'
-    elif [[ -z "$1" ]]; then
-        find . -name 'BUILD' -o -name '*.bazel' -o -name '*.bzl'
-    else
-        die "Found unsupported args: $@ for get_bazel_files_to_check."
-    fi
-}
-
 # List .h|.cc files changed that still exist,
 # i.e., not removed.
 # Usage: get_clang_files_to_check [--incremental]
