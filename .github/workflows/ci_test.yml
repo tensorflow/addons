@@ -105,6 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: gabrieldemarmiesse/clang-format-lint-action@v0.5
+      - uses: gabrieldemarmiesse/clang-format-lint-action@add_cli_args
         with:
           clangFormatVersion: 9
+          cliArgs: --style=google
