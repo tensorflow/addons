@@ -17,6 +17,9 @@
 import tensorflow as tf
 import tensorflow.keras.backend as K
 
+from tensorflow_addons.utils.types import Number, TensorLike
+from typeguard import typechecked
+
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
@@ -62,12 +65,13 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
           `gamma` is less than zero
     """
 
+    @typechecked
     def __init__(self,
-                 from_logits=False,
-                 alpha=0.25,
-                 gamma=2.0,
-                 reduction=tf.keras.losses.Reduction.NONE,
-                 name='sigmoid_focal_crossentropy'):
+                 from_logits: bool = False,
+                 alpha: Number = 0.25,
+                 gamma: Number = 2.0,
+                 reduction: str = 'tf.keras.losses.Reduction.NONE',
+                 name: str = 'sigmoid_focal_crossentropy'):
         super().__init__(name=name, reduction=reduction)
 
         self.from_logits = from_logits
@@ -94,11 +98,11 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 @tf.function
-def sigmoid_focal_crossentropy(y_true,
-                               y_pred,
-                               alpha=0.25,
-                               gamma=2.0,
-                               from_logits=False):
+def sigmoid_focal_crossentropy(y_true: TensorLike,
+                               y_pred: TensorLike,
+                               alpha: Number = 0.25,
+                               gamma: Number = 2.0,
+                               from_logits: bool = False) -> tf.Tensor:
     """
     Args
         y_true: true targets tensor.

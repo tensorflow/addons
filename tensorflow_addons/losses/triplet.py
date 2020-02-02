@@ -16,7 +16,9 @@
 
 import tensorflow as tf
 from tensorflow_addons.losses import metric_learning
+from tensorflow_addons.utils.types import TensorLike
 from typeguard import typechecked
+from typing import Optional
 
 
 def _masked_maximum(data, mask, dim=1):
@@ -65,7 +67,11 @@ def _masked_minimum(data, mask, dim=1):
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
-def triplet_semihard_loss(y_true, y_pred, margin=1.0):
+def triplet_semihard_loss(
+    y_true: TensorLike,
+    y_pred: TensorLike,
+    margin: float = 1.0
+) -> tf.Tensor:
     """Computes the triplet loss with semi-hard negative mining.
 
     Args:
@@ -145,7 +151,12 @@ def triplet_semihard_loss(y_true, y_pred, margin=1.0):
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
-def triplet_hard_loss(y_true, y_pred, margin=1.0, soft=False):
+def triplet_hard_loss(
+    y_true: TensorLike,
+    y_pred: TensorLike,
+    margin: float = 1.0,
+    soft: bool = False
+) -> tf.Tensor:
     """Computes the triplet loss with hard negative and hard positive mining.
 
     Args:
@@ -214,7 +225,8 @@ class TripletSemiHardLoss(tf.keras.losses.Loss):
       name: Optional name for the op.
     """
 
-    def __init__(self, margin=1.0, name=None, **kwargs):
+    @typechecked
+    def __init__(self, margin: float = 1.0, name: Optional[str] = None, **kwargs):
         super().__init__(name=name, reduction=tf.keras.losses.Reduction.NONE)
         self.margin = margin
 

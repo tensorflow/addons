@@ -26,9 +26,7 @@ TUTORIAL_URL = "https://docs.python.org/3/library/typing.html"
 # the exception list.
 EXCEPTION_LIST = [
     tensorflow_addons.losses.contrastive_loss,
-    tensorflow_addons.losses.sigmoid_focal_crossentropy,
     tensorflow_addons.losses.giou_loss,
-    tensorflow_addons.losses.lifted_struct_loss,
     tensorflow_addons.losses.sparsemax_loss,
     tensorflow_addons.losses.triplet_semihard_loss,
     tensorflow_addons.losses.pinball_loss,
@@ -36,13 +34,7 @@ EXCEPTION_LIST = [
     tensorflow_addons.losses.ContrastiveLoss,
     tensorflow_addons.losses.SigmoidFocalCrossEntropy,
     tensorflow_addons.losses.GIoULoss,
-    tensorflow_addons.losses.LiftedStructLoss,
     tensorflow_addons.losses.SparsemaxLoss,
-    tensorflow_addons.losses.TripletSemiHardLoss,
-    tensorflow_addons.losses.npairs_loss,
-    tensorflow_addons.losses.NpairsLoss,
-    tensorflow_addons.losses.npairs_multilabel_loss,
-    tensorflow_addons.losses.NpairsMultilabelLoss,
     tensorflow_addons.metrics.CohenKappa,
     tensorflow_addons.metrics.F1Score,
     tensorflow_addons.metrics.FBetaScore,
