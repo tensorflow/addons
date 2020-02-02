@@ -61,7 +61,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         self._track_trackable(layer, name='layer')
         self._init_critical_section = tf.CriticalSection(name='init_mutex')
         self.is_rnn = isinstance(self.layer, tf.keras.layers.RNN)
-
+        self.temp_kernel=None
         if self.data_init and self.is_rnn:
             logging.warning(
                 "WeightNormalization: Using `data_init=True` with RNNs "
@@ -119,31 +119,34 @@ class WeightNormalization(tf.keras.layers.Wrapper):
                     self._naked_clone_layer.activation = None
 
         self.built = True
-
+        
+    @tf.function(autograph=False)
     def call(self, inputs):
         """Call `Layer`"""
 
         def _do_nothing():
             return tf.identity(self.g)
 
+
         def _update_weights():
             # Ensure we read `self.g` after _update_weights.
             with tf.control_dependencies(self._initialize_weights(inputs)):
                 return tf.identity(self.g)
-
+        
         g = self._init_critical_section.execute(lambda: tf.cond(
             self._initialized, _do_nothing, _update_weights))
-
+            
         with tf.name_scope('compute_weights'):
             # Replace kernel by normalized weight variable.
             kernel = tf.nn.l2_normalize(self.v, axis=self.kernel_norm_axes) * g
-
+            
             if self.is_rnn:
                 self.layer.cell.recurrent_kernel = kernel
                 update_kernel = tf.identity(self.layer.cell.recurrent_kernel)
             else:
                 self.layer.kernel = kernel
                 update_kernel = tf.identity(self.layer.kernel)
+                
 
             # Ensure we calculate result after updating kernel.
             with tf.control_dependencies([update_kernel]):
@@ -215,7 +218,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         kernel = tf.Variable(
             tf.nn.l2_normalize(self.v, axis=self.kernel_norm_axes) * self.g,
             name='recurrent_kernel' if self.is_rnn else 'kernel')
-
+        
         if self.is_rnn:
             self.layer.cell.recurrent_kernel = kernel
         else:

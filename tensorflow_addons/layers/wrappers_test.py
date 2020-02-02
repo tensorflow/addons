@@ -152,7 +152,8 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
         ["Dense", lambda: tf.keras.layers.Dense(1), [25]],
         ["SimpleRNN", lambda: tf.keras.layers.SimpleRNN(1), [10, 10]],
         ["Conv2D", lambda: tf.keras.layers.Conv2D(3, 1), [3, 3, 1]],
-        ["LSTM", lambda: tf.keras.layers.LSTM(1), [10, 10]])
+        ["LSTM", lambda: tf.keras.layers.LSTM(1), [10, 10]]
+        )
     def test_removal(self, base_layer_fn, input_shape):
         sample_data = np.ones([1] + input_shape, dtype=np.float32)
 
@@ -165,9 +166,15 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
                 wn_removed_layer = wn_layer.remove()
                 wn_removed_output = wn_removed_layer(sample_data)
 
+            if wn_layer.is_rnn:
+                kernel = wn_layer.layer.cell.recurrent_kernel
+                remove_kernel=wn_removed_layer.cell.recurrent_kernel
+            else:
+                kernel = wn_layer.layer.kernel
+                remove_kernel=wn_removed_layer.kernel
             self.evaluate(tf.compat.v1.global_variables_initializer())
             self.assertAllClose(
-                self.evaluate(wn_removed_output), self.evaluate(wn_output))
+                self.evaluate(kernel), self.evaluate(remove_kernel))
             self.assertTrue(isinstance(wn_removed_layer, base_layer.__class__))
 
 
