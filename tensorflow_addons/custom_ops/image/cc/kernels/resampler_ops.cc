@@ -112,13 +112,13 @@ struct Resampler2DFunctor<CPUDevice, T> {
     // Rough estimate of work for each batch entry.
     // From third_party/tensorflow/core/util/work_sharder.cc we gather that an
     // estimate of the cost of each work unit is needed to correctly shard the
-    // workload. Shard assumes each cost unit is 1ns, minimum cost per shard
+    // workload. thread_pool->ParallelFor assumes each cost unit is 1ns, minimum
+    // cost per shard
     // being 10us.
     const int64 cost =
         static_cast<int64>(num_sampling_points) * data_channels * 1000;
-    auto worker_threads = *(ctx->device()->tensorflow_cpu_worker_threads());
-    Shard(worker_threads.num_threads, worker_threads.workers, batch_size, cost,
-          resample_batches);
+    auto thread_pool = ctx->device()->tensorflow_cpu_worker_threads()->workers;
+    thread_pool->ParallelFor(batch_size, cost, resample_batches);
   }
 };
 
@@ -314,14 +314,14 @@ struct ResamplerGrad2DFunctor<CPUDevice, T> {
     // Rough estimate of work for each batch entry.
     // From third_party/tensorflow/core/util/work_sharder.cc we gather that an
     // estimate of the cost of each work unit is needed to correctly shard the
-    // workload. Shard assumes each cost unit is 1ns, minimum cost per shard
+    // workload. thread_pool->ParallelFor assumes each cost unit is 1ns, minimum
+    // cost per shard
     // being 10us.
     // TODO(fviola): Check out if there is a better way of doing this.
-    auto worker_threads = *(ctx->device()->tensorflow_cpu_worker_threads());
+    auto thread_pool = ctx->device()->tensorflow_cpu_worker_threads()->workers;
     const int64 cost =
         static_cast<int64>(num_sampling_points) * data_channels * 1000;
-    Shard(worker_threads.num_threads, worker_threads.workers, batch_size, cost,
-          update_grads_for_batches);
+    thread_pool->ParallelFor(batch_size, cost, update_grads_for_batches);
   }
 };
 

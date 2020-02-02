@@ -111,11 +111,9 @@ struct CorrelationCostFunctor<CPUDevice, Dtype> {
         }
       }
     };
-
-    auto worker_threads = *(context->device()->tensorflow_cpu_worker_threads());
-    Shard(worker_threads.num_threads, worker_threads.workers, oN * oH * oW,
-          cost_per_pixel, work);
-
+    auto thread_pool =
+        context->device()->tensorflow_cpu_worker_threads()->workers;
+    thread_pool->ParallelFor(oN * oH * oW, cost_per_pixel, work);
     return Status::OK();
   }
 };
@@ -209,9 +207,9 @@ struct CorrelationCostGradFunctor<CPUDevice, Dtype> {
       }
     };
 
-    auto worker_threads = *(context->device()->tensorflow_cpu_worker_threads());
-    Shard(worker_threads.num_threads, worker_threads.workers, iN * oH * oW,
-          cost_per_pixel, work);
+    auto thread_pool =
+        context->device()->tensorflow_cpu_worker_threads()->workers;
+    thread_pool->ParallelFor(iN * oH * oW, cost_per_pixel, work);
 
     return Status::OK();
   }
