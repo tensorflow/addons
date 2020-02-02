@@ -25,9 +25,7 @@ from typing import Optional
 @tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def lifted_struct_loss(
-    labels: FloatTensorLike,
-    embeddings: TensorLike,
-    margin: Number = 1.0
+    labels: FloatTensorLike, embeddings: TensorLike, margin: Number = 1.0
 ) -> FloatTensorLike:
     """Computes the lifted structured loss.
 

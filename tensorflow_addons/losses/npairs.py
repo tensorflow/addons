@@ -151,7 +151,7 @@ class NpairsLoss(tf.keras.losses.Loss):
     """
 
     @typechecked
-    def __init__(self, name: str ="npairs_loss"):
+    def __init__(self, name: str = "npairs_loss"):
         super().__init__(reduction=tf.keras.losses.Reduction.NONE, name=name)
 
     def call(self, y_true, y_pred):
