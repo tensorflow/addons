@@ -26,7 +26,7 @@ from tensorflow_addons.utils.resource_loader import LazySO
 from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 
 from typeguard import typechecked
-from typing import Callable, List, Optional, ClassVar, Union
+from typing import Callable, List, Optional, Union
 
 _beam_search_so = LazySO("custom_ops/seq2seq/_beam_search_ops.so")
 
@@ -96,9 +96,7 @@ def _tile_batch(t, multiplier):
     return tiled
 
 
-def tile_batch(
-    t: FloatTensorLike, multiplier: int, name: Optional[str] = None
-) -> tf.Tensor:
+def tile_batch(t: TensorLike, multiplier: int, name: Optional[str] = None) -> tf.Tensor:
     """Tile the batch dimension of a (possibly nested structure of) tensor(s)
     t.
 
@@ -127,7 +125,7 @@ def tile_batch(
 
 
 def gather_tree_from_array(
-    t: FloatTensorLike, parent_ids: List[int], sequence_length: List[int]
+    t: TensorLike, parent_ids: List[int], sequence_length: List[int]
 ) -> tf.Tensor:
     """Calculates the full beams for `TensorArray`s.
 
@@ -254,7 +252,7 @@ class BeamSearchDecoderMixin:
     @typechecked
     def __init__(
         self,
-        cell: ClassVar[tf.keras.layers.RNN],
+        cell: tf.keras.layers.Layer,
         beam_width: int,
         output_layer: Optional[tf.keras.layers.Layer] = None,
         length_penalty_weight: FloatTensorLike = 0.0,
@@ -658,9 +656,9 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
     @typechecked
     def __init__(
         self,
-        cell: ClassVar[tf.keras.layers.RNN],
+        cell: tf.keras.layers.Layer,
         beam_width: int,
-        embedding_fn: Union[TensorLike, Callable] = None,
+        embedding_fn: Union[TensorLike, Callable, None] = None,
         output_layer: Optional[tf.keras.layers.Layer] = None,
         length_penalty_weight: FloatTensorLike = 0.0,
         coverage_penalty_weight: FloatTensorLike = 0.0,

@@ -23,7 +23,7 @@ from tensorflow_addons.seq2seq import sampler as sampler_py
 from tensorflow_addons.utils import keras_utils
 
 from typeguard import typechecked
-from typing import Optional, ClassVar
+from typing import Optional
 
 
 class BasicDecoderOutput(
@@ -38,7 +38,7 @@ class BasicDecoder(decoder.BaseDecoder):
     @typechecked
     def __init__(
         self,
-        cell: ClassVar[tf.keras.layers.RNN],
+        cell: tf.keras.layers.Layer,
         sampler: sampler_py.Sampler,
         output_layer: Optional[tf.keras.layers.Layer] = None,
         **kwargs
