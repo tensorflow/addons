@@ -45,7 +45,6 @@ EXCEPTION_LIST = [
     tensorflow_addons.losses.NpairsMultilabelLoss,
     tensorflow_addons.metrics.F1Score,
     tensorflow_addons.metrics.FBetaScore,
-    tensorflow_addons.metrics.MatthewsCorrelationCoefficient,
     tensorflow_addons.metrics.MultiLabelConfusionMatrix,
     tensorflow_addons.metrics.RSquare,
     tensorflow_addons.rnn.LayerNormLSTMCell,
