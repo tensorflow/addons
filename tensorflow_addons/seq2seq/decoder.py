@@ -19,7 +19,7 @@ import abc
 import tensorflow as tf
 from tensorflow_addons.utils.types import Number
 from typeguard import typechecked
-from typing import Optional
+from typing import Any, Optional, Tuple
 
 # TODO: Find public API alternatives to these
 from tensorflow.python.ops import control_flow_util
@@ -257,7 +257,7 @@ class BaseDecoder(tf.keras.layers.Layer):
 
 
 def dynamic_decode(
-    decoder: Decoder,
+    decoder: BaseDecoder,
     output_time_major: bool = False,
     impute_finished: bool = False,
     maximum_iterations: Optional[Number] = None,
@@ -266,7 +266,7 @@ def dynamic_decode(
     training: Optional[bool] = None,
     scope: Optional[str] = None,
     **kwargs
-) -> tf.Tensor:
+) -> Tuple[Any, Any, Any]:
     """Perform dynamic decoding with `decoder`.
 
     Calls initialize() once and step() repeatedly on the Decoder object.
