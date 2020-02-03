@@ -14,12 +14,8 @@
 # ==============================================================================
 """Tests for PolynomialCrossing layer."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
-import tensorflow.compat.v2 as tf
+import tensorflow as tf
 
 from tensorflow_addons.layers.polynomial import PolynomialCrossing
 from tensorflow_addons.utils import test_utils
@@ -27,22 +23,21 @@ from tensorflow_addons.utils import test_utils
 
 @test_utils.run_all_in_graph_and_eager_modes
 class PolynomialCrossingTest(tf.test.TestCase):
-  # Do not use layer_test due to multiple inputs.
+    # Do not use layer_test due to multiple inputs.
 
-  def test_full_matrix(self):
-    x0 = np.random.random((12, 5))
-    x = np.random.random((12, 5))
-    layer = PolynomialCrossing(projection_dim=None)
-    layer([x0, x])
+    def test_full_matrix(self):
+        x0 = np.random.random((12, 5))
+        x = np.random.random((12, 5))
+        layer = PolynomialCrossing(projection_dim=None)
+        layer([x0, x])
 
-  def test_invalid_proj_dim(self):
-    with self.assertRaisesRegexp(ValueError, r'is not supported yet'):
-      x0 = np.random.random((12, 5))
-      x = np.random.random((12, 5))
-      layer = PolynomialCrossing(projection_dim=6)
-      layer([x0, x])
+    def test_invalid_proj_dim(self):
+        with self.assertRaisesRegexp(ValueError, r'is not supported yet'):
+            x0 = np.random.random((12, 5))
+            x = np.random.random((12, 5))
+            layer = PolynomialCrossing(projection_dim=6)
+            layer([x0, x])
 
 
 if __name__ == '__main__':
-  tf.enable_v2_behavior()
   tf.test.main()
