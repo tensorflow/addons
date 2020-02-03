@@ -56,8 +56,8 @@ def hamming_distance(actuals: TensorLike, predictions: TensorLike) -> Number:
 def hamming_loss_fn(
     y_true: TensorLike,
     y_pred: TensorLike,
-    mode: str,
     threshold: Union[FloatTensorLike, None],
+    mode: str,
 ) -> Number:
     """Computes hamming loss.
 
@@ -140,11 +140,11 @@ class HammingLoss(MeanMetricWrapper):
     def __init__(
         self,
         mode: str,
+        name: str = "hamming_loss",
         threshold: Optional[FloatTensorLike] = None,
         dtype: Optional[FloatTensorLike] = None,
-        name: str = "hamming_loss",
         **kwargs
     ):
         super().__init__(
-            hamming_loss_fn, mode=mode, threshold=threshold, dtype=dtype, name=name
+            hamming_loss_fn, name=name, dtype=dtype, mode=mode, threshold=threshold
         )
