@@ -18,7 +18,7 @@ import tensorflow as tf
 import tensorflow.keras.backend as K
 
 from tensorflow_addons.utils.types import TensorLike, Number
-from typegrd import typechecked
+from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
