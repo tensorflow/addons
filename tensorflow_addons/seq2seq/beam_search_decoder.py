@@ -125,7 +125,7 @@ def tile_batch(t: TensorLike, multiplier: int, name: Optional[str] = None) -> tf
 
 
 def gather_tree_from_array(
-    t: TensorLike, parent_ids: List[int], sequence_length: List[int]
+    t: TensorLike, parent_ids: TensorLike, sequence_length: TensorLike
 ) -> tf.Tensor:
     """Calculates the full beams for `TensorArray`s.
 

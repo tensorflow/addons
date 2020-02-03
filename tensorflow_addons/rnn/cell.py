@@ -20,7 +20,6 @@ from typeguard import typechecked
 
 from tensorflow_addons.utils import types
 from typing import Optional
-from tensorflow_addons.utils.types import Activation
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -235,8 +234,8 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
     @typechecked
     def __init__(self,
                  units: int,
-                 activation: Activation = 'tanh',
-                 recurrent_activation: Activation = 'sigmoid',
+                 activation: types.Activation = 'tanh',
+                 recurrent_activation: types.Activation = 'sigmoid',
                  use_bias: bool = True,
                  kernel_initializer: types.Initializer = 'glorot_uniform',
                  recurrent_initializer: types.Initializer = 'orthogonal',
