@@ -69,7 +69,7 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
                  from_logits: bool = False,
                  alpha: Number = 0.25,
                  gamma: Number = 2.0,
-                 reduction: str = 'tf.keras.losses.Reduction.NONE',
+                 reduction: str = tf.keras.losses.Reduction.NONE,
                  name: str = 'sigmoid_focal_crossentropy'):
         super().__init__(name=name, reduction=reduction)
 
