@@ -101,7 +101,7 @@ jobs:
       - name: Run type check
         run: python tools/ci_build/verify/check_typing_info.py
   case-insensitive-filesystem:
-    name: Works on case insensitive FS
+    name: Verify python filenames work on case insensitive FS
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
