@@ -17,6 +17,10 @@
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
 
+from typeguard import typechecked
+from tensorflow_addons.utils.types import FloatTensorLike
+from typing import Optional
+
 
 class RSquare(Metric):
     """Compute R^2 score.
@@ -40,7 +44,8 @@ class RSquare(Metric):
     ```
     """
 
-    def __init__(self, name='r_square', dtype=tf.float32):
+    @typechecked
+    def __init__(self, name: str = 'r_square', dtype: Optional[FloatTensorLike] = None, **kwargs):
         super().__init__(name=name, dtype=dtype)
         self.squared_sum = self.add_weight("squared_sum", initializer="zeros")
         self.sum = self.add_weight("sum", initializer="zeros")

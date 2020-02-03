@@ -230,13 +230,15 @@ class F1Score(FBetaScore):
             number of true instances in each class.
     """
 
+    @typechecked
     def __init__(
         self,
-        num_classes,
-        average=None,
-        threshold=None,
-        name="f1_score",
-        dtype=tf.float32,
+        num_classes: Number,
+        average: str = None,
+        threshold: Optional[FloatTensorLike] = None,
+        name: str = "f1_score",
+        dtype: Optional[FloatTensorLike] = None,
+        **kwargs
     ):
         super().__init__(num_classes, average, 1.0, threshold, name=name, dtype=dtype)
 
