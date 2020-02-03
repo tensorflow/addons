@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for RNN cells."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -156,7 +152,7 @@ class NASCellTest(tf.test.TestCase):
         cell = rnn_cell.NASCell(10, projection=5, use_bias=True)
 
         expected_config = {
-            "dtype": None,
+            "dtype": "float32",
             "name": "nas_cell",
             "trainable": True,
             "units": 10,
@@ -189,12 +185,15 @@ class LayerNormLSTMCellTest(tf.test.TestCase):
         state1 = [h1, c1]
         state = (state0, state1)
         const_initializer = tf.constant_initializer(0.5)
-        single_cell = lambda: rnn_cell.LayerNormLSTMCell(
-            units=2,
-            kernel_initializer=const_initializer,
-            recurrent_initializer=const_initializer,
-            bias_initializer=const_initializer,
-            norm_epsilon=1e-12)
+
+        def single_cell():
+            return rnn_cell.LayerNormLSTMCell(
+                units=2,
+                kernel_initializer=const_initializer,
+                recurrent_initializer=const_initializer,
+                bias_initializer=const_initializer,
+                norm_epsilon=1e-12
+            )
         cell = keras.layers.StackedRNNCells([single_cell() for _ in range(2)])
         output, output_states = cell(x, state)
         self.evaluate([tf.compat.v1.global_variables_initializer()])
@@ -241,7 +240,7 @@ class LayerNormLSTMCellTest(tf.test.TestCase):
         cell = rnn_cell.LayerNormLSTMCell(10)
 
         expected_config = {
-            "dtype": None,
+            "dtype": "float32",
             "name": "layer_norm_lstm_cell",
             "trainable": True,
             "units": 10,

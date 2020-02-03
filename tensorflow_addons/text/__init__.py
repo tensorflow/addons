@@ -12,24 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Text-processing ops."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+"""Additional text-processing ops."""
 
 # Conditional Random Field
 from tensorflow_addons.text.crf import crf_binary_score
 from tensorflow_addons.text.crf import crf_decode
+from tensorflow_addons.text.crf import crf_decode_backward
+from tensorflow_addons.text.crf import crf_decode_forward
+from tensorflow_addons.text.crf import crf_forward
 from tensorflow_addons.text.crf import crf_log_likelihood
 from tensorflow_addons.text.crf import crf_log_norm
 from tensorflow_addons.text.crf import crf_multitag_sequence_score
 from tensorflow_addons.text.crf import crf_sequence_score
 from tensorflow_addons.text.crf import crf_unary_score
-from tensorflow_addons.text.crf import CrfDecodeBackwardRnnCell
-from tensorflow_addons.text.crf import CrfDecodeForwardRnnCell
-from tensorflow_addons.text.crf import CrfForwardRnnCell
 from tensorflow_addons.text.crf import viterbi_decode
 
 # Skip Gram Sampling
 from tensorflow_addons.text.skip_gram_ops import skip_gram_sample
 from tensorflow_addons.text.skip_gram_ops import skip_gram_sample_with_text_vocab
+
+# Parse Time
+
+# Temporarily disable for windows
+# Remove after: https://github.com/tensorflow/addons/issues/782
+import os
+if os.name != 'nt':
+    from tensorflow_addons.text.parse_time_op import parse_time

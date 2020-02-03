@@ -36,11 +36,27 @@ if [[ ! -d "tensorflow_addons" ]]; then
     exit 1
 fi
 
-# Install python
-CI_REQUIREMENT="$SCRIPT_DIR/ci_requirements.txt"
-pip install ${QUIET_FLAG} -r ${CI_REQUIREMENT}
+# Download buildifier.
+wget ${QUIET_FLAG} https://github.com/bazelbuild/buildtools/releases/download/0.4.5/buildifier
+chmod +x buildifier
+sudo mv buildifier /usr/local/bin/.
 
-# Check clang-format
+# Download buildozer.
+wget ${QUIET_FLAG} https://github.com/bazelbuild/buildtools/releases/download/0.4.5/buildozer
+chmod +x buildozer
+sudo mv buildozer /usr/local/bin/.
+
+# Remove the now private ppa. This can be removed after the docker image removes the
+# pre-installed python packages from this ppa.
+rm -f /etc/apt/sources.list.d/jonathonf-ubuntu-python-3_6-xenial.list
+
+# Install clang-format
+apt-get update -qq && apt-get install -y clang-format-3.8
+
+# Install black
+python3 -m pip install black
+
+# Check clang-format:
 CLANG_FORMAT=${CLANG_FORMAT:-clang-format-3.8}
 which ${CLANG_FORMAT} > /dev/null
 if [[ $? != "0" ]]; then

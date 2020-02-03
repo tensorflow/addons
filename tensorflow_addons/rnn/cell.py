@@ -13,16 +13,12 @@
 # limitations under the License.
 # ==============================================================================
 """Module for RNN Cells."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
 import tensorflow.keras as keras
-from tensorflow_addons.utils import keras_utils
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class NASCell(keras.layers.AbstractRNNCell):
     """Neural Architecture Search (NAS) recurrent network cell.
 
@@ -63,7 +59,7 @@ class NASCell(keras.layers.AbstractRNNCell):
           bias_initializer: Initializer for bias, used when use_bias is True.
           **kwargs: Additional keyword arguments.
         """
-        super(NASCell, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.units = units
         self.projection = projection
         self.use_bias = use_bias
@@ -97,23 +93,23 @@ class NASCell(keras.layers.AbstractRNNCell):
         # Variables for the NAS cell. `recurrent_kernel` is all matrices
         # multiplying the hidden state and `kernel` is all matrices multiplying
         # the inputs.
-        self.recurrent_kernel = self.add_variable(
+        self.recurrent_kernel = self.add_weight(
             name="recurrent_kernel",
             shape=[self.output_size, self._NAS_BASE * self.units],
             initializer=self.recurrent_initializer)
-        self.kernel = self.add_variable(
+        self.kernel = self.add_weight(
             name="kernel",
             shape=[input_size, self._NAS_BASE * self.units],
             initializer=self.kernel_initializer)
 
         if self.use_bias:
-            self.bias = self.add_variable(
+            self.bias = self.add_weight(
                 name="bias",
                 shape=[self._NAS_BASE * self.units],
                 initializer=self.bias_initializer)
         # Projection layer if specified
         if self.projection is not None:
-            self.projection_weights = self.add_variable(
+            self.projection_weights = self.add_weight(
                 name="projection_weights",
                 shape=[self.units, self.projection],
                 initializer=self.projection_initializer)
@@ -206,11 +202,11 @@ class NASCell(keras.layers.AbstractRNNCell):
             "bias_initializer": self.bias_initializer,
             "projection_initializer": self.projection_initializer,
         }
-        base_config = super(NASCell, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package='Addons')
 class LayerNormLSTMCell(keras.layers.LSTMCell):
     """LSTM cell with layer normalization and recurrent dropout.
 
@@ -292,7 +288,7 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
           norm_epsilon: Float, the epsilon value for normalization layers.
           **kwargs: Dict, the other keyword arguments for layer creation.
         """
-        super(LayerNormLSTMCell, self).__init__(
+        super().__init__(
             units,
             activation=activation,
             recurrent_activation=recurrent_activation,
@@ -320,11 +316,10 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
         self.state_norm = self._create_norm_layer('state_norm')
 
     def build(self, input_shape):
-        super(LayerNormLSTMCell, self).build(input_shape)
-        norm_input_shape = [input_shape[0], self.units]
-        self.kernel_norm.build(norm_input_shape)
-        self.recurrent_norm.build(norm_input_shape)
-        self.state_norm.build(norm_input_shape)
+        super().build(input_shape)
+        self.kernel_norm.build([input_shape[0], self.units * 4])
+        self.recurrent_norm.build([input_shape[0], self.units * 4])
+        self.state_norm.build([input_shape[0], self.units])
 
     def call(self, inputs, states, training=None):
         h_tm1 = states[0]  # previous memory state
@@ -359,8 +354,8 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
             'norm_epsilon':
             self.norm_epsilon,
         }
-        base_config = super(LayerNormLSTMCell, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}
 
     def _create_norm_layer(self, name):
         return keras.layers.LayerNormalization(

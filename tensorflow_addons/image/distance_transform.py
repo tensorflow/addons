@@ -13,27 +13,22 @@
 # limitations under the License.
 # ==============================================================================
 """Distance transform ops."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+from tensorflow_addons.image import utils as img_utils
+from tensorflow_addons.utils.resource_loader import LazySO
 
-_image_ops_so = tf.load_op_library(
-    get_path_to_datafile("custom_ops/image/_image_ops.so"))
+_image_so = LazySO("custom_ops/image/_image_ops.so")
 
-tf.no_gradient("EuclideanDistanceTransform")
+tf.no_gradient("Addons>EuclideanDistanceTransform")
 
 
-@tf.function
 def euclidean_dist_transform(images, dtype=tf.float32, name=None):
     """Applies euclidean distance transform(s) to the image(s).
 
     Args:
       images: A tensor of shape (num_images, num_rows, num_columns, 1) (NHWC),
-        or (num_rows, num_columns, 1) (HWC). The rank must be statically known
-        (the shape is not `TensorShape(None)`.
+        or (num_rows, num_columns, 1) (HWC) or (num_rows, num_columns) (HW).
       dtype: DType of the output tensor.
       name: The name of the op.
 
@@ -45,23 +40,17 @@ def euclidean_dist_transform(images, dtype=tf.float32, name=None):
     Raises:
       TypeError: If `image` is not tf.uint8, or `dtype` is not floating point.
       ValueError: If `image` more than one channel, or `image` is not of
-        rank 3 or 4.
+        rank between 2 and 4.
     """
 
     with tf.name_scope(name or "euclidean_distance_transform"):
         image_or_images = tf.convert_to_tensor(images, name="images")
 
         if image_or_images.dtype.base_dtype != tf.uint8:
-            raise TypeError(
-                "Invalid dtype %s. Expected uint8." % image_or_images.dtype)
-        if image_or_images.get_shape().ndims is None:
-            raise ValueError("`images` rank must be statically known")
-        elif len(image_or_images.get_shape()) == 3:
-            images = image_or_images[None, :, :, :]
-        elif len(image_or_images.get_shape()) == 4:
-            images = image_or_images
-        else:
-            raise ValueError("`images` should have rank between 3 and 4")
+            raise TypeError("Invalid dtype %s. Expected uint8." % image_or_images.dtype)
+
+        images = img_utils.to_4D_image(image_or_images)
+        original_ndims = img_utils.get_ndims(image_or_images)
 
         if images.get_shape()[3] != 1 and images.get_shape()[3] is not None:
             raise ValueError("`images` must have only one channel")
@@ -70,8 +59,6 @@ def euclidean_dist_transform(images, dtype=tf.float32, name=None):
             raise TypeError("`dtype` must be float16, float32 or float64")
 
         images = tf.cast(images, dtype)
-        output = _image_ops_so.euclidean_distance_transform(images)
+        output = _image_so.ops.addons_euclidean_distance_transform(images)
 
-        if len(image_or_images.get_shape()) == 3:
-            return output[0, :, :, :]
-        return output
+        return img_utils.from_4D_image(output, original_ndims)

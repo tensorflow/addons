@@ -16,15 +16,18 @@
 
 all: code-format sanity-check unit-test
 
-# TODO: install those dependencies in docker image (dockerfile).
 install-ci-dependency:
 	bash tools/ci_build/install/install_ci_dependency.sh --quiet
 
 code-format: install-ci-dependency
 	bash tools/ci_build/code_format.sh --incremental --in-place
+	black ./
 
 sanity-check: install-ci-dependency
 	bash tools/ci_build/ci_sanity.sh --incremental
 
 unit-test:
 	bash tools/ci_testing/addons_cpu.sh
+
+gpu-unit-test:
+	bash tools/ci_testing/addons_gpu.sh

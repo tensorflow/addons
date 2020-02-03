@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for Cohen's Kappa Metric."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow_addons.metrics import CohenKappa
 from tensorflow_addons.utils import test_utils
@@ -55,6 +51,11 @@ class CohenKappaTest(tf.test.TestCase):
         self.evaluate(update_op1)
         self.evaluate(update_op2)
         self.evaluate(update_op3)
+
+    def reset_obj_states(self, obj1, obj2, obj3):
+        obj1.reset_states()
+        obj2.reset_states()
+        obj3.reset_states()
 
     def check_results(self, objs, values):
         obj1, obj2, obj3 = objs
@@ -129,6 +130,26 @@ class CohenKappaTest(tf.test.TestCase):
         # check results
         self.check_results([kp_obj1, kp_obj2, kp_obj3],
                            [-0.25473321, -0.38992332, -0.60695344])
+
+    def test_kappa_reset_states(self):
+        # Initialize
+        kp_obj1, kp_obj2, kp_obj3 = self.initialize_vars()
+
+        # reset states
+        self.reset_obj_states(kp_obj1, kp_obj2, kp_obj3)
+
+        # check results
+        self.check_results([kp_obj1, kp_obj2, kp_obj3], [0.0, 0.0, 0.0])
+
+    def test_large_values(self):
+        y_true = [1] * 10000 + [0] * 20000 + [1] * 20000
+        y_pred = [0] * 20000 + [1] * 30000
+
+        obj = CohenKappa(num_classes=2)
+        self.evaluate(tf.compat.v1.variables_initializer(obj.variables))
+
+        self.evaluate(obj.update_state(y_true, y_pred))
+        self.assertAllClose(0.166666666, obj.result())
 
 
 if __name__ == '__main__':

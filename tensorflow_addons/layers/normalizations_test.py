@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # =============================================================================
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
@@ -24,6 +21,7 @@ from tensorflow_addons.layers.normalizations import InstanceNormalization
 from tensorflow_addons.utils import test_utils
 
 
+@test_utils.run_all_in_graph_and_eager_modes
 class NormalizationTest(tf.test.TestCase):
 
     # ------------Tests to ensure proper inheritance. If these suceed you can
@@ -50,10 +48,11 @@ class NormalizationTest(tf.test.TestCase):
             reshaped_inputs, group_shape = group_layer._reshape_into_groups(
                 inputs, (10, 10, 10), tensor_input_shape)
             for i in range(len(expected_shape)):
-                self.assertEqual(int(group_shape[i]), expected_shape[i])
+                self.assertEqual(
+                    self.evaluate(group_shape[i]), expected_shape[i])
 
         input_shape = (10, 10, 10)
-        expected_shape = [10, 5, 10, 2]
+        expected_shape = [10, 10, 5, 2]
         run_reshape_test(2, 5, input_shape, expected_shape)
 
         input_shape = (10, 10, 10)
@@ -86,7 +85,7 @@ class NormalizationTest(tf.test.TestCase):
 
     def _test_random_shape_on_all_axis_except_batch(self, shape, groups,
                                                     center, scale):
-        inputs = tf.random.normal((shape))
+        inputs = tf.random.normal(shape)
         for axis in range(1, len(shape)):
             self._test_specific_layer(inputs, axis, groups, center, scale)
 
@@ -99,27 +98,27 @@ class NormalizationTest(tf.test.TestCase):
             axis=axis, groups=groups, center=center, scale=scale)
         model = tf.keras.models.Sequential()
         model.add(layer)
-        outputs = model.predict(inputs)
+        outputs = model.predict(inputs, steps=1)
         self.assertFalse(np.isnan(outputs).any())
 
         # Create shapes
         if groups is -1:
             groups = input_shape[axis]
-        np_inputs = inputs.numpy()
+        np_inputs = self.evaluate(inputs)
         reshaped_dims = list(np_inputs.shape)
         reshaped_dims[axis] = reshaped_dims[axis] // groups
-        reshaped_dims.insert(1, groups)
+        reshaped_dims.insert(axis, groups)
         reshaped_inputs = np.reshape(np_inputs, tuple(reshaped_dims))
+
+        group_reduction_axes = list(range(1, len(reshaped_dims)))
+        axis = -2 if axis == -1 else axis - 1
+        group_reduction_axes.pop(axis)
 
         # Calculate mean and variance
         mean = np.mean(
-            reshaped_inputs,
-            axis=tuple(range(2, len(reshaped_dims))),
-            keepdims=True)
+            reshaped_inputs, axis=tuple(group_reduction_axes), keepdims=True)
         variance = np.var(
-            reshaped_inputs,
-            axis=tuple(range(2, len(reshaped_dims))),
-            keepdims=True)
+            reshaped_inputs, axis=tuple(group_reduction_axes), keepdims=True)
 
         # Get gamma and beta initalized by layer
         gamma, beta = layer._get_reshaped_weights(input_shape)
@@ -134,8 +133,9 @@ class NormalizationTest(tf.test.TestCase):
         output_test = gamma * zeroed * rsqrt + beta
 
         # compare outputs
-        output_test = np.reshape(output_test, input_shape.as_list())
-        self.assertAlmostEqual(np.mean(output_test - outputs), 0, places=7)
+        output_test = tf.reshape(output_test, input_shape)
+        self.assertAlmostEqual(
+            self.evaluate(tf.reduce_mean(output_test - outputs)), 0, places=7)
 
     def _create_and_fit_Sequential_model(self, layer, shape):
         # Helperfunction for quick evaluation
@@ -153,7 +153,6 @@ class NormalizationTest(tf.test.TestCase):
         model.fit(x=input_batch, y=output_batch, epochs=1, batch_size=1)
         return model
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_weights(self):
         # Check if weights get initialized correctly
         layer = GroupNormalization(groups=1, scale=False, center=False)
@@ -167,24 +166,21 @@ class NormalizationTest(tf.test.TestCase):
         self.assertEqual(len(layer.weights), 2)
 
     def test_apply_normalization(self):
-
         input_shape = (1, 4)
-        expected_shape = (1, 2, 2)
         reshaped_inputs = tf.constant([[[2.0, 2.0], [3.0, 3.0]]])
         layer = GroupNormalization(groups=2, axis=1, scale=False, center=False)
         normalized_input = layer._apply_normalization(reshaped_inputs,
                                                       input_shape)
         self.assertTrue(
-            tf.reduce_all(
-                tf.equal(normalized_input,
-                         tf.constant([[[0.0, 0.0], [0.0, 0.0]]]))))
+            np.all(
+                np.equal(
+                    self.evaluate(normalized_input),
+                    np.array([[[0.0, 0.0], [0.0, 0.0]]]))))
 
     def test_axis_error(self):
-
         with self.assertRaises(ValueError):
             GroupNormalization(axis=0)
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_groupnorm_flat(self):
         # Check basic usage of groupnorm_flat
         # Testing for 1 == LayerNorm, 16 == GroupNorm, -1 == InstanceNorm
@@ -197,19 +193,15 @@ class NormalizationTest(tf.test.TestCase):
             self.assertTrue(hasattr(model.layers[0], 'gamma'))
             self.assertTrue(hasattr(model.layers[0], 'beta'))
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_instancenorm_flat(self):
         # Check basic usage of instancenorm
-
         model = self._create_and_fit_Sequential_model(InstanceNormalization(),
                                                       (64,))
         self.assertTrue(hasattr(model.layers[0], 'gamma'))
         self.assertTrue(hasattr(model.layers[0], 'beta'))
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_initializer(self):
         # Check if the initializer for gamma and beta is working correctly
-
         layer = GroupNormalization(
             groups=32,
             beta_initializer='random_normal',
@@ -223,9 +215,7 @@ class NormalizationTest(tf.test.TestCase):
         negativ = weights[weights < 0.0]
         self.assertTrue(len(negativ) == 0)
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_regularizations(self):
-
         layer = GroupNormalization(
             gamma_regularizer='l1', beta_regularizer='l1', groups=4, axis=2)
         layer.build((None, 4, 4))
@@ -237,11 +227,9 @@ class NormalizationTest(tf.test.TestCase):
         self.assertEqual(layer.gamma.constraint, max_norm)
         self.assertEqual(layer.beta.constraint, max_norm)
 
-    @test_utils.run_in_graph_and_eager_modes
     def test_groupnorm_conv(self):
         # Check if Axis is working for CONV nets
         # Testing for 1 == LayerNorm, 5 == GroupNorm, -1 == InstanceNorm
-
         groups = [-1, 5, 1]
         for i in groups:
             model = tf.keras.models.Sequential()
@@ -254,7 +242,7 @@ class NormalizationTest(tf.test.TestCase):
                 optimizer=tf.keras.optimizers.RMSprop(0.01), loss='mse')
             x = np.random.randint(1000, size=(10, 20, 20, 3))
             y = np.random.randint(1000, size=(10, 1))
-            a = model.fit(x=x, y=y, epochs=1)
+            model.fit(x=x, y=y, epochs=1)
             self.assertTrue(hasattr(model.layers[0], 'gamma'))
 
 

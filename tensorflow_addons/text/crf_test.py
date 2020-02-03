@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for CRF."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import itertools
 
 import numpy as np
@@ -209,8 +205,11 @@ class CrfTest(tf.test.TestCase):
         transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]],
                                      dtype=np.float32)
         sequence_lengths = np.array(3, dtype=np.int32)
+        # TODO: https://github.com/PyCQA/pylint/issues/3139
+        # pylint: disable=E1136
         num_words = inputs.shape[0]
         num_tags = inputs.shape[1]
+        # pylint: enable=E1136
         all_sequence_log_likelihoods = []
 
         # Make sure all probabilities sum to 1.
@@ -229,14 +228,23 @@ class CrfTest(tf.test.TestCase):
         tf_total_log_likelihood = self.evaluate(total_log_likelihood)
         self.assertAllClose(tf_total_log_likelihood, 0.0)
 
+        # check if `transition_params = None` raises an error
+        text.crf_log_likelihood(
+            inputs=tf.expand_dims(inputs, 0),
+            tag_indices=tf.expand_dims(tag_indices, 0),
+            sequence_lengths=tf.expand_dims(sequence_lengths, 0))
+
     def testViterbiDecode(self):
         inputs = np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]],
                           dtype=np.float32)
         transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]],
                                      dtype=np.float32)
         sequence_lengths = np.array(3, dtype=np.int32)
+        # TODO: https://github.com/PyCQA/pylint/issues/3139
+        # pylint: disable=E1136
         num_words = inputs.shape[0]
         num_tags = inputs.shape[1]
+        # pylint: enable=E1136
 
         all_sequence_scores = []
         all_sequences = []
@@ -340,6 +348,27 @@ class CrfTest(tf.test.TestCase):
         tf_tags, tf_scores = self.evaluate([tags, scores])
         self.assertEqual(len(tf_tags.shape), 2)
         self.assertEqual(len(tf_scores.shape), 1)
+
+    def testDifferentDtype(self):
+        inputs = np.ones([16, 20, 5], dtype=np.float32)
+        tags = tf.convert_to_tensor(np.ones([16, 20], dtype=np.int64))
+        seq_lens = np.ones([16], dtype=np.int64) * 20
+
+        loss, _ = text.crf_log_likelihood(
+            inputs=inputs, tag_indices=tags, sequence_lengths=seq_lens)
+
+    def testTfFunction(self):
+        batch_size = 4
+        num_tags = 10
+        input_signature = (tf.TensorSpec([None, None, num_tags]),
+                           tf.TensorSpec([num_tags, num_tags]),
+                           tf.TensorSpec([None], dtype=tf.int32))
+        crf_decode = tf.function(input_signature=input_signature)(
+            text.crf_decode)
+        potentials = tf.random.uniform([batch_size, 1, num_tags])
+        transition_params = tf.random.uniform([num_tags, num_tags])
+        sequence_length = tf.ones([batch_size], dtype=tf.int32)
+        crf_decode(potentials, transition_params, sequence_length)
 
 
 if __name__ == "__main__":

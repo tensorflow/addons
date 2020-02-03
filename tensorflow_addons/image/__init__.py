@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Image manipulation ops."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+"""Additional image manipulation ops."""
 
+from tensorflow_addons.image.connected_components import connected_components
 from tensorflow_addons.image.dense_image_warp import dense_image_warp
 from tensorflow_addons.image.dense_image_warp import interpolate_bilinear
 from tensorflow_addons.image.distance_transform import euclidean_dist_transform
@@ -24,5 +22,9 @@ from tensorflow_addons.image.distort_image_ops import adjust_hsv_in_yiq
 from tensorflow_addons.image.distort_image_ops import random_hsv_in_yiq
 from tensorflow_addons.image.filters import mean_filter2d
 from tensorflow_addons.image.filters import median_filter2d
+from tensorflow_addons.image.interpolate_spline import interpolate_spline
+from tensorflow_addons.image.resampler_ops import resampler
+from tensorflow_addons.image.sparse_image_warp import sparse_image_warp
 from tensorflow_addons.image.transform_ops import rotate
 from tensorflow_addons.image.transform_ops import transform
+from tensorflow_addons.image.translate_ops import translate

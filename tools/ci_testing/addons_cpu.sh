@@ -14,15 +14,16 @@
 # limitations under the License.
 #
 # ==============================================================================
+set -x
+
 # Make sure we're in the project root path.
 SCRIPT_DIR=$( cd ${0%/*} && pwd -P )
-ROOT_DIR=$( cd "$SCRIPT_DIR/.." && pwd -P )
+ROOT_DIR=$( cd "$SCRIPT_DIR/../.." && pwd -P )
+cd $ROOT_DIR
 if [[ ! -d "tensorflow_addons" ]]; then
     echo "ERROR: PWD: $PWD is not project root"
     exit 1
 fi
-
-set -x
 
 PLATFORM="$(uname -s | tr 'A-Z' 'a-z')"
 
@@ -32,20 +33,23 @@ else
     N_JOBS=$(grep -c ^processor /proc/cpuinfo)
 fi
 
-
 echo ""
 echo "Bazel will use ${N_JOBS} concurrent job(s)."
 echo ""
 
 export CC_OPT_FLAGS='-mavx'
-export TF_NEED_CUDA=0 # TODO: Verify this is used in GPU custom-op
+export TF_NEED_CUDA=0
 
-export PYTHON_BIN_PATH=`which python`
-# Use default configuration here.
-yes 'y' | ./configure.sh
+if [ -x "$(command -v python3)" ]; then
+    echo 'y' | python3 ./configure.py
+  else
+    echo 'y' | python ./configure.py
+fi
+
+cat ./.bazelrc
 
 ## Run bazel test command. Double test timeouts to avoid flakes.
-bazel test -c opt -k \
+${BAZEL_PATH:=bazel} test -c opt -k \
     --jobs=${N_JOBS} --test_timeout 300,450,1200,3600 \
     --test_output=errors --local_test_jobs=8 \
     //tensorflow_addons/...

@@ -12,11 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Customized RNN cells."""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+"""Additional RNN cells that corform to Keras API."""
 
 from tensorflow_addons.rnn.cell import LayerNormLSTMCell
 from tensorflow_addons.rnn.cell import NASCell

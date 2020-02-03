@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for LazyAdam."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 import tensorflow as tf
 
@@ -115,7 +111,9 @@ class LazyAdamTest(tf.test.TestCase):
                 # it (i.e. they have GPU kernels).
                 var = tf.Variable([[1.0], [2.0]])
                 indices = tf.constant([0, 1], dtype=index_dtype)
-                g_sum = lambda: tf.math.reduce_sum(tf.gather(var, indices))  # pylint: disable=cell-var-from-loop
+
+                def g_sum():
+                    return tf.math.reduce_sum(tf.gather(var, indices))
                 optimizer = lazy_adam.LazyAdam(3.0)
                 minimize_op = optimizer.minimize(g_sum, var_list=[var])
                 self.evaluate(tf.compat.v1.global_variables_initializer())
@@ -151,11 +149,9 @@ class LazyAdamTest(tf.test.TestCase):
                                         repeated_index_update_var.eval())
 
     def doTestBasic(self, use_callable_params=False):
-        # yapf: disable
         for i, dtype in enumerate([tf.dtypes.half,
                                    tf.dtypes.float32,
                                    tf.dtypes.float64]):
-            # yapf: enable
             with self.session(graph=tf.Graph()):
                 # Initialize tf for numpy implementation.
                 m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
@@ -169,15 +165,10 @@ class LazyAdamTest(tf.test.TestCase):
                 grads0 = tf.constant(grads0_np)
                 grads1 = tf.constant(grads1_np)
 
-                learning_rate = lambda: 0.001
-                beta1 = lambda: 0.9
-                beta2 = lambda: 0.999
-                epsilon = lambda: 1e-8
+                def learning_rate():
+                    return 0.001
                 if not use_callable_params:
                     learning_rate = learning_rate()
-                    beta1 = beta1()
-                    beta2 = beta2()
-                    epsilon = epsilon()
 
                 opt = lazy_adam.LazyAdam(learning_rate=learning_rate)
                 if not tf.executing_eagerly():
@@ -322,7 +313,7 @@ class LazyAdamTest(tf.test.TestCase):
         opt = lazy_adam.LazyAdam(1.)
         opt.minimize(lambda: v1 + v2, var_list=[v1, v2])
         # There should be iteration, and two unique slot variables for v1 and v2.
-        self.assertEqual(5, len(set(opt.variables())))
+        self.assertEqual(5, len(opt.variables()))
         self.assertEqual(
             self.evaluate(opt.variables()[0]), self.evaluate(opt.iterations))
 

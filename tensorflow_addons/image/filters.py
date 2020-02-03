@@ -13,11 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
+from tensorflow_addons.image import utils as img_utils
 from tensorflow_addons.utils import keras_utils
 
 
@@ -59,7 +56,8 @@ def mean_filter2d(image,
     """Perform mean filtering on image(s).
 
     Args:
-      image: Either a 3-D `Tensor` of shape `[height, width, channels]`,
+      image: Either a 2-D `Tensor` of shape `[height, width]`,
+        a 3-D `Tensor` of shape `[height, width, channels]`,
         or a 4-D `Tensor` of shape `[batch_size, height, width, channels]`.
       filter_shape: An `integer` or `tuple`/`list` of 2 integers, specifying
         the height and width of the 2-D mean filter. Can be a single integer
@@ -74,28 +72,22 @@ def mean_filter2d(image,
     Returns:
       3-D or 4-D `Tensor` of the same dtype as input.
     Raises:
-      ValueError: If `image` is not 3 or 4-dimensional,
+      ValueError: If `image` is not 2, 3 or 4-dimensional,
         if `padding` is other than "REFLECT", "CONSTANT" or "SYMMETRIC",
         or if `filter_shape` is invalid.
     """
     with tf.name_scope(name or "mean_filter2d"):
         image = tf.convert_to_tensor(image, name="image")
-
-        rank = image.shape.rank
-        if rank != 3 and rank != 4:
-            raise ValueError("image should be either 3 or 4-dimensional.")
+        original_ndims = img_utils.get_ndims(image)
+        image = img_utils.to_4D_image(image)
 
         if padding not in ["REFLECT", "CONSTANT", "SYMMETRIC"]:
             raise ValueError(
                 "padding should be one of \"REFLECT\", \"CONSTANT\", or "
                 "\"SYMMETRIC\".")
 
-        filter_shape = keras_utils.conv_utils.normalize_tuple(
-            filter_shape, 2, "filter_shape")
-
-        # Expand to a 4-D tensor
-        if rank == 3:
-            image = tf.expand_dims(image, axis=0)
+        filter_shape = keras_utils.normalize_tuple(filter_shape, 2,
+                                                   "filter_shape")
 
         # Keep the precision if it's float;
         # otherwise, convert to float32 for computing.
@@ -111,7 +103,7 @@ def mean_filter2d(image,
         # has the value of 1 for each element.
         area = tf.constant(
             filter_shape[0] * filter_shape[1], dtype=image.dtype)
-        filter_shape = filter_shape + (tf.shape(image)[-1], 1)
+        filter_shape += (tf.shape(image)[-1], 1)
         kernel = tf.ones(shape=filter_shape, dtype=image.dtype)
 
         output = tf.nn.depthwise_conv2d(
@@ -119,11 +111,7 @@ def mean_filter2d(image,
 
         output /= area
 
-        # Squeeze out the first axis to make sure
-        # output has the same dimension with image.
-        if rank == 3:
-            output = tf.squeeze(output, axis=0)
-
+        output = img_utils.from_4D_image(output, original_ndims)
         return tf.dtypes.cast(output, orig_dtype)
 
 
@@ -136,7 +124,8 @@ def median_filter2d(image,
     """Perform median filtering on image(s).
 
     Args:
-      image: Either a 3-D `Tensor` of shape `[height, width, channels]`,
+      image: Either a 2-D `Tensor` of shape `[height, width]`,
+        a 3-D `Tensor` of shape `[height, width, channels]`,
         or a 4-D `Tensor` of shape `[batch_size, height, width, channels]`.
       filter_shape: An `integer` or `tuple`/`list` of 2 integers, specifying
         the height and width of the 2-D median filter. Can be a single integer
@@ -151,28 +140,22 @@ def median_filter2d(image,
     Returns:
       3-D or 4-D `Tensor` of the same dtype as input.
     Raises:
-      ValueError: If `image` is not 3 or 4-dimensional,
+      ValueError: If `image` is not 2, 3 or 4-dimensional,
         if `padding` is other than "REFLECT", "CONSTANT" or "SYMMETRIC",
         or if `filter_shape` is invalid.
     """
     with tf.name_scope(name or "median_filter2d"):
         image = tf.convert_to_tensor(image, name="image")
-
-        rank = image.shape.rank
-        if rank != 3 and rank != 4:
-            raise ValueError("image should be either 3 or 4-dimensional.")
+        original_ndims = img_utils.get_ndims(image)
+        image = img_utils.to_4D_image(image)
 
         if padding not in ["REFLECT", "CONSTANT", "SYMMETRIC"]:
             raise ValueError(
                 "padding should be one of \"REFLECT\", \"CONSTANT\", or "
                 "\"SYMMETRIC\".")
 
-        filter_shape = keras_utils.conv_utils.normalize_tuple(
-            filter_shape, 2, "filter_shape")
-
-        # Expand to a 4-D tensor
-        if rank == 3:
-            image = tf.expand_dims(image, axis=0)
+        filter_shape = keras_utils.normalize_tuple(filter_shape, 2,
+                                                   "filter_shape")
 
         image_shape = tf.shape(image)
         batch_size = image_shape[0]
@@ -212,10 +195,5 @@ def median_filter2d(image,
                 top[:, :, :, :, floor - 1] + top[:, :, :, :, ceil - 1]) / 2
 
         output = tf.cast(median, image.dtype)
-
-        # Squeeze out the first axis to make sure
-        # output has the same dimension with image.
-        if rank == 3:
-            output = tf.squeeze(output, axis=0)
-
+        output = img_utils.from_4D_image(output, original_ndims)
         return output

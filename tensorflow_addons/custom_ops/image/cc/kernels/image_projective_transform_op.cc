@@ -26,6 +26,7 @@ limitations under the License.
 #include "tensorflow/core/platform/types.h"
 
 namespace tensorflow {
+namespace addons {
 
 namespace functor {
 
@@ -118,10 +119,10 @@ class ImageProjectiveTransformV2 : public OpKernel {
   }
 };
 
-#define REGISTER(TYPE)                                        \
-  REGISTER_KERNEL_BUILDER(Name("ImageProjectiveTransformV2")  \
-                              .Device(DEVICE_CPU)             \
-                              .TypeConstraint<TYPE>("dtype"), \
+#define REGISTER(TYPE)                                              \
+  REGISTER_KERNEL_BUILDER(Name("Addons>ImageProjectiveTransformV2") \
+                              .Device(DEVICE_CPU)                   \
+                              .TypeConstraint<TYPE>("dtype"),       \
                           ImageProjectiveTransformV2<CPUDevice, TYPE>)
 
 TF_CALL_uint8(REGISTER);
@@ -157,11 +158,11 @@ TF_CALL_double(DECLARE_FUNCTOR);
 
 }  // end namespace functor
 
-#define REGISTER(TYPE)                                       \
-  REGISTER_KERNEL_BUILDER(Name("ImageProjectiveTransformV2") \
-                              .Device(DEVICE_GPU)            \
-                              .TypeConstraint<TYPE>("dtype") \
-                              .HostMemory("output_shape"),   \
+#define REGISTER(TYPE)                                              \
+  REGISTER_KERNEL_BUILDER(Name("Addons>ImageProjectiveTransformV2") \
+                              .Device(DEVICE_GPU)                   \
+                              .TypeConstraint<TYPE>("dtype")        \
+                              .HostMemory("output_shape"),          \
                           ImageProjectiveTransformV2<GPUDevice, TYPE>)
 
 TF_CALL_uint8(REGISTER);
@@ -175,4 +176,5 @@ TF_CALL_double(REGISTER);
 
 #endif  // GOOGLE_CUDA
 
+}  // end namespace addons
 }  // end namespace tensorflow

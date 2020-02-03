@@ -5,19 +5,19 @@
 
 # Subpackage Owners
 /tensorflow_addons/activations/ @facaiy @seanpmorgan
-/tensorflow_addons/callbacks/ @squadrick
+/tensorflow_addons/callbacks/ @squadrick @shun-lin
 /tensorflow_addons/image/ @windqaq @facaiy 
 /tensorflow_addons/layers/ @seanpmorgan @facaiy
 /tensorflow_addons/losses/ @facaiy @windqaq
 /tensorflow_addons/metrics/ @squadrick
 /tensorflow_addons/optimizers/ @facaiy @windqaq @squadrick
 /tensorflow_addons/rnn/ @qlzh727
-/tensorflow_addons/seq2seq/ @qlzh727
+/tensorflow_addons/seq2seq/ @qlzh727 @guillaumekln
 /tensorflow_addons/text/ @seanpmorgan @facaiy
 
 /tensorflow_addons/custom_ops/image/ @windqaq @facaiy
 /tensorflow_addons/custom_ops/seq2seq/ @qlzh727
-/tensorflow_addons/custom_ops/text/ @seanpmorgan @facaiy
+/tensorflow_addons/custom_ops/text/ @seanpmorgan @facaiy @helinwang
 
 # Submodule Owners
 # These may not automatically trigger a review because submodule owners do not
@@ -32,3 +32,4 @@
 /tensorflow_addons/layers/sparsemax*.py @AndreasMadsen
 /tensorflow_addons/losses/contrastive*.py @WindQAQ
 /tensorflow_addons/losses/sparsemax*.py @AndreasMadsen
+/tensorflow_addons/text/parse_time*.py @helinwang

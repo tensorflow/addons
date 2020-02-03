@@ -12,20 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""TensorFlow Addons 
+"""TensorFlow Addons.
 
-TensorFlow Addons is a repository of contributions that conform to
-well-established API patterns,but implement new functionality not available in
-core TensorFlow.TensorFlow natively supports a large number of operators,
-layers, metrics, losses, and optimizers. However, in a fast moving field like
-ML, there are many interesting new developments that cannot be integrated into
-core TensorFlow (because their broad applicability is not yet clear, or it is
-mostly used by a smaller subset of the community).
+TensorFlow Addons is a repository of contributions that conform to well-
+established API patterns, but implement new functionality not available
+in core TensorFlow. TensorFlow natively supports a large number of
+operators, layers, metrics, losses, and optimizers. However, in a fast
+moving field like ML, there are many interesting new developments that
+cannot be integrated into core TensorFlow (because their broad
+applicability is not yet clear, or it is mostly used by a smaller subset
+of the community).
 """
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import os
 import sys
@@ -34,27 +31,37 @@ from datetime import datetime
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.dist import Distribution
+from setuptools import Extension
 
 DOCLINES = __doc__.split('\n')
 
+TFA_NIGHTLY = 'tfa-nightly'
+TFA_RELEASE = 'tensorflow-addons'
+
+if '--nightly' in sys.argv:
+    project_name = TFA_NIGHTLY
+    nightly_idx = sys.argv.index('--nightly')
+    sys.argv.pop(nightly_idx)
+else:
+    project_name = TFA_RELEASE
+
+# Version
 version = {}
 base_dir = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
-    # yapf: disable
     exec(fp.read(), version)
-    # yapf: enable
 
-REQUIRED_PACKAGES = [
-    'six >= 1.10.0',
-]
-
-if '--nightly' in sys.argv:
-    project_name = 'tfa-nightly'
-    nightly_idx = sys.argv.index('--nightly')
-    sys.argv.pop(nightly_idx)
+if project_name == TFA_NIGHTLY:
     version['__version__'] += datetime.strftime(datetime.today(), "%Y%m%d")
+
+with open('requirements.txt') as f:
+    required_pkgs = f.read().splitlines()
+
+# Manylinux2010 requires a patch for platlib
+if sys.platform.startswith('linux') and os.environ.get('TF_ADDONS_NO_BUILD', '0') == '0':
+    ext_modules = [Extension('_foo', ['stub.cc'])]
 else:
-    project_name = 'tensorflow-addons'
+    ext_modules = []
 
 
 class BinaryDistribution(Distribution):
@@ -72,7 +79,8 @@ setup(
     author='Google Inc.',
     author_email='opensource@google.com',
     packages=find_packages(),
-    install_requires=REQUIRED_PACKAGES,
+    ext_modules=ext_modules,
+    install_requires=required_pkgs,
     include_package_data=True,
     zip_safe=False,
     distclass=BinaryDistribution,
@@ -82,10 +90,9 @@ setup(
         'Intended Audience :: Education',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Software Development :: Libraries',

@@ -16,7 +16,6 @@ py_library(
     data = [
         "//tensorflow_addons/custom_ops/seq2seq:_beam_search_ops.so",
     ],
-    srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/utils",
     ],
@@ -33,7 +32,7 @@ py_test(
 
 py_test(
     name = "basic_decoder_test",
-    size = "medium",
+    size = "small",
     srcs = ["basic_decoder_test.py"],
     deps = [
         ":seq2seq",
@@ -42,7 +41,7 @@ py_test(
 
 py_test(
     name = "beam_search_decoder_test",
-    size = "medium",
+    size = "small",
     srcs = ["beam_search_decoder_test.py"],
     deps = [
         ":seq2seq",
@@ -51,7 +50,7 @@ py_test(
 
 py_test(
     name = "beam_search_ops_test",
-    size = "medium",
+    size = "small",
     srcs = ["beam_search_ops_test.py"],
     deps = [
         ":seq2seq",
@@ -60,7 +59,7 @@ py_test(
 
 py_test(
     name = "decoder_test",
-    size = "medium",
+    size = "small",
     srcs = ["decoder_test.py"],
     deps = [
         ":seq2seq",
@@ -69,7 +68,7 @@ py_test(
 
 py_test(
     name = "loss_test",
-    size = "medium",
+    size = "small",
     srcs = ["loss_test.py"],
     deps = [
         ":seq2seq",
