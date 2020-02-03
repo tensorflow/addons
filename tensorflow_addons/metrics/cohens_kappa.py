@@ -18,6 +18,10 @@ import tensorflow as tf
 import numpy as np
 import tensorflow.keras.backend as K
 from tensorflow.keras.metrics import Metric
+from tensorflow_addons.utils.types import FloatTensorLike, Number
+
+from typeguard import typechecked
+from typing import Optional
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -59,10 +63,10 @@ class CohenKappa(Metric):
     """
 
     def __init__(self,
-                 num_classes,
-                 name='cohen_kappa',
-                 weightage=None,
-                 dtype=None):
+                 num_classes: Number,
+                 name: str = 'cohen_kappa',
+                 weightage: Optional[str] = None,
+                 dtype: Optional[FloatTensorLike] = None):
         """Creates a `CohenKappa` instance.
 
         Args:
