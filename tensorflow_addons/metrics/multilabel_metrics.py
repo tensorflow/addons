@@ -255,7 +255,7 @@ class MultiLabelMacroSensitivity(tf.keras.metrics.Metric):
         label_is_pos = tf.greater(tf.cast(y_true, tf.float32), self._threshold)
 
         pred_is_neg = tf.logical_not(tf.cast(pred_is_pos, tf.bool))
-        label_is_neg = tf.logical_not(tf.cast(label_is_pos, tf.bool))
+        # label_is_neg = tf.logical_not(tf.cast(label_is_pos, tf.bool))
 
         self._true_positives.assign_add(
             tf.reduce_sum(

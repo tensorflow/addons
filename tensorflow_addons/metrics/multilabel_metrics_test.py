@@ -92,10 +92,10 @@ class MultiLabelMacroSensitivityTest(tf.test.TestCase):
 
     def initialize_vars(self):
         _class = MultiLabelMacroSensitivity
-        _name = "multi_label_macro_sensitivity"
-        _threshold = 0.5
-        _from_logits = True
-        _activation = "sigmoid"
+        # _name = "multi_label_macro_sensitivity"
+        # _threshold = 0.5
+        # _from_logits = True
+        # _activation = "sigmoid"
         obj = _class()
         self.evaluate(tf.compat.v1.variables_initializer(obj.variables))
         return obj
@@ -162,10 +162,10 @@ class MultiLabelMacroSpecificityTest(tf.test.TestCase):
 
     def initialize_vars(self):
         _class = MultiLabelMacroSpecificity
-        _name = "multi_label_macro_specificity"
-        _threshold = 0.5
-        _from_logits = True
-        _activation = "sigmoid"
+        # _name = "multi_label_macro_specificity"
+        # _threshold = 0.5
+        # _from_logits = True
+        # _activation = "sigmoid"
         obj = _class()
         self.evaluate(tf.compat.v1.variables_initializer(obj.variables))
         return obj
