@@ -19,7 +19,7 @@ from tensorflow_addons.activations import gelu
 from typeguard import typechecked
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class GELU(tf.keras.layers.Layer):
     """Gaussian Error Linear Unit.
 
@@ -46,7 +46,7 @@ class GELU(tf.keras.layers.Layer):
         return gelu(inputs, approximate=self.approximate)
 
     def get_config(self):
-        config = {'approximate': self.approximate}
+        config = {"approximate": self.approximate}
         base_config = super().get_config()
         return {**base_config, **config}
 
