@@ -46,18 +46,6 @@ cmd_status(){
     fi
 }
 
-# Run bazel build --nobuild to test the validity of the BUILD files
-do_bazel_nobuild() {
-    python3 ./configure.py --quiet
-
-    # Check
-    BUILD_TARGET="//tensorflow_addons/..."
-    BUILD_CMD="bazel build --nobuild ${BAZEL_FLAGS} -- ${BUILD_TARGET}"
-    ${BUILD_CMD}
-
-    cmd_status "This is due to invalid BUILD files."
-}
-
 do_check_file_name_test() {
     cd "$ROOT_DIR/tools/ci_build/verify"
     python check_file_name.py
@@ -65,8 +53,8 @@ do_check_file_name_test() {
 
 
 # Supply all sanity step commands and descriptions
-SANITY_STEPS=("do_bazel_nobuild" "do_check_file_name_test")
-SANITY_STEPS_DESC=("bazel nobuild" "Check file names for cases")
+SANITY_STEPS=("do_check_file_name_test")
+SANITY_STEPS_DESC=("Check file names for cases")
 
 INCREMENTAL_FLAG=""
 DEFAULT_BAZEL_CONFIGS=""
