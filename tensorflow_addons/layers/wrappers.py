@@ -17,6 +17,7 @@ import logging
 
 import tensorflow as tf
 
+cs = tf.CriticalSection(name='init_mutex')
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 class WeightNormalization(tf.keras.layers.Wrapper):
@@ -57,7 +58,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         super().__init__(layer, **kwargs)
         self.data_init = data_init
         self._track_trackable(layer, name='layer')
-        self._init_critical_section = tf.CriticalSection(name='init_mutex')
+        self._init_critical_section = cs
         self.is_rnn = isinstance(self.layer, tf.keras.layers.RNN)
 
         if self.data_init and self.is_rnn:
