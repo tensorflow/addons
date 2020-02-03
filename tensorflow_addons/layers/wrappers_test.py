@@ -162,7 +162,6 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
             self.evaluate(tf.compat.v1.global_variables_initializer())
             with tf.control_dependencies([wn_output]):
                 wn_removed_layer = wn_layer.remove()
-                wn_removed_output = wn_removed_layer(sample_data)
 
             if wn_layer.is_rnn:
                 kernel = wn_layer.layer.cell.recurrent_kernel
