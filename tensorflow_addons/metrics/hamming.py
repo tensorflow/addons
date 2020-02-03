@@ -16,10 +16,10 @@
 
 import tensorflow as tf
 from tensorflow_addons.metrics.utils import MeanMetricWrapper
-from tensorflow_addons.utils.types import FloatTensorLike, Number, TensorLike
+from tensorflow_addons.utils.types import FloatTensorLike, TensorLike, Number
 
 from typeguard import typechecked
-from typing import Union
+from typing import Union, Optional
 
 
 def hamming_distance(actuals: TensorLike, predictions: TensorLike) -> Number:
@@ -138,7 +138,12 @@ class HammingLoss(MeanMetricWrapper):
 
     @typechecked
     def __init__(
-        self, mode, threshold=None, dtype=tf.float32, name="hamming_loss", **kwargs
+        self,
+        mode: str,
+        threshold: Optional[FloatTensorLike] = None,
+        dtype: Optional[FloatTensorLike] = None,
+        name: str = "hamming_loss",
+        **kwargs
     ):
         super().__init__(
             hamming_loss_fn, mode=mode, threshold=threshold, dtype=dtype, name=name
