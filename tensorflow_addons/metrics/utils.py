@@ -21,11 +21,18 @@ from tensorflow_addons.utils.types import FloatTensorLike
 from typeguard import typechecked
 from typing import Optional, Callable
 
+
 class MeanMetricWrapper(tf.keras.metrics.Mean):
     """Wraps a stateless metric function with the Mean metric."""
 
     @typechecked
-    def __init__(self, fn: Callable, name: Optional[str] = None, dtype: Optional[FloatTensorLike] = None, **kwargs):
+    def __init__(
+        self,
+        fn: Callable,
+        name: Optional[str] = None,
+        dtype: Optional[FloatTensorLike] = None,
+        **kwargs
+    ):
         """Creates a `MeanMetricWrapper` instance.
         Args:
           fn: The metric function to wrap, with signature

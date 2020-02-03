@@ -62,11 +62,13 @@ class CohenKappa(Metric):
     ```
     """
 
+    @typechecked
     def __init__(self,
                  num_classes: Number,
                  name: str = 'cohen_kappa',
                  weightage: Optional[str] = None,
-                 dtype: Optional[FloatTensorLike] = None):
+                 dtype: Optional[FloatTensorLike] = None,
+                 **kwargs):
         """Creates a `CohenKappa` instance.
 
         Args:

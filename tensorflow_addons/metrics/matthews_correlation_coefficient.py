@@ -15,6 +15,10 @@
 """Matthews Correlation Coefficient Implementation."""
 
 import tensorflow as tf
+from tensorflow_addons.utils.types import FloatTensorLike, Number
+
+from typeguard import typechecked
+from typing import Optional
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -52,10 +56,12 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
     ```
     """
 
+    @typechecked
     def __init__(self,
-                 num_classes=None,
-                 name='MatthewsCorrelationCoefficient',
-                 dtype=tf.float32):
+                 num_classes: Number,
+                 name: str = 'MatthewsCorrelationCoefficient',
+                 dtype: Optional[FloatTensorLike] = None,
+                 **kwargs):
         """Creates a Matthews Correlation Coefficient instance.
 
         Args:
