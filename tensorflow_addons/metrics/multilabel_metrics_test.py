@@ -79,7 +79,7 @@ class MultiLabelMacroSensitivityTest(tf.test.TestCase):
             activation=_activation,
         )
         self.assertEqual(obj_a._name, _name)
-        self.assertEqual(obj_a._threshold, _threshold)
+        self.assertEqual(obj_a._threshold, tf.constant(_threshold, dtype=tf.float32))
         self.assertEqual(obj_a._from_logits, _from_logits)
         self.assertEqual(obj_a._activation, _activation)
 
