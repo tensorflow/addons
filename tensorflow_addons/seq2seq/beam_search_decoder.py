@@ -26,7 +26,7 @@ from tensorflow_addons.utils.resource_loader import LazySO
 from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 
 from typeguard import typechecked
-from typing import Callable, List, Optional, Union
+from typing import Callable, Optional, Union
 
 _beam_search_so = LazySO("custom_ops/seq2seq/_beam_search_ops.so")
 
