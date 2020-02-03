@@ -53,7 +53,7 @@ class GIoULoss(tf.keras.losses.Loss):
     @typechecked
     def __init__(self,
                  mode: str = 'giou',
-                 reduction: tf.keras.losses.Reduction = tf.keras.losses.Reduction.AUTO,
+                 reduction: str = 'tf.keras.losses.Reduction.AUTO',
                  name: str = 'giou_loss'):
         if mode not in ['giou', 'iou']:
             raise ValueError("Value of mode should be 'iou' or 'giou'")

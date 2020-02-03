@@ -18,7 +18,7 @@ import tensorflow as tf
 import tensorflow.keras.backend as K
 
 from tensorflow_addons.utils.types import TensorLike, Number
-from typeguard import typechecked
+from typegrd import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -69,7 +69,7 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
                  from_logits: bool = False,
                  alpha: Number = 0.25,
                  gamma: Number = 2.0,
-                 reduction: tf.keras.losses.Reduction = tf.keras.losses.Reduction.NONE,
+                 reduction: str = 'tf.keras.losses.Reduction.NONE',
                  name: str = 'sigmoid_focal_crossentropy'):
         super().__init__(name=name, reduction=reduction)
 
