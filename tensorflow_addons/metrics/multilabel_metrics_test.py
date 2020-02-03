@@ -53,10 +53,10 @@ class MultiLabelMacroRecallTest(tf.test.TestCase):
         )
 
         self.update_obj_states(obj, y_true, y_pred)
-        self.check_results(obj, 0.5)
+        self.check_results(obj, 0.6666667)
 
         obj.reset_states()
-        expected_single_results = [0.5, 0.0, 1.0, 0.0, 0.33333334]
+        expected_single_results = [0.5, 0.0, 1.0, 0.0, 1.0]
         for i, res in enumerate(xpected_single_results):
             self.update_obj_states(obj, y_true[:, i], y_pred[:, i])
             self.check_results(obj, res)
@@ -107,7 +107,7 @@ class MultiLabelMacroSensitivityTest(tf.test.TestCase):
     def check_results(self, obj, value):
         self.assertAllClose(value, self.evaluate(obj.result()), atol=1e-5)
 
-    def test_recall_score(self):
+    def test_sensitivity_score(self):
         obj = self.initialize_vars()
         y_true = tf.cast(
             tf.constant(
@@ -124,10 +124,10 @@ class MultiLabelMacroSensitivityTest(tf.test.TestCase):
         )
         self.update_obj_states(obj, y_true, y_pred)
         self.update_obj_states(obj, y_true, y_pred)
-        self.check_results(obj, 0.8)
+        self.check_results(obj, 0.5714286)
 
         obj.reset_states()
-        expected_single_results = [1.0, 0.0, 1.0, 0.0, 1.0]
+        expected_single_results = [1.0, 0.0, 1.0, 0.0, 0.33333334]
         for i, res in enumerate(xpected_single_results):
             self.update_obj_states(obj, y_true[:, i], y_pred[:, i])
             self.check_results(obj, res)
@@ -178,7 +178,7 @@ class MultiLabelMacroSpecificityTest(tf.test.TestCase):
     def check_results(self, obj, value):
         self.assertAllClose(value, self.evaluate(obj.result()), atol=1e-5)
 
-    def test_recall_score(self):
+    def test_specificity_score(self):
         obj = self.initialize_vars()
         y_true = tf.cast(
             tf.constant(
@@ -195,7 +195,7 @@ class MultiLabelMacroSpecificityTest(tf.test.TestCase):
         )
         self.update_obj_states(obj, y_true, y_pred)
         self.update_obj_states(obj, y_true, y_pred)
-        self.check_results(obj, 0.6)
+        self.check_results(obj, 0.75)
 
         obj.reset_states()
         expected_single_results = [0.5, 1.0, 1.0, 0.5, 0.0]
