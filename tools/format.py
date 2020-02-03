@@ -15,16 +15,14 @@ except CalledProcessError:
     files_changed = True
 
 try:
-    check_bash_call("buildifier --check -r .")
+    check_bash_call("buildifier -mode=check -r .")
 except CalledProcessError:
     check_bash_call("buildifier -r .")
     files_changed = True
 
 # todo: find a way to check if files changed
 # see https://github.com/DoozyX/clang-format-lint-action for inspiration
-check_bash_call(
-    "shopt -s globstar && " "clang-format-9 -i --style=google **/*.cc **/*.h"
-)
+check_bash_call("shopt -s globstar && clang-format-9 -i --style=google **/*.cc **/*.h")
 
 
 if files_changed:

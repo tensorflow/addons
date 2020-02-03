@@ -12,4 +12,4 @@ RUN mkdir /addons
 WORKDIR /addons
 
 
-CMD ["bash", "tools/pre-commit.sh"]
+CMD ["python", "tools/format.py"]
