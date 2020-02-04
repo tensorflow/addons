@@ -1,4 +1,4 @@
-# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 import tensorflow as tf
 import numpy as np
 from typeguard import typechecked
+import logging
 
 
 class ModelManager:
@@ -103,7 +104,7 @@ class ModelManager:
             if lr_mult != 1.0:
                 layers_with_lr_mult.append(sub_layer)
                 if verbose:
-                    tf.print("layer %s lr_mult : %f" % (sub_layer.name, lr_mult))
+                    logging.info("layer %s lr_mult : %f" % (sub_layer.name, lr_mult))
 
         return layers_with_lr_mult
 
@@ -119,11 +120,11 @@ class ModelManager:
         layers_with_lr_mult = self._check_for_lr_mult(model, verbose=verbose)
         if len(layers_with_lr_mult) == 0:
 
-            tf.print(
+            logging.warning(
                 "Discriminative Layer Training requires an lr_mult attribute on at least one layer"
             )
 
-            tf.print(
+            logging.warning(
                 "The assigned lr_mult must not be equal to 1. eg: model.layers[0].lr_mult = 0.01"
             )
 
