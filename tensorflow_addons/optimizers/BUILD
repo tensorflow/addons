@@ -19,8 +19,7 @@ py_library(
         "stochastic_weight_averaging.py",
         "utils.py",
         "weight_decay_optimizers.py",
-        "yogi.py"
-
+        "yogi.py",
     ],
     deps = [
         "//tensorflow_addons/utils",
@@ -158,8 +157,6 @@ py_test(
         ":optimizers",
     ],
 )
-
-
 
 py_test(
     name = "discriminative_layer_training_test",
