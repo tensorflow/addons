@@ -28,7 +28,7 @@ class PolynomialCrossingTest(tf.test.TestCase):
     def test_full_matrix(self):
         x0 = np.asarray([[0.1, 0.2, 0.3]]).astype(np.float32)
         x = np.asarray([[0.4, 0.5, 0.6]]).astype(np.float32)
-        layer = PolynomialCrossing(projection_dim=None, kernel_initializer='ones')
+        layer = PolynomialCrossing(projection_dim=None, kernel_initializer="ones")
         output = layer([x0, x])
         self.evaluate(tf.compat.v1.global_variables_initializer())
         self.assertAllClose(np.asarray([[0.55, 0.8, 1.05]]), output)
