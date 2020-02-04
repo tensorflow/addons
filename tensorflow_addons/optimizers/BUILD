@@ -9,6 +9,7 @@ py_library(
         "average_wrapper.py",
         "conditional_gradient.py",
         "cyclical_learning_rate.py",
+        "discriminative_layer_training.py",
         "lamb.py",
         "lazy_adam.py",
         "lookahead.py",
@@ -18,8 +19,8 @@ py_library(
         "stochastic_weight_averaging.py",
         "utils.py",
         "weight_decay_optimizers.py",
-        "yogi.py",
-        "discriminative_layer_training.py"
+        "yogi.py"
+
     ],
     deps = [
         "//tensorflow_addons/utils",
