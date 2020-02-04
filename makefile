@@ -17,7 +17,7 @@
 all: code-format sanity-check unit-test
 
 install-ci-dependency:
-	bash tools/ci_build/install/install_ci_dependency.sh --quiet
+	bash tools/ci_build/install/install_ci_dependency.sh
 
 code-format: install-ci-dependency
 	black ./
