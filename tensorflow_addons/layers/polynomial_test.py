@@ -30,6 +30,7 @@ class PolynomialCrossingTest(tf.test.TestCase):
         x = np.asarray([[0.4, 0.5, 0.6]]).astype(np.float32)
         layer = PolynomialCrossing(projection_dim=None)
         output = layer([x0, x])
+        self.evaluate(tf.compat.v1.global_variables_initializer())
         self.assertAllClose(np.asarray([[0.55, 0.8, 1.05]]), output)
 
     def test_invalid_proj_dim(self):
