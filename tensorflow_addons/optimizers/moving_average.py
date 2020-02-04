@@ -45,7 +45,7 @@ class MovingAverage(AveragedOptimizerWrapper):
                  num_updates=None,
                  name="MovingAverage",
                  **kwargs):
-        """Construct a new MovingAverage optimizer.
+        r"""Construct a new MovingAverage optimizer.
 
         Args:
             optimizer: str or `tf.keras.optimizers.Optimizer` that will be
