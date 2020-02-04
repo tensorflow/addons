@@ -78,7 +78,9 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
         self.alpha = alpha
         self.gamma = gamma
 
-    def call(self, y_true, y_pred):
+    def call(self,
+             y_true,
+             y_pred):
         return sigmoid_focal_crossentropy(
             y_true,
             y_pred,
