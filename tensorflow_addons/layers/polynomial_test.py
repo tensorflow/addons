@@ -26,11 +26,11 @@ class PolynomialCrossingTest(tf.test.TestCase):
     # Do not use layer_test due to multiple inputs.
 
     def test_full_matrix(self):
-        x0 = np.asarray([[.1, .2, .3]]).astype(np.float32)
-        x = np.asarray([[.4, .5, .6]]).astype(np.float32)
+        x0 = np.asarray([[0.1, 0.2, 0.3]]).astype(np.float32)
+        x = np.asarray([[0.4, 0.5, 0.6]]).astype(np.float32)
         layer = PolynomialCrossing(projection_dim=None)
         output = layer([x0, x])
-        self.assertAllClose(np.asarray([[.55, .8, 1.05]]), output)
+        self.assertAllClose(np.asarray([[0.55, 0.8, 1.05]]), output)
 
     def test_invalid_proj_dim(self):
         with self.assertRaisesRegexp(ValueError, r"is not supported yet"):
