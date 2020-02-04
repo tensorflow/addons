@@ -19,9 +19,9 @@
 | hamming | HammingLoss and hamming_distance | [Hamming distance](https://en.wikipedia.org/wiki/Hamming_distance)|
 | matthews_correlation_coefficient | Matthews Correlation Coefficient | [MCC](https://en.wikipedia.org/wiki/Matthews_correlation_coefficient)|
 | multilabel_confusion_matrix | Multilabel Confusion Matrix | [mcm](https://en.wikipedia.org/wiki/Confusion_matrix)|
-| multilabel_metrics| MultiLabelMacroRecall|[MultiLabel Metrics][zhang and zhou 2014]|
-| multilabel_metrics| MultiLabelMacroSpecificity|[MultiLabel Metrics][zhang and zhou 2014]|
-| multilabel_metrics| MultiLabelMacroSensitivity|[MultiLabel Metrics][zhang and zhou 2014]|
+| multilabel_metrics| MultiLabelMacroRecall|[MultiLabel Metrics](https://ieeexplore.ieee.org/document/6471714)|
+| multilabel_metrics| MultiLabelMacroSpecificity|[MultiLabel Metrics](https://ieeexplore.ieee.org/document/6471714)|
+| multilabel_metrics| MultiLabelMacroSensitivity|[MultiLabel Metrics](https://ieeexplore.ieee.org/document/6471714)|
 | r_square| RSquare|[R-Square](https://en.wikipedia.org/wiki/Coefficient_of_determination)|
 
 ## Contribution Guidelines
@@ -42,6 +42,3 @@ must:
 
 #### Documentation Requirements
  * Update the table of contents in this sub-package's README.
-
-
-[zhang and zhou 2014]: https://ieeexplore.ieee.org/document/6471714
