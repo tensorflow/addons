@@ -57,15 +57,6 @@ jobs:
             curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
             export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
             bash -x -e ./tools/ci_testing/addons_cpu.sh
-  sanity-check:
-    name: Sanity Check
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v1
-      - name: Sanity check
-        run: |
-          set -x -e
-          bash tools/run_docker.sh -c 'make sanity-check'
   flake8-test:
     name: Flake8
     runs-on: ubuntu-latest

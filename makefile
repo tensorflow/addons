@@ -22,9 +22,6 @@ install-ci-dependency:
 code-format: install-ci-dependency
 	black ./
 
-sanity-check: install-ci-dependency
-	bash tools/ci_build/ci_sanity.sh --incremental
-
 unit-test:
 	bash tools/ci_testing/addons_cpu.sh
 
