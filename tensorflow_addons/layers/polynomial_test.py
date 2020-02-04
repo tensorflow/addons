@@ -26,10 +26,11 @@ class PolynomialCrossingTest(tf.test.TestCase):
     # Do not use layer_test due to multiple inputs.
 
     def test_full_matrix(self):
-        x0 = np.random.random((12, 5))
-        x = np.random.random((12, 5))
+        x0 = np.asarray([[.1, .2, .3]]).astype(np.float32)
+        x = np.asarray([[.4, .5, .6]]).astype(np.float32)
         layer = PolynomialCrossing(projection_dim=None)
-        layer([x0, x])
+        output = layer([x0, x])
+        self.assertAllClose(np.asarray([[.55, .8, 1.05]]), output)
 
     def test_invalid_proj_dim(self):
         with self.assertRaisesRegexp(ValueError, r"is not supported yet"):
@@ -37,6 +38,20 @@ class PolynomialCrossingTest(tf.test.TestCase):
             x = np.random.random((12, 5))
             layer = PolynomialCrossing(projection_dim=6)
             layer([x0, x])
+
+    def test_invalid_inputs(self):
+        with self.assertRaisesRegexp(ValueError, r"must be a tuple or list of size 2"):
+            x0 = np.random.random((12, 5))
+            x = np.random.random((12, 5))
+            x1 = np.random.random((12, 5))
+            layer = PolynomialCrossing(projection_dim=6)
+            layer([x0, x, x1])
+
+    def test_serialization(self):
+        layer = PolynomialCrossing(projection_dim=None)
+        serialized_layer = tf.keras.layers.serialize(layer)
+        new_layer = tf.keras.layers.deserialize(serialized_layer)
+        self.assertEqual(layer.get_config(), new_layer.get_config())
 
 
 if __name__ == "__main__":
