@@ -71,7 +71,6 @@ class MultiLabelMacroRecallTest(tf.test.TestCase):
         self.check_results(obj, 0.6666667)
 
 
-
 @test_utils.run_all_in_graph_and_eager_modes
 class MultiLabelMacroSensitivityTest(tf.test.TestCase):
     def test_config(self):
@@ -175,7 +174,7 @@ class MultiLabelMacroSpecificityTest(tf.test.TestCase):
             dtype=tf.float32,
         )
         self.update_obj_states(obj, y_true, y_pred)
-        self.check_results(obj, 0.75)        
+        self.check_results(obj, 0.75)
 
 
 if __name__ == "__main__":
