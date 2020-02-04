@@ -24,9 +24,9 @@ from tensorflow_addons.metrics.matthews_correlation_coefficient import (
 from tensorflow_addons.metrics.multilabel_confusion_matrix import (
     MultiLabelConfusionMatrix,
 )
-from tensorflow_addons.metrics.r_square import RSquare
 from tensorflow_addons.metrics.multilabel_metrics import (
-    MultiLabelMacroRecall,
-    MultiLabelMacroSensitivity,
-    MultiLabelMacroSpecificity,
+MultiLabelMacroRecall,
+MultiLabelMacroSensitivity,
+MultiLabelMacroSpecificity,
 )
+from tensorflow_addons.metrics.r_square import RSquare
