@@ -136,7 +136,7 @@ class ModelManager:
         ]
 
         if verbose:
-            tf.print(
+            logging.info(
                 "%i params of %i will learn at a different rate"
                 % (
                     self._compute_params(vars_with_lr_mult),
