@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-.PHONY: all
 
-all: code-format sanity-check unit-test
-
-install-ci-dependency:
-	bash tools/ci_build/install/install_ci_dependency.sh
-
-code-format:
-	bash tools/pre-commit.sh
-
-unit-test:
-	bash tools/ci_testing/addons_cpu.sh
-
-gpu-unit-test:
-	bash tools/ci_testing/addons_gpu.sh
+wget -O /usr/local/bin/buildifier https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier
+chmod +x /usr/local/bin/buildifier
