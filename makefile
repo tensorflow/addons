@@ -20,8 +20,7 @@ install-ci-dependency:
 	bash tools/ci_build/install/install_ci_dependency.sh --quiet
 
 code-format:
-
-	bash tools/format.sh
+	bash tools/pre-commit.sh
 
 sanity-check: install-ci-dependency
 	bash tools/ci_build/ci_sanity.sh --incremental
