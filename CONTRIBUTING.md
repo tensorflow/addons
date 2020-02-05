@@ -55,14 +55,10 @@ us**
 Try these useful commands below:
 
 * Format code automatically: `bash tools/run_docker.sh -c 'make code-format'`
+* Run sanity check: `bash tools/run_sanity_check.sh`
 * Run CPU unit tests: `bash tools/run_docker.sh -c 'make unit-test'`
 * Run GPU unit tests: `bash tools/run_docker.sh -d gpu -c 'make gpu-unit-test'`
 * All of the above: `bash tools/run_docker.sh -d gpu -c 'make'`
-
-
-For the moment we don't have an easy way to run the small tests done 
-in the CI locally. But it's coming soon.
-See https://github.com/tensorflow/addons/issues/991 for updates.
 
 ## Coding style
 
