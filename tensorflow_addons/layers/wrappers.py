@@ -122,7 +122,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
         self.built = True
 
-    @tf.function(autograph=False)
+    @tf.function
     def call(self, inputs):
         """Call `Layer`"""
 
