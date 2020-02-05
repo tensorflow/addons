@@ -702,6 +702,7 @@ class BahdanauAttention(_BaseAttentionMechanism):
     `normalize=True`.
     """
 
+    @typechecked
     def __init__(
         self,
         units,
@@ -1057,6 +1058,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
     ICML 2017.  https://arxiv.org/abs/1704.00784
     """
 
+    @typechecked
     def __init__(
         self,
         units,
