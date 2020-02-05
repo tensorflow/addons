@@ -71,9 +71,9 @@ class FBetaScore(tf.keras.metrics.Metric):
         beta=1.0,
         threshold=None,
         name="fbeta_score",
-        dtype=tf.float32,
+        dtype=None,
     ):
-        super().__init__(name=name)
+        super().__init__(name=name, dtype=dtype)
 
         if average not in (None, "micro", "macro", "weighted"):
             raise ValueError(
@@ -225,12 +225,7 @@ class F1Score(FBetaScore):
     """
 
     def __init__(
-        self,
-        num_classes,
-        average=None,
-        threshold=None,
-        name="f1_score",
-        dtype=tf.float32,
+        self, num_classes, average=None, threshold=None, name="f1_score", dtype=None,
     ):
         super().__init__(num_classes, average, 1.0, threshold, name=name, dtype=dtype)
 
