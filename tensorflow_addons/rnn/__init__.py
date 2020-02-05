@@ -16,3 +16,4 @@
 
 from tensorflow_addons.rnn.cell import LayerNormLSTMCell
 from tensorflow_addons.rnn.cell import NASCell
+from tensorflow_addons.rnn.cell import LayerNormSimpleRNNCell
