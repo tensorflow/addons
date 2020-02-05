@@ -19,6 +19,9 @@ import abc
 import tensorflow as tf
 
 from tensorflow_addons.seq2seq import decoder
+from tensorflow_addons.utils import types
+
+from typeguard import typechecked
 
 _transpose_batch_time = decoder._transpose_batch_time
 
@@ -100,13 +103,14 @@ class Sampler(metaclass=abc.ABCMeta):
 class CustomSampler(Sampler):
     """Base abstract class that allows the user to customize sampling."""
 
+    @typechecked
     def __init__(
         self,
         initialize_fn,
         sample_fn,
         next_inputs_fn,
         sample_ids_shape=None,
-        sample_ids_dtype=None,
+        sample_ids_dtype: types.AcceptableDTypes = None,
     ):
         """Initializer.
 

@@ -18,6 +18,7 @@ import tensorflow as tf
 import numpy as np
 import tensorflow.keras.backend as K
 from tensorflow.keras.metrics import Metric
+from tensorflow_addons.utils import types
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -62,7 +63,7 @@ class CohenKappa(Metric):
                  num_classes,
                  name='cohen_kappa',
                  weightage=None,
-                 dtype=None):
+                 dtype: types.AcceptableDTypes = None):
         """Creates a `CohenKappa` instance.
 
         Args:
