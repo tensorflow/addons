@@ -57,15 +57,6 @@ jobs:
             curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
             export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
             bash -x -e ./tools/ci_testing/addons_cpu.sh
-  sanity-check:
-    name: Sanity Check
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v1
-      - name: Sanity check
-        run: |
-          set -x -e
-          bash tools/run_docker.sh -c 'make sanity-check'
   flake8-test:
     name: Flake8
     runs-on: ubuntu-latest
@@ -146,8 +137,13 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: install buildifier
-        run: |
-          sudo wget -O /usr/local/bin/buildifier https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier
-          sudo chmod +x /usr/local/bin/buildifier
+        run: sudo bash tools/ci_build/install/buildifier.sh
       - name: Ensure contributor used "buildifier -r ./" before commit
         run: buildifier -mode=check -r ./
+  local-dev-tools:
+    name: Check that local dev tools work
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Checking the sanity check
+        run: bash tools/run_sanity_check.sh
