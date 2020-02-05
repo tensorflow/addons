@@ -16,7 +16,7 @@
 
 import numpy as np
 import tensorflow as tf
-from tensorflow_addons.utils.types import FloatTensorLike
+from tensorflow_addons.utils.types import AcceptableDTypes
 
 from typeguard import typechecked
 from typing import Optional, Callable
@@ -30,7 +30,7 @@ class MeanMetricWrapper(tf.keras.metrics.Mean):
         self,
         fn: Callable,
         name: Optional[str] = None,
-        dtype: Optional[FloatTensorLike] = None,
+        dtype: AcceptableDTypes = None,
         **kwargs
     ):
         """Creates a `MeanMetricWrapper` instance.

@@ -16,7 +16,7 @@
 
 import tensorflow as tf
 from tensorflow_addons.metrics.utils import MeanMetricWrapper
-from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
+from tensorflow_addons.utils.types import FloatTensorLike, TensorLike, AcceptableDTypes
 
 from typeguard import typechecked
 from typing import Union, Optional
@@ -142,7 +142,7 @@ class HammingLoss(MeanMetricWrapper):
         mode: str,
         name: str = "hamming_loss",
         threshold: Optional[FloatTensorLike] = None,
-        dtype: Optional[FloatTensorLike] = None,
+        dtype: AcceptableDTypes = None,
         **kwargs
     ):
         super().__init__(
