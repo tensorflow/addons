@@ -343,7 +343,7 @@ class LayerNormSimpleRNNTest(tf.test.TestCase):
             return_sequences=False)
         layer.build((None, None, 2))
         self.assertEqual(len(layer.losses), 4)
-    
+
     def test_configs_layernorm(self):
         config = {'layernorm_epsilon': 1e-6}
         cell1 = LayerNormSimpleRNNCell(units=8, **config)
