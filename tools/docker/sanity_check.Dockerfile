@@ -53,7 +53,7 @@ RUN touch /ok.txt
 
 # -------------------------------
 # Clang C++ code format
-FROM python:3.5
+FROM python:3.6
 
 RUN git clone https://github.com/gabrieldemarmiesse/clang-format-lint-action.git
 WORKDIR ./clang-format-lint-action
