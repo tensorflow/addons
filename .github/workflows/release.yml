@@ -124,7 +124,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
         with:
-          python-version: 3.6
+          python-version: 3.5
       - name: Build manylinux2010 wheels
         run: |
           docker run -e TF_NEED_CUDA=1 -v ${PWD}:/addons -w /addons \

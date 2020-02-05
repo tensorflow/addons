@@ -9,7 +9,7 @@ RUN touch /ok.txt
 
 # -------------------------------
 # Black Python code format
-FROM python:3.5
+FROM python:3.6
 
 RUN pip install black==19.10b0
 COPY ./ /addons
