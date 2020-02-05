@@ -140,3 +140,10 @@ jobs:
         run: sudo bash tools/ci_build/install/buildifier.sh
       - name: Ensure contributor used "buildifier -r ./" before commit
         run: buildifier -mode=check -r ./
+  local-dev-tools:
+    name: Check that local dev tools work
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Checking the sanity check
+        run: bash tools/run_sanity_check.sh
