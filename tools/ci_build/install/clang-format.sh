@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,25 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for GELU activation."""
-
-import numpy as np
-import tensorflow as tf
-from absl.testing import parameterized
-from tensorflow_addons.layers.gelu import GELU
-from tensorflow_addons.utils import test_utils
 
 
-@parameterized.parameters([np.float16, np.float32, np.float64])
-@test_utils.run_all_in_graph_and_eager_modes
-class TestGELU(tf.test.TestCase):
-    def test_random(self, dtype):
-        x = np.array([[0.5, 1.2, -0.3]]).astype(dtype)
-        val = np.array([[0.345714, 1.0617027, -0.11462909]]).astype(dtype)
-        test_utils.layer_test(
-            GELU, kwargs={"dtype": dtype}, input_data=x, expected_output=val
-        )
-
-
-if __name__ == "__main__":
-    tf.test.main()
+wget -O /usr/local/bin/clang-format-9 https://github.com/DoozyX/clang-format-lint-action/raw/master/clang-format/clang-format9
+chmod +x /usr/local/bin/clang-format-9
