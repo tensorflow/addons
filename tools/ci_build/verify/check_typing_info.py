@@ -51,6 +51,7 @@ EXCEPTION_LIST = [
     tensorflow_addons.metrics.RSquare,
     tensorflow_addons.rnn.LayerNormLSTMCell,
     tensorflow_addons.rnn.NASCell,
+    tensorflow_addons.rnn.LayerNormSimpleRNNCell,
     tensorflow_addons.seq2seq.AttentionMechanism,
     tensorflow_addons.seq2seq.AttentionWrapper,
     tensorflow_addons.seq2seq.AttentionWrapperState,
