@@ -16,13 +16,13 @@
 
 import tensorflow as tf
 from tensorflow_addons.metrics.utils import MeanMetricWrapper
-from tensorflow_addons.utils.types import FloatTensorLike, TensorLike, Number
+from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 
 from typeguard import typechecked
 from typing import Union, Optional
 
 
-def hamming_distance(actuals: TensorLike, predictions: TensorLike) -> Number:
+def hamming_distance(actuals: TensorLike, predictions: TensorLike) -> tf.Tensor:
     """Computes hamming distance.
 
     Hamming distance is for comparing two binary strings.
@@ -58,7 +58,7 @@ def hamming_loss_fn(
     y_pred: TensorLike,
     threshold: Union[FloatTensorLike, None],
     mode: str,
-) -> Number:
+) -> tf.Tensor:
     """Computes hamming loss.
 
     Hamming loss is the fraction of wrong labels to the total number
