@@ -19,8 +19,7 @@ from tensorflow.keras.metrics import Metric
 import numpy as np
 
 from typeguard import typechecked
-from tensorflow_addons.utils.types import FloatTensorLike, Number
-from typing import Optional
+from tensorflow_addons.utils.types import Number, AcceptableDTypes
 
 
 class MultiLabelConfusionMatrix(Metric):
@@ -74,7 +73,7 @@ class MultiLabelConfusionMatrix(Metric):
     def __init__(self,
                  num_classes: Number,
                  name: str = 'Multilabel_confusion_matrix',
-                 dtype: Optional[FloatTensorLike] = None,
+                 dtype: AcceptableDTypes = None,
                  **kwargs
                  ):
         super().__init__(name=name, dtype=dtype)

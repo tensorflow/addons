@@ -17,7 +17,7 @@
 import tensorflow as tf
 from typeguard import typechecked
 
-from tensorflow_addons.utils.types import FloatTensorLike, Number
+from tensorflow_addons.utils.types import FloatTensorLike, Number, AcceptableDTypes
 from typing import Optional
 
 
@@ -76,7 +76,7 @@ class FBetaScore(tf.keras.metrics.Metric):
         beta: FloatTensorLike = 1.0,
         threshold: Optional[FloatTensorLike] = None,
         name: str = "fbeta_score",
-        dtype: Optional[FloatTensorLike] = None,
+        dtype: AcceptableDTypes = None,
         **kwargs
     ):
         super().__init__(name=name)
@@ -237,7 +237,7 @@ class F1Score(FBetaScore):
         average: str = None,
         threshold: Optional[FloatTensorLike] = None,
         name: str = "f1_score",
-        dtype: Optional[FloatTensorLike] = None,
+        dtype: AcceptableDTypes = None,
         **kwargs
     ):
         super().__init__(num_classes, average, 1.0, threshold, name=name, dtype=dtype)
