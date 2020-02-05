@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -x -e
+set -e
 
 export DOCKER_BUILDKIT=1
 docker build -t tf_addons_formatting -f tools/docker/Dockerfile_formatting .
