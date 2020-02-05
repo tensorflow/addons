@@ -19,6 +19,7 @@ import numpy as np
 import tensorflow.keras.backend as K
 from tensorflow.keras.metrics import Metric
 from tensorflow_addons.utils import types
+from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -59,6 +60,7 @@ class CohenKappa(Metric):
     ```
     """
 
+    @typechecked
     def __init__(self,
                  num_classes,
                  name='cohen_kappa',
