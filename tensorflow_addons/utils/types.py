@@ -14,7 +14,7 @@
 # ==============================================================================
 """Types for typing functions signatures."""
 
-from typing import Union, Callable, List, Type
+from typing import Union, Callable, List
 
 import numpy as np
 import tensorflow as tf
