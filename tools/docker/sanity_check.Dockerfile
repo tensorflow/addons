@@ -84,10 +84,11 @@ RUN touch /ok.txt
 # docs tests
 FROM python:3.5
 
-RUN pip install tensorflow-cpu==2.1.0 typeguard==2.7.1
+RUN pip install tensorflow-cpu==2.1.0
+RUN pip install typeguard==2.7.1
 
 COPY tools/docs/doc_requirements.txt ./
-RUN doc_requirements.txt
+RUN pip install -r doc_requirements.txt
 
 COPY ./ /addons
 WORKDIR /addons
