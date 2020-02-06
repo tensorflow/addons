@@ -22,10 +22,12 @@ import numpy as np
 
 import tensorflow as tf
 
-from tensorflow_addons.utils import keras_utils
+from tensorflow_addons.utils import keras_utils, types
 
 # TODO: Find public API alternatives to these
 from tensorflow.python.keras.engine import base_layer_utils
+
+from typeguard import typechecked
 
 
 class AttentionMechanism:
@@ -523,6 +525,7 @@ class LuongAttention(_BaseAttentionMechanism):
     `scale=True`.
     """
 
+    @typechecked
     def __init__(
         self,
         units,
@@ -530,7 +533,7 @@ class LuongAttention(_BaseAttentionMechanism):
         memory_sequence_length=None,
         scale=False,
         probability_fn="softmax",
-        dtype=None,
+        dtype: types.AcceptableDTypes = None,
         name="LuongAttention",
         **kwargs
     ):
@@ -699,6 +702,7 @@ class BahdanauAttention(_BaseAttentionMechanism):
     `normalize=True`.
     """
 
+    @typechecked
     def __init__(
         self,
         units,
@@ -707,7 +711,7 @@ class BahdanauAttention(_BaseAttentionMechanism):
         normalize=False,
         probability_fn="softmax",
         kernel_initializer="glorot_uniform",
-        dtype=None,
+        dtype: types.AcceptableDTypes = None,
         name="BahdanauAttention",
         **kwargs
     ):
@@ -1054,6 +1058,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
     ICML 2017.  https://arxiv.org/abs/1704.00784
     """
 
+    @typechecked
     def __init__(
         self,
         units,
@@ -1065,7 +1070,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
         score_bias_init=0.0,
         mode="parallel",
         kernel_initializer="glorot_uniform",
-        dtype=None,
+        dtype: types.AcceptableDTypes = None,
         name="BahdanauMonotonicAttention",
         **kwargs
     ):
@@ -1237,6 +1242,7 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
     ICML 2017.](https://arxiv.org/abs/1704.00784)
     """
 
+    @typechecked
     def __init__(
         self,
         units,
@@ -1247,7 +1253,7 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
         sigmoid_noise_seed=None,
         score_bias_init=0.0,
         mode="parallel",
-        dtype=None,
+        dtype: types.AcceptableDTypes = None,
         name="LuongMonotonicAttention",
         **kwargs
     ):

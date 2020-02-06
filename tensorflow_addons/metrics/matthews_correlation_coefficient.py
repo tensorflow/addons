@@ -17,7 +17,7 @@
 import tensorflow as tf
 
 from typeguard import typechecked
-from tensorflow_addons.utils.types import Number, AcceptableDTypes
+from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -57,7 +57,7 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
 
     @typechecked
     def __init__(self,
-                 num_classes: Number,
+                 num_classes: FloatTensorLike,
                  name: str = 'MatthewsCorrelationCoefficient',
                  dtype: AcceptableDTypes = None,
                  **kwargs):
