@@ -82,7 +82,7 @@ RUN touch /ok.txt
 
 # -------------------------------
 # docs tests
-FROM python:3.5
+FROM python:3.6
 
 RUN pip install tensorflow-cpu==2.1.0
 RUN pip install typeguard==2.7.1
