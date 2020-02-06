@@ -57,15 +57,6 @@ jobs:
             curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
             export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
             bash -x -e ./tools/ci_testing/addons_cpu.sh
-  sanity-check:
-    name: Sanity Check
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v1
-      - name: Sanity check
-        run: |
-          set -x -e
-          bash tools/run_docker.sh -c 'make sanity-check'
   flake8-test:
     name: Flake8
     runs-on: ubuntu-latest
@@ -100,3 +91,59 @@ jobs:
         run: TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
       - name: Run type check
         run: python tools/ci_build/verify/check_typing_info.py
+  case-insensitive-filesystem:
+    name: Verify python filenames work on case insensitive FS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.7'
+      - name: Run filename check
+        run: python tools/ci_build/verify/check_file_name.py
+  valid_build_files:
+    name: Valid build files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup Bazel
+        uses: abhinavsingh/setup-bazel@v3
+        with:
+          version: $BAZEL_VERSION
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.7'
+      - name: Setup the environement
+        run: |
+          pip install tensorflow-cpu
+          python3 ./configure.py --no-deps
+      - name: Check the validity of build files
+        run: bazel build --nobuild -- //tensorflow_addons/...
+  clang-format:
+    name: Clang C++ code format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      # TODO: use DoozyX/clang-format-lint-action when
+      # https://github.com/DoozyX/clang-format-lint-action/pull/5 is merged
+      # and the new version is out
+      - uses: gabrieldemarmiesse/clang-format-lint-action@1044fee
+        with:
+          clangFormatVersion: 9
+          cliArgs: --style=google
+  check-bazel-format:
+    name: Bazel code format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: install buildifier
+        run: sudo bash tools/ci_build/install/buildifier.sh
+      - name: Ensure contributor used "buildifier -r ./" before commit
+        run: buildifier -mode=check -r ./
+  local-dev-tools:
+    name: Check that local dev tools work
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Checking the sanity check
+        run: bash tools/run_sanity_check.sh

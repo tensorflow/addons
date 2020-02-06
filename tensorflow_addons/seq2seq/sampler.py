@@ -19,9 +19,9 @@ import abc
 import tensorflow as tf
 from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.utils.types import Initializer, TensorLike
-
 from typeguard import typechecked
 from typing import Callable, Optional, Union
+from tensorflow_addons.utils import types
 
 _transpose_batch_time = decoder._transpose_batch_time
 
@@ -110,7 +110,7 @@ class CustomSampler(Sampler):
         sample_fn: Union[TensorLike, Callable],
         next_inputs_fn: Union[TensorLike, Callable],
         sample_ids_shape: Optional[TensorLike] = None,
-        sample_ids_dtype: Optional[TensorLike] = None,
+        sample_ids_dtype: types.AcceptableDTypes = None,
     ):
         """Initializer.
 

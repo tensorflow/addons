@@ -14,42 +14,24 @@ exclude = '''
     | build
     | dist
   )/
-  | setup.py
-  | tensorflow_addons/activations/gelu.py
-  | tensorflow_addons/activations/gelu_test.py
   | tensorflow_addons/activations/rrelu.py
   | tensorflow_addons/activations/rrelu_test.py
-  | tensorflow_addons/callbacks/tqdm_progress_bar.py
   | tensorflow_addons/image/filters.py
   | tensorflow_addons/image/filters_test.py
-  | tensorflow_addons/image/sparse_image_warp.py
-  | tensorflow_addons/image/sparse_image_warp_test.py
-  | tensorflow_addons/layers/gelu.py
-  | tensorflow_addons/layers/gelu_test.py
-  | tensorflow_addons/layers/maxout.py
-  | tensorflow_addons/layers/maxout_test.py
   | tensorflow_addons/layers/normalizations.py
   | tensorflow_addons/layers/normalizations_test.py
-  | tensorflow_addons/layers/optical_flow.py
-  | tensorflow_addons/layers/optical_flow_test.py
   | tensorflow_addons/layers/wrappers.py
   | tensorflow_addons/layers/wrappers_test.py
   | tensorflow_addons/losses/__init__.py
   | tensorflow_addons/losses/focal_loss.py
-  | tensorflow_addons/losses/focal_loss_test.py
   | tensorflow_addons/losses/giou_loss.py
   | tensorflow_addons/losses/giou_loss_test.py
   | tensorflow_addons/metrics/cohens_kappa.py
   | tensorflow_addons/metrics/cohens_kappa_test.py
   | tensorflow_addons/metrics/matthews_correlation_coefficient.py
-  | tensorflow_addons/metrics/matthews_correlation_coefficient_test.py
   | tensorflow_addons/metrics/multilabel_confusion_matrix.py
-  | tensorflow_addons/metrics/multilabel_confusion_matrix_test.py
   | tensorflow_addons/metrics/r_square.py
-  | tensorflow_addons/metrics/r_square_test.py
   | tensorflow_addons/optimizers/__init__.py
-  | tensorflow_addons/optimizers/lamb.py
-  | tensorflow_addons/optimizers/lamb_test.py
   | tensorflow_addons/optimizers/lookahead.py
   | tensorflow_addons/optimizers/lookahead_test.py
   | tensorflow_addons/optimizers/moving_average.py
@@ -58,7 +40,6 @@ exclude = '''
   | tensorflow_addons/optimizers/weight_decay_optimizers_test.py
   | tensorflow_addons/rnn/cell.py
   | tensorflow_addons/rnn/cell_test.py
-  | tensorflow_addons/seq2seq/attention_wrapper.py
   | tensorflow_addons/seq2seq/attention_wrapper_test.py
   | tensorflow_addons/text/__init__.py
   | tensorflow_addons/text/crf.py

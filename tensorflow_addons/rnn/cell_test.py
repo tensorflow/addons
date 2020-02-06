@@ -20,6 +20,7 @@ import tensorflow.keras as keras
 
 from tensorflow_addons.utils import test_utils
 from tensorflow_addons.rnn import cell as rnn_cell
+from tensorflow_addons.rnn import LayerNormSimpleRNNCell
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -290,6 +291,66 @@ class LayerNormLSTMCellTest(tf.test.TestCase):
         restored_cell = rnn_cell.LayerNormLSTMCell.from_config(config)
         restored_config = restored_cell.get_config()
         self.assertEqual(config, restored_config)
+
+
+@test_utils.run_all_in_graph_and_eager_modes
+class LayerNormSimpleRNNTest(tf.test.TestCase):
+    def test_constraints_layernorm_rnn(self):
+        embedding_dim = 4
+        k_constraint = keras.constraints.max_norm(0.01)
+        r_constraint = keras.constraints.max_norm(0.01)
+        b_constraint = keras.constraints.max_norm(0.01)
+        g_constraint = keras.constraints.max_norm(0.01)
+        layer = keras.layers.RNN(
+            LayerNormSimpleRNNCell(
+                units=5,
+                kernel_constraint=k_constraint,
+                recurrent_constraint=r_constraint,
+                bias_constraint=b_constraint,
+                gamma_constraint=g_constraint),
+            input_shape=(None, embedding_dim),
+            return_sequences=False)
+        layer.build((None, None, embedding_dim))
+        self.assertEqual(layer.cell.kernel.constraint, k_constraint)
+        self.assertEqual(layer.cell.recurrent_kernel.constraint, r_constraint)
+        self.assertEqual(layer.cell.bias.constraint, b_constraint)
+        self.assertEqual(layer.cell.layernorm.gamma.constraint, g_constraint)
+
+    def test_with_masking_layer_layernorm_rnn(self):
+        inputs = np.random.random((2, 3, 4))
+        targets = np.abs(np.random.random((2, 3, 5)))
+        targets /= targets.sum(axis=-1, keepdims=True)
+        model = keras.models.Sequential()
+        model.add(keras.layers.Masking(input_shape=(3, 4)))
+        model.add(
+            keras.layers.RNN(
+                LayerNormSimpleRNNCell(units=5),
+                return_sequences=True,
+                unroll=False))
+        model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
+        model.fit(inputs, targets, epochs=1, batch_size=2, verbose=1)
+
+    def test_regularizers_layernorm_rnn(self):
+        embedding_dim = 4
+        layer = keras.layers.RNN(
+            LayerNormSimpleRNNCell(
+                units=5,
+                kernel_regularizer=keras.regularizers.l1(0.01),
+                recurrent_regularizer=keras.regularizers.l1(0.01),
+                bias_regularizer='l2',
+                gamma_regularizer='l2'),
+            input_shape=(None, embedding_dim),
+            return_sequences=False)
+        layer.build((None, None, 2))
+        self.assertEqual(len(layer.losses), 4)
+
+    def test_configs_layernorm(self):
+        config = {'layernorm_epsilon': 1e-6}
+        cell1 = LayerNormSimpleRNNCell(units=8, **config)
+        config1 = cell1.get_config()
+        cell2 = LayerNormSimpleRNNCell(**config1)
+        config2 = cell2.get_config()
+        assert config1 == config2
 
 
 if __name__ == "__main__":

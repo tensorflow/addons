@@ -16,12 +16,15 @@
 
 import numpy as np
 import tensorflow as tf
+from tensorflow_addons.utils import types
+from typeguard import typechecked
 
 
 class MeanMetricWrapper(tf.keras.metrics.Mean):
     """Wraps a stateless metric function with the Mean metric."""
 
-    def __init__(self, fn, name=None, dtype=None, **kwargs):
+    @typechecked
+    def __init__(self, fn, name=None, dtype: types.AcceptableDTypes = None, **kwargs):
         """Creates a `MeanMetricWrapper` instance.
         Args:
           fn: The metric function to wrap, with signature

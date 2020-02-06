@@ -14,6 +14,21 @@ int formatted_code;
 void formatted_code_again;
 ```
 
+Install Clang-format 9 with:
+
+```bash
+wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+sudo add-apt-repository -u 'http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main'
+sudo apt install clang-format-9
+```
+
+format all with:
+```bash
+clang-format-9 -i --style=google **/*.cc **/*.h
+```
+
+We'll soon provide a simple and easy to use docker image to run this.
+
 #### Python
 
 Addons uses [flake8](http://flake8.pycqa.org/en/latest/) to check pep8 compliance and 
