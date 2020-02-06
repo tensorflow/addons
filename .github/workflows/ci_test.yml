@@ -26,7 +26,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        python-version: ['3.7']
+        python-version: ['3.5']
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -42,7 +42,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: ['3.7']
+        python-version: ['3.5']
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -84,7 +84,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
         with:
-          python-version: '3.7'
+          python-version: '3.5'
       - name: install tensorflow and typeguard
         run: pip install tensorflow-cpu typeguard
       - name: install tf addons
@@ -98,7 +98,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
         with:
-          python-version: '3.7'
+          python-version: '3.5'
       - name: Run filename check
         run: python tools/ci_build/verify/check_file_name.py
   valid_build_files:
@@ -112,7 +112,7 @@ jobs:
           version: $BAZEL_VERSION
       - uses: actions/setup-python@v1
         with:
-          python-version: '3.7'
+          python-version: '3.5'
       - name: Setup the environement
         run: |
           pip install tensorflow-cpu
