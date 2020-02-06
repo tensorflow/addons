@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.5
       - name: Nightly build for Windows
         env:
           TF_NEED_CUDA: 0
