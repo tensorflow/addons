@@ -147,3 +147,5 @@ jobs:
       - uses: actions/checkout@v1
       - name: Checking the sanity check
         run: bash tools/run_sanity_check.sh
+      - name: Checking the pre-commit
+          run: bash tools/pre-commit.sh
