@@ -1,5 +1,5 @@
 # Flake8
-FROM python:3.7
+FROM python:3.5
 
 RUN pip install flake8==3.7.9
 COPY ./ /addons
@@ -9,7 +9,7 @@ RUN touch /ok.txt
 
 # -------------------------------
 # Black Python code format
-FROM python:3.7
+FROM python:3.6
 
 RUN pip install black==19.10b0
 COPY ./ /addons
@@ -18,7 +18,7 @@ RUN touch /ok.txt
 
 # -------------------------------
 # Check that the public API is typed
-FROM python:3.7
+FROM python:3.5
 
 RUN pip install tensorflow-cpu==2.1.0 typeguard==2.7.1
 COPY ./ /addons
@@ -28,7 +28,7 @@ RUN touch /ok.txt
 
 # -------------------------------
 # Verify python filenames work on case insensitive FS
-FROM python:3.7
+FROM python:3.5
 
 COPY ./ /addons
 WORKDIR /addons
@@ -37,7 +37,7 @@ RUN touch /ok.txt
 
 # -------------------------------
 # Valid build files
-FROM python:3.7
+FROM python:3.5
 
 RUN apt-get update && apt-get install sudo
 RUN git clone https://github.com/abhinavsingh/setup-bazel.git
@@ -53,7 +53,7 @@ RUN touch /ok.txt
 
 # -------------------------------
 # Clang C++ code format
-FROM python:3.7
+FROM python:3.6
 
 RUN git clone https://github.com/gabrieldemarmiesse/clang-format-lint-action.git
 WORKDIR ./clang-format-lint-action
