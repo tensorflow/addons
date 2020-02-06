@@ -20,7 +20,7 @@ jobs:
       - name: CI test Ubuntu CPU
         run: |
           set -x -e
-          bash tools/run_docker.sh -d cpu -c 'make unit-test'
+          bash tools/run_cpu_tests.sh
   macos-test:
     name: MacOS CPU Python3
     runs-on: macos-latest
