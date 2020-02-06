@@ -17,11 +17,11 @@
 import abc
 
 import tensorflow as tf
-
 from tensorflow_addons.seq2seq import decoder
-from tensorflow_addons.utils import types
-
+from tensorflow_addons.utils.types import Initializer, TensorLike
 from typeguard import typechecked
+from typing import Callable, Optional, Union
+from tensorflow_addons.utils import types
 
 _transpose_batch_time = decoder._transpose_batch_time
 
@@ -106,10 +106,10 @@ class CustomSampler(Sampler):
     @typechecked
     def __init__(
         self,
-        initialize_fn,
-        sample_fn,
-        next_inputs_fn,
-        sample_ids_shape=None,
+        initialize_fn: Initializer,
+        sample_fn: Union[TensorLike, Callable],
+        next_inputs_fn: Union[TensorLike, Callable],
+        sample_ids_shape: Optional[TensorLike] = None,
         sample_ids_dtype: types.AcceptableDTypes = None,
     ):
         """Initializer.
@@ -172,7 +172,8 @@ class TrainingSampler(Sampler):
     Returned sample_ids are the argmax of the RNN output logits.
     """
 
-    def __init__(self, time_major=False):
+    @typechecked
+    def __init__(self, time_major: bool = False):
         """Initializer.
 
         Args:
@@ -304,13 +305,14 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
     sample id values elsewhere.
     """
 
+    @typechecked
     def __init__(
         self,
-        sampling_probability,
-        embedding_fn=None,
-        time_major=False,
-        seed=None,
-        scheduling_seed=None,
+        sampling_probability: TensorLike,
+        embedding_fn: Union[TensorLike, Callable] = None,
+        time_major: bool = False,
+        seed: Optional[int] = None,
+        scheduling_seed: Optional[TensorLike] = None,
     ):
         """Initializer.
 
@@ -404,8 +406,13 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
     elsewhere.
     """
 
+    @typechecked
     def __init__(
-        self, sampling_probability, time_major=False, seed=None, next_inputs_fn=None
+        self,
+        sampling_probability: TensorLike,
+        time_major: bool = False,
+        seed: Optional[int] = None,
+        next_inputs_fn: Optional[Callable] = None,
     ):
         """Initializer.
 
@@ -538,7 +545,8 @@ class GreedyEmbeddingSampler(Sampler):
     result through an embedding layer to get the next input.
     """
 
-    def __init__(self, embedding_fn=None):
+    @typechecked
+    def __init__(self, embedding_fn: Union[TensorLike, Callable] = None):
         """Initializer.
 
         Args:
@@ -637,7 +645,13 @@ class SampleEmbeddingSampler(GreedyEmbeddingSampler):
     result through an embedding layer to get the next input.
     """
 
-    def __init__(self, embedding_fn=None, softmax_temperature=None, seed=None):
+    @typechecked
+    def __init__(
+        self,
+        embedding_fn: Union[TensorLike, Callable] = None,
+        softmax_temperature: Optional[TensorLike] = None,
+        seed: Optional[TensorLike] = None,
+    ):
         """Initializer.
 
         Args:
@@ -679,8 +693,14 @@ class SampleEmbeddingSampler(GreedyEmbeddingSampler):
 class InferenceSampler(Sampler):
     """A helper to use during inference with a custom sampling function."""
 
+    @typechecked
     def __init__(
-        self, sample_fn, sample_shape, sample_dtype, end_fn, next_inputs_fn=None
+        self,
+        sample_fn: Union[TensorLike, Callable],
+        sample_shape: TensorLike,
+        sample_dtype: tf.int32,
+        end_fn: Callable,
+        next_inputs_fn: Optional[Callable] = None,
     ):
         """Initializer.
 
