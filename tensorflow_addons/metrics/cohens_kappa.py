@@ -18,7 +18,7 @@ import tensorflow as tf
 import numpy as np
 import tensorflow.keras.backend as K
 from tensorflow.keras.metrics import Metric
-from tensorflow_addons.utils.types import Number, AcceptableDTypes
+from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
 
 from typeguard import typechecked
 from typing import Optional
@@ -64,7 +64,7 @@ class CohenKappa(Metric):
 
     @typechecked
     def __init__(self,
-                 num_classes: Number,
+                 num_classes: FloatTensorLike,
                  name: str = 'cohen_kappa',
                  weightage: Optional[str] = None,
                  dtype: AcceptableDTypes = None,
