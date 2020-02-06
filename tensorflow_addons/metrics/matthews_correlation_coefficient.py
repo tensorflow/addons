@@ -16,8 +16,8 @@
 
 import tensorflow as tf
 
-from typeguard import typechecked
 from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
+from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
