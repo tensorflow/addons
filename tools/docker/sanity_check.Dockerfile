@@ -79,6 +79,22 @@ COPY ./ /addons
 RUN buildifier -mode=check -r /addons
 RUN touch /ok.txt
 
+
+# -------------------------------
+# docs tests
+FROM python:3.5
+
+RUN pip install tensorflow-cpu==2.1.0 typeguard==2.7.1
+
+COPY tools/docs/doc_requirements.txt ./
+RUN doc_requirements.txt
+
+COPY ./ /addons
+WORKDIR /addons
+RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
+RUN python tools/docs/build_docs.py
+RUN touch /ok.txt
+
 # -------------------------------
 # ensure that all checks were successful
 # this is necessary if using docker buildkit
@@ -94,3 +110,4 @@ COPY --from=3 /ok.txt /ok3.txt
 COPY --from=4 /ok.txt /ok4.txt
 COPY --from=5 /ok.txt /ok5.txt
 COPY --from=6 /ok.txt /ok6.txt
+COPY --from=7 /ok.txt /ok7.txt
