@@ -26,7 +26,7 @@ def sparsemax_loss(
     logits: TensorLike,
     sparsemax: TensorLike,
     labels: TensorLike,
-    name: Optional[str] = None
+    name: Optional[str] = None,
 ) -> tf.Tensor:
     """Sparsemax loss function [1].
 
