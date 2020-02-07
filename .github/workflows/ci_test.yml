@@ -95,14 +95,14 @@ jobs:
   clang-format:
     name: Clang C++ code format
     runs-on: ubuntu-latest
-      steps:
+    steps:
       - uses: actions/checkout@v1
       - name: Run type check
         run: bash tools/run_buildx.sh clang-format
   check-bazel-format:
     name: Bazel code format
     runs-on: ubuntu-latest
-      steps:
+    steps:
       - uses: actions/checkout@v1
       - name: Run type check
         run: bash tools/run_buildx.sh check-bazel-format
