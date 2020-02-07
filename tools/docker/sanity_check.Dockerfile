@@ -26,7 +26,7 @@ RUN python /addons/tools/ci_build/verify/check_typing_info.py
 RUN touch /ok.txt
 
 # -------------------------------
-FROM python:3.5 as case-insensitive-filesystem
+FROM python:3.5-alpine as case-insensitive-filesystem
 
 COPY ./ /addons
 WORKDIR /addons
@@ -49,8 +49,9 @@ RUN bazel build --nobuild -- //tensorflow_addons/...
 RUN touch /ok.txt
 
 # -------------------------------
-FROM python:3.6 as clang-format
+FROM python:3.6-alpine as clang-format
 
+RUN apk add --no-cache git
 RUN git clone https://github.com/gabrieldemarmiesse/clang-format-lint-action.git
 WORKDIR ./clang-format-lint-action
 RUN git checkout 1044fee
