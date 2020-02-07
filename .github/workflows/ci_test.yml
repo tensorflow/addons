@@ -63,7 +63,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Run flake8
-        run: DOCKER_BUILDKIT=1 docker build -f tools/docker/sanity_check.Dockerfile --cache-to=type=registry,ref=gabrieldemarmiesse/caching-stuff --target=flake8 ./
+        run: DOCKER_BUILDKIT=1 docker build -f tools/docker/sanity_check.Dockerfile --cache-from=type=registry,ref=gabrieldemarmiesse/caching-stuff --target=flake8 ./
   black-test:
     name: Black Python code format
     runs-on: ubuntu-latest
