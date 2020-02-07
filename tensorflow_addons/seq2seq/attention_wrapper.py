@@ -876,7 +876,7 @@ def safe_cumprod(x: TensorLike, *args, **kwargs) -> tf.Tensor:
 
 def monotonic_attention(
     p_choose_i: FloatTensorLike, previous_attention: FloatTensorLike, mode: str
-):
+) -> tf.Tensor:
     """Compute monotonic attention distribution from choosing probabilities.
 
     Monotonic attention implies that the input sequence is processed in an
