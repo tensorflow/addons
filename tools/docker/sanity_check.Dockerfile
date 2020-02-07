@@ -1,5 +1,5 @@
 # Flake8
-FROM python:3.5
+FROM python:3.5-alpine as flake8
 
 RUN pip install flake8==3.7.9
 COPY ./ /addons
