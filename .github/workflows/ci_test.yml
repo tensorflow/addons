@@ -152,5 +152,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Check building the docs
-        run: DOCKER_BUILDKIT=1 docker build -f tools/docker/sanity_check.Dockerfile --target=docs_tests ./
+      - name: Installing dependencies
+        run: pip install -r tools/docs/doc_requirements.txt -r requirements.txt -r build_deps/build-requirements.txt
+      - name: Installing tf addons
+        run: TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
+      - name: Building the docs
+        run: python tools/docs/build_docs.py
