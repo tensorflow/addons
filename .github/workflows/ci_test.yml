@@ -97,6 +97,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - run: docker info
       - name: Run type check
         run: bash tools/run_buildx.sh clang-format
   check-bazel-format:
