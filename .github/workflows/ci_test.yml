@@ -62,90 +62,62 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: crazy-max/ghaction-docker-buildx@v1
-        with:
-          version: latest
+      - uses: crazy-max/ghaction-docker-buildx@v1
       - name: Run flake8
-        run: docker buildx build -f tools/docker/sanity_check.Dockerfile --cache-from=type=registry,ref=gabrieldemarmiesse/caching-stuff --target=flake8 ./
+        run: bash tools/run_buildx.sh flake8-test
   black-test:
     name: Black Python code format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-      - name: install black
-        run: pip install black
+      - uses: crazy-max/ghaction-docker-buildx@v1
       - name: Ensure contributor used ("black ./") before commit
-        run: black --check ./
+        run: bash tools/run_buildx.sh black-test
   public-api-typed:
     name: Check that the public API is typed
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: '3.5'
-      - name: install tensorflow and typeguard
-        run: pip install tensorflow-cpu typeguard
-      - name: install tf addons
-        run: TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
+      - uses: crazy-max/ghaction-docker-buildx@v1
       - name: Run type check
-        run: python tools/ci_build/verify/check_typing_info.py
+        run: bash tools/run_buildx.sh public-api-typed
   case-insensitive-filesystem:
     name: Verify python filenames work on case insensitive FS
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: '3.5'
-      - name: Run filename check
-        run: python tools/ci_build/verify/check_file_name.py
+      - uses: crazy-max/ghaction-docker-buildx@v1
+      - name: Run type check
+        run: bash tools/run_buildx.sh case-insensitive-filesystem
   valid_build_files:
     name: Valid build files
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Setup Bazel
-        uses: abhinavsingh/setup-bazel@v3
-        with:
-          version: $BAZEL_VERSION
-      - uses: actions/setup-python@v1
-        with:
-          python-version: '3.5'
-      - name: Setup the environement
-        run: |
-          pip install tensorflow-cpu
-          python3 ./configure.py --no-deps
-      - name: Check the validity of build files
-        run: bazel build --nobuild -- //tensorflow_addons/...
+      steps:
+        - uses: actions/checkout@v1
+        - uses: crazy-max/ghaction-docker-buildx@v1
+        - name: Run type check
+          run: bash tools/run_buildx.sh valid_build_files
   clang-format:
     name: Clang C++ code format
     runs-on: ubuntu-latest
-    steps:
+      steps:
       - uses: actions/checkout@v1
-      # TODO: use DoozyX/clang-format-lint-action when
-      # https://github.com/DoozyX/clang-format-lint-action/pull/5 is merged
-      # and the new version is out
-      - uses: gabrieldemarmiesse/clang-format-lint-action@1044fee
-        with:
-          clangFormatVersion: 9
-          cliArgs: --style=google
+      - uses: crazy-max/ghaction-docker-buildx@v1
+      - name: Run type check
+        run: bash tools/run_buildx.sh clang-format
   check-bazel-format:
     name: Bazel code format
     runs-on: ubuntu-latest
-    steps:
+      steps:
       - uses: actions/checkout@v1
-      - name: install buildifier
-        run: sudo bash tools/ci_build/install/buildifier.sh
-      - name: Ensure contributor used "buildifier -r ./" before commit
-        run: buildifier -mode=check -r ./
+      - uses: crazy-max/ghaction-docker-buildx@v1
+      - name: Run type check
+        run: bash tools/run_buildx.sh check-bazel-format
   local-dev-tools:
     name: Check that local dev tools work
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - uses: crazy-max/ghaction-docker-buildx@v1
       - name: Checking the sanity check
-        run: bash tools/run_sanity_check.sh
+        run: docker buildx build -f tools/docker/sanity_check.Dockerfile --cache-from=type=registry,ref=gabrieldemarmiesse/caching-stuff .
