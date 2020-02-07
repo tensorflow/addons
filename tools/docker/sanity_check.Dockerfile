@@ -20,7 +20,9 @@ RUN touch /ok.txt
 # Check that the public API is typed
 FROM python:3.5
 
-RUN pip install tensorflow-cpu==2.1.0 typeguard==2.7.1
+RUN pip install tensorflow-cpu==2.1.0
+RUN pip install typeguard==2.7.1
+
 COPY ./ /addons
 RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e /addons
 RUN python /addons/tools/ci_build/verify/check_typing_info.py
@@ -39,11 +41,11 @@ RUN touch /ok.txt
 # Valid build files
 FROM python:3.5
 
+RUN pip install tensorflow-cpu==2.1.0
+
 RUN apt-get update && apt-get install sudo
 RUN git clone https://github.com/abhinavsingh/setup-bazel.git
 RUN bash ./setup-bazel/setup-bazel.sh 1.1.0
-
-RUN pip install tensorflow-cpu==2.1.0
 
 COPY ./ /addons
 WORKDIR /addons
