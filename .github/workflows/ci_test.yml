@@ -152,6 +152,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.5'
       - name: Installing dependencies
         run: pip install -r tools/docs/doc_requirements.txt -r requirements.txt -r build_deps/build-requirements.txt
       - name: Installing tf addons
