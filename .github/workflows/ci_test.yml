@@ -153,4 +153,4 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Check building the docs
-        run: docker build -f tools/docker/sanity_check.Dockerfile --target=docs_tests ./
+        run: DOCKER_BUILDKIT=1 docker build -f tools/docker/sanity_check.Dockerfile --target=docs_tests ./
