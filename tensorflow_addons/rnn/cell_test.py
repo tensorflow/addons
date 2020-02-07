@@ -29,38 +29,75 @@ class NASCellTest(tf.test.TestCase):
         units = 6
         batch_size = 3
         expected_output = np.array(
-            [[0.576751, 0.576751, 0.576751, 0.576751, 0.576751, 0.576751],
-             [0.618936, 0.618936, 0.618936, 0.618936, 0.618936, 0.618936],
-             [0.627393, 0.627393, 0.627393, 0.627393, 0.627393, 0.627393]])
+            [
+                [0.576751, 0.576751, 0.576751, 0.576751, 0.576751, 0.576751],
+                [0.618936, 0.618936, 0.618936, 0.618936, 0.618936, 0.618936],
+                [0.627393, 0.627393, 0.627393, 0.627393, 0.627393, 0.627393],
+            ]
+        )
         expected_state = np.array(
-            [[
-                0.7157977, 0.7157977, 0.7157977, 0.7157977, 0.7157977,
-                0.7157977, 0.5767508, 0.5767508, 0.5767508, 0.5767508,
-                0.5767508, 0.5767508
-            ],
-             [
-                 0.7804162, 0.7804162, 0.7804162, 0.7804162, 0.7804162,
-                 0.7804162, 0.6189357, 0.6189357, 0.6189357, 0.6189357,
-                 0.6189357, 0.6189357
-             ],
-             [
-                 0.7945764, 0.7945764, 0.7945764, 0.7945764, 0.7945765,
-                 0.7945765, 0.6273934, 0.6273934, 0.6273934, 0.6273934,
-                 0.6273934, 0.6273934
-             ]])
+            [
+                [
+                    0.7157977,
+                    0.7157977,
+                    0.7157977,
+                    0.7157977,
+                    0.7157977,
+                    0.7157977,
+                    0.5767508,
+                    0.5767508,
+                    0.5767508,
+                    0.5767508,
+                    0.5767508,
+                    0.5767508,
+                ],
+                [
+                    0.7804162,
+                    0.7804162,
+                    0.7804162,
+                    0.7804162,
+                    0.7804162,
+                    0.7804162,
+                    0.6189357,
+                    0.6189357,
+                    0.6189357,
+                    0.6189357,
+                    0.6189357,
+                    0.6189357,
+                ],
+                [
+                    0.7945764,
+                    0.7945764,
+                    0.7945764,
+                    0.7945764,
+                    0.7945765,
+                    0.7945765,
+                    0.6273934,
+                    0.6273934,
+                    0.6273934,
+                    0.6273934,
+                    0.6273934,
+                    0.6273934,
+                ],
+            ]
+        )
         const_initializer = tf.constant_initializer(0.5)
         cell = rnn_cell.NASCell(
             units=units,
             kernel_initializer=const_initializer,
-            recurrent_initializer=const_initializer)
+            recurrent_initializer=const_initializer,
+        )
 
         inputs = tf.constant(
-            np.array([[1., 1., 1., 1.], [2., 2., 2., 2.], [3., 3., 3., 3.]],
-                     dtype=np.float32),
-            dtype=tf.float32)
+            np.array(
+                [[1.0, 1.0, 1.0, 1.0], [2.0, 2.0, 2.0, 2.0], [3.0, 3.0, 3.0, 3.0]],
+                dtype=np.float32,
+            ),
+            dtype=tf.float32,
+        )
         state_value = tf.constant(
-            0.1 * np.ones((batch_size, units), dtype=np.float32),
-            dtype=tf.float32)
+            0.1 * np.ones((batch_size, units), dtype=np.float32), dtype=tf.float32
+        )
         init_state = [state_value, state_value]
         output, state = cell(inputs, init_state)
         self.evaluate([tf.compat.v1.global_variables_initializer()])
@@ -84,43 +121,77 @@ class NASCellTest(tf.test.TestCase):
         batch_size = 3
         projection = 5
         expected_output = np.array(
-            [[1.697418, 1.697418, 1.697418, 1.697418, 1.697418],
-             [1.840037, 1.840037, 1.840037, 1.840037, 1.840037],
-             [1.873985, 1.873985, 1.873985, 1.873985, 1.873985]])
+            [
+                [1.697418, 1.697418, 1.697418, 1.697418, 1.697418],
+                [1.840037, 1.840037, 1.840037, 1.840037, 1.840037],
+                [1.873985, 1.873985, 1.873985, 1.873985, 1.873985],
+            ]
+        )
 
         expected_state = np.array(
-            [[
-                0.69855207, 0.69855207, 0.69855207, 0.69855207, 0.69855207,
-                0.69855207, 1.69741797, 1.69741797, 1.69741797, 1.69741797,
-                1.69741797
-            ],
-             [
-                 0.77073824, 0.77073824, 0.77073824, 0.77073824, 0.77073824,
-                 0.77073824, 1.84003687, 1.84003687, 1.84003687, 1.84003687,
-                 1.84003687
-             ],
-             [
-                 0.78973997, 0.78973997, 0.78973997, 0.78973997, 0.78973997,
-                 0.78973997, 1.87398517, 1.87398517, 1.87398517, 1.87398517,
-                 1.87398517
-             ]])
+            [
+                [
+                    0.69855207,
+                    0.69855207,
+                    0.69855207,
+                    0.69855207,
+                    0.69855207,
+                    0.69855207,
+                    1.69741797,
+                    1.69741797,
+                    1.69741797,
+                    1.69741797,
+                    1.69741797,
+                ],
+                [
+                    0.77073824,
+                    0.77073824,
+                    0.77073824,
+                    0.77073824,
+                    0.77073824,
+                    0.77073824,
+                    1.84003687,
+                    1.84003687,
+                    1.84003687,
+                    1.84003687,
+                    1.84003687,
+                ],
+                [
+                    0.78973997,
+                    0.78973997,
+                    0.78973997,
+                    0.78973997,
+                    0.78973997,
+                    0.78973997,
+                    1.87398517,
+                    1.87398517,
+                    1.87398517,
+                    1.87398517,
+                    1.87398517,
+                ],
+            ]
+        )
         const_initializer = tf.constant_initializer(0.5)
         cell = rnn_cell.NASCell(
             units=units,
             projection=projection,
             kernel_initializer=const_initializer,
             recurrent_initializer=const_initializer,
-            projection_initializer=const_initializer)
+            projection_initializer=const_initializer,
+        )
         inputs = tf.constant(
-            np.array([[1., 1., 1., 1.], [2., 2., 2., 2.], [3., 3., 3., 3.]],
-                     dtype=np.float32),
-            dtype=tf.float32)
+            np.array(
+                [[1.0, 1.0, 1.0, 1.0], [2.0, 2.0, 2.0, 2.0], [3.0, 3.0, 3.0, 3.0]],
+                dtype=np.float32,
+            ),
+            dtype=tf.float32,
+        )
         state_value_c = tf.constant(
-            0.1 * np.ones((batch_size, units), dtype=np.float32),
-            dtype=tf.float32)
+            0.1 * np.ones((batch_size, units), dtype=np.float32), dtype=tf.float32
+        )
         state_value_h = tf.constant(
-            0.1 * np.ones((batch_size, projection), dtype=np.float32),
-            dtype=tf.float32)
+            0.1 * np.ones((batch_size, projection), dtype=np.float32), dtype=tf.float32
+        )
         init_state = [state_value_c, state_value_h]
         output, state = cell(inputs, init_state)
         self.evaluate([tf.compat.v1.global_variables_initializer()])
@@ -143,7 +214,8 @@ class NASCellTest(tf.test.TestCase):
         """Tests that NASCell works with keras RNN layer."""
         cell = rnn_cell.NASCell(10)
         seq_input = tf.convert_to_tensor(
-            np.random.rand(2, 3, 5), name="seq_input", dtype=tf.float32)
+            np.random.rand(2, 3, 5), name="seq_input", dtype=tf.float32
+        )
         rnn_layer = keras.layers.RNN(cell=cell)
         rnn_outputs = rnn_layer(seq_input)
         self.evaluate([tf.compat.v1.global_variables_initializer()])
@@ -193,17 +265,18 @@ class LayerNormLSTMCellTest(tf.test.TestCase):
                 kernel_initializer=const_initializer,
                 recurrent_initializer=const_initializer,
                 bias_initializer=const_initializer,
-                norm_epsilon=1e-12
+                norm_epsilon=1e-12,
             )
+
         cell = keras.layers.StackedRNNCells([single_cell() for _ in range(2)])
         output, output_states = cell(x, state)
         self.evaluate([tf.compat.v1.global_variables_initializer()])
         output_v, output_states_v = self.evaluate([output, output_states])
 
         expected_output = np.array([[-0.47406167, 0.47406143]])
-        expected_state0_c = np.array([[-1., 1.]])
+        expected_state0_c = np.array([[-1.0, 1.0]])
         expected_state0_h = np.array([[-0.47406167, 0.47406143]])
-        expected_state1_c = np.array([[-1., 1.]])
+        expected_state1_c = np.array([[-1.0, 1.0]])
         expected_state1_h = np.array([[-0.47406167, 0.47406143]])
 
         actual_state0_h = output_states_v[0][0]
@@ -227,7 +300,8 @@ class LayerNormLSTMCellTest(tf.test.TestCase):
             kernel_initializer=const_initializer,
             recurrent_initializer=const_initializer,
             bias_initializer=const_initializer,
-            norm_epsilon=1e-12)
+            norm_epsilon=1e-12,
+        )
         output, output_states = cell(x, state)
         self.evaluate([tf.compat.v1.global_variables_initializer()])
         output_v, output_states_v = self.evaluate([output, output_states])
@@ -250,21 +324,13 @@ class LayerNormLSTMCellTest(tf.test.TestCase):
             "use_bias": True,
             "kernel_initializer": {
                 "class_name": "GlorotUniform",
-                "config": {
-                    "seed": None
-                }
+                "config": {"seed": None},
             },
             "recurrent_initializer": {
                 "class_name": "Orthogonal",
-                "config": {
-                    "seed": None,
-                    "gain": 1.0
-                }
+                "config": {"seed": None, "gain": 1.0},
             },
-            "bias_initializer": {
-                "class_name": "Zeros",
-                "config": {}
-            },
+            "bias_initializer": {"class_name": "Zeros", "config": {}},
             "unit_forget_bias": True,
             "kernel_regularizer": None,
             "recurrent_regularizer": None,
@@ -272,17 +338,11 @@ class LayerNormLSTMCellTest(tf.test.TestCase):
             "kernel_constraint": None,
             "recurrent_constraint": None,
             "bias_constraint": None,
-            "dropout": 0.,
-            "recurrent_dropout": 0.,
+            "dropout": 0.0,
+            "recurrent_dropout": 0.0,
             "implementation": 2,
-            "norm_gamma_initializer": {
-                "class_name": "Ones",
-                "config": {}
-            },
-            "norm_beta_initializer": {
-                "class_name": "Zeros",
-                "config": {}
-            },
+            "norm_gamma_initializer": {"class_name": "Ones", "config": {}},
+            "norm_beta_initializer": {"class_name": "Zeros", "config": {}},
             "norm_epsilon": 1e-3,
         }
         config = cell.get_config()
@@ -307,9 +367,11 @@ class LayerNormSimpleRNNTest(tf.test.TestCase):
                 kernel_constraint=k_constraint,
                 recurrent_constraint=r_constraint,
                 bias_constraint=b_constraint,
-                gamma_constraint=g_constraint),
+                gamma_constraint=g_constraint,
+            ),
             input_shape=(None, embedding_dim),
-            return_sequences=False)
+            return_sequences=False,
+        )
         layer.build((None, None, embedding_dim))
         self.assertEqual(layer.cell.kernel.constraint, k_constraint)
         self.assertEqual(layer.cell.recurrent_kernel.constraint, r_constraint)
@@ -324,10 +386,10 @@ class LayerNormSimpleRNNTest(tf.test.TestCase):
         model.add(keras.layers.Masking(input_shape=(3, 4)))
         model.add(
             keras.layers.RNN(
-                LayerNormSimpleRNNCell(units=5),
-                return_sequences=True,
-                unroll=False))
-        model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
+                LayerNormSimpleRNNCell(units=5), return_sequences=True, unroll=False
+            )
+        )
+        model.compile(loss="categorical_crossentropy", optimizer="rmsprop")
         model.fit(inputs, targets, epochs=1, batch_size=2, verbose=1)
 
     def test_regularizers_layernorm_rnn(self):
@@ -337,15 +399,17 @@ class LayerNormSimpleRNNTest(tf.test.TestCase):
                 units=5,
                 kernel_regularizer=keras.regularizers.l1(0.01),
                 recurrent_regularizer=keras.regularizers.l1(0.01),
-                bias_regularizer='l2',
-                gamma_regularizer='l2'),
+                bias_regularizer="l2",
+                gamma_regularizer="l2",
+            ),
             input_shape=(None, embedding_dim),
-            return_sequences=False)
+            return_sequences=False,
+        )
         layer.build((None, None, 2))
         self.assertEqual(len(layer.losses), 4)
 
     def test_configs_layernorm(self):
-        config = {'layernorm_epsilon': 1e-6}
+        config = {"layernorm_epsilon": 1e-6}
         cell1 = LayerNormSimpleRNNCell(units=8, **config)
         config1 = cell1.get_config()
         cell2 = LayerNormSimpleRNNCell(**config1)
