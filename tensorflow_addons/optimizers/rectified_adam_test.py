@@ -20,6 +20,9 @@ from tensorflow_addons.utils import test_utils
 from tensorflow_addons.optimizers import RectifiedAdam, Lookahead
 
 
+ITERATION = 300
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class RectifiedAdamTest(tf.test.TestCase):
     def run_dense_sample(self, iterations, expected, optimizer):
@@ -71,7 +74,7 @@ class RectifiedAdamTest(tf.test.TestCase):
     def test_dense_sample(self):
         # Expected values are obtained from the official implementation
         self.run_dense_sample(
-            iterations=1000,
+            iterations=ITERATION,
             expected=[[0.5554, 1.5549], [2.5557, 3.5557]],
             optimizer=RectifiedAdam(lr=1e-3),
         )
@@ -80,7 +83,7 @@ class RectifiedAdamTest(tf.test.TestCase):
         # Expected values are obtained from the official implementation
         # Dense results should be: [-0.1929,  0.8066], [1.8075, 2.8074]
         self.run_sparse_sample(
-            iterations=2000,
+            iterations=ITERATION,
             expected=[[-0.1929, 2.0], [3.0, 2.8074]],
             optimizer=RectifiedAdam(lr=1e-3),
         )
@@ -89,7 +92,7 @@ class RectifiedAdamTest(tf.test.TestCase):
         # Expected values are obtained from the official implementation
         # `amsgrad` has no effect because the gradient is fixed
         self.run_dense_sample(
-            iterations=1000,
+            iterations=ITERATION,
             expected=[[0.5554, 1.5549], [2.5557, 3.5557]],
             optimizer=RectifiedAdam(lr=1e-3, amsgrad=True),
         )
@@ -98,7 +101,7 @@ class RectifiedAdamTest(tf.test.TestCase):
         # Expected values are obtained from the official implementation
         # `amsgrad` has no effect because the gradient is fixed
         self.run_sparse_sample(
-            iterations=2000,
+            iterations=ITERATION,
             expected=[[-0.1929, 2.0], [3.0, 2.8074]],
             optimizer=RectifiedAdam(lr=1e-3, amsgrad=True),
         )
@@ -106,7 +109,7 @@ class RectifiedAdamTest(tf.test.TestCase):
     def test_dense_sample_with_weight_decay(self):
         # Expected values are obtained from the official implementation
         self.run_dense_sample(
-            iterations=1000,
+            iterations=ITERATION,
             expected=[[0.5472, 1.5368], [2.5276, 3.5176]],
             optimizer=RectifiedAdam(lr=1e-3, weight_decay=0.01),
         )
@@ -115,26 +118,26 @@ class RectifiedAdamTest(tf.test.TestCase):
         # Expected values are obtained from the official implementation
         # Dense results should be: [-0.2029,  0.7768], [1.7578, 2.7380]
         self.run_sparse_sample(
-            iterations=2000,
+            iterations=ITERATION,
             expected=[[-0.2029, 2.0], [3.0, 2.7380]],
             optimizer=RectifiedAdam(lr=1e-3, weight_decay=0.01),
         )
 
     def test_dense_sample_with_warmup(self):
         self.run_dense_sample(
-            iterations=1000,
+            iterations=ITERATION,
             expected=[[0.8041, 1.8041], [2.8041, 3.8041]],
             optimizer=RectifiedAdam(
-                lr=1e-3, total_steps=1000, warmup_proportion=0.1, min_lr=1e-5,
+                lr=1e-3, total_steps=ITERATION, warmup_proportion=0.1, min_lr=1e-5,
             ),
         )
 
     def test_sparse_sample_with_warmup(self):
         self.run_sparse_sample(
-            iterations=2000,
+            iterations=ITERATION * 2,
             expected=[[0.4653, 2.0], [3.0, 3.4653]],
             optimizer=RectifiedAdam(
-                lr=1e-3, total_steps=2000, warmup_proportion=0.1, min_lr=1e-5,
+                lr=1e-3, total_steps=ITERATION * 2, warmup_proportion=0.1, min_lr=1e-5,
             ),
         )
 
@@ -142,7 +145,7 @@ class RectifiedAdamTest(tf.test.TestCase):
         # Expected values are obtained from the original implementation
         # of Ranger
         self.run_dense_sample(
-            iterations=1000,
+            iterations=ITERATION,
             expected=[[0.7985, 1.7983], [2.7987, 3.7986]],
             optimizer=Lookahead(
                 RectifiedAdam(lr=1e-3, beta_1=0.95,),
