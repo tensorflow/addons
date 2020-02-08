@@ -76,7 +76,6 @@ COPY ./ /addons
 RUN buildifier -mode=check -r /addons
 RUN touch /ok.txt
 
-
 # -------------------------------
 # docs tests
 FROM python:3.6 as docs_tests
