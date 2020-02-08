@@ -8,7 +8,6 @@ RUN bash buildifier.sh
 COPY tools/ci_build/install/clang-format.sh ./clang-format.sh
 RUN bash clang-format.sh
 
-RUN mkdir /addons
 WORKDIR /addons
 
 
