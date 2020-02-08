@@ -147,3 +147,10 @@ jobs:
       - uses: actions/checkout@v1
       - name: Checking the sanity check
         run: bash tools/run_sanity_check.sh
+  docs_tests:
+    name: Check that we can build the docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Building the docs
+        run: DOCKER_BUILDKIT=1 docker build -f tools/docker/sanity_check.Dockerfile --target=docs_tests ./
