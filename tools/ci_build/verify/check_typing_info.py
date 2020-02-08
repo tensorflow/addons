@@ -55,7 +55,7 @@ EXCEPTION_LIST = [
 
 if __name__ == "__main__":
     ensure_api_is_typed(
-        tensorflow_addons,
+        [tensorflow_addons],
         EXCEPTION_LIST,
         init_only=True,
         additional_message=HELP_MESSAGE,
