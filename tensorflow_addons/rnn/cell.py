@@ -20,6 +20,8 @@ from typeguard import typechecked
 
 from tensorflow_addons.utils.types import (
     Activation,
+    FloatTensorLike,
+    TensorLike,
     Initializer,
     Constraint,
     Regularizer,
@@ -47,8 +49,8 @@ class NASCell(keras.layers.AbstractRNNCell):
     @typechecked
     def __init__(
         self,
-        units: int,
-        projection: Optional[int] = None,
+        units: TensorLike,
+        projection: Optional[FloatTensorLike] = None,
         use_bias: bool = False,
         kernel_initializer: Initializer = "glorot_uniform",
         recurrent_initializer: Initializer = "glorot_uniform",
@@ -247,7 +249,7 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
     @typechecked
     def __init__(
         self,
-        units: int,
+        units: TensorLike,
         activation: Activation = "tanh",
         recurrent_activation: Activation = "sigmoid",
         use_bias: bool = True,
@@ -261,11 +263,11 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
         kernel_constraint: Constraint = None,
         recurrent_constraint: Constraint = None,
         bias_constraint: Constraint = None,
-        dropout: float = 0.0,
-        recurrent_dropout: float = 0.0,
+        dropout: FloatTensorLike = 0.0,
+        recurrent_dropout: FloatTensorLike = 0.0,
         norm_gamma_initializer: Initializer = "ones",
         norm_beta_initializer: Initializer = "zeros",
-        norm_epsilon: float = 1e-3,
+        norm_epsilon: FloatTensorLike = 1e-3,
         **kwargs
     ):
         """Initializes the LSTM cell.
@@ -467,26 +469,27 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
     ```
     """
 
+    @typechecked
     def __init__(
         self,
-        units,
-        activation="tanh",
-        use_bias=True,
-        layernorm_epsilon=1e-05,
-        kernel_initializer="glorot_uniform",
-        recurrent_initializer="orthogonal",
-        bias_initializer="zeros",
-        gamma_initializer="ones",
-        kernel_regularizer=None,
-        recurrent_regularizer=None,
-        bias_regularizer=None,
-        gamma_regularizer=None,
-        kernel_constraint=None,
-        recurrent_constraint=None,
-        bias_constraint=None,
-        gamma_constraint=None,
-        dropout=0.0,
-        recurrent_dropout=0.0,
+        units: TensorLike,
+        activation: Activation = "tanh",
+        use_bias: bool = True,
+        layernorm_epsilon: FloatTensorLike = 1e-05,
+        kernel_initializer: Initializer = "glorot_uniform",
+        recurrent_initializer: Initializer = "orthogonal",
+        bias_initializer: Initializer = "zeros",
+        gamma_initializer: Initializer = "ones",
+        kernel_regularizer: Regularizer = None,
+        recurrent_regularizer: Regularizer = None,
+        bias_regularizer: Regularizer = None,
+        gamma_regularizer: Regularizer = None,
+        kernel_constraint: Regularizer = None,
+        recurrent_constraint: Constraint = None,
+        bias_constraint: Constraint = None,
+        gamma_constraint: Constraint = None,
+        dropout: FloatTensorLike = 0.0,
+        recurrent_dropout: FloatTensorLike = 0.0,
         **kwargs
     ):
         super(LayerNormSimpleRNNCell, self).__init__(
