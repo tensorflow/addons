@@ -62,57 +62,50 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: crazy-max/ghaction-docker-buildx@v1
       - name: Run flake8
-        run: bash tools/run_buildx.sh flake8-test
+        run: bash tools/run_build.sh flake8-test
   black-test:
     name: Black Python code format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: crazy-max/ghaction-docker-buildx@v1
       - name: Ensure contributor used ("black ./") before commit
-        run: bash tools/run_buildx.sh black-test
+        run: bash tools/run_build.sh black-test
   public-api-typed:
     name: Check that the public API is typed
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: crazy-max/ghaction-docker-buildx@v1
       - name: Run type check
-        run: bash tools/run_buildx.sh public-api-typed
+        run: bash tools/run_build.sh public-api-typed
   case-insensitive-filesystem:
     name: Verify python filenames work on case insensitive FS
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: crazy-max/ghaction-docker-buildx@v1
       - name: Run type check
-        run: bash tools/run_buildx.sh case-insensitive-filesystem
+        run: bash tools/run_build.sh case-insensitive-filesystem
   valid_build_files:
     name: Valid build files
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: crazy-max/ghaction-docker-buildx@v1
       - name: Run type check
-        run: bash tools/run_buildx.sh valid_build_files
+        run: bash tools/run_build.sh valid_build_files
   clang-format:
     name: Clang C++ code format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: crazy-max/ghaction-docker-buildx@v1
       - name: Run type check
-        run: bash tools/run_buildx.sh clang-format
+        run: bash tools/run_build.sh clang-format
   check-bazel-format:
     name: Bazel code format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: crazy-max/ghaction-docker-buildx@v1
       - name: Run type check
-        run: bash tools/run_buildx.sh check-bazel-format
+        run: bash tools/run_build.sh check-bazel-format
   local-dev-tools:
     name: Check that local dev tools work
     runs-on: ubuntu-latest
