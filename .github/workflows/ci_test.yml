@@ -112,4 +112,13 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Checking the sanity check
-        run: docker buildx build -f tools/docker/sanity_check.Dockerfile --cache-from=type=registry,ref=gabrieldemarmiesse/caching-stuff .
+        run: bash tools/run_sanity_check.sh
+      - name: Checking the pre-commit
+        run: bash tools/pre-commit.sh
+  docs_tests:
+    name: Check that we can build the docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Building the docs
+        run: bash tools/run_build.sh docs_tests

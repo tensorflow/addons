@@ -38,7 +38,5 @@ exclude = '''
   | tensorflow_addons/text/__init__.py
   | tensorflow_addons/text/crf.py
   | tensorflow_addons/text/crf_test.py
-  | tensorflow_addons/image/distance_transform_test.py
-  | tensorflow_addons/optimizers/lazy_adam_test.py
 )
 '''
