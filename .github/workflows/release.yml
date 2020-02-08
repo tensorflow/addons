@@ -2,6 +2,7 @@ name: addons-release
 
 on:
   release:
+    types: [published]
     tags:
       - v*
 
