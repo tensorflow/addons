@@ -76,6 +76,7 @@ COPY ./ /addons
 RUN buildifier -mode=check -r /addons
 RUN touch /ok.txt
 
+
 # -------------------------------
 # ensure that all checks were successful
 # this is necessary if using docker buildkit
