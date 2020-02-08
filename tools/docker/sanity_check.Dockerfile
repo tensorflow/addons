@@ -20,7 +20,9 @@ RUN touch /ok.txt
 # Check that the public API is typed
 FROM python:3.5
 
-RUN pip install tensorflow-cpu==2.1.0 typeguard==2.7.1
+RUN pip install tensorflow-cpu==2.1.0
+RUN pip install typeguard==2.7.1
+
 COPY ./ /addons
 RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e /addons
 RUN python /addons/tools/ci_build/verify/check_typing_info.py
@@ -39,11 +41,11 @@ RUN touch /ok.txt
 # Valid build files
 FROM python:3.5
 
+RUN pip install tensorflow-cpu==2.1.0
+
 RUN apt-get update && apt-get install sudo
 RUN git clone https://github.com/abhinavsingh/setup-bazel.git
 RUN bash ./setup-bazel/setup-bazel.sh 1.1.0
-
-RUN pip install tensorflow-cpu==2.1.0
 
 COPY ./ /addons
 WORKDIR /addons
@@ -80,6 +82,24 @@ RUN buildifier -mode=check -r /addons
 RUN touch /ok.txt
 
 # -------------------------------
+# docs tests
+FROM python:3.6 as docs_tests
+
+RUN pip install tensorflow-cpu==2.1.0
+RUN pip install typeguard==2.7.1
+
+COPY tools/docs/doc_requirements.txt ./
+RUN pip install -r doc_requirements.txt
+
+RUN apt-get update && apt-get install -y rsync
+
+COPY ./ /addons
+WORKDIR /addons
+RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
+RUN python tools/docs/build_docs.py
+RUN touch /ok.txt
+
+# -------------------------------
 # ensure that all checks were successful
 # this is necessary if using docker buildkit
 # with "export DOCKER_BUILDKIT=1"
@@ -94,3 +114,4 @@ COPY --from=3 /ok.txt /ok3.txt
 COPY --from=4 /ok.txt /ok4.txt
 COPY --from=5 /ok.txt /ok5.txt
 COPY --from=6 /ok.txt /ok6.txt
+COPY --from=7 /ok.txt /ok7.txt
