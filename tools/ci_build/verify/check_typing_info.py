@@ -27,8 +27,6 @@ TUTORIAL_URL = "https://docs.python.org/3/library/typing.html"
 EXCEPTION_LIST = [
     tensorflow_addons.losses.lifted_struct_loss,
     tensorflow_addons.losses.triplet_semihard_loss,
-    tensorflow_addons.losses.pinball_loss,
-    tensorflow_addons.losses.PinballLoss,
     tensorflow_addons.losses.LiftedStructLoss,
     tensorflow_addons.losses.TripletSemiHardLoss,
     tensorflow_addons.losses.npairs_loss,
