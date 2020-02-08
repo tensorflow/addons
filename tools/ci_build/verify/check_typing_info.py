@@ -14,6 +14,8 @@
 # ==============================================================================
 #
 
+from types import ModuleType
+
 from typedapi import ensure_api_is_typed
 
 import tensorflow_addons
@@ -53,10 +55,14 @@ EXCEPTION_LIST = [
 ]
 
 
+modules_list = []
+for attr_name in dir(tensorflow_addons):
+    attr = getattr(tensorflow_addons, attr_name)
+    if isinstance(attr, ModuleType):
+        modules_list.append(attr)
+
+
 if __name__ == "__main__":
     ensure_api_is_typed(
-        [tensorflow_addons],
-        EXCEPTION_LIST,
-        init_only=True,
-        additional_message=HELP_MESSAGE,
+        modules_list, EXCEPTION_LIST, init_only=True, additional_message=HELP_MESSAGE,
     )
