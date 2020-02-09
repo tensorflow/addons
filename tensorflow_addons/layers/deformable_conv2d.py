@@ -216,7 +216,7 @@ class DeformableConv2D(tf.keras.layers.Layer):
                     dilation=self.dilation_rate[i],
                 )
                 new_space.append(new_dim)
-            return tensor_shape.TensorShape(
+            return tf.TensorShape(
                 [input_shape[0]] + new_space + [self.filters]
             )
         else:
