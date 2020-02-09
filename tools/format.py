@@ -29,3 +29,5 @@ if files_changed:
     print("Some files have changed.")
     print("Please do git add and git commit again")
     exit(1)
+else:
+    check_bash_call("flake8")
