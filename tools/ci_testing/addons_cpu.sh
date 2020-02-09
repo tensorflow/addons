@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 # ==============================================================================
+# usage: bash tools/ci_testing/addons_cpu.sh [--no-deps]
+
 set -x
 
 # Make sure we're in the project root path.
@@ -42,9 +44,9 @@ export TF_NEED_CUDA=0
 
 # Check if python3 is available. On Windows VM it is not.
 if [ -x "$(command -v python3)" ]; then
-    python3 ./configure.py
+    python3 ./configure.py $1
   else
-    python ./configure.py
+    python ./configure.py $1
 fi
 
 cat ./.bazelrc

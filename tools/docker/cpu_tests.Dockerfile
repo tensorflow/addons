@@ -10,4 +10,4 @@ RUN pip install -r requirements.txt
 
 COPY ./ /addons
 WORKDIR addons
-RUN bash tools/ci_testing/addons_cpu.sh
+RUN bash tools/ci_testing/addons_cpu.sh --no-deps
