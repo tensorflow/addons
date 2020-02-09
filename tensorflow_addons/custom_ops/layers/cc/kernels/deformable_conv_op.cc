@@ -121,7 +121,7 @@ typedef Eigen::ThreadPoolDevice CPUDevice;
 Eigen::IndexPair<Eigen::DenseIndex> ContractionDims(bool adj_x, bool adj_y) {
   return {adj_x ? 0 : 1, adj_y ? 1 : 0};
 }
-#ifdef PLATFORM_WINDOWS
+#ifdef WIN32
 #include <mutex>
 template <typename T>
 void AtomicAdd(T *address, T val) {
