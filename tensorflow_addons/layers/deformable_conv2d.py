@@ -143,15 +143,15 @@ class DeformableConv2D(tf.keras.layers.Layer):
     def __init__(
         self,
         filters: int,
-        kernel_size=(3, 3),
-        num_groups=1,
-        deformable_groups=1,
-        strides=(1, 1),
-        im2col=1,
-        use_bias=False,
-        padding="valid",
-        data_format="channels_last",
-        dilations=(1, 1),
+        kernel_size: tuple = (3, 3),
+        num_groups: int = 1,
+        deformable_groups: int = 1,
+        strides: tuple = (1, 1),
+        im2col: int = 1,
+        use_bias: bool = False,
+        padding: str = "valid",
+        data_format: str = "channels_last",
+        dilations: tuple = (1, 1),
     ):
         super(DeformableConv2D, self).__init__()
         self.filters = filters
@@ -216,9 +216,7 @@ class DeformableConv2D(tf.keras.layers.Layer):
                     dilation=self.dilation_rate[i],
                 )
                 new_space.append(new_dim)
-            return tf.TensorShape(
-                [input_shape[0]] + new_space + [self.filters]
-            )
+            return tf.TensorShape([input_shape[0]] + new_space + [self.filters])
         else:
             space = input_shape[2:]
             new_space = []
@@ -323,14 +321,14 @@ def _deformable_psroi_pool_back_prop(op, *grad):
 class DeformablePSROIAlign(tf.keras.layers.Layer):
     def __init__(
         self,
-        output_dim=256,
-        spatial_scale=1 / 16,
-        group_size=1,
-        pooled_size=7,
-        sample_per_part=4,
-        part_size=7,
-        trans_std=1,
-        data_format="channels_last",
+        output_dim: int = 256,
+        spatial_scale: float = 1 / 16,
+        group_size: int = 1,
+        pooled_size: int = 7,
+        sample_per_part: int = 4,
+        part_size: int = 7,
+        trans_std: int = 1,
+        data_format: str = "channels_last",
     ):
         super(DeformablePSROIAlign, self).__init__()
         self.spatial_scale = spatial_scale
