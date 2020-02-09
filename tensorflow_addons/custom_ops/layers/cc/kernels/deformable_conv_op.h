@@ -24,7 +24,9 @@
 #endif  // __JETBRAINS_IDE__
 
 #define EIGEN_USE_THREADS
+#ifdef GOOGLE_CUDA
 #define EIGEN_USE_GPU
+#endif
 
 #include <iostream>
 #include <vector>
