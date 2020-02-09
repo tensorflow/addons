@@ -18,11 +18,18 @@ import tensorflow as tf
 import tensorflow.keras as keras
 from typeguard import typechecked
 
-from tensorflow_addons.utils.types import Activation, Initializer, Constraint, Regularizer
+from tensorflow_addons.utils.types import (
+    Activation,
+    FloatTensorLike,
+    TensorLike,
+    Initializer,
+    Constraint,
+    Regularizer,
+)
 from typing import Optional
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class NASCell(keras.layers.AbstractRNNCell):
     """Neural Architecture Search (NAS) recurrent network cell.
 
@@ -40,15 +47,17 @@ class NASCell(keras.layers.AbstractRNNCell):
     _NAS_BASE = 8
 
     @typechecked
-    def __init__(self,
-                 units: int,
-                 projection: Optional[int] = None,
-                 use_bias: bool = False,
-                 kernel_initializer: Initializer = "glorot_uniform",
-                 recurrent_initializer: Initializer = "glorot_uniform",
-                 projection_initializer: Initializer = "glorot_uniform",
-                 bias_initializer: Initializer = "zeros",
-                 **kwargs):
+    def __init__(
+        self,
+        units: TensorLike,
+        projection: Optional[FloatTensorLike] = None,
+        use_bias: bool = False,
+        kernel_initializer: Initializer = "glorot_uniform",
+        recurrent_initializer: Initializer = "glorot_uniform",
+        projection_initializer: Initializer = "glorot_uniform",
+        bias_initializer: Initializer = "zeros",
+        **kwargs
+    ):
         """Initialize the parameters for a NAS cell.
 
         Args:
@@ -90,10 +99,10 @@ class NASCell(keras.layers.AbstractRNNCell):
 
     def build(self, inputs_shape):
         input_size = tf.compat.dimension_value(
-            tf.TensorShape(inputs_shape).with_rank(2)[1])
+            tf.TensorShape(inputs_shape).with_rank(2)[1]
+        )
         if input_size is None:
-            raise ValueError(
-                "Could not infer input size from inputs.get_shape()[-1]")
+            raise ValueError("Could not infer input size from inputs.get_shape()[-1]")
 
         # Variables for the NAS cell. `recurrent_kernel` is all matrices
         # multiplying the hidden state and `kernel` is all matrices multiplying
@@ -101,23 +110,27 @@ class NASCell(keras.layers.AbstractRNNCell):
         self.recurrent_kernel = self.add_weight(
             name="recurrent_kernel",
             shape=[self.output_size, self._NAS_BASE * self.units],
-            initializer=self.recurrent_initializer)
+            initializer=self.recurrent_initializer,
+        )
         self.kernel = self.add_weight(
             name="kernel",
             shape=[input_size, self._NAS_BASE * self.units],
-            initializer=self.kernel_initializer)
+            initializer=self.kernel_initializer,
+        )
 
         if self.use_bias:
             self.bias = self.add_weight(
                 name="bias",
                 shape=[self._NAS_BASE * self.units],
-                initializer=self.bias_initializer)
+                initializer=self.bias_initializer,
+            )
         # Projection layer if specified
         if self.projection is not None:
             self.projection_weights = self.add_weight(
                 name="projection_weights",
                 shape=[self.units, self.projection],
-                initializer=self.projection_initializer)
+                initializer=self.projection_initializer,
+            )
 
         self.built = True
 
@@ -159,9 +172,11 @@ class NASCell(keras.layers.AbstractRNNCell):
         # The NAS cell branches into 8 different splits for both the hidden
         # state and the input
         m_matrix_splits = tf.split(
-            axis=1, num_or_size_splits=self._NAS_BASE, value=m_matrix)
+            axis=1, num_or_size_splits=self._NAS_BASE, value=m_matrix
+        )
         inputs_matrix_splits = tf.split(
-            axis=1, num_or_size_splits=self._NAS_BASE, value=inputs_matrix)
+            axis=1, num_or_size_splits=self._NAS_BASE, value=inputs_matrix
+        )
 
         # First layer
         layer1_0 = sigmoid(inputs_matrix_splits[0] + m_matrix_splits[0])
@@ -211,7 +226,7 @@ class NASCell(keras.layers.AbstractRNNCell):
         return {**base_config, **config}
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class LayerNormLSTMCell(keras.layers.LSTMCell):
     """LSTM cell with layer normalization and recurrent dropout.
 
@@ -232,27 +247,29 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
     """
 
     @typechecked
-    def __init__(self,
-                 units: int,
-                 activation: Activation = 'tanh',
-                 recurrent_activation: Activation = 'sigmoid',
-                 use_bias: bool = True,
-                 kernel_initializer: Initializer = 'glorot_uniform',
-                 recurrent_initializer: Initializer = 'orthogonal',
-                 bias_initializer: Initializer = 'zeros',
-                 unit_forget_bias: bool = True,
-                 kernel_regularizer: Regularizer = None,
-                 recurrent_regularizer: Regularizer = None,
-                 bias_regularizer: Regularizer = None,
-                 kernel_constraint: Constraint = None,
-                 recurrent_constraint: Constraint = None,
-                 bias_constraint: Constraint = None,
-                 dropout: float = 0.,
-                 recurrent_dropout: float = 0.,
-                 norm_gamma_initializer: Initializer = 'ones',
-                 norm_beta_initializer: Initializer = 'zeros',
-                 norm_epsilon: float = 1e-3,
-                 **kwargs):
+    def __init__(
+        self,
+        units: TensorLike,
+        activation: Activation = "tanh",
+        recurrent_activation: Activation = "sigmoid",
+        use_bias: bool = True,
+        kernel_initializer: Initializer = "glorot_uniform",
+        recurrent_initializer: Initializer = "orthogonal",
+        bias_initializer: Initializer = "zeros",
+        unit_forget_bias: bool = True,
+        kernel_regularizer: Regularizer = None,
+        recurrent_regularizer: Regularizer = None,
+        bias_regularizer: Regularizer = None,
+        kernel_constraint: Constraint = None,
+        recurrent_constraint: Constraint = None,
+        bias_constraint: Constraint = None,
+        dropout: FloatTensorLike = 0.0,
+        recurrent_dropout: FloatTensorLike = 0.0,
+        norm_gamma_initializer: Initializer = "ones",
+        norm_beta_initializer: Initializer = "zeros",
+        norm_epsilon: FloatTensorLike = 1e-3,
+        **kwargs
+    ):
         """Initializes the LSTM cell.
 
         Args:
@@ -311,15 +328,14 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
             bias_constraint=bias_constraint,
             dropout=dropout,
             recurrent_dropout=recurrent_dropout,
-            **kwargs)
-        self.norm_gamma_initializer = keras.initializers.get(
-            norm_gamma_initializer)
-        self.norm_beta_initializer = keras.initializers.get(
-            norm_beta_initializer)
+            **kwargs,
+        )
+        self.norm_gamma_initializer = keras.initializers.get(norm_gamma_initializer)
+        self.norm_beta_initializer = keras.initializers.get(norm_beta_initializer)
         self.norm_epsilon = norm_epsilon
-        self.kernel_norm = self._create_norm_layer('kernel_norm')
-        self.recurrent_norm = self._create_norm_layer('recurrent_norm')
-        self.state_norm = self._create_norm_layer('state_norm')
+        self.kernel_norm = self._create_norm_layer("kernel_norm")
+        self.recurrent_norm = self._create_norm_layer("recurrent_norm")
+        self.state_norm = self._create_norm_layer("state_norm")
 
     def build(self, input_shape):
         super().build(input_shape)
@@ -332,16 +348,14 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
         c_tm1 = states[1]  # previous carry state
 
         dp_mask = self.get_dropout_mask_for_cell(inputs, training, count=4)
-        rec_dp_mask = self.get_recurrent_dropout_mask_for_cell(
-            h_tm1, training, count=4)
-        if 0. < self.dropout < 1.:
+        rec_dp_mask = self.get_recurrent_dropout_mask_for_cell(h_tm1, training, count=4)
+        if 0.0 < self.dropout < 1.0:
             inputs *= dp_mask[0]
         z = self.kernel_norm(keras.backend.dot(inputs, self.kernel))
 
-        if 0. < self.recurrent_dropout < 1.:
+        if 0.0 < self.recurrent_dropout < 1.0:
             h_tm1 *= rec_dp_mask[0]
-        z += self.recurrent_norm(
-            keras.backend.dot(h_tm1, self.recurrent_kernel))
+        z += self.recurrent_norm(keras.backend.dot(h_tm1, self.recurrent_kernel))
         if self.use_bias:
             z = keras.backend.bias_add(z, self.bias)
 
@@ -353,12 +367,13 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
 
     def get_config(self):
         config = {
-            'norm_gamma_initializer':
-            keras.initializers.serialize(self.norm_gamma_initializer),
-            'norm_beta_initializer':
-            keras.initializers.serialize(self.norm_beta_initializer),
-            'norm_epsilon':
-            self.norm_epsilon,
+            "norm_gamma_initializer": keras.initializers.serialize(
+                self.norm_gamma_initializer
+            ),
+            "norm_beta_initializer": keras.initializers.serialize(
+                self.norm_beta_initializer
+            ),
+            "norm_epsilon": self.norm_epsilon,
         }
         base_config = super().get_config()
         return {**base_config, **config}
@@ -368,10 +383,11 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
             beta_initializer=self.norm_beta_initializer,
             gamma_initializer=self.norm_gamma_initializer,
             epsilon=self.norm_epsilon,
-            name=name)
+            name=name,
+        )
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
     """Cell class for LayerNormSimpleRNN.
 
@@ -453,26 +469,29 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
     ```
     """
 
-    def __init__(self,
-                 units,
-                 activation='tanh',
-                 use_bias=True,
-                 layernorm_epsilon=1e-05,
-                 kernel_initializer='glorot_uniform',
-                 recurrent_initializer='orthogonal',
-                 bias_initializer='zeros',
-                 gamma_initializer='ones',
-                 kernel_regularizer=None,
-                 recurrent_regularizer=None,
-                 bias_regularizer=None,
-                 gamma_regularizer=None,
-                 kernel_constraint=None,
-                 recurrent_constraint=None,
-                 bias_constraint=None,
-                 gamma_constraint=None,
-                 dropout=0.,
-                 recurrent_dropout=0.,
-                 **kwargs):
+    @typechecked
+    def __init__(
+        self,
+        units: TensorLike,
+        activation: Activation = "tanh",
+        use_bias: bool = True,
+        layernorm_epsilon: FloatTensorLike = 1e-05,
+        kernel_initializer: Initializer = "glorot_uniform",
+        recurrent_initializer: Initializer = "orthogonal",
+        bias_initializer: Initializer = "zeros",
+        gamma_initializer: Initializer = "ones",
+        kernel_regularizer: Regularizer = None,
+        recurrent_regularizer: Regularizer = None,
+        bias_regularizer: Regularizer = None,
+        gamma_regularizer: Regularizer = None,
+        kernel_constraint: Regularizer = None,
+        recurrent_constraint: Constraint = None,
+        bias_constraint: Constraint = None,
+        gamma_constraint: Constraint = None,
+        dropout: FloatTensorLike = 0.0,
+        recurrent_dropout: FloatTensorLike = 0.0,
+        **kwargs
+    ):
         super(LayerNormSimpleRNNCell, self).__init__(
             units,
             activation=activation,
@@ -488,7 +507,8 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
             bias_constraint=bias_constraint,
             dropout=dropout,
             recurrent_dropout=recurrent_dropout,
-            **kwargs)
+            **kwargs,
+        )
         self.layernorm = keras.layers.LayerNormalization(
             axis=-1,
             epsilon=layernorm_epsilon,
@@ -500,7 +520,8 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
             gamma_regularizer=gamma_regularizer,
             beta_constraint=None,
             gamma_constraint=gamma_constraint,
-            **kwargs)
+            **kwargs,
+        )
 
     def build(self, input_shape):
         super(LayerNormSimpleRNNCell, self).build(input_shape)
@@ -558,8 +579,7 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
         """
         prev_output = states[0]
         dp_mask = self.get_dropout_mask_for_cell(inputs, training)
-        rec_dp_mask = self.get_recurrent_dropout_mask_for_cell(
-            prev_output, training)
+        rec_dp_mask = self.get_recurrent_dropout_mask_for_cell(prev_output, training)
 
         if dp_mask is not None:
             h = keras.backend.dot(inputs * dp_mask, self.kernel)
@@ -571,8 +591,7 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
 
         if rec_dp_mask is not None:
             prev_output = prev_output * rec_dp_mask
-        output = h + keras.backend.dot(prev_output,
-                                       self.recurrent_kernel)  # "net"
+        output = h + keras.backend.dot(prev_output, self.recurrent_kernel)  # "net"
 
         output = self.layernorm(output)
 
@@ -588,13 +607,15 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
 
     def get_config(self):
         cell_config = super(LayerNormSimpleRNNCell, self).get_config()
-        del cell_config['name']
+        del cell_config["name"]
 
         ln_config = self.layernorm.get_config()
         ln_config = {
-          k:v for k, v in ln_config.items()
-          if k in ["epsilon", "gamma_initializer",
-                   "gamma_regularizer", "gamma_constraint"]}
+            k: v
+            for k, v in ln_config.items()
+            if k
+            in ["epsilon", "gamma_initializer", "gamma_regularizer", "gamma_constraint"]
+        }
 
-        ln_config['layernorm_epsilon'] = ln_config.pop("epsilon")
+        ln_config["layernorm_epsilon"] = ln_config.pop("epsilon")
         return dict(list(cell_config.items()) + list(ln_config.items()))

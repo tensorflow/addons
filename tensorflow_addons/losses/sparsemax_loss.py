@@ -14,12 +14,20 @@
 # ==============================================================================
 
 import tensorflow as tf
-
 from tensorflow_addons.activations.sparsemax import sparsemax
+
+from tensorflow_addons.utils.types import TensorLike
+from typeguard import typechecked
+from typing import Optional
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def sparsemax_loss(logits, sparsemax, labels, name=None):
+def sparsemax_loss(
+    logits: TensorLike,
+    sparsemax: TensorLike,
+    labels: TensorLike,
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Sparsemax loss function [1].
 
     Computes the generalized multi-label classification loss for the sparsemax
@@ -78,7 +86,9 @@ def sparsemax_loss(logits, sparsemax, labels, name=None):
 
 @tf.function
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def sparsemax_loss_from_logits(y_true, logits_pred):
+def sparsemax_loss_from_logits(
+    y_true: TensorLike, logits_pred: TensorLike
+) -> tf.Tensor:
     y_pred = sparsemax(logits_pred)
     loss = sparsemax_loss(logits_pred, y_pred, y_true)
     return loss
@@ -105,11 +115,12 @@ class SparsemaxLoss(tf.keras.losses.Loss):
       name: Optional name for the op.
     """
 
+    @typechecked
     def __init__(
         self,
-        from_logits=True,
-        reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
-        name="sparsemax_loss",
+        from_logits: bool = True,
+        reduction: str = tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
+        name: str = "sparsemax_loss",
     ):
         if from_logits is not True:
             raise ValueError("from_logits must be True")

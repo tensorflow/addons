@@ -27,8 +27,6 @@ format all with:
 clang-format-9 -i --style=google **/*.cc **/*.h
 ```
 
-We'll soon provide a simple and easy to use docker image to run this.
-
 #### Python
 
 Addons uses [flake8](http://flake8.pycqa.org/en/latest/) to check pep8 compliance and 
@@ -47,11 +45,6 @@ Be sure to run them both before you push your commits, otherwise the CI will fai
 ```
 python -m black ./
 python -m flake8
-```
-
-If you want those tools to run automatically before each commit, run:
-```bash
-cd .git/hooks && ln -s -f ../../tools/pre-commit.sh pre-commit
 ```
 
 #### TensorFlow Conventions

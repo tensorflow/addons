@@ -33,10 +33,8 @@ class LookaheadTest(tf.test.TestCase):
         var_0 = tf.Variable(val_0, dtype=tf.dtypes.float32)
         var_1 = tf.Variable(val_1, dtype=tf.dtypes.float32)
 
-        grad_0 = tf.constant(
-            np.random.standard_normal((2,)), dtype=tf.dtypes.float32)
-        grad_1 = tf.constant(
-            np.random.standard_normal((2,)), dtype=tf.dtypes.float32)
+        grad_0 = tf.constant(np.random.standard_normal((2,)), dtype=tf.dtypes.float32)
+        grad_1 = tf.constant(np.random.standard_normal((2,)), dtype=tf.dtypes.float32)
 
         grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
@@ -62,11 +60,15 @@ class LookaheadTest(tf.test.TestCase):
         var_1 = tf.Variable(val_1, dtype=tf.dtypes.float32)
 
         grad_0 = tf.IndexedSlices(
-            tf.constant([np.random.standard_normal()]), tf.constant([0]),
-            tf.constant([2]))
+            tf.constant([np.random.standard_normal()]),
+            tf.constant([0]),
+            tf.constant([2]),
+        )
         grad_1 = tf.IndexedSlices(
-            tf.constant([np.random.standard_normal()]), tf.constant([1]),
-            tf.constant([2]))
+            tf.constant([np.random.standard_normal()]),
+            tf.constant([1]),
+            tf.constant([2]),
+        )
 
         grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
@@ -84,10 +86,9 @@ class LookaheadTest(tf.test.TestCase):
     def test_dense_exact_ratio(self):
         for k in [5, 10, 100]:
             for alpha in [0.3, 0.7]:
-                optimizer = tf.keras.optimizers.get('adam')
+                optimizer = tf.keras.optimizers.get("adam")
                 vals, quick_vars = self.run_dense_sample(k, optimizer)
-                optimizer = Lookahead(
-                    'adam', sync_period=k, slow_step_size=alpha)
+                optimizer = Lookahead("adam", sync_period=k, slow_step_size=alpha)
                 _, slow_vars = self.run_dense_sample(k, optimizer)
                 for val, quick, slow in zip(vals, quick_vars, slow_vars):
                     expected = val + (quick - val) * alpha
@@ -96,10 +97,9 @@ class LookaheadTest(tf.test.TestCase):
     def test_sparse_exact_ratio(self):
         for k in [5, 10, 100]:
             for alpha in [0.3, 0.7]:
-                optimizer = tf.keras.optimizers.get('adam')
+                optimizer = tf.keras.optimizers.get("adam")
                 vals, quick_vars = self.run_sparse_sample(k, optimizer)
-                optimizer = Lookahead(
-                    'adam', sync_period=k, slow_step_size=alpha)
+                optimizer = Lookahead("adam", sync_period=k, slow_step_size=alpha)
                 _, slow_vars = self.run_sparse_sample(k, optimizer)
                 for val, quick, slow in zip(vals, quick_vars, slow_vars):
                     expected = val + (quick - val) * alpha
@@ -115,7 +115,7 @@ class LookaheadTest(tf.test.TestCase):
 
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
-        model.compile(Lookahead('adam'), loss='mse')
+        model.compile(Lookahead("adam"), loss="mse")
 
         model.fit(x, y, epochs=3)
 
@@ -128,15 +128,18 @@ class LookaheadTest(tf.test.TestCase):
 
     def test_model_dynamic_lr(self):
         grad = tf.Variable([[0.1]])
-        model = tf.keras.Sequential([
-            tf.keras.layers.Dense(
-                1,
-                kernel_initializer=tf.keras.initializers.Constant([[1.0]]),
-                use_bias=False)
-        ])
+        model = tf.keras.Sequential(
+            [
+                tf.keras.layers.Dense(
+                    1,
+                    kernel_initializer=tf.keras.initializers.Constant([[1.0]]),
+                    use_bias=False,
+                )
+            ]
+        )
         model.build(input_shape=[1, 1])
 
-        opt = Lookahead('adam', sync_period=10, slow_step_size=0.4)
+        opt = Lookahead("adam", sync_period=10, slow_step_size=0.4)
         update = opt.apply_gradients(list(zip([grad], model.variables)))
 
         self.evaluate(tf.compat.v1.global_variables_initializer())
@@ -147,13 +150,12 @@ class LookaheadTest(tf.test.TestCase):
         self.assertAllClose(opt.lr.read_value(), 1e-4)
 
     def test_get_config(self):
-        opt = Lookahead('adam', sync_period=10, slow_step_size=0.4)
-        opt = tf.keras.optimizers.deserialize(
-            tf.keras.optimizers.serialize(opt))
+        opt = Lookahead("adam", sync_period=10, slow_step_size=0.4)
+        opt = tf.keras.optimizers.deserialize(tf.keras.optimizers.serialize(opt))
         config = opt.get_config()
-        self.assertEqual(config['sync_period'], 10)
-        self.assertEqual(config['slow_step_size'], 0.4)
+        self.assertEqual(config["sync_period"], 10)
+        self.assertEqual(config["slow_step_size"], 0.4)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.test.main()
