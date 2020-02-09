@@ -19,10 +19,7 @@ from tensorflow_addons.layers.deformable_conv2d import (
     DeformableConv2D,
     DeformablePSROIAlign,
 )
-from tensorflow_addons.layers.deformable_conv2d import (
-    _deformable_conv2d,
-    _deformable_conv2d_ops_so,
-)
+from tensorflow_addons.layers.deformable_conv2d import _deformable_conv2d_ops_so
 from tensorflow_addons.utils import test_utils
 
 
@@ -181,7 +178,7 @@ class DeformableConv2DTest(tf.test.TestCase):
 
     def _keras(self, data_format, use_gpu=False):
         inputs = self._create_test_data(data_format)
-        output = self._forward(inputs, 64, data_format=data_format)
+        self._forward(inputs, 64, data_format=data_format)
 
     def testForwardNCHW(self):
         self._forward_simple(data_format="channels_first", use_gpu=False)
@@ -227,7 +224,6 @@ class DeformablePSROIAlignTest(tf.test.TestCase):
         group_size = 1
         pooled_size = 7
         sample_per_part = 4
-        no_trans = True
         part_size = 7
         trans_std = 1
         (
@@ -253,13 +249,6 @@ class DeformablePSROIAlignTest(tf.test.TestCase):
         rois = tf.convert_to_tensor(
             [[0, 1, 1, 800, 800], [0, 2, 2, 400, 400]], dtype=tf.float32
         )
-        spatial_scale = 1 / 16
-        group_size = 1
-        pooled_size = 7
-        sample_per_part = 4
-        no_trans = True
-        part_size = 7
-        trans_std = 1
         psroilayer = DeformablePSROIAlign(output_dim=64, data_format="channels_first")
         ret = psroilayer([featuremap, rois])
         return ret
