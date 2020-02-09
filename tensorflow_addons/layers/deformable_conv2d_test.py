@@ -190,7 +190,7 @@ class DeformableConv2DTest(tf.test.TestCase):
         if tf.test.is_gpu_available():
             self._forward_simple(data_format="channels_last", use_gpu=True)
 
-    """		
+    """
     def testBackwardNCHW(self):
         self._gradients(data_format="channels_first", use_gpu=False)
         if tf.test.is_gpu_available():
