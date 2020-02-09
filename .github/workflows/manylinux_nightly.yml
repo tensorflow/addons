@@ -13,7 +13,7 @@ jobs:
       - name: Nightly test Ubuntu
         run: |
           set -x -e
-          bash tools/run_docker.sh -d cpu -c 'make unit-test'
+          bash tools/run_cpu_tests.sh
 
   manylinux-nightly-wheel:
     name: Build nightly wheels for manylinux2010
