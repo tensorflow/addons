@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <mutex>
 
 #include "tensorflow_addons/custom_ops/layers/cc/kernels/deformable_conv2d_utils.h"
 
@@ -121,8 +122,7 @@ typedef Eigen::ThreadPoolDevice CPUDevice;
 Eigen::IndexPair<Eigen::DenseIndex> ContractionDims(bool adj_x, bool adj_y) {
   return {adj_x ? 0 : 1, adj_y ? 1 : 0};
 }
-#ifdef WIN32
-#include <mutex>
+#if PLATFORM_WINDOWS
 template <typename T>
 void AtomicAdd(T *address, T val) {
   static std::mutex mu;
