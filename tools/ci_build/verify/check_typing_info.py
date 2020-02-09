@@ -30,12 +30,6 @@ HELP_MESSAGE = (
 # TODO: add types and remove all elements from
 # the exception list.
 EXCEPTION_LIST = [
-    tensorflow_addons.losses.triplet_semihard_loss,
-    tensorflow_addons.losses.TripletSemiHardLoss,
-    tensorflow_addons.losses.npairs_loss,
-    tensorflow_addons.losses.NpairsLoss,
-    tensorflow_addons.losses.npairs_multilabel_loss,
-    tensorflow_addons.losses.NpairsMultilabelLoss,
 ]
 
 
