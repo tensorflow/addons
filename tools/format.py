@@ -30,11 +30,15 @@ def _run_format_and_flake8():
     if files_changed:
         print("Some files have changed.")
         print("Please do git add and git commit again")
-        exit(1)
     else:
-        print("No formatting needed. Running flake8.")
-        check_bash_call("flake8")
-        print("Done")
+        print("No formatting needed.")
+
+    print("Running flake8.")
+    check_bash_call("flake8")
+    print("Done")
+
+    if files_changed:
+        exit(1)
 
 
 def run_format_and_flake8():
