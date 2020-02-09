@@ -19,3 +19,21 @@ custom_op_library(
         "cc/kernels/correlation_cost_op_gpu.cu.cc",
     ],
 )
+
+custom_op_library(
+    name = "_deformable_conv2d_ops.so",
+    srcs = [
+        "cc/kernels/deformable_conv2d_utils.h",
+        "cc/kernels/deformable_conv_op.cc",
+        "cc/kernels/deformable_conv_op.h",
+        "cc/ops/deformable_conv2d.cc",
+    ],
+    cuda_deps = [
+        "@cub_archive//:cub",
+    ],
+    cuda_srcs = [
+        "cc/kernels/deformable_conv2d_utils.h",
+        "cc/kernels/deformable_conv_op.h",
+        "cc/kernels/deformable_conv_op_gpu.cu.cc",
+    ],
+)

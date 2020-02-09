@@ -6,6 +6,7 @@ py_library(
     name = "layers",
     srcs = [
         "__init__.py",
+        "deformable_conv2d.py",
         "gelu.py",
         "maxout.py",
         "multihead_attention.py",
@@ -20,6 +21,7 @@ py_library(
     ],
     data = [
         "//tensorflow_addons/custom_ops/layers:_correlation_cost_ops.so",
+        "//tensorflow_addons/custom_ops/layers:_deformable_conv2d_ops.so",
     ],
     deps = [
         "//tensorflow_addons/activations",
@@ -156,6 +158,12 @@ py_test(
         "multihead_attention_test.py",
     ],
     main = "multihead_attention_test.py",
+    name = "deformable_conv_test",
+    size = "small",
+    srcs = [
+        "deformable_conv2d_test.py",
+    ],
+    main = "deformable_conv2d_test.py",
     deps = [
         ":layers",
     ],
