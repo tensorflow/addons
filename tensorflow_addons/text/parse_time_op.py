@@ -23,7 +23,7 @@ _parse_time_so = LazySO("custom_ops/text/_parse_time_op.so")
 tf.no_gradient("Addons>ParseTime")
 
 
-def parse_time(time_string, time_format, output_unit):
+def parse_time(time_string: str, time_format: str, output_unit: str) -> str:
     """Parse an input string according to the provided format string into a
     Unix time.
 
