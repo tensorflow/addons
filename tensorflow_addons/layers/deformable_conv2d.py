@@ -19,10 +19,10 @@ from typeguard import typechecked
 from tensorflow_addons.utils.resource_loader import LazySO
 from tensorflow.python.keras.utils import conv_utils
 
-# _deformable_conv2d_ops_so = LazySO("custom_ops/layers/_deformable_conv2d_ops.so")
-_deformable_conv2d_ops_so = LazySO(
-    "/home/admin-seu/TempData/sss/custom_ops/deformable_conv2d_ops_new/deformable_conv2D.so"
-)
+_deformable_conv2d_ops_so = LazySO("custom_ops/layers/_deformable_conv2d_ops.so")
+# _deformable_conv2d_ops_so = LazySO(
+#    "/home/admin-seu/TempData/sss/custom_ops/deformable_conv2d_ops_new/deformable_conv2D.so"
+# )
 # _deformable_conv2d_ops_so = LazySO("/home/admin-seu/TempData/sss/SoftWare/addons/bazel-bin/tensorflow_addons/custom_ops/layers/_deformable_conv2d_ops.so")
 # _deformable_conv2d_ops_so = tf.load_op_library("custom_ops/layers/_deformable_conv2d_ops.so")
 
