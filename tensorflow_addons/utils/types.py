@@ -43,6 +43,4 @@ Activation = Union[None, str, Callable]
 
 TensorLike = Union[List[Union[Number, list]], tuple, Number, np.ndarray, tf.Tensor]
 FloatTensorLike = Union[tf.Tensor, float, np.float16, np.float32, np.float64]
-AcceptableDTypes = Union[
-    tf.DType, np.dtype, type, int, str, None, tf.lookup.KeyValueTensorInitializer
-]
+AcceptableDTypes = Union[tf.DType, np.dtype, type, int, str, None]

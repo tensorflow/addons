@@ -34,7 +34,7 @@ def skip_gram_sample(
     start: FloatTensorLike = 0,
     limit: FloatTensorLike = -1,
     emit_self_as_target: bool = False,
-    vocab_freq_table: AcceptableDTypes = None,
+    vocab_freq_table: tf.lookup.KeyValueTensorInitializer = None,
     vocab_min_count: Optional[FloatTensorLike] = None,
     vocab_subsampling: Optional[FloatTensorLike] = None,
     corpus_size: Optional[FloatTensorLike] = None,
