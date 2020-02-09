@@ -7,7 +7,6 @@
 #ifdef GOOGLE_CUDA
 #include "tensorflow/core/platform/stream_executor.h"
 #include "tensorflow/core/util/gpu_kernel_helper.h"
-#endif
 
 namespace tensorflow {
 namespace addons {
@@ -123,7 +122,6 @@ __device__ DType DmcnGetCoordinateWeight(DType argmax_h, DType argmax_w,
   return weight;
 }
 
-#ifdef GOOGLE_CUDA
 template <typename DType>
 __global__ void SwapAxisKernel(const int n, const int cuda_mem_size,
                                const int min_unit_size, DType *input_data,
