@@ -842,9 +842,8 @@ void LaunchBatchMatMul<CPUDevice, T>::launch(OpKernelContext *context,
   contract_pairs[0] = ContractionDims(adj_x, adj_y);
   auto &device = context->eigen_device<CPUDevice>();
   for (int i = 0; i < t_out.dimension(0); ++i) {
-    t_out.template chip<0>(i).device(device) =
-        (t_in_x.template chip<0>(i))
-            .template contract(t_in_y.template chip<0>(i), contract_pairs);
+    t_out.chip(i, 0).device(device) =
+        (t_in_x.chip(i, 0)).contract(t_in_y.chip(i, 0), contract_pairs);
   }
 }
 
