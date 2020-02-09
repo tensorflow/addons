@@ -16,13 +16,13 @@
 
 import tensorflow as tf
 
-from tensorflow_addons.utils.types import TensorLike, FloatTensorLike
+from tensorflow_addons.utils.types import TensorLike
 from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
-def npairs_loss(y_true: TensorLike, y_pred: TensorLike) -> FloatTensorLike:
+def npairs_loss(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
     """Computes the npairs loss between `y_true` and `y_pred`.
 
     Npairs loss expects paired data where a pair is composed of samples from
@@ -64,7 +64,7 @@ def npairs_loss(y_true: TensorLike, y_pred: TensorLike) -> FloatTensorLike:
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
-def npairs_multilabel_loss(y_true: TensorLike, y_pred: TensorLike) -> FloatTensorLike:
+def npairs_multilabel_loss(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
     r"""Computes the npairs loss between multilabel data `y_true` and `y_pred`.
 
     Npairs loss expects paired data where a pair is composed of samples from

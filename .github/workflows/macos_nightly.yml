@@ -25,22 +25,27 @@ jobs:
           bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
           bash -x -e tools/ci_testing/addons_cpu.sh
 
-  macos-nightly-bazel:
-    name: Bazel nightly for macOS
+  macos-nightly-wheel:
+    name: Build nightly wheels for macOS
     needs: [macos-cpu-nightly-test]
     runs-on: macos-latest
+    strategy:
+      matrix:
+        python-version: ['3.5', '3.6', '3.7']
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
         with:
-          python-version: 3.7
-      - name: Nightly build for macOS
+          python-version: ${{ matrix.python-version }}
+      - name: Build macOS wheels
         env:
           TF_NEED_CUDA: 0
         run: |
-          python --version
-          bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
+          python3 --version
+          python3 -m pip install delocate wheel setuptools
           python3 ./configure.py --quiet
+
+          bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
           bazel build \
             -c opt \
             --noshow_progress \
@@ -48,31 +53,6 @@ jobs:
             --verbose_failures \
             --test_output=errors \
             build_pip_pkg
-      - uses: actions/upload-artifact@v1
-        with:
-          name: ${{ runner.os }}-bazel-bin
-          path: bazel-bin
-
-  macos-nightly-wheel:
-    name: Build nightly wheels for macOS
-    needs: [macos-nightly-bazel]
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        python-version: ['3.5', '3.6', '3.7']
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/download-artifact@v1
-        with:
-          name: ${{ runner.os }}-bazel-bin
-          path: bazel-bin
-      - uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Build macOS wheels
-        run: |
-          chmod +x bazel-bin/build_pip_pkg
-          python3 -m pip install delocate wheel setuptools
 
           bazel-bin/build_pip_pkg artifacts --nightly
           for f in artifacts/*.whl; do

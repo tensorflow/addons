@@ -26,7 +26,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        python-version: ['3.7']
+        python-version: ['3.5']
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -42,7 +42,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: ['3.7']
+        python-version: ['3.5']
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
@@ -84,9 +84,9 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
         with:
-          python-version: '3.7'
+          python-version: '3.6'
       - name: install tensorflow and typeguard
-        run: pip install tensorflow-cpu typeguard
+        run: pip install tensorflow-cpu typeguard git+https://github.com/gabrieldemarmiesse/typed_api.git@0.1.1
       - name: install tf addons
         run: TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
       - name: Run type check
@@ -98,7 +98,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
         with:
-          python-version: '3.7'
+          python-version: '3.5'
       - name: Run filename check
         run: python tools/ci_build/verify/check_file_name.py
   valid_build_files:
@@ -112,7 +112,7 @@ jobs:
           version: $BAZEL_VERSION
       - uses: actions/setup-python@v1
         with:
-          python-version: '3.7'
+          python-version: '3.5'
       - name: Setup the environement
         run: |
           pip install tensorflow-cpu
@@ -137,8 +137,22 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: install buildifier
-        run: |
-          sudo wget -O /usr/local/bin/buildifier https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier
-          sudo chmod +x /usr/local/bin/buildifier
+        run: sudo bash tools/ci_build/install/buildifier.sh
       - name: Ensure contributor used "buildifier -r ./" before commit
         run: buildifier -mode=check -r ./
+  local-dev-tools:
+    name: Check that local dev tools work
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Checking the sanity check
+        run: bash tools/run_sanity_check.sh
+      - name: Checking the pre-commit
+        run: bash tools/pre-commit.sh
+  docs_tests:
+    name: Check that we can build the docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Building the docs
+        run: DOCKER_BUILDKIT=1 docker build -f tools/docker/sanity_check.Dockerfile --target=docs_tests ./
