@@ -29,8 +29,7 @@ HELP_MESSAGE = (
 
 # TODO: add types and remove all elements from
 # the exception list.
-EXCEPTION_LIST = [
-]
+EXCEPTION_LIST = []
 
 
 modules_list = []
