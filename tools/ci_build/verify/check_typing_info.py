@@ -30,26 +30,12 @@ HELP_MESSAGE = (
 # TODO: add types and remove all elements from
 # the exception list.
 EXCEPTION_LIST = [
-    tensorflow_addons.losses.lifted_struct_loss,
     tensorflow_addons.losses.triplet_semihard_loss,
-    tensorflow_addons.losses.LiftedStructLoss,
     tensorflow_addons.losses.TripletSemiHardLoss,
     tensorflow_addons.losses.npairs_loss,
     tensorflow_addons.losses.NpairsLoss,
     tensorflow_addons.losses.npairs_multilabel_loss,
     tensorflow_addons.losses.NpairsMultilabelLoss,
-    tensorflow_addons.text.crf_binary_score,
-    tensorflow_addons.text.crf_decode,
-    tensorflow_addons.text.crf_decode_backward,
-    tensorflow_addons.text.crf_decode_forward,
-    tensorflow_addons.text.crf_forward,
-    tensorflow_addons.text.crf_log_likelihood,
-    tensorflow_addons.text.crf_log_norm,
-    tensorflow_addons.text.crf_multitag_sequence_score,
-    tensorflow_addons.text.crf_sequence_score,
-    tensorflow_addons.text.crf_unary_score,
-    tensorflow_addons.text.viterbi_decode,
-    tensorflow_addons.text.parse_time,
 ]
 
 
