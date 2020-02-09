@@ -111,12 +111,6 @@ struct DeformableConv2DCol2ImCoord {
                   DType *grad_mask);
 };
 template <typename Device, typename DType>
-struct SwapAxis {
-  void operator()(const Device &d, DType *input_data,
-                  const TShape &origin_shape, const int axis_x,
-                  const int axis_y);
-};
-template <typename Device, typename DType>
 struct DeformableConv2DCol2Im {
   void operator()(const Device &d, const DType *data_col,
                   const DType *data_offset, const DType *data_mask,

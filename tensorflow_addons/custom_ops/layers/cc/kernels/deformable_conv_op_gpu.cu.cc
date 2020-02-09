@@ -762,7 +762,6 @@ template struct DeformableConv2DCol2ImCoord<GPUDevice, double>;
 template struct PureAddTo<GPUDevice, double>;
 template struct SetOne<GPUDevice, double>;
 template struct SetZeros<GPUDevice, double>;
-template struct SwapAxis<GPUDevice, double>;
 template struct SetNumAtIndex<GPUDevice, double>;
 
 template struct DeformableConv2DIm2Col<GPUDevice, float>;
@@ -771,7 +770,6 @@ template struct DeformableConv2DCol2ImCoord<GPUDevice, float>;
 template struct PureAddTo<GPUDevice, float>;
 template struct SetOne<GPUDevice, float>;
 template struct SetZeros<GPUDevice, float>;
-template struct SwapAxis<GPUDevice, float>;
 template struct SetNumAtIndex<GPUDevice, float>;
 template <typename T>
 se::DeviceMemory<T> AsDeviceMemory(const T *cuda_memory) {

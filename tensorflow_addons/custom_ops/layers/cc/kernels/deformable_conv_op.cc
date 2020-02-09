@@ -887,7 +887,6 @@ template struct DeformableConv2DCol2ImCoord<CPUDevice, double>;
 template struct PureAddTo<CPUDevice, double>;
 template struct SetOne<CPUDevice, double>;
 template struct SetZeros<CPUDevice, double>;
-template struct SwapAxis<CPUDevice, double>;
 template struct SetNumAtIndex<CPUDevice, double>;
 
 template struct DeformableConv2DIm2Col<CPUDevice, float>;
@@ -896,7 +895,6 @@ template struct DeformableConv2DCol2ImCoord<CPUDevice, float>;
 template struct PureAddTo<CPUDevice, float>;
 template struct SetOne<CPUDevice, float>;
 template struct SetZeros<CPUDevice, float>;
-template struct SwapAxis<CPUDevice, float>;
 template struct SetNumAtIndex<CPUDevice, float>;
 
 template struct LaunchBatchMatMul<CPUDevice, float>;
