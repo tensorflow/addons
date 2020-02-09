@@ -170,7 +170,7 @@ class DeformableConv2D(tf.keras.layers.Layer):
             strides=(1, 1),
             padding=self.padding,
             use_bias=True,
-            data_format=data_format,
+            data_format="channels_last",
         )
 
     def build(self, input_shape):
@@ -238,7 +238,10 @@ class DeformableConv2D(tf.keras.layers.Layer):
         :param kwargs:
         :return:
         """
-        weight_info = self.conv_offset(inputs)
+        if self.data_format == "channels_first":
+            weight_info = self.conv_offset(tf.transpose(inputs, [0, 2, 3, 1]))
+        else:
+            weight_info = self.conv_offset(inputs)
         tf_data_format = "NCHW"
         tf_padding = "VALID"
         if self.padding == "same":
@@ -249,7 +252,7 @@ class DeformableConv2D(tf.keras.layers.Layer):
             offset = tf.concat((o1, o2), axis=-1)
             mask = tf.sigmoid(mask)
         else:
-            o1, o2, mask = tf.split(weight_info, 3, axis=1)
+            o1, o2, mask = tf.split(tf.transpose(weight_info, [0, 3, 1, 2]), 3, axis=1)
             offset = tf.concat((o1, o2), axis=1)
             mask = tf.sigmoid(mask)
         result = _deformable_conv2d(
