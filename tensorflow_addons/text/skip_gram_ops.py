@@ -19,27 +19,30 @@ import tensorflow as tf
 
 from tensorflow_addons.utils.resource_loader import LazySO
 
+from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike, TensorLike
+from typing import Optional
+
 _skip_gram_so = LazySO("custom_ops/text/_skip_gram_ops.so")
 
 tf.no_gradient("Addons>SkipGramGenerateCandidates")
 
 
 def skip_gram_sample(
-    input_tensor,
-    min_skips=1,
-    max_skips=5,
-    start=0,
-    limit=-1,
-    emit_self_as_target=False,
-    vocab_freq_table=None,
-    vocab_min_count=None,
-    vocab_subsampling=None,
-    corpus_size=None,
-    batch_size=None,
-    batch_capacity=None,
-    seed=None,
-    name=None,
-):
+    input_tensor: TensorLike,
+    min_skips: FloatTensorLike = 1,
+    max_skips: FloatTensorLike = 5,
+    start: FloatTensorLike = 0,
+    limit: FloatTensorLike = -1,
+    emit_self_as_target: bool = False,
+    vocab_freq_table: tf.lookup.KeyValueTensorInitializer = None,
+    vocab_min_count: Optional[FloatTensorLike] = None,
+    vocab_subsampling: Optional[FloatTensorLike] = None,
+    corpus_size: Optional[FloatTensorLike] = None,
+    batch_size: Optional[FloatTensorLike] = None,
+    batch_capacity: Optional[FloatTensorLike] = None,
+    seed: Optional[FloatTensorLike] = None,
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Generates skip-gram token and label paired Tensors from the input
     tensor.
 
@@ -206,26 +209,26 @@ def skip_gram_sample(
 
 
 def skip_gram_sample_with_text_vocab(
-    input_tensor,
-    vocab_freq_file,
-    vocab_token_index=0,
-    vocab_token_dtype=tf.dtypes.string,
-    vocab_freq_index=1,
-    vocab_freq_dtype=tf.dtypes.float64,
-    vocab_delimiter=",",
-    vocab_min_count=0,
-    vocab_subsampling=None,
-    corpus_size=None,
-    min_skips=1,
-    max_skips=5,
-    start=0,
-    limit=-1,
-    emit_self_as_target=False,
-    batch_size=None,
-    batch_capacity=None,
-    seed=None,
-    name=None,
-):
+    input_tensor: TensorLike,
+    vocab_freq_file: str,
+    vocab_token_index: FloatTensorLike = 0,
+    vocab_token_dtype: Optional[AcceptableDTypes] = tf.dtypes.string,
+    vocab_freq_index: FloatTensorLike = 1,
+    vocab_freq_dtype: Optional[AcceptableDTypes] = tf.dtypes.float64,
+    vocab_delimiter: str = ",",
+    vocab_min_count: Optional[FloatTensorLike] = None,
+    vocab_subsampling: Optional[FloatTensorLike] = None,
+    corpus_size: Optional[FloatTensorLike] = None,
+    min_skips: FloatTensorLike = 1,
+    max_skips: FloatTensorLike = 5,
+    start: FloatTensorLike = 0,
+    limit: FloatTensorLike = -1,
+    emit_self_as_target: bool = False,
+    batch_size: Optional[FloatTensorLike] = None,
+    batch_capacity: Optional[FloatTensorLike] = None,
+    seed: Optional[FloatTensorLike] = None,
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Skip-gram sampling with a text vocabulary file.
 
     Wrapper around `skip_gram_sample()` for use with a text vocabulary file.
