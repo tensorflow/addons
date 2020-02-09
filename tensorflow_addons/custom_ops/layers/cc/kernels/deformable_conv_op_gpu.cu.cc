@@ -987,7 +987,7 @@ template struct DeformablePSROIPoolForward<GPUDevice, float>;
 template struct DeformablePSROIPoolForward<GPUDevice, double>;
 template struct DeformablePSROIPoolBackwardKernel<GPUDevice, float>;
 template struct DeformablePSROIPoolBackwardKernel<GPUDevice, double>;
-#endif
 }  // namespace functor
 }  // namespace addons
 }  // namespace tensorflow
+#endif
