@@ -38,20 +38,8 @@ EXCEPTION_LIST = [
     tensorflow_addons.losses.NpairsLoss,
     tensorflow_addons.losses.npairs_multilabel_loss,
     tensorflow_addons.losses.NpairsMultilabelLoss,
-    tensorflow_addons.text.crf_binary_score,
-    tensorflow_addons.text.crf_decode,
-    tensorflow_addons.text.crf_decode_backward,
-    tensorflow_addons.text.crf_decode_forward,
-    tensorflow_addons.text.crf_forward,
-    tensorflow_addons.text.crf_log_likelihood,
-    tensorflow_addons.text.crf_log_norm,
-    tensorflow_addons.text.crf_multitag_sequence_score,
-    tensorflow_addons.text.crf_sequence_score,
-    tensorflow_addons.text.crf_unary_score,
-    tensorflow_addons.text.viterbi_decode,
     tensorflow_addons.text.skip_gram_sample,
     tensorflow_addons.text.skip_gram_sample_with_text_vocab,
-    tensorflow_addons.text.parse_time,
 ]
 
 
