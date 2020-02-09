@@ -49,8 +49,6 @@ EXCEPTION_LIST = [
     tensorflow_addons.text.crf_sequence_score,
     tensorflow_addons.text.crf_unary_score,
     tensorflow_addons.text.viterbi_decode,
-    tensorflow_addons.text.skip_gram_sample,
-    tensorflow_addons.text.skip_gram_sample_with_text_vocab,
     tensorflow_addons.text.parse_time,
 ]
 
