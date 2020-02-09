@@ -6,6 +6,7 @@ py_library(
     name = "layers",
     srcs = [
         "__init__.py",
+        "deformable_conv2d.py",
         "gelu.py",
         "maxout.py",
         "normalizations.py",
@@ -18,6 +19,7 @@ py_library(
     ],
     data = [
         "//tensorflow_addons/custom_ops/layers:_correlation_cost_ops.so",
+        "//tensorflow_addons/custom_ops/layers:_deformable_conv2d_ops.so",
     ],
     deps = [
         "//tensorflow_addons/activations",
@@ -120,6 +122,18 @@ py_test(
         "optical_flow_test.py",
     ],
     main = "optical_flow_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "deformable_conv_test",
+    size = "small",
+    srcs = [
+        "deformable_conv2d_test.py",
+    ],
+    main = "deformable_conv2d_test.py",
     deps = [
         ":layers",
     ],
