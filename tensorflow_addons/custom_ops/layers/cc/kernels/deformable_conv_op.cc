@@ -121,7 +121,15 @@ typedef Eigen::ThreadPoolDevice CPUDevice;
 Eigen::IndexPair<Eigen::DenseIndex> ContractionDims(bool adj_x, bool adj_y) {
   return {adj_x ? 0 : 1, adj_y ? 1 : 0};
 }
-
+#ifdef PLATFORM_WINDOWS
+#include <mutex>
+template <typename T>
+void AtomicAdd(T *address, T val) {
+  static std::mutex mu;
+  std::lock_guard<std::mutex> lk(mu);
+  *address += val;
+}
+#else
 void AtomicAdd(float *address, float val) {
   auto *address_as_ull = reinterpret_cast<uInt *>(address);
   uInt old = *address_as_ull;
@@ -147,6 +155,7 @@ void AtomicAdd(double *address, double val) {
                                       *reinterpret_cast<ull *>(&desired));
   } while (assumed != old);
 }
+#endif
 
 template <typename DType>
 void SwapAxisKernel(const CPUDevice &d, const int n, const int cuda_mem_size,
