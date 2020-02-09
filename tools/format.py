@@ -46,6 +46,7 @@ def run_format_and_flake8():
         _run_format_and_flake8()
     except CalledProcessError as error:
         print("Pre-commit returned exit code", error.returncode)
+        exit(error.returncode)
 
 
 if __name__ == "__main__":
