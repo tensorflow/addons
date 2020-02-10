@@ -14,10 +14,6 @@ exclude = '''
     | build
     | dist
   )/
-  | tensorflow_addons/activations/rrelu.py
-  | tensorflow_addons/activations/rrelu_test.py
-  | tensorflow_addons/image/filters.py
-  | tensorflow_addons/image/filters_test.py
   | tensorflow_addons/layers/normalizations.py
   | tensorflow_addons/layers/normalizations_test.py
   | tensorflow_addons/layers/wrappers.py
