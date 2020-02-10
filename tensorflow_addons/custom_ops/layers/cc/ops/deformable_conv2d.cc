@@ -1,6 +1,3 @@
-//
-// Created by 孙嘉禾 on 2019/12/31.
-//
 
 #include <algorithm>
 #include <cmath>
