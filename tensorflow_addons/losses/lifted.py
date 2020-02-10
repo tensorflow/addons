@@ -17,10 +17,16 @@
 import tensorflow as tf
 from tensorflow_addons.losses import metric_learning
 
+from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
+from typeguard import typechecked
+from typing import Optional
+
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
-def lifted_struct_loss(labels, embeddings, margin=1.0):
+def lifted_struct_loss(
+    labels: TensorLike, embeddings: TensorLike, margin: FloatTensorLike = 1.0
+) -> tf.Tensor:
     """Computes the lifted structured loss.
 
     Args:
@@ -120,7 +126,10 @@ class LiftedStructLoss(tf.keras.losses.Loss):
       name: Optional name for the op.
     """
 
-    def __init__(self, margin=1.0, name=None, **kwargs):
+    @typechecked
+    def __init__(
+        self, margin: FloatTensorLike = 1.0, name: Optional[str] = None, **kwargs
+    ):
         super().__init__(name=name, reduction=tf.keras.losses.Reduction.NONE)
         self.margin = margin
 

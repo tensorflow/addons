@@ -15,6 +15,10 @@
 """Implements F scores."""
 
 import tensorflow as tf
+from typeguard import typechecked
+
+from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
+from typing import Optional
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -64,16 +68,18 @@ class FBetaScore(tf.keras.metrics.Metric):
             number of true instances in each class.
     """
 
+    @typechecked
     def __init__(
         self,
-        num_classes,
-        average=None,
-        beta=1.0,
-        threshold=None,
-        name="fbeta_score",
-        dtype=tf.float32,
+        num_classes: FloatTensorLike,
+        average: Optional[str] = None,
+        beta: FloatTensorLike = 1.0,
+        threshold: Optional[FloatTensorLike] = None,
+        name: str = "fbeta_score",
+        dtype: AcceptableDTypes = None,
+        **kwargs
     ):
-        super().__init__(name=name)
+        super().__init__(name=name, dtype=dtype)
 
         if average not in (None, "micro", "macro", "weighted"):
             raise ValueError(
@@ -224,13 +230,15 @@ class F1Score(FBetaScore):
             number of true instances in each class.
     """
 
+    @typechecked
     def __init__(
         self,
-        num_classes,
-        average=None,
-        threshold=None,
-        name="f1_score",
-        dtype=tf.float32,
+        num_classes: FloatTensorLike,
+        average: str = None,
+        threshold: Optional[FloatTensorLike] = None,
+        name: str = "f1_score",
+        dtype: AcceptableDTypes = None,
+        **kwargs
     ):
         super().__init__(num_classes, average, 1.0, threshold, name=name, dtype=dtype)
 

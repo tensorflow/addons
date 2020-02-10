@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Additional RNN cells that corform to Keras API."""
 
-from tensorflow_addons.rnn.cell import LayerNormLSTMCell
-from tensorflow_addons.rnn.cell import NASCell
-from tensorflow_addons.rnn.cell import LayerNormSimpleRNNCell
+wget -O /usr/local/bin/buildifier https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier
+chmod +x /usr/local/bin/buildifier

@@ -25,9 +25,9 @@ SEED = 111111
 
 @test_utils.run_all_in_graph_and_eager_modes
 class RreluTest(tf.test.TestCase, parameterized.TestCase):
-    @parameterized.named_parameters(("float16", np.float16),
-                                    ("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(
+        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
+    )
     def test_rrelu(self, dtype):
         x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
         lower = 0.1
@@ -46,12 +46,15 @@ class RreluTest(tf.test.TestCase, parameterized.TestCase):
                     expect_result = training_results.get(dtype)
                 else:
                     expect_result = [
-                        -0.30000001192092896, -0.15000000596046448, 0, 1, 2
+                        -0.30000001192092896,
+                        -0.15000000596046448,
+                        0,
+                        1,
+                        2,
                     ]
                 self.assertAllCloseAccordingToType(result, expect_result)
 
-    @parameterized.named_parameters(("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
     def test_theoretical_gradients(self, dtype):
         if tf.executing_eagerly():
 
@@ -69,9 +72,11 @@ class RreluTest(tf.test.TestCase, parameterized.TestCase):
             for training in [True, False]:
                 with self.subTest(training=training):
                     theoretical, numerical = tf.test.compute_gradient(
-                        rrelu_wrapper(lower, upper, training), [x])
+                        rrelu_wrapper(lower, upper, training), [x]
+                    )
                     self.assertAllCloseAccordingToType(
-                        theoretical, numerical, rtol=5e-4, atol=5e-4)
+                        theoretical, numerical, rtol=5e-4, atol=5e-4
+                    )
 
 
 # TODO: Benchmark fails for windows builds #839

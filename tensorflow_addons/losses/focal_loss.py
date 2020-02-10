@@ -17,7 +17,7 @@
 import tensorflow as tf
 import tensorflow.keras.backend as K
 
-from tensorflow_addons.utils.types import TensorLike, Number
+from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 from typeguard import typechecked
 
 
@@ -64,11 +64,12 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
         ValueError: If the shape of `sample_weight` is invalid or value of
           `gamma` is less than zero
     """
+
     @typechecked
     def __init__(self,
                  from_logits: bool = False,
-                 alpha: Number = 0.25,
-                 gamma: Number = 2.0,
+                 alpha: FloatTensorLike = 0.25,
+                 gamma: FloatTensorLike = 2.0,
                  reduction: str = tf.keras.losses.Reduction.NONE,
                  name: str = 'sigmoid_focal_crossentropy'):
         super().__init__(name=name, reduction=reduction)
@@ -101,8 +102,8 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
 @tf.function
 def sigmoid_focal_crossentropy(y_true: TensorLike,
                                y_pred: TensorLike,
-                               alpha: Number = 0.25,
-                               gamma: Number = 2.0,
+                               alpha: FloatTensorLike = 0.25,
+                               gamma: FloatTensorLike = 2.0,
                                from_logits: bool = False) -> tf.Tensor:
     """
     Args

@@ -21,8 +21,12 @@ from tensorflow_addons.utils.types import TensorLike, FloatTensorLike
 from typing import Optional, Union, List, Tuple
 
 
-def _pad(image: TensorLike, filter_shape: Union[List[int], Tuple[int]], mode: str = "CONSTANT",
-         constant_values: TensorLike = 0) -> tf.Tensor:
+def _pad(
+    image: TensorLike,
+    filter_shape: Union[List[int], Tuple[int]],
+    mode: str = "CONSTANT",
+    constant_values: TensorLike = 0,
+) -> tf.Tensor:
     """Explicitly pad a 4-D image.
 
     Equivalent to the implicit padding method offered in `tf.nn.conv2d` and
@@ -52,11 +56,13 @@ def _pad(image: TensorLike, filter_shape: Union[List[int], Tuple[int]], mode: st
 
 
 @tf.function
-def mean_filter2d(image: TensorLike,
-                  filter_shape: Union[List[int], Tuple[int]] = [3, 3],
-                  padding: str = "REFLECT",
-                  constant_values: TensorLike = 0,
-                  name: Optional[str] = None) -> tf.Tensor:
+def mean_filter2d(
+    image: TensorLike,
+    filter_shape: Union[List[int], Tuple[int]] = [3, 3],
+    padding: str = "REFLECT",
+    constant_values: TensorLike = 0,
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Perform mean filtering on image(s).
 
     Args:
@@ -87,11 +93,10 @@ def mean_filter2d(image: TensorLike,
 
         if padding not in ["REFLECT", "CONSTANT", "SYMMETRIC"]:
             raise ValueError(
-                "padding should be one of \"REFLECT\", \"CONSTANT\", or "
-                "\"SYMMETRIC\".")
+                'padding should be one of "REFLECT", "CONSTANT", or ' '"SYMMETRIC".'
+            )
 
-        filter_shape = keras_utils.normalize_tuple(filter_shape, 2,
-                                                   "filter_shape")
+        filter_shape = keras_utils.normalize_tuple(filter_shape, 2, "filter_shape")
 
         # Keep the precision if it's float;
         # otherwise, convert to float32 for computing.
@@ -100,18 +105,17 @@ def mean_filter2d(image: TensorLike,
             image = tf.dtypes.cast(image, tf.dtypes.float32)
 
         # Explicitly pad the image
-        image = _pad(
-            image, filter_shape, mode=padding, constant_values=constant_values)
+        image = _pad(image, filter_shape, mode=padding, constant_values=constant_values)
 
         # Filter of shape (filter_width, filter_height, in_channels, 1)
         # has the value of 1 for each element.
-        area = tf.constant(
-            filter_shape[0] * filter_shape[1], dtype=image.dtype)
+        area = tf.constant(filter_shape[0] * filter_shape[1], dtype=image.dtype)
         filter_shape += (tf.shape(image)[-1], 1)
         kernel = tf.ones(shape=filter_shape, dtype=image.dtype)
 
         output = tf.nn.depthwise_conv2d(
-            image, kernel, strides=(1, 1, 1, 1), padding="VALID")
+            image, kernel, strides=(1, 1, 1, 1), padding="VALID"
+        )
 
         output /= area
 
@@ -120,11 +124,13 @@ def mean_filter2d(image: TensorLike,
 
 
 @tf.function
-def median_filter2d(image: TensorLike,
-                    filter_shape: Union[List[int], Tuple[int]] = [3, 3],
-                    padding: str = "REFLECT",
-                    constant_values: FloatTensorLike = 0,
-                    name: Optional[str] = None) -> tf.Tensor:
+def median_filter2d(
+    image: TensorLike,
+    filter_shape: Union[List[int], Tuple[int]] = [3, 3],
+    padding: str = "REFLECT",
+    constant_values: FloatTensorLike = 0,
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Perform median filtering on image(s).
 
     Args:
@@ -155,11 +161,10 @@ def median_filter2d(image: TensorLike,
 
         if padding not in ["REFLECT", "CONSTANT", "SYMMETRIC"]:
             raise ValueError(
-                "padding should be one of \"REFLECT\", \"CONSTANT\", or "
-                "\"SYMMETRIC\".")
+                'padding should be one of "REFLECT", "CONSTANT", or ' '"SYMMETRIC".'
+            )
 
-        filter_shape = keras_utils.normalize_tuple(filter_shape, 2,
-                                                   "filter_shape")
+        filter_shape = keras_utils.normalize_tuple(filter_shape, 2, "filter_shape")
 
         image_shape = tf.shape(image)
         batch_size = image_shape[0]
@@ -168,8 +173,7 @@ def median_filter2d(image: TensorLike,
         channels = image_shape[3]
 
         # Explicitly pad the image
-        image = _pad(
-            image, filter_shape, mode=padding, constant_values=constant_values)
+        image = _pad(image, filter_shape, mode=padding, constant_values=constant_values)
 
         area = filter_shape[0] * filter_shape[1]
 
@@ -181,10 +185,10 @@ def median_filter2d(image: TensorLike,
             sizes=[1, filter_shape[0], filter_shape[1], 1],
             strides=[1, 1, 1, 1],
             rates=[1, 1, 1, 1],
-            padding="VALID")
+            padding="VALID",
+        )
 
-        patches = tf.reshape(
-            patches, shape=[batch_size, height, width, area, channels])
+        patches = tf.reshape(patches, shape=[batch_size, height, width, area, channels])
 
         patches = tf.transpose(patches, [0, 1, 2, 4, 3])
 
@@ -195,8 +199,7 @@ def median_filter2d(image: TensorLike,
         if area % 2 == 1:
             median = top[:, :, :, :, floor - 1]
         else:
-            median = (
-                top[:, :, :, :, floor - 1] + top[:, :, :, :, ceil - 1]) / 2
+            median = (top[:, :, :, :, floor - 1] + top[:, :, :, :, ceil - 1]) / 2
 
         output = tf.cast(median, image.dtype)
         output = img_utils.from_4D_image(output, original_ndims)

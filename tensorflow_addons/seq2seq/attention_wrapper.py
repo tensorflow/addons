@@ -23,6 +23,15 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.utils import keras_utils
+from tensorflow_addons.utils.types import (
+    AcceptableDTypes,
+    FloatTensorLike,
+    TensorLike,
+    Initializer,
+)
+
+from typeguard import typechecked
+from typing import Optional, Callable
 
 # TODO: Find public API alternatives to these
 from tensorflow.python.keras.engine import base_layer_utils
@@ -523,15 +532,16 @@ class LuongAttention(_BaseAttentionMechanism):
     `scale=True`.
     """
 
+    @typechecked
     def __init__(
         self,
-        units,
-        memory=None,
-        memory_sequence_length=None,
-        scale=False,
-        probability_fn="softmax",
-        dtype=None,
-        name="LuongAttention",
+        units: TensorLike,
+        memory: Optional[TensorLike] = None,
+        memory_sequence_length: Optional[TensorLike] = None,
+        scale: bool = False,
+        probability_fn: str = "softmax",
+        dtype: AcceptableDTypes = None,
+        name: str = "LuongAttention",
         **kwargs
     ):
         """Construct the AttentionMechanism mechanism.
@@ -699,16 +709,17 @@ class BahdanauAttention(_BaseAttentionMechanism):
     `normalize=True`.
     """
 
+    @typechecked
     def __init__(
         self,
-        units,
-        memory=None,
-        memory_sequence_length=None,
-        normalize=False,
-        probability_fn="softmax",
-        kernel_initializer="glorot_uniform",
-        dtype=None,
-        name="BahdanauAttention",
+        units: TensorLike,
+        memory: Optional[TensorLike] = None,
+        memory_sequence_length: Optional[TensorLike] = None,
+        normalize: bool = False,
+        probability_fn: str = "softmax",
+        kernel_initializer: Initializer = "glorot_uniform",
+        dtype: AcceptableDTypes = None,
+        name: str = "BahdanauAttention",
         **kwargs
     ):
         """Construct the Attention mechanism.
@@ -839,7 +850,7 @@ class BahdanauAttention(_BaseAttentionMechanism):
         return cls(**config)
 
 
-def safe_cumprod(x, *args, **kwargs):
+def safe_cumprod(x: TensorLike, *args, **kwargs) -> tf.Tensor:
     """Computes cumprod of x in logspace using cumsum to avoid underflow.
 
     The cumprod function and its gradient can result in numerical instabilities
@@ -863,7 +874,9 @@ def safe_cumprod(x, *args, **kwargs):
         )
 
 
-def monotonic_attention(p_choose_i, previous_attention, mode):
+def monotonic_attention(
+    p_choose_i: FloatTensorLike, previous_attention: FloatTensorLike, mode: str
+) -> tf.Tensor:
     """Compute monotonic attention distribution from choosing probabilities.
 
     Monotonic attention implies that the input sequence is processed in an
@@ -1054,19 +1067,20 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
     ICML 2017.  https://arxiv.org/abs/1704.00784
     """
 
+    @typechecked
     def __init__(
         self,
-        units,
-        memory=None,
-        memory_sequence_length=None,
-        normalize=False,
-        sigmoid_noise=0.0,
-        sigmoid_noise_seed=None,
-        score_bias_init=0.0,
-        mode="parallel",
-        kernel_initializer="glorot_uniform",
-        dtype=None,
-        name="BahdanauMonotonicAttention",
+        units: TensorLike,
+        memory: Optional[TensorLike] = None,
+        memory_sequence_length: Optional[TensorLike] = None,
+        normalize: bool = False,
+        sigmoid_noise: FloatTensorLike = 0.0,
+        sigmoid_noise_seed: Optional[FloatTensorLike] = None,
+        score_bias_init: FloatTensorLike = 0.0,
+        mode: str = "parallel",
+        kernel_initializer: Initializer = "glorot_uniform",
+        dtype: AcceptableDTypes = None,
+        name: str = "BahdanauMonotonicAttention",
         **kwargs
     ):
         """Construct the Attention mechanism.
@@ -1237,18 +1251,19 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
     ICML 2017.](https://arxiv.org/abs/1704.00784)
     """
 
+    @typechecked
     def __init__(
         self,
-        units,
-        memory=None,
-        memory_sequence_length=None,
-        scale=False,
-        sigmoid_noise=0.0,
-        sigmoid_noise_seed=None,
-        score_bias_init=0.0,
-        mode="parallel",
-        dtype=None,
-        name="LuongMonotonicAttention",
+        units: TensorLike,
+        memory: Optional[TensorLike] = None,
+        memory_sequence_length: Optional[TensorLike] = None,
+        scale: bool = False,
+        sigmoid_noise: FloatTensorLike = 0.0,
+        sigmoid_noise_seed: Optional[FloatTensorLike] = None,
+        score_bias_init: FloatTensorLike = 0.0,
+        mode: str = "parallel",
+        dtype: AcceptableDTypes = None,
+        name: str = "LuongMonotonicAttention",
         **kwargs
     ):
         """Construct the Attention mechanism.
@@ -1537,7 +1552,7 @@ def _maybe_mask_score(
     return tf.where(memory_mask, score, score_mask_values)
 
 
-def hardmax(logits, name=None):
+def hardmax(logits: TensorLike, name: Optional[str] = None) -> tf.Tensor:
     """Returns batched one-hot vectors.
 
     The depth index containing the `1` is that of the maximum logit value.
@@ -1598,18 +1613,19 @@ def _compute_attention(
 class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
     """Wraps another `RNNCell` with attention."""
 
+    @typechecked
     def __init__(
         self,
-        cell,
-        attention_mechanism,
-        attention_layer_size=None,
-        alignment_history=False,
-        cell_input_fn=None,
-        output_attention=True,
-        initial_cell_state=None,
-        name=None,
-        attention_layer=None,
-        attention_fn=None,
+        cell: tf.keras.layers.Layer,
+        attention_mechanism: tf.keras.layers.Layer,
+        attention_layer_size: Optional[FloatTensorLike] = None,
+        alignment_history: bool = False,
+        cell_input_fn: Optional[Callable] = None,
+        output_attention: bool = True,
+        initial_cell_state: Optional[TensorLike] = None,
+        name: Optional[str] = None,
+        attention_layer: Optional[tf.keras.layers.Layer] = None,
+        attention_fn: Optional[Callable] = None,
         **kwargs
     ):
         """Construct the `AttentionWrapper`.

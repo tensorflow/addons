@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-#
-# Usage: install_ci_dependency.sh [--quiet]
-#
 
 
-python3 -m pip install black
+wget -O /usr/local/bin/clang-format-9 https://github.com/DoozyX/clang-format-lint-action/raw/master/clang-format/clang-format9
+chmod +x /usr/local/bin/clang-format-9
