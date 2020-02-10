@@ -14,10 +14,6 @@ exclude = '''
     | build
     | dist
   )/
-  | tensorflow_addons/activations/rrelu.py
-  | tensorflow_addons/activations/rrelu_test.py
-  | tensorflow_addons/image/filters.py
-  | tensorflow_addons/image/filters_test.py
   | tensorflow_addons/losses/__init__.py
   | tensorflow_addons/losses/focal_loss.py
   | tensorflow_addons/losses/giou_loss.py
