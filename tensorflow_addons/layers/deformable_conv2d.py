@@ -20,11 +20,6 @@ from tensorflow_addons.utils.resource_loader import LazySO
 from tensorflow.python.keras.utils import conv_utils
 
 _deformable_conv2d_ops_so = LazySO("custom_ops/layers/_deformable_conv2d_ops.so")
-# _deformable_conv2d_ops_so = LazySO(
-#    "/home/admin-seu/TempData/sss/custom_ops/deformable_conv2d_ops_new/deformable_conv2D.so"
-# )
-# _deformable_conv2d_ops_so = LazySO("/home/admin-seu/TempData/sss/SoftWare/addons/bazel-bin/tensorflow_addons/custom_ops/layers/_deformable_conv2d_ops.so")
-# _deformable_conv2d_ops_so = tf.load_op_library("custom_ops/layers/_deformable_conv2d_ops.so")
 
 
 def _deformable_conv2d(
@@ -137,7 +132,7 @@ def _deformable_conv2d_back_prop(op, grad):
     return data_grad  # List of 4 Tensor, since we have 4 input
 
 
-# @tf.keras.utils.register_keras_serializable(package="Addons")
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class DeformableConv2D(tf.keras.layers.Layer):
     @typechecked
     def __init__(
@@ -320,7 +315,7 @@ def _deformable_psroi_pool_back_prop(op, *grad):
     return [data_grad[0], tf.zeros_like(bbox), data_grad[1]]
 
 
-# @tf.keras.utils.register_keras_serializable(package="Addons")
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class DeformablePSROIAlign(tf.keras.layers.Layer):
     def __init__(
         self,
