@@ -42,9 +42,11 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
         model.add(tf.keras.layers.Dense(1))
         model.add(tf.keras.layers.Activation("sigmoid"))
+        model.compile(loss = 'binary_crossentropy', optimizer = tf.keras.optimizers.SGD)
 
         model.fit(train_x, train_y, batch_size=64, epochs=1)
 
+    @test_utils.run_in_graph_and_eager_modes
     def test_distributed_2(self):
 
         train, test = tf.keras.datasets.cifar100.load_data()
@@ -67,6 +69,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         model.add(tf.keras.layers.Dense(1))
         model.add(tf.keras.layers.Activation("sigmoid"))
 
+        model.compile(loss='binary_crossentropy', optimizer = tf.keras.optimizers.SGD)
         model.fit(train_x, train_y, batch_size=64, epochs=1)
 
 
