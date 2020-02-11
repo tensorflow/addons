@@ -24,7 +24,7 @@ from typeguard import typechecked
 from typing import Optional
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class CohenKappa(Metric):
     """Computes Kappa score between two raters.
 
@@ -63,14 +63,16 @@ class CohenKappa(Metric):
     """
 
     @typechecked
-    def __init__(self,
-                 num_classes: FloatTensorLike,
-                 name: str = 'cohen_kappa',
-                 weightage: Optional[str] = None,
-                 sparse_labels: bool = False,
-                 regression: bool = False,
-                 dtype: AcceptableDTypes = None,
-                 **kwargs):
+    def __init__(
+        self,
+        num_classes: FloatTensorLike,
+        name: str = "cohen_kappa",
+        weightage: Optional[str] = None,
+        sparse_labels: bool = False,
+        regression: bool = False,
+        dtype: AcceptableDTypes = None,
+        **kwargs
+    ):
         """Creates a `CohenKappa` instance.
 
         Args:
@@ -94,7 +96,7 @@ class CohenKappa(Metric):
         """
         super().__init__(name=name, dtype=dtype)
 
-        if weightage not in (None, 'linear', 'quadratic'):
+        if weightage not in (None, "linear", "quadratic"):
             raise ValueError("Unknown kappa weighting type.")
 
         if num_classes == 2:
@@ -102,18 +104,21 @@ class CohenKappa(Metric):
         elif num_classes > 2:
             self._update = self._update_multi_class_model
         else:
-            raise ValueError("""Number of classes must be
-                              greater than or euqal to two""")
+            raise ValueError(
+                """Number of classes must be
+                              greater than or euqal to two"""
+            )
 
         self.weightage = weightage
         self.num_classes = num_classes
         self.regression = regression
         self.sparse_labels = sparse_labels
         self.conf_mtx = self.add_weight(
-            'conf_mtx',
+            "conf_mtx",
             shape=(self.num_classes, self.num_classes),
             initializer=tf.keras.initializers.zeros,
-            dtype=tf.float32)
+            dtype=tf.float32,
+        )
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         """Accumulates the confusion matrix condition statistics.
@@ -166,7 +171,8 @@ class CohenKappa(Metric):
             predictions=y_pred,
             num_classes=self.num_classes,
             weights=sample_weight,
-            dtype=tf.float32)
+            dtype=tf.float32,
+        )
 
         return self.conf_mtx.assign_add(new_conf_mtx)
 
@@ -182,7 +188,7 @@ class CohenKappa(Metric):
             weight_mtx += tf.cast(tf.range(nb_ratings), dtype=tf.float32)
             weight_mtx = tf.cast(weight_mtx, dtype=self.dtype)
 
-            if self.weightage == 'linear':
+            if self.weightage == "linear":
                 weight_mtx = tf.abs(weight_mtx - tf.transpose(weight_mtx))
             else:
                 weight_mtx = tf.pow((weight_mtx - tf.transpose(weight_mtx)), 2)
@@ -209,7 +215,8 @@ class CohenKappa(Metric):
         return tf.cond(
             tf.math.is_nan(denominator),
             true_fn=lambda: 0.0,
-            false_fn=lambda: 1 - (numerator / denominator))
+            false_fn=lambda: 1 - (numerator / denominator),
+        )
 
     def get_config(self):
         """Returns the serializable config of the metric."""
@@ -218,7 +225,7 @@ class CohenKappa(Metric):
             "num_classes": self.num_classes,
             "weightage": self.weightage,
             "sparse_labels": self.sparse_labels,
-            "regression": self.regression
+            "regression": self.regression,
         }
         base_config = super().get_config()
         return {**base_config, **config}
@@ -229,5 +236,5 @@ class CohenKappa(Metric):
         for v in self.variables:
             K.set_value(
                 v,
-                np.zeros((self.num_classes, self.num_classes),
-                         v.dtype.as_numpy_dtype))
+                np.zeros((self.num_classes, self.num_classes), v.dtype.as_numpy_dtype),
+            )
