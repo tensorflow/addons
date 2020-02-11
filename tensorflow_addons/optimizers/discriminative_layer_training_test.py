@@ -139,7 +139,7 @@ def _zipped_permutes():
         # we also assume that if it works for conv2d, it should work for conv3d by extension
         # apply the same extension logic for all layers tested and it should cover maybe 90% of layers in use?
         toy_cnn,
-        toy_rnn,
+        # toy_rnn,
     ]
     losses = [
         # additional loss types do not need to be tested
