@@ -32,11 +32,6 @@ _DEFAULT_CUDNN_VERSION = "7"
 _DEFAULT_CUDNN_PATH = "/usr/lib/x86_64-linux-gnu"
 
 _TFA_BAZELRC = ".bazelrc"
-_TF_NEED_CUDA = os.getenv("TF_NEED_CUDA")
-_TF_CUDA_VERSION = os.getenv("TF_CUDA_VERSION")
-_CUDA_TOOLKIT_PATH = os.getenv("CUDA_TOOLKIT_PATH")
-_TF_CUDNN_VERSION = os.getenv("TF_CUDNN_VERSION")
-_CUDNN_INSTALL_PATH = os.getenv("CUDNN_INSTALL_PATH")
 
 
 # Writes variables to bazelrc file
@@ -150,6 +145,7 @@ def create_build_configuration():
     write_to_bazelrc("build --strategy=Genrule=standalone")
     write_to_bazelrc("build -c opt")
 
+    _TF_NEED_CUDA = os.getenv("TF_NEED_CUDA")
 
     while _TF_NEED_CUDA is None:
         print()
@@ -164,6 +160,10 @@ def create_build_configuration():
             print("Invalid selection:", answer)
 
     if _TF_NEED_CUDA == "1":
+        _TF_CUDA_VERSION = os.getenv("TF_CUDA_VERSION")
+        _CUDA_TOOLKIT_PATH = os.getenv("CUDA_TOOLKIT_PATH")
+        _TF_CUDNN_VERSION = os.getenv("TF_CUDNN_VERSION")
+        _CUDNN_INSTALL_PATH = os.getenv("CUDNN_INSTALL_PATH")
         print()
         print("Configuring GPU setup...")
 
