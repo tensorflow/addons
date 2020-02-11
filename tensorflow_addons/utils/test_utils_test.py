@@ -18,10 +18,10 @@ import tensorflow as tf
 import numpy as np
 from tensorflow_addons.utils import test_utils
 
+
 @test_utils.run_all_distributed
 class DiscriminativeLearningTest(tf.test.TestCase):
     def test_distributed_1(self):
-
 
         train, test = tf.keras.datasets.cifar100.load_data()
         train_tanksandtrains = np.isin(train[1], [85, 90]).flatten()
@@ -32,14 +32,18 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         model = tf.keras.Sequential()
 
-        model.add(tf.keras.applications.resnet50.ResNet50(weights='imagenet',
-                                                          input_shape=(32, 32, 3),
-                                                          include_top=False,
-                                                          pooling='avg'))
+        model.add(
+            tf.keras.applications.resnet50.ResNet50(
+                weights="imagenet",
+                input_shape=(32, 32, 3),
+                include_top=False,
+                pooling="avg",
+            )
+        )
         model.add(tf.keras.layers.Dense(1))
-        model.add(tf.keras.layers.Activation('sigmoid'))
+        model.add(tf.keras.layers.Activation("sigmoid"))
 
-        model.fit(train_x, train_y, batch_size=64, epochs = 1)
+        model.fit(train_x, train_y, batch_size=64, epochs=1)
 
     def test_distributed_2(self):
 
@@ -52,14 +56,18 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         model = tf.keras.Sequential()
 
-        model.add(tf.keras.applications.resnet50.ResNet50(weights='imagenet',
-                                                          input_shape=(32, 32, 3),
-                                                          include_top=False,
-                                                          pooling='avg'))
+        model.add(
+            tf.keras.applications.resnet50.ResNet50(
+                weights="imagenet",
+                input_shape=(32, 32, 3),
+                include_top=False,
+                pooling="avg",
+            )
+        )
         model.add(tf.keras.layers.Dense(1))
-        model.add(tf.keras.layers.Activation('sigmoid'))
+        model.add(tf.keras.layers.Activation("sigmoid"))
 
-        model.fit(train_x, train_y, batch_size=64, epochs = 1)
+        model.fit(train_x, train_y, batch_size=64, epochs=1)
 
 
 if __name__ == "__main__":
