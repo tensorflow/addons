@@ -135,14 +135,24 @@ def get_train_results(model, verbose=False):
 
 
 def zipped_permutes():
-    model_fns = [toy_cnn]
+    model_fns = [
+        # generally, we want to test that common layers function correctly with discriminative layer training
+        # dense, conv2d, batch norm, lstm, pooling, should cover the majority of layer types
+        # we also assume that if it works for conv2d, it should work for conv3d by extension
+        # apply the same extension logic for all layers tested and it should cover maybe 90% of layers in use?
+        toy_cnn,
+        toy_rnn,
+    ]
     losses = [
-        # tf.keras.losses.BinaryCrossentropy(from_logits=True),
+        # additional loss types do not need to be tested
+        # this is because losses affect the gradient tape, which is computed before
+        # the apply_gradients step. This means that the some gradient value is passed on to each opt
+        # and the gradient calculation is unaffected by which optimizer you are using
         tf.keras.losses.CategoricalCrossentropy(from_logits=True),
-        #         tf.keras.losses.MeanSquaredError(),
     ]
     optimzers = [
-        #         tf.keras.optimizers.SGD,
+        #additional optimizers can be added for testing
+        tf.keras.optimizers.SGD,
         tf.keras.optimizers.Adam,
     ]
     return list(itertools.product(model_fns, losses, optimzers))
