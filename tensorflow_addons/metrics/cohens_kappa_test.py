@@ -207,7 +207,7 @@ class CohenKappaTest(tf.test.TestCase):
         inputs = tf.keras.layers.Input(shape=(10,))
         outputs = tf.keras.layers.Dense(1, activation="sigmoid")(inputs)
         model = tf.keras.models.Model(inputs, outputs)
-        model.compile(optimizer="sgd", loss="mse", metrics=[kp])
+        model.compile(optimizer="sgd", loss="binary_crossentropy", metrics=[kp])
 
         x = np.random.rand(1000, 10).astype(np.float32)
         y = np.random.randint(2, size=(1000, 1)).astype(np.float32)
