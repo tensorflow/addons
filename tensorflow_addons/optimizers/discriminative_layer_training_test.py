@@ -18,7 +18,7 @@ import tensorflow as tf
 from tensorflow_addons.utils import test_utils
 import numpy as np
 from tensorflow_addons.optimizers.discriminative_layer_training import (
-    DiscriminativeWrapper,
+    DiscriminativeLayerOptimizer,
 )
 import itertools
 import os
@@ -151,7 +151,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         model.compile(loss=loss, optimizer=opt(learning_rate))
 
         model_lr = model_fn()
-        d_opt = DiscriminativeWrapper(
+        d_opt = DiscriminativeLayerOptimizer(
             opt, model_lr, verbose=False, learning_rate=learning_rate
         )
         model_lr.compile(loss=loss, optimizer=d_opt)
@@ -167,7 +167,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         model_lr = model_fn()
         model_lr.lr_mult = 0.0
-        d_opt = DiscriminativeWrapper(
+        d_opt = DiscriminativeLayerOptimizer(
             opt, model_lr, verbose=False, learning_rate=learning_rate
         )
         model_lr.compile(loss=loss, optimizer=d_opt)
@@ -184,7 +184,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         model_lr = model_fn()
         model_lr.lr_mult = mult
-        d_opt = DiscriminativeWrapper(
+        d_opt = DiscriminativeLayerOptimizer(
             opt, model_lr, verbose=False, learning_rate=learning_rate
         )
         model_lr.compile(loss=loss, optimizer=d_opt)
@@ -197,7 +197,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         learning_rate = 0.01
         model_lr = model_fn()
         model_lr.layers[0].lr_mult = 0.01
-        d_opt = DiscriminativeWrapper(
+        d_opt = DiscriminativeLayerOptimizer(
             opt, model_lr, verbose=False, learning_rate=learning_rate
         )
         model_lr.compile(loss=loss, optimizer=d_opt)

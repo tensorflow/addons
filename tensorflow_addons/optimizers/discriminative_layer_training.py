@@ -140,7 +140,7 @@ class DiscriminativeModelManager:
             )
 
 
-class DiscriminativeWrapper(tf.keras.optimizers.Optimizer):
+class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
     @typechecked
     def __init__(
         self,
