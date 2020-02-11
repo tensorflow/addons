@@ -97,11 +97,19 @@ def toy_rnn(first_run=False):
         net = tf.keras.Sequential(name="pretrained lstm")
 
         net.add(tf.keras.layers.Input(input_shape=(32, 32, 3)))
-        net.add(tf.keras.layers.Reshape(target_shape=(32, 96)))
+
+        #crop the input shape so the lstm runs faster
+        net.add(tf.keras.layers.Cropping2D(cropping= ((8, 8), (12, 12) ) ))
+
+        #reshape into a timeseries
+        net.add(tf.keras.layers.Reshape(target_shape=(16, 8 * 3)))
+
         # reduce the length of the time series
-        net.add(tf.keras.layers.Cropping1D(cropping=(0, 16)))
+        net.add(tf.keras.layers.Cropping1D(cropping=(0, 5)))
+        # reduce dimensions
+
         # we are primarily interested in the bidir lstm layer and its behavior
-        net.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(8)))
+        net.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(4)))
 
         model = tf.keras.Sequential(
             [net, tf.keras.layers.Dropout(0.5), tf.keras.layers.Dense(5, name="head"),]
