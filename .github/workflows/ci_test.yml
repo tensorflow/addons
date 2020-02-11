@@ -20,7 +20,7 @@ jobs:
       - name: CI test Ubuntu CPU
         run: |
           set -x -e
-          bash tools/run_docker.sh -d cpu -c 'make unit-test'
+          bash tools/run_cpu_tests.sh
   macos-test:
     name: MacOS CPU Python3
     runs-on: macos-latest
@@ -62,88 +62,61 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-      - name: install flake8
-        run: pip install flake8
       - name: Run flake8
-        run: flake8
+        run: bash tools/run_build.sh flake8-test
   black-test:
     name: Black Python code format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-      - name: install black
-        run: pip install black
       - name: Ensure contributor used ("black ./") before commit
-        run: black --check ./
+        run: bash tools/run_build.sh black-test
   public-api-typed:
     name: Check that the public API is typed
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: '3.5'
-      - name: install tensorflow and typeguard
-        run: pip install tensorflow-cpu typeguard
-      - name: install tf addons
-        run: TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
       - name: Run type check
-        run: python tools/ci_build/verify/check_typing_info.py
+        run: bash tools/run_build.sh public-api-typed
   case-insensitive-filesystem:
     name: Verify python filenames work on case insensitive FS
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: '3.5'
-      - name: Run filename check
-        run: python tools/ci_build/verify/check_file_name.py
+      - name: Run type check
+        run: bash tools/run_build.sh case-insensitive-filesystem
   valid_build_files:
     name: Valid build files
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Setup Bazel
-        uses: abhinavsingh/setup-bazel@v3
-        with:
-          version: $BAZEL_VERSION
-      - uses: actions/setup-python@v1
-        with:
-          python-version: '3.5'
-      - name: Setup the environement
-        run: |
-          pip install tensorflow-cpu
-          python3 ./configure.py --no-deps
-      - name: Check the validity of build files
-        run: bazel build --nobuild -- //tensorflow_addons/...
+      - name: Run type check
+        run: bash tools/run_build.sh valid_build_files
   clang-format:
     name: Clang C++ code format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      # TODO: use DoozyX/clang-format-lint-action when
-      # https://github.com/DoozyX/clang-format-lint-action/pull/5 is merged
-      # and the new version is out
-      - uses: gabrieldemarmiesse/clang-format-lint-action@1044fee
-        with:
-          clangFormatVersion: 9
-          cliArgs: --style=google
+      - name: Run type check
+        run: bash tools/run_build.sh clang-format
   check-bazel-format:
     name: Bazel code format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: install buildifier
-        run: sudo bash tools/ci_build/install/buildifier.sh
-      - name: Ensure contributor used "buildifier -r ./" before commit
-        run: buildifier -mode=check -r ./
-  local-dev-tools:
-    name: Check that local dev tools work
+      - name: Run type check
+        run: bash tools/run_build.sh check-bazel-format
+  pre-commit:
+    name: Check that the pre-commit works
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Checking the sanity check
-        run: bash tools/run_sanity_check.sh
+      - name: Checking the pre-commit
+        run: bash tools/pre-commit.sh
+  docs_tests:
+    name: Check that we can build the docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Building the docs
+        run: bash tools/run_build.sh docs_tests

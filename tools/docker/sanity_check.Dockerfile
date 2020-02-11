@@ -1,5 +1,4 @@
-# Flake8
-FROM python:3.5
+FROM python:3.5-alpine as flake8-test
 
 RUN pip install flake8==3.7.9
 COPY ./ /addons
@@ -8,8 +7,7 @@ RUN flake8
 RUN touch /ok.txt
 
 # -------------------------------
-# Black Python code format
-FROM python:3.6
+FROM python:3.6 as black-test
 
 RUN pip install black==19.10b0
 COPY ./ /addons
@@ -17,11 +15,11 @@ RUN black --check /addons
 RUN touch /ok.txt
 
 # -------------------------------
-# Check that the public API is typed
-FROM python:3.5
+FROM python:3.6 as public-api-typed
 
 RUN pip install tensorflow-cpu==2.1.0
 RUN pip install typeguard==2.7.1
+RUN pip install git+https://github.com/gabrieldemarmiesse/typed_api.git@0.1.1
 
 COPY ./ /addons
 RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e /addons
@@ -29,8 +27,7 @@ RUN python /addons/tools/ci_build/verify/check_typing_info.py
 RUN touch /ok.txt
 
 # -------------------------------
-# Verify python filenames work on case insensitive FS
-FROM python:3.5
+FROM python:3.5-alpine as case-insensitive-filesystem
 
 COPY ./ /addons
 WORKDIR /addons
@@ -38,8 +35,7 @@ RUN python /addons/tools/ci_build/verify/check_file_name.py
 RUN touch /ok.txt
 
 # -------------------------------
-# Valid build files
-FROM python:3.5
+FROM python:3.5 as valid_build_files
 
 RUN pip install tensorflow-cpu==2.1.0
 
@@ -54,9 +50,9 @@ RUN bazel build --nobuild -- //tensorflow_addons/...
 RUN touch /ok.txt
 
 # -------------------------------
-# Clang C++ code format
-FROM python:3.6
+FROM python:3.6-alpine as clang-format
 
+RUN apk add --no-cache git
 RUN git clone https://github.com/gabrieldemarmiesse/clang-format-lint-action.git
 WORKDIR ./clang-format-lint-action
 RUN git checkout 1044fee
@@ -71,7 +67,7 @@ RUN touch /ok.txt
 
 # -------------------------------
 # Bazel code format
-FROM alpine:3.11
+FROM alpine:3.11 as check-bazel-format
 
 RUN wget -O /usr/local/bin/buildifier \
             https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier
@@ -79,6 +75,24 @@ RUN chmod +x /usr/local/bin/buildifier
 
 COPY ./ /addons
 RUN buildifier -mode=check -r /addons
+RUN touch /ok.txt
+
+# -------------------------------
+# docs tests
+FROM python:3.6 as docs_tests
+
+RUN pip install tensorflow-cpu==2.1.0
+RUN pip install typeguard==2.7.1
+
+COPY tools/docs/doc_requirements.txt ./
+RUN pip install -r doc_requirements.txt
+
+RUN apt-get update && apt-get install -y rsync
+
+COPY ./ /addons
+WORKDIR /addons
+RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
+RUN python tools/docs/build_docs.py
 RUN touch /ok.txt
 
 # -------------------------------
@@ -96,3 +110,4 @@ COPY --from=3 /ok.txt /ok3.txt
 COPY --from=4 /ok.txt /ok4.txt
 COPY --from=5 /ok.txt /ok5.txt
 COPY --from=6 /ok.txt /ok6.txt
+COPY --from=7 /ok.txt /ok7.txt
