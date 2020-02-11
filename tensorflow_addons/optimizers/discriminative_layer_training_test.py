@@ -96,7 +96,7 @@ def toy_rnn(first_run=False):
         # pretend that net is a pretrained lstm of some sort
         net = tf.keras.Sequential(name="pretrained lstm")
 
-        net.add(tf.keras.layers.Input(shape=(32, 32, 3)))
+        net.add(tf.keras.layers.Input(input_shape=(32, 32, 3)))
         net.add(tf.keras.layers.Reshape(target_shape=(32, 96)))
         # reduce the length of the time series
         net.add(tf.keras.layers.Cropping1D(cropping=(0, 16)))
