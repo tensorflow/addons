@@ -20,7 +20,7 @@ from typeguard import typechecked
 import logging
 
 
-class ModelManager:
+class DiscriminativeModelManager:
     """Class for grouping functions related to model lr_mult management"""
 
     @staticmethod
@@ -56,18 +56,18 @@ class ModelManager:
         https://stackoverflow.com/questions/6340351/iterating-through-list-of-list-in-python
         """
 
-        mult = ModelManager._get_lr_mult(layer)
-        layers = ModelManager._get_layers(layer)
+        mult = DiscriminativeModelManager._get_lr_mult(layer)
+        layers = DiscriminativeModelManager._get_layers(layer)
 
         if len(layers) > 0:
             for sublayer in layers:
 
                 # we generally want to propagate the lr mult to the lower layers
                 if propagate_lr_mult_to_sub_layers:
-                    ModelManager._assign_lr_mult(sublayer, mult)
+                    DiscriminativeModelManager._assign_lr_mult(sublayer, mult)
 
                 # recursively iterate through the nested layers
-                for nested_sublayer in ModelManager._get_lowest_layers(sublayer):
+                for nested_sublayer in DiscriminativeModelManager._get_lowest_layers(sublayer):
                     yield nested_sublayer
 
         else:
@@ -77,9 +77,10 @@ class ModelManager:
     def _apply_lr_mult_to_var(layer):
         """Helper method to apply the lr mult to the trainable variables of a layer
         """
-        lr_mult = ModelManager._get_lr_mult(layer)
+        lr_mult = DiscriminativeModelManager._get_lr_mult(layer)
         for var in layer.trainable_variables:
             var.lr_mult = lr_mult #the lr_mult behaves as a hyper parameter and not a variable. it will not be a tensor
+            #there's not benefit in setting the lr_mult as a variable because it does not interact with tensors
 
     @staticmethod
     def _check_for_lr_mult(layer, verbose=True, propagate=True):
@@ -88,10 +89,10 @@ class ModelManager:
 
         layers_with_lr_mult = []
 
-        for sub_layer in ModelManager._get_lowest_layers(
+        for sub_layer in DiscriminativeModelManager._get_lowest_layers(
             layer, propagate_lr_mult_to_sub_layers=propagate
         ):
-            lr_mult = ModelManager._get_lr_mult(sub_layer)
+            lr_mult = DiscriminativeModelManager._get_lr_mult(sub_layer)
             if lr_mult != 1.0:
                 layers_with_lr_mult.append(sub_layer)
                 if verbose:
@@ -110,7 +111,7 @@ class ModelManager:
         """Prepares a model for disc training
         """
 
-        layers_with_lr_mult = ModelManager._check_for_lr_mult(model, verbose=verbose)
+        layers_with_lr_mult = DiscriminativeModelManager._check_for_lr_mult(model, verbose=verbose)
         if len(layers_with_lr_mult) == 0:
 
             logging.warning(
@@ -122,8 +123,8 @@ class ModelManager:
             )
 
 
-        for layer in ModelManager._get_lowest_layers(model):
-            ModelManager._apply_lr_mult_to_var(layer)
+        for layer in DiscriminativeModelManager._get_lowest_layers(model):
+            DiscriminativeModelManager._apply_lr_mult_to_var(layer)
 
         vars_with_lr_mult = [
             var for var in model.trainable_variables if var.lr_mult != 1.0
@@ -133,8 +134,8 @@ class ModelManager:
             logging.info(
                 "%i params of %i will learn at a different rate"
                 % (
-                    ModelManager._compute_params(vars_with_lr_mult),
-                    ModelManager._compute_params(model.trainable_variables),
+                    DiscriminativeModelManager._compute_params(vars_with_lr_mult),
+                    DiscriminativeModelManager._compute_params(model.trainable_variables),
                 )
             )
 
@@ -208,7 +209,7 @@ class DiscriminativeWrapper(tf.keras.optimizers.Optimizer):
 
         super().__init__(lr=learning_rate, name=name, *args, **kwargs)
 
-        ModelManager._prepare_model(model, verbose=verbose)
+        DiscriminativeModelManager._prepare_model(model, verbose=verbose)
 
         self.opt_class = base_optimizer
 
