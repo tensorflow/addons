@@ -36,18 +36,23 @@ class DiscriminativeModelManager:
         return getattr(layer, "lr_mult", 1.0)
 
     @staticmethod
-    def _assign_lr_mult(layer, lr_mult, override=False):
+    def _assign_lr_mult(layer, lr_mult):
         """Helper method to assign a layer's learning rate multiplier, which does nothing if lr mult is already set
         """
-
-        try:
-            if layer.lr_mult and override:
-                layer.lr_mult = lr_mult  # check if layer has lr mult and if override, then assign the new lr mult
-        except AttributeError:
+        if not hasattr(layer, 'lr_mult'):
             layer.lr_mult = lr_mult  # since layer has no lr mult, assign the mult
+            # this method should be called after the user has already assigned some lr mults
+            # to some layers. We just don't want to override any lr mults they assigned
+        else:
+            # we pass here because of propagation to nested layers
+            # users should be able to speficy model.layers[0].layers[0].lr_mult = 0.01
+            # and model.layers[0].lr_mult = 0.1, such that the model.layers[0].layers[0]
+            # keeps its assigned lr mult of 0.01
+            pass
+
 
     @staticmethod
-    def _get_lowest_layers(layer, propagate_lr_mult_to_sub_layers=True):
+    def _recursively_assign_sublayer_lr_mult(layer):
 
         """Helper method iterate through all nested layers of an object that behaves like a layer or model
         By default, we want to propagate the lr mult to the lower layers.
@@ -62,12 +67,16 @@ class DiscriminativeModelManager:
         if len(layers) > 0:
             for sublayer in layers:
 
-                # we generally want to propagate the lr mult to the lower layers
-                if propagate_lr_mult_to_sub_layers:
-                    DiscriminativeModelManager._assign_lr_mult(sublayer, mult)
+                # we always assign the lr mult to the sublayers of the current layer
+                # the assign method will avoid overwritting lr mults
+                # so if you have a resnet and you specifically assign the first resnet layer
+                # to have lr_mult of 0.01 and the resnet model to have lr_mult of 0.1, all
+                # resnet layers except the first should get lr_mult of 0.1 and the first
+                # keeps its lr_mult of 0.01
+                DiscriminativeModelManager._assign_lr_mult(sublayer, mult)
 
                 # recursively iterate through the nested layers
-                for nested_sublayer in DiscriminativeModelManager._get_lowest_layers(
+                for nested_sublayer in DiscriminativeModelManager._recursively_assign_sublayer_lr_mult(
                     sublayer
                 ):
                     yield nested_sublayer
@@ -91,8 +100,8 @@ class DiscriminativeModelManager:
 
         layers_with_lr_mult = []
 
-        for sub_layer in DiscriminativeModelManager._get_lowest_layers(
-            layer, propagate_lr_mult_to_sub_layers=propagate
+        for sub_layer in DiscriminativeModelManager._recursively_assign_sublayer_lr_mult(
+            layer
         ):
             lr_mult = DiscriminativeModelManager._get_lr_mult(sub_layer)
             if lr_mult != 1.0:
@@ -125,7 +134,7 @@ class DiscriminativeModelManager:
                 """
             )
 
-        for layer in DiscriminativeModelManager._get_lowest_layers(model):
+        for layer in DiscriminativeModelManager._recursively_assign_sublayer_lr_mult(model):
             DiscriminativeModelManager._apply_lr_mult_to_var(layer)
 
         vars_with_lr_mult = [
