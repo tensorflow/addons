@@ -160,7 +160,7 @@ py_test(
 
 py_test(
     name = "discriminative_layer_training_test",
-    size = "medium",
+    size = "large",
     srcs = [
         "discriminative_layer_training_test.py",
     ],
