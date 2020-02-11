@@ -19,7 +19,7 @@ import numpy as np
 from tensorflow_addons.utils import test_utils
 
 
-@test_utils.run_all_distributed
+@test_utils.run_all_distributed(2)
 class DiscriminativeLearningTest(tf.test.TestCase):
     def test_distributed_1(self):
 
