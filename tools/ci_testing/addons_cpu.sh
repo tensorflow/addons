@@ -16,7 +16,13 @@
 # ==============================================================================
 # usage: bash tools/ci_testing/addons_cpu.sh [--no-deps]
 
-set -x
+set -x -e
+
+
+if [ "$1" != "--no-deps" ] && [ "$1" != "" ]; then
+  echo Wrong argument $1
+  exit 1
+fi
 
 # Make sure we're in the project root path.
 SCRIPT_DIR=$( cd ${0%/*} && pwd -P )
