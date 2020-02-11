@@ -23,9 +23,10 @@ from tensorflow_addons.optimizers.discriminative_layer_training import (
 import itertools
 import os
 from tensorflow.python.eager import context
+import tempfile
 
 
-def toy_cnn():
+def toy_cnn(first_run = False):
     """Consistently create model with same random weights
     skip head activation to allow both bce with logits and cce with logits
 
@@ -33,67 +34,92 @@ def toy_cnn():
     other models returned by this function, for the duration of that
     continuous integration run
 
+    Run this function before running the tests and set first run to true
+
     model is intended to work with
     x = np.ones(shape = (None, 32, 32, 3), dtype = np.float32)
     y = np.zeros(shape = (None, 5), dtype = np.float32)
     y[:, 0] = 1.
     """
 
-    cnn_model_path = "cnn.h5"
+    cnn_model_path = os.path.join(tempfile.gettempdir() , "cnn.h5")
 
-    if not os.path.exists(cnn_model_path):
-        # force eager mode for simple initialization of vars
-        with context.eager_mode():
-            tf.random.set_seed(1)
-            bignet = tf.keras.applications.mobilenet_v2.MobileNetV2(
-                include_top=False, weights=None, input_shape=(32, 32, 3), pooling="avg"
-            )
+    if first_run:
+        bignet = tf.keras.applications.mobilenet_v2.MobileNetV2(
+            include_top=False, weights=None, input_shape=(32, 32, 3), pooling="avg"
+        )
 
-            # take the first few layers so we cover BN, Conv, Pooling ops for testing
-            net = tf.keras.models.Model(
-                inputs=bignet.input, outputs=bignet.get_layer("block_2_add").output
-            )
-            model = tf.keras.Sequential(
-                [
-                    net,
-                    tf.keras.layers.GlobalAveragePooling2D(),
-                    tf.keras.layers.Dropout(0.5),
-                    tf.keras.layers.Dense(5, name="head"),
-                ]
-            )
-            # always save and never return initialized model from memory
-            # it seems you cannot pass variables from a nested eager context to its parent graph context
+        # take the first few layers so we cover BN, Conv, Pooling ops for testing
+        net = tf.keras.models.Model(
+            inputs=bignet.input, outputs=bignet.get_layer("block_2_add").output
+        )
+        model = tf.keras.Sequential(
+            [
+                net,
+                tf.keras.layers.GlobalAveragePooling2D(),
+                tf.keras.layers.Dropout(0.5),
+                tf.keras.layers.Dense(5, name="head"),
+            ]
+        )
 
-            model.save(cnn_model_path)
+        model.save(cnn_model_path)
+        # this creates a model with set weights for testing purposes
+        # most tests will assert equivalency between a model with discriminative training and a model without
+        return None
+    else:
+        assert os.path.exists((cnn_model_path)), 'Could not find h5 file at path %s ' % cnn_model_path
+        # load the variable initialized model from the disk
+        return tf.keras.models.load_model(cnn_model_path)
 
-    # load the initialized model from the disk
-    return tf.keras.models.load_model(cnn_model_path)
 
-
-# TODO: get toy_run to work
-def toy_rnn():
+def toy_rnn(first_run = False):
     """
-
     Consistently create model with same random weights
     skip head activation to allow both bce with logits and cce with logits
     intended to work with
+
+    The model returned by this function should have identical weights to all
+    other models returned by this function, for the duration of that
+    continuous integration run
+
+    Run this function before running the tests and set first run to true
 
     x = np.ones(shape = (None, 32, 32, 3), dtype = np.float32)
     y = np.zeros(shape = (None, 5), dtype = np.float32)
     y[:, 0] = 1.
     """
+    rnn_model_path = os.path.join(tempfile.gettempdir() , "rnn.h5")
 
-    tf.random.set_seed(1)
+    if first_run:
 
-    model = tf.keras.Sequential()
-    model.add(tf.keras.layers.Input(shape=(32, 32, 3)))
-    model.add(tf.keras.layers.Reshape(target_shape=(32, 96)))
-    model.add(tf.keras.layers.Cropping1D(cropping=(0, 24)))
-    model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(8)))
-    model.add(tf.keras.layers.Dropout(0.5))
-    model.add(tf.keras.layers.Dense(5))
+        #pretend that net is a pretrained lstm of some sort
+        net = tf.keras.Sequential(name='pretrained lstm')
 
-    return model
+        net.add(tf.keras.layers.Input(shape=(32, 32, 3)))
+        net.add(tf.keras.layers.Reshape(target_shape=(32, 96)))
+        #reduce the length of the time series
+        net.add(tf.keras.layers.Cropping1D(cropping=(0, 16)))
+        #we are primarily interested in the bidir lstm layer and its behavior
+        net.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(8)))
+
+        model = tf.keras.Sequential(
+            [
+                net,
+                tf.keras.layers.Dropout(0.5),
+                tf.keras.layers.Dense(5, name="head"),
+            ]
+        )
+
+        model.save(rnn_model_path)
+        # this creates a model with set weights for testing purposes
+        # most tests will assert equivalency between a model with discriminative training and a model without
+        return None
+
+    else:
+        assert os.path.exists((rnn_model_path)), 'Could not find h5 file at path %s ' % rnn_model_path
+        # load the variable initialized model from the disk
+        return tf.keras.models.load_model(rnn_model_path)
+
 
 
 def get_train_results(model, verbose=False):
