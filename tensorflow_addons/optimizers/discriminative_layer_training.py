@@ -226,6 +226,7 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
     def apply_gradients(self, grads_and_vars, name=None):
         """allocates gradients to each optimizer based on the variable's learning rate multiplier
         then applies the gradients. In graph mode, it returns 1 operation per optimizer
+        Please use the model.fit method instead of accessing this directly
         """
 
         # create gradvar buckets for each opt
