@@ -94,9 +94,7 @@ def toy_rnn(first_run=False):
     if first_run:
 
         # pretend that net is a pretrained lstm of some sort
-        net = tf.keras.Sequential(name="pretrained lstm")
-
-        net.add(tf.keras.layers.InputLayer(input_shape=(32, 32, 3)))
+        net = tf.keras.Sequential()
 
         # crop the input shape so the lstm runs faster
         net.add(tf.keras.layers.Cropping2D(cropping=((8, 8), (12, 12))))
@@ -112,7 +110,12 @@ def toy_rnn(first_run=False):
         net.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(4)))
 
         model = tf.keras.Sequential(
-            [net, tf.keras.layers.Dropout(0.5), tf.keras.layers.Dense(5, name="head"),]
+            [
+                tf.keras.layers.InputLayer(input_shape=(32, 32, 3)),
+                net,
+                tf.keras.layers.Dropout(0.5),
+                tf.keras.layers.Dense(5, name="head"),
+            ]
         )
 
         model.save(rnn_model_path)
