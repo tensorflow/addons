@@ -178,7 +178,7 @@ class CohenKappaTest(tf.test.TestCase):
         self.evaluate(obj.update_state(y_true, y_pred))
         self.assertAllClose(0.19999999, obj.result())
 
-    def test_keras_reg_model(self):
+    def test_keras_binary_reg_model(self):
         kp = CohenKappa(num_classes=2)
         inputs = tf.keras.layers.Input(shape=(10,))
         outputs = tf.keras.layers.Dense(1)(inputs)
@@ -190,7 +190,31 @@ class CohenKappaTest(tf.test.TestCase):
 
         model.fit(x, y, epochs=1, verbose=0, batch_size=32)
 
-    def test_keras_classification_model(self):
+    def test_keras_multiclass_reg_model(self):
+        kp = CohenKappa(num_classes=5, regression=True, sparse_labels=True)
+        inputs = tf.keras.layers.Input(shape=(10,))
+        outputs = tf.keras.layers.Dense(1)(inputs)
+        model = tf.keras.models.Model(inputs, outputs)
+        model.compile(optimizer="sgd", loss="mse", metrics=[kp])
+
+        x = np.random.rand(1000, 10).astype(np.float32)
+        y = np.random.randint(5, size=(1000,)).astype(np.float32)
+
+        model.fit(x, y, epochs=1, verbose=0, batch_size=32)
+
+    def test_keras_binary_clasasification_model(self):
+        kp = CohenKappa(num_classes=2)
+        inputs = tf.keras.layers.Input(shape=(10,))
+        outputs = tf.keras.layers.Dense(1, activation="sigmoid")(inputs)
+        model = tf.keras.models.Model(inputs, outputs)
+        model.compile(optimizer="sgd", loss="mse", metrics=[kp])
+
+        x = np.random.rand(1000, 10).astype(np.float32)
+        y = np.random.randint(2, size=(1000, 1)).astype(np.float32)
+
+        model.fit(x, y, epochs=1, verbose=0, batch_size=32)
+
+    def test_keras_multiclass_classification_model(self):
         kp = CohenKappa(num_classes=5)
         inputs = tf.keras.layers.Input(shape=(10,))
         outputs = tf.keras.layers.Dense(5, activation="softmax")(inputs)
@@ -199,7 +223,7 @@ class CohenKappaTest(tf.test.TestCase):
 
         x = np.random.rand(1000, 10).astype(np.float32)
         y = np.random.randint(5, size=(1000,)).astype(np.float32)
-        y = tf.keras.utils.to_categorical(y)
+        y = tf.keras.utils.to_categorical(y, num_classes=5)
 
         model.fit(x, y, epochs=1, verbose=0, batch_size=32)
 

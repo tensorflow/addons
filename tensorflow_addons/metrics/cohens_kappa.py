@@ -68,7 +68,7 @@ class CohenKappa(Metric):
                  name: str = 'cohen_kappa',
                  weightage: Optional[str] = None,
                  sparse_labels: bool = False,
-                 reg_values: bool = False,
+                 regression: bool = False,
                  dtype: AcceptableDTypes = None,
                  **kwargs):
         """Creates a `CohenKappa` instance.
@@ -81,10 +81,10 @@ class CohenKappa(Metric):
           sparse_lables: (bool) Valid only for multi-class scenario.
             If True, ground truth labels are expected tp be integers
             and not one-hot encoded
-          reg_values: (bool) If set, that means the problem is being treated
+          regression: (bool) If set, that means the problem is being treated
             as a regression problem where you are regressing the predictions.
             **Note:** If you are regressing for the values, the the output layer
-            should contain a single unit
+            should contain a single unit.
           name: (optional) String name of the metric instance
           dtype: (optional) Data type of the metric result. Defaults to `None`
 
@@ -107,7 +107,7 @@ class CohenKappa(Metric):
 
         self.weightage = weightage
         self.num_classes = num_classes
-        self.reg_values = reg_values
+        self.regression = regression
         self.sparse_labels = sparse_labels
         self.conf_mtx = self.add_weight(
             'conf_mtx',
@@ -147,7 +147,7 @@ class CohenKappa(Metric):
             y_true = tf.cast(y_true, dtype=tf.int64)
 
         if tf.rank(y_pred) > 1:
-            if not self.reg_values:
+            if not self.regression:
                 y_pred = tf.cast(tf.argmax(y_pred, axis=-1), dtype=tf.int64)
             else:
                 y_pred = tf.math.round(tf.math.abs(y_pred))
@@ -217,6 +217,8 @@ class CohenKappa(Metric):
         config = {
             "num_classes": self.num_classes,
             "weightage": self.weightage,
+            "sparse_labels": self.sparse_labels,
+            "regression": self.regression
         }
         base_config = super().get_config()
         return {**base_config, **config}
