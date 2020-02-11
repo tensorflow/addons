@@ -4,12 +4,13 @@
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:------------- |
 | contrastive |  @WindQAQ | windqaq@gmail.com |
-| focal_loss | @SSaishruthi  | saishruthi.tn@gmail.com |
+| focal_loss | @AakashKumarNain<br> @SSaishruthi  | aakashnain@outlook.com<br> saishruthi.tn@gmail.com |
 | giou_loss | @fsx950223  | fsx950223@gmail.com |
 | lifted | @rahulunair | rahulunair@gmail.com  |
 | npairs | @WindQAQ | windqaq@gmail.com |
 | sparsemax_loss | @AndreasMadsen | amwwebdk+github@gmail.com |
 | triplet |  @rahulunair | rahulunair@gmail.com  |
+| quantiles | @RomainBrault | mail@romainbrault.com |
 
 ## Components
 | Submodule | Loss  | Reference               |
@@ -22,6 +23,7 @@
 | npairs | NpairsMultilabelLoss | http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf |
 | sparsemax_loss | SparsemaxLoss |  https://arxiv.org/abs/1602.02068 |
 | triplet | TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
+| quantiles | PinballLoss | https://en.wikipedia.org/wiki/Quantile_regression |
 
 
 ## Contribution Guidelines

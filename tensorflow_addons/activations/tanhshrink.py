@@ -13,20 +13,16 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
-_activation_ops_so = tf.load_op_library(
-    get_path_to_datafile("custom_ops/activations/_activation_ops.so"))
+from tensorflow_addons.utils import types
+from tensorflow_addons.utils.resource_loader import LazySO
+
+_activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
-@tf.function
-def tanhshrink(x):
+@tf.keras.utils.register_keras_serializable(package="Addons")
+def tanhshrink(x: types.TensorLike) -> tf.Tensor:
     """Applies the element-wise function: x - tanh(x)
 
     Args:
@@ -36,9 +32,9 @@ def tanhshrink(x):
         A `Tensor`. Has the same type as `features`.
     """
     x = tf.convert_to_tensor(x)
-    return _activation_ops_so.addons_tanhshrink(x)
+    return _activation_so.ops.addons_tanhshrink(x)
 
 
 @tf.RegisterGradient("Addons>Tanhshrink")
 def _tanhshrink_grad(op, grad):
-    return _activation_ops_so.addons_tanhshrink_grad(grad, op.inputs[0])
+    return _activation_so.ops.addons_tanhshrink_grad(grad, op.inputs[0])

@@ -1,0 +1,3 @@
+set -e
+
+bash tools/run_gpu_tests.sh

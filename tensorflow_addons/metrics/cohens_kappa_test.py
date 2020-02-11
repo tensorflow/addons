@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for Cohen's Kappa Metric."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow_addons.metrics import CohenKappa
 from tensorflow_addons.utils import test_utils
@@ -26,21 +22,21 @@ from tensorflow_addons.utils import test_utils
 @test_utils.run_all_in_graph_and_eager_modes
 class CohenKappaTest(tf.test.TestCase):
     def test_config(self):
-        kp_obj = CohenKappa(name='cohen_kappa', num_classes=5)
-        self.assertEqual(kp_obj.name, 'cohen_kappa')
+        kp_obj = CohenKappa(name="cohen_kappa", num_classes=5)
+        self.assertEqual(kp_obj.name, "cohen_kappa")
         self.assertEqual(kp_obj.dtype, tf.float32)
         self.assertEqual(kp_obj.num_classes, 5)
 
         # Check save and restore config
         kb_obj2 = CohenKappa.from_config(kp_obj.get_config())
-        self.assertEqual(kb_obj2.name, 'cohen_kappa')
+        self.assertEqual(kb_obj2.name, "cohen_kappa")
         self.assertEqual(kb_obj2.dtype, tf.float32)
         self.assertEqual(kp_obj.num_classes, 5)
 
     def initialize_vars(self):
         kp_obj1 = CohenKappa(num_classes=5)
-        kp_obj2 = CohenKappa(num_classes=5, weightage='linear')
-        kp_obj3 = CohenKappa(num_classes=5, weightage='quadratic')
+        kp_obj2 = CohenKappa(num_classes=5, weightage="linear")
+        kp_obj3 = CohenKappa(num_classes=5, weightage="quadratic")
 
         self.evaluate(tf.compat.v1.variables_initializer(kp_obj1.variables))
         self.evaluate(tf.compat.v1.variables_initializer(kp_obj2.variables))
@@ -82,8 +78,9 @@ class CohenKappaTest(tf.test.TestCase):
         self.update_obj_states(kp_obj1, kp_obj2, kp_obj3, actuals, preds, None)
 
         # Check results
-        self.check_results([kp_obj1, kp_obj2, kp_obj3],
-                           [0.61904761, 0.62790697, 0.68932038])
+        self.check_results(
+            [kp_obj1, kp_obj2, kp_obj3], [0.61904761, 0.62790697, 0.68932038]
+        )
 
     def test_kappa_perfect_score(self):
         actuals = [4, 4, 3, 3, 2, 2, 1, 1]
@@ -113,8 +110,9 @@ class CohenKappaTest(tf.test.TestCase):
         self.update_obj_states(kp_obj1, kp_obj2, kp_obj3, actuals, preds, None)
 
         # check results
-        self.check_results([kp_obj1, kp_obj2, kp_obj3],
-                           [-0.3333333, -0.52380952, -0.72727272])
+        self.check_results(
+            [kp_obj1, kp_obj2, kp_obj3], [-0.3333333, -0.52380952, -0.72727272]
+        )
 
     def test_kappa_with_sample_weights(self):
         actuals = [4, 4, 3, 3, 2, 2, 1, 1]
@@ -128,12 +126,12 @@ class CohenKappaTest(tf.test.TestCase):
         kp_obj1, kp_obj2, kp_obj3 = self.initialize_vars()
 
         # Update
-        self.update_obj_states(kp_obj1, kp_obj2, kp_obj3, actuals, preds,
-                               weights)
+        self.update_obj_states(kp_obj1, kp_obj2, kp_obj3, actuals, preds, weights)
 
         # check results
-        self.check_results([kp_obj1, kp_obj2, kp_obj3],
-                           [-0.25473321, -0.38992332, -0.60695344])
+        self.check_results(
+            [kp_obj1, kp_obj2, kp_obj3], [-0.25473321, -0.38992332, -0.60695344]
+        )
 
     def test_kappa_reset_states(self):
         # Initialize
@@ -156,5 +154,5 @@ class CohenKappaTest(tf.test.TestCase):
         self.assertAllClose(0.166666666, obj.result())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.test.main()

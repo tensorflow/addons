@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,19 +14,6 @@
 # limitations under the License.
 # ==============================================================================
 
-set -e -x
 
-if [[ $(uname) == "Darwin" ]]; then
-    CMD="delocate-wheel -w wheelhouse"
-elif [[ $(uname) == "Linux" ]]; then
-    apt-get -y -qq update && apt-get install patchelf
-    pip3.6 install -U auditwheel==2.0.0
-    tools/ci_build/builds/tf_auditwheel_patch.sh
-    CMD="auditwheel repair --plat manylinux2010_x86_64"
-fi
-
-ls artifacts/*
-for f in artifacts/*.whl; do
-    $CMD $f
-done
-ls wheelhouse/*
+wget -O /usr/local/bin/clang-format-9 https://github.com/DoozyX/clang-format-lint-action/raw/master/clang-format/clang-format9
+chmod +x /usr/local/bin/clang-format-9

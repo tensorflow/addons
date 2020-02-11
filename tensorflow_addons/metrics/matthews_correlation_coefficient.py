@@ -14,11 +14,10 @@
 # ==============================================================================
 """Matthews Correlation Coefficient Implementation."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
+
+from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
+from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -56,11 +55,13 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
     ```
     """
 
+    @typechecked
     def __init__(self,
-                 num_classes=None,
-                 name='MatthewsCorrelationCoefficient',
-                 dtype=tf.float32):
-        """Creates a Matthews Correlation Coefficient instanse.
+                 num_classes: FloatTensorLike,
+                 name: str = 'MatthewsCorrelationCoefficient',
+                 dtype: AcceptableDTypes = None,
+                 **kwargs):
+        """Creates a Matthews Correlation Coefficient instance.
 
         Args:
             num_classes : Number of unique classes in the dataset.
@@ -68,8 +69,7 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
             dtype: (Optional) Data type of the metric result.
             Defaults to `tf.float32`.
         """
-        super(MatthewsCorrelationCoefficient, self).__init__(
-            name=name, dtype=dtype)
+        super().__init__(name=name, dtype=dtype)
         self.num_classes = num_classes
         self.true_positives = self.add_weight(
             'true_positives',
@@ -140,8 +140,8 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
         config = {
             "num_classes": self.num_classes,
         }
-        base_config = super(MatthewsCorrelationCoefficient, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}
 
     def reset_states(self):
         """Resets all of the metric state variables."""

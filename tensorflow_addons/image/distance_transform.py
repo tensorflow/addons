@@ -13,22 +13,24 @@
 # limitations under the License.
 # ==============================================================================
 """Distance transform ops."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow_addons.image import utils as img_utils
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+from tensorflow_addons.utils.resource_loader import LazySO
+from tensorflow_addons.utils.types import TensorLike
 
-_image_ops_so = tf.load_op_library(
-    get_path_to_datafile("custom_ops/image/_image_ops.so"))
+from typing import Optional, Type
+
+_image_so = LazySO("custom_ops/image/_image_ops.so")
 
 tf.no_gradient("Addons>EuclideanDistanceTransform")
 
 
-@tf.function
-def euclidean_dist_transform(images, dtype=tf.float32, name=None):
+def euclidean_dist_transform(
+    images: TensorLike,
+    dtype: Type[tf.dtypes.DType] = tf.float32,
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Applies euclidean distance transform(s) to the image(s).
 
     Args:
@@ -52,8 +54,7 @@ def euclidean_dist_transform(images, dtype=tf.float32, name=None):
         image_or_images = tf.convert_to_tensor(images, name="images")
 
         if image_or_images.dtype.base_dtype != tf.uint8:
-            raise TypeError(
-                "Invalid dtype %s. Expected uint8." % image_or_images.dtype)
+            raise TypeError("Invalid dtype %s. Expected uint8." % image_or_images.dtype)
 
         images = img_utils.to_4D_image(image_or_images)
         original_ndims = img_utils.get_ndims(image_or_images)
@@ -65,6 +66,6 @@ def euclidean_dist_transform(images, dtype=tf.float32, name=None):
             raise TypeError("`dtype` must be float16, float32 or float64")
 
         images = tf.cast(images, dtype)
-        output = _image_ops_so.addons_euclidean_distance_transform(images)
+        output = _image_so.ops.addons_euclidean_distance_transform(images)
 
         return img_utils.from_4D_image(output, original_ndims)

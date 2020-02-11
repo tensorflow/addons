@@ -14,14 +14,14 @@
 # ==============================================================================
 """Implements Cohen's Kappa."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 import numpy as np
 import tensorflow.keras.backend as K
 from tensorflow.keras.metrics import Metric
+from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
+
+from typeguard import typechecked
+from typing import Optional
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -62,11 +62,13 @@ class CohenKappa(Metric):
     ```
     """
 
+    @typechecked
     def __init__(self,
-                 num_classes,
-                 name='cohen_kappa',
-                 weightage=None,
-                 dtype=None):
+                 num_classes: FloatTensorLike,
+                 name: str = 'cohen_kappa',
+                 weightage: Optional[str] = None,
+                 dtype: AcceptableDTypes = None,
+                 **kwargs):
         """Creates a `CohenKappa` instance.
 
         Args:
@@ -82,7 +84,7 @@ class CohenKappa(Metric):
           ValueError: If the value passed for `weightage` is invalid
             i.e. not any one of [None, 'linear', 'quadratic']
         """
-        super(CohenKappa, self).__init__(name=name, dtype=dtype)
+        super().__init__(name=name, dtype=dtype)
 
         if weightage not in (None, 'linear', 'quadratic'):
             raise ValueError("Unknown kappa weighting type.")
@@ -154,8 +156,7 @@ class CohenKappa(Metric):
         pred_ratings_hist = tf.reduce_sum(self.conf_mtx, axis=0)
 
         # 4. Get the outer product
-        out_prod = pred_ratings_hist[..., None] * \
-                    actual_ratings_hist[None, ...]
+        out_prod = pred_ratings_hist[..., None] * actual_ratings_hist[None, ...]
 
         # 5. Normalize the confusion matrix and outer product
         conf_mtx = self.conf_mtx / tf.reduce_sum(self.conf_mtx)
@@ -179,8 +180,8 @@ class CohenKappa(Metric):
             "num_classes": self.num_classes,
             "weightage": self.weightage,
         }
-        base_config = super(CohenKappa, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}
 
     def reset_states(self):
         """Resets all of the metric state variables."""
