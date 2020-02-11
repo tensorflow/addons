@@ -298,8 +298,10 @@ def generate_tests(devices):
 
 
 if __name__ == "__main__":
+    # save models so weights are always the same
+    toy_cnn(first_run=True)
+    toy_rnn(first_run=True)
+
     devices = test_utils.create_virtual_devices(2)
     generate_tests(devices)
-    #     DiscriminativeLearningTest()._run_tests_in_notebook()
-    #     print("done")
     tf.test.main()
