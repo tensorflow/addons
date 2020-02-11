@@ -22,11 +22,10 @@ from tensorflow_addons.optimizers.discriminative_layer_training import (
 )
 import itertools
 import os
-from tensorflow.python.eager import context
 import tempfile
 
 
-def toy_cnn(first_run = False):
+def toy_cnn(first_run=False):
     """Consistently create model with same random weights
     skip head activation to allow both bce with logits and cce with logits
 
@@ -42,7 +41,7 @@ def toy_cnn(first_run = False):
     y[:, 0] = 1.
     """
 
-    cnn_model_path = os.path.join(tempfile.gettempdir() , "cnn.h5")
+    cnn_model_path = os.path.join(tempfile.gettempdir(), "cnn.h5")
 
     if first_run:
         bignet = tf.keras.applications.mobilenet_v2.MobileNetV2(
@@ -67,12 +66,14 @@ def toy_cnn(first_run = False):
         # most tests will assert equivalency between a model with discriminative training and a model without
         return None
     else:
-        assert os.path.exists((cnn_model_path)), 'Could not find h5 file at path %s ' % cnn_model_path
+        assert os.path.exists((cnn_model_path)), (
+            "Could not find h5 file at path %s " % cnn_model_path
+        )
         # load the variable initialized model from the disk
         return tf.keras.models.load_model(cnn_model_path)
 
 
-def toy_rnn(first_run = False):
+def toy_rnn(first_run=False):
     """
     Consistently create model with same random weights
     skip head activation to allow both bce with logits and cce with logits
@@ -88,26 +89,22 @@ def toy_rnn(first_run = False):
     y = np.zeros(shape = (None, 5), dtype = np.float32)
     y[:, 0] = 1.
     """
-    rnn_model_path = os.path.join(tempfile.gettempdir() , "rnn.h5")
+    rnn_model_path = os.path.join(tempfile.gettempdir(), "rnn.h5")
 
     if first_run:
 
-        #pretend that net is a pretrained lstm of some sort
-        net = tf.keras.Sequential(name='pretrained lstm')
+        # pretend that net is a pretrained lstm of some sort
+        net = tf.keras.Sequential(name="pretrained lstm")
 
         net.add(tf.keras.layers.Input(shape=(32, 32, 3)))
         net.add(tf.keras.layers.Reshape(target_shape=(32, 96)))
-        #reduce the length of the time series
+        # reduce the length of the time series
         net.add(tf.keras.layers.Cropping1D(cropping=(0, 16)))
-        #we are primarily interested in the bidir lstm layer and its behavior
+        # we are primarily interested in the bidir lstm layer and its behavior
         net.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(8)))
 
         model = tf.keras.Sequential(
-            [
-                net,
-                tf.keras.layers.Dropout(0.5),
-                tf.keras.layers.Dense(5, name="head"),
-            ]
+            [net, tf.keras.layers.Dropout(0.5), tf.keras.layers.Dense(5, name="head"),]
         )
 
         model.save(rnn_model_path)
@@ -116,10 +113,11 @@ def toy_rnn(first_run = False):
         return None
 
     else:
-        assert os.path.exists((rnn_model_path)), 'Could not find h5 file at path %s ' % rnn_model_path
+        assert os.path.exists((rnn_model_path)), (
+            "Could not find h5 file at path %s " % rnn_model_path
+        )
         # load the variable initialized model from the disk
         return tf.keras.models.load_model(rnn_model_path)
-
 
 
 def _get_train_results(model, verbose=False):
@@ -151,7 +149,7 @@ def _zipped_permutes():
         tf.keras.losses.CategoricalCrossentropy(from_logits=True),
     ]
     optimzers = [
-        #additional optimizers can be added for testing
+        # additional optimizers can be added for testing
         tf.keras.optimizers.SGD,
         tf.keras.optimizers.Adam,
     ]

@@ -27,13 +27,13 @@ class DiscriminativeModelManager:
     def _get_layers(layer):
         """Helper method to access a layer's sublayers as a list or return an empty list
         """
-        return getattr(layer, 'layers', [])
+        return getattr(layer, "layers", [])
 
     @staticmethod
     def _get_lr_mult(layer):
         """Helper method to access a layer's learning rate multiplier, which defaults to 1 if lr mult is not set
         """
-        return getattr(layer, 'lr_mult', 1.0)
+        return getattr(layer, "lr_mult", 1.0)
 
     @staticmethod
     def _assign_lr_mult(layer, lr_mult, override=False):
@@ -67,9 +67,10 @@ class DiscriminativeModelManager:
                     DiscriminativeModelManager._assign_lr_mult(sublayer, mult)
 
                 # recursively iterate through the nested layers
-                for nested_sublayer in DiscriminativeModelManager._get_lowest_layers(sublayer):
+                for nested_sublayer in DiscriminativeModelManager._get_lowest_layers(
+                    sublayer
+                ):
                     yield nested_sublayer
-
         else:
             yield layer
 
@@ -79,8 +80,9 @@ class DiscriminativeModelManager:
         """
         lr_mult = DiscriminativeModelManager._get_lr_mult(layer)
         for var in layer.trainable_variables:
-            var.lr_mult = lr_mult #the lr_mult behaves as a hyper parameter and not a variable. it will not be a tensor
-            #there's not benefit in setting the lr_mult as a variable because it does not interact with tensors
+            var.lr_mult = lr_mult
+            # the lr_mult behaves as a hyper parameter and not a variable. it will not be a tensor
+            # there's not benefit in setting the lr_mult as a variable because it does not interact with tensors
 
     @staticmethod
     def _check_for_lr_mult(layer, verbose=True, propagate=True):
@@ -111,17 +113,17 @@ class DiscriminativeModelManager:
         """Prepares a model for disc training
         """
 
-        layers_with_lr_mult = DiscriminativeModelManager._check_for_lr_mult(model, verbose=verbose)
+        layers_with_lr_mult = DiscriminativeModelManager._check_for_lr_mult(
+            model, verbose=verbose
+        )
         if len(layers_with_lr_mult) == 0:
 
             logging.warning(
-                """
-                No Layer has been assigned an lr_mult attribute != 1.0 
+                """No Layer has been assigned an lr_mult attribute != 1.0
                 Discriminative Layer Training will apply the same learning rate to all layers
-                It will perform as if you did not use Discriminative Layer Training    
+                It will perform as if you did not use Discriminative Layer Training
                 """
             )
-
 
         for layer in DiscriminativeModelManager._get_lowest_layers(model):
             DiscriminativeModelManager._apply_lr_mult_to_var(layer)
@@ -135,7 +137,9 @@ class DiscriminativeModelManager:
                 "%i params of %i will learn at a different rate"
                 % (
                     DiscriminativeModelManager._compute_params(vars_with_lr_mult),
-                    DiscriminativeModelManager._compute_params(model.trainable_variables),
+                    DiscriminativeModelManager._compute_params(
+                        model.trainable_variables
+                    ),
                 )
             )
 
@@ -218,9 +222,9 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
 
         self.optimizer_group = []
 
-        for lr_mult_value in variable_groups.keys():
+        for lr_mult in variable_groups.keys():
             opt = self.opt_class(learning_rate=learning_rate * lr_mult, **kwargs)
-            opt.lr_mult_value = lr_mult_value
+            opt.lr_mult = lr_mult
             self.optimizer_group.append(opt)
 
     def apply_gradients(self, grads_and_vars, name=None):
@@ -236,7 +240,7 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
 
         # load the gradvars into the appropriate bucket
         for grad, var in tuple(grads_and_vars):
-            gvdict[var.lr_mult_value].append((grad, var))
+            gvdict[var.lr_mult].append((grad, var))
 
         # return results from each opt
         # in eager mode, this will return a list of irrelevant results for each optimizer
@@ -244,7 +248,7 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
         # in graph mode, this will return a list of tensor ops for each opt
         # in graph mode, apply_gradients creates the tensor ops for applying gradients on the graph
         return [
-            opt.apply_gradients(tuple(gvdict[opt.lr_mult_value]))
+            opt.apply_gradients(tuple(gvdict[opt.lr_mult]))
             for opt in self.optimizer_group
         ]
 
