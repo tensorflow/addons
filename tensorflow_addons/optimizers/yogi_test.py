@@ -117,6 +117,7 @@ class YogiOptimizerTest(tf.test.TestCase):
                 beta1=beta1,
                 l1_regularization_strength=l1reg,
                 l2_regularization_strength=l2reg,
+                initial_accumulator_value=1.0,
             )
             if not tf.executing_eagerly():
                 update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
@@ -235,6 +236,7 @@ class YogiOptimizerTest(tf.test.TestCase):
                 beta1=beta1,
                 l1_regularization_strength=l1reg,
                 l2_regularization_strength=l2reg,
+                initial_accumulator_value=1.0,
             )
 
             if not tf.executing_eagerly():
@@ -296,7 +298,7 @@ class YogiOptimizerTest(tf.test.TestCase):
             var1 = tf.Variable(var1_np)
             grads0 = tf.constant(grads0_np)
             grads1 = tf.constant(grads1_np)
-            opt = yogi.Yogi(tf.constant(0.01))
+            opt = yogi.Yogi(tf.constant(0.01), initial_accumulator_value=1.0)
 
             if not tf.executing_eagerly():
                 update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
@@ -339,7 +341,7 @@ class YogiOptimizerTest(tf.test.TestCase):
             var1 = tf.Variable(var1_np)
             grads0 = tf.constant(grads0_np)
             grads1 = tf.constant(grads1_np)
-            opt = yogi.Yogi()
+            opt = yogi.Yogi(initial_accumulator_value=1.0)
 
             if not tf.executing_eagerly():
                 update1 = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
