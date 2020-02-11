@@ -122,8 +122,8 @@ def toy_rnn(first_run = False):
 
 
 
-def get_train_results(model, verbose=False):
-    """Run a traininng loop and return the results for analysis
+def _get_train_results(model, verbose=False):
+    """Run a training loop and return the results for analysis
     model must be compiled first
     """
     tf.random.set_seed(1)
@@ -134,7 +134,7 @@ def get_train_results(model, verbose=False):
     return model.fit(x, y, epochs=10, batch_size=16, verbose=verbose, shuffle=False)
 
 
-def zipped_permutes():
+def _zipped_permutes():
     model_fns = [
         # generally, we want to test that common layers function correctly with discriminative layer training
         # dense, conv2d, batch norm, lstm, pooling, should cover the majority of layer types
@@ -176,8 +176,8 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
 
     def _assert_training_losses_are_close(self, model, model_lr):
-        hist = get_train_results(model, verbose=False)
-        hist_lr = get_train_results(model_lr, verbose=False)
+        hist = _get_train_results(model, verbose=False)
+        hist_lr = _get_train_results(model_lr, verbose=False)
         self._assert_losses_are_close(hist, hist_lr)
 
     def _test_equal_with_no_layer_lr(self, model_fn, loss, opt):
@@ -238,7 +238,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
         model_lr.compile(loss=loss, optimizer=d_opt)
 
-        loss_values = get_losses(get_train_results(model_lr))
+        loss_values = get_losses(_get_train_results(model_lr))
         self.assertLess(loss_values[-1], loss_values[0])
 
     def _run_tests_in_notebook(self):
@@ -277,7 +277,7 @@ def test_wrap(method, devices, **kwargs):
 def generate_tests(devices):
     for name, method in DiscriminativeLearningTest.__dict__.copy().items():
         if callable(method) and name[:5] == "_test":
-            for model_fn, loss, opt in zipped_permutes():
+            for model_fn, loss, opt in _zipped_permutes():
                 testmethodname = name[1:] + "_%s_%s_%s" % (
                     model_fn.__name__,
                     loss.name,
