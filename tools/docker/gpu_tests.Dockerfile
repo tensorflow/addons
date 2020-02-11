@@ -4,7 +4,7 @@ COPY build_deps/build-requirements.txt ./
 RUN pip3 install -r build-requirements.txt
 
 COPY requirements.txt ./
-RUN pip3 install -r requirements.txt
+RUN pip3 install -r --no-cache-dir requirements.txt
 
 COPY ./ /addons
 WORKDIR addons

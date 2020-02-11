@@ -7,7 +7,7 @@ RUN git clone https://github.com/abhinavsingh/setup-bazel.git
 RUN bash ./setup-bazel/setup-bazel.sh 1.1.0
 
 COPY requirements.txt ./
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./ /addons
 WORKDIR addons
