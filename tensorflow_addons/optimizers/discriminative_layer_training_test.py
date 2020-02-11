@@ -96,12 +96,12 @@ def toy_rnn(first_run=False):
         # pretend that net is a pretrained lstm of some sort
         net = tf.keras.Sequential(name="pretrained lstm")
 
-        net.add(tf.keras.layers.Input(input_shape=(32, 32, 3)))
+        net.add(tf.keras.layers.InputLayer(input_shape=(32, 32, 3)))
 
-        #crop the input shape so the lstm runs faster
-        net.add(tf.keras.layers.Cropping2D(cropping= ((8, 8), (12, 12) ) ))
+        # crop the input shape so the lstm runs faster
+        net.add(tf.keras.layers.Cropping2D(cropping=((8, 8), (12, 12))))
 
-        #reshape into a timeseries
+        # reshape into a timeseries
         net.add(tf.keras.layers.Reshape(target_shape=(16, 8 * 3)))
 
         # reduce the length of the time series
