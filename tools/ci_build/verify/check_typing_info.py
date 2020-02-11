@@ -26,9 +26,7 @@ HELP_MESSAGE = (
     "https://github.com/tensorflow/addons/blob/master/CONTRIBUTING.md#about-type-hints"
 )
 
-
-# TODO: add types and remove all elements from
-# the exception list.
+# Files within this list will be exempt from verification.
 EXCEPTION_LIST = []
 
 
