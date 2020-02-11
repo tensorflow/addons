@@ -18,8 +18,6 @@ exclude = '''
   | tensorflow_addons/losses/focal_loss.py
   | tensorflow_addons/losses/giou_loss.py
   | tensorflow_addons/losses/giou_loss_test.py
-  | tensorflow_addons/metrics/cohens_kappa.py
-  | tensorflow_addons/metrics/matthews_correlation_coefficient.py
   | tensorflow_addons/metrics/multilabel_confusion_matrix.py
   | tensorflow_addons/metrics/r_square.py
   | tensorflow_addons/optimizers/__init__.py
