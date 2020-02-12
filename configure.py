@@ -160,71 +160,75 @@ def create_build_configuration():
             print("Invalid selection:", answer)
 
     if _TF_NEED_CUDA == "1":
-        _TF_CUDA_VERSION = os.getenv("TF_CUDA_VERSION")
-        _CUDA_TOOLKIT_PATH = os.getenv("CUDA_TOOLKIT_PATH")
-        _TF_CUDNN_VERSION = os.getenv("TF_CUDNN_VERSION")
-        _CUDNN_INSTALL_PATH = os.getenv("CUDNN_INSTALL_PATH")
-        print()
-        print("Configuring GPU setup...")
-
-        if _TF_CUDA_VERSION is None:
-            answer = get_input(
-                "Please specify the CUDA version [Default is {}]: ".format(
-                    _DEFAULT_CUDA_VERISON
-                )
-            )
-            _TF_CUDA_VERSION = answer or _DEFAULT_CUDA_VERISON
-        print("> Using CUDA version:", _TF_CUDA_VERSION)
-        print()
-
-        if _CUDA_TOOLKIT_PATH is None:
-            answer = get_input(
-                "Please specify the location of CUDA. [Default is {}]: ".format(
-                    _DEFAULT_CUDA_PATH
-                )
-            )
-            _CUDA_TOOLKIT_PATH = answer or _DEFAULT_CUDA_PATH
-        print("> CUDA installation path:", _CUDA_TOOLKIT_PATH)
-        print()
-
-        if _TF_CUDNN_VERSION is None:
-            answer = get_input(
-                "Please specify the cuDNN major version [Default is {}]: ".format(
-                    _DEFAULT_CUDNN_VERSION
-                )
-            )
-            _TF_CUDNN_VERSION = answer or _DEFAULT_CUDNN_VERSION
-        print("> Using cuDNN version:", _TF_CUDNN_VERSION)
-        print()
-
-        if _CUDNN_INSTALL_PATH is None:
-            answer = get_input(
-                "Please specify the location of cuDNN installation. [Default is {}]: ".format(
-                    _DEFAULT_CUDNN_PATH
-                )
-            )
-            _CUDNN_INSTALL_PATH = answer or _DEFAULT_CUDNN_PATH
-        print("> cuDNN installation path:", _CUDNN_INSTALL_PATH)
-        print()
-
-        write_action_env_to_bazelrc("TF_NEED_CUDA", _TF_NEED_CUDA)
-        write_action_env_to_bazelrc("CUDA_TOOLKIT_PATH", _CUDA_TOOLKIT_PATH)
-        write_action_env_to_bazelrc("CUDNN_INSTALL_PATH", _CUDNN_INSTALL_PATH)
-        write_action_env_to_bazelrc("TF_CUDA_VERSION", _TF_CUDA_VERSION)
-        write_action_env_to_bazelrc("TF_CUDNN_VERSION", _TF_CUDNN_VERSION)
-
-        write_to_bazelrc("test --config=cuda")
-        write_to_bazelrc("build --config=cuda")
-        write_to_bazelrc(
-            "build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true"
-        )
-        write_to_bazelrc(
-            "build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain"
-        )
+        configure_cuda()
 
     print()
     print("Build configurations successfully written to", _TFA_BAZELRC)
     print()
+
+
+def configure_cuda():
+    _TF_CUDA_VERSION = os.getenv("TF_CUDA_VERSION")
+    _CUDA_TOOLKIT_PATH = os.getenv("CUDA_TOOLKIT_PATH")
+    _TF_CUDNN_VERSION = os.getenv("TF_CUDNN_VERSION")
+    _CUDNN_INSTALL_PATH = os.getenv("CUDNN_INSTALL_PATH")
+    print()
+    print("Configuring GPU setup...")
+
+    if _TF_CUDA_VERSION is None:
+        answer = get_input(
+            "Please specify the CUDA version [Default is {}]: ".format(
+                _DEFAULT_CUDA_VERISON
+            )
+        )
+        _TF_CUDA_VERSION = answer or _DEFAULT_CUDA_VERISON
+    print("> Using CUDA version:", _TF_CUDA_VERSION)
+    print()
+
+    if _CUDA_TOOLKIT_PATH is None:
+        answer = get_input(
+            "Please specify the location of CUDA. [Default is {}]: ".format(
+                _DEFAULT_CUDA_PATH
+            )
+        )
+        _CUDA_TOOLKIT_PATH = answer or _DEFAULT_CUDA_PATH
+    print("> CUDA installation path:", _CUDA_TOOLKIT_PATH)
+    print()
+
+    if _TF_CUDNN_VERSION is None:
+        answer = get_input(
+            "Please specify the cuDNN major version [Default is {}]: ".format(
+                _DEFAULT_CUDNN_VERSION
+            )
+        )
+        _TF_CUDNN_VERSION = answer or _DEFAULT_CUDNN_VERSION
+    print("> Using cuDNN version:", _TF_CUDNN_VERSION)
+    print()
+
+    if _CUDNN_INSTALL_PATH is None:
+        answer = get_input(
+            "Please specify the location of cuDNN installation. [Default is {}]: ".format(
+                _DEFAULT_CUDNN_PATH
+            )
+        )
+        _CUDNN_INSTALL_PATH = answer or _DEFAULT_CUDNN_PATH
+    print("> cuDNN installation path:", _CUDNN_INSTALL_PATH)
+    print()
+
+    write_action_env_to_bazelrc("TF_NEED_CUDA", "1")
+    write_action_env_to_bazelrc("CUDA_TOOLKIT_PATH", _CUDA_TOOLKIT_PATH)
+    write_action_env_to_bazelrc("CUDNN_INSTALL_PATH", _CUDNN_INSTALL_PATH)
+    write_action_env_to_bazelrc("TF_CUDA_VERSION", _TF_CUDA_VERSION)
+    write_action_env_to_bazelrc("TF_CUDNN_VERSION", _TF_CUDNN_VERSION)
+
+    write_to_bazelrc("test --config=cuda")
+    write_to_bazelrc("build --config=cuda")
+    write_to_bazelrc(
+        "build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true"
+    )
+    write_to_bazelrc(
+        "build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain"
+    )
 
 
 if __name__ == "__main__":
