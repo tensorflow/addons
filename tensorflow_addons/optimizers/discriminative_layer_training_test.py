@@ -284,17 +284,17 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         learning_rate = 0.01
         model_lr = model_fn()
 
-        # we set model to lrmult 0 and layer one to lrmult 0.5
+        # we set model to lrmult 0 and layer one to lrmult 5
         # if layer one is trainable, then the loss should decrease
         model_lr.lr_mult = 0.00
-        model_lr.layers[-1].lr_mult = 0.5
+        model_lr.layers[-1].lr_mult = 3
 
         d_opt = DiscriminativeLayerOptimizer(
             opt, model_lr, verbose=False, learning_rate=learning_rate
         )
         model_lr.compile(loss=loss, optimizer=d_opt)
 
-        loss_values = get_losses(_get_train_results(model_lr, epochs=4))
+        loss_values = get_losses(_get_train_results(model_lr, epochs=5))
         self.assertLess(loss_values[-1], loss_values[0])
 
     def _test_variables_get_assigned(self, model_fn, loss, opt):
