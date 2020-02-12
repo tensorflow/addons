@@ -99,7 +99,11 @@ def toy_rnn(first_run=False):
 
         # crop the input shape so the lstm runs faster
         # pretrained need inputshape for weights to be initialized
-        net.add(tf.keras.layers.Cropping2D(cropping=((8, 8), (12, 12)), input_shape = (32, 32, 3)))
+        net.add(
+            tf.keras.layers.Cropping2D(
+                cropping=((8, 8), (12, 12)), input_shape=(32, 32, 3)
+            )
+        )
 
         # reshape into a timeseries
         net.add(tf.keras.layers.Reshape(target_shape=(16, 8 * 3)))
@@ -133,7 +137,7 @@ def toy_rnn(first_run=False):
         return tf.keras.models.load_model(rnn_model_path)
 
 
-def _get_train_results(model, verbose=False, epochs = 10):
+def _get_train_results(model, verbose=False, epochs=10):
     """Run a training loop and return the results for analysis
     model must be compiled first
     """
@@ -187,13 +191,13 @@ class DiscriminativeLearningTest(tf.test.TestCase):
             get_losses(hist), get_losses(hist_lr), rtol=rtol, atol=atol
         )
 
-    def _assert_training_losses_are_close(self, model, model_lr, epochs = 10):
+    def _assert_training_losses_are_close(self, model, model_lr, epochs=10):
         """easy way to check if two models train in almost the same way
         epochs set to 10 by default to allow momentum methods to pick up momentum and diverge
         if the disc training is not working
         """
-        hist = _get_train_results(model, verbose=False, epochs= epochs)
-        hist_lr = _get_train_results(model_lr, verbose=False, epochs= epochs)
+        hist = _get_train_results(model, verbose=False, epochs=epochs)
+        hist_lr = _get_train_results(model_lr, verbose=False, epochs=epochs)
         self._assert_losses_are_close(hist, hist_lr)
 
     def _test_equal_with_no_layer_lr(self, model_fn, loss, opt):
@@ -210,7 +214,9 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         self._assert_training_losses_are_close(model, model_lr)
 
-    def _test_equal_0_sub_layer_lr_to_sub_layer_trainable_false(self, model_fn, loss, opt):
+    def _test_equal_0_sub_layer_lr_to_sub_layer_trainable_false(
+        self, model_fn, loss, opt
+    ):
         """confirm 0 lr_mult for the a specific layer is the same as setting layer to not trainable
         this also confirms that lr_mult propagates into that layer's trainable variables
         this also confirms that lr_mult does not propagate to the rest of the layers unintentionally
@@ -218,7 +224,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         learning_rate = 0.01
         model = model_fn()
 
-        #we use layer 1 instead of 0 bc layer 0 is just an input layer
+        # we use layer 1 instead of 0 bc layer 0 is just an input layer
         model.layers[1].trainable = False
         model.compile(loss=loss, optimizer=opt(learning_rate))
 
@@ -247,8 +253,8 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
         model_lr.compile(loss=loss, optimizer=d_opt)
 
-        #only two epochs because we expect no training to occur, thus losses shouldn't change anyways
-        self._assert_training_losses_are_close(model, model_lr, epochs = 2)
+        # only two epochs because we expect no training to occur, thus losses shouldn't change anyways
+        self._assert_training_losses_are_close(model, model_lr, epochs=2)
 
     def _test_equal_half_layer_lr_to_half_lr_of_opt(self, model_fn, loss, opt):
         """confirm 0.5 lr_mult for the model is the same as optim with 0.5 lr
@@ -291,13 +297,11 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         loss_values = get_losses(_get_train_results(model_lr, epochs=4))
         self.assertLess(loss_values[-1], loss_values[0])
 
-
     def _test_variables_get_assigned(self):
         """confirm that variables do get an lr_mult attribute and that they get the correct one
         :TODO confirm propagation to nested sublayers, confirm not override of a sublayer's mult
         """
         pass
-
 
     def _run_tests_in_notebook(self):
         for name, method in DiscriminativeLearningTest.__dict__.items():
