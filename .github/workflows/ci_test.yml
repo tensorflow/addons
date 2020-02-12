@@ -1,12 +1,13 @@
 name: GitHub CI
 
-on:
   push:
     branches:
       - master
+      - r*
   pull_request:
     branches:
       - master
+      - r*
 
 env:
   BAZEL_VERSION: 1.1.0
