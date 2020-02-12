@@ -230,7 +230,7 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
         self.opt_class = base_optimizer
 
         # find unique lr_mult
-        variable_groups = {var.lr_mult_value: None for var in model.trainable_variables}
+        variable_groups = {var.lr_mult: None for var in model.trainable_variables}
 
         self.optimizer_group = []
 

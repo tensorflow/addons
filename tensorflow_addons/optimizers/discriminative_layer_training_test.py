@@ -310,9 +310,9 @@ def generate_tests(devices):
 
 
 if __name__ == "__main__":
-    # save models so weights are always the same
     devices = test_utils.create_virtual_devices(2)
 
+    # save models so weights are always the same
     toy_cnn(first_run=True)
     toy_rnn(first_run=True)
 
