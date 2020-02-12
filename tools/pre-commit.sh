@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# usage: bash tools/pre-commit.sh
+# by default uses docker buildkit.
+# to disable it:
+# DOCKER_BUILDKIT=0 bash tools/pre-commit.sh
+
 
 set -e
 
