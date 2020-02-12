@@ -303,7 +303,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         learning_rate = 0.01
         model_lr = model_fn()
 
-        #set lr mults
+        # set lr mults
         model_lr.layers[1].lr_mult = 0.3
         model_lr.layers[1].layers[-1].lr_mult = 0.1
         model_lr.layers[-1].lr_mult = 0.5
@@ -313,24 +313,25 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
         model_lr.compile(loss=loss, optimizer=d_opt)
 
-
         # we expect trainable vars at 0.3 to be reduced by the amount at 0.1
         # this tests that the 0.3 lr mult does not override the 0.1 lr mult
-        self.assertEqual(len(model_lr.layers[1].trainable_variables) - len(model_lr.layers[1].layers[-1].trainable_variables),
-                         len([var for var in model_lr.trainable_variables if var.lr_mult == 0.3])
-                         )
+        self.assertEqual(
+            len(model_lr.layers[1].trainable_variables)
+            - len(model_lr.layers[1].layers[-1].trainable_variables),
+            len([var for var in model_lr.trainable_variables if var.lr_mult == 0.3]),
+        )
 
         # we expect trainable vars of model with lr_mult 0.1 to equal trainable vars of that layer
-        self.assertEqual(len(model_lr.layers[1].layers[-1].trainable_variables),
-                         len([var for var in model_lr.trainable_variables if var.lr_mult == 0.1])
-                         )
+        self.assertEqual(
+            len(model_lr.layers[1].layers[-1].trainable_variables),
+            len([var for var in model_lr.trainable_variables if var.lr_mult == 0.1]),
+        )
 
         # same logic as above
-        self.assertEqual(len(model_lr.layers[-1].trainable_variables),
-                         len([var for var in model_lr.trainable_variables if var.lr_mult == 0.5])
-                         )
-
-
+        self.assertEqual(
+            len(model_lr.layers[-1].trainable_variables),
+            len([var for var in model_lr.trainable_variables if var.lr_mult == 0.5]),
+        )
 
     def _run_tests_in_notebook(self):
         for name, method in DiscriminativeLearningTest.__dict__.items():

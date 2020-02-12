@@ -272,13 +272,15 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
         for now, it returns the config values of itself and base optimizers
         """
 
-        logging.warning("""Discriminative Training Optimzer depends on its attached model
+        logging.warning(
+            """Discriminative Training Optimzer depends on its attached model
         It will behave differently on the same model if the lr mult attributes are not set in the same way 
         Currently, this method does not support preserving optimizer's state during training 
-        """)
+        """
+        )
         config = super().get_config()
-        config['base_optimizer'] = self.opt_class
-        config['learning_rate'] = self.learning_rate
+        config["base_optimizer"] = self.opt_class
+        config["learning_rate"] = self.learning_rate
 
         for key, value in self.kwargs:
             config[key] = value
@@ -289,9 +291,11 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
     def from_config(cls, config, model):
         """For this to work, you need to pass the same model to the optimizer"""
 
-        logging.warning("""Discriminative Training Optimzer depends on its attached model
+        logging.warning(
+            """Discriminative Training Optimzer depends on its attached model
         It will behave differently on the same model if the lr mult attributes are not set in the same way
         Currently, this method does not support preserving optimizer's state during training 
-        """)
+        """
+        )
 
         return cls(**config, model=model)
