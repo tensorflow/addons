@@ -225,11 +225,11 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         model = model_fn()
 
         # we use layer 1 instead of 0 bc layer 0 is just an input layer
-        model.layers[1].trainable = False
+        model.layers[0].trainable = False
         model.compile(loss=loss, optimizer=opt(learning_rate))
 
         model_lr = model_fn()
-        model_lr.layers[1].lr_mult = 0.0
+        model_lr.layers[0].lr_mult = 0.0
         d_opt = DiscriminativeLayerOptimizer(
             opt, model_lr, verbose=False, learning_rate=learning_rate
         )
@@ -304,8 +304,8 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         model_lr = model_fn()
 
         # set lr mults
-        model_lr.layers[1].lr_mult = 0.3
-        model_lr.layers[1].layers[-1].lr_mult = 0.1
+        model_lr.layers[0].lr_mult = 0.3
+        model_lr.layers[0].layers[-1].lr_mult = 0.1
         model_lr.layers[-1].lr_mult = 0.5
 
         d_opt = DiscriminativeLayerOptimizer(
@@ -316,14 +316,14 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         # we expect trainable vars at 0.3 to be reduced by the amount at 0.1
         # this tests that the 0.3 lr mult does not override the 0.1 lr mult
         self.assertEqual(
-            len(model_lr.layers[1].trainable_variables)
-            - len(model_lr.layers[1].layers[-1].trainable_variables),
+            len(model_lr.layers[0].trainable_variables)
+            - len(model_lr.layers[0].layers[-1].trainable_variables),
             len([var for var in model_lr.trainable_variables if var.lr_mult == 0.3]),
         )
 
         # we expect trainable vars of model with lr_mult 0.1 to equal trainable vars of that layer
         self.assertEqual(
-            len(model_lr.layers[1].layers[-1].trainable_variables),
+            len(model_lr.layers[0].layers[-1].trainable_variables),
             len([var for var in model_lr.trainable_variables if var.lr_mult == 0.1]),
         )
 
