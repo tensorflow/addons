@@ -24,7 +24,6 @@ exclude = '''
   | tensorflow_addons/optimizers/lookahead.py
   | tensorflow_addons/optimizers/moving_average.py
   | tensorflow_addons/optimizers/weight_decay_optimizers.py
-  | tensorflow_addons/seq2seq/attention_wrapper_test.py
   | tensorflow_addons/text/__init__.py
   | tensorflow_addons/text/crf.py
   | tensorflow_addons/text/crf_test.py
