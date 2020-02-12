@@ -274,8 +274,8 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
 
         logging.warning(
             """Discriminative Training Optimzer depends on its attached model
-        It will behave differently on the same model if the lr mult attributes are not set in the same way 
-        Currently, this method does not support preserving optimizer's state during training 
+        It will behave differently on the same model if the lr mult attributes are not set in the same way
+        Currently, this method does not support preserving optimizer's state during training
         """
         )
         config = super().get_config()
@@ -294,7 +294,7 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
         logging.warning(
             """Discriminative Training Optimzer depends on its attached model
         It will behave differently on the same model if the lr mult attributes are not set in the same way
-        Currently, this method does not support preserving optimizer's state during training 
+        Currently, this method does not support preserving optimizer's state during training
         """
         )
 
