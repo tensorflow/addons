@@ -228,6 +228,8 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
         DiscriminativeModelManager._prepare_model(model, verbose=verbose)
 
         self.opt_class = base_optimizer
+        self.learning_rate = learning_rate
+        self.kwargs = kwargs
 
         # find unique lr_mult
         variable_groups = {var.lr_mult: None for var in model.trainable_variables}
@@ -265,7 +267,31 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
         ]
 
     def get_config(self):
-        raise NotImplementedError("Optimizer wrapper does not support get config")
+        """This method cannot effectively return the optimizer configuration because
+        that configuration depends on the model and base optimizer
+        for now, it returns the config values of itself and base optimizers
+        """
 
-    def from_config(self):
-        raise NotImplementedError("Optimizer wrapper does not support from config")
+        logging.warning("""Discriminative Training Optimzer depends on its attached model
+        It will behave differently on the same model if the lr mult attributes are not set in the same way 
+        Currently, this method does not support preserving optimizer's state during training 
+        """)
+        config = super().get_config()
+        config['base_optimizer'] = self.opt_class
+        config['learning_rate'] = self.learning_rate
+
+        for key, value in self.kwargs:
+            config[key] = value
+
+        return config
+
+    @classmethod
+    def from_config(cls, config, model):
+        """For this to work, you need to pass the same model to the optimizer"""
+
+        logging.warning("""Discriminative Training Optimzer depends on its attached model
+        It will behave differently on the same model if the lr mult attributes are not set in the same way
+        Currently, this method does not support preserving optimizer's state during training 
+        """)
+
+        return cls(**config, model=model)
