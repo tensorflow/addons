@@ -5,8 +5,9 @@
 -----------------
 
 [![PyPI Status Badge](https://badge.fury.io/py/tensorflow-addons.svg)](https://pypi.org/project/tensorflow-addons/)
-[![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/tensorflow-addons)](https://pypi.org/project/tensorflow-addons/)
 [![Documentation](https://img.shields.io/badge/api-reference-blue.svg)](https://www.tensorflow.org/addons/api_docs/python/tfa)
+[![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ### Nightly Tests
@@ -61,9 +62,9 @@ import tensorflow_addons as tfa
 | Version    | Compatible With |Python versions  | Compiler  | cuDNN | CUDA | 
 |:----------------------- |:---|:---------- |:---------|:---------|:---------|
 | tfa-nightly | tensorflow>=2.1.0 | 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
-| tensorflow-addons-0.7.0 | tensorflow>=2.1.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
-| tensorflow-addons-0.6.0 | tensorflow==2.0.0 <br> tensorflow-gpu==2.0.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
-| tensorflow-addons-0.5.2 | tensorflow==2.0.0 <br> tensorflow-gpu==2.0.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
+| tensorflow-addons-0.8.2 | tensorflow>=2.1.0 |3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.7.1 | tensorflow>=2.1.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.6.0 | tensorflow==2.0.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
 
 
 #### Nightly Builds

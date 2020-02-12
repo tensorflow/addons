@@ -54,18 +54,34 @@ us**
 ## Development Tips
 Try these useful commands below:
 
-* Format code automatically: `bash tools/run_docker.sh -c 'make code-format'`
+* Format code automatically: `bash tools/pre-commit.sh`
 * Run sanity check: `bash tools/run_sanity_check.sh`
-* Run CPU unit tests: `bash tools/run_docker.sh -c 'make unit-test'`
-* Run GPU unit tests: `bash tools/run_docker.sh -d gpu -c 'make gpu-unit-test'`
-* All of the above: `bash tools/run_docker.sh -d gpu -c 'make'`
+* Run CPU unit tests: `bash tools/run_cpu_tests.sh`
+* Run GPU unit tests: `bash tools/run_gpu_tests.sh`
 
 ## Coding style
 
-Addons provides `make code-format` command to format your changes
-automatically, don't forget to use it before pushing your code.
+We provide a pre-commit hook to format your code automatically before each
+commit, so that you don't have to read our style guide. Install it with
 
-Please see our [Style Guide](STYLE_GUIDE.md) for more details.
+```
+cd .git/hooks && ln -s -f ../../tools/pre-commit.sh pre-commit
+```
+
+and you're good to go.
+
+Note that this pre-commit needs Docker to run. 
+If you have docker 19.03+, it uses
+[Docker buildkit](https://docs.docker.com/develop/develop-images/build_enhancements/) 
+to make the build step much faster.
+
+
+It should also work on 
+Windows (with [Docker desktop for Windows](https://docs.docker.com/docker-for-windows/install/), 
+select "Run linux containers").
+But this has not been tested. If you work on Windows, we'd be happy to have your feedback!
+
+See our [Style Guide](STYLE_GUIDE.md) for more details.
 
 ## Code Testing
 ### CI Testing
@@ -76,12 +92,12 @@ subscribe for alerts please join the [addons-testing mailing list](https://group
 
 #### CPU Testing Script
 ```bash
-bash tools/run_docker.sh -c 'make unit-test'
+bash tools/run_cpu_tests.sh
 ```
 
 #### GPU Testing Script
 ```bash
-bash tools/run_docker.sh -d gpu -c 'make gpu-unit-test'
+bash tools/run_gpu_tests.sh
 ```
 
 #### Run Manually

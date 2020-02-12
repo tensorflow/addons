@@ -66,7 +66,7 @@ class Yogi(tf.keras.optimizers.Optimizer):
         epsilon: FloatTensorLike = 1e-3,
         l1_regularization_strength: FloatTensorLike = 0.0,
         l2_regularization_strength: FloatTensorLike = 0.0,
-        initial_accumulator_value: FloatTensorLike = 1.0,
+        initial_accumulator_value: FloatTensorLike = 1e-6,
         activation: str = "sign",
         name: str = "Yogi",
         **kwargs
