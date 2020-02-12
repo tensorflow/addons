@@ -67,18 +67,26 @@ class CohenKappa(Metric):
                  num_classes: FloatTensorLike,
                  name: str = 'cohen_kappa',
                  weightage: Optional[str] = None,
+                 sparse_labels: bool = False,
+                 regression: bool = False,
                  dtype: AcceptableDTypes = None,
                  **kwargs):
         """Creates a `CohenKappa` instance.
 
         Args:
           num_classes: Number of unique classes in your dataset.
-          name: (Optional) String name of the metric instance.
-          weightage: (Optional) Weighting to be considered for calculating
+          weightage: (optional) Weighting to be considered for calculating
             kappa statistics. A valid value is one of
-            [None, 'linear', 'quadratic']. Defaults to `None`.
-          dtype: (Optional) Data type of the metric result.
-            Defaults to `None`.
+            [None, 'linear', 'quadratic']. Defaults to `None`
+          sparse_lables: (bool) Valid only for multi-class scenario.
+            If True, ground truth labels are expected tp be integers
+            and not one-hot encoded
+          regression: (bool) If set, that means the problem is being treated
+            as a regression problem where you are regressing the predictions.
+            **Note:** If you are regressing for the values, the the output layer
+            should contain a single unit.
+          name: (optional) String name of the metric instance
+          dtype: (optional) Data type of the metric result. Defaults to `None`
 
         Raises:
           ValueError: If the value passed for `weightage` is invalid
@@ -89,8 +97,18 @@ class CohenKappa(Metric):
         if weightage not in (None, 'linear', 'quadratic'):
             raise ValueError("Unknown kappa weighting type.")
 
+        if num_classes == 2:
+            self._update = self._update_binary_class_model
+        elif num_classes > 2:
+            self._update = self._update_multi_class_model
+        else:
+            raise ValueError("""Number of classes must be
+                              greater than or euqal to two""")
+
         self.weightage = weightage
         self.num_classes = num_classes
+        self.regression = regression
+        self.sparse_labels = sparse_labels
         self.conf_mtx = self.add_weight(
             'conf_mtx',
             shape=(self.num_classes, self.num_classes),
@@ -114,14 +132,35 @@ class CohenKappa(Metric):
         Returns:
           Update op.
         """
+        return self._update(y_true, y_pred, sample_weight)
+
+    def _update_binary_class_model(self, y_true, y_pred, sample_weight=None):
         y_true = tf.cast(y_true, dtype=tf.int64)
-        y_pred = tf.cast(y_pred, dtype=tf.int64)
+        y_pred = tf.cast(y_pred, dtype=tf.float32)
+        y_pred = tf.cast(y_pred > 0.5, dtype=tf.int64)
+        return self._update_confusion_matrix(y_true, y_pred, sample_weight)
 
-        if y_true.shape != y_pred.shape:
-            raise ValueError(
-                "Number of samples in `y_true` and `y_pred` are different")
+    def _update_multi_class_model(self, y_true, y_pred, sample_weight=None):
+        if not self.sparse_labels:
+            y_true = tf.cast(tf.argmax(y_true, axis=-1), dtype=tf.int64)
+        else:
+            y_true = tf.cast(y_true, dtype=tf.int64)
 
-        # compute the new values of the confusion matrix
+        if tf.rank(y_pred) > 1:
+            if not self.regression:
+                y_pred = tf.cast(tf.argmax(y_pred, axis=-1), dtype=tf.int64)
+            else:
+                y_pred = tf.math.round(tf.math.abs(y_pred))
+                y_pred = tf.cast(y_pred, dtype=tf.int64)
+        else:
+            y_pred = tf.cast(y_pred, dtype=tf.int64)
+
+        return self._update_confusion_matrix(y_true, y_pred, sample_weight)
+
+    def _update_confusion_matrix(self, y_true, y_pred, sample_weight):
+        y_true = tf.squeeze(y_true)
+        y_pred = tf.squeeze(y_pred)
+
         new_conf_mtx = tf.math.confusion_matrix(
             labels=y_true,
             predictions=y_pred,
@@ -129,7 +168,6 @@ class CohenKappa(Metric):
             weights=sample_weight,
             dtype=tf.float32)
 
-        # update the values in the original confusion matrix
         return self.conf_mtx.assign_add(new_conf_mtx)
 
     def result(self):
@@ -179,6 +217,8 @@ class CohenKappa(Metric):
         config = {
             "num_classes": self.num_classes,
             "weightage": self.weightage,
+            "sparse_labels": self.sparse_labels,
+            "regression": self.regression
         }
         base_config = super().get_config()
         return {**base_config, **config}
