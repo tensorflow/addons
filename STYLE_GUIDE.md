@@ -14,6 +14,19 @@ int formatted_code;
 void formatted_code_again;
 ```
 
+Install Clang-format 9 with:
+
+```bash
+wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+sudo add-apt-repository -u 'http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main'
+sudo apt install clang-format-9
+```
+
+format all with:
+```bash
+clang-format-9 -i --style=google **/*.cc **/*.h
+```
+
 #### Python
 
 Addons uses [flake8](http://flake8.pycqa.org/en/latest/) to check pep8 compliance and 
@@ -32,11 +45,6 @@ Be sure to run them both before you push your commits, otherwise the CI will fai
 ```
 python -m black ./
 python -m flake8
-```
-
-If you want those tools to run automatically before each commit, run:
-```bash
-cd .git/hooks && ln -s -f ../../tools/pre-commit.sh pre-commit
 ```
 
 #### TensorFlow Conventions

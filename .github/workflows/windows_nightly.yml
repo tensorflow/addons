@@ -29,24 +29,28 @@ jobs:
           export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
           bash -x -e ./tools/ci_testing/addons_cpu.sh
 
-  windows-nightly-bazel:
-    name: Build nightly for Windows
+  windows-nightly-wheel:
+    name: Build nightly wheels for Windows
     needs: [windows-cpu-nightly-test]
     runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ['3.5', '3.6', '3.7']
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-python@v1
         with:
-          python-version: 3.7
-      - name: Nightly build for Windows
+          python-version: ${{ matrix.python-version }}
+      - name: Build Windows wheels
         env:
           TF_NEED_CUDA: 0
           BAZEL_VC: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/"
         shell: bash
         run: |
-          python --version
+          python -m pip install wheel setuptools
+          python ./configure.py --quiet
+
           curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
-          echo 'y' | python ./configure.py --quiet
           ./bazel-${BAZEL_VERSION}-windows-x86_64.exe build \
             -c opt \
             --enable_runfiles \
@@ -55,32 +59,6 @@ jobs:
             --verbose_failures \
             --test_output=errors \
             build_pip_pkg
-      - uses: actions/upload-artifact@v1
-        with:
-          name: ${{ runner.os }}-bazel-bin
-          path: bazel-bin
-
-  windows-nightly-wheel:
-    name: Build nightly wheels for Windows
-    needs: [windows-nightly-bazel]
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        python-version: ['3.5', '3.6', '3.7']
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/download-artifact@v1
-        with:
-          name: ${{ runner.os }}-bazel-bin
-          path: bazel-bin
-      - uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Build Windows wheels
-        shell: bash
-        run: |
-          chmod +x bazel-bin/build_pip_pkg
-          python -m pip install wheel setuptools
           bazel-bin/build_pip_pkg artifacts --nightly
       - uses: actions/upload-artifact@v1
         with:

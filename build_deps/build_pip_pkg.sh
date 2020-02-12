@@ -44,6 +44,13 @@ function main() {
     exit 1
   fi
 
+  # Check if python3 is available. On Windows VM it is not.
+  if [ -x "$(command -v python3)" ]; then
+      _PYTHON_BINARY=python3
+    else
+      _PYTHON_BINARY=python
+  fi
+
   mkdir -p ${DEST}
   DEST=$(abspath "${DEST}")
   echo "=== destination directory: ${DEST}"
@@ -72,9 +79,9 @@ function main() {
 
   if [[ -z ${BUILD_FLAG} ]]; then
     # Windows has issues with locking library files for deletion so do not fail here
-    ${PYTHON_VERSION:=python} setup.py bdist_wheel || true
+    ${_PYTHON_BINARY} setup.py bdist_wheel || true
   else
-    ${PYTHON_VERSION:=python} setup.py bdist_wheel "${2}" || true
+    ${_PYTHON_BINARY} setup.py bdist_wheel "${2}" || true
   fi
 
   cp dist/*.whl "${DEST}"

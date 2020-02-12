@@ -9,6 +9,7 @@
 | normalizations | @smokrow | moritz.kroeger@tu-dortmund.de |
 | opticalflow | @fsx950223 | fsx950223@gmail.com |
 | poincare | @rahulunair | rahulunair@gmail.com  |
+| polynomial     | @tanzheny        | tanzheny@google.com
 | sparsemax | @AndreasMadsen | amwwebdk+github@gmail.com |
 | tlu       | @AakashKumarNain | aakashnain@outlook.com |
 | wrappers | @seanpmorgan | seanmorgan@outlook.com |
@@ -23,6 +24,7 @@
 | normalizations | InstanceNormalization | https://arxiv.org/abs/1607.08022 |
 | opticalflow | CorrelationCost | https://arxiv.org/abs/1504.06852   |
 | poincare | PoincareNormalize | https://arxiv.org/abs/1705.08039    |
+| polynomial     | PolynomialCrossing    | https://arxiv.org/pdf/1708.05123 |
 | sparsemax| Sparsemax | https://arxiv.org/abs/1602.02068 |
 | tlu       | TLU | https://arxiv.org/abs/1911.09737  |
 | wrappers | WeightNormalization | https://arxiv.org/abs/1602.07868 |

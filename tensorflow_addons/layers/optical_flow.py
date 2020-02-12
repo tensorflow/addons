@@ -21,15 +21,17 @@ from tensorflow_addons.utils.resource_loader import LazySO
 _correlation_cost_so = LazySO("custom_ops/layers/_correlation_cost_ops.so")
 
 
-def _correlation_cost(input_a,
-                      input_b,
-                      kernel_size,
-                      max_displacement,
-                      stride_1,
-                      stride_2,
-                      pad,
-                      data_format='channels_last',
-                      name=None):
+def _correlation_cost(
+    input_a,
+    input_b,
+    kernel_size,
+    max_displacement,
+    stride_1,
+    stride_2,
+    pad,
+    data_format="channels_last",
+    name=None,
+):
     """Correlation Cost Volume computation.
 
     "FlowNet: Learning Optical Flow with Convolutional Networks"
@@ -84,8 +86,9 @@ def _correlation_cost(input_a,
         elif data_format == "channels_first":
             op_data_format = "NCHW"
         else:
-            raise ValueError("`data_format` must be either `channels_last` or"
-                             "`channels_first`")
+            raise ValueError(
+                "`data_format` must be either `channels_last` or" "`channels_first`"
+            )
 
         ret = op_call(
             input_a,
@@ -95,8 +98,9 @@ def _correlation_cost(input_a,
             stride_1=stride_1,
             stride_2=stride_2,
             pad=pad,
-            data_format=op_data_format)
-        if data_format == 'channels_last':
+            data_format=op_data_format,
+        )
+        if data_format == "channels_last":
             # this is easier to maintain without
             # specializing an additional cuda kernel
             return tf.transpose(ret, [0, 2, 3, 1])
@@ -126,14 +130,15 @@ def _correlation_cost_grad(op, grad_output):
         stride_1=stride_1,
         stride_2=stride_2,
         pad=pad,
-        data_format=data_format)
+        data_format=data_format,
+    )
 
     grad_input_a = tf.convert_to_tensor(grads[0], name="grad_input_a")
     grad_input_b = tf.convert_to_tensor(grads[1], name="grad_input_b")
     return [grad_input_a, grad_input_b]
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class CorrelationCost(tf.keras.layers.Layer):
     """Correlation Cost Layer.
 
@@ -157,14 +162,16 @@ class CorrelationCost(tf.keras.layers.Layer):
     """
 
     @typechecked
-    def __init__(self,
-                 kernel_size: int,
-                 max_displacement: int,
-                 stride_1: int,
-                 stride_2: int,
-                 pad: int,
-                 data_format: str,
-                 **kwargs):
+    def __init__(
+        self,
+        kernel_size: int,
+        max_displacement: int,
+        stride_1: int,
+        stride_2: int,
+        pad: int,
+        data_format: str,
+        **kwargs
+    ):
         self.kernel_size = kernel_size
         self.max_displacement = max_displacement
         self.stride_1 = stride_1
@@ -172,8 +179,10 @@ class CorrelationCost(tf.keras.layers.Layer):
         self.pad = pad
 
         if data_format != "channels_last" and data_format != "channels_first":
-            raise ValueError("`data_format` must be either `channels_last` or"
-                             "`channels_first`, instead got %s" % data_format)
+            raise ValueError(
+                "`data_format` must be either `channels_last` or"
+                "`channels_first`, instead got %s" % data_format
+            )
 
         self.data_format = data_format
 
@@ -199,7 +208,8 @@ class CorrelationCost(tf.keras.layers.Layer):
             stride_1=self.stride_1,
             stride_2=self.stride_2,
             pad=self.pad,
-            data_format=self.data_format)
+            data_format=self.data_format,
+        )
 
     def compute_output_shape(self, input_shape):
         assert isinstance(input_shape, list)
@@ -215,7 +225,7 @@ class CorrelationCost(tf.keras.layers.Layer):
         n = input_shape[0][0]
         r = self.max_displacement // self.stride_2
         bd = self.max_displacement + (self.kernel_size - 1) // 2
-        output_c = (2 * r + 1)**2
+        output_c = (2 * r + 1) ** 2
 
         if self.data_format == "channels_first":
             output_h = input_shape[0][2] + 2 * (self.pad - bd) // self.stride_1
@@ -227,17 +237,18 @@ class CorrelationCost(tf.keras.layers.Layer):
             output_w = input_shape[0][2] + 2 * (self.pad - bd) // self.stride_1
             return [(n, output_h, output_w, output_c)]
         else:
-            raise ValueError("`data_format` must be either `channels_last` or"
-                             "`channels_first`")
+            raise ValueError(
+                "`data_format` must be either `channels_last` or" "`channels_first`"
+            )
 
     def get_config(self):
         config = {
-            'kernel_size': self.kernel_size,
-            'max_displacement': self.max_displacement,
-            'stride_1': self.stride_1,
-            'stride_2': self.stride_2,
-            'pad': self.pad,
-            'data_format': self.data_format
+            "kernel_size": self.kernel_size,
+            "max_displacement": self.max_displacement,
+            "stride_1": self.stride_1,
+            "stride_2": self.stride_2,
+            "pad": self.pad,
+            "data_format": self.data_format,
         }
 
         base_config = super().get_config()

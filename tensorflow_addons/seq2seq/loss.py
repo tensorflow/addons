@@ -15,19 +15,23 @@
 """Seq2seq loss operations for use in sequence models."""
 
 import tensorflow as tf
+from tensorflow_addons.utils.types import TensorLike
+
+from typeguard import typechecked
+from typing import Callable, Optional
 
 
 def sequence_loss(
-    logits,
-    targets,
-    weights,
-    average_across_timesteps=True,
-    average_across_batch=True,
-    sum_over_timesteps=False,
-    sum_over_batch=False,
-    softmax_loss_function=None,
-    name=None,
-):
+    logits: TensorLike,
+    targets: TensorLike,
+    weights: TensorLike,
+    average_across_timesteps: bool = True,
+    average_across_batch: bool = True,
+    sum_over_timesteps: bool = False,
+    sum_over_batch: bool = False,
+    softmax_loss_function: Optional[Callable] = None,
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Weighted cross-entropy loss for a sequence of logits.
 
     Depending on the values of `average_across_timesteps` /
@@ -168,14 +172,15 @@ def sequence_loss(
 class SequenceLoss(tf.keras.losses.Loss):
     """Weighted cross-entropy loss for a sequence of logits."""
 
+    @typechecked
     def __init__(
         self,
-        average_across_timesteps=False,
-        average_across_batch=False,
-        sum_over_timesteps=True,
-        sum_over_batch=True,
-        softmax_loss_function=None,
-        name=None,
+        average_across_timesteps: bool = False,
+        average_across_batch: bool = False,
+        sum_over_timesteps: bool = True,
+        sum_over_batch: bool = True,
+        softmax_loss_function: Optional[Callable] = None,
+        name: Optional[str] = None,
     ):
         super().__init__(name=name)
         self.average_across_timesteps = average_across_timesteps

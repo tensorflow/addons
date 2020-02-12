@@ -23,11 +23,15 @@ from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils.resource_loader import LazySO
+from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
+
+from typeguard import typechecked
+from typing import Callable, Optional, Union
 
 _beam_search_so = LazySO("custom_ops/seq2seq/_beam_search_ops.so")
 
 
-def gather_tree(*args, **kwargs):
+def gather_tree(*args, **kwargs) -> tf.Tensor:
     return _beam_search_so.ops.addons_gather_tree(*args, **kwargs)
 
 
@@ -92,7 +96,7 @@ def _tile_batch(t, multiplier):
     return tiled
 
 
-def tile_batch(t, multiplier, name=None):
+def tile_batch(t: TensorLike, multiplier: int, name: Optional[str] = None) -> tf.Tensor:
     """Tile the batch dimension of a (possibly nested structure of) tensor(s)
     t.
 
@@ -120,7 +124,9 @@ def tile_batch(t, multiplier, name=None):
         return tf.nest.map_structure(lambda t_: _tile_batch(t_, multiplier), t)
 
 
-def gather_tree_from_array(t, parent_ids, sequence_length):
+def gather_tree_from_array(
+    t: TensorLike, parent_ids: TensorLike, sequence_length: TensorLike
+) -> tf.Tensor:
     """Calculates the full beams for `TensorArray`s.
 
     Args:
@@ -243,14 +249,15 @@ class BeamSearchDecoderMixin:
     used together with other class as base.
     """
 
+    @typechecked
     def __init__(
         self,
-        cell,
-        beam_width,
-        output_layer=None,
-        length_penalty_weight=0.0,
-        coverage_penalty_weight=0.0,
-        reorder_tensor_arrays=True,
+        cell: tf.keras.layers.Layer,
+        beam_width: int,
+        output_layer: Optional[tf.keras.layers.Layer] = None,
+        length_penalty_weight: FloatTensorLike = 0.0,
+        coverage_penalty_weight: FloatTensorLike = 0.0,
+        reorder_tensor_arrays: bool = True,
         **kwargs
     ):
         """Initialize the BeamSearchDecoderMixin.
@@ -646,15 +653,16 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
     the decoding to cover all inputs.
     """
 
+    @typechecked
     def __init__(
         self,
-        cell,
-        beam_width,
-        embedding_fn=None,
-        output_layer=None,
-        length_penalty_weight=0.0,
-        coverage_penalty_weight=0.0,
-        reorder_tensor_arrays=True,
+        cell: tf.keras.layers.Layer,
+        beam_width: int,
+        embedding_fn: Union[TensorLike, Callable, None] = None,
+        output_layer: Optional[tf.keras.layers.Layer] = None,
+        length_penalty_weight: FloatTensorLike = 0.0,
+        coverage_penalty_weight: FloatTensorLike = 0.0,
+        reorder_tensor_arrays: bool = True,
         **kwargs
     ):
         """Initialize the BeamSearchDecoder.

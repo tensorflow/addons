@@ -16,8 +16,11 @@
 
 import tensorflow as tf
 
+from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
+from typeguard import typechecked
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
     """Computes the Matthews Correlation Coefficient.
 
@@ -52,10 +55,14 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
     ```
     """
 
-    def __init__(self,
-                 num_classes=None,
-                 name='MatthewsCorrelationCoefficient',
-                 dtype=tf.float32):
+    @typechecked
+    def __init__(
+        self,
+        num_classes: FloatTensorLike,
+        name: str = "MatthewsCorrelationCoefficient",
+        dtype: AcceptableDTypes = None,
+        **kwargs
+    ):
         """Creates a Matthews Correlation Coefficient instance.
 
         Args:
@@ -67,25 +74,29 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
         super().__init__(name=name, dtype=dtype)
         self.num_classes = num_classes
         self.true_positives = self.add_weight(
-            'true_positives',
+            "true_positives",
             shape=[self.num_classes],
-            initializer='zeros',
-            dtype=self.dtype)
+            initializer="zeros",
+            dtype=self.dtype,
+        )
         self.false_positives = self.add_weight(
-            'false_positives',
+            "false_positives",
             shape=[self.num_classes],
-            initializer='zeros',
-            dtype=self.dtype)
+            initializer="zeros",
+            dtype=self.dtype,
+        )
         self.false_negatives = self.add_weight(
-            'false_negatives',
+            "false_negatives",
             shape=[self.num_classes],
-            initializer='zeros',
-            dtype=self.dtype)
+            initializer="zeros",
+            dtype=self.dtype,
+        )
         self.true_negatives = self.add_weight(
-            'true_negatives',
+            "true_negatives",
             shape=[self.num_classes],
-            initializer='zeros',
-            dtype=self.dtype)
+            initializer="zeros",
+            dtype=self.dtype,
+        )
 
     # TODO: sample_weights
     def update_state(self, y_true, y_pred, sample_weight=None):
@@ -97,7 +108,8 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
         y_true_negative = tf.math.not_equal(y_true, 1.0)
         y_pred_negative = tf.math.not_equal(y_pred, 1.0)
         true_negative = tf.math.count_nonzero(
-            tf.math.logical_and(y_true_negative, y_pred_negative), axis=0)
+            tf.math.logical_and(y_true_negative, y_pred_negative), axis=0
+        )
         # predicted sum
         pred_sum = tf.math.count_nonzero(y_pred, 0)
         # Ground truth label sum
@@ -125,7 +137,8 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
         denominator3 = self.true_negatives + self.false_positives
         denominator4 = self.true_negatives + self.false_negatives
         denominator = tf.math.sqrt(
-            denominator1 * denominator2 * denominator3 * denominator4)
+            denominator1 * denominator2 * denominator3 * denominator4
+        )
         mcc = tf.math.divide_no_nan(numerator, denominator)
         return mcc
 

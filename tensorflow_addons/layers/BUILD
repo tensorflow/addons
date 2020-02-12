@@ -12,6 +12,7 @@ py_library(
         "normalizations.py",
         "optical_flow.py",
         "poincare.py",
+        "polynomial.py",
         "sparsemax.py",
         "tlu.py",
         "wrappers.py",
@@ -46,6 +47,20 @@ py_test(
     main = "crf_test.py",
     deps = [
         "//tensorflow_addons/layers:crf",
+    ],
+)
+
+py_test(
+    name = "polynomial_test",
+    size = "small",
+    srcs = [
+        "polynomial_test.py",
+    ],
+    main = "polynomial_test.py",
+    python_version = "PY3",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":layers",
     ],
 )
 
