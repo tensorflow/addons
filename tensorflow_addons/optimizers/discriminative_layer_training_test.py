@@ -281,7 +281,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         # we set model to lrmult 0 and layer one to lrmult 0.5
         # if layer one is trainable, then the loss should decrease
         model_lr.lr_mult = 0.00
-        model_lr.layers[1].lr_mult = 0.5
+        model_lr.layers[-1].lr_mult = 0.5
 
         d_opt = DiscriminativeLayerOptimizer(
             opt, model_lr, verbose=False, learning_rate=learning_rate
