@@ -121,7 +121,7 @@ def toy_rnn(first_run=False):
 
         # seems that weights won't get created unless we run fit once
         opt = tf.keras.optimizers.SGD(learning_rate = 0)
-        model.compile(loss = 'binary_crossentropy', opt = opt)
+        model.compile(loss = 'binary_crossentropy', optimizer = opt)
         x = np.ones(shape=(1, 32, 32, 3), dtype=np.float32)
         y = np.zeros(shape=(1, 5), dtype=np.float32)
         model.fit(x, y, epochs=1, batch_size=1, verbose=False, shuffle=False)
