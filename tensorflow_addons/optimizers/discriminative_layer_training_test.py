@@ -98,7 +98,8 @@ def toy_rnn(first_run=False):
         net = tf.keras.Sequential()
 
         # crop the input shape so the lstm runs faster
-        net.add(tf.keras.layers.Cropping2D(cropping=((8, 8), (12, 12))))
+        # pretrained need inputshape for weights to be initialized
+        net.add(tf.keras.layers.Cropping2D(cropping=((8, 8), (12, 12)), input_shape = (32, 32, 3)))
 
         # reshape into a timeseries
         net.add(tf.keras.layers.Reshape(target_shape=(16, 8 * 3)))
@@ -118,13 +119,6 @@ def toy_rnn(first_run=False):
                 tf.keras.layers.Dense(5, name="head"),
             ]
         )
-
-        # seems that weights won't get created unless we run fit once
-        opt = tf.keras.optimizers.SGD(learning_rate = 0)
-        model.compile(loss = 'binary_crossentropy', optimizer = opt)
-        x = np.ones(shape=(1, 32, 32, 3), dtype=np.float32)
-        y = np.zeros(shape=(1, 5), dtype=np.float32)
-        model.fit(x, y, epochs=1, batch_size=1, verbose=False, shuffle=False)
 
         model.save(rnn_model_path)
         # this creates a model with set weights for testing purposes
