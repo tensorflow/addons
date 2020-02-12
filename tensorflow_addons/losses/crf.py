@@ -14,9 +14,7 @@
 # ==============================================================================
 """Implementing Conditional Random Field loss."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import tensorflow as tf
 
@@ -36,8 +34,9 @@ class ConditionalRandomFieldLoss(object):
 
         # check if last layer is CRF
         if not isinstance(crf_layer, CRF):
-            raise ValueError("Last layer must be CRF for use {}.".format(
-                self.__class__.__name__))
+            raise ValueError(
+                "Last layer must be CRF for use {}.".format(self.__class__.__name__)
+            )
 
         loss_vector = crf_layer.get_loss(y_true, y_pred)
 
@@ -58,8 +57,7 @@ def crf_loss(y_true, y_pred):
 
     # check if last layer is CRF
     if not isinstance(crf_layer, CRF):
-        raise ValueError(
-            "Last layer must be CRF for use {}.".format("crf_loss"))
+        raise ValueError("Last layer must be CRF for use {}.".format("crf_loss"))
 
     loss_vector = crf_layer.get_loss(y_true, y_pred)
 

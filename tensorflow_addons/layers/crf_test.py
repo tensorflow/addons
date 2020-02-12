@@ -14,12 +14,11 @@
 # ==============================================================================
 """Tests for Conditional Random Field layer."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import numpy as np
 import tensorflow as tf
+
 from tensorflow_addons.layers.crf import CRF
 from tensorflow_addons.utils import test_utils
 
@@ -54,16 +53,11 @@ class TestCRF(tf.test.TestCase):
         test_utils.layer_test(
             CRF,
             kwargs={
-                "units":
-                5,
-                "use_kernel":
-                False,  # disable kernel transform
-                "chain_initializer":
-                tf.keras.initializers.Constant(transitions),
-                "use_boundary":
-                True,
-                "boundary_initializer":
-                tf.keras.initializers.Constant(boundary_value),
+                "units": 5,
+                "use_kernel": False,  # disable kernel transform
+                "chain_initializer": tf.keras.initializers.Constant(transitions),
+                "use_boundary": True,
+                "boundary_initializer": tf.keras.initializers.Constant(boundary_value),
             },
             input_data=x,
             expected_output=expected_y,

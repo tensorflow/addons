@@ -1,4 +1,4 @@
-## Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,28 +14,27 @@
 # ==============================================================================
 """Tests for Conditional Random Field loss."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import itertools
 import math
 import os
 
 import numpy as np
-import tensorflow as tf
 import six
+import tensorflow as tf
+from tensorflow.python.framework import tensor_util
+from tensorflow.python.keras.engine import base_layer_utils
+from tensorflow.python.util import nest
 
 from tensorflow_addons.layers.crf import CRF
 from tensorflow_addons.losses import crf
 from tensorflow_addons.utils import test_utils
-from tensorflow.python.keras.engine import base_layer_utils
-from tensorflow.python.framework import tensor_util
+
 if six.PY3:
     from unittest.mock import patch
 else:
     from mock import patch
-from tensorflow.python.util import nest
 
 # TODO(howl-anderson):  test CRF as the first layer
 
@@ -45,19 +44,23 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
     def setUp(self):
         super(ConditionalRandomFieldLossTest, self).setUp()
 
-        self.logits = np.array([
-            [[0, 0, 0.5, 0.5, 0.2], [0, 0, 0.3, 0.3, 0.1], [0, 0, 0.9, 10, 1]],
-            [[0, 0, 0.2, 0.5, 0.2], [0, 0, 3, 0.3, 0.1], [0, 0, 0.9, 1, 1]],
-        ])
+        self.logits = np.array(
+            [
+                [[0, 0, 0.5, 0.5, 0.2], [0, 0, 0.3, 0.3, 0.1], [0, 0, 0.9, 10, 1]],
+                [[0, 0, 0.2, 0.5, 0.2], [0, 0, 3, 0.3, 0.1], [0, 0, 0.9, 1, 1]],
+            ]
+        )
         self.tags = np.array([[2, 3, 4], [3, 2, 2]])
 
-        self.transitions = np.array([
-            [0.1, 0.2, 0.3, 0.4, 0.5],
-            [0.8, 0.3, 0.1, 0.7, 0.9],
-            [-0.3, 2.1, -5.6, 3.4, 4.0],
-            [0.2, 0.4, 0.6, -0.3, -0.4],
-            [1.0, 1.0, 1.0, 1.0, 1.0],
-        ])
+        self.transitions = np.array(
+            [
+                [0.1, 0.2, 0.3, 0.4, 0.5],
+                [0.8, 0.3, 0.1, 0.7, 0.9],
+                [-0.3, 2.1, -5.6, 3.4, 4.0],
+                [0.2, 0.4, 0.6, -0.3, -0.4],
+                [1.0, 1.0, 1.0, 1.0, 1.0],
+            ]
+        )
 
         self.boundary_values = np.ones((5,))
 
@@ -67,8 +70,7 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
             use_kernel=False,  # disable kernel transform
             chain_initializer=tf.keras.initializers.Constant(self.transitions),
             use_boundary=True,
-            boundary_initializer=tf.keras.initializers.Constant(
-                self.boundary_values),
+            boundary_initializer=tf.keras.initializers.Constant(self.boundary_values),
             name="crf_layer",
         )
 
@@ -100,8 +102,7 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
                 self.score(logits_i, tags_j)
                 for tags_j in itertools.product(range(5), repeat=3)
             ]
-            denominator = math.log(
-                sum(math.exp(score) for score in all_scores))
+            denominator = math.log(sum(math.exp(score) for score in all_scores))
             # And include them in the manual calculation.
             manual_log_likelihood += numerator - denominator
 
@@ -115,7 +116,8 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         model.compile(
             "adam",
             loss=crf.ConditionalRandomFieldLoss(),
-            metrics=[tf.keras.metrics.Accuracy()])
+            metrics=[tf.keras.metrics.Accuracy()],
+        )
 
         log_likelihood, _ = model.train_on_batch(self.logits, self.tags)
 
@@ -133,22 +135,21 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         model.compile(
             "adam",
             loss=crf.ConditionalRandomFieldLoss(),
-            metrics=[tf.keras.metrics.Accuracy()])
+            metrics=[tf.keras.metrics.Accuracy()],
+        )
 
         model.fit(self.logits, self.tags, epochs=10, batch_size=1)
 
     def test_dump_and_load(self):
         tmp_dir = self.get_temp_dir()
-        MODEL_PERSISTENCE_PATH = os.path.join(tmp_dir,
-                                              'test_saving_crf_model.h5')
+        MODEL_PERSISTENCE_PATH = os.path.join(tmp_dir, "test_saving_crf_model.h5")
 
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Input(shape=(3, 5)))
         model.add(self.crf)
         model.compile(
-            "adam",
-            loss="Addons>crf_loss",
-            metrics=[tf.keras.metrics.Accuracy()])
+            "adam", loss="Addons>crf_loss", metrics=[tf.keras.metrics.Accuracy()]
+        )
 
         model.fit(self.logits, self.tags, epochs=10, batch_size=1)
 
@@ -195,13 +196,14 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
 
         # check shape inference
         model = tf.keras.models.Model(x, y)
-        model.compile('adam', crf.ConditionalRandomFieldLoss())
+        model.compile("adam", crf.ConditionalRandomFieldLoss())
 
         with self.assertRaises(tf.errors.InvalidArgumentError) as context:
             model.fit(train_x, train_y)
 
-        self.assertTrue("CRF layer do not support left padding" in
-                        context.exception.message)
+        self.assertTrue(
+            "CRF layer do not support left padding" in context.exception.message
+        )
 
     def test_mask_right_padding(self):
         train_x = np.array(
@@ -234,7 +236,7 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
 
         # check shape inference
         model = tf.keras.models.Model(x, y)
-        model.compile('adam', crf.ConditionalRandomFieldLoss())
+        model.compile("adam", crf.ConditionalRandomFieldLoss())
         model.fit(train_x, train_y)
 
     def test_in_subclass_model(self):
@@ -271,19 +273,18 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
 
                 # pylint: disable=protected-access
                 return_tensor = acd.mark_as_return(tensor)
-                if getattr(tensor, '_keras_mask', None) is not None:
-                    return_tensor._keras_mask = acd.mark_as_return(
-                        tensor._keras_mask)
+                if getattr(tensor, "_keras_mask", None) is not None:
+                    return_tensor._keras_mask = acd.mark_as_return(tensor._keras_mask)
                 else:
                     return_tensor._keras_mask = None
 
                 # TODO(howl-anderson) a little hack here, handle _keras_history
-                if getattr(tensor, '_keras_history', None) is not None:
+                if getattr(tensor, "_keras_history", None) is not None:
                     return_tensor._keras_history = tensor._keras_history
 
                 # Handle TensorFlow Probability attached metadata.
                 # TODO(b/132076537): Remove this once TFP uses `CompositeTensor`.
-                if getattr(tensor, '_tfp_distribution', None) is not None:
+                if getattr(tensor, "_tfp_distribution", None) is not None:
                     return_tensor._tfp_distribution = tensor._tfp_distribution
 
                 return return_tensor
@@ -300,22 +301,20 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
             def call(self, inputs):
                 return self.layer(inputs)
 
-            @patch.object(base_layer_utils, 'mark_as_return',
-                          patch_mark_as_return)
+            @patch.object(base_layer_utils, "mark_as_return", patch_mark_as_return)
             def __call__(self, inputs, *args, **kwargs):
-                outputs = super(CRFModel, self).__call__(
-                    inputs, *args, **kwargs)
+                outputs = super(CRFModel, self).__call__(inputs, *args, **kwargs)
 
                 # A hack that add _keras_history to EagerTensor, make it more like normal Tensor
                 for tensor in tf.nest.flatten(outputs):
-                    if not hasattr(tensor, '_keras_history'):
+                    if not hasattr(tensor, "_keras_history"):
                         tensor._keras_history = (self, 0, 0)
 
                 return outputs
 
         model = CRFModel()
 
-        model.compile('adam', crf.ConditionalRandomFieldLoss())
+        model.compile("adam", crf.ConditionalRandomFieldLoss())
         model.fit(train_x, train_y)
 
     def test_serialization(self, dtype=None):
@@ -326,7 +325,8 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
 
     def test_keras_model_compile(self):
         model = tf.keras.models.Sequential(
-            [tf.keras.layers.Input(shape=(3, 5)), self.crf])
+            [tf.keras.layers.Input(shape=(3, 5)), self.crf]
+        )
 
         model.compile(loss="Addons>crf_loss", optimizer="adam")
 

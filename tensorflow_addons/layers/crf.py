@@ -16,15 +16,14 @@
 # ==============================================================================
 """Implementing Conditional Random Field layer."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import tensorflow as tf
+
 from tensorflow_addons.text.crf import crf_decode, crf_log_likelihood
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class CRF(tf.keras.layers.Layer):
     """Linear chain conditional random field (CRF).
 
@@ -102,25 +101,27 @@ class CRF(tf.keras.layers.Layer):
         - [Conditional Random Field](https://en.wikipedia.org/wiki/Conditional_random_field)
     """
 
-    def __init__(self,
-                 units,
-                 chain_initializer="orthogonal",
-                 chain_regularizer=None,
-                 chain_constraint=None,
-                 use_boundary=True,
-                 boundary_initializer="zeros",
-                 boundary_regularizer=None,
-                 boundary_constraint=None,
-                 use_kernel=True,
-                 kernel_initializer="glorot_uniform",
-                 kernel_regularizer=None,
-                 kernel_constraint=None,
-                 use_bias=True,
-                 bias_initializer="zeros",
-                 bias_regularizer=None,
-                 bias_constraint=None,
-                 activation="linear",
-                 **kwargs):
+    def __init__(
+        self,
+        units,
+        chain_initializer="orthogonal",
+        chain_regularizer=None,
+        chain_constraint=None,
+        use_boundary=True,
+        boundary_initializer="zeros",
+        boundary_regularizer=None,
+        boundary_constraint=None,
+        use_kernel=True,
+        kernel_initializer="glorot_uniform",
+        kernel_regularizer=None,
+        kernel_constraint=None,
+        use_bias=True,
+        bias_initializer="zeros",
+        bias_regularizer=None,
+        bias_constraint=None,
+        activation="linear",
+        **kwargs,
+    ):
         super(CRF, self).__init__(**kwargs)
 
         # setup mask supporting flag, used by base class (the Layer)
@@ -138,20 +139,17 @@ class CRF(tf.keras.layers.Layer):
 
         self.kernel_initializer = tf.keras.initializers.get(kernel_initializer)
         self.chain_initializer = tf.keras.initializers.get(chain_initializer)
-        self.boundary_initializer = tf.keras.initializers.get(
-            boundary_initializer)
+        self.boundary_initializer = tf.keras.initializers.get(boundary_initializer)
         self.bias_initializer = tf.keras.initializers.get(bias_initializer)
 
         self.kernel_regularizer = tf.keras.regularizers.get(kernel_regularizer)
         self.chain_regularizer = tf.keras.regularizers.get(chain_regularizer)
-        self.boundary_regularizer = tf.keras.regularizers.get(
-            boundary_regularizer)
+        self.boundary_regularizer = tf.keras.regularizers.get(boundary_regularizer)
         self.bias_regularizer = tf.keras.regularizers.get(bias_regularizer)
 
         self.kernel_constraint = tf.keras.constraints.get(kernel_constraint)
         self.chain_constraint = tf.keras.constraints.get(chain_constraint)
-        self.boundary_constraint = tf.keras.constraints.get(
-            boundary_constraint)
+        self.boundary_constraint = tf.keras.constraints.get(boundary_constraint)
         self.bias_constraint = tf.keras.constraints.get(bias_constraint)
 
         # values will be assigned in method
@@ -173,8 +171,6 @@ class CRF(tf.keras.layers.Layer):
 
         # see API docs of InputSpec for more detail
         self.input_spec = [tf.keras.layers.InputSpec(shape=input_shape)]
-
-        feature_size = input_shape[-1]
 
         # weights that work as transfer probability of each tags
         self.chain_kernel = self.add_weight(
@@ -204,16 +200,16 @@ class CRF(tf.keras.layers.Layer):
 
         if self.use_kernel:
             self._dense_layer = tf.keras.layers.Dense(
-                    units=self.units,
-                    activation=self.activation,
-                    use_bias=self.use_bias,
-                    bias_initializer=self.bias_initializer,
-                    kernel_regularizer=self.kernel_regularizer,
-                    bias_regularizer=self.bias_regularizer,
-                    kernel_constraint=self.kernel_constraint,
-                    bias_constraint=self.bias_constraint,
-                    dtype=self.dtype
-                )
+                units=self.units,
+                activation=self.activation,
+                use_bias=self.use_bias,
+                bias_initializer=self.bias_initializer,
+                kernel_regularizer=self.kernel_regularizer,
+                bias_regularizer=self.bias_regularizer,
+                kernel_constraint=self.kernel_constraint,
+                bias_constraint=self.bias_constraint,
+                dtype=self.dtype,
+            )
         else:
             self._dense_layer = lambda x: tf.cast(x, dtype=self.dtype)
 
@@ -224,8 +220,7 @@ class CRF(tf.keras.layers.Layer):
 
         if mask is not None:
             if tf.keras.backend.ndim(mask) != 2:
-                raise ValueError(
-                    "Input mask to CRF must have dim 2 if not None")
+                raise ValueError("Input mask to CRF must have dim 2 if not None")
 
         # left padding of mask is not supported, due the underline CRF function
         # detect it and report it to user
@@ -240,9 +235,13 @@ class CRF(tf.keras.layers.Layer):
         if first_mask is not None:
             no_left_padding = tf.math.reduce_all(first_mask)
             msg = "Currently, CRF layer do not support left padding"
-            with tf.control_dependencies([
-                tf.debugging.assert_equal(no_left_padding, tf.constant(True), message=msg)
-            ]):
+            with tf.control_dependencies(
+                [
+                    tf.debugging.assert_equal(
+                        no_left_padding, tf.constant(True), message=msg
+                    )
+                ]
+            ):
                 self.potentials = self._dense_layer(inputs)
         else:
             self.potentials = self._dense_layer(inputs)
@@ -250,12 +249,14 @@ class CRF(tf.keras.layers.Layer):
         # appending boundary probability info
         if self.use_boundary:
             self.potentials = self.add_boundary_energy(
-                self.potentials, mask, self.left_boundary, self.right_boundary)
+                self.potentials, mask, self.left_boundary, self.right_boundary
+            )
 
         self.sequence_length = self._get_sequence_length(inputs, mask)
 
         decoded_sequence, _ = self.get_viterbi_decoding(
-            self.potentials, self.sequence_length)
+            self.potentials, self.sequence_length
+        )
 
         return decoded_sequence
 
@@ -282,8 +283,7 @@ class CRF(tf.keras.layers.Layer):
 
     def mask_to_sequence_length(self, mask):
         """compute sequence length from mask."""
-        sequence_length = tf.cast(
-            tf.reduce_sum(tf.cast(mask, tf.int8), 1), tf.int64)
+        sequence_length = tf.cast(tf.reduce_sum(tf.cast(mask, tf.int8), 1), tf.int64)
         return sequence_length
 
     @staticmethod
@@ -292,8 +292,8 @@ class CRF(tf.keras.layers.Layer):
         # shift mask to left by 1: 0011100 => 0111000
         offset = 1
         left_shifted_mask = tf.concat(
-            [mask[:, offset:],
-             tf.zeros_like(mask[:, :offset])], axis=1)
+            [mask[:, offset:], tf.zeros_like(mask[:, :offset])], axis=1
+        )
 
         # TODO(howl-anderson): for below code
         # Original code in keras_contrib:
@@ -317,11 +317,13 @@ class CRF(tf.keras.layers.Layer):
         # shift mask to right by 1: 0011100 => 0001110
         offset = 1
         right_shifted_mask = tf.concat(
-            [tf.zeros_like(mask[:, :offset]), mask[:, :-offset]], axis=1)
+            [tf.zeros_like(mask[:, :offset]), mask[:, :-offset]], axis=1
+        )
 
         # 0011100 > 0001110 => 0010000
         left_boundary = tf.greater(
-            tf.cast(mask, tf.int32), tf.cast(right_shifted_mask, tf.int32))
+            tf.cast(mask, tf.int32), tf.cast(right_shifted_mask, tf.int32)
+        )
         # left_boundary = tf.greater(mask, right_shifted_mask)
 
         return left_boundary
@@ -335,69 +337,62 @@ class CRF(tf.keras.layers.Layer):
         end = expand_scalar_to_3d(end)
         if mask is None:
             potentials = tf.concat(
-                [potentials[:, :1, :] + start, potentials[:, 1:, :]], axis=1)
+                [potentials[:, :1, :] + start, potentials[:, 1:, :]], axis=1
+            )
             potentials = tf.concat(
-                [potentials[:, :-1, :], potentials[:, -1:, :] + end], axis=1)
+                [potentials[:, :-1, :], potentials[:, -1:, :] + end], axis=1
+            )
         else:
-            mask = tf.keras.backend.expand_dims(
-                tf.cast(mask, start.dtype), axis=-1)
-            start_mask = tf.cast(
-                self._compute_mask_left_boundary(mask),
-                start.dtype,
-            )
+            mask = tf.keras.backend.expand_dims(tf.cast(mask, start.dtype), axis=-1)
+            start_mask = tf.cast(self._compute_mask_left_boundary(mask), start.dtype)
 
-            end_mask = tf.cast(
-                self._compute_mask_right_boundary(mask),
-                end.dtype,
-            )
+            end_mask = tf.cast(self._compute_mask_right_boundary(mask), end.dtype)
             potentials = potentials + start_mask * start
             potentials = potentials + end_mask * end
         return potentials
 
     def get_viterbi_decoding(self, potentials, sequence_length):
         # decode_tags: A [batch_size, max_seq_len] matrix, with dtype `tf.int32`
-        decode_tags, best_score = crf_decode(potentials, self.chain_kernel,
-                                             sequence_length)
+        decode_tags, best_score = crf_decode(
+            potentials, self.chain_kernel, sequence_length
+        )
 
         return decode_tags, best_score
 
     def get_config(self):
         # used for loading model from disk
         config = {
-            "units":
-            self.units,
-            "use_boundary":
-            self.use_boundary,
-            "use_bias":
-            self.use_bias,
-            "use_kernel":
-            self.use_kernel,
-            "kernel_initializer":
-            tf.keras.initializers.serialize(self.kernel_initializer),
-            "chain_initializer":
-            tf.keras.initializers.serialize(self.chain_initializer),
-            "boundary_initializer":
-            tf.keras.initializers.serialize(self.boundary_initializer),
-            "bias_initializer":
-            tf.keras.initializers.serialize(self.bias_initializer),
-            "activation":
-            tf.keras.activations.serialize(self.activation),
-            "kernel_regularizer":
-            tf.keras.regularizers.serialize(self.kernel_regularizer),
-            "chain_regularizer":
-            tf.keras.regularizers.serialize(self.chain_regularizer),
-            "boundary_regularizer":
-            tf.keras.regularizers.serialize(self.boundary_regularizer),
-            "bias_regularizer":
-            tf.keras.regularizers.serialize(self.bias_regularizer),
-            "kernel_constraint":
-            tf.keras.constraints.serialize(self.kernel_constraint),
-            "chain_constraint":
-            tf.keras.constraints.serialize(self.chain_constraint),
-            "boundary_constraint":
-            tf.keras.constraints.serialize(self.boundary_constraint),
-            "bias_constraint":
-            tf.keras.constraints.serialize(self.bias_constraint)
+            "units": self.units,
+            "use_boundary": self.use_boundary,
+            "use_bias": self.use_bias,
+            "use_kernel": self.use_kernel,
+            "kernel_initializer": tf.keras.initializers.serialize(
+                self.kernel_initializer
+            ),
+            "chain_initializer": tf.keras.initializers.serialize(
+                self.chain_initializer
+            ),
+            "boundary_initializer": tf.keras.initializers.serialize(
+                self.boundary_initializer
+            ),
+            "bias_initializer": tf.keras.initializers.serialize(self.bias_initializer),
+            "activation": tf.keras.activations.serialize(self.activation),
+            "kernel_regularizer": tf.keras.regularizers.serialize(
+                self.kernel_regularizer
+            ),
+            "chain_regularizer": tf.keras.regularizers.serialize(
+                self.chain_regularizer
+            ),
+            "boundary_regularizer": tf.keras.regularizers.serialize(
+                self.boundary_regularizer
+            ),
+            "bias_regularizer": tf.keras.regularizers.serialize(self.bias_regularizer),
+            "kernel_constraint": tf.keras.constraints.serialize(self.kernel_constraint),
+            "chain_constraint": tf.keras.constraints.serialize(self.chain_constraint),
+            "boundary_constraint": tf.keras.constraints.serialize(
+                self.boundary_constraint
+            ),
+            "bias_constraint": tf.keras.constraints.serialize(self.bias_constraint),
         }
         base_config = super(CRF, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
@@ -415,7 +410,8 @@ class CRF(tf.keras.layers.Layer):
         self.sequence_length = tf.cast(self.sequence_length, tf.int32)
 
         log_likelihood, _ = crf_log_likelihood(
-            self.potentials, y_true, self.sequence_length, self.chain_kernel)
+            self.potentials, y_true, self.sequence_length, self.chain_kernel
+        )
 
         return -log_likelihood
 
@@ -429,14 +425,14 @@ class CRF(tf.keras.layers.Layer):
             return tf.reduce_mean(judge)
         else:
             mask = tf.cast(self.mask, tf.keras.backend.floatx())
-            return (tf.reduce_sum(judge * mask) / tf.reduce_sum(mask))
+            return tf.reduce_sum(judge * mask) / tf.reduce_sum(mask)
 
     def __call__(self, inputs, *args, **kwargs):
         outputs = super(CRF, self).__call__(inputs, *args, **kwargs)
 
         # A hack that add _keras_history to EagerTensor, make it more like normal Tensor
         for tensor in tf.nest.flatten(outputs):
-            if not hasattr(tensor, '_keras_history'):
+            if not hasattr(tensor, "_keras_history"):
                 tensor._keras_history = (self, 0, 0)
 
         return outputs
