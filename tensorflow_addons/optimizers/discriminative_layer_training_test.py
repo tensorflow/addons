@@ -150,7 +150,7 @@ def _zipped_permutes():
         # we also assume that if it works for conv2d, it should work for conv3d by extension
         # apply the same extension logic for all layers tested and it should cover maybe 90% of layers in use?
         toy_cnn,
-        # toy_rnn,
+        toy_rnn,
     ]
     losses = [
         # additional loss types do not need to be tested
@@ -186,6 +186,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
 
     def _assert_training_losses_are_close(self, model, model_lr):
+        """easy way to check if two models train in almost the same way"""
         hist = _get_train_results(model, verbose=False)
         hist_lr = _get_train_results(model_lr, verbose=False)
         self._assert_losses_are_close(hist, hist_lr)
@@ -205,7 +206,9 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         self._assert_training_losses_are_close(model, model_lr)
 
     def _test_equal_0_layer_lr_to_trainable_false(self, model_fn, loss, opt):
-        """confirm 0 lr_mult for the model is the same as model not trainable"""
+        """confirm 0 lr_mult for the model is the same as model not trainable
+        this also confirms that lr_mult on the model is propagated to all sublayers and their variables
+        """
         learning_rate = 0.01
         model = model_fn()
         model.trainable = False
@@ -221,7 +224,9 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         self._assert_training_losses_are_close(model, model_lr)
 
     def _test_equal_half_layer_lr_to_half_lr_of_opt(self, model_fn, loss, opt):
-        """confirm 0.5 lr_mult for the model is the same as optim with 0.5 lr"""
+        """confirm 0.5 lr_mult for the model is the same as optim with 0.5 lr
+        this also confirms that lr_mult on the model is propagated to all sublayers and their variables
+        """
 
         mult = 0.5
         learning_rate = 0.01
