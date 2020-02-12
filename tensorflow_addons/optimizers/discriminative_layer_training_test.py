@@ -54,6 +54,7 @@ def toy_cnn(first_run=False):
         )
         model = tf.keras.Sequential(
             [
+                tf.keras.layers.InputLayer(input_shape=(32, 32, 3)),
                 net,
                 tf.keras.layers.GlobalAveragePooling2D(),
                 tf.keras.layers.Dropout(0.5),
@@ -118,6 +119,13 @@ def toy_rnn(first_run=False):
             ]
         )
 
+        # seems that weights won't get created unless we run fit once
+        opt = tf.keras.optimizers.SGD(learning_rate = 0)
+        model.compile(loss = 'binary_crossentropy', opt = opt)
+        x = np.ones(shape=(1, 32, 32, 3), dtype=np.float32)
+        y = np.zeros(shape=(1, 5), dtype=np.float32)
+        model.fit(x, y, epochs=1, batch_size=1, verbose=False, shuffle=False)
+
         model.save(rnn_model_path)
         # this creates a model with set weights for testing purposes
         # most tests will assert equivalency between a model with discriminative training and a model without
@@ -131,7 +139,7 @@ def toy_rnn(first_run=False):
         return tf.keras.models.load_model(rnn_model_path)
 
 
-def _get_train_results(model, verbose=False):
+def _get_train_results(model, verbose=False, epochs = 10):
     """Run a training loop and return the results for analysis
     model must be compiled first
     """
@@ -140,7 +148,7 @@ def _get_train_results(model, verbose=False):
     y = np.zeros(shape=(32, 5), dtype=np.float32)
     y[:, 0] = 1.0
 
-    return model.fit(x, y, epochs=10, batch_size=16, verbose=verbose, shuffle=False)
+    return model.fit(x, y, epochs=epochs, batch_size=16, verbose=verbose, shuffle=False)
 
 
 def _zipped_permutes():
@@ -185,10 +193,13 @@ class DiscriminativeLearningTest(tf.test.TestCase):
             get_losses(hist), get_losses(hist_lr), rtol=rtol, atol=atol
         )
 
-    def _assert_training_losses_are_close(self, model, model_lr):
-        """easy way to check if two models train in almost the same way"""
-        hist = _get_train_results(model, verbose=False)
-        hist_lr = _get_train_results(model_lr, verbose=False)
+    def _assert_training_losses_are_close(self, model, model_lr, epochs = 10):
+        """easy way to check if two models train in almost the same way
+        epochs set to 10 by default to allow momentum methods to pick up momentum and diverge
+        if the disc training is not working
+        """
+        hist = _get_train_results(model, verbose=False, epochs= epochs)
+        hist_lr = _get_train_results(model_lr, verbose=False, epochs= epochs)
         self._assert_losses_are_close(hist, hist_lr)
 
     def _test_equal_with_no_layer_lr(self, model_fn, loss, opt):
@@ -205,9 +216,30 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         self._assert_training_losses_are_close(model, model_lr)
 
+    def _test_equal_0_sub_layer_lr_to_sub_layer_trainable_false(self, model_fn, loss, opt):
+        """confirm 0 lr_mult for the a specific layer is the same as setting layer to not trainable
+        this also confirms that lr_mult propagates into that layer's trainable variables
+        this also confirms that lr_mult does not propagate to the rest of the layers unintentionally
+        """
+        learning_rate = 0.01
+        model = model_fn()
+
+        #we use layer 1 instead of 0 bc layer 0 is just an input layer
+        model.layers[1].trainable = False
+        model.compile(loss=loss, optimizer=opt(learning_rate))
+
+        model_lr = model_fn()
+        model_lr.layers[1].lr_mult = 0.0
+        d_opt = DiscriminativeLayerOptimizer(
+            opt, model_lr, verbose=False, learning_rate=learning_rate
+        )
+        model_lr.compile(loss=loss, optimizer=d_opt)
+
+        self._assert_training_losses_are_close(model, model_lr)
+
     def _test_equal_0_layer_lr_to_trainable_false(self, model_fn, loss, opt):
         """confirm 0 lr_mult for the model is the same as model not trainable
-        this also confirms that lr_mult on the model is propagated to all sublayers and their variables
+        this also confirms that lr_mult on the model level is propagated to all sublayers and their variables
         """
         learning_rate = 0.01
         model = model_fn()
@@ -221,11 +253,12 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
         model_lr.compile(loss=loss, optimizer=d_opt)
 
-        self._assert_training_losses_are_close(model, model_lr)
+        #only two epochs because we expect no training to occur, thus losses shouldn't change anyways
+        self._assert_training_losses_are_close(model, model_lr, epochs = 2)
 
     def _test_equal_half_layer_lr_to_half_lr_of_opt(self, model_fn, loss, opt):
         """confirm 0.5 lr_mult for the model is the same as optim with 0.5 lr
-        this also confirms that lr_mult on the model is propagated to all sublayers and their variables
+        this also confirms that lr_mult on the model level is propagated to all sublayers and their variables
         """
 
         mult = 0.5
@@ -242,19 +275,35 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         self._assert_training_losses_are_close(model, model_lr)
 
-    def _test_loss_changes_over_time(self, model_fn, loss, opt):
-        """confirm that model trains with lower lr on specific layer"""
+    def _test_sub_layers_keep_lr_mult(self, model_fn, loss, opt):
+        """confirm that model trains with lower lr on specific layer
+        while a different lr_mult is applied everywhere else
+        also confirms that sub layers with an lr mult do not get overridden
+        """
 
         learning_rate = 0.01
         model_lr = model_fn()
-        model_lr.layers[0].lr_mult = 0.01
+
+        # we set model to lrmult 0 and layer one to lrmult 0.5
+        # if layer one is trainable, then the loss should decrease
+        model_lr.lr_mult = 0.00
+        model_lr.layers[1].lr_mult = 0.5
+
         d_opt = DiscriminativeLayerOptimizer(
             opt, model_lr, verbose=False, learning_rate=learning_rate
         )
         model_lr.compile(loss=loss, optimizer=d_opt)
 
-        loss_values = get_losses(_get_train_results(model_lr))
+        loss_values = get_losses(_get_train_results(model_lr, epochs=4))
         self.assertLess(loss_values[-1], loss_values[0])
+
+
+    def _test_variables_get_assigned(self):
+        """confirm that variables do get an lr_mult attribute and that they get the correct one
+        :TODO confirm propagation to nested sublayers, confirm not override of a sublayer's mult
+        """
+        pass
+
 
     def _run_tests_in_notebook(self):
         for name, method in DiscriminativeLearningTest.__dict__.items():
