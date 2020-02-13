@@ -19,11 +19,12 @@ from __future__ import absolute_import, division, print_function
 import tensorflow as tf
 
 from tensorflow_addons.layers.crf import CRF
+from tensorflow_addons.utils import types
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class ConditionalRandomFieldLoss(object):
-    def __init__(self, name="crf_loss"):
+    def __init__(self, name: str = "crf_loss"):
         self.name = name
 
     def get_config(self):
@@ -44,7 +45,7 @@ class ConditionalRandomFieldLoss(object):
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def crf_loss(y_true, y_pred):
+def crf_loss(y_true: types.TensorLike, y_pred: types.TensorLike) -> tf.Tensor:
     """
     Args
         y_true: true targets tensor.

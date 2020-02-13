@@ -19,8 +19,10 @@
 from __future__ import absolute_import, division, print_function
 
 import tensorflow as tf
+from typeguard import typechecked
 
 from tensorflow_addons.text.crf import crf_decode, crf_log_likelihood
+from tensorflow_addons.utils import types
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -101,25 +103,26 @@ class CRF(tf.keras.layers.Layer):
         - [Conditional Random Field](https://en.wikipedia.org/wiki/Conditional_random_field)
     """
 
+    @typechecked
     def __init__(
         self,
-        units,
-        chain_initializer="orthogonal",
-        chain_regularizer=None,
-        chain_constraint=None,
-        use_boundary=True,
-        boundary_initializer="zeros",
-        boundary_regularizer=None,
-        boundary_constraint=None,
-        use_kernel=True,
-        kernel_initializer="glorot_uniform",
-        kernel_regularizer=None,
-        kernel_constraint=None,
-        use_bias=True,
-        bias_initializer="zeros",
-        bias_regularizer=None,
-        bias_constraint=None,
-        activation="linear",
+        units: int,
+        chain_initializer: types.Initializer = "orthogonal",
+        chain_regularizer: types.Regularizer = None,
+        chain_constraint: types.Constraint = None,
+        use_boundary: bool = True,
+        boundary_initializer: types.Initializer = "zeros",
+        boundary_regularizer: types.Regularizer = None,
+        boundary_constraint: types.Constraint = None,
+        use_kernel: bool = True,
+        kernel_initializer: types.Initializer = "glorot_uniform",
+        kernel_regularizer: types.Regularizer = None,
+        kernel_constraint: types.Constraint = None,
+        use_bias: bool = True,
+        bias_initializer: types.Initializer = "zeros",
+        bias_regularizer: types.Regularizer = None,
+        bias_constraint: types.Constraint = None,
+        activation: types.Activation = "linear",
         **kwargs,
     ):
         super(CRF, self).__init__(**kwargs)
