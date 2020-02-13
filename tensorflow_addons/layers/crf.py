@@ -123,7 +123,7 @@ class CRF(tf.keras.layers.Layer):
         bias_regularizer: types.Regularizer = None,
         bias_constraint: types.Constraint = None,
         activation: types.Activation = "linear",
-        **kwargs,
+        **kwargs
     ):
         super(CRF, self).__init__(**kwargs)
 
