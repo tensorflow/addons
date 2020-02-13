@@ -1,0 +1,18 @@
+name: Backport
+on:
+  pull_request:
+    types:
+      - closed
+      - labeled
+
+jobs:
+  backport:
+    runs-on: ubuntu-18.04
+    name: Backport
+    steps:
+      - name: Backport Bot
+        uses: Gaurav0/backport@v1.0.24
+        with:
+          bot_username: bot-of-gabrieldemarmiesse
+          bot_token: ${{ secrets.BOT_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
