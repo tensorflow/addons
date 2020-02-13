@@ -358,8 +358,11 @@ def test_wrap(method, devices, **kwargs):
     def single(self):
         return method(self, **kwargs)
 
+    devices = devices
+
+    @test_utils.run_distributed(2)
     @test_utils.run_in_graph_and_eager_modes
-    @run_distributed(devices)
+    # @run_distributed(devices)
     def distributed(self):
         return method(self, **kwargs)
 
@@ -392,11 +395,12 @@ def generate_tests(devices):
 
 
 if __name__ == "__main__":
-    devices = test_utils.create_virtual_devices(2)
+    # create devices to avoid cannot create devices error
+    # devices = test_utils.create_virtual_devices(2)
 
     # save models so weights are always the same
     toy_cnn(first_run=True)
     toy_rnn(first_run=True)
 
-    generate_tests(devices)
+    generate_tests(devices=None)
     tf.test.main()
