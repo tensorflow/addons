@@ -360,9 +360,10 @@ def test_wrap(method, devices, **kwargs):
 
     devices = devices
 
-    @test_utils.run_distributed(2)
+    # test utils run distributed results in a cannot RuntimeError: Virtual devices cannot be modified after being initialized
+    # @test_utils.run_distributed(2)
     @test_utils.run_in_graph_and_eager_modes
-    # @run_distributed(devices)
+    @run_distributed(devices)
     def distributed(self):
         return method(self, **kwargs)
 
@@ -396,11 +397,11 @@ def generate_tests(devices):
 
 if __name__ == "__main__":
     # create devices to avoid cannot create devices error
-    # devices = test_utils.create_virtual_devices(2)
+    devices = test_utils.create_virtual_devices(2)
 
     # save models so weights are always the same
     toy_cnn(first_run=True)
     toy_rnn(first_run=True)
 
-    generate_tests(devices=None)
+    generate_tests(devices=devices)
     tf.test.main()
