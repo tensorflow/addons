@@ -88,4 +88,6 @@ class AssertRNNCellTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
+    _train_some_model()
+
     tf.test.main()
