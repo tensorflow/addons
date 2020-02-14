@@ -65,7 +65,7 @@ def toy_cnn(first_run=False):
         model.save(cnn_model_path)
         # this creates a model with set weights for testing purposes
         # most tests will assert equivalency between a model with discriminative training and a model without
-        return None
+        return tf.keras.models.load_model(cnn_model_path)
     else:
         assert os.path.exists((cnn_model_path)), (
             "Could not find h5 file at path %s " % cnn_model_path
@@ -127,7 +127,7 @@ def toy_rnn(first_run=False):
         model.save(rnn_model_path)
         # this creates a model with set weights for testing purposes
         # most tests will assert equivalency between a model with discriminative training and a model without
-        return None
+        return tf.keras.models.load_model(rnn_model_path)
 
     else:
         assert os.path.exists((rnn_model_path)), (
@@ -338,7 +338,6 @@ class DiscriminativeLearningTest(tf.test.TestCase):
             len(model_lr.layers[-1].trainable_variables),
             len([var for var in model_lr.trainable_variables if var.lr_mult == 0.5]),
         )
-
 
     def _run_tests_in_notebook(self):
         for name, method in DiscriminativeLearningTest.__dict__.items():
