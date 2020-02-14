@@ -15,14 +15,30 @@
 """Tests for Keras utils."""
 
 import tensorflow as tf
+import numpy as np
 
 from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils import test_utils
 
 
+def _train_some_model():
+
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Dense(1))
+
+    x = np.ones(shape = [32, 1])
+    y = np.ones(shape = [32, 1])
+
+    model.fit(x, y, epochs = 5)
+
+    return model
+
+
 @test_utils.run_all_distributed(2)
 class NormalizeTupleTest(tf.test.TestCase):
-
+    def test_train_model(self):
+        _train_some_model()
+        self.assertAllClose(1, 1)
 
     def test_normalize_tuple(self):
         self.assertEqual((2, 2, 2), keras_utils.normalize_tuple(2, n=3, name="strides"))
@@ -38,6 +54,11 @@ class NormalizeTupleTest(tf.test.TestCase):
 
 
 class AssertRNNCellTest(tf.test.TestCase):
+
+    @test_utils.run_distributed(2)
+    def test_model(self):
+        _train_some_model()
+        self.assertAllClose(1, 1)
 
     @test_utils.run_distributed(2)
     def test_standard_cell(self):
