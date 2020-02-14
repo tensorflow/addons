@@ -183,10 +183,10 @@ class DiscriminativeLearningTest(tf.test.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(self, *args, **kwargs)
 
-        #before running the tests, create model weights for reloading
+        # before running the tests, create model weights for reloading
         toy_cnn()
         toy_rnn()
-        #set up again to hopefully prevent the cannot initialize virtual devices error
+        # set up again to hopefully prevent the cannot initialize virtual devices error
         self.setUp()
 
     def _assert_losses_are_close(self, hist, hist_lr):
@@ -209,10 +209,6 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         hist = _get_train_results(model, verbose=False, epochs=epochs)
         hist_lr = _get_train_results(model_lr, verbose=False, epochs=epochs)
         self._assert_losses_are_close(hist, hist_lr)
-
-
-
-
 
     @test_utils.run_distributed(2)
     def _test_equal_with_no_layer_lr(self, model_fn, loss, opt):
@@ -372,19 +368,16 @@ def run_distributed(devices):
 
     return decorator
 
-
 def test_wrap(method,  **kwargs):
     @test_utils.run_in_graph_and_eager_modes
     def single(self):
         return method(self, **kwargs)
-
 
     @test_utils.run_in_graph_and_eager_modes
     def distributed(self):
         return method(self, **kwargs)
 
     return single, distributed
-
 
 def generate_tests():
     for name, method in DiscriminativeLearningTest.__dict__.copy().items():
