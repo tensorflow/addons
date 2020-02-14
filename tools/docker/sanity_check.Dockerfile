@@ -9,7 +9,7 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.6 as black-test
 
-RUN pip install --no-cache-dir black==19.10b0
+RUN pip install black==19.10b0
 COPY ./ /addons
 RUN black --check /addons
 RUN touch /ok.txt
@@ -17,11 +17,12 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.6 as public-api-typed
 
-RUN pip install --no-cache-dir tensorflow-cpu==2.1.0 typeguard==2.7.1
-RUN pip install --no-cache-dir git+https://github.com/gabrieldemarmiesse/typed_api.git@0.1.1
+RUN pip install tensorflow-cpu==2.1.0 \
+			typeguard==2.7.1 \
+			git+https://github.com/gabrieldemarmiesse/typed_api.git@0.1.1
 
 COPY ./ /addons
-RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e /addons
+RUN TF_ADDONS_NO_BUILD=1 pip install --no-cache-dir --no-deps -e /addons
 RUN python /addons/tools/ci_build/verify/check_typing_info.py
 RUN touch /ok.txt
 
@@ -36,7 +37,7 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.5 as valid_build_files
 
-RUN pip install --no-cache-dir tensorflow-cpu==2.1.0
+RUN pip install tensorflow-cpu==2.1.0
 
 RUN apt-get update && apt-get install sudo
 RUN git clone https://github.com/abhinavsingh/setup-bazel.git
@@ -80,7 +81,7 @@ RUN touch /ok.txt
 # docs tests
 FROM python:3.6 as docs_tests
 
-RUN pip install --no-cache-dir tensorflow-cpu==2.1.0 typeguard==2.7.1
+RUN pip install tensorflow-cpu==2.1.0 typeguard==2.7.1
 
 COPY tools/docs/doc_requirements.txt ./
 RUN pip install --no-cache-dir -r doc_requirements.txt
