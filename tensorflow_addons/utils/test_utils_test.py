@@ -24,7 +24,7 @@ from tensorflow_addons.utils import test_utils
 def _train_some_model():
 
     model = tf.keras.Sequential()
-    model.add(tf.keras.layers.Dense(1, input_shape=(1)))
+    model.add(tf.keras.layers.Dense(1, input_shape=(1,)))
 
     x = np.ones(shape = [32, 1])
     y = np.ones(shape = [32, 1])
@@ -63,7 +63,7 @@ class AssertRNNCellTest(tf.test.TestCase):
 
     @test_utils.run_in_graph_and_eager_modes
     @test_utils.run_distributed(2)
-    def test_model(self):
+    def test_model_fail(self):
         _train_some_model()
         self.assertAllClose(1, 0)
 
