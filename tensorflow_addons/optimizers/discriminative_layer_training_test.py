@@ -200,6 +200,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         hist_lr = _get_train_results(model_lr, verbose=False, epochs=epochs)
         self._assert_losses_are_close(hist, hist_lr)
 
+    @test_utils.run_distributed(2)
     def _test_equal_with_no_layer_lr(self, model_fn, loss, opt):
         """confirm that discriminative learning is almost the same as regular learning"""
         learning_rate = 0.01
@@ -214,6 +215,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         self._assert_training_losses_are_close(model, model_lr)
 
+    @test_utils.run_distributed(2)
     def _test_equal_0_sub_layer_lr_to_sub_layer_trainable_false(
         self, model_fn, loss, opt
     ):
@@ -237,6 +239,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         self._assert_training_losses_are_close(model, model_lr)
 
+    @test_utils.run_distributed(2)
     def _test_equal_0_layer_lr_to_trainable_false(self, model_fn, loss, opt):
         """confirm 0 lr_mult for the model is the same as model not trainable
         this also confirms that lr_mult on the model level is propagated to all sublayers and their variables
@@ -256,6 +259,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         # only two epochs because we expect no training to occur, thus losses shouldn't change anyways
         self._assert_training_losses_are_close(model, model_lr, epochs=2)
 
+    @test_utils.run_distributed(2)
     def _test_equal_half_layer_lr_to_half_lr_of_opt(self, model_fn, loss, opt):
         """confirm 0.5 lr_mult for the model is the same as optim with 0.5 lr
         this also confirms that lr_mult on the model level is propagated to all sublayers and their variables
@@ -275,6 +279,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         self._assert_training_losses_are_close(model, model_lr)
 
+    @test_utils.run_distributed(2)
     def _test_sub_layers_keep_lr_mult(self, model_fn, loss, opt):
         """confirm that model trains with lower lr on specific layer
         while a different lr_mult is applied everywhere else
@@ -297,6 +302,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         loss_values = get_losses(_get_train_results(model_lr, epochs=5))
         self.assertLess(loss_values[-1], loss_values[0])
 
+    @test_utils.run_distributed(2)
     def _test_variables_get_assigned(self, model_fn, loss, opt):
         """confirm that variables do get an lr_mult attribute and that they get the correct one
         """
@@ -333,6 +339,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
             len([var for var in model_lr.trainable_variables if var.lr_mult == 0.5]),
         )
 
+
     def _run_tests_in_notebook(self):
         for name, method in DiscriminativeLearningTest.__dict__.items():
             if callable(method) and name[:4] == "test":
@@ -361,8 +368,8 @@ def test_wrap(method, devices, **kwargs):
     devices = devices
 
     # test utils run distributed results in a cannot RuntimeError: Virtual devices cannot be modified after being initialized
-    @test_utils.run_distributed(2)
-    # @test_utils.run_in_graph_and_eager_modes
+    # @test_utils.run_distributed(2)
+    @test_utils.run_in_graph_and_eager_modes
     # @run_distributed(devices)
     def distributed(self):
         return method(self, **kwargs)
