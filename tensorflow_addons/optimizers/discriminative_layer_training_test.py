@@ -25,7 +25,7 @@ import os
 import tempfile
 
 
-def toy_cnn(first_run=False):
+def toy_cnn():
     """Consistently create model with same random weights
     skip head activation to allow both bce with logits and cce with logits
 
@@ -74,7 +74,7 @@ def toy_cnn(first_run=False):
         return tf.keras.models.load_model(cnn_model_path)
 
 
-def toy_rnn(first_run=False):
+def toy_rnn():
     """
     Consistently create model with same random weights
     skip head activation to allow both bce with logits and cce with logits
@@ -179,6 +179,16 @@ def get_losses(hist):
 
 
 class DiscriminativeLearningTest(tf.test.TestCase):
+
+    def __init__(self, methodName="runTest"):
+        super().__init__(self, methodName)
+
+        #before running the tests, create model weights for reloading
+        toy_cnn()
+        toy_rnn()
+        #set up again to hopefully prevent the cannot initialize virtual devices error
+        self.setUp()
+
     def _assert_losses_are_close(self, hist, hist_lr):
         """higher tolerance for graph and distributed bc unable to run deterministically"""
         if not tf.executing_eagerly() or tf.distribute.has_strategy():
@@ -199,6 +209,10 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         hist = _get_train_results(model, verbose=False, epochs=epochs)
         hist_lr = _get_train_results(model_lr, verbose=False, epochs=epochs)
         self._assert_losses_are_close(hist, hist_lr)
+
+
+
+
 
     @test_utils.run_distributed(2)
     def _test_equal_with_no_layer_lr(self, model_fn, loss, opt):
@@ -359,24 +373,20 @@ def run_distributed(devices):
     return decorator
 
 
-def test_wrap(method, devices, **kwargs):
+def test_wrap(method,  **kwargs):
     @test_utils.run_in_graph_and_eager_modes
     def single(self):
         return method(self, **kwargs)
 
-    devices = devices
 
-    # test utils run distributed results in a cannot RuntimeError: Virtual devices cannot be modified after being initialized
-    # @test_utils.run_distributed(2)
     @test_utils.run_in_graph_and_eager_modes
-    # @run_distributed(devices)
     def distributed(self):
         return method(self, **kwargs)
 
     return single, distributed
 
 
-def generate_tests(devices):
+def generate_tests():
     for name, method in DiscriminativeLearningTest.__dict__.copy().items():
         if callable(method) and name[:5] == "_test":
             for model_fn, loss, opt in _zipped_permutes():
@@ -387,7 +397,6 @@ def generate_tests(devices):
                 )
                 testmethod, testmethod_dist = test_wrap(
                     method=method,
-                    devices=devices,
                     model_fn=model_fn,
                     loss=loss,
                     opt=opt,
@@ -402,12 +411,5 @@ def generate_tests(devices):
 
 
 if __name__ == "__main__":
-    # create devices to avoid cannot create devices error
-    # devices = test_utils.create_virtual_devices(2)
-    devices = None
-    # save models so weights are always the same
-    # toy_cnn(first_run=True)
-    # toy_rnn(first_run=True)
-
-    generate_tests(devices=devices)
+    generate_tests()
     tf.test.main()
