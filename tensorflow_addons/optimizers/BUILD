@@ -19,7 +19,6 @@ py_library(
         "utils.py",
         "weight_decay_optimizers.py",
         "yogi.py",
-        "discriminative_layer_training.py"
     ],
     deps = [
         "//tensorflow_addons/utils",
@@ -153,20 +152,6 @@ py_test(
         "cyclical_learning_rate_test.py",
     ],
     main = "cyclical_learning_rate_test.py",
-    deps = [
-        ":optimizers",
-    ],
-)
-
-
-
-py_test(
-    name = "discriminative_layer_training_test",
-    size = "small",
-    srcs = [
-        "discriminative_layer_training_test.py",
-    ],
-    main = "discriminative_layer_training_test.py",
     deps = [
         ":optimizers",
     ],

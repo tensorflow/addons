@@ -36,7 +36,3 @@ from tensorflow_addons.optimizers.weight_decay_optimizers import SGDW
 from tensorflow_addons.optimizers.weight_decay_optimizers import (
     extend_with_decoupled_weight_decay)
 from tensorflow_addons.optimizers.yogi import Yogi
-
-from tensorflow_addons.optimizers.discriminative_layer_training import (
-    DiscriminativeLearning,
-)
