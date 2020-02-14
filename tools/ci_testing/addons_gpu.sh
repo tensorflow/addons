@@ -43,7 +43,12 @@ export CUDA_TOOLKIT_PATH="/usr/local/cuda"
 export TF_CUDNN_VERSION="7"
 export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 
-yes 'y' | ./configure.sh
+# Check if python3 is available. On Windows VM it is not.
+if [ -x "$(command -v python3)" ]; then
+    python3 ./configure.py
+  else
+    python ./configure.py
+fi
 
 ## Run bazel test command. Double test timeouts to avoid flakes.
 bazel test -c opt -k \
@@ -51,7 +56,6 @@ bazel test -c opt -k \
     --test_output=errors --local_test_jobs=8 \
     --run_under=$(readlink -f tools/ci_testing/parallel_gpu_execute.sh) \
     --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.1:toolchain \
-    --extra_toolchains=@bazel_tools//tools/python:autodetecting_toolchain_nonstrict \
     //tensorflow_addons/...
 
 exit $?

@@ -14,10 +14,19 @@
 # ==============================================================================
 
 import tensorflow as tf
+from tensorflow_addons.utils.types import Number
+from tensorflow_addons.utils import types
+from typing import Optional
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
-def rrelu(x, lower=0.125, upper=0.3333333333333333, training=None, seed=None):
+@tf.keras.utils.register_keras_serializable(package="Addons")
+def rrelu(
+    x: types.TensorLike,
+    lower: Number = 0.125,
+    upper: Number = 0.3333333333333333,
+    training: Optional[str] = None,
+    seed: Optional[str] = None,
+) -> tf.Tensor:
     """rrelu function.
 
     Computes rrelu function:
@@ -45,7 +54,8 @@ def rrelu(x, lower=0.125, upper=0.3333333333333333, training=None, seed=None):
 
     if training:
         alpha = tf.random.uniform(
-            tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype, seed=seed)
+            tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype, seed=seed
+        )
     else:
         alpha = tf.cast((lower + upper) / 2, x.dtype)
 

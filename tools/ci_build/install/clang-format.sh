@@ -13,26 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-set -e -x
 
-# No GPU support for Windows (See #784)
-export TF_NEED_CUDA="0"
 
-mkdir -p artifacts/
-
-python --version
-python -m pip install --upgrade pip
-
-#Link TF dependency
-echo 'y' | ./configure.sh --quiet
-
-./bazel-1.1.0-windows-x86_64.exe build \
-    -c opt \
-    --enable_runfiles \
-    --noshow_progress \
-    --noshow_loading_progress \
-    --verbose_failures \
-    --test_output=errors \
-    build_pip_pkg
-
-bazel-bin/build_pip_pkg artifacts --nightly
+wget -O /usr/local/bin/clang-format-9 https://github.com/DoozyX/clang-format-lint-action/raw/master/clang-format/clang-format9
+chmod +x /usr/local/bin/clang-format-9

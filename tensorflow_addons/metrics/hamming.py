@@ -16,9 +16,13 @@
 
 import tensorflow as tf
 from tensorflow_addons.metrics.utils import MeanMetricWrapper
+from tensorflow_addons.utils.types import FloatTensorLike, TensorLike, AcceptableDTypes
+
+from typeguard import typechecked
+from typing import Union, Optional
 
 
-def hamming_distance(actuals, predictions):
+def hamming_distance(actuals: TensorLike, predictions: TensorLike) -> tf.Tensor:
     """Computes hamming distance.
 
     Hamming distance is for comparing two binary strings.
@@ -49,7 +53,12 @@ def hamming_distance(actuals, predictions):
     return ham_distance
 
 
-def hamming_loss_fn(y_true, y_pred, threshold, mode):
+def hamming_loss_fn(
+    y_true: TensorLike,
+    y_pred: TensorLike,
+    threshold: Union[FloatTensorLike, None],
+    mode: str,
+) -> tf.Tensor:
     """Computes hamming loss.
 
     Hamming loss is the fraction of wrong labels to the total number
@@ -127,7 +136,15 @@ def hamming_loss_fn(y_true, y_pred, threshold, mode):
 class HammingLoss(MeanMetricWrapper):
     """Computes hamming loss."""
 
-    def __init__(self, mode, name="hamming_loss", threshold=None, dtype=tf.float32):
+    @typechecked
+    def __init__(
+        self,
+        mode: str,
+        name: str = "hamming_loss",
+        threshold: Optional[FloatTensorLike] = None,
+        dtype: AcceptableDTypes = None,
+        **kwargs
+    ):
         super().__init__(
-            hamming_loss_fn, name, dtype=dtype, mode=mode, threshold=threshold
+            hamming_loss_fn, name=name, dtype=dtype, mode=mode, threshold=threshold
         )

@@ -16,10 +16,13 @@
 
 import tensorflow as tf
 
+from tensorflow_addons.utils.types import TensorLike
+from typeguard import typechecked
+
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
-def npairs_loss(y_true, y_pred):
+def npairs_loss(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
     """Computes the npairs loss between `y_true` and `y_pred`.
 
     Npairs loss expects paired data where a pair is composed of samples from
@@ -61,7 +64,7 @@ def npairs_loss(y_true, y_pred):
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
-def npairs_multilabel_loss(y_true, y_pred):
+def npairs_multilabel_loss(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
     r"""Computes the npairs loss between multilabel data `y_true` and `y_pred`.
 
     Npairs loss expects paired data where a pair is composed of samples from
@@ -147,7 +150,8 @@ class NpairsLoss(tf.keras.losses.Loss):
       name: (Optional) name for the loss.
     """
 
-    def __init__(self, name="npairs_loss"):
+    @typechecked
+    def __init__(self, name: str = "npairs_loss"):
         super().__init__(reduction=tf.keras.losses.Reduction.NONE, name=name)
 
     def call(self, y_true, y_pred):
@@ -191,7 +195,8 @@ class NpairsMultilabelLoss(tf.keras.losses.Loss):
       name: (Optional) name for the loss.
     """
 
-    def __init__(self, name="npairs_multilabel_loss"):
+    @typechecked
+    def __init__(self, name: str = "npairs_multilabel_loss"):
         super().__init__(reduction=tf.keras.losses.Reduction.NONE, name=name)
 
     def call(self, y_true, y_pred):

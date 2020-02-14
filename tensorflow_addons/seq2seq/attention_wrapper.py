@@ -23,6 +23,15 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.utils import keras_utils
+from tensorflow_addons.utils.types import (
+    AcceptableDTypes,
+    FloatTensorLike,
+    TensorLike,
+    Initializer,
+)
+
+from typeguard import typechecked
+from typing import Optional, Callable
 
 # TODO: Find public API alternatives to these
 from tensorflow.python.keras.engine import base_layer_utils
@@ -66,13 +75,15 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
     stateful. The support for that will be added in a future version.
     """
 
-    def __init__(self,
-                 memory,
-                 probability_fn,
-                 query_layer=None,
-                 memory_layer=None,
-                 memory_sequence_length=None,
-                 **kwargs):
+    def __init__(
+        self,
+        memory,
+        probability_fn,
+        query_layer=None,
+        memory_layer=None,
+        memory_sequence_length=None,
+        **kwargs
+    ):
         """Construct base AttentionMechanism class.
 
         Args:
@@ -95,22 +106,28 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
           **kwargs: Dictionary that contains other common arguments for layer
             creation.
         """
-        if (query_layer is not None
-                and not isinstance(query_layer, tf.keras.layers.Layer)):
+        if query_layer is not None and not isinstance(
+            query_layer, tf.keras.layers.Layer
+        ):
             raise TypeError(
-                "query_layer is not a Layer: %s" % type(query_layer).__name__)
-        if (memory_layer is not None
-                and not isinstance(memory_layer, tf.keras.layers.Layer)):
-            raise TypeError("memory_layer is not a Layer: %s" %
-                            type(memory_layer).__name__)
+                "query_layer is not a Layer: %s" % type(query_layer).__name__
+            )
+        if memory_layer is not None and not isinstance(
+            memory_layer, tf.keras.layers.Layer
+        ):
+            raise TypeError(
+                "memory_layer is not a Layer: %s" % type(memory_layer).__name__
+            )
         self.query_layer = query_layer
         self.memory_layer = memory_layer
         if self.memory_layer is not None and "dtype" not in kwargs:
             kwargs["dtype"] = self.memory_layer.dtype
         super().__init__(**kwargs)
         if not callable(probability_fn):
-            raise TypeError("probability_fn must be callable, saw type: %s" %
-                            type(probability_fn).__name__)
+            raise TypeError(
+                "probability_fn must be callable, saw type: %s"
+                % type(probability_fn).__name__
+            )
         self.default_probability_fn = probability_fn
         self.probability_fn = probability_fn
 
@@ -175,14 +192,14 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
           **kwargs: dict, other keyeword arguments for the `__call__()`
         """
         # Allow manual memory reset
-        if kwargs.get('setup_memory', False):
+        if kwargs.get("setup_memory", False):
             self._memory_initialized = False
 
         if self._memory_initialized:
             if len(inputs) not in (2, 3):
                 raise ValueError(
-                    "Expect the inputs to have 2 or 3 tensors, got %d" %
-                    len(inputs))
+                    "Expect the inputs to have 2 or 3 tensors, got %d" % len(inputs)
+                )
             if len(inputs) == 2:
                 # We append the calculated memory here so that the graph will be
                 # connected.
@@ -223,11 +240,10 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
             if isinstance(inputs, list):
                 if len(inputs) not in (1, 2):
                     raise ValueError(
-                        "Expect inputs to have 1 or 2 tensors, got %d" %
-                        len(inputs))
+                        "Expect inputs to have 1 or 2 tensors, got %d" % len(inputs)
+                    )
                 memory = inputs[0]
-                memory_sequence_length = inputs[1] if len(
-                    inputs) == 2 else None
+                memory_sequence_length = inputs[1] if len(inputs) == 2 else None
                 memory_mask = mask
             else:
                 memory, memory_sequence_length = inputs, None
@@ -243,21 +259,19 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
         else:
             if not self._memory_initialized:
                 raise ValueError(
-                    "Cannot query the attention before the setup of "
-                    "memory")
+                    "Cannot query the attention before the setup of " "memory"
+                )
             if len(inputs) not in (2, 3):
                 raise ValueError(
                     "Expect the inputs to have query, state, and optional "
-                    "processed memory, got %d items" % len(inputs))
+                    "processed memory, got %d items" % len(inputs)
+                )
             # Ignore the rest of the inputs and only care about the query and
             # state
             query, state = inputs[0], inputs[1]
             return self._calculate_attention(query, state)
 
-    def setup_memory(self,
-                     memory,
-                     memory_sequence_length=None,
-                     memory_mask=None):
+    def setup_memory(self, memory, memory_sequence_length=None, memory_mask=None):
         """Pre-process the memory before actually query the memory.
 
         This should only be called once at the first invocation of call().
@@ -275,13 +289,15 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
         if memory_sequence_length is not None and memory_mask is not None:
             raise ValueError(
                 "memory_sequence_length and memory_mask cannot be "
-                "used at same time for attention.")
+                "used at same time for attention."
+            )
         with tf.name_scope(self.name or "BaseAttentionMechanismInit"):
             self.values = _prepare_memory(
                 memory,
                 memory_sequence_length=memory_sequence_length,
                 memory_mask=memory_mask,
-                check_inner_dims_defined=self._check_inner_dims_defined)
+                check_inner_dims_defined=self._check_inner_dims_defined,
+            )
             # Mark the value as check since the memory and memory mask might not
             # passed from __call__(), which does not have proper keras metadata.
             # TODO(omalleyt12): Remove this hack once the mask the has proper
@@ -291,10 +307,12 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
                 self.keys = self.memory_layer(self.values)
             else:
                 self.keys = self.values
-            self.batch_size = (tf.compat.dimension_value(self.keys.shape[0])
-                               or tf.shape(self.keys)[0])
-            self._alignments_size = (tf.compat.dimension_value(
-                self.keys.shape[1]) or tf.shape(self.keys)[1])
+            self.batch_size = (
+                tf.compat.dimension_value(self.keys.shape[0]) or tf.shape(self.keys)[0]
+            )
+            self._alignments_size = (
+                tf.compat.dimension_value(self.keys.shape[1]) or tf.shape(self.keys)[1]
+            )
             if memory_mask is not None or memory_sequence_length is not None:
                 unwrapped_probability_fn = self.default_probability_fn
 
@@ -304,14 +322,18 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
                             score,
                             memory_mask=memory_mask,
                             memory_sequence_length=memory_sequence_length,
-                            score_mask_value=score.dtype.min), prev)
+                            score_mask_value=score.dtype.min,
+                        ),
+                        prev,
+                    )
 
                 self.probability_fn = _mask_probability_fn
         self._memory_initialized = True
 
     def _calculate_attention(self, query, state):
         raise NotImplementedError(
-            "_calculate_attention need to be implemented by subclasses.")
+            "_calculate_attention need to be implemented by subclasses."
+        )
 
     def compute_mask(self, inputs, mask=None):
         # There real input of the attention is query and state, and the memory
@@ -347,8 +369,10 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
             "hardmax": hardmax,
         }
         if func_name not in valid_probability_fns.keys():
-            raise ValueError("Invalid probability function: %s, options are %s"
-                             % (func_name, valid_probability_fns.keys()))
+            raise ValueError(
+                "Invalid probability function: %s, options are %s"
+                % (func_name, valid_probability_fns.keys())
+            )
         return valid_probability_fns[func_name]
 
     @classmethod
@@ -374,12 +398,14 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
         query_layer_config = config.pop("query_layer", None)
         if query_layer_config:
             query_layer = tf.keras.layers.deserialize(
-                query_layer_config, custom_objects=custom_objects)
+                query_layer_config, custom_objects=custom_objects
+            )
             config["query_layer"] = query_layer
         memory_layer_config = config.pop("memory_layer", None)
         if memory_layer_config:
             memory_layer = tf.keras.layers.deserialize(
-                memory_layer_config, custom_objects=custom_objects)
+                memory_layer_config, custom_objects=custom_objects
+            )
             config["memory_layer"] = memory_layer
         return config
 
@@ -464,8 +490,9 @@ def _luong_score(query, keys, scale):
         raise ValueError(
             "Incompatible or unknown inner dimensions between query and keys. "
             "Query (%s) has units: %s.  Keys (%s) have units: %s.  "
-            "Perhaps you need to set num_units to the keys' dimension (%s)?" %
-            (query, depth, keys, key_units, key_units))
+            "Perhaps you need to set num_units to the keys' dimension (%s)?"
+            % (query, depth, keys, key_units, key_units)
+        )
 
     # Reshape from [batch_size, depth] to [batch_size, 1, depth]
     # for matmul.
@@ -505,15 +532,18 @@ class LuongAttention(_BaseAttentionMechanism):
     `scale=True`.
     """
 
-    def __init__(self,
-                 units,
-                 memory=None,
-                 memory_sequence_length=None,
-                 scale=False,
-                 probability_fn="softmax",
-                 dtype=None,
-                 name="LuongAttention",
-                 **kwargs):
+    @typechecked
+    def __init__(
+        self,
+        units: TensorLike,
+        memory: Optional[TensorLike] = None,
+        memory_sequence_length: Optional[TensorLike] = None,
+        scale: bool = False,
+        probability_fn: str = "softmax",
+        dtype: AcceptableDTypes = None,
+        name: str = "LuongAttention",
+        **kwargs
+    ):
         """Construct the AttentionMechanism mechanism.
 
         Args:
@@ -541,12 +571,14 @@ class LuongAttention(_BaseAttentionMechanism):
 
         def wrapped_probability_fn(score, _):
             return probability_fn(score)
+
         if dtype is None:
             dtype = tf.float32
         memory_layer = kwargs.pop("memory_layer", None)
         if not memory_layer:
             memory_layer = tf.keras.layers.Dense(
-                units, name="memory_layer", use_bias=False, dtype=dtype)
+                units, name="memory_layer", use_bias=False, dtype=dtype
+            )
         self.units = units
         self.scale = scale
         self.scale_weight = None
@@ -558,13 +590,15 @@ class LuongAttention(_BaseAttentionMechanism):
             probability_fn=wrapped_probability_fn,
             name=name,
             dtype=dtype,
-            **kwargs)
+            **kwargs,
+        )
 
     def build(self, input_shape):
         super().build(input_shape)
         if self.scale and self.scale_weight is None:
             self.scale_weight = self.add_weight(
-                "attention_g", initializer=tf.ones_initializer, shape=())
+                "attention_g", initializer=tf.ones_initializer, shape=()
+            )
         self.built = True
 
     def _calculate_attention(self, query, state):
@@ -600,15 +634,14 @@ class LuongAttention(_BaseAttentionMechanism):
     @classmethod
     def from_config(cls, config, custom_objects=None):
         config = _BaseAttentionMechanism.deserialize_inner_layer_from_config(
-            config, custom_objects=custom_objects)
+            config, custom_objects=custom_objects
+        )
         return cls(**config)
 
 
-def _bahdanau_score(processed_query,
-                    keys,
-                    attention_v,
-                    attention_g=None,
-                    attention_b=None):
+def _bahdanau_score(
+    processed_query, keys, attention_v, attention_g=None, attention_b=None
+):
     """Implements Bahdanau-style (additive) scoring function.
 
     This attention has two forms.  The first is Bhandanau attention,
@@ -642,13 +675,16 @@ def _bahdanau_score(processed_query,
     # Reshape from [batch_size, ...] to [batch_size, 1, ...] for broadcasting.
     processed_query = tf.expand_dims(processed_query, 1)
     if attention_g is not None and attention_b is not None:
-        normed_v = attention_g * attention_v * tf.math.rsqrt(
-            tf.reduce_sum(tf.square(attention_v)))
+        normed_v = (
+            attention_g
+            * attention_v
+            * tf.math.rsqrt(tf.reduce_sum(tf.square(attention_v)))
+        )
         return tf.reduce_sum(
-            normed_v * tf.tanh(keys + processed_query + attention_b), [2])
+            normed_v * tf.tanh(keys + processed_query + attention_b), [2]
+        )
     else:
-        return tf.reduce_sum(attention_v * tf.tanh(keys + processed_query),
-                             [2])
+        return tf.reduce_sum(attention_v * tf.tanh(keys + processed_query), [2])
 
 
 class BahdanauAttention(_BaseAttentionMechanism):
@@ -673,16 +709,19 @@ class BahdanauAttention(_BaseAttentionMechanism):
     `normalize=True`.
     """
 
-    def __init__(self,
-                 units,
-                 memory=None,
-                 memory_sequence_length=None,
-                 normalize=False,
-                 probability_fn="softmax",
-                 kernel_initializer="glorot_uniform",
-                 dtype=None,
-                 name="BahdanauAttention",
-                 **kwargs):
+    @typechecked
+    def __init__(
+        self,
+        units: TensorLike,
+        memory: Optional[TensorLike] = None,
+        memory_sequence_length: Optional[TensorLike] = None,
+        normalize: bool = False,
+        probability_fn: str = "softmax",
+        kernel_initializer: Initializer = "glorot_uniform",
+        dtype: AcceptableDTypes = None,
+        name: str = "BahdanauAttention",
+        **kwargs
+    ):
         """Construct the Attention mechanism.
 
         Args:
@@ -711,16 +750,19 @@ class BahdanauAttention(_BaseAttentionMechanism):
 
         def wrapped_probability_fn(score, _):
             return probability_fn(score)
+
         if dtype is None:
             dtype = tf.float32
         query_layer = kwargs.pop("query_layer", None)
         if not query_layer:
             query_layer = tf.keras.layers.Dense(
-                units, name="query_layer", use_bias=False, dtype=dtype)
+                units, name="query_layer", use_bias=False, dtype=dtype
+            )
         memory_layer = kwargs.pop("memory_layer", None)
         if not memory_layer:
             memory_layer = tf.keras.layers.Dense(
-                units, name="memory_layer", use_bias=False, dtype=dtype)
+                units, name="memory_layer", use_bias=False, dtype=dtype
+            )
         self.units = units
         self.normalize = normalize
         self.kernel_initializer = tf.keras.initializers.get(kernel_initializer)
@@ -735,26 +777,27 @@ class BahdanauAttention(_BaseAttentionMechanism):
             probability_fn=wrapped_probability_fn,
             name=name,
             dtype=dtype,
-            **kwargs)
+            **kwargs,
+        )
 
     def build(self, input_shape):
         super().build(input_shape)
         if self.attention_v is None:
             self.attention_v = self.add_weight(
-                "attention_v", [self.units],
+                "attention_v",
+                [self.units],
                 dtype=self.dtype,
-                initializer=self.kernel_initializer)
-        if (self.normalize and self.attention_g is None
-                and self.attention_b is None):
+                initializer=self.kernel_initializer,
+            )
+        if self.normalize and self.attention_g is None and self.attention_b is None:
             self.attention_g = self.add_weight(
                 "attention_g",
-                initializer=tf.constant_initializer(
-                    math.sqrt(1. / self.units)),
-                shape=())
+                initializer=tf.constant_initializer(math.sqrt(1.0 / self.units)),
+                shape=(),
+            )
             self.attention_b = self.add_weight(
-                "attention_b",
-                shape=[self.units],
-                initializer=tf.zeros_initializer())
+                "attention_b", shape=[self.units], initializer=tf.zeros_initializer()
+            )
         self.built = True
 
     def _calculate_attention(self, query, state):
@@ -773,14 +816,14 @@ class BahdanauAttention(_BaseAttentionMechanism):
             `max_time`).
           next_state: same as alignments.
         """
-        processed_query = self.query_layer(
-            query) if self.query_layer else query
+        processed_query = self.query_layer(query) if self.query_layer else query
         score = _bahdanau_score(
             processed_query,
             self.keys,
             self.attention_v,
             attention_g=self.attention_g,
-            attention_b=self.attention_b)
+            attention_b=self.attention_b,
+        )
         alignments = self.probability_fn(score, state)
         next_state = alignments
         return alignments, next_state
@@ -802,11 +845,12 @@ class BahdanauAttention(_BaseAttentionMechanism):
     @classmethod
     def from_config(cls, config, custom_objects=None):
         config = _BaseAttentionMechanism.deserialize_inner_layer_from_config(
-            config, custom_objects=custom_objects)
+            config, custom_objects=custom_objects
+        )
         return cls(**config)
 
 
-def safe_cumprod(x, *args, **kwargs):
+def safe_cumprod(x: TensorLike, *args, **kwargs) -> tf.Tensor:
     """Computes cumprod of x in logspace using cumsum to avoid underflow.
 
     The cumprod function and its gradient can result in numerical instabilities
@@ -826,11 +870,13 @@ def safe_cumprod(x, *args, **kwargs):
         x = tf.convert_to_tensor(x, name="x")
         tiny = np.finfo(x.dtype.as_numpy_dtype).tiny
         return tf.exp(
-            tf.cumsum(
-                tf.math.log(tf.clip_by_value(x, tiny, 1)), *args, **kwargs))
+            tf.cumsum(tf.math.log(tf.clip_by_value(x, tiny, 1)), *args, **kwargs)
+        )
 
 
-def monotonic_attention(p_choose_i, previous_attention, mode):
+def monotonic_attention(
+    p_choose_i: FloatTensorLike, previous_attention: FloatTensorLike, mode: str
+) -> tf.Tensor:
     """Compute monotonic attention distribution from choosing probabilities.
 
     Monotonic attention implies that the input sequence is processed in an
@@ -874,15 +920,18 @@ def monotonic_attention(p_choose_i, previous_attention, mode):
     # Force things to be tensors
     p_choose_i = tf.convert_to_tensor(p_choose_i, name="p_choose_i")
     previous_attention = tf.convert_to_tensor(
-        previous_attention, name="previous_attention")
+        previous_attention, name="previous_attention"
+    )
     if mode == "recursive":
         # Use .shape[0] when it's not None, or fall back on symbolic shape
-        batch_size = tf.compat.dimension_value(
-            p_choose_i.shape[0]) or tf.shape(p_choose_i)[0]
+        batch_size = (
+            tf.compat.dimension_value(p_choose_i.shape[0]) or tf.shape(p_choose_i)[0]
+        )
         # Compute [1, 1 - p_choose_i[0], 1 - p_choose_i[1], ..., 1 - p_choose_
         # i[-2]]
         shifted_1mp_choose_i = tf.concat(
-            [tf.ones((batch_size, 1)), 1 - p_choose_i[:, :-1]], 1)
+            [tf.ones((batch_size, 1)), 1 - p_choose_i[:, :-1]], 1
+        )
         # Compute attention distribution recursively as
         # q[i] = (1 - p_choose_i[i - 1])*q[i - 1] + previous_attention[i]
         # attention[i] = p_choose_i[i]*q[i]
@@ -892,22 +941,25 @@ def monotonic_attention(p_choose_i, previous_attention, mode):
                 # iterations
                 lambda x, yz: tf.reshape(yz[0] * x + yz[1], (batch_size,)),
                 # Loop variables yz[0] and yz[1]
-                [
-                    tf.transpose(shifted_1mp_choose_i),
-                    tf.transpose(previous_attention)
-                ],
+                [tf.transpose(shifted_1mp_choose_i), tf.transpose(previous_attention)],
                 # Initial value of x is just zeros
-                tf.zeros((batch_size,))))
+                tf.zeros((batch_size,)),
+            )
+        )
     elif mode == "parallel":
         # safe_cumprod computes cumprod in logspace with numeric checks
-        cumprod_1mp_choose_i = safe_cumprod(
-            1 - p_choose_i, axis=1, exclusive=True)
+        cumprod_1mp_choose_i = safe_cumprod(1 - p_choose_i, axis=1, exclusive=True)
         # Compute recurrence relation solution
-        attention = p_choose_i * cumprod_1mp_choose_i * tf.cumsum(
-            previous_attention /
-            # Clip cumprod_1mp to avoid divide-by-zero
-            tf.clip_by_value(cumprod_1mp_choose_i, 1e-10, 1.),
-            axis=1)
+        attention = (
+            p_choose_i
+            * cumprod_1mp_choose_i
+            * tf.cumsum(
+                previous_attention /
+                # Clip cumprod_1mp to avoid divide-by-zero
+                tf.clip_by_value(cumprod_1mp_choose_i, 1e-10, 1.0),
+                axis=1,
+            )
+        )
     elif mode == "hard":
         # Remove any probabilities before the index chosen last time step
         p_choose_i *= tf.cumsum(previous_attention, axis=1)
@@ -916,18 +968,15 @@ def monotonic_attention(p_choose_i, previous_attention, mode):
         # p_choose_i = [0, 0, 0, 1, 1, 0, 1, 1]
         # cumprod(1 - p_choose_i, exclusive=True) = [1, 1, 1, 1, 0, 0, 0, 0]
         # Product of above: [0, 0, 0, 1, 0, 0, 0, 0]
-        attention = p_choose_i * tf.math.cumprod(
-            1 - p_choose_i, axis=1, exclusive=True)
+        attention = p_choose_i * tf.math.cumprod(1 - p_choose_i, axis=1, exclusive=True)
     else:
         raise ValueError("mode must be 'recursive', 'parallel', or 'hard'.")
     return attention
 
 
-def _monotonic_probability_fn(score,
-                              previous_alignments,
-                              sigmoid_noise,
-                              mode,
-                              seed=None):
+def _monotonic_probability_fn(
+    score, previous_alignments, sigmoid_noise, mode, seed=None
+):
     """Attention probability function for monotonic attention.
 
     Takes in unnormalized attention scores, adds pre-sigmoid noise to encourage
@@ -997,7 +1046,8 @@ class _BaseMonotonicAttentionMechanism(_BaseAttentionMechanism):
         """
         max_time = self._alignments_size
         return tf.one_hot(
-            tf.zeros((batch_size,), dtype=tf.int32), max_time, dtype=dtype)
+            tf.zeros((batch_size,), dtype=tf.int32), max_time, dtype=dtype
+        )
 
 
 class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
@@ -1017,19 +1067,22 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
     ICML 2017.  https://arxiv.org/abs/1704.00784
     """
 
-    def __init__(self,
-                 units,
-                 memory=None,
-                 memory_sequence_length=None,
-                 normalize=False,
-                 sigmoid_noise=0.,
-                 sigmoid_noise_seed=None,
-                 score_bias_init=0.,
-                 mode="parallel",
-                 kernel_initializer="glorot_uniform",
-                 dtype=None,
-                 name="BahdanauMonotonicAttention",
-                 **kwargs):
+    @typechecked
+    def __init__(
+        self,
+        units: TensorLike,
+        memory: Optional[TensorLike] = None,
+        memory_sequence_length: Optional[TensorLike] = None,
+        normalize: bool = False,
+        sigmoid_noise: FloatTensorLike = 0.0,
+        sigmoid_noise_seed: Optional[FloatTensorLike] = None,
+        score_bias_init: FloatTensorLike = 0.0,
+        mode: str = "parallel",
+        kernel_initializer: Initializer = "glorot_uniform",
+        dtype: AcceptableDTypes = None,
+        name: str = "BahdanauMonotonicAttention",
+        **kwargs
+    ):
         """Construct the Attention mechanism.
 
         Args:
@@ -1064,15 +1117,18 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
             _monotonic_probability_fn,
             sigmoid_noise=sigmoid_noise,
             mode=mode,
-            seed=sigmoid_noise_seed)
+            seed=sigmoid_noise_seed,
+        )
         query_layer = kwargs.pop("query_layer", None)
         if not query_layer:
             query_layer = tf.keras.layers.Dense(
-                units, name="query_layer", use_bias=False, dtype=dtype)
+                units, name="query_layer", use_bias=False, dtype=dtype
+            )
         memory_layer = kwargs.pop("memory_layer", None)
         if not memory_layer:
             memory_layer = tf.keras.layers.Dense(
-                units, name="memory_layer", use_bias=False, dtype=dtype)
+                units, name="memory_layer", use_bias=False, dtype=dtype
+            )
         self.units = units
         self.normalize = normalize
         self.sigmoid_noise = sigmoid_noise
@@ -1092,33 +1148,38 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
             probability_fn=wrapped_probability_fn,
             name=name,
             dtype=dtype,
-            **kwargs)
+            **kwargs,
+        )
 
     def build(self, input_shape):
         super().build(input_shape)
         if self.attention_v is None:
             self.attention_v = self.add_weight(
-                "attention_v", [self.units],
+                "attention_v",
+                [self.units],
                 dtype=self.dtype,
-                initializer=self.kernel_initializer)
+                initializer=self.kernel_initializer,
+            )
         if self.attention_score_bias is None:
             self.attention_score_bias = self.add_weight(
                 "attention_score_bias",
                 shape=(),
                 dtype=self.dtype,
-                initializer=tf.constant_initializer(self.score_bias_init))
-        if (self.normalize and self.attention_g is None
-                and self.attention_b is None):
+                initializer=tf.constant_initializer(self.score_bias_init),
+            )
+        if self.normalize and self.attention_g is None and self.attention_b is None:
             self.attention_g = self.add_weight(
                 "attention_g",
                 dtype=self.dtype,
-                initializer=tf.constant_initializer(
-                    math.sqrt(1. / self.units)),
-                shape=())
+                initializer=tf.constant_initializer(math.sqrt(1.0 / self.units)),
+                shape=(),
+            )
             self.attention_b = self.add_weight(
-                "attention_b", [self.units],
+                "attention_b",
+                [self.units],
                 dtype=self.dtype,
-                initializer=tf.zeros_initializer())
+                initializer=tf.zeros_initializer(),
+            )
         self.built = True
 
     def _calculate_attention(self, query, state):
@@ -1136,14 +1197,14 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
             `[batch_size, alignments_size]` (`alignments_size` is memory's
             `max_time`).
         """
-        processed_query = self.query_layer(
-            query) if self.query_layer else query
+        processed_query = self.query_layer(query) if self.query_layer else query
         score = _bahdanau_score(
             processed_query,
             self.keys,
             self.attention_v,
             attention_g=self.attention_g,
-            attention_b=self.attention_b)
+            attention_b=self.attention_b,
+        )
         score += self.attention_score_bias
         alignments = self.probability_fn(score, state)
         next_state = alignments
@@ -1170,7 +1231,8 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
     @classmethod
     def from_config(cls, config, custom_objects=None):
         config = _BaseAttentionMechanism.deserialize_inner_layer_from_config(
-            config, custom_objects=custom_objects)
+            config, custom_objects=custom_objects
+        )
         return cls(**config)
 
 
@@ -1189,18 +1251,21 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
     ICML 2017.](https://arxiv.org/abs/1704.00784)
     """
 
-    def __init__(self,
-                 units,
-                 memory=None,
-                 memory_sequence_length=None,
-                 scale=False,
-                 sigmoid_noise=0.,
-                 sigmoid_noise_seed=None,
-                 score_bias_init=0.,
-                 mode="parallel",
-                 dtype=None,
-                 name="LuongMonotonicAttention",
-                 **kwargs):
+    @typechecked
+    def __init__(
+        self,
+        units: TensorLike,
+        memory: Optional[TensorLike] = None,
+        memory_sequence_length: Optional[TensorLike] = None,
+        scale: bool = False,
+        sigmoid_noise: FloatTensorLike = 0.0,
+        sigmoid_noise_seed: Optional[FloatTensorLike] = None,
+        score_bias_init: FloatTensorLike = 0.0,
+        mode: str = "parallel",
+        dtype: AcceptableDTypes = None,
+        name: str = "LuongMonotonicAttention",
+        **kwargs
+    ):
         """Construct the Attention mechanism.
 
         Args:
@@ -1233,11 +1298,13 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
             _monotonic_probability_fn,
             sigmoid_noise=sigmoid_noise,
             mode=mode,
-            seed=sigmoid_noise_seed)
+            seed=sigmoid_noise_seed,
+        )
         memory_layer = kwargs.pop("memory_layer", None)
         if not memory_layer:
             memory_layer = tf.keras.layers.Dense(
-                units, name="memory_layer", use_bias=False, dtype=dtype)
+                units, name="memory_layer", use_bias=False, dtype=dtype
+            )
         self.units = units
         self.scale = scale
         self.sigmoid_noise = sigmoid_noise
@@ -1254,18 +1321,21 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
             probability_fn=wrapped_probability_fn,
             name=name,
             dtype=dtype,
-            **kwargs)
+            **kwargs,
+        )
 
     def build(self, input_shape):
         super().build(input_shape)
         if self.scale and self.attention_g is None:
             self.attention_g = self.add_weight(
-                "attention_g", initializer=tf.ones_initializer, shape=())
+                "attention_g", initializer=tf.ones_initializer, shape=()
+            )
         if self.attention_score_bias is None:
             self.attention_score_bias = self.add_weight(
                 "attention_score_bias",
                 shape=(),
-                initializer=tf.constant_initializer(self.score_bias_init))
+                initializer=tf.constant_initializer(self.score_bias_init),
+            )
         self.built = True
 
     def _calculate_attention(self, query, state):
@@ -1305,15 +1375,24 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
     @classmethod
     def from_config(cls, config, custom_objects=None):
         config = _BaseAttentionMechanism.deserialize_inner_layer_from_config(
-            config, custom_objects=custom_objects)
+            config, custom_objects=custom_objects
+        )
         return cls(**config)
 
 
 class AttentionWrapperState(
-        collections.namedtuple(
-            "AttentionWrapperState",
-            ("cell_state", "attention", "time", "alignments",
-             "alignment_history", "attention_state"))):
+    collections.namedtuple(
+        "AttentionWrapperState",
+        (
+            "cell_state",
+            "attention",
+            "time",
+            "alignments",
+            "alignment_history",
+            "attention_state",
+        ),
+    )
+):
     """`namedtuple` storing the state of a `AttentionWrapper`.
 
     Contains:
@@ -1363,8 +1442,7 @@ class AttentionWrapperState(
                 if not tf.executing_eagerly():
                     new_shape = tf.shape(new)
                     old_shape = tf.shape(old)
-                    assert_equal = tf.debugging.assert_equal(
-                        new_shape, old_shape)
+                    assert_equal = tf.debugging.assert_equal(new_shape, old_shape)
                     with tf.control_dependencies([assert_equal]):
                         # Add an identity op so that control deps can kick in.
                         return tf.identity(new)
@@ -1373,19 +1451,17 @@ class AttentionWrapperState(
                         raise ValueError(
                             "The shape of the AttentionWrapperState is "
                             "expected to be same as the one to clone. "
-                            "self.shape: %s, input.shape: %s" % (old.shape,
-                                                                 new.shape))
+                            "self.shape: %s, input.shape: %s" % (old.shape, new.shape)
+                        )
                     return new
             return new
 
-        return tf.nest.map_structure(with_same_shape, self,
-                                     super()._replace(**kwargs))
+        return tf.nest.map_structure(with_same_shape, self, super()._replace(**kwargs))
 
 
-def _prepare_memory(memory,
-                    memory_sequence_length=None,
-                    memory_mask=None,
-                    check_inner_dims_defined=True):
+def _prepare_memory(
+    memory, memory_sequence_length=None, memory_mask=None, check_inner_dims_defined=True
+):
     """Convert to tensor and possibly mask `memory`.
 
     Args:
@@ -1405,21 +1481,24 @@ def _prepare_memory(memory,
         `memory.shape[2:].is_fully_defined()`.
     """
     memory = tf.nest.map_structure(
-        lambda m: tf.convert_to_tensor(m, name="memory"), memory)
+        lambda m: tf.convert_to_tensor(m, name="memory"), memory
+    )
     if memory_sequence_length is not None and memory_mask is not None:
         raise ValueError(
-            "memory_sequence_length and memory_mask can't be provided "
-            "at same time.")
+            "memory_sequence_length and memory_mask can't be provided " "at same time."
+        )
     if memory_sequence_length is not None:
         memory_sequence_length = tf.convert_to_tensor(
-            memory_sequence_length, name="memory_sequence_length")
+            memory_sequence_length, name="memory_sequence_length"
+        )
     if check_inner_dims_defined:
 
         def _check_dims(m):
             if not m.get_shape()[2:].is_fully_defined():
                 raise ValueError(
                     "Expected memory %s to have fully defined inner dims, "
-                    "but saw shape: %s" % (m.name, m.get_shape()))
+                    "but saw shape: %s" % (m.name, m.get_shape())
+                )
 
         tf.nest.map_structure(_check_dims, memory)
     if memory_sequence_length is None and memory_mask is None:
@@ -1428,11 +1507,11 @@ def _prepare_memory(memory,
         seq_len_mask = tf.sequence_mask(
             memory_sequence_length,
             maxlen=tf.shape(tf.nest.flatten(memory)[0])[1],
-            dtype=tf.nest.flatten(memory)[0].dtype)
+            dtype=tf.nest.flatten(memory)[0].dtype,
+        )
     else:
         # For memory_mask is not None
-        seq_len_mask = tf.cast(
-            memory_mask, dtype=tf.nest.flatten(memory)[0].dtype)
+        seq_len_mask = tf.cast(memory_mask, dtype=tf.nest.flatten(memory)[0].dtype)
 
     def _maybe_mask(m, seq_len_mask):
         """Mask the memory based on the memory mask."""
@@ -1440,39 +1519,40 @@ def _prepare_memory(memory,
         rank = rank if rank is not None else tf.rank(m)
         extra_ones = tf.ones(rank - 2, dtype=tf.int32)
         seq_len_mask = tf.reshape(
-            seq_len_mask, tf.concat((tf.shape(seq_len_mask), extra_ones), 0))
+            seq_len_mask, tf.concat((tf.shape(seq_len_mask), extra_ones), 0)
+        )
         return m * seq_len_mask
 
-    return tf.nest.map_structure(lambda m: _maybe_mask(m, seq_len_mask),
-                                 memory)
+    return tf.nest.map_structure(lambda m: _maybe_mask(m, seq_len_mask), memory)
 
 
-def _maybe_mask_score(score,
-                      memory_sequence_length=None,
-                      memory_mask=None,
-                      score_mask_value=None):
+def _maybe_mask_score(
+    score, memory_sequence_length=None, memory_mask=None, score_mask_value=None
+):
     """Mask the attention score based on the masks."""
     if memory_sequence_length is None and memory_mask is None:
         return score
     if memory_sequence_length is not None and memory_mask is not None:
         raise ValueError(
-            "memory_sequence_length and memory_mask can't be provided "
-            "at same time.")
+            "memory_sequence_length and memory_mask can't be provided " "at same time."
+        )
     if memory_sequence_length is not None:
-        message = ("All values in memory_sequence_length must greater than "
-                   "zero.")
-        with tf.control_dependencies([
+        message = "All values in memory_sequence_length must greater than " "zero."
+        with tf.control_dependencies(
+            [
                 tf.debugging.assert_positive(  # pylint: disable=bad-continuation
-                    memory_sequence_length,
-                    message=message)
-        ]):
+                    memory_sequence_length, message=message
+                )
+            ]
+        ):
             memory_mask = tf.sequence_mask(
-                memory_sequence_length, maxlen=tf.shape(score)[1])
+                memory_sequence_length, maxlen=tf.shape(score)[1]
+            )
     score_mask_values = score_mask_value * tf.ones_like(score)
     return tf.where(memory_mask, score, score_mask_values)
 
 
-def hardmax(logits, name=None):
+def hardmax(logits: TensorLike, name: Optional[str] = None) -> tf.Tensor:
     """Returns batched one-hot vectors.
 
     The depth index containing the `1` is that of the maximum logit value.
@@ -1492,18 +1572,21 @@ def hardmax(logits, name=None):
         return tf.one_hot(tf.argmax(logits, -1), depth, dtype=logits.dtype)
 
 
-def _compute_attention(attention_mechanism, cell_output, attention_state,
-                       attention_layer):
+def _compute_attention(
+    attention_mechanism, cell_output, attention_state, attention_layer
+):
     """Computes the attention and alignments for a given
     attention_mechanism."""
     if isinstance(attention_mechanism, _BaseAttentionMechanism):
         alignments, next_attention_state = attention_mechanism(
-            [cell_output, attention_state])
+            [cell_output, attention_state]
+        )
     else:
         # For other class, assume they are following _BaseAttentionMechanism,
         # which takes query and state as separate parameter.
         alignments, next_attention_state = attention_mechanism(
-            cell_output, state=attention_state)
+            cell_output, state=attention_state
+        )
 
     # Reshape from [batch_size, memory_time] to [batch_size, 1, memory_time]
     expanded_alignments = tf.expand_dims(alignments, 1)
@@ -1530,18 +1613,21 @@ def _compute_attention(attention_mechanism, cell_output, attention_state,
 class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
     """Wraps another `RNNCell` with attention."""
 
-    def __init__(self,
-                 cell,
-                 attention_mechanism,
-                 attention_layer_size=None,
-                 alignment_history=False,
-                 cell_input_fn=None,
-                 output_attention=True,
-                 initial_cell_state=None,
-                 name=None,
-                 attention_layer=None,
-                 attention_fn=None,
-                 **kwargs):
+    @typechecked
+    def __init__(
+        self,
+        cell: tf.keras.layers.Layer,
+        attention_mechanism: tf.keras.layers.Layer,
+        attention_layer_size: Optional[FloatTensorLike] = None,
+        alignment_history: bool = False,
+        cell_input_fn: Optional[Callable] = None,
+        output_attention: bool = True,
+        initial_cell_state: Optional[TensorLike] = None,
+        name: Optional[str] = None,
+        attention_layer: Optional[tf.keras.layers.Layer] = None,
+        attention_fn: Optional[Callable] = None,
+        **kwargs
+    ):
         """Construct the `AttentionWrapper`.
 
         **NOTE** If you are using the `BeamSearchDecoder` with a cell wrapped
@@ -1642,55 +1728,69 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                 if not isinstance(attention_mechanism, AttentionMechanism):
                     raise TypeError(
                         "attention_mechanism must contain only instances of "
-                        "AttentionMechanism, saw type: %s" %
-                        type(attention_mechanism).__name__)
+                        "AttentionMechanism, saw type: %s"
+                        % type(attention_mechanism).__name__
+                    )
         else:
             self._is_multi = False
             if not isinstance(attention_mechanism, AttentionMechanism):
                 raise TypeError(
                     "attention_mechanism must be an AttentionMechanism or "
                     "list of multiple AttentionMechanism instances, saw type: "
-                    "%s" % type(attention_mechanism).__name__)
+                    "%s" % type(attention_mechanism).__name__
+                )
             attention_mechanisms = [attention_mechanism]
 
         if cell_input_fn is None:
-            cell_input_fn = (
-                lambda inputs, attention: tf.concat([inputs, attention], -1))
+
+            def cell_input_fn(inputs, attention):
+                return tf.concat([inputs, attention], -1)
+
         else:
             if not callable(cell_input_fn):
-                raise TypeError("cell_input_fn must be callable, saw type: %s"
-                                % type(cell_input_fn).__name__)
+                raise TypeError(
+                    "cell_input_fn must be callable, saw type: %s"
+                    % type(cell_input_fn).__name__
+                )
 
         if attention_layer_size is not None and attention_layer is not None:
             raise ValueError(
-                "Only one of attention_layer_size and attention_layer "
-                "should be set")
+                "Only one of attention_layer_size and attention_layer " "should be set"
+            )
 
         if attention_layer_size is not None:
             attention_layer_sizes = tuple(
-                attention_layer_size if isinstance(attention_layer_size, (
-                    list, tuple)) else (attention_layer_size,))
+                attention_layer_size
+                if isinstance(attention_layer_size, (list, tuple))
+                else (attention_layer_size,)
+            )
             if len(attention_layer_sizes) != len(attention_mechanisms):
                 raise ValueError(
                     "If provided, attention_layer_size must contain exactly "
-                    "one integer per attention_mechanism, saw: %d vs %d" %
-                    (len(attention_layer_sizes), len(attention_mechanisms)))
+                    "one integer per attention_mechanism, saw: %d vs %d"
+                    % (len(attention_layer_sizes), len(attention_mechanisms))
+                )
             self._attention_layers = list(
                 tf.keras.layers.Dense(
                     attention_layer_size,
                     name="attention_layer",
                     use_bias=False,
-                    dtype=attention_mechanisms[i].dtype) for i,
-                attention_layer_size in enumerate(attention_layer_sizes))
+                    dtype=attention_mechanisms[i].dtype,
+                )
+                for i, attention_layer_size in enumerate(attention_layer_sizes)
+            )
         elif attention_layer is not None:
             self._attention_layers = list(
-                attention_layer if isinstance(attention_layer, (
-                    list, tuple)) else (attention_layer,))
+                attention_layer
+                if isinstance(attention_layer, (list, tuple))
+                else (attention_layer,)
+            )
             if len(self._attention_layers) != len(attention_mechanisms):
                 raise ValueError(
                     "If provided, attention_layer must contain exactly one "
-                    "layer per attention_mechanism, saw: %d vs %d" % (len(
-                        self._attention_layers), len(attention_mechanisms)))
+                    "layer per attention_mechanism, saw: %d vs %d"
+                    % (len(self._attention_layers), len(attention_mechanisms))
+                )
         else:
             self._attention_layers = None
 
@@ -1709,40 +1809,45 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                 self._initial_cell_state = None
             else:
                 final_state_tensor = tf.nest.flatten(initial_cell_state)[-1]
-                state_batch_size = (tf.compat.dimension_value(
-                    final_state_tensor.shape[0])
-                                    or tf.shape(final_state_tensor)[0])
+                state_batch_size = (
+                    tf.compat.dimension_value(final_state_tensor.shape[0])
+                    or tf.shape(final_state_tensor)[0]
+                )
                 error_message = (
-                    "When constructing AttentionWrapper %s: " % self.name +
-                    "Non-matching batch sizes between the memory "
+                    "When constructing AttentionWrapper %s: " % self.name
+                    + "Non-matching batch sizes between the memory "
                     "(encoder output) and initial_cell_state.  Are you using "
                     "the BeamSearchDecoder?  You may need to tile your "
                     "initial state via the tfa.seq2seq.tile_batch "
-                    "function with argument multiple=beam_width.")
+                    "function with argument multiple=beam_width."
+                )
                 with tf.control_dependencies(
-                        self._batch_size_checks(  # pylint: disable=bad-continuation
-                            state_batch_size, error_message)):
+                    self._batch_size_checks(  # pylint: disable=bad-continuation
+                        state_batch_size, error_message
+                    )
+                ):
                     self._initial_cell_state = tf.nest.map_structure(
-                        lambda s: tf.identity(
-                            s, name="check_initial_cell_state"),
-                        initial_cell_state)
+                        lambda s: tf.identity(s, name="check_initial_cell_state"),
+                        initial_cell_state,
+                    )
 
     def _attention_mechanisms_checks(self):
         for attention_mechanism in self._attention_mechanisms:
             if not attention_mechanism.memory_initialized:
-                raise ValueError("The AttentionMechanism instances passed to "
-                                 "this AttentionWrapper should be initialized "
-                                 "with a memory first, either by passing it "
-                                 "to the AttentionMechanism constructor or "
-                                 "calling attention_mechanism.setup_memory()")
+                raise ValueError(
+                    "The AttentionMechanism instances passed to "
+                    "this AttentionWrapper should be initialized "
+                    "with a memory first, either by passing it "
+                    "to the AttentionMechanism constructor or "
+                    "calling attention_mechanism.setup_memory()"
+                )
 
     def _batch_size_checks(self, batch_size, error_message):
         self._attention_mechanisms_checks()
         return [
             tf.debugging.assert_equal(
-                batch_size,
-                attention_mechanism.batch_size,
-                message=error_message)
+                batch_size, attention_mechanism.batch_size, message=error_message
+            )
             for attention_mechanism in self._attention_mechanisms
         ]
 
@@ -1752,7 +1857,8 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         self._attention_mechanisms_checks()
         attention_output_sizes = (
             attention_mechanism.values.shape[-1]
-            for attention_mechanism in self._attention_mechanisms)
+            for attention_mechanism in self._attention_mechanisms
+        )
         if self._attention_layers is None:
             self._attention_layer_size = sum(attention_output_sizes)
         else:
@@ -1761,9 +1867,12 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             # output.
             self._attention_layer_size = sum(
                 layer.compute_output_shape(
-                    [None, self._cell.output_size + attention_output_size])[-1]
+                    [None, self._cell.output_size + attention_output_size]
+                )[-1]
                 for layer, attention_output_size in zip(
-                    self._attention_layers, attention_output_sizes))
+                    self._attention_layers, attention_output_sizes
+                )
+            )
         return self._attention_layer_size
 
     def _item_or_tuple(self, seq):
@@ -1806,12 +1915,16 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             time=tf.TensorShape([]),
             attention=self._get_attention_layer_size(),
             alignments=self._item_or_tuple(
-                a.alignments_size for a in self._attention_mechanisms),
+                a.alignments_size for a in self._attention_mechanisms
+            ),
             attention_state=self._item_or_tuple(
-                a.state_size for a in self._attention_mechanisms),
+                a.state_size for a in self._attention_mechanisms
+            ),
             alignment_history=self._item_or_tuple(
-                a.alignments_size if self._alignment_history else () for a in
-                self._attention_mechanisms))  # sometimes a TensorArray
+                a.alignments_size if self._alignment_history else ()
+                for a in self._attention_mechanisms
+            ),
+        )  # sometimes a TensorArray
 
     def get_initial_state(self, inputs=None, batch_size=None, dtype=None):
         """Return an initial (zero) state tuple for this `AttentionWrapper`.
@@ -1837,25 +1950,30 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         if inputs is not None:
             batch_size = tf.shape(inputs)[0]
             dtype = inputs.dtype
-        with tf.name_scope(type(self).__name__ + "ZeroState"):  # pylint: disable=bad-continuation
+        with tf.name_scope(
+            type(self).__name__ + "ZeroState"
+        ):  # pylint: disable=bad-continuation
             if self._initial_cell_state is not None:
                 cell_state = self._initial_cell_state
             else:
                 cell_state = self._cell.get_initial_state(
-                    batch_size=batch_size, dtype=dtype)
+                    batch_size=batch_size, dtype=dtype
+                )
             error_message = (
-                "When calling get_initial_state of AttentionWrapper %s: " %
-                self.name + "Non-matching batch sizes between the memory "
+                "When calling get_initial_state of AttentionWrapper %s: " % self.name
+                + "Non-matching batch sizes between the memory "
                 "(encoder output) and the requested batch size. Are you using "
                 "the BeamSearchDecoder?  If so, make sure your encoder output "
                 "has been tiled to beam_width via "
                 "tfa.seq2seq.tile_batch, and the batch_size= argument "
-                "passed to get_initial_state is batch_size * beam_width.")
+                "passed to get_initial_state is batch_size * beam_width."
+            )
             with tf.control_dependencies(
-                    self._batch_size_checks(batch_size, error_message)):  # pylint: disable=bad-continuation
+                self._batch_size_checks(batch_size, error_message)
+            ):  # pylint: disable=bad-continuation
                 cell_state = tf.nest.map_structure(
-                    lambda s: tf.identity(s, name="checked_cell_state"),
-                    cell_state)
+                    lambda s: tf.identity(s, name="checked_cell_state"), cell_state
+                )
             initial_alignments = [
                 attention_mechanism.initial_alignments(batch_size, dtype)
                 for attention_mechanism in self._attention_mechanisms
@@ -1864,20 +1982,22 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                 cell_state=cell_state,
                 time=tf.zeros([], dtype=tf.int32),
                 attention=tf.zeros(
-                    [batch_size, self._get_attention_layer_size()],
-                    dtype=dtype),
+                    [batch_size, self._get_attention_layer_size()], dtype=dtype
+                ),
                 alignments=self._item_or_tuple(initial_alignments),
                 attention_state=self._item_or_tuple(
                     attention_mechanism.initial_state(batch_size, dtype)
-                    for attention_mechanism in self._attention_mechanisms),
+                    for attention_mechanism in self._attention_mechanisms
+                ),
                 alignment_history=self._item_or_tuple(
                     tf.TensorArray(
-                        dtype,
-                        size=0,
-                        dynamic_size=True,
-                        element_shape=alignment.shape) if self.
-                    _alignment_history else ()
-                    for alignment in initial_alignments))
+                        dtype, size=0, dynamic_size=True, element_shape=alignment.shape
+                    )
+                    if self._alignment_history
+                    else ()
+                    for alignment in initial_alignments
+                ),
+            )
 
     def call(self, inputs, state, **kwargs):
         """Perform a step of attention-wrapped RNN.
@@ -1915,26 +2035,29 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         if not isinstance(state, AttentionWrapperState):
             raise TypeError(
                 "Expected state to be instance of AttentionWrapperState. "
-                "Received type %s instead." % type(state))
+                "Received type %s instead." % type(state)
+            )
 
         # Step 1: Calculate the true inputs to the cell based on the
         # previous attention value.
         cell_inputs = self._cell_input_fn(inputs, state.attention)
         cell_state = state.cell_state
-        cell_output, next_cell_state = self._cell(cell_inputs, cell_state,
-                                                  **kwargs)
+        cell_output, next_cell_state = self._cell(cell_inputs, cell_state, **kwargs)
 
-        cell_batch_size = (tf.compat.dimension_value(cell_output.shape[0])
-                           or tf.shape(cell_output)[0])
+        cell_batch_size = (
+            tf.compat.dimension_value(cell_output.shape[0]) or tf.shape(cell_output)[0]
+        )
         error_message = (
-            "When applying AttentionWrapper %s: " % self.name +
-            "Non-matching batch sizes between the memory "
+            "When applying AttentionWrapper %s: " % self.name
+            + "Non-matching batch sizes between the memory "
             "(encoder output) and the query (decoder output).  Are you using "
             "the BeamSearchDecoder?  You may need to tile your memory input "
             "via the tfa.seq2seq.tile_batch function with argument "
-            "multiple=beam_width.")
+            "multiple=beam_width."
+        )
         with tf.control_dependencies(
-                self._batch_size_checks(cell_batch_size, error_message)):  # pylint: disable=bad-continuation
+            self._batch_size_checks(cell_batch_size, error_message)
+        ):  # pylint: disable=bad-continuation
             cell_output = tf.identity(cell_output, name="checked_cell_output")
 
         if self._is_multi:
@@ -1950,10 +2073,16 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         maybe_all_histories = []
         for i, attention_mechanism in enumerate(self._attention_mechanisms):
             attention, alignments, next_attention_state = self._attention_fn(
-                attention_mechanism, cell_output, previous_attention_state[i],
-                self._attention_layers[i] if self._attention_layers else None)
-            alignment_history = previous_alignment_history[i].write(
-                state.time, alignments) if self._alignment_history else ()
+                attention_mechanism,
+                cell_output,
+                previous_attention_state[i],
+                self._attention_layers[i] if self._attention_layers else None,
+            )
+            alignment_history = (
+                previous_alignment_history[i].write(state.time, alignments)
+                if self._alignment_history
+                else ()
+            )
 
             all_attention_states.append(next_attention_state)
             all_alignments.append(alignments)
@@ -1967,7 +2096,8 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             attention=attention,
             attention_state=self._item_or_tuple(all_attention_states),
             alignments=self._item_or_tuple(all_alignments),
-            alignment_history=self._item_or_tuple(maybe_all_histories))
+            alignment_history=self._item_or_tuple(maybe_all_histories),
+        )
 
         if self._output_attention:
             return attention, next_state

@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
+# usage: bash tools/pre-commit.sh
+# by default uses docker buildkit.
+# to disable it:
+# DOCKER_BUILDKIT=0 bash tools/pre-commit.sh
 
-
-python -m black --check ./
-need_format=$?
 
 set -e
-if [ $need_format -ne 0 ]
-then
-    python -m black ./
-    echo Some Python files were formatted
-    echo You need to do git add and git commit again
-    exit $need_format
+
+if [ "$DOCKER_BUILDKIT" == "" ]; then
+  export DOCKER_BUILDKIT=1
 fi
 
-python -m flake8
+docker build -t tf_addons_formatting -f tools/docker/pre-commit.Dockerfile .
+docker run --rm -t -v "$(pwd -P):/addons" tf_addons_formatting

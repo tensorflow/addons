@@ -28,8 +28,9 @@ class TestGELU(tf.test.TestCase):
         x = np.array([[0.5, 1.2, -0.3]]).astype(dtype)
         val = np.array([[0.345714, 1.0617027, -0.11462909]]).astype(dtype)
         test_utils.layer_test(
-            GELU, kwargs={'dtype': dtype}, input_data=x, expected_output=val)
+            GELU, kwargs={"dtype": dtype}, input_data=x, expected_output=val
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.test.main()
