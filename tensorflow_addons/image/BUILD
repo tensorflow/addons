@@ -32,3 +32,135 @@ filegroup(
     srcs = glob(["test_data/*.png"]),
 )
 
+py_test(
+    name = "dense_image_warp_test",
+    size = "small",
+    srcs = [
+        "dense_image_warp_test.py",
+    ],
+    main = "dense_image_warp_test.py",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "distance_transform_ops_test",
+    size = "small",
+    srcs = [
+        "distance_transform_test.py",
+    ],
+    main = "distance_transform_test.py",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "distort_image_ops_test",
+    size = "small",
+    srcs = [
+        "distort_image_ops_test.py",
+    ],
+    main = "distort_image_ops_test.py",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "filters_test",
+    size = "medium",
+    srcs = [
+        "filters_test.py",
+    ],
+    flaky = True,
+    main = "filters_test.py",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "transform_ops_test",
+    size = "medium",
+    srcs = [
+        "transform_ops_test.py",
+    ],
+    main = "transform_ops_test.py",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "translate_ops_test",
+    size = "medium",
+    srcs = [
+        "translate_ops_test.py",
+    ],
+    main = "translate_ops_test.py",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "utils_test",
+    size = "small",
+    srcs = [
+        "utils_test.py",
+    ],
+    main = "utils_test.py",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "sparse_image_warp_test",
+    size = "medium",
+    srcs = [
+        "sparse_image_warp_test.py",
+    ],
+    main = "sparse_image_warp_test.py",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "interpolate_spline_test",
+    size = "medium",
+    srcs = [
+        "interpolate_spline_test.py",
+    ],
+    main = "interpolate_spline_test.py",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "connected_components_test",
+    size = "medium",
+    srcs = [
+        "connected_components_test.py",
+    ],
+    main = "connected_components_test.py",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "resampler_ops_test",
+    size = "medium",
+    srcs = [
+        "resampler_ops_test.py",
+    ],
+    main = "resampler_ops_test.py",
+    deps = [
+        ":image",
+    ],
+)

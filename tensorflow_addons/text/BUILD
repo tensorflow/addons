@@ -31,3 +31,44 @@ py_library(
         ],
     }),
 )
+
+py_test(
+    name = "crf_test",
+    size = "small",
+    srcs = [
+        "crf_test.py",
+    ],
+    main = "crf_test.py",
+    deps = [
+        ":text",
+    ],
+)
+
+py_test(
+    name = "skip_gram_ops_test",
+    size = "small",
+    srcs = [
+        "skip_gram_ops_test.py",
+    ],
+    main = "skip_gram_ops_test.py",
+    deps = [
+        ":text",
+    ],
+)
+
+# Temporarily use dummy test for windows ParseTime
+py_test(
+    name = "parse_time_op_test",
+    size = "small",
+    srcs = select({
+        "//tensorflow_addons:windows": ["parse_time_dummy_test.py"],
+        "//conditions:default": ["parse_time_op_test.py"],
+    }),
+    main = select({
+        "//tensorflow_addons:windows": "parse_time_dummy_test.py",
+        "//conditions:default": "parse_time_op_test.py",
+    }),
+    deps = [
+        ":text",
+    ],
+)
