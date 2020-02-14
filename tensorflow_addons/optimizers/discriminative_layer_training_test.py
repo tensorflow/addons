@@ -43,7 +43,7 @@ def toy_cnn(first_run=False):
 
     cnn_model_path = os.path.join(tempfile.gettempdir(), "cnn.h5")
 
-    if first_run:
+    if not os.path.exists(cnn_model_path):
         bignet = tf.keras.applications.mobilenet_v2.MobileNetV2(
             include_top=False, weights=None, input_shape=(32, 32, 3), pooling="avg"
         )
@@ -92,7 +92,7 @@ def toy_rnn(first_run=False):
     """
     rnn_model_path = os.path.join(tempfile.gettempdir(), "rnn.h5")
 
-    if first_run:
+    if not os.path.exists(rnn_model_path):
 
         # pretend that net is a pretrained lstm of some sort
         net = tf.keras.Sequential()
@@ -407,8 +407,8 @@ if __name__ == "__main__":
     # devices = test_utils.create_virtual_devices(2)
     devices = None
     # save models so weights are always the same
-    toy_cnn(first_run=True)
-    toy_rnn(first_run=True)
+    # toy_cnn(first_run=True)
+    # toy_rnn(first_run=True)
 
     generate_tests(devices=devices)
     tf.test.main()
