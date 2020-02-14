@@ -24,7 +24,7 @@ from tensorflow_addons.utils import test_utils
 def _train_some_model():
 
     model = tf.keras.Sequential()
-    model.add(tf.keras.layers.Dense(1))
+    model.add(tf.keras.layers.Dense(1, input_shape=(1)))
 
     x = np.ones(shape = [32, 1])
     y = np.ones(shape = [32, 1])
