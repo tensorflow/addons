@@ -180,8 +180,8 @@ def get_losses(hist):
 
 class DiscriminativeLearningTest(tf.test.TestCase):
 
-    def __init__(self, methodName="runTest"):
-        super().__init__(self, methodName)
+    def __init__(self, *args, **kwargs):
+        super().__init__(self, *args, **kwargs)
 
         #before running the tests, create model weights for reloading
         toy_cnn()
