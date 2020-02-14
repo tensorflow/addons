@@ -59,11 +59,13 @@ class AssertRNNCellTest(tf.test.TestCase):
     @test_utils.run_distributed(2)
     def test_model(self):
         _train_some_model()
+        _train_some_model()
         self.assertAllClose(1, 1)
 
     @test_utils.run_in_graph_and_eager_modes
     @test_utils.run_distributed(2)
     def test_model_fail(self):
+        _train_some_model()
         _train_some_model()
         self.assertAllClose(1, 0)
 
