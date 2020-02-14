@@ -298,16 +298,15 @@ class CRF(tf.keras.layers.Layer):
             [mask[:, offset:], tf.zeros_like(mask[:, :offset])], axis=1
         )
 
-        # TODO(howl-anderson): for below code
+        # NOTE: below code is different from keras_contrib
         # Original code in keras_contrib:
         # end_mask = K.cast(
         #   K.greater(self.shift_left(mask), mask),
         #   K.floatx()
         # )
-        # May have a bug, it's better confirmed
+        # has a bug, confirmed
         # by the original keras_contrib maintainer
         # Luiz Felix (github: lzfelix),
-        # mailed him already and waiting for reply.
 
         # 0011100 > 0111000 => 0000100
         right_boundary = tf.greater(mask, left_shifted_mask)
