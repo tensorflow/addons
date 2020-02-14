@@ -179,16 +179,6 @@ def get_losses(hist):
 
 
 class DiscriminativeLearningTest(tf.test.TestCase):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # before running the tests, create model weights for reloading
-        toy_cnn()
-        toy_rnn()
-        # set up again to hopefully prevent the cannot initialize virtual devices error
-        self.setUp()
-
     def _assert_losses_are_close(self, hist, hist_lr):
         """higher tolerance for graph and distributed bc unable to run deterministically"""
         if not tf.executing_eagerly() or tf.distribute.has_strategy():
@@ -209,6 +199,14 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         hist = _get_train_results(model, verbose=False, epochs=epochs)
         hist_lr = _get_train_results(model_lr, verbose=False, epochs=epochs)
         self._assert_losses_are_close(hist, hist_lr)
+
+    def test_a_initialize_model_weights(self):
+        # this test should run first to initialize the model weights
+        # there seem to be major issues in initializing model weights on the fly when testing
+        # so we initialize them and save them to an h5 file and reload them each time
+        # this ensures that when comparing two runs, they start at the same place
+        toy_cnn()
+        toy_rnn()
 
     @test_utils.run_distributed(2)
     def _test_equal_with_no_layer_lr(self, model_fn, loss, opt):
@@ -369,7 +367,7 @@ def run_distributed(devices):
     return decorator
 
 
-def test_wrap(method,  **kwargs):
+def test_wrap(method, **kwargs):
     @test_utils.run_in_graph_and_eager_modes
     def single(self):
         return method(self, **kwargs)
@@ -391,13 +389,11 @@ def generate_tests():
                     opt.__name__,
                 )
                 testmethod, testmethod_dist = test_wrap(
-                    method=method,
-                    model_fn=model_fn,
-                    loss=loss,
-                    opt=opt,
+                    method=method, model_fn=model_fn, loss=loss, opt=opt,
                 )
 
-                #                 setattr(DiscriminativeLearningTest, testmethodname, testmethod)
+                # setattr(DiscriminativeLearningTest, testmethodname, testmethod)
+
                 setattr(
                     DiscriminativeLearningTest,
                     testmethodname + "_distributed",
