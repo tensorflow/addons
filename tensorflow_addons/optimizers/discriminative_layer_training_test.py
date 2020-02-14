@@ -181,7 +181,7 @@ def get_losses(hist):
 class DiscriminativeLearningTest(tf.test.TestCase):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # before running the tests, create model weights for reloading
         toy_cnn()
@@ -368,6 +368,7 @@ def run_distributed(devices):
 
     return decorator
 
+
 def test_wrap(method,  **kwargs):
     @test_utils.run_in_graph_and_eager_modes
     def single(self):
@@ -378,6 +379,7 @@ def test_wrap(method,  **kwargs):
         return method(self, **kwargs)
 
     return single, distributed
+
 
 def generate_tests():
     for name, method in DiscriminativeLearningTest.__dict__.copy().items():
