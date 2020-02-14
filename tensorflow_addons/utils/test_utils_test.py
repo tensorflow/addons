@@ -28,7 +28,7 @@ def _train_some_model():
 
     x = np.ones(shape = [32, 1])
     y = np.ones(shape = [32, 1])
-
+    model.compile(loss = 'binary_crossentropy')
     model.fit(x, y, epochs = 5)
 
     return model
