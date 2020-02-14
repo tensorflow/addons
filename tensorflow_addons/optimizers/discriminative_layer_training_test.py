@@ -200,7 +200,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         hist_lr = _get_train_results(model_lr, verbose=False, epochs=epochs)
         self._assert_losses_are_close(hist, hist_lr)
 
-    @test_utils.run_in_graph_and_eager_modes
+    @test_utils.run_distributed(1)
     def test_a_initialize_model_weights(self):
         # this test should run first to initialize the model weights
         # there seem to be major issues in initializing model weights on the fly when testing
