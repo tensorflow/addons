@@ -19,7 +19,7 @@ FROM python:3.6 as public-api-typed
 
 RUN pip install tensorflow-cpu==2.1.0
 RUN pip install typeguard==2.7.1
-RUN pip install git+https://github.com/gabrieldemarmiesse/typed_api.git@0.1.1
+RUN pip install typedapi==0.2.0
 
 COPY ./ /addons
 RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e /addons
