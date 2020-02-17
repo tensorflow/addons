@@ -22,6 +22,10 @@ FROM python:3.5
 
 RUN pip install tensorflow-cpu==2.1.0
 RUN pip install typeguard==2.7.1
+<<<<<<< HEAD
+=======
+RUN pip install typedapi==0.2.0
+>>>>>>> 268745c... Used pypi release. (#1100)
 
 COPY ./ /addons
 RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e /addons
