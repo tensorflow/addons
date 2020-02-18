@@ -202,10 +202,12 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
     @test_utils.run_distributed(2)
     def test_a_initialize_model_weights(self):
-        # this test should run first to initialize the model weights
-        # there seem to be major issues in initializing model weights on the fly when testing
-        # so we initialize them and save them to an h5 file and reload them each time
-        # this ensures that when comparing two runs, they start at the same place
+        """this test should run first to initialize the model weights
+        there seem to be major issues in initializing model weights on the fly when testing
+        so we initialize them and save them to an h5 file and reload them each time
+        this ensures that when comparing two runs, they start at the same place
+        this is not actually testing anything, so it does not need to run in eager and graph
+        this needs to run distributed or else it will cause the cannot modify virtual devices error"""
         toy_cnn()
         toy_rnn()
 
@@ -355,46 +357,36 @@ class DiscriminativeLearningTest(tf.test.TestCase):
                 method(self)
 
 
-def run_distributed(devices):
-    def decorator(f):
-        def decorated(self, *args, **kwargs):
-            logical_devices = devices
-            strategy = tf.distribute.MirroredStrategy(logical_devices)
-            with strategy.scope():
-                f(self, *args, **kwargs)
-
-        return decorated
-
-    return decorator
-
-
 def test_wrap(method, **kwargs):
-    @test_utils.run_in_graph_and_eager_modes
-    def single(self):
-        return method(self, **kwargs)
+    # wrap every test to run in graph and eager
 
     @test_utils.run_in_graph_and_eager_modes
-    def distributed(self):
+    def test(self):
         return method(self, **kwargs)
 
-    return single, distributed
+    return test
 
 
 def generate_tests():
+    # generate tests for each permutation in the zipped permutes
+    # this separates tests for each permuatation of model, optimizer, and loss
     for name, method in DiscriminativeLearningTest.__dict__.copy().items():
         if callable(method) and name[:5] == "_test":
             for model_fn, loss, opt in _zipped_permutes():
+
+                # name the test as test_testname_model_loss_optimizer
                 testmethodname = name[1:] + "_%s_%s_%s" % (
                     model_fn.__name__,
                     loss.name,
                     opt.__name__,
                 )
-                testmethod, testmethod_dist = test_wrap(
+
+                # apply run in egaer and graph modes to each test
+                testmethod_dist = test_wrap(
                     method=method, model_fn=model_fn, loss=loss, opt=opt,
                 )
 
-                # setattr(DiscriminativeLearningTest, testmethodname, testmethod)
-
+                # we only run distributed tests
                 setattr(
                     DiscriminativeLearningTest,
                     testmethodname + "_distributed",
