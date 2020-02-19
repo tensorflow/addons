@@ -106,6 +106,8 @@ jobs:
           bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
           bazel build \
             -c opt \
+            --copt -mmacosx-version-min=10.13 \
+            --linkopt -mmacosx-version-min=10.13 \
             --noshow_progress \
             --noshow_loading_progress \
             --verbose_failures \
