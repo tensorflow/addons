@@ -40,8 +40,8 @@ FROM python:3.5 as valid_build_files
 RUN pip install tensorflow-cpu==2.1.0
 
 RUN apt-get update && apt-get install sudo
-RUN git clone https://github.com/abhinavsingh/setup-bazel.git
-RUN bash ./setup-bazel/setup-bazel.sh 1.1.0
+COPY tools/ci_build/install/bazel.sh ./
+RUN bash bazel.sh
 
 COPY ./ /addons
 WORKDIR /addons
@@ -69,9 +69,8 @@ RUN touch /ok.txt
 # Bazel code format
 FROM alpine:3.11 as check-bazel-format
 
-RUN wget -O /usr/local/bin/buildifier \
-            https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier
-RUN chmod +x /usr/local/bin/buildifier
+COPY ./tools/ci_build/install/buildifier.sh ./
+RUN sh buildifier.sh
 
 COPY ./ /addons
 RUN buildifier -mode=check -r /addons
