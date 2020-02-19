@@ -1,6 +1,7 @@
 FROM python:3.5-alpine as flake8-test
 
-RUN pip install flake8==3.7.9
+COPY tools/tests_dependencies/flake8.txt ./
+RUN pip install -r flake8.txt
 COPY ./ /addons
 WORKDIR /addons
 RUN flake8
@@ -9,7 +10,8 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.6 as black-test
 
-RUN pip install black==19.10b0
+COPY tools/tests_dependencies/black.txt ./
+RUN pip install -r black.txt
 COPY ./ /addons
 RUN black --check /addons
 RUN touch /ok.txt
@@ -17,9 +19,13 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.6 as public-api-typed
 
-RUN pip install tensorflow-cpu==2.1.0
-RUN pip install typeguard==2.7.1
-RUN pip install typedapi==0.2.0
+COPY build_deps/build-requirements-cpu.txt ./
+RUN pip install -r build-requirements-cpu.txt
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
+COPY tools/tests_dependencies/typedapi.txt ./
+RUN pip install -r typedapi.txt
+
 
 COPY ./ /addons
 RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e /addons
@@ -37,11 +43,15 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.5 as valid_build_files
 
-RUN pip install tensorflow-cpu==2.1.0
+COPY build_deps/build-requirements-cpu.txt ./
+RUN pip install -r build-requirements-cpu.txt
 
 RUN apt-get update && apt-get install sudo
 COPY tools/ci_build/install/bazel.sh ./
 RUN bash bazel.sh
+
+COPY tools/docker/finish_bazel_install.sh ./
+RUN bash finish_bazel_install.sh
 
 COPY ./ /addons
 WORKDIR /addons
@@ -80,8 +90,10 @@ RUN touch /ok.txt
 # docs tests
 FROM python:3.6 as docs_tests
 
-RUN pip install tensorflow-cpu==2.1.0
-RUN pip install typeguard==2.7.1
+COPY build_deps/build-requirements-cpu.txt ./
+RUN pip install -r build-requirements-cpu.txt
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
 
 COPY tools/docs/doc_requirements.txt ./
 RUN pip install -r doc_requirements.txt

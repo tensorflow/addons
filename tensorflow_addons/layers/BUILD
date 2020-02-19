@@ -124,3 +124,15 @@ py_test(
         ":layers",
     ],
 )
+
+py_test(
+    name = "multihead_attention_test",
+    size = "small",
+    srcs = [
+        "multihead_attention_test.py",
+    ],
+    main = "multihead_attention_test.py",
+    deps = [
+        ":layers",
+    ],
+)

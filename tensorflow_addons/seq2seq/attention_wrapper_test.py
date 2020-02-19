@@ -139,14 +139,11 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
 
         score = attention([query, state])
 
-        x = np.random.randint(vocab, size=(self.batch, self.timestep))
         x_test = np.random.randint(vocab, size=(self.batch, self.timestep))
-        y = np.random.randn(self.batch, self.timestep)
         model = tf.keras.Model([inputs, query, state], score)
         # Fall back to v1 style Keras training loop until issue with
         # using outputs of a layer in another layer's constructor.
         model.compile("rmsprop", "mse")
-        model.fit([x, self.query, self.state], (y, y))
         y_ref = model.predict_on_batch([x_test, self.query, self.state])
 
         config = model.get_config()
@@ -322,7 +319,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
         self.assertEqual(initial_state.attention.shape[-1], self.units * 2)
         first_input = self.decoder_inputs[:, 0].astype(np.float32)
-        output, next_state = attention_wrapper(first_input, initial_state)
+        output, _ = attention_wrapper(first_input, initial_state)
         self.assertEqual(output.shape[-1], self.units * 2)
 
     def _testWithAttention(
@@ -986,6 +983,34 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             expected_final_alignment_history=expected_final_alignment_history,
             create_attention_kwargs=create_attention_kwargs,
         )
+
+    def test_attention_state_with_keras_rnn(self):
+        # See https://github.com/tensorflow/addons/issues/1095.
+        cell = tf.keras.layers.LSTMCell(8)
+
+        mechanism = wrapper.LuongAttention(units=8, memory=tf.ones((2, 4, 8)))
+
+        cell = wrapper.AttentionWrapper(cell=cell, attention_mechanism=mechanism)
+
+        layer = tf.keras.layers.RNN(cell)
+        _ = layer(inputs=tf.ones((2, 4, 8)))
+
+        # Make sure the explicit initial_state also works.
+        initial_state = cell.get_initial_state(batch_size=2, dtype=tf.float32)
+        _ = layer(inputs=tf.ones((2, 4, 8)), initial_state=initial_state)
+
+    def test_attention_state_with_variable_length_input(self):
+        cell = tf.keras.layers.LSTMCell(3)
+        mechanism = wrapper.LuongAttention(units=3)
+        cell = wrapper.AttentionWrapper(cell, mechanism)
+
+        var_len = tf.random.uniform(shape=(), minval=2, maxval=10, dtype=tf.int32)
+        data = tf.ones(shape=(var_len, var_len, 3))
+
+        mechanism.setup_memory(data)
+        layer = tf.keras.layers.RNN(cell)
+
+        _ = layer(data)
 
 
 if __name__ == "__main__":

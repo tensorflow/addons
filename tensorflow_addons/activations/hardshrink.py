@@ -48,3 +48,20 @@ def _hardshrink_grad(op, grad):
     return _activation_so.ops.addons_hardshrink_grad(
         grad, op.inputs[0], op.get_attr("lower"), op.get_attr("upper")
     )
+
+
+def _hardshrink_py(
+    x: types.TensorLike, lower: Number = -0.5, upper: Number = 0.5
+) -> tf.Tensor:
+    if lower > upper:
+        raise ValueError(
+            "The value of lower is {} and should"
+            " not be higher than the value "
+            "variable upper, which is {} .".format(lower, upper)
+        )
+    x = tf.convert_to_tensor(x)
+    mask_lower = x < lower
+    mask_upper = upper < x
+    mask = tf.logical_or(mask_lower, mask_upper)
+    mask = tf.cast(mask, x.dtype)
+    return x * mask

@@ -24,3 +24,4 @@ from tensorflow_addons.layers.polynomial import PolynomialCrossing
 from tensorflow_addons.layers.sparsemax import Sparsemax
 from tensorflow_addons.layers.tlu import TLU
 from tensorflow_addons.layers.wrappers import WeightNormalization
+from tensorflow_addons.layers.multihead_attention import MultiHeadAttention
