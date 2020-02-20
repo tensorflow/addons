@@ -2035,7 +2035,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         if not isinstance(state, AttentionWrapperState):
             try:
                 state = AttentionWrapperState(*state)
-            except:
+            except TypeError:
                 raise TypeError(
                     "Expected state to be instance of AttentionWrapperState or "
                     "values that can construct AttentionWrapperState. "

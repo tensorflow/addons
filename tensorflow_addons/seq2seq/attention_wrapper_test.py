@@ -993,8 +993,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
 
         mechanism = wrapper.LuongAttention(units=8, memory=tf.ones((2, 4, 8)))
 
-        cell = wrapper.AttentionWrapper(
-            cell=cell, attention_mechanism=mechanism)
+        cell = wrapper.AttentionWrapper(cell=cell, attention_mechanism=mechanism)
 
         layer = tf.keras.layers.RNN(cell)
         _ = layer(inputs=tf.ones((2, 4, 8)))
