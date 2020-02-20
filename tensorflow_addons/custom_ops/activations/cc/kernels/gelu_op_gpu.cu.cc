@@ -17,11 +17,12 @@ limitations under the License.
 
 #define EIGEN_USE_GPU
 
-#include "tensorflow_addons/custom_ops/activations/cc/kernels/gelu_op.h"
 #include "tensorflow/core/framework/register_types.h"
+#include "tensorflow_addons/custom_ops/activations/cc/kernels/gelu_op.h"
 #include "third_party/eigen3/Eigen/Core"
 
 namespace tensorflow {
+namespace addons {
 
 using GPUDevice = Eigen::GpuDevice;
 
@@ -31,6 +32,7 @@ using GPUDevice = Eigen::GpuDevice;
 
 TF_CALL_GPU_NUMBER_TYPES(DEFINE_GPU_KERNELS);
 
+}  // namespace addons
 }  // namespace tensorflow
 
 #endif  // GOOGLE_CUDA

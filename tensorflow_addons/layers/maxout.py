@@ -14,15 +14,11 @@
 # ==============================================================================
 """Implementing Maxout layer."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
+from typeguard import typechecked
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class Maxout(tf.keras.layers.Layer):
     """Applies Maxout to the input.
 
@@ -46,8 +42,9 @@ class Maxout(tf.keras.layers.Layer):
       nD tensor with shape: `(batch_size, ..., num_units, ...)`.
     """
 
-    def __init__(self, num_units, axis=-1, **kwargs):
-        super(Maxout, self).__init__(**kwargs)
+    @typechecked
+    def __init__(self, num_units: int, axis: int = -1, **kwargs):
+        super().__init__(**kwargs)
         self.num_units = num_units
         self.axis = axis
 
@@ -60,17 +57,17 @@ class Maxout(tf.keras.layers.Layer):
                 shape[i] = tf.shape(inputs)[i]
 
         num_channels = shape[self.axis]
-        if (not isinstance(num_channels, tf.Tensor)
-                and num_channels % self.num_units):
-            raise ValueError('number of features({}) is not '
-                             'a multiple of num_units({})'.format(
-                                 num_channels, self.num_units))
+        if not isinstance(num_channels, tf.Tensor) and num_channels % self.num_units:
+            raise ValueError(
+                "number of features({}) is not "
+                "a multiple of num_units({})".format(num_channels, self.num_units)
+            )
 
         if self.axis < 0:
             axis = self.axis + len(shape)
         else:
             axis = self.axis
-        assert axis >= 0, 'Find invalid axis: {}'.format(self.axis)
+        assert axis >= 0, "Find invalid axis: {}".format(self.axis)
 
         expand_shape = shape[:]
         expand_shape[axis] = self.num_units
@@ -78,7 +75,8 @@ class Maxout(tf.keras.layers.Layer):
         expand_shape.insert(axis, k)
 
         outputs = tf.math.reduce_max(
-            tf.reshape(inputs, expand_shape), axis, keepdims=False)
+            tf.reshape(inputs, expand_shape), axis, keepdims=False
+        )
         return outputs
 
     def compute_output_shape(self, input_shape):
@@ -87,6 +85,6 @@ class Maxout(tf.keras.layers.Layer):
         return tf.TensorShape(input_shape)
 
     def get_config(self):
-        config = {'num_units': self.num_units, 'axis': self.axis}
-        base_config = super(Maxout, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        config = {"num_units": self.num_units, "axis": self.axis}
+        base_config = super().get_config()
+        return {**base_config, **config}

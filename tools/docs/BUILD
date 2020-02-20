@@ -12,7 +12,6 @@ package(
 py_binary(
     name = "build_docs",
     srcs = ["build_docs.py"],
-    srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons",
     ],

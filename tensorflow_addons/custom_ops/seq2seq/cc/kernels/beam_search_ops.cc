@@ -19,6 +19,8 @@ limitations under the License.
 #define EIGEN_USE_GPU
 #endif  // GOOGLE_CUDA
 
+#include "tensorflow_addons/custom_ops/seq2seq/cc/kernels/beam_search_ops.h"
+
 #include <memory>
 #include <vector>
 
@@ -31,10 +33,10 @@ limitations under the License.
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/platform/macros.h"
 #include "tensorflow/core/util/work_sharder.h"
-#include "tensorflow_addons/custom_ops/seq2seq/cc/kernels/beam_search_ops.h"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
+namespace addons {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
@@ -91,9 +93,9 @@ class GatherTreeOp : public OpKernel {
   }
 };
 
-#define REGISTER_KERNEL(T)                                          \
-  REGISTER_KERNEL_BUILDER(                                          \
-      Name("GatherTree").Device(DEVICE_CPU).TypeConstraint<T>("T"), \
+#define REGISTER_KERNEL(T)                                                 \
+  REGISTER_KERNEL_BUILDER(                                                 \
+      Name("Addons>GatherTree").Device(DEVICE_CPU).TypeConstraint<T>("T"), \
       GatherTreeOp<CPUDevice, T>);
 REGISTER_KERNEL(int32);
 #undef REGISTER_KERNEL
@@ -156,9 +158,8 @@ struct GatherTree<CPUDevice, int32> {
         Eigen::TensorOpCost::DivCost<int32>() +
         6 * Eigen::TensorOpCost::AddCost<int32>() +
         2 * max_time * (5 * Eigen::TensorOpCost::AddCost<int32>());
-    auto worker_threads = *(ctx->device()->tensorflow_cpu_worker_threads());
-    Shard(worker_threads.num_threads, worker_threads.workers,
-          batch_size * beam_width, batch_beam_cost, DoWork);
+    auto thread_pool = ctx->device()->tensorflow_cpu_worker_threads()->workers;
+    thread_pool->ParallelFor(batch_size * beam_width, batch_beam_cost, DoWork);
   }
 };
 
@@ -181,7 +182,7 @@ DECLARE_GPU_SPEC(int32);
 }  // end namespace functor
 
 #define REGISTER_GPU_KERNEL(T)                          \
-  REGISTER_KERNEL_BUILDER(Name("GatherTree")            \
+  REGISTER_KERNEL_BUILDER(Name("Addons>GatherTree")     \
                               .Device(DEVICE_GPU)       \
                               .TypeConstraint<T>("T")   \
                               .HostMemory("end_token"), \
@@ -191,4 +192,5 @@ REGISTER_GPU_KERNEL(int32);
 #undef REGISTER_GPU_KERNEL
 #endif  // GOOGLE_CUDA
 
+}  // end namespace addons
 }  // end namespace tensorflow

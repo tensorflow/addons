@@ -13,18 +13,26 @@
 # limitations under the License.
 # ==============================================================================
 """Utilities for metrics."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
-import six
+import numpy as np
 import tensorflow as tf
+from tensorflow_addons.utils.types import AcceptableDTypes
+
+from typeguard import typechecked
+from typing import Optional, Callable
 
 
 class MeanMetricWrapper(tf.keras.metrics.Mean):
     """Wraps a stateless metric function with the Mean metric."""
 
-    def __init__(self, fn, name=None, dtype=None, **kwargs):
+    @typechecked
+    def __init__(
+        self,
+        fn: Callable,
+        name: Optional[str] = None,
+        dtype: AcceptableDTypes = None,
+        **kwargs
+    ):
         """Creates a `MeanMetricWrapper` instance.
         Args:
           fn: The metric function to wrap, with signature
@@ -33,7 +41,7 @@ class MeanMetricWrapper(tf.keras.metrics.Mean):
           dtype: (Optional) data type of the metric result.
           **kwargs: The keyword arguments that are passed on to `fn`.
         """
-        super(MeanMetricWrapper, self).__init__(name=name, dtype=dtype)
+        super().__init__(name=name, dtype=dtype)
         self._fn = fn
         self._fn_kwargs = kwargs
 
@@ -56,12 +64,25 @@ class MeanMetricWrapper(tf.keras.metrics.Mean):
         #   `ragged_assert_compatible_and_get_flat_values`
         #   and `squeeze_or_expand_dimensions`
         matches = self._fn(y_true, y_pred, **self._fn_kwargs)
-        return super(MeanMetricWrapper, self).update_state(
-            matches, sample_weight=sample_weight)
+        return super().update_state(matches, sample_weight=sample_weight)
 
     def get_config(self):
         config = {}
-        for k, v in six.iteritems(self._fn_kwargs):
+        for k, v in self._fn_kwargs.items():
             config[k] = v
-        base_config = super(MeanMetricWrapper, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}
+
+
+def _get_model(metric, num_output):
+    # Test API comptibility with tf.keras Model
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Dense(64, activation="relu"))
+    model.add(tf.keras.layers.Dense(num_output, activation="softmax"))
+    model.compile(
+        optimizer="adam", loss="categorical_crossentropy", metrics=["acc", metric]
+    )
+
+    data = np.random.random((10, 3))
+    labels = np.random.random((10, num_output))
+    model.fit(data, labels, epochs=1, batch_size=5, verbose=0)

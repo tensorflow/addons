@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_ADDONS_EUCLIDEAN_DISTANCE_OP_H_
-#define TENSORFLOW_ADDONS_EUCLIDEAN_DISTANCE_OP_H_
+#ifndef TENSORFLOW_ADDONS_IMAGE_KERNELS_EUCLIDEAN_DISTANCE_TRANSFORM_OP_H_
+#define TENSORFLOW_ADDONS_IMAGE_KERNELS_EUCLIDEAN_DISTANCE_TRANSFORM_OP_H_
 
 #define EIGEN_USE_THREADS
 
@@ -25,13 +25,14 @@ limitations under the License.
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
+namespace addons {
 
 namespace generator {
 
 using Eigen::array;
 using Eigen::DenseIndex;
-using Eigen::numext::sqrt;
 using Eigen::numext::mini;
+using Eigen::numext::sqrt;
 
 template <typename Device, typename T>
 class EuclideanDistanceTransformGenerator {
@@ -40,8 +41,8 @@ class EuclideanDistanceTransformGenerator {
   int64 height_, width_;
 
  public:
-  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE EuclideanDistanceTransformGenerator(
-      typename TTypes<T, 4>::ConstTensor input)
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
+  EuclideanDistanceTransformGenerator(typename TTypes<T, 4>::ConstTensor input)
       : input_(input) {
     height_ = input_.dimension(1);
     width_ = input_.dimension(2);
@@ -91,6 +92,7 @@ struct EuclideanDistanceTransformFunctor {
 
 }  // end namespace functor
 
+}  // end namespace addons
 }  // end namespace tensorflow
 
-#endif  // TENSORFLOW_ADDONS_EUCLIDEAN_DISTANCE_OP_H_
+#endif  // TENSORFLOW_ADDONS_IMAGE_KERNELS_EUCLIDEAN_DISTANCE_TRANSFORM_OP_H_

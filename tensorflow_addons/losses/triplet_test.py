@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for triplet loss."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 import tensorflow as tf
@@ -38,17 +35,57 @@ def pairwise_distance_np(feature, squared=False):
         [number of data, number of data].
     """
     triu = np.triu_indices(feature.shape[0], 1)
-    upper_tri_pdists = np.linalg.norm(
-        feature[triu[1]] - feature[triu[0]], axis=1)
+    upper_tri_pdists = np.linalg.norm(feature[triu[1]] - feature[triu[0]], axis=1)
     if squared:
-        upper_tri_pdists **= 2.
+        upper_tri_pdists **= 2.0
     num_data = feature.shape[0]
     pairwise_distances = np.zeros((num_data, num_data))
     pairwise_distances[np.triu_indices(num_data, 1)] = upper_tri_pdists
     # Make symmetrical.
-    pairwise_distances = pairwise_distances + pairwise_distances.T - np.diag(
-        pairwise_distances.diagonal())
+    pairwise_distances = (
+        pairwise_distances
+        + pairwise_distances.T
+        - np.diag(pairwise_distances.diagonal())
+    )
     return pairwise_distances
+
+
+def triplet_hard_loss_np(labels, embedding, margin, soft=False):
+
+    num_data = embedding.shape[0]
+    # Reshape labels to compute adjacency matrix.
+    labels_reshaped = np.reshape(labels.astype(np.float32), (labels.shape[0], 1))
+    # Compute the loss in NP.
+    adjacency = np.equal(labels_reshaped, labels_reshaped.T)
+
+    pdist_matrix = pairwise_distance_np(embedding, squared=True)
+    loss_np = 0.0
+    for i in range(num_data):
+        pos_distances = []
+        neg_distances = []
+        for j in range(num_data):
+            if adjacency[i][j] == 0:
+                neg_distances.append(pdist_matrix[i][j])
+            if adjacency[i][j] > 0.0 and i != j:
+                pos_distances.append(pdist_matrix[i][j])
+
+        # if there are no positive pairs, distance is 0
+        if len(pos_distances) == 0:
+            pos_distances.append(0)
+
+        # Sort by distance.
+        neg_distances.sort()
+        min_neg_distance = neg_distances[0]
+        pos_distances.sort(reverse=True)
+        max_pos_distance = pos_distances[0]
+
+        if soft:
+            loss_np += np.log1p(np.exp(max_pos_distance - min_neg_distance))
+        else:
+            loss_np += np.maximum(0.0, max_pos_distance - min_neg_distance + margin)
+
+    loss_np /= num_data
+    return loss_np
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -63,8 +100,7 @@ class TripletSemiHardLossTest(tf.test.TestCase):
         labels = np.random.randint(0, num_classes, size=(num_data))
 
         # Reshape labels to compute adjacency matrix.
-        labels_reshaped = np.reshape(
-            labels.astype(np.float32), (labels.shape[0], 1))
+        labels_reshaped = np.reshape(labels.astype(np.float32), (labels.shape[0], 1))
         # Compute the loss in NP.
         adjacency = np.equal(labels_reshaped, labels_reshaped.T)
 
@@ -93,7 +129,8 @@ class TripletSemiHardLossTest(tf.test.TestCase):
                             break
 
                     loss_np += np.maximum(
-                        0.0, margin - chosen_neg_distance + pos_distance)
+                        0.0, margin - chosen_neg_distance + pos_distance
+                    )
 
         loss_np /= num_positives
 
@@ -105,12 +142,64 @@ class TripletSemiHardLossTest(tf.test.TestCase):
         self.assertAlmostEqual(self.evaluate(loss), loss_np, 3)
 
     def test_keras_model_compile(self):
-        model = tf.keras.models.Sequential([
-            tf.keras.layers.Input(shape=(784,)),
-            tf.keras.layers.Dense(10),
-        ])
-        model.compile(loss="triplet_semihard_loss", optimizer="adam")
+        model = tf.keras.models.Sequential(
+            [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10),]
+        )
+        model.compile(loss="Addons>triplet_semihard_loss", optimizer="adam")
+
+    def test_serialization(self):
+        loss = triplet.TripletSemiHardLoss()
+        tf.keras.losses.deserialize(tf.keras.losses.serialize(loss))
 
 
-if __name__ == '__main__':
+@test_utils.run_all_in_graph_and_eager_modes
+class TripletHardLossTest(tf.test.TestCase):
+    def test_unweighted(self):
+        num_data = 20
+        feat_dim = 6
+        margin = 1.0
+        num_classes = 4
+
+        embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
+        labels = np.random.randint(0, num_classes, size=(num_data))
+
+        loss_np = triplet_hard_loss_np(labels, embedding, margin)
+
+        # Compute the loss in TF.
+        y_true = tf.constant(labels)
+        y_pred = tf.constant(embedding)
+        cce_obj = triplet.TripletHardLoss()
+        loss = cce_obj(y_true, y_pred)
+        self.assertAlmostEqual(self.evaluate(loss), loss_np, 3)
+
+    def test_unweighted_soft(self):
+        num_data = 20
+        feat_dim = 6
+        margin = 1.0
+        num_classes = 4
+
+        embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
+        labels = np.random.randint(0, num_classes, size=(num_data))
+
+        loss_np = triplet_hard_loss_np(labels, embedding, margin, soft=True)
+
+        # Compute the loss in TF.
+        y_true = tf.constant(labels)
+        y_pred = tf.constant(embedding)
+        cce_obj = triplet.TripletHardLoss(soft=True)
+        loss = cce_obj(y_true, y_pred)
+        self.assertAlmostEqual(self.evaluate(loss), loss_np, 3)
+
+    def test_keras_model_compile(self):
+        model = tf.keras.models.Sequential(
+            [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10),]
+        )
+        model.compile(loss="Addons>triplet_hard_loss", optimizer="adam")
+
+    def test_serialization(self):
+        loss = triplet.TripletHardLoss()
+        tf.keras.losses.deserialize(tf.keras.losses.serialize(loss))
+
+
+if __name__ == "__main__":
     tf.test.main()

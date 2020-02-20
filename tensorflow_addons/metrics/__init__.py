@@ -12,13 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A module containing metrics that conform to Keras API."""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+"""Additional metrics that conform to Keras API."""
 
 from tensorflow_addons.metrics.cohens_kappa import CohenKappa
 from tensorflow_addons.metrics.f_scores import F1Score, FBetaScore
+from tensorflow_addons.metrics.hamming import HammingLoss, hamming_distance
+from tensorflow_addons.metrics.utils import MeanMetricWrapper
+from tensorflow_addons.metrics.matthews_correlation_coefficient import (
+    MatthewsCorrelationCoefficient,
+)
+from tensorflow_addons.metrics.multilabel_confusion_matrix import (
+    MultiLabelConfusionMatrix,
+)
 from tensorflow_addons.metrics.r_square import RSquare
-from tensorflow_addons.metrics.multilabel_confusion_matrix import MultiLabelConfusionMatrix

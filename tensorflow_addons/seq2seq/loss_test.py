@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for tf.addons.seq2seq.python.loss_ops."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
 
@@ -32,8 +29,7 @@ class LossTest(tf.test.TestCase):
         self.sequence_length = 3
         self.number_of_classes = 5
         logits = [
-            tf.constant(
-                i + 0.5, shape=[self.batch_size, self.number_of_classes])
+            tf.constant(i + 0.5, shape=[self.batch_size, self.number_of_classes])
             for i in range(self.sequence_length)
         ]
         self.logits = tf.stack(logits, axis=1)
@@ -60,7 +56,8 @@ class LossTest(tf.test.TestCase):
                 self.targets,
                 self.weights,
                 average_across_timesteps=True,
-                average_across_batch=True)
+                average_across_batch=True,
+            )
             res = self.evaluate(average_loss_per_example)
             self.assertAllClose(self.expected_loss, res)
 
@@ -69,10 +66,10 @@ class LossTest(tf.test.TestCase):
                 self.targets,
                 self.weights,
                 average_across_timesteps=False,
-                average_across_batch=True)
+                average_across_batch=True,
+            )
             res = self.evaluate(average_loss_per_sequence)
-            compare_per_sequence = np.full((self.sequence_length),
-                                           self.expected_loss)
+            compare_per_sequence = np.full((self.sequence_length), self.expected_loss)
             self.assertAllClose(compare_per_sequence, res)
 
             average_loss_per_batch = loss.sequence_loss(
@@ -80,7 +77,8 @@ class LossTest(tf.test.TestCase):
                 self.targets,
                 self.weights,
                 average_across_timesteps=True,
-                average_across_batch=False)
+                average_across_batch=False,
+            )
             res = self.evaluate(average_loss_per_batch)
             compare_per_batch = np.full((self.batch_size), self.expected_loss)
             self.assertAllClose(compare_per_batch, res)
@@ -90,10 +88,12 @@ class LossTest(tf.test.TestCase):
                 self.targets,
                 self.weights,
                 average_across_timesteps=False,
-                average_across_batch=False)
+                average_across_batch=False,
+            )
             res = self.evaluate(total_loss)
-            compare_total = np.full((self.batch_size, self.sequence_length),
-                                    self.expected_loss)
+            compare_total = np.full(
+                (self.batch_size, self.sequence_length), self.expected_loss
+            )
             self.assertAllClose(compare_total, res)
 
     def testSequenceLossClass(self):
@@ -103,9 +103,9 @@ class LossTest(tf.test.TestCase):
                 average_across_timesteps=True,
                 average_across_batch=True,
                 sum_over_timesteps=False,
-                sum_over_batch=False)
-            average_loss_per_example = seq_loss(self.targets, self.logits,
-                                                self.weights)
+                sum_over_batch=False,
+            )
+            average_loss_per_example = seq_loss(self.targets, self.logits, self.weights)
             res = self.evaluate(average_loss_per_example)
             self.assertAllClose(self.expected_loss, res)
 
@@ -113,21 +113,22 @@ class LossTest(tf.test.TestCase):
                 average_across_timesteps=False,
                 average_across_batch=True,
                 sum_over_timesteps=False,
-                sum_over_batch=False)
-            average_loss_per_sequence = seq_loss(self.targets, self.logits,
-                                                 self.weights)
+                sum_over_batch=False,
+            )
+            average_loss_per_sequence = seq_loss(
+                self.targets, self.logits, self.weights
+            )
             res = self.evaluate(average_loss_per_sequence)
-            compare_per_sequence = np.full((self.sequence_length),
-                                           self.expected_loss)
+            compare_per_sequence = np.full((self.sequence_length), self.expected_loss)
             self.assertAllClose(compare_per_sequence, res)
 
             seq_loss = loss.SequenceLoss(
                 average_across_timesteps=True,
                 average_across_batch=False,
                 sum_over_timesteps=False,
-                sum_over_batch=False)
-            average_loss_per_batch = seq_loss(self.targets, self.logits,
-                                              self.weights)
+                sum_over_batch=False,
+            )
+            average_loss_per_batch = seq_loss(self.targets, self.logits, self.weights)
             res = self.evaluate(average_loss_per_batch)
             compare_per_batch = np.full((self.batch_size), self.expected_loss)
             self.assertAllClose(compare_per_batch, res)
@@ -136,11 +137,13 @@ class LossTest(tf.test.TestCase):
                 average_across_timesteps=False,
                 average_across_batch=False,
                 sum_over_timesteps=False,
-                sum_over_batch=False)
+                sum_over_batch=False,
+            )
             total_loss = seq_loss(self.targets, self.logits, self.weights)
             res = self.evaluate(total_loss)
-            compare_total = np.full((self.batch_size, self.sequence_length),
-                                    self.expected_loss)
+            compare_total = np.full(
+                (self.batch_size, self.sequence_length), self.expected_loss
+            )
             self.assertAllClose(compare_total, res)
 
     def testSumReduction(self):
@@ -150,9 +153,9 @@ class LossTest(tf.test.TestCase):
                 average_across_timesteps=False,
                 average_across_batch=False,
                 sum_over_timesteps=True,
-                sum_over_batch=True)
-            average_loss_per_example = seq_loss(self.targets, self.logits,
-                                                self.weights)
+                sum_over_batch=True,
+            )
+            average_loss_per_example = seq_loss(self.targets, self.logits, self.weights)
             res = self.evaluate(average_loss_per_example)
             self.assertAllClose(self.expected_loss, res)
 
@@ -160,21 +163,22 @@ class LossTest(tf.test.TestCase):
                 average_across_timesteps=False,
                 average_across_batch=False,
                 sum_over_timesteps=False,
-                sum_over_batch=True)
-            average_loss_per_sequence = seq_loss(self.targets, self.logits,
-                                                 self.weights)
+                sum_over_batch=True,
+            )
+            average_loss_per_sequence = seq_loss(
+                self.targets, self.logits, self.weights
+            )
             res = self.evaluate(average_loss_per_sequence)
-            compare_per_sequence = np.full((self.sequence_length),
-                                           self.expected_loss)
+            compare_per_sequence = np.full((self.sequence_length), self.expected_loss)
             self.assertAllClose(compare_per_sequence, res)
 
             seq_loss = loss.SequenceLoss(
                 average_across_timesteps=False,
                 average_across_batch=False,
                 sum_over_timesteps=True,
-                sum_over_batch=False)
-            average_loss_per_batch = seq_loss(self.targets, self.logits,
-                                              self.weights)
+                sum_over_batch=False,
+            )
+            average_loss_per_batch = seq_loss(self.targets, self.logits, self.weights)
             res = self.evaluate(average_loss_per_batch)
             compare_per_batch = np.full((self.batch_size), self.expected_loss)
             self.assertAllClose(compare_per_batch, res)
@@ -183,11 +187,13 @@ class LossTest(tf.test.TestCase):
                 average_across_timesteps=False,
                 average_across_batch=False,
                 sum_over_timesteps=False,
-                sum_over_batch=False)
+                sum_over_batch=False,
+            )
             total_loss = seq_loss(self.targets, self.logits, self.weights)
             res = self.evaluate(total_loss)
-            compare_total = np.full((self.batch_size, self.sequence_length),
-                                    self.expected_loss)
+            compare_total = np.full(
+                (self.batch_size, self.sequence_length), self.expected_loss
+            )
             self.assertAllClose(compare_total, res)
 
     def testWeightedSumReduction(self):
@@ -204,9 +210,9 @@ class LossTest(tf.test.TestCase):
                 average_across_timesteps=False,
                 average_across_batch=False,
                 sum_over_timesteps=True,
-                sum_over_batch=True)
-            average_loss_per_example = seq_loss(self.targets, self.logits,
-                                                self.weights)
+                sum_over_batch=True,
+            )
+            average_loss_per_example = seq_loss(self.targets, self.logits, self.weights)
             res = self.evaluate(average_loss_per_example)
             self.assertAllClose(self.expected_loss, res)
 
@@ -214,24 +220,25 @@ class LossTest(tf.test.TestCase):
                 average_across_timesteps=False,
                 average_across_batch=False,
                 sum_over_timesteps=False,
-                sum_over_batch=True)
-            average_loss_per_sequence = seq_loss(self.targets, self.logits,
-                                                 self.weights)
+                sum_over_batch=True,
+            )
+            average_loss_per_sequence = seq_loss(
+                self.targets, self.logits, self.weights
+            )
             res = self.evaluate(average_loss_per_sequence)
-            compare_per_sequence = np.full((self.sequence_length),
-                                           self.expected_loss)
+            compare_per_sequence = np.full((self.sequence_length), self.expected_loss)
             # The last element in every sequence are zeros, which will be
             # filtered.
-            compare_per_sequence[-1] = 0.
+            compare_per_sequence[-1] = 0.0
             self.assertAllClose(compare_per_sequence, res)
 
             seq_loss = loss.SequenceLoss(
                 average_across_timesteps=False,
                 average_across_batch=False,
                 sum_over_timesteps=True,
-                sum_over_batch=False)
-            average_loss_per_batch = seq_loss(self.targets, self.logits,
-                                              self.weights)
+                sum_over_batch=False,
+            )
+            average_loss_per_batch = seq_loss(self.targets, self.logits, self.weights)
             res = self.evaluate(average_loss_per_batch)
             compare_per_batch = np.full((self.batch_size), self.expected_loss)
             self.assertAllClose(compare_per_batch, res)
@@ -240,11 +247,13 @@ class LossTest(tf.test.TestCase):
                 average_across_timesteps=False,
                 average_across_batch=False,
                 sum_over_timesteps=False,
-                sum_over_batch=False)
+                sum_over_batch=False,
+            )
             total_loss = seq_loss(self.targets, self.logits, self.weights)
             res = self.evaluate(total_loss)
-            compare_total = np.full((self.batch_size, self.sequence_length),
-                                    self.expected_loss)
+            compare_total = np.full(
+                (self.batch_size, self.sequence_length), self.expected_loss
+            )
             # The last element in every sequence are zeros, which will be
             # filtered.
             compare_total[:, -1] = 0
@@ -263,7 +272,8 @@ class LossTest(tf.test.TestCase):
                 self.targets,
                 weights,
                 average_across_timesteps=True,
-                average_across_batch=True)
+                average_across_batch=True,
+            )
             res = self.evaluate(average_loss_per_example)
             self.assertAllClose(0.0, res)
 
@@ -272,9 +282,10 @@ class LossTest(tf.test.TestCase):
                 self.targets,
                 weights,
                 average_across_timesteps=False,
-                average_across_batch=True)
+                average_across_batch=True,
+            )
             res = self.evaluate(average_loss_per_sequence)
-            compare_per_sequence = np.zeros((self.sequence_length))
+            compare_per_sequence = np.zeros(self.sequence_length)
             self.assertAllClose(compare_per_sequence, res)
 
             average_loss_per_batch = loss.sequence_loss(
@@ -282,9 +293,10 @@ class LossTest(tf.test.TestCase):
                 self.targets,
                 weights,
                 average_across_timesteps=True,
-                average_across_batch=False)
+                average_across_batch=False,
+            )
             res = self.evaluate(average_loss_per_batch)
-            compare_per_batch = np.zeros((self.batch_size))
+            compare_per_batch = np.zeros(self.batch_size)
             self.assertAllClose(compare_per_batch, res)
 
             total_loss = loss.sequence_loss(
@@ -292,23 +304,78 @@ class LossTest(tf.test.TestCase):
                 self.targets,
                 weights,
                 average_across_timesteps=False,
-                average_across_batch=False)
+                average_across_batch=False,
+            )
             res = self.evaluate(total_loss)
             compare_total = np.zeros((self.batch_size, self.sequence_length))
             self.assertAllClose(compare_total, res)
 
     def testAmbiguousOrder(self):
-        with self.assertRaisesRegexp(ValueError, 'because of ambiguous order'):
+        with self.assertRaisesRegexp(ValueError, "because of ambiguous order"):
             with self.cached_session(use_gpu=True):
                 self.setup()
                 seq_loss = loss.SequenceLoss(
                     average_across_timesteps=False,
                     average_across_batch=True,
                     sum_over_timesteps=True,
-                    sum_over_batch=False)
-                self.evaluate(
-                    seq_loss(self.targets, self.logits, self.weights))
+                    sum_over_batch=False,
+                )
+                self.evaluate(seq_loss(self.targets, self.logits, self.weights))
 
 
-if __name__ == '__main__':
+@test_utils.run_all_in_graph_and_eager_modes
+class DenseTargetLossTest(LossTest):
+    def setup(self):
+        super().setup()
+        self.targets = tf.one_hot(self.targets, depth=self.number_of_classes)
+
+    def testKerasCompatibility(self):
+        """To test the compatibility of SequenceLoss with Keras's built-in
+        training loops, we create a fake model which always outputs a pre-
+        defined set of logits.
+
+        Then we check the calculated loss to be equal to the expected
+        loss. Note that since the fake model doesn't have any trainable
+        parameters, no matter how many steps we train it, it always
+        outputs the same loss value.
+        """
+        with self.cached_session(use_gpu=True):
+            self.setup()
+
+            def return_logits(x):
+                batch_size = tf.shape(x)[0]
+                logits_single_row = self.logits[0, :, :]
+                logits_batch = tf.tile(
+                    tf.expand_dims(logits_single_row, 0), [batch_size, 1, 1]
+                )
+                return logits_batch
+
+            inp = tf.keras.layers.Input(shape=(self.sequence_length,))
+            out = tf.keras.layers.Lambda(
+                return_logits,
+                output_shape=(self.sequence_length, self.number_of_classes),
+            )(inp)
+            model = tf.keras.models.Model(inp, out)
+
+            loss_obj = loss.SequenceLoss()
+            model.compile(
+                optimizer="adam", loss=loss_obj, sample_weight_mode="temporal"
+            )
+
+            # This is a fake input.
+            x = tf.ones(shape=(self.batch_size, self.sequence_length))
+
+            h = model.fit(
+                x,
+                self.targets,
+                sample_weight=self.weights,
+                batch_size=self.batch_size,
+                steps_per_epoch=1,
+            )
+
+            calculated_loss = h.history["loss"][0]
+            self.assertAllClose(calculated_loss, self.expected_loss)
+
+
+if __name__ == "__main__":
     tf.test.main()

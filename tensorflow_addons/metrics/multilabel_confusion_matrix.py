@@ -14,13 +14,12 @@
 # ==============================================================================
 """Implements Multi-label confusion matrix scores."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
 import numpy as np
+
+from typeguard import typechecked
+from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
 
 
 class MultiLabelConfusionMatrix(Metric):
@@ -70,11 +69,14 @@ class MultiLabelConfusionMatrix(Metric):
     ```
     """
 
+    @typechecked
     def __init__(self,
-                 num_classes,
-                 name='Multilabel_confusion_matrix',
-                 dtype=tf.int32):
-        super(MultiLabelConfusionMatrix, self).__init__(name=name, dtype=dtype)
+                 num_classes: FloatTensorLike,
+                 name: str = 'Multilabel_confusion_matrix',
+                 dtype: AcceptableDTypes = None,
+                 **kwargs
+                 ):
+        super().__init__(name=name, dtype=dtype)
         self.num_classes = num_classes
         self.true_positives = self.add_weight(
             'true_positives',
@@ -100,7 +102,7 @@ class MultiLabelConfusionMatrix(Metric):
     def update_state(self, y_true, y_pred):
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred, tf.int32)
-
+        # true positive
         true_positive = tf.math.count_nonzero(y_true * y_pred, 0)
         # predictions sum
         pred_sum = tf.math.count_nonzero(y_pred, 0)
@@ -108,8 +110,10 @@ class MultiLabelConfusionMatrix(Metric):
         true_sum = tf.math.count_nonzero(y_true, 0)
         false_positive = pred_sum - true_positive
         false_negative = true_sum - true_positive
-        true_negative = y_true.get_shape(
-        )[0] - true_positive - false_positive - false_negative
+        y_true_negative = tf.math.not_equal(y_true, 1)
+        y_pred_negative = tf.math.not_equal(y_pred, 1)
+        true_negative = tf.math.count_nonzero(
+            tf.math.logical_and(y_true_negative, y_pred_negative), axis=0)
 
         # true positive state update
         self.true_positives.assign_add(tf.cast(true_positive, self.dtype))
@@ -137,8 +141,8 @@ class MultiLabelConfusionMatrix(Metric):
         config = {
             "num_classes": self.num_classes,
         }
-        base_config = super(MultiLabelConfusionMatrix, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}
 
     def reset_states(self):
         self.true_positives.assign(np.zeros(self.num_classes), np.int32)

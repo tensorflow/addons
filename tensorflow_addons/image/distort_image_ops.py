@@ -13,27 +13,26 @@
 # limitations under the License.
 # ==============================================================================
 """Python layer for distort_image_ops."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+from tensorflow_addons.utils.resource_loader import LazySO
+from tensorflow_addons.utils.types import Number, TensorLike
 
-_distort_image_ops = tf.load_op_library(
-    get_path_to_datafile("custom_ops/image/_distort_image_ops.so"))
+from typing import Optional
+
+_distort_image_so = LazySO("custom_ops/image/_distort_image_ops.so")
 
 
-# pylint: disable=invalid-name
-@tf.function
-def random_hsv_in_yiq(image,
-                      max_delta_hue=0,
-                      lower_saturation=1,
-                      upper_saturation=1,
-                      lower_value=1,
-                      upper_value=1,
-                      seed=None,
-                      name=None):
+def random_hsv_in_yiq(
+    image: TensorLike,
+    max_delta_hue: Number = 0,
+    lower_saturation: Number = 1,
+    upper_saturation: Number = 1,
+    lower_value: Number = 1,
+    upper_value: Number = 1,
+    seed: Optional[int] = None,
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Adjust hue, saturation, value of an RGB image randomly in YIQ color
     space.
 
@@ -74,8 +73,9 @@ def random_hsv_in_yiq(image,
         raise ValueError("lower_value must be non-negative.")
 
     if lower_saturation > upper_saturation:
-        raise ValueError("lower_saturation must be not greater than "
-                         "upper_saturation.")
+        raise ValueError(
+            "lower_saturation must be not greater than " "upper_saturation."
+        )
 
     if lower_value > upper_value:
         raise ValueError("lower_value must be not greater than upper_value.")
@@ -84,34 +84,29 @@ def random_hsv_in_yiq(image,
         if max_delta_hue == 0:
             delta_hue = 0
         else:
-            delta_hue = tf.random.uniform([],
-                                          -max_delta_hue,
-                                          max_delta_hue,
-                                          seed=seed)
+            delta_hue = tf.random.uniform([], -max_delta_hue, max_delta_hue, seed=seed)
         if lower_saturation == upper_saturation:
             scale_saturation = lower_saturation
         else:
-            scale_saturation = tf.random.uniform([],
-                                                 lower_saturation,
-                                                 upper_saturation,
-                                                 seed=seed)
+            scale_saturation = tf.random.uniform(
+                [], lower_saturation, upper_saturation, seed=seed
+            )
         if lower_value == upper_value:
             scale_value = lower_value
         else:
-            scale_value = tf.random.uniform([],
-                                            lower_value,
-                                            upper_value,
-                                            seed=seed)
+            scale_value = tf.random.uniform([], lower_value, upper_value, seed=seed)
         return adjust_hsv_in_yiq(
-            image, delta_hue, scale_saturation, scale_value, name=scope)
+            image, delta_hue, scale_saturation, scale_value, name=scope
+        )
 
 
-@tf.function
-def adjust_hsv_in_yiq(image,
-                      delta_hue=0,
-                      scale_saturation=1,
-                      scale_value=1,
-                      name=None):
+def adjust_hsv_in_yiq(
+    image: TensorLike,
+    delta_hue: Number = 0,
+    scale_saturation: Number = 1,
+    scale_value: Number = 1,
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Adjust hue, saturation, value of an RGB image in YIQ color space.
 
     This is a convenience method that converts an RGB image to float
@@ -143,7 +138,8 @@ def adjust_hsv_in_yiq(image,
         orig_dtype = image.dtype
         flt_image = tf.image.convert_image_dtype(image, tf.dtypes.float32)
 
-        rgb_altered = _distort_image_ops.adjust_hsv_in_yiq(
-            flt_image, delta_hue, scale_saturation, scale_value)
+        rgb_altered = _distort_image_so.ops.addons_adjust_hsv_in_yiq(
+            flt_image, delta_hue, scale_saturation, scale_value
+        )
 
         return tf.image.convert_image_dtype(rgb_altered, orig_dtype)

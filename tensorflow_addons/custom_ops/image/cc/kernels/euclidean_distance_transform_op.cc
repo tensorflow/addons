@@ -20,12 +20,14 @@ limitations under the License.
 #endif  // GOOGLE_CUDA
 
 #include "tensorflow_addons/custom_ops/image/cc/kernels/euclidean_distance_transform_op.h"
+
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/platform/types.h"
 
 namespace tensorflow {
+namespace addons {
 
 namespace functor {
 
@@ -65,10 +67,10 @@ class EuclideanDistanceTransform : public OpKernel {
   }
 };
 
-#define REGISTER(TYPE)                                        \
-  REGISTER_KERNEL_BUILDER(Name("EuclideanDistanceTransform")  \
-                              .Device(DEVICE_CPU)             \
-                              .TypeConstraint<TYPE>("dtype"), \
+#define REGISTER(TYPE)                                              \
+  REGISTER_KERNEL_BUILDER(Name("Addons>EuclideanDistanceTransform") \
+                              .Device(DEVICE_CPU)                   \
+                              .TypeConstraint<TYPE>("dtype"),       \
                           EuclideanDistanceTransform<CPUDevice, TYPE>)
 
 TF_CALL_half(REGISTER);
@@ -96,10 +98,10 @@ TF_CALL_double(DECLARE_FUNCTOR);
 
 }  // end namespace functor
 
-#define REGISTER(TYPE)                                        \
-  REGISTER_KERNEL_BUILDER(Name("EuclideanDistanceTransform")  \
-                              .Device(DEVICE_GPU)             \
-                              .TypeConstraint<TYPE>("dtype"), \
+#define REGISTER(TYPE)                                              \
+  REGISTER_KERNEL_BUILDER(Name("Addons>EuclideanDistanceTransform") \
+                              .Device(DEVICE_GPU)                   \
+                              .TypeConstraint<TYPE>("dtype"),       \
                           EuclideanDistanceTransform<GPUDevice, TYPE>)
 
 TF_CALL_half(REGISTER);
@@ -110,4 +112,5 @@ TF_CALL_double(REGISTER);
 
 #endif  // GOOGLE_CUDA
 
+}  // end namespace addons
 }  // end namespace tensorflow

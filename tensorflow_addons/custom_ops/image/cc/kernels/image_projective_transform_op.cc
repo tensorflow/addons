@@ -20,12 +20,14 @@ limitations under the License.
 #endif  // GOOGLE_CUDA
 
 #include "tensorflow_addons/custom_ops/image/cc/kernels/image_projective_transform_op.h"
+
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/platform/types.h"
 
 namespace tensorflow {
+namespace addons {
 
 namespace functor {
 
@@ -74,11 +76,12 @@ class ImageProjectiveTransformV2 : public OpKernel {
     const Tensor& transform_t = ctx->input(1);
     OP_REQUIRES(ctx, images_t.shape().dims() == 4,
                 errors::InvalidArgument("Input images must have rank 4"));
-    OP_REQUIRES(ctx, (TensorShapeUtils::IsMatrix(transform_t.shape()) &&
-                      (transform_t.dim_size(0) == images_t.dim_size(0) ||
-                       transform_t.dim_size(0) == 1) &&
-                      transform_t.dim_size(1) ==
-                          ProjectiveGenerator<Device, T>::kNumParameters),
+    OP_REQUIRES(ctx,
+                (TensorShapeUtils::IsMatrix(transform_t.shape()) &&
+                 (transform_t.dim_size(0) == images_t.dim_size(0) ||
+                  transform_t.dim_size(0) == 1) &&
+                 transform_t.dim_size(1) ==
+                     ProjectiveGenerator<Device, T>::kNumParameters),
                 errors::InvalidArgument(
                     "Input transform should be num_images x 8 or 1 x 8"));
 
@@ -106,8 +109,9 @@ class ImageProjectiveTransformV2 : public OpKernel {
 
     Tensor* output_t;
     OP_REQUIRES_OK(ctx, ctx->allocate_output(
-                            0, TensorShape({images_t.dim_size(0), out_height,
-                                            out_width, images_t.dim_size(3)}),
+                            0,
+                            TensorShape({images_t.dim_size(0), out_height,
+                                         out_width, images_t.dim_size(3)}),
                             &output_t));
     auto output = output_t->tensor<T, 4>();
     auto images = images_t.tensor<T, 4>();
@@ -118,10 +122,10 @@ class ImageProjectiveTransformV2 : public OpKernel {
   }
 };
 
-#define REGISTER(TYPE)                                        \
-  REGISTER_KERNEL_BUILDER(Name("ImageProjectiveTransformV2")  \
-                              .Device(DEVICE_CPU)             \
-                              .TypeConstraint<TYPE>("dtype"), \
+#define REGISTER(TYPE)                                              \
+  REGISTER_KERNEL_BUILDER(Name("Addons>ImageProjectiveTransformV2") \
+                              .Device(DEVICE_CPU)                   \
+                              .TypeConstraint<TYPE>("dtype"),       \
                           ImageProjectiveTransformV2<CPUDevice, TYPE>)
 
 TF_CALL_uint8(REGISTER);
@@ -157,11 +161,11 @@ TF_CALL_double(DECLARE_FUNCTOR);
 
 }  // end namespace functor
 
-#define REGISTER(TYPE)                                       \
-  REGISTER_KERNEL_BUILDER(Name("ImageProjectiveTransformV2") \
-                              .Device(DEVICE_GPU)            \
-                              .TypeConstraint<TYPE>("dtype") \
-                              .HostMemory("output_shape"),   \
+#define REGISTER(TYPE)                                              \
+  REGISTER_KERNEL_BUILDER(Name("Addons>ImageProjectiveTransformV2") \
+                              .Device(DEVICE_GPU)                   \
+                              .TypeConstraint<TYPE>("dtype")        \
+                              .HostMemory("output_shape"),          \
                           ImageProjectiveTransformV2<GPUDevice, TYPE>)
 
 TF_CALL_uint8(REGISTER);
@@ -175,4 +179,5 @@ TF_CALL_double(REGISTER);
 
 #endif  // GOOGLE_CUDA
 
+}  // end namespace addons
 }  // end namespace tensorflow

@@ -14,31 +14,38 @@ int formatted_code;
 void formatted_code_again;
 ```
 
+Install Clang-format 9 with:
+
+```bash
+wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+sudo add-apt-repository -u 'http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main'
+sudo apt install clang-format-9
+```
+
+format all with:
+```bash
+clang-format-9 -i --style=google **/*.cc **/*.h
+```
+
 #### Python
-Python code should conform to [PEP8](https://www.python.org/dev/peps/pep-0008/).
 
-Addons uses [yapf](https://github.com/google/yapf) to format code,
-and [pylint](https://www.pylint.org/) for code analysis.
-You can disable them locally like this:
+Addons uses [flake8](http://flake8.pycqa.org/en/latest/) to check pep8 compliance and 
+code analysis.
 
-```python
-# yapf: disable
-FOO = {
-    # ... some very large, complex data literal.
-}
+Addons use [Black](https://black.readthedocs.io/en/stable/) to format our code.
+The continuous integration check will fail if you do not use it.
 
-BAR = [
-    # ... another large data literal.
-]
-# yapf: enable
+Install them with:
+```
+pip install flake8 black
 ```
 
-```python
-# pylint: disable=protected-access
-foo._protected_member
-# pylint: enable=protected-access
-```
+Be sure to run them both before you push your commits, otherwise the CI will fail!
 
+```
+python -m black ./
+python -m flake8
+```
 
 #### TensorFlow Conventions
 

@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Text-processing ops."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+"""Additional text-processing ops."""
 
 # Conditional Random Field
 from tensorflow_addons.text.crf import crf_binary_score
@@ -33,3 +30,11 @@ from tensorflow_addons.text.crf import viterbi_decode
 # Skip Gram Sampling
 from tensorflow_addons.text.skip_gram_ops import skip_gram_sample
 from tensorflow_addons.text.skip_gram_ops import skip_gram_sample_with_text_vocab
+
+# Parse Time
+
+# Temporarily disable for windows
+# Remove after: https://github.com/tensorflow/addons/issues/782
+import os
+if os.name != 'nt':
+    from tensorflow_addons.text.parse_time_op import parse_time

@@ -17,13 +17,14 @@ limitations under the License.
 
 #define EIGEN_USE_GPU
 
-#include "tensorflow_addons/custom_ops/layers/cc/kernels/correlation_cost_op.h"
 #include "gpu/cub/device/device_reduce.cuh"
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/util/tensor_format.h"
+#include "tensorflow_addons/custom_ops/layers/cc/kernels/correlation_cost_op.h"
 
 namespace tensorflow {
+namespace addons {
 
 typedef Eigen::GpuDevice GPUDevice;
 
@@ -362,12 +363,12 @@ struct CorrelationCostFunctor<GPUDevice, Dtype> {
     dim3 threadsPerBlock(THREADS_PER_BLOCK);
     dim3 totalBlocksCorr(N, oH, oW);
 
-    Correlation_forward<
-        THREADS_PER_BLOCK><<<totalBlocksCorr, threadsPerBlock, 0, d.stream()>>>(
-        output_t->flat<Dtype>().data(), oC, oH, oW,
-        padded_a_t.flat<Dtype>().data(), iC, iH, iW,
-        padded_b_t.flat<Dtype>().data(), pad, kernel_size, max_displacement,
-        stride_1, stride_2);
+    Correlation_forward<THREADS_PER_BLOCK>
+        <<<totalBlocksCorr, threadsPerBlock, 0, d.stream()>>>(
+            output_t->flat<Dtype>().data(), oC, oH, oW,
+            padded_a_t.flat<Dtype>().data(), iC, iH, iW,
+            padded_b_t.flat<Dtype>().data(), pad, kernel_size, max_displacement,
+            stride_1, stride_2);
 
     return Status::OK();
   }
@@ -445,21 +446,21 @@ struct CorrelationCostGradFunctor<GPUDevice, Dtype> {
     dim3 totalBlocksCorr(iH, iW, iC);
 
     for (int n = 0; n < N; ++n) {
-      Correlation_backward_input1<
-          THREADS_PER_BLOCK><<<totalBlocksCorr, threadsPerBlock>>>(
-          n, output_a_gradient_t->flat<Dtype>().data(), iC, iH, iW,
-          topdiff_t.flat<Dtype>().data(), oC, oH, oW,
-          padded_b_t.flat<Dtype>().data(), pad, kernel_size, max_displacement,
-          stride_1, stride_2, is_NCHW);
+      Correlation_backward_input1<THREADS_PER_BLOCK>
+          <<<totalBlocksCorr, threadsPerBlock>>>(
+              n, output_a_gradient_t->flat<Dtype>().data(), iC, iH, iW,
+              topdiff_t.flat<Dtype>().data(), oC, oH, oW,
+              padded_b_t.flat<Dtype>().data(), pad, kernel_size,
+              max_displacement, stride_1, stride_2, is_NCHW);
     }
 
     for (int n = 0; n < N; n++) {
-      Correlation_backward_input2<
-          THREADS_PER_BLOCK><<<totalBlocksCorr, threadsPerBlock>>>(
-          n, output_b_gradient_t->flat<Dtype>().data(), iC, iH, iW,
-          topdiff_t.flat<Dtype>().data(), oC, oH, oW,
-          padded_a_t.flat<Dtype>().data(), pad, kernel_size, max_displacement,
-          stride_1, stride_2, is_NCHW);
+      Correlation_backward_input2<THREADS_PER_BLOCK>
+          <<<totalBlocksCorr, threadsPerBlock>>>(
+              n, output_b_gradient_t->flat<Dtype>().data(), iC, iH, iW,
+              topdiff_t.flat<Dtype>().data(), oC, oH, oW,
+              padded_a_t.flat<Dtype>().data(), pad, kernel_size,
+              max_displacement, stride_1, stride_2, is_NCHW);
     }
 
     return Status::OK();
@@ -469,7 +470,8 @@ struct CorrelationCostGradFunctor<GPUDevice, Dtype> {
 template struct CorrelationCostFunctor<GPUDevice, float>;
 template struct CorrelationCostGradFunctor<GPUDevice, float>;
 
-}  // end namespace functor
+}  // namespace functor
+}  // namespace addons
 }  // namespace tensorflow
 
 #endif  // GOOGLE_CUDA

@@ -13,16 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_ADDONS_GELU_OP_H_
-#define TENSORFLOW_ADDONS_GELU_OP_H_
+#ifndef TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_GELU_OP_H_
+#define TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_GELU_OP_H_
 
 #define EIGEN_USE_THREADS
+#include <cmath>
 
 #include "tensorflow/core/framework/numeric_op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
+namespace addons {
 namespace functor {
 
 // Functor used by GeluOp to do the computations.
@@ -58,7 +60,7 @@ struct GeluGrad {
   // Computes GeluGrad backprops.
   //
   // gradients: gradients backpropagated to the Gelu op.
-  // features: the inputs that were passed to the Gelu op.
+  // features: inputs that were passed to the Gelu op.
   // approximate: whether to enable approximation.
   // backprops: gradients to backpropagate to the Gelu inputs.
   void operator()(const Device& d, typename TTypes<T>::ConstTensor gradients,
@@ -137,8 +139,9 @@ void GeluGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
           approximate, output->flat<T>());
 }
 
+}  // namespace addons
 }  // namespace tensorflow
 
 #undef EIGEN_USE_THREADS
 
-#endif  // TENSORFLOW_ADDONS_GELU_OP_H_
+#endif  // TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_GELU_OP_H_

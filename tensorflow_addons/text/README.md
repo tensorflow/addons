@@ -3,14 +3,16 @@
 ## Maintainers
 | Submodule  |  Maintainers  | Contact Info   |
 |:---------- |:----------- |:------------- |
-| skip_gram_ops |  |  |
+| skip_gram_ops | @rahulunair | rahulunair@gmail.com  |
 | crf | Dheeraj R. Reddy | dheeraj98reddy@gmail.com |
+| parse_time_op | Helin Wang | helin@google.com |
 
 ## Components 
 | Submodule  | Text Processing Function |  Reference  |
 |:---------- |:----------- |:----------- |
 | skip_gram_ops |  skip_gram_sample | https://arxiv.org/abs/1301.3781 |
 | skip_gram_ops |  skip_gram_sample_with_text_vocab | https://arxiv.org/abs/1301.3781 |
+| parse_time_op | parse_time ||
 
 ## Contribution Guidelines
 #### Standard API

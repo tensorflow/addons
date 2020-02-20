@@ -17,10 +17,11 @@ limitations under the License.
 
 #define EIGEN_USE_GPU
 
-#include "tensorflow_addons/custom_ops/seq2seq/cc/kernels/beam_search_ops.h"
 #include "tensorflow/core/util/gpu_kernel_helper.h"
+#include "tensorflow_addons/custom_ops/seq2seq/cc/kernels/beam_search_ops.h"
 
 namespace tensorflow {
+namespace addons {
 namespace functor {
 
 typedef Eigen::GpuDevice GPUDevice;
@@ -105,5 +106,6 @@ DEFINE_GPU_SPECS(int32);
 #undef DEFINE_GPU_SPECS
 
 }  // end namespace functor
+}  // end namespace addons
 }  // end namespace tensorflow
 #endif  // GOOGLE_CUDA

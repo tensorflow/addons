@@ -17,12 +17,13 @@ limitations under the License.
 #include "tensorflow/core/framework/shape_inference.h"
 
 namespace tensorflow {
+namespace addons {
 
 using shape_inference::DimensionHandle;
 using shape_inference::InferenceContext;
 using shape_inference::ShapeHandle;
 
-REGISTER_OP("GatherTree")
+REGISTER_OP("Addons>GatherTree")
     .Input("step_ids: T")
     .Input("parent_ids: T")
     .Input("max_sequence_lengths: int32")
@@ -69,4 +70,5 @@ end_token: `[]`.
 beams: `[max_time, batch_size, beam_width]`.
 )doc");
 
+}  // end namespace addons
 }  // end namespace tensorflow

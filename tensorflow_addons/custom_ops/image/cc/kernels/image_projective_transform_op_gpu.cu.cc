@@ -17,12 +17,13 @@ limitations under the License.
 
 #define EIGEN_USE_GPU
 
-#include "tensorflow_addons/custom_ops/image/cc/kernels/image_projective_transform_op.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/platform/types.h"
+#include "tensorflow_addons/custom_ops/image/cc/kernels/image_projective_transform_op.h"
 
 namespace tensorflow {
+namespace addons {
 
 namespace functor {
 
@@ -38,6 +39,7 @@ template class FillProjectiveTransform<GPUDevice, double>;
 
 }  // end namespace functor
 
+}  // end namespace addons
 }  // end namespace tensorflow
 
 #endif  // GOOGLE_CUDA

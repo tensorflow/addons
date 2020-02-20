@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for lifted loss."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 import tensorflow as tf
 
@@ -39,16 +35,18 @@ def pairwise_distance_np(feature, squared=False):
         [number of data, number of data].
     """
     triu = np.triu_indices(feature.shape[0], 1)
-    upper_tri_pdists = np.linalg.norm(
-        feature[triu[1]] - feature[triu[0]], axis=1)
+    upper_tri_pdists = np.linalg.norm(feature[triu[1]] - feature[triu[0]], axis=1)
     if squared:
-        upper_tri_pdists **= 2.
+        upper_tri_pdists **= 2.0
     num_data = feature.shape[0]
     pairwise_distances = np.zeros((num_data, num_data))
     pairwise_distances[np.triu_indices(num_data, 1)] = upper_tri_pdists
     # Make symmetrical.
-    pairwise_distances = pairwise_distances + pairwise_distances.T - np.diag(
-        pairwise_distances.diagonal())
+    pairwise_distances = (
+        pairwise_distances
+        + pairwise_distances.T
+        - np.diag(pairwise_distances.diagonal())
+    )
     return pairwise_distances
 
 
@@ -61,8 +59,7 @@ class LiftedStructLossTest(tf.test.TestCase):
         num_classes = 4
 
         embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
-        labels = np.random.randint(
-            0, num_classes, size=(num_data)).astype(np.float32)
+        labels = np.random.randint(0, num_classes, size=(num_data)).astype(np.float32)
         # Reshape labels to compute adjacency matrix.
         labels_reshaped = np.reshape(labels, (labels.shape[0], 1))
 
@@ -102,6 +99,16 @@ class LiftedStructLossTest(tf.test.TestCase):
         loss = cce_obj(y_true, y_pred)
         self.assertAlmostEqual(self.evaluate(loss), loss_np, 3)
 
+    def test_keras_model_compile(self):
+        model = tf.keras.models.Sequential(
+            [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10),]
+        )
+        model.compile(loss="Addons>lifted_struct_loss", optimizer="adam")
 
-if __name__ == '__main__':
+    def test_serialization(self):
+        loss = lifted.LiftedStructLoss()
+        tf.keras.losses.deserialize(tf.keras.losses.serialize(loss))
+
+
+if __name__ == "__main__":
     tf.test.main()
