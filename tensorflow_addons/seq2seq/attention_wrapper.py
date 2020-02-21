@@ -411,11 +411,11 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
 
     @property
     def alignments_size(self):
-        return self._alignments_size
+        return self._alignments_size.shape
 
     @property
     def state_size(self):
-        return self._alignments_size
+        return self._alignments_size.shape
 
     def initial_alignments(self, batch_size, dtype):
         """Creates the initial alignment values for the `AttentionWrapper`
