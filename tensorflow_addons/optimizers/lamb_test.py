@@ -41,7 +41,8 @@ def lamb_update_numpy(
 
     w_norm = linalg.norm(param, ord=2)
     g_norm = linalg.norm(update, ord=2)
-    ratio = np.where(w_norm > 0, np.where(g_norm > 0, (w_norm / g_norm), 1.0), 1.0)
+    ratio = np.where(w_norm > 0, np.where(
+        g_norm > 0, (w_norm / g_norm), 1.0), 1.0)
 
     param_t = param - ratio * lr * update
     return param_t, m_t, v_t
@@ -92,7 +93,8 @@ class LAMBTest(tf.test.TestCase):
             )
             opt = lamb.LAMB()
             if not tf.executing_eagerly():
-                update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+                update = opt.apply_gradients(
+                    zip([grads0, grads1], [var0, var1]))
                 self.evaluate(tf.compat.v1.global_variables_initializer())
 
             # Fetch params to validate initial values
@@ -113,12 +115,16 @@ class LAMBTest(tf.test.TestCase):
                 else:
                     opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
-                var0_np, m0, v0 = lamb_update_numpy(var0_np, grads0_np, t, m0, v0)
-                var1_np, m1, v1 = lamb_update_numpy(var1_np, grads1_np, t, m1, v1)
+                var0_np, m0, v0 = lamb_update_numpy(
+                    var0_np, grads0_np, t, m0, v0)
+                var1_np, m1, v1 = lamb_update_numpy(
+                    var1_np, grads1_np, t, m1, v1)
 
                 # Validate updated params
-                self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
-                self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
+                self.assertAllCloseAccordingToType(
+                    var0_np, self.evaluate(var0))
+                self.assertAllCloseAccordingToType(
+                    var1_np, self.evaluate(var1))
 
     def doTestBasic(self, use_callable_params=False):
         for i, dtype in enumerate(
@@ -144,7 +150,8 @@ class LAMBTest(tf.test.TestCase):
 
             opt = lamb.LAMB(learning_rate=learning_rate)
             if not tf.executing_eagerly():
-                update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+                update = opt.apply_gradients(
+                    zip([grads0, grads1], [var0, var1]))
                 self.evaluate(tf.compat.v1.global_variables_initializer())
 
             # Run 3 steps of LAMB
@@ -161,12 +168,16 @@ class LAMBTest(tf.test.TestCase):
                 else:
                     opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
-                var0_np, m0, v0 = lamb_update_numpy(var0_np, grads0_np, t, m0, v0)
-                var1_np, m1, v1 = lamb_update_numpy(var1_np, grads1_np, t, m1, v1)
+                var0_np, m0, v0 = lamb_update_numpy(
+                    var0_np, grads0_np, t, m0, v0)
+                var1_np, m1, v1 = lamb_update_numpy(
+                    var1_np, grads1_np, t, m1, v1)
 
                 # Validate updated params
-                self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
-                self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
+                self.assertAllCloseAccordingToType(
+                    var0_np, self.evaluate(var0))
+                self.assertAllCloseAccordingToType(
+                    var1_np, self.evaluate(var1))
 
     def testResourceBasic(self):
         self.doTestBasic()
@@ -207,7 +218,8 @@ class LAMBTest(tf.test.TestCase):
             )
 
             if not tf.executing_eagerly():
-                update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+                update = opt.apply_gradients(
+                    zip([grads0, grads1], [var0, var1]))
                 self.evaluate(tf.compat.v1.global_variables_initializer())
 
             # Run 3 steps of LAMB
@@ -227,8 +239,10 @@ class LAMBTest(tf.test.TestCase):
                 )
 
                 # Validate updated params
-                self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
-                self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
+                self.assertAllCloseAccordingToType(
+                    var0_np, self.evaluate(var0), rtol=1e-04, atol=1e-04)
+                self.assertAllCloseAccordingToType(
+                    var1_np, self.evaluate(var1), rtol=1e-04, atol=1e-04)
 
     def testBasicWithLearningRateInverseTimeDecay(self):
         for i, dtype in enumerate(
@@ -260,7 +274,8 @@ class LAMBTest(tf.test.TestCase):
             )
 
             if not tf.executing_eagerly():
-                update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+                update = opt.apply_gradients(
+                    zip([grads0, grads1], [var0, var1]))
                 self.evaluate(tf.compat.v1.global_variables_initializer())
 
             # Run 3 steps of LAMB
@@ -280,8 +295,10 @@ class LAMBTest(tf.test.TestCase):
                 )
 
                 # Validate updated params
-                self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
-                self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
+                self.assertAllCloseAccordingToType(
+                    var0_np, self.evaluate(var0))
+                self.assertAllCloseAccordingToType(
+                    var1_np, self.evaluate(var1))
 
     def testTensorLearningRate(self):
         for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
@@ -299,7 +316,8 @@ class LAMBTest(tf.test.TestCase):
             opt = lamb.LAMB(tf.constant(0.001))
 
             if not tf.executing_eagerly():
-                update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+                update = opt.apply_gradients(
+                    zip([grads0, grads1], [var0, var1]))
                 self.evaluate(tf.compat.v1.global_variables_initializer())
 
             # Fetch params to validate initial values
@@ -320,12 +338,16 @@ class LAMBTest(tf.test.TestCase):
                 else:
                     opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
-                var0_np, m0, v0 = lamb_update_numpy(var0_np, grads0_np, t, m0, v0)
-                var1_np, m1, v1 = lamb_update_numpy(var1_np, grads1_np, t, m1, v1)
+                var0_np, m0, v0 = lamb_update_numpy(
+                    var0_np, grads0_np, t, m0, v0)
+                var1_np, m1, v1 = lamb_update_numpy(
+                    var1_np, grads1_np, t, m1, v1)
 
                 # Validate updated params
-                self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
-                self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
+                self.assertAllCloseAccordingToType(
+                    var0_np, self.evaluate(var0))
+                self.assertAllCloseAccordingToType(
+                    var1_np, self.evaluate(var1))
 
     def testSharing(self):
         for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
@@ -343,8 +365,10 @@ class LAMBTest(tf.test.TestCase):
             opt = lamb.LAMB()
 
             if not tf.executing_eagerly():
-                update1 = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-                update2 = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+                update1 = opt.apply_gradients(
+                    zip([grads0, grads1], [var0, var1]))
+                update2 = opt.apply_gradients(
+                    zip([grads0, grads1], [var0, var1]))
                 self.evaluate(tf.compat.v1.global_variables_initializer())
 
             # Fetch params to validate initial values
@@ -369,12 +393,16 @@ class LAMBTest(tf.test.TestCase):
                 else:
                     opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
-                var0_np, m0, v0 = lamb_update_numpy(var0_np, grads0_np, t, m0, v0)
-                var1_np, m1, v1 = lamb_update_numpy(var1_np, grads1_np, t, m1, v1)
+                var0_np, m0, v0 = lamb_update_numpy(
+                    var0_np, grads0_np, t, m0, v0)
+                var1_np, m1, v1 = lamb_update_numpy(
+                    var1_np, grads1_np, t, m1, v1)
 
                 # Validate updated params
-                self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
-                self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
+                self.assertAllCloseAccordingToType(
+                    var0_np, self.evaluate(var0))
+                self.assertAllCloseAccordingToType(
+                    var1_np, self.evaluate(var1))
 
     def testMinimizeMeanSquareLossWithWeightDecay(self):
         w = tf.Variable([0.1, -0.2, -0.1])
@@ -397,7 +425,8 @@ class LAMBTest(tf.test.TestCase):
             else:
                 self.evaluate(op)
         # Validate updated params
-        self.assertAllClose(self.evaluate(w), [0.4, 0.2, -0.5], rtol=1e-2, atol=1e-2)
+        self.assertAllClose(self.evaluate(
+            w), [0.4, 0.2, -0.5], rtol=1e-2, atol=1e-2)
 
     def test_get_config(self):
         opt = lamb.LAMB(1e-4)

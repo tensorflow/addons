@@ -23,6 +23,9 @@ py_library(
     deps = [
         "//tensorflow_addons/utils",
     ],
+    data = [
+        "//tensorflow_addons/custom_ops/optimizers:_optimizer_ops.so",
+    ],
 )
 
 py_test(

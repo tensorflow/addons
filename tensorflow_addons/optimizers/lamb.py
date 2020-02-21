@@ -25,6 +25,10 @@ from typeguard import typechecked
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
+from tensorflow_addons.utils.resource_loader import LazySO
+
+_optimizer_ops_so = LazySO("custom_ops/optimizers/_optimizer_ops.so")
+
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class LAMB(tf.keras.optimizers.Optimizer):
@@ -112,7 +116,8 @@ class LAMB(tf.keras.optimizers.Optimizer):
         local_step = tf.cast(self.iterations + 1, var_dtype)
         beta_1_t = tf.identity(self._get_hyper("beta_1", var_dtype))
         beta_2_t = tf.identity(self._get_hyper("beta_2", var_dtype))
-        weight_decay_rate = tf.identity(self._get_hyper("weight_decay_rate", var_dtype))
+        weight_decay_rate = tf.identity(
+            self._get_hyper("weight_decay_rate", var_dtype))
         beta_1_power = tf.pow(beta_1_t, local_step)
         beta_2_power = tf.pow(beta_2_t, local_step)
         apply_state[(var_device, var_dtype)].update(
@@ -133,39 +138,42 @@ class LAMB(tf.keras.optimizers.Optimizer):
         coefficients = (apply_state or {}).get(
             (var_device, var_dtype)
         ) or self._fallback_apply_state(var_device, var_dtype)
-
-        # m_t = beta1 * m + (1 - beta1) * g_t
         m = self.get_slot(var, "m")
-        m_scaled_g_values = grad * coefficients["one_minus_beta_1_t"]
-        m_t = m * coefficients["beta_1_t"] + m_scaled_g_values
-        m_t = m.assign(m_t, use_locking=self._use_locking)
-        # v_t = beta2 * v + (1 - beta2) * (g_t * g_t)
         v = self.get_slot(var, "v")
-        v_scaled_g_values = (grad * grad) * coefficients["one_minus_beta_2_t"]
-        v_t = v * coefficients["beta_2_t"] + v_scaled_g_values
-        v_t = v.assign(v_t, use_locking=self._use_locking)
-
-        m_t_hat = m_t / (1.0 - coefficients["beta_1_power"])
-        v_t_hat = v_t / (1.0 - coefficients["beta_2_power"])
-
-        v_sqrt = tf.sqrt(v_t_hat)
-        update = m_t_hat / (v_sqrt + coefficients["epsilon"])
 
         var_name = self._get_variable_name(var.name)
-        if self._do_use_weight_decay(var_name):
-            update += coefficients["weight_decay_rate"] * var
+        wd = coefficients["weight_decay_rate"] if self._do_use_weight_decay(
+            var_name) else tf.constant(0.0, var_dtype)
+
+        # returns update for var, updated values for m,v
+        updates = _optimizer_ops_so.ops.addons_apply_adam_with_weightdecay(
+            var,
+            m,
+            v,
+            coefficients["beta_1_power"],
+            coefficients["beta_2_power"],
+            wd,
+            coefficients["beta_1_t"],
+            coefficients["beta_1_t"],
+            coefficients["epsilon"],
+            grad, use_locking=self._use_locking)
+
+        var_update = updates[0]
+        m = m.assign(updates[1], use_locking=self._use_locking)
+        v = v.assign(updates[2], use_locking=self._use_locking)
 
         ratio = 1.0
         if self._do_layer_adaptation(var_name):
             w_norm = tf.norm(var, ord=2)
-            g_norm = tf.norm(update, ord=2)
+            g_norm = tf.norm(var_update, ord=2)
             ratio = tf.where(
                 tf.greater(w_norm, 0),
                 tf.where(tf.greater(g_norm, 0), (w_norm / g_norm), 1.0),
                 1.0,
             )
 
-        var_update = var - ratio * coefficients["lr_t"] * update
+        with tf.control_dependencies([m, v]):
+            var_update = var - ratio * coefficients["lr_t"] * var_update
         return var.assign(var_update, use_locking=self._use_locking).op
 
     def _resource_apply_sparse(self, grad, var, indices, apply_state=None):
@@ -177,14 +185,16 @@ class LAMB(tf.keras.optimizers.Optimizer):
         # m_t = beta1 * m + (1 - beta1) * g_t
         m = self.get_slot(var, "m")
         m_scaled_g_values = grad * coefficients["one_minus_beta_1_t"]
-        m_t = m.assign(m * coefficients["beta_1_t"], use_locking=self._use_locking)
+        m_t = m.assign(m * coefficients["beta_1_t"],
+                       use_locking=self._use_locking)
         with tf.control_dependencies([m_t]):
             m_t = self._resource_scatter_add(m, indices, m_scaled_g_values)
 
         # v_t = beta2 * v + (1 - beta2) * (g_t * g_t)
         v = self.get_slot(var, "v")
         v_scaled_g_values = (grad * grad) * coefficients["one_minus_beta_2_t"]
-        v_t = v.assign(v * coefficients["beta_2_t"], use_locking=self._use_locking)
+        v_t = v.assign(v * coefficients["beta_2_t"],
+                       use_locking=self._use_locking)
         with tf.control_dependencies([v_t]):
             v_t = self._resource_scatter_add(v, indices, v_scaled_g_values)
 
