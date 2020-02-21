@@ -56,7 +56,7 @@ jobs:
             --test_output=errors \
             build_pip_pkg
 
-          bazel-bin/build_pip_pkg artifacts --nightly
+          bazel-bin/build_pip_pkg artifacts --plat-name macosx_10_13_x86_64 --nightly
           for f in artifacts/*.whl; do
             delocate-wheel -w wheelhouse $f
           done
