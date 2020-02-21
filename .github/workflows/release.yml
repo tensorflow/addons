@@ -87,7 +87,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Build macOS wheels
-        if: github.event_name == 'release' || ${{ matrix.python-version }} == '3.5'
+        if: github.event_name == 'release' || matrix.python-version == '3.5'
         run: |
           python3 --version
           python3 -m pip install delocate wheel setuptools
