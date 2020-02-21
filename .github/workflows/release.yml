@@ -89,6 +89,7 @@ jobs:
             delocate-wheel -w wheelhouse $f
           done
       - uses: actions/upload-artifact@v1
+        if: github.event_name == 'release' || matrix.python-version == '3.5'
         with:
           name: ${{ runner.os }}-wheels
           path: wheelhouse
@@ -126,6 +127,7 @@ jobs:
             build_pip_pkg
           bazel-bin/build_pip_pkg artifacts
       - uses: actions/upload-artifact@v1
+        if: github.event_name == 'release' || matrix.python-version == '3.5'
         with:
           name: ${{ runner.os }}-wheels
           path: artifacts
