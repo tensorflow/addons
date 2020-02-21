@@ -89,9 +89,9 @@ function main() {
 
   if [[ -z ${NIGHTLY_FLAG} ]]; then
     # Windows has issues with locking library files for deletion so do not fail here
-    ${_PYTHON_BINARY} "${BUILD_CMD}" || true
+    ${_PYTHON_BINARY} ${BUILD_CMD} || true
   else
-    ${_PYTHON_BINARY} "${BUILD_CMD}" "${NIGHTLY_FLAG}" || true
+    ${_PYTHON_BINARY} ${BUILD_CMD} ${NIGHTLY_FLAG} || true
   fi
 
   cp dist/*.whl "${DEST}"
