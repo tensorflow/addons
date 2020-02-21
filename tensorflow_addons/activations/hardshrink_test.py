@@ -19,6 +19,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow_addons.activations import hardshrink
 from tensorflow_addons.utils import test_utils
+from tensorflow_addons.activations.hardshrink import _hardshrink_py
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -52,6 +53,31 @@ class HardshrinkTest(tf.test.TestCase, parameterized.TestCase):
 
         theoretical, numerical = tf.test.compute_gradient(hardshrink, [x])
         self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
+
+    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
+    def test_same_as_py_func(self, dtype):
+        # Only test theoretical gradients for float32 and float64
+        # because of the instability of float16 while computing jacobian
+
+        # Hardshrink is not continuous at `lower` and `upper`.
+        # Avoid these two points to make gradients smooth.
+        x = tf.constant([-2.0, -1.5, 0.0, 1.5, 2.0], dtype=dtype)
+        lower = -0.6
+        upper = 0.6
+
+        native_inference = hardshrink(x, lower, upper)
+        python_inference = _hardshrink_py(x, lower, upper)
+
+        self.assertAllCloseAccordingToType(
+            native_inference, python_inference, atol=1e-4
+        )
+
+        native_theoretical, _ = tf.test.compute_gradient(hardshrink, [x, lower, upper])
+        python_theoretical, _ = tf.test.compute_gradient(hardshrink, [x, lower, upper])
+
+        self.assertAllCloseAccordingToType(
+            native_theoretical, python_theoretical, atol=1e-4
+        )
 
 
 if __name__ == "__main__":
