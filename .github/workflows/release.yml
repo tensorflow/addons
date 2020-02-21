@@ -52,11 +52,7 @@ jobs:
         env:
           BAZEL_VC: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/"
         shell: bash
-        run: |
-          python -m pip install wheel setuptools
-          curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
-          export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
-          bash -x -e ./tools/ci_testing/addons_cpu.sh
+        run: bash tools/run_cpu_tests_windows.sh
 
   manylinux-release-wheel:
     name: Build release wheels for manylinux2010
