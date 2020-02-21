@@ -1004,8 +1004,8 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
 
     def test_attention_state_with_variable_length_input(self):
         cell = tf.keras.layers.LSTMCell(3)
-        mechanism = tfa.seq2seq.LuongAttention(units=3)
-        cell = tfa.seq2seq.AttentionWrapper(cell, mechanism)
+        mechanism = wrapper.LuongAttention(units=3)
+        cell = wrapper.AttentionWrapper(cell, mechanism)
 
         var_len = tf.random.uniform(shape=(), minval=2, maxval=10, dtype=tf.int32)
         data = tf.ones(shape=(var_len, var_len, 3))
