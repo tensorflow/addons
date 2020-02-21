@@ -50,7 +50,6 @@ jobs:
 
   manylinux-release-wheel:
     name: Build release wheels for manylinux2010
-    needs: [manylinux-cpu-release-test]
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -78,7 +77,6 @@ jobs:
 
   macos-release-wheel:
     name: Build release wheels for macOS
-    needs: [macos-cpu-release-test]
     runs-on: macos-latest
     strategy:
       matrix:
@@ -117,7 +115,6 @@ jobs:
 
   windows-release-wheel:
     name: Build release wheels for Windows
-    needs: [windows-cpu-release-test]
     runs-on: windows-latest
     strategy:
       matrix:
