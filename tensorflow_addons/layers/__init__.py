@@ -27,3 +27,4 @@ from tensorflow_addons.layers.tlu import TLU
 from tensorflow_addons.layers.wrappers import WeightNormalization
 from tensorflow_addons.layers.deformable_conv2d import DeformableConv2D
 from tensorflow_addons.layers.deformable_conv2d import DeformablePSROIAlign
+from tensorflow_addons.layers.equi_conv import EquiConv

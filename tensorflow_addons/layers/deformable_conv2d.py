@@ -16,6 +16,7 @@
 
 import tensorflow as tf
 from typeguard import typechecked
+from tensorflow_addons.utils import types
 from tensorflow_addons.utils.resource_loader import LazySO
 from tensorflow.python.keras.utils import conv_utils
 
@@ -93,7 +94,7 @@ def _deformable_conv2d_back_prop(op, grad):
     num_groups = op.get_attr("num_groups")
     deformable_groups = op.get_attr("deformable_groups")
     """
-    REGISTER_OP("Addons>DeformableConv2DBackProp")
+    REGISTER_OP("AddonsDeformableConv2DBackProp")
         .Input("input: T")
         .Input("filter: T")
         .Input("offset: T")
@@ -147,6 +148,12 @@ class DeformableConv2D(tf.keras.layers.Layer):
         padding: str = "valid",
         data_format: str = "channels_last",
         dilations: tuple = (1, 1),
+        kernel_initializer: types.Initializer = None,
+        bias_initializer: types.Initializer = None,
+        kernel_regularizer: types.Regularizer = None,
+        bias_regularizer: types.Regularizer = None,
+        kernel_constraint: types.Constraint = None,
+        bias_constraint: types.Constraint = None,
     ):
         super(DeformableConv2D, self).__init__()
         self.filters = filters
@@ -159,13 +166,25 @@ class DeformableConv2D(tf.keras.layers.Layer):
         self.padding = padding
         self.data_format = data_format
         self.dilations = dilations
+        self.kernel_initializer = tf.keras.initializers.get(kernel_initializer)
+        self.bias_initializer = tf.keras.initializers.get(bias_initializer)
+        self.kernel_regularizer = tf.keras.regularizers.get(kernel_regularizer)
+        self.bias_regularizer = tf.keras.regularizers.get(bias_regularizer)
+        self.kernel_constraint = tf.keras.constraints.get(kernel_constraint)
+        self.bias_constraint = tf.keras.constraints.get(bias_constraint)
         self.conv_offset = tf.keras.layers.Conv2D(
             self.deformable_groups * 3 * self.kernel_size[0] * self.kernel_size[1],
             kernel_size=self.kernel_size,
             strides=(1, 1),
             padding=self.padding,
-            use_bias=True,
+            use_bias=self.use_bias,
             data_format="channels_last",
+            kernel_initializer=self.kernel_initializer,
+            bias_initializer=self.bias_initializer,
+            kernel_regularizer=self.kernel_regularizer,
+            bias_regularizer=self.bias_regularizer,
+            kernel_constraint=self.kernel_constraint,
+            bias_constraint=self.bias_constraint,
         )
 
     def build(self, input_shape):
@@ -174,26 +193,22 @@ class DeformableConv2D(tf.keras.layers.Layer):
         else:
             channel = int(input_shape[1])
         if self.data_format == "channels_last":
-            self.filter = tf.Variable(
-                initial_value=tf.random.normal(
-                    shape=[
-                        self.kernel_size[0],
-                        self.kernel_size[1],
-                        channel,
-                        self.filters,
-                    ]
-                )
+            self.filter = self.add_weight(
+                name="filter",
+                shape=[self.kernel_size[0], self.kernel_size[1], channel, self.filters],
+                initializer=self.kernel_initializer,
+                regularizer=self.kernel_regularizer,
+                constraint=self.kernel_constraint,
+                trainable=True,
             )
         else:
-            self.filter = tf.Variable(
-                initial_value=tf.random.normal(
-                    shape=[
-                        self.filters,
-                        channel,
-                        self.kernel_size[0],
-                        self.kernel_size[1],
-                    ]
-                )
+            self.filter = self.add_weight(
+                name="filter",
+                shape=[self.filters, channel, self.kernel_size[0], self.kernel_size[1]],
+                initializer=self.kernel_initializer,
+                regularizer=self.kernel_regularizer,
+                constraint=self.kernel_constraint,
+                trainable=True,
             )
         self.built = True
 
