@@ -19,11 +19,13 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.6 as public-api-typed
 
-RUN pip install tensorflow-cpu==2.1.0
+COPY build_deps/build-requirements-cpu.txt ./
+RUN pip install -r build-requirements-cpu.txt
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 COPY tools/tests_dependencies/typedapi.txt ./
 RUN pip install -r typedapi.txt
+
 
 COPY ./ /addons
 RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e /addons
@@ -41,7 +43,8 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.5 as valid_build_files
 
-RUN pip install tensorflow-cpu==2.1.0
+COPY build_deps/build-requirements-cpu.txt ./
+RUN pip install -r build-requirements-cpu.txt
 
 RUN apt-get update && apt-get install sudo
 COPY tools/ci_build/install/bazel.sh ./
@@ -84,7 +87,8 @@ RUN touch /ok.txt
 # docs tests
 FROM python:3.6 as docs_tests
 
-RUN pip install tensorflow-cpu==2.1.0
+COPY build_deps/build-requirements-cpu.txt ./
+RUN pip install -r build-requirements-cpu.txt
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
