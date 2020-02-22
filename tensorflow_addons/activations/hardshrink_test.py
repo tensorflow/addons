@@ -56,28 +56,27 @@ class HardshrinkTest(tf.test.TestCase, parameterized.TestCase):
 
     @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
     def test_same_as_py_func(self, dtype):
-        # Only test theoretical gradients for float32 and float64
-        # because of the instability of float16 while computing jacobian
+        np.random.seed(1234)
+        for _ in range(20):
+            self.verify_funcs_are_equivalent(dtype)
 
-        # Hardshrink is not continuous at `lower` and `upper`.
-        # Avoid these two points to make gradients smooth.
-        x = tf.constant([-2.0, -1.5, 0.0, 1.5, 2.0], dtype=dtype)
-        lower = -0.6
-        upper = 0.6
+    def verify_funcs_are_equivalent(self, dtype):
+        x_np = np.random.uniform(-10, 10, size=(4, 4)).astype(dtype)
+        x = tf.convert_to_tensor(x_np)
+        lower = np.random.uniform(-10, 10)
+        upper = lower + np.random.uniform(0, 10)
 
-        native_inference = hardshrink(x, lower, upper)
-        python_inference = _hardshrink_py(x, lower, upper)
+        with tf.GradientTape(persistent=True) as t:
+            t.watch(x)
+            y_native = hardshrink(x, lower, upper)
+            y_py = _hardshrink_py(x, lower, upper)
 
-        self.assertAllCloseAccordingToType(
-            native_inference, python_inference, atol=1e-4
-        )
+        self.assertAllCloseAccordingToType(y_native, y_py, atol=1e-4)
 
-        native_theoretical, _ = tf.test.compute_gradient(hardshrink, [x, lower, upper])
-        python_theoretical, _ = tf.test.compute_gradient(hardshrink, [x, lower, upper])
+        grad_native = t.gradient(y_native, x)
+        grad_py = t.gradient(y_py, x)
 
-        self.assertAllCloseAccordingToType(
-            native_theoretical, python_theoretical, atol=1e-4
-        )
+        self.assertAllCloseAccordingToType(grad_native, grad_py, atol=1e-4)
 
 
 if __name__ == "__main__":
