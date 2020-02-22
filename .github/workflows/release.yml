@@ -38,7 +38,7 @@ jobs:
       - name: Build manylinux2010 wheels
         run: |
           docker run -e TF_NEED_CUDA=1 -v ${PWD}:/addons -w /addons \
-            gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010 \
+            tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16 \
             tools/ci_build/builds/release_linux.sh
 
           sudo apt-get install patchelf
