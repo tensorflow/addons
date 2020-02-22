@@ -1,6 +1,7 @@
 FROM python:3.5
 
-RUN pip install tensorflow-cpu==2.1.0
+COPY build_deps/build-requirements-cpu.txt ./
+RUN pip install -r build-requirements-cpu.txt
 
 RUN apt-get update && apt-get install -y sudo rsync
 COPY tools/ci_build/install/bazel.sh ./
@@ -19,7 +20,8 @@ RUN bazel-bin/build_pip_pkg artifacts
 
 FROM python:3.5
 
-RUN pip install tensorflow-cpu==2.1.0
+COPY build_deps/build-requirements-cpu.txt ./
+RUN pip install -r build-requirements-cpu.txt
 
 COPY --from=0 /addons/artifacts /artifacts
 
