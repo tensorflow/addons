@@ -45,6 +45,9 @@ RUN apt-get update && apt-get install sudo
 COPY tools/ci_build/install/bazel.sh ./
 RUN bash bazel.sh
 
+COPY tools/docker/finish_bazel_install.sh ./
+RUN bash finish_bazel_install.sh
+
 COPY ./ /addons
 WORKDIR /addons
 RUN python ./configure.py --no-deps
