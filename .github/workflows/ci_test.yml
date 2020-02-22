@@ -14,51 +14,6 @@ env:
   BAZEL_VERSION: 1.1.0
 
 jobs:
-  linux-test:
-    name: Ubuntu CPU Python3
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: CI test Ubuntu CPU
-        run: |
-          set -x -e
-          bash tools/run_cpu_tests.sh
-  macos-test:
-    name: MacOS CPU Python3
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        python-version: ['3.5']
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: CI test macOS py${{ matrix.python-version }}
-        run: |
-          python --version
-          bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
-          bash -x -e tools/ci_testing/addons_cpu.sh
-  windows-test:
-    name: Windows CPU Python3
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        python-version: ['3.5']
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: CI test windows py${{ matrix.python-version }}
-        env:
-          BAZEL_VC: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/"
-        shell: bash
-        run: |
-            python -m pip install wheel setuptools
-            curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
-            export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
-            bash -x -e ./tools/ci_testing/addons_cpu.sh
   flake8-test:
     name: Flake8
     runs-on: ubuntu-latest
