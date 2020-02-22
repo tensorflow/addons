@@ -7,6 +7,7 @@ py_library(
     srcs = [
         "__init__.py",
         "deformable_conv2d.py",
+        "equi_conv.py",
         "gelu.py",
         "maxout.py",
         "multihead_attention.py",
@@ -164,6 +165,18 @@ py_test(
         "deformable_conv2d_test.py",
     ],
     main = "deformable_conv2d_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "equi_conv_test",
+    size = "small",
+    srcs = [
+        "equi_conv_test.py",
+    ],
+    main = "equi_conv_test.py",
     deps = [
         ":layers",
     ],
