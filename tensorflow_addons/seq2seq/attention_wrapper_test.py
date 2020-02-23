@@ -139,14 +139,11 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
 
         score = attention([query, state])
 
-        x = np.random.randint(vocab, size=(self.batch, self.timestep))
         x_test = np.random.randint(vocab, size=(self.batch, self.timestep))
-        y = np.random.randn(self.batch, self.timestep)
         model = tf.keras.Model([inputs, query, state], score)
         # Fall back to v1 style Keras training loop until issue with
         # using outputs of a layer in another layer's constructor.
         model.compile("rmsprop", "mse")
-        model.fit([x, self.query, self.state], (y, y))
         y_ref = model.predict_on_batch([x_test, self.query, self.state])
 
         config = model.get_config()
