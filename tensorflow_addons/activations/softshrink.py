@@ -48,3 +48,14 @@ def _softshrink_grad(op, grad):
     return _activation_so.ops.addons_softshrink_grad(
         grad, op.inputs[0], op.get_attr("lower"), op.get_attr("upper")
     )
+
+
+def _softshrink_py(x, lower, upper):
+    x = tf.convert_to_tensor(x)
+    mask_lower = x < lower
+    mask_upper = upper < x
+    mask_middle = tf.logical_not(tf.logical_or(mask_lower, mask_upper))
+    mask_lower = tf.cast(mask_lower, x.dtype)
+    mask_upper = tf.cast(mask_upper, x.dtype)
+    mask_middle = tf.cast(mask_middle, x.dtype)
+    return (x * (1 - mask_middle)) - mask_lower * lower - mask_upper * upper
