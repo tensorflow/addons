@@ -43,9 +43,7 @@ class MishTest(tf.test.TestCase, parameterized.TestCase):
         theoretical, numerical = tf.test.compute_gradient(mish, [x])
         self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
 
-    @parameterized.named_parameters(
-        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
-    )
+    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
     def test_same_as_py_func(self, dtype):
         np.random.seed(1234)
         for _ in range(20):
