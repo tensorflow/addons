@@ -51,11 +51,16 @@ def _softshrink_grad(op, grad):
 
 
 def _softshrink_py(x, lower, upper):
-    x = tf.convert_to_tensor(x)
+    if lower > upper:
+        raise ValueError(
+            "The value of lower is {} and should"
+            " not be higher than the value "
+            "variable upper, which is {} .".format(lower, upper)
+        )
     mask_lower = x < lower
     mask_upper = upper < x
     mask_middle = tf.logical_not(tf.logical_or(mask_lower, mask_upper))
     mask_lower = tf.cast(mask_lower, x.dtype)
     mask_upper = tf.cast(mask_upper, x.dtype)
     mask_middle = tf.cast(mask_middle, x.dtype)
-    return (x * (1 - mask_middle)) - mask_lower * lower - mask_upper * upper
+    return x * (1 - mask_middle) - mask_lower * lower - mask_upper * upper
