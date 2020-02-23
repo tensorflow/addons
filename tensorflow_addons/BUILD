@@ -11,6 +11,7 @@ py_library(
     name = "tensorflow_addons",
     data = [
         "__init__.py",
+        "options.py",
         "version.py",
     ],
     deps = [
