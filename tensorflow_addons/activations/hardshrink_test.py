@@ -17,16 +17,16 @@ from absl.testing import parameterized
 
 import numpy as np
 import tensorflow as tf
-from tensorflow_addons.activations import hardshrink
-from tensorflow_addons.utils import test_utils
+from tensorflow_addons.activations.hardshrink import _hardshrink_custom_op
 from tensorflow_addons.activations.hardshrink import _hardshrink_py
+from tensorflow_addons.utils import test_utils
 
 
 @test_utils.run_all_in_graph_and_eager_modes
 class HardshrinkTest(tf.test.TestCase, parameterized.TestCase):
     def test_invalid(self):
         with self.assertRaisesOpError("lower must be less than or equal to upper."):
-            y = hardshrink(tf.ones(shape=(1, 2, 3)), lower=2.0, upper=-2.0)
+            y = _hardshrink_custom_op(tf.ones(shape=(1, 2, 3)), lower=2.0, upper=-2.0)
             self.evaluate(y)
 
     @parameterized.named_parameters(
@@ -35,11 +35,11 @@ class HardshrinkTest(tf.test.TestCase, parameterized.TestCase):
     def test_hardshrink(self, dtype):
         x = tf.constant([-2.0, -0.5, 0.0, 0.5, 2.0], dtype=dtype)
         expected_result = tf.constant([-2.0, 0.0, 0.0, 0.0, 2.0], dtype=dtype)
-        self.assertAllCloseAccordingToType(hardshrink(x), expected_result)
+        self.assertAllCloseAccordingToType(_hardshrink_custom_op(x), expected_result)
 
         expected_result = tf.constant([-2.0, 0.0, 0.0, 0.0, 2.0], dtype=dtype)
         self.assertAllCloseAccordingToType(
-            hardshrink(x, lower=-1.0, upper=1.0), expected_result
+            _hardshrink_custom_op(x, lower=-1.0, upper=1.0), expected_result
         )
 
     @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
@@ -51,7 +51,7 @@ class HardshrinkTest(tf.test.TestCase, parameterized.TestCase):
         # Avoid these two points to make gradients smooth.
         x = tf.constant([-2.0, -1.5, 0.0, 1.5, 2.0], dtype=dtype)
 
-        theoretical, numerical = tf.test.compute_gradient(hardshrink, [x])
+        theoretical, numerical = tf.test.compute_gradient(_hardshrink_custom_op, [x])
         self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
 
     @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
@@ -68,7 +68,7 @@ class HardshrinkTest(tf.test.TestCase, parameterized.TestCase):
 
         with tf.GradientTape(persistent=True) as t:
             t.watch(x)
-            y_native = hardshrink(x, lower, upper)
+            y_native = _hardshrink_custom_op(x, lower, upper)
             y_py = _hardshrink_py(x, lower, upper)
 
         self.assertAllCloseAccordingToType(y_native, y_py, atol=1e-4)

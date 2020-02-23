@@ -18,6 +18,7 @@ from tensorflow_addons.utils.types import Number
 
 from tensorflow_addons.utils import types
 from tensorflow_addons.utils.resource_loader import LazySO
+from tensorflow_addons import options
 
 _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
@@ -40,6 +41,14 @@ def hardshrink(
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
+    if options.TF_ADDONS_PY_OPS:
+        return _hardshrink_py(x, lower, upper)
+    else:
+        return _hardshrink_custom_op(x, lower, upper)
+
+
+def _hardshrink_custom_op(x, lower=-0.5, upper=0.5):
+    """Alias with lazy loading of the .so file"""
     return _activation_so.ops.addons_hardshrink(x, lower, upper)
 
 
@@ -59,7 +68,6 @@ def _hardshrink_py(
             " not be higher than the value "
             "variable upper, which is {} .".format(lower, upper)
         )
-    x = tf.convert_to_tensor(x)
     mask_lower = x < lower
     mask_upper = upper < x
     mask = tf.logical_or(mask_lower, mask_upper)
