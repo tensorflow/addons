@@ -138,13 +138,14 @@ def toy_rnn():
 def _get_train_results(model, verbose=False, epochs=10):
     """Run a training loop and return the results for analysis.
     Model must be compiled first.
+    Training data sizes reduced.
     """
     tf.random.set_seed(1)
-    x = np.ones(shape=(32, 32, 32, 3), dtype=np.float32)
-    y = np.zeros(shape=(32, 5), dtype=np.float32)
+    x = np.ones(shape=(8, 32, 32, 3), dtype=np.float32)
+    y = np.zeros(shape=(8, 5), dtype=np.float32)
     y[:, 0] = 1.0
 
-    return model.fit(x, y, epochs=epochs, batch_size=16, verbose=verbose, shuffle=False)
+    return model.fit(x, y, epochs=epochs, batch_size=4, verbose=verbose, shuffle=False)
 
 
 def _zipped_permutes():
@@ -165,7 +166,7 @@ def _zipped_permutes():
     ]
     optimzers = [
         # Additional optimizers can be added for testing.
-        tf.keras.optimizers.SGD,
+        # However, testing adam should cover most optimizer behaviours because it uses momentum.
         tf.keras.optimizers.Adam,
     ]
     return list(itertools.product(model_fns, losses, optimzers))
@@ -369,8 +370,8 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
         model_lr.compile(loss=loss, optimizer=d_opt)
 
-        x = np.ones(shape=(32, 32, 32, 3), dtype=np.float32)
-        y = np.zeros(shape=(32, 5), dtype=np.float32)
+        x = np.ones(shape=(8, 32, 32, 3), dtype=np.float32)
+        y = np.zeros(shape=(8, 5), dtype=np.float32)
         y[:, 0] = 1.0
 
         filepath = os.path.join(tempfile.gettempdir(), model_fn.__name__ + "_{epoch}")
@@ -384,8 +385,8 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         model_lr.fit(
             x,
             y,
-            epochs=5,
-            batch_size=16,
+            epochs=2,
+            batch_size=4,
             verbose=False,
             shuffle=False,
             callbacks=callbacks,
@@ -393,7 +394,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         # If this doesn't error out, then loading and checkpointing should be fine.
         model_lr.load_weights(
-            filepath=os.path.join(tempfile.gettempdir(), model_fn.__name__ + "4")
+            filepath=os.path.join(tempfile.gettempdir(), model_fn.__name__ + "1")
         )
 
     def _run_tests_in_notebook(self):
