@@ -16,9 +16,9 @@ py_library(
         "tanhshrink.py",
     ],
     data = [
+        "//tensorflow_addons:options.py",
         "//tensorflow_addons/custom_ops/activations:_activation_ops.so",
         "//tensorflow_addons/utils",
-        "//tensorflow_addons:options.py",
     ],
 )
 
