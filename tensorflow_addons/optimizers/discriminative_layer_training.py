@@ -40,12 +40,12 @@ class DiscriminativeModelManager:
         """Helper method to assign a layer's learning rate multiplier, which does nothing if lr mult is already set.
         """
         if not hasattr(layer, "lr_mult"):
-            layer.lr_mult = lr_mult  # since layer has no lr mult, assign the mult.
-            # this method should be called after the user has already assigned some lr mults
+            layer.lr_mult = lr_mult  # Since layer has no lr mult, assign the mult.
+            # This method should be called after the user has already assigned some lr mults
             # to some layers. We just don't want to override any lr mults they assigned.
         else:
-            # we pass here because of propagation to nested layers.
-            # users should be able to speficy model.layers[0].layers[0].lr_mult = 0.01
+            # We pass here because of propagation to nested layers.
+            # Users should be able to speficy model.layers[0].layers[0].lr_mult = 0.01
             # and model.layers[0].lr_mult = 0.1, such that the model.layers[0].layers[0]
             # keeps its assigned lr mult of 0.01.
             pass
@@ -64,15 +64,15 @@ class DiscriminativeModelManager:
 
         if layers is not None:
             for sublayer in layers:
-                # we always assign the lr mult to the sublayers of the current layer.
-                # the assign method will avoid overwritting lr mults.
-                # so, if you have a resnet and you specifically assign the first resnet layer
+                # We always assign the lr mult to the sublayers of the current layer.
+                # The assign method will avoid overwritting lr mults.
+                # So, if you have a resnet and you specifically assign the first resnet layer
                 # to have lr_mult of 0.01 and the resnet model to have lr_mult of 0.1, all
                 # resnet layers except the first should get lr_mult of 0.1 and the first
                 # keeps its lr_mult of 0.01.
                 DiscriminativeModelManager._assign_lr_mult(sublayer, mult)
 
-                # recursively iterate through the nested layers.
+                # Recursively iterate through the nested layers.
                 for (
                     nested_sublayer
                 ) in DiscriminativeModelManager._recursively_assign_sublayer_lr_mult(
@@ -92,12 +92,12 @@ class DiscriminativeModelManager:
         lr_mult = DiscriminativeModelManager._get_lr_mult(layer)
         for var in layer.trainable_variables:
             var.lr_mult = lr_mult
-            # the lr_mult behaves as a hyper parameter and not a variable. it will not be a tensor.
-            # there's no benefit in setting the lr_mult as a variable because it does not interact with tensors.
+            # The lr_mult behaves as a hyper parameter and not a variable. it will not be a tensor.
+            # There's no benefit in setting the lr_mult as a variable because it does not interact with tensors.
 
     @staticmethod
     def _check_for_lr_mult(layer, verbose=True, propagate=True):
-        """Identify which layers have an LR mult not equal to 1.
+        """Identify which layers have an lr mult not equal to 1.
         """
 
         layers_with_lr_mult = []
@@ -115,7 +115,7 @@ class DiscriminativeModelManager:
 
     @staticmethod
     def _compute_params(var_list):
-        """helps compute params to provide a summary that aligns with model.summary().
+        """Helps compute params to provide a summary that aligns with model.summary().
         """
         return np.sum([np.prod(list(var.shape)) for var in var_list])
 
@@ -135,7 +135,7 @@ class DiscriminativeModelManager:
                 """
             )
 
-        # lr mult assignment occurs in two steps to ensure propagation occurs correctly.
+        # Lr mult assignment occurs in two steps to ensure propagation occurs correctly.
         # In this example, given a model with layers : variables similar to { L1 : V1 , L2 : {L3 : V3, L4 : V4 ,} ,},
         # L2 represents a nested layer (usually a tf.keras.Model) and does not directly own any variables.
         # If the user assigns L2 an lr mult x, x is propaged to L3 and L4 and then V3 and V4 is assigned lr mult of x.
@@ -206,7 +206,7 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
                 model.fit(x, y)
 
             Arguments
-                base_optimizer: a class that inherits from tf.keras.optimizers.Optimizer. Do not
+                base_optimizer: A class that inherits from tf.keras.optimizers.Optimizer. Do not
                     pass an instance of the class.
 
                 model: tf.keras.Model, The model to be used for discriminative learning.
@@ -241,7 +241,7 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
         self.learning_rate = learning_rate
         self.kwargs = kwargs
 
-        # find unique lr_mult
+        # Find unique lr_mult.
         variable_groups = {var.lr_mult: None for var in model.trainable_variables}
 
         self.optimizer_group = []
@@ -252,25 +252,25 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
             self.optimizer_group.append(opt)
 
     def apply_gradients(self, grads_and_vars, name=None):
-        """allocates gradients to each optimizer based on the variable's learning rate multiplier
+        """Allocates gradients to each optimizer based on the variable's learning rate multiplier
         then applies the gradients. In graph mode, it returns 1 operation per optimizer.
         Please use the model.fit method instead of accessing this directly.
         """
 
-        # create gradvar buckets for each opt
+        # Create gradvar buckets for each opt.
         gvdict = {}
         for opt in self.optimizer_group:
             gvdict[opt.lr_mult] = []
 
-        # load the gradvars into the appropriate bucket
+        # Load the gradvars into the appropriate bucket.
         for grad, var in tuple(grads_and_vars):
             gvdict[var.lr_mult].append((grad, var))
 
-        # return results from each opt
-        # in eager mode, this will return a list of irrelevant results for each optimizer
-        # in eager mode, the function apply_gradients actually applies gradients to the model
-        # in graph mode, this will return a list of tensor ops for each opt
-        # in graph mode, apply_gradients creates the tensor ops for applying gradients on the graph
+        # Return results from each opt.
+        # In eager mode, this will return a list of irrelevant results for each optimizer.
+        # In eager mode, the function apply_gradients actually applies gradients to the model.
+        # In graph mode, this will return a list of tensor ops for each opt.
+        # In graph mode, apply_gradients creates the tensor ops for applying gradients on the graph.
         return [
             opt.apply_gradients(tuple(gvdict[opt.lr_mult]))
             for opt in self.optimizer_group
