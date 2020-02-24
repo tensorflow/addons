@@ -1,1 +1,1 @@
-typeguard==2.7.1
+typeguard>=2.7
