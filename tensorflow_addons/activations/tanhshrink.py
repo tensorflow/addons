@@ -41,4 +41,4 @@ def _tanhshrink_grad(op, grad):
 
 
 def _tanhshrink_py(x):
-    return x-tf.math.tanh(x)
+    return x - tf.math.tanh(x)
