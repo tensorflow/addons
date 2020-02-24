@@ -21,23 +21,23 @@ import logging
 
 
 class DiscriminativeModelManager:
-    """Class for grouping functions related to model lr_mult management"""
+    """Class for grouping functions related to model lr_mult management."""
 
     @staticmethod
     def _get_layers(layer):
-        """Helper method to access a layer's sublayers as a list or return an empty list
+        """Helper method to access a layer's sublayers as a list or return an empty list.
         """
-        return getattr(layer, "layers", [])
+        return getattr(layer, "layers", None)
 
     @staticmethod
     def _get_lr_mult(layer):
-        """Helper method to access a layer's learning rate multiplier, which defaults to 1 if lr mult is not set
+        """Helper method to access a layer's learning rate multiplier, which defaults to 1 if lr mult is not set.
         """
         return getattr(layer, "lr_mult", 1.0)
 
     @staticmethod
     def _assign_lr_mult(layer, lr_mult):
-        """Helper method to assign a layer's learning rate multiplier, which does nothing if lr mult is already set
+        """Helper method to assign a layer's learning rate multiplier, which does nothing if lr mult is already set.
         """
         if not hasattr(layer, "lr_mult"):
             layer.lr_mult = lr_mult  # since layer has no lr mult, assign the mult
@@ -52,10 +52,9 @@ class DiscriminativeModelManager:
 
     @staticmethod
     def _recursively_assign_sublayer_lr_mult(layer):
-
-        """Helper method iterate through all nested layers of an object that behaves like a layer or model
+        """Helper method iterate through all nested layers of an object that behaves like a layer or model.
         By default, we want to propagate the lr mult to the lower layers.
-
+        Note that this function always returns a list of the lowest sublayers.
 
         https://stackoverflow.com/questions/6340351/iterating-through-list-of-list-in-python
         """
@@ -63,9 +62,8 @@ class DiscriminativeModelManager:
         mult = DiscriminativeModelManager._get_lr_mult(layer)
         layers = DiscriminativeModelManager._get_layers(layer)
 
-        if len(layers) > 0:
+        if layers is not None:
             for sublayer in layers:
-
                 # we always assign the lr mult to the sublayers of the current layer
                 # the assign method will avoid overwritting lr mults
                 # so if you have a resnet and you specifically assign the first resnet layer
@@ -86,17 +84,17 @@ class DiscriminativeModelManager:
 
     @staticmethod
     def _apply_lr_mult_to_var(layer):
-        """Helper method to apply the lr mult to the trainable variables of a layer
+        """Helper method to apply the lr mult to the trainable variables of a layer.
         """
         lr_mult = DiscriminativeModelManager._get_lr_mult(layer)
         for var in layer.trainable_variables:
             var.lr_mult = lr_mult
-            # the lr_mult behaves as a hyper parameter and not a variable. it will not be a tensor
-            # there's not benefit in setting the lr_mult as a variable because it does not interact with tensors
+            # the lr_mult behaves as a hyper parameter and not a variable. it will not be a tensor.
+            # there's not benefit in setting the lr_mult as a variable because it does not interact with tensors.
 
     @staticmethod
     def _check_for_lr_mult(layer, verbose=True, propagate=True):
-        """Identify which layers have an LR mult not equal to 1
+        """Identify which layers have an LR mult not equal to 1.
         """
 
         layers_with_lr_mult = []
@@ -114,20 +112,19 @@ class DiscriminativeModelManager:
 
     @staticmethod
     def _compute_params(var_list):
-        """helps compute params to provide a summary that aligns with model.summary()
+        """helps compute params to provide a summary that aligns with model.summary().
         """
         return np.sum([np.prod(list(var.shape)) for var in var_list])
 
     @staticmethod
     def _prepare_model(model, verbose=True):
-        """Prepares a model for disc training
+        """Prepares a model for disc training.
         """
 
         layers_with_lr_mult = DiscriminativeModelManager._check_for_lr_mult(
             model, verbose=verbose
         )
         if len(layers_with_lr_mult) == 0:
-
             logging.warning(
                 """No Layer has been assigned an lr_mult attribute != 1.0
                 Discriminative Layer Training will apply the same learning rate to all layers
@@ -135,6 +132,14 @@ class DiscriminativeModelManager:
                 """
             )
 
+        # lr mult assignment occurs in two steps to ensure propagation occurs correctly.
+        # In this example, given a model with layers : variables similar to { L1 : V1 , L2 : {L3 : V3, L4 : V4 ,} ,},
+        # L2 represents a nested layer (usually a tf.keras.Model) and does not directly own any variables.
+        # If the user assigns L2 an lr mult x, x is propaged to L3 and L4 and then V3 and V4 is assigned lr mult of x.
+        # If the user assigned l2 lr mult x and L3 lr mult y, then lr mult x is propaged to L4
+        # while L3 keeps its lr mult of y. Finally, the variables are assigned by x to V4 and y to V3.
+        # If a user doesn't assign an lr mult to L1, then L1 gets lr mult of 1.0 and so does V1.
+        # This is preferred because I don't want the optimizer to do a hasattr check on the variables.
         for layer in DiscriminativeModelManager._recursively_assign_sublayer_lr_mult(
             model
         ):
@@ -160,7 +165,7 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
     @typechecked
     def __init__(
         self,
-        base_optimizer: object,
+        base_optimizer: tf.keras.optimizers.Optimizer.__class__,
         model: tf.keras.Model,
         learning_rate: float,
         verbose: bool = True,
@@ -184,7 +189,7 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
             Performance is similar to using a single copy of the base optimizer as gradients are computed
             only once and then passed on.
 
-            This optimizer does not support from_config or get_config. To try to preserve the state, you may
+            This optimizer does preserve optimizer state. To try to preserve the state, you may
             serialize the optimizers in the optimizer_group attribute in an instance of this class.
 
             Example usage
@@ -219,6 +224,7 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
             References
                 - [Universal Language Model Fine-tuning for Text Classification](https://arxiv.org/pdf/1801.06146.pdf)
         """
+
         assert issubclass(
             base_optimizer, tf.keras.optimizers.Optimizer
         ), "Base optimizer must be a class that inherits from tf.keras.optimizers.Optimizer"
@@ -243,8 +249,8 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
 
     def apply_gradients(self, grads_and_vars, name=None):
         """allocates gradients to each optimizer based on the variable's learning rate multiplier
-        then applies the gradients. In graph mode, it returns 1 operation per optimizer
-        Please use the model.fit method instead of accessing this directly
+        then applies the gradients. In graph mode, it returns 1 operation per optimizer.
+        Please use the model.fit method instead of accessing this directly.
         """
 
         # create gradvar buckets for each opt
@@ -273,9 +279,9 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
         """
 
         logging.warning(
-            """Discriminative Training Optimzer depends on its attached model
-        It will behave differently on the same model if the lr mult attributes are not set in the same way
-        Currently, this method does not support preserving optimizer's state during training
+        """Discriminative Training Optimzer depends on its attached model.
+        It will behave differently on the same model if the lr mult attributes are not set in the same way.
+        Currently, this method does not support preserving optimizer's state during training.
         """
         )
         config = super().get_config()
@@ -292,9 +298,9 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
         """For this to work, you need to pass the same model to the optimizer"""
 
         logging.warning(
-            """Discriminative Training Optimzer depends on its attached model
-        It will behave differently on the same model if the lr mult attributes are not set in the same way
-        Currently, this method does not support preserving optimizer's state during training
+        """Discriminative Training Optimzer depends on its attached model.
+        It will behave differently on the same model if the lr mult attributes are not set in the same way.
+        Currently, this method does not support preserving optimizer's state during training.
         """
         )
 
