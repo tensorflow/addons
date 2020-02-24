@@ -4,7 +4,7 @@
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
 | conditional_gradient | Pengyu Kan, Vishnu Lokhande | pkan2@wisc.edu, lokhande@cs.wisc.edu |
-| cyclical_learning_rate | Raphael Meudec | raphael.meudec@gmail.com |
+| cyclical_learning_rate | Raphael Meudec | raphael.meudec@gmail.com |
 | lamb | Jing Li, Junjie Ke | jingli@google.com, junjiek@google.com |
 | lazy_adam | Saishruthi Swaminathan  | saishruthi.tn@gmail.com  |
 | lookahead | Zhao Hanguang | cyberzhg@gmail.com |
