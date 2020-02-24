@@ -1,6 +1,7 @@
 FROM python:3.5-alpine as flake8-test
 
-RUN pip install flake8==3.7.9
+COPY tools/tests_dependencies/flake8.txt ./
+RUN pip install -r flake8.txt
 COPY ./ /addons
 WORKDIR /addons
 RUN flake8
@@ -9,7 +10,8 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.6 as black-test
 
-RUN pip install black==19.10b0
+COPY tools/tests_dependencies/black.txt ./
+RUN pip install -r black.txt
 COPY ./ /addons
 RUN black --check /addons
 RUN touch /ok.txt
@@ -19,8 +21,11 @@ FROM python:3.6 as public-api-typed
 
 COPY build_deps/build-requirements-cpu.txt ./
 RUN pip install -r build-requirements-cpu.txt
-RUN pip install typeguard==2.7.1
-RUN pip install typedapi==0.2.0
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
+COPY tools/tests_dependencies/typedapi.txt ./
+RUN pip install -r typedapi.txt
+
 
 COPY ./ /addons
 RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e /addons
@@ -87,7 +92,8 @@ FROM python:3.6 as docs_tests
 
 COPY build_deps/build-requirements-cpu.txt ./
 RUN pip install -r build-requirements-cpu.txt
-RUN pip install typeguard==2.7.1
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
 
 COPY tools/docs/doc_requirements.txt ./
 RUN pip install -r doc_requirements.txt
