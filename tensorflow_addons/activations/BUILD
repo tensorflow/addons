@@ -18,6 +18,7 @@ py_library(
     data = [
         "//tensorflow_addons/custom_ops/activations:_activation_ops.so",
         "//tensorflow_addons/utils",
+        "//tensorflow_addons:options.py",
     ],
 )
 
