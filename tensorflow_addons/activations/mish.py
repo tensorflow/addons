@@ -42,3 +42,7 @@ def mish(x: types.TensorLike) -> tf.Tensor:
 @tf.RegisterGradient("Addons>Mish")
 def _mish_grad(op, grad):
     return _activation_so.ops.addons_mish_grad(grad, op.inputs[0])
+
+
+def _mish_py(x):
+    return x * tf.math.tanh(tf.math.softplus(x))
