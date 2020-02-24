@@ -26,14 +26,14 @@ import tempfile
 
 
 def toy_cnn():
-    """Consistently create model with same random weights
-    skip head activation to allow both bce with logits and cce with logits
+    """Consistently create model with same random weights.
+    skip head activation to allow both bce with logits and cce with logits.
 
     The model returned by this function should have identical weights to all
     other models returned by this function, for the duration of that
-    continuous integration run
+    continuous integration run.
 
-    Run this function before running the tests and set first run to true
+    Run this function within a test, but make sure it runs before other tests.
 
     model is intended to work with
     x = np.ones(shape = (None, 32, 32, 3), dtype = np.float32)
@@ -75,17 +75,16 @@ def toy_cnn():
 
 
 def toy_rnn():
-    """
-    Consistently create model with same random weights
-    skip head activation to allow both bce with logits and cce with logits
-    intended to work with
+    """Consistently create model with same random weights.
+    skip head activation to allow both bce with logits and cce with logits.
 
     The model returned by this function should have identical weights to all
     other models returned by this function, for the duration of that
-    continuous integration run
+    continuous integration run.
 
-    Run this function before running the tests and set first run to true
+    Run this function within a test, but make sure it runs before other tests.
 
+    model is intended to work with
     x = np.ones(shape = (None, 32, 32, 3), dtype = np.float32)
     y = np.zeros(shape = (None, 5), dtype = np.float32)
     y[:, 0] = 1.
@@ -94,7 +93,7 @@ def toy_rnn():
 
     if not os.path.exists(rnn_model_path):
 
-        # pretend that net is a pretrained lstm of some sort
+        # pretend this net is a pretrained lstm of some sort
         net = tf.keras.Sequential()
 
         # crop the input shape so the lstm runs faster
@@ -138,8 +137,8 @@ def toy_rnn():
 
 
 def _get_train_results(model, verbose=False, epochs=10):
-    """Run a training loop and return the results for analysis
-    model must be compiled first
+    """Run a training loop and return the results for analysis.
+    model must be compiled first.
     """
     tf.random.set_seed(1)
     x = np.ones(shape=(32, 32, 32, 3), dtype=np.float32)
@@ -151,24 +150,23 @@ def _get_train_results(model, verbose=False, epochs=10):
 
 def _zipped_permutes():
     model_fns = [
-        # generally, we want to test that common layers function correctly with discriminative layer training
-        # dense, conv2d, batch norm, lstm, pooling, should cover the majority of layer types
-        # we also assume that if it works for conv2d, it should work for conv3d by extension
+        # generally, we want to test that common layers function correctly with discriminative layer training.
+        # dense, conv2d, batch norm, lstm, pooling, should cover the majority of layer types.
+        # we also assume that if it works for conv2d, it should work for conv3d by extension.
         # apply the same extension logic for all layers tested and it should cover maybe 90% of layers in use?
         toy_cnn,
         toy_rnn,
     ]
     losses = [
-        # additional loss types do not need to be tested
+        # additional loss types do not need to be tested.
         # this is because losses affect the gradient tape, which is computed before
         # the apply_gradients step. This means that the some gradient value is passed on to each opt
-        # and the gradient calculation is unaffected by which optimizer you are using
+        # and the gradient calculation is unaffected by which optimizer you are using.
         tf.keras.losses.CategoricalCrossentropy(from_logits=True),
     ]
     optimzers = [
-        # additional optimizers can be added for testing
-        # seems to be timing out. will add SGD back later
-        # tf.keras.optimizers.SGD,
+        # additional optimizers can be added for testing.
+        tf.keras.optimizers.SGD,
         tf.keras.optimizers.Adam,
     ]
     return list(itertools.product(model_fns, losses, optimzers))
@@ -180,7 +178,7 @@ def get_losses(hist):
 
 class DiscriminativeLearningTest(tf.test.TestCase):
     def _assert_losses_are_close(self, hist, hist_lr):
-        """higher tolerance for graph and distributed bc unable to run deterministically"""
+        """higher tolerance for graph and distributed bc unable to run deterministically."""
         if not tf.executing_eagerly() or tf.distribute.has_strategy():
             rtol, atol = 0.05, 1.00
             # print('graph or dist')
@@ -192,9 +190,9 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
 
     def _assert_training_losses_are_close(self, model, model_lr, epochs=10):
-        """easy way to check if two models train in almost the same way
-        epochs set to 10 by default to allow momentum methods to pick up momentum and diverge
-        if the disc training is not working
+        """easy way to check if two models train in almost the same way.
+        epochs set to 10 by default to allow momentum methods to pick up momentum and diverge,
+        if the disc training is not working.
         """
         hist = _get_train_results(model, verbose=False, epochs=epochs)
         hist_lr = _get_train_results(model_lr, verbose=False, epochs=epochs)
@@ -202,18 +200,19 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
     @test_utils.run_distributed(2)
     def test_a_initialize_model_weights(self):
-        """this test should run first to initialize the model weights
-        there seem to be major issues in initializing model weights on the fly when testing
-        so we initialize them and save them to an h5 file and reload them each time
-        this ensures that when comparing two runs, they start at the same place
-        this is not actually testing anything, so it does not need to run in eager and graph
-        this needs to run distributed or else it will cause the cannot modify virtual devices error"""
+        """this test should run first to initialize the model weights.
+        there seem to be major issues in initializing model weights on the fly when testing,
+        so we initialize them and save them to an h5 file and reload them each time.
+        this ensures that when comparing two runs, they start at the same place.
+        this is not actually testing anything, so it does not need to run in eager and graph.
+        this needs to run distributed or else it will cause the cannot modify virtual devices error."""
         toy_cnn()
         toy_rnn()
 
+    @test_utils.run_in_graph_and_eager_modes
     @test_utils.run_distributed(2)
     def _test_equal_with_no_layer_lr(self, model_fn, loss, opt):
-        """confirm that discriminative learning is almost the same as regular learning"""
+        """confirm that discriminative learning is almost the same as regular learning."""
         learning_rate = 0.01
         model = model_fn()
         model.compile(loss=loss, optimizer=opt(learning_rate))
@@ -226,18 +225,19 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         self._assert_training_losses_are_close(model, model_lr)
 
+    @test_utils.run_in_graph_and_eager_modes
     @test_utils.run_distributed(2)
     def _test_equal_0_sub_layer_lr_to_sub_layer_trainable_false(
         self, model_fn, loss, opt
     ):
-        """confirm 0 lr_mult for the a specific layer is the same as setting layer to not trainable
-        this also confirms that lr_mult propagates into that layer's trainable variables
-        this also confirms that lr_mult does not propagate to the rest of the layers unintentionally
+        """confirm 0 lr_mult for the a specific layer is the same as setting layer to not trainable.
+        this also confirms that lr_mult propagates into that layer's trainable variables.
+        this also confirms that lr_mult does not propagate to the rest of the layers unintentionally.
         """
         learning_rate = 0.01
         model = model_fn()
 
-        # we use layer 1 instead of 0 bc layer 0 is just an input layer
+        # layers 0 represents the pretrained network
         model.layers[0].trainable = False
         model.compile(loss=loss, optimizer=opt(learning_rate))
 
@@ -250,10 +250,11 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         self._assert_training_losses_are_close(model, model_lr)
 
+    @test_utils.run_in_graph_and_eager_modes
     @test_utils.run_distributed(2)
     def _test_equal_0_layer_lr_to_trainable_false(self, model_fn, loss, opt):
-        """confirm 0 lr_mult for the model is the same as model not trainable
-        this also confirms that lr_mult on the model level is propagated to all sublayers and their variables
+        """confirm 0 lr_mult for the model is the same as model not trainable.
+        this also confirms that lr_mult on the model level is propagated to all sublayers and their variables.
         """
         learning_rate = 0.01
         model = model_fn()
@@ -267,13 +268,14 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
         model_lr.compile(loss=loss, optimizer=d_opt)
 
-        # only two epochs because we expect no training to occur, thus losses shouldn't change anyways
+        # only two epochs because we expect no training to occur, thus losses shouldn't change anyways.
         self._assert_training_losses_are_close(model, model_lr, epochs=2)
 
+    @test_utils.run_in_graph_and_eager_modes
     @test_utils.run_distributed(2)
     def _test_equal_half_layer_lr_to_half_lr_of_opt(self, model_fn, loss, opt):
-        """confirm 0.5 lr_mult for the model is the same as optim with 0.5 lr
-        this also confirms that lr_mult on the model level is propagated to all sublayers and their variables
+        """confirm 0.5 lr_mult for the model is the same as optim with 0.5 lr.
+        this also confirms that lr_mult on the model level is propagated to all sublayers and their variables.
         """
 
         mult = 0.5
@@ -290,18 +292,19 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         self._assert_training_losses_are_close(model, model_lr)
 
+    @test_utils.run_in_graph_and_eager_modes
     @test_utils.run_distributed(2)
     def _test_sub_layers_keep_lr_mult(self, model_fn, loss, opt):
-        """confirm that model trains with lower lr on specific layer
-        while a different lr_mult is applied everywhere else
-        also confirms that sub layers with an lr mult do not get overridden
+        """confirm that model trains with lower lr on specific layer,
+        while a different lr_mult is applied everywhere else.
+        also confirms that sub layers with an lr mult do not get overridden.
         """
 
         learning_rate = 0.01
         model_lr = model_fn()
 
-        # we set model to lrmult 0 and layer one to lrmult 5
-        # if layer one is trainable, then the loss should decrease
+        # we set model to lrmult 0 and layer one to lrmult 5.
+        # if layer one is trainable, then the loss should decrease.
         model_lr.lr_mult = 0.00
         model_lr.layers[-1].lr_mult = 3
 
@@ -313,14 +316,15 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         loss_values = get_losses(_get_train_results(model_lr, epochs=5))
         self.assertLess(loss_values[-1], loss_values[0])
 
+    @test_utils.run_in_graph_and_eager_modes
     @test_utils.run_distributed(2)
     def _test_variables_get_assigned(self, model_fn, loss, opt):
-        """confirm that variables do get an lr_mult attribute and that they get the correct one
+        """confirm that variables do get an lr_mult attribute and that they get the correct one.
         """
         learning_rate = 0.01
         model_lr = model_fn()
 
-        # set lr mults
+        # set lr mults.
         model_lr.layers[0].lr_mult = 0.3
         model_lr.layers[0].layers[-1].lr_mult = 0.1
         model_lr.layers[-1].lr_mult = 0.5
@@ -330,24 +334,67 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
         model_lr.compile(loss=loss, optimizer=d_opt)
 
-        # we expect trainable vars at 0.3 to be reduced by the amount at 0.1
-        # this tests that the 0.3 lr mult does not override the 0.1 lr mult
+        # we expect trainable vars at 0.3 to be reduced by the amount at 0.1.
+        # this tests that the 0.3 lr mult does not override the 0.1 lr mult.
         self.assertEqual(
             len(model_lr.layers[0].trainable_variables)
             - len(model_lr.layers[0].layers[-1].trainable_variables),
             len([var for var in model_lr.trainable_variables if var.lr_mult == 0.3]),
         )
 
-        # we expect trainable vars of model with lr_mult 0.1 to equal trainable vars of that layer
+        # we expect trainable vars of model with lr_mult 0.1 to equal trainable vars of that layer.
         self.assertEqual(
             len(model_lr.layers[0].layers[-1].trainable_variables),
             len([var for var in model_lr.trainable_variables if var.lr_mult == 0.1]),
         )
 
-        # same logic as above
+        # same logic as above.
         self.assertEqual(
             len(model_lr.layers[-1].trainable_variables),
             len([var for var in model_lr.trainable_variables if var.lr_mult == 0.5]),
+        )
+
+    @test_utils.run_in_graph_and_eager_modes
+    @test_utils.run_distributed(2)
+    def _test_model_checkpoint(self, model_fn, loss, opt):
+        """confirm that model does save checkpoints and can load them properly"""
+
+        learning_rate = 0.01
+        model_lr = model_fn()
+        model_lr.layers[0].lr_mult = 0.3
+        model_lr.layers[0].layers[-1].lr_mult = 0.1
+        model_lr.layers[-1].lr_mult = 0.5
+
+        d_opt = DiscriminativeLayerOptimizer(
+            opt, model_lr, verbose=False, learning_rate=learning_rate
+        )
+        model_lr.compile(loss=loss, optimizer=d_opt)
+
+        x = np.ones(shape=(32, 32, 32, 3), dtype=np.float32)
+        y = np.zeros(shape=(32, 5), dtype=np.float32)
+        y[:, 0] = 1.0
+
+        filepath = os.path.join(tempfile.gettempdir(), model_fn.__name__ + "_{epoch}")
+
+        callbacks = [
+            tf.keras.callbacks.ModelCheckpoint(
+                filepath=filepath, save_weights_only=True, verbose=1
+            )
+        ]
+
+        model_lr.fit(
+            x,
+            y,
+            epochs=5,
+            batch_size=16,
+            verbose=False,
+            shuffle=False,
+            callbacks=callbacks,
+        )
+
+        # if this doesn't error out, then loading and checkpointing should be fine
+        model_lr.load_weights(
+            filepath=os.path.join(tempfile.gettempdir(), model_fn.__name__ + "4")
         )
 
     def _run_tests_in_notebook(self):
@@ -358,9 +405,8 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
 
 def test_wrap(method, **kwargs):
-    # wrap every test to run in graph and eager
+    """wrap the test method so that it has pre assigned kwargs."""
 
-    @test_utils.run_in_graph_and_eager_modes
     def test(self):
         return method(self, **kwargs)
 
@@ -368,25 +414,26 @@ def test_wrap(method, **kwargs):
 
 
 def generate_tests():
-    # generate tests for each permutation in the zipped permutes
-    # this separates tests for each permuatation of model, optimizer, and loss
+    # generate tests for each permutation in the zipped permutes.
+    # this separates tests for each permuatation of model, optimizer, and loss.
     for name, method in DiscriminativeLearningTest.__dict__.copy().items():
         if callable(method) and name[:5] == "_test":
             for model_fn, loss, opt in _zipped_permutes():
 
-                # name the test as test_testname_model_loss_optimizer
+                # name the test as test_testname_model_loss_optimizer.
                 testmethodname = name[1:] + "_%s_%s_%s" % (
                     model_fn.__name__,
                     loss.name,
                     opt.__name__,
                 )
 
-                # apply run in egaer and graph modes to each test
+                # create test functions that use kwargs mentioned above.
                 testmethod_dist = test_wrap(
                     method=method, model_fn=model_fn, loss=loss, opt=opt,
                 )
 
-                # we only run distributed tests
+                # set class attributes so we get multiple nicely named tests.
+                # also all tests are set to run distributed, so append distributed to the end.
                 setattr(
                     DiscriminativeLearningTest,
                     testmethodname + "_distributed",

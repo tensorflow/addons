@@ -40,14 +40,14 @@ class DiscriminativeModelManager:
         """Helper method to assign a layer's learning rate multiplier, which does nothing if lr mult is already set.
         """
         if not hasattr(layer, "lr_mult"):
-            layer.lr_mult = lr_mult  # since layer has no lr mult, assign the mult
+            layer.lr_mult = lr_mult  # since layer has no lr mult, assign the mult.
             # this method should be called after the user has already assigned some lr mults
-            # to some layers. We just don't want to override any lr mults they assigned
+            # to some layers. We just don't want to override any lr mults they assigned.
         else:
-            # we pass here because of propagation to nested layers
+            # we pass here because of propagation to nested layers.
             # users should be able to speficy model.layers[0].layers[0].lr_mult = 0.01
             # and model.layers[0].lr_mult = 0.1, such that the model.layers[0].layers[0]
-            # keeps its assigned lr mult of 0.01
+            # keeps its assigned lr mult of 0.01.
             pass
 
     @staticmethod
@@ -64,15 +64,15 @@ class DiscriminativeModelManager:
 
         if layers is not None:
             for sublayer in layers:
-                # we always assign the lr mult to the sublayers of the current layer
-                # the assign method will avoid overwritting lr mults
-                # so if you have a resnet and you specifically assign the first resnet layer
+                # we always assign the lr mult to the sublayers of the current layer.
+                # the assign method will avoid overwritting lr mults.
+                # so, if you have a resnet and you specifically assign the first resnet layer
                 # to have lr_mult of 0.01 and the resnet model to have lr_mult of 0.1, all
                 # resnet layers except the first should get lr_mult of 0.1 and the first
-                # keeps its lr_mult of 0.01
+                # keeps its lr_mult of 0.01.
                 DiscriminativeModelManager._assign_lr_mult(sublayer, mult)
 
-                # recursively iterate through the nested layers
+                # recursively iterate through the nested layers.
                 for (
                     nested_sublayer
                 ) in DiscriminativeModelManager._recursively_assign_sublayer_lr_mult(
@@ -85,12 +85,15 @@ class DiscriminativeModelManager:
     @staticmethod
     def _apply_lr_mult_to_var(layer):
         """Helper method to apply the lr mult to the trainable variables of a layer.
+        This is necessary because the optimizer does not receive layers during optimization and only receives
+        variable objects. The lr mult attribute on the variable allows the disc optimizer to send the variable to
+        the correct learning rate.
         """
         lr_mult = DiscriminativeModelManager._get_lr_mult(layer)
         for var in layer.trainable_variables:
             var.lr_mult = lr_mult
             # the lr_mult behaves as a hyper parameter and not a variable. it will not be a tensor.
-            # there's not benefit in setting the lr_mult as a variable because it does not interact with tensors.
+            # there's no benefit in setting the lr_mult as a variable because it does not interact with tensors.
 
     @staticmethod
     def _check_for_lr_mult(layer, verbose=True, propagate=True):
@@ -138,8 +141,8 @@ class DiscriminativeModelManager:
         # If the user assigns L2 an lr mult x, x is propaged to L3 and L4 and then V3 and V4 is assigned lr mult of x.
         # If the user assigned l2 lr mult x and L3 lr mult y, then lr mult x is propaged to L4
         # while L3 keeps its lr mult of y. Finally, the variables are assigned by x to V4 and y to V3.
-        # If a user doesn't assign an lr mult to L1, then L1 gets lr mult of 1.0 and so does V1.
-        # This is preferred because I don't want the optimizer to do a hasattr check on the variables.
+        # This two step method ensures that each variable is assigned an lr mult exactly 1 time.
+
         for layer in DiscriminativeModelManager._recursively_assign_sublayer_lr_mult(
             model
         ):
@@ -173,7 +176,7 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
         *args,
         **kwargs
     ):
-        """Discriminative Layer Training Wrapper
+        """Discriminative Layer Training Wrapper.
 
             Discriminative layer training is a technique that applies different learning rates to
             different layers in a model. Generally, a lower learning rate is applied to the
@@ -189,8 +192,9 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
             Performance is similar to using a single copy of the base optimizer as gradients are computed
             only once and then passed on.
 
-            This optimizer does preserve optimizer state. To try to preserve the state, you may
-            serialize the optimizers in the optimizer_group attribute in an instance of this class.
+            Currently, this optimizer does not preserve optimizer state. Its state preservation methods will
+            differ significantly from a standard optimizer because it is a wrapper for multiple optimizers each with
+            their own learning rate, hyper parameters, and slots.
 
             Example usage
                 model = tf.keras.Sequential()
@@ -273,16 +277,23 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
         ]
 
     def get_config(self):
-        """This method cannot effectively return the optimizer configuration because
-        that configuration depends on the model and base optimizer
-        for now, it returns the config values of itself and base optimizers
+        """Returns the config of the optimizer.
+
+        An optimizer config is a Python dictionary (serializable)
+        containing the configuration of an optimizer.
+        The same optimizer can be reinstantiated later
+        (without any saved state) from this configuration.
+
+        Please note that this optimizer requires a model for instantiation or calling the from_config class method.
+
+        Returns:
+            Python dictionary.
         """
 
         logging.warning(
-        """Discriminative Training Optimzer depends on its attached model.
-        It will behave differently on the same model if the lr mult attributes are not set in the same way.
-        Currently, this method does not support preserving optimizer's state during training.
-        """
+            """Discriminative Training Optimzer depends on its attached model.
+            It will behave differently on the same model if the lr mult attributes are not set in the same way.
+            """
         )
         config = super().get_config()
         config["base_optimizer"] = self.opt_class
@@ -295,13 +306,25 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
 
     @classmethod
     def from_config(cls, config, model):
-        """For this to work, you need to pass the same model to the optimizer"""
+        """Creates an optimizer from its config.
+        This method is the reverse of `get_config`,
+        capable of instantiating the same optimizer from the config
+        dictionary.
+
+        Please note that this optimizer requires a model for instantiation or calling the from_config class method.
+
+        Arguments:
+            config: A Python dictionary, typically the output of get_config.
+            model: An instance of tf.keras.Model.
+
+        Returns:
+            An optimizer instance.
+        """
 
         logging.warning(
-        """Discriminative Training Optimzer depends on its attached model.
-        It will behave differently on the same model if the lr mult attributes are not set in the same way.
-        Currently, this method does not support preserving optimizer's state during training.
-        """
+            """Discriminative Training Optimzer depends on its attached model.
+            It will behave differently on the same model if the lr mult attributes are not set in the same way.
+            """
         )
 
         return cls(**config, model=model)
