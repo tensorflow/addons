@@ -9,7 +9,7 @@ jobs:
     name: Test nightly on Ubuntu
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Nightly test Ubuntu
         run: |
           set -x -e
@@ -20,7 +20,7 @@ jobs:
     needs: [manylinux-cpu-nightly-test]
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
           python-version: 3.5
