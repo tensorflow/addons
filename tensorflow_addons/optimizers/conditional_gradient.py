@@ -48,7 +48,7 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
 
     ```
     variable -= (1-learning_rate) * (variable
-    + lambda_ * top_singular_vector(gradient))
+        + lambda_ * top_singular_vector(gradient))
     ```
     """
 
@@ -125,158 +125,103 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
             self.epsilon, var_dtype
         )
 
+    @staticmethod
+    def _frobenius_norm(m):
+        return tf.reduce_sum(m ** 2) ** 0.5
+
+    @staticmethod
+    def _top_singular_vector(m):
+        # handle the case where m is a tensor of rank 0 or rank 1.
+        # Example:
+        #   scalar (rank 0) a, shape []=> [[a]], shape [1,1]
+        #   vector (rank 1) [a,b], shape [2] => [[a,b]], shape [1,2]
+        original_rank = tf.rank(m)
+        shape = tf.shape(m)
+        first_pad = tf.cast(tf.less(original_rank, 2), dtype=tf.int32)
+        second_pad = tf.cast(tf.equal(original_rank, 0), dtype=tf.int32)
+        new_shape = tf.concat(
+            [
+                tf.ones(shape=first_pad, dtype=tf.int32),
+                tf.ones(shape=second_pad, dtype=tf.int32),
+                shape,
+            ],
+            axis=0,
+        )
+        n = tf.reshape(m, new_shape)
+        st, ut, vt = tf.linalg.svd(n, full_matrices=False)
+        n_size = tf.shape(n)
+        ut = tf.reshape(ut[:, 0], [n_size[0], 1])
+        vt = tf.reshape(vt[:, 0], [n_size[1], 1])
+        st = tf.matmul(ut, tf.transpose(vt))
+        # when we return the top singular vector, we have to remove the
+        # dimension we have added on
+        st_shape = tf.shape(st)
+        begin = tf.cast(tf.less(original_rank, 2), dtype=tf.int32)
+        end = 2 - tf.cast(tf.equal(original_rank, 0), dtype=tf.int32)
+        new_shape = st_shape[begin:end]
+        return tf.reshape(st, new_shape)
+
     def _resource_apply_dense(self, grad, var, apply_state=None):
-        def frobenius_norm(m):
-            return tf.math.reduce_sum(m ** 2) ** 0.5
-
-        def top_singular_vector(m):
-            # handle the case where m is a tensor of rank 0 or rank 1.
-            n = tf.cond(
-                tf.equal(tf.rank(m), 0),
-                lambda: tf.expand_dims(tf.expand_dims(m, [0]), [0]),
-                lambda: m,
-            )
-            n = tf.cond(
-                tf.equal(tf.rank(m), 1), lambda: tf.expand_dims(m, [0]), lambda: n,
-            )
-            st, ut, vt = tf.linalg.svd(n, full_matrices=False)
-            m_size = tf.shape(n)
-            ut = tf.reshape(ut[:, 0], [m_size[0], 1])
-            vt = tf.reshape(vt[:, 0], [m_size[1], 1])
-            st = tf.matmul(ut, tf.transpose(vt))
-            # when we return the top singular vector, we have to remove the
-            # dimension we have added on
-            st = tf.cond(
-                tf.equal(tf.rank(m), 0),
-                lambda: tf.squeeze(tf.squeeze(st, [0]), [0]),
-                lambda: st,
-            )
-            st = tf.cond(
-                tf.equal(tf.rank(m), 1), lambda: tf.squeeze(st, [0]), lambda: st,
-            )
-            return st
-
-        ord = self.ord
-        if ord == "fro":
-            var_device, var_dtype = var.device, var.dtype.base_dtype
-            coefficients = (apply_state or {}).get(
-                (var_device, var_dtype)
-            ) or self._fallback_apply_state(var_device, var_dtype)
+        var_device, var_dtype = var.device, var.dtype.base_dtype
+        coefficients = (apply_state or {}).get(
+            (var_device, var_dtype)
+        ) or self._fallback_apply_state(var_device, var_dtype)
+        lr = coefficients["learning_rate"]
+        lambda_ = coefficients["lambda_"]
+        epsilon = coefficients["epsilon"]
+        if self.ord == "fro":
             norm = tf.convert_to_tensor(
-                frobenius_norm(grad), name="norm", dtype=var.dtype.base_dtype
+                self._frobenius_norm(grad), name="norm", dtype=var.dtype.base_dtype
             )
-            lr = coefficients["learning_rate"]
-            lambda_ = coefficients["lambda_"]
-            epsilon = coefficients["epsilon"]
             var_update_tensor = tf.math.multiply(var, lr) - (
                 1 - lr
             ) * lambda_ * grad / (norm + epsilon)
-            var_update_kwargs = {
-                "resource": var.handle,
-                "value": var_update_tensor,
-            }
-            var_update_op = tf.raw_ops.AssignVariableOp(**var_update_kwargs)
-            return tf.group(var_update_op)
-
         else:
-            var_device, var_dtype = var.device, var.dtype.base_dtype
-            coefficients = (apply_state or {}).get(
-                (var_device, var_dtype)
-            ) or self._fallback_apply_state(var_device, var_dtype)
             top_singular_vector = tf.convert_to_tensor(
-                top_singular_vector(grad),
+                self._top_singular_vector(grad),
                 name="top_singular_vector",
                 dtype=var.dtype.base_dtype,
             )
-            lr = coefficients["learning_rate"]
-            lambda_ = coefficients["lambda_"]
-            epsilon = coefficients["epsilon"]
             var_update_tensor = (
                 tf.math.multiply(var, lr) - (1 - lr) * lambda_ * top_singular_vector
             )
-            var_update_kwargs = {
-                "resource": var.handle,
-                "value": var_update_tensor,
-            }
-            var_update_op = tf.raw_ops.AssignVariableOp(**var_update_kwargs)
-            return tf.group(var_update_op)
+        var_update_kwargs = {
+            "resource": var.handle,
+            "value": var_update_tensor,
+        }
+        var_update_op = tf.raw_ops.AssignVariableOp(**var_update_kwargs)
+        return tf.group(var_update_op)
 
     def _resource_apply_sparse(self, grad, var, indices, apply_state=None):
-        def frobenius_norm(m):
-            return tf.reduce_sum(m ** 2) ** 0.5
-
-        def top_singular_vector(m):
-            # handle the case where m is a tensor of rank 0 or rank 1.
-            n = tf.cond(
-                tf.equal(tf.rank(m), 0),
-                lambda: tf.expand_dims(tf.expand_dims(m, [0]), [0]),
-                lambda: m,
-            )
-            n = tf.cond(
-                tf.equal(tf.rank(m), 1), lambda: tf.expand_dims(m, [0]), lambda: n,
-            )
-            st, ut, vt = tf.linalg.svd(n, full_matrices=False)
-            m_size = tf.shape(n)
-            ut = tf.reshape(ut[:, 0], [m_size[0], 1])
-            vt = tf.reshape(vt[:, 0], [m_size[1], 1])
-            st = tf.matmul(ut, tf.transpose(vt))
-            # when we return the top singular vector, we have to remove the
-            # dimension we have added on
-            st = tf.cond(
-                tf.equal(tf.rank(m), 0),
-                lambda: tf.squeeze(tf.squeeze(st, [0]), [0]),
-                lambda: st,
-            )
-            st = tf.cond(
-                tf.equal(tf.rank(m), 1), lambda: tf.squeeze(st, [0]), lambda: st,
-            )
-            return st
-
-        ord = self.ord
-        if ord == "fro":
-            var_device, var_dtype = var.device, var.dtype.base_dtype
-            coefficients = (apply_state or {}).get(
-                (var_device, var_dtype)
-            ) or self._fallback_apply_state(var_device, var_dtype)
+        var_device, var_dtype = var.device, var.dtype.base_dtype
+        coefficients = (apply_state or {}).get(
+            (var_device, var_dtype)
+        ) or self._fallback_apply_state(var_device, var_dtype)
+        lr = coefficients["learning_rate"]
+        lambda_ = coefficients["lambda_"]
+        epsilon = coefficients["epsilon"]
+        var_slice = tf.gather(var, indices)
+        if self.ord == "fro":
             norm = tf.convert_to_tensor(
-                frobenius_norm(grad), name="norm", dtype=var.dtype.base_dtype
+                self._frobenius_norm(grad), name="norm", dtype=var.dtype.base_dtype
             )
-            lr = coefficients["learning_rate"]
-            lambda_ = coefficients["lambda_"]
-            epsilon = coefficients["epsilon"]
-            var_slice = tf.gather(var, indices)
             var_update_value = tf.math.multiply(var_slice, lr) - (
                 1 - lr
             ) * lambda_ * grad / (norm + epsilon)
-            var_update_kwargs = {
-                "resource": var.handle,
-                "indices": indices,
-                "updates": var_update_value,
-            }
-            var_update_op = tf.raw_ops.ResourceScatterUpdate(**var_update_kwargs)
-            return tf.group(var_update_op)
-
         else:
-            var_device, var_dtype = var.device, var.dtype.base_dtype
-            coefficients = (apply_state or {}).get(
-                (var_device, var_dtype)
-            ) or self._fallback_apply_state(var_device, var_dtype)
             top_singular_vector = tf.convert_to_tensor(
-                top_singular_vector(grad),
+                self._top_singular_vector(grad),
                 name="top_singular_vector",
                 dtype=var.dtype.base_dtype,
             )
-            lr = coefficients["learning_rate"]
-            lambda_ = coefficients["lambda_"]
-            var_slice = tf.gather(var, indices)
             var_update_value = (
                 tf.math.multiply(var_slice, lr)
                 - (1 - lr) * lambda_ * top_singular_vector
             )
-            var_update_kwargs = {
-                "resource": var.handle,
-                "indices": indices,
-                "updates": var_update_value,
-            }
-            var_update_op = tf.raw_ops.ResourceScatterUpdate(**var_update_kwargs)
-            return tf.group(var_update_op)
+        var_update_kwargs = {
+            "resource": var.handle,
+            "indices": indices,
+            "updates": var_update_value,
+        }
+        var_update_op = tf.raw_ops.ResourceScatterUpdate(**var_update_kwargs)
+        return tf.group(var_update_op)

@@ -18,6 +18,7 @@ import tensorflow as tf
 from tensorflow_addons.utils import test_utils
 import numpy as np
 import conditional_gradient as cg_lib
+import platform
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -28,26 +29,59 @@ class ConditionalGradientTest(tf.test.TestCase):
 
     def top_singular_vector(self, m):
         # handle the case where m is a tensor of rank 0 or rank 1.
-        n = tf.cond(
-            tf.equal(tf.rank(m), 0),
-            lambda: tf.expand_dims(tf.expand_dims(m, [0]), [0]),
-            lambda: m,
+        # Example:
+        #   scalar (rank 0) a, shape []=> [[a]], shape [1,1]
+        #   vector (rank 1) [a,b], shape [2] => [[a,b]], shape [1,2]
+        original_rank = tf.rank(m)
+        shape = tf.shape(m)
+        first_pad = tf.cast(tf.less(original_rank, 2), dtype=tf.int32)
+        second_pad = tf.cast(tf.equal(original_rank, 0), dtype=tf.int32)
+        new_shape = tf.concat(
+            [
+                tf.ones(shape=first_pad, dtype=tf.int32),
+                tf.ones(shape=second_pad, dtype=tf.int32),
+                shape,
+            ],
+            axis=0,
         )
-        n = tf.cond(tf.equal(tf.rank(m), 1), lambda: tf.expand_dims(m, [0]), lambda: n,)
+        n = tf.reshape(m, new_shape)
         st, ut, vt = tf.linalg.svd(n, full_matrices=False)
-        m_size = tf.shape(n)
-        ut = tf.reshape(ut[:, 0], [m_size[0], 1])
-        vt = tf.reshape(vt[:, 0], [m_size[1], 1])
+        n_size = tf.shape(n)
+        ut = tf.reshape(ut[:, 0], [n_size[0], 1])
+        vt = tf.reshape(vt[:, 0], [n_size[1], 1])
         st = tf.matmul(ut, tf.transpose(vt))
         # when we return the top singular vector, we have to remove the
         # dimension we have added on
-        st = tf.cond(
-            tf.equal(tf.rank(m), 0),
-            lambda: tf.squeeze(tf.squeeze(st, [0]), [0]),
-            lambda: st,
-        )
-        st = tf.cond(tf.equal(tf.rank(m), 1), lambda: tf.squeeze(st, [0]), lambda: st,)
-        return st
+        st_shape = tf.shape(st)
+        begin = tf.cast(tf.less(original_rank, 2), dtype=tf.int32)
+        end = 2 - tf.cast(tf.equal(original_rank, 0), dtype=tf.int32)
+        new_shape = st_shape[begin:end]
+        return tf.reshape(st, new_shape)
+
+    # Based on issue #347 in the following link,
+    #        "https://github.com/tensorflow/addons/issues/347"
+    # tf.half is not registered for 'ResourceScatterUpdate' OpKernel
+    # for 'GPU' devices.
+    # So we have to remove tf.half when testing with gpu.
+    # The function "_DtypesToTest" is from
+    #       "https://github.com/tensorflow/tensorflow/blob/5d4a6cee737a1dc6c20172a1dc1
+    #        5df10def2df72/tensorflow/python/kernel_tests/conv_ops_3d_test.py#L53-L62"
+    def _DtypesToTest(self, use_gpu):
+        if use_gpu:
+            return [tf.float32, tf.float64]
+        else:
+            return [tf.half, tf.float32, tf.float64]
+
+    # Based on issue #36764 in the following link,
+    #        "https://github.com/tensorflow/tensorflow/issues/36764"
+    # tf.half is not registered for tf.linalg.svd function on Windows
+    # CPU version.
+    # So we have to remove tf.half when testing with Windows CPU version.
+    def _DtypesWithCheckingSystem(self, use_gpu, system):
+        if system == "Windows":
+            return [tf.float32, tf.float64]
+        else:
+            return self._DtypesToTest(use_gpu)
 
     def doTestBasicFrobenius(self, use_resource=False, use_callable_params=False):
         for i, dtype in enumerate([tf.half, tf.float32, tf.float64]):
@@ -151,14 +185,13 @@ class ConditionalGradientTest(tf.test.TestCase):
             )
 
     def doTestBasicNuclear(self, use_resource=False, use_callable_params=False):
-        # for i, dtype in enumerate([tf.half, tf.float32, tf.float64]):
-        for i, dtype in enumerate([tf.float32, tf.float64]):
-            # TODO:
-            # Based on issue #36764 in the following link,
-            #        "https://github.com/tensorflow/tensorflow/issues/36764"
-            # tf.half is not registered for tf.linalg.svd function on Windows
-            # CPU version.
-            # So we have to remove tf.half when testing with Windows CPU version.
+        # TODO:
+        #       to address issue #36764
+        for i, dtype in enumerate(
+            self._DtypesWithCheckingSystem(
+                use_gpu=tf.test.is_gpu_available(), system=platform.system()
+            )
+        ):
 
             if use_resource:
                 var0 = tf.Variable([1.0, 2.0], dtype=dtype, name="var0_%d" % i)
@@ -321,21 +354,6 @@ class ConditionalGradientTest(tf.test.TestCase):
             )
             self.assertEqual(3, len(optimizer_variables))
 
-    # Based on issue #347 in the following link,
-    #        "https://github.com/tensorflow/addons/issues/347"
-    # tf.half is not registered for 'ResourceScatterUpdate' OpKernel
-    # for 'GPU' devices.
-    # So we have to remove tf.half when testing with gpu.
-    # The function "_DtypesToTest" is from
-    #       "https://github.com/tensorflow/tensorflow/blob/5d4a6cee737a1dc6c20172a1dc1
-    #        5df10def2df72/tensorflow/python/kernel_tests/conv_ops_3d_test.py#L53-L62"
-
-    def _DtypesToTest(self, use_gpu):
-        if use_gpu:
-            return [tf.float32, tf.float64]
-        else:
-            return [tf.half, tf.float32, tf.float64]
-
     def testMinimizeSparseResourceVariableFrobenius(self):
         # This test invokes the ResourceSparseApplyConditionalGradient
         # operation. And it will call the 'ResourceScatterUpdate' OpKernel
@@ -387,23 +405,11 @@ class ConditionalGradientTest(tf.test.TestCase):
             )
 
     def testMinimizeSparseResourceVariableNuclear(self):
-        # This test invokes the ResourceSparseApplyConditionalGradient
-        # operation. And it will call the 'ResourceScatterUpdate' OpKernel
-        # for 'GPU' devices. However, tf.half is not registered in this case,
-        # based on issue #347.
-        # Thus, we will call the "_DtypesToTest" function.
-        #
         # TODO:
-        #       Wait for the solving of issue #347. After that, we will test
-        #       for the dtype to be tf.half, with 'GPU' devices.
-        # for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
-        for dtype in [tf.float32, tf.float64]:
-            # TODO:
-            # Based on issue #36764 in the following link,
-            #        "https://github.com/tensorflow/tensorflow/issues/36764"
-            # tf.half is not registered for tf.linalg.svd function on Windows
-            # CPU version.
-            # So we have to remove tf.half when testing with Windows CPU version.
+        #       to address issue #347 and #36764.
+        for dtype in self._DtypesWithCheckingSystem(
+            use_gpu=tf.test.is_gpu_available(), system=platform.system()
+        ):
             var0 = tf.Variable([[1.0, 2.0]], dtype=dtype)
 
             def loss():
@@ -598,8 +604,9 @@ class ConditionalGradientTest(tf.test.TestCase):
                 )
 
     def testTensorLearningRateAndConditionalGradientNuclear(self):
-        # for dtype in [tf.half, tf.float32, tf.float64]:
-        for dtype in [tf.float32, tf.float64]:
+        for dtype in self._DtypesWithCheckingSystem(
+            use_gpu=tf.test.is_gpu_available(), system=platform.system()
+        ):
             # TODO:
             # Based on issue #36764 in the following link,
             #        "https://github.com/tensorflow/tensorflow/issues/36764"
@@ -1375,15 +1382,10 @@ class ConditionalGradientTest(tf.test.TestCase):
 
     def testSparseNuclear(self):
         # TODO:
-        #       To address the issue #347.
-        # for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
-        for dtype in [tf.float32, tf.float64]:
-            # TODO:
-            # Based on issue #36764 in the following link,
-            #        "https://github.com/tensorflow/tensorflow/issues/36764"
-            # tf.half is not registered for tf.linalg.svd function on Windows
-            # CPU version.
-            # So we have to remove tf.half when testing with Windows CPU version.
+        #       To address the issue #347 and issue #36764.
+        for dtype in self._DtypesWithCheckingSystem(
+            use_gpu=tf.test.is_gpu_available(), system=platform.system()
+        ):
             with self.cached_session():
                 var0 = tf.Variable(tf.zeros([4, 2], dtype=dtype))
                 var1 = tf.Variable(tf.constant(1.0, dtype, [4, 2]))
@@ -1661,14 +1663,11 @@ class ConditionalGradientTest(tf.test.TestCase):
                 )
 
     def testSharingNuclear(self):
-        # for dtype in [tf.half, tf.float32, tf.float64]:
-        for dtype in [tf.float32, tf.float64]:
-            # TODO:
-            # Based on issue #36764 in the following link,
-            #        "https://github.com/tensorflow/tensorflow/issues/36764"
-            # tf.half is not registered for tf.linalg.svd function on Windows
-            # CPU version.
-            # So we have to remove tf.half when testing with Windows CPU version.
+        # TODO:
+        #       To address the issue #36764.
+        for dtype in self._DtypesWithCheckingSystem(
+            use_gpu=tf.test.is_gpu_available(), system=platform.system()
+        ):
             with self.cached_session():
                 var0 = tf.Variable([1.0, 2.0], dtype=dtype)
                 var1 = tf.Variable([3.0, 4.0], dtype=dtype)
