@@ -13,8 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import warnings
-
 import tensorflow as tf
 from tensorflow_addons.utils.types import Number
 

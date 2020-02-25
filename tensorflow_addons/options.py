@@ -14,18 +14,18 @@ except KeyError:
 
 FALLBACK_WARNING_TEMPLATE = """{}
 
-The {} C++/CUDA custom op could not be loaded. 
-For this reason, Addons will fallback to an implementation written 
+The {} C++/CUDA custom op could not be loaded.
+For this reason, Addons will fallback to an implementation written
 in Python with public TensorFlow ops. There worst you might experience with
-this is a moderate slowdown on GPU. There can be multiple 
-reason for this loading error, one of them may be an ABI incompatibility between 
+this is a moderate slowdown on GPU. There can be multiple
+reason for this loading error, one of them may be an ABI incompatibility between
 the TensorFlow installed on your system and the TensorFlow used to compile
-TensorFlow Addons' custom ops. The stacktrace generated when loading the 
+TensorFlow Addons' custom ops. The stacktrace generated when loading the
 shared object file was displayed above.
 
 If you want this warning to disappear, either make sure the TensorFlow installed
-is compatible with this version of Addons, or tell TensorFlow Addons to 
-prefer using Python implementations and not custom C++/CUDA ones. You can do that 
+is compatible with this version of Addons, or tell TensorFlow Addons to
+prefer using Python implementations and not custom C++/CUDA ones. You can do that
 by changing the TF_ADDONS_PY_OPS flag
 either with the environment variable:
 ```bash
