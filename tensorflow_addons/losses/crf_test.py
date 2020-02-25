@@ -36,7 +36,7 @@ if six.PY3:
 else:
     from mock import patch
 
-# TODO(howl-anderson):  test CRF as the first layer
+CRF_LOSS_OBJ_LIST = [crf.crf_loss, crf.ConditionalRandomFieldLoss()]
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -108,16 +108,11 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
 
         return manual_log_likelihood
 
-    def test_loss_function(self):
-
+    def _test_loss_function(self, loss_obj):
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Input(shape=(3, 5)))
         model.add(self.crf)
-        model.compile(
-            "adam",
-            loss=crf.ConditionalRandomFieldLoss(),
-            metrics=[tf.keras.metrics.Accuracy()],
-        )
+        model.compile("adam", loss=loss_obj, metrics=[tf.keras.metrics.Accuracy()])
 
         log_likelihood, _ = model.train_on_batch(self.logits, self.tags)
 
@@ -128,207 +123,232 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
 
         self.assertAllClose(expected_log_likelihood, unbatched_log_likelihood)
 
+    def test_class_loss_function(self):
+        self._test_loss_function(crf.ConditionalRandomFieldLoss())
+
+    def test_func_loss_function(self):
+        self._test_loss_function(crf.crf_loss)
+
     def test_model_fit(self):
-        model = tf.keras.models.Sequential()
-        model.add(tf.keras.layers.Input(shape=(3, 5)))
-        model.add(self.crf)
-        model.compile(
-            "adam",
-            loss=crf.ConditionalRandomFieldLoss(),
-            metrics=[tf.keras.metrics.Accuracy()],
-        )
+        for loss_obj in CRF_LOSS_OBJ_LIST:
+            with self.subTest(loss_obj=loss_obj):
+                model = tf.keras.models.Sequential()
+                model.add(tf.keras.layers.Input(shape=(3, 5)))
+                model.add(self.crf)
+                model.compile(
+                    "adam", loss=loss_obj, metrics=[tf.keras.metrics.Accuracy()]
+                )
 
-        model.fit(self.logits, self.tags, epochs=10, batch_size=1)
+                model.fit(self.logits, self.tags, epochs=10, batch_size=1)
 
-    def test_dump_and_load(self):
+    def _test_dump_and_load(self, loss_obj):
         tmp_dir = self.get_temp_dir()
         MODEL_PERSISTENCE_PATH = os.path.join(tmp_dir, "test_saving_crf_model.h5")
 
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Input(shape=(3, 5)))
         model.add(self.crf)
-        model.compile(
-            "adam", loss="Addons>crf_loss", metrics=[tf.keras.metrics.Accuracy()]
-        )
+        model.compile("adam", loss=loss_obj, metrics=[tf.keras.metrics.Accuracy()])
 
         model.fit(self.logits, self.tags, epochs=10, batch_size=1)
 
         model.save(MODEL_PERSISTENCE_PATH)
+
+        # no news is good news
         new_model = tf.keras.models.load_model(MODEL_PERSISTENCE_PATH)
-
         new_model.fit(self.logits, self.tags, epochs=10, batch_size=1)
-
-        tf.keras.models.load_model(MODEL_PERSISTENCE_PATH)
 
         try:
             os.remove(MODEL_PERSISTENCE_PATH)
         except OSError:
             pass
 
+    def test_dump_and_load_with_class_loss(self):
+        # TODO(howl-anderson): wait for the PR merged
+        self.skipTest("require tensorflow/tensorflow#37018 merged")
+
+        self._test_dump_and_load(crf.ConditionalRandomFieldLoss())
+
     def test_mask_left_padding(self):
-        train_x = np.array(
-            [
-                [
-                    # O   B-X  I-X  B-Y  I-Y
-                    [0.0, 1.0, 0.0, 0.0, 0.0],
-                    [0.0, 0.0, 1.0, 0.0, 0.0],
-                    [0.0, 0.0, 1.0, 0.0, 0.0],
-                ],
-                [
-                    # O   B-X  I-X  B-Y  I-Y
-                    [0.0, 1.0, 0.0, 0.0, 0.0],
-                    [0.0, 1.0, 0.0, 0.0, 0.0],
-                    [0.0, 1.0, 0.0, 0.0, 0.0],
-                ],
-            ]
-        )  # yapf: disable
+        for loss_obj in CRF_LOSS_OBJ_LIST:
+            with self.subTest(loss_obj=loss_obj):
+                train_x = np.array(
+                    [
+                        [
+                            # O   B-X  I-X  B-Y  I-Y
+                            [0.0, 1.0, 0.0, 0.0, 0.0],
+                            [0.0, 0.0, 1.0, 0.0, 0.0],
+                            [0.0, 0.0, 1.0, 0.0, 0.0],
+                        ],
+                        [
+                            # O   B-X  I-X  B-Y  I-Y
+                            [0.0, 1.0, 0.0, 0.0, 0.0],
+                            [0.0, 1.0, 0.0, 0.0, 0.0],
+                            [0.0, 1.0, 0.0, 0.0, 0.0],
+                        ],
+                    ]
+                )  # yapf: disable
 
-        train_y = np.array(
-            [[1, 2, 2], [1, 1, 1]]  # B-X  I-X  I-X  # B-X  B-X  B-X
-        )  # yapf: disable
+                train_y = np.array(
+                    [[1, 2, 2], [1, 1, 1]]  # B-X  I-X  I-X  # B-X  B-X  B-X
+                )  # yapf: disable
 
-        mask = np.array([[0, 1, 1], [1, 1, 1]])
+                mask = np.array([[0, 1, 1], [1, 1, 1]])
 
-        layer = CRF(5)
+                layer = CRF(5)
 
-        x = tf.keras.layers.Input(shape=(3, 5))
-        y = layer(x, mask=tf.constant(mask))
+                x = tf.keras.layers.Input(shape=(3, 5))
+                y = layer(x, mask=tf.constant(mask))
 
-        # check shape inference
-        model = tf.keras.models.Model(x, y)
-        model.compile("adam", crf.ConditionalRandomFieldLoss())
+                # check shape inference
+                model = tf.keras.models.Model(x, y)
+                model.compile("adam", loss_obj)
 
-        with self.assertRaises(tf.errors.InvalidArgumentError) as context:
-            model.fit(train_x, train_y)
+                with self.assertRaises(tf.errors.InvalidArgumentError) as context:
+                    model.fit(train_x, train_y)
 
-        self.assertTrue(
-            "CRF layer do not support left padding" in context.exception.message
-        )
+                self.assertTrue(
+                    "CRF layer do not support left padding" in context.exception.message
+                )
 
     def test_mask_right_padding(self):
-        train_x = np.array(
-            [
-                [
-                    # O   B-X  I-X  B-Y  I-Y
-                    [0.0, 1.0, 0.0, 0.0, 0.0],
-                    [0.0, 0.0, 1.0, 0.0, 0.0],
-                    [0.0, 0.0, 1.0, 0.0, 0.0],
-                ],
-                [
-                    # O   B-X  I-X  B-Y  I-Y
-                    [0.0, 1.0, 0.0, 0.0, 0.0],
-                    [0.0, 1.0, 0.0, 0.0, 0.0],
-                    [0.0, 1.0, 0.0, 0.0, 0.0],
-                ],
-            ]
-        )  # yapf: disable
+        for loss_obj in CRF_LOSS_OBJ_LIST:
+            with self.subTest(loss_obj=loss_obj):
+                train_x = np.array(
+                    [
+                        [
+                            # O   B-X  I-X  B-Y  I-Y
+                            [0.0, 1.0, 0.0, 0.0, 0.0],
+                            [0.0, 0.0, 1.0, 0.0, 0.0],
+                            [0.0, 0.0, 1.0, 0.0, 0.0],
+                        ],
+                        [
+                            # O   B-X  I-X  B-Y  I-Y
+                            [0.0, 1.0, 0.0, 0.0, 0.0],
+                            [0.0, 1.0, 0.0, 0.0, 0.0],
+                            [0.0, 1.0, 0.0, 0.0, 0.0],
+                        ],
+                    ]
+                )  # yapf: disable
 
-        train_y = np.array(
-            [[1, 2, 2], [1, 1, 1]]  # B-X  I-X  I-X  # B-X  B-X  B-X
-        )  # yapf: disable
+                train_y = np.array(
+                    [[1, 2, 2], [1, 1, 1]]  # B-X  I-X  I-X  # B-X  B-X  B-X
+                )  # yapf: disable
 
-        mask = np.array([[1, 1, 1], [1, 1, 0]])
+                mask = np.array([[1, 1, 1], [1, 1, 0]])
 
-        layer = CRF(5)
+                layer = CRF(5)
 
-        x = tf.keras.layers.Input(shape=(3, 5))
-        y = layer(x, mask=tf.constant(mask))
+                x = tf.keras.layers.Input(shape=(3, 5))
+                y = layer(x, mask=tf.constant(mask))
 
-        # check shape inference
-        model = tf.keras.models.Model(x, y)
-        model.compile("adam", crf.ConditionalRandomFieldLoss())
-        model.fit(train_x, train_y)
+                # check shape inference
+                model = tf.keras.models.Model(x, y)
+                model.compile("adam", loss_obj)
+                model.fit(train_x, train_y)
 
     def test_in_subclass_model(self):
-        train_x = np.array(
-            [
-                [
-                    # O   B-X  I-X  B-Y  I-Y
-                    [0.0, 1.0, 0.0, 0.0, 0.0],
-                    [0.0, 0.0, 1.0, 0.0, 0.0],
-                    [0.0, 0.0, 1.0, 0.0, 0.0],
-                ],
-                [
-                    # O   B-X  I-X  B-Y  I-Y
-                    [0.0, 1.0, 0.0, 0.0, 0.0],
-                    [0.0, 1.0, 0.0, 0.0, 0.0],
-                    [0.0, 1.0, 0.0, 0.0, 0.0],
-                ],
-            ]
-        )  # yapf: disable
+        for loss_obj in CRF_LOSS_OBJ_LIST:
+            with self.subTest(loss_obj=loss_obj):
+                train_x = np.array(
+                    [
+                        [
+                            # O   B-X  I-X  B-Y  I-Y
+                            [0.0, 1.0, 0.0, 0.0, 0.0],
+                            [0.0, 0.0, 1.0, 0.0, 0.0],
+                            [0.0, 0.0, 1.0, 0.0, 0.0],
+                        ],
+                        [
+                            # O   B-X  I-X  B-Y  I-Y
+                            [0.0, 1.0, 0.0, 0.0, 0.0],
+                            [0.0, 1.0, 0.0, 0.0, 0.0],
+                            [0.0, 1.0, 0.0, 0.0, 0.0],
+                        ],
+                    ]
+                )  # yapf: disable
 
-        train_y = np.array(
-            [[1, 2, 2], [1, 1, 1]]  # B-X  I-X  I-X  # B-X  B-X  B-X
-        )  # yapf: disable
+                train_y = np.array(
+                    [[1, 2, 2], [1, 1, 1]]  # B-X  I-X  I-X  # B-X  B-X  B-X
+                )  # yapf: disable
 
-        def patch_mark_as_return(outputs, acd):
-            """Marks `outputs` as the return values for automatic control
-            deps."""
+                def patch_mark_as_return(outputs, acd):
+                    """Marks `outputs` as the return values for automatic control
+                    deps."""
 
-            def _mark_as_return(tensor):
-                """Marks `tensor` as the return value for automatic control
-                deps."""
-                if not tensor_util.is_tensor(tensor):
-                    return tensor
+                    def _mark_as_return(tensor):
+                        """Marks `tensor` as the return value for automatic control
+                        deps."""
+                        if not tensor_util.is_tensor(tensor):
+                            return tensor
 
-                # pylint: disable=protected-access
-                return_tensor = acd.mark_as_return(tensor)
-                if getattr(tensor, "_keras_mask", None) is not None:
-                    return_tensor._keras_mask = acd.mark_as_return(tensor._keras_mask)
-                else:
-                    return_tensor._keras_mask = None
+                        # pylint: disable=protected-access
+                        return_tensor = acd.mark_as_return(tensor)
+                        if getattr(tensor, "_keras_mask", None) is not None:
+                            return_tensor._keras_mask = acd.mark_as_return(
+                                tensor._keras_mask
+                            )
+                        else:
+                            return_tensor._keras_mask = None
 
-                # TODO(howl-anderson) a little hack here, handle _keras_history
-                if getattr(tensor, "_keras_history", None) is not None:
-                    return_tensor._keras_history = tensor._keras_history
+                        # TODO(howl-anderson) a little hack here, handle _keras_history
+                        if getattr(tensor, "_keras_history", None) is not None:
+                            return_tensor._keras_history = tensor._keras_history
 
-                # Handle TensorFlow Probability attached metadata.
-                # TODO(b/132076537): Remove this once TFP uses `CompositeTensor`.
-                if getattr(tensor, "_tfp_distribution", None) is not None:
-                    return_tensor._tfp_distribution = tensor._tfp_distribution
+                        # Handle TensorFlow Probability attached metadata.
+                        # TODO(b/132076537): Remove this once TFP uses `CompositeTensor`.
+                        if getattr(tensor, "_tfp_distribution", None) is not None:
+                            return_tensor._tfp_distribution = tensor._tfp_distribution
 
-                return return_tensor
-                # pylint: enable=protected-access
+                        return return_tensor
+                        # pylint: enable=protected-access
 
-            return nest.map_structure(_mark_as_return, outputs)
+                    return nest.map_structure(_mark_as_return, outputs)
 
-        class CRFModel(tf.keras.Model):
-            def __init__(self):
-                super(CRFModel, self).__init__()
+                class CRFModel(tf.keras.Model):
+                    def __init__(self):
+                        super(CRFModel, self).__init__()
 
-                self.layer = CRF(5)
+                        self.layer = CRF(5)
 
-            def call(self, inputs):
-                return self.layer(inputs)
+                    def call(self, inputs):
+                        return self.layer(inputs)
 
-            @patch.object(base_layer_utils, "mark_as_return", patch_mark_as_return)
-            def __call__(self, inputs, *args, **kwargs):
-                outputs = super(CRFModel, self).__call__(inputs, *args, **kwargs)
+                    @patch.object(
+                        base_layer_utils, "mark_as_return", patch_mark_as_return
+                    )
+                    def __call__(self, inputs, *args, **kwargs):
+                        outputs = super(CRFModel, self).__call__(
+                            inputs, *args, **kwargs
+                        )
 
-                # A hack that add _keras_history to EagerTensor, make it more like normal Tensor
-                for tensor in tf.nest.flatten(outputs):
-                    if not hasattr(tensor, "_keras_history"):
-                        tensor._keras_history = (self, 0, 0)
+                        # A hack that add _keras_history to EagerTensor, make it more like normal Tensor
+                        for tensor in tf.nest.flatten(outputs):
+                            if not hasattr(tensor, "_keras_history"):
+                                tensor._keras_history = (self, 0, 0)
 
-                return outputs
+                        return outputs
 
-        model = CRFModel()
+                model = CRFModel()
 
-        model.compile("adam", crf.ConditionalRandomFieldLoss())
-        model.fit(train_x, train_y)
+                model.compile("adam", loss_obj)
+                model.fit(train_x, train_y)
 
     def test_serialization(self, dtype=None):
-        ref_fn = crf.crf_loss
-        config = tf.keras.losses.serialize(ref_fn)
-        fn = tf.keras.losses.deserialize(config)
-        self.assertEqual(ref_fn, fn)
+        for loss_obj in CRF_LOSS_OBJ_LIST:
+            with self.subTest(loss_obj=loss_obj):
+                ref_fn = loss_obj
+                config = tf.keras.losses.serialize(ref_fn)
+                fn = tf.keras.losses.deserialize(config)
+                self.assertEqual(ref_fn.get_config(), fn.get_config())
 
     def test_keras_model_compile(self):
-        model = tf.keras.models.Sequential(
-            [tf.keras.layers.Input(shape=(3, 5)), self.crf]
-        )
+        for loss_obj in CRF_LOSS_OBJ_LIST:
+            with self.subTest(loss_obj=loss_obj):
+                model = tf.keras.models.Sequential(
+                    [tf.keras.layers.Input(shape=(3, 5)), self.crf]
+                )
 
-        model.compile(loss="Addons>crf_loss", optimizer="adam")
+                model.compile(loss=loss_obj, optimizer="adam")
 
 
 if __name__ == "__main__":

@@ -44,22 +44,4 @@ class ConditionalRandomFieldLoss(object):
         return tf.keras.backend.mean(loss_vector)
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
-def crf_loss(y_true: types.TensorLike, y_pred: types.TensorLike) -> tf.Tensor:
-    """
-    Args
-        y_true: true targets tensor.
-        y_pred: predictions tensor.
-
-    Returns:
-        scalar.
-    """
-    crf_layer = y_pred._keras_history[0]
-
-    # check if last layer is CRF
-    if not isinstance(crf_layer, CRF):
-        raise ValueError("Last layer must be CRF for use {}.".format("crf_loss"))
-
-    loss_vector = crf_layer.get_loss(y_true, y_pred)
-
-    return tf.keras.backend.mean(loss_vector)
+crf_loss = ConditionalRandomFieldLoss()
