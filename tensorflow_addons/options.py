@@ -43,8 +43,7 @@ tfa.options.TF_ADDONS_PY_OPS = True
 
 
 def warn_fallback(op_name):
-    warning_msg = FALLBACK_WARNING_TEMPLATE.format(traceback.format_exc(),
-                                                   op_name)
+    warning_msg = FALLBACK_WARNING_TEMPLATE.format(traceback.format_exc(), op_name)
     warnings.warn(warning_msg, RuntimeWarning)
     global TF_ADDONS_PY_OPS
     TF_ADDONS_PY_OPS = True
