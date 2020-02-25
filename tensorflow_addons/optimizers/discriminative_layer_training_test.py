@@ -357,7 +357,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
     @test_utils.run_in_graph_and_eager_modes
     @test_utils.run_distributed(2)
     def _test_model_checkpoint(self, model_fn, loss, opt):
-        """Confirm that model does save checkpoints and can load them properly"""
+        """Confirm that model does save checkpoints and can load them properly."""
 
         learning_rate = 0.01
         model_lr = model_fn()
@@ -374,7 +374,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         y = np.zeros(shape=(8, 5), dtype=np.float32)
         y[:, 0] = 1.0
 
-        filepath = os.path.join(tempfile.gettempdir(), model_fn.__name__ + '_cp.ckpt' )
+        filepath = os.path.join(tempfile.gettempdir(), model_fn.__name__ + "_cp.ckpt")
 
         callbacks = [
             tf.keras.callbacks.ModelCheckpoint(
@@ -393,9 +393,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
 
         # If this doesn't error out, then loading and checkpointing should be fine.
-        model_lr.load_weights(
-            filepath=filepath
-        )
+        model_lr.load_weights(filepath=filepath)
 
     def _run_tests_in_notebook(self):
         for name, method in DiscriminativeLearningTest.__dict__.items():
