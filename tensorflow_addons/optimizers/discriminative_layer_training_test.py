@@ -395,12 +395,6 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         # If this doesn't error out, then loading and checkpointing should be fine.
         model_lr.load_weights(filepath=filepath)
 
-    def _run_tests_in_notebook(self):
-        for name, method in DiscriminativeLearningTest.__dict__.items():
-            if callable(method) and name[:4] == "test":
-                print("running test %s" % name)
-                method(self)
-
 
 def test_wrap(method, **kwargs):
     """Wrap the test method so that it has pre assigned kwargs."""
