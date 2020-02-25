@@ -13,6 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 
+import warnings
+
 import tensorflow as tf
 from tensorflow_addons.utils.types import Number
 
@@ -41,10 +43,14 @@ def hardshrink(
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
-    if options.TF_ADDONS_PY_OPS:
-        return _hardshrink_py(x, lower, upper)
-    else:
-        return _hardshrink_custom_op(x, lower, upper)
+
+    if not options.TF_ADDONS_PY_OPS:
+        try:
+            return _hardshrink_custom_op(x, lower, upper)
+        except tf.errors.NotFoundError:
+            options.warn_fallback('hardshrink')
+
+    return _hardshrink_py(x, lower, upper)
 
 
 def _hardshrink_custom_op(x, lower=-0.5, upper=0.5):
