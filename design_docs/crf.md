@@ -64,7 +64,9 @@ easy to implement and no more need patch
 
 #### cons ####
 
-This solution has a shortage that this model can not be save and load from disk anymore.
+This solution has a shortage that load model from disk will be difficult.
+
+##### TensorFlow's default load process don't work #####
 
 ```python
 # Save the model
@@ -74,13 +76,35 @@ model.save('path_to_my_model.h5')
 new_model = keras.models.load_model('path_to_my_model.h5')
 ```
 
-key code snippet of how load loss from disk (as h5 file) in the function `tensorflow_core.python.keras.saving.saving_utils.compile_args_from_training_config`.
+The reason is when Keras core reconstruct the model from disk, it will construct layer and loss from disk independently, so the new loss instance don't have the reference to the new CRF layer instance, therefore the loss function don't work anymore.
 
-loss function must be a class or function that can load from default losses, global custom losses registry or custom_objects passed by user.
+##### A workaround solution (not prefect) #####
+TODO: add a PoC code for this
 
-Since the layer object was constructed in side the `load_model` function, there is no way to pass a loss object generated from a layer object though custom_objects.
+This a workaround solution for loading CRF model from disk.
 
-Also I think it even can not be saved to disk. TODO(howl-anderson): add more detailed code later.
+1. Load the model without compile
+```python
+new_model = keras.models.load_model('path_to_my_model.h5', compile=Flase)
+```
+
+2. Get the CRF layer instance
+```python
+# normally, crf layer is the last layer
+crf_layer_instance = new_model.get_layer(index=-1)
+```
+
+3. Get the CRF loss instance from layer instance
+```python
+crf_loss_instance = crf_layer_instance.get_keras_loss()
+```
+
+4. Compile the model
+```python
+new_model.compile(loss=crf_loss_instance)
+```
+
+The shortage of this method is user need to add extract code to load the model and all the arguments except the loss passed to model's compile method before will not longer remembered, user need to pass to it again (if their still remember it)
 
 ## About CRF loss
 
@@ -90,8 +114,7 @@ Also I think it even can not be saved to disk. TODO(howl-anderson): add more det
 the recommended way to implement a "normal" loss
 
 #### cons
-
-according to the code around tensorflow_core/python/keras/engine/training.py:1651 
+according to the code around `tensorflow_core/python/keras/engine/training.py:1651`
 `per_sample_losses` returned by `loss_fn.call(y_true, y_pred)` must (or can be converted to) have the same shape with `sample_weight` which default to output `mask` (tensorflow_core/python/keras/engine/training.py:1642) of CRF layer.
 
 but that is not possible because `per_sample_losses` is a 1d tensor and `mask` of CRF is a 2d tensor.
@@ -100,12 +123,31 @@ One way to fix it is set output `mark` of crf layer to a 1d tensor, which make t
 
 Other way is modified the output of loss class to make `per_sample_losses` to a 2d tensor and properly set the reduce property of the class. It so wired and break the semantic meaning of the interface, should considered to a bad idea.
 
-### Solution 2: implement loss as a function
+
+### Solution 2: implement as a function ###
+
+#### pros ####
+This is a old but standard (keras style) way to implement the loss function
+
+#### cons ####
+TensorFlow will convert a loss function into a subclass of `tf.keras.losses.Loss` in `` file by `` (call chain: `tf.keras.Model::compile()` [Line: 314] > `tensorflow/python/keras/engine/training_utils.py::prepare_loss_functions` [Line: 1501] > `tensorflow/python/keras/engine/training_utils.py::get_loss_function` [Line: 1186]).
+
+```python
+  # For losses which are given as strings/functions in the compile API,
+  # we always set the loss reduction type to be `SUM_OVER_BATCH_SIZE`
+  # (both in distribution strategy context and otherwise).
+  return losses.LossFunctionWrapper(
+      loss_fn,
+      name=loss_fn.__name__,
+      reduction=losses_utils.ReductionV2.SUM_OVER_BATCH_SIZE)
+```
+
+So it has same issue that solution 1.
+
+### Solution 3: implement loss as a callable class
 
 #### pros
-
-easy to implement and nothing breaks. `mark` property is still a meaningful tensor which standard as a mark.
+Nothing breaks. `mark` property is still a meaningful tensor which standard as a mark.
 
 #### cons
-
-this is a old style way to implement a loss function, which is not the recommend way in TF 2.x.
+this solution need understanding how keras process a loss function, which is not documented and not recommend way in TF 2.x.
