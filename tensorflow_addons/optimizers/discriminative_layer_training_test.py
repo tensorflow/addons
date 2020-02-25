@@ -374,7 +374,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         y = np.zeros(shape=(8, 5), dtype=np.float32)
         y[:, 0] = 1.0
 
-        filepath = os.path.join(tempfile.gettempdir(), model_fn.__name__ + "_{epoch}")
+        filepath = os.path.join(tempfile.gettempdir(), model_fn.__name__ + '_cp.ckpt' )
 
         callbacks = [
             tf.keras.callbacks.ModelCheckpoint(
@@ -394,7 +394,7 @@ class DiscriminativeLearningTest(tf.test.TestCase):
 
         # If this doesn't error out, then loading and checkpointing should be fine.
         model_lr.load_weights(
-            filepath=os.path.join(tempfile.gettempdir(), model_fn.__name__ + "1")
+            filepath=filepath
         )
 
     def _run_tests_in_notebook(self):
