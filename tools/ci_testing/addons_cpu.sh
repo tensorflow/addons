@@ -14,7 +14,15 @@
 # limitations under the License.
 #
 # ==============================================================================
-set -x
+# usage: bash tools/ci_testing/addons_cpu.sh [--no-deps]
+
+set -x -e
+
+
+if [ "$1" != "--no-deps" ] && [ "$1" != "" ]; then
+  echo Wrong argument $1
+  exit 1
+fi
 
 # Make sure we're in the project root path.
 SCRIPT_DIR=$( cd ${0%/*} && pwd -P )
@@ -40,10 +48,11 @@ echo ""
 export CC_OPT_FLAGS='-mavx'
 export TF_NEED_CUDA=0
 
+# Check if python3 is available. On Windows VM it is not.
 if [ -x "$(command -v python3)" ]; then
-    echo 'y' | python3 ./configure.py
+    python3 ./configure.py $1
   else
-    echo 'y' | python ./configure.py
+    python ./configure.py $1
 fi
 
 cat ./.bazelrc

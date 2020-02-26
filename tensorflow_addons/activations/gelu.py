@@ -21,7 +21,7 @@ from tensorflow_addons.utils.resource_loader import LazySO
 _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
     """Gaussian Error Linear Unit.
 
@@ -46,5 +46,6 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
 
 @tf.RegisterGradient("Addons>Gelu")
 def _gelu_grad(op, grad):
-    return _activation_so.ops.addons_gelu_grad(grad, op.inputs[0],
-                                               op.get_attr("approximate"))
+    return _activation_so.ops.addons_gelu_grad(
+        grad, op.inputs[0], op.get_attr("approximate")
+    )

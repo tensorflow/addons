@@ -17,11 +17,12 @@
 import time
 import tensorflow as tf
 from collections import defaultdict
+from typeguard import typechecked
 
 from tensorflow.keras.callbacks import Callback
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class TQDMProgressBar(Callback):
     """TQDM Progress Bar for Tensorflow Keras.
 
@@ -45,28 +46,34 @@ class TQDMProgressBar(Callback):
         show_overall_progress: False to hide overall progress bar.
     """
 
-    def __init__(self,
-                 metrics_separator=" - ",
-                 overall_bar_format='{l_bar}{bar} {n_fmt}/{total_fmt} ETA: '
-                 '{remaining}s,  {rate_fmt}{postfix}',
-                 epoch_bar_format='{n_fmt}/{total_fmt}{bar} ETA: '
-                 '{remaining}s - {desc}',
-                 metrics_format='{name}: {value:0.4f}',
-                 update_per_second=10,
-                 leave_epoch_progress=True,
-                 leave_overall_progress=True,
-                 show_epoch_progress=True,
-                 show_overall_progress=True):
+    @typechecked
+    def __init__(
+        self,
+        metrics_separator: str = " - ",
+        overall_bar_format: str = "{l_bar}{bar} {n_fmt}/{total_fmt} ETA: "
+        "{remaining}s,  {rate_fmt}{postfix}",
+        epoch_bar_format: str = "{n_fmt}/{total_fmt}{bar} ETA: "
+        "{remaining}s - {desc}",
+        metrics_format: str = "{name}: {value:0.4f}",
+        update_per_second: int = 10,
+        leave_epoch_progress: bool = True,
+        leave_overall_progress: bool = True,
+        show_epoch_progress: bool = True,
+        show_overall_progress: bool = True,
+    ):
 
         try:
             # import tqdm here because tqdm is not a required package
             # for addons
             import tqdm
-            version_message = 'Please update your TQDM version to >= 4.36.1, '
-            'you have version {}. To update, run !pip install -U tqdm'
-            assert tqdm.__version__ >= '4.36.1', version_message.format(
-                tqdm.__version__)
+
+            version_message = "Please update your TQDM version to >= 4.36.1, "
+            "you have version {}. To update, run !pip install -U tqdm"
+            assert tqdm.__version__ >= "4.36.1", version_message.format(
+                tqdm.__version__
+            )
             from tqdm.auto import tqdm
+
             self.tqdm = tqdm
         except ImportError:
             raise ImportError("Please install tqdm via pip install tqdm")
@@ -91,25 +98,26 @@ class TQDMProgressBar(Callback):
         self.metrics = None
 
     def on_train_begin(self, logs=None):
-        self.num_epochs = self.params['epochs']
-        self.metrics = self.params['metrics']
+        self.num_epochs = self.params["epochs"]
+        self.metrics = self.params["metrics"]
 
         if self.show_overall_progress:
             self.overall_progress_tqdm = self.tqdm(
-                desc='Training',
+                desc="Training",
                 total=self.num_epochs,
                 bar_format=self.overall_bar_format,
                 leave=self.leave_overall_progress,
                 dynamic_ncols=True,
-                unit='epochs')
+                unit="epochs",
+            )
 
         # set counting mode
-        if 'samples' in self.params:
-            self.mode = 'samples'
-            self.total_steps = self.params['samples']
+        if "samples" in self.params:
+            self.mode = "samples"
+            self.total_steps = self.params["samples"]
         else:
-            self.mode = 'steps'
-            self.total_steps = self.params['steps']
+            self.mode = "steps"
+            self.total_steps = self.params["steps"]
 
     def on_train_end(self, logs={}):
         if self.show_overall_progress:
@@ -117,7 +125,8 @@ class TQDMProgressBar(Callback):
 
     def on_epoch_begin(self, epoch, logs={}):
         current_epoch_description = "Epoch {epoch}/{num_epochs}".format(
-            epoch=epoch + 1, num_epochs=self.num_epochs)
+            epoch=epoch + 1, num_epochs=self.num_epochs
+        )
 
         if self.show_epoch_progress:
             print(current_epoch_description)
@@ -126,7 +135,8 @@ class TQDMProgressBar(Callback):
                 bar_format=self.epoch_bar_format,
                 leave=self.leave_epoch_progress,
                 dynamic_ncols=True,
-                unit=self.mode)
+                unit=self.mode,
+            )
 
         self.num_samples_seen = 0
         self.steps_to_update = 0
@@ -144,8 +154,9 @@ class TQDMProgressBar(Callback):
             self.epoch_progress_tqdm.mininterval = 0
 
             # update the rest of the steps in epoch progress bar
-            self.epoch_progress_tqdm.update(self.total_steps -
-                                            self.epoch_progress_tqdm.n)
+            self.epoch_progress_tqdm.update(
+                self.total_steps - self.epoch_progress_tqdm.n
+            )
             self.epoch_progress_tqdm.close()
 
         if self.show_overall_progress:
@@ -153,7 +164,7 @@ class TQDMProgressBar(Callback):
 
     def on_batch_end(self, batch, logs={}):
         if self.mode == "samples":
-            batch_size = logs['size']
+            batch_size = logs["size"]
         else:
             batch_size = 1
 
@@ -207,13 +218,13 @@ class TQDMProgressBar(Callback):
 
     def get_config(self):
         config = {
-            'metrics_separator': self.metrics_separator,
-            'overall_bar_format': self.overall_bar_format,
-            'epoch_bar_format': self.epoch_bar_format,
-            'leave_epoch_progress': self.leave_epoch_progress,
-            'leave_overall_progress': self.leave_overall_progress,
-            'show_epoch_progress': self.show_epoch_progress,
-            'show_overall_progress': self.show_overall_progress,
+            "metrics_separator": self.metrics_separator,
+            "overall_bar_format": self.overall_bar_format,
+            "epoch_bar_format": self.epoch_bar_format,
+            "leave_epoch_progress": self.leave_epoch_progress,
+            "leave_overall_progress": self.leave_overall_progress,
+            "show_epoch_progress": self.show_epoch_progress,
+            "show_overall_progress": self.show_overall_progress,
         }
 
         base_config = super().get_config()

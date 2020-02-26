@@ -30,13 +30,7 @@ from absl import flags
 import tensorflow_addons as tfa
 
 from tensorflow_docs.api_generator import generate_lib
-from tensorflow_docs.api_generator import parser
 from tensorflow_docs.api_generator import public_api
-
-from tensorflow.python.util import tf_inspect
-
-# Use tensorflow's `tf_inspect`, which is aware of `tf_decorator`.
-parser.tf_inspect = tf_inspect
 
 PROJECT_SHORT_NAME = "tfa"
 PROJECT_FULL_NAME = "TensorFlow Addons"

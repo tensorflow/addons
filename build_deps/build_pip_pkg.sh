@@ -23,6 +23,10 @@ function is_windows() {
   [[ "${PLATFORM}" =~ msys_nt*|mingw*|cygwin*|uwin* ]]
 }
 
+function is_macos() {
+  [[ "${PLATFORM}" == "darwin" ]]
+}
+
 if is_windows; then
   PIP_FILE_PREFIX="bazel-bin/build_pip_pkg.exe.runfiles/__main__/"
 else
@@ -37,11 +41,18 @@ function abspath() {
 
 function main() {
   DEST=${1}
-  BUILD_FLAG=${2}
+  NIGHTLY_FLAG=${2}
 
   if [[ -z ${DEST} ]]; then
     echo "No destination dir provided"
     exit 1
+  fi
+
+  # Check if python3 is available. On Windows VM it is not.
+  if [ -x "$(command -v python3)" ]; then
+      _PYTHON_BINARY=python3
+    else
+      _PYTHON_BINARY=python
   fi
 
   mkdir -p ${DEST}
@@ -70,11 +81,17 @@ function main() {
   pushd ${TMPDIR}
   echo $(date) : "=== Building wheel"
 
-  if [[ -z ${BUILD_FLAG} ]]; then
+
+  BUILD_CMD="setup.py bdist_wheel"
+  if is_macos; then
+    BUILD_CMD="${BUILD_CMD} --plat-name macosx_10_13_x86_64"
+  fi
+
+  if [[ -z ${NIGHTLY_FLAG} ]]; then
     # Windows has issues with locking library files for deletion so do not fail here
-    ${PYTHON_VERSION:=python} setup.py bdist_wheel || true
+    ${_PYTHON_BINARY} ${BUILD_CMD} || true
   else
-    ${PYTHON_VERSION:=python} setup.py bdist_wheel "${2}" || true
+    ${_PYTHON_BINARY} ${BUILD_CMD} ${NIGHTLY_FLAG} || true
   fi
 
   cp dist/*.whl "${DEST}"

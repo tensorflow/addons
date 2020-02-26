@@ -2,8 +2,19 @@ name: addons-release
 
 on:
   release:
+    types: [published]
     tags:
       - v*
+  push:
+    branches:
+      - master
+      - r*
+  pull_request:
+    branches:
+      - master
+      - r*
+  schedule:
+    - cron:  '0 0 * * *'
 
 env:
   BAZEL_VERSION: 1.1.0
@@ -13,123 +24,26 @@ jobs:
     name: Test release on Ubuntu
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Release test Ubuntu
         run: |
           set -x -e
-          bash tools/run_docker.sh -d cpu -c 'make unit-test'
-
-  macos-cpu-release-test:
-    name: Test release on macOS
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        python-version: ['3.5', '3.6', '3.7']
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Release test macOS py${{ matrix.python-version }}
-        run: |
-          python --version
-          bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
-          bash -x -e tools/ci_testing/addons_cpu.sh
-
-  windows-cpu-release-test:
-    name: Test release on Windows
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        python-version: ['3.5', '3.6', '3.7']
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Release test Windows py${{ matrix.python-version }}
-        env:
-          BAZEL_VC: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/"
-        shell: bash
-        run: |
-          python -m pip install wheel setuptools
-          curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
-          export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
-          bash -x -e ./tools/ci_testing/addons_cpu.sh
-
-  macos-release-bazel:
-    name: Bazel release for macOS
-    needs: [macos-cpu-release-test]
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-      - name: Release build for macOS
-        env:
-          TF_NEED_CUDA: 0
-        run: |
-          python --version
-          bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
-          echo 'y' | python3 ./configure.py --quiet
-          bazel build \
-            -c opt \
-            --noshow_progress \
-            --noshow_loading_progress \
-            --verbose_failures \
-            --test_output=errors \
-            build_pip_pkg
-      - uses: actions/upload-artifact@v1
-        with:
-          name: ${{ runner.os }}-bazel-bin
-          path: bazel-bin
-
-  windows-release-bazel:
-    name: Build release for Windows
-    needs: [windows-cpu-release-test]
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-      - name: Release build for Windows
-        env:
-          TF_NEED_CUDA: 0
-          BAZEL_VC: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/"
-        shell: bash
-        run: |
-          python --version
-          curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
-          echo 'y' | python ./configure.py --quiet
-          ./bazel-${BAZEL_VERSION}-windows-x86_64.exe build \
-            -c opt \
-            --enable_runfiles \
-            --noshow_progress \
-            --noshow_loading_progress \
-            --verbose_failures \
-            --test_output=errors \
-            build_pip_pkg
-      - uses: actions/upload-artifact@v1
-        with:
-          name: ${{ runner.os }}-bazel-bin
-          path: bazel-bin
-
+          bash tools/run_cpu_tests.sh
   manylinux-release-wheel:
     name: Build release wheels for manylinux2010
-    needs: [manylinux-cpu-release-test]
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v1
+      - if: github.event_name == 'schedule'
+        run: echo "::set-env name=NIGHTLY_FLAG::--nightly"
+      - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
-          python-version: 3.6
+          python-version: 3.5
       - name: Build manylinux2010 wheels
         run: |
           docker run -e TF_NEED_CUDA=1 -v ${PWD}:/addons -w /addons \
-            gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010 \
-            tools/ci_build/builds/release_linux.sh
+            tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16 \
+            tools/ci_build/builds/release_linux.sh $NIGHTLY_FLAG
 
           sudo apt-get install patchelf
           python3 -m pip install -U auditwheel==2.0.0
@@ -146,64 +60,89 @@ jobs:
 
   macos-release-wheel:
     name: Build release wheels for macOS
-    needs: [macos-release-bazel]
     runs-on: macos-latest
     strategy:
       matrix:
         python-version: ['3.5', '3.6', '3.7']
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/download-artifact@v1
-        with:
-          name: ${{ runner.os }}-bazel-bin
-          path: bazel-bin
+      - if: github.event_name == 'schedule'
+        run: echo "::set-env name=NIGHTLY_FLAG::--nightly"
+      - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
       - name: Build macOS wheels
+        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         run: |
-          chmod +x bazel-bin/build_pip_pkg
+          python3 --version
           python3 -m pip install delocate wheel setuptools
 
-          bazel-bin/build_pip_pkg artifacts
+          bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
+          bash tools/ci_testing/addons_cpu.sh
+
+          bazel build \
+            -c opt \
+            --copt -mmacosx-version-min=10.13 \
+            --linkopt -mmacosx-version-min=10.13 \
+            --noshow_progress \
+            --noshow_loading_progress \
+            --verbose_failures \
+            --test_output=errors \
+            build_pip_pkg
+
+          bazel-bin/build_pip_pkg artifacts $NIGHTLY_FLAG
           for f in artifacts/*.whl; do
             delocate-wheel -w wheelhouse $f
           done
       - uses: actions/upload-artifact@v1
+        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
           name: ${{ runner.os }}-wheels
           path: wheelhouse
 
   windows-release-wheel:
     name: Build release wheels for Windows
-    needs: [windows-release-bazel]
     runs-on: windows-latest
     strategy:
       matrix:
         python-version: ['3.5', '3.6', '3.7']
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/download-artifact@v1
-        with:
-          name: ${{ runner.os }}-bazel-bin
-          path: bazel-bin
+      - if: github.event_name == 'schedule'
+        run: echo "::set-env name=NIGHTLY_FLAG::--nightly"
+      - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
       - name: Build Windows wheels
+        env:
+          TF_NEED_CUDA: 0
+          BAZEL_VC: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/"
         shell: bash
+        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         run: |
-          chmod +x bazel-bin/build_pip_pkg
           python -m pip install wheel setuptools
-          bazel-bin/build_pip_pkg artifacts
+          curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
+          export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
+          bash ./tools/ci_testing/addons_cpu.sh
+
+          ./bazel-${BAZEL_VERSION}-windows-x86_64.exe build \
+            -c opt \
+            --enable_runfiles \
+            --noshow_progress \
+            --noshow_loading_progress \
+            --verbose_failures \
+            --test_output=errors \
+            build_pip_pkg
+          bazel-bin/build_pip_pkg artifacts $NIGHTLY_FLAG
       - uses: actions/upload-artifact@v1
+        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
           name: ${{ runner.os }}-wheels
           path: artifacts
 
   upload-wheels:
     name: Publish wheels to PyPi
-    needs: [manylinux-release-wheel, macos-release-wheel, windows-release-wheel]
+    needs: [manylinux-release-wheel, macos-release-wheel, windows-release-wheel, manylinux-cpu-release-test]
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/download-artifact@v1
@@ -227,6 +166,7 @@ jobs:
           ls -la dist/
           sha256sum dist/*.whl
       - uses: pypa/gh-action-pypi-publish@master
+        if: github.event_name == 'schedule' || github.event_name == 'release'
         with:
           user: __token__
           password: ${{ secrets.pypi_token }}

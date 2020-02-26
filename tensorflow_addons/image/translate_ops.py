@@ -16,9 +16,14 @@
 
 import tensorflow as tf
 from tensorflow_addons.image.transform_ops import transform
+from tensorflow_addons.utils.types import TensorLike
+
+from typing import Optional
 
 
-def translations_to_projective_transforms(translations, name=None):
+def translations_to_projective_transforms(
+    translations: TensorLike, name: Optional[str] = None
+) -> tf.Tensor:
     """Returns projective transform(s) for the given translation(s).
 
     Args:
@@ -65,7 +70,12 @@ def translations_to_projective_transforms(translations, name=None):
 
 
 @tf.function
-def translate(images, translations, interpolation="NEAREST", name=None):
+def translate(
+    images: TensorLike,
+    translations: TensorLike,
+    interpolation: str = "NEAREST",
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Translate image(s) by the passed vectors(s).
 
     Args:

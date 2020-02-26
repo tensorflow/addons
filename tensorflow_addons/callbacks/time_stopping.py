@@ -16,6 +16,7 @@
 
 import datetime
 import time
+from typeguard import typechecked
 
 import tensorflow as tf
 from tensorflow.keras.callbacks import Callback
@@ -31,11 +32,13 @@ class TimeStopping(Callback):
         verbose: verbosity mode. Defaults to 0.
     """
 
-    def __init__(self, seconds=86400, verbose=0):
+    @typechecked
+    def __init__(self, seconds: int = 86400, verbose: int = 0):
         super().__init__()
 
         self.seconds = seconds
         self.verbose = verbose
+        self.stopped_epoch = None
 
     def on_train_begin(self, logs=None):
         self.stopping_time = time.time() + self.seconds
@@ -46,7 +49,7 @@ class TimeStopping(Callback):
             self.stopped_epoch = epoch
 
     def on_train_end(self, logs=None):
-        if self.verbose > 0:
+        if self.stopped_epoch is not None and self.verbose > 0:
             formatted_time = datetime.timedelta(seconds=self.seconds)
             msg = "Timed stopping at epoch {} after training for {}".format(
                 self.stopped_epoch + 1, formatted_time
