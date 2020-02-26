@@ -999,6 +999,19 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         initial_state = cell.get_initial_state(batch_size=2, dtype=tf.float32)
         _ = layer(inputs=tf.ones((2, 4, 8)), initial_state=initial_state)
 
+    def test_attention_state_with_variable_length_input(self):
+        cell = tf.keras.layers.LSTMCell(3)
+        mechanism = wrapper.LuongAttention(units=3)
+        cell = wrapper.AttentionWrapper(cell, mechanism)
+
+        var_len = tf.random.uniform(shape=(), minval=2, maxval=10, dtype=tf.int32)
+        data = tf.ones(shape=(var_len, var_len, 3))
+
+        mechanism.setup_memory(data)
+        layer = tf.keras.layers.RNN(cell)
+
+        _ = layer(data)
+
 
 if __name__ == "__main__":
     tf.test.main()
