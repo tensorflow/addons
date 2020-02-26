@@ -14,18 +14,5 @@ exclude = '''
     | build
     | dist
   )/
-  | tensorflow_addons/losses/__init__.py
-  | tensorflow_addons/losses/focal_loss.py
-  | tensorflow_addons/losses/giou_loss.py
-  | tensorflow_addons/losses/giou_loss_test.py
-  | tensorflow_addons/metrics/multilabel_confusion_matrix.py
-  | tensorflow_addons/metrics/r_square.py
-  | tensorflow_addons/optimizers/__init__.py
-  | tensorflow_addons/optimizers/lookahead.py
-  | tensorflow_addons/optimizers/moving_average.py
-  | tensorflow_addons/optimizers/weight_decay_optimizers.py
-  | tensorflow_addons/text/__init__.py
-  | tensorflow_addons/text/crf.py
-  | tensorflow_addons/text/crf_test.py
 )
 '''
