@@ -42,3 +42,7 @@ def lisht(x: types.TensorLike) -> tf.Tensor:
 @tf.RegisterGradient("Addons>Lisht")
 def _lisht_grad(op, grad):
     return _activation_so.ops.addons_lisht_grad(grad, op.inputs[0])
+
+
+def _lisht_py(x):
+    return x * tf.math.tanh(x)

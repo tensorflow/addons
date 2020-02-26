@@ -17,7 +17,7 @@
 import tensorflow as tf
 
 from tensorflow_addons.utils.types import TensorLike
-from typing import List
+from typing import Optional
 from typeguard import typechecked
 
 
@@ -54,7 +54,7 @@ class GIoULoss(tf.keras.losses.Loss):
     def __init__(self,
                  mode: str = 'giou',
                  reduction: str = tf.keras.losses.Reduction.AUTO,
-                 name: str = 'giou_loss'):
+                 name: Optional[str] = 'giou_loss'):
         if mode not in ['giou', 'iou']:
             raise ValueError("Value of mode should be 'iou' or 'giou'")
         super().__init__(name=name, reduction=reduction)
@@ -98,8 +98,8 @@ def giou_loss(y_true: TensorLike,
     return 1 - giou
 
 
-def _calculate_giou(b1: List[int],
-                    b2: List[int],
+def _calculate_giou(b1: TensorLike,
+                    b2: TensorLike,
                     mode: str = 'giou') -> tf.Tensor:
     """
     Args:

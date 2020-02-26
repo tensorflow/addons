@@ -1,3 +1,3 @@
 set -x -e
 
-bash tools/run_gpu_tests.sh --no-buildkit
+DOCKER_BUILDKIT=0 bash tools/run_gpu_tests.sh

@@ -1,15 +1,11 @@
-# usage: bash tools/run_gpu_tests.sh [--no-deps]
+# usage: bash tools/run_gpu_tests.sh
+# by default uses docker buildkit.
+# to disable it:
+# DOCKER_BUILDKIT=0 bash tools/run_gpu_tests.sh
 
 set -x -e
 
-if [ "$1" != "--no-buildkit" ] && [ "$1" != "" ]; then
-  echo Wrong argument $1
-  exit 1
-fi
-
-if [ "$1" == "--no-buildkit" ]; then
-  export DOCKER_BUILDKIT=0
-else
+if [ "$DOCKER_BUILDKIT" == "" ]; then
   export DOCKER_BUILDKIT=1
 fi
 
