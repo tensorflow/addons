@@ -13,31 +13,28 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from absl.testing import parameterized
 
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.activations import mish
+from tensorflow_addons.activations.mish import _mish_py
 from tensorflow_addons.utils import test_utils
 
 
 @test_utils.run_all_in_graph_and_eager_modes
 class MishTest(tf.test.TestCase, parameterized.TestCase):
-    @parameterized.named_parameters(("float16", np.float16),
-                                    ("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(
+        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
+    )
     def test_mish(self, dtype):
         x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
         expected_result = tf.constant(
-            [-0.2525015, -0.30340144, 0.0, 0.86509836, 1.943959], dtype=dtype)
+            [-0.2525015, -0.30340144, 0.0, 0.86509836, 1.943959], dtype=dtype
+        )
         self.assertAllCloseAccordingToType(mish(x), expected_result)
 
-    @parameterized.named_parameters(("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
     def test_theoretical_gradients(self, dtype):
         # Only test theoretical gradients for float32 and float64
         # because of the instability of float16 while computing jacobian
@@ -46,13 +43,27 @@ class MishTest(tf.test.TestCase, parameterized.TestCase):
         theoretical, numerical = tf.test.compute_gradient(mish, [x])
         self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
 
-    def test_unknown_shape(self):
-        fn = mish.get_concrete_function(
-            tf.TensorSpec(shape=None, dtype=tf.float32))
+    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
+    def test_same_as_py_func(self, dtype):
+        np.random.seed(1234)
+        for _ in range(20):
+            self.verify_funcs_are_equivalent(dtype)
 
-        for shape in [(1,), (1, 2), (1, 2, 3), (1, 2, 3, 4)]:
-            x = tf.ones(shape=shape, dtype=tf.float32)
-            self.assertAllClose(fn(x), mish(x))
+    def verify_funcs_are_equivalent(self, dtype):
+        x_np = np.random.uniform(-10, 10, size=(4, 4)).astype(dtype)
+        x = tf.convert_to_tensor(x_np)
+
+        with tf.GradientTape(persistent=True) as t:
+            t.watch(x)
+            y_native = mish(x)
+            y_py = _mish_py(x)
+
+        self.assertAllCloseAccordingToType(y_native, y_py, atol=1e-4)
+
+        grad_native = t.gradient(y_native, x)
+        grad_py = t.gradient(y_py, x)
+
+        self.assertAllCloseAccordingToType(grad_native, grad_py, atol=1e-4)
 
 
 if __name__ == "__main__":

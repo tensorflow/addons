@@ -28,7 +28,7 @@
 #### Standard API
 In order to conform with the current API standard, all activations
 must:
- * Be a `tf.function`.
+ * Be a `tf.function` unless it is a straightforward call to a custom op or likely to be retraced.
  * Register as a keras global object so it can be serialized properly: `@tf.keras.utils.register_keras_serializable(package='Addons')`
  * Add the addon to the `py_library` in this sub-package's BUILD file.
 

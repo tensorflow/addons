@@ -14,11 +14,11 @@
 # ==============================================================================
 """Implements GIoU loss."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
+
+from tensorflow_addons.utils.types import TensorLike
+from typing import Optional
+from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -50,28 +50,32 @@ class GIoULoss(tf.keras.losses.Loss):
     Args:
       mode: one of ['giou', 'iou'], decided to calculate GIoU or IoU loss.
     """
-
+    @typechecked
     def __init__(self,
-                 mode='giou',
-                 reduction=tf.keras.losses.Reduction.AUTO,
-                 name='giou_loss'):
+                 mode: str = 'giou',
+                 reduction: str = tf.keras.losses.Reduction.AUTO,
+                 name: Optional[str] = 'giou_loss'):
         if mode not in ['giou', 'iou']:
             raise ValueError("Value of mode should be 'iou' or 'giou'")
-        super(GIoULoss, self).__init__(name=name, reduction=reduction)
+        super().__init__(name=name, reduction=reduction)
         self.mode = mode
 
     def get_config(self):
-        base_config = super(GIoULoss, self).get_config()
+        base_config = super().get_config()
         base_config['mode'] = self.mode
         return base_config
 
-    def call(self, y_true, y_pred):
+    def call(self,
+             y_true,
+             y_pred):
         return giou_loss(y_true, y_pred, mode=self.mode)
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 @tf.function
-def giou_loss(y_true, y_pred, mode='giou'):
+def giou_loss(y_true: TensorLike,
+              y_pred: TensorLike,
+              mode: str = 'giou') -> tf.Tensor:
     """
     Args:
         y_true: true targets tensor. The coordinates of the each bounding
@@ -94,7 +98,9 @@ def giou_loss(y_true, y_pred, mode='giou'):
     return 1 - giou
 
 
-def _calculate_giou(b1, b2, mode='giou'):
+def _calculate_giou(b1: TensorLike,
+                    b2: TensorLike,
+                    mode: str = 'giou') -> tf.Tensor:
     """
     Args:
         b1: bounding box. The coordinates of the each bounding box in boxes are
