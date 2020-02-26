@@ -331,7 +331,7 @@ class SGDW(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
             momentum=momentum,
             nesterov=nesterov,
             name=name,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -423,5 +423,5 @@ class AdamW(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
             epsilon=epsilon,
             amsgrad=amsgrad,
             name=name,
-            **kwargs
+            **kwargs,
         )
