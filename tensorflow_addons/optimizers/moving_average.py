@@ -22,7 +22,7 @@ from typing import Optional, Union
 from typeguard import typechecked
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class MovingAverage(AveragedOptimizerWrapper):
     """Optimizer that computes a moving average of the variables.
 
@@ -42,13 +42,15 @@ class MovingAverage(AveragedOptimizerWrapper):
     """
 
     @typechecked
-    def __init__(self,
-                 optimizer: Union[tf.keras.optimizers.Optimizer, str],
-                 sequential_update: bool = True,
-                 average_decay: FloatTensorLike = 0.99,
-                 num_updates: Optional[str] = None,
-                 name: str = "MovingAverage",
-                 **kwargs):
+    def __init__(
+        self,
+        optimizer: Union[tf.keras.optimizers.Optimizer, str],
+        sequential_update: bool = True,
+        average_decay: FloatTensorLike = 0.99,
+        num_updates: Optional[str] = None,
+        name: str = "MovingAverage",
+        **kwargs
+    ):
         r"""Construct a new MovingAverage optimizer.
 
         Args:
@@ -74,26 +76,28 @@ class MovingAverage(AveragedOptimizerWrapper):
         super().__init__(optimizer, sequential_update, name, **kwargs)
         self._num_updates = num_updates
         if self._num_updates is not None:
-            num_updates = tf.cast(
-                self._num_updates, tf.float32, name="num_updates")
+            num_updates = tf.cast(self._num_updates, tf.float32, name="num_updates")
             average_decay = tf.minimum(
-                average_decay, (1.0 + num_updates) / (10.0 + num_updates))
+                average_decay, (1.0 + num_updates) / (10.0 + num_updates)
+            )
 
         self._set_hyper("average_decay", average_decay)
 
     def average_op(self, var, average_var):
-        decay = self._get_hyper('average_decay', tf.dtypes.float32)
+        decay = self._get_hyper("average_decay", tf.dtypes.float32)
         return assign_moving_average(average_var, var, decay, False)
 
     def get_config(self):
         config = {
-            'average_decay': self._serialize_hyperparameter('average_decay'),
-            'num_updates': self._num_updates,
+            "average_decay": self._serialize_hyperparameter("average_decay"),
+            "num_updates": self._num_updates,
         }
         base_config = super().get_config()
         return {**base_config, **config}
 
     def _create_slots(self, var_list):
-        self._optimizer._create_slots(var_list=var_list)  # pylint: disable=protected-access
+        self._optimizer._create_slots(
+            var_list=var_list
+        )  # pylint: disable=protected-access
         for var in var_list:
-            self.add_slot(var, 'average', var.read_value())
+            self.add_slot(var, "average", var.read_value())
