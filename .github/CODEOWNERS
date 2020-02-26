@@ -5,7 +5,7 @@
 
 # Subpackage Owners
 /tensorflow_addons/activations/ @facaiy @seanpmorgan
-/tensorflow_addons/callbacks/ @squadrick
+/tensorflow_addons/callbacks/ @squadrick @shun-lin
 /tensorflow_addons/image/ @windqaq @facaiy 
 /tensorflow_addons/layers/ @seanpmorgan @facaiy
 /tensorflow_addons/losses/ @facaiy @windqaq

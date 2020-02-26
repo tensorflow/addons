@@ -60,7 +60,7 @@ def _get_python_bin(repository_ctx):
     python_bin = repository_ctx.os.environ.get(_PYTHON_BIN_PATH)
     if python_bin != None:
         return python_bin
-    python_bin_name = "python.exe" if _is_windows(repository_ctx) else "python"
+    python_bin_name = "python.exe" if _is_windows(repository_ctx) else "python3"
     python_bin_path = repository_ctx.which(python_bin_name)
     if python_bin_path != None:
         return str(python_bin_path)
@@ -374,7 +374,7 @@ def find_cuda_define(repository_ctx, header_dir, header_file, define):
     if not h_path.exists:
         auto_configure_fail("Cannot find %s at %s" % (header_file, str(h_path)))
     result = repository_ctx.execute(
-        # Grep one more lines as some #defines are splitted into two lines.
+        # Grep one more lines as some #defines are split into two lines.
         [
             "grep",
             "--color=never",

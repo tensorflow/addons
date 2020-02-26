@@ -13,31 +13,31 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import abc
-import six
 
 import tensorflow as tf
+from typeguard import typechecked
+from typing import Union
 
 
-@six.add_metaclass(abc.ABCMeta)
-class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer):
-    def __init__(self,
-                 optimizer,
-                 sequential_update=True,
-                 name="AverageOptimizer",
-                 **kwargs):
-        super(AveragedOptimizerWrapper, self).__init__(name, **kwargs)
+class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCMeta):
+    @typechecked
+    def __init__(
+        self,
+        optimizer: Union[tf.keras.optimizers.Optimizer, str],
+        sequential_update: bool = True,
+        name: str = "AverageOptimizer",
+        **kwargs
+    ):
+        super().__init__(name, **kwargs)
 
         if isinstance(optimizer, str):
             optimizer = tf.keras.optimizers.get(optimizer)
 
         if not isinstance(optimizer, tf.keras.optimizers.Optimizer):
             raise TypeError(
-                'optimizer is not an object of tf.keras.optimizers.Optimizer')
+                "optimizer is not an object of tf.keras.optimizers.Optimizer"
+            )
 
         if not isinstance(sequential_update, bool):
             raise TypeError("sequential_update must be of bool type")
@@ -46,27 +46,26 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer):
         self._sequential_update = sequential_update
 
     def _create_slots(self, var_list):
-        self._optimizer._create_slots(var_list=var_list)  # pylint: disable=protected-access
+        self._optimizer._create_slots(var_list=var_list)
         for var in var_list:
-            self.add_slot(var, 'average')
+            self.add_slot(var, "average")
 
     def _create_hypers(self):
-        self._optimizer._create_hypers()  # pylint: disable=protected-access
+        self._optimizer._create_hypers()
 
     def _prepare(self, var_list):
-        return self._optimizer._prepare(var_list=var_list)  # pylint: disable=protected-access
+        return self._optimizer._prepare(var_list=var_list)
 
     def apply_gradients(self, grads_and_vars, name=None):
-        self._optimizer._iterations = self.iterations  # pylint: disable=protected-access
-        return super(AveragedOptimizerWrapper, self).apply_gradients(
-            grads_and_vars, name)
+        self._optimizer._iterations = self.iterations
+        return super().apply_gradients(grads_and_vars, name)
 
     @abc.abstractmethod
     def average_op(self, var, average_var):
         raise NotImplementedError
 
     def _apply_average_op(self, train_op, var):
-        average_var = self.get_slot(var, 'average')
+        average_var = self.get_slot(var, "average")
         if self._sequential_update:
             with tf.control_dependencies([train_op]):
                 avg_op = self.average_op(var, average_var)
@@ -76,19 +75,19 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer):
         return avg_op
 
     def _resource_apply_dense(self, grad, var):
-        train_op = self._optimizer._resource_apply_dense(grad, var)  # pylint: disable=protected-access
+        train_op = self._optimizer._resource_apply_dense(grad, var)
         average_op = self._apply_average_op(train_op, var)
         return tf.group(train_op, average_op)
 
     def _resource_apply_sparse(self, grad, var, indices):
-        train_op = self._optimizer._resource_apply_sparse(  # pylint: disable=protected-access
-            grad, var, indices)
+        train_op = self._optimizer._resource_apply_sparse(grad, var, indices)
         average_op = self._apply_average_op(train_op, var)
         return tf.group(train_op, average_op)
 
     def _resource_apply_sparse_duplicate_indices(self, grad, var, indices):
-        train_op = self._optimizer._resource_apply_sparse_duplicate_indices(  # pylint: disable=protected-access
-            grad, var, indices)
+        train_op = self._optimizer._resource_apply_sparse_duplicate_indices(
+            grad, var, indices
+        )
         average_op = self._apply_average_op(train_op, var)
         return tf.group(train_op, average_op)
 
@@ -116,25 +115,27 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer):
         model.save('model.h5')
         ```
         """
-        assign_op = tf.group([
-            var.assign(self.get_slot(var, 'average')) for var in var_list
-            if var.trainable
-        ])
+        assign_op = tf.group(
+            [
+                var.assign(self.get_slot(var, "average"))
+                for var in var_list
+                if var.trainable
+            ]
+        )
         return assign_op
 
     def get_config(self):
         config = {
-            'optimizer': tf.keras.optimizers.serialize(self._optimizer),
-            'sequential_update': self._sequential_update
+            "optimizer": tf.keras.optimizers.serialize(self._optimizer),
+            "sequential_update": self._sequential_update,
         }
-        base_config = super(AveragedOptimizerWrapper, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}
 
     @classmethod
     def from_config(cls, config, custom_objects=None):
         optimizer = tf.keras.optimizers.deserialize(
-            config.pop('optimizer'),
-            custom_objects=custom_objects,
+            config.pop("optimizer"), custom_objects=custom_objects,
         )
         return cls(optimizer, **config)
 
@@ -144,16 +145,16 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer):
 
     @property
     def lr(self):
-        return self._optimizer._get_hyper('learning_rate')  # pylint: disable=protected-access
+        return self._optimizer._get_hyper("learning_rate")
 
     @lr.setter
     def lr(self, lr):
-        self._optimizer._set_hyper('learning_rate', lr)  # pylint: disable=protected-access
+        self._optimizer._set_hyper("learning_rate", lr)  #
 
     @property
     def learning_rate(self):
-        return self._optimizer._get_hyper('learning_rate')  # pylint: disable=protected-access
+        return self._optimizer._get_hyper("learning_rate")
 
     @learning_rate.setter
     def learning_rate(self, learning_rate):
-        self._optimizer._set_hyper('learning_rate', learning_rate)  # pylint: disable=protected-access
+        self._optimizer._set_hyper("learning_rate", learning_rate)

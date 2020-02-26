@@ -13,29 +13,34 @@
 # limitations under the License.
 # ==============================================================================
 """Image transform ops."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
 from tensorflow_addons.image import utils as img_utils
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+from tensorflow_addons.utils.resource_loader import LazySO
+from tensorflow_addons.utils.types import TensorLike
 
-_image_ops_so = tf.load_op_library(
-    get_path_to_datafile("custom_ops/image/_image_ops.so"))
+from typing import Optional
 
-_IMAGE_DTYPES = set([
-    tf.dtypes.uint8, tf.dtypes.int32, tf.dtypes.int64, tf.dtypes.float16,
-    tf.dtypes.float32, tf.dtypes.float64
-])
+_image_so = LazySO("custom_ops/image/_image_ops.so")
+
+_IMAGE_DTYPES = {
+    tf.dtypes.uint8,
+    tf.dtypes.int32,
+    tf.dtypes.int64,
+    tf.dtypes.float16,
+    tf.dtypes.float32,
+    tf.dtypes.float64,
+}
 
 
 @tf.function
-def transform(images,
-              transforms,
-              interpolation="NEAREST",
-              output_shape=None,
-              name=None):
+def transform(
+    images: TensorLike,
+    transforms: TensorLike,
+    interpolation: str = "NEAREST",
+    output_shape: Optional[list] = None,
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Applies the given transform(s) to the image(s).
 
     Args:
@@ -69,7 +74,8 @@ def transform(images,
     with tf.name_scope(name or "transform"):
         image_or_images = tf.convert_to_tensor(images, name="images")
         transform_or_transforms = tf.convert_to_tensor(
-            transforms, name="transforms", dtype=tf.dtypes.float32)
+            transforms, name="transforms", dtype=tf.dtypes.float32
+        )
         if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
             raise TypeError("Invalid dtype %s." % image_or_images.dtype)
         images = img_utils.to_4D_image(image_or_images)
@@ -79,12 +85,14 @@ def transform(images,
             output_shape = tf.shape(images)[1:3]
 
         output_shape = tf.convert_to_tensor(
-            output_shape, tf.dtypes.int32, name="output_shape")
+            output_shape, tf.dtypes.int32, name="output_shape"
+        )
 
         if not output_shape.get_shape().is_compatible_with([2]):
             raise ValueError(
                 "output_shape must be a 1-D Tensor of 2 elements: "
-                "new_height, new_width")
+                "new_height, new_width"
+            )
 
         if len(transform_or_transforms.get_shape()) == 1:
             transforms = transform_or_transforms[None]
@@ -95,18 +103,20 @@ def transform(images,
         else:
             transforms = transform_or_transforms
             raise ValueError(
-                "transforms should have rank 1 or 2, but got rank %d" % len(
-                    transforms.get_shape()))
+                "transforms should have rank 1 or 2, but got rank %d"
+                % len(transforms.get_shape())
+            )
 
-        output = _image_ops_so.addons_image_projective_transform_v2(
+        output = _image_so.ops.addons_image_projective_transform_v2(
             images,
             output_shape=output_shape,
             transforms=transforms,
-            interpolation=interpolation.upper())
+            interpolation=interpolation.upper(),
+        )
         return img_utils.from_4D_image(output, original_ndims)
 
 
-def compose_transforms(transforms, name=None):
+def compose_transforms(transforms: TensorLike, name: Optional[str] = None) -> tf.Tensor:
     """Composes the transforms tensors.
 
     Args:
@@ -130,7 +140,9 @@ def compose_transforms(transforms, name=None):
         return matrices_to_flat_transforms(composed)
 
 
-def flat_transforms_to_matrices(transforms, name=None):
+def flat_transforms_to_matrices(
+    transforms: TensorLike, name: Optional[str] = None
+) -> tf.Tensor:
     """Converts projective transforms to affine matrices.
 
     Note that the output matrices map output coordinates to input coordinates.
@@ -152,18 +164,20 @@ def flat_transforms_to_matrices(transforms, name=None):
     with tf.name_scope(name or "flat_transforms_to_matrices"):
         transforms = tf.convert_to_tensor(transforms, name="transforms")
         if transforms.shape.ndims not in (1, 2):
-            raise ValueError(
-                "Transforms should be 1D or 2D, got: %s" % transforms)
+            raise ValueError("Transforms should be 1D or 2D, got: %s" % transforms)
         # Make the transform(s) 2D in case the input is a single transform.
         transforms = tf.reshape(transforms, tf.constant([-1, 8]))
         num_transforms = tf.shape(transforms)[0]
         # Add a column of ones for the implicit last entry in the matrix.
         return tf.reshape(
             tf.concat([transforms, tf.ones([num_transforms, 1])], axis=1),
-            tf.constant([-1, 3, 3]))
+            tf.constant([-1, 3, 3]),
+        )
 
 
-def matrices_to_flat_transforms(transform_matrices, name=None):
+def matrices_to_flat_transforms(
+    transform_matrices: TensorLike, name: Optional[str] = None
+) -> tf.Tensor:
     """Converts affine matrices to projective transforms.
 
     Note that we expect matrices that map output coordinates to input
@@ -185,10 +199,12 @@ def matrices_to_flat_transforms(transform_matrices, name=None):
     """
     with tf.name_scope(name or "matrices_to_flat_transforms"):
         transform_matrices = tf.convert_to_tensor(
-            transform_matrices, name="transform_matrices")
+            transform_matrices, name="transform_matrices"
+        )
         if transform_matrices.shape.ndims not in (2, 3):
             raise ValueError(
-                "Matrices should be 2D or 3D, got: %s" % transform_matrices)
+                "Matrices should be 2D or 3D, got: %s" % transform_matrices
+            )
         # Flatten each matrix.
         transforms = tf.reshape(transform_matrices, tf.constant([-1, 9]))
         # Divide each matrix by the last entry (normally 1).
@@ -196,10 +212,12 @@ def matrices_to_flat_transforms(transform_matrices, name=None):
         return transforms[:, :8]
 
 
-def angles_to_projective_transforms(angles,
-                                    image_height,
-                                    image_width,
-                                    name=None):
+def angles_to_projective_transforms(
+    angles: TensorLike,
+    image_height: TensorLike,
+    image_width: TensorLike,
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Returns projective transform(s) for the given angle(s).
 
     Args:
@@ -215,21 +233,28 @@ def angles_to_projective_transforms(angles,
     """
     with tf.name_scope(name or "angles_to_projective_transforms"):
         angle_or_angles = tf.convert_to_tensor(
-            angles, name="angles", dtype=tf.dtypes.float32)
+            angles, name="angles", dtype=tf.dtypes.float32
+        )
         if len(angle_or_angles.get_shape()) == 0:
             angles = angle_or_angles[None]
         elif len(angle_or_angles.get_shape()) == 1:
             angles = angle_or_angles
         else:
             raise ValueError("angles should have rank 0 or 1.")
-        # yapf: disable
-        x_offset = ((image_width - 1) -
-                    (tf.math.cos(angles) * (image_width - 1) -
-                     tf.math.sin(angles) * (image_height - 1))) / 2.0
-        y_offset = ((image_height - 1) -
-                    (tf.math.sin(angles) * (image_width - 1) +
-                     tf.math.cos(angles) * (image_height - 1))) / 2.0
-        # yapf: enable
+        x_offset = (
+            (image_width - 1)
+            - (
+                tf.math.cos(angles) * (image_width - 1)
+                - tf.math.sin(angles) * (image_height - 1)
+            )
+        ) / 2.0
+        y_offset = (
+            (image_height - 1)
+            - (
+                tf.math.sin(angles) * (image_width - 1)
+                + tf.math.cos(angles) * (image_height - 1)
+            )
+        ) / 2.0
         num_angles = tf.shape(angles)[0]
         return tf.concat(
             values=[
@@ -241,7 +266,8 @@ def angles_to_projective_transforms(angles,
                 y_offset[:, None],
                 tf.zeros((num_angles, 2), tf.dtypes.float32),
             ],
-            axis=1)
+            axis=1,
+        )
 
 
 @tf.RegisterGradient("Addons>ImageProjectiveTransformV2")
@@ -253,7 +279,8 @@ def _image_projective_transform_grad(op, grad):
 
     image_or_images = tf.convert_to_tensor(images, name="images")
     transform_or_transforms = tf.convert_to_tensor(
-        transforms, name="transforms", dtype=tf.dtypes.float32)
+        transforms, name="transforms", dtype=tf.dtypes.float32
+    )
 
     if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
         raise ValueError("Invalid dtype %s." % image_or_images.dtype)
@@ -263,22 +290,30 @@ def _image_projective_transform_grad(op, grad):
         transforms = transform_or_transforms
     else:
         transforms = transform_or_transforms
-        raise ValueError("transforms should have rank 1 or 2, but got rank %d"
-                         % len(transforms.get_shape()))
+        raise ValueError(
+            "transforms should have rank 1 or 2, but got rank %d"
+            % len(transforms.get_shape())
+        )
 
     # Invert transformations
     transforms = flat_transforms_to_matrices(transforms=transforms)
     inverse = tf.linalg.inv(transforms)
     transforms = matrices_to_flat_transforms(inverse)
-    output = _image_ops_so.addons_image_projective_transform_v2(
+    output = _image_so.ops.addons_image_projective_transform_v2(
         images=grad,
         transforms=transforms,
         output_shape=tf.shape(image_or_images)[1:3],
-        interpolation=interpolation)
+        interpolation=interpolation,
+    )
     return [output, None, None]
 
 
-def rotate(images, angles, interpolation="NEAREST", name=None):
+def rotate(
+    images: TensorLike,
+    angles: TensorLike,
+    interpolation: str = "NEAREST",
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Rotate image(s) counterclockwise by the passed angle(s) in radians.
 
     Args:
@@ -312,5 +347,6 @@ def rotate(images, angles, interpolation="NEAREST", name=None):
         output = transform(
             images,
             angles_to_projective_transforms(angles, image_height, image_width),
-            interpolation=interpolation)
+            interpolation=interpolation,
+        )
         return img_utils.from_4D_image(output, original_ndims)

@@ -13,14 +13,13 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow.python.training.moving_averages import assign_moving_average
-
 from tensorflow_addons.optimizers import AveragedOptimizerWrapper
+from tensorflow_addons.utils.types import FloatTensorLike
+
+from typing import Optional, Union
+from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -42,12 +41,13 @@ class MovingAverage(AveragedOptimizerWrapper):
     ```
     """
 
+    @typechecked
     def __init__(self,
-                 optimizer,
-                 sequential_update=True,
-                 average_decay=0.99,
-                 num_updates=None,
-                 name="MovingAverage",
+                 optimizer: Union[tf.keras.optimizers.Optimizer, str],
+                 sequential_update: bool = True,
+                 average_decay: FloatTensorLike = 0.99,
+                 num_updates: Optional[str] = None,
+                 name: str = "MovingAverage",
                  **kwargs):
         r"""Construct a new MovingAverage optimizer.
 
@@ -59,9 +59,9 @@ class MovingAverage(AveragedOptimizerWrapper):
                 benign data races. If True, will update the moving average
                 after gradient updates.
             average_decay: float. Decay to use to maintain the moving averages
-                of trained variables. 
+                of trained variables.
             num_updates: Optional count of the number of updates applied to
-                variables. 
+                variables.
             name: Optional name for the operations created when applying
                 gradients. Defaults to "MovingAverage".
             **kwargs: keyword arguments. Allowed to be {`clipnorm`,
@@ -71,8 +71,7 @@ class MovingAverage(AveragedOptimizerWrapper):
                 decay of learning rate. `lr` is included for backward
                 compatibility, recommended to use `learning_rate` instead.
         """
-        super(MovingAverage, self).__init__(optimizer, sequential_update, name,
-                                            **kwargs)
+        super().__init__(optimizer, sequential_update, name, **kwargs)
         self._num_updates = num_updates
         if self._num_updates is not None:
             num_updates = tf.cast(
@@ -91,8 +90,8 @@ class MovingAverage(AveragedOptimizerWrapper):
             'average_decay': self._serialize_hyperparameter('average_decay'),
             'num_updates': self._num_updates,
         }
-        base_config = super(MovingAverage, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}
 
     def _create_slots(self, var_list):
         self._optimizer._create_slots(var_list=var_list)  # pylint: disable=protected-access

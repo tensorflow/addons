@@ -14,14 +14,11 @@
 # ==============================================================================
 """Implementing PoincareNormalize layer."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
+from typeguard import typechecked
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class PoincareNormalize(tf.keras.layers.Layer):
     """Project into the Poincare ball with norm <= 1.0 - epsilon.
 
@@ -45,17 +42,17 @@ class PoincareNormalize(tf.keras.layers.Layer):
         numerical stability.
     """
 
-    def __init__(self, axis=1, epsilon=1e-5, **kwargs):
-        super(PoincareNormalize, self).__init__(**kwargs)
+    @typechecked
+    def __init__(self, axis: int = 1, epsilon: float = 1e-5, **kwargs):
+        super().__init__(**kwargs)
         self.axis = axis
         self.epsilon = epsilon
 
     def call(self, inputs):
         x = tf.convert_to_tensor(inputs)
-        square_sum = tf.math.reduce_sum(
-            tf.math.square(x), self.axis, keepdims=True)
+        square_sum = tf.math.reduce_sum(tf.math.square(x), self.axis, keepdims=True)
         x_inv_norm = tf.math.rsqrt(square_sum)
-        x_inv_norm = tf.math.minimum((1. - self.epsilon) * x_inv_norm, 1.)
+        x_inv_norm = tf.math.minimum((1.0 - self.epsilon) * x_inv_norm, 1.0)
         outputs = tf.math.multiply(x, x_inv_norm)
         return outputs
 
@@ -63,6 +60,6 @@ class PoincareNormalize(tf.keras.layers.Layer):
         return input_shape
 
     def get_config(self):
-        config = {'axis': self.axis, 'epsilon': self.epsilon}
-        base_config = super(PoincareNormalize, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        config = {"axis": self.axis, "epsilon": self.epsilon}
+        base_config = super().get_config()
+        return {**base_config, **config}

@@ -13,11 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 """Utilities similar to tf.python.platform.resource_loader."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import os
+
+import tensorflow as tf
 
 
 def get_project_root():
@@ -37,3 +36,15 @@ def get_path_to_datafile(path):
     """
     root_dir = get_project_root()
     return os.path.join(root_dir, path.replace("/", os.sep))
+
+
+class LazySO:
+    def __init__(self, relative_path):
+        self.relative_path = relative_path
+        self._ops = None
+
+    @property
+    def ops(self):
+        if self._ops is None:
+            self._ops = tf.load_op_library(get_path_to_datafile(self.relative_path))
+        return self._ops

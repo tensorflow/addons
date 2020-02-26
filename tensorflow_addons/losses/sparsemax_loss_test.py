@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 import numpy as np
 
@@ -69,7 +65,7 @@ def _np_sparsemax_loss(z, q):
     return 0.5 * S_sum + 0.5 * q_norm - z_k
 
 
-@test_utils.run_all_with_types(['float32', 'float64'])
+@test_utils.run_all_with_types(["float32", "float64"])
 @test_utils.run_all_in_graph_and_eager_modes
 class SparsemaxTest(tf.test.TestCase):
     def _tf_sparsemax(self, z, dtype):
@@ -124,32 +120,41 @@ class SparsemaxTest(tf.test.TestCase):
 
     def test_sparsemax_loss_of_nan(self, dtype=None):
         """check sparsemax-loss transfers nan."""
-        random = np.random.RandomState(2)
-
         q = np.asarray([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
-        z_nan = np.asarray([[0, np.nan, 0], [0, np.nan, np.nan],
-                            [np.nan, np.nan, np.nan]]).astype(dtype)
+        z_nan = np.asarray(
+            [[0, np.nan, 0], [0, np.nan, np.nan], [np.nan, np.nan, np.nan]]
+        ).astype(dtype)
 
         _, tf_loss_nan = self._tf_sparsemax_loss(z_nan, q, dtype)
         self.assertAllEqual([np.nan, np.nan, np.nan], tf_loss_nan)
 
     def test_sparsemax_loss_of_inf(self, dtype=None):
         """check sparsemax-loss is infinity safe."""
-        random = np.random.RandomState(3)
-
         q = np.asarray([[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]])
-        z_neg = np.asarray([
-            [0, -np.inf, 0],
-            [0, -np.inf, -np.inf],
-            [-np.inf, -np.inf, 0],
-            [-np.inf, -np.inf, -np.inf],
-        ]).astype(dtype)
-        z_pos = np.asarray([[0, np.inf, 0], [0, np.inf, np.inf],
-                            [np.inf, np.inf, 0], [np.inf, np.inf,
-                                                  np.inf]]).astype(dtype)
-        z_mix = np.asarray([[0, np.inf, 0], [0, np.inf, -np.inf],
-                            [-np.inf, np.inf, 0], [-np.inf, np.inf,
-                                                   -np.inf]]).astype(dtype)
+        z_neg = np.asarray(
+            [
+                [0, -np.inf, 0],
+                [0, -np.inf, -np.inf],
+                [-np.inf, -np.inf, 0],
+                [-np.inf, -np.inf, -np.inf],
+            ]
+        ).astype(dtype)
+        z_pos = np.asarray(
+            [
+                [0, np.inf, 0],
+                [0, np.inf, np.inf],
+                [np.inf, np.inf, 0],
+                [np.inf, np.inf, np.inf],
+            ]
+        ).astype(dtype)
+        z_mix = np.asarray(
+            [
+                [0, np.inf, 0],
+                [0, np.inf, -np.inf],
+                [-np.inf, np.inf, 0],
+                [-np.inf, np.inf, -np.inf],
+            ]
+        ).astype(dtype)
 
         _, tf_loss_neg = self._tf_sparsemax_loss(z_neg, q, dtype)
         self.assertAllEqual([0.25, np.inf, 0, np.nan], tf_loss_neg)
@@ -173,7 +178,8 @@ class SparsemaxTest(tf.test.TestCase):
         _, tf_loss_z = self._tf_sparsemax_loss(z, q, dtype)
 
         self.assertAllCloseAccordingToType(
-            tf_loss_zpc, tf_loss_z, float_atol=5e-6, float_rtol=5e-6)
+            tf_loss_zpc, tf_loss_z, float_atol=5e-6, float_rtol=5e-6
+        )
 
     def test_sparsemax_loss_positive(self, dtype=None):
         """check sparsemax-loss proposition 4."""
@@ -215,7 +221,7 @@ class SparsemaxTest(tf.test.TestCase):
 
         # sparsemax is not a smooth function so gradient estimation is only
         # possible for float64.
-        if dtype != 'float64':
+        if dtype != "float64":
             return
 
         z = random.uniform(low=-3, high=3, size=(test_obs, 10)).astype(dtype)
@@ -223,7 +229,8 @@ class SparsemaxTest(tf.test.TestCase):
         q[np.arange(0, test_obs), np.random.randint(0, 10, size=test_obs)] = 1
 
         (jacob_sym,), (jacob_num,) = tf.test.compute_gradient(
-            lambda logits: sparsemax_loss(logits, sparsemax(logits), q), [z])
+            lambda logits: sparsemax_loss(logits, sparsemax(logits), q), [z]
+        )
         self.assertAllCloseAccordingToType(jacob_sym, jacob_num)
 
     def test_serialization(self, dtype=None):
@@ -233,5 +240,5 @@ class SparsemaxTest(tf.test.TestCase):
         self.assertEqual(ref_fn, fn)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.test.main()

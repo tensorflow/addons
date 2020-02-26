@@ -14,6 +14,7 @@ py_library(
             "giou_loss.py",
             "lifted.py",
             "metric_learning.py",
+            "quantiles.py",
             "sparsemax_loss.py",
             "triplet.py",
         ],
@@ -25,6 +26,7 @@ py_library(
             "lifted.py",
             "metric_learning.py",
             "npairs.py",
+            "quantiles.py",
             "sparsemax_loss.py",
             "triplet.py",
         ],
@@ -89,6 +91,18 @@ py_test(
 )
 
 py_test(
+    name = "quantiles_test",
+    size = "small",
+    srcs = [
+        "quantiles_test.py",
+    ],
+    main = "quantiles_test.py",
+    deps = [
+        ":losses",
+    ],
+)
+
+py_test(
     name = "sparsemax_loss_test",
     size = "small",
     srcs = [
@@ -140,7 +154,7 @@ py_test(
     name = "kappa_loss_test",
     size = "small",
     srcs = [
-        "kappa_loss_test.py"
+        "kappa_loss_test.py",
     ],
     main = "kappa_loss_test.py",
     deps = [

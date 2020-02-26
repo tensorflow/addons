@@ -1,1 +1,1 @@
-tf-nightly
+typeguard>=2.7

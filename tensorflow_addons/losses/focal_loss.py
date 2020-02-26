@@ -14,12 +14,11 @@
 # ==============================================================================
 """Implements Focal loss."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 import tensorflow.keras.backend as K
+
+from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
+from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -66,20 +65,22 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
           `gamma` is less than zero
     """
 
+    @typechecked
     def __init__(self,
-                 from_logits=False,
-                 alpha=0.25,
-                 gamma=2.0,
-                 reduction=tf.keras.losses.Reduction.NONE,
-                 name='sigmoid_focal_crossentropy'):
-        super(SigmoidFocalCrossEntropy, self).__init__(
-            name=name, reduction=reduction)
+                 from_logits: bool = False,
+                 alpha: FloatTensorLike = 0.25,
+                 gamma: FloatTensorLike = 2.0,
+                 reduction: str = tf.keras.losses.Reduction.NONE,
+                 name: str = 'sigmoid_focal_crossentropy'):
+        super().__init__(name=name, reduction=reduction)
 
         self.from_logits = from_logits
         self.alpha = alpha
         self.gamma = gamma
 
-    def call(self, y_true, y_pred):
+    def call(self,
+             y_true,
+             y_pred):
         return sigmoid_focal_crossentropy(
             y_true,
             y_pred,
@@ -93,17 +94,17 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
             "alpha": self.alpha,
             "gamma": self.gamma,
         }
-        base_config = super(SigmoidFocalCrossEntropy, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 @tf.function
-def sigmoid_focal_crossentropy(y_true,
-                               y_pred,
-                               alpha=0.25,
-                               gamma=2.0,
-                               from_logits=False):
+def sigmoid_focal_crossentropy(y_true: TensorLike,
+                               y_pred: TensorLike,
+                               alpha: FloatTensorLike = 0.25,
+                               gamma: FloatTensorLike = 2.0,
+                               from_logits: bool = False) -> tf.Tensor:
     """
     Args
         y_true: true targets tensor.
@@ -121,10 +122,6 @@ def sigmoid_focal_crossentropy(y_true,
 
     y_pred = tf.convert_to_tensor(y_pred)
     y_true = tf.convert_to_tensor(y_true, dtype=y_pred.dtype)
-
-    if y_true.shape != y_pred.shape:
-        raise ValueError("Shape mismatch for y_true: {} and y_pred: {}".format(
-            tf.shape(y_true), tf.shape(y_pred)))
 
     # Get the cross_entropy for each entry
     ce = K.binary_crossentropy(y_true, y_pred, from_logits=from_logits)

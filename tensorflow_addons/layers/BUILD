@@ -11,7 +11,9 @@ py_library(
         "normalizations.py",
         "optical_flow.py",
         "poincare.py",
+        "polynomial.py",
         "sparsemax.py",
+        "tlu.py",
         "wrappers.py",
     ],
     data = [
@@ -24,12 +26,38 @@ py_library(
 )
 
 py_test(
+    name = "polynomial_test",
+    size = "small",
+    srcs = [
+        "polynomial_test.py",
+    ],
+    main = "polynomial_test.py",
+    python_version = "PY3",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
     name = "gelu_test",
     size = "small",
     srcs = [
         "gelu_test.py",
     ],
     main = "gelu_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "tlu_test",
+    size = "small",
+    srcs = [
+        "tlu_test.py",
+    ],
+    main = "tlu_test.py",
     deps = [
         ":layers",
     ],

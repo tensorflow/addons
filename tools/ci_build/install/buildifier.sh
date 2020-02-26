@@ -13,30 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-set -e -x
 
-# No GPU support for Windows (See #784)
-export TF_NEED_CUDA="0"
-
-mkdir -p artifacts/
-export BAZEL_VC=/c/Program\ Files\ \(x86\)/Microsoft\ Visual\ Studio/2017/BuildTools/VC/
-
-# Install Bazel 1.1.0
-wget --quiet -nc https://github.com/bazelbuild/bazel/releases/download/1.1.0/bazel-1.1.0-windows-x86_64.exe
-
-python --version
-python -m pip install --upgrade pip
-
-#Link TF dependency
-echo 'y' | ./configure.sh --quiet
-
-./bazel-1.1.0-windows-x86_64.exe build \
-    -c opt \
-    --enable_runfiles \
-    --noshow_progress \
-    --noshow_loading_progress \
-    --verbose_failures \
-    --test_output=errors \
-    build_pip_pkg
-
-bazel-bin/build_pip_pkg artifacts --nightly
+wget -O /usr/local/bin/buildifier https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier
+chmod +x /usr/local/bin/buildifier

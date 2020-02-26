@@ -13,35 +13,36 @@
 # limitations under the License.
 # ==============================================================================
 """Skip-gram sampling ops from https://arxiv.org/abs/1301.3781."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import csv
 import tensorflow as tf
 
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+from tensorflow_addons.utils.resource_loader import LazySO
 
-_skip_gram_ops = tf.load_op_library(
-    get_path_to_datafile("custom_ops/text/_skip_gram_ops.so"))
+from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike, TensorLike
+from typing import Optional
+
+_skip_gram_so = LazySO("custom_ops/text/_skip_gram_ops.so")
 
 tf.no_gradient("Addons>SkipGramGenerateCandidates")
 
 
-def skip_gram_sample(input_tensor,
-                     min_skips=1,
-                     max_skips=5,
-                     start=0,
-                     limit=-1,
-                     emit_self_as_target=False,
-                     vocab_freq_table=None,
-                     vocab_min_count=None,
-                     vocab_subsampling=None,
-                     corpus_size=None,
-                     batch_size=None,
-                     batch_capacity=None,
-                     seed=None,
-                     name=None):
+def skip_gram_sample(
+    input_tensor: TensorLike,
+    min_skips: FloatTensorLike = 1,
+    max_skips: FloatTensorLike = 5,
+    start: FloatTensorLike = 0,
+    limit: FloatTensorLike = -1,
+    emit_self_as_target: bool = False,
+    vocab_freq_table: tf.lookup.KeyValueTensorInitializer = None,
+    vocab_min_count: Optional[FloatTensorLike] = None,
+    vocab_subsampling: Optional[FloatTensorLike] = None,
+    corpus_size: Optional[FloatTensorLike] = None,
+    batch_size: Optional[FloatTensorLike] = None,
+    batch_capacity: Optional[FloatTensorLike] = None,
+    seed: Optional[FloatTensorLike] = None,
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Generates skip-gram token and label paired Tensors from the input
     tensor.
 
@@ -142,35 +143,40 @@ def skip_gram_sample(input_tensor,
         both absent.
     """
 
-    if vocab_freq_table is None and (vocab_min_count is not None
-                                     or vocab_subsampling is not None
-                                     or corpus_size is not None):
+    if vocab_freq_table is None and (
+        vocab_min_count is not None
+        or vocab_subsampling is not None
+        or corpus_size is not None
+    ):
         raise ValueError(
             "vocab_freq_table is not provided, but vocab_min_count={}, "
             "vocab_subsampling={}, or corpus_size={} is not None."
             "These settings are useless without a vocab_freq_table.".format(
-                vocab_min_count, vocab_subsampling, corpus_size))
+                vocab_min_count, vocab_subsampling, corpus_size
+            )
+        )
 
     if (vocab_subsampling is None) != (corpus_size is None):
         raise ValueError(
             "vocab_subsampling is {} while corpus_size is {} - both must be "
             "provided in order for subsampling to work.".format(
-                vocab_subsampling, corpus_size))
+                vocab_subsampling, corpus_size
+            )
+        )
 
-    # pylint: disable=bad-continuation
     with tf.name_scope(name or "skip_gram_sample"):
 
-        # pylint: enable=bad-continuation
         input_tensor = _filter_input(
             input_tensor=input_tensor,
             vocab_freq_table=vocab_freq_table,
             vocab_min_count=vocab_min_count,
             vocab_subsampling=vocab_subsampling,
             corpus_size=corpus_size,
-            seed=seed)
+            seed=seed,
+        )
 
         seed1, seed2 = tf.compat.v1.get_seed(seed)
-        tokens, labels = _skip_gram_ops.addons_skip_gram_generate_candidates(
+        tokens, labels = _skip_gram_so.ops.addons_skip_gram_generate_candidates(
             input_tensor=input_tensor,
             min_skips=min_skips,
             max_skips=max_skips,
@@ -180,7 +186,8 @@ def skip_gram_sample(input_tensor,
             # Note that seed here should be seed1! This is due to
             # GuardedPhiloxRandom's hard-coded attributes of "seed" and "seed2".
             seed=seed1,
-            seed2=seed2)
+            seed2=seed2,
+        )
 
         # TODO(weiho): If the need arises, add support for sparse input_tensor that
         # figures out sentence boundaries, then calls
@@ -189,39 +196,39 @@ def skip_gram_sample(input_tensor,
         # Batches the (tokens, labels) outputs so that they will be of deterministic
         # batch_size, to facilitate feeding them into the rest of the network.
         if batch_size is not None and batch_size > 0:
-            # yapf: disable
             batch_capacity = (
                 batch_capacity
                 if (batch_capacity is not None and batch_capacity > 0)
-                else 100 * batch_size)
-            # yapf: enable
-            return tf.train.batch([tokens, labels],
-                                  batch_size,
-                                  capacity=batch_capacity,
-                                  enqueue_many=True)
+                else 100 * batch_size
+            )
+            return tf.train.batch(
+                [tokens, labels], batch_size, capacity=batch_capacity, enqueue_many=True
+            )
 
         return tokens, labels
 
 
-def skip_gram_sample_with_text_vocab(input_tensor,
-                                     vocab_freq_file,
-                                     vocab_token_index=0,
-                                     vocab_token_dtype=tf.dtypes.string,
-                                     vocab_freq_index=1,
-                                     vocab_freq_dtype=tf.dtypes.float64,
-                                     vocab_delimiter=",",
-                                     vocab_min_count=0,
-                                     vocab_subsampling=None,
-                                     corpus_size=None,
-                                     min_skips=1,
-                                     max_skips=5,
-                                     start=0,
-                                     limit=-1,
-                                     emit_self_as_target=False,
-                                     batch_size=None,
-                                     batch_capacity=None,
-                                     seed=None,
-                                     name=None):
+def skip_gram_sample_with_text_vocab(
+    input_tensor: TensorLike,
+    vocab_freq_file: str,
+    vocab_token_index: FloatTensorLike = 0,
+    vocab_token_dtype: Optional[AcceptableDTypes] = tf.dtypes.string,
+    vocab_freq_index: FloatTensorLike = 1,
+    vocab_freq_dtype: Optional[AcceptableDTypes] = tf.dtypes.float64,
+    vocab_delimiter: str = ",",
+    vocab_min_count: Optional[FloatTensorLike] = None,
+    vocab_subsampling: Optional[FloatTensorLike] = None,
+    corpus_size: Optional[FloatTensorLike] = None,
+    min_skips: FloatTensorLike = 1,
+    max_skips: FloatTensorLike = 5,
+    start: FloatTensorLike = 0,
+    limit: FloatTensorLike = -1,
+    emit_self_as_target: bool = False,
+    batch_size: Optional[FloatTensorLike] = None,
+    batch_capacity: Optional[FloatTensorLike] = None,
+    seed: Optional[FloatTensorLike] = None,
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Skip-gram sampling with a text vocabulary file.
 
     Wrapper around `skip_gram_sample()` for use with a text vocabulary file.
@@ -317,12 +324,15 @@ def skip_gram_sample_with_text_vocab(input_tensor,
 
     if vocab_token_index < 0 or vocab_freq_index < 0:
         raise ValueError(
-            "vocab_token_index={} and vocab_freq_index={} must both be >= 0.".
-            format(vocab_token_index, vocab_freq_index))
+            "vocab_token_index={} and vocab_freq_index={} must both be >= 0.".format(
+                vocab_token_index, vocab_freq_index
+            )
+        )
     if vocab_token_index == vocab_freq_index:
         raise ValueError(
             "vocab_token_index and vocab_freq_index should be different, "
-            "but are both {}.".format(vocab_token_index))
+            "but are both {}.".format(vocab_token_index)
+        )
 
     # Iterates through the vocab file and calculates the number of vocab terms as
     # well as the total corpus size (by summing the frequency counts of all the
@@ -336,14 +346,17 @@ def skip_gram_sample_with_text_vocab(input_tensor,
                 raise ValueError(
                     "Row in vocab file only has {} columns, "
                     "so vocab_token_index={} or "
-                    "vocab_freq_index={} is out of bounds. Row content: {}".
-                    format(len(row), vocab_token_index, vocab_freq_index, row))
+                    "vocab_freq_index={} is out of bounds. Row content: {}".format(
+                        len(row), vocab_token_index, vocab_freq_index, row
+                    )
+                )
             vocab_size += 1
             freq = vocab_freq_dtype.as_numpy_dtype(row[vocab_freq_index])
             if freq < 0:
                 raise ValueError(
                     "Row in vocab file has negative frequency of {}. "
-                    "Row content: {}".format(freq, row))
+                    "Row content: {}".format(freq, row)
+                )
             # Note: tokens whose frequencies are below vocab_min_count will still
             # contribute to the total corpus size used for vocab subsampling.
             calculated_corpus_size += freq
@@ -353,8 +366,10 @@ def skip_gram_sample_with_text_vocab(input_tensor,
     elif calculated_corpus_size - corpus_size > 1e-6:
         raise ValueError(
             "`corpus_size`={} must be greater than or equal to the "
-            "sum of all the frequency counts ({}) of `vocab_freq_file` ({}).".
-            format(corpus_size, calculated_corpus_size, vocab_freq_file))
+            "sum of all the frequency counts ({}) of `vocab_freq_file` ({}).".format(
+                corpus_size, calculated_corpus_size, vocab_freq_file
+            )
+        )
 
     vocab_freq_table = tf.lookup.StaticHashTable(
         tf.lookup.TextFileInitializer(
@@ -364,9 +379,11 @@ def skip_gram_sample_with_text_vocab(input_tensor,
             value_dtype=vocab_freq_dtype,
             value_index=vocab_freq_index,
             vocab_size=vocab_size,
-            delimiter=vocab_delimiter),
+            delimiter=vocab_delimiter,
+        ),
         # For vocab terms not in vocab file, use a default value of -1.
-        default_value=-1)
+        default_value=-1,
+    )
 
     return skip_gram_sample(
         input_tensor,
@@ -383,11 +400,18 @@ def skip_gram_sample_with_text_vocab(input_tensor,
         batch_size=batch_size,
         batch_capacity=batch_capacity,
         seed=seed,
-        name=name)
+        name=name,
+    )
 
 
-def _filter_input(input_tensor, vocab_freq_table, vocab_min_count,
-                  vocab_subsampling, corpus_size, seed):
+def _filter_input(
+    input_tensor,
+    vocab_freq_table,
+    vocab_min_count,
+    vocab_subsampling,
+    corpus_size,
+    seed,
+):
     input_tensor = tf.convert_to_tensor(input_tensor)
     """Filters input tensor based on vocab freq, threshold, and subsampling."""
     if vocab_freq_table is None:
@@ -397,11 +421,10 @@ def _filter_input(input_tensor, vocab_freq_table, vocab_min_count,
         raise ValueError(
             "vocab_freq_table must be a subclass of "
             "InitializableLookupTableBase (such as HashTable) instead of type "
-            "{}.".format(type(vocab_freq_table)))
+            "{}.".format(type(vocab_freq_table))
+        )
 
-    # pylint: disable=bad-continuation
     with tf.name_scope("filter_vocab"):
-        # pylint: enable=bad-continuation
         freq = vocab_freq_table.lookup(input_tensor)
         # Filters out elements in input_tensor that are not found in
         # vocab_freq_table (table returns a default value of -1 specified above when
@@ -412,7 +435,8 @@ def _filter_input(input_tensor, vocab_freq_table, vocab_min_count,
         if vocab_min_count is not None:
             cast_threshold = tf.cast(vocab_min_count, freq.dtype)
             mask = tf.math.logical_and(
-                mask, tf.math.greater_equal(freq, cast_threshold))
+                mask, tf.math.greater_equal(freq, cast_threshold)
+            )
 
         input_tensor = tf.boolean_mask(input_tensor, mask)
         freq = tf.boolean_mask(freq, mask)
@@ -422,8 +446,10 @@ def _filter_input(input_tensor, vocab_freq_table, vocab_min_count,
 
     if vocab_subsampling < 0 or vocab_subsampling > 1:
         raise ValueError(
-            "Invalid vocab_subsampling={} - it should be within range [0, 1].".
-            format(vocab_subsampling))
+            "Invalid vocab_subsampling={} - it should be within range [0, 1].".format(
+                vocab_subsampling
+            )
+        )
 
     # Subsamples the input tokens based on vocabulary frequency and
     # vocab_subsampling threshold (ie randomly discard commonly appearing
@@ -435,15 +461,12 @@ def _filter_input(input_tensor, vocab_freq_table, vocab_min_count,
 
         # From tensorflow_models/tutorials/embedding/word2vec_kernels.cc, which is
         # suppose to correlate with Eq. 5 in http://arxiv.org/abs/1310.4546.
-        keep_prob = (
-            (tf.math.sqrt(freq / (vocab_subsampling * corpus_size)) + 1.0) *
-            (vocab_subsampling * corpus_size / freq))
+        keep_prob = (tf.math.sqrt(freq / (vocab_subsampling * corpus_size)) + 1.0) * (
+            vocab_subsampling * corpus_size / freq
+        )
         random_prob = tf.random.uniform(
-            tf.shape(freq),
-            minval=0,
-            maxval=1,
-            dtype=tf.dtypes.float64,
-            seed=seed)
+            tf.shape(freq), minval=0, maxval=1, dtype=tf.dtypes.float64, seed=seed
+        )
 
         mask = tf.math.less_equal(random_prob, keep_prob)
         return tf.boolean_mask(input_tensor, mask)
