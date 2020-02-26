@@ -411,11 +411,14 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
 
     @property
     def alignments_size(self):
-        return self._alignments_size
+        if isinstance(self._alignments_size, int):
+            return self._alignments_size
+        else:
+            return tf.TensorShape([None])
 
     @property
     def state_size(self):
-        return self._alignments_size
+        return self.alignments_size
 
     def initial_alignments(self, batch_size, dtype):
         """Creates the initial alignment values for the `AttentionWrapper`
@@ -2033,10 +2036,14 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
           TypeError: If `state` is not an instance of `AttentionWrapperState`.
         """
         if not isinstance(state, AttentionWrapperState):
-            raise TypeError(
-                "Expected state to be instance of AttentionWrapperState. "
-                "Received type %s instead." % type(state)
-            )
+            try:
+                state = AttentionWrapperState(*state)
+            except TypeError:
+                raise TypeError(
+                    "Expected state to be instance of AttentionWrapperState or "
+                    "values that can construct AttentionWrapperState. "
+                    "Received type %s instead." % type(state)
+                )
 
         # Step 1: Calculate the true inputs to the cell based on the
         # previous attention value.

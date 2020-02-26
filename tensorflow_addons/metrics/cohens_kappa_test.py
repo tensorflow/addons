@@ -14,6 +14,7 @@
 # ==============================================================================
 """Tests for Cohen's Kappa Metric."""
 
+import numpy as np
 import tensorflow as tf
 from tensorflow_addons.metrics import CohenKappa
 from tensorflow_addons.utils import test_utils
@@ -34,9 +35,9 @@ class CohenKappaTest(tf.test.TestCase):
         self.assertEqual(kp_obj.num_classes, 5)
 
     def initialize_vars(self):
-        kp_obj1 = CohenKappa(num_classes=5)
-        kp_obj2 = CohenKappa(num_classes=5, weightage="linear")
-        kp_obj3 = CohenKappa(num_classes=5, weightage="quadratic")
+        kp_obj1 = CohenKappa(num_classes=5, sparse_labels=True)
+        kp_obj2 = CohenKappa(num_classes=5, sparse_labels=True, weightage="linear")
+        kp_obj3 = CohenKappa(num_classes=5, sparse_labels=True, weightage="quadratic")
 
         self.evaluate(tf.compat.v1.variables_initializer(kp_obj1.variables))
         self.evaluate(tf.compat.v1.variables_initializer(kp_obj2.variables))
@@ -147,11 +148,84 @@ class CohenKappaTest(tf.test.TestCase):
         y_true = [1] * 10000 + [0] * 20000 + [1] * 20000
         y_pred = [0] * 20000 + [1] * 30000
 
+        y_true = tf.convert_to_tensor(y_true)
+        y_pred = tf.convert_to_tensor(y_pred)
+
         obj = CohenKappa(num_classes=2)
         self.evaluate(tf.compat.v1.variables_initializer(obj.variables))
 
         self.evaluate(obj.update_state(y_true, y_pred))
         self.assertAllClose(0.166666666, obj.result())
+
+    def test_with_sparse_labels(self):
+        y_true = np.array([4, 4, 3, 4], dtype=np.int32)
+        y_pred = np.array([4, 4, 1, 2], dtype=np.int32)
+
+        obj = CohenKappa(num_classes=5, sparse_labels=True)
+        self.evaluate(tf.compat.v1.variables_initializer(obj.variables))
+
+        self.evaluate(obj.update_state(y_true, y_pred))
+        self.assertAllClose(0.19999999, obj.result())
+
+    def test_with_ohe_labels(self):
+        y_true = np.array([4, 4, 3, 4], dtype=np.int32)
+        y_true = tf.keras.utils.to_categorical(y_true, num_classes=5)
+        y_pred = np.array([4, 4, 1, 2], dtype=np.int32)
+
+        obj = CohenKappa(num_classes=5, sparse_labels=False)
+        self.evaluate(tf.compat.v1.variables_initializer(obj.variables))
+
+        self.evaluate(obj.update_state(y_true, y_pred))
+        self.assertAllClose(0.19999999, obj.result())
+
+    def test_keras_binary_reg_model(self):
+        kp = CohenKappa(num_classes=2)
+        inputs = tf.keras.layers.Input(shape=(10,))
+        outputs = tf.keras.layers.Dense(1)(inputs)
+        model = tf.keras.models.Model(inputs, outputs)
+        model.compile(optimizer="sgd", loss="mse", metrics=[kp])
+
+        x = np.random.rand(1000, 10).astype(np.float32)
+        y = np.random.randint(2, size=(1000, 1)).astype(np.float32)
+
+        model.fit(x, y, epochs=1, verbose=0, batch_size=32)
+
+    def test_keras_multiclass_reg_model(self):
+        kp = CohenKappa(num_classes=5, regression=True, sparse_labels=True)
+        inputs = tf.keras.layers.Input(shape=(10,))
+        outputs = tf.keras.layers.Dense(1)(inputs)
+        model = tf.keras.models.Model(inputs, outputs)
+        model.compile(optimizer="sgd", loss="mse", metrics=[kp])
+
+        x = np.random.rand(1000, 10).astype(np.float32)
+        y = np.random.randint(5, size=(1000,)).astype(np.float32)
+
+        model.fit(x, y, epochs=1, verbose=0, batch_size=32)
+
+    def test_keras_binary_clasasification_model(self):
+        kp = CohenKappa(num_classes=2)
+        inputs = tf.keras.layers.Input(shape=(10,))
+        outputs = tf.keras.layers.Dense(1, activation="sigmoid")(inputs)
+        model = tf.keras.models.Model(inputs, outputs)
+        model.compile(optimizer="sgd", loss="binary_crossentropy", metrics=[kp])
+
+        x = np.random.rand(1000, 10).astype(np.float32)
+        y = np.random.randint(2, size=(1000, 1)).astype(np.float32)
+
+        model.fit(x, y, epochs=1, verbose=0, batch_size=32)
+
+    def test_keras_multiclass_classification_model(self):
+        kp = CohenKappa(num_classes=5)
+        inputs = tf.keras.layers.Input(shape=(10,))
+        outputs = tf.keras.layers.Dense(5, activation="softmax")(inputs)
+        model = tf.keras.models.Model(inputs, outputs)
+        model.compile(optimizer="sgd", loss="categorical_crossentropy", metrics=[kp])
+
+        x = np.random.rand(1000, 10).astype(np.float32)
+        y = np.random.randint(5, size=(1000,)).astype(np.float32)
+        y = tf.keras.utils.to_categorical(y, num_classes=5)
+
+        model.fit(x, y, epochs=1, verbose=0, batch_size=32)
 
 
 if __name__ == "__main__":
