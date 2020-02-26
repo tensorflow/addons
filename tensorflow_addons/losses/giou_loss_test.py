@@ -27,33 +27,33 @@ class GIoULossTest(tf.test.TestCase, parameterized.TestCase):
     """GIoU test class."""
 
     def test_config(self):
-        gl_obj = GIoULoss(
-            reduction=tf.keras.losses.Reduction.NONE, name='giou_loss')
-        self.assertEqual(gl_obj.name, 'giou_loss')
+        gl_obj = GIoULoss(reduction=tf.keras.losses.Reduction.NONE, name="giou_loss")
+        self.assertEqual(gl_obj.name, "giou_loss")
         self.assertEqual(gl_obj.reduction, tf.keras.losses.Reduction.NONE)
 
-    @parameterized.named_parameters(("float16", np.float16),
-                                    ("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(
+        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
+    )
     def test_iou(self, dtype):
-        boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]],
-                             dtype=dtype)
-        boxes2 = tf.constant([[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]],
-                             dtype=dtype)
-        expected_result = tf.constant([0.875, 1.], dtype=dtype)
-        loss = giou_loss(boxes1, boxes2, mode='iou')
+        boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]], dtype=dtype)
+        boxes2 = tf.constant(
+            [[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]], dtype=dtype
+        )
+        expected_result = tf.constant([0.875, 1.0], dtype=dtype)
+        loss = giou_loss(boxes1, boxes2, mode="iou")
         self.assertAllCloseAccordingToType(loss, expected_result)
 
-    @parameterized.named_parameters(("float16", np.float16),
-                                    ("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(
+        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
+    )
     def test_giou_loss(self, dtype):
-        boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]],
-                             dtype=dtype)
-        boxes2 = tf.constant([[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]],
-                             dtype=dtype)
+        boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]], dtype=dtype)
+        boxes2 = tf.constant(
+            [[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]], dtype=dtype
+        )
         expected_result = tf.constant(
-            [1.07500000298023224, 1.9333333373069763], dtype=dtype)
+            [1.07500000298023224, 1.9333333373069763], dtype=dtype
+        )
         loss = giou_loss(boxes1, boxes2)
         self.assertAllCloseAccordingToType(loss, expected_result)
 
@@ -61,37 +61,34 @@ class GIoULossTest(tf.test.TestCase, parameterized.TestCase):
         boxes1 = tf.constant([[4, 3, 7, 5], [5, 6, 10, 7]], dtype=tf.int32)
         boxes2 = tf.constant([[3, 4, 6, 8], [14, 14, 15, 15]], dtype=tf.int32)
         expected_result = tf.constant(
-            [1.07500000298023224, 1.9333333373069763], dtype=tf.float32)
+            [1.07500000298023224, 1.9333333373069763], dtype=tf.float32
+        )
         loss = giou_loss(boxes1, boxes2)
         self.assertAllCloseAccordingToType(loss, expected_result)
 
-    @parameterized.named_parameters(("float16", np.float16),
-                                    ("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(
+        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
+    )
     def test_different_shapes(self, dtype):
-        boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]],
-                             dtype=dtype)
+        boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]], dtype=dtype)
         boxes2 = tf.constant([[3.0, 4.0, 6.0, 8.0]], dtype=dtype)
         tf.expand_dims(boxes1, -2)
         tf.expand_dims(boxes2, 0)
-        expected_result = tf.constant([1.07500000298023224, 1.366071],
-                                      dtype=dtype)
+        expected_result = tf.constant([1.07500000298023224, 1.366071], dtype=dtype)
         loss = giou_loss(boxes1, boxes2)
         self.assertAllCloseAccordingToType(loss, expected_result)
 
-        boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]],
-                             dtype=dtype)
+        boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]], dtype=dtype)
         boxes2 = tf.constant([[3.0, 4.0, 6.0, 8.0]], dtype=dtype)
         tf.expand_dims(boxes1, 0)
         tf.expand_dims(boxes2, -2)
-        expected_result = tf.constant([1.07500000298023224, 1.366071],
-                                      dtype=dtype)
+        expected_result = tf.constant([1.07500000298023224, 1.366071], dtype=dtype)
         loss = giou_loss(boxes1, boxes2)
         self.assertAllCloseAccordingToType(loss, expected_result)
 
-    @parameterized.named_parameters(("float16", np.float16),
-                                    ("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(
+        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
+    )
     def test_one_bbox(self, dtype):
         boxes1 = tf.constant([4.0, 3.0, 7.0, 5.0], dtype=dtype)
         boxes2 = tf.constant([3.0, 4.0, 6.0, 8.0], dtype=dtype)
@@ -99,23 +96,24 @@ class GIoULossTest(tf.test.TestCase, parameterized.TestCase):
         loss = giou_loss(boxes1, boxes2)
         self.assertAllCloseAccordingToType(loss, expected_result)
 
-    @parameterized.named_parameters(("float16", np.float16),
-                                    ("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(
+        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
+    )
     def test_keras_model(self, dtype):
-        boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]],
-                             dtype=dtype)
-        boxes2 = tf.constant([[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]],
-                             dtype=dtype)
+        boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]], dtype=dtype)
+        boxes2 = tf.constant(
+            [[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]], dtype=dtype
+        )
         expected_result = tf.constant(
-            [1.07500000298023224, 1.9333333373069763], dtype=dtype)
+            [1.07500000298023224, 1.9333333373069763], dtype=dtype
+        )
         model = tf.keras.Sequential()
         model.compile(
-            optimizer='adam',
-            loss=GIoULoss(reduction=tf.keras.losses.Reduction.NONE))
+            optimizer="adam", loss=GIoULoss(reduction=tf.keras.losses.Reduction.NONE)
+        )
         loss = model.evaluate(boxes1, boxes2, batch_size=2, steps=1)
         self.assertAllCloseAccordingToType(loss, expected_result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.test.main()
