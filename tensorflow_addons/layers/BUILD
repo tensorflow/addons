@@ -8,6 +8,7 @@ py_library(
         "__init__.py",
         "gelu.py",
         "maxout.py",
+        "multihead_attention.py",
         "normalizations.py",
         "optical_flow.py",
         "poincare.py",
