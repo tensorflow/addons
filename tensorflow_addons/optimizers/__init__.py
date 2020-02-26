@@ -16,16 +16,19 @@
 
 from tensorflow_addons.optimizers.average_wrapper import AveragedOptimizerWrapper
 from tensorflow_addons.optimizers.conditional_gradient import ConditionalGradient
+from tensorflow_addons.optimizers.cyclical_learning_rate import CyclicalLearningRate
 from tensorflow_addons.optimizers.cyclical_learning_rate import (
-    CyclicalLearningRate)
+    TriangularCyclicalLearningRate,
+)
 from tensorflow_addons.optimizers.cyclical_learning_rate import (
-    TriangularCyclicalLearningRate)
+    Triangular2CyclicalLearningRate,
+)
 from tensorflow_addons.optimizers.cyclical_learning_rate import (
-    Triangular2CyclicalLearningRate)
-from tensorflow_addons.optimizers.cyclical_learning_rate import (
-    ExponentialCyclicalLearningRate)
+    ExponentialCyclicalLearningRate,
+)
 from tensorflow_addons.optimizers.discriminative_layer_training import (
-    DiscriminativeLayerOptimizer)
+    DiscriminativeLayerOptimizer,
+)
 from tensorflow_addons.optimizers.lamb import LAMB
 from tensorflow_addons.optimizers.lazy_adam import LazyAdam
 from tensorflow_addons.optimizers.lookahead import Lookahead
@@ -36,5 +39,6 @@ from tensorflow_addons.optimizers.stochastic_weight_averaging import SWA
 from tensorflow_addons.optimizers.weight_decay_optimizers import AdamW
 from tensorflow_addons.optimizers.weight_decay_optimizers import SGDW
 from tensorflow_addons.optimizers.weight_decay_optimizers import (
-    extend_with_decoupled_weight_decay)
+    extend_with_decoupled_weight_decay,
+)
 from tensorflow_addons.optimizers.yogi import Yogi
