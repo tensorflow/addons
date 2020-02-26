@@ -23,6 +23,7 @@ from typing import Optional
 # TODO: Wrap functions in @tf.function once
 # https://github.com/tensorflow/tensorflow/issues/29075 is resolved
 
+
 def crf_filtered_inputs(inputs, tag_bitmap):
     """Constrains the inputs to filter out certain tags at each time step.
     tag_bitmap limits the allowed tags at each input time step.
@@ -555,8 +556,12 @@ def crf_decode(
             _multi_seq_fn)
 
 
-def crf_constrained_decode(potentials, tag_bitmap, transition_params,
-        sequence_length):
+def crf_constrained_decode(
+        potentials,
+        tag_bitmap,
+        transition_params,
+        sequence_length
+):
     """Decode the highest scoring sequence of tags under constraints.
     This is a function for tensor.
     Args:
