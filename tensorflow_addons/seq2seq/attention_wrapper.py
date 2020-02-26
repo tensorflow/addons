@@ -414,7 +414,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
         if isinstance(self._alignments_size, int):
             return self._alignments_size
         else:
-            return self._alignments_size.shape
+            return tf.TensorShape([None])
 
     @property
     def state_size(self):
