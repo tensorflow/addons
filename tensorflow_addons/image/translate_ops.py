@@ -14,16 +14,16 @@
 # ==============================================================================
 """Image translate ops."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow_addons.image.transform_ops import transform
+from tensorflow_addons.utils.types import TensorLike
+
+from typing import Optional
 
 
-@tf.function
-def translations_to_projective_transforms(translations, name=None):
+def translations_to_projective_transforms(
+    translations: TensorLike, name: Optional[str] = None
+) -> tf.Tensor:
     """Returns projective transform(s) for the given translation(s).
 
     Args:
@@ -38,10 +38,10 @@ def translations_to_projective_transforms(translations, name=None):
     """
     with tf.name_scope(name or "translations_to_projective_transforms"):
         translation_or_translations = tf.convert_to_tensor(
-            translations, name="translations", dtype=tf.dtypes.float32)
+            translations, name="translations", dtype=tf.dtypes.float32
+        )
         if translation_or_translations.get_shape().ndims is None:
-            raise TypeError(
-                "translation_or_translations rank must be statically known")
+            raise TypeError("translation_or_translations rank must be statically known")
         elif len(translation_or_translations.get_shape()) == 1:
             translations = translation_or_translations[None]
         elif len(translation_or_translations.get_shape()) == 2:
@@ -65,11 +65,17 @@ def translations_to_projective_transforms(translations, name=None):
                 -translations[:, 1, None],
                 tf.zeros((num_translations, 2), tf.dtypes.float32),
             ],
-            axis=1)
+            axis=1,
+        )
 
 
 @tf.function
-def translate(images, translations, interpolation="NEAREST", name=None):
+def translate(
+    images: TensorLike,
+    translations: TensorLike,
+    interpolation: str = "NEAREST",
+    name: Optional[str] = None,
+) -> tf.Tensor:
     """Translate image(s) by the passed vectors(s).
 
     Args:
@@ -95,4 +101,5 @@ def translate(images, translations, interpolation="NEAREST", name=None):
         return transform(
             images,
             translations_to_projective_transforms(translations),
-            interpolation=interpolation)
+            interpolation=interpolation,
+        )

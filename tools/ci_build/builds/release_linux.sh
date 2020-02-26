@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +15,25 @@
 # ==============================================================================
 set -e -x
 
+if [[ $1 == "--nightly" ]]; then
+    PKG_OPS="--nightly"
+elif [[ -n "$1" ]]; then
+    echo "Found unsupported args: $@"
+    exit 1
+fi
+
+# Configs
+export TF_NEED_CUDA="1"
+export TF_CUDA_VERSION="10.1"
+export CUDA_TOOLKIT_PATH="/usr/local/cuda"
+export TF_CUDNN_VERSION="7"
+export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
+
 # Remove the now private ppa. This can be removed after the docker image removes the
 # pre-installed python packages from this ppa.
 rm -f /etc/apt/sources.list.d/jonathonf-ubuntu-python-3_6-xenial.list
 
-PYTHON_VERSIONS="python2.7 python3.5 python3.6 python3.7"
+PYTHON_VERSIONS="python3.5 python3.6 python3.7"
 ln -sf /usr/bin/python3.5 /usr/bin/python3 # Py36 has issues with add-apt
 curl -sSOL https://bootstrap.pypa.io/get-pip.py
 add-apt-repository -y ppa:deadsnakes/ppa
@@ -27,14 +41,14 @@ add-apt-repository -y ppa:deadsnakes/ppa
 apt-get -y -qq update
 
 for version in ${PYTHON_VERSIONS}; do
-    export PYTHON_VERSION=${version}
-    apt-get -y -qq install ${PYTHON_VERSION}
+    apt-get -y -qq install ${version}
+    ln -sf /usr/bin/${version} /usr/bin/python3
 
-    ${PYTHON_VERSION} get-pip.py -q
-    ${PYTHON_VERSION} -m pip --version
+    python3 get-pip.py -q
+    python3 -m pip --version
 
     #Link TF dependency
-    yes 'y' | ./configure.sh --quiet
+    python3 ./configure.py --quiet
 
     # Build
     bazel build \
@@ -47,14 +61,8 @@ for version in ${PYTHON_VERSIONS}; do
       build_pip_pkg
 
     # Package Whl
-    bazel-bin/build_pip_pkg artifacts --nightly
-
-    # Uncomment and use this command for release branches
-    #bazel-bin/build_pip_pkg artifacts
+    bazel-bin/build_pip_pkg artifacts ${PKG_OPS}
 done
 
 # Clean up
 rm get-pip.py
-
-# Verify Wheels
-./tools/ci_build/builds/wheel_verify.sh

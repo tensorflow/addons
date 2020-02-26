@@ -14,16 +14,7 @@
 # ==============================================================================
 .PHONY: all
 
-all: code-format sanity-check unit-test
-
-install-ci-dependency:
-	bash tools/ci_build/install/install_ci_dependency.sh --quiet
-
-code-format: install-ci-dependency
-	bash tools/ci_build/code_format.sh --incremental --in-place
-
-sanity-check: install-ci-dependency
-	bash tools/ci_build/ci_sanity.sh --incremental
+all: unit-test
 
 unit-test:
 	bash tools/ci_testing/addons_cpu.sh
