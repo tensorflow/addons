@@ -15,8 +15,15 @@
 """Additional losses that conform to Keras API."""
 
 from tensorflow_addons.losses.contrastive import contrastive_loss, ContrastiveLoss
+<<<<<<< HEAD
 from tensorflow_addons.losses.center_loss import center_loss, CenterLoss
 from tensorflow_addons.losses.focal_loss import sigmoid_focal_crossentropy, SigmoidFocalCrossEntropy
+=======
+from tensorflow_addons.losses.focal_loss import (
+    sigmoid_focal_crossentropy,
+    SigmoidFocalCrossEntropy,
+)
+>>>>>>> master
 from tensorflow_addons.losses.giou_loss import giou_loss, GIoULoss
 from tensorflow_addons.losses.lifted import lifted_struct_loss, LiftedStructLoss
 from tensorflow_addons.losses.sparsemax_loss import sparsemax_loss, SparsemaxLoss
@@ -31,5 +38,11 @@ from tensorflow_addons.losses.quantiles import pinball_loss, PinballLoss
 # Temporarily disable for windows
 # Remove after: https://github.com/tensorflow/addons/issues/838
 import os
-if os.name != 'nt':
-    from tensorflow_addons.losses.npairs import npairs_loss, NpairsLoss, npairs_multilabel_loss, NpairsMultilabelLoss
+
+if os.name != "nt":
+    from tensorflow_addons.losses.npairs import (
+        npairs_loss,
+        NpairsLoss,
+        npairs_multilabel_loss,
+        NpairsMultilabelLoss,
+    )
