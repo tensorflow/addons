@@ -13,21 +13,17 @@
 # limitations under the License.
 # ==============================================================================
 """Parse time ops."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import tensorflow as tf
 
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+from tensorflow_addons.utils.resource_loader import LazySO
 
-_parse_time_op = tf.load_op_library(
-    get_path_to_datafile("custom_ops/text/_parse_time_op.so"))
+_parse_time_so = LazySO("custom_ops/text/_parse_time_op.so")
 
 tf.no_gradient("Addons>ParseTime")
 
 
-def parse_time(time_string, time_format, output_unit):
+def parse_time(time_string: str, time_format: str, output_unit: str) -> str:
     """Parse an input string according to the provided format string into a
     Unix time.
 
@@ -82,5 +78,4 @@ def parse_time(time_string, time_format, output_unit):
       ValueError: If `output_unit` is not a valid value,
         if parsing `time_string` according to `time_format` failed.
     """
-    return _parse_time_op.addons_parse_time(time_string, time_format,
-                                            output_unit)
+    return _parse_time_so.ops.addons_parse_time(time_string, time_format, output_unit)

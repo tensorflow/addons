@@ -15,9 +15,9 @@ limitations under the License.
 
 #define EIGEN_USE_GPU
 
-#include "tensorflow_addons/custom_ops/image/cc/kernels/adjust_hsv_in_yiq_op.h"
 #include "tensorflow/core/platform/stream_executor.h"
 #include "tensorflow/core/util/gpu_kernel_helper.h"
+#include "tensorflow_addons/custom_ops/image/cc/kernels/adjust_hsv_in_yiq_op.h"
 
 namespace tensorflow {
 namespace addons {
@@ -34,13 +34,13 @@ inline se::DeviceMemory<T> AsDeviceMemory(const T* cuda_memory, uint64 size) {
 
 namespace internal {
 
-__global__ void compute_tranformation_matrix_cuda(const float* const delta_h,
-                                                  const float* const scale_s,
-                                                  const float* const scale_v,
-                                                  float* const matrix,
-                                                  const int matrix_size) {
+__global__ void compute_transformation_matrix_cuda(const float* const delta_h,
+                                                   const float* const scale_s,
+                                                   const float* const scale_v,
+                                                   float* const matrix,
+                                                   const int matrix_size) {
   if (matrix_size == kChannelSize * kChannelSize) {
-    compute_tranformation_matrix<kChannelSize * kChannelSize>(
+    compute_transformation_matrix<kChannelSize * kChannelSize>(
         *delta_h, *scale_s, *scale_v, matrix);
   }
 }
@@ -59,22 +59,22 @@ void AdjustHsvInYiqGPU::operator()(OpKernelContext* ctx, int channel_count,
   const uint64 n = kChannelSize;
   auto* cu_stream = ctx->eigen_device<GPUDevice>().stream();
   OP_REQUIRES(ctx, cu_stream, errors::Internal("No GPU stream available."));
-  Tensor tranformation_matrix;
+  Tensor transformation_matrix;
   OP_REQUIRES_OK(ctx, ctx->allocate_temp(
                           DT_FLOAT, TensorShape({kChannelSize * kChannelSize}),
-                          &tranformation_matrix));
-  // TODO(huangyp): It takes about 3.5 us to compute tranformation_matrix
+                          &transformation_matrix));
+  // TODO(huangyp): It takes about 3.5 us to compute transformation_matrix
   // with one thread. Improve its performance if necessary.
-  TF_CHECK_OK(CudaLaunchKernel(internal::compute_tranformation_matrix_cuda, 1,
+  TF_CHECK_OK(CudaLaunchKernel(internal::compute_transformation_matrix_cuda, 1,
                                1, 0, cu_stream, delta_h, scale_s, scale_v,
-                               tranformation_matrix.flat<float>().data(),
-                               tranformation_matrix.flat<float>().size()));
+                               transformation_matrix.flat<float>().data(),
+                               transformation_matrix.flat<float>().size()));
   // Call cuBlas C = A * B directly.
   auto no_transpose = se::blas::Transpose::kNoTranspose;
   auto a_ptr =
       AsDeviceMemory(input->flat<float>().data(), input->flat<float>().size());
-  auto b_ptr = AsDeviceMemory(tranformation_matrix.flat<float>().data(),
-                              tranformation_matrix.flat<float>().size());
+  auto b_ptr = AsDeviceMemory(transformation_matrix.flat<float>().data(),
+                              transformation_matrix.flat<float>().size());
   auto c_ptr = AsDeviceMemory(output->flat<float>().data(),
                               output->flat<float>().size());
   auto* stream = ctx->op_device_context()->stream();
@@ -86,8 +86,8 @@ void AdjustHsvInYiqGPU::operator()(OpKernelContext* ctx, int channel_count,
                          a_ptr, k, 0.0f, &c_ptr, n)
           .ok();
   if (!blas_launch_status) {
-    ctx->SetStatus(errors::Internal("Blas SGEMM launch failed : m=", m, ", n=",
-                                    n, ", k=", k));
+    ctx->SetStatus(errors::Internal("Blas SGEMM launch failed : m=", m,
+                                    ", n=", n, ", k=", k));
   }
 }
 }  // namespace functor

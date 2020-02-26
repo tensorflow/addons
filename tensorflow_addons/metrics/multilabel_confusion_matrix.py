@@ -14,13 +14,12 @@
 # ==============================================================================
 """Implements Multi-label confusion matrix scores."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
 import numpy as np
+
+from typeguard import typechecked
+from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
 
 
 class MultiLabelConfusionMatrix(Metric):
@@ -70,11 +69,14 @@ class MultiLabelConfusionMatrix(Metric):
     ```
     """
 
+    @typechecked
     def __init__(self,
-                 num_classes,
-                 name='Multilabel_confusion_matrix',
-                 dtype=tf.int32):
-        super(MultiLabelConfusionMatrix, self).__init__(name=name, dtype=dtype)
+                 num_classes: FloatTensorLike,
+                 name: str = 'Multilabel_confusion_matrix',
+                 dtype: AcceptableDTypes = None,
+                 **kwargs
+                 ):
+        super().__init__(name=name, dtype=dtype)
         self.num_classes = num_classes
         self.true_positives = self.add_weight(
             'true_positives',
@@ -139,8 +141,8 @@ class MultiLabelConfusionMatrix(Metric):
         config = {
             "num_classes": self.num_classes,
         }
-        base_config = super(MultiLabelConfusionMatrix, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}
 
     def reset_states(self):
         self.true_positives.assign(np.zeros(self.num_classes), np.int32)

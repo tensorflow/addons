@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for R-Square Metric."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow_addons.metrics import RSquare
 from tensorflow_addons.utils import test_utils
@@ -26,12 +22,12 @@ from tensorflow_addons.utils import test_utils
 @test_utils.run_all_in_graph_and_eager_modes
 class RSquareTest(tf.test.TestCase):
     def test_config(self):
-        r2_obj = RSquare(name='r_square')
-        self.assertEqual(r2_obj.name, 'r_square')
+        r2_obj = RSquare(name="r_square")
+        self.assertEqual(r2_obj.name, "r_square")
         self.assertEqual(r2_obj.dtype, tf.float32)
         # Check save and restore config
         r2_obj2 = RSquare.from_config(r2_obj.get_config())
-        self.assertEqual(r2_obj2.name, 'r_square')
+        self.assertEqual(r2_obj2.name, "r_square")
         self.assertEqual(r2_obj2.dtype, tf.float32)
 
     def initialize_vars(self):
@@ -83,5 +79,5 @@ class RSquareTest(tf.test.TestCase):
         self.check_results(r2_obj, 0.7376327)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.test.main()
