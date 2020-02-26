@@ -21,7 +21,7 @@ from typing import Optional
 from typeguard import typechecked
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class GIoULoss(tf.keras.losses.Loss):
     """Implements the GIoU loss function.
 
@@ -50,32 +50,31 @@ class GIoULoss(tf.keras.losses.Loss):
     Args:
       mode: one of ['giou', 'iou'], decided to calculate GIoU or IoU loss.
     """
+
     @typechecked
-    def __init__(self,
-                 mode: str = 'giou',
-                 reduction: str = tf.keras.losses.Reduction.AUTO,
-                 name: Optional[str] = 'giou_loss'):
-        if mode not in ['giou', 'iou']:
+    def __init__(
+        self,
+        mode: str = "giou",
+        reduction: str = tf.keras.losses.Reduction.AUTO,
+        name: Optional[str] = "giou_loss",
+    ):
+        if mode not in ["giou", "iou"]:
             raise ValueError("Value of mode should be 'iou' or 'giou'")
         super().__init__(name=name, reduction=reduction)
         self.mode = mode
 
     def get_config(self):
         base_config = super().get_config()
-        base_config['mode'] = self.mode
+        base_config["mode"] = self.mode
         return base_config
 
-    def call(self,
-             y_true,
-             y_pred):
+    def call(self, y_true, y_pred):
         return giou_loss(y_true, y_pred, mode=self.mode)
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
-def giou_loss(y_true: TensorLike,
-              y_pred: TensorLike,
-              mode: str = 'giou') -> tf.Tensor:
+def giou_loss(y_true: TensorLike, y_pred: TensorLike, mode: str = "giou") -> tf.Tensor:
     """
     Args:
         y_true: true targets tensor. The coordinates of the each bounding
@@ -87,7 +86,7 @@ def giou_loss(y_true: TensorLike,
     Returns:
         GIoU loss float `Tensor`.
     """
-    if mode not in ['giou', 'iou']:
+    if mode not in ["giou", "iou"]:
         raise ValueError("Value of mode should be 'iou' or 'giou'")
     y_pred = tf.convert_to_tensor(y_pred)
     if not y_pred.dtype.is_floating:
@@ -98,9 +97,7 @@ def giou_loss(y_true: TensorLike,
     return 1 - giou
 
 
-def _calculate_giou(b1: TensorLike,
-                    b2: TensorLike,
-                    mode: str = 'giou') -> tf.Tensor:
+def _calculate_giou(b1: TensorLike, b2: TensorLike, mode: str = "giou") -> tf.Tensor:
     """
     Args:
         b1: bounding box. The coordinates of the each bounding box in boxes are
@@ -112,7 +109,7 @@ def _calculate_giou(b1: TensorLike,
     Returns:
         GIoU loss float `Tensor`.
     """
-    zero = tf.convert_to_tensor(0., b1.dtype)
+    zero = tf.convert_to_tensor(0.0, b1.dtype)
     b1_ymin, b1_xmin, b1_ymax, b1_xmax = tf.unstack(b1, 4, axis=-1)
     b2_ymin, b2_xmin, b2_ymax, b2_xmax = tf.unstack(b2, 4, axis=-1)
     b1_width = tf.maximum(zero, b1_xmax - b1_xmin)
@@ -132,7 +129,7 @@ def _calculate_giou(b1: TensorLike,
 
     union_area = b1_area + b2_area - intersect_area
     iou = tf.math.divide_no_nan(intersect_area, union_area)
-    if mode == 'iou':
+    if mode == "iou":
         return iou
 
     enclose_ymin = tf.minimum(b1_ymin, b2_ymin)
@@ -142,6 +139,5 @@ def _calculate_giou(b1: TensorLike,
     enclose_width = tf.maximum(zero, enclose_xmax - enclose_xmin)
     enclose_height = tf.maximum(zero, enclose_ymax - enclose_ymin)
     enclose_area = enclose_width * enclose_height
-    giou = iou - tf.math.divide_no_nan(
-        (enclose_area - union_area), enclose_area)
+    giou = iou - tf.math.divide_no_nan((enclose_area - union_area), enclose_area)
     return giou
