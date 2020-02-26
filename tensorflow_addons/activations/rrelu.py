@@ -24,8 +24,8 @@ def rrelu(
     x: types.TensorLike,
     lower: Number = 0.125,
     upper: Number = 0.3333333333333333,
-    training: Optional[str] = None,
-    seed: Optional[str] = None,
+    training: Optional[bool] = None,
+    seed: Optional[int] = None,
 ) -> tf.Tensor:
     """rrelu function.
 
