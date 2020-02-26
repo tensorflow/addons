@@ -14,7 +14,15 @@
 # limitations under the License.
 #
 # ==============================================================================
-set -x
+# usage: bash tools/ci_testing/addons_cpu.sh [--no-deps]
+
+set -x -e
+
+
+if [ "$1" != "--no-deps" ] && [ "$1" != "" ]; then
+  echo Wrong argument $1
+  exit 1
+fi
 
 # Make sure we're in the project root path.
 SCRIPT_DIR=$( cd ${0%/*} && pwd -P )
@@ -33,20 +41,26 @@ else
     N_JOBS=$(grep -c ^processor /proc/cpuinfo)
 fi
 
-
 echo ""
 echo "Bazel will use ${N_JOBS} concurrent job(s)."
 echo ""
 
 export CC_OPT_FLAGS='-mavx'
 export TF_NEED_CUDA=0
-yes 'y' | ./configure.sh
+
+# Check if python3 is available. On Windows VM it is not.
+if [ -x "$(command -v python3)" ]; then
+    python3 ./configure.py $1
+  else
+    python ./configure.py $1
+fi
+
+cat ./.bazelrc
 
 ## Run bazel test command. Double test timeouts to avoid flakes.
-bazel test -c opt -k \
+${BAZEL_PATH:=bazel} test -c opt -k \
     --jobs=${N_JOBS} --test_timeout 300,450,1200,3600 \
     --test_output=errors --local_test_jobs=8 \
-    --extra_toolchains=@bazel_tools//tools/python:autodetecting_toolchain_nonstrict \
     //tensorflow_addons/...
 
 exit $?

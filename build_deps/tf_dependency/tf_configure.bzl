@@ -135,7 +135,6 @@ def _symlink_genrule_for_dir(
         src_files = [],
         dest_files = [],
         tf_pip_dir_rename_pair = []):
-
     """Returns a genrule to symlink(or copy if on Windows) a set of files.
     If src_dir is passed, files will be read from the given directory; otherwise
     we assume files are in src_files and dest_files.
@@ -153,10 +152,11 @@ def _symlink_genrule_for_dir(
     Returns:
         genrule target that creates the symlinks.
     """
+
     # Check that tf_pip_dir_rename_pair has the right length
     tf_pip_dir_rename_pair_len = len(tf_pip_dir_rename_pair)
-    if tf_pip_dir_rename_pair_len != 0 and tf_pip_dir_rename_pair_len !=2:
-      _fail("The size of argument tf_pip_dir_rename_pair should be either 0 or 2, but %d is given." % tf_pip_dir_rename_pair_len)
+    if tf_pip_dir_rename_pair_len != 0 and tf_pip_dir_rename_pair_len != 2:
+        _fail("The size of argument tf_pip_dir_rename_pair should be either 0 or 2, but %d is given." % tf_pip_dir_rename_pair_len)
 
     if src_dir != None:
         src_dir = _norm_path(src_dir)
@@ -165,9 +165,9 @@ def _symlink_genrule_for_dir(
 
         # Create a list with the src_dir stripped to use for outputs.
         if tf_pip_dir_rename_pair_len:
-          dest_files = files.replace(src_dir, "").replace(tf_pip_dir_rename_pair[0], tf_pip_dir_rename_pair[1]).splitlines()
+            dest_files = files.replace(src_dir, "").replace(tf_pip_dir_rename_pair[0], tf_pip_dir_rename_pair[1]).splitlines()
         else:
-          dest_files = files.replace(src_dir, "").splitlines()
+            dest_files = files.replace(src_dir, "").splitlines()
         src_files = files.splitlines()
     command = []
     outs = []
@@ -197,14 +197,13 @@ def _tf_pip_impl(repository_ctx):
         tf_header_dir,
         "include",
         "tf_header_include",
-        tf_pip_dir_rename_pair = ["tensorflow_core", "tensorflow"]
+        tf_pip_dir_rename_pair = ["tensorflow_core", "tensorflow"],
     )
 
     tf_shared_library_dir = repository_ctx.os.environ[_TF_SHARED_LIBRARY_DIR]
     tf_shared_library_name = repository_ctx.os.environ[_TF_SHARED_LIBRARY_NAME]
     tf_shared_library_path = "%s/%s" % (tf_shared_library_dir, tf_shared_library_name)
     tf_cx11_abi = "-D_GLIBCXX_USE_CXX11_ABI=%s" % (repository_ctx.os.environ[_TF_CXX11_ABI_FLAG])
-
 
     tf_shared_library_rule = _symlink_genrule_for_dir(
         repository_ctx,
@@ -221,10 +220,13 @@ def _tf_pip_impl(repository_ctx):
         "%{TF_SHARED_LIBRARY_NAME}": tf_shared_library_name,
     })
 
-    _tpl(repository_ctx,
-        "build_defs.bzl", {
+    _tpl(
+        repository_ctx,
+        "build_defs.bzl",
+        {
             "%{tf_cx11_abi}": tf_cx11_abi,
-    })
+        },
+    )
 
 tf_configure = repository_rule(
     environ = [

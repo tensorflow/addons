@@ -14,15 +14,15 @@
 
 # Orginal implementation from keras_contrib/layer/normalization
 # =============================================================================
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import logging
 import tensorflow as tf
+from typeguard import typechecked
+
+from tensorflow_addons.utils import types
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class GroupNormalization(tf.keras.layers.Layer):
     """Group normalization layer.
 
@@ -70,20 +70,23 @@ class GroupNormalization(tf.keras.layers.Layer):
         - [Group Normalization](https://arxiv.org/abs/1803.08494)
     """
 
-    def __init__(self,
-                 groups=2,
-                 axis=-1,
-                 epsilon=1e-3,
-                 center=True,
-                 scale=True,
-                 beta_initializer='zeros',
-                 gamma_initializer='ones',
-                 beta_regularizer=None,
-                 gamma_regularizer=None,
-                 beta_constraint=None,
-                 gamma_constraint=None,
-                 **kwargs):
-        super(GroupNormalization, self).__init__(**kwargs)
+    @typechecked
+    def __init__(
+        self,
+        groups: int = 2,
+        axis: int = -1,
+        epsilon: float = 1e-3,
+        center: bool = True,
+        scale: bool = True,
+        beta_initializer: types.Initializer = "zeros",
+        gamma_initializer: types.Initializer = "ones",
+        beta_regularizer: types.Regularizer = None,
+        gamma_regularizer: types.Regularizer = None,
+        beta_constraint: types.Constraint = None,
+        gamma_constraint: types.Constraint = None,
+        **kwargs
+    ):
+        super().__init__(**kwargs)
         self.supports_masking = True
         self.groups = groups
         self.axis = axis
@@ -108,7 +111,7 @@ class GroupNormalization(tf.keras.layers.Layer):
         self._add_gamma_weight(input_shape)
         self._add_beta_weight(input_shape)
         self.built = True
-        super(GroupNormalization, self).build(input_shape)
+        super().build(input_shape)
 
     def call(self, inputs):
 
@@ -116,10 +119,10 @@ class GroupNormalization(tf.keras.layers.Layer):
         tensor_input_shape = tf.shape(inputs)
 
         reshaped_inputs, group_shape = self._reshape_into_groups(
-            inputs, input_shape, tensor_input_shape)
+            inputs, input_shape, tensor_input_shape
+        )
 
-        normalized_inputs = self._apply_normalization(reshaped_inputs,
-                                                      input_shape)
+        normalized_inputs = self._apply_normalization(reshaped_inputs, input_shape)
 
         outputs = tf.reshape(normalized_inputs, tensor_input_shape)
 
@@ -127,31 +130,24 @@ class GroupNormalization(tf.keras.layers.Layer):
 
     def get_config(self):
         config = {
-            'groups':
-            self.groups,
-            'axis':
-            self.axis,
-            'epsilon':
-            self.epsilon,
-            'center':
-            self.center,
-            'scale':
-            self.scale,
-            'beta_initializer':
-            tf.keras.initializers.serialize(self.beta_initializer),
-            'gamma_initializer':
-            tf.keras.initializers.serialize(self.gamma_initializer),
-            'beta_regularizer':
-            tf.keras.regularizers.serialize(self.beta_regularizer),
-            'gamma_regularizer':
-            tf.keras.regularizers.serialize(self.gamma_regularizer),
-            'beta_constraint':
-            tf.keras.constraints.serialize(self.beta_constraint),
-            'gamma_constraint':
-            tf.keras.constraints.serialize(self.gamma_constraint)
+            "groups": self.groups,
+            "axis": self.axis,
+            "epsilon": self.epsilon,
+            "center": self.center,
+            "scale": self.scale,
+            "beta_initializer": tf.keras.initializers.serialize(self.beta_initializer),
+            "gamma_initializer": tf.keras.initializers.serialize(
+                self.gamma_initializer
+            ),
+            "beta_regularizer": tf.keras.regularizers.serialize(self.beta_regularizer),
+            "gamma_regularizer": tf.keras.regularizers.serialize(
+                self.gamma_regularizer
+            ),
+            "beta_constraint": tf.keras.constraints.serialize(self.beta_constraint),
+            "gamma_constraint": tf.keras.constraints.serialize(self.gamma_constraint),
         }
-        base_config = super(GroupNormalization, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}
 
     def compute_output_shape(self, input_shape):
         return input_shape
@@ -173,7 +169,8 @@ class GroupNormalization(tf.keras.layers.Layer):
         group_reduction_axes.pop(axis)
 
         mean, variance = tf.nn.moments(
-            reshaped_inputs, group_reduction_axes, keepdims=True)
+            reshaped_inputs, group_reduction_axes, keepdims=True
+        )
 
         gamma, beta = self._get_reshaped_weights(input_shape)
         normalized_inputs = tf.nn.batch_normalization(
@@ -182,7 +179,8 @@ class GroupNormalization(tf.keras.layers.Layer):
             variance=variance,
             scale=gamma,
             offset=beta,
-            variance_epsilon=self.epsilon)
+            variance_epsilon=self.epsilon,
+        )
         return normalized_inputs
 
     def _get_reshaped_weights(self, input_shape):
@@ -199,10 +197,11 @@ class GroupNormalization(tf.keras.layers.Layer):
     def _check_if_input_shape_is_none(self, input_shape):
         dim = input_shape[self.axis]
         if dim is None:
-            raise ValueError('Axis ' + str(self.axis) + ' of '
-                             'input tensor should have a defined dimension '
-                             'but the layer received an input with shape ' +
-                             str(input_shape) + '.')
+            raise ValueError(
+                "Axis " + str(self.axis) + " of "
+                "input tensor should have a defined dimension "
+                "but the layer received an input with shape " + str(input_shape) + "."
+            )
 
     def _set_number_of_groups_for_instance_norm(self, input_shape):
         dim = input_shape[self.axis]
@@ -215,26 +214,30 @@ class GroupNormalization(tf.keras.layers.Layer):
         dim = input_shape[self.axis]
         if dim < self.groups:
             raise ValueError(
-                'Number of groups (' + str(self.groups) + ') cannot be '
-                'more than the number of channels (' + str(dim) + ').')
+                "Number of groups (" + str(self.groups) + ") cannot be "
+                "more than the number of channels (" + str(dim) + ")."
+            )
 
         if dim % self.groups != 0:
             raise ValueError(
-                'Number of groups (' + str(self.groups) + ') must be a '
-                'multiple of the number of channels (' + str(dim) + ').')
+                "Number of groups (" + str(self.groups) + ") must be a "
+                "multiple of the number of channels (" + str(dim) + ")."
+            )
 
     def _check_axis(self):
 
         if self.axis == 0:
             raise ValueError(
                 "You are trying to normalize your batch axis. Do you want to "
-                "use tf.layer.batch_normalization instead")
+                "use tf.layer.batch_normalization instead"
+            )
 
     def _create_input_spec(self, input_shape):
 
         dim = input_shape[self.axis]
         self.input_spec = tf.keras.layers.InputSpec(
-            ndim=len(input_shape), axes={self.axis: dim})
+            ndim=len(input_shape), axes={self.axis: dim}
+        )
 
     def _add_gamma_weight(self, input_shape):
 
@@ -244,10 +247,11 @@ class GroupNormalization(tf.keras.layers.Layer):
         if self.scale:
             self.gamma = self.add_weight(
                 shape=shape,
-                name='gamma',
+                name="gamma",
                 initializer=self.gamma_initializer,
                 regularizer=self.gamma_regularizer,
-                constraint=self.gamma_constraint)
+                constraint=self.gamma_constraint,
+            )
         else:
             self.gamma = None
 
@@ -259,10 +263,11 @@ class GroupNormalization(tf.keras.layers.Layer):
         if self.center:
             self.beta = self.add_weight(
                 shape=shape,
-                name='beta',
+                name="beta",
                 initializer=self.beta_initializer,
                 regularizer=self.beta_regularizer,
-                constraint=self.beta_constraint)
+                constraint=self.beta_constraint,
+            )
         else:
             self.beta = None
 
@@ -273,7 +278,7 @@ class GroupNormalization(tf.keras.layers.Layer):
         return broadcast_shape
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class InstanceNormalization(GroupNormalization):
     """Instance normalization layer.
 
@@ -315,4 +320,4 @@ class InstanceNormalization(GroupNormalization):
             logging.warning("The given value for groups will be overwritten.")
 
         kwargs["groups"] = -1
-        super(InstanceNormalization, self).__init__(**kwargs)
+        super().__init__(**kwargs)

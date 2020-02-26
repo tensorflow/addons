@@ -17,7 +17,6 @@ limitations under the License.
 #define TENSORFLOW_ADDONS_ACTIVATIONS_KERNELS_GELU_OP_H_
 
 #define EIGEN_USE_THREADS
-#define _USE_MATH_DEFINES
 #include <cmath>
 
 #include "tensorflow/core/framework/numeric_op.h"

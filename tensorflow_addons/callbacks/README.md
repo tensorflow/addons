@@ -3,12 +3,14 @@
 ## Maintainers
 | Submodule  | Maintainers  | Contact Info   |
 |:---------- |:------------- |:--------------|
+| average_model_checkpoint | @squadrick | dheeraj98reddy@gmail.com |
 |  time_stopping | @shun-lin | shunlin@google.com |
 |  tqdm_progress_bar | @shun-lin | shunlin@google.com |
 
 ## Contents
 | Submodule | Callback  | Reference                               |
 |:----------------------- |:-------------------|:---------------|
+| average_model_checkpoint | AverageModelCheckpoint | N/A |
 | time_stopping | TimeStopping | N/A |
 | tqdm_progress_bar | TQDMProgressBar | https://tqdm.github.io/ |
 
