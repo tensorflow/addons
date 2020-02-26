@@ -14,12 +14,11 @@
 # ==============================================================================
 """Implements Focal loss."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 import tensorflow.keras.backend as K
+
+from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
+from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
@@ -41,10 +40,10 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
     fl = tfa.losses.SigmoidFocalCrossEntropy()
     loss = fl(
       [[0.97], [0.91], [0.03]],
-      [[1], [1], [0])
-    print('Loss: ', loss.numpy())  # Loss: [[0.03045921]
-                                            [0.09431068]
-                                            [0.31471074]
+      [[1.0], [1.0], [0.0]])
+    print('Loss: ', loss.numpy())  # Loss: [0.00010971,
+                                            0.0032975,
+                                            0.00030611]
     ```
     Usage with tf.keras API:
 
@@ -66,20 +65,22 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
           `gamma` is less than zero
     """
 
+    @typechecked
     def __init__(self,
-                 from_logits=False,
-                 alpha=0.25,
-                 gamma=2.0,
-                 reduction=tf.keras.losses.Reduction.NONE,
-                 name='sigmoid_focal_crossentropy'):
-        super(SigmoidFocalCrossEntropy, self).__init__(
-            name=name, reduction=reduction)
+                 from_logits: bool = False,
+                 alpha: FloatTensorLike = 0.25,
+                 gamma: FloatTensorLike = 2.0,
+                 reduction: str = tf.keras.losses.Reduction.NONE,
+                 name: str = 'sigmoid_focal_crossentropy'):
+        super().__init__(name=name, reduction=reduction)
 
         self.from_logits = from_logits
         self.alpha = alpha
         self.gamma = gamma
 
-    def call(self, y_true, y_pred):
+    def call(self,
+             y_true,
+             y_pred):
         return sigmoid_focal_crossentropy(
             y_true,
             y_pred,
@@ -93,26 +94,26 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
             "alpha": self.alpha,
             "gamma": self.gamma,
         }
-        base_config = super(SigmoidFocalCrossEntropy, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}
 
 
 @tf.keras.utils.register_keras_serializable(package='Addons')
 @tf.function
-def sigmoid_focal_crossentropy(y_true,
-                               y_pred,
-                               alpha=0.25,
-                               gamma=2.0,
-                               from_logits=False):
+def sigmoid_focal_crossentropy(y_true: TensorLike,
+                               y_pred: TensorLike,
+                               alpha: FloatTensorLike = 0.25,
+                               gamma: FloatTensorLike = 2.0,
+                               from_logits: bool = False) -> tf.Tensor:
     """
     Args
         y_true: true targets tensor.
         y_pred: predictions tensor.
         alpha: balancing factor.
         gamma: modulating factor.
-    
+
     Returns:
-        Weighted loss float `Tensor`. If `reduction` is `NONE`,this has the 
+        Weighted loss float `Tensor`. If `reduction` is `NONE`,this has the
         same shape as `y_true`; otherwise, it is scalar.
     """
     if gamma and gamma < 0:
@@ -120,29 +121,28 @@ def sigmoid_focal_crossentropy(y_true,
             "Value of gamma should be greater than or equal to zero")
 
     y_pred = tf.convert_to_tensor(y_pred)
-    y_true = tf.cast(y_true, y_pred.dtype)
+    y_true = tf.convert_to_tensor(y_true, dtype=y_pred.dtype)
 
-    # Get the binary cross_entropy
-    bce = K.binary_crossentropy(y_true, y_pred, from_logits=from_logits)
+    # Get the cross_entropy for each entry
+    ce = K.binary_crossentropy(y_true, y_pred, from_logits=from_logits)
 
     # If logits are provided then convert the predictions into probabilities
     if from_logits:
-        y_pred = K.sigmoid(y_pred)
+        pred_prob = tf.sigmoid(y_pred)
     else:
-        y_pred = K.clip(y_pred, K.epsilon(), 1. - K.epsilon())
+        pred_prob = y_pred
 
-    p_t = (y_true * y_pred) + ((1 - y_true) * (1 - y_pred))
-    alpha_factor = 1
-    modulating_factor = 1
+    p_t = (y_true * pred_prob) + ((1 - y_true) * (1 - pred_prob))
+    alpha_factor = 1.0
+    modulating_factor = 1.0
 
     if alpha:
         alpha = tf.convert_to_tensor(alpha, dtype=K.floatx())
-        alpha_factor = y_true * alpha + ((1 - alpha) * (1 - y_true))
+        alpha_factor = (y_true * alpha + (1 - y_true) * (1 - alpha))
 
     if gamma:
         gamma = tf.convert_to_tensor(gamma, dtype=K.floatx())
-        modulating_factor = K.pow((1 - p_t), gamma)
+        modulating_factor = tf.pow((1.0 - p_t), gamma)
 
     # compute the final loss and return
-    return K.mean(
-        alpha_factor * modulating_factor * bce, axis=-1, keepdims=True)
+    return tf.reduce_sum(alpha_factor * modulating_factor * ce, axis=-1)

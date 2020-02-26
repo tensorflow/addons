@@ -11,16 +11,31 @@ py_library(
         "normalizations.py",
         "optical_flow.py",
         "poincare.py",
+        "polynomial.py",
         "sparsemax.py",
+        "tlu.py",
         "wrappers.py",
     ],
     data = [
         "//tensorflow_addons/custom_ops/layers:_correlation_cost_ops.so",
     ],
-    srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/activations",
         "//tensorflow_addons/utils",
+    ],
+)
+
+py_test(
+    name = "polynomial_test",
+    size = "small",
+    srcs = [
+        "polynomial_test.py",
+    ],
+    main = "polynomial_test.py",
+    python_version = "PY3",
+    srcs_version = "PY2AND3",
+    deps = [
+        ":layers",
     ],
 )
 
@@ -31,7 +46,18 @@ py_test(
         "gelu_test.py",
     ],
     main = "gelu_test.py",
-    srcs_version = "PY2AND3",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "tlu_test",
+    size = "small",
+    srcs = [
+        "tlu_test.py",
+    ],
+    main = "tlu_test.py",
     deps = [
         ":layers",
     ],
@@ -43,8 +69,9 @@ py_test(
     srcs = [
         "wrappers_test.py",
     ],
+    # TODO: Investigate why flaky #830
+    flaky = True,
     main = "wrappers_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":layers",
     ],
@@ -57,7 +84,6 @@ py_test(
         "sparsemax_test.py",
     ],
     main = "sparsemax_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":layers",
     ],
@@ -70,7 +96,6 @@ py_test(
         "maxout_test.py",
     ],
     main = "maxout_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":layers",
     ],
@@ -83,7 +108,6 @@ py_test(
         "normalizations_test.py",
     ],
     main = "normalizations_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":layers",
     ],
@@ -96,7 +120,6 @@ py_test(
         "optical_flow_test.py",
     ],
     main = "optical_flow_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":layers",
     ],

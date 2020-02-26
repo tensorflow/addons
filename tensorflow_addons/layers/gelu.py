@@ -12,18 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implements GeLU activation."""
-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+"""Implements GELU activation."""
 
 import tensorflow as tf
 from tensorflow_addons.activations import gelu
+from typeguard import typechecked
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
-class GeLU(tf.keras.layers.Layer):
+@tf.keras.utils.register_keras_serializable(package="Addons")
+class GELU(tf.keras.layers.Layer):
     """Gaussian Error Linear Unit.
 
     A smoother version of ReLU generally used
@@ -39,8 +36,9 @@ class GeLU(tf.keras.layers.Layer):
         Same shape as the input.
     """
 
-    def __init__(self, approximate=True, **kwargs):
-        super(GeLU, self).__init__(**kwargs)
+    @typechecked
+    def __init__(self, approximate: bool = True, **kwargs):
+        super().__init__(**kwargs)
         self.approximate = approximate
         self.supports_masking = True
 
@@ -48,9 +46,9 @@ class GeLU(tf.keras.layers.Layer):
         return gelu(inputs, approximate=self.approximate)
 
     def get_config(self):
-        config = {'approximate': self.approximate}
-        base_config = super(GeLU, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        config = {"approximate": self.approximate}
+        base_config = super().get_config()
+        return {**base_config, **config}
 
     def compute_output_shape(self, input_shape):
         return input_shape

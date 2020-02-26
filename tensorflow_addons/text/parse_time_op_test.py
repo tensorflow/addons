@@ -14,10 +14,6 @@
 # ==============================================================================
 """Parse time op tests."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
 from tensorflow_addons import text
@@ -29,25 +25,29 @@ class ParseTimeTest(tf.test.TestCase):
     def test_parse_time(self):
         time_format = "%Y-%m-%dT%H:%M:%E*S%Ez"
         items = [
-            ("2019-05-17T23:56:09.05Z", time_format, "NANOSECOND",
-             1558137369050000000),
-            ("2019-05-17T23:56:09.05Z", time_format, "MICROSECOND",
-             1558137369050000),
-            ("2019-05-17T23:56:09.05Z", time_format, "MILLISECOND",
-             1558137369050),
+            ("2019-05-17T23:56:09.05Z", time_format, "NANOSECOND", 1558137369050000000),
+            ("2019-05-17T23:56:09.05Z", time_format, "MICROSECOND", 1558137369050000),
+            ("2019-05-17T23:56:09.05Z", time_format, "MILLISECOND", 1558137369050),
             ("2019-05-17T23:56:09.05Z", time_format, "SECOND", 1558137369),
-            ([
-                "2019-05-17T23:56:09.05Z", "2019-05-20T11:22:33.44Z",
-                "2019-05-30T22:33:44.55Z"
-            ], time_format, "MILLISECOND",
-             [1558137369050, 1558351353440, 1559255624550]),
+            (
+                [
+                    "2019-05-17T23:56:09.05Z",
+                    "2019-05-20T11:22:33.44Z",
+                    "2019-05-30T22:33:44.55Z",
+                ],
+                time_format,
+                "MILLISECOND",
+                [1558137369050, 1558351353440, 1559255624550],
+            ),
         ]
         for time_string, time_format, output_unit, expected in items:
             result = self.evaluate(
                 text.parse_time(
                     time_string=time_string,
                     time_format=time_format,
-                    output_unit=output_unit))
+                    output_unit=output_unit,
+                )
+            )
             self.assertAllEqual(expected, result)
 
     def test_invalid_output_unit(self):
@@ -56,7 +56,8 @@ class ParseTimeTest(tf.test.TestCase):
             text.parse_time(
                 time_string="2019-05-17T23:56:09.05Z",
                 time_format="%Y-%m-%dT%H:%M:%E*S%Ez",
-                output_unit="INVALID")
+                output_unit="INVALID",
+            )
 
     def test_invalid_time_format(self):
         with self.assertRaises(tf.errors.InvalidArgumentError):
@@ -64,7 +65,9 @@ class ParseTimeTest(tf.test.TestCase):
                 text.parse_time(
                     time_string="2019-05-17T23:56:09.05Z",
                     time_format="INVALID",
-                    output_unit="SECOND"))
+                    output_unit="SECOND",
+                )
+            )
 
     def test_invalid_time_string(self):
         with self.assertRaises(tf.errors.InvalidArgumentError):
@@ -72,7 +75,9 @@ class ParseTimeTest(tf.test.TestCase):
                 text.parse_time(
                     time_string="INVALID",
                     time_format="%Y-%m-%dT%H:%M:%E*S%Ez",
-                    output_unit="SECOND"))
+                    output_unit="SECOND",
+                )
+            )
 
 
 if __name__ == "__main__":

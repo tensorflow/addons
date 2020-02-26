@@ -2,21 +2,36 @@ licenses(["notice"])  # Apache 2.0
 
 package(default_visibility = ["//visibility:public"])
 
+# TODO: Build npairs for windows after SparseMatMul issue is solved
+# https://github.com/tensorflow/addons/issues/838
 py_library(
     name = "losses",
-    srcs = [
-        "__init__.py",
-        "conter_loss.py",
-        "contrastive.py",
-        "focal_loss.py",
-        "giou_loss.py",
-        "lifted.py",
-        "metric_learning.py",
-        "npairs.py",
-        "sparsemax_loss.py",
-        "triplet.py",
-    ],
-    srcs_version = "PY2AND3",
+    srcs = select({
+        "//tensorflow_addons:windows": [
+            "__init__.py",
+            "contrastive.py",
+            "focal_loss.py",
+            "giou_loss.py",
+            "lifted.py",
+            "metric_learning.py",
+            "quantiles.py",
+            "sparsemax_loss.py",
+            "triplet.py",
+        ],
+        "//conditions:default": [
+            "__init__.py",
+            "conter_loss.py",
+            "contrastive.py",
+            "focal_loss.py",
+            "giou_loss.py",
+            "lifted.py",
+            "metric_learning.py",
+            "npairs.py",
+            "quantiles.py",
+            "sparsemax_loss.py",
+            "triplet.py",
+        ],
+    }),
     deps = [
         "//tensorflow_addons/activations",
         "//tensorflow_addons/utils",
@@ -43,7 +58,6 @@ py_test(
         "contrastive_test.py",
     ],
     main = "contrastive_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":losses",
     ],
@@ -56,7 +70,6 @@ py_test(
         "focal_loss_test.py",
     ],
     main = "focal_loss_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":losses",
     ],
@@ -69,20 +82,35 @@ py_test(
         "giou_loss_test.py",
     ],
     main = "giou_loss_test.py",
-    srcs_version = "PY2AND3",
+    deps = [
+        ":losses",
+    ],
+)
+
+# Temporarily disable on windows
+py_test(
+    name = "npairs_test",
+    size = "small",
+    srcs = select({
+        "//tensorflow_addons:windows": ["npairs_dummy_test.py"],
+        "//conditions:default": ["npairs_test.py"],
+    }),
+    main = select({
+        "//tensorflow_addons:windows": "npairs_dummy_test.py",
+        "//conditions:default": "npairs_test.py",
+    }),
     deps = [
         ":losses",
     ],
 )
 
 py_test(
-    name = "npairs_test",
+    name = "quantiles_test",
     size = "small",
     srcs = [
-        "npairs_test.py",
+        "quantiles_test.py",
     ],
-    main = "npairs_test.py",
-    srcs_version = "PY2AND3",
+    main = "quantiles_test.py",
     deps = [
         ":losses",
     ],
@@ -95,7 +123,6 @@ py_test(
         "sparsemax_loss_test.py",
     ],
     main = "sparsemax_loss_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":losses",
     ],
@@ -108,7 +135,6 @@ py_test(
         "triplet_test.py",
     ],
     main = "triplet_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":losses",
     ],
@@ -121,7 +147,6 @@ py_test(
         "lifted_test.py",
     ],
     main = "lifted_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":losses",
     ],
@@ -134,7 +159,6 @@ py_test(
         "metric_test.py",
     ],
     main = "metric_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":losses",
     ],

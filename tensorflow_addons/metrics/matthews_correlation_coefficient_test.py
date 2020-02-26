@@ -14,10 +14,6 @@
 # ==============================================================================
 """Matthews Correlation Coefficient Test."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
 import numpy as np
@@ -60,12 +56,14 @@ class MatthewsCorrelationCoefficientTest(tf.test.TestCase):
         self.check_results(mcc, [-0.33333334])
 
     def test_multiple_classes(self):
-        gt_label = tf.constant([[1.0, 0.0, 0.0], [1.0, 0.0, 0.0],
-                                [1.0, 0.0, 1.0], [0.0, 1.0, 1.0]],
-                               dtype=tf.float32)
-        preds = tf.constant([[1.0, 0.0, 0.0], [0.0, 0.0, 0.0], [1.0, 0.0, 1.0],
-                             [1.0, 1.0, 0.0]],
-                            dtype=tf.float32)
+        gt_label = tf.constant(
+            [[1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 1.0], [0.0, 1.0, 1.0]],
+            dtype=tf.float32,
+        )
+        preds = tf.constant(
+            [[1.0, 0.0, 0.0], [0.0, 0.0, 0.0], [1.0, 0.0, 1.0], [1.0, 1.0, 0.0]],
+            dtype=tf.float32,
+        )
         # Initialize
         mcc = self.initialize_vars(n_classes=3)
         # Update
@@ -76,14 +74,13 @@ class MatthewsCorrelationCoefficientTest(tf.test.TestCase):
     # Keras model API check
     def test_keras_model(self):
         model = tf.keras.Sequential()
-        model.add(tf.keras.layers.Dense(64, activation='relu'))
-        model.add(tf.keras.layers.Dense(64, activation='relu'))
-        model.add(tf.keras.layers.Dense(1, activation='softmax'))
+        model.add(tf.keras.layers.Dense(64, activation="relu"))
+        model.add(tf.keras.layers.Dense(64, activation="relu"))
+        model.add(tf.keras.layers.Dense(1, activation="softmax"))
         mcc = MatthewsCorrelationCoefficient(num_classes=1)
         model.compile(
-            optimizer='Adam',
-            loss='binary_crossentropy',
-            metrics=['accuracy', mcc])
+            optimizer="Adam", loss="binary_crossentropy", metrics=["accuracy", mcc]
+        )
         # data preparation
         data = np.random.random((10, 1))
         labels = np.random.random((10, 1))
@@ -91,5 +88,5 @@ class MatthewsCorrelationCoefficientTest(tf.test.TestCase):
         model.fit(data, labels, epochs=1, batch_size=32, verbose=0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.test.main()

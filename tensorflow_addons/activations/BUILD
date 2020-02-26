@@ -19,7 +19,6 @@ py_library(
         "//tensorflow_addons/custom_ops/activations:_activation_ops.so",
         "//tensorflow_addons/utils",
     ],
-    srcs_version = "PY2AND3",
 )
 
 py_test(
@@ -29,7 +28,6 @@ py_test(
         "activations_test.py",
     ],
     main = "activations_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":activations",
     ],
@@ -42,7 +40,6 @@ py_test(
         "sparsemax_test.py",
     ],
     main = "sparsemax_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":activations",
     ],
@@ -55,7 +52,6 @@ py_test(
         "gelu_test.py",
     ],
     main = "gelu_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":activations",
     ],
@@ -68,7 +64,6 @@ py_test(
         "hardshrink_test.py",
     ],
     main = "hardshrink_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":activations",
     ],
@@ -81,7 +76,6 @@ py_test(
         "lisht_test.py",
     ],
     main = "lisht_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":activations",
     ],
@@ -94,7 +88,6 @@ py_test(
         "mish_test.py",
     ],
     main = "mish_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":activations",
     ],
@@ -107,7 +100,6 @@ py_test(
         "softshrink_test.py",
     ],
     main = "softshrink_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":activations",
     ],
@@ -120,7 +112,6 @@ py_test(
         "tanhshrink_test.py",
     ],
     main = "tanhshrink_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":activations",
     ],
@@ -132,8 +123,8 @@ py_test(
     srcs = [
         "rrelu_test.py",
     ],
+    args = ["--benchmarks=all"],
     main = "rrelu_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":activations",
     ],
