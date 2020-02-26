@@ -28,9 +28,8 @@
 #### Standard API
 In order to conform with the current API standard, all activations
 must:
- * Be a `tf.function`.
- * [Register as a keras global object](https://github.com/tensorflow/addons/blob/master/tensorflow_addons/utils/keras_utils.py)
-  so it can be serialized properly.
+ * Be a `tf.function` unless it is a straightforward call to a custom op or likely to be retraced.
+ * Register as a keras global object so it can be serialized properly: `@tf.keras.utils.register_keras_serializable(package='Addons')`
  * Add the addon to the `py_library` in this sub-package's BUILD file.
 
 #### Testing Requirements

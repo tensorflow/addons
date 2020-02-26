@@ -36,11 +36,11 @@ class ProximalAdagradTest(tf.test.TestCase):
                 3.0,
                 initial_accumulator_value=0.1,
                 l1_regularization_strength=0.0,
-                l2_regularization_strength=0.0)
+                l2_regularization_strength=0.0,
+            )
 
             if not tf.executing_eagerly():
-                update = opt.apply_gradients(
-                    zip([grads0, grads1], [var0, var1]))
+                update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
                 self.evaluate(tf.compat.v1.global_variables_initializer())
 
             v0_val, v1_val = self.evaluate([var0, var1])
@@ -68,11 +68,11 @@ class ProximalAdagradTest(tf.test.TestCase):
                 3.0,
                 initial_accumulator_value=0.1,
                 l1_regularization_strength=0.001,
-                l2_regularization_strength=0.0)
+                l2_regularization_strength=0.0,
+            )
 
             if not tf.executing_eagerly():
-                update = opt.apply_gradients(
-                    zip([grads0, grads1], [var0, var1]))
+                update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
                 self.evaluate(tf.compat.v1.global_variables_initializer())
 
             v0_val, v1_val = self.evaluate([var0, var1])
@@ -100,11 +100,11 @@ class ProximalAdagradTest(tf.test.TestCase):
                 3.0,
                 initial_accumulator_value=0.1,
                 l1_regularization_strength=0.001,
-                l2_regularization_strength=2.0)
+                l2_regularization_strength=2.0,
+            )
 
             if not tf.executing_eagerly():
-                update = opt.apply_gradients(
-                    zip([grads0, grads1], [var0, var1]))
+                update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
                 self.evaluate(tf.compat.v1.global_variables_initializer())
 
             v0_val, v1_val = self.evaluate([var0, var1])
@@ -123,5 +123,5 @@ class ProximalAdagradTest(tf.test.TestCase):
             self.assertAllClose([-0.0045, -0.0095], v1_val)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.test.main()

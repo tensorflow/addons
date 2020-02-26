@@ -13,10 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import numpy as np
 import tensorflow as tf
 
@@ -56,17 +52,17 @@ def _np_sparsemax(z):
 class SparsemaxTest(tf.test.TestCase):
     def test_sparsemax_layer_against_numpy(self, dtype):
         """check sparsemax kernel against numpy."""
-        self.skipTest('Wait #33614 to be fixed')
         random = np.random.RandomState(1)
 
         z = random.uniform(low=-3, high=3, size=(test_obs, 10)).astype(dtype)
 
         test_utils.layer_test(
             Sparsemax,
-            kwargs={'dtype': dtype},
+            kwargs={"dtype": dtype},
             input_data=z,
-            expected_output=_np_sparsemax(z).astype(dtype))
+            expected_output=_np_sparsemax(z).astype(dtype),
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tf.test.main()

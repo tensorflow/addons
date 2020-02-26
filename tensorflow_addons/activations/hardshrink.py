@@ -13,21 +13,19 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
+from tensorflow_addons.utils.types import Number
 
-_activation_ops_so = tf.load_op_library(
-    get_path_to_datafile("custom_ops/activations/_activation_ops.so"))
+from tensorflow_addons.utils import types
+from tensorflow_addons.utils.resource_loader import LazySO
+
+_activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 
-@keras_utils.register_keras_custom_object
-@tf.function
-def hardshrink(x, lower=-0.5, upper=0.5):
+@tf.keras.utils.register_keras_serializable(package="Addons")
+def hardshrink(
+    x: types.TensorLike, lower: Number = -0.5, upper: Number = 0.5
+) -> tf.Tensor:
     """Hard shrink function.
 
     Computes hard shrink function:
@@ -42,11 +40,28 @@ def hardshrink(x, lower=-0.5, upper=0.5):
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
-    return _activation_ops_so.addons_hardshrink(x, lower, upper)
+    return _activation_so.ops.addons_hardshrink(x, lower, upper)
 
 
 @tf.RegisterGradient("Addons>Hardshrink")
 def _hardshrink_grad(op, grad):
-    return _activation_ops_so.addons_hardshrink_grad(grad, op.inputs[0],
-                                                     op.get_attr("lower"),
-                                                     op.get_attr("upper"))
+    return _activation_so.ops.addons_hardshrink_grad(
+        grad, op.inputs[0], op.get_attr("lower"), op.get_attr("upper")
+    )
+
+
+def _hardshrink_py(
+    x: types.TensorLike, lower: Number = -0.5, upper: Number = 0.5
+) -> tf.Tensor:
+    if lower > upper:
+        raise ValueError(
+            "The value of lower is {} and should"
+            " not be higher than the value "
+            "variable upper, which is {} .".format(lower, upper)
+        )
+    x = tf.convert_to_tensor(x)
+    mask_lower = x < lower
+    mask_upper = upper < x
+    mask = tf.logical_or(mask_lower, mask_upper)
+    mask = tf.cast(mask, x.dtype)
+    return x * mask

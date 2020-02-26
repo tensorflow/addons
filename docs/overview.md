@@ -34,7 +34,7 @@ import tensorflow_addons as tfa
 
 #### Nightly Builds
 There are also nightly builds of TensorFlow Addons under the pip package
-`tfa-nightly`, which is built against `tf-nightly`. Nightly builds
+`tfa-nightly`, which is built against the latest stable version of TensorFlow. Nightly builds
 include newer features, but may be less stable than the versioned releases.
 
 ```
@@ -55,7 +55,7 @@ export CUDA_HOME="/path/to/cuda10" (default: /usr/local/cuda)
 export CUDNN_INSTALL_PATH="/path/to/cudnn" (default: /usr/lib/x86_64-linux-gnu)
 
 # This script links project with TensorFlow dependency
-./configure.sh
+python3 ./configure.py
 
 bazel build build_pip_pkg
 bazel-bin/build_pip_pkg artifacts
@@ -126,9 +126,9 @@ warning.
 
 ## Contributing
 TF-Addons is a community led open source project. As such, the project
-depends on public contributions, bug-fixes, and documentation. Please
-see [contribution guidelines](CONTRIBUTING.md) for a guide on how to
-contribute. This project adheres to [TensorFlow's code of conduct](CODE_OF_CONDUCT.md).
+depends on public contributions, bug-fixes, and documentation. Please see 
+[contribution guidelines](https://github.com/tensorflow/addons/blob/master/CONTRIBUTING.md) 
+for a guide on how to contribute. This project adheres to [TensorFlow's code of conduct](https://github.com/tensorflow/addons/blob/master/CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code.
 
 ## Community

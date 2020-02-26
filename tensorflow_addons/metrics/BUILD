@@ -8,11 +8,12 @@ py_library(
         "__init__.py",
         "cohens_kappa.py",
         "f_scores.py",
+        "hamming.py",
+        "matthews_correlation_coefficient.py",
         "multilabel_confusion_matrix.py",
         "r_square.py",
         "utils.py",
     ],
-    srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/utils",
     ],
@@ -25,7 +26,6 @@ py_test(
         "cohens_kappa_test.py",
     ],
     main = "cohens_kappa_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":metrics",
     ],
@@ -38,33 +38,18 @@ py_test(
         "r_square_test.py",
     ],
     main = "r_square_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":metrics",
     ],
 )
 
 py_test(
-    name = "f1_test",
+    name = "f_test",
     size = "small",
     srcs = [
-        "f1_test.py",
+        "f_test.py",
     ],
-    main = "f1_test.py",
-    srcs_version = "PY2AND3",
-    deps = [
-        ":metrics",
-    ],
-)
-
-py_test(
-    name = "fbeta_test",
-    size = "small",
-    srcs = [
-        "fbeta_test.py",
-    ],
-    main = "fbeta_test.py",
-    srcs_version = "PY2AND3",
+    main = "f_test.py",
     deps = [
         ":metrics",
     ],
@@ -77,7 +62,30 @@ py_test(
         "multilabel_confusion_matrix_test.py",
     ],
     main = "multilabel_confusion_matrix_test.py",
-    srcs_version = "PY2AND3",
+    deps = [
+        ":metrics",
+    ],
+)
+
+py_test(
+    name = "matthews_correlation_coefficient_test",
+    size = "small",
+    srcs = [
+        "matthews_correlation_coefficient_test.py",
+    ],
+    main = "matthews_correlation_coefficient_test.py",
+    deps = [
+        ":metrics",
+    ],
+)
+
+py_test(
+    name = "hamming_test",
+    size = "small",
+    srcs = [
+        "hamming_test.py",
+    ],
+    main = "hamming_test.py",
     deps = [
         ":metrics",
     ],

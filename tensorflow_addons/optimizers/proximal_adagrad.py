@@ -33,14 +33,16 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
     (http://papers.nips.cc/paper/3793-efficient-learning-using-forward-backward-splitting.pdf).
     """
 
-    def __init__(self,
-                 learning_rate=0.001,
-                 initial_accumulator_value=0.1,
-                 l1_regularization_strength=0.0,
-                 l2_regularization_strength=0.0,
-                 use_locking=False,
-                 name="ProximalAdagrad",
-                 **kwargs):
+    def __init__(
+        self,
+        learning_rate=0.001,
+        initial_accumulator_value=0.1,
+        l1_regularization_strength=0.0,
+        l2_regularization_strength=0.0,
+        use_locking=False,
+        name="ProximalAdagrad",
+        **kwargs
+    ):
         """Construct a new Proximal Adagrad optimizer.
 
         Args:
@@ -70,16 +72,19 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
         """
         if initial_accumulator_value < 0.0:
             raise ValueError(
-                "`initial_accumulator_value` must be non-negative: %s" %
-                initial_accumulator_value)
+                "`initial_accumulator_value` must be non-negative: %s"
+                % initial_accumulator_value
+            )
         if l1_regularization_strength < 0.0:
             raise ValueError(
-                "`l1_regularization_strength` must be non-negative: %s" %
-                l1_regularization_strength)
+                "`l1_regularization_strength` must be non-negative: %s"
+                % l1_regularization_strength
+            )
         if l2_regularization_strength < 0.0:
             raise ValueError(
-                "`l2_regularization_strength` must be non-negative: %s" %
-                l2_regularization_strength)
+                "`l2_regularization_strength` must be non-negative: %s"
+                % l2_regularization_strength
+            )
         super(ProximalAdagrad, self).__init__(name, **kwargs)
         self._set_hyper("learning_rate", kwargs.get("lr", learning_rate))
         self._l1_regularization_strength = l1_regularization_strength
@@ -89,17 +94,17 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
 
     def _create_slots(self, var_list):
         for var in var_list:
-            init = tf.keras.initializers.constant(
-                self._initial_accumulator_value)
+            init = tf.keras.initializers.constant(self._initial_accumulator_value)
             self.add_slot(var, "accumulator", init)
 
     def _prepare_local(self, var_device, var_dtype, apply_state):
-        super(ProximalAdagrad, self)._prepare_local(var_device, var_dtype,
-                                                    apply_state)
+        super(ProximalAdagrad, self)._prepare_local(var_device, var_dtype, apply_state)
         apply_state[(var_device, var_dtype)].update(
             dict(
                 neg_lr_t=-apply_state[(var_device, var_dtype)]["lr_t"],
-                zero=tf.zeros((), dtype=tf.int64)))
+                zero=tf.zeros((), dtype=tf.int64),
+            )
+        )
 
     def set_weights(self, weights):
         params = self.weights
@@ -135,8 +140,9 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
 
     def _resource_apply_dense(self, grad, var, apply_state=None):
         var_device, var_dtype = var.device, var.dtype.base_dtype
-        coefficients = ((apply_state or {}).get((var_device, var_dtype))
-                        or self._fallback_apply_state(var_device, var_dtype))
+        coefficients = (apply_state or {}).get(
+            (var_device, var_dtype)
+        ) or self._fallback_apply_state(var_device, var_dtype)
 
         acc = self.get_slot(var, "accumulator")
         return training_ops.resource_apply_proximal_adagrad(
@@ -146,14 +152,16 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
             self._l1_regularization_strength,
             self._l2_regularization_strength,
             grad,
-            use_locking=self._use_locking)
+            use_locking=self._use_locking,
+        )
 
     def _resource_apply_sparse(self, grad, var, indices, apply_state=None):
         var_device, var_dtype = var.device, var.dtype.base_dtype
-        coefficients = ((apply_state or {}).get((var_device, var_dtype))
-                        or self._fallback_apply_state(var_device, var_dtype))
+        coefficients = (apply_state or {}).get(
+            (var_device, var_dtype)
+        ) or self._fallback_apply_state(var_device, var_dtype)
 
-        acc = self.get_slot(var, 'accumulator')
+        acc = self.get_slot(var, "accumulator")
         return training_ops.resource_sparse_apply_proximal_adagrad(
             var.handle,
             acc.handle,
@@ -162,20 +170,18 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
             self._l2_regularization_strength,
             grad,
             indices,
-            use_locking=self._use_locking)
+            use_locking=self._use_locking,
+        )
 
     def get_config(self):
         config = super(ProximalAdagrad, self).get_config()
-        config.update({
-            "learning_rate":
-            self._serialize_hyperparameter("learning_rate"),
-            "decay":
-            self._serialize_hyperparameter("decay"),
-            "l1_regularization_strength":
-            self._l1_regularization_strength,
-            "l2_regularization_strength":
-            self._l2_regularization_strength,
-            "initial_accumulator_value":
-            self._initial_accumaltor_value,
-        })
+        config.update(
+            {
+                "learning_rate": self._serialize_hyperparameter("learning_rate"),
+                "decay": self._serialize_hyperparameter("decay"),
+                "l1_regularization_strength": self._l1_regularization_strength,
+                "l2_regularization_strength": self._l2_regularization_strength,
+                "initial_accumulator_value": self._initial_accumaltor_value,
+            }
+        )
         return config

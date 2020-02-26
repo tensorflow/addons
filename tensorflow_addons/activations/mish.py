@@ -13,21 +13,16 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
-_activation_ops_so = tf.load_op_library(
-    get_path_to_datafile("custom_ops/activations/_activation_ops.so"))
+from tensorflow_addons.utils import types
+from tensorflow_addons.utils.resource_loader import LazySO
+
+_activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 
-@keras_utils.register_keras_custom_object
-@tf.function
-def mish(x):
+@tf.keras.utils.register_keras_serializable(package="Addons")
+def mish(x: types.TensorLike) -> tf.Tensor:
     """Mish: A Self Regularized Non-Monotonic Neural Activation Function.
 
     Computes mish activation: x * tanh(softplus(x))
@@ -41,9 +36,13 @@ def mish(x):
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
-    return _activation_ops_so.addons_mish(x)
+    return _activation_so.ops.addons_mish(x)
 
 
 @tf.RegisterGradient("Addons>Mish")
 def _mish_grad(op, grad):
-    return _activation_ops_so.addons_mish_grad(grad, op.inputs[0])
+    return _activation_so.ops.addons_mish_grad(grad, op.inputs[0])
+
+
+def _mish_py(x):
+    return x * tf.math.tanh(tf.math.softplus(x))

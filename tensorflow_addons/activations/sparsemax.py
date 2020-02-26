@@ -13,18 +13,14 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 
-from tensorflow_addons.utils import keras_utils
+from tensorflow_addons.utils import types
 
 
-@keras_utils.register_keras_custom_object
+@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
-def sparsemax(logits, axis=-1):
+def sparsemax(logits: types.TensorLike, axis: int = -1) -> tf.Tensor:
     """Sparsemax activation function [1].
 
     For each batch `i` and class `j` we have
@@ -73,10 +69,17 @@ def sparsemax(logits, axis=-1):
 def _swap_axis(logits, dim_index, last_index, **kwargs):
     return tf.transpose(
         logits,
-        tf.concat([
-            tf.range(dim_index), [last_index],
-            tf.range(dim_index + 1, last_index), [dim_index]
-        ], 0), **kwargs)
+        tf.concat(
+            [
+                tf.range(dim_index),
+                [last_index],
+                tf.range(dim_index + 1, last_index),
+                [dim_index],
+            ],
+            0,
+        ),
+        **kwargs,
+    )
 
 
 @tf.function
@@ -115,21 +118,21 @@ def _compute_2d_sparsemax(logits):
     # fixed later (see p_safe) by returning p = nan. This results in the same
     # behavior as softmax.
     k_z_safe = tf.math.maximum(k_z, 1)
-    indices = tf.stack(
-        [tf.range(0, obs), tf.reshape(k_z_safe, [-1]) - 1], axis=1)
+    indices = tf.stack([tf.range(0, obs), tf.reshape(k_z_safe, [-1]) - 1], axis=1)
     tau_sum = tf.gather_nd(z_cumsum, indices)
     tau_z = (tau_sum - 1) / tf.cast(k_z, logits.dtype)
 
     # calculate p
-    p = tf.math.maximum(
-        tf.cast(0, logits.dtype), z - tf.expand_dims(tau_z, -1))
+    p = tf.math.maximum(tf.cast(0, logits.dtype), z - tf.expand_dims(tau_z, -1))
     # If k_z = 0 or if z = nan, then the input is invalid
     p_safe = tf.where(
         tf.expand_dims(
-            tf.math.logical_or(
-                tf.math.equal(k_z, 0), tf.math.is_nan(z_cumsum[:, -1])),
-            axis=-1), tf.fill([obs, dims], tf.cast(float("nan"),
-                                                   logits.dtype)), p)
+            tf.math.logical_or(tf.math.equal(k_z, 0), tf.math.is_nan(z_cumsum[:, -1])),
+            axis=-1,
+        ),
+        tf.fill([obs, dims], tf.cast(float("nan"), logits.dtype)),
+        p,
+    )
 
     # Reshape back to original size
     p_safe = tf.reshape(p_safe, shape_op)

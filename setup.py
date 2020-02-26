@@ -24,12 +24,7 @@ applicability is not yet clear, or it is mostly used by a smaller subset
 of the community).
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
-import platform
 import sys
 
 from datetime import datetime
@@ -38,14 +33,14 @@ from setuptools import setup
 from setuptools.dist import Distribution
 from setuptools import Extension
 
-DOCLINES = __doc__.split('\n')
+DOCLINES = __doc__.split("\n")
 
-TFA_NIGHTLY = 'tfa-nightly'
-TFA_RELEASE = 'tensorflow-addons'
+TFA_NIGHTLY = "tfa-nightly"
+TFA_RELEASE = "tensorflow-addons"
 
-if '--nightly' in sys.argv:
+if "--nightly" in sys.argv:
     project_name = TFA_NIGHTLY
-    nightly_idx = sys.argv.index('--nightly')
+    nightly_idx = sys.argv.index("--nightly")
     sys.argv.pop(nightly_idx)
 else:
     project_name = TFA_RELEASE
@@ -54,26 +49,22 @@ else:
 version = {}
 base_dir = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
-    # yapf: disable
     exec(fp.read(), version)
-    # yapf: enable
 
 if project_name == TFA_NIGHTLY:
-    version['__version__'] += datetime.strftime(datetime.today(), "%Y%m%d")
+    version["__version__"] += datetime.strftime(datetime.today(), "%Y%m%d")
 
-# Dependencies
-REQUIRED_PACKAGES = [
-    'six >= 1.10.0',
-]
+with open("requirements.txt") as f:
+    required_pkgs = f.read().splitlines()
 
-if project_name == TFA_RELEASE:
-    # TODO: remove if-else condition when tf supports package consolidation.
-    if platform.system() == 'Linux':
-        REQUIRED_PACKAGES.append('tensorflow-gpu >= 2.0.0')
-    else:
-        REQUIRED_PACKAGES.append('tensorflow >= 2.0.0')
-elif project_name == TFA_NIGHTLY:
-    REQUIRED_PACKAGES.append('tf-nightly')
+# Manylinux2010 requires a patch for platlib
+if (
+    sys.platform.startswith("linux")
+    and os.environ.get("TF_ADDONS_NO_BUILD", "0") == "0"
+):
+    ext_modules = [Extension("_foo", ["stub.cc"])]
+else:
+    ext_modules = []
 
 
 class BinaryDistribution(Distribution):
@@ -85,31 +76,30 @@ class BinaryDistribution(Distribution):
 
 setup(
     name=project_name,
-    version=version['__version__'],
+    version=version["__version__"],
     description=DOCLINES[0],
-    long_description='\n'.join(DOCLINES[2:]),
-    author='Google Inc.',
-    author_email='opensource@google.com',
+    long_description="\n".join(DOCLINES[2:]),
+    author="Google Inc.",
+    author_email="opensource@google.com",
     packages=find_packages(),
-    ext_modules=[Extension('_foo', ['stub.cc'])],
-    install_requires=REQUIRED_PACKAGES,
+    ext_modules=ext_modules,
+    install_requires=required_pkgs,
     include_package_data=True,
     zip_safe=False,
     distclass=BinaryDistribution,
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Education',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Topic :: Scientific/Engineering :: Mathematics',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'Topic :: Software Development :: Libraries',
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Education",
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Topic :: Scientific/Engineering :: Mathematics",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Topic :: Software Development :: Libraries",
     ],
-    license='Apache 2.0',
-    keywords='tensorflow addons machine learning',
+    license="Apache 2.0",
+    keywords="tensorflow addons machine learning",
 )
