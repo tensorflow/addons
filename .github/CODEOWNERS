@@ -52,7 +52,7 @@
 /tensorflow_addons/layers/normalizations*.py @smokrow
 /tensorflow_addons/layers/optical_flow*.py @fsx950223
 /tensorflow_addons/layers/poincare*.py @rahulunair
-/tensorflow_addons/layers/polynomial*.py @tanzheny
+/tensorflow_addons/layers/polynomial*.py @tanzhenyu
 /tensorflow_addons/layers/sparsemax*.py @andreasmadsen
 /tensorflow_addons/layers/tlu*.py @aakashkumarnain
 /tensorflow_addons/layers/wrappers*.py @seanpmorgan
