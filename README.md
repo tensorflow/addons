@@ -137,7 +137,7 @@ import tensorflow_addons as tfa
 tfa.options.TF_ADDONS_PY_OPS=True
 ```
 
-This variable default to `True` on Windows and Mac, and `False` for Linux.
+This variable will default to `True` on Windows and Mac, and `False` for Linux.
 
 #### Proxy Maintainership
 Addons has been designed to compartmentalize subpackages and submodules so 
