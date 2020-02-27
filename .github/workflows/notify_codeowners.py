@@ -119,7 +119,7 @@ def parse_codeowners(text: str) -> CodeOwners:
 
 nice_message = """
 
-You are owners of some files modified in this pull request.
+You are owner{} of some files modified in this pull request.
 Would you kindly review the changes whenever you have the time to?
 Thank you very much.
 """
@@ -135,7 +135,11 @@ def craft_message(codeowners: CodeOwners, pull_request):
             owners.update(users)
 
     owners = [f"@{owner}" for owner in owners]
-    return " ".join(owners + [nice_message])
+    if len(owners) >= 2:
+        plural = "s"
+    else:
+        plural = ""
+    return " ".join(owners + [nice_message.format(plural)])
 
 
 def get_pull_request_id_from_gh_actions():
