@@ -39,6 +39,26 @@ class MultiHeadAttentionTest(tf.test.TestCase):
         self.assertEqual(output.shape[1], q.shape[1])
         self.assertEqual(output.shape[2], v.shape[2])
 
+    def test_output_size(self):
+        batch_size = 10
+        num_heads = 8
+        head_size = 12
+        output_size = 20
+
+        q = tf.random.uniform((batch_size, 5, 9), dtype=np.float32)
+        k = tf.random.uniform((batch_size, 7, 11), dtype=np.float32)
+        v = tf.random.uniform((batch_size, 7, 13), dtype=np.float32)
+
+        mha = MultiHeadAttention(
+            head_size=head_size, num_heads=num_heads, output_size=output_size
+        )
+
+        output = mha([q, k, v])
+
+        self.assertEqual(output.shape[0], batch_size)
+        self.assertEqual(output.shape[1], q.shape[1])
+        self.assertEqual(output.shape[2], output_size)
+
     def test_attention_coefficients_shape(self):
         batch_size = 10
         num_heads = 8
@@ -62,6 +82,28 @@ class MultiHeadAttentionTest(tf.test.TestCase):
         self.assertEqual(output.shape[1], q.shape[1])
         self.assertEqual(output.shape[2], v.shape[2])
 
+    def test_no_value(self):
+        batch_size = 10
+        num_heads = 8
+        head_size = 12
+
+        q = tf.random.uniform((batch_size, 5, 9), dtype=np.float32)
+        k = tf.random.uniform((batch_size, 7, 11), dtype=np.float32)
+
+        mha = MultiHeadAttention(
+            head_size=head_size, num_heads=num_heads, return_attn_coef=True
+        )
+
+        output, attn_coef = mha([q, k])
+
+        self.assertEqual(attn_coef.shape[0], batch_size)
+        self.assertEqual(attn_coef.shape[1], num_heads)
+        self.assertEqual(attn_coef.shape[2], q.shape[1])
+        self.assertEqual(attn_coef.shape[3], k.shape[1])
+
+        self.assertEqual(output.shape[1], q.shape[1])
+        self.assertEqual(output.shape[2], k.shape[2])
+
     def test_mask(self):
         batch_size = 10
         num_heads = 8
@@ -76,7 +118,7 @@ class MultiHeadAttentionTest(tf.test.TestCase):
             head_size=head_size, num_heads=num_heads, return_attn_coef=True
         )
 
-        output, attn_coef = mha([q, k, v, mask])
+        output, attn_coef = mha([q, k, v], mask=mask)
 
         self.assertEqual(attn_coef.shape[0], batch_size)
         self.assertEqual(attn_coef.shape[1], num_heads)
@@ -107,7 +149,7 @@ class MultiHeadAttentionTest(tf.test.TestCase):
             head_size=head_size, num_heads=num_heads, return_attn_coef=True
         )
 
-        output, attn_coef = mha([q, k, v, mask])
+        output, attn_coef = mha([q, k, v], mask=mask)
 
         self.assertEqual(output.shape[0], batch_size)
         self.assertEqual(output.shape[1], q.shape[1])
