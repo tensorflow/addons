@@ -178,55 +178,55 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
     ):
         """Discriminative Layer Training Wrapper.
 
-            Discriminative layer training is a technique that applies different learning rates to
-            different layers in a model. Generally, a lower learning rate is applied to the
-            layers closest to the input and a higher learning rate is applied to layers closer
-            to the output. This method helps in transfer learning by quickly calibrating the head
-            of a model while preserving the useful weights in the main part of the model.
+        Discriminative layer training is a technique that applies different learning rates to
+        different layers in a model. Generally, a lower learning rate is applied to the
+        layers closest to the input and a higher learning rate is applied to layers closer
+        to the output. This method helps in transfer learning by quickly calibrating the head
+        of a model while preserving the useful weights in the main part of the model.
 
-            You should assign the lr_mult attribute to a layer. This will multiply the learning rate
-            used by the base optimizer for that layer.
+        You should assign the lr_mult attribute to a layer. This will multiply the learning rate
+        used by the base optimizer for that layer.
 
-            This method creates a copy of the base optimizer for each unique learning rate multipler.
+        This method creates a copy of the base optimizer for each unique learning rate multipler.
 
-            Performance is similar to using a single copy of the base optimizer as gradients are computed
-            only once and then passed on.
+        Performance is similar to using a single copy of the base optimizer as gradients are computed
+        only once and then passed on.
 
-            Currently, this optimizer does not preserve optimizer state. Its state preservation methods will
-            differ significantly from a standard optimizer because it is a wrapper for multiple optimizers each with
-            their own learning rate, hyper parameters, and slots.
+        Currently, this optimizer does not preserve optimizer state. Its state preservation methods will
+        differ significantly from a standard optimizer because it is a wrapper for multiple optimizers each with
+        their own learning rate, hyper parameters, and slots.
 
-            Example usage
-                model = tf.keras.Sequential()
-                model.add(tf.keras.applications.resnet.ResNet50(include_top = False, pooling = 'avg'))
-                model.add(tf.keras.layers.Dense(1, activation = 'sigmoid'))
-                model.layers[0].lr_mult = 0.01
-                opt = DiscriminativeWrapper(tf.keras.optimizers.Adam, model, learning_rate = 0.01)
-                model.compile(loss = tf.keras.losses.BinaryCrossentropy, optimizer = opt)
-                model.fit(x, y)
+        Example usage
+            model = tf.keras.Sequential()
+            model.add(tf.keras.applications.resnet.ResNet50(include_top = False, pooling = 'avg'))
+            model.add(tf.keras.layers.Dense(1, activation = 'sigmoid'))
+            model.layers[0].lr_mult = 0.01
+            opt = DiscriminativeWrapper(tf.keras.optimizers.Adam, model, learning_rate = 0.01)
+            model.compile(loss = tf.keras.losses.BinaryCrossentropy, optimizer = opt)
+            model.fit(x, y)
 
-            Arguments
-                base_optimizer: A class that inherits from tf.keras.optimizers.Optimizer. Do not
-                    pass an instance of the class.
+        Arguments
+            base_optimizer: A class that inherits from tf.keras.optimizers.Optimizer. Do not
+                pass an instance of the class.
 
-                model: tf.keras.Model, The model to be used for discriminative learning.
-                    It should have at least 1 layer with the attribute lr_mult. The lr_mult should
-                    be set to a value not equal to 1. Otherwise, you will have the exact same
-                    result as not using discriminative learning.
+            model: tf.keras.Model, The model to be used for discriminative learning.
+                It should have at least 1 layer with the attribute lr_mult. The lr_mult should
+                be set to a value not equal to 1. Otherwise, you will have the exact same
+                result as not using discriminative learning.
 
-                learning_rate: float, the learning rate for the model
+            learning_rate: float, the learning rate for the model
 
-                verbose: Bool, to generate a report on how many parameters are affected
+            verbose: Bool, to generate a report on how many parameters are affected
 
-                *args: Args to pass to the base optimizer
+            *args: Args to pass to the base optimizer
 
-                **kwargs: Kwargs to pass to the base optimizer
+            **kwargs: Kwargs to pass to the base optimizer
 
-            Returns
-                Optimizer - A keras optimizer to use with model.compile
+        Returns
+            Optimizer - A keras optimizer to use with model.compile
 
-            References
-                - [Universal Language Model Fine-tuning for Text Classification](https://arxiv.org/pdf/1801.06146.pdf)
+        References
+            - [Universal Language Model Fine-tuning for Text Classification](https://arxiv.org/pdf/1801.06146.pdf)
         """
 
         assert issubclass(

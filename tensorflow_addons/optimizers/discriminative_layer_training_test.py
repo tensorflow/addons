@@ -395,6 +395,42 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         # If this doesn't error out, then loading and checkpointing should be fine.
         model_lr.load_weights(filepath=filepath)
 
+    def _test_config_tofrom(self, model_fn, loss, opt):
+        """Confirm that optimizer saves config and loads config."""
+
+        # build model and save the opt to a config as c.
+        learning_rate = 0.01
+        model_lr = model_fn()
+        model_lr.layers[0].lr_mult = 0.3
+        model_lr.layers[0].layers[-1].lr_mult = 0.1
+        model_lr.layers[-1].lr_mult = 0.5
+
+        d_opt = DiscriminativeLayerOptimizer(
+            opt, model_lr, verbose=False, learning_rate=learning_rate
+        )
+        model_lr.compile(loss=loss, optimizer=d_opt)
+
+        c = d_opt.get_config()
+
+        # reconstruct the model and then build the opt from config.
+
+        model_lr = model_fn()
+        model_lr.layers[0].lr_mult = 0.3
+        model_lr.layers[0].layers[-1].lr_mult = 0.1
+        model_lr.layers[-1].lr_mult = 0.5
+
+        d_opt_from_config = DiscriminativeLayerOptimizer.from_config(c, model_lr)
+        model_lr.compile(loss=loss, optimizer=d_opt_from_config)
+
+        # we expect both optimizers to have the same optimizer group and base optimizer.
+        self.assertAllEqual(len(d_opt.optimizer_group), len(d_opt_from_config.optimizer_group))
+        self.assertAllEqual(d_opt.opt_class, d_opt_from_config.opt_class)
+
+        # we also expect the lr for each opt in the opt groups to be the same. Also confirms same lr mult.
+        self.assertAllEqual([opt.learning_rate for opt in d_opt.optimizer_group],
+                            [opt.learning_rate for opt in d_opt_from_config.optimizer_group])
+
+
 
 def test_wrap(method, **kwargs):
     """Wrap the test method so that it has pre assigned kwargs."""
