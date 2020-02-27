@@ -19,7 +19,6 @@ jobs:
         env:
           PR: ${{ steps.findPr.outputs.pr }}
         run: |
-          cat $GITHUB_EVENT_PATH
           python .github/workflows/notify_codeowners.py \
               --pull-request-id=auto \
               https://raw.githubusercontent.com/tensorflow/addons/master/.github/CODEOWNERS
