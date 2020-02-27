@@ -9,6 +9,20 @@ import glob
 import os
 import json
 
+# Github already take care
+# of notifying users with write access
+BLACKLIST = [
+    "tensorflow/sig-addons-maintainers",
+    "facaiy",
+    "seanpmorgan",
+    "squadrick",
+    "shun-lin",
+    "windqaq",
+    "qlzh727",
+    "guillaumekln",
+    "helinwang",
+]
+
 
 def xor_strings(a, b):
     result = int(a, 16) ^ int(b, 16)
@@ -32,15 +46,14 @@ def check_user(user: str, line_idx: int):
             f"doesn't start with '@' "
         )
     user = user[1:]
-    if "/" not in user:
-        # it's a real user. Check for typos.
-        try:
-            CLIENT.get_user(user)
-        except github.UnknownObjectException:
-            raise KeyError(
-                f"User '{user}' line {line_idx} does not exist. "
-                f"Did you make a typo?"
-            )
+    if user in BLACKLIST:
+        return None
+    try:
+        CLIENT.get_user(user)
+    except github.UnknownObjectException:
+        raise KeyError(
+            f"User '{user}' line {line_idx} does not exist. " f"Did you make a typo?"
+        )
     return user
 
 
@@ -97,7 +110,9 @@ def parse_codeowners(text: str) -> CodeOwners:
 
         pattern = check_pattern(elements[0], i)
         users = [check_user(user, i) for user in elements[1:]]
-        result.append((pattern, users))
+        users = [user for user in users if user is not None]
+        if users:
+            result.append((pattern, users))
 
     return result
 
