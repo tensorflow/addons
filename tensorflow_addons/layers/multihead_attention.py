@@ -71,14 +71,14 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         bias_constraint: constraint, constraint for the bias weights.
 
     Input shape
-        query: `(..., N, Dq)`
-        key: `(..., M, Dk)`
-        value: `(..., M, Dv)` (optional)
+        query: `(..., query_elements, query_depth)`
+        key: `(..., key_elements, key_depth)`
+        value: `(..., key_elements, value_depth)` (optional)
 
     Output shape
-        - `(..., N, output_size)` if `output_size` is given, else
-        - `(..., N, Dv)` if `value` is given, else
-        - `(..., N, Dk)`
+        - `(..., query_elements, output_size)` if `output_size` is given, else
+        - `(..., query_elements, value_depth)` if `value` is given, else
+        - `(..., query_elements, key_depth)`
     """
 
     def __init__(
