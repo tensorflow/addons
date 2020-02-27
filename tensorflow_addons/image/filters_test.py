@@ -149,12 +149,12 @@ class MeanFilter2dTest(_Filter2dTest):
 
     def test_reflect_padding_with_3x3_filter(self):
         expected_plane = tf.constant(
-            [ 
-               [3.6666667, 4.       , 4.3333335],
-               [4.6666665, 5.       , 5.3333335],
-               [5.6666665, 6.       , 6.3333335],
+            [
+                [3.6666667, 4.0, 4.3333335],
+                [4.6666665, 5.0, 5.3333335],
+                [5.6666665, 6.0, 6.3333335],
             ]
-       )
+        )
 
         for image_shape in self._image_shapes_to_test:
             self._verify_values(
@@ -167,11 +167,7 @@ class MeanFilter2dTest(_Filter2dTest):
 
     def test_reflect_padding_with_4x4_filter(self):
         expected_plane = tf.constant(
-            [
-                [5., 5., 5.],
-                [5., 5., 5.],
-                [5., 5., 5.],
-            ]
+            [[5.0, 5.0, 5.0], [5.0, 5.0, 5.0], [5.0, 5.0, 5.0],]
         )
 
         for image_shape in self._image_shapes_to_test:
@@ -187,7 +183,7 @@ class MeanFilter2dTest(_Filter2dTest):
         expected_plane = tf.constant(
             [
                 [1.3333334, 2.3333333, 1.7777778],
-                [3.       , 5.       , 3.6666667],
+                [3.0, 5.0, 3.6666667],
                 [2.6666667, 4.3333335, 3.1111112],
             ]
         )
@@ -204,7 +200,7 @@ class MeanFilter2dTest(_Filter2dTest):
         expected_plane = tf.constant(
             [
                 [1.8888888, 2.6666667, 2.3333333],
-                [3.3333333, 5.       , 4.       ],
+                [3.3333333, 5.0, 4.0],
                 [3.2222223, 4.6666665, 3.6666667],
             ]
         )
@@ -221,9 +217,9 @@ class MeanFilter2dTest(_Filter2dTest):
     def test_symmetric_padding_with_3x3_filter(self):
         expected_plane = tf.constant(
             [
-                [2.3333333, 3.       , 3.6666667],
-                [4.3333335, 5.       , 5.6666665],
-                [6.3333335, 7.       , 7.6666665], 
+                [2.3333333, 3.0, 3.6666667],
+                [4.3333335, 5.0, 5.6666665],
+                [6.3333335, 7.0, 7.6666665],
             ]
         )
 
