@@ -52,7 +52,7 @@ def check_user(user: str, line_idx: int):
         CLIENT.get_user(user)
     except github.UnknownObjectException:
         raise KeyError(
-            f"User '{user}' line {line_idx} does not exist. " f"Did you make a typo?"
+            f"User '{user}' line {line_idx} does not exist. Did you make a typo?"
         )
     return user
 
