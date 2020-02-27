@@ -105,9 +105,8 @@ TF-Addons. In order to achieve these we require that our additions
 conform to established API patterns seen in core TensorFlow.
 
 #### GPU/CPU Custom-Ops
-A major benefit of TensorFlow Addons is that there are precompiled ops.
-Custom ops work on GPU only on Ubuntu. This is why on Windows and MacOS, 
-If available, Addons will fallback to a pure TensorFlow Python implementation for custom-ops.
+A major benefit of TensorFlow Addons is that there are precompiled ops for CPU/GPU.
+Currently however, GPU custom ops only work for Linux distributions. For this reason Windows and MacOS will fallback to pure TensorFlow Python implementations whenever possible.
 
 The order of priority in MacOS/Windows:
 1) Pure TensorFlow + Python implementation (work on cpu+gpu)
