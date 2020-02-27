@@ -7,6 +7,7 @@ import re
 import fnmatch
 import glob
 import os
+import json
 
 
 def xor_strings(a, b):
@@ -122,6 +123,11 @@ def craft_message(codeowners: CodeOwners, pull_request):
     return " ".join(owners + [nice_message])
 
 
+def get_pull_request_id_from_gh_actions():
+    actions_file = Path(os.environ["GITHUB_EVENT_PATH"])
+    return json.loads(actions_file.read_text())["number"]
+
+
 @click.command()
 @click.option("--pull-request-id")
 @click.option("--dry-run", is_flag=True)
@@ -134,6 +140,8 @@ def notify_codeowners(pull_request_id, dry_run, file):
     codeowners = parse_codeowners(text)
 
     if pull_request_id is not None:
+        if pull_request_id == 'auto':
+            pull_request_id = get_pull_request_id_from_gh_actions()
         pull_request_id = int(pull_request_id)
         pull_request = CLIENT.get_repo("tensorflow/addons").get_pull(pull_request_id)
         msg = craft_message(codeowners, pull_request)
