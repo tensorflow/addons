@@ -93,20 +93,11 @@ class ImageOpsTest(tf.test.TestCase):
         # Scale test image to range [0, 0.01]
         test_image = (test_image / image_size) * 0.01
 
-        if output_shape is None:
-            resize_shape = None
-        elif len(output_shape) == 2:
-            resize_shape = output_shape
-        elif len(output_shape) == 3:
-            resize_shape = output_shape[0:2]
-        elif len(output_shape) == 4:
-            resize_shape = output_shape[1:3]
-
         def transform_fn(x):
             x.set_shape(input_shape)
             transform = transform_ops.angles_to_projective_transforms(np.pi / 2, 4, 4)
             return transform_ops.transform(
-                images=x, transforms=transform, output_shape=resize_shape
+                images=x, transforms=transform, output_shape=output_shape
             )
 
         theoretical, numerical = tf.test.compute_gradient(transform_fn, [test_image])
@@ -114,12 +105,8 @@ class ImageOpsTest(tf.test.TestCase):
         self.assertAllClose(theoretical[0], numerical[0])
 
     def test_grad(self):
-        self._test_grad([16, 16])
-        self._test_grad([4, 12, 12])
-        self._test_grad([3, 4, 12, 12])
-        self._test_grad([16, 16], [8, 8])
-        self._test_grad([4, 12, 3], [8, 24, 3])
-        self._test_grad([3, 4, 12, 3], [3, 8, 24, 3])
+        self._test_grad([8, 8])
+        self._test_grad([8, 8], [4, 4])
 
     def test_transform_data_types(self):
         for dtype in _DTYPES:
