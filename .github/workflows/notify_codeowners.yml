@@ -16,9 +16,9 @@ jobs:
           python-version: 3.7
       - run: pip install pygithub click
       - uses: jwalton/gh-find-current-pr@v1
-          id: findPr
-          with:
-            github-token: ${{ secrets.GITHUB_TOKEN }}
+        id: findPr
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Drop a message for codeowners
         env:
           PR: ${{ steps.findPr.outputs.pr }}
