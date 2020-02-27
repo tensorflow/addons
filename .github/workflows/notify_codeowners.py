@@ -140,7 +140,7 @@ def notify_codeowners(pull_request_id, dry_run, file):
     codeowners = parse_codeowners(text)
 
     if pull_request_id is not None:
-        if pull_request_id == 'auto':
+        if pull_request_id == "auto":
             pull_request_id = get_pull_request_id_from_gh_actions()
         pull_request_id = int(pull_request_id)
         pull_request = CLIENT.get_repo("tensorflow/addons").get_pull(pull_request_id)
