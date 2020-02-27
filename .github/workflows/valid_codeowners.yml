@@ -21,4 +21,4 @@ jobs:
         with:
           python-version: 3.7
       - name: Check that the CODEOWNERS is valid
-        run: python .github/workflows/notify_codeowners/main.py .github/CODEOWNERS
+        run: python .github/workflows/notify_codeowners.py .github/CODEOWNERS

@@ -22,6 +22,6 @@ jobs:
         env:
           PR: ${{ steps.findPr.outputs.pr }}
         run: |
-          python .github/workflows/notify_codeowners/main.py \
+          python .github/workflows/notify_codeowners.py \
               --pull-request-id=$PR \
               https://raw.githubusercontent.com/tensorflow/addons/master/.github/CODEOWNERS
