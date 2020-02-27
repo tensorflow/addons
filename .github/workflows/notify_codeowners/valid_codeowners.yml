@@ -1,4 +1,4 @@
-name: GitHub CI
+name: Check codeowners file
 
 on:
   push:

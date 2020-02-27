@@ -1,4 +1,4 @@
-name: GitHub CI
+name: Notify codeowners main
 
 on:
   pull_request:
@@ -6,8 +6,8 @@ on:
 
 
 jobs:
-  valid-codeowners:
-    name: Check that the CODEOWNERS is valid
+  notify-codeowners:
+    name: Notify codeowners
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -18,7 +18,7 @@ jobs:
           id: findPr
           with:
             github-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check that the CODEOWNERS is valid
+      - name: Drop a message for codeowners
         env:
           PR: ${{ steps.findPr.outputs.pr }}
         run: |

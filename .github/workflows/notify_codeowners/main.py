@@ -105,7 +105,7 @@ nice_message = """
 
 You are owners of some files modified in this pull request.
 Would you kindly review the changes whenever you have the time to?
-Thank you very much. 
+Thank you very much.
 """
 
 
