@@ -28,8 +28,8 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
     @typechecked
     def __init__(
         self,
-        initial_learning_rate: Union[FloatTensorLike, Callable],
-        maximal_learning_rate: Union[FloatTensorLike, Callable],
+        initial_learning_rate: FloatTensorLike,
+        maximal_learning_rate: FloatTensorLike,
         step_size: FloatTensorLike,
         scale_fn: Callable,
         scale_mode: str = "cycle",
@@ -114,10 +114,9 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
     @typechecked
     def __init__(
         self,
-        initial_learning_rate: Union[FloatTensorLike, Callable],
-        maximal_learning_rate: Union[FloatTensorLike, Callable],
+        initial_learning_rate: FloatTensorLike,
+        maximal_learning_rate: FloatTensorLike,
         step_size: FloatTensorLike,
-        scale_fn: Callable,
         scale_mode: str = "cycle",
         name: str = "TriangularCyclicalLearningRate",
     ):
@@ -177,10 +176,9 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
     @typechecked
     def __init__(
         self,
-        initial_learning_rate: Union[FloatTensorLike, Callable],
-        maximal_learning_rate: Union[FloatTensorLike, Callable],
+        initial_learning_rate: FloatTensorLike,
+        maximal_learning_rate: FloatTensorLike,
         step_size: FloatTensorLike,
-        scale_fn: Callable,
         scale_mode: str = "cycle",
         name: str = "Triangular2CyclicalLearningRate",
     ):
@@ -240,10 +238,9 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
     @typechecked
     def __init__(
         self,
-        initial_learning_rate: Union[FloatTensorLike, Callable],
-        maximal_learning_rate: Union[FloatTensorLike, Callable],
+        initial_learning_rate: FloatTensorLike,
+        maximal_learning_rate: FloatTensorLike,
         step_size: FloatTensorLike,
-        scale_fn: Callable,
         scale_mode: str = "iterations",
         gamma: FloatTensorLike = 1.0,
         name: str = "ExponentialCyclicalLearningRate",
