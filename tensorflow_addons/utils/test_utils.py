@@ -16,6 +16,7 @@
 
 import contextlib
 import inspect
+import time
 import unittest
 
 import tensorflow as tf
@@ -160,3 +161,24 @@ def run_with_types(dtypes):
         return decorated
 
     return decorator
+
+
+def time_function(f):
+    def decorated(self, *args, **kwargs):
+        start = time.time()
+        f(self, *args, **kwargs)
+        end = time.time()
+        print(f.__name__, "took", (end - start), "seconds")
+
+    return decorated
+
+
+def time_all_functions(cls):
+    for name, method in cls.__dict__.copy().items():
+        if (
+            callable(method)
+            and name.startswith(unittest.TestLoader.testMethodPrefix)
+            and name != "test_session"
+        ):
+            setattr(cls, name, time_function(method))
+    return cls
