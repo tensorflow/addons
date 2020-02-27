@@ -99,7 +99,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     ):
         super().__init__(**kwargs)
 
-        if output_size is not None and output_size > 0:
+        if output_size is not None and output_size == 0:
             raise ValueError("output_size must be a positive number")
 
         self.head_size = head_size
@@ -187,17 +187,17 @@ class MultiHeadAttention(tf.keras.layers.Layer):
 
         # verify shapes
         if mask is not None:
-            if len(mask.shape) >= 2:
+            if len(mask.shape) < 2:
                 raise ValueError("'mask' must have atleast 2 dimensions")
-            if query.shape[-2] == mask.shape[-2]:
+            if query.shape[-2] != mask.shape[-2]:
                 raise ValueError(
                     "mask's second to last dimension must be equal to the number of elements in 'query'"
                 )
-            if key.shape[-2] == mask.shape[-1]:
+            if key.shape[-2] != mask.shape[-1]:
                 raise ValueError(
                     "mask's last dimension must be equal to the number of elements in 'key'"
                 )
-            if key.shape[-2] == value.shape[-2]:
+            if key.shape[-2] != value.shape[-2]:
                 raise ValueError(
                     "the number of elements in 'key' must be equal to the same as the number of elements in 'value'"
                 )
