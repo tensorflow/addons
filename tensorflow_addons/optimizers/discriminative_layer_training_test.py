@@ -423,13 +423,16 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         model_lr.compile(loss=loss, optimizer=d_opt_from_config)
 
         # we expect both optimizers to have the same optimizer group and base optimizer.
-        self.assertAllEqual(len(d_opt.optimizer_group), len(d_opt_from_config.optimizer_group))
+        self.assertAllEqual(
+            len(d_opt.optimizer_group), len(d_opt_from_config.optimizer_group)
+        )
         self.assertAllEqual(d_opt.opt_class, d_opt_from_config.opt_class)
 
         # we also expect the lr for each opt in the opt groups to be the same. Also confirms same lr mult.
-        self.assertAllEqual([opt.learning_rate for opt in d_opt.optimizer_group],
-                            [opt.learning_rate for opt in d_opt_from_config.optimizer_group])
-
+        self.assertAllEqual(
+            [opt.learning_rate for opt in d_opt.optimizer_group],
+            [opt.learning_rate for opt in d_opt_from_config.optimizer_group],
+        )
 
 
 def test_wrap(method, **kwargs):
