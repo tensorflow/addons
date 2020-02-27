@@ -23,9 +23,9 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     r"""
     MultiHead Attention layer.
 
-    Defines the MultiHead Attention operation as defined in 
-    [Attention Is All You Need](https://arxiv.org/abs/1706.03762) which takes 
-    in a `query`, `key` and `value` tensors returns the dot-product attention 
+    Defines the MultiHead Attention operation as defined in
+    [Attention Is All You Need](https://arxiv.org/abs/1706.03762) which takes
+    in a `query`, `key` and `value` tensors returns the dot-product attention
     between them:
 
         ```python
@@ -50,18 +50,18 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         ```
 
     Arguments
-        head_size: int, dimensionality of the `query`, `key` and `value` tensors 
+        head_size: int, dimensionality of the `query`, `key` and `value` tensors
         after the linear transformation.
         num_heads: int, number of attention heads.
-        output_size: int, dimensionality of the output space, if `None` then the 
-        input dimension of 
+        output_size: int, dimensionality of the output space, if `None` then the
+        input dimension of
         `value` or `key` will be used, default `None`.
-        dropout_rate: float, `rate` parameter for the dropout layer that is 
-        applied to attention after softmax, 
+        dropout_rate: float, `rate` parameter for the dropout layer that is
+        applied to attention after softmax,
         default `0`.
-        use_projection_bias: bool, whether to use a bias term after the linear 
+        use_projection_bias: bool, whether to use a bias term after the linear
         output projection.
-        return_attn_coef: bool, if `True`, return the attention coefficients as 
+        return_attn_coef: bool, if `True`, return the attention coefficients as
         an additional output argument.
         kernel_initializer: initializer, initializer for the kernel weights.
         kernel_regularizer: regularizer, regularizer for the kernel weights.
