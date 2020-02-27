@@ -23,16 +23,19 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     r"""
     MultiHead Attention layer.
 
-    Defines the MultiHead Attention operation as defined in [Attention Is All You Need](https://arxiv.org/abs/1706.03762) which takes in a `query`, `key` and `value` tensors returns the dot-product attention between them:
+    Defines the MultiHead Attention operation as defined in 
+    [Attention Is All You Need](https://arxiv.org/abs/1706.03762) which takes 
+    in a `query`, `key` and `value` tensors returns the dot-product attention 
+    between them:
 
         ```python
         mha = MultiHeadAttention(head_size=128, num_heads=128)
 
-        query = tf.random.uniform((32, 20, 200)) # (B, N, Dq)
-        key = tf.random.uniform((32, 15, 300)) # (B, M, Dk)
-        value = tf.random.uniform((32, 15, 400)) # (B, M, Dv)
+        query = tf.random.uniform((32, 20, 200)) # (batch_size, query_elements, query_depth)
+        key = tf.random.uniform((32, 15, 300)) # (batch_size, key_elements, key_depth)
+        value = tf.random.uniform((32, 15, 400)) # (batch_size, key_elements, value_depth)
 
-        attention = mha([query, key, value]) # (B, N, Dv)
+        attention = mha([query, key, value]) # (batch_size, query_elements, value_depth)
         ```
 
     If `value` is not given then internally `value = key` will be used:
@@ -40,19 +43,26 @@ class MultiHeadAttention(tf.keras.layers.Layer):
          ```python
         mha = MultiHeadAttention(head_size=128, num_heads=128)
 
-        query = tf.random.uniform((32, 20, 200)) # (B, N, Dq)
-        key = tf.random.uniform((32, 15, 300)) # (B, M, Dk)
+        query = tf.random.uniform((32, 20, 200)) # (batch_size, query_elements, query_depth)
+        key = tf.random.uniform((32, 15, 300)) # (batch_size, key_elements, key_depth)
 
-        attention = mha([query, key]) # (B, N, Dk)
+        attention = mha([query, key]) # (batch_size, query_elements, key_depth)
         ```
 
     Arguments
-        head_size: int, dimensionality of the `query`, `key` and `value` tensors after the linear transformation.
+        head_size: int, dimensionality of the `query`, `key` and `value` tensors 
+        after the linear transformation.
         num_heads: int, number of attention heads.
-        output_size: int, dimensionality of the output space, if `None` then the input dimension of `value` or `key` will be used, default `None`.
-        dropout_rate: float, `rate` parameter for the dropout layer that is applied to attention after softmax, default `0`.
-        use_projection_bias: bool, whether to use a bias term after the linear output projection.
-        return_attn_coef: bool, if `True`, return the attention coefficients as an additional output argument.
+        output_size: int, dimensionality of the output space, if `None` then the 
+        input dimension of 
+        `value` or `key` will be used, default `None`.
+        dropout_rate: float, `rate` parameter for the dropout layer that is 
+        applied to attention after softmax, 
+        default `0`.
+        use_projection_bias: bool, whether to use a bias term after the linear 
+        output projection.
+        return_attn_coef: bool, if `True`, return the attention coefficients as 
+        an additional output argument.
         kernel_initializer: initializer, initializer for the kernel weights.
         kernel_regularizer: regularizer, regularizer for the kernel weights.
         kernel_constraint: constraint, constraint for the kernel weights.
@@ -103,12 +113,18 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         self.bias_regularizer = tf.keras.regularizers.get(bias_regularizer)
         self.bias_constraint = tf.keras.constraints.get(bias_constraint)
 
+        self.dropout = tf.keras.layers.Dropout(self.dropout_rate)
+
     def build(self, input_shape):
 
         num_query_features = input_shape[0][-1]
         num_key_features = input_shape[1][-1]
-        num_value_features = input_shape[2][-1]
-        output_size = self.output_size if self.output_size else num_value_features
+        num_value_features = (
+            input_shape[2][-1] if len(input_shape) > 2 else num_key_features
+        )
+        output_size = (
+            self.output_size if self.output_size is not None else num_value_features
+        )
 
         self.query_kernel = self.add_weight(
             name="query_kernel",
@@ -150,11 +166,9 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         else:
             self.projection_bias = None
 
-        self.dropout = tf.keras.layers.Dropout(self.dropout_rate)
-
         super().build(input_shape)
 
-    def call(self, inputs, training=None):
+    def call(self, inputs, training=None, mask=None):
 
         # einsum nomenclature
         # ------------------------
@@ -166,20 +180,17 @@ class MultiHeadAttention(tf.keras.layers.Layer):
 
         query = inputs[0]
         key = inputs[1]
-        value = inputs[2]
-        attention_mask = inputs[3] if len(inputs) == 4 else None
+        value = inputs[2] if len(inputs) > 2 else key
 
         # verify shapes
-        if attention_mask is not None:
+        if mask is not None:
+            assert len(mask.shape) >= 2, "'mask' must have atleast 2 dimensions"
             assert (
-                len(attention_mask.shape) >= 2
-            ), "'attention_mask' must have atleast 2 dimensions"
+                query.shape[-2] == mask.shape[-2]
+            ), "mask's second to last dimension must be equal to the number of elements in 'query'"
             assert (
-                query.shape[-2] == attention_mask.shape[-2]
-            ), "attention_mask's second to last dimension must be equal to the number of elements in 'query'"
-            assert (
-                key.shape[-2] == attention_mask.shape[-1]
-            ), "attention_mask's last dimension must be equal to the number of elements in 'key'"
+                key.shape[-2] == mask.shape[-1]
+            ), "mask's last dimension must be equal to the number of elements in 'key'"
             assert (
                 key.shape[-2] == value.shape[-2]
             ), "the number of elements in 'key' must be equal to the same as the number of elements in 'value'"
@@ -198,14 +209,14 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         logits = tf.einsum("...NHO,...MHO->...HNM", query, key)
 
         # apply mask
-        if attention_mask is not None:
-            attention_mask = tf.cast(attention_mask, tf.float32)
+        if mask is not None:
+            mask = tf.cast(mask, tf.float32)
 
             # possibly expand on the head dimension so broadcasting works
-            if len(attention_mask.shape) != len(logits.shape):
-                attention_mask = tf.expand_dims(attention_mask, -3)
+            if len(mask.shape) != len(logits.shape):
+                mask = tf.expand_dims(mask, -3)
 
-            logits += -10e9 * (1.0 - attention_mask)
+            logits += -10e9 * (1.0 - mask)
 
         attn_coef = tf.nn.softmax(logits)
 
@@ -230,8 +241,12 @@ class MultiHeadAttention(tf.keras.layers.Layer):
             return output
 
     def compute_output_shape(self, input_shape):
-        num_value_features = input_shape[2][-1]
-        output_size = self.output_size if self.output_size else num_value_features
+        num_value_features = (
+            input_shape[2][-1] if len(input_shape) > 2 else input_shape[1][-1]
+        )
+        output_size = (
+            self.output_size if self.output_size is not None else num_value_features
+        )
 
         return input_shape[0][:-1] + (output_size,)
 
