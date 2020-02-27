@@ -56,7 +56,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         output_size: int, dimensionality of the output space, if `None` then the
         input dimension of
         `value` or `key` will be used, default `None`.
-        dropout_rate: float, `rate` parameter for the dropout layer that is
+        dropout: float, `rate` parameter for the dropout layer that is
         applied to attention after softmax,
         default `0`.
         use_projection_bias: bool, whether to use a bias term after the linear
@@ -86,7 +86,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         head_size: int,
         num_heads: int,
         output_size: int = None,
-        dropout_rate: float = 0.0,
+        dropout: float = 0.0,
         use_projection_bias: bool = True,
         return_attn_coef: bool = False,
         kernel_initializer: typing.Union[str, typing.Callable] = "glorot_uniform",
@@ -102,7 +102,6 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         self.head_size = head_size
         self.num_heads = num_heads
         self.output_size = output_size
-        self.dropout_rate = dropout_rate
         self.use_projection_bias = use_projection_bias
         self.return_attn_coef = return_attn_coef
 
@@ -113,7 +112,8 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         self.bias_regularizer = tf.keras.regularizers.get(bias_regularizer)
         self.bias_constraint = tf.keras.constraints.get(bias_constraint)
 
-        self.dropout = tf.keras.layers.Dropout(self.dropout_rate)
+        self.dropout = tf.keras.layers.Dropout(dropout)
+        self._droput_rate = dropout
 
     def build(self, input_shape):
 
@@ -251,11 +251,13 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         return input_shape[0][:-1] + (output_size,)
 
     def get_config(self):
-        return dict(
+        config = super().get_config()
+
+        config.update(
             head_size=self.head_size,
             num_heads=self.num_heads,
             output_size=self.output_size,
-            dropout_rate=self.dropout_rate,
+            dropout=self._droput_rate,
             use_projection_bias=self.use_projection_bias,
             return_attn_coef=self.return_attn_coef,
             kernel_initializer=tf.keras.initializers.serialize(self.kernel_initializer),
@@ -264,5 +266,6 @@ class MultiHeadAttention(tf.keras.layers.Layer):
             bias_initializer=tf.keras.initializers.serialize(self.bias_initializer),
             bias_regularizer=tf.keras.regularizers.serialize(self.bias_regularizer),
             bias_constraint=tf.keras.constraints.serialize(self.bias_constraint),
-            **super().get_config(),
         )
+
+        return config
