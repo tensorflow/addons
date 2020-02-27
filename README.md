@@ -112,7 +112,7 @@ The order of priority in MacOS/Windows:
 1) Pure TensorFlow + Python implementation (work on cpu+gpu)
 2) C++ implementation for CPU
 
-The order of priority for Ubuntu:
+The order of priority for Linux:
 1) CUDA implementation
 2) C++ implementation
 3) Pure TensorFlow + Python implementation (work on cpu+gpu)
