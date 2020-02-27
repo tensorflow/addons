@@ -117,7 +117,6 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
         initial_learning_rate: Union[FloatTensorLike, Callable],
         maximal_learning_rate: Union[FloatTensorLike, Callable],
         step_size: FloatTensorLike,
-        scale_fn: Callable,
         scale_mode: str = "cycle",
         name: str = "TriangularCyclicalLearningRate",
     ):
@@ -180,7 +179,6 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
         initial_learning_rate: Union[FloatTensorLike, Callable],
         maximal_learning_rate: Union[FloatTensorLike, Callable],
         step_size: FloatTensorLike,
-        scale_fn: Callable,
         scale_mode: str = "cycle",
         name: str = "Triangular2CyclicalLearningRate",
     ):
@@ -243,7 +241,6 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
         initial_learning_rate: Union[FloatTensorLike, Callable],
         maximal_learning_rate: Union[FloatTensorLike, Callable],
         step_size: FloatTensorLike,
-        scale_fn: Callable,
         scale_mode: str = "iterations",
         gamma: FloatTensorLike = 1.0,
         name: str = "ExponentialCyclicalLearningRate",
