@@ -1,30 +1,7 @@
 # Addons - Losses
 
-## Maintainers
-| Submodule  |  Maintainers  | Contact Info   |
-|:---------- |:----------- |:------------- |
-| contrastive |  @WindQAQ | windqaq@gmail.com |
-| focal_loss | @AakashKumarNain<br> @SSaishruthi  | aakashnain@outlook.com<br> saishruthi.tn@gmail.com |
-| giou_loss | @fsx950223  | fsx950223@gmail.com |
-| lifted | @rahulunair | rahulunair@gmail.com  |
-| npairs | @WindQAQ | windqaq@gmail.com |
-| sparsemax_loss | @AndreasMadsen | amwwebdk+github@gmail.com |
-| triplet |  @rahulunair | rahulunair@gmail.com  |
-| quantiles | @RomainBrault | mail@romainbrault.com |
-
 ## Components
-| Submodule | Loss  | Reference               |
-|:----------------------- |:---------------------|:--------------------------|
-| contrastive | ContrastiveLoss | http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf |
-| focal_loss | SigmoidFocalCrossEntropy | https://arxiv.org/abs/1708.02002  |
-| giou_loss | GIoULoss | https://giou.stanford.edu/GIoU.pdf       |
-| lifted | LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
-| npairs | NpairsLoss | http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf |
-| npairs | NpairsMultilabelLoss | http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf |
-| sparsemax_loss | SparsemaxLoss |  https://arxiv.org/abs/1602.02068 |
-| triplet | TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
-| quantiles | PinballLoss | https://en.wikipedia.org/wiki/Quantile_regression |
-
+https://www.tensorflow.org/addons/api_docs/python/tfa/losses
 
 ## Contribution Guidelines
 #### Standard API
@@ -44,5 +21,5 @@ must:
  * Add a `py_test` to this sub-package's BUILD file.
 
 #### Documentation Requirements
- * Update the table of contents in the project's central README.
- * Update the table of contents in this sub-package's README.
+ * Update the [CODEOWNERS file](.github/CODEOWNERS)
+

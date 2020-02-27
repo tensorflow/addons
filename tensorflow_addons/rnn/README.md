@@ -1,16 +1,7 @@
 # Addons - RNN
 
-## Maintainers
-| Submodule  | Maintainers  | Contact Info  |
-|:---------- |:------------ |:------------- |
-| cell       | Google       | @qlzh727      |
-
 ## Components
-| Submodule | Class              | Reference |
-|:----------|:------------------ |:--------- |
-| cell      | NASCell            | https://arxiv.org/abs/1611.01578  |
-| cell      | LayerNormLSTMCell  | https://arxiv.org/abs/1607.06450  |
-
+https://www.tensorflow.org/addons/api_docs/python/tfa/rnn
 
 ## Contribution Guidelines
 #### Prerequisites
@@ -34,4 +25,4 @@ In order to conform with the current API standard, all cells must:
  * Add a `py_test` to this sub-package's BUILD file.
 
 #### Documentation Requirements
- * Update the table of contents in this sub-packages's README.
+ * Update the [CODEOWNERS file](.github/CODEOWNERS)

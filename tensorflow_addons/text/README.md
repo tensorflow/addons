@@ -1,18 +1,7 @@
 # Addons - Text
 
-## Maintainers
-| Submodule  |  Maintainers  | Contact Info   |
-|:---------- |:----------- |:------------- |
-| skip_gram_ops | @rahulunair | rahulunair@gmail.com  |
-| crf | Dheeraj R. Reddy | dheeraj98reddy@gmail.com |
-| parse_time_op | Helin Wang | helin@google.com |
-
 ## Components 
-| Submodule  | Text Processing Function |  Reference  |
-|:---------- |:----------- |:----------- |
-| skip_gram_ops |  skip_gram_sample | https://arxiv.org/abs/1301.3781 |
-| skip_gram_ops |  skip_gram_sample_with_text_vocab | https://arxiv.org/abs/1301.3781 |
-| parse_time_op | parse_time ||
+https://www.tensorflow.org/addons/api_docs/python/tfa/text
 
 ## Contribution Guidelines
 #### Standard API
@@ -33,4 +22,4 @@ must:
  * Add a `py_test` to this sub-package's BUILD file.
 
 #### Documentation Requirements
- * Update the table of contents in this sub-packages's README.
+ * Update the [CODEOWNERS file](.github/CODEOWNERS)

@@ -31,16 +31,16 @@ developments that cannot be integrated into core TensorFlow
 ## Maintainers
 | Subpackage    | Maintainers  | Contact Info                        |
 |:----------------------- |:----------- |:----------------------------|
-| [tfa.activations](tensorflow_addons/activations/README.md) | SIG-Addons | @facaiy @seanpmorgan | 
-| [tfa.callbacks](tensorflow_addons/callbacks/README.md) | SIG-Addons | @squadrick @shun-lin |
-| [tfa.image](tensorflow_addons/image/README.md) | SIG-Addons | @windqaq @facaiy |
-| [tfa.layers](tensorflow_addons/layers/README.md) | SIG-Addons | @seanpmorgan @facaiy |
-| [tfa.losses](tensorflow_addons/losses/README.md) | SIG-Addons | @facaiy @windqaq   |
-| [tfa.metrics](tensorflow_addons/metrics/README.md) | SIG-Addons | @squadrick | 
-| [tfa.optimizers](tensorflow_addons/optimizers/README.md) | SIG-Addons | @facaiy @windqaq @squadrick |
-| [tfa.rnn](tensorflow_addons/rnn/README.md) | Google | @qlzh727 |
-| [tfa.seq2seq](tensorflow_addons/seq2seq/README.md) | Google/SIG-Addons | @qlzh727 @guillaumekln |
-| [tfa.text](tensorflow_addons/text/README.md) |  SIG-Addons |  @seanpmorgan @facaiy |
+| [tfa.activations](https://www.tensorflow.org/addons/api_docs/python/tfa/activations) | SIG-Addons | @facaiy @seanpmorgan | 
+| [tfa.callbacks](https://www.tensorflow.org/addons/api_docs/python/tfa/callbacks) | SIG-Addons | @squadrick @shun-lin |
+| [tfa.image](https://www.tensorflow.org/addons/api_docs/python/tfa/image) | SIG-Addons | @windqaq @facaiy |
+| [tfa.layers](https://www.tensorflow.org/addons/api_docs/python/tfa/layers) | SIG-Addons | @seanpmorgan @facaiy |
+| [tfa.losses](https://www.tensorflow.org/addons/api_docs/python/tfa/losses) | SIG-Addons | @facaiy @windqaq   |
+| [tfa.metrics](https://www.tensorflow.org/addons/api_docs/python/tfa/metrics) | SIG-Addons | @squadrick | 
+| [tfa.optimizers](https://www.tensorflow.org/addons/api_docs/python/tfa/optimizers) | SIG-Addons | @facaiy @windqaq @squadrick |
+| [tfa.rnn](https://www.tensorflow.org/addons/api_docs/python/tfa/rnn) | Google | @qlzh727 |
+| [tfa.seq2seq](https://www.tensorflow.org/addons/api_docs/python/tfa/seq2seq) | Google/SIG-Addons | @qlzh727 @guillaumekln |
+| [tfa.text](https://www.tensorflow.org/addons/api_docs/python/tfa/text) |  SIG-Addons |  @seanpmorgan @facaiy |
 
 ## Installation
 #### Stable Builds
