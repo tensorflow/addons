@@ -127,7 +127,6 @@ def craft_message(codeowners: CodeOwners, pull_request):
 @click.option("--dry-run", is_flag=True)
 @click.argument("file")
 def notify_codeowners(pull_request_id, dry_run, file):
-    pull_request_id = int(pull_request_id)
     if file.startswith("http"):
         text = urllib.request.urlopen(file).read().decode("utf-8")
     else:
@@ -135,6 +134,7 @@ def notify_codeowners(pull_request_id, dry_run, file):
     codeowners = parse_codeowners(text)
 
     if pull_request_id:
+        pull_request_id = int(pull_request_id)
         pull_request = CLIENT.get_repo("tensorflow/addons").get_pull(pull_request_id)
         msg = craft_message(codeowners, pull_request)
         print(msg)
