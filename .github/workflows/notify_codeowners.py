@@ -20,7 +20,6 @@ BLACKLIST = [
     "windqaq",
     "qlzh727",
     "guillaumekln",
-    "helinwang",
 ]
 
 
