@@ -133,7 +133,7 @@ def notify_codeowners(pull_request_id, dry_run, file):
         text = Path(file).read_text()
     codeowners = parse_codeowners(text)
 
-    if pull_request_id:
+    if pull_request_id is not None:
         pull_request_id = int(pull_request_id)
         pull_request = CLIENT.get_repo("tensorflow/addons").get_pull(pull_request_id)
         msg = craft_message(codeowners, pull_request)

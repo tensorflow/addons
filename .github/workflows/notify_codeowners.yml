@@ -1,4 +1,4 @@
-name: Notify codeowners main
+name: Notify codeowners
 
 on:
   pull_request:
@@ -23,6 +23,7 @@ jobs:
         env:
           PR: ${{ steps.findPr.outputs.pr }}
         run: |
+          cat $GITHUB_EVENT_PATH
           python .github/workflows/notify_codeowners.py \
               --pull-request-id=$PR \
               https://raw.githubusercontent.com/tensorflow/addons/master/.github/CODEOWNERS
