@@ -1,0 +1,27 @@
+name: GitHub CI
+
+on:
+  pull_request:
+    types: [opened]
+
+
+jobs:
+  valid-codeowners:
+    name: Check that the CODEOWNERS is valid
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - uses: jwalton/gh-find-current-pr@v1
+          id: findPr
+          with:
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check that the CODEOWNERS is valid
+        env:
+          PR: ${{ steps.findPr.outputs.pr }}
+        run: |
+          python .github/workflows/notify_codeowners/main.py \
+              --pull-request-id=$PR \
+              https://raw.githubusercontent.com/tensorflow/addons/master/.github/CODEOWNERS
