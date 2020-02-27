@@ -47,6 +47,11 @@ for version in ${PYTHON_VERSIONS}; do
     python3 get-pip.py -q
     python3 -m pip --version
 
+    # tenmporary fix for "no space available on github actions"
+    python3 -m pip install --no-cache-dir \
+      -r build_deps/build-requirements.txt \
+      -r requirements.txt
+
     #Link TF dependency
     python3 ./configure.py --quiet
 
@@ -62,6 +67,9 @@ for version in ${PYTHON_VERSIONS}; do
 
     # Package Whl
     bazel-bin/build_pip_pkg artifacts ${PKG_OPS}
+
+    # tenmporary fix for "no space available on github actions"
+    python3 -m pip uninstall -y tensorflow
 done
 
 # Clean up
