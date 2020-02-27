@@ -21,4 +21,4 @@ must:
  * Add activation name to [activations_test.py](https://github.com/tensorflow/addons/tree/master/tensorflow_addons/activations/activations_test.py) to test serialization.
 
 #### Documentation Requirements
- * Update the [CODEOWNERS file](.github/CODEOWNERS)
+ * Update the [CODEOWNERS file](https://github.com/tensorflow/addons/blob/master/.github/CODEOWNERS)
