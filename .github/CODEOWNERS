@@ -47,7 +47,7 @@
 /tensorflow_addons/image/transform_ops*.py @mels630
 /tensorflow_addons/image/translate_ops*.py @sayoojbk
 
-/tensorflow_addons/layers/gelu*.py 	@aakashkumarnain
+/tensorflow_addons/layers/gelu*.py @aakashkumarnain
 /tensorflow_addons/layers/maxout*.py @fsx950223
 /tensorflow_addons/layers/normalizations*.py @smokrow
 /tensorflow_addons/layers/optical_flow*.py @fsx950223
