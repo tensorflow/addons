@@ -99,7 +99,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     ):
         super().__init__(**kwargs)
 
-        if output_size is not None and output_size == 0:
+        if output_size is not None and output_size < 1:
             raise ValueError("output_size must be a positive number")
 
         self.head_size = head_size
