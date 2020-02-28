@@ -97,7 +97,7 @@ jobs:
       - uses: actions/upload-artifact@v1
         if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
-          name: ${{ runner.os }}-wheels
+          name: ${{ runner.os }}-${{ matrix.python-version }}-wheel
           path: wheelhouse
 
   windows-release-wheel:
