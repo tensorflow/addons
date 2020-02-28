@@ -120,7 +120,8 @@ class DecoupledWeightDecayExtension:
         self._decay_var_list = set(decay_var_list) if decay_var_list else False
         return super().minimize(loss, var_list=var_list, grad_loss=grad_loss, name=name)
 
-    def apply_gradients(self, grads_and_vars, name=None, decay_var_list=None):
+    def apply_gradients(self, grads_and_vars, name=None, decay_var_list=None,
+                        all_reduce_sum_gradients=True):
         """Apply gradients to variables.
 
         This is the second part of `minimize()`. It returns an `Operation` that
@@ -132,6 +133,10 @@ class DecoupledWeightDecayExtension:
                 name passed to the `Optimizer` constructor.
             decay_var_list: Optional list of variables to be decayed. Defaults
                 to all variables in var_list.
+            all_reduce_sum_gradients: Whether to sum gradients from different
+                replicas in the presense of `tf.distribute.Strategy`. If False,
+                it's user responsibility to aggregate the gradients. Default 
+                to True.
         Returns:
             An `Operation` that applies the specified gradients.
         Raises:
@@ -139,7 +144,8 @@ class DecoupledWeightDecayExtension:
             ValueError: If none of the variables have gradients.
         """
         self._decay_var_list = set(decay_var_list) if decay_var_list else False
-        return super().apply_gradients(grads_and_vars, name=name)
+        return super().apply_gradients(grads_and_vars, name=name,
+                                       all_reduce_sum_gradients=all_reduce_sum_gradients)
 
     def _decay_weights_op(self, var):
         if not self._decay_var_list or var in self._decay_var_list:
