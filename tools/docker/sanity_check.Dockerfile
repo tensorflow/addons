@@ -124,6 +124,7 @@ RUN bash finish_bazel_install.sh
 
 COPY ./ /addons
 WORKDIR /addons
+RUN python configure.py --no-deps
 RUN bash tools/install_so_files.sh
 RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
 RUN python -c "from tensorflow_addons.activations import gelu; print(gelu(0.2))"
