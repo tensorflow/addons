@@ -65,7 +65,7 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
         )
 
     def test_non_layer(self):
-        images = tf.random.uniform((2, 4, 43))
+        images = tf.random.uniform((2, 4, 3))
         with self.assertRaises(AssertionError):
             wrappers.WeightNormalization(images)
 
@@ -77,9 +77,9 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
             wn_wrapper(images)
 
     def test_with_time_dist(self):
-        batch_shape = (32, 16, 64, 64, 3)
+        batch_shape = (8, 8, 16, 16, 3)
         inputs = tf.keras.layers.Input(batch_shape=batch_shape)
-        a = tf.keras.layers.Conv2D(3, 5)
+        a = tf.keras.layers.Conv2D(3, 3)
         b = wrappers.WeightNormalization(a)
         out = tf.keras.layers.TimeDistributed(b)(inputs)
         tf.keras.Model(inputs, out)
@@ -104,7 +104,7 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
             self.assertTrue(isinstance(new_wn_layer.layer, base_layer.__class__))
 
     @parameterized.named_parameters(
-        ["Dense", lambda: tf.keras.layers.Dense(1), [25]],
+        ["Dense", lambda: tf.keras.layers.Dense(1), [1]],
         ["SimpleRNN", lambda: tf.keras.layers.SimpleRNN(1), [None, 10]],
         ["Conv2D", lambda: tf.keras.layers.Conv2D(3, 1), [3, 3, 1]],
         ["LSTM", lambda: tf.keras.layers.LSTM(1), [10, 10]],
@@ -118,7 +118,7 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
             model.build()
 
     @parameterized.named_parameters(
-        ["Dense", lambda: tf.keras.layers.Dense(1), [25]],
+        ["Dense", lambda: tf.keras.layers.Dense(1), [1]],
         ["SimpleRNN", lambda: tf.keras.layers.SimpleRNN(1), [10, 10]],
         ["Conv2D", lambda: tf.keras.layers.Conv2D(3, 1), [3, 3, 1]],
         ["LSTM", lambda: tf.keras.layers.LSTM(1), [10, 10]],
@@ -132,7 +132,7 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
         model.save_weights("wrapper_test_model.h5")
 
     @parameterized.named_parameters(
-        ["Dense", lambda: tf.keras.layers.Dense(1), [25]],
+        ["Dense", lambda: tf.keras.layers.Dense(1), [1]],
         ["SimpleRNN", lambda: tf.keras.layers.SimpleRNN(1), [10, 10]],
         ["Conv2D", lambda: tf.keras.layers.Conv2D(3, 1), [3, 3, 1]],
         ["LSTM", lambda: tf.keras.layers.LSTM(1), [10, 10]],
@@ -147,7 +147,7 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
         self.assertAllClose(self.evaluate(base_output), self.evaluate(wn_output))
 
     @parameterized.named_parameters(
-        ["Dense", lambda: tf.keras.layers.Dense(1), [25]],
+        ["Dense", lambda: tf.keras.layers.Dense(1), [1]],
         ["SimpleRNN", lambda: tf.keras.layers.SimpleRNN(1), [10, 10]],
         ["Conv2D", lambda: tf.keras.layers.Conv2D(3, 1), [3, 3, 1]],
         ["LSTM", lambda: tf.keras.layers.LSTM(1), [10, 10]],
