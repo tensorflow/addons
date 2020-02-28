@@ -137,8 +137,30 @@ jobs:
       - uses: actions/upload-artifact@v1
         if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
-          name: ${{ runner.os }}-wheels
+          name: ${{ runner.os }}-${{ matrix.python-version }}-wheel
           path: artifacts
+  test-release-wheel:
+    name: Test release wheels
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ['macos-latest', 'windows-latest']
+        python-version: ['3.5', '3.6', '3.7']
+    steps:
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/download-artifact@v1
+        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
+        with:
+          name: ${{ runner.os }}-${{ matrix.python-version }}-wheel
+          path: wheel
+      - name: Test wheel
+        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
+        run: |
+          pip install tensorflow~=2.1.0
+          pip install wheel/tensorflow_addons-*.whl
+          python -c "from tensorflow_addons.activations import gelu; print(gelu(0.2))"
 
   upload-wheels:
     name: Publish wheels to PyPi
