@@ -126,6 +126,7 @@ Thank you very much.
 
 
 def craft_message(codeowners: CodeOwners, pull_request):
+
     owners = set()
     for file in pull_request.get_files():
         for pattern, users in codeowners:
