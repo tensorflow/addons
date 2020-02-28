@@ -117,7 +117,6 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
         initial_learning_rate: Union[FloatTensorLike, Callable],
         maximal_learning_rate: Union[FloatTensorLike, Callable],
         step_size: FloatTensorLike,
-        scale_fn: Callable,
         scale_mode: str = "cycle",
         name: str = "TriangularCyclicalLearningRate",
     ):
@@ -154,7 +153,6 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
                 a Python number.  The maximum learning rate.
             step_size: A scalar `float32` or `float64` `Tensor` or a
                 Python number. Step size.
-            scale_fn: A function. Scheduling function applied in cycle
             scale_mode: ['cycle', 'iterations']. Mode to apply during cyclic
                 schedule
             name: (Optional) Name for the operation.
@@ -180,7 +178,6 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
         initial_learning_rate: Union[FloatTensorLike, Callable],
         maximal_learning_rate: Union[FloatTensorLike, Callable],
         step_size: FloatTensorLike,
-        scale_fn: Callable,
         scale_mode: str = "cycle",
         name: str = "Triangular2CyclicalLearningRate",
     ):
@@ -217,7 +214,6 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
                 a Python number.  The maximum learning rate.
             step_size: A scalar `float32` or `float64` `Tensor` or a
                 Python number. Step size.
-            scale_fn: A function. Scheduling function applied in cycle
             scale_mode: ['cycle', 'iterations']. Mode to apply during cyclic
                 schedule
             name: (Optional) Name for the operation.
@@ -243,7 +239,6 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
         initial_learning_rate: Union[FloatTensorLike, Callable],
         maximal_learning_rate: Union[FloatTensorLike, Callable],
         step_size: FloatTensorLike,
-        scale_fn: Callable,
         scale_mode: str = "iterations",
         gamma: FloatTensorLike = 1.0,
         name: str = "ExponentialCyclicalLearningRate",
@@ -282,7 +277,6 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
                 a Python number.  The maximum learning rate.
             step_size: A scalar `float32` or `float64` `Tensor` or a
                 Python number. Step size.
-            scale_fn: A function. Scheduling function applied in cycle
             scale_mode: ['cycle', 'iterations']. Mode to apply during cyclic
                 schedule
             gamma: A scalar `float32` or `float64` `Tensor` or a
