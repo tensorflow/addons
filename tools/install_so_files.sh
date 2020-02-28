@@ -1,0 +1,3 @@
+python configure.py
+bazel build //tensorflow_addons/...
+rsync -a ./bazel-bin/tensorflow_addons/custom_ops/ ./tensorflow_addons/custom_ops/
