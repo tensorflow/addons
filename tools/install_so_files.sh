@@ -1,3 +1,9 @@
-python configure.py
 bazel build //tensorflow_addons/...
-rsync -a ./bazel-bin/tensorflow_addons/custom_ops/ ./tensorflow_addons/custom_ops/
+cp ./bazel-bin/tensorflow_addons/custom_ops/activations/_activation_ops.so ./tensorflow_addons/custom_ops/activations/
+cp ./bazel-bin/tensorflow_addons/custom_ops/image/_distort_image_ops.so ./tensorflow_addons/custom_ops/image/
+cp ./bazel-bin/tensorflow_addons/custom_ops/layers/_correlation_cost_ops.so ./tensorflow_addons/custom_ops/layers/
+cp ./bazel-bin/tensorflow_addons/custom_ops/text/_parse_time_op.so ./tensorflow_addons/custom_ops/text/
+cp ./bazel-bin/tensorflow_addons/custom_ops/seq2seq/_beam_search_ops.so ./tensorflow_addons/custom_ops/seq2seq/
+cp ./bazel-bin/tensorflow_addons/custom_ops/image/_image_ops.so ./tensorflow_addons/custom_ops/image/
+cp ./bazel-bin/tensorflow_addons/custom_ops/image/_resampler_ops.so ./tensorflow_addons/custom_ops/image/
+cp ./bazel-bin/tensorflow_addons/custom_ops/text/_skip_gram_ops.so ./tensorflow_addons/custom_ops/text/

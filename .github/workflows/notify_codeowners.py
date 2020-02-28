@@ -45,6 +45,7 @@ def check_user(user: str, line_idx: int):
             f"doesn't start with '@' "
         )
     user = user[1:]
+    user = user.lower()  # in github, user names are case insensitive
     if user in BLACKLIST:
         return None
     try:
@@ -133,7 +134,15 @@ def craft_message(codeowners: CodeOwners, pull_request):
                 continue
             owners.update(users)
 
+    author = pull_request.user.login.lower()
+    try:
+        owners.remove(author)  # no need to notify the author
+    except KeyError:
+        pass
+
     owners = [f"@{owner}" for owner in owners]
+    if not owners:
+        return None
     if len(owners) >= 2:
         plural = "s"
     else:
@@ -148,9 +157,9 @@ def get_pull_request_id_from_gh_actions():
 
 @click.command()
 @click.option("--pull-request-id")
-@click.option("--dry-run", is_flag=True)
+@click.option("--no-dry-run", is_flag=True)
 @click.argument("file")
-def notify_codeowners(pull_request_id, dry_run, file):
+def notify_codeowners(pull_request_id, no_dry_run, file):
     if file.startswith("http"):
         text = urllib.request.urlopen(file).read().decode("utf-8")
     else:
@@ -164,7 +173,7 @@ def notify_codeowners(pull_request_id, dry_run, file):
         pull_request = CLIENT.get_repo("tensorflow/addons").get_pull(pull_request_id)
         msg = craft_message(codeowners, pull_request)
         print(msg)
-        if not dry_run:
+        if no_dry_run and msg is not None:
             pull_request.create_issue_comment(msg)
 
 

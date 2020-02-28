@@ -13,6 +13,8 @@
 # limitations under the License.
 # =============================================================================
 
+import os
+import tempfile
 from absl.testing import parameterized
 
 import numpy as np
@@ -124,12 +126,12 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
         ["LSTM", lambda: tf.keras.layers.LSTM(1), [10, 10]],
     )
     def test_save_file_h5(self, base_layer, input_shape):
-        self.create_tempfile("wrapper_test_model.h5")
         base_layer = base_layer()
         wn_conv = wrappers.WeightNormalization(base_layer)
         model = tf.keras.Sequential(layers=[wn_conv])
         model.build([None] + input_shape)
-        model.save_weights("wrapper_test_model.h5")
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            model.save_weights(os.path.join(tmp_dir, "wrapper_test_model.h5"))
 
     @parameterized.named_parameters(
         ["Dense", lambda: tf.keras.layers.Dense(1), [1]],

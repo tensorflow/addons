@@ -15,9 +15,9 @@
 # ==============================================================================
 set -e -x
 
-if [[ $1 == "--nightly" ]]; then
+if [[ $2 == "--nightly" ]]; then
     PKG_OPS="--nightly"
-elif [[ -n "$1" ]]; then
+elif [[ -n "$2" ]]; then
     echo "Found unsupported args: $@"
     exit 1
 fi
@@ -29,48 +29,29 @@ export CUDA_TOOLKIT_PATH="/usr/local/cuda"
 export TF_CUDNN_VERSION="7"
 export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 
-# Remove the now private ppa. This can be removed after the docker image removes the
-# pre-installed python packages from this ppa.
-rm -f /etc/apt/sources.list.d/jonathonf-ubuntu-python-3_6-xenial.list
+# Fix presented in
+# https://stackoverflow.com/questions/44967202/pip-is-showing-error-lsb-release-a-returned-non-zero-exit-status-1/44967506
+echo "#! /usr/bin/python2.7" >> /usr/bin/lsb_release2
+cat /usr/bin/lsb_release >> /usr/bin/lsb_release2
+mv /usr/bin/lsb_release2 /usr/bin/lsb_release
 
-PYTHON_VERSIONS="python3.5 python3.6 python3.7"
-ln -sf /usr/bin/python3.5 /usr/bin/python3 # Py36 has issues with add-apt
-curl -sSOL https://bootstrap.pypa.io/get-pip.py
-add-apt-repository -y ppa:deadsnakes/ppa
+ln -sf $(which python$1) /usr/bin/python3
+python3 -m pip install --upgrade pip
+python3 -m pip install --upgrade setuptools
 
-apt-get -y -qq update
+#Link TF dependency
+python3 --version
+python3 ./configure.py
 
-for version in ${PYTHON_VERSIONS}; do
-    apt-get -y -qq install ${version}
-    ln -sf /usr/bin/${version} /usr/bin/python3
+# Build
+bazel build \
+  -c opt \
+  --noshow_progress \
+  --noshow_loading_progress \
+  --verbose_failures \
+  --test_output=errors \
+  --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.1:toolchain \
+  build_pip_pkg
 
-    python3 get-pip.py -q
-    python3 -m pip --version
-
-    # tenmporary fix for "no space available on github actions"
-    python3 -m pip install --no-cache-dir \
-      -r build_deps/build-requirements.txt \
-      -r requirements.txt
-
-    #Link TF dependency
-    python3 ./configure.py --quiet
-
-    # Build
-    bazel build \
-      -c opt \
-      --noshow_progress \
-      --noshow_loading_progress \
-      --verbose_failures \
-      --test_output=errors \
-      --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.1:toolchain \
-      build_pip_pkg
-
-    # Package Whl
-    bazel-bin/build_pip_pkg artifacts ${PKG_OPS}
-
-    # tenmporary fix for "no space available on github actions"
-    python3 -m pip uninstall -y tensorflow
-done
-
-# Clean up
-rm get-pip.py
+# Package Whl
+bazel-bin/build_pip_pkg artifacts ${PKG_OPS}
