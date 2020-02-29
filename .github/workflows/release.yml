@@ -53,8 +53,8 @@ jobs:
           name: ${{ runner.os }}-wheels
           path: wheelhouse
 
-  macos-release-wheel:
-    name: Build release wheels for macOS
+  release-wheel:
+    name: Build release wheels
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -67,7 +67,7 @@ jobs:
       - uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Build macOS wheels
+      - name: Build wheels
         if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         env:
           OS: ${{ runner.os }}
@@ -80,7 +80,7 @@ jobs:
 
   upload-wheels:
     name: Publish wheels to PyPi
-    needs: [manylinux-release-wheel, macos-release-wheel, windows-release-wheel, manylinux-cpu-release-test]
+    needs: [manylinux-release-wheel, release-wheel, manylinux-cpu-release-test]
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/download-artifact@v1
