@@ -32,18 +32,23 @@ jobs:
   manylinux-release-wheel:
     name: Build release wheels for manylinux2010
     runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        python-version: ['3.5', '3.6', '3.7']
     steps:
       - if: github.event_name == 'schedule'
         run: echo "::set-env name=NIGHTLY_FLAG::--nightly"
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
-          python-version: 3.5
+          python-version: ${{ matrix.python-version }}
       - name: Build manylinux2010 wheels
+        env:
+          PY_VERSION: ${{ matrix.python-version }}
         run: |
           docker run -e TF_NEED_CUDA=1 -v ${PWD}:/addons -w /addons \
             tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16 \
-            tools/ci_build/builds/release_linux.sh $NIGHTLY_FLAG
+            tools/ci_build/builds/release_linux.sh $PY_VERSION $NIGHTLY_FLAG
 
           sudo apt-get install patchelf
           python3 -m pip install -U auditwheel==2.0.0
