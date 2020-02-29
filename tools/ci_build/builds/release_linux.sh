@@ -29,6 +29,12 @@ export CUDA_TOOLKIT_PATH="/usr/local/cuda"
 export TF_CUDNN_VERSION="7"
 export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 
+# Fix presented in
+# https://stackoverflow.com/questions/44967202/pip-is-showing-error-lsb-release-a-returned-non-zero-exit-status-1/44967506
+echo "#! /usr/bin/python2.7" >> /usr/bin/lsb_release2
+cat /usr/bin/lsb_release >> /usr/bin/lsb_release2
+mv /usr/bin/lsb_release2 /usr/bin/lsb_release
+
 ln -sf $(which python$1) /usr/bin/python3
 python3 -m pip install --upgrade pip
 python3 -m pip install --upgrade setuptools
