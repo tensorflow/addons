@@ -43,6 +43,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Build manylinux2010 wheels
+        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         env:
           PY_VERSION: ${{ matrix.python-version }}
         run: |
@@ -59,6 +60,7 @@ jobs:
           done
           ls -al wheelhouse/
       - uses: actions/upload-artifact@v1
+        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
           name: ${{ runner.os }}-wheels
           path: wheelhouse
