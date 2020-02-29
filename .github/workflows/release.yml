@@ -60,6 +60,7 @@ jobs:
       matrix:
         os: ['macos-latest', 'windows-latest']
         python-version: ['3.5', '3.6', '3.7']
+      fail-fast: false
     steps:
       - if: github.event_name == 'schedule'
         run: echo "::set-env name=NIGHTLY_FLAG::--nightly"
