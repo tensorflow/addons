@@ -47,6 +47,7 @@ jobs:
       - name: Build wheels
         if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         env:
+          PY_VERSION: ${{ matrix.python-version }}
           OS: ${{ runner.os }}
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}.sh
