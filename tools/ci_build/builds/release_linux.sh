@@ -34,7 +34,8 @@ python3 -m pip install --upgrade pip
 python3 -m pip install --upgrade setuptools
 
 #Link TF dependency
-python3 ./configure.py --quiet
+python3 --version
+python3 ./configure.py
 
 # Build
 bazel build \
