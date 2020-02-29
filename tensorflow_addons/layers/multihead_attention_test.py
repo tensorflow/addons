@@ -306,9 +306,9 @@ class MultiHeadAttentionTest(tf.test.TestCase):
 
         inputs = tf.keras.layers.Input(shape=[42, 13])
 
-        net = MultiHeadAttention(
-            head_size=head_size, num_heads=num_heads, dropout=0.5
-        )([inputs, inputs, inputs])
+        net = MultiHeadAttention(head_size=head_size, num_heads=num_heads, dropout=0.5)(
+            [inputs, inputs, inputs]
+        )
         net = tf.keras.layers.GlobalAveragePooling1D()(net)
         net = tf.keras.layers.Dense(10, activation="softmax")(net)
 
