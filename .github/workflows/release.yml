@@ -141,11 +141,12 @@ jobs:
             --test_output=errors \
             build_pip_pkg
           bazel-bin/build_pip_pkg artifacts $NIGHTLY_FLAG
+          mv artifacts wheelhouse
       - uses: actions/upload-artifact@v1
         if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
           name: ${{ runner.os }}-wheels
-          path: artifacts
+          path: wheelhouse
 
   upload-wheels:
     name: Publish wheels to PyPi
