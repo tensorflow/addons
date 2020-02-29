@@ -1,4 +1,4 @@
-# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -259,7 +259,18 @@ class MultiHeadAttention(tf.keras.layers.Layer):
             self.output_size if self.output_size is not None else num_value_features
         )
 
-        return input_shape[0][:-1] + (output_size,)
+        output_shape = input_shape[0][:-1] + (output_size,)
+
+        if self.return_attn_coef:
+            num_key_elements = input_shape[1][-2]
+            num_value_elements = (
+                input_shape[2][-2] if len(input_shape) > 2 else num_key_elements
+            )
+            attn_coef_shape = input_shape[0][:-2] + (num_key_elements, num_value_elements)
+
+            return output_shape, attn_coef_shape
+        else:
+            return output_shape
 
     def get_config(self):
         config = super().get_config()
