@@ -30,6 +30,7 @@ export TF_CUDNN_VERSION="7"
 export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 
 ln -sf $(which python$1) /usr/bin/python
+python -m pip install --upgrade pip
 
 #Link TF dependency
 python ./configure.py --quiet
