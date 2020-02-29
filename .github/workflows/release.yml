@@ -55,9 +55,10 @@ jobs:
 
   macos-release-wheel:
     name: Build release wheels for macOS
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: ['macos-latest', 'windows-latest']
         python-version: ['3.5', '3.6', '3.7']
     steps:
       - if: github.event_name == 'schedule'
@@ -68,33 +69,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Build macOS wheels
         if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
-        run: bash .github/workflows/make_wheel_macOS.sh
-      - uses: actions/upload-artifact@v1
-        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
-        with:
-          name: ${{ runner.os }}-wheels
-          path: wheelhouse
-
-  windows-release-wheel:
-    name: Build release wheels for Windows
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        python-version: ['3.5', '3.6', '3.7']
-    steps:
-      - if: github.event_name == 'schedule'
-        run: echo "::set-env name=NIGHTLY_FLAG::--nightly"
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Build Windows wheels
         env:
-          TF_NEED_CUDA: 0
-          BAZEL_VC: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/"
-        shell: bash
-        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
-        run: bash .github/workflows/make_wheel_Windows.sh
+          OS: ${{ runner.os }}
+        run: bash .github/workflows/make_wheel_${OS}.sh
       - uses: actions/upload-artifact@v1
         if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:

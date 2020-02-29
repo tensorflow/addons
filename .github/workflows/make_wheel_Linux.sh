@@ -1,6 +1,6 @@
 set -e -x
 
- docker run -e TF_NEED_CUDA=1 -v ${PWD}:/addons -w /addons \
+docker run -e TF_NEED_CUDA=1 -v ${PWD}:/addons -w /addons \
   tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16 \
   tools/ci_build/builds/release_linux.sh $PY_VERSION $NIGHTLY_FLAG
 
