@@ -163,7 +163,9 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
             with tf.control_dependencies([wn_output]):
                 wn_removed_layer = wn_layer.remove()
                 wn_removed_output = wn_removed_layer(sample_data)
-                self.evaluate(tf.compat.v1.initialize_variables(wn_removed_layer.variables))
+                self.evaluate(
+                    tf.compat.v1.initialize_variables(wn_removed_layer.variables)
+                )
                 self.assertAllClose(
                     self.evaluate(wn_removed_output), self.evaluate(wn_output)
                 )
