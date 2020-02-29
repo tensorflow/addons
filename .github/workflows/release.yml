@@ -68,7 +68,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Build macOS wheels
         if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
-        run: bash .github/workflows/make_wheel_Windows.sh
+        run: bash .github/workflows/make_wheel_macOS.sh
       - uses: actions/upload-artifact@v1
         if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
