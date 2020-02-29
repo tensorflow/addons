@@ -29,13 +29,12 @@ export CUDA_TOOLKIT_PATH="/usr/local/cuda"
 export TF_CUDNN_VERSION="7"
 export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 
-ln -sf $(which python$1) /usr/bin/python
 ln -sf $(which python$1) /usr/bin/python3
-python -m pip install --upgrade pip
-python -m pip install --upgrade setuptools
+python3 -m pip install --upgrade pip
+python3 -m pip install --upgrade setuptools
 
 #Link TF dependency
-python ./configure.py --quiet
+python3 ./configure.py --quiet
 
 # Build
 bazel build \
