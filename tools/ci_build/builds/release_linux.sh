@@ -31,6 +31,7 @@ export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 
 ln -sf $(which python$1) /usr/bin/python
 python -m pip install --upgrade pip
+python -m pip install --upgrade setuptools
 
 #Link TF dependency
 python ./configure.py --quiet
