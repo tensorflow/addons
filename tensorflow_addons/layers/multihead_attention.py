@@ -262,11 +262,13 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         output_shape = input_shape[0][:-1] + (output_size,)
 
         if self.return_attn_coef:
+            num_query_elements = input_shape[0][-2]
             num_key_elements = input_shape[1][-2]
-            num_value_elements = (
-                input_shape[2][-2] if len(input_shape) > 2 else num_key_elements
+            attn_coef_shape = input_shape[0][:-2] + (
+                self.num_heads,
+                num_query_elements,
+                num_key_elements,
             )
-            attn_coef_shape = input_shape[0][:-2] + (num_key_elements, num_value_elements)
 
             return output_shape, attn_coef_shape
         else:
