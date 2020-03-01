@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 #
-
-from types import ModuleType
-
 from typedapi import ensure_api_is_typed
 
 import tensorflow_addons as tfa
