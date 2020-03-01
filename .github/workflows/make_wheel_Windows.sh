@@ -16,5 +16,4 @@ bash ./tools/ci_testing/addons_cpu.sh
   --verbose_failures \
   --test_output=errors \
   build_pip_pkg
-bazel-bin/build_pip_pkg artifacts $NIGHTLY_FLAG
-mv artifacts wheelhouse
+bazel-bin/build_pip_pkg wheelhouse $NIGHTLY_FLAG
