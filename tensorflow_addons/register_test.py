@@ -13,7 +13,7 @@ class AssertRNNCellTest(unittest.TestCase):
 
     def test_get_all_shared_objects(self):
         all_shared_objects = get_all_shared_objects()
-        self.assertTrue(len(all_shared_objects) >= 15)
+        self.assertTrue(len(all_shared_objects) >= 4)
 
         for file in all_shared_objects:
             tf.load_op_library(file)

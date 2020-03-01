@@ -1,4 +1,5 @@
 import glob
+from pathlib import Path
 import tensorflow as tf
 from tensorflow_addons import (
     activations,
@@ -71,4 +72,5 @@ def register_custom_kernels() -> None:
 def get_all_shared_objects():
     custom_ops_dir = os.path.join(get_project_root(), "custom_ops")
     all_shared_objects = glob.glob(custom_ops_dir + "/**/*.so", recursive=True)
+    all_shared_objects = [x for x in all_shared_objects if Path(x).is_file()]
     return list(all_shared_objects)
