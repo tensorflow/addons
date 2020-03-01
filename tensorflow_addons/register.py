@@ -23,7 +23,7 @@ def register_keras_objects() -> None:
 
 
 def register_custom_kernels() -> None:
-    all_shared_objects = get_all_shared_objects()
+    all_shared_objects = _get_all_shared_objects()
     if not all_shared_objects:
         raise FileNotFoundError(
             "No shared objects files were found in the custom ops "
@@ -46,7 +46,7 @@ def register_custom_kernels() -> None:
         ) from e
 
 
-def get_all_shared_objects():
+def _get_all_shared_objects():
     custom_ops_dir = os.path.join(get_project_root(), "custom_ops")
     all_shared_objects = glob.glob(custom_ops_dir + "/**/*.so", recursive=True)
     all_shared_objects = [x for x in all_shared_objects if Path(x).is_file()]

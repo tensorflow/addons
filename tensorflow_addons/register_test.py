@@ -1,6 +1,6 @@
 import unittest
 import tensorflow as tf
-from tensorflow_addons.register import register_all, get_all_shared_objects
+from tensorflow_addons.register import register_all, _get_all_shared_objects
 
 
 class AssertRNNCellTest(unittest.TestCase):
@@ -12,7 +12,7 @@ class AssertRNNCellTest(unittest.TestCase):
         register_all()
 
     def test_get_all_shared_objects(self):
-        all_shared_objects = get_all_shared_objects()
+        all_shared_objects = _get_all_shared_objects()
         self.assertTrue(len(all_shared_objects) >= 4)
 
         for file in all_shared_objects:
