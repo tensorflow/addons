@@ -1,33 +1,10 @@
 import glob
-from pathlib import Path
-import tensorflow as tf
-from tensorflow_addons import (
-    activations,
-    callbacks,
-    image,
-    layers,
-    losses,
-    metrics,
-    optimizers,
-    rnn,
-    seq2seq,
-)
-from tensorflow_addons.utils.resource_loader import get_project_root
 import os
+from pathlib import Path
 
-SUBMODULES = [
-    activations,
-    callbacks,
-    image,
-    layers,
-    losses,
-    metrics,
-    optimizers,
-    rnn,
-    seq2seq,
-]
+import tensorflow as tf
 
-already_registered = False
+from tensorflow_addons.utils.resource_loader import get_project_root
 
 
 def register_all(keras_objects: bool = True, custom_kernels: bool = True) -> None:
