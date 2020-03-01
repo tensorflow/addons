@@ -52,7 +52,6 @@ jobs:
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}.sh
       - uses: actions/upload-artifact@v1
-        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
           name: ${{ runner.os }}-wheels
           path: wheelhouse
