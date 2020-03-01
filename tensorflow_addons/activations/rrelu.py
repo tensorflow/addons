@@ -19,6 +19,7 @@ from tensorflow_addons.utils import types
 from typing import Optional
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 def rrelu(
     x: types.TensorLike,
     lower: Number = 0.125,

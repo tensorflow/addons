@@ -20,6 +20,7 @@ from tensorflow_addons.utils.types import TensorLike
 from typeguard import typechecked
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def npairs_loss(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
     """Computes the npairs loss between `y_true` and `y_pred`.
@@ -61,6 +62,7 @@ def npairs_loss(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
     return tf.math.reduce_mean(loss)
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def npairs_multilabel_loss(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
     r"""Computes the npairs loss between multilabel data `y_true` and `y_pred`.
@@ -125,6 +127,7 @@ def npairs_multilabel_loss(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
     return tf.math.reduce_mean(loss)
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class NpairsLoss(tf.keras.losses.Loss):
     """Computes the npairs loss between `y_true` and `y_pred`.
 
@@ -155,6 +158,7 @@ class NpairsLoss(tf.keras.losses.Loss):
         return npairs_loss(y_true, y_pred)
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class NpairsMultilabelLoss(tf.keras.losses.Loss):
     r"""Computes the npairs loss between multilabel data `y_true` and `y_pred`.
 

@@ -257,6 +257,7 @@ def extend_with_decoupled_weight_decay(
     return OptimizerWithDecoupledWeightDecay
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class SGDW(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
     """Optimizer that implements the Momentum algorithm with weight_decay.
 
@@ -334,6 +335,7 @@ class SGDW(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
         )
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class AdamW(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
     """Optimizer that implements the Adam algorithm with weight decay.
 

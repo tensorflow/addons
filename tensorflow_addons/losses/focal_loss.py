@@ -21,6 +21,7 @@ from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 from typeguard import typechecked
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
     """Implements the focal loss function.
 
@@ -98,6 +99,7 @@ class SigmoidFocalCrossEntropy(tf.keras.losses.Loss):
         return {**base_config, **config}
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def sigmoid_focal_crossentropy(
     y_true: TensorLike,

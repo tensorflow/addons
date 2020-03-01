@@ -30,6 +30,7 @@ from typeguard import typechecked
 from typing import Union
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class SWA(AveragedOptimizerWrapper):
     """This class extends optimizers with Stochastic Weight Averaging (SWA).
 

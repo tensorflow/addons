@@ -24,6 +24,7 @@ from typeguard import typechecked
 from tensorflow.python.training import training_ops
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class NovoGrad(tf.keras.optimizers.Optimizer):
     """The NovoGrad Optimizer was first proposed in [Stochastic Gradient
     Methods with Layerwise Adaptvie Moments for training of Deep

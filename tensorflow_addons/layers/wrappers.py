@@ -19,6 +19,7 @@ import tensorflow as tf
 from typeguard import typechecked
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class WeightNormalization(tf.keras.layers.Wrapper):
     """This wrapper reparameterizes a layer by decoupling the weight's
     magnitude and direction.

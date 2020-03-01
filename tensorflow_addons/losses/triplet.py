@@ -65,6 +65,7 @@ def _masked_minimum(data, mask, dim=1):
     return masked_minimums
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def triplet_semihard_loss(
     y_true: TensorLike, y_pred: TensorLike, margin: FloatTensorLike = 1.0
@@ -146,6 +147,7 @@ def triplet_semihard_loss(
     return triplet_loss
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def triplet_hard_loss(
     y_true: TensorLike,
@@ -201,6 +203,7 @@ def triplet_hard_loss(
     return triplet_loss
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class TripletSemiHardLoss(tf.keras.losses.Loss):
     """Computes the triplet loss with semi-hard negative mining.
 
@@ -238,6 +241,7 @@ class TripletSemiHardLoss(tf.keras.losses.Loss):
         return {**base_config, **config}
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class TripletHardLoss(tf.keras.losses.Loss):
     """Computes the triplet loss with hard negative and hard positive mining.
 

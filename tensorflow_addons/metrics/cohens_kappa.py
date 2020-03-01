@@ -24,6 +24,7 @@ from typeguard import typechecked
 from typing import Optional
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class CohenKappa(Metric):
     """Computes Kappa score between two raters.
 

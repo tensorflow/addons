@@ -27,6 +27,7 @@ from typeguard import typechecked
 from typing import Union, Callable
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class LazyAdam(tf.keras.optimizers.Adam):
     """Variant of the Adam optimizer that handles sparse updates more
     efficiently.

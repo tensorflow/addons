@@ -29,6 +29,7 @@ from tensorflow_addons.utils.types import (
 from typing import Optional
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class NASCell(keras.layers.AbstractRNNCell):
     """Neural Architecture Search (NAS) recurrent network cell.
 
@@ -225,6 +226,7 @@ class NASCell(keras.layers.AbstractRNNCell):
         return {**base_config, **config}
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class LayerNormLSTMCell(keras.layers.LSTMCell):
     """LSTM cell with layer normalization and recurrent dropout.
 
@@ -385,6 +387,7 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
         )
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
     """Cell class for LayerNormSimpleRNN.
 

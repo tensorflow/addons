@@ -21,6 +21,7 @@ from typing import Union, Callable
 from typeguard import typechecked
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class RectifiedAdam(tf.keras.optimizers.Optimizer):
     """Variant of the Adam optimizer whose adaptive learning rate is rectified
     so as to have a consistent variance.

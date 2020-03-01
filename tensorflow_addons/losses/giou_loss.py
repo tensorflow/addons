@@ -21,6 +21,7 @@ from typing import Optional
 from typeguard import typechecked
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class GIoULoss(tf.keras.losses.Loss):
     """Implements the GIoU loss function.
 
@@ -71,6 +72,7 @@ class GIoULoss(tf.keras.losses.Loss):
         return giou_loss(y_true, y_pred, mode=self.mode)
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def giou_loss(y_true: TensorLike, y_pred: TensorLike, mode: str = "giou") -> tf.Tensor:
     """

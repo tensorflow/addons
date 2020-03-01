@@ -18,6 +18,7 @@ import tensorflow as tf
 from tensorflow_addons.utils import types
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def sparsemax(logits: types.TensorLike, axis: int = -1) -> tf.Tensor:
     """Sparsemax activation function [1].

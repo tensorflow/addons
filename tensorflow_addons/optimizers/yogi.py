@@ -49,6 +49,7 @@ def _solve(a, b, c):
     return w
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class Yogi(tf.keras.optimizers.Optimizer):
     """Optimizer that implements the Yogi algorithm in Keras.
 

@@ -19,6 +19,7 @@ from typeguard import typechecked
 from tensorflow_addons.utils.types import TensorLike, FloatTensorLike
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def pinball_loss(
     y_true: TensorLike, y_pred: TensorLike, tau: FloatTensorLike = 0.5
@@ -71,6 +72,7 @@ def pinball_loss(
     return tf.reduce_mean(tf.keras.backend.batch_flatten(pinball), axis=-1)
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class PinballLoss(tf.keras.losses.Loss):
     """Computes the pinball loss between `y_true` and `y_pred`.
 

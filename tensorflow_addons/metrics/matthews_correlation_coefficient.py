@@ -20,6 +20,7 @@ from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
 from typeguard import typechecked
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
     """Computes the Matthews Correlation Coefficient.
 

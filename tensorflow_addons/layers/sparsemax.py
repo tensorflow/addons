@@ -18,6 +18,7 @@ from tensorflow_addons.activations.sparsemax import sparsemax
 from typeguard import typechecked
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class Sparsemax(tf.keras.layers.Layer):
     """Sparsemax activation function [1].
 
