@@ -22,7 +22,6 @@ from typeguard import typechecked
 from typing import Optional
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def lifted_struct_loss(
     labels: TensorLike, embeddings: TensorLike, margin: FloatTensorLike = 1.0
@@ -111,7 +110,6 @@ def lifted_struct_loss(
     return lifted_loss
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 class LiftedStructLoss(tf.keras.losses.Loss):
     """Computes the lifted structured loss.
 

@@ -22,7 +22,6 @@ from typeguard import typechecked
 from tensorflow_addons.utils import types
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 class GroupNormalization(tf.keras.layers.Layer):
     """Group normalization layer.
 
@@ -278,7 +277,6 @@ class GroupNormalization(tf.keras.layers.Layer):
         return broadcast_shape
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 class InstanceNormalization(GroupNormalization):
     """Instance normalization layer.
 

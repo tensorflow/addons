@@ -20,7 +20,6 @@ from tensorflow_addons.utils.types import TensorLike, Number
 from typeguard import typechecked
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def contrastive_loss(
     y_true: TensorLike, y_pred: TensorLike, margin: Number = 1.0
@@ -59,7 +58,6 @@ def contrastive_loss(
     )
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 class ContrastiveLoss(tf.keras.losses.Loss):
     r"""Computes the contrastive loss between `y_true` and `y_pred`.
 

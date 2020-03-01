@@ -22,7 +22,6 @@ from typing import Optional, Union
 from typeguard import typechecked
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 class MovingAverage(AveragedOptimizerWrapper):
     """Optimizer that computes a moving average of the variables.
 

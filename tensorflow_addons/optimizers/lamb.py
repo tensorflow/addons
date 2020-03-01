@@ -26,7 +26,6 @@ import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 class LAMB(tf.keras.optimizers.Optimizer):
     """Optimizer that implements the Layer-wise Adaptive Moments (LAMB).
 

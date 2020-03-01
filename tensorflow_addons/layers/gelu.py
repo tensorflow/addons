@@ -19,7 +19,6 @@ from tensorflow_addons.activations import gelu
 from typeguard import typechecked
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 class GELU(tf.keras.layers.Layer):
     """Gaussian Error Linear Unit.
 

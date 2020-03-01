@@ -20,7 +20,6 @@ from typeguard import typechecked
 from tensorflow_addons.utils import types
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 class PolynomialCrossing(tf.keras.layers.Layer):
     """Layer for Deep & Cross Network to learn explicit feature interactions.
 

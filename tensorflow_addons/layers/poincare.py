@@ -18,7 +18,6 @@ import tensorflow as tf
 from typeguard import typechecked
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 class PoincareNormalize(tf.keras.layers.Layer):
     """Project into the Poincare ball with norm <= 1.0 - epsilon.
 

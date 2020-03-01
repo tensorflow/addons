@@ -22,7 +22,6 @@ from tensorflow_addons.utils.resource_loader import LazySO
 _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 def softshrink(
     x: types.TensorLike, lower: Number = -0.5, upper: Number = 0.5
 ) -> tf.Tensor:

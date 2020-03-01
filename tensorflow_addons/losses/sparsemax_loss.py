@@ -21,7 +21,6 @@ from typeguard import typechecked
 from typing import Optional
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 def sparsemax_loss(
     logits: TensorLike,
     sparsemax: TensorLike,
@@ -85,7 +84,6 @@ def sparsemax_loss(
 
 
 @tf.function
-@tf.keras.utils.register_keras_serializable(package="Addons")
 def sparsemax_loss_from_logits(
     y_true: TensorLike, logits_pred: TensorLike
 ) -> tf.Tensor:
@@ -94,7 +92,6 @@ def sparsemax_loss_from_logits(
     return loss
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 class SparsemaxLoss(tf.keras.losses.Loss):
     """Sparsemax loss function.
 

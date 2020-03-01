@@ -20,7 +20,6 @@ from typeguard import typechecked
 from typing import Union
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 class Lookahead(tf.keras.optimizers.Optimizer):
     """This class allows to extend optimizers with the lookahead mechanism.
 

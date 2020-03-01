@@ -138,7 +138,6 @@ def _correlation_cost_grad(op, grad_output):
     return [grad_input_a, grad_input_b]
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 class CorrelationCost(tf.keras.layers.Layer):
     """Correlation Cost Layer.
 

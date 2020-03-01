@@ -20,7 +20,6 @@ from typeguard import typechecked
 from tensorflow_addons.utils import types
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 class TLU(tf.keras.layers.Layer):
     """Thresholded Linear Unit. An activation function which is similar to ReLU
     but with a learned threshold that benefits models using FRN(Filter Response

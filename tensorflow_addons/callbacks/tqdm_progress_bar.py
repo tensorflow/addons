@@ -15,14 +15,12 @@
 """TQDM Progress Bar."""
 
 import time
-import tensorflow as tf
 from collections import defaultdict
 from typeguard import typechecked
 
 from tensorflow.keras.callbacks import Callback
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 class TQDMProgressBar(Callback):
     """TQDM Progress Bar for Tensorflow Keras.
 

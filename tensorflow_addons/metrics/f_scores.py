@@ -21,7 +21,6 @@ from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
 from typing import Optional
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 class FBetaScore(tf.keras.metrics.Metric):
     """Computes F-Beta score.
 
@@ -189,7 +188,6 @@ class FBetaScore(tf.keras.metrics.Metric):
         self.weights_intermediate.assign(tf.zeros(self.init_shape, self.dtype))
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 class F1Score(FBetaScore):
     """Computes F-1 Score.
 
