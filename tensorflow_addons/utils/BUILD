@@ -25,3 +25,15 @@ py_test(
         ":utils",
     ],
 )
+
+py_test(
+    name = "test_utils_test",
+    size = "small",
+    srcs = [
+        "test_utils_test.py",
+    ],
+    main = "test_utils_test.py",
+    deps = [
+        ":utils",
+    ],
+)
