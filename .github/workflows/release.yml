@@ -59,9 +59,10 @@ jobs:
   test-release-wheel:
     name: Test release wheels
     runs-on: ${{ matrix.os }}
+    needs: [release-wheel]
     strategy:
       matrix:
-        os: ['macos-latest', 'windows-latest']
+        os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
         python-version: ['3.5', '3.6', '3.7']
     steps:
       - uses: actions/setup-python@v1
@@ -71,13 +72,13 @@ jobs:
         if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
           name: ${{ runner.os }}-${{ matrix.python-version }}-wheel
-          path: wheel
+          path: ./wheel
       - name: Test wheel
         if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         run: |
           pip install tensorflow~=2.1.0
           pip install wheel/tensorflow_addons-*.whl
-          python -c "from tensorflow_addons.activations import gelu; print(gelu(0.2))"
+          python -c "import tensorflow_addons as tfa; print(tfa.activations.gelu(0.2))"
 
   upload-wheels:
     name: Publish wheels to PyPi
