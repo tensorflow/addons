@@ -34,7 +34,7 @@ class ActivationsTest(tf.test.TestCase):
 
     def test_serialization(self):
         for name in self.ALL_ACTIVATIONS:
-            fn = tf.keras.activations.get(name)
+            fn = tf.keras.activations.get("Addons>" + name)
             ref_fn = getattr(activations, name)
             self.assertEqual(fn, ref_fn)
             config = tf.keras.activations.serialize(fn)
