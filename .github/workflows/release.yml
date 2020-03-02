@@ -82,7 +82,7 @@ jobs:
 
   upload-wheels:
     name: Publish wheels to PyPi
-    needs: [release-wheel, manylinux-cpu-release-test]
+    needs: [release-wheel, test-release-wheel, manylinux-cpu-release-test]
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/download-artifact@v1
