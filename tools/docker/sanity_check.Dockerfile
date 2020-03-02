@@ -128,7 +128,7 @@ WORKDIR /addons
 RUN python configure.py --no-deps
 RUN bash tools/install_so_files.sh
 RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
-RUN pytest -vv -n auto ./tensorflow_addons
+RUN pytest -v --durations=25 -n auto ./tensorflow_addons
 RUN touch /ok.txt
 
 # -------------------------------
