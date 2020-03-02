@@ -30,6 +30,7 @@ class ActivationsTest(tf.test.TestCase):
         "softshrink",
         "sparsemax",
         "tanhshrink",
+        "my_super_fun_activation!!!",
     ]
 
     def test_serialization(self):
