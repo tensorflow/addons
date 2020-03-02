@@ -25,7 +25,7 @@ def _train_something():
 
     model.add(tf.keras.layers.Dense(1, input_shape=(1,)))
 
-    model.comple(loss="mse", optimizer="sgd")
+    model.compile(loss="mse", optimizer="sgd")
 
     x = np.zeros(shape=(32, 1))
     y = np.zeros(shape=(32, 1))
@@ -34,7 +34,7 @@ def _train_something():
 
 
 class TestUtilsTestNotDistributed(tf.test.TestCase):
-    # we should be able to run some tests that are distributed and not distributed
+    # we should be able to run some tests that are distributed and some that are not distributed
     def test_training(self):
         _train_something()
 
@@ -57,6 +57,7 @@ class TestUtilsTestNotDistributed(tf.test.TestCase):
 
 @test_utils.run_all_distributed(2)
 class TestUtilsTest(tf.test.TestCase):
+    # test the class wrapper
     def test_training(self):
         _train_something()
 
