@@ -45,12 +45,16 @@ class TestUtilsTestNotDistributed(tf.test.TestCase):
     def test_training_dist(self):
         _train_something()
 
+    @test_utils.run_distributed(4)
+    def test_training_dist_more_devices(self):
+        _train_something()
+
     @test_utils.run_in_graph_and_eager_modes
     def test_training_graph_eager(self):
         _train_something()
 
-    @test_utils.run_distributed(2)
     @test_utils.run_in_graph_and_eager_modes
+    @test_utils.run_distributed(2)
     def test_training_graph_eager_dist(self):
         _train_something()
 
@@ -64,9 +68,9 @@ class TestUtilsTest(tf.test.TestCase):
     def test_training_again(self):
         _train_something()
 
-    @test_utils.run_in_graph_and_eager_modes
-    def test_training_graph_eager(self):
-        _train_something()
+    # @test_utils.run_in_graph_and_eager_modes
+    # def test_training_graph_eager(self):
+    #     _train_something()
 
 
 if __name__ == "__main__":

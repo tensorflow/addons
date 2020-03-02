@@ -80,17 +80,17 @@ def create_virtual_devices(
     if device_type == "CPU":
         memory_limit_per_device = None
 
-    tf.config.experimental.set_virtual_device_configuration(
+    tf.config.set_logical_device_configuration(
         physical_devices[0],
         [
-            tf.config.experimental.VirtualDeviceConfiguration(
+            tf.config.LogicalDeviceConfiguration(
                 memory_limit=memory_limit_per_device
             )
             for _ in range(num_devices)
         ],
     )
 
-    return tf.config.experimental.list_logical_devices(device_type)
+    return tf.config.list_logical_devices(device_type)
 
 
 def run_all_distributed(num_devices):
