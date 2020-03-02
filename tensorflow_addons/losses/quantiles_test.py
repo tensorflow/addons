@@ -126,3 +126,7 @@ class PinballLossTest(tf.test.TestCase):
         y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3), dtype=tf.dtypes.float32)
         loss = pin_obj(y_true, y_pred, sample_weight=2.3)
         self.assertAlmostEqual(self.evaluate(loss), 12.65, 3)
+
+
+if __name__ == "__main__":
+    tf.test.main()
