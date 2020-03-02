@@ -18,7 +18,7 @@ import contextlib
 import inspect
 import time
 import unittest
-
+import logging
 import tensorflow as tf
 
 # TODO: find public API alternative to these
@@ -83,14 +83,53 @@ def create_virtual_devices(
     tf.config.set_logical_device_configuration(
         physical_devices[0],
         [
-            tf.config.LogicalDeviceConfiguration(
-                memory_limit=memory_limit_per_device
-            )
+            tf.config.LogicalDeviceConfiguration(memory_limit=memory_limit_per_device)
             for _ in range(num_devices)
         ],
     )
 
     return tf.config.list_logical_devices(device_type)
+
+
+def create_or_get_logical_devices(
+    num_devices, force_device=None, memory_limit_per_device=1024
+):
+    if force_device is None:
+        device_type = (
+            "GPU" if len(tf.config.list_physical_devices("GPU")) > 0 else "CPU"
+        )
+    else:
+        assert force_device in ["CPU", "GPU"]
+        device_type = force_device
+
+    logical_devices = tf.config.list_logical_devices(device_type)
+
+    if len(logical_devices) == num_devices:
+        # if we have x logical devices already, return logical devices.
+        logical_devices_out = logical_devices
+    elif len(logical_devices) > num_devices:
+        # if we have x logical devices and we are requesting x - n devices, return fewer devices.
+        logical_devices_out = logical_devices[:num_devices]
+    elif len(logical_devices) < num_devices:
+        # if we don't have enough logical devices, try create x devices.
+        try:
+            logical_devices_out = create_virtual_devices(
+                num_devices, force_device, memory_limit_per_device
+            )
+        except RuntimeError as r:
+            if "Virtual devices cannot be modified after being initialized" in str(r):
+                logging.info(
+                    """Tensorflow does not allow you to initialize devices again.
+                Please make sure that your first test initializes x number of devices.
+                Afterwards, this function will correctly allocate x - n number of devices, if you need fewer than x.
+                Otherwise, this function will correctly allocate x devices.
+                Finally, if you ask this function for x + n devices, after the first initialization, you will see this
+                error reminding you to initialize x number of devices first, where x is maximum number needed for tests.
+                """
+                )
+                raise r
+
+    return logical_devices_out
 
 
 def run_all_distributed(num_devices):
@@ -119,7 +158,7 @@ def run_distributed(num_devices):
             )
 
         def decorated(self, *args, **kwargs):
-            logical_devices = create_virtual_devices(num_devices)
+            logical_devices = create_or_get_logical_devices(num_devices)
             strategy = tf.distribute.MirroredStrategy(logical_devices)
             with strategy.scope():
                 f(self, *args, **kwargs)

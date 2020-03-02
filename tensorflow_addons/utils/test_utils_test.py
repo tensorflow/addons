@@ -33,7 +33,7 @@ def _train_something():
     model.fit(x, y, batch_size=2, epochs=2)
 
 
-class TestUtilsTestNotDistributed(tf.test.TestCase):
+class TestUtilsTestMixed(tf.test.TestCase):
     # we should be able to run some tests that are distributed and some that are not distributed
     def test_training(self):
         _train_something()
@@ -41,12 +41,12 @@ class TestUtilsTestNotDistributed(tf.test.TestCase):
     def test_training_again(self):
         _train_something()
 
-    @test_utils.run_distributed(2)
+    @test_utils.run_distributed(4)
     def test_training_dist(self):
         _train_something()
 
-    @test_utils.run_distributed(4)
-    def test_training_dist_more_devices(self):
+    @test_utils.run_distributed(2)
+    def test_training_dist_fewer_devices(self):
         _train_something()
 
     @test_utils.run_in_graph_and_eager_modes
