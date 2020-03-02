@@ -50,3 +50,7 @@ class ActivationsTest(tf.test.TestCase):
                 deserialized_layer.__class__.__name__, layer.__class__.__name__
             )
             self.assertEqual(deserialized_layer.activation.__name__, name)
+
+
+if __name__ == "__main__":
+    tf.test.main()
