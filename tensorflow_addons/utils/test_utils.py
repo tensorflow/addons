@@ -94,6 +94,20 @@ def create_virtual_devices(
 def create_or_get_logical_devices(
     num_devices, force_device=None, memory_limit_per_device=1024
 ):
+    """Virtualize a the physical device into logical devices or get devices if virtualization
+    has already occurred.
+
+    Args:
+        num_devices: The number of virtual devices needed.
+        force_device: 'CPU'/'GPU'. Defaults to None, where the
+            devices is selected based on the system.
+        memory_limit_per_device: Specify memory for each
+            virtual GPU. Only for GPUs.
+
+    Returns:
+        logical_devices_out: A list of logical devices which can be passed to
+            tf.distribute.MirroredStrategy()
+    """
     if force_device is None:
         device_type = (
             "GPU" if len(tf.config.list_physical_devices("GPU")) > 0 else "CPU"
@@ -122,12 +136,12 @@ def create_or_get_logical_devices(
                     """Tensorflow does not allow you to initialize devices again.
                 Please make sure that your first test initializes x number of devices.
                 Afterwards, this function will correctly allocate x - n number of devices, if you need fewer than x.
-                Otherwise, this function will correctly allocate x devices.
+                Otherwise, this function will correctly allocate x devices, if you need exactly x.
                 Finally, if you ask this function for x + n devices, after the first initialization, you will see this
                 error reminding you to initialize x number of devices first, where x is maximum number needed for tests.
                 """
                 )
-                raise r
+            raise r
 
     return logical_devices_out
 

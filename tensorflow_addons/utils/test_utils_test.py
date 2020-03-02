@@ -33,8 +33,15 @@ def _train_something():
     model.fit(x, y, batch_size=2, epochs=2)
 
 
+class TestA(tf.test.TestCase):
+    # hopefully this test will run first so things init properly.
+    @test_utils.run_distributed(4)
+    def test_training_dist(self):
+        _train_something()
+
+
 class TestUtilsTestMixed(tf.test.TestCase):
-    # we should be able to run some tests that are distributed and some that are not distributed
+    # we should be able to run some tests that are distributed and some that are not distributed.
     def test_training(self):
         _train_something()
 
