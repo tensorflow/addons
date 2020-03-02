@@ -55,7 +55,7 @@ jobs:
         if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
           name: ${{ runner.os }}-${{ matrix.python-version }}-wheel
-          path: artifacts
+          path: wheelhouse
   test-release-wheel:
     name: Test release wheels
     runs-on: ${{ matrix.os }}
