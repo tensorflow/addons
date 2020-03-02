@@ -177,3 +177,7 @@ class HammingMetricsTest(tf.test.TestCase):
         data = np.random.random((100, 10))
         labels = np.random.random((100, 3))
         model.fit(data, labels, epochs=1, batch_size=32, verbose=0)
+
+
+if __name__ == "__main__":
+    tf.test.main()
