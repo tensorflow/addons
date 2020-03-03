@@ -43,6 +43,12 @@ python3 -m pip install --upgrade setuptools
 python3 --version
 python3 ./configure.py
 
+## Run bazel test command. Double test timeouts to avoid flakes.
+bazel test -c opt -k \
+    --jobs=${N_JOBS} --test_timeout 300,450,1200,3600 \
+    --test_output=errors --local_test_jobs=8 \
+    //tensorflow_addons/...
+
 # Build
 bazel build \
   -c opt \
