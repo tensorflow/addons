@@ -130,7 +130,7 @@ def create_or_get_logical_devices(
             logical_devices_out = create_virtual_devices(
                 num_devices, force_device, memory_limit_per_device
             )
-            logging.debug('%i virtual devices initialized' % num_devices)
+            logging.info('%i virtual devices initialized' % num_devices)
         except RuntimeError as r:
             # if "Virtual devices cannot be modified after being initialized" in str(r):
             #     logging.info(
