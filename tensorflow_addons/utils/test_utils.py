@@ -130,17 +130,18 @@ def create_or_get_logical_devices(
             logical_devices_out = create_virtual_devices(
                 num_devices, force_device, memory_limit_per_device
             )
+            logging.debug('%i virtual devices initialized' % num_devices)
         except RuntimeError as r:
-            if "Virtual devices cannot be modified after being initialized" in str(r):
-                logging.info(
-                    """Tensorflow does not allow you to initialize devices again.
-                Please make sure that your first test initializes x number of devices.
-                Afterwards, this function will correctly allocate x - n number of devices, if you need fewer than x.
-                Otherwise, this function will correctly allocate x devices, if you need exactly x.
-                Finally, if you ask this function for x + n devices, after the first initialization, you will see this
-                error reminding you to initialize x number of devices first, where x is maximum number needed for tests.
-                """
-                )
+            # if "Virtual devices cannot be modified after being initialized" in str(r):
+            #     logging.info(
+            #         """Tensorflow does not allow you to initialize devices again.
+            #     Please make sure that your first test initializes x number of devices.
+            #     Afterwards, this function will correctly allocate x - n number of devices, if you need fewer than x.
+            #     Otherwise, this function will correctly allocate x devices, if you need exactly x.
+            #     Finally, if you ask this function for x + n devices, after the first initialization, you will see this
+            #     error reminding you to initialize x number of devices first, where x is maximum number needed for tests.
+            #     """
+            #     )
             raise r
 
     return logical_devices_out

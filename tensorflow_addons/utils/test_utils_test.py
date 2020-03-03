@@ -66,7 +66,7 @@ class TestUtilsTestMixed(tf.test.TestCase):
         _train_something()
 
 
-@test_utils.run_all_distributed(2)
+@test_utils.run_all_distributed(3)
 class TestUtilsTest(tf.test.TestCase):
     # test the class wrapper
     def test_training(self):
