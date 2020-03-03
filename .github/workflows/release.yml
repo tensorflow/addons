@@ -20,15 +20,6 @@ env:
   BAZEL_VERSION: 1.1.0
 
 jobs:
-  manylinux-cpu-release-test:
-    name: Test release on Ubuntu
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Release test Ubuntu
-        run: |
-          set -x -e
-          bash tools/run_cpu_tests.sh
   release-wheel:
     name: Build release wheels
     runs-on: ${{ matrix.os }}
@@ -59,7 +50,7 @@ jobs:
 
   upload-wheels:
     name: Publish wheels to PyPi
-    needs: [release-wheel, manylinux-cpu-release-test]
+    needs: [release-wheel]
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/download-artifact@v1
