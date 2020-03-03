@@ -40,40 +40,40 @@ class TestA(tf.test.TestCase):
         _train_something()
 
 
-class TestUtilsTestMixed(tf.test.TestCase):
-    # we should be able to run some tests that are distributed and some that are not distributed.
-    def test_training(self):
-        _train_something()
-
-    def test_training_again(self):
-        _train_something()
-
-    @test_utils.run_distributed(4)
-    def test_training_dist(self):
-        _train_something()
-
-    @test_utils.run_distributed(2)
-    def test_training_dist_fewer_devices(self):
-        _train_something()
-
-    @test_utils.run_in_graph_and_eager_modes
-    def test_training_graph_eager(self):
-        _train_something()
-
-    @test_utils.run_in_graph_and_eager_modes
-    @test_utils.run_distributed(2)
-    def test_training_graph_eager_dist(self):
-        _train_something()
-
-
-@test_utils.run_all_distributed(3)
-class TestUtilsTest(tf.test.TestCase):
-    # test the class wrapper
-    def test_training(self):
-        _train_something()
-
-    def test_training_again(self):
-        _train_something()
+# class TestUtilsTestMixed(tf.test.TestCase):
+#     # we should be able to run some tests that are distributed and some that are not distributed.
+#     def test_training(self):
+#         _train_something()
+#
+#     def test_training_again(self):
+#         _train_something()
+#
+#     @test_utils.run_distributed(4)
+#     def test_training_dist(self):
+#         _train_something()
+#
+#     @test_utils.run_distributed(2)
+#     def test_training_dist_fewer_devices(self):
+#         _train_something()
+#
+#     @test_utils.run_in_graph_and_eager_modes
+#     def test_training_graph_eager(self):
+#         _train_something()
+#
+#     @test_utils.run_in_graph_and_eager_modes
+#     @test_utils.run_distributed(2)
+#     def test_training_graph_eager_dist(self):
+#         _train_something()
+#
+#
+# @test_utils.run_all_distributed(3)
+# class TestUtilsTest(tf.test.TestCase):
+#     # test the class wrapper
+#     def test_training(self):
+#         _train_something()
+#
+#     def test_training_again(self):
+#         _train_something()
 
     # @test_utils.run_in_graph_and_eager_modes
     # def test_training_graph_eager(self):
