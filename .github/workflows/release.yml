@@ -79,7 +79,7 @@ jobs:
         run: |
           pip install tensorflow~=2.1.0
           pip install wheel/tensorflow_addons-*.whl
-          python -c "import tensorflow_addons as tfa; print(tfa.activations.gelu(0.2))"
+          python -c "import tensorflow_addons as tfa; print(tfa.activations.lisht(0.2))"
 
   upload-wheels:
     name: Publish wheels to PyPi
