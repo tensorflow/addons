@@ -54,32 +54,50 @@ jobs:
       - uses: actions/upload-artifact@v1
         if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
-          name: ${{ runner.os }}-wheels
+          name: ${{ runner.os }}-${{ matrix.python-version }}-wheel
           path: wheelhouse
+  test-release-wheel:
+    name: Test release wheels
+    runs-on: ${{ matrix.os }}
+    needs: [release-wheel]
+    strategy:
+      matrix:
+        os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
+        python-version: ['3.5', '3.6', '3.7']
+    steps:
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/download-artifact@v1
+        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
+        with:
+          name: ${{ runner.os }}-${{ matrix.python-version }}-wheel
+          path: ./wheel
+      - name: Test wheel
+        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
+        shell: bash
+        run: |
+          pip install tensorflow~=2.1.0
+          pip install wheel/tensorflow_addons-*.whl
+          python -c "import tensorflow_addons as tfa; print(tfa.activations.lisht(0.2))"
 
   upload-wheels:
     name: Publish wheels to PyPi
-    needs: [release-wheel, manylinux-cpu-release-test]
+    needs: [release-wheel, test-release-wheel, manylinux-cpu-release-test]
     runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        os: ['macOS', 'Windows', 'Linux']
+        python-version: ['3.5', '3.6', '3.7']
     steps:
       - uses: actions/download-artifact@v1
+        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
-          name: Linux-wheels
-          path: Linux-wheels
-      - uses: actions/download-artifact@v1
-        with:
-          name: macOS-wheels
-          path: macOS-wheels
-      - uses: actions/download-artifact@v1
-        with:
-          name: Windows-wheels
-          path: Windows-wheels
-      - run: |
+          name: ${{ runner.os }}-${{ matrix.python-version }}-wheel
+          path: ./dist
+      - if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
+        run: |
           set -e -x
-          mkdir -p dist
-          cp Linux-wheels/*.whl dist/
-          cp macOS-wheels/*.whl dist/
-          cp Windows-wheels/*.whl dist/
           ls -la dist/
           sha256sum dist/*.whl
       - uses: pypa/gh-action-pypi-publish@master
