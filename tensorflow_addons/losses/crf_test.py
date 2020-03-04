@@ -14,14 +14,11 @@
 # ==============================================================================
 """Tests for Conditional Random Field loss."""
 
-from __future__ import absolute_import, division, print_function
-
 import itertools
 import math
 import os
 
 import numpy as np
-import six
 import tensorflow as tf
 from tensorflow.python.framework import tensor_util
 from tensorflow.python.keras.engine import base_layer_utils
@@ -31,10 +28,7 @@ from tensorflow_addons.layers.crf import CRF
 from tensorflow_addons.losses import crf
 from tensorflow_addons.utils import test_utils
 
-if six.PY3:
-    from unittest.mock import patch
-else:
-    from mock import patch
+from unittest.mock import patch
 
 CRF_LOSS_OBJ_LIST = [crf.crf_loss, crf.ConditionalRandomFieldLoss()]
 
@@ -42,7 +36,7 @@ CRF_LOSS_OBJ_LIST = [crf.crf_loss, crf.ConditionalRandomFieldLoss()]
 @test_utils.run_all_in_graph_and_eager_modes
 class ConditionalRandomFieldLossTest(tf.test.TestCase):
     def setUp(self):
-        super(ConditionalRandomFieldLossTest, self).setUp()
+        super().setUp()
 
         self.logits = np.array(
             [
@@ -306,7 +300,7 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
 
                 class CRFModel(tf.keras.Model):
                     def __init__(self):
-                        super(CRFModel, self).__init__()
+                        super().__init__()
 
                         self.layer = CRF(5)
 
@@ -317,7 +311,7 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
                         base_layer_utils, "mark_as_return", patch_mark_as_return
                     )
                     def __call__(self, inputs, *args, **kwargs):
-                        outputs = super(CRFModel, self).__call__(
+                        outputs = super().__call__(
                             inputs, *args, **kwargs
                         )
 
@@ -333,7 +327,7 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
                 model.compile("adam", loss_obj)
                 model.fit(train_x, train_y)
 
-    def test_serialization(self, dtype=None):
+    def test_serialization(self):
         for loss_obj in CRF_LOSS_OBJ_LIST:
             with self.subTest(loss_obj=loss_obj):
                 ref_fn = loss_obj
