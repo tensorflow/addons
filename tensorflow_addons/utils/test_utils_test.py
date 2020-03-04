@@ -63,10 +63,12 @@ class TestUtilsTestMixed(tf.test.TestCase):
     def test_training_graph_eager_dist(self):
         _train_something()
 
-    @test_utils.run_distributed(10)
     def test_train_dist_too_many(self):
         with self.assertRaises(RuntimeError) as cm:
-            _train_something()
+            # create a function that is wrapped. if we wrapped test_train_dist_too_many, the error is raised
+            # outside of the scope of selff.assertRaises.
+            func = test_utils.run_distributed(10)(self.test_training())
+            func()
 
         exception = cm.exception
 
