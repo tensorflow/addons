@@ -66,20 +66,10 @@ class TestUtilsTestMixed(tf.test.TestCase):
     def test_train_dist_too_many(self):
         with self.assertRaises(RuntimeError) as cm:
             # create a function that is wrapped. if we wrapped test_train_dist_too_many, the error is raised
-            # outside of the scope of selff.assertRaises.
+            # outside of the scope of self.assertRaises.
             func = test_utils.run_distributed(10)(self.test_training())
             func(self)
-
-        exception = cm.exception
-
-        expected_message = """%i logical devices have been initialized at an earlier stage,
-               but the current request is for %i logical devices. Please initialize more logical devices at the earlier stage.
-               You are seeing this error because you cannot modify logical devices after initialization.
-               """ % (
-            4,
-            10,
-        )
-        self.assertEqual(expected_message, str(exception))
+            # this should raise a runtime error
 
 
 @test_utils.run_all_distributed(3)
