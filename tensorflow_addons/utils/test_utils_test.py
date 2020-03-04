@@ -20,6 +20,7 @@ from tensorflow_addons.utils import test_utils
 
 
 def _train_something():
+    # run a simple training loop to confirm that run distributed works.
 
     model = tf.keras.models.Sequential()
 
@@ -45,15 +46,12 @@ class TestUtilsTestMixed(tf.test.TestCase):
     def test_training(self):
         _train_something()
 
-    def test_training_again(self):
-        _train_something()
-
     @test_utils.run_distributed(4)
-    def test_training_dist(self):
+    def test_training_dist_many(self):
         _train_something()
 
     @test_utils.run_distributed(2)
-    def test_training_dist_fewer_devices(self):
+    def test_training_dist_few(self):
         _train_something()
 
     @test_utils.run_in_graph_and_eager_modes
@@ -65,21 +63,31 @@ class TestUtilsTestMixed(tf.test.TestCase):
     def test_training_graph_eager_dist(self):
         _train_something()
 
+    @test_utils.run_distributed(10)
+    def test_train_dist_too_many(self):
+        with self.assertRaises(RuntimeError) as cm:
+            _train_something()
 
-#
-#
-# @test_utils.run_all_distributed(3)
-# class TestUtilsTest(tf.test.TestCase):
-#     # test the class wrapper
-#     def test_training(self):
-#         _train_something()
-#
-#     def test_training_again(self):
-#         _train_something()
+        exception = cm.exception
 
-# @test_utils.run_in_graph_and_eager_modes
-# def test_training_graph_eager(self):
-#     _train_something()
+        expected_message = """%i logical devices have been initialized at an earlier stage,
+               but the current request is for %i logical devices. Please initialize more logical devices at the earlier stage.
+               You are seeing this error because you cannot modify logical devices after initialization.
+               """ % (
+            4,
+            10,
+        )
+        self.assertEqual(expected_message, exception.message)
+
+
+@test_utils.run_all_distributed(3)
+class TestUtilsTest(tf.test.TestCase):
+    # test the class wrapper
+    def test_training(self):
+        _train_something()
+
+    def test_training_again(self):
+        _train_something()
 
 
 if __name__ == "__main__":
