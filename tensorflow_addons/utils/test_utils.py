@@ -118,10 +118,10 @@ def create_or_get_logical_devices(
 
     physical_devices = tf.config.list_physical_devices(device_type)
 
-    # check the logical device configuration. Do not use list device because that actually initializes devices
+    # check the logical device configuration. Do not use list device because that actually initializes devices.
     logical_config = tf.config.get_logical_device_configuration(physical_devices[0])
 
-    # explicitly confirm that we have no device configuration
+    # explicitly confirm that we have no device configuration.
     if logical_config is None:
         # create devices
         logical_devices = create_virtual_devices(
@@ -129,13 +129,13 @@ def create_or_get_logical_devices(
         )
         logging.info("%i logical devices initialized" % num_devices)
     else:
-        # if we have a configuration, then get the logical devices
+        # if we have a configuration, then get the logical devices.
         logical_devices = tf.config.list_logical_devices(device_type)
 
-    # take the at most num_devices number of logical devices
+    # take at most num_devices number of logical devices.
     logical_devices_out = logical_devices[:num_devices]
 
-    # confirm that we are returning the correct number of logical devices
+    # confirm that we are returning the correct number of logical devices.
     if len(logical_devices_out) < num_devices:
         raise RuntimeError(
             """%i logical devices have been initialized at an earlier stage,
@@ -148,7 +148,7 @@ def create_or_get_logical_devices(
         raise ArithmeticError(
             """List comprehension failure.
         Expected the following python code to return true, when x, i, n are integers:
-        x <= [i for i in range(n)][:x]
+        x <= len([i for i in range(n)][:x])
         """
         )
 

@@ -69,7 +69,7 @@ class TestUtilsTestMixed(tf.test.TestCase):
             # outside of the scope of self.assertRaises.
             func = test_utils.run_distributed(10)(self.test_training())
             func(self)
-            # this should raise a runtime error
+            # this should raise a runtime error.
 
 
 @test_utils.run_all_distributed(3)
