@@ -77,3 +77,14 @@ jobs:
       - uses: actions/checkout@v2
       - name: Building the docs
         run: bash tools/run_build.sh docs_tests
+  valid-codeowners:
+    name: Check that the CODEOWNERS is valid
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - run: pip install pygithub click
+      - name: Check that the CODEOWNERS is valid
+        run: python .github/workflows/notify_codeowners.py .github/CODEOWNERS

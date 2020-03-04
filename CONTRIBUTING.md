@@ -104,9 +104,9 @@ bash tools/run_gpu_tests.sh
 
 It is recommend that tests are ran within docker images, but should still work on host.
 
-CPU Docker: `docker run --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-ubuntu16.04-manylinux2010 /bin/bash`
+CPU Docker: `docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-ubuntu16`
 
-GPU Docker: `docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda10.1-cudnn7-ubuntu16.04-manylinux2010 /bin/bash`
+GPU Docker: `docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16`
 
 Configure:
 ```
