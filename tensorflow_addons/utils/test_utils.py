@@ -116,33 +116,41 @@ def create_or_get_logical_devices(
         assert force_device in ["CPU", "GPU"]
         device_type = force_device
 
-    logical_devices = tf.config.list_logical_devices(device_type)
+    physical_devices = tf.config.list_physical_devices(device_type)
 
-    if len(logical_devices) == num_devices:
-        # if we have x logical devices already, return logical devices.
-        logical_devices_out = logical_devices
-    elif len(logical_devices) > num_devices:
-        # if we have x logical devices and we are requesting x - n devices, return fewer devices.
-        logical_devices_out = logical_devices[:num_devices]
-    elif len(logical_devices) < num_devices:
-        # if we don't have enough logical devices, try create x devices.
-        try:
-            logical_devices_out = create_virtual_devices(
-                num_devices, force_device, memory_limit_per_device
-            )
-            logging.info('%i virtual devices initialized' % num_devices)
-        except RuntimeError as r:
-            # if "Virtual devices cannot be modified after being initialized" in str(r):
-            #     logging.info(
-            #         """Tensorflow does not allow you to initialize devices again.
-            #     Please make sure that your first test initializes x number of devices.
-            #     Afterwards, this function will correctly allocate x - n number of devices, if you need fewer than x.
-            #     Otherwise, this function will correctly allocate x devices, if you need exactly x.
-            #     Finally, if you ask this function for x + n devices, after the first initialization, you will see this
-            #     error reminding you to initialize x number of devices first, where x is maximum number needed for tests.
-            #     """
-            #     )
-            raise r
+    # check the logical device configuration. Do not use list device because that actually initializes devices
+    logical_config = tf.config.get_logical_device_configuration(physical_devices[0])
+
+    # explicitly confirm that we have no device configuration
+    if logical_config is None:
+        # create devices
+        logical_devices = create_virtual_devices(
+            num_devices, force_device, memory_limit_per_device
+        )
+        logging.info("%i logical devices initialized" % num_devices)
+    else:
+        # if we have a configuration, then get the logical devices
+        logical_devices = tf.config.list_logical_devices(device_type)
+
+    # take the at most num_devices number of logical devices
+    logical_devices_out = logical_devices[:num_devices]
+
+    # confirm that we are returning the correct number of logical devices
+    if len(logical_devices_out) < num_devices:
+        raise RuntimeError(
+            """%i logical devices have been initialized at an earlier stage,
+        but the current request is for %i logical devices. Please initialize more logical devices at the earlier stage.
+        You are seeing this error because you cannot modify logical devices after initialization.
+        """
+            % (len(logical_devices), num_devices)
+        )
+    elif len(logical_devices_out) > num_devices:
+        raise ArithmeticError(
+            """List comprehension failure.
+        Expected the following python code to return true, when x, i, n are integers:
+        x <= [i for i in range(n)][:x]
+        """
+        )
 
     return logical_devices_out
 
