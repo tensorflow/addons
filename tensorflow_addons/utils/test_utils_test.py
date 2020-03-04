@@ -64,7 +64,7 @@ class TestUtilsTestMixed(tf.test.TestCase):
         _train_something()
 
     def test_train_dist_too_many(self):
-        with self.assertRaises(RuntimeError) as cm:
+        with self.assertRaises(RuntimeError):
             # create a function that is wrapped. if we wrapped test_train_dist_too_many, the error is raised
             # outside of the scope of self.assertRaises.
             func = test_utils.run_distributed(10)(self.test_training())
