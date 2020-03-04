@@ -164,7 +164,7 @@ class MovingAverageTest(tf.test.TestCase):
         seed = 0x2019
         np.random.seed(seed)
         tf.random.set_seed(seed)
-        num_examples = 50000
+        num_examples = 5000
         x = np.random.standard_normal((num_examples, 3))
         w = np.random.standard_normal((3, 1))
         y = np.dot(x, w) + np.random.standard_normal((num_examples, 1)) * 1e-4
@@ -173,10 +173,10 @@ class MovingAverageTest(tf.test.TestCase):
         model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
         self.evaluate(tf.compat.v1.global_variables_initializer())
 
-        opt = MovingAverage("adam")
+        opt = MovingAverage("sgd")
         model.compile(opt, loss="mse")
 
-        model.fit(x, y, epochs=10)
+        model.fit(x, y, epochs=5)
         opt.assign_average_vars(model.variables)
 
         x = np.random.standard_normal((100, 3))
@@ -185,7 +185,7 @@ class MovingAverageTest(tf.test.TestCase):
         predicted = model.predict(x)
 
         max_abs_diff = np.max(np.abs(predicted - y))
-        self.assertLess(max_abs_diff, 1e-3)
+        self.assertLess(max_abs_diff, 5e-3)
 
 
 if __name__ == "__main__":

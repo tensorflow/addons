@@ -123,7 +123,7 @@ class NovoGradTest(tf.test.TestCase):
         model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
         model.compile(NovoGrad(), loss="mse")
 
-        model.fit(x, y, epochs=10)
+        model.fit(x, y, epochs=2)
 
         x = np.random.standard_normal((100, 3))
         y = np.dot(x, w)
