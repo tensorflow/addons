@@ -79,7 +79,7 @@ class TestUtilsTestMixed(tf.test.TestCase):
             4,
             10,
         )
-        self.assertEqual(expected_message, exception.message)
+        self.assertEqual(expected_message, str(exception))
 
 
 @test_utils.run_all_distributed(3)
