@@ -311,9 +311,7 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
                         base_layer_utils, "mark_as_return", patch_mark_as_return
                     )
                     def __call__(self, inputs, *args, **kwargs):
-                        outputs = super().__call__(
-                            inputs, *args, **kwargs
-                        )
+                        outputs = super().__call__(inputs, *args, **kwargs)
 
                         # A hack that add _keras_history to EagerTensor, make it more like normal Tensor
                         for tensor in tf.nest.flatten(outputs):
