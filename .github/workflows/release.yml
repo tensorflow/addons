@@ -76,7 +76,7 @@ jobs:
         shell: bash
         run: |
           pip install tensorflow~=2.1.0
-          pip install wheel/tensorflow_addons-*.whl
+          pip install wheel/*.whl
           python -c "import tensorflow_addons as tfa; print(tfa.activations.lisht(0.2))"
 
   upload-wheels:
