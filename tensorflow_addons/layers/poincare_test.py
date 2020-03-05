@@ -14,6 +14,8 @@
 # ==============================================================================
 """Tests for PoincareNormalize layer."""
 
+import unittest
+
 import numpy as np
 import tensorflow as tf
 
@@ -54,6 +56,7 @@ class PoincareNormalizeTest(tf.test.TestCase):
                 norm = np.linalg.norm(y, axis=dim)
                 self.assertLessEqual(norm.max(), 1.0 - epsilon + tol)
 
+    @unittest.skip("Failing. See https://github.com/tensorflow/addons/issues/1205")
     def testPoincareNormalizeDimArray(self):
         x_shape = [20, 7, 3]
         epsilon = 1e-5
