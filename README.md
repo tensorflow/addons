@@ -42,8 +42,10 @@ developments that cannot be integrated into core TensorFlow
 * [tfa.text](https://www.tensorflow.org/addons/api_docs/python/tfa/text) 
 
 ## Maintainership
-The maintainers of addons can be found in the [CODEOWNERS](.github/CODEOWNERS) file of the repo. This file 
-is parsed and pull requests will automatically tag the owners using a bot.
+The maintainers of Addons can be found in the [CODEOWNERS](.github/CODEOWNERS) file of the repo. This file 
+is parsed and pull requests will automatically tag the owners using a bot. If you would
+like to maintain something, please feel free to submit a PR. We encourage multiple 
+owners for all submodules.
 
 ## Installation
 #### Stable Builds
