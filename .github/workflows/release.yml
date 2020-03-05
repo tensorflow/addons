@@ -13,22 +13,11 @@ on:
     branches:
       - master
       - r*
-  schedule:
-    - cron:  '0 0 * * *'
 
 env:
   BAZEL_VERSION: 1.1.0
 
 jobs:
-  manylinux-cpu-release-test:
-    name: Test release on Ubuntu
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Release test Ubuntu
-        run: |
-          set -x -e
-          bash tools/run_cpu_tests.sh
   release-wheel:
     name: Build release wheels
     runs-on: ${{ matrix.os }}
@@ -38,21 +27,21 @@ jobs:
         python-version: ['3.5', '3.6', '3.7']
       fail-fast: false
     steps:
-      - if: github.event_name == 'schedule'
+      - if: github.event_name == 'push'
         run: echo "::set-env name=NIGHTLY_FLAG::--nightly"
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
       - name: Build wheels
-        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
+        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
         env:
           PY_VERSION: ${{ matrix.python-version }}
           OS: ${{ runner.os }}
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}.sh
       - uses: actions/upload-artifact@v1
-        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
+        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
           name: ${{ runner.os }}-${{ matrix.python-version }}-wheel
           path: wheelhouse
@@ -69,12 +58,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - uses: actions/download-artifact@v1
-        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
+        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
           name: ${{ runner.os }}-${{ matrix.python-version }}-wheel
           path: ./wheel
       - name: Test wheel
-        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
+        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
         shell: bash
         run: |
           pip install tensorflow~=2.1.0
@@ -83,7 +72,7 @@ jobs:
 
   upload-wheels:
     name: Publish wheels to PyPi
-    needs: [release-wheel, test-release-wheel, manylinux-cpu-release-test]
+    needs: [release-wheel, test-release-wheel]
     runs-on: ubuntu-18.04
     strategy:
       matrix:
@@ -91,17 +80,17 @@ jobs:
         python-version: ['3.5', '3.6', '3.7']
     steps:
       - uses: actions/download-artifact@v1
-        if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
+        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
           name: ${{ runner.os }}-${{ matrix.python-version }}-wheel
           path: ./dist
-      - if: github.event_name == 'schedule' || github.event_name == 'release' || matrix.python-version == '3.5'
+      - if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
         run: |
           set -e -x
           ls -la dist/
           sha256sum dist/*.whl
       - uses: pypa/gh-action-pypi-publish@master
-        if: github.event_name == 'schedule' || github.event_name == 'release'
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
         with:
           user: __token__
           password: ${{ secrets.pypi_token }}
