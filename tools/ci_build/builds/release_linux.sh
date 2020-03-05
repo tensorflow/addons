@@ -47,6 +47,7 @@ python3 ./configure.py
 bazel test -c opt -k \
     --jobs=auto --test_timeout 300,450,1200,3600 \
     --test_output=errors --local_test_jobs=8 \
+    --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.1:toolchain \
     //tensorflow_addons/...
 
 # Build
