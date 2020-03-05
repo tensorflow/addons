@@ -28,19 +28,24 @@ developments that cannot be integrated into core TensorFlow
 (because their broad applicability is not yet clear, or it is mostly
  used by a smaller subset of the community).
 
-## Maintainers
-| Subpackage    | Maintainers  | Contact Info                        |
-|:----------------------- |:----------- |:----------------------------|
-| [tfa.activations](https://www.tensorflow.org/addons/api_docs/python/tfa/activations) | SIG-Addons | @facaiy @seanpmorgan | 
-| [tfa.callbacks](https://www.tensorflow.org/addons/api_docs/python/tfa/callbacks) | SIG-Addons | @squadrick @shun-lin |
-| [tfa.image](https://www.tensorflow.org/addons/api_docs/python/tfa/image) | SIG-Addons | @windqaq @facaiy |
-| [tfa.layers](https://www.tensorflow.org/addons/api_docs/python/tfa/layers) | SIG-Addons | @seanpmorgan @facaiy |
-| [tfa.losses](https://www.tensorflow.org/addons/api_docs/python/tfa/losses) | SIG-Addons | @facaiy @windqaq   |
-| [tfa.metrics](https://www.tensorflow.org/addons/api_docs/python/tfa/metrics) | SIG-Addons | @squadrick | 
-| [tfa.optimizers](https://www.tensorflow.org/addons/api_docs/python/tfa/optimizers) | SIG-Addons | @facaiy @windqaq @squadrick |
-| [tfa.rnn](https://www.tensorflow.org/addons/api_docs/python/tfa/rnn) | Google | @qlzh727 |
-| [tfa.seq2seq](https://www.tensorflow.org/addons/api_docs/python/tfa/seq2seq) | Google/SIG-Addons | @qlzh727 @guillaumekln |
-| [tfa.text](https://www.tensorflow.org/addons/api_docs/python/tfa/text) |  SIG-Addons |  @seanpmorgan @facaiy |
+## Addons Subpackages
+
+* [tfa.activations](https://www.tensorflow.org/addons/api_docs/python/tfa/activations) 
+* [tfa.callbacks](https://www.tensorflow.org/addons/api_docs/python/tfa/callbacks) 
+* [tfa.image](https://www.tensorflow.org/addons/api_docs/python/tfa/image) 
+* [tfa.layers](https://www.tensorflow.org/addons/api_docs/python/tfa/layers)
+* [tfa.losses](https://www.tensorflow.org/addons/api_docs/python/tfa/losses)
+* [tfa.metrics](https://www.tensorflow.org/addons/api_docs/python/tfa/metrics) 
+* [tfa.optimizers](https://www.tensorflow.org/addons/api_docs/python/tfa/optimizers) 
+* [tfa.rnn](https://www.tensorflow.org/addons/api_docs/python/tfa/rnn) 
+* [tfa.seq2seq](https://www.tensorflow.org/addons/api_docs/python/tfa/seq2seq) 
+* [tfa.text](https://www.tensorflow.org/addons/api_docs/python/tfa/text) 
+
+## Maintainership
+The maintainers of Addons can be found in the [CODEOWNERS](.github/CODEOWNERS) file of the repo. This file 
+is parsed and pull requests will automatically tag the owners using a bot. If you would
+like to maintain something, please feel free to submit a PR. We encourage multiple 
+owners for all submodules.
 
 ## Installation
 #### Stable Builds
