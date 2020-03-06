@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implements Multi-label confusion matrix scores."""
 
+import warnings
+
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
 import numpy as np
@@ -104,7 +106,13 @@ class MultiLabelConfusionMatrix(Metric):
             dtype=self.dtype,
         )
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        if sample_weight is not None:
+            warnings.warn(
+                "`sample_weight` is not None. Be aware that MultiLabelConfusionMatrix "
+                "does not take `sample_weight` into account when computing the metric "
+                "value.")
+
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred, tf.int32)
         # true positive

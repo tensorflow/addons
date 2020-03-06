@@ -13,76 +13,29 @@
 # limitations under the License.
 # ==============================================================================
 import unittest
+import inspect
 
-import tensorflow as tf
+from tensorflow.keras.metrics import Metric
+from tensorflow_addons import metrics
 
 
+class MetricsTests(unittest.TestCase):
+    def test_update_state_signature(self):
+        for name, obj in inspect.getmembers(metrics):
+            if inspect.isclass(obj) and issubclass(obj, Metric):
+                check_update_state_signature(obj)
 
-class MatthewsCorrelationCoefficientTest(tf.test.TestCase):
-    def test_config(self):
-        # mcc object
-        mcc1 = MatthewsCorrelationCoefficient(num_classes=1)
-        self.assertEqual(mcc1.num_classes, 1)
-        self.assertEqual(mcc1.dtype, tf.float32)
-        # check configure
-        mcc2 = MatthewsCorrelationCoefficient.from_config(mcc1.get_config())
-        self.assertEqual(mcc2.num_classes, 1)
-        self.assertEqual(mcc2.dtype, tf.float32)
 
-    def initialize_vars(self, n_classes):
-        mcc = MatthewsCorrelationCoefficient(num_classes=n_classes)
-        self.evaluate(tf.compat.v1.variables_initializer(mcc.variables))
-        return mcc
-
-    def update_obj_states(self, obj, gt_label, preds):
-        update_op = obj.update_state(gt_label, preds)
-        self.evaluate(update_op)
-
-    def check_results(self, obj, value):
-        self.assertAllClose(value, self.evaluate(obj.result()), atol=1e-5)
-
-    def test_binary_classes(self):
-        gt_label = tf.constant([[1.0], [1.0], [1.0], [0.0]], dtype=tf.float32)
-        preds = tf.constant([[1.0], [0.0], [1.0], [1.0]], dtype=tf.float32)
-        # Initialize
-        mcc = self.initialize_vars(n_classes=1)
-        # Update
-        self.update_obj_states(mcc, gt_label, preds)
-        # Check results
-        self.check_results(mcc, [-0.33333334])
-
-    def test_multiple_classes(self):
-        gt_label = tf.constant(
-            [[1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 1.0], [0.0, 1.0, 1.0]],
-            dtype=tf.float32,
-        )
-        preds = tf.constant(
-            [[1.0, 0.0, 0.0], [0.0, 0.0, 0.0], [1.0, 0.0, 1.0], [1.0, 1.0, 0.0]],
-            dtype=tf.float32,
-        )
-        # Initialize
-        mcc = self.initialize_vars(n_classes=3)
-        # Update
-        self.update_obj_states(mcc, gt_label, preds)
-        # Check results
-        self.check_results(mcc, [-0.33333334, 1.0, 0.57735026])
-
-    # Keras model API check
-    def test_keras_model(self):
-        model = tf.keras.Sequential()
-        model.add(tf.keras.layers.Dense(64, activation="relu"))
-        model.add(tf.keras.layers.Dense(64, activation="relu"))
-        model.add(tf.keras.layers.Dense(1, activation="softmax"))
-        mcc = MatthewsCorrelationCoefficient(num_classes=1)
-        model.compile(
-            optimizer="Adam", loss="binary_crossentropy", metrics=["accuracy", mcc]
-        )
-        # data preparation
-        data = np.random.random((10, 1))
-        labels = np.random.random((10, 1))
-        labels = np.where(labels > 0.5, 1.0, 0.0)
-        model.fit(data, labels, epochs=1, batch_size=32, verbose=0)
+def check_update_state_signature(metric_class):
+    update_state_signature = inspect.signature(metric_class.update_state)
+    for expected_parameter in ["y_true", "y_pred", "sample_weight"]:
+        if expected_parameter not in update_state_signature.parameters.keys():
+            raise ValueError(
+                "Class {} is missing the parameter {} in the `update_state` "
+                "method. If the method doesn't use this argument, declare "
+                "it anyway and raise a UserWarning if it is "
+                "not None.".format(metric_class.__name__, expected_parameter))
 
 
 if __name__ == "__main__":
-    unittest
+    unittest.main()
