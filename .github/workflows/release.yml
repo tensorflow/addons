@@ -82,7 +82,7 @@ jobs:
       - uses: actions/download-artifact@v1
         if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
-          name: ${{ runner.os }}-${{ matrix.python-version }}-wheel
+          name: ${{ matrix.os }}-${{ matrix.python-version }}-wheel
           path: ./dist
       - if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
         run: |
