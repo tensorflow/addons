@@ -34,7 +34,8 @@ def check_update_state_signature(metric_class):
                 "Class {} is missing the parameter {} in the `update_state` "
                 "method. If the method doesn't use this argument, declare "
                 "it anyway and raise a UserWarning if it is "
-                "not None.".format(metric_class.__name__, expected_parameter))
+                "not None.".format(metric_class.__name__, expected_parameter)
+            )
 
 
 if __name__ == "__main__":

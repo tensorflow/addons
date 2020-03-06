@@ -111,7 +111,8 @@ class MultiLabelConfusionMatrix(Metric):
             warnings.warn(
                 "`sample_weight` is not None. Be aware that MultiLabelConfusionMatrix "
                 "does not take `sample_weight` into account when computing the metric "
-                "value.")
+                "value."
+            )
 
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred, tf.int32)

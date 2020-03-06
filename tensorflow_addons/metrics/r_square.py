@@ -60,7 +60,8 @@ class RSquare(Metric):
             warnings.warn(
                 "`sample_weight` is not None. Be aware that RSquare "
                 "does not take `sample_weight` into account when computing the metric "
-                "value.")
+                "value."
+            )
         y_true = tf.convert_to_tensor(y_true, tf.float32)
         y_pred = tf.convert_to_tensor(y_pred, tf.float32)
         self.squared_sum.assign_add(tf.reduce_sum(y_true ** 2))
