@@ -340,7 +340,7 @@ class AdamW(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
     """Optimizer that implements the Adam algorithm with weight decay.
 
     This is an implementation of the AdamW optimizer described in "Decoupled
-    Weight Decay Regularization" by Loshchilov & Hutter
+    Weight Decay Regularization" by Loshch ilov & Hutter
     (https://arxiv.org/abs/1711.05101)
     ([pdf])(https://arxiv.org/pdf/1711.05101.pdf).
 
