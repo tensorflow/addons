@@ -27,17 +27,18 @@ of the community).
 import os
 import sys
 
-from datetime import datetime
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.dist import Distribution
 from setuptools import Extension
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 def get_last_commit_time() -> str:
     from git import Repo
 
-    return Repo("./").commit("HEAD").committed_datetime.strftime("%Y%m%d%H%M%S")
+    return Repo(BASE_DIR).commit("HEAD").committed_datetime.strftime("%Y%m%d%H%M%S")
 
 
 DOCLINES = __doc__.split("\n")
@@ -47,8 +48,7 @@ TFA_RELEASE = "tensorflow-addons"
 
 # Version
 version = {}
-base_dir = os.path.dirname(os.path.abspath(__file__))
-with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
+with open(os.path.join(BASE_DIR, "tensorflow_addons", "version.py")) as fp:
     exec(fp.read(), version)
 
 if "--nightly" in sys.argv:
