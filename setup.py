@@ -27,37 +27,32 @@ of the community).
 import os
 import sys
 
+from datetime import datetime
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.dist import Distribution
 from setuptools import Extension
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-
-def get_last_commit_time() -> str:
-    from git import Repo
-
-    return Repo(BASE_DIR).commit("HEAD").committed_datetime.strftime("%Y%m%d%H%M%S")
-
 
 DOCLINES = __doc__.split("\n")
 
 TFA_NIGHTLY = "tfa-nightly"
 TFA_RELEASE = "tensorflow-addons"
 
-# Version
-version = {}
-with open(os.path.join(BASE_DIR, "tensorflow_addons", "version.py")) as fp:
-    exec(fp.read(), version)
-
 if "--nightly" in sys.argv:
     project_name = TFA_NIGHTLY
     nightly_idx = sys.argv.index("--nightly")
     sys.argv.pop(nightly_idx)
-    version["__version__"] += get_last_commit_time()
 else:
     project_name = TFA_RELEASE
+
+# Version
+version = {}
+base_dir = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
+    exec(fp.read(), version)
+
+if project_name == TFA_NIGHTLY:
+    version["__version__"] += datetime.now().strftime("%Y%m%d%H%M%S")
 
 with open("requirements.txt") as f:
     required_pkgs = f.read().splitlines()
