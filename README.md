@@ -77,7 +77,7 @@ There are also nightly builds of TensorFlow Addons under the pip package
 `tfa-nightly`, which is built against **the latest stable version of TensorFlow**. Nightly builds
 include newer features, but may be less stable than the versioned releases. Contrary to 
 what the name implies, nightly builds are not released every night, but at every commit 
-of the master branch. `0.9.0.dev20200306094440` means that the build time was 
+of the master branch. `0.9.0.dev20200306094440` means that the commit time was 
 2020/03/06 at 09:44:40 Coordinated Universal Time.
 
 ```
