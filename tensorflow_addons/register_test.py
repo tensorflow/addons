@@ -4,7 +4,6 @@ from tensorflow_addons.register import register_all, _get_all_shared_objects
 
 
 class AssertRNNCellTest(unittest.TestCase):
-
     def test_multiple_register(self):
         register_all()
         register_all()
