@@ -27,14 +27,12 @@ jobs:
         python-version: ['3.5', '3.6', '3.7']
       fail-fast: false
     steps:
+      - if: github.event_name == 'push'
+        run: echo "::set-env name=NIGHTLY_FLAG::--nightly"
+      - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
-      - if: github.event_name == 'push'
-        run: |
-          echo "::set-env name=NIGHTLY_FLAG::--nightly"
-          python -m pip install GitPython
-      - uses: actions/checkout@v2
       - name: Build wheels
         if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
         env:
