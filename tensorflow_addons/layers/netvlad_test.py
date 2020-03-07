@@ -15,10 +15,8 @@
 """Tests for NetVLAD layer."""
 
 from absl.testing import parameterized
-
 import numpy as np
-import tensorflow.compat.v2 as tf
-
+import tensorflow as tf
 from tensorflow_addons.layers.netvlad import NetVLAD
 from tensorflow_addons.utils import test_utils
 
