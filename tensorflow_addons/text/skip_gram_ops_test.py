@@ -551,27 +551,34 @@ class SkipGramOpsTest(tf.test.TestCase):
         # corpus_size for the above vocab is 0.4+0.08+0.3+0.2+0.02 = 1.
         with tempfile.TemporaryDirectory() as tmp_dir:
             text_vocab_float_file = self._make_text_vocab_float_file(tmp_dir)
-            self._text_vocab_subsample_vocab_helper(
-                vocab_freq_file=text_vocab_float_file,
-                vocab_min_count=0.03,
-                vocab_freq_dtype=tf.dtypes.float32,
-            )
-            self._text_vocab_subsample_vocab_helper(
-                vocab_freq_file=text_vocab_float_file,
-                vocab_min_count=0.03,
-                vocab_freq_dtype=tf.dtypes.float32,
-                corpus_size=1.0,
+            self._skip_gram_sample_with_text_vocab_subsample_vocab_float(
+                text_vocab_float_file
             )
 
-            # The user-supplied corpus_size should not be less than the sum of all
-            # the frequency counts of vocab_freq_file, which is 1.
-            with self.assertRaises(ValueError):
-                self._text_vocab_subsample_vocab_helper(
-                    vocab_freq_file=text_vocab_float_file,
-                    vocab_min_count=0.03,
-                    vocab_freq_dtype=tf.dtypes.float32,
-                    corpus_size=0.99,
-                )
+    def _skip_gram_sample_with_text_vocab_subsample_vocab_float(
+        self, text_vocab_float_file
+    ):
+        self._text_vocab_subsample_vocab_helper(
+            vocab_freq_file=text_vocab_float_file,
+            vocab_min_count=0.03,
+            vocab_freq_dtype=tf.dtypes.float32,
+        )
+        self._text_vocab_subsample_vocab_helper(
+            vocab_freq_file=text_vocab_float_file,
+            vocab_min_count=0.03,
+            vocab_freq_dtype=tf.dtypes.float32,
+            corpus_size=1.0,
+        )
+
+        # The user-supplied corpus_size should not be less than the sum of all
+        # the frequency counts of vocab_freq_file, which is 1.
+        with self.assertRaises(ValueError):
+            self._text_vocab_subsample_vocab_helper(
+                vocab_freq_file=text_vocab_float_file,
+                vocab_min_count=0.03,
+                vocab_freq_dtype=tf.dtypes.float32,
+                corpus_size=0.99,
+            )
 
     def test_skip_gram_sample_with_text_vocab_errors(self):
         """Tests various errors raised by
