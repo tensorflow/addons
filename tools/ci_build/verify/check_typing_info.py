@@ -33,7 +33,7 @@ EXCEPTION_LIST = []
 modules_list = []
 for attr_name in dir(tensorflow_addons):
     attr = getattr(tensorflow_addons, attr_name)
-    if isinstance(attr, ModuleType):
+    if isinstance(attr, ModuleType) and attr is not tensorflow_addons.options:
         modules_list.append(attr)
 
 
