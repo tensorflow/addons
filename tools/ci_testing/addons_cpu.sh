@@ -33,34 +33,15 @@ if [[ ! -d "tensorflow_addons" ]]; then
     exit 1
 fi
 
-PLATFORM="$(uname -s | tr 'A-Z' 'a-z')"
-
-if [[ ${PLATFORM} == "darwin" ]]; then
-    N_JOBS=$(sysctl -n hw.ncpu)
-else
-    N_JOBS=$(grep -c ^processor /proc/cpuinfo)
-fi
-
-echo ""
-echo "Bazel will use ${N_JOBS} concurrent job(s)."
-echo ""
-
 export CC_OPT_FLAGS='-mavx'
 export TF_NEED_CUDA=0
 
-# Check if python3 is available. On Windows VM it is not.
-if [ -x "$(command -v python3)" ]; then
-    python3 ./configure.py $1
-  else
-    python ./configure.py $1
-fi
+python3 -m pip install -r tools/test_dependecies/pytest.txt
+python3 ./configure.py $1
 
 cat ./.bazelrc
 
-## Run bazel test command. Double test timeouts to avoid flakes.
-${BAZEL_PATH:=bazel} test -c opt -k \
-    --jobs=${N_JOBS} --test_timeout 300,450,1200,3600 \
-    --test_output=errors --local_test_jobs=8 \
-    //tensorflow_addons/...
+bash tools/install_so_files.sh
+python3 -m pytest -v --durations=25 -n auto ./tensorflow_addons
 
 exit $?
