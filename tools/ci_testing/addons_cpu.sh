@@ -52,4 +52,5 @@ if [ -x "$(command -v python3)" ]; then
     python -m pytest -v --durations=25 -n auto ./tensorflow_addons
 fi
 
+
 exit $?

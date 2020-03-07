@@ -18,6 +18,22 @@ env:
   BAZEL_VERSION: 1.1.0
 
 jobs:
+  test-with-bazel:
+    name: Build release wheels
+    runs-on: ubuntu-18.04
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.5
+      - name: Build wheels
+        env:
+        run: |
+          wget https://github.com/bazelbuild/bazel/releases/download/$BAZEL_VERSION/bazel-$BAZEL_VERSION-installer-linux-x86_64.sh
+          bash bazel-*-installer-linux-x86_64.sh
+          python configure.py
+          bazel test -c opt -k --test_timeout 300,450,1200,3600 --test_output=errors //tensorflow_addons/...
   release-wheel:
     name: Build release wheels
     runs-on: ${{ matrix.os }}
@@ -72,7 +88,7 @@ jobs:
 
   upload-wheels:
     name: Publish wheels to PyPi
-    needs: [release-wheel, test-release-wheel]
+    needs: [release-wheel, test-release-wheel, test-with-bazel]
     runs-on: ubuntu-18.04
     strategy:
       matrix:
