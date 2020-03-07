@@ -12,6 +12,7 @@ py_library(
     data = [
         "__init__.py",
         "options.py",
+        "register.py",
         "version.py",
     ],
     deps = [
@@ -25,5 +26,18 @@ py_library(
         "//tensorflow_addons/rnn",
         "//tensorflow_addons/seq2seq",
         "//tensorflow_addons/text",
+        "//tensorflow_addons/utils",
+    ],
+)
+
+py_test(
+    name = "register_test",
+    size = "small",
+    srcs = [
+        "register_test.py",
+    ],
+    main = "register_test.py",
+    deps = [
+        ":tensorflow_addons",
     ],
 )
