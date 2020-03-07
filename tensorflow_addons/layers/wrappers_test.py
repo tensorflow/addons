@@ -156,19 +156,22 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
         sample_data = np.ones([1] + input_shape, dtype=np.float32)
 
         for data_init in [True, False]:
-            base_layer = base_layer_fn()
-            wn_layer = wrappers.WeightNormalization(base_layer, data_init)
-            wn_output = wn_layer(sample_data)
-            self.evaluate(tf.compat.v1.global_variables_initializer())
-            with tf.control_dependencies([wn_output]):
-                wn_removed_layer = wn_layer.remove()
-                wn_removed_output = wn_removed_layer(sample_data)
+            with self.subTest(data_init=data_init):
+                base_layer = base_layer_fn()
+                wn_layer = wrappers.WeightNormalization(base_layer, data_init)
+                wn_output = wn_layer(sample_data)
+                self.evaluate(tf.compat.v1.global_variables_initializer())
+                with tf.control_dependencies([wn_output]):
+                    wn_removed_layer = wn_layer.remove()
+                    wn_removed_output = wn_removed_layer(sample_data)
 
-            self.evaluate(tf.compat.v1.global_variables_initializer())
-            self.assertAllClose(
-                self.evaluate(wn_removed_output), self.evaluate(wn_output)
-            )
-            self.assertTrue(isinstance(wn_removed_layer, base_layer.__class__))
+                self.evaluate(
+                    tf.compat.v1.initialize_variables(wn_removed_layer.variables)
+                )
+                self.assertAllClose(
+                    self.evaluate(wn_removed_output), self.evaluate(wn_output)
+                )
+                self.assertTrue(isinstance(wn_removed_layer, base_layer.__class__))
 
 
 if __name__ == "__main__":
