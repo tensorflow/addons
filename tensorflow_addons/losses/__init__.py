@@ -30,14 +30,10 @@ from tensorflow_addons.losses.triplet import (
 )
 from tensorflow_addons.losses.quantiles import pinball_loss, PinballLoss
 
-# Temporarily disable for windows
-# Remove after: https://github.com/tensorflow/addons/issues/838
-import os
 
-if os.name != "nt":
-    from tensorflow_addons.losses.npairs import (
-        npairs_loss,
-        NpairsLoss,
-        npairs_multilabel_loss,
-        NpairsMultilabelLoss,
-    )
+from tensorflow_addons.losses.npairs import (
+    npairs_loss,
+    NpairsLoss,
+    npairs_multilabel_loss,
+    NpairsMultilabelLoss,
+)

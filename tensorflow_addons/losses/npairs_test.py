@@ -13,31 +13,29 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for npairs loss."""
-
-import sys
 import platform
+import unittest
 
-import pytest
 import tensorflow as tf
-from tensorflow_addons import losses
+from tensorflow_addons.losses import npairs
 from tensorflow_addons.utils import test_utils
 
-if platform.system() == "Windows":
-    pytest.skip(
-        "Doesn't work with Windows. "
-        "See https://github.com/tensorflow/addons/issues/838"
-    )
+IS_WINDOWS = platform.system() == "Windows"
 
 
+@unittest.skipIf(
+    IS_WINDOWS,
+    reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
+)
 @test_utils.run_all_in_graph_and_eager_modes
 class NpairsLossTest(tf.test.TestCase):
     def test_config(self):
-        nl_obj = losses.npairs.NpairsLoss(name="nl")
+        nl_obj = npairs.NpairsLoss(name="nl")
         self.assertEqual(nl_obj.name, "nl")
         self.assertEqual(nl_obj.reduction, tf.keras.losses.Reduction.NONE)
 
     def test_unweighted(self):
-        nl_obj = losses.npairs.NpairsLoss()
+        nl_obj = npairs.NpairsLoss()
         # batch size = 4, hidden size = 2
         y_true = tf.constant([0, 1, 2, 3], dtype=tf.int64)
         # features of anchors
@@ -63,16 +61,20 @@ class NpairsLossTest(tf.test.TestCase):
         self.assertAllClose(loss, 0.253856)
 
 
+@unittest.skipIf(
+    IS_WINDOWS,
+    reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
+)
 @test_utils.run_all_in_graph_and_eager_modes
 class NpairsMultilabelLossTest(tf.test.TestCase):
     def config(self):
-        nml_obj = losses.npairs.NpairsMultilabelLoss(name="nml")
+        nml_obj = npairs.NpairsMultilabelLoss(name="nml")
         self.assertEqual(nml_obj.name, "nml")
         self.assertEqual(nml_obj.reduction, tf.keras.losses.Reduction.NONE)
 
     def test_single_label(self):
         """Test single label, which is the same with `NpairsLoss`."""
-        nml_obj = losses.npairs.NpairsMultilabelLoss()
+        nml_obj = npairs.NpairsMultilabelLoss()
         # batch size = 4, hidden size = 2
         y_true = tf.constant(
             [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]], dtype=tf.int64
@@ -105,7 +107,7 @@ class NpairsMultilabelLossTest(tf.test.TestCase):
         self.assertAllClose(loss, 0.253856)
 
     def test_multilabel(self):
-        nml_obj = losses.npairs.NpairsMultilabelLoss()
+        nml_obj = npairs.NpairsMultilabelLoss()
         # batch size = 4, hidden size = 2
         y_true = tf.constant(
             [[1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 1], [0, 0, 0, 1]], dtype=tf.int64
@@ -147,4 +149,4 @@ class NpairsMultilabelLossTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
+    tf.test.main()
