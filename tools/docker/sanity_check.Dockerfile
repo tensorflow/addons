@@ -114,6 +114,8 @@ COPY build_deps/build-requirements-cpu.txt ./
 RUN pip install -r build-requirements-cpu.txt
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
+COPY tools/tests_dependencies/pytest.txt ./
+RUN pip install -r pytest.txt
 
 RUN apt-get update && apt-get install -y sudo rsync
 COPY tools/ci_build/install/bazel.sh ./
@@ -127,7 +129,7 @@ WORKDIR /addons
 RUN python configure.py --no-deps
 RUN bash tools/install_so_files.sh
 RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
-RUN python -c "import tensorflow_addons as tfa; print(tfa.activations.lisht(0.2))"
+RUN pytest -v -n auto ./tensorflow_addons/activations
 RUN touch /ok.txt
 
 # -------------------------------
