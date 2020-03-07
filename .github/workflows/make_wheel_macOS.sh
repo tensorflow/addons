@@ -6,7 +6,7 @@ python3 --version
 python3 -m pip install delocate wheel setuptools
 
 bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
-#bash tools/ci_testing/addons_cpu.sh
+bash tools/ci_testing/addons_cpu.sh
 
 bazel build \
   -c opt \
