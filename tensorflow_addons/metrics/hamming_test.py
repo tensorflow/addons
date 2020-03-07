@@ -13,7 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Tests Hamming metrics."""
-import unittest
 
 import tensorflow as tf
 from tensorflow_addons.metrics import HammingLoss, hamming_distance
@@ -40,8 +39,8 @@ class HammingMetricsTest(tf.test.TestCase):
     def check_results(self, obj, value):
         self.assertAllClose(value, self.evaluate(obj.result()), atol=1e-5)
 
-    @unittest.skip("Failing. See https://github.com/tensorflow/addons/issues/1200")
     def test_mc_4_classes(self):
+        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1200")
         actuals = tf.constant(
             [
                 [1, 0, 0, 0],
@@ -73,8 +72,8 @@ class HammingMetricsTest(tf.test.TestCase):
         # Check results
         self.check_results(hl_obj, 0.2857143)
 
-    @unittest.skip("Failing. See https://github.com/tensorflow/addons/issues/1200")
     def test_mc_5_classes(self):
+        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1200")
         actuals = tf.constant(
             [
                 [1, 0, 0, 0, 0],
@@ -109,8 +108,8 @@ class HammingMetricsTest(tf.test.TestCase):
         # Check results
         self.check_results(hl_obj, 0.25)
 
-    @unittest.skip("Failing. See https://github.com/tensorflow/addons/issues/1200")
     def test_ml_4_classes(self):
+        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1200")
         actuals = tf.constant(
             [[1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 0, 1]], dtype=tf.float32
         )
@@ -129,8 +128,8 @@ class HammingMetricsTest(tf.test.TestCase):
         # Check results
         self.check_results(hl_obj, 0.16666667)
 
-    @unittest.skip("Failing. See https://github.com/tensorflow/addons/issues/1200")
     def test_ml_5_classes(self):
+        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1200")
         actuals = tf.constant(
             [
                 [1, 0, 0, 0, 0],
