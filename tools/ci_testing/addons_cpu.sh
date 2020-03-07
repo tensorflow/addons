@@ -36,12 +36,20 @@ fi
 export CC_OPT_FLAGS='-mavx'
 export TF_NEED_CUDA=0
 
-python3 -m pip install -r tools/tests_dependencies/pytest.txt
-python3 ./configure.py $1
 
-cat ./.bazelrc
-
-bash tools/install_so_files.sh
-python3 -m pytest -v --durations=25 -n auto ./tensorflow_addons
+# Check if python3 is available. On Windows VM it is not.
+if [ -x "$(command -v python3)" ]; then
+    python3 -m pip install -r tools/tests_dependencies/pytest.txt
+    python3 ./configure.py $1
+    cat ./.bazelrc
+    bash tools/install_so_files.sh
+    python3 -m pytest -v --durations=25 -n auto ./tensorflow_addons
+  else
+    python -m pip install -r tools/tests_dependencies/pytest.txt
+    python ./configure.py $1
+    cat ./.bazelrc
+    bash tools/install_so_files.sh
+    python -m pytest -v --durations=25 -n auto ./tensorflow_addons
+fi
 
 exit $?
