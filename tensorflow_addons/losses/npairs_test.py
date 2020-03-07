@@ -13,12 +13,20 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for npairs loss."""
+import platform
+import unittest
 
 import tensorflow as tf
 from tensorflow_addons.losses import npairs
 from tensorflow_addons.utils import test_utils
 
+IS_WINDOWS = platform.system() == "Windows"
 
+
+@unittest.skipIf(
+    IS_WINDOWS,
+    reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
+)
 @test_utils.run_all_in_graph_and_eager_modes
 class NpairsLossTest(tf.test.TestCase):
     def test_config(self):
@@ -53,6 +61,10 @@ class NpairsLossTest(tf.test.TestCase):
         self.assertAllClose(loss, 0.253856)
 
 
+@unittest.skipIf(
+    IS_WINDOWS,
+    reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
+)
 @test_utils.run_all_in_graph_and_eager_modes
 class NpairsMultilabelLossTest(tf.test.TestCase):
     def config(self):
