@@ -33,4 +33,4 @@ python3 -m pip install -r tools/tests_dependencies/pytest.txt
 python3 ./configure.py
 cat ./.bazelrc
 bash tools/install_so_files.sh
-python3 -m pytest --cov=tensorflow_addons -v --durations=25 -n auto ./tensorflow_addons
+python3 -m pytest --cov=tensorflow_addons -v --durations=25 ./tensorflow_addons
