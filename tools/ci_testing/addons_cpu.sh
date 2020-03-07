@@ -29,15 +29,13 @@ export TF_NEED_CUDA=0
 
 # Check if python3 is available. On Windows VM it is not.
 if [ -x "$(command -v python3)" ]; then
-  python3 -m pip install -r tools/tests_dependencies/pytest.txt
-  python3 ./configure.py $1
-  cat ./.bazelrc
-  bash tools/install_so_files.sh
-  python3 -m pytest --cov=tensorflow_addons -v --durations=25 -n auto ./tensorflow_addons
+  PYTHON_BINARY=python3
 else
-  python -m pip install -r tools/tests_dependencies/pytest.txt
-  python ./configure.py $1
-  cat ./.bazelrc
-  bash tools/install_so_files.sh
-  python -m pytest --cov=tensorflow_addons -v --durations=25 -n auto ./tensorflow_addons
+  PYTHON_BINARY=python
 fi
+
+$PYTHON_BINARY -m pip install -r tools/tests_dependencies/pytest.txt
+$PYTHON_BINARY ./configure.py $1
+cat ./.bazelrc
+bash tools/install_so_files.sh
+$PYTHON_BINARY -m pytest --cov=tensorflow_addons -v --durations=25 -n auto ./tensorflow_addons
