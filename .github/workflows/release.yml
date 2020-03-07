@@ -27,7 +27,6 @@ jobs:
         with:
           python-version: 3.5
       - name: Build wheels
-        env:
         run: |
           wget https://github.com/bazelbuild/bazel/releases/download/$BAZEL_VERSION/bazel-$BAZEL_VERSION-installer-linux-x86_64.sh
           bash bazel-*-installer-linux-x86_64.sh
