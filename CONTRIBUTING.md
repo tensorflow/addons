@@ -90,6 +90,7 @@ This is if you want to stay in Windows world. In this case, you need:
  (if you want to compile custom ops on windows, optional).
  
  If you develop on Windows and you encounter issues, we'd be happy to have your feedback!
+ [This link](https://github.com/tensorflow/addons/issues/1134) might help you.
 
 ## Development Tips
 Try these useful commands below:
