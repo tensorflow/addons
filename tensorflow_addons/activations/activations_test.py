@@ -33,8 +33,6 @@ class ActivationsTest(tf.test.TestCase):
     ]
 
     def test_serialization(self):
-        # See See https://github.com/tensorflow/addons/issues/1197
-        return
         for name in self.ALL_ACTIVATIONS:
             fn = tf.keras.activations.get("Addons>" + name)
             ref_fn = getattr(activations, name)
@@ -44,8 +42,6 @@ class ActivationsTest(tf.test.TestCase):
             self.assertEqual(fn, ref_fn)
 
     def test_serialization_with_layers(self):
-        # See See https://github.com/tensorflow/addons/issues/1197
-        return
         for name in self.ALL_ACTIVATIONS:
             layer = tf.keras.layers.Dense(3, activation=getattr(activations, name))
             config = tf.keras.layers.serialize(layer)
