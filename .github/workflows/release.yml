@@ -28,8 +28,7 @@ jobs:
           python-version: 3.5
       - name: Build wheels
         run: |
-          wget https://github.com/bazelbuild/bazel/releases/download/$BAZEL_VERSION/bazel-$BAZEL_VERSION-installer-linux-x86_64.sh
-          bash bazel-*-installer-linux-x86_64.sh
+          bash tools/ci_build/install/bazel.sh
           python configure.py
           bazel test -c opt -k --test_timeout 300,450,1200,3600 --test_output=errors //tensorflow_addons/...
   release-wheel:

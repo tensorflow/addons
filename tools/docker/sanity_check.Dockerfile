@@ -107,14 +107,15 @@ RUN python tools/docs/build_docs.py
 RUN touch /ok.txt
 
 # -------------------------------
-# test with pytest
+# test in editable mode
 FROM python:3.6 as test_editable_mode
 
 COPY build_deps/build-requirements-cpu.txt ./
 RUN pip install -r build-requirements-cpu.txt
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
-RUN pip install pytest pytest-xdist
+COPY tools/tests_dependencies/pytest.txt ./
+RUN pip install -r pytest.txt
 
 RUN apt-get update && apt-get install -y sudo rsync
 COPY tools/ci_build/install/bazel.sh ./
@@ -128,7 +129,7 @@ WORKDIR /addons
 RUN python configure.py --no-deps
 RUN bash tools/install_so_files.sh
 RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
-RUN pytest -v --durations=25 -n auto ./tensorflow_addons
+RUN pytest -v --durations=25 -n auto ./tensorflow_addons/activations
 RUN touch /ok.txt
 
 # -------------------------------
