@@ -86,7 +86,9 @@ This is if you want to stay in Windows world. In this case, you need:
 * Docker desktop with Linux containers (code format, testing on linux, etc...)
 * A local Python installation
 * Bazel (if you want to compile custom ops on Windows, optional)
-* [Visual Studio build tools 2019](https://chocolatey.org/packages/visualstudio2019buildtools)
+* Visual Studio build tools 2019
+[install with chocolatey](https://chocolatey.org/packages/visualstudio2019buildtools) or
+ [install manually](https://www.tensorflow.org/install/source_windows#install_visual_c_build_tools_2019)
  (if you want to compile custom ops on windows, optional).
  
  If you develop on Windows and you encounter issues, we'd be happy to have your feedback!
