@@ -35,8 +35,7 @@ def _maybe_serialized(lr_decay, serialize_and_deserialize):
 @parameterized.named_parameters(("NotSerialized", False), ("Serialized", True))
 class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
     def testTriangularCyclicalLearningRate(self, serialize):
-        # TODO: Fix this test. See https://github.com/tensorflow/addons/issues/1203
-        return
+        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1203")
         initial_learning_rate = 0.1
         maximal_learning_rate = 1
         step_size = 4000
@@ -63,8 +62,7 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
             self.evaluate(step.assign_add(1))
 
     def testTriangular2CyclicalLearningRate(self, serialize):
-        # TODO: Fix this test. See https://github.com/tensorflow/addons/issues/1203
-        return
+        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1203")
         initial_learning_rate = 0.1
         maximal_learning_rate = 1
         step_size = 4000
@@ -94,8 +92,7 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
             self.evaluate(step.assign_add(1))
 
     def testExponentialCyclicalLearningRate(self, serialize):
-        # TODO: Fix this test. See https://github.com/tensorflow/addons/issues/1203
-        return
+        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1203")
         initial_learning_rate = 0.1
         maximal_learning_rate = 1
         step_size = 4000
@@ -125,8 +122,7 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
             self.evaluate(step.assign_add(1))
 
     def testCustomCyclicalLearningRate(self, serialize):
-        # TODO: Fix this test. See https://github.com/tensorflow/addons/issues/1203
-        return
+        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1203")
         initial_learning_rate = 0.1
         maximal_learning_rate = 1
         step_size = 4000
