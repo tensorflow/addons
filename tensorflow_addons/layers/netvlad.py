@@ -22,9 +22,9 @@ import tensorflow as tf
 class NetVLAD(tf.keras.layers.Layer):
     """Applies NetVLAD to the input.
 
-    "NetVLAD: CNN architecture for weakly supervised place recognition"
-    Relja Arandjelovic, Petr Gronat, Akihiko Torii, Tomas Pajdla, Josef Sivic.
-    https://arxiv.org/abs/1511.07247
+        "NetVLAD: CNN architecture for weakly supervised place recognition"
+        Relja Arandjelovic, Petr Gronat, Akihiko Torii, Tomas Pajdla, Josef Sivic.
+        https://arxiv.org/abs/1511.07247
 
     Arguments:
     num_clusters: The number of clusters to use.
