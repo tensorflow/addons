@@ -107,7 +107,7 @@ RUN python tools/docs/build_docs.py
 RUN touch /ok.txt
 
 # -------------------------------
-# docs tests
+# test with pytest
 FROM python:3.6 as test_editable_mode
 
 COPY build_deps/build-requirements-cpu.txt ./

@@ -1389,7 +1389,6 @@ class AttentionWrapperState(
         (
             "cell_state",
             "attention",
-            "time",
             "alignments",
             "alignment_history",
             "attention_state",
@@ -1403,7 +1402,6 @@ class AttentionWrapperState(
       - `cell_state`: The state of the wrapped `RNNCell` at the previous time
         step.
       - `attention`: The attention emitted at the previous time step.
-      - `time`: int32 scalar containing the current time step.
       - `alignments`: A single or tuple of `Tensor`(s) containing the
          alignments emitted at the previous time step for each attention
          mechanism.
@@ -1915,7 +1913,6 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         """
         return AttentionWrapperState(
             cell_state=self._cell.state_size,
-            time=tf.TensorShape([]),
             attention=self._get_attention_layer_size(),
             alignments=self._item_or_tuple(
                 a.alignments_size for a in self._attention_mechanisms
@@ -1983,7 +1980,6 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             ]
             return AttentionWrapperState(
                 cell_state=cell_state,
-                time=tf.zeros([], dtype=tf.int32),
                 attention=tf.zeros(
                     [batch_size, self._get_attention_layer_size()], dtype=dtype
                 ),
@@ -2086,7 +2082,9 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                 self._attention_layers[i] if self._attention_layers else None,
             )
             alignment_history = (
-                previous_alignment_history[i].write(state.time, alignments)
+                previous_alignment_history[i].write(
+                    previous_alignment_history[i].size(), alignments
+                )
                 if self._alignment_history
                 else ()
             )
@@ -2098,7 +2096,6 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
 
         attention = tf.concat(all_attentions, 1)
         next_state = AttentionWrapperState(
-            time=state.time + 1,
             cell_state=next_cell_state,
             attention=attention,
             attention_state=self._item_or_tuple(all_attention_states),

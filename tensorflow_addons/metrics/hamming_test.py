@@ -40,8 +40,7 @@ class HammingMetricsTest(tf.test.TestCase):
         self.assertAllClose(value, self.evaluate(obj.result()), atol=1e-5)
 
     def test_mc_4_classes(self):
-        # TODO: fix this test. See https://github.com/tensorflow/addons/issues/1200
-        return
+        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1200")
         actuals = tf.constant(
             [
                 [1, 0, 0, 0],
@@ -74,8 +73,7 @@ class HammingMetricsTest(tf.test.TestCase):
         self.check_results(hl_obj, 0.2857143)
 
     def test_mc_5_classes(self):
-        # TODO: fix this test. See https://github.com/tensorflow/addons/issues/1200
-        return
+        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1200")
         actuals = tf.constant(
             [
                 [1, 0, 0, 0, 0],
@@ -111,8 +109,7 @@ class HammingMetricsTest(tf.test.TestCase):
         self.check_results(hl_obj, 0.25)
 
     def test_ml_4_classes(self):
-        # TODO: fix this test. See https://github.com/tensorflow/addons/issues/1200
-        return
+        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1200")
         actuals = tf.constant(
             [[1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 0, 1]], dtype=tf.float32
         )
@@ -132,8 +129,7 @@ class HammingMetricsTest(tf.test.TestCase):
         self.check_results(hl_obj, 0.16666667)
 
     def test_ml_5_classes(self):
-        # TODO: fix this test. See https://github.com/tensorflow/addons/issues/1200
-        return
+        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1200")
         actuals = tf.constant(
             [
                 [1, 0, 0, 0, 0],
@@ -185,3 +181,7 @@ class HammingMetricsTest(tf.test.TestCase):
         data = np.random.random((100, 10))
         labels = np.random.random((100, 3))
         model.fit(data, labels, epochs=1, batch_size=32, verbose=0)
+
+
+if __name__ == "__main__":
+    tf.test.main()
