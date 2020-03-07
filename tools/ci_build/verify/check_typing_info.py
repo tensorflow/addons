@@ -13,12 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 #
-
-from types import ModuleType
-
 from typedapi import ensure_api_is_typed
 
-import tensorflow_addons
+import tensorflow_addons as tfa
 
 TUTORIAL_URL = "https://docs.python.org/3/library/typing.html"
 HELP_MESSAGE = (
@@ -30,11 +27,18 @@ HELP_MESSAGE = (
 EXCEPTION_LIST = []
 
 
-modules_list = []
-for attr_name in dir(tensorflow_addons):
-    attr = getattr(tensorflow_addons, attr_name)
-    if isinstance(attr, ModuleType) and attr is not tensorflow_addons.options:
-        modules_list.append(attr)
+modules_list = [
+    tfa,
+    tfa.activations,
+    tfa.callbacks,
+    tfa.image,
+    tfa.losses,
+    tfa.metrics,
+    tfa.optimizers,
+    tfa.rnn,
+    tfa.seq2seq,
+    tfa.text,
+]
 
 
 if __name__ == "__main__":
