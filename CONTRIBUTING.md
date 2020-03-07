@@ -86,7 +86,7 @@ This is if you want to stay in Windows world. In this case, you need:
 * Docker desktop with Linux containers (code format, testing on linux, etc...)
 * A local Python installation
 * Bazel (if you want to compile custom ops on Windows, optional)
-* [Visual Studio build tools 2017](https://devblogs.microsoft.com/cppblog/visual-studio-build-tools-now-include-the-vs2017-and-vs2015-msvc-toolsets/)
+* [Visual Studio build tools 2019](https://chocolatey.org/packages/visualstudio2019buildtools)
  (if you want to compile custom ops on windows, optional).
  
  If you develop on Windows and you encounter issues, we'd be happy to have your feedback!
