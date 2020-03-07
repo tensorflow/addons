@@ -31,7 +31,6 @@ from datetime import datetime
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.dist import Distribution
-from setuptools import Extension
 
 DOCLINES = __doc__.split("\n")
 
@@ -57,15 +56,6 @@ if project_name == TFA_NIGHTLY:
 with open("requirements.txt") as f:
     required_pkgs = f.read().splitlines()
 
-# Manylinux2010 requires a patch for platlib
-if (
-    sys.platform.startswith("linux")
-    and os.environ.get("TF_ADDONS_NO_BUILD", "0") == "0"
-):
-    ext_modules = [Extension("_foo", ["stub.cc"])]
-else:
-    ext_modules = []
-
 
 class BinaryDistribution(Distribution):
     """This class is needed in order to create OS specific wheels."""
@@ -82,7 +72,6 @@ setup(
     author="Google Inc.",
     author_email="opensource@google.com",
     packages=find_packages(),
-    ext_modules=ext_modules,
     install_requires=required_pkgs,
     include_package_data=True,
     zip_safe=False,
