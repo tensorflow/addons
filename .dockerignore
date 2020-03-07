@@ -1,6 +1,6 @@
 .git
 .github
 *.Dockerfile
-
+.coverage*
 # C extensions
 *.so
