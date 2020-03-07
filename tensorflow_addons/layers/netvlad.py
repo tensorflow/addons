@@ -37,8 +37,7 @@ class NetVLAD(tf.keras.layers.Layer):
     def __init__(self, num_clusters, **kwargs):
         super().__init__(**kwargs)
         if num_clusters <= 0:
-            raise ValueError(
-                "`num_clusters` must be greater than 1: %i" % num_clusters)
+            raise ValueError("`num_clusters` must be greater than 1: %i" % num_clusters)
         self.num_clusters = num_clusters
 
     def build(self, input_shape):
@@ -49,13 +48,16 @@ class NetVLAD(tf.keras.layers.Layer):
         self.fc = tf.keras.layers.Dense(
             units=self.num_clusters,
             activation=tf.nn.softmax,
-            kernel_regularizer=tf.keras.regularizers.l2(1e-5))
+            kernel_regularizer=tf.keras.regularizers.l2(1e-5),
+        )
         self.cluster_centers = self.add_weight(
             name="cluster_centers",
             shape=(1, feature_dim, self.num_clusters),
             initializer=tf.keras.initializers.TruncatedNormal(
-                stddev=1.0 / math.sqrt(feature_dim)),
-            trainable=True)
+                stddev=1.0 / math.sqrt(feature_dim)
+            ),
+            trainable=True,
+        )
         super(NetVLAD, self).build(input_shape)
 
     def call(self, frames):
@@ -96,8 +98,8 @@ class NetVLAD(tf.keras.layers.Layer):
         # Output shape: (batch_size, feature_dim, num_clusters)
         frames = tf.reshape(frames, (-1, max_frames, feature_dim))
         b = tf.transpose(
-            tf.matmul(tf.transpose(activation, perm=(0, 2, 1)), frames),
-            perm=(0, 2, 1))
+            tf.matmul(tf.transpose(activation, perm=(0, 2, 1)), frames), perm=(0, 2, 1)
+        )
 
         # Output shape: (batch_size, feature_dim, num_clusters)
         vlad = b - a
