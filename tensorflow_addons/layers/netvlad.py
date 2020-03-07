@@ -20,7 +20,7 @@ import tensorflow as tf
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class NetVLAD(tf.keras.layers.Layer):
-  """Applies NetVLAD to the input.
+    """Applies NetVLAD to the input.
 
     "NetVLAD: CNN architecture for weakly supervised place recognition"
     Relja Arandjelovic, Petr Gronat, Akihiko Torii, Tomas Pajdla, Josef Sivic.
