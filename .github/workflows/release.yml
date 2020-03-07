@@ -39,8 +39,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/pip_cache
-          key: ${{ matrix.os }}-${{ matrix.python-version }}
-          restore-keys: ${{ matrix.os }}-${{ matrix.python-version }}-
+          key: ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/*.txt') }}
       - name: Build wheels
         if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
         env:
