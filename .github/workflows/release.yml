@@ -39,7 +39,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/pip_cache
-          key: ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/*.txt') }}
+          key: ${{ matrix.os }}-${{ matrix.python-version }}
       - name: Build wheels
         if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
         env:
@@ -66,11 +66,10 @@ jobs:
       - uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: actions/checkout@v2
       - uses: actions/cache@v1
         with:
           path: ~/pip_cache
-          key: ${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/*.txt') }}
+          key: ${{ matrix.os }}-${{ matrix.python-version }}
       - uses: actions/download-artifact@v1
         if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
         with:
