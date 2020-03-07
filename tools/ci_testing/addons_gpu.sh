@@ -20,21 +20,7 @@
 # export TF_GPU_COUNT=4 # Specify number of GPUs available
 # export TF_TESTS_PER_GPU=8 # Specify number of tests per GPU
 # export TF_PER_DEVICE_MEMORY_LIMIT_MB=1024 # Limit the memory used per test
-set -x
-
-SCRIPT_DIR=$( cd ${0%/*} && pwd -P )
-ROOT_DIR=$( cd "$SCRIPT_DIR/../.." && pwd -P )
-cd $ROOT_DIR
-if [[ ! -d "tensorflow_addons" ]]; then
-    echo "ERROR: PWD: $PWD is not project root"
-    exit 1
-fi
-
-N_JOBS=$(grep -c ^processor /proc/cpuinfo)
-
-echo ""
-echo "Bazel will use ${N_JOBS} concurrent job(s)."
-echo ""
+set -e -x
 
 export CC_OPT_FLAGS='-mavx'
 export TF_NEED_CUDA="1"
@@ -43,19 +29,8 @@ export CUDA_TOOLKIT_PATH="/usr/local/cuda"
 export TF_CUDNN_VERSION="7"
 export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 
-# Check if python3 is available. On Windows VM it is not.
-if [ -x "$(command -v python3)" ]; then
-    python3 ./configure.py
-  else
-    python ./configure.py
-fi
-
-## Run bazel test command. Double test timeouts to avoid flakes.
-bazel test -c opt -k \
-    --jobs=${N_JOBS} --test_timeout 300,450,1200,3600 \
-    --test_output=errors --local_test_jobs=8 \
-    --run_under=$(readlink -f tools/ci_testing/parallel_gpu_execute.sh) \
-    --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.1:toolchain \
-    //tensorflow_addons/...
-
-exit $?
+python3 -m pip install -r tools/tests_dependencies/pytest.txt
+python3 ./configure.py
+cat ./.bazelrc
+bash tools/install_so_files.sh
+python3 -m pytest --cov=tensorflow_addons -v --durations=25 -n auto ./tensorflow_addons
