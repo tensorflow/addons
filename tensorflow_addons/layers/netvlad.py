@@ -34,7 +34,6 @@ class NetVLAD(tf.keras.layers.Layer):
         2D tensor with shape: `(batch_size, feature_dim * num_clusters)`.
     """
 
-
     def __init__(self, num_clusters, **kwargs):
         super().__init__(**kwargs)
         if num_clusters <= 0:
