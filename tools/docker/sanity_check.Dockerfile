@@ -107,6 +107,30 @@ RUN python tools/docs/build_docs.py
 RUN touch /ok.txt
 
 # -------------------------------
+# test the editable mode
+FROM python:3.6 as test_editable_mode
+
+COPY build_deps/build-requirements-cpu.txt ./
+RUN pip install -r build-requirements-cpu.txt
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
+
+RUN apt-get update && apt-get install -y sudo rsync
+COPY tools/ci_build/install/bazel.sh ./
+RUN bash bazel.sh
+COPY tools/docker/finish_bazel_install.sh ./
+RUN bash finish_bazel_install.sh
+
+
+COPY ./ /addons
+WORKDIR /addons
+RUN python configure.py --no-deps
+RUN bash tools/install_so_files.sh
+RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
+RUN python -c "import tensorflow_addons as tfa; print(tfa.activations.lisht(0.2))"
+RUN touch /ok.txt
+
+# -------------------------------
 # ensure that all checks were successful
 # this is necessary if using docker buildkit
 # with "export DOCKER_BUILDKIT=1"
@@ -122,3 +146,4 @@ COPY --from=4 /ok.txt /ok4.txt
 COPY --from=5 /ok.txt /ok5.txt
 COPY --from=6 /ok.txt /ok6.txt
 COPY --from=7 /ok.txt /ok7.txt
+COPY --from=8 /ok.txt /ok8.txt
