@@ -77,14 +77,10 @@ py_test(
 py_test(
     name = "npairs_test",
     size = "small",
-    srcs = select({
-        "//tensorflow_addons:windows": ["npairs_dummy_test.py"],
-        "//conditions:default": ["npairs_test.py"],
-    }),
-    main = select({
-        "//tensorflow_addons:windows": "npairs_dummy_test.py",
-        "//conditions:default": "npairs_test.py",
-    }),
+    srcs = [
+        "npairs_test.py",
+    ],
+    main = "npairs_test.py",
     deps = [
         ":losses",
     ],
