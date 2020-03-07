@@ -28,6 +28,7 @@ jobs:
           python-version: 3.5
       - name: Build wheels
         run: |
+          pip install -r tools/tests_dependencies/pytest.txt
           bash tools/ci_build/install/bazel.sh
           python configure.py
           bazel test -c opt -k --test_timeout 300,450,1200,3600 --test_output=errors //tensorflow_addons/...
