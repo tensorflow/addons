@@ -52,7 +52,7 @@ with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
     exec(fp.read(), version)
 
 if project_name == TFA_NIGHTLY:
-    version["__version__"] += datetime.strftime(datetime.today(), "%Y%m%d")
+    version["__version__"] += datetime.now().strftime("%Y%m%d%H%M%S")
 
 with open("requirements.txt") as f:
     required_pkgs = f.read().splitlines()

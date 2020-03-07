@@ -12,6 +12,7 @@ py_library(
     data = [
         "__init__.py",
         "register.py",
+        "options.py",
         "version.py",
     ],
     deps = [
