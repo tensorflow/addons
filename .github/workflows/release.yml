@@ -21,7 +21,6 @@ jobs:
   test-with-bazel:
     name: Build release wheels
     runs-on: ubuntu-18.04
-
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
