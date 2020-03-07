@@ -36,7 +36,7 @@ fi
 export CC_OPT_FLAGS='-mavx'
 export TF_NEED_CUDA=0
 
-python3 -m pip install -r tools/test_dependecies/pytest.txt
+python3 -m pip install -r tools/tests_dependencies/pytest.txt
 python3 ./configure.py $1
 
 cat ./.bazelrc
