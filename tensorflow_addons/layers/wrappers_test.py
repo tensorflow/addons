@@ -17,7 +17,6 @@ import os
 import tempfile
 from absl.testing import parameterized
 
-from flaky import flaky
 import numpy as np
 import tensorflow as tf
 
@@ -149,7 +148,6 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
         self.evaluate(tf.compat.v1.global_variables_initializer())
         self.assertAllClose(self.evaluate(base_output), self.evaluate(wn_output))
 
-    @flaky
     @parameterized.named_parameters(
         ["Dense", lambda: tf.keras.layers.Dense(1), [1]],
         ["SimpleRNN", lambda: tf.keras.layers.SimpleRNN(1), [10, 10]],
