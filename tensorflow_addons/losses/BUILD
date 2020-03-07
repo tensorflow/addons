@@ -58,7 +58,6 @@ py_test(
     ],
 )
 
-# Temporarily disable on windows
 py_test(
     name = "npairs_test",
     size = "small",
