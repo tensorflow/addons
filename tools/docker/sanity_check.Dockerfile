@@ -28,7 +28,7 @@ RUN pip install -r typedapi.txt
 
 
 COPY ./ /addons
-RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e /addons
+RUN pip install --no-deps -e /addons
 RUN python /addons/tools/ci_build/verify/check_typing_info.py
 RUN touch /ok.txt
 
@@ -47,8 +47,8 @@ COPY build_deps/build-requirements-cpu.txt ./
 RUN pip install -r build-requirements-cpu.txt
 
 RUN apt-get update && apt-get install sudo
-COPY tools/ci_build/install/bazel.sh ./
-RUN bash bazel.sh
+COPY tools/tests_dependencies/bazel_linux.sh ./
+RUN bash bazel_linux.sh
 
 COPY tools/docker/finish_bazel_install.sh ./
 RUN bash finish_bazel_install.sh
@@ -79,7 +79,7 @@ RUN touch /ok.txt
 # Bazel code format
 FROM alpine:3.11 as check-bazel-format
 
-COPY ./tools/ci_build/install/buildifier.sh ./
+COPY ./tools/tests_dependencies/buildifier.sh ./
 RUN sh buildifier.sh
 
 COPY ./ /addons
@@ -102,7 +102,7 @@ RUN apt-get update && apt-get install -y rsync
 
 COPY ./ /addons
 WORKDIR /addons
-RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
+RUN pip install --no-deps -e .
 RUN python tools/docs/build_docs.py
 RUN touch /ok.txt
 
@@ -118,17 +118,16 @@ COPY tools/tests_dependencies/pytest.txt ./
 RUN pip install -r pytest.txt
 
 RUN apt-get update && apt-get install -y sudo rsync
-COPY tools/ci_build/install/bazel.sh ./
-RUN bash bazel.sh
+COPY tools/tests_dependencies/bazel_linux.sh ./
+RUN bash bazel_linux.sh
 COPY tools/docker/finish_bazel_install.sh ./
 RUN bash finish_bazel_install.sh
-
 
 COPY ./ /addons
 WORKDIR /addons
 RUN python configure.py --no-deps
 RUN bash tools/install_so_files.sh
-RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
+RUN pip install --no-deps -e .
 RUN pytest -v -n auto ./tensorflow_addons/activations
 RUN touch /ok.txt
 

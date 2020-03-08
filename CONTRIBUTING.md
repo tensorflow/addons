@@ -182,7 +182,7 @@ then you don't need to use Bazel to run your tests.
 Just run from the root:
 
 ```
-TF_ADDONS_NO_BUILD=1 pip install -e ./
+pip install -e ./
 ```
 
 It's going to install Addons in editable mode without compiling anything.
