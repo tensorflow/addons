@@ -4,7 +4,7 @@ COPY build_deps/build-requirements-cpu.txt ./
 RUN pip install -r build-requirements-cpu.txt
 
 RUN apt-get update && apt-get install -y sudo rsync
-COPY tools/ci_build/install/bazel.sh ./
+COPY tools/tests_dependencies/bazel.sh ./
 RUN bash bazel.sh
 
 COPY requirements.txt ./

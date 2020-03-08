@@ -47,7 +47,7 @@ COPY build_deps/build-requirements-cpu.txt ./
 RUN pip install -r build-requirements-cpu.txt
 
 RUN apt-get update && apt-get install sudo
-COPY tools/ci_build/install/bazel.sh ./
+COPY tools/tests_dependencies/bazel.sh ./
 RUN bash bazel.sh
 
 COPY tools/docker/finish_bazel_install.sh ./
@@ -79,7 +79,7 @@ RUN touch /ok.txt
 # Bazel code format
 FROM alpine:3.11 as check-bazel-format
 
-COPY ./tools/ci_build/install/buildifier.sh ./
+COPY ./tools/tests_dependencies/buildifier.sh ./
 RUN sh buildifier.sh
 
 COPY ./ /addons
@@ -116,7 +116,7 @@ COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
 RUN apt-get update && apt-get install -y sudo rsync
-COPY tools/ci_build/install/bazel.sh ./
+COPY tools/tests_dependencies/bazel.sh ./
 RUN bash bazel.sh
 COPY tools/docker/finish_bazel_install.sh ./
 RUN bash finish_bazel_install.sh
