@@ -18,6 +18,7 @@ import math
 
 from tensorflow_addons.utils import types
 from tensorflow_addons.utils.resource_loader import LazySO
+from tensorflow_addons import options
 
 _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
@@ -42,6 +43,17 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
+
+    if not options.TF_ADDONS_PY_OPS:
+        try:
+            return _gelu_custom_op(x, approximate)
+        except tf.errors.NotFoundError:
+            options.warn_fallback("gelu")
+
+    return _gelu_py(x, approximate)
+
+
+def _gelu_custom_op(x, approximate):
     return _activation_so.ops.addons_gelu(x, approximate)
 
 
