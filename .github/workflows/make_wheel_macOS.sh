@@ -19,6 +19,5 @@ bazel build \
   build_pip_pkg
 
 bazel-bin/build_pip_pkg artifacts $NIGHTLY_FLAG
-for f in artifacts/*.whl; do
-  delocate-wheel -w wheelhouse $f
-done
+delocate-wheel -w wheelhouse artifacts/*.whl
+
