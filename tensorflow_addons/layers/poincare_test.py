@@ -55,7 +55,6 @@ class PoincareNormalizeTest(tf.test.TestCase):
                 self.assertLessEqual(norm.max(), 1.0 - epsilon + tol)
 
     def testPoincareNormalizeDimArray(self):
-        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1205")
         x_shape = [20, 7, 3]
         epsilon = 1e-5
         tol = 1e-6
