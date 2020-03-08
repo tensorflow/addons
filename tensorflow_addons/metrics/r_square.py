@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implements R^2 scores."""
 
+import warnings
+
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
 
@@ -53,7 +55,13 @@ class RSquare(Metric):
         self.res = self.add_weight("residual", initializer="zeros")
         self.count = self.add_weight("count", initializer="zeros")
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        if sample_weight is not None:
+            warnings.warn(
+                "`sample_weight` is not None. Be aware that RSquare "
+                "does not take `sample_weight` into account when computing the metric "
+                "value."
+            )
         y_true = tf.convert_to_tensor(y_true, tf.float32)
         y_pred = tf.convert_to_tensor(y_pred, tf.float32)
         self.squared_sum.assign_add(tf.reduce_sum(y_true ** 2))
