@@ -28,7 +28,7 @@ RUN pip install -r typedapi.txt
 
 
 COPY ./ /addons
-RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e /addons
+RUN pip install --no-deps -e /addons
 RUN python /addons/tools/ci_build/verify/check_typing_info.py
 RUN touch /ok.txt
 
@@ -102,7 +102,7 @@ RUN apt-get update && apt-get install -y rsync
 
 COPY ./ /addons
 WORKDIR /addons
-RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
+RUN pip install --no-deps -e .
 RUN python tools/docs/build_docs.py
 RUN touch /ok.txt
 
@@ -126,7 +126,7 @@ COPY ./ /addons
 WORKDIR /addons
 RUN python configure.py --no-deps
 RUN bash tools/install_so_files.sh
-RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
+RUN pip install --no-deps -e .
 RUN python -c "import tensorflow_addons as tfa; print(tfa.activations.lisht(0.2))"
 RUN touch /ok.txt
 
