@@ -98,7 +98,7 @@ RUN pip install -r requirements.txt
 COPY ./ /addons
 WORKDIR /addons
 RUN pip install --no-deps -e .
-RUN python tools/docs/build_docs.py
+RUN python docs/build_docs.py
 RUN touch /ok.txt
 
 # -------------------------------
