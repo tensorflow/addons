@@ -21,7 +21,7 @@ FROM python:3.6 as public-api-typed
 
 COPY tools/install_deps /install_deps
 RUN pip install -r /install_deps/tensorflow-cpu.txt
-RUN pip install -r typedapi.txt
+RUN pip install -r /install_deps/typedapi.txt
 
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
