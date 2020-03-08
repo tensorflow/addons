@@ -18,15 +18,14 @@ from absl.testing import parameterized
 
 import tensorflow as tf
 from tensorflow_addons.utils import test_utils
+from tensorflow_addons.optimizers import cyclical_learning_rate
 import numpy as np
-
-import cyclical_learning_rate
 
 
 def _maybe_serialized(lr_decay, serialize_and_deserialize):
     if serialize_and_deserialize:
-        serialized = tf.keras.optimizers.learning_rate_schedule.serialize(lr_decay)
-        return tf.keras.optimizers.learning_rate_schedule.deserialize(serialized)
+        serialized = lr_decay.get_config()
+        return lr_decay.from_config(serialized)
     else:
         return lr_decay
 
@@ -38,7 +37,7 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
         initial_learning_rate = 0.1
         maximal_learning_rate = 1
         step_size = 4000
-        step = tf.resource_variable_ops.ResourceVariable(0)
+        step = tf.Variable(0)
         triangular_cyclical_lr = cyclical_learning_rate.TriangularCyclicalLearningRate(
             initial_learning_rate=initial_learning_rate,
             maximal_learning_rate=maximal_learning_rate,
@@ -56,7 +55,7 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
 
         for expected_value in expected:
             self.assertAllClose(
-                self.evaluate(triangular_cyclical_lr(step)), expected_value, 1e-6
+                self.evaluate(triangular_cyclical_lr(step)), expected_value, 1e-4, 1e-4
             )
             self.evaluate(step.assign_add(1))
 
@@ -64,7 +63,7 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
         initial_learning_rate = 0.1
         maximal_learning_rate = 1
         step_size = 4000
-        step = tf.resource_variable_ops.ResourceVariable(0)
+        step = tf.Variable(0)
         triangular2_cyclical_lr = cyclical_learning_rate.Triangular2CyclicalLearningRate(
             initial_learning_rate=initial_learning_rate,
             maximal_learning_rate=maximal_learning_rate,
@@ -95,7 +94,7 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
         step_size = 4000
         gamma = 0.996
 
-        step = tf.resource_variable_ops.ResourceVariable(0)
+        step = tf.Variable(0)
         exponential_cyclical_lr = cyclical_learning_rate.ExponentialCyclicalLearningRate(
             initial_learning_rate=initial_learning_rate,
             maximal_learning_rate=maximal_learning_rate,
@@ -126,7 +125,7 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
         def scale_fn(x):
             return 1 / (5 ** (x * 0.0001))
 
-        step = tf.resource_variable_ops.ResourceVariable(0)
+        step = tf.Variable(0)
         custom_cyclical_lr = cyclical_learning_rate.CyclicalLearningRate(
             initial_learning_rate=initial_learning_rate,
             maximal_learning_rate=maximal_learning_rate,
@@ -146,3 +145,7 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
             ) * np.maximum(0, 1 - non_bounded_value) * scale_fn(i)
             self.assertAllClose(self.evaluate(custom_cyclical_lr(step)), expected, 1e-6)
             self.evaluate(step.assign_add(1))
+
+
+if __name__ == "__main__":
+    tf.test.main()
