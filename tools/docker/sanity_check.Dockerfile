@@ -47,8 +47,8 @@ COPY build_deps/build-requirements-cpu.txt ./
 RUN pip install -r build-requirements-cpu.txt
 
 RUN apt-get update && apt-get install sudo
-COPY tools/tests_dependencies/bazel.sh ./
-RUN bash bazel.sh
+COPY tools/tests_dependencies/bazel_linux.sh ./
+RUN bash bazel_linux.sh
 
 COPY tools/docker/finish_bazel_install.sh ./
 RUN bash finish_bazel_install.sh
