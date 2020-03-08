@@ -46,7 +46,7 @@ def softshrink(
         try:
             return _softshrink_custom_op(x, lower, upper)
         except tf.errors.NotFoundError:
-            options.warn_fallback("hardshrink")
+            options.warn_fallback("softshrink")
 
     return _softshrink_py(x, lower, upper)
 
