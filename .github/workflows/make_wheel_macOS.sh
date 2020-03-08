@@ -5,7 +5,7 @@ export TF_NEED_CUDA=0
 python3 --version
 python3 -m pip install delocate wheel setuptools
 
-bash tools/tests_dependencies/bazel_macos.sh $BAZEL_VERSION
+bash tools/install_deps/bazel_macos.sh $BAZEL_VERSION
 bash tools/ci_testing/addons_cpu.sh
 
 bazel build \
