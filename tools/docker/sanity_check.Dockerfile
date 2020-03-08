@@ -1,7 +1,7 @@
 FROM python:3.5-alpine as flake8-test
 
-COPY tools/install_deps/flake8.txt ./
-RUN pip install -r flake8.txt
+COPY tools/install_deps /install_deps
+RUN pip install -r /install_deps/flake8.txt
 COPY ./ /addons
 WORKDIR /addons
 RUN flake8
@@ -10,8 +10,8 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.6 as black-test
 
-COPY tools/install_deps/black.txt ./
-RUN pip install -r black.txt
+COPY tools/install_deps /install_deps
+RUN pip install -r /install_deps/black.txt
 COPY ./ /addons
 RUN black --check /addons
 RUN touch /ok.txt
@@ -19,13 +19,12 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.6 as public-api-typed
 
-COPY build_deps/build-requirements-cpu.txt ./
-RUN pip install -r build-requirements-cpu.txt
-COPY requirements.txt ./
-RUN pip install -r requirements.txt
-COPY tools/install_deps/typedapi.txt ./
+COPY tools/install_deps /install_deps
+RUN pip install -r /install_deps/tensorflow-cpu.txt
 RUN pip install -r typedapi.txt
 
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
 
 COPY ./ /addons
 RUN pip install --no-deps -e /addons
@@ -43,15 +42,12 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.5 as valid_build_files
 
-COPY build_deps/build-requirements-cpu.txt ./
-RUN pip install -r build-requirements-cpu.txt
-
 RUN apt-get update && apt-get install sudo
-COPY tools/install_deps/bazel_linux.sh ./
-RUN bash bazel_linux.sh
 
-COPY tools/docker/finish_bazel_install.sh ./
-RUN bash finish_bazel_install.sh
+COPY tools/install_deps /install_deps
+RUN pip install -r /install_deps/tensorflow-cpu.txt
+RUN bash /install_deps/bazel_linux.sh
+RUN bash /install_deps/finish_bazel_install.sh
 
 COPY ./ /addons
 WORKDIR /addons
@@ -79,8 +75,8 @@ RUN touch /ok.txt
 # Bazel code format
 FROM alpine:3.11 as check-bazel-format
 
-COPY ./tools/install_deps/buildifier.sh ./
-RUN sh buildifier.sh
+COPY tools/install_deps /install_deps
+RUN sh /install_deps/buildifier.sh
 
 COPY ./ /addons
 RUN buildifier -mode=check -r /addons
@@ -90,15 +86,14 @@ RUN touch /ok.txt
 # docs tests
 FROM python:3.6 as docs_tests
 
-COPY build_deps/build-requirements-cpu.txt ./
-RUN pip install -r build-requirements-cpu.txt
+RUN apt-get update && apt-get install -y rsync
+
+COPY tools/install_deps /install_deps
+RUN pip install -r /install_deps/tensorflow-cpu.txt
+RUN pip install -r /install_deps/doc_requirements.txt
+
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
-
-COPY tools/docs/doc_requirements.txt ./
-RUN pip install -r doc_requirements.txt
-
-RUN apt-get update && apt-get install -y rsync
 
 COPY ./ /addons
 WORKDIR /addons
@@ -110,16 +105,15 @@ RUN touch /ok.txt
 # test the editable mode
 FROM python:3.6 as test_editable_mode
 
-COPY build_deps/build-requirements-cpu.txt ./
-RUN pip install -r build-requirements-cpu.txt
+RUN apt-get update && apt-get install -y sudo rsync
+
+COPY tools/install_deps /install_deps
+RUN pip install -r /install_deps/tensorflow-cpu.txt
+RUN bash /install_deps/bazel_linux.sh
+RUN bash /install_deps/finish_bazel_install.sh
+
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
-
-RUN apt-get update && apt-get install -y sudo rsync
-COPY tools/install_deps/bazel_linux.sh ./
-RUN bash bazel_linux.sh
-COPY tools/docker/finish_bazel_install.sh ./
-RUN bash finish_bazel_install.sh
 
 COPY ./ /addons
 WORKDIR /addons
