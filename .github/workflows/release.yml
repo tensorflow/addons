@@ -16,6 +16,7 @@ on:
 
 env:
   BAZEL_VERSION: 1.1.0
+  OLDEST_PY_VERSION: '3.5'
 
 jobs:
   test-with-bazel:
@@ -48,14 +49,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Build wheels
-        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
+        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == env.OLDEST_PY_VERSION
         env:
           PY_VERSION: ${{ matrix.python-version }}
           OS: ${{ runner.os }}
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}.sh
       - uses: actions/upload-artifact@v1
-        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
+        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == env.OLDEST_PY_VERSION
         with:
           name: ${{ runner.os }}-${{ matrix.python-version }}-wheel
           path: wheelhouse
@@ -72,12 +73,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - uses: actions/download-artifact@v1
-        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
+        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == env.OLDEST_PY_VERSION
         with:
           name: ${{ runner.os }}-${{ matrix.python-version }}-wheel
           path: ./wheel
       - name: Test wheel
-        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
+        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == env.OLDEST_PY_VERSION
         shell: bash
         run: |
           pip install tensorflow~=2.1.0
@@ -94,11 +95,11 @@ jobs:
         python-version: ['3.5', '3.6', '3.7']
     steps:
       - uses: actions/download-artifact@v1
-        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
+        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == env.OLDEST_PY_VERSION
         with:
           name: ${{ matrix.os }}-${{ matrix.python-version }}-wheel
           path: ./dist
-      - if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == '3.5'
+      - if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == env.OLDEST_PY_VERSION
         run: |
           set -e -x
           ls -la dist/
