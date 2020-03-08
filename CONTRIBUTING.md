@@ -223,7 +223,7 @@ Since adding type hints can be hard, especially for people who are not
 familiar with it, we made a big todo-list of functions/class constructors that 
 need typing. If you want to add a feature to the public API and 
 don't want to bother adding type hints, please add your feature to the todo-list 
-in [tools/ci_build/verify/check_typing_info.py](tools/ci_testing/check_typing_info.py).
+in [tools/ci_build/verify/check_typing_info.py](tools/testing/check_typing_info.py).
 
 Help is welcome to make this TODO list smaller!
 

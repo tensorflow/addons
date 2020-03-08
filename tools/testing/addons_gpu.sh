@@ -54,7 +54,7 @@ fi
 bazel test -c opt -k \
     --jobs=${N_JOBS} --test_timeout 300,450,1200,3600 \
     --test_output=errors --local_test_jobs=8 \
-    --run_under=$(readlink -f tools/ci_testing/parallel_gpu_execute.sh) \
+    --run_under=$(readlink -f tools/testing/parallel_gpu_execute.sh) \
     --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.1:toolchain \
     //tensorflow_addons/...
 
