@@ -8,7 +8,6 @@ sudo apt-get install patchelf
 python3 -m pip install -U auditwheel==2.0.0
 tools/ci_build/builds/tf_auditwheel_patch.sh
 
-for f in artifacts/*.whl; do
-  auditwheel repair --plat manylinux2010_x86_64 $f
-done
+auditwheel repair --plat manylinux2010_x86_64 artifacts/*.whl
+
 ls -al wheelhouse/
