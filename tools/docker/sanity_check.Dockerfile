@@ -28,7 +28,7 @@ RUN pip install -r requirements.txt
 
 COPY ./ /addons
 RUN pip install --no-deps -e /addons
-RUN python /addons/tools/ci_build/verify/check_typing_info.py
+RUN python /addons/tools/testing/check_typing_info.py
 RUN touch /ok.txt
 
 # -------------------------------
