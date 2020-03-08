@@ -50,6 +50,49 @@ paper and understand how it fits into the TensorFlow community. This
 process can take longer than typical commit reviews so please bare with
 us**
 
+## Tools needed for developement
+
+#### Linux
+
+* Docker (code formatting / testing)
+* Nvidia-docker (for GPU testing, optional)
+* Bazel installed locally (to build custom ops locally, optional)
+* NVCC/Cuda installed locally (to build custom ops with gpu locally, optional)
+
+#### MacOS
+
+* Docker (code formatting / testing)
+* Bazel installed locally (to build custom ops locally, optional)
+
+#### Windows
+
+For Windows, you have two options:
+
+##### WSL 2
+
+WSL 2 is a very light virtual machine running with hyper-V. When running in 
+WSL 2, you're in a full linux environment, with a real linux kernel. 
+WSL 2 networking is shared with Windows and your Windows files can be found under 
+`/mnt/c`. When working with WSL 2, you can just follow the linux guides and tutorials
+and everything will work as in linux, including 
+Docker (that means you install docker with apt-get), git, ssh...
+See [the WSL 2 install guide](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
+
+##### Powershell in Windows
+
+This is if you want to stay in Windows world. In this case, you need:
+
+* Git with git bash install on the PATH (meaning that you can run the `sh` command from Powershell).
+* Docker desktop with Linux containers (code format, testing on linux, etc...)
+* A local Python installation
+* Bazel (if you want to compile custom ops on Windows, optional)
+* Visual Studio build tools 2019
+[install with chocolatey](https://chocolatey.org/packages/visualstudio2019buildtools) or
+ [install manually](https://www.tensorflow.org/install/source_windows#install_visual_c_build_tools_2019)
+ (if you want to compile custom ops on windows, optional).
+ 
+ If you develop on Windows and you encounter issues, we'd be happy to have your feedback!
+ [This link](https://github.com/tensorflow/addons/issues/1134) might help you.
 
 ## Development Tips
 Try these useful commands below:
@@ -59,10 +102,12 @@ Try these useful commands below:
 * Run CPU unit tests: `bash tools/run_cpu_tests.sh`
 * Run GPU unit tests: `bash tools/run_gpu_tests.sh`
 
+If you're running Powershell on Windows, use `sh` instead of `bash` when typing the commands.
+
 ## Coding style
 
 We provide a pre-commit hook to format your code automatically before each
-commit, so that you don't have to read our style guide. Install it with
+commit, so that you don't have to read our style guide. Install it on Linux/MacOS with
 
 ```
 cd .git/hooks && ln -s -f ../../tools/pre-commit.sh pre-commit
@@ -70,16 +115,17 @@ cd .git/hooks && ln -s -f ../../tools/pre-commit.sh pre-commit
 
 and you're good to go.
 
+On Windows, in powershell, do:
+
+```
+cd .git/hooks
+cmd /c mklink pre-commit ..\..\tools\pre-commit.sh
+```
+
 Note that this pre-commit needs Docker to run. 
 If you have docker 19.03+, it uses
 [Docker buildkit](https://docs.docker.com/develop/develop-images/build_enhancements/) 
 to make the build step much faster.
-
-
-It should also work on 
-Windows (with [Docker desktop for Windows](https://docs.docker.com/docker-for-windows/install/), 
-select "Run linux containers").
-But this has not been tested. If you work on Windows, we'd be happy to have your feedback!
 
 See our [Style Guide](STYLE_GUIDE.md) for more details.
 
@@ -95,10 +141,14 @@ subscribe for alerts please join the [addons-testing mailing list](https://group
 bash tools/run_cpu_tests.sh
 ```
 
+On PowerShell, just use `sh` instead of `bash`.
+
 #### GPU Testing Script
 ```bash
 bash tools/run_gpu_tests.sh
 ```
+
+On PowerShell, just use `sh` instead of `bash`.
 
 #### Run Manually
 
@@ -132,7 +182,7 @@ then you don't need to use Bazel to run your tests.
 Just run from the root:
 
 ```
-TF_ADDONS_NO_BUILD=1 pip install -e ./
+pip install -e ./
 ```
 
 It's going to install Addons in editable mode without compiling anything.
