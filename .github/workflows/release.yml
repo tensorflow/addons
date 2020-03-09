@@ -68,6 +68,7 @@ jobs:
       matrix:
         os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
         python-version: ['3.5', '3.6', '3.7']
+      fail-fast: false
     steps:
       - uses: actions/setup-python@v1
         with:
