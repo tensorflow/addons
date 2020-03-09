@@ -16,6 +16,7 @@ def test_get_all_shared_objects():
 
     for file in all_shared_objects:
         tf.load_op_library(file)
+    raise ValueError
 
 
 if __name__ == "__main__":
