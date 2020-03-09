@@ -18,7 +18,10 @@ from absl.testing import parameterized
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.activations import softshrink
-from tensorflow_addons.activations.softshrink import _softshrink_py
+from tensorflow_addons.activations.softshrink import (
+    _softshrink_py,
+    _softshrink_custom_op,
+)
 from tensorflow_addons.utils import test_utils
 
 
@@ -26,7 +29,7 @@ from tensorflow_addons.utils import test_utils
 class SoftshrinkTest(tf.test.TestCase, parameterized.TestCase):
     def test_invalid(self):
         with self.assertRaisesOpError("lower must be less than or equal to upper."):
-            y = softshrink(tf.ones(shape=(1, 2, 3)), lower=2.0, upper=-2.0)
+            y = _softshrink_custom_op(tf.ones(shape=(1, 2, 3)), lower=2.0, upper=-2.0)
             self.evaluate(y)
 
     @parameterized.named_parameters(
