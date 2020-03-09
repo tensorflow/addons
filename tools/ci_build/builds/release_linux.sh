@@ -43,7 +43,7 @@ python3 -m pip install --upgrade setuptools
 python3 --version
 python3 ./configure.py
 
-bash tools/ci_testing/addons_cpu.sh
+bash tools/testing/addons_cpu.sh
 bazel clean --expunge
 
 # Build

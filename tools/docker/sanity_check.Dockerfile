@@ -29,7 +29,7 @@ RUN pip install -r typedapi.txt
 
 COPY ./ /addons
 RUN pip install --no-deps -e /addons
-RUN python /addons/tools/ci_build/verify/check_typing_info.py
+RUN python /addons/tools/testing/check_typing_info.py
 RUN touch /ok.txt
 
 # -------------------------------
@@ -37,7 +37,7 @@ FROM python:3.5-alpine as case-insensitive-filesystem
 
 COPY ./ /addons
 WORKDIR /addons
-RUN python /addons/tools/ci_build/verify/check_file_name.py
+RUN python /addons/tools/testing/check_file_name.py
 RUN touch /ok.txt
 
 # -------------------------------
