@@ -53,6 +53,18 @@ py_test(
 )
 
 py_test(
+    name = "poincare_test",
+    size = "small",
+    srcs = [
+        "poincare_test.py",
+    ],
+    main = "poincare_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
     name = "tlu_test",
     size = "small",
     srcs = [
@@ -70,8 +82,6 @@ py_test(
     srcs = [
         "wrappers_test.py",
     ],
-    # TODO: Investigate why flaky #830
-    flaky = True,
     main = "wrappers_test.py",
     deps = [
         ":layers",

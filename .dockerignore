@@ -1,3 +1,6 @@
 .git
 .github
 *.Dockerfile
+
+# C extensions
+*.so

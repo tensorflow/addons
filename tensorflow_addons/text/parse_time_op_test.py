@@ -13,13 +13,21 @@
 # limitations under the License.
 # ==============================================================================
 """Parse time op tests."""
+import unittest
+import platform
 
 import tensorflow as tf
 
 from tensorflow_addons import text
 from tensorflow_addons.utils import test_utils
 
+IS_WINDOWS = platform.system() == "Windows"
 
+
+@unittest.skipIf(
+    IS_WINDOWS,
+    reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/782",
+)
 @test_utils.run_all_in_graph_and_eager_modes
 class ParseTimeTest(tf.test.TestCase):
     def test_parse_time(self):
