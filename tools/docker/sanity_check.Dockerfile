@@ -95,7 +95,7 @@ RUN pip install -r build-requirements-cpu.txt
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
-COPY tools/docs/doc_requirements.txt ./
+COPY tools/tests_dependencies/doc_requirements.txt ./
 RUN pip install -r doc_requirements.txt
 
 RUN apt-get update && apt-get install -y rsync
@@ -103,7 +103,7 @@ RUN apt-get update && apt-get install -y rsync
 COPY ./ /addons
 WORKDIR /addons
 RUN pip install --no-deps -e .
-RUN python tools/docs/build_docs.py
+RUN python docs/build_docs.py
 RUN touch /ok.txt
 
 # -------------------------------
