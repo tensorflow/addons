@@ -13,4 +13,4 @@ RUN bash finish_bazel_install.sh
 
 COPY ./ /addons
 WORKDIR addons
-CMD ["bash", "tools/ci_testing/addons_gpu.sh"]
+CMD ["bash", "tools/testing/addons_gpu.sh"]

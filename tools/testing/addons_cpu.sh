@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # ==============================================================================
-# usage: bash tools/ci_testing/addons_cpu.sh [--no-deps]
+# usage: bash tools/testing/addons_cpu.sh [--no-deps]
 
 set -x -e
 
