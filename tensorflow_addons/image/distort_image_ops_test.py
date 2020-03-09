@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for python distort_image_ops."""
 
+import sys
+
+import pytest
 import numpy as np
 
 import tensorflow as tf
@@ -378,4 +381,4 @@ class AdjustSaturationInYiqBenchmark(tf.test.Benchmark):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

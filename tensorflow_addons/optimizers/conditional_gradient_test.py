@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for Conditional Gradient."""
 
+import sys
+
+import pytest
 import tensorflow as tf
 from tensorflow_addons.utils import test_utils
 import numpy as np
@@ -841,4 +844,4 @@ class ConditionalGradientTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

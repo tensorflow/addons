@@ -17,7 +17,9 @@
 import csv
 import os
 import tempfile
+import sys
 
+import pytest
 import tensorflow as tf
 
 from tensorflow_addons import text
@@ -614,4 +616,4 @@ class SkipGramOpsTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

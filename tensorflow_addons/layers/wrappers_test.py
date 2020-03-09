@@ -13,10 +13,12 @@
 # limitations under the License.
 # =============================================================================
 
+import sys
 import os
 import tempfile
 from absl.testing import parameterized
 
+import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -177,4 +179,4 @@ class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

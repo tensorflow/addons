@@ -13,6 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 
+import sys
+
+import pytest
 from absl.testing import parameterized
 
 import numpy as np
@@ -90,4 +93,4 @@ class RreluTest(tf.test.TestCase, parameterized.TestCase):
 #             self.run_op_benchmark(sess, result.op, min_iters=25)
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))
