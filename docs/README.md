@@ -6,7 +6,7 @@ This is made from two main components:
 
 ## 1. Narrative Docs
 
-Any mayrkdown or notebook files in this directory will be published to tensorflow.org/addons.
+Any markdown or notebook files in this directory will be published to tensorflow.org/addons.
 
 `tutorials/_toc.yaml` controls the left-nav on the tutorials tab. Make sure to keep that file up to date.
 Notify the tensorflow/docs team if you need to major changes. 
