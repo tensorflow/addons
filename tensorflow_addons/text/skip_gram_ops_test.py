@@ -16,6 +16,8 @@
 
 import csv
 import os
+import tempfile
+
 import tensorflow as tf
 
 from tensorflow_addons import text
@@ -387,8 +389,8 @@ class SkipGramOpsTest(tf.test.TestCase):
         self.assertAllEqual([b"the", b"to", b"life", b"and"], output)
 
     @staticmethod
-    def _make_text_vocab_freq_file():
-        filepath = os.path.join(tf.compat.v1.test.get_temp_dir(), "vocab_freq.txt")
+    def _make_text_vocab_freq_file(tmp_dir):
+        filepath = os.path.join(tmp_dir, "vocab_freq.txt")
         with open(filepath, "w") as f:
             writer = csv.writer(f)
             writer.writerows(
@@ -397,10 +399,8 @@ class SkipGramOpsTest(tf.test.TestCase):
         return filepath
 
     @staticmethod
-    def _make_text_vocab_float_file():
-        filepath = os.path.join(
-            tf.compat.v1.test.get_temp_dir(), "vocab_freq_float.txt"
-        )
+    def _make_text_vocab_float_file(tmp_dir):
+        filepath = os.path.join(tmp_dir, "vocab_freq_float.txt")
         with open(filepath, "w") as f:
             writer = csv.writer(f)
             writer.writerows(
@@ -430,17 +430,18 @@ class SkipGramOpsTest(tf.test.TestCase):
 
         # b"answer" is not in vocab file, and b"universe"'s frequency is below
         # threshold of 3.
-        vocab_freq_file = self._make_text_vocab_freq_file()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            vocab_freq_file = self._make_text_vocab_freq_file(tmp_dir)
 
-        tokens, labels = text.skip_gram_sample_with_text_vocab(
-            input_tensor=input_tensor,
-            vocab_freq_file=vocab_freq_file,
-            vocab_token_index=0,
-            vocab_freq_index=1,
-            vocab_min_count=3,
-            min_skips=1,
-            max_skips=1,
-        )
+            tokens, labels = text.skip_gram_sample_with_text_vocab(
+                input_tensor=input_tensor,
+                vocab_freq_file=vocab_freq_file,
+                vocab_token_index=0,
+                vocab_freq_index=1,
+                vocab_min_count=3,
+                min_skips=1,
+                max_skips=1,
+            )
 
         expected_tokens, expected_labels = self._split_tokens_labels(
             [
@@ -510,7 +511,11 @@ class SkipGramOpsTest(tf.test.TestCase):
         # universe: 2
         #
         # corpus_size for the above vocab is 40+8+30+20+2 = 100.
-        text_vocab_freq_file = self._make_text_vocab_freq_file()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            text_vocab_freq_file = self._make_text_vocab_freq_file(tmp_dir)
+            self._skip_gram_sample_with_text_vocab_subsample_vocab(text_vocab_freq_file)
+
+    def _skip_gram_sample_with_text_vocab_subsample_vocab(self, text_vocab_freq_file):
         self._text_vocab_subsample_vocab_helper(
             vocab_freq_file=text_vocab_freq_file,
             vocab_min_count=3,
@@ -544,7 +549,15 @@ class SkipGramOpsTest(tf.test.TestCase):
         # universe: 0.02
         #
         # corpus_size for the above vocab is 0.4+0.08+0.3+0.2+0.02 = 1.
-        text_vocab_float_file = self._make_text_vocab_float_file()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            text_vocab_float_file = self._make_text_vocab_float_file(tmp_dir)
+            self._skip_gram_sample_with_text_vocab_subsample_vocab_float(
+                text_vocab_float_file
+            )
+
+    def _skip_gram_sample_with_text_vocab_subsample_vocab_float(
+        self, text_vocab_float_file
+    ):
         self._text_vocab_subsample_vocab_helper(
             vocab_freq_file=text_vocab_float_file,
             vocab_min_count=0.03,
@@ -570,9 +583,13 @@ class SkipGramOpsTest(tf.test.TestCase):
     def test_skip_gram_sample_with_text_vocab_errors(self):
         """Tests various errors raised by
         skip_gram_sample_with_text_vocab()."""
-        dummy_input = tf.constant([""])
-        vocab_freq_file = self._make_text_vocab_freq_file()
 
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            vocab_freq_file = self._make_text_vocab_freq_file(tmp_dir)
+            self._skip_gram_sample_with_text_vocab_errors(vocab_freq_file)
+
+    def _skip_gram_sample_with_text_vocab_errors(self, vocab_freq_file):
+        dummy_input = tf.constant([""])
         invalid_indices = (
             # vocab_token_index can't be negative.
             (-1, 0),
