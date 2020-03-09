@@ -16,6 +16,7 @@
 
 import math
 import tensorflow as tf
+from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -34,7 +35,8 @@ class NetVLAD(tf.keras.layers.Layer):
         2D tensor with shape: `(batch_size, feature_dim * num_clusters)`.
     """
 
-    def __init__(self, num_clusters, **kwargs):
+    @typechecked
+    def __init__(self, num_clusters: int, **kwargs):
         super().__init__(**kwargs)
         if num_clusters <= 0:
             raise ValueError("`num_clusters` must be greater than 1: %i" % num_clusters)
