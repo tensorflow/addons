@@ -45,6 +45,13 @@ if "--nightly" in sys.argv:
 else:
     project_name = TFA_RELEASE
 
+ext_modules = []
+if "--platlib-patch" in sys.argv:
+    if sys.platform.startswith("linux"):
+        # Manylinux2010 requires a patch for platlib
+        ext_modules = [Extension("_foo", ["stub.cc"])]
+    sys.argv.remove("--platlib-patch")
+
 # Version
 version = {}
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -52,19 +59,10 @@ with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
     exec(fp.read(), version)
 
 if project_name == TFA_NIGHTLY:
-    version["__version__"] += datetime.strftime(datetime.today(), "%Y%m%d")
+    version["__version__"] += datetime.now().strftime("%Y%m%d%H%M%S")
 
 with open("requirements.txt") as f:
     required_pkgs = f.read().splitlines()
-
-# Manylinux2010 requires a patch for platlib
-if (
-    sys.platform.startswith("linux")
-    and os.environ.get("TF_ADDONS_NO_BUILD", "0") == "0"
-):
-    ext_modules = [Extension("_foo", ["stub.cc"])]
-else:
-    ext_modules = []
 
 
 class BinaryDistribution(Distribution):
