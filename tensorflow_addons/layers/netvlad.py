@@ -23,6 +23,10 @@ from typeguard import typechecked
 class NetVLAD(tf.keras.layers.Layer):
     """Applies NetVLAD to the input.
 
+        This is a fully-differentiable version of "Vector of Locally Aggregated Descriptors" commonly used in image
+        retrieval. It is also used in audio retrieval, and audio represenation learning (ex
+        "Towards Learning a Universal Non-Semantic Representation of Speech", https://arxiv.org/abs/2002.12764).
+
         "NetVLAD: CNN architecture for weakly supervised place recognition"
         Relja Arandjelovic, Petr Gronat, Akihiko Torii, Tomas Pajdla, Josef Sivic.
         https://arxiv.org/abs/1511.07247
