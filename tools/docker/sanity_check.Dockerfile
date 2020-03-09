@@ -1,6 +1,6 @@
 FROM python:3.5-alpine as flake8-test
 
-COPY tools/tests_dependencies/flake8.txt ./
+COPY tools/install_deps/flake8.txt ./
 RUN pip install -r flake8.txt
 COPY ./ /addons
 WORKDIR /addons
@@ -10,7 +10,7 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.6 as black-test
 
-COPY tools/tests_dependencies/black.txt ./
+COPY tools/install_deps/black.txt ./
 RUN pip install -r black.txt
 COPY ./ /addons
 RUN black --check /addons
@@ -23,7 +23,7 @@ COPY build_deps/build-requirements-cpu.txt ./
 RUN pip install -r build-requirements-cpu.txt
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
-COPY tools/tests_dependencies/typedapi.txt ./
+COPY tools/install_deps/typedapi.txt ./
 RUN pip install -r typedapi.txt
 
 
@@ -47,7 +47,7 @@ COPY build_deps/build-requirements-cpu.txt ./
 RUN pip install -r build-requirements-cpu.txt
 
 RUN apt-get update && apt-get install sudo
-COPY tools/tests_dependencies/bazel_linux.sh ./
+COPY tools/install_deps/bazel_linux.sh ./
 RUN bash bazel_linux.sh
 
 COPY tools/docker/finish_bazel_install.sh ./
@@ -79,7 +79,7 @@ RUN touch /ok.txt
 # Bazel code format
 FROM alpine:3.11 as check-bazel-format
 
-COPY ./tools/tests_dependencies/buildifier.sh ./
+COPY ./tools/install_deps/buildifier.sh ./
 RUN sh buildifier.sh
 
 COPY ./ /addons
@@ -95,7 +95,7 @@ RUN pip install -r build-requirements-cpu.txt
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
-COPY tools/tests_dependencies/doc_requirements.txt ./
+COPY tools/install_deps/doc_requirements.txt ./
 RUN pip install -r doc_requirements.txt
 
 RUN apt-get update && apt-get install -y rsync
@@ -114,11 +114,11 @@ COPY build_deps/build-requirements-cpu.txt ./
 RUN pip install -r build-requirements-cpu.txt
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
-COPY tools/tests_dependencies/pytest.txt ./
+COPY tools/install_deps/pytest.txt ./
 RUN pip install -r pytest.txt
 
 RUN apt-get update && apt-get install -y sudo rsync
-COPY tools/tests_dependencies/bazel_linux.sh ./
+COPY tools/install_deps/bazel_linux.sh ./
 RUN bash bazel_linux.sh
 COPY tools/docker/finish_bazel_install.sh ./
 RUN bash finish_bazel_install.sh

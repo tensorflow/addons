@@ -29,8 +29,8 @@ jobs:
           python-version: ${{ env.OLDEST_PY_VERSION }}
       - name: Build wheels
         run: |
-          pip install -r tools/tests_dependencies/pytest.txt -r build_deps/build-requirements-cpu.txt -r requirements.txt
-          bash tools/tests_dependencies/bazel_linux.sh
+          pip install -r tools/install_deps/pytest.txt -r build_deps/build-requirements-cpu.txt -r requirements.txt
+          bash tools/install_deps/bazel_linux.sh
           python configure.py --no-deps
           bazel test -c opt -k --test_timeout 300,450,1200,3600 --test_output=errors //tensorflow_addons/...
   release-wheel:
