@@ -29,6 +29,7 @@
 /tensorflow_addons/image/distort_image_ops*.py @WindQAQ
 /tensorflow_addons/image/filters*.py @Mainak431
 /tensorflow_addons/layers/normalizations*.py @smokrow
+/tensorflow_addons/layers/multihead_attention*.py @cgarciae
 /tensorflow_addons/layers/sparsemax*.py @AndreasMadsen
 /tensorflow_addons/losses/contrastive*.py @WindQAQ
 /tensorflow_addons/losses/sparsemax*.py @AndreasMadsen
