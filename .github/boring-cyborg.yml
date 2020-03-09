@@ -42,7 +42,7 @@ labelPRBasedOnFilePath:
     - docs/tutorials/**/*
 
   test-cases:
-    - tools/ci_testing/**/
+    - tools/testing/**/
 
   style:
     - STYLE_GUIDE.md
