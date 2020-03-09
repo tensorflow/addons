@@ -23,9 +23,12 @@ from __future__ import print_function
 
 import inspect
 import math
-import tensorflow.compat.v1 as tf
-from tensorflow.contrib import image as contrib_image
-from tensorflow.contrib import training as contrib_training
+import tensorflow as tf
+
+from tensorflow_addons.image import rotate as rot
+from tensorflow_addons.image import translate
+from tensorflow_addons.image import transform
+from tensorflow_addons.utils import hparam
 
 
 # This signifies the max integer that the controller RNN could predict for the
@@ -102,14 +105,14 @@ def blend(image1, image2, factor):
   if factor == 1.0:
     return tf.convert_to_tensor(image2)
 
-  image1 = tf.to_float(image1)
-  image2 = tf.to_float(image2)
+  image1 = tf.cast(image1, dtype=tf.float32)
+  image2 = tf.cast(image2, dtype=tf.float32)
 
   difference = image2 - image1
   scaled = factor * difference
 
   # Do addition in float.
-  temp = tf.to_float(image1) + scaled
+  temp = tf.convert_to_tensor(image1, dtype=tf.float32) + scaled
 
   # Interpolate
   if factor > 0.0 and factor < 1.0:
@@ -145,11 +148,11 @@ def cutout(image, pad_size, replace=0):
   image_width = tf.shape(image)[1]
 
   # Sample the center location in the image where the zero mask will be applied.
-  cutout_center_height = tf.random_uniform(
+  cutout_center_height = tf.random.uniform(
       shape=[], minval=0, maxval=image_height,
       dtype=tf.int32)
 
-  cutout_center_width = tf.random_uniform(
+  cutout_center_width = tf.random.uniform(
       shape=[], minval=0, maxval=image_width,
       dtype=tf.int32)
 
@@ -193,6 +196,7 @@ def solarize_add(image, addition=0, threshold=128):
 def color(image, factor):
   """Equivalent of PIL Color."""
   degenerate = tf.image.grayscale_to_rgb(tf.image.rgb_to_grayscale(image))
+  degenerate = tf.cast(degenerate, dtype=tf.float32)
   return blend(degenerate, image, factor)
 
 
@@ -246,19 +250,19 @@ def rotate(image, degrees, replace):
   # In practice, we should randomize the rotation degrees by flipping
   # it negatively half the time, but that's done on 'degrees' outside
   # of the function.
-  image = contrib_image.rotate(wrap(image), radians)
+  image = rot(wrap(image), radians)
   return unwrap(image, replace)
 
 
 def translate_x(image, pixels, replace):
   """Equivalent of PIL Translate in X dimension."""
-  image = contrib_image.translate(wrap(image), [-pixels, 0])
+  image = translate(wrap(image), [-pixels, 0])
   return unwrap(image, replace)
 
 
 def translate_y(image, pixels, replace):
   """Equivalent of PIL Translate in Y dimension."""
-  image = contrib_image.translate(wrap(image), [0, -pixels])
+  image = translate(wrap(image), [0, -pixels])
   return unwrap(image, replace)
 
 
@@ -268,7 +272,7 @@ def shear_x(image, level, replace):
   # with a matrix form of:
   # [1  level
   #  0  1].
-  image = contrib_image.transform(
+  image = transform(
       wrap(image), [1., level, 0., 0., 1., 0., 0., 0.])
   return unwrap(image, replace)
 
@@ -279,7 +283,7 @@ def shear_y(image, level, replace):
   # with a matrix form of:
   # [1  0
   #  level  1].
-  image = contrib_image.transform(
+  image = transform(
       wrap(image), [1., 0., 0., level, 1., 0., 0., 0.])
   return unwrap(image, replace)
 
@@ -300,14 +304,14 @@ def autocontrast(image):
     # A possibly cheaper version can be done using cumsum/unique_with_counts
     # over the histogram values, rather than iterating over the entire image.
     # to compute mins and maxes.
-    lo = tf.to_float(tf.reduce_min(image))
-    hi = tf.to_float(tf.reduce_max(image))
+    lo = tf.cast(tf.reduce_min(image), dtype=tf.float32)
+    hi = tf.cast(tf.reduce_max(image), dtype=tf.float32)
 
     # Scale the image, making the lowest value 0 and the highest value 255.
     def scale_values(im):
       scale = 255.0 / (hi - lo)
       offset = -lo * scale
-      im = tf.to_float(im) * scale + offset
+      im = tf.cast(im, dtype=tf.float32) * scale + offset
       im = tf.clip_by_value(im, 0.0, 255.0)
       return tf.cast(im, tf.uint8)
 
@@ -337,7 +341,7 @@ def sharpness(image, factor):
   kernel = tf.tile(kernel, [1, 1, 3, 1])
   strides = [1, 1, 1, 1]
   degenerate = tf.nn.depthwise_conv2d(
-      image, kernel, strides, padding='VALID', rate=[1, 1])
+      image, kernel, strides, padding='VALID', dilations=[1, 1])
   degenerate = tf.clip_by_value(degenerate, 0.0, 255.0)
   degenerate = tf.squeeze(tf.cast(degenerate, tf.uint8), [0])
 
@@ -431,13 +435,20 @@ def unwrap(image, replace):
   # Find all pixels where the last channel is zero.
   alpha_channel = flattened_image[:, 3]
 
-  replace = tf.concat([replace, tf.ones([1], image.dtype)], 0)
+  replace = tf.constant(replace, tf.uint8)
+  if tf.rank(replace) == 0:
+    replace = tf.expand_dims(replace, 0)
+    replace = tf.concat([replace, replace, replace], 0)
+  replace = tf.concat([replace, tf.ones([1], dtype=img_1.dtype)], 0)
 
   # Where they are zero, fill them in with 'replace'.
+  cond = tf.equal(alpha_channel,1)
+  cond = tf.expand_dims(cond, 1)
+  cond = tf.concat([cond,cond,cond,cond], 1)
   flattened_image = tf.where(
-      tf.equal(alpha_channel, 0),
-      tf.ones_like(flattened_image, dtype=image.dtype) * replace,
-      flattened_image)
+      cond,
+      flattened_image,
+      replace)
 
   image = tf.reshape(flattened_image, image_shape)
   image = tf.slice(image, [0, 0, 0], [image_shape[0], image_shape[1], 3])
