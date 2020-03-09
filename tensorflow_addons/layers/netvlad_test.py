@@ -30,7 +30,10 @@ class NetVLADTest(tf.test.TestCase, parameterized.TestCase):
     )
     def test_simple(self, num_clusters):
         test_utils.layer_test(
-            NetVLAD, kwargs={"num_clusters": num_clusters}, input_shape=(5, 4, 100)
+            NetVLAD,
+            kwargs={"num_clusters": num_clusters},
+            input_shape=(5, 4, 100),
+            expected_output_shape=(5, num_clusters * 100),
         )
 
     def test_unknown(self):
@@ -40,6 +43,7 @@ class NetVLADTest(tf.test.TestCase, parameterized.TestCase):
             kwargs={"num_clusters": 3},
             input_shape=(None, None, 100),
             input_data=inputs,
+            expected_output_shape=(None, 3 * 100),
         )
 
     def test_invalid_shape(self):
