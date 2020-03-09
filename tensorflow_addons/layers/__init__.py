@@ -16,6 +16,7 @@
 
 from tensorflow_addons.layers.gelu import GELU
 from tensorflow_addons.layers.maxout import Maxout
+from tensorflow_addons.layers.multihead_attention import MultiHeadAttention
 from tensorflow_addons.layers.normalizations import GroupNormalization
 from tensorflow_addons.layers.normalizations import InstanceNormalization
 from tensorflow_addons.layers.optical_flow import CorrelationCost
@@ -24,4 +25,3 @@ from tensorflow_addons.layers.polynomial import PolynomialCrossing
 from tensorflow_addons.layers.sparsemax import Sparsemax
 from tensorflow_addons.layers.tlu import TLU
 from tensorflow_addons.layers.wrappers import WeightNormalization
-from tensorflow_addons.layers.multihead_attention import MultiHeadAttention
