@@ -29,6 +29,8 @@ export CUDA_TOOLKIT_PATH="/usr/local/cuda"
 export TF_CUDNN_VERSION="7"
 export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 
+# we use only "python3" because we can't run gpu tests on Windows
+# so no need to make it work with "python" like in the cpu tests.
 python3 -m pip install -r tools/tests_dependencies/pytest.txt
 python3 ./configure.py
 cat ./.bazelrc
