@@ -215,7 +215,7 @@ pytest tensorflow_addons/
 
 Pytest has many cool options to help you make great tests:
 
-```
+```bash
 # Use multiprocessing to run the tests, 3 workers
 pytest -n 3 tensorflow_addons/
 pytest -n auto tensorflow_addons/
@@ -250,7 +250,7 @@ pytest --duration=10 tensorflow_addons/
 
 If you need a custom C++/Cuda op for your test, compile your ops with
 
-```
+```bash
 python configure.py
 python configure.py --no-deps   # if you don't want any dependencies installed with pip
 bash tools/install_so_files.sh  # Linux/macos/WSL2
