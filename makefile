@@ -17,7 +17,7 @@
 all: unit-test
 
 unit-test:
-	bash tools/ci_testing/addons_cpu.sh
+	bash tools/testing/addons_cpu.sh
 
 gpu-unit-test:
-	bash tools/ci_testing/addons_gpu.sh
+	bash tools/testing/addons_gpu.sh

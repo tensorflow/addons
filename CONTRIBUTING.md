@@ -167,7 +167,7 @@ Run selected tests:
 bazel test -c opt -k \
 --test_timeout 300,450,1200,3600 \
 --test_output=all \
---run_under=$(readlink -f tools/ci_testing/parallel_gpu_execute.sh) \
+--run_under=$(readlink -f tools/testing/parallel_gpu_execute.sh) \
 //tensorflow_addons/<test_selection>
 ```
 
