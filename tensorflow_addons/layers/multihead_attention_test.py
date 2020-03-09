@@ -13,13 +13,16 @@
 # limitations under the License.
 # =============================================================================
 
+import sys
+import tempfile
+from pathlib import Path
+
 import numpy as np
+import pytest
 import tensorflow as tf
 
 from tensorflow_addons.layers.multihead_attention import MultiHeadAttention
 from tensorflow_addons.utils import test_utils
-import tempfile
-from pathlib import Path
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -335,4 +338,4 @@ class MultiHeadAttentionTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))
