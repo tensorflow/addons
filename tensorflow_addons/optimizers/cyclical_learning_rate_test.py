@@ -153,3 +153,7 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
             ) * np.maximum(0, 1 - non_bounded_value) * scale_fn(i)
             self.assertAllClose(self.evaluate(custom_cyclical_lr(step)), expected, 1e-6)
             self.evaluate(step.assign_add(1))
+
+
+if __name__ == "__main__":
+    sys.exit(pytest.main([__file__]))
