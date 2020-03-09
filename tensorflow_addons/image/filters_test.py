@@ -356,4 +356,4 @@ class MedianFilter2dTest(_Filter2dTest):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

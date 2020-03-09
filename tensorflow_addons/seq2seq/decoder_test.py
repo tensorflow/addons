@@ -186,4 +186,4 @@ class DecodeRNNTest(test_utils.keras_parameterized.TestCase, tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

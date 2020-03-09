@@ -171,4 +171,4 @@ def connected_components_reference_implementation(images):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))
