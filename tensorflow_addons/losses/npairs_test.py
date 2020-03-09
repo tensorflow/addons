@@ -13,9 +13,12 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for npairs loss."""
+
+import sys
 import platform
 import unittest
 
+import pytest
 import tensorflow as tf
 from tensorflow_addons.losses import npairs
 from tensorflow_addons.utils import test_utils

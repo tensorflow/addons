@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for python distort_image_ops."""
 
+import sys
+
+import pytest
 import numpy as np
 
 import tensorflow as tf

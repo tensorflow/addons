@@ -13,10 +13,12 @@
 # limitations under the License.
 # =============================================================================
 
+import sys
 import os
 import tempfile
 from absl.testing import parameterized
 
+import pytest
 import numpy as np
 import tensorflow as tf
 

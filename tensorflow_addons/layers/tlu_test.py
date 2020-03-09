@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for TLU activation."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 from absl.testing import parameterized

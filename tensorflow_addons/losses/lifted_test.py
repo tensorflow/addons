@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for lifted loss."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 

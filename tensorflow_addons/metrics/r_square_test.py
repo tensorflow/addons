@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for R-Square Metric."""
 
+import sys
+
+import pytest
 import tensorflow as tf
 from tensorflow_addons.metrics import RSquare
 from tensorflow_addons.utils import test_utils

@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for contrastive loss."""
 
+import sys
+
+import pytest
 import tensorflow as tf
 from tensorflow_addons.losses import contrastive
 from tensorflow_addons.utils import test_utils

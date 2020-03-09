@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for Cohen's Kappa Metric."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.metrics import CohenKappa

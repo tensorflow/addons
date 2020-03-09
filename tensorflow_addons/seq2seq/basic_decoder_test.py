@@ -17,8 +17,10 @@
 import sys
 import pytest
 from absl.testing import parameterized
-import numpy as np
+import sys
 
+import pytest
+import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.seq2seq import attention_wrapper

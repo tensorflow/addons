@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for tfa.seq2seq.decoder."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 

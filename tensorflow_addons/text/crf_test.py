@@ -15,7 +15,9 @@
 """Tests for CRF."""
 
 import itertools
+import sys
 
+import pytest
 import numpy as np
 import tensorflow as tf
 

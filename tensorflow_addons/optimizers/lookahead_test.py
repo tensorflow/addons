@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for Lookahead optimizer."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 

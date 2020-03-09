@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for Keras utils."""
 
+import sys
+
+import pytest
 import tensorflow as tf
 
 from tensorflow_addons.utils import keras_utils

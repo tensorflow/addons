@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for optimizers with weight decay."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 

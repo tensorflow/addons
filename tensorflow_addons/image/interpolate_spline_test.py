@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for interpolate_spline."""
 
+import sys
+
+import pytest
 import numpy as np
 from scipy import interpolate as sc_interpolate
 

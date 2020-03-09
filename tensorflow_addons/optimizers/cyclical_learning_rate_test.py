@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for Cyclical Learning Rate."""
 
+import sys
+
+import pytest
 from absl.testing import parameterized
 
 import tensorflow as tf

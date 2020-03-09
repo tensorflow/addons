@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for Rectified Adam optimizer."""
 
+import sys
+
+import pytest
 import tensorflow as tf
 
 from tensorflow_addons.utils import test_utils

@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for util ops."""
 
+import sys
+
+import pytest
 import tensorflow as tf
 
 from tensorflow_addons.image import utils as img_utils

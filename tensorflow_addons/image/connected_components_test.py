@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for connected component analysis."""
 
+import sys
+
+import pytest
 import logging
 import tensorflow as tf
 import numpy as np

@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for translate ops."""
 
+import sys
+
+import pytest
 import tensorflow as tf
 
 from tensorflow_addons.image import translate_ops
