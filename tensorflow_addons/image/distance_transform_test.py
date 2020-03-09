@@ -108,7 +108,9 @@ class DistanceOpsTest(tf.test.TestCase):
         image = tf.constant(image, dtype=tf.uint8)
 
         for output_dtype in [tf.uint8, tf.int32, tf.int64]:
-            with pytest.raises(TypeError, match="`dtype` must be float16, float32 or float64"):
+            with pytest.raises(
+                TypeError, match="`dtype` must be float16, float32 or float64"
+            ):
                 _ = dist_ops.euclidean_dist_transform(image, dtype=output_dtype)
 
     def test_image_with_invalid_shape(self):
