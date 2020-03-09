@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for NetVLAD layer."""
 
+import sys
+
+import pytest
 from absl.testing import parameterized
 import numpy as np
 import tensorflow as tf
@@ -61,4 +64,4 @@ class NetVLADTest(tf.test.TestCase, parameterized.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))
