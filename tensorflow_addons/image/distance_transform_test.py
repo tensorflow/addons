@@ -70,8 +70,8 @@ class DistanceOpsTest(tf.test.TestCase):
             output_flat = tf.reshape(output, [-1])
 
             with self.subTest(output_dtype=output_dtype):
-                self.assertEqual(output.dtype, output_dtype)
-                self.assertEqual(output.shape, [5, 5, 1])
+                assert output.dtype == output_dtype
+                assert output.shape == [5, 5, 1]
                 self.assertAllCloseAccordingToType(output_flat, expected_output)
 
     def test_batch_binary_images(self):
@@ -93,8 +93,8 @@ class DistanceOpsTest(tf.test.TestCase):
             output_flat = tf.reshape(output, [-1])
 
             with self.subTest(output_dtype=output_dtype):
-                self.assertEqual(output.dtype, output_dtype)
-                self.assertEqual(output.shape, [batch_size, 5, 5, 1])
+                assert output.dtype == output_dtype
+                assert output.shape == [batch_size, 5, 5, 1]
                 self.assertAllCloseAccordingToType(output_flat, expected_output)
 
     def test_image_with_invalid_dtype(self):
@@ -108,14 +108,12 @@ class DistanceOpsTest(tf.test.TestCase):
         image = tf.constant(image, dtype=tf.uint8)
 
         for output_dtype in [tf.uint8, tf.int32, tf.int64]:
-            with self.assertRaisesRegex(
-                TypeError, "`dtype` must be float16, float32 or float64"
-            ):
+            with pytest.raises(TypeError, match="`dtype` must be float16, float32 or float64"):
                 _ = dist_ops.euclidean_dist_transform(image, dtype=output_dtype)
 
     def test_image_with_invalid_shape(self):
         image = tf.zeros([2, 4, 3], tf.uint8)
-        with self.assertRaisesRegex(ValueError, "`images` must have only one channel"):
+        with pytest.raises(ValueError, match="`images` must have only one channel"):
             _ = dist_ops.euclidean_dist_transform(image)
 
     def test_all_zeros(self):

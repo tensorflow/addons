@@ -292,7 +292,7 @@ class RotateOpTest(tf.test.TestCase):
         result = transform_ops.rotate(
             image, tf.random.uniform((), -1, 1), interpolation="BILINEAR"
         )
-        self.assertEqual(image.get_shape(), result.get_shape())
+        assert image.get_shape() == result.get_shape()
 
     def test_unknown_shape(self):
         fn = tf.function(transform_ops.rotate).get_concrete_function(

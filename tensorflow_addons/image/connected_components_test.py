@@ -90,14 +90,12 @@ class ConnectedComponentsTest(tf.test.TestCase):
                     components = self.evaluate(
                         connected_components(tf.cast(disconnected_snake, tf.bool))
                     )
-                    self.assertEqual(
-                        components.max(), 2, "disconnect (%d, %d)" % (i, j)
-                    )
+                    assert components.max() == 2, "disconnect (%d, %d)" % (i, j)
                     bins = np.bincount(components.ravel())
                     # Nonzero number of pixels labeled 0, 1, or 2.
-                    self.assertGreater(bins[0], 0)
-                    self.assertGreater(bins[1], 0)
-                    self.assertGreater(bins[2], 0)
+                    assert bins[0] > 0
+                    assert bins[1] > 0
+                    assert bins[2] > 0
 
     def testMultipleImages(self):
         images = [

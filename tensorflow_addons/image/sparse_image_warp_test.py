@@ -37,23 +37,19 @@ class SparseImageWarpTest(tf.test.TestCase):
         num_points_per_edge = 4
         locs = _get_boundary_locations(image_height, image_width, num_points_per_edge)
         num_points = locs.shape[0]
-        self.assertEqual(num_points, 4 + 4 * num_points_per_edge)
+        assert num_points == 4 + 4 * num_points_per_edge
         locs = [(locs[i, 0], locs[i, 1]) for i in range(num_points)]
         for i in (0, image_height - 1):
             for j in (0, image_width - 1):
-                self.assertIn((i, j), locs, "{},{} not in the locations".format(i, j))
+                assert (i, j) in locs, "{},{} not in the locations".format(i, j)
 
             for i in (2, 4, 6, 8):
                 for j in (0, image_width - 1):
-                    self.assertIn(
-                        (i, j), locs, "{},{} not in the locations".format(i, j)
-                    )
+                    assert (i, j) in locs, "{},{} not in the locations".format(i, j)
 
             for i in (0, image_height - 1):
                 for j in (2, 4, 6, 8):
-                    self.assertIn(
-                        (i, j), locs, "{},{} not in the locations".format(i, j)
-                    )
+                    assert (i, j) in locs, "{},{} not in the locations".format(i, j)
 
     def testGetGridLocations(self):
         image_height = 5
@@ -61,8 +57,8 @@ class SparseImageWarpTest(tf.test.TestCase):
         grid = _get_grid_locations(image_height, image_width)
         for i in range(image_height):
             for j in range(image_width):
-                self.assertEqual(grid[i, j, 0], i)
-                self.assertEqual(grid[i, j, 1], j)
+                assert grid[i, j, 0] == i
+                assert grid[i, j, 1] == j
 
     def testZeroShift(self):
         """Run assertZeroShift for various hyperparameters."""

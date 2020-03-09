@@ -99,7 +99,7 @@ class MeanFilter2dTest(_Filter2dTest):
         errors = (ValueError, tf.errors.InvalidArgumentError)
         for image_shape in [(1,), (16, 28, 28, 1, 1)]:
             with self.subTest(dim=len(image_shape)):
-                with self.assertRaisesRegexp(errors, msg):
+                with pytest.raises(errors, match=msg):
                     image = tf.ones(shape=image_shape)
                     self.evaluate(mean_filter2d(image))
 
@@ -109,19 +109,19 @@ class MeanFilter2dTest(_Filter2dTest):
 
         for filter_shape in [(3, 3, 3), (3, None, 3)]:
             with self.subTest(filter_shape=filter_shape):
-                with self.assertRaisesRegexp(ValueError, msg):
+                with pytest.raises(ValueError, match=msg):
                     mean_filter2d(image, filter_shape=filter_shape)
 
         filter_shape = None
         with self.subTest(filter_shape=filter_shape):
-            with self.assertRaisesRegexp(TypeError, msg):
+            with pytest.raises(TypeError, match=msg):
                 mean_filter2d(image, filter_shape=filter_shape)
 
     def test_invalid_padding(self):
         msg = 'padding should be one of "REFLECT", "CONSTANT", ' 'or "SYMMETRIC".'
         image = tf.ones(shape=(1, 28, 28, 1))
 
-        with self.assertRaisesRegexp(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             mean_filter2d(image, padding="TEST")
 
     def test_none_channels(self):
@@ -247,7 +247,7 @@ class MedianFilter2dTest(_Filter2dTest):
         errors = (ValueError, tf.errors.InvalidArgumentError)
         for image_shape in [(1,), (16, 28, 28, 1, 1)]:
             with self.subTest(dim=len(image_shape)):
-                with self.assertRaisesRegexp(errors, msg):
+                with pytest.raises(errors, match=msg):
                     image = tf.ones(shape=image_shape)
                     self.evaluate(median_filter2d(image))
 
@@ -257,19 +257,19 @@ class MedianFilter2dTest(_Filter2dTest):
 
         for filter_shape in [(3, 3, 3), (3, None, 3)]:
             with self.subTest(filter_shape=filter_shape):
-                with self.assertRaisesRegexp(ValueError, msg):
+                with pytest.raises(ValueError, match=msg):
                     median_filter2d(image, filter_shape=filter_shape)
 
         filter_shape = None
         with self.subTest(filter_shape=filter_shape):
-            with self.assertRaisesRegexp(TypeError, msg):
+            with pytest.raises(TypeError, match=msg):
                 mean_filter2d(image, filter_shape=filter_shape)
 
     def test_invalid_padding(self):
         msg = 'padding should be one of "REFLECT", "CONSTANT", ' 'or "SYMMETRIC".'
         image = tf.ones(shape=(1, 28, 28, 1))
 
-        with self.assertRaisesRegexp(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             median_filter2d(image, padding="TEST")
 
     def test_none_channels(self):

@@ -39,20 +39,18 @@ class ActivationsTest(tf.test.TestCase):
         for name in self.ALL_ACTIVATIONS:
             fn = tf.keras.activations.get("Addons>" + name)
             ref_fn = getattr(activations, name)
-            self.assertEqual(fn, ref_fn)
+            assert fn == ref_fn
             config = tf.keras.activations.serialize(fn)
             fn = tf.keras.activations.deserialize(config)
-            self.assertEqual(fn, ref_fn)
+            assert fn == ref_fn
 
     def test_serialization_with_layers(self):
         for name in self.ALL_ACTIVATIONS:
             layer = tf.keras.layers.Dense(3, activation=getattr(activations, name))
             config = tf.keras.layers.serialize(layer)
             deserialized_layer = tf.keras.layers.deserialize(config)
-            self.assertEqual(
-                deserialized_layer.__class__.__name__, layer.__class__.__name__
-            )
-            self.assertEqual(deserialized_layer.activation.__name__, name)
+            assert deserialized_layer.__class__.__name__ == layer.__class__.__name__
+            assert deserialized_layer.activation.__name__ == name
 
 
 if __name__ == "__main__":
