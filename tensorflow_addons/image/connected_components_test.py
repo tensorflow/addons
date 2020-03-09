@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for connected component analysis."""
 
+import sys
+
+import pytest
 import logging
 import tensorflow as tf
 import numpy as np
@@ -171,4 +174,4 @@ def connected_components_reference_implementation(images):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for focal loss."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
@@ -127,4 +130,4 @@ class SigmoidFocalCrossEntropyTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

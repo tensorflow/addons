@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for tfa.seq2seq.decoder."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -186,4 +189,4 @@ class DecodeRNNTest(test_utils.keras_parameterized.TestCase, tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for metric learning."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.losses.metric_learning import pairwise_distance
@@ -58,4 +61,4 @@ class PairWiseDistance(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))
