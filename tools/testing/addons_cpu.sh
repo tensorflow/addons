@@ -34,7 +34,7 @@ else
   PYTHON_BINARY=python
 fi
 
-$PYTHON_BINARY -m pip install -r tools/tests_dependencies/pytest.txt
+$PYTHON_BINARY -m pip install -r tools/install_deps/pytest.txt
 $PYTHON_BINARY ./configure.py $1
 cat ./.bazelrc
 bash tools/install_so_files.sh
