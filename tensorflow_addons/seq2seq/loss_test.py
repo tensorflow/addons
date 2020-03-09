@@ -14,8 +14,10 @@
 # ==============================================================================
 """Tests for tf.addons.seq2seq.python.loss_ops."""
 
-import numpy as np
+import sys
 
+import pytest
+import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.seq2seq import loss
@@ -378,4 +380,4 @@ class DenseTargetLossTest(LossTest):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

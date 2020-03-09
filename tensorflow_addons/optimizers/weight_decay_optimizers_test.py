@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for optimizers with weight decay."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -291,4 +294,4 @@ class ExtendWithWeightDecayTest(SGDWTest):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

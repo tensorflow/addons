@@ -14,7 +14,9 @@
 # ==============================================================================
 import unittest
 import inspect
+import sys
 
+import pytest
 from tensorflow.keras.metrics import Metric
 from tensorflow_addons import metrics
 
@@ -39,4 +41,4 @@ def check_update_state_signature(metric_class):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    sys.exit(pytest.main([__file__]))

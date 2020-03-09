@@ -4,7 +4,7 @@ COPY build_deps/build-requirements-cpu.txt ./
 RUN pip install -r build-requirements-cpu.txt
 
 RUN apt-get update && apt-get install -y sudo rsync
-COPY tools/tests_dependencies/bazel.sh ./
+COPY tools/install_deps/bazel.sh ./
 RUN bash bazel.sh
 
 COPY requirements.txt ./
@@ -15,7 +15,7 @@ RUN bash finish_bazel_install.sh
 
 COPY ./ /addons
 WORKDIR addons
-RUN bash tools/ci_testing/addons_cpu.sh --no-deps
+RUN bash tools/testing/addons_cpu.sh --no-deps
 
 RUN bazel build --enable_runfiles build_pip_pkg
 RUN bazel-bin/build_pip_pkg artifacts

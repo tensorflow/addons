@@ -9,6 +9,7 @@ py_library(
         "gelu.py",
         "maxout.py",
         "multihead_attention.py",
+        "netvlad.py",
         "normalizations.py",
         "optical_flow.py",
         "poincare.py",
@@ -131,6 +132,18 @@ py_test(
         "optical_flow_test.py",
     ],
     main = "optical_flow_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "netvlad_test",
+    size = "small",
+    srcs = [
+        "netvlad_test.py",
+    ],
+    main = "netvlad_test.py",
     deps = [
         ":layers",
     ],

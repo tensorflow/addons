@@ -21,7 +21,7 @@ $> pip install -U git+https://github.com/tensorflow/docs
 $> pip install artifacts/tensorflow_addons-*.whl
 
 Generate Docs:
-$> from the repo root run: python tools/docs/build_docs.py
+$> from the repo root run: python docs/build_docs.py
 """
 
 from absl import app
