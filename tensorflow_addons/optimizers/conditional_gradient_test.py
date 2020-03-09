@@ -17,7 +17,7 @@
 import tensorflow as tf
 from tensorflow_addons.utils import test_utils
 import numpy as np
-import conditional_gradient as cg_lib
+from tensorflow_addons.optimizers import conditional_gradient as cg_lib
 
 
 @test_utils.run_all_in_graph_and_eager_modes
