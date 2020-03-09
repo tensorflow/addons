@@ -16,23 +16,18 @@ Notify the tensorflow/docs team if you need to major changes.
 
 [tensorflow.org/addons/api_docs/python/tfa](https://tensorflow.org/addons/api_docs/python/tfa)
 
-`build_docs.py` controls executed this docs generation. To run it:
+`build_docs.py` controls executed this docs generation. To test-run it:
 
 ```bash
 # Install dependencies:
-pip install -r tools/docs/doc_requirements.txt
+pip install -r tools/tests_dependencies/doc_requirements.txt
 
 # Build tool:
-bazel build tools/docs:build_docs
+bazel build docs:build_docs
 
 # Generate API doc:
 # Use current branch
-bazel-bin/tools/docs/build_docs --git_branch=$(git rev-parse --abbrev-ref HEAD)
+bazel-bin/docs/build_docs --git_branch=$(git rev-parse --abbrev-ref HEAD)
 # or specified explicitly
-bazel-bin/tools/docs/build_docs --git_branch=master --output_dir=docs/api_docs/python/
-
-# Release API doc:
-git add -f docs/
-git commit -m "DOC: xxxxx"
-git push
+bazel-bin/docs/build_docs --git_branch=master --output_dir=/tmp/tfa_api
 ```
