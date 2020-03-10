@@ -28,7 +28,7 @@ warning_template = """
 This version of TensorFlow Addons requires TensorFlow {required}.
 Detected an installation of version {present}.
 
-While some functions might work, TensorFlow Addons was not tested 
+While some functions might work, TensorFlow Addons was not tested
 with this TensorFlow version. Also custom ops were not compiled
 against this version of TensorFlow. If you use custom ops,
 you might get errors (segmentation faults for example).
