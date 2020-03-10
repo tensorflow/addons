@@ -54,23 +54,13 @@ class TestUtilsTestMixed(tf.test.TestCase):
     def test_training_dist_few(self):
         _train_something()
 
-    @test_utils.run_in_graph_and_eager_modes()
+    @test_utils.run_in_graph_and_eager_modes
     def test_training_graph_eager(self):
         _train_something()
 
-    @test_utils.run_in_graph_and_eager_modes()
+    @test_utils.run_in_graph_and_eager_modes
     @test_utils.run_distributed(2)
     def test_training_graph_eager_dist(self):
-        _train_something()
-
-    @test_utils.run_in_graph_and_eager_modes(reset_test=False)
-    @test_utils.run_distributed(2)
-    def test_training_graph_eager_dist_no_reset(self):
-        _train_something()
-
-    @test_utils.run_deprecated_v1
-    @test_utils.run_distributed(2)
-    def test_training_graph_only_dist(self):
         _train_something()
 
     def test_train_dist_too_many(self):

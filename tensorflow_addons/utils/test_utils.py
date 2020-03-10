@@ -136,21 +136,15 @@ def create_or_get_logical_devices(
     logical_devices_out = logical_devices[:num_devices]
 
     # confirm that we are returning the correct number of logical devices.
-    if len(logical_devices_out) < num_devices:
-        raise RuntimeError(
-            """%i logical devices have been initialized at an earlier stage,
+    assert (
+        len(logical_devices_out) < num_devices
+    ), """%i logical devices have been initialized at an earlier stage,
         but the current request is for %i logical devices. Please initialize more logical devices at the earlier stage.
         You are seeing this error because you cannot modify logical devices after initialization.
-        """
-            % (len(logical_devices), num_devices)
-        )
-    elif len(logical_devices_out) > num_devices:
-        raise ArithmeticError(
-            """List comprehension failure.
-        Expected the following python code to return true, when x, i, n are integers:
-        x <= len([i for i in range(n)][:x])
-        """
-        )
+        """ % (
+        len(logical_devices),
+        num_devices,
+    )
 
     return logical_devices_out
 
