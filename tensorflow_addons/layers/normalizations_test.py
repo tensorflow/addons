@@ -341,44 +341,51 @@ class FilterResponseNormalizationTest(tf.test.TestCase):
         x = x * tf.math.rsqrt(nu2 + tf.abs(eps))
         return gamma * x + beta
 
-    def test_random_inputs(self):
+    def set_random_seed(self):
+        seed = 0x2020
+        np.random.seed(seed)
+        tf.random.set_seed(seed)
+
+    def test_with_gamma(self):
+        self.set_random_seed()
         inputs = np.random.rand(28, 28, 1).astype(np.float32)
         frn = FilterResponseNormalization(
             beta_initializer="zeros", gamma_initializer="ones"
         )
         frn.build((28, 28, 1))
         observed = frn(inputs)
+        self.evaluate(tf.compat.v1.global_variables_initializer())
         expected = self.calculate_frn(inputs, beta=0, gamma=1)
-        self.assertAllClose(expected, observed)
+        self.assertAllClose(expected, observed[0])
 
+    def test_with_beta(self):
+        self.set_random_seed()
+        inputs = np.random.rand(28, 28, 1).astype(np.float32)
         frn = FilterResponseNormalization(
             beta_initializer="ones", gamma_initializer="ones"
         )
         frn.build((28, 28, 1))
         observed = frn(inputs)
+        self.evaluate(tf.compat.v1.global_variables_initializer())
         expected = self.calculate_frn(inputs, beta=1, gamma=1)
-        self.assertAllClose(expected, observed)
+        self.assertAllClose(expected, observed[0])
 
-        frn = FilterResponseNormalization(
-            beta_initializer=tf.keras.initializers.Constant(0.5),
-            gamma_initializer="ones",
-        )
-        frn.build((28, 28, 1))
-        observed = frn(inputs)
-        expected = self.calculate_frn(inputs, beta=0.5, gamma=1)
-        self.assertAllClose(expected, observed)
-
+    def test_with_epsilon(self):
+        self.set_random_seed()
+        inputs = np.random.rand(28, 28, 1).astype(np.float32)
         frn = FilterResponseNormalization(
             beta_initializer=tf.keras.initializers.Constant(0.5),
             gamma_initializer="ones",
             learned_epsilon=True,
         )
         frn.build((28, 28, 1))
+        self.evaluate(tf.compat.v1.global_variables_initializer())
         observed = frn(inputs)
         expected = self.calculate_frn(inputs, beta=0.5, gamma=1, learned_epsilon=True)
-        self.assertAllClose(expected, observed)
+        self.assertAllClose(expected, observed[0])
 
     def test_keras_model(self):
+        self.set_random_seed()
         frn = FilterResponseNormalization(
             beta_initializer="ones", gamma_initializer="ones"
         )
@@ -387,7 +394,7 @@ class FilterResponseNormalizationTest(tf.test.TestCase):
         input_layer = tf.keras.layers.Input(shape=(32, 32, 3))
         x = frn(input_layer)
         x = tf.keras.layers.Flatten()(x)
-        out = tf.keras.layers.Dense(1, activation="sigmoid")
+        out = tf.keras.layers.Dense(1, activation="sigmoid")(x)
         model = tf.keras.models.Model(input_layer, out)
         model.compile(loss="binary_crossentropy", optimizer="sgd")
         model.fit(random_inputs, random_labels, epochs=2)
