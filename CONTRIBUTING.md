@@ -180,7 +180,6 @@ bazel test -c opt -k \
 If you're just modifying Python code (as opposed to C++/CUDA code), 
 then you don't need to use Bazel to run your tests. 
 And you don't need to compile anything.
-You don't even need a GPU because it's rare that something works for CPU but not for GPU. 
 Just run from the root:
 
 ```
