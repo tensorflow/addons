@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for Cohen's Kappa Metric."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.metrics import CohenKappa
@@ -229,4 +232,4 @@ class CohenKappaTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

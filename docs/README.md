@@ -20,7 +20,7 @@ Notify the tensorflow/docs team if you need to major changes.
 
 ```bash
 # Install dependencies:
-pip install -r tools/tests_dependencies/doc_requirements.txt
+pip install -r tools/install_deps/doc_requirements.txt
 
 # Build tool:
 bazel build docs:build_docs

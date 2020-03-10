@@ -21,15 +21,6 @@ doesn't already exist) and discussing your proposed changes. This will
 let us give you advice on the proposed changes. If the changes are
 minor, then feel free to make them without discussion.
 
-Want to contribute but not sure of what? Here are a few suggestions:
-1. Add a new tutorial. Located in [`docs/tutorials/`](docs/tutorials),
-  these are a great way to familiarize yourself and others with TF-Addons. See
-  [the guidelines](docs/tutorials/README.md) for more information on how to add
-  examples.
-2. Solve an [existing issue](https://github.com/tensorflow/addons/issues).
-  These range from low-level software bugs to higher-level design problems.
-  Check out the label [help wanted](https://github.com/tensorflow/addons/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22). If you're a new contributor, the label [good first issue](https://github.com/tensorflow/addons/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) can be a good place to start.
-
 All submissions, including submissions by project members, require
 review.
 
@@ -167,7 +158,7 @@ Run selected tests:
 bazel test -c opt -k \
 --test_timeout 300,450,1200,3600 \
 --test_output=all \
---run_under=$(readlink -f tools/ci_testing/parallel_gpu_execute.sh) \
+--run_under=$(readlink -f tools/testing/parallel_gpu_execute.sh) \
 //tensorflow_addons/<test_selection>
 ```
 
@@ -223,7 +214,7 @@ Since adding type hints can be hard, especially for people who are not
 familiar with it, we made a big todo-list of functions/class constructors that 
 need typing. If you want to add a feature to the public API and 
 don't want to bother adding type hints, please add your feature to the todo-list 
-in [tools/ci_build/verify/check_typing_info.py](tools/ci_build/verify/check_typing_info.py).
+in [tools/testing/check_typing_info.py](tools/testing/check_typing_info.py).
 
 Help is welcome to make this TODO list smaller!
 
