@@ -28,7 +28,8 @@ warning_template = """
 This version of TensorFlow Addons requires TensorFlow {required}.
 Detected an installation of version {present}.
 
-While some functions might work, custom ops were not compiled
+While some functions might work, TensorFlow Addons was not tested 
+with this TensorFlow version. Also custom ops were not compiled
 against this version of TensorFlow. If you use custom ops,
 you might get errors (segmentation faults for example).
 
@@ -36,7 +37,7 @@ It might help you to fallback to pure Python ops with
 TF_ADDONS_PY_OPS . To do that, see
 https://github.com/tensorflow/addons#gpucpu-custom-ops
 
-If you encounter errors, do not file bugs in GitHub because
+If you encounter errors, do *not* file bugs in GitHub because
 the version of TensorFlow you are using is not supported.
 """
 
