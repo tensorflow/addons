@@ -175,11 +175,34 @@ bazel test -c opt -k \
 `<package>` can be any package name like `metrics` for example.
 `<py_test_name>` can be any test name given by the `BUILD` file or `*` for all tests of the given package.
 
-### Install in editable mode
+### Setup your development environment
 
 If you're just modifying Python code (as opposed to C++/CUDA code), 
 then you don't need to use Bazel to run your tests. 
 And you don't need to compile anything.
+
+#### Optional but recommended, creating a virtual environment
+
+If you want to work in 
+a [virtualenv](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/):
+
+```
+pip install virtualenv
+venv my_dev_environement
+source my_dev_environement/bin/activate  # Linux/macos/WSL2
+.\my_dev_environement\Scripts\activate   # PowerShell
+```
+
+If you want to work in 
+a [conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html):
+```
+conda create --name my_dev_environement
+conda activate my_dev_environement
+```
+
+
+#### Install TensorFlow Addons in editable mode
+
 Just run from the root:
 
 ```
@@ -192,12 +215,16 @@ interpreter startup. This command needs to be executed only once.
 Now, anywhere on your system, if you do `import tensorflow_addons`, it's 
 going to import the code in this git repository.
 
+#### Uninstall TensorFlow Addons
+
 To undo this operation, for example, you want to later on 
 install TensorFlow Addons from PyPI, the release version, do:
 
 ```
 pip uninstall tensorflow-addons
 ```
+
+#### Run the tests with pytest
 
 If TensorFlow Addons is installed in editable mode, you can then just run your tests by 
 running Pytest. For example:
@@ -257,7 +284,7 @@ sh tools/install_so_files.sh    # PowerShell
 ```
 
 Note that you need bazel, a C++ compiler and a NVCC compiler (if you want to test
-Cuda ops). For that reason, we recommend you [run inside the custom-op docker containers](https://github.com/tensorflow/addons/blob/master/CONTRIBUTING.md#run-manually)
+Cuda ops). For that reason, we recommend you [run inside the custom-op docker containers](#run-manually)
 
 
 #### Testing with Pycharm
