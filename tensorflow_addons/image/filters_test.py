@@ -13,6 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 
+import sys
+
+import pytest
 import tensorflow as tf
 from tensorflow_addons.image import mean_filter2d
 from tensorflow_addons.image import median_filter2d
@@ -150,9 +153,9 @@ class MeanFilter2dTest(_Filter2dTest):
     def test_reflect_padding_with_3x3_filter(self):
         expected_plane = tf.constant(
             [
-                [33.0 / 9.0, 36.0 / 9.0, 39.0 / 9.0],
-                [42.0 / 9.0, 45.0 / 9.0, 48.0 / 9.0],
-                [51.0 / 9.0, 54.0 / 9.0, 57.0 / 9.0],
+                [3.6666667, 4.0, 4.3333335],
+                [4.6666665, 5.0, 5.3333335],
+                [5.6666665, 6.0, 6.3333335],
             ]
         )
 
@@ -167,11 +170,7 @@ class MeanFilter2dTest(_Filter2dTest):
 
     def test_reflect_padding_with_4x4_filter(self):
         expected_plane = tf.constant(
-            [
-                [80.0 / 16.0, 80.0 / 16.0, 80.0 / 16.0],
-                [80.0 / 16.0, 80.0 / 16.0, 80.0 / 16.0],
-                [80.0 / 16.0, 80.0 / 16.0, 80.0 / 16.0],
-            ]
+            [[5.0, 5.0, 5.0], [5.0, 5.0, 5.0], [5.0, 5.0, 5.0],]
         )
 
         for image_shape in self._image_shapes_to_test:
@@ -186,9 +185,9 @@ class MeanFilter2dTest(_Filter2dTest):
     def test_constant_padding_with_3x3_filter(self):
         expected_plane = tf.constant(
             [
-                [12.0 / 9.0, 21.0 / 9.0, 16.0 / 9.0],
-                [27.0 / 9.0, 45.0 / 9.0, 33.0 / 9.0],
-                [24.0 / 9.0, 39.0 / 9.0, 28.0 / 9.0],
+                [1.3333334, 2.3333333, 1.7777778],
+                [3.0, 5.0, 3.6666667],
+                [2.6666667, 4.3333335, 3.1111112],
             ]
         )
 
@@ -203,9 +202,9 @@ class MeanFilter2dTest(_Filter2dTest):
 
         expected_plane = tf.constant(
             [
-                [17.0 / 9.0, 24.0 / 9.0, 21.0 / 9.0],
-                [30.0 / 9.0, 45.0 / 9.0, 36.0 / 9.0],
-                [29.0 / 9.0, 42.0 / 9.0, 33.0 / 9.0],
+                [1.8888888, 2.6666667, 2.3333333],
+                [3.3333333, 5.0, 4.0],
+                [3.2222223, 4.6666665, 3.6666667],
             ]
         )
 
@@ -221,9 +220,9 @@ class MeanFilter2dTest(_Filter2dTest):
     def test_symmetric_padding_with_3x3_filter(self):
         expected_plane = tf.constant(
             [
-                [21.0 / 9.0, 27.0 / 9.0, 33.0 / 9.0],
-                [39.0 / 9.0, 45.0 / 9.0, 51.0 / 9.0],
-                [57.0 / 9.0, 63.0 / 9.0, 69.0 / 9.0],
+                [2.3333333, 3.0, 3.6666667],
+                [4.3333335, 5.0, 5.6666665],
+                [6.3333335, 7.0, 7.6666665],
             ]
         )
 
@@ -360,4 +359,4 @@ class MedianFilter2dTest(_Filter2dTest):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

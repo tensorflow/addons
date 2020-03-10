@@ -13,6 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 
+import sys
+
+import pytest
 from absl.testing import parameterized
 
 import numpy as np
@@ -58,13 +61,13 @@ class MishTest(tf.test.TestCase, parameterized.TestCase):
             y_native = mish(x)
             y_py = _mish_py(x)
 
-        self.assertAllCloseAccordingToType(y_native, y_py, atol=1e-4)
+        self.assertAllCloseAccordingToType(y_native, y_py)
 
         grad_native = t.gradient(y_native, x)
         grad_py = t.gradient(y_py, x)
 
-        self.assertAllCloseAccordingToType(grad_native, grad_py, atol=1e-4)
+        self.assertAllCloseAccordingToType(grad_native, grad_py)
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

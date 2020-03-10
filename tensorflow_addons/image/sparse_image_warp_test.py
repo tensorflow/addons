@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for sparse_image_warp."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.image import sparse_image_warp
@@ -267,4 +270,4 @@ class SparseImageWarpTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

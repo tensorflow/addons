@@ -33,7 +33,7 @@ labelPRBasedOnFilePath:
   # Other labels
   build:
     - build_deps/**/*
-    - tools/ci_build/**/*
+    - tools/releases/**/*
 
   documentation:
     - docs/**/*
@@ -42,7 +42,7 @@ labelPRBasedOnFilePath:
     - docs/tutorials/**/*
 
   test-cases:
-    - tools/ci_testing/**/
+    - tools/testing/**/
 
   style:
     - STYLE_GUIDE.md

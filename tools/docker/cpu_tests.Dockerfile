@@ -1,10 +1,10 @@
 FROM python:3.5
 
-COPY build_deps/build-requirements-cpu.txt ./
-RUN pip install -r build-requirements-cpu.txt
+COPY tools/install_deps/tensorflow-cpu.txt ./
+RUN pip install -r tensorflow-cpu.txt
 
 RUN apt-get update && apt-get install -y sudo rsync
-COPY tools/ci_build/install/bazel.sh ./
+COPY tools/install_deps/bazel.sh ./
 RUN bash bazel.sh
 
 COPY requirements.txt ./
@@ -15,7 +15,7 @@ RUN bash finish_bazel_install.sh
 
 COPY ./ /addons
 WORKDIR addons
-RUN bash tools/ci_testing/addons_cpu.sh --no-deps
+RUN bash tools/testing/addons_cpu.sh --no-deps
 
 RUN bazel build --enable_runfiles build_pip_pkg
 RUN bazel-bin/build_pip_pkg artifacts
@@ -23,8 +23,8 @@ RUN bazel-bin/build_pip_pkg artifacts
 
 FROM python:3.5
 
-COPY build_deps/build-requirements-cpu.txt ./
-RUN pip install -r build-requirements-cpu.txt
+COPY tools/install_deps/tensorflow-cpu.txt ./
+RUN pip install -r tensorflow-cpu.txt
 
 COPY --from=0 /addons/artifacts /artifacts
 

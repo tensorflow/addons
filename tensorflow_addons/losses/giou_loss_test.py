@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for GIoU loss."""
 
+import sys
+
+import pytest
 from absl.testing import parameterized
 
 import numpy as np
@@ -116,4 +119,4 @@ class GIoULossTest(tf.test.TestCase, parameterized.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

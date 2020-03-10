@@ -1,21 +1,7 @@
 # Addons - Seq2seq
 
-## Maintainers
-| Submodule  |  Maintainers  | Contact Info   |
-|:---------- |:----------- |:--------------|
-| ALL | Google | @qlzh727 | 
-| ALL | Guillaume Klein | @guillaumekln |
-
-
 ## Contents
-| Module | Description                             |
-|:----------------------- |:-----------------------------|
-| attention_wrapper | Attention related functions and RNN cell wrapper |
-| basic_decoder | Basic decoder that does not use beam search |
-| beam_search_decoder | Decoder that uses beam search |
-| decoder | Base decoders object and functions for user to create customized decoder |
-| loss | Sequence loss which can sum/average over batch or timesteps dimention |
-| sampler | Objects that work with basic_decoder to provide input for each timestep |
+https://www.tensorflow.org/addons/api_docs/python/tfa/seq2seq
 
 ## Contribution Guidelines
 #### Standard API

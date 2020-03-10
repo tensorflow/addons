@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for util ops."""
 
+import sys
+
+import pytest
 import tensorflow as tf
 
 from tensorflow_addons.image import utils as img_utils
@@ -88,4 +91,4 @@ class UtilsOpsTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))
