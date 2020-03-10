@@ -137,7 +137,7 @@ def create_or_get_logical_devices(
 
     # confirm that we are returning the correct number of logical devices.
     assert (
-        len(logical_devices_out) <= num_devices
+        len(logical_devices_out) == num_devices
     ), """%i logical devices have been initialized at an earlier stage,
         but the current request is for %i logical devices. Please initialize more logical devices at the earlier stage.
         You are seeing this error because you cannot modify logical devices after initialization.
