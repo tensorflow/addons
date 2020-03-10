@@ -145,9 +145,15 @@ On PowerShell, just use `sh` instead of `bash`.
 
 It is recommend that tests are ran within docker images, but should still work on host.
 
-CPU Docker: `docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-ubuntu16`
+CPU Docker: 
+```
+docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-ubuntu16
+```
 
-GPU Docker: `docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16`
+GPU Docker: 
+```
+docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16
+```
 
 Configure:
 ```
@@ -166,10 +172,34 @@ bazel test -c opt -k \
 `<package>` can be any package name like `metrics` for example.
 `<py_test_name>` can be any test name given by the `BUILD` file or `*` for all tests of the given package.
 
-### Install in editable mode without compiling
+### Setup your development environment
 
 If you're just modifying Python code (as opposed to C++/CUDA code), 
-then you don't need to use Bazel to run your tests.
+then you don't need to use Bazel to run your tests. 
+And you don't need to compile anything.
+
+#### Optional but recommended, creating a virtual environment
+
+If you want to work in 
+a [virtualenv](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/):
+
+```
+pip install virtualenv
+venv my_dev_environement
+source my_dev_environement/bin/activate  # Linux/macos/WSL2
+.\my_dev_environement\Scripts\activate   # PowerShell
+```
+
+If you want to work in 
+a [conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html):
+```
+conda create --name my_dev_environement
+conda activate my_dev_environement
+```
+
+
+#### Install TensorFlow Addons in editable mode
+
 Just run from the root:
 
 ```
@@ -178,12 +208,93 @@ pip install -e ./
 
 It's going to install Addons in editable mode without compiling anything.
 You can modify source files and changes will be seen at the next Python 
-interpreter startup.
+interpreter startup. This command needs to be executed only once. 
+Now, anywhere on your system, if you do `import tensorflow_addons`, it's 
+going to import the code in this git repository.
 
-You can then just run your tests by running Unittests. For example:
-```bash
-python -m unittest tensorflow_addons/rnn/cell_test.py
+#### Uninstall TensorFlow Addons
+
+To undo this operation, for example, you want to later on 
+install TensorFlow Addons from PyPI, the release version, do:
+
 ```
+pip uninstall tensorflow-addons
+```
+
+#### Run the tests with pytest
+
+If TensorFlow Addons is installed in editable mode, you can then just run your tests by 
+running Pytest. For example:
+```bash
+pip install -r tools/install_deps/pytest.txt
+python -m pytest tensorflow_addons/rnn/cell_test.py
+# or even
+python -m pytest tensorflow_addons/rnn/
+# or even 
+python -m pytest tensorflow_addons/
+# or even if pytest is in the PATH
+pytest tensorflow_addons/
+```
+
+Pytest has many cool options to help you make great tests:
+
+```bash
+# Use multiprocessing to run the tests, 3 workers
+pytest -n 3 tensorflow_addons/
+pytest -n auto tensorflow_addons/
+
+# Open the debugger to inspect variables and execute code when 
+# an exception is raised.
+pytest --pdb tensorflow_addons/ 
+
+# or if you prefer the Ipython debugger
+pytest --pdb --pdbcls=IPython.terminal.debugger:TerminalPdb --capture no tensorflow_addons/
+
+# by defaults print() aren't displayed with pytest
+# if you like to debug with prints (you might get 
+# the output scrambled)
+pytest -s tensorflow_addons/
+
+# get the list of functions you ran
+pytest -v tensorflow_addons/
+
+# to rerun all previous tests, running the ones that failed first
+pytest --ff tensorflow_addons/
+
+# You know which function to execute, but you're too 
+# lazy to type the file path
+pytest -k "test_get_all_shared_objects" ./tensorflow_addons/
+
+# get the 10 slowest functions
+pytest --duration=10 tensorflow_addons/
+```
+
+#### Compiling custom ops
+
+If you need a custom C++/Cuda op for your test, compile your ops with
+
+```bash
+python configure.py
+python configure.py --no-deps   # if you don't want any dependencies installed with pip
+bash tools/install_so_files.sh  # Linux/macos/WSL2
+sh tools/install_so_files.sh    # PowerShell
+```
+
+Note that you need bazel, a C++ compiler and a NVCC compiler (if you want to test
+Cuda ops). For that reason, we recommend you [run inside the custom-op docker containers](#run-manually)
+
+
+#### Testing with Pycharm
+
+Pycharm has a debugger build in the IDE for visual inspection of variables
+and step by step executions of Python instructions. It can run your test 
+functions from the little green arrows next to it. And you can add 
+ breakpoints by just clicking next to a line in the code (a red dot will appear). 
+ 
+ But in order for the debugger to run correctly, you need to specify 
+ that you use pytest as your main test runner, not unittest (the default one). 
+ 
+ For that, go in File -> Settings -> search box -> Default test runner -> Select "Pytest".
 
 ## About type hints
 
