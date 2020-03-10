@@ -258,7 +258,7 @@ sh tools/install_so_files.sh    # PowerShell
 ```
 
 Note that you need bazel, a C++ compiler and a NVCC compiler (if you want to test
-Cuda ops).
+Cuda ops). For that reason, we recommend you [run inside the custom-op docker containers](https://github.com/tensorflow/addons/blob/master/CONTRIBUTING.md#run-manually)
 
 
 #### Testing with Pycharm
