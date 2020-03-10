@@ -27,37 +27,6 @@ class ConditionalGradientTest(tf.test.TestCase):
         var = var * lr - (1 - lr) * lambda_ * g / norm
         return var
 
-    def top_singular_vector(self, m):
-        # handle the case where m is a tensor of rank 0 or rank 1.
-        # Example:
-        #   scalar (rank 0) a, shape []=> [[a]], shape [1,1]
-        #   vector (rank 1) [a,b], shape [2] => [[a,b]], shape [1,2]
-        original_rank = tf.rank(m)
-        shape = tf.shape(m)
-        first_pad = tf.cast(tf.less(original_rank, 2), dtype=tf.int32)
-        second_pad = tf.cast(tf.equal(original_rank, 0), dtype=tf.int32)
-        new_shape = tf.concat(
-            [
-                tf.ones(shape=first_pad, dtype=tf.int32),
-                tf.ones(shape=second_pad, dtype=tf.int32),
-                shape,
-            ],
-            axis=0,
-        )
-        n = tf.reshape(m, new_shape)
-        st, ut, vt = tf.linalg.svd(n, full_matrices=False)
-        n_size = tf.shape(n)
-        ut = tf.reshape(ut[:, 0], [n_size[0], 1])
-        vt = tf.reshape(vt[:, 0], [n_size[1], 1])
-        st = tf.matmul(ut, tf.transpose(vt))
-        # when we return the top singular vector, we have to remove the
-        # dimension we have added on
-        st_shape = tf.shape(st)
-        begin = tf.cast(tf.less(original_rank, 2), dtype=tf.int32)
-        end = 2 - tf.cast(tf.equal(original_rank, 0), dtype=tf.int32)
-        new_shape = st_shape[begin:end]
-        return tf.reshape(st, new_shape)
-
     # Based on issue #347 in the following link,
     #        "https://github.com/tensorflow/addons/issues/347"
     # tf.half is not registered for 'ResourceScatterUpdate' OpKernel
@@ -202,8 +171,12 @@ class ConditionalGradientTest(tf.test.TestCase):
 
             grads0 = tf.constant([0.1, 0.1], dtype=dtype)
             grads1 = tf.constant([0.01, 0.01], dtype=dtype)
-            top_singular_vector0 = self.top_singular_vector(grads0)
-            top_singular_vector1 = self.top_singular_vector(grads1)
+            top_singular_vector0 = cg_lib.ConditionalGradient._top_singular_vector(
+                grads0
+            )
+            top_singular_vector1 = cg_lib.ConditionalGradient._top_singular_vector(
+                grads1
+            )
 
             def learning_rate():
                 return 0.5
@@ -421,7 +394,9 @@ class ConditionalGradientTest(tf.test.TestCase):
             grads0_0 = 32 * 1.0 + 40 * 2.0
             grads0_1 = 40 * 1.0 + 50 * 2.0
             grads0 = tf.constant([[grads0_0, grads0_1]], dtype=dtype)
-            top_singular_vector0 = self.top_singular_vector(grads0)
+            top_singular_vector0 = cg_lib.ConditionalGradient._top_singular_vector(
+                grads0
+            )
 
             learning_rate = 0.1
             lambda_ = 0.1
@@ -494,7 +469,7 @@ class ConditionalGradientTest(tf.test.TestCase):
 
         # the gradient for this loss function:
         grads0 = tf.constant([[0, 0], [1, 1]], dtype=tf.float32)
-        top_singular_vector0 = self.top_singular_vector(grads0)
+        top_singular_vector0 = cg_lib.ConditionalGradient._top_singular_vector(grads0)
 
         learning_rate = 0.1
         lambda_ = 0.1
@@ -618,8 +593,12 @@ class ConditionalGradientTest(tf.test.TestCase):
                 var1 = tf.Variable([3.0, 4.0], dtype=dtype)
                 grads0 = tf.constant([0.1, 0.1], dtype=dtype)
                 grads1 = tf.constant([0.01, 0.01], dtype=dtype)
-                top_singular_vector0 = self.top_singular_vector(grads0)
-                top_singular_vector1 = self.top_singular_vector(grads1)
+                top_singular_vector0 = cg_lib.ConditionalGradient._top_singular_vector(
+                    grads0
+                )
+                top_singular_vector1 = cg_lib.ConditionalGradient._top_singular_vector(
+                    grads1
+                )
                 ord = "nuclear"
                 cg_opt = cg_lib.ConditionalGradient(
                     learning_rate=tf.constant(0.5), lambda_=tf.constant(0.01), ord=ord
@@ -1673,8 +1652,12 @@ class ConditionalGradientTest(tf.test.TestCase):
                 var1 = tf.Variable([3.0, 4.0], dtype=dtype)
                 grads0 = tf.constant([0.1, 0.1], dtype=dtype)
                 grads1 = tf.constant([0.01, 0.01], dtype=dtype)
-                top_singular_vector0 = self.top_singular_vector(grads0)
-                top_singular_vector1 = self.top_singular_vector(grads1)
+                top_singular_vector0 = cg_lib.ConditionalGradient._top_singular_vector(
+                    grads0
+                )
+                top_singular_vector1 = cg_lib.ConditionalGradient._top_singular_vector(
+                    grads1
+                )
                 learning_rate = 0.1
                 lambda_ = 0.1
                 ord = "nuclear"

@@ -173,18 +173,16 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
             norm = tf.convert_to_tensor(
                 self._frobenius_norm(grad), name="norm", dtype=var.dtype.base_dtype
             )
-            var_update_tensor = tf.math.multiply(var, lr) - (
-                1 - lr
-            ) * lambda_ * grad / (norm + epsilon)
+            s = grad / (norm + epsilon)
         else:
             top_singular_vector = tf.convert_to_tensor(
                 self._top_singular_vector(grad),
                 name="top_singular_vector",
                 dtype=var.dtype.base_dtype,
             )
-            var_update_tensor = (
-                tf.math.multiply(var, lr) - (1 - lr) * lambda_ * top_singular_vector
-            )
+            s = top_singular_vector
+
+        var_update_tensor = tf.math.multiply(var, lr) - (1 - lr) * lambda_ * s
         var_update_kwargs = {
             "resource": var.handle,
             "value": var_update_tensor,
@@ -205,19 +203,16 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
             norm = tf.convert_to_tensor(
                 self._frobenius_norm(grad), name="norm", dtype=var.dtype.base_dtype
             )
-            var_update_value = tf.math.multiply(var_slice, lr) - (
-                1 - lr
-            ) * lambda_ * grad / (norm + epsilon)
+            s = grad / (norm + epsilon)
         else:
             top_singular_vector = tf.convert_to_tensor(
                 self._top_singular_vector(grad),
                 name="top_singular_vector",
                 dtype=var.dtype.base_dtype,
             )
-            var_update_value = (
-                tf.math.multiply(var_slice, lr)
-                - (1 - lr) * lambda_ * top_singular_vector
-            )
+            s = top_singular_vector
+
+        var_update_value = tf.math.multiply(var_slice, lr) - (1 - lr) * lambda_ * s
         var_update_kwargs = {
             "resource": var.handle,
             "indices": indices,
