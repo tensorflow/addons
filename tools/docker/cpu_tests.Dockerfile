@@ -4,8 +4,8 @@ COPY tools/install_deps/tensorflow-cpu.txt ./
 RUN pip install -r tensorflow-cpu.txt
 
 RUN apt-get update && apt-get install -y sudo rsync
-COPY tools/install_deps/bazel.sh ./
-RUN bash bazel.sh
+COPY tools/install_deps/bazel_linux.sh ./
+RUN bash bazel_linux.sh
 
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
