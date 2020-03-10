@@ -19,8 +19,8 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.6 as public-api-typed
 
-COPY build_deps/build-requirements-cpu.txt ./
-RUN pip install -r build-requirements-cpu.txt
+COPY tools/install_deps/tensorflow-cpu.txt ./
+RUN pip install -r tensorflow-cpu.txt
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 COPY tools/install_deps/typedapi.txt ./
@@ -43,8 +43,8 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.5 as valid_build_files
 
-COPY build_deps/build-requirements-cpu.txt ./
-RUN pip install -r build-requirements-cpu.txt
+COPY tools/install_deps/tensorflow-cpu.txt ./
+RUN pip install -r tensorflow-cpu.txt
 
 RUN apt-get update && apt-get install sudo
 COPY tools/install_deps/bazel_linux.sh ./
@@ -90,8 +90,8 @@ RUN touch /ok.txt
 # docs tests
 FROM python:3.6 as docs_tests
 
-COPY build_deps/build-requirements-cpu.txt ./
-RUN pip install -r build-requirements-cpu.txt
+COPY tools/install_deps/tensorflow-cpu.txt ./
+RUN pip install -r tensorflow-cpu.txt
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
@@ -110,8 +110,8 @@ RUN touch /ok.txt
 # test the editable mode
 FROM python:3.6 as test_editable_mode
 
-COPY build_deps/build-requirements-cpu.txt ./
-RUN pip install -r build-requirements-cpu.txt
+COPY tools/install_deps/tensorflow-cpu.txt ./
+RUN pip install -r tensorflow-cpu.txt
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 COPY tools/install_deps/pytest.txt ./
