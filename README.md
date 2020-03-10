@@ -196,11 +196,46 @@ warning.
 
 
 ## Contributing
-TF-Addons is a community led open source project. As such, the project
-depends on public contributions, bug-fixes, and documentation. Please
-see [contribution guidelines](CONTRIBUTING.md) for a guide on how to
-contribute. This project adheres to [TensorFlow's code of conduct](CODE_OF_CONDUCT.md).
+TF-Addons is a community led open source project (only a few maintainers work for Google!). 
+As such, the project depends on public contributions, bug-fixes, and documentation. 
+This project adheres to [TensorFlow's code of conduct](CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code.
+
+Want to contribute but not sure of what? Here are a few suggestions:
+1. Add a new tutorial. Located in [`docs/tutorials/`](docs/tutorials),
+  these are a great way to familiarize yourself and others with TF-Addons. See
+  [the guidelines](docs/tutorials/README.md) for more information on how to add
+  examples.
+2. Improve the docstrings. The docstrings are fetched and then displayed in the documentation.
+  Do a change and hundreds of developers will see it and benefit from it. Maintainers are often focused 
+  on making APIs, fixing bugs and other code related changes. The documentation will never 
+  be loved enough!
+3. Solve an [existing issue](https://github.com/tensorflow/addons/issues).
+  These range from low-level software bugs to higher-level design problems.
+  Check out the label [help wanted](https://github.com/tensorflow/addons/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22). If you're a new contributor, the label [good first issue](https://github.com/tensorflow/addons/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) can be a good place to start.
+4. Review a pull request. So you're not a software engineer but you know a lot
+  about a certain field a research? That's awesome and we need your help! Many people 
+  are submitting pull requests to add layers/optimizers/functions taken from recent
+  papers. Since TensorFlow Addons maintainers are not specialized in everything,
+  you can imagine how hard it is to review. It takes very long to read the paper,
+  understand it and check the math in the pull request. If you're specialized, look at 
+  the [list of pull requests](https://github.com/tensorflow/addons/pulls). 
+  If there is something from a paper you now, please comment on the pull request to
+  check the math is ok. If you see that everything is good, say it! It will help 
+  the maintainers to sleep better at night knowing that he/she wasn't the only
+  person to approve the pull request.
+5. You have an opinion and want to share it? The docs are not very helpful for 
+  a function or a class? You tried to open a pull request but you didn't manage to 
+  install or test anything and you think it's too complicated? You made a pull request
+  but you didn't find the process good enough and it made no sense to you? Please 
+  say it! We want feedback. Maintainers are too much the head into the code 
+  to understand what it's like for someone new to open source to come to this project. 
+  If you don't understand something, be aware there are no people who are 
+  bad at understanding, there are just bad tutorials and bad guides.
+
+Please see [contribution guidelines](CONTRIBUTING.md) to get started (and remember,
+if you don't understand something, open an issue, or even make a pull request to 
+improve the guide!).
 
 ## Community
 * [Public Mailing List](https://groups.google.com/a/tensorflow.org/forum/#!forum/addons)
