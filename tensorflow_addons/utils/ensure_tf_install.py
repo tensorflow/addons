@@ -50,6 +50,7 @@ def _ensure_tf_install():
     required_tf_version = "2.1.0"
 
     if LooseVersion(tf.__version__) != LooseVersion(required_tf_version):
-        message = warning_template.format(required=required_tf_version,
-                                          present=tf.__version__)
+        message = warning_template.format(
+            required=required_tf_version, present=tf.__version__
+        )
         warnings.warn(message, UserWarning)
