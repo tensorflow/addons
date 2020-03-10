@@ -8,6 +8,7 @@ py_library(
         "__init__.py",
         "gelu.py",
         "maxout.py",
+        "multihead_attention.py",
         "netvlad.py",
         "normalizations.py",
         "optical_flow.py",
@@ -143,6 +144,18 @@ py_test(
         "netvlad_test.py",
     ],
     main = "netvlad_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "multihead_attention_test",
+    size = "small",
+    srcs = [
+        "multihead_attention_test.py",
+    ],
+    main = "multihead_attention_test.py",
     deps = [
         ":layers",
     ],
