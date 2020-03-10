@@ -229,7 +229,7 @@ pytest --pdb --pdbcls=IPython.terminal.debugger:TerminalPdb --capture no tensorf
 
 # by defaults print() aren't displayed with pytest
 # if you like to debug with prints (you might get 
-# the outpout scrambled
+# the output scrambled)
 pytest -s tensorflow_addons/
 
 # get the list of functions you ran
