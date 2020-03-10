@@ -209,7 +209,7 @@ class ResamplerTest(tf.test.TestCase, parameterized.TestCase):
 
         with pytest.raises(
             tf.errors.UnimplementedError,
-            match="Only bilinear interpolation is currently supported.",
+            match="Only bilinear interpolation is currently supported",
         ):
             self.evaluate(resampler_ops.resampler(data, warp))
 
