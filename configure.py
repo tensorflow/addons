@@ -100,7 +100,7 @@ def create_build_configuration():
     with open("requirements.txt") as f:
         required_packages = f.read().splitlines()
 
-    with open("build_deps/build-requirements.txt") as f:
+    with open("tools/install_deps/tensorflow.txt") as f:
         required_packages.extend(f.read().splitlines())
 
     print()
