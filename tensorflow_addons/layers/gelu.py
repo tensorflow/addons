@@ -43,6 +43,8 @@ class GELU(tf.keras.layers.Layer):
         self.supports_masking = True
 
     def call(self, inputs):
+        if tf.executing_eagerly():
+            raise ValueError
         return gelu(inputs, approximate=self.approximate)
 
     def get_config(self):

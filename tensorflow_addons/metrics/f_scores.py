@@ -123,6 +123,8 @@ class FBetaScore(tf.keras.metrics.Metric):
     # TODO: Add sample_weight support, currently it is
     # ignored during calculations.
     def update_state(self, y_true, y_pred, sample_weight=None):
+        if tf.executing_eagerly():
+            raise ValueError
         if self.threshold is None:
             threshold = tf.reduce_max(y_pred, axis=-1, keepdims=True)
             # make sure [0, 0, 0] doesn't become [1, 1, 1]
