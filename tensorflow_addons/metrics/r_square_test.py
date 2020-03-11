@@ -38,8 +38,8 @@ class RSquareTest(tf.test.TestCase):
         self.evaluate(tf.compat.v1.variables_initializer(r2_obj.variables))
         return r2_obj
 
-    def update_obj_states(self, obj, actuals, preds):
-        update_op = obj.update_state(actuals, preds)
+    def update_obj_states(self, obj, actuals, preds, sample_weight=None):
+        update_op = obj.update_state(actuals, preds, sample_weight=sample_weight)
         self.evaluate(update_op)
 
     def check_results(self, obj, value):
@@ -80,6 +80,20 @@ class RSquareTest(tf.test.TestCase):
         self.update_obj_states(r2_obj, actuals, preds)
         # Check results
         self.check_results(r2_obj, 0.7376327)
+
+    def test_r2_random_score_with_sample_weight(self):
+        actuals = tf.constant([35, 8000, 9, 11.5], dtype=tf.float32)
+        preds = tf.constant([2, 50, 500, 3.12], dtype=tf.float32)
+        sample_weight = tf.constant([2, 5, 1, 8], dtype=tf.float32)
+        actuals = tf.cast(actuals, dtype=tf.float32)
+        preds = tf.cast(preds, dtype=tf.float32)
+        sample_weight = tf.cast(sample_weight, dtype=tf.float32)
+        # Initialize
+        r2_obj = self.initialize_vars()
+        # Update
+        self.update_obj_states(r2_obj, actuals, preds, sample_weight=sample_weight)
+        # Check results
+        self.check_results(r2_obj, -0.4431257)
 
 
 if __name__ == "__main__":
