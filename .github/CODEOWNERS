@@ -67,7 +67,7 @@
 /tensorflow_addons/losses/npairs*.py @windqaq
 /tensorflow_addons/losses/quantiles*.py @romainbrault
 /tensorflow_addons/losses/sparsemax*.py @andreasmadsen
-/tensorflow_addons/losses/triplet*.py
+/tensorflow_addons/losses/triplet*.py @lc0
 
 /tensorflow_addons/metrics/cohens_kappa*.py
 /tensorflow_addons/metrics/f_scores*.py @ssaishruthi
