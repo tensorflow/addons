@@ -220,9 +220,12 @@ class CohenKappaTest(tf.test.TestCase):
         model.fit(x, y, epochs=1, verbose=0, batch_size=32)
 
 
-@pytest.fixture(scope="function", params=[True, False])
+@pytest.fixture(scope="function", params=["eager_mode", "tf_function"])
 def maybe_run_functions_eagerly(request):
-    tf.config.experimental_run_functions_eagerly(request.param)
+    if request.param == "eager_mode":
+        tf.config.experimental_run_functions_eagerly(True)
+    elif request.param == "tf_function":
+        tf.config.experimental_run_functions_eagerly(False)
 
     def finalizer():
         tf.config.experimental_run_functions_eagerly(False)
