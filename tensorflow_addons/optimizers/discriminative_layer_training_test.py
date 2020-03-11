@@ -427,11 +427,11 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
 
 
-def test_wrap(method, **kwargs):
+def wrap_test(func, **kwargs):
     """Wrap the test method so that it has pre assigned kwargs."""
 
     def test(self):
-        return method(self, **kwargs)
+        return func(self, **kwargs)
 
     return test
 
@@ -439,8 +439,8 @@ def test_wrap(method, **kwargs):
 def generate_tests():
     # Generate tests for each permutation in the zipped permutes.
     # This separates tests for each permuatation of model, optimizer, and loss.
-    for name, method in DiscriminativeLearningTest.__dict__.copy().items():
-        if callable(method) and name[:5] == "_test":
+    for name, func in DiscriminativeLearningTest.__dict__.copy().items():
+        if callable(func) and name[:5] == "_test":
             for model_fn, loss, opt in _zipped_permutes():
 
                 # Name the test as test_testname_model_loss_optimizer.
@@ -451,8 +451,8 @@ def generate_tests():
                 )
 
                 # Create test functions that use kwargs mentioned above.
-                testmethod_dist = test_wrap(
-                    method=method, model_fn=model_fn, loss=loss, opt=opt,
+                testmethod_dist = wrap_test(
+                    func=func, model_fn=model_fn, loss=loss, opt=opt,
                 )
 
                 # Set class attributes so we get multiple nicely named tests.
