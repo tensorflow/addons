@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for translate ops."""
 
+import sys
+
+import pytest
 import tensorflow as tf
 
 from tensorflow_addons.image import translate_ops
@@ -50,4 +53,4 @@ class TranslateOpTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

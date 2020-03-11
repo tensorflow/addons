@@ -13,6 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 
+import sys
+
+import pytest
 from absl.testing import parameterized
 
 import numpy as np
@@ -66,11 +69,14 @@ class GeluTest(tf.test.TestCase, parameterized.TestCase):
                 t.watch(x)
                 y_native = gelu(x, approximate=approximate)
                 y_py = _gelu_py(x, approximate=approximate)
-            self.assertAllCloseAccordingToType(y_native, y_py, atol=1e-4)
+            self.assertAllCloseAccordingToType(y_native, y_py)
             grad_native = t.gradient(y_native, x)
             grad_py = t.gradient(y_py, x)
-            self.assertAllCloseAccordingToType(grad_native, grad_py, atol=1e-4)
+            # TODO: lower atol to 1e-6
+            # currently it doesn't work.
+            # It necessitates changing the Python or C++ implementation.
+            self.assertAllCloseAccordingToType(grad_native, grad_py, atol=1e-5)
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

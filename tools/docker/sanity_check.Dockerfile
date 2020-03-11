@@ -1,6 +1,6 @@
 FROM python:3.5-alpine as flake8-test
 
-COPY tools/tests_dependencies/flake8.txt ./
+COPY tools/install_deps/flake8.txt ./
 RUN pip install -r flake8.txt
 COPY ./ /addons
 WORKDIR /addons
@@ -10,7 +10,7 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.6 as black-test
 
-COPY tools/tests_dependencies/black.txt ./
+COPY tools/install_deps/black.txt ./
 RUN pip install -r black.txt
 COPY ./ /addons
 RUN black --check /addons
@@ -19,17 +19,17 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.6 as public-api-typed
 
-COPY build_deps/build-requirements-cpu.txt ./
-RUN pip install -r build-requirements-cpu.txt
+COPY tools/install_deps/tensorflow-cpu.txt ./
+RUN pip install -r tensorflow-cpu.txt
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
-COPY tools/tests_dependencies/typedapi.txt ./
+COPY tools/install_deps/typedapi.txt ./
 RUN pip install -r typedapi.txt
 
 
 COPY ./ /addons
-RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e /addons
-RUN python /addons/tools/ci_build/verify/check_typing_info.py
+RUN pip install --no-deps -e /addons
+RUN python /addons/tools/testing/check_typing_info.py
 RUN touch /ok.txt
 
 # -------------------------------
@@ -37,18 +37,18 @@ FROM python:3.5-alpine as case-insensitive-filesystem
 
 COPY ./ /addons
 WORKDIR /addons
-RUN python /addons/tools/ci_build/verify/check_file_name.py
+RUN python /addons/tools/testing/check_file_name.py
 RUN touch /ok.txt
 
 # -------------------------------
 FROM python:3.5 as valid_build_files
 
-COPY build_deps/build-requirements-cpu.txt ./
-RUN pip install -r build-requirements-cpu.txt
+COPY tools/install_deps/tensorflow-cpu.txt ./
+RUN pip install -r tensorflow-cpu.txt
 
 RUN apt-get update && apt-get install sudo
-COPY tools/ci_build/install/bazel.sh ./
-RUN bash bazel.sh
+COPY tools/install_deps/bazel_linux.sh ./
+RUN bash bazel_linux.sh
 
 COPY tools/docker/finish_bazel_install.sh ./
 RUN bash finish_bazel_install.sh
@@ -79,7 +79,7 @@ RUN touch /ok.txt
 # Bazel code format
 FROM alpine:3.11 as check-bazel-format
 
-COPY ./tools/ci_build/install/buildifier.sh ./
+COPY ./tools/install_deps/buildifier.sh ./
 RUN sh buildifier.sh
 
 COPY ./ /addons
@@ -90,20 +90,45 @@ RUN touch /ok.txt
 # docs tests
 FROM python:3.6 as docs_tests
 
-COPY build_deps/build-requirements-cpu.txt ./
-RUN pip install -r build-requirements-cpu.txt
+COPY tools/install_deps/tensorflow-cpu.txt ./
+RUN pip install -r tensorflow-cpu.txt
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
-COPY tools/docs/doc_requirements.txt ./
+COPY tools/install_deps/doc_requirements.txt ./
 RUN pip install -r doc_requirements.txt
 
 RUN apt-get update && apt-get install -y rsync
 
 COPY ./ /addons
 WORKDIR /addons
-RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
-RUN python tools/docs/build_docs.py
+RUN pip install --no-deps -e .
+RUN python docs/build_docs.py
+RUN touch /ok.txt
+
+# -------------------------------
+# test the editable mode
+FROM python:3.6 as test_editable_mode
+
+COPY tools/install_deps/tensorflow-cpu.txt ./
+RUN pip install -r tensorflow-cpu.txt
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
+COPY tools/install_deps/pytest.txt ./
+RUN pip install -r pytest.txt
+
+RUN apt-get update && apt-get install -y sudo rsync
+COPY tools/install_deps/bazel_linux.sh ./
+RUN bash bazel_linux.sh
+COPY tools/docker/finish_bazel_install.sh ./
+RUN bash finish_bazel_install.sh
+
+COPY ./ /addons
+WORKDIR /addons
+RUN python configure.py --no-deps
+RUN bash tools/install_so_files.sh
+RUN pip install --no-deps -e .
+RUN pytest -v -n auto ./tensorflow_addons/activations
 RUN touch /ok.txt
 
 # -------------------------------
@@ -122,3 +147,4 @@ COPY --from=4 /ok.txt /ok4.txt
 COPY --from=5 /ok.txt /ok5.txt
 COPY --from=6 /ok.txt /ok6.txt
 COPY --from=7 /ok.txt /ok7.txt
+COPY --from=8 /ok.txt /ok8.txt

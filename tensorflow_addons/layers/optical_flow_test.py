@@ -13,6 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.layers.optical_flow import CorrelationCost
@@ -223,4 +226,4 @@ class CorrelationCostTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

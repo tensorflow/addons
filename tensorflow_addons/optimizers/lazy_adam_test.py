@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for LazyAdam."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -203,7 +206,7 @@ class LazyAdamTest(tf.test.TestCase):
                         "LazyAdam/var0_%d/m:0" % (i,), opt.get_slot(var0, "m").name
                     )
 
-    @test_utils.run_in_graph_and_eager_modes(reset_test=True)
+    @test_utils.run_in_graph_and_eager_modes
     def testResourceBasic(self):
         self.doTestBasic()
 
@@ -310,4 +313,4 @@ class LazyAdamTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

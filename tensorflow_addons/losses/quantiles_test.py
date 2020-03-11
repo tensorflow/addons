@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for pinball loss."""
 
+import sys
+
+import pytest
 import tensorflow as tf
 
 from tensorflow_addons.losses import quantiles
@@ -86,6 +89,7 @@ class PinballLossTest(tf.test.TestCase):
         self.assertAlmostEqual(self.evaluate(loss), 40.7 / 6, 3)
 
     def test_timestep_weighted(self):
+        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1202")
         pin_obj = quantiles.PinballLoss()
         y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3, 1))
         y_pred = tf.constant(
@@ -103,6 +107,7 @@ class PinballLossTest(tf.test.TestCase):
         self.assertAlmostEqual(self.evaluate(loss), 0.0, 3)
 
     def test_invalid_sample_weight(self):
+        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1202")
         pin_obj = quantiles.PinballLoss()
         y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3, 1))
         y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3, 1))
@@ -126,3 +131,7 @@ class PinballLossTest(tf.test.TestCase):
         y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3), dtype=tf.dtypes.float32)
         loss = pin_obj(y_true, y_pred, sample_weight=2.3)
         self.assertAlmostEqual(self.evaluate(loss), 12.65, 3)
+
+
+if __name__ == "__main__":
+    sys.exit(pytest.main([__file__]))

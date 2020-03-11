@@ -90,3 +90,15 @@ py_test(
         ":metrics",
     ],
 )
+
+py_test(
+    name = "metrics_test",
+    size = "small",
+    srcs = [
+        "metrics_test.py",
+    ],
+    main = "metrics_test.py",
+    deps = [
+        ":metrics",
+    ],
+)

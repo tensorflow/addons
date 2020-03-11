@@ -14,8 +14,10 @@
 # ==============================================================================
 """Tests for tfa.seq2seq.seq2seq.beam_search_decoder."""
 
-import numpy as np
+import sys
 
+import pytest
+import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.seq2seq import attention_wrapper
@@ -664,4 +666,4 @@ class BeamSearchDecoderTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))
