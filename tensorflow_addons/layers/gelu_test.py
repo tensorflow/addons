@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for GELU activation."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 from absl.testing import parameterized
@@ -33,4 +36,4 @@ class TestGELU(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

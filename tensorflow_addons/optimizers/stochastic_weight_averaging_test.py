@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for Stochastic Weight Averaging optimizer."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -83,7 +86,7 @@ class SWATest(tf.test.TestCase):
             "sgd", start_averaging=num_examples // 32 - 1, average_period=100
         )
         model.compile(optimizer, loss="mse")
-        model.fit(x, y, epochs=10)
+        model.fit(x, y, epochs=2)
         optimizer.assign_average_vars(model.variables)
 
         x = np.random.standard_normal((100, 3))
@@ -126,4 +129,4 @@ class SWATest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

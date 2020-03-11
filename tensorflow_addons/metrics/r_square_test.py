@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for R-Square Metric."""
 
+import sys
+
+import pytest
 import tensorflow as tf
 from tensorflow_addons.metrics import RSquare
 from tensorflow_addons.utils import test_utils
@@ -80,4 +83,4 @@ class RSquareTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

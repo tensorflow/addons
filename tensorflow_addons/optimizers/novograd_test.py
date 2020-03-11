@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for NovoGrad Optimizer."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -123,7 +126,7 @@ class NovoGradTest(tf.test.TestCase):
         model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
         model.compile(NovoGrad(), loss="mse")
 
-        model.fit(x, y, epochs=10)
+        model.fit(x, y, epochs=2)
 
         x = np.random.standard_normal((100, 3))
         y = np.dot(x, w)
@@ -141,4 +144,4 @@ class NovoGradTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))
