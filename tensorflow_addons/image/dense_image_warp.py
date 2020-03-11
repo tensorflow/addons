@@ -47,6 +47,8 @@ def interpolate_bilinear(
       ValueError: if the indexing mode is invalid, or if the shape of the
         inputs invalid.
     """
+    if tf.executing_eagerly():
+        raise ValueError
     if indexing != "ij" and indexing != "xy":
         raise ValueError("Indexing mode must be 'ij' or 'xy'")
 
