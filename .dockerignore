@@ -4,3 +4,4 @@
 .coverage*
 # C extensions
 *.so
+wheelhouse/
