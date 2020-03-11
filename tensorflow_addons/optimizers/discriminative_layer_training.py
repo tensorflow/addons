@@ -233,6 +233,14 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
             base_optimizer, tf.keras.optimizers.Optimizer
         ), "Base optimizer must be a class that inherits from tf.keras.optimizers.Optimizer"
 
+        # assume that users will follow the general guidelines and init thier opts within a dist scope.
+        if tf.distribute.has_strategy():
+            logging.warning(
+                """The discriminative layer optimizer may not behave as expected
+            when using a distribution strategy.
+            """
+            )
+
         super().__init__(lr=learning_rate, name=name, *args, **kwargs)
 
         DiscriminativeModelManager._prepare_model(model, verbose=verbose)
