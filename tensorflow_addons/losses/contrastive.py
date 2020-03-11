@@ -102,8 +102,6 @@ class ContrastiveLoss(tf.keras.losses.Loss):
         self.margin = margin
 
     def call(self, y_true, y_pred):
-        if tf.executing_eagerly():
-            raise ValueError
         return contrastive_loss(y_true, y_pred, self.margin)
 
     def get_config(self):
