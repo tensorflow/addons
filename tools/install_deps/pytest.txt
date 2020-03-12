@@ -1,2 +1,4 @@
+hypothesis~=5.6
 pytest~=5.3
 pytest-xdist~=1.31
+scikit-learn~=0.22

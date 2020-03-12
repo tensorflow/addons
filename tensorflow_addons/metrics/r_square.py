@@ -22,10 +22,12 @@ from typeguard import typechecked
 from tensorflow_addons.utils.types import AcceptableDTypes
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class RSquare(Metric):
     """Compute R^2 score.
 
-     This is also called as coefficient of determination.
+     This is also called the [coefficient of determination
+     ](https://en.wikipedia.org/wiki/Coefficient_of_determination).
      It tells how close are data to the fitted regression line.
 
      - Highest score can be 1.0 and it indicates that the predictors
@@ -33,6 +35,11 @@ class RSquare(Metric):
      - Score 0.0 indicates that the predictors do not
        account for variation in the target.
      - It can also be negative if the model is worse.
+
+     The sample weighting for this metric implementation mimics the
+     behaviour of the [scikit-learn implementation
+     ](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.r2_score.html)
+     of the same metric.
 
      Usage:
      ```python
@@ -48,7 +55,7 @@ class RSquare(Metric):
     def __init__(
         self, name: str = "r_square", dtype: AcceptableDTypes = None, **kwargs
     ):
-        super().__init__(name=name, dtype=dtype)
+        super().__init__(name=name, dtype=dtype, **kwargs)
         self.squared_sum = self.add_weight("squared_sum", initializer="zeros")
         self.sum = self.add_weight("sum", initializer="zeros")
         self.res = self.add_weight("residual", initializer="zeros")

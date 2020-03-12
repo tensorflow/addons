@@ -16,10 +16,46 @@
 
 import sys
 
+import hypothesis.strategies as st
 import pytest
 import tensorflow as tf
+from hypothesis import assume
+from hypothesis import given
+from hypothesis import settings
+from hypothesis.extra.numpy import arrays
+from sklearn.metrics import r2_score as sklearn_r2_score
 from tensorflow_addons.metrics import RSquare
 from tensorflow_addons.utils import test_utils
+
+
+@st.composite
+def metric_arguments(draw):
+    batch_size = draw(st.integers(min_value=2, max_value=50))
+    actuals = draw(
+        arrays(
+            elements=st.floats(allow_infinity=False, allow_nan=False, width=32),
+            shape=(batch_size,),
+            dtype="float32",
+            unique=True,
+        )
+    )
+    preds = draw(
+        arrays(
+            elements=st.floats(allow_infinity=False, allow_nan=False, width=32),
+            shape=actuals.shape,
+            dtype="float32",
+        )
+    )
+    sample_weight = draw(
+        arrays(
+            elements=st.floats(allow_infinity=False, allow_nan=False, width=32),
+            shape=actuals.shape,
+            dtype="float32",
+        )
+    )
+
+    assume(sum(sample_weight) != 0)
+    return actuals, preds, sample_weight
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -81,19 +117,25 @@ class RSquareTest(tf.test.TestCase):
         # Check results
         self.check_results(r2_obj, 0.7376327)
 
-    def test_r2_random_score_with_sample_weight(self):
-        actuals = tf.constant([35, 8000, 9, 11.5], dtype=tf.float32)
-        preds = tf.constant([2, 50, 500, 3.12], dtype=tf.float32)
-        sample_weight = tf.constant([2, 5, 1, 8], dtype=tf.float32)
-        actuals = tf.cast(actuals, dtype=tf.float32)
-        preds = tf.cast(preds, dtype=tf.float32)
-        sample_weight = tf.cast(sample_weight, dtype=tf.float32)
+    @settings(deadline=2000, max_examples=10)
+    @given(metric_arguments())
+    def test_r2_random_score_with_sample_weight(self, metric_arguments_tuple):
+        actuals, preds, sample_weight = metric_arguments_tuple
+        tensor_actuals = tf.constant(actuals, dtype=tf.float32)
+        tensor_preds = tf.constant(preds, dtype=tf.float32)
+        tensor_sample_weight = tf.constant(sample_weight, dtype=tf.float32)
+        tensor_actuals = tf.cast(tensor_actuals, dtype=tf.float32)
+        tensor_preds = tf.cast(tensor_preds, dtype=tf.float32)
+        tensor_sample_weight = tf.cast(tensor_sample_weight, dtype=tf.float32)
         # Initialize
         r2_obj = self.initialize_vars()
         # Update
-        self.update_obj_states(r2_obj, actuals, preds, sample_weight=sample_weight)
-        # Check results
-        self.check_results(r2_obj, -0.4431257)
+        self.update_obj_states(
+            r2_obj, tensor_actuals, tensor_preds, sample_weight=tensor_sample_weight
+        )
+        # Check results by comparing to results of scikit-learn r2 implementation
+        sklearn_result = sklearn_r2_score(actuals, preds, sample_weight=sample_weight)
+        self.check_results(r2_obj, sklearn_result)
 
 
 if __name__ == "__main__":
