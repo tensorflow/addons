@@ -124,7 +124,6 @@ py_test(
     srcs = [
         "rrelu_test.py",
     ],
-    args = ["--benchmarks=all"],
     main = "rrelu_test.py",
     deps = [
         ":activations",
