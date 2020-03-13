@@ -27,7 +27,6 @@ import sys
 import logging
 
 _DEFAULT_CUDA_VERISON = "10.1"
-_DEFAULT_CUDA_PATH = "/usr/local/cuda"
 _DEFAULT_CUDNN_VERSION = "7"
 _DEFAULT_CUDNN_PATH = "/usr/lib/x86_64-linux-gnu"
 
@@ -122,9 +121,7 @@ def create_build_configuration():
 
     _TF_CFLAGS = tf.sysconfig.get_compile_flags()
     _TF_LFLAGS = tf.sysconfig.get_link_flags()
-    _TF_CXX11_ABI_FLAG = tf.sysconfig.CXX11_ABI_FLAG
 
-    _TF_SHARED_LIBRARY_NAME = generate_shared_lib_name(_TF_LFLAGS)
     _TF_HEADER_DIR = _TF_CFLAGS[0][2:]
 
     # OS Specific parsing
@@ -138,8 +135,10 @@ def create_build_configuration():
 
     write_action_env_to_bazelrc("TF_HEADER_DIR", _TF_HEADER_DIR)
     write_action_env_to_bazelrc("TF_SHARED_LIBRARY_DIR", _TF_SHARED_LIBRARY_DIR)
-    write_action_env_to_bazelrc("TF_SHARED_LIBRARY_NAME", _TF_SHARED_LIBRARY_NAME)
-    write_action_env_to_bazelrc("TF_CXX11_ABI_FLAG", _TF_CXX11_ABI_FLAG)
+    write_action_env_to_bazelrc(
+        "TF_SHARED_LIBRARY_NAME", generate_shared_lib_name(_TF_LFLAGS)
+    )
+    write_action_env_to_bazelrc("TF_CXX11_ABI_FLAG", tf.sysconfig.CXX11_ABI_FLAG)
 
     write_to_bazelrc("build --spawn_strategy=standalone")
     write_to_bazelrc("build --strategy=Genrule=standalone")
@@ -167,9 +166,21 @@ def create_build_configuration():
     print()
 
 
+def get_cuda_toolkit_path():
+    default = "/usr/local/cuda"
+    cuda_toolkit_path = os.getenv("CUDA_TOOLKIT_PATH")
+    if cuda_toolkit_path is None:
+        answer = get_input(
+            "Please specify the location of CUDA. [Default is {}]: ".format(default)
+        )
+        cuda_toolkit_path = answer or default
+    print("> CUDA installation path:", cuda_toolkit_path)
+    print()
+    return cuda_toolkit_path
+
+
 def configure_cuda():
     _TF_CUDA_VERSION = os.getenv("TF_CUDA_VERSION")
-    _CUDA_TOOLKIT_PATH = os.getenv("CUDA_TOOLKIT_PATH")
     _TF_CUDNN_VERSION = os.getenv("TF_CUDNN_VERSION")
     _CUDNN_INSTALL_PATH = os.getenv("CUDNN_INSTALL_PATH")
     print()
@@ -183,16 +194,6 @@ def configure_cuda():
         )
         _TF_CUDA_VERSION = answer or _DEFAULT_CUDA_VERISON
     print("> Using CUDA version:", _TF_CUDA_VERSION)
-    print()
-
-    if _CUDA_TOOLKIT_PATH is None:
-        answer = get_input(
-            "Please specify the location of CUDA. [Default is {}]: ".format(
-                _DEFAULT_CUDA_PATH
-            )
-        )
-        _CUDA_TOOLKIT_PATH = answer or _DEFAULT_CUDA_PATH
-    print("> CUDA installation path:", _CUDA_TOOLKIT_PATH)
     print()
 
     if _TF_CUDNN_VERSION is None:
@@ -216,7 +217,7 @@ def configure_cuda():
     print()
 
     write_action_env_to_bazelrc("TF_NEED_CUDA", "1")
-    write_action_env_to_bazelrc("CUDA_TOOLKIT_PATH", _CUDA_TOOLKIT_PATH)
+    write_action_env_to_bazelrc("CUDA_TOOLKIT_PATH", get_cuda_toolkit_path())
     write_action_env_to_bazelrc("CUDNN_INSTALL_PATH", _CUDNN_INSTALL_PATH)
     write_action_env_to_bazelrc("TF_CUDA_VERSION", _TF_CUDA_VERSION)
     write_action_env_to_bazelrc("TF_CUDNN_VERSION", _TF_CUDNN_VERSION)
