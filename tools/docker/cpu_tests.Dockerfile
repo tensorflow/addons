@@ -10,7 +10,7 @@ RUN bash bazel_linux.sh
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
-COPY tools/docker/finish_bazel_install.sh ./
+COPY tools/install_deps/finish_bazel_install.sh ./
 RUN bash finish_bazel_install.sh
 
 COPY ./ /addons
