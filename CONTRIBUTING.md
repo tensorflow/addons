@@ -86,7 +86,8 @@ This is if you want to stay in Windows world. In this case, you need:
  [This link](https://github.com/tensorflow/addons/issues/1134) might help you.
 
 ## Development Tips
-Try these useful commands below:
+Try these useful commands below, they only use Docker and 
+don't require anything else (not even python installed):
 
 * Format code automatically: `bash tools/pre-commit.sh`
 * Run sanity check: `bash tools/run_sanity_check.sh`
@@ -125,54 +126,10 @@ See our [Style Guide](STYLE_GUIDE.md) for more details.
 Nightly CI tests are ran and results can be found on the central README. To
 subscribe for alerts please join the [addons-testing mailing list](https://groups.google.com/a/tensorflow.org/forum/#!forum/addons-testing).
 
-### Locally Testing 
 
-#### CPU Testing Script
-```bash
-bash tools/run_cpu_tests.sh
-```
+### Testing locally, without Docker
 
-On PowerShell, just use `sh` instead of `bash`.
-
-#### GPU Testing Script
-```bash
-bash tools/run_gpu_tests.sh
-```
-
-On PowerShell, just use `sh` instead of `bash`.
-
-#### Run Manually
-
-It is recommend that tests are ran within docker images, but should still work on host.
-
-CPU Docker: 
-```
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-ubuntu16
-```
-
-GPU Docker: 
-```
-docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16
-```
-
-Configure:
-```
-python3 ./configure.py  # Links project with TensorFlow dependency
-```
-Run selected tests:
-```bash
-bazel test -c opt -k \
---test_timeout 300,450,1200,3600 \
---test_output=all \
---run_under=$(readlink -f tools/testing/parallel_gpu_execute.sh) \
-//tensorflow_addons/<test_selection>
-```
-
-`<test_selection>` can be `...` for all tests or `<package>:<py_test_name>` for individual tests.
-`<package>` can be any package name like `metrics` for example.
-`<py_test_name>` can be any test name given by the `BUILD` file or `*` for all tests of the given package.
-
-### Setup your development environment
+When running outside Docker, you can use your IDE to debug, and use your local tools to work.
 
 If you're just modifying Python code (as opposed to C++/CUDA code), 
 then you don't need to use Bazel to run your tests. 
@@ -269,6 +226,18 @@ pytest -k "test_get_all_shared_objects" ./tensorflow_addons/
 pytest --duration=10 tensorflow_addons/
 ```
 
+#### Testing with Pycharm
+
+Pycharm has a debugger build in the IDE for visual inspection of variables
+and step by step executions of Python instructions. It can run your test 
+functions from the little green arrows next to it. And you can add 
+ breakpoints by just clicking next to a line in the code (a red dot will appear). 
+ 
+ But in order for the debugger to run correctly, you need to specify 
+ that you use pytest as your main test runner, not unittest (the default one). 
+ 
+ For that, go in File -> Settings -> search box -> Default test runner -> Select "Pytest".
+
 #### Compiling custom ops
 
 If you need a custom C++/Cuda op for your test, compile your ops with
@@ -281,20 +250,68 @@ sh tools/install_so_files.sh    # PowerShell
 ```
 
 Note that you need bazel, a C++ compiler and a NVCC compiler (if you want to test
-Cuda ops). For that reason, we recommend you [run inside the custom-op docker containers](#run-manually)
+Cuda ops). For that reason, we recommend you run inside the custom-op docker containers. 
+This will avoid you the hassle of installing Bazel, GCC/clang...
+See below.
 
 
-#### Testing with Pycharm
+#### Run Manually
 
-Pycharm has a debugger build in the IDE for visual inspection of variables
-and step by step executions of Python instructions. It can run your test 
-functions from the little green arrows next to it. And you can add 
- breakpoints by just clicking next to a line in the code (a red dot will appear). 
- 
- But in order for the debugger to run correctly, you need to specify 
- that you use pytest as your main test runner, not unittest (the default one). 
- 
- For that, go in File -> Settings -> search box -> Default test runner -> Select "Pytest".
+Running tests interactively in Docker gives you good flexibility and doesn't require 
+to install any additional tools.
+
+CPU Docker: 
+```
+docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-ubuntu16
+```
+
+GPU Docker: 
+```
+docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16
+```
+
+Configure:
+```
+python3.5 ./configure.py  # Links project with TensorFlow dependency
+```
+
+Install in editable mode
+```
+python3.5 -m pip install -e .
+python3.5 -m pip install pytest pytest-xdist
+```
+
+Compile the custom ops
+```
+bash tools/install_custom_ops.sh
+```
+
+Run selected tests:
+```bash
+python3.5 -m pytest path/to/file/or/directory/to/test
+```
+
+#### Testing with Bazel
+
+Testing with Bazel is still supported but not recommended unless you work at Google.
+This is because pytest offers many more options to run your test suite and have
+better error reports, timings reports, open-source plugins and documentation online, 
+at least for Python testing. 
+
+Internally, Google can use Bazel to test many commits 
+quickly, as Bazel has great support for caching and distributed testing.
+
+To test with Bazel:
+
+```
+python configure.py
+pip install pytest
+bazel test -c opt -k \
+--test_timeout 300,450,1200,3600 \
+--test_output=all \
+--run_under=$(readlink -f tools/testing/parallel_gpu_execute.sh) \
+//tensorflow_addons/...
+```
 
 ## About type hints
 
