@@ -15,6 +15,7 @@ py_library(
         "utils.py",
     ],
     deps = [
+        "//tensorflow_addons/testing",
         "//tensorflow_addons/utils",
     ],
 )
