@@ -21,6 +21,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow_addons.metrics import CohenKappa
 from tensorflow_addons.utils import test_utils
+from tensorflow_addons.testing.serialization import check_metric_serialization
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -229,6 +230,15 @@ class CohenKappaTest(tf.test.TestCase):
         y = tf.keras.utils.to_categorical(y, num_classes=5)
 
         model.fit(x, y, epochs=1, verbose=0, batch_size=32)
+
+
+def test_cohen_kappa_serialization():
+    actuals = np.array([4, 4, 3, 3, 2, 2, 1, 1], dtype=np.int32)
+    preds = np.array([1, 2, 4, 1, 3, 3, 4, 4], dtype=np.int32)
+    weights = np.array([1, 1, 2, 5, 10, 2, 3, 3], dtype=np.int32)
+
+    ck = CohenKappa(num_classes=5, sparse_labels=True, weightage="quadratic")
+    check_metric_serialization(ck, actuals, preds, weights)
 
 
 if __name__ == "__main__":

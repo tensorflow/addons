@@ -38,7 +38,15 @@ def check_metric_serialization(
         metric_copy.update_state(y_true, y_pred, sample_weight)
 
     assert_all_arrays_close(metric.get_weights(), metric_copy.get_weights())
-    assert metric.result().numpy() == metric_copy.result().numpy()
+    metric_result = metric.result().numpy()
+    metric_copy_result = metric_copy.result().numpy()
+    if metric_result != metric_copy_result:
+        raise ValueError(
+            "The original gave a result of {} after an "
+            "`.update_states()` call, but the copy gave "
+            "a result of {} after the same "
+            "call.".format(metric_result, metric_copy_result)
+        )
 
 
 def check_config(config, class_, strict):

@@ -21,10 +21,11 @@ def get_random_booleans():
 
 
 def test_check_metric_serialization_true_negative():
-    check_metric_serialization(TrueNegatives(0.8),
-                               np.random.uniform(0, 2, size=(2, 2)).astype(np.bool),
-                               np.random.uniform(0, 1, size=(2, 2)).astype(np.float32))
-
+    check_metric_serialization(
+        TrueNegatives(0.8),
+        np.random.uniform(0, 2, size=(2, 2)).astype(np.bool),
+        np.random.uniform(0, 1, size=(2, 2)).astype(np.float32),
+    )
 
 
 class MyDummyMetric(Metric):
@@ -49,12 +50,11 @@ def test_missing_arg():
     assert "stuff" in str(exception_info.value)
 
 
-
 class MyOtherDummyMetric(Metric):
     def __init__(self, to_add, name=None, dtype=None):
         super().__init__(name, dtype)
         self.to_add = to_add
-        self.sum_of_y_pred = self.add_weight(name='my_sum', initializer='zeros')
+        self.sum_of_y_pred = self.add_weight(name="my_sum", initializer="zeros")
 
     def update_state(self, y_true, y_pred, sample_weights=None):
         self.sum_of_y_pred.assign_add(tf.math.reduce_sum(y_pred) + self.to_add)
@@ -71,4 +71,3 @@ class MyOtherDummyMetric(Metric):
 def test_wrong_serialization():
     with pytest.raises(AssertionError):
         check_metric_serialization(MyOtherDummyMetric(5), (2,), (2,))
-
