@@ -46,7 +46,7 @@ class MultiLabelConfusionMatrix(Metric):
     - true positives for class i in M(1,1)
 
     Usage:
-    
+
     # multilabel confusion matrix
     >>> y_true = tf.constant([[1, 0, 1], [0, 1, 0]], dtype=tf.int32)
     >>> y_pred = tf.constant([[1, 0, 0],[0, 1, 1]], dtype=tf.int32)
@@ -64,9 +64,8 @@ class MultiLabelConfusionMatrix(Metric):
     >>> output.update_state(y_true, y_pred)
     >>> output.result()
     <tf.Tensor: shape=(3, 2, 2), dtype=int32, numpy=
-    array([[[1, 0], [0, 1]], [[1, 0], [1, 0]], [[1, 1], [0, 0]]], 
+    array([[[1, 0], [0, 1]], [[1, 0], [1, 0]], [[1, 1], [0, 0]]],
     dtype=int32)>
-    
     """
 
     @typechecked

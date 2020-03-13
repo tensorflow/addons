@@ -31,7 +31,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     Tim Salimans, Diederik P. Kingma (2016)
     WeightNormalization wrapper works for keras and tf layers.
 
-    Usage: 
+    Usage:
 
     >>> net = tfa.layers.WeightNormalization(
     ...   tf.keras.layers.Conv2D(2, 2, activation='relu'),

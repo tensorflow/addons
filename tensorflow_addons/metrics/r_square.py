@@ -43,9 +43,8 @@ class RSquare(Metric):
     >>> ans.update_state(actuals, preds)
     >>> ans.result()
     <tf.Tensor: shape=(), dtype=float32, numpy=0.57142866>
-     
     """
-    
+
     @typechecked
     def __init__(
         self, name: str = "r_square", dtype: AcceptableDTypes = None, **kwargs

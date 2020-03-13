@@ -52,7 +52,7 @@ class CohenKappa(Metric):
     <tf.Tensor: shape=(), dtype=float32, numpy=0.37209308>
 
     Usage with tf.keras API:
-    
+
     ```python
     model = tf.keras.models.Model(inputs, outputs)
     model.add_metric(tfa.metrics.CohenKappa(num_classes=5)(outputs))

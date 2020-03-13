@@ -25,30 +25,26 @@ import textwrap
 import numpy as np
 
 # pylint: disable=unused-import
-from absl import app
 from absl import flags
 from absl.testing import absltest
+import doctest
 
 # pylint: disable=unused-import
 import tensorflow_addons as tfa
 import tensorflow.compat.v2 as tf
-tf.compat.v1.enable_v2_behavior()
 
-# We put doctest after absltest so that it picks up the unittest monkeypatch.
-# Otherwise doctest tests aren't runnable at all.
-import doctest
+tf.compat.v1.enable_v2_behavior()
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string('module', None, 'A specific module to run doctest on.')
-flags.DEFINE_boolean('list', None,
-                     'List all the modules in the core package imported.')
-flags.DEFINE_string('file', None, 'A specific file to run doctest on.')
+flags.DEFINE_string("module", None, "A specific module to run doctest on.")
+flags.DEFINE_boolean("list", None, "List all the modules in the core package imported.")
+flags.DEFINE_string("file", None, "A specific file to run doctest on.")
 
-flags.mark_flags_as_mutual_exclusive(['module', 'file'])
-flags.mark_flags_as_mutual_exclusive(['list', 'file'])
+flags.mark_flags_as_mutual_exclusive(["module", "file"])
+flags.mark_flags_as_mutual_exclusive(["list", "file"])
 
-PACKAGE = 'tensorflow_addons.'
+PACKAGE = "tensorflow_addons."
 
 
 def find_modules():
@@ -95,11 +91,11 @@ def get_module_and_inject_docstring(file_path):
     """
 
     file_path = os.path.abspath(file_path)
-    mod_index = file_path.find(PACKAGE.replace('.', os.sep))
+    mod_index = file_path.find(PACKAGE.replace(".", os.sep))
     file_mod_name, _ = os.path.splitext(file_path[mod_index:])
-    file_module = sys.modules[file_mod_name.replace(os.sep, '.')]
+    file_module = sys.modules[file_mod_name.replace(os.sep, ".")]
 
-    with open(file_path, 'r') as f:
+    with open(file_path, "r") as f:
         content = f.read()
 
     file_module.__doc__ = content
@@ -121,24 +117,25 @@ class CustomOutputChecker(doctest.OutputChecker):
     This allows it to be customized before they are compared.
     """
 
-    ADDRESS_RE = re.compile(r'\bat 0x[0-9a-f]*?>')
+    ADDRESS_RE = re.compile(r"\bat 0x[0-9a-f]*?>")
 
     def check_output(self, want, got, optionflags):
         # Replace python's addresses with ellipsis (`...`) since it can change on
         # each execution.
-        want = self.ADDRESS_RE.sub('at ...>', want)
+        want = self.ADDRESS_RE.sub("at ...>", want)
         return doctest.OutputChecker.check_output(self, want, got, optionflags)
 
-    _MESSAGE = textwrap.dedent("""\n
+    _MESSAGE = textwrap.dedent(
+        """\n
         #############################################################
         Check the documentation
         (https://www.tensorflow.org/community/contribute/docs_ref) on how to write testable docstrings.
-        #############################################################""")
+        #############################################################"""
+    )
 
     def output_difference(self, example, got, optionflags):
         got = got + self._MESSAGE
-        return doctest.OutputChecker.output_difference(self, example, got,
-                                                       optionflags)
+        return doctest.OutputChecker.output_difference(self, example, got, optionflags)
 
 
 def load_tests(unused_loader, tests, unused_ignore):
@@ -150,10 +147,10 @@ def load_tests(unused_loader, tests, unused_ignore):
         tf_modules = filter_on_submodules(tf_modules, FLAGS.module)
 
     if FLAGS.list:
-        print('**************************************************')
+        print("**************************************************")
         for mod in tf_modules:
             print(mod.__name__)
-        print('**************************************************')
+        print("**************************************************")
         return tests
 
     if FLAGS.file:
@@ -165,21 +162,20 @@ def load_tests(unused_loader, tests, unused_ignore):
             doctest.DocTestSuite(
                 module,
                 test_finder=doctest.DocTestFinder(exclude_empty=False),
-                extraglobs={
-                    'tf': tf,
-                    'np': np,
-                    'os': os,
-                    'tfa': tfa
-                },
+                extraglobs={"tf": tf, "np": np, "os": os, "tfa": tfa},
                 setUp=testcase.set_up,
                 tearDown=testcase.tear_down,
                 checker=CustomOutputChecker(),
-                optionflags=(doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE
-                             | doctest.IGNORE_EXCEPTION_DETAIL
-                             | doctest.DONT_ACCEPT_BLANKLINE),
-            ))
+                optionflags=(
+                    doctest.ELLIPSIS
+                    | doctest.NORMALIZE_WHITESPACE
+                    | doctest.IGNORE_EXCEPTION_DETAIL
+                    | doctest.DONT_ACCEPT_BLANKLINE
+                ),
+            )
+        )
     return tests
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     absltest.main()

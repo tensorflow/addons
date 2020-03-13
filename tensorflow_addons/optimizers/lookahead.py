@@ -37,7 +37,6 @@ class Lookahead(tf.keras.optimizers.Optimizer):
 
     >>> opt = tf.keras.optimizers.SGD(learning_rate=0.01)
     >>> opt = tfa.optimizers.Lookahead(opt)
-    
     """
 
     @typechecked

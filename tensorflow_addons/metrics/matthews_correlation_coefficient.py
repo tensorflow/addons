@@ -49,7 +49,7 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
     >>> mcc.result()
     <tf.Tensor: shape=(1,), dtype=float32, numpy=array([-0.33333334], dtype=float32)>
     """
-    
+
     @typechecked
     def __init__(
         self,
