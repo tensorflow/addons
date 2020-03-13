@@ -1,12 +1,9 @@
+import numpy as np
+import pytest
+import tensorflow as tf
+
 from tensorflow.keras.metrics import MeanAbsoluteError, TrueNegatives, Metric
 from tensorflow_addons.testing.serialization import check_metric_serialization
-import tensorflow as tf
-import numpy as np
-
-import pytest
-
-
-tf.config.experimental_run_functions_eagerly(True)
 
 
 def test_check_metric_serialization_mae():
