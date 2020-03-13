@@ -13,15 +13,23 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for npairs loss."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
+import sys
+import platform
+import unittest
+
+import pytest
 import tensorflow as tf
 from tensorflow_addons.losses import npairs
 from tensorflow_addons.utils import test_utils
 
+IS_WINDOWS = platform.system() == "Windows"
 
+
+@unittest.skipIf(
+    IS_WINDOWS,
+    reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
+)
 @test_utils.run_all_in_graph_and_eager_modes
 class NpairsLossTest(tf.test.TestCase):
     def test_config(self):
@@ -34,11 +42,13 @@ class NpairsLossTest(tf.test.TestCase):
         # batch size = 4, hidden size = 2
         y_true = tf.constant([0, 1, 2, 3], dtype=tf.int64)
         # features of anchors
-        f = tf.constant([[1., 1.], [1., -1.], [-1., 1.], [-1., -1.]],
-                        dtype=tf.float32)
+        f = tf.constant(
+            [[1.0, 1.0], [1.0, -1.0], [-1.0, 1.0], [-1.0, -1.0]], dtype=tf.float32
+        )
         # features of positive samples
-        fp = tf.constant([[1., 1.], [1., -1.], [-1., 1.], [-1., -1.]],
-                         dtype=tf.float32)
+        fp = tf.constant(
+            [[1.0, 1.0], [1.0, -1.0], [-1.0, 1.0], [-1.0, -1.0]], dtype=tf.float32
+        )
         # similarity matrix
         y_pred = tf.matmul(f, fp, transpose_a=False, transpose_b=True)
         loss = nl_obj(y_true, y_pred)
@@ -54,6 +64,10 @@ class NpairsLossTest(tf.test.TestCase):
         self.assertAllClose(loss, 0.253856)
 
 
+@unittest.skipIf(
+    IS_WINDOWS,
+    reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
+)
 @test_utils.run_all_in_graph_and_eager_modes
 class NpairsMultilabelLossTest(tf.test.TestCase):
     def config(self):
@@ -66,14 +80,16 @@ class NpairsMultilabelLossTest(tf.test.TestCase):
         nml_obj = npairs.NpairsMultilabelLoss()
         # batch size = 4, hidden size = 2
         y_true = tf.constant(
-            [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]],
-            dtype=tf.int64)
+            [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]], dtype=tf.int64
+        )
         # features of anchors
-        f = tf.constant([[1., 1.], [1., -1.], [-1., 1.], [-1., -1.]],
-                        dtype=tf.float32)
+        f = tf.constant(
+            [[1.0, 1.0], [1.0, -1.0], [-1.0, 1.0], [-1.0, -1.0]], dtype=tf.float32
+        )
         # features of positive samples
-        fp = tf.constant([[1., 1.], [1., -1.], [-1., 1.], [-1., -1.]],
-                         dtype=tf.float32)
+        fp = tf.constant(
+            [[1.0, 1.0], [1.0, -1.0], [-1.0, 1.0], [-1.0, -1.0]], dtype=tf.float32
+        )
         # similarity matrix
         y_pred = tf.matmul(f, fp, transpose_a=False, transpose_b=True)
         loss = nml_obj(y_true, y_pred)
@@ -97,14 +113,16 @@ class NpairsMultilabelLossTest(tf.test.TestCase):
         nml_obj = npairs.NpairsMultilabelLoss()
         # batch size = 4, hidden size = 2
         y_true = tf.constant(
-            [[1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 1], [0, 0, 0, 1]],
-            dtype=tf.int64)
+            [[1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 1], [0, 0, 0, 1]], dtype=tf.int64
+        )
         # features of anchors
-        f = tf.constant([[1., 1.], [1., -1.], [-1., 1.], [-1., -1.]],
-                        dtype=tf.float32)
+        f = tf.constant(
+            [[1.0, 1.0], [1.0, -1.0], [-1.0, 1.0], [-1.0, -1.0]], dtype=tf.float32
+        )
         # features of positive samples
-        fp = tf.constant([[1., 1.], [1., -1.], [-1., 1.], [-1., -1.]],
-                         dtype=tf.float32)
+        fp = tf.constant(
+            [[1.0, 1.0], [1.0, -1.0], [-1.0, 1.0], [-1.0, -1.0]], dtype=tf.float32
+        )
         # similarity matrix
         y_pred = tf.matmul(f, fp, transpose_a=False, transpose_b=True)
         loss = nml_obj(y_true, y_pred)
@@ -134,4 +152,4 @@ class NpairsMultilabelLossTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

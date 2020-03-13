@@ -31,8 +31,8 @@ namespace generator {
 
 using Eigen::array;
 using Eigen::DenseIndex;
-using Eigen::numext::sqrt;
 using Eigen::numext::mini;
+using Eigen::numext::sqrt;
 
 template <typename Device, typename T>
 class EuclideanDistanceTransformGenerator {
@@ -41,8 +41,8 @@ class EuclideanDistanceTransformGenerator {
   int64 height_, width_;
 
  public:
-  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE EuclideanDistanceTransformGenerator(
-      typename TTypes<T, 4>::ConstTensor input)
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
+  EuclideanDistanceTransformGenerator(typename TTypes<T, 4>::ConstTensor input)
       : input_(input) {
     height_ = input_.dimension(1);
     width_ = input_.dimension(2);

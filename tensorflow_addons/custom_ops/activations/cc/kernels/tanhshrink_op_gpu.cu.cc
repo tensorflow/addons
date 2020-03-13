@@ -17,8 +17,8 @@ limitations under the License.
 
 #define EIGEN_USE_GPU
 
-#include "tensorflow_addons/custom_ops/activations/cc/kernels/tanhshrink_op.h"
 #include "tensorflow/core/framework/register_types.h"
+#include "tensorflow_addons/custom_ops/activations/cc/kernels/tanhshrink_op.h"
 #include "third_party/eigen3/Eigen/Core"
 
 namespace tensorflow {

@@ -13,10 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+import sys
 
+import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -62,10 +61,11 @@ class SparsemaxTest(tf.test.TestCase):
 
         test_utils.layer_test(
             Sparsemax,
-            kwargs={'dtype': dtype},
+            kwargs={"dtype": dtype},
             input_data=z,
-            expected_output=_np_sparsemax(z).astype(dtype))
+            expected_output=_np_sparsemax(z).astype(dtype),
+        )
 
 
-if __name__ == '__main__':
-    tf.test.main()
+if __name__ == "__main__":
+    sys.exit(pytest.main([__file__]))

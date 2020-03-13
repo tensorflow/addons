@@ -13,40 +13,39 @@
 # limitations under the License.
 # ==============================================================================
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+import sys
 
+import pytest
 from absl.testing import parameterized
 
 import numpy as np
 import tensorflow as tf
-from tensorflow_addons.activations import hardshrink
+from tensorflow_addons.activations.hardshrink import _hardshrink_custom_op
+from tensorflow_addons.activations.hardshrink import _hardshrink_py
 from tensorflow_addons.utils import test_utils
 
 
 @test_utils.run_all_in_graph_and_eager_modes
 class HardshrinkTest(tf.test.TestCase, parameterized.TestCase):
     def test_invalid(self):
-        with self.assertRaisesOpError(
-                "lower must be less than or equal to upper."):  # pylint: disable=bad-continuation
-            y = hardshrink(tf.ones(shape=(1, 2, 3)), lower=2.0, upper=-2.0)
+        with self.assertRaisesOpError("lower must be less than or equal to upper."):
+            y = _hardshrink_custom_op(tf.ones(shape=(1, 2, 3)), lower=2.0, upper=-2.0)
             self.evaluate(y)
 
-    @parameterized.named_parameters(("float16", np.float16),
-                                    ("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(
+        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
+    )
     def test_hardshrink(self, dtype):
         x = tf.constant([-2.0, -0.5, 0.0, 0.5, 2.0], dtype=dtype)
         expected_result = tf.constant([-2.0, 0.0, 0.0, 0.0, 2.0], dtype=dtype)
-        self.assertAllCloseAccordingToType(hardshrink(x), expected_result)
+        self.assertAllCloseAccordingToType(_hardshrink_custom_op(x), expected_result)
 
         expected_result = tf.constant([-2.0, 0.0, 0.0, 0.0, 2.0], dtype=dtype)
         self.assertAllCloseAccordingToType(
-            hardshrink(x, lower=-1.0, upper=1.0), expected_result)
+            _hardshrink_custom_op(x, lower=-1.0, upper=1.0), expected_result
+        )
 
-    @parameterized.named_parameters(("float32", np.float32),
-                                    ("float64", np.float64))
+    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
     def test_theoretical_gradients(self, dtype):
         # Only test theoretical gradients for float32 and float64
         # because of the instability of float16 while computing jacobian
@@ -55,17 +54,33 @@ class HardshrinkTest(tf.test.TestCase, parameterized.TestCase):
         # Avoid these two points to make gradients smooth.
         x = tf.constant([-2.0, -1.5, 0.0, 1.5, 2.0], dtype=dtype)
 
-        theoretical, numerical = tf.test.compute_gradient(hardshrink, [x])
+        theoretical, numerical = tf.test.compute_gradient(_hardshrink_custom_op, [x])
         self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
 
-    def test_unknown_shape(self):
-        fn = hardshrink.get_concrete_function(
-            tf.TensorSpec(shape=None, dtype=tf.float32))
+    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
+    def test_same_as_py_func(self, dtype):
+        np.random.seed(1234)
+        for _ in range(20):
+            self.verify_funcs_are_equivalent(dtype)
 
-        for shape in [(1,), (1, 2), (1, 2, 3), (1, 2, 3, 4)]:
-            x = tf.ones(shape=shape, dtype=tf.float32)
-            self.assertAllClose(fn(x), hardshrink(x))
+    def verify_funcs_are_equivalent(self, dtype):
+        x_np = np.random.uniform(-10, 10, size=(4, 4)).astype(dtype)
+        x = tf.convert_to_tensor(x_np)
+        lower = np.random.uniform(-10, 10)
+        upper = lower + np.random.uniform(0, 10)
+
+        with tf.GradientTape(persistent=True) as t:
+            t.watch(x)
+            y_native = _hardshrink_custom_op(x, lower, upper)
+            y_py = _hardshrink_py(x, lower, upper)
+
+        self.assertAllCloseAccordingToType(y_native, y_py)
+
+        grad_native = t.gradient(y_native, x)
+        grad_py = t.gradient(y_py, x)
+
+        self.assertAllCloseAccordingToType(grad_native, grad_py)
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

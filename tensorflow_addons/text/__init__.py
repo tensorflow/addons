@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Additional text-processing ops."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 # Conditional Random Field
 from tensorflow_addons.text.crf import crf_binary_score
@@ -29,10 +26,8 @@ from tensorflow_addons.text.crf import crf_multitag_sequence_score
 from tensorflow_addons.text.crf import crf_sequence_score
 from tensorflow_addons.text.crf import crf_unary_score
 from tensorflow_addons.text.crf import viterbi_decode
+from tensorflow_addons.text.parse_time_op import parse_time
 
 # Skip Gram Sampling
 from tensorflow_addons.text.skip_gram_ops import skip_gram_sample
 from tensorflow_addons.text.skip_gram_ops import skip_gram_sample_with_text_vocab
-
-# Parse Time
-from tensorflow_addons.text.parse_time_op import parse_time

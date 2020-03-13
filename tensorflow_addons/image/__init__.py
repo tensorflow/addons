@@ -13,9 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Additional image manipulation ops."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 from tensorflow_addons.image.connected_components import connected_components
 from tensorflow_addons.image.dense_image_warp import dense_image_warp

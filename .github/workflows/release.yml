@@ -1,0 +1,112 @@
+name: addons-release
+
+on:
+  release:
+    types: [published]
+    tags:
+      - v*
+  push:
+    branches:
+      - master
+      - r*
+  pull_request:
+    branches:
+      - master
+      - r*
+
+env:
+  BAZEL_VERSION: 1.1.0
+  OLDEST_PY_VERSION: '3.5'
+
+jobs:
+  test-with-bazel:
+    name: Test with bazel
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ env.OLDEST_PY_VERSION }}
+      - name: Build wheels
+        run: |
+          pip install -r tools/install_deps/pytest.txt -r tools/install_deps/tensorflow-cpu.txt -r requirements.txt
+          bash tools/install_deps/bazel_linux.sh
+          python configure.py --no-deps
+          bazel test -c opt -k --test_timeout 300,450,1200,3600 --test_output=errors //tensorflow_addons/...
+  release-wheel:
+    name: Build release wheels
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
+        python-version: ['3.5', '3.6', '3.7']
+      fail-fast: false
+    steps:
+      - if: github.event_name == 'push'
+        run: echo "::set-env name=NIGHTLY_FLAG::--nightly"
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build wheels
+        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == env.OLDEST_PY_VERSION
+        env:
+          PY_VERSION: ${{ matrix.python-version }}
+          OS: ${{ runner.os }}
+        shell: bash
+        run: bash .github/workflows/make_wheel_${OS}.sh
+      - uses: actions/upload-artifact@v1
+        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == env.OLDEST_PY_VERSION
+        with:
+          name: ${{ runner.os }}-${{ matrix.python-version }}-wheel
+          path: wheelhouse
+  test-release-wheel:
+    name: Test release wheels
+    runs-on: ${{ matrix.os }}
+    needs: [release-wheel]
+    strategy:
+      matrix:
+        os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
+        python-version: ['3.5', '3.6', '3.7']
+      fail-fast: false
+    steps:
+      - uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/download-artifact@v1
+        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == env.OLDEST_PY_VERSION
+        with:
+          name: ${{ runner.os }}-${{ matrix.python-version }}-wheel
+          path: ./wheel
+      - name: Test wheel
+        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == env.OLDEST_PY_VERSION
+        shell: bash
+        run: |
+          pip install tensorflow~=2.1.0
+          pip install wheel/*.whl
+          python -c "import tensorflow_addons as tfa; print(tfa.activations.lisht(0.2))"
+
+  upload-wheels:
+    name: Publish wheels to PyPi
+    needs: [release-wheel, test-release-wheel, test-with-bazel]
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        os: ['macOS', 'Windows', 'Linux']
+        python-version: ['3.5', '3.6', '3.7']
+    steps:
+      - uses: actions/download-artifact@v1
+        if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == env.OLDEST_PY_VERSION
+        with:
+          name: ${{ matrix.os }}-${{ matrix.python-version }}-wheel
+          path: ./dist
+      - if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == env.OLDEST_PY_VERSION
+        run: |
+          set -e -x
+          ls -la dist/
+          sha256sum dist/*.whl
+      - uses: pypa/gh-action-pypi-publish@master
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_token }}

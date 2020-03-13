@@ -25,7 +25,6 @@ py_library(
         "//tensorflow_addons/custom_ops/image:_resampler_ops.so",
         "//tensorflow_addons/utils",
     ],
-    srcs_version = "PY2AND3",
 )
 
 filegroup(
@@ -40,7 +39,6 @@ py_test(
         "dense_image_warp_test.py",
     ],
     main = "dense_image_warp_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":image",
     ],
@@ -53,7 +51,6 @@ py_test(
         "distance_transform_test.py",
     ],
     main = "distance_transform_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":image",
     ],
@@ -66,7 +63,6 @@ py_test(
         "distort_image_ops_test.py",
     ],
     main = "distort_image_ops_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":image",
     ],
@@ -78,8 +74,8 @@ py_test(
     srcs = [
         "filters_test.py",
     ],
+    flaky = True,
     main = "filters_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":image",
     ],
@@ -92,7 +88,6 @@ py_test(
         "transform_ops_test.py",
     ],
     main = "transform_ops_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":image",
     ],
@@ -105,7 +100,6 @@ py_test(
         "translate_ops_test.py",
     ],
     main = "translate_ops_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":image",
     ],
@@ -118,7 +112,6 @@ py_test(
         "utils_test.py",
     ],
     main = "utils_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":image",
     ],
@@ -131,7 +124,6 @@ py_test(
         "sparse_image_warp_test.py",
     ],
     main = "sparse_image_warp_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":image",
     ],
@@ -144,7 +136,6 @@ py_test(
         "interpolate_spline_test.py",
     ],
     main = "interpolate_spline_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":image",
     ],
@@ -157,7 +148,6 @@ py_test(
         "connected_components_test.py",
     ],
     main = "connected_components_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":image",
     ],
@@ -170,7 +160,6 @@ py_test(
         "resampler_ops_test.py",
     ],
     main = "resampler_ops_test.py",
-    srcs_version = "PY2AND3",
     deps = [
         ":image",
     ],

@@ -20,10 +20,9 @@ limitations under the License.
 
 #define EIGEN_USE_THREADS
 
-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
-
 #include "tensorflow/core/framework/tensor_types.h"
 #include "tensorflow/core/platform/types.h"
+#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
 namespace addons {
@@ -46,9 +45,9 @@ class ProjectiveGenerator {
   static const int kNumParameters = 8;
 
   EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
-      ProjectiveGenerator(typename TTypes<T, 4>::ConstTensor input,
-                          typename TTypes<float>::ConstMatrix transforms,
-                          const Interpolation interpolation)
+  ProjectiveGenerator(typename TTypes<T, 4>::ConstTensor input,
+                      typename TTypes<float>::ConstMatrix transforms,
+                      const Interpolation interpolation)
       : input_(input), transforms_(transforms), interpolation_(interpolation) {}
 
   EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE T

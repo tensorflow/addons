@@ -14,19 +14,20 @@
 # ============================================================================
 """Python layer for Resampler."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
-from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
-_resampler_ops = tf.load_op_library(
-    get_path_to_datafile("custom_ops/image/_resampler_ops.so"))
+from tensorflow_addons.utils import types
+from tensorflow_addons.utils.resource_loader import LazySO
+
+from typing import Optional
+
+_resampler_so = LazySO("custom_ops/image/_resampler_ops.so")
 
 
 @tf.function
-def resampler(data, warp, name=None):
+def resampler(
+    data: types.TensorLike, warp: types.TensorLike, name: Optional[str] = None
+) -> tf.Tensor:
     """Resamples input data at user defined coordinates.
 
     The resampler currently only supports bilinear interpolation of 2D data.
@@ -52,14 +53,14 @@ def resampler(data, warp, name=None):
     with tf.name_scope(name or "resampler"):
         data_tensor = tf.convert_to_tensor(data, name="data")
         warp_tensor = tf.convert_to_tensor(warp, name="warp")
-        return _resampler_ops.addons_resampler(data_tensor, warp_tensor)
+        return _resampler_so.ops.addons_resampler(data_tensor, warp_tensor)
 
 
 @tf.RegisterGradient("Addons>Resampler")
-def _resampler_grad(op, grad_output):
+def _resampler_grad(op: types.TensorLike, grad_output: types.TensorLike) -> tf.Tensor:
     data, warp = op.inputs
     grad_output_tensor = tf.convert_to_tensor(grad_output, name="grad_output")
-    return _resampler_ops.addons_resampler_grad(data, warp, grad_output_tensor)
+    return _resampler_so.ops.addons_resampler_grad(data, warp, grad_output_tensor)
 
 
 tf.no_gradient("Addons>ResamplerGrad")

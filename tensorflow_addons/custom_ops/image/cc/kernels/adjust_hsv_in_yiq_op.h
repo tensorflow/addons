@@ -19,12 +19,12 @@ limitations under the License.
 #endif  // GOOGLE_CUDA
 
 #include <cmath>
-#include "third_party/eigen3/Eigen/Core"
-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/framework/types.h"
+#include "third_party/eigen3/Eigen/Core"
+#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
 namespace addons {
@@ -34,7 +34,7 @@ static constexpr int kChannelSize = 3;
 namespace internal {
 
 template <int MATRIX_SIZE>
-EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void compute_tranformation_matrix(
+EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void compute_transformation_matrix(
     const float delta_h, const float scale_s, const float scale_v,
     float* matrix) {
   static_assert(MATRIX_SIZE == kChannelSize * kChannelSize,

@@ -16,4 +16,5 @@ http_archive(
 tf_configure(
     name = "local_config_tf",
 )
+
 cuda_configure(name = "local_config_cuda")

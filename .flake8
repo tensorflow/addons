@@ -1,0 +1,24 @@
+[flake8]
+
+ignore =
+    # defaults flake8 ignores
+    E121,E123,E126,E226,E24,E704,W503,W504
+    # whitespace before ':'
+    # https://black.readthedocs.io/en/stable/the_black_code_style.html#slices
+    E203
+    # missing whitespace after ','
+    # black takes care of that. Sometimes it may
+    # add a comma at the end of lists.
+    E231
+    # Line too long
+    # We use black, no need to enforce line length
+    E501
+    # lowercase ... imported as non lowercase
+    # Useful to ignore for "import keras.backend as K"
+    N812
+
+per-file-ignores =
+    # imported but unused in __init__.py, that's ok.
+    **/__init__.py:F401
+    # import not at top okay due to TF installation check
+    tensorflow_addons/__init__.py:F401,E402

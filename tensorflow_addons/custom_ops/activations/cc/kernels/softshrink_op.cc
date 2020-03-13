@@ -16,6 +16,7 @@ limitations under the License.
 #define EIGEN_USE_THREADS
 
 #include "tensorflow_addons/custom_ops/activations/cc/kernels/softshrink_op.h"
+
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"

@@ -1,15 +1,7 @@
 # Addons - Callbacks
 
-## Maintainers
-| Submodule  | Maintainers  | Contact Info   |
-|:---------- |:------------- |:--------------|
-|  tqdm_progress_bar | @shun-lin | shunlin@google.com |
-
 ## Contents
-| Submodule | Callback  | Reference                               |
-|:----------------------- |:-------------------|:---------------|
-| tqdm_progress_bar | TQDMProgressBar | https://tqdm.github.io/ |
-
+https://www.tensorflow.org/addons/api_docs/python/tfa/callbacks
 
 ## Contribution Guidelines
 #### Standard API
@@ -28,4 +20,4 @@ must:
  * Add a `py_test` to this sub-package's BUILD file.
 
 #### Documentation Requirements
- * Update the table of contents in this sub-package's README.
+ * Update the [CODEOWNERS file](https://github.com/tensorflow/addons/blob/master/.github/CODEOWNERS)

@@ -13,10 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for Keras utils."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
+import sys
+
+import pytest
 import tensorflow as tf
 
 from tensorflow_addons.utils import keras_utils
@@ -24,18 +24,16 @@ from tensorflow_addons.utils import keras_utils
 
 class NormalizeTupleTest(tf.test.TestCase):
     def test_normalize_tuple(self):
-        self.assertEqual((2, 2, 2),
-                         keras_utils.normalize_tuple(2, n=3, name='strides'))
-        self.assertEqual((2, 1, 2),
-                         keras_utils.normalize_tuple((2, 1, 2),
-                                                     n=3,
-                                                     name='strides'))
+        self.assertEqual((2, 2, 2), keras_utils.normalize_tuple(2, n=3, name="strides"))
+        self.assertEqual(
+            (2, 1, 2), keras_utils.normalize_tuple((2, 1, 2), n=3, name="strides")
+        )
 
         with self.assertRaises(ValueError):
-            keras_utils.normalize_tuple((2, 1), n=3, name='strides')
+            keras_utils.normalize_tuple((2, 1), n=3, name="strides")
 
         with self.assertRaises(TypeError):
-            keras_utils.normalize_tuple(None, n=3, name='strides')
+            keras_utils.normalize_tuple(None, n=3, name="strides")
 
 
 class AssertRNNCellTest(tf.test.TestCase):
@@ -55,5 +53,5 @@ class AssertRNNCellTest(tf.test.TestCase):
         keras_utils.assert_like_rnncell("cell", CustomCell())
 
 
-if __name__ == '__main__':
-    tf.test.main()
+if __name__ == "__main__":
+    sys.exit(pytest.main([__file__]))

@@ -16,7 +16,6 @@ py_library(
     data = [
         "//tensorflow_addons/custom_ops/seq2seq:_beam_search_ops.so",
     ],
-    srcs_version = "PY2AND3",
     deps = [
         "//tensorflow_addons/utils",
     ],
