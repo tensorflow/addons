@@ -7,7 +7,7 @@ RUN python3 -m pip install -r tensorflow.txt
 COPY requirements.txt ./
 RUN python3 -m pip install -r requirements.txt
 
-COPY tools/docker/finish_bazel_install.sh ./
+COPY tools/install_deps/finish_bazel_install.sh ./
 RUN bash finish_bazel_install.sh
 
 
