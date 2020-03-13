@@ -14,15 +14,9 @@
 # limitations under the License.
 #
 # ==============================================================================
-# usage: bash tools/testing/addons_cpu.sh [--no-deps]
+# usage: bash tools/testing/addons_cpu.sh
 
 set -x -e
-
-
-if [ "$1" != "--no-deps" ] && [ "$1" != "" ]; then
-  echo Wrong argument $1
-  exit 1
-fi
 
 export CC_OPT_FLAGS='-mavx'
 export TF_NEED_CUDA=0

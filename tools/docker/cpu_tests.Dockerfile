@@ -15,7 +15,7 @@ RUN bash finish_bazel_install.sh
 
 COPY ./ /addons
 WORKDIR addons
-RUN bash tools/testing/addons_cpu.sh --no-deps
+RUN bash tools/testing/addons_cpu.sh
 
 RUN bazel build --enable_runfiles build_pip_pkg
 RUN bazel-bin/build_pip_pkg artifacts

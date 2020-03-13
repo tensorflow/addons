@@ -6,7 +6,7 @@ set -e
 cd /tmp
 git clone https://github.com/tensorflow/addons.git
 cd addons
-python ./configure.py --no-deps
+python ./configure.py
 bazel build --nobuild -- //tensorflow_addons/...
 cd ..
 rm -rf ./addons

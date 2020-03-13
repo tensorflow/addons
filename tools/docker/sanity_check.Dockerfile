@@ -28,7 +28,7 @@ RUN pip install -r typedapi.txt
 
 
 COPY ./ /addons
-RUN pip install --no-deps -e /addons
+RUN pip install -e /addons
 RUN python /addons/tools/testing/check_typing_info.py
 RUN touch /ok.txt
 
@@ -55,7 +55,7 @@ RUN bash finish_bazel_install.sh
 
 COPY ./ /addons
 WORKDIR /addons
-RUN python ./configure.py --no-deps
+RUN python ./configure.py
 RUN bazel build --nobuild -- //tensorflow_addons/...
 RUN touch /ok.txt
 
@@ -102,7 +102,7 @@ RUN apt-get update && apt-get install -y rsync
 
 COPY ./ /addons
 WORKDIR /addons
-RUN pip install --no-deps -e .
+RUN pip install -e .
 RUN python docs/build_docs.py
 RUN touch /ok.txt
 
@@ -125,9 +125,9 @@ RUN bash finish_bazel_install.sh
 
 COPY ./ /addons
 WORKDIR /addons
-RUN python configure.py --no-deps
+RUN python configure.py
 RUN bash tools/install_so_files.sh
-RUN pip install --no-deps -e .
+RUN pip install -e .
 RUN pytest -v -n auto ./tensorflow_addons/activations
 RUN touch /ok.txt
 

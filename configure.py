@@ -12,14 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# Usage: configure.py [--quiet] [--no-deps]
-#
-# Options:
-#  --quiet  Give less output.
-#  --no-deps  Don't install Python dependencies
+# Usage: python configure.py
 
-
-import argparse
 import os
 import platform
 import subprocess
@@ -80,38 +74,23 @@ def generate_shared_lib_name(namespec):
         return namespec[1][3:]
 
 
+def ensure_tf_is_installed():
+    try:
+        import tensorflow as tf
+
+        print("> Using pre-installed Tensorflow", tf.__version__)
+    except ImportError:
+        print("> Tensorflow not detected. Installing...")
+        install_cmd = [sys.executable, "-m", "pip", "install"]
+        with open("tools/install_deps/tensorflow.txt") as f:
+            install_cmd += f.read().splitlines()
+        subprocess.check_call(install_cmd)
+
+
 def create_build_configuration():
     print()
     print("Configuring TensorFlow Addons to be built from source...")
-
-    pip_install_options = ["--upgrade"]
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--quiet", action="store_true", help="Give less output.")
-    parser.add_argument(
-        "--no-deps",
-        action="store_true",
-        help="Do not check and install Python dependencies.",
-    )
-    args = parser.parse_args()
-    if args.quiet:
-        pip_install_options.append("--quiet")
-
-    python_path = sys.executable
-    with open("requirements.txt") as f:
-        required_packages = f.read().splitlines()
-
-    with open("tools/install_deps/tensorflow.txt") as f:
-        required_packages.extend(f.read().splitlines())
-
-    print()
-    if args.no_deps:
-        print("> Using pre-installed Tensorflow.")
-    else:
-        print("> Installing", required_packages)
-        install_cmd = [python_path, "-m", "pip", "install"]
-        install_cmd.extend(pip_install_options)
-        install_cmd.extend(required_packages)
-        subprocess.check_call(install_cmd)
+    ensure_tf_is_installed()
 
     if os.path.isfile(_TFA_BAZELRC):
         os.remove(_TFA_BAZELRC)
