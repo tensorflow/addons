@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import tensorflow as tf
+import sys
 
 from tensorflow.keras.metrics import MeanAbsoluteError, TrueNegatives, Metric
 from tensorflow_addons.testing.serialization import check_metric_serialization
@@ -68,3 +69,7 @@ class MyOtherDummyMetric(Metric):
 def test_wrong_serialization():
     with pytest.raises(AssertionError):
         check_metric_serialization(MyOtherDummyMetric(5), (2,), (2,))
+
+
+if __name__ == "__main__":
+    sys.exit(pytest.main([__file__]))
