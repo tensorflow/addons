@@ -28,8 +28,6 @@ import logging
 
 _DEFAULT_CUDA_VERISON = "10.1"
 _DEFAULT_CUDNN_VERSION = "7"
-_DEFAULT_CUDNN_PATH = "/usr/lib/x86_64-linux-gnu"
-
 _TFA_BAZELRC = ".bazelrc"
 
 
@@ -171,10 +169,25 @@ def get_cuda_toolkit_path():
     return cuda_toolkit_path
 
 
+def get_cudnn_install_path():
+    default = "/usr/lib/x86_64-linux-gnu"
+    cudnn_install_path = os.getenv("CUDNN_INSTALL_PATH")
+    if cudnn_install_path is None:
+        answer = get_input(
+            "Please specify the location of cuDNN installation. [Default is {}]: ".format(
+                default
+            )
+        )
+        cudnn_install_path = answer or default
+    print("> cuDNN installation path:", cudnn_install_path)
+    print()
+    return cudnn_install_path
+
+
 def configure_cuda():
     _TF_CUDA_VERSION = os.getenv("TF_CUDA_VERSION")
     _TF_CUDNN_VERSION = os.getenv("TF_CUDNN_VERSION")
-    _CUDNN_INSTALL_PATH = os.getenv("CUDNN_INSTALL_PATH")
+
     print()
     print("Configuring GPU setup...")
 
@@ -198,19 +211,9 @@ def configure_cuda():
     print("> Using cuDNN version:", _TF_CUDNN_VERSION)
     print()
 
-    if _CUDNN_INSTALL_PATH is None:
-        answer = get_input(
-            "Please specify the location of cuDNN installation. [Default is {}]: ".format(
-                _DEFAULT_CUDNN_PATH
-            )
-        )
-        _CUDNN_INSTALL_PATH = answer or _DEFAULT_CUDNN_PATH
-    print("> cuDNN installation path:", _CUDNN_INSTALL_PATH)
-    print()
-
     write_action_env_to_bazelrc("TF_NEED_CUDA", "1")
     write_action_env_to_bazelrc("CUDA_TOOLKIT_PATH", get_cuda_toolkit_path())
-    write_action_env_to_bazelrc("CUDNN_INSTALL_PATH", _CUDNN_INSTALL_PATH)
+    write_action_env_to_bazelrc("CUDNN_INSTALL_PATH", get_cudnn_install_path())
     write_action_env_to_bazelrc("TF_CUDA_VERSION", _TF_CUDA_VERSION)
     write_action_env_to_bazelrc("TF_CUDNN_VERSION", _TF_CUDNN_VERSION)
 
