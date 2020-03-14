@@ -56,3 +56,4 @@ class AccuracyStopping(Callback):
 
         base_config = super().get_config()
         return {**base_config, **config}
+    
