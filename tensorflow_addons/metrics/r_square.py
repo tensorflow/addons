@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Implements R^2 scores."""
+from typing import Tuple
 
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
@@ -53,15 +54,28 @@ class RSquare(Metric):
 
     @typechecked
     def __init__(
-        self, name: str = "r_square", dtype: AcceptableDTypes = None, **kwargs
+        self,
+        name: str = "r_square",
+        dtype: AcceptableDTypes = None,
+        y_shape: Tuple[int, ...] = (),
+        **kwargs
     ):
         super().__init__(name=name, dtype=dtype, **kwargs)
-        self.squared_sum = self.add_weight("squared_sum", initializer="zeros")
-        self.sum = self.add_weight("sum", initializer="zeros")
-        self.res = self.add_weight("residual", initializer="zeros")
-        self.count = self.add_weight("count", initializer="zeros")
+        self.y_shape = y_shape
+        self.squared_sum = self.add_weight(
+            name="squared_sum", shape=y_shape, initializer="zeros", dtype=dtype
+        )
+        self.sum = self.add_weight(
+            name="sum", shape=y_shape, initializer="zeros", dtype=dtype
+        )
+        self.res = self.add_weight(
+            name="residual", shape=y_shape, initializer="zeros", dtype=dtype
+        )
+        self.count = self.add_weight(
+            name="count", shape=y_shape, initializer="zeros", dtype=dtype
+        )
 
-    def update_state(self, y_true, y_pred, sample_weight=None):
+    def update_state(self, y_true, y_pred, sample_weight=None) -> None:
         y_true = tf.cast(y_true, self._dtype)
         y_pred = tf.cast(y_pred, self._dtype)
         if sample_weight is None:
@@ -70,23 +84,26 @@ class RSquare(Metric):
         sample_weight = weights_broadcast_ops.broadcast_weights(sample_weight, y_true)
 
         weighted_y_true = tf.multiply(y_true, sample_weight)
-        self.sum.assign_add(tf.reduce_sum(weighted_y_true))
-        self.squared_sum.assign_add(tf.reduce_sum(tf.multiply(y_true, weighted_y_true)))
+        self.sum.assign_add(tf.reduce_sum(weighted_y_true, axis=0))
+        self.squared_sum.assign_add(
+            tf.reduce_sum(tf.multiply(y_true, weighted_y_true), axis=0)
+        )
         self.res.assign_add(
             tf.reduce_sum(
-                tf.multiply(tf.square(tf.subtract(y_true, y_pred)), sample_weight)
+                tf.multiply(tf.square(tf.subtract(y_true, y_pred)), sample_weight),
+                axis=0,
             )
         )
-        self.count.assign_add(tf.reduce_sum(sample_weight))
+        self.count.assign_add(tf.reduce_sum(sample_weight, axis=0))
 
-    def result(self):
+    def result(self) -> tf.Tensor:
         mean = self.sum / self.count
         total = self.squared_sum - self.sum * mean
         return 1 - (self.res / total)
 
-    def reset_states(self):
+    def reset_states(self) -> None:
         # The state of the metric will be reset at the start of each epoch.
-        self.squared_sum.assign(0.0)
-        self.sum.assign(0.0)
-        self.res.assign(0.0)
-        self.count.assign(0.0)
+        self.squared_sum.assign(tf.zeros(shape=self.y_shape, dtype=self.dtype))
+        self.sum.assign(tf.zeros(shape=self.y_shape, dtype=self.dtype))
+        self.res.assign(tf.zeros(shape=self.y_shape, dtype=self.dtype))
+        self.count.assign(tf.zeros(shape=self.y_shape, dtype=self.dtype))
