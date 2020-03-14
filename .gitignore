@@ -40,6 +40,5 @@ wheels/
 
 .coverage*
 htmlcov
-.hypothesis
 
 wheelhouse/
