@@ -26,8 +26,6 @@ import subprocess
 import sys
 import logging
 
-_DEFAULT_CUDA_VERISON = "10.1"
-_DEFAULT_CUDNN_VERSION = "7"
 _TFA_BAZELRC = ".bazelrc"
 
 
@@ -184,38 +182,39 @@ def get_cudnn_install_path():
     return cudnn_install_path
 
 
-def configure_cuda():
-    _TF_CUDA_VERSION = os.getenv("TF_CUDA_VERSION")
-    _TF_CUDNN_VERSION = os.getenv("TF_CUDNN_VERSION")
+def get_cuda_version():
+    default = "10.1"
+    cuda_version = os.getenv("TF_CUDA_VERSION")
+    if cuda_version is None:
+        answer = get_input(
+            "Please specify the CUDA version [Default is {}]: ".format(default)
+        )
+        cuda_version = answer or default
+    print("> Using CUDA version:", cuda_version)
+    print()
 
+
+def get_cudnn_version():
+    default = "7"
+    cudnn_version = os.getenv("TF_CUDNN_VERSION")
+    if cudnn_version is None:
+        answer = get_input(
+            "Please specify the cuDNN major version [Default is {}]: ".format(default)
+        )
+        cudnn_version = answer or default
+    print("> Using cuDNN version:", cudnn_version)
+    print()
+    return cudnn_version
+
+
+def configure_cuda():
     print()
     print("Configuring GPU setup...")
-
-    if _TF_CUDA_VERSION is None:
-        answer = get_input(
-            "Please specify the CUDA version [Default is {}]: ".format(
-                _DEFAULT_CUDA_VERISON
-            )
-        )
-        _TF_CUDA_VERSION = answer or _DEFAULT_CUDA_VERISON
-    print("> Using CUDA version:", _TF_CUDA_VERSION)
-    print()
-
-    if _TF_CUDNN_VERSION is None:
-        answer = get_input(
-            "Please specify the cuDNN major version [Default is {}]: ".format(
-                _DEFAULT_CUDNN_VERSION
-            )
-        )
-        _TF_CUDNN_VERSION = answer or _DEFAULT_CUDNN_VERSION
-    print("> Using cuDNN version:", _TF_CUDNN_VERSION)
-    print()
-
     write_action_env_to_bazelrc("TF_NEED_CUDA", "1")
     write_action_env_to_bazelrc("CUDA_TOOLKIT_PATH", get_cuda_toolkit_path())
     write_action_env_to_bazelrc("CUDNN_INSTALL_PATH", get_cudnn_install_path())
-    write_action_env_to_bazelrc("TF_CUDA_VERSION", _TF_CUDA_VERSION)
-    write_action_env_to_bazelrc("TF_CUDNN_VERSION", _TF_CUDNN_VERSION)
+    write_action_env_to_bazelrc("TF_CUDA_VERSION", get_cuda_version())
+    write_action_env_to_bazelrc("TF_CUDNN_VERSION", get_cudnn_version())
 
     write_to_bazelrc("test --config=cuda")
     write_to_bazelrc("build --config=cuda")
