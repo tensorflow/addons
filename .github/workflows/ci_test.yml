@@ -95,8 +95,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - env:
-          DOCKER_BUILDKIT=1
-          TF_VERSION=2.2.0rc0
+          DOCKER_BUILDKIT: 1
+          TF_VERSION: 2.2.0rc0
         run: docker build --build-arg TF_VERSION -f tools/docker/cpu_tests.Dockerfile ./
   valid-codeowners:
     name: Check that the CODEOWNERS is valid
