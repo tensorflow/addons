@@ -44,20 +44,12 @@ def write_action_env_to_bazelrc(var_name, var):
     write_to_bazelrc('build --action_env %s="%s"' % (var_name, str(var)))
 
 
-def is_linux():
-    return platform.system() == "Linux"
-
-
 def is_macos():
     return platform.system() == "Darwin"
 
 
 def is_windows():
     return platform.system() == "Windows"
-
-
-def is_ppc64le():
-    return platform.machine() == "ppc64le"
 
 
 def get_input(question):
