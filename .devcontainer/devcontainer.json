@@ -1,0 +1,26 @@
+{
+    "name": "TensorFlow-addons",
+    "dockerFile": "../tools/docker/gpu_tests.Dockerfile",
+    "context": "..",
+    "extensions": [
+        "ms-python.python",
+        "ms-vscode.cpptools"
+    ],
+    
+    // Uncomment to use Docker from inside the container. See https://aka.ms/vscode-remote/samples/docker-in-docker.
+    // "mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],
+    
+    // To connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
+    "remoteUser": "vscode",
+
+    // Uncomment when using a ptrace-based debugger like C++, Go, and Rust
+    "runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
+    
+    // Set *default* container specific settings.json values on container create.
+	"settings": { 
+		"terminal.integrated.shell.linux": null
+	},
+    "build": {
+        "target": "interactive_dev",
+    }
+}
