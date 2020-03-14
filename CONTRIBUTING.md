@@ -293,10 +293,11 @@ python3.5 -m pytest path/to/file/or/directory/to/test
 
 #### Testing with Bazel
 
-Testing with Bazel is still supported but not recommended unless you work at Google.
-This is because pytest offers many more options to run your test suite and have
-better error reports, timings reports, open-source plugins and documentation online, 
-at least for Python testing. 
+Testing with Bazel is still supported but not recommended unless you have prior experience 
+with Bazel, and would like to use it for specific capabilities (Remote execution, etc).
+This is because pytest offers many more options to run your test suite and has
+better error reports, timings reports, open-source plugins and documentation online 
+for Python testing. 
 
 Internally, Google can use Bazel to test many commits 
 quickly, as Bazel has great support for caching and distributed testing.
