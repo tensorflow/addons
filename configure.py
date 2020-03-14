@@ -192,6 +192,7 @@ def get_cuda_version():
         cuda_version = answer or default
     print("> Using CUDA version:", cuda_version)
     print()
+    return cuda_version
 
 
 def get_cudnn_version():
