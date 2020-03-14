@@ -13,9 +13,15 @@ RUN pip install -r requirements.txt
 COPY tools/install_deps/finish_bazel_install.sh ./
 RUN bash finish_bazel_install.sh
 
+COPY tools/install_deps/pytest.txt ./
+RUN pip install -r pytest.txt pytest-cov
+
 COPY ./ /addons
 WORKDIR addons
-RUN bash tools/testing/addons_cpu.sh --no-deps
+RUN python configure.py --no-deps
+RUN pip install -e ./
+RUN bash tools/install_so_files.sh
+RUN pytest -v -n auto --durations=25 --cov=tensorflow_addons ./tensorflow_addons/
 
 RUN bazel build --enable_runfiles build_pip_pkg
 RUN bazel-bin/build_pip_pkg artifacts
