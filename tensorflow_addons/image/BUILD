@@ -167,8 +167,8 @@ py_test(
 )
 
 py_test(
-    name = "augment_ops_test"
-    size = "medim"
+    name = "augment_ops_test",
+    size = "medium",
     srcs = [
         "augment_ops_test.py",
     ],
