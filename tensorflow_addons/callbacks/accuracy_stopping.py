@@ -24,9 +24,8 @@ class AccuracyStopping(Callback):
     """Stop training when a specified accuracy is reached.
     Args:
         Acc: Maximum accuracy before stopping.
-            Defaults to 0.9999 %. It takes value in between 0 - 1. 
-    """
-
+            Defaults to 0.9999 %. It takes value in between 0 - 1."""
+    
     @typechecked
     def __init__(self, Acc: float = 0.9999):
         super().__init__()
@@ -53,7 +52,6 @@ class AccuracyStopping(Callback):
             "Acc": self.Acc,
             "verbose": self.verbose,
         }
-
         base_config = super().get_config()
         return {**base_config, **config}
     
