@@ -38,6 +38,9 @@ def blend(image1: TensorLike, image2: TensorLike, factor: float) -> TensorLike:
     A blended image Tensor of type uint8.
 
   """
+    if image1.dtype != tf.uint8 or image2.dtype != tf.uint8:
+        raise ValueError("Images must have dtype tf.uint8")
+
     if factor == 0.0:
         return tf.convert_to_tensor(image1)
     if factor == 1.0:
@@ -50,14 +53,16 @@ def blend(image1: TensorLike, image2: TensorLike, factor: float) -> TensorLike:
     scaled = factor * difference
 
     # Do addition in float.
-    temp = tf.convert_to_tensor(image1, dtype=tf.dtypes.float32) + scaled
+    temp = image1 + scaled
 
     # Interpolate
     if factor > 0.0 and factor < 1.0:
         # Interpolation means we always stay within 0 and 255.
+        temp = tf.round(temp)
         return tf.cast(temp, tf.dtypes.uint8)
 
     # Extrapolate:
     #
     # We need to clip and then cast.
-    return tf.cast(tf.clip_by_value(temp, 0.0, 255.0), tf.dtypes.uint8)
+    temp = tf.round(tf.clip_by_value(temp, 0.0, 255.0))
+    return tf.cast(temp, tf.dtypes.uint8)
