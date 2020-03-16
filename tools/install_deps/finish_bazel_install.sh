@@ -4,9 +4,9 @@ set -e
 # can be removed once docker buildx/buildkit is stable
 # and we'll use "RUN --mount=cache ..." instead
 cd /tmp
-git clone https://github.com/tensorflow/addons.git
+git clone -b v0.8.3 https://github.com/tensorflow/addons.git
 cd addons
-python3 ./configure.py --no-deps
+python ./configure.py --no-deps
 bazel build --nobuild -- //tensorflow_addons/...
 cd ..
 rm -rf ./addons
