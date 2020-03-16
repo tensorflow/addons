@@ -69,7 +69,7 @@ def generate_shared_lib_name(namespec):
         return namespec[1][3:]
 
 
-def install_dependencies(quiet: bool):
+def install_dependencies(quiet):
     install_cmd = [sys.executable, "-m", "pip", "install", "--upgrade"]
     if quiet:
         install_cmd.append("--quiet")
