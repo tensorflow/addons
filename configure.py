@@ -69,11 +69,24 @@ def generate_shared_lib_name(namespec):
         return namespec[1][3:]
 
 
+def install_dependencies(quiet: bool):
+    install_cmd = [sys.executable, "-m", "pip", "install", "--upgrade"]
+    if quiet:
+        install_cmd.append("--quiet")
+
+    with open("requirements.txt") as f:
+        install_cmd += f.read().splitlines()
+    with open("tools/install_deps/tensorflow.txt") as f:
+        install_cmd += f.read().splitlines()
+
+    print("> Installing packages. Running ", " ".join(install_cmd))
+    subprocess.check_call(install_cmd)
+
+
 def create_build_configuration():
     print()
     print("Configuring TensorFlow Addons to be built from source...")
 
-    pip_install_options = ["--upgrade"]
     parser = argparse.ArgumentParser()
     parser.add_argument("--quiet", action="store_true", help="Give less output.")
     parser.add_argument(
@@ -82,25 +95,12 @@ def create_build_configuration():
         help="Do not check and install Python dependencies.",
     )
     args = parser.parse_args()
-    if args.quiet:
-        pip_install_options.append("--quiet")
-
-    python_path = sys.executable
-    with open("requirements.txt") as f:
-        required_packages = f.read().splitlines()
-
-    with open("tools/install_deps/tensorflow.txt") as f:
-        required_packages.extend(f.read().splitlines())
 
     print()
     if args.no_deps:
         print("> Using pre-installed Tensorflow.")
     else:
-        print("> Installing", required_packages)
-        install_cmd = [python_path, "-m", "pip", "install"]
-        install_cmd.extend(pip_install_options)
-        install_cmd.extend(required_packages)
-        subprocess.check_call(install_cmd)
+        install_dependencies(args.quiet)
 
     if os.path.isfile(_TFA_BAZELRC):
         os.remove(_TFA_BAZELRC)
