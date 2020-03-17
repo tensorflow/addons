@@ -83,10 +83,10 @@ class GIoULossTest(tf.test.TestCase, parameterized.TestCase):
 
         boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]], dtype=dtype)
         boxes2 = tf.constant([[3.0, 4.0, 6.0, 8.0]], dtype=dtype)
-        tf.expand_dims(boxes1, 0)
-        tf.expand_dims(boxes2, -2)
+        expand_boxes1 = tf.expand_dims(boxes1, -2)
+        expand_boxes2 = tf.expand_dims(boxes2, 0)
         expected_result = tf.constant([1.07500000298023224, 1.366071], dtype=dtype)
-        loss = giou_loss(boxes1, boxes2)
+        loss = giou_loss(expand_boxes1, expand_boxes2)
         self.assertAllCloseAccordingToType(loss, expected_result)
 
     @parameterized.named_parameters(
@@ -102,18 +102,16 @@ class GIoULossTest(tf.test.TestCase, parameterized.TestCase):
     @parameterized.named_parameters(
         ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
     )
-    @pytest.mark.xfail(tf.__version__ == "2.2.0-rc0", reason="TODO: Fix this test")
     def test_keras_model(self, dtype):
         boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]], dtype=dtype)
         boxes2 = tf.constant(
             [[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]], dtype=dtype
         )
-        expected_result = tf.constant(
-            [1.07500000298023224, 1.9333333373069763], dtype=dtype
-        )
+        expected_result = tf.constant(1.5041667222976685, dtype=dtype)
         model = tf.keras.Sequential()
         model.compile(
-            optimizer="adam", loss=GIoULoss(reduction=tf.keras.losses.Reduction.NONE)
+            optimizer="adam",
+            loss=GIoULoss(reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE),
         )
         loss = model.evaluate(boxes1, boxes2, batch_size=2, steps=1)
         self.assertAllCloseAccordingToType(loss, expected_result)
