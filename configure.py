@@ -56,8 +56,31 @@ def get_input(question):
         return ""
 
 
+def get_tf_header_dir():
+    import tensorflow as tf
+
+    tf_header_dir = tf.sysconfig.get_compile_flags()[0][2:]
+    if is_windows():
+        tf_header_dir = tf_header_dir.replace("\\", "/")
+    return tf_header_dir
+
+
+def get_tf_shared_lib_dir():
+    import tensorflow as tf
+
+    # OS Specific parsing
+    if is_windows():
+        tf_shared_lib_dir = tf.sysconfig.get_compile_flags()[0][2:-7] + "python"
+        return tf_shared_lib_dir.replace("\\", "/")
+    else:
+        return tf.sysconfig.get_link_flags()[0][2:]
+
+
 # Converts the linkflag namespec to the full shared library name
-def generate_shared_lib_name(namespec):
+def get_shared_lib_name():
+    import tensorflow as tf
+
+    namespec = tf.sysconfig.get_link_flags()
     if is_macos():
         # MacOS
         return "lib" + namespec[1][2:] + ".dylib"
@@ -109,25 +132,9 @@ def create_build_configuration():
 
     import tensorflow as tf  # noqa: E402 module level import not at top of file
 
-    _TF_CFLAGS = tf.sysconfig.get_compile_flags()
-    _TF_LFLAGS = tf.sysconfig.get_link_flags()
-
-    _TF_HEADER_DIR = _TF_CFLAGS[0][2:]
-
-    # OS Specific parsing
-    if is_windows():
-        _TF_SHARED_LIBRARY_DIR = _TF_CFLAGS[0][2:-7] + "python"
-        _TF_SHARED_LIBRARY_DIR = _TF_SHARED_LIBRARY_DIR.replace("\\", "/")
-
-        _TF_HEADER_DIR = _TF_HEADER_DIR.replace("\\", "/")
-    else:
-        _TF_SHARED_LIBRARY_DIR = _TF_LFLAGS[0][2:]
-
-    write_action_env_to_bazelrc("TF_HEADER_DIR", _TF_HEADER_DIR)
-    write_action_env_to_bazelrc("TF_SHARED_LIBRARY_DIR", _TF_SHARED_LIBRARY_DIR)
-    write_action_env_to_bazelrc(
-        "TF_SHARED_LIBRARY_NAME", generate_shared_lib_name(_TF_LFLAGS)
-    )
+    write_action_env_to_bazelrc("TF_HEADER_DIR", get_tf_header_dir())
+    write_action_env_to_bazelrc("TF_SHARED_LIBRARY_DIR", get_tf_shared_lib_dir())
+    write_action_env_to_bazelrc("TF_SHARED_LIBRARY_NAME", get_shared_lib_name())
     write_action_env_to_bazelrc("TF_CXX11_ABI_FLAG", tf.sysconfig.CXX11_ABI_FLAG)
 
     write_to_bazelrc("build --spawn_strategy=standalone")
