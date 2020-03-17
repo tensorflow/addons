@@ -1,7 +1,7 @@
-FROM python:3.5
+FROM python:3.5 as build_wheel
 
-COPY tools/install_deps/tensorflow-cpu.txt ./
-RUN pip install -r tensorflow-cpu.txt
+ARG TF_VERSION=2.1.0
+RUN pip install tensorflow-cpu==$TF_VERSION
 
 RUN apt-get update && apt-get install -y sudo rsync
 COPY tools/install_deps/bazel_linux.sh ./
