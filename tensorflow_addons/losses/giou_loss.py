@@ -73,7 +73,6 @@ class GIoULoss(tf.keras.losses.Loss):
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-@tf.function
 def giou_loss(y_true: TensorLike, y_pred: TensorLike, mode: str = "giou") -> tf.Tensor:
     """
     Args:
@@ -92,7 +91,7 @@ def giou_loss(y_true: TensorLike, y_pred: TensorLike, mode: str = "giou") -> tf.
     if not y_pred.dtype.is_floating:
         y_pred = tf.cast(y_pred, tf.float32)
     y_true = tf.cast(y_true, y_pred.dtype)
-    giou = _calculate_giou(y_pred, y_true, mode)
+    giou = tf.squeeze(_calculate_giou(y_pred, y_true, mode))
 
     return 1 - giou
 
