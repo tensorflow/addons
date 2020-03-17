@@ -1,16 +1,5 @@
-import tensorflow as tf
-import pytest
+from tensorflow_addons.utils.test_utils import maybe_run_functions_eagerly  # noqa: F401
 
-
-def finalizer():
-    tf.config.experimental_run_functions_eagerly(False)
-
-
-@pytest.fixture(scope="function", params=["eager_mode", "tf_function"])
-def maybe_run_functions_eagerly(request):
-    if request.param == "eager_mode":
-        tf.config.experimental_run_functions_eagerly(True)
-    elif request.param == "tf_function":
-        tf.config.experimental_run_functions_eagerly(False)
-
-    request.addfinalizer(finalizer)
+# fixtures present in this file will be available
+# when running tests and can be referenced with strings
+# https://docs.pytest.org/en/latest/fixture.html#conftest-py-sharing-fixture-functions
