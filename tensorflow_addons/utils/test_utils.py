@@ -19,6 +19,7 @@ import inspect
 import time
 import unittest
 
+import pytest
 import tensorflow as tf
 
 # TODO: find public API alternative to these
@@ -182,3 +183,17 @@ def time_all_functions(cls):
         ):
             setattr(cls, name, time_function(method))
     return cls
+
+
+def finalizer():
+    tf.config.experimental_run_functions_eagerly(False)
+
+
+@pytest.fixture(scope="function", params=["eager_mode", "tf_function"])
+def maybe_run_functions_eagerly(request):
+    if request.param == "eager_mode":
+        tf.config.experimental_run_functions_eagerly(True)
+    elif request.param == "tf_function":
+        tf.config.experimental_run_functions_eagerly(False)
+
+    request.addfinalizer(finalizer)
