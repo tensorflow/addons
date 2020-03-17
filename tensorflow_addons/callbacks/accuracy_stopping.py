@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Callback that stops training when a specified amount of accuracy has achieved."""
+"""Callback that stops training when a specified accuracy has been achieved."""
 
 
 import tensorflow as tf
