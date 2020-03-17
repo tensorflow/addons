@@ -24,12 +24,15 @@ class AccuracyStopping(Callback):
     """Stop training when a specified accuracy is reached.
     Args:
         Acc: Minimum accuracy before stopping.
-            Defaults to 0.9999. It takes value in between 0 - 1."""
+            Defaults to 0.9999. It takes value in between 0 - 1.
+        verbose: verbosity mode. Defaults to 0.
+    """
     
     @typechecked
-    def __init__(self, accuracy: float = 0.9999):
+    def __init__(self, accuracy: float = 0.9999, verbose: int = 0):
         super().__init__()
         self.accuracy = accuracy
+        self.verbose = verbose
    
 
     def on_epoch_end(self, epoch, logs={}):
@@ -41,15 +44,15 @@ class AccuracyStopping(Callback):
             
 
     def on_train_end(self, logs=None):
-        if self.stopped_epoch is not None:
-            msg = "Reached {} % accuracy on {} epochs so cancelling training!" .format(
+        if self.stopped_epoch is not None and self.verbose > 0:
+            msg = "Reached {} % accuracy on {} epochs so stopping  training!" .format(
                 self.accuracy*100, self.stopped_epoch + 1)
             print(msg)
             
 
     def get_config(self):
         config = {
-            "Acc": self.Acc,
+            "accuracy": self.accuracy,
             "verbose": self.verbose,
         }
         base_config = super().get_config()
