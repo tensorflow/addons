@@ -170,17 +170,6 @@ class CohenKappaTest(tf.test.TestCase):
         self.evaluate(obj.update_state(y_true, y_pred))
         self.assertAllClose(0.19999999, obj.result())
 
-    def test_with_ohe_labels(self):
-        y_true = np.array([4, 4, 3, 4], dtype=np.int32)
-        y_true = tf.keras.utils.to_categorical(y_true, num_classes=5)
-        y_pred = np.array([4, 4, 1, 2], dtype=np.int32)
-
-        obj = CohenKappa(num_classes=5, sparse_labels=False)
-        self.evaluate(tf.compat.v1.variables_initializer(obj.variables))
-
-        self.evaluate(obj.update_state(y_true, y_pred))
-        self.assertAllClose(0.19999999, obj.result())
-
     def test_keras_binary_reg_model(self):
         kp = CohenKappa(num_classes=2)
         inputs = tf.keras.layers.Input(shape=(10,))
@@ -231,6 +220,18 @@ class CohenKappaTest(tf.test.TestCase):
         y = tf.keras.utils.to_categorical(y, num_classes=5)
 
         model.fit(x, y, epochs=1, verbose=0, batch_size=32)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_with_ohe_labels():
+    y_true = np.array([4, 4, 3, 4], dtype=np.int32)
+    y_true = tf.keras.utils.to_categorical(y_true, num_classes=5)
+    y_pred = np.array([4, 4, 1, 2], dtype=np.int32)
+
+    obj = CohenKappa(num_classes=5, sparse_labels=False)
+
+    obj.update_state(y_true, y_pred)
+    np.testing.assert_allclose(0.19999999, obj.result().numpy())
 
 
 if __name__ == "__main__":
