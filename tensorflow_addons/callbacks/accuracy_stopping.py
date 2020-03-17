@@ -27,15 +27,15 @@ class AccuracyStopping(Callback):
             Defaults to 0.9999. It takes value in between 0 - 1."""
     
     @typechecked
-    def __init__(self, Acc: float = 0.9999):
+    def __init__(self, accuracy: float = 0.9999):
         super().__init__()
-        self.Acc = Acc
+        self.accuracy = accuracy
    
 
     def on_epoch_end(self, epoch, logs={}):
         print(self.Acc)
         print(logs.get('accuracy'))
-        if (logs.get('accuracy') >= self.Acc):
+        if (logs.get('accuracy') >= self.accuracy):
             self.model.stop_training = True
             self.stopped_epoch = epoch
             
@@ -43,7 +43,7 @@ class AccuracyStopping(Callback):
     def on_train_end(self, logs=None):
         if self.stopped_epoch is not None:
             msg = "Reached {} % accuracy on {} epochs so cancelling training!" .format(
-                self.Acc*100, self.stopped_epoch + 1)
+                self.accuracy*100, self.stopped_epoch + 1)
             print(msg)
             
 
