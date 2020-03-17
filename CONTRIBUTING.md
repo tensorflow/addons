@@ -38,7 +38,7 @@ fitting the following criteria:
 
 **Note: New contributions often require team-members to read a research
 paper and understand how it fits into the TensorFlow community. This
-process can take longer than typical commit reviews so please bare with
+process can take longer than typical commit reviews so please bear with
 us**
 
 ## Tools needed for developement
