@@ -23,8 +23,8 @@ from typeguard import typechecked
 class AccuracyStopping(Callback):
     """Stop training when a specified accuracy is reached.
     Args:
-        Acc: Maximum accuracy before stopping.
-            Defaults to 0.9999 %. It takes value in between 0 - 1."""
+        Acc: Minimum accuracy before stopping.
+            Defaults to 0.9999. It takes value in between 0 - 1."""
     
     @typechecked
     def __init__(self, Acc: float = 0.9999):
