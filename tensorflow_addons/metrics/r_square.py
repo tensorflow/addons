@@ -131,7 +131,11 @@ class RSquare(Metric):
         elif self.multioutput == "variance_weighted":
             return _reduce_average(raw_scores, weights=total)
         else:
-            raise NotImplementedError("lol")
+            raise RuntimeError(
+                "The multioutput attribute must be one of {}, but was: {}".format(
+                    VALID_MULTIOUTPUT, self.multioutput
+                )
+            )
 
     def reset_states(self) -> None:
         # The state of the metric will be reset at the start of each epoch.
