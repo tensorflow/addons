@@ -22,34 +22,33 @@ from tensorflow_addons.layers.optical_flow import CorrelationCost
 from tensorflow_addons.utils import test_utils
 
 
+def _forward(
+    input_a,
+    input_b,
+    kernel_size,
+    max_displacement,
+    stride_1,
+    stride_2,
+    pad,
+    data_format,
+):
+    input_a_op = tf.convert_to_tensor(input_a, dtype=tf.float32)
+    input_b_op = tf.convert_to_tensor(input_b, dtype=tf.float32)
+
+    output = CorrelationCost(
+        kernel_size=kernel_size,
+        max_displacement=max_displacement,
+        stride_1=stride_1,
+        stride_2=stride_2,
+        pad=pad,
+        data_format=data_format,
+    )([input_a_op, input_b_op])
+
+    return output
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class CorrelationCostTest(tf.test.TestCase):
-    def _forward(
-        self,
-        input_a,
-        input_b,
-        kernel_size,
-        max_displacement,
-        stride_1,
-        stride_2,
-        pad,
-        data_format,
-    ):
-
-        input_a_op = tf.convert_to_tensor(input_a, dtype=tf.float32)
-        input_b_op = tf.convert_to_tensor(input_b, dtype=tf.float32)
-
-        output = CorrelationCost(
-            kernel_size=kernel_size,
-            max_displacement=max_displacement,
-            stride_1=stride_1,
-            stride_2=stride_2,
-            pad=pad,
-            data_format=data_format,
-        )([input_a_op, input_b_op])
-
-        return output
-
     def _create_test_data(self, data_format):
         # Produce test data for _forward_simple and _keras methods
         val_a = np.array(
@@ -92,7 +91,7 @@ class CorrelationCostTest(tf.test.TestCase):
             stride_2 = 2
             pad = 4
 
-            actual = self._forward(
+            actual = _forward(
                 input_a_tensor,
                 input_b_tensor,
                 kernel_size=kernel_size,
