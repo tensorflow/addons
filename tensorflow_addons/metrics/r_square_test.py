@@ -16,8 +16,10 @@
 
 import sys
 
+import numpy as np
 import pytest
 import tensorflow as tf
+from sklearn.metrics import r2_score as sklearn_r2_score
 from tensorflow_addons.metrics import RSquare
 from tensorflow_addons.utils import test_utils
 
@@ -38,8 +40,8 @@ class RSquareTest(tf.test.TestCase):
         self.evaluate(tf.compat.v1.variables_initializer(r2_obj.variables))
         return r2_obj
 
-    def update_obj_states(self, obj, actuals, preds):
-        update_op = obj.update_state(actuals, preds)
+    def update_obj_states(self, obj, actuals, preds, sample_weight=None):
+        update_op = obj.update_state(actuals, preds, sample_weight=sample_weight)
         self.evaluate(update_op)
 
     def check_results(self, obj, value):
@@ -80,6 +82,32 @@ class RSquareTest(tf.test.TestCase):
         self.update_obj_states(r2_obj, actuals, preds)
         # Check results
         self.check_results(r2_obj, 0.7376327)
+
+    def test_r2_sklearn_comparison(self):
+        """Test that RSquare behaves similarly to the scikit-learn
+        implementation of the same metric, given random input.
+        """
+        for i in range(10):
+            actuals = np.random.rand(64, 1)
+            preds = np.random.rand(64, 1)
+            sample_weight = np.random.rand(64, 1)
+            tensor_actuals = tf.constant(actuals, dtype=tf.float32)
+            tensor_preds = tf.constant(preds, dtype=tf.float32)
+            tensor_sample_weight = tf.constant(sample_weight, dtype=tf.float32)
+            tensor_actuals = tf.cast(tensor_actuals, dtype=tf.float32)
+            tensor_preds = tf.cast(tensor_preds, dtype=tf.float32)
+            tensor_sample_weight = tf.cast(tensor_sample_weight, dtype=tf.float32)
+            # Initialize
+            r2_obj = self.initialize_vars()
+            # Update
+            self.update_obj_states(
+                r2_obj, tensor_actuals, tensor_preds, sample_weight=tensor_sample_weight
+            )
+            # Check results by comparing to results of scikit-learn r2 implementation
+            sklearn_result = sklearn_r2_score(
+                actuals, preds, sample_weight=sample_weight
+            )
+            self.check_results(r2_obj, sklearn_result)
 
 
 if __name__ == "__main__":

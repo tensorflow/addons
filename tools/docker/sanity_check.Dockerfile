@@ -50,7 +50,7 @@ RUN apt-get update && apt-get install sudo
 COPY tools/install_deps/bazel_linux.sh ./
 RUN bash bazel_linux.sh
 
-COPY tools/docker/finish_bazel_install.sh ./
+COPY tools/install_deps/finish_bazel_install.sh ./
 RUN bash finish_bazel_install.sh
 
 COPY ./ /addons
@@ -120,7 +120,7 @@ RUN pip install -r pytest.txt
 RUN apt-get update && apt-get install -y sudo rsync
 COPY tools/install_deps/bazel_linux.sh ./
 RUN bash bazel_linux.sh
-COPY tools/docker/finish_bazel_install.sh ./
+COPY tools/install_deps/finish_bazel_install.sh ./
 RUN bash finish_bazel_install.sh
 
 COPY ./ /addons
