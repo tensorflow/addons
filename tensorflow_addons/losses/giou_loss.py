@@ -15,14 +15,14 @@
 """Implements GIoU loss."""
 
 import tensorflow as tf
-
+from tensorflow.python.keras.losses import LossFunctionWrapper
 from tensorflow_addons.utils.types import TensorLike
 from typing import Optional
 from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class GIoULoss(tf.keras.losses.Loss):
+class GIoULoss(LossFunctionWrapper):
     """Implements the GIoU loss function.
 
     GIoU loss was first introduced in the
@@ -58,18 +58,7 @@ class GIoULoss(tf.keras.losses.Loss):
         reduction: str = tf.keras.losses.Reduction.AUTO,
         name: Optional[str] = "giou_loss",
     ):
-        if mode not in ["giou", "iou"]:
-            raise ValueError("Value of mode should be 'iou' or 'giou'")
-        super().__init__(name=name, reduction=reduction)
-        self.mode = mode
-
-    def get_config(self):
-        base_config = super().get_config()
-        base_config["mode"] = self.mode
-        return base_config
-
-    def call(self, y_true, y_pred):
-        return giou_loss(y_true, y_pred, mode=self.mode)
+        super().__init__(giou_loss, name=name, reduction=reduction, mode=mode)
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
