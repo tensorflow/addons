@@ -195,31 +195,35 @@ class CohenKappaTest(tf.test.TestCase):
 
         model.fit(x, y, epochs=1, verbose=0, batch_size=32)
 
-    def test_keras_binary_clasasification_model(self):
-        kp = CohenKappa(num_classes=2)
-        inputs = tf.keras.layers.Input(shape=(10,))
-        outputs = tf.keras.layers.Dense(1, activation="sigmoid")(inputs)
-        model = tf.keras.models.Model(inputs, outputs)
-        model.compile(optimizer="sgd", loss="binary_crossentropy", metrics=[kp])
 
-        x = np.random.rand(1000, 10).astype(np.float32)
-        y = np.random.randint(2, size=(1000, 1)).astype(np.float32)
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_keras_binary_clasasification_model():
+    kp = CohenKappa(num_classes=2)
+    inputs = tf.keras.layers.Input(shape=(10,))
+    outputs = tf.keras.layers.Dense(1, activation="sigmoid")(inputs)
+    model = tf.keras.models.Model(inputs, outputs)
+    model.compile(optimizer="sgd", loss="binary_crossentropy", metrics=[kp])
 
-        model.fit(x, y, epochs=1, verbose=0, batch_size=32)
+    x = np.random.rand(1000, 10).astype(np.float32)
+    y = np.random.randint(2, size=(1000, 1)).astype(np.float32)
 
-    @pytest.mark.xfail(tf.__version__ == "2.2.0-rc0", reason="TODO: Fix this test")
-    def test_keras_multiclass_classification_model(self):
-        kp = CohenKappa(num_classes=5)
-        inputs = tf.keras.layers.Input(shape=(10,))
-        outputs = tf.keras.layers.Dense(5, activation="softmax")(inputs)
-        model = tf.keras.models.Model(inputs, outputs)
-        model.compile(optimizer="sgd", loss="categorical_crossentropy", metrics=[kp])
+    model.fit(x, y, epochs=1, verbose=0, batch_size=32)
 
-        x = np.random.rand(1000, 10).astype(np.float32)
-        y = np.random.randint(5, size=(1000,)).astype(np.float32)
-        y = tf.keras.utils.to_categorical(y, num_classes=5)
 
-        model.fit(x, y, epochs=1, verbose=0, batch_size=32)
+@pytest.mark.xfail(tf.__version__ == "2.2.0-rc0", reason="TODO: Fix this test")
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_keras_multiclass_classification_model():
+    kp = CohenKappa(num_classes=5)
+    inputs = tf.keras.layers.Input(shape=(10,))
+    outputs = tf.keras.layers.Dense(5, activation="softmax")(inputs)
+    model = tf.keras.models.Model(inputs, outputs)
+    model.compile(optimizer="sgd", loss="categorical_crossentropy", metrics=[kp])
+
+    x = np.random.rand(1000, 10).astype(np.float32)
+    y = np.random.randint(5, size=(1000,)).astype(np.float32)
+    y = tf.keras.utils.to_categorical(y, num_classes=5)
+
+    model.fit(x, y, epochs=1, verbose=0, batch_size=32)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
