@@ -23,6 +23,7 @@ import tensorflow as tf
 from tensorflow_addons.layers.polynomial import PolynomialCrossing
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_full_matrix():
     x0 = np.asarray([[0.1, 0.2, 0.3]]).astype(np.float32)
     x = np.asarray([[0.4, 0.5, 0.6]]).astype(np.float32)
@@ -31,6 +32,7 @@ def test_full_matrix():
     np.testing.assert_allclose([[0.55, 0.8, 1.05]], output)
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_invalid_proj_dim():
     with pytest.raises(ValueError) as exception_info:
         x0 = np.random.random((12, 5))
@@ -40,6 +42,7 @@ def test_invalid_proj_dim():
     assert "is not supported yet" in str(exception_info.value)
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_invalid_inputs():
     with pytest.raises(ValueError) as exception_info:
         x0 = np.random.random((12, 5))
