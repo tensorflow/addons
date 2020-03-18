@@ -173,4 +173,7 @@ py_test(
         "augment_ops_test.py",
     ],
     main = "augment_ops_test.py",
+    deps = [
+        ":image",
+    ],
 )
