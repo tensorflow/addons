@@ -8,7 +8,7 @@ def solarize(image, threshold=128):
     """Method to solarize the image
   image: input image
   threshold: threshold value to solarize the image
-  
+
   Returns:
     A solarized image
   """
@@ -23,7 +23,7 @@ def solarize_add(image, addition=0, threshold=128):
   image: input image
   addition: addition amount to add in image
   threshold: threshold value to solarize the image
-  
+
   Returns:
     Solarized image with addition values
   """
