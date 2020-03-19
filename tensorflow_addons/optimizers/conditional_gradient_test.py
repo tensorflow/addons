@@ -25,10 +25,6 @@ from tensorflow_addons.optimizers import conditional_gradient as cg_lib
 
 @test_utils.run_all_in_graph_and_eager_modes
 class ConditionalGradientTest(tf.test.TestCase):
-    def _update_conditional_gradient_numpy(self, var, norm, g, lr, lambda_):
-        var = var * lr - (1 - lr) * lambda_ * g / norm
-        return var
-
     def doTestBasic(self, use_resource=False, use_callable_params=False):
         for i, dtype in enumerate([tf.half, tf.float32, tf.float64]):
             if use_resource:
