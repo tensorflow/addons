@@ -8,6 +8,9 @@ def solarize(image, threshold=128):
     """Method to solarize the image
   image: input image
   threshold: threshold value to solarize the image
+  
+  Returns:
+    A solarized image
   """
     # For each pixel in the image, select the pixel
     # if the value is less than the threshold.
@@ -20,6 +23,9 @@ def solarize_add(image, addition=0, threshold=128):
   image: input image
   addition: addition amount to add in image
   threshold: threshold value to solarize the image
+  
+  Returns:
+    Solarized image with addition values
   """
     # For each pixel in the image less than threshold
     # we add 'addition' amount to it and then clip the
