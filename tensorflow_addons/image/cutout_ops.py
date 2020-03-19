@@ -18,7 +18,6 @@ import tensorflow as tf
 from tensorflow_addons.utils.types import TensorLike, Number
 from tensorflow_addons.image.utils import from_4D_image, to_4D_image
 from tensorflow.python.keras.utils import conv_utils
-import numpy as np
 
 
 def _get_image_wh(images, data_format):
@@ -67,7 +66,7 @@ def random_cutout(
     Returns:
       An image Tensor.
     """
-    if np.isscalar(mask_size):
+    if tf.equal(tf.rank(mask_size), 0):
         mask_size = [mask_size, mask_size]
     data_format = conv_utils.normalize_data_format(data_format)
     # Sample the center location in the images where the zero mask will be applied.
@@ -121,7 +120,7 @@ def cutout(
       An image Tensor.
     """
     with tf.name_scope("cutout"):
-        if np.isscalar(mask_size):
+        if tf.equal(tf.rank(mask_size), 0):
             mask_size = [mask_size, mask_size]
         data_format = conv_utils.normalize_data_format(data_format)
         image_height, image_width = _get_image_wh(images, data_format)
