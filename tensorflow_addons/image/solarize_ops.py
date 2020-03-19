@@ -4,6 +4,7 @@
 import tensorflow as tf
 from tensorflow_addons.utils.types import TensorLike
 
+
 def solarize(image: TensorLike, threshold: float = 128) -> TensorLike:
 
     """Method to solarize the image
@@ -19,7 +20,9 @@ def solarize(image: TensorLike, threshold: float = 128) -> TensorLike:
     return tf.where(image < threshold, image, 255 - image)
 
 
-def solarize_add(image: TensorLike, addition: int = 0, threshold: float = 128) -> TensorLike:
+def solarize_add(
+    image: TensorLike, addition: int = 0, threshold: float = 128
+) -> TensorLike:
     """Method to add solarize to the image
   image: input image
   addition: addition amount to add in image
