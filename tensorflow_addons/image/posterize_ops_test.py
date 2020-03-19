@@ -19,10 +19,11 @@ import pytest
 import tensorflow as tf
 from tensorflow_addons.image import posterize_ops
 from tensorflow_addons.utils import test_utils
+from absl.testing import parameterized
 
 
 @test_utils.run_all_in_graph_and_eager_modes
-class PosterizeOpsTest(tf.test.TestCase, absl.testing.parameterized.TestCase):
+class PosterizeOpsTest(tf.test.TestCase, parameterized.TestCase):
     """PosterizeOpsTest class to test the working of
     methods images"""
 
