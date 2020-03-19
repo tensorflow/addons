@@ -20,12 +20,12 @@ py_library(
         "weight_decay_optimizers.py",
         "yogi.py",
     ],
-    deps = [ 
-        "//tensorflow_addons/utils",
-    ],
     data = [
         "//tensorflow_addons:options.py",
         "//tensorflow_addons/custom_ops/optimizers:_optimizer_ops.so",
+    ],
+    deps = [
+        "//tensorflow_addons/utils",
     ],
 )
 

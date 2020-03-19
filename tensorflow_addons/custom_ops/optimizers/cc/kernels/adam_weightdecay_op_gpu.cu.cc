@@ -17,11 +17,10 @@ limitations under the License.
 
 #define EIGEN_USE_GPU
 
-#include "tensorflow/core/util/gpu_kernel_helper.h"
-#include "tensorflow/core/util/gpu_launch_config.h"
-
 #include <algorithm>
 
+#include "tensorflow/core/util/gpu_kernel_helper.h"
+#include "tensorflow/core/util/gpu_launch_config.h"
 #include "tensorflow_addons/custom_ops/optimizers/cc/kernels/adam_weightdecay_op.h"
 
 using namespace tensorflow;
