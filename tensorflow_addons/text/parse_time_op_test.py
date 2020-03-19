@@ -52,7 +52,7 @@ def test_parse_time():
         result = text.parse_time(
             time_string=time_string, time_format=time_format, output_unit=output_unit,
         )
-        np.testing.assert_equal(expected, result)
+        np.testing.assert_equal(expected, result.numpy())
 
 
 def test_invalid_output_unit():
