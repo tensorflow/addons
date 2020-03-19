@@ -21,7 +21,6 @@ import tensorflow as tf
 import numpy as np
 from absl.testing import parameterized
 from tensorflow_addons.image.cutout_ops import cutout, random_cutout
-from tensorflow_addons.utils import test_utils
 from tensorflow_addons.image.utils import from_4D_image, to_4D_image
 
 
