@@ -1,8 +1,6 @@
 """Test of solarize_ops"""
-import sys
 
 import tensorflow as tf
-import pytest
 from tensorflow_addons.image import solarize_ops
 from tensorflow_addons.utils import test_utils
 from absl.testing import parameterized
@@ -29,5 +27,12 @@ class SolarizeOPSTest(tf.test.TestCase, parameterized.TestCase):
             self.assertAllEqual(tf.shape(solarize_img), tf.shape(test_image_file))
 
 
+def main(unused_argv):
+    del unused_argv
+    sol = SolarizeOPSTest()
+    sol.test_solarize()
+    sol.test_solarize_add()
+
+
 if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
+    main(0)
