@@ -17,7 +17,7 @@ py_library(
         "interpolate_spline.py",
         "connected_components.py",
         "resampler_ops.py",
-        "augment_ops.py",
+        "compose_ops.py",
     ]),
     data = [
         ":sparse_image_warp_test_data",
@@ -167,12 +167,12 @@ py_test(
 )
 
 py_test(
-    name = "augment_ops_test",
+    name = "compose_ops_test",
     size = "medium",
     srcs = [
-        "augment_ops_test.py",
+        "compose_ops_test.py",
     ],
-    main = "augment_ops_test.py",
+    main = "compose_ops_test.py",
     deps = [
         ":image",
     ],

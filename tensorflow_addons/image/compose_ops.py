@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Image ops commonly used for augmentation."""
+"""Compose Ops"""
 
 import tensorflow as tf
 
@@ -38,31 +38,32 @@ def blend(image1: TensorLike, image2: TensorLike, factor: float) -> TensorLike:
     A blended image Tensor of type uint8.
 
   """
-    if image1.dtype != tf.uint8 or image2.dtype != tf.uint8:
-        raise ValueError("Images must have dtype tf.uint8")
+    with tf.name_scope("blend"):
+        if image1.dtype != tf.uint8 or image2.dtype != tf.uint8:
+            raise ValueError("Images must have dtype tf.uint8")
 
-    if factor == 0.0:
-        return tf.convert_to_tensor(image1)
-    if factor == 1.0:
-        return tf.convert_to_tensor(image2)
+        if factor == 0.0:
+            return tf.convert_to_tensor(image1)
+        if factor == 1.0:
+            return tf.convert_to_tensor(image2)
 
-    image1 = tf.cast(image1, dtype=tf.dtypes.float32)
-    image2 = tf.cast(image2, dtype=tf.dtypes.float32)
+        image1 = tf.cast(image1, dtype=tf.dtypes.float32)
+        image2 = tf.cast(image2, dtype=tf.dtypes.float32)
 
-    difference = image2 - image1
-    scaled = factor * difference
+        difference = image2 - image1
+        scaled = factor * difference
 
-    # Do addition in float.
-    temp = image1 + scaled
+        # Do addition in float.
+        temp = image1 + scaled
 
-    # Interpolate
-    if factor > 0.0 and factor < 1.0:
-        # Interpolation means we always stay within 0 and 255.
-        temp = tf.round(temp)
+        # Interpolate
+        if factor > 0.0 and factor < 1.0:
+            # Interpolation means we always stay within 0 and 255.
+            temp = tf.round(temp)
+            return tf.cast(temp, tf.dtypes.uint8)
+
+        # Extrapolate:
+        #
+        # We need to clip and then cast.
+        temp = tf.round(tf.clip_by_value(temp, 0.0, 255.0))
         return tf.cast(temp, tf.dtypes.uint8)
-
-    # Extrapolate:
-    #
-    # We need to clip and then cast.
-    temp = tf.round(tf.clip_by_value(temp, 0.0, 255.0))
-    return tf.cast(temp, tf.dtypes.uint8)
