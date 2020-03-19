@@ -16,6 +16,7 @@
 
 import tensorflow as tf
 from tensorflow_addons.image.transform_ops import transform
+from tensorflow_addons.image.utils import wrap, unwrap
 from tensorflow_addons.utils.types import TensorLike
 
 from typing import Optional
@@ -103,3 +104,35 @@ def translate(
             translations_to_projective_transforms(translations),
             interpolation=interpolation,
         )
+
+
+def translate_x(image: TensorLike, pixels: int, replace: int) -> TensorLike:
+    """Equivalent of PIL Translate in X dimension."""
+    image = translate(wrap(image), [-pixels, 0])
+    return unwrap(image, replace)
+
+
+def translate_y(image: TensorLike, pixels: int, replace: int) -> TensorLike:
+    """Equivalent of PIL Translate in Y dimension."""
+    image = translate(wrap(image), [0, -pixels])
+    return unwrap(image, replace)
+
+
+def shear_x(image: TensorLike, level: float, replace: int) -> TensorLike:
+    """Equivalent of PIL Shearing in X dimension."""
+    # Shear parallel to x axis is a projective transform
+    # with a matrix form of:
+    # [1  level
+    #  0  1].
+    image = transform(wrap(image), [1.0, level, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0])
+    return unwrap(image, replace)
+
+
+def shear_y(image: TensorLike, level: float, replace: int) -> TensorLike:
+    """Equivalent of PIL Shearing in Y dimension."""
+    # Shear parallel to y axis is a projective transform
+    # with a matrix form of:
+    # [1  0
+    #  level  1].
+    image = transform(wrap(image), [1.0, 0.0, 0.0, level, 1.0, 0.0, 0.0, 0.0])
+    return unwrap(image, replace)
