@@ -1,3 +1,4 @@
+
 """Test of solarize_ops"""
 import tensorflow as tf
 from tensorflow_addons.image import solarize_ops
