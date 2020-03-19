@@ -31,7 +31,7 @@ class PosterizeOpsTest(tf.test.TestCase, parameterized.TestCase):
         """ Method to test the posterize technique on images """
         if tf.executing_eagerly():
             orig_image = tf.io.read_file("test_data/Yellow_Smiley_Face.png")
-            orig_image = tf.io.decode_image(orig_image, dtype=tf.uint8)
+            orig_image = tf.io.decode_image(orig_image, dtype=tf.dtypes.uint8)
             bits = 2
             posterize_image = posterize_ops.posterize(orig_image, bits)
             self.assertAllEqual(tf.shape(orig_image), tf.shape(posterize_image))
