@@ -20,26 +20,7 @@ py_library(
             "connected_components.py",
             "resampler_ops.py",
             "solarize_ops.py",
-        ]
-    ),
-    data=[
-
-    name = "image",
-    srcs = ([
-        "__init__.py",
-        "dense_image_warp.py",
-        "distance_transform.py",
-        "distort_image_ops.py",
-        "filters.py",
-        "transform_ops.py",
-        "translate_ops.py",
-        "utils.py",
-        "sparse_image_warp.py",
-        "interpolate_spline.py",
-        "connected_components.py",
-        "resampler_ops.py",
-        "compose_ops.py",
-    ]),
+        ]),
     data = [
 
         ":sparse_image_warp_test_data",
