@@ -19,6 +19,7 @@ py_library(
         "resampler_ops.py",
         "compose_ops.py",
         "solarize_ops.py",
+        "posterize_ops.py",
     ]),
     data = [
         ":sparse_image_warp_test_data",
@@ -186,6 +187,18 @@ py_test(
         "solarize_ops_test.py",
     ],
     main = "solarize_ops_test.py",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "posterize_ops_test",
+    size = "medium",
+    srcs = [
+        "posterize_ops_test.py",
+    ],
+    main = "posterize_ops_test.py",
     deps = [
         ":image",
     ],

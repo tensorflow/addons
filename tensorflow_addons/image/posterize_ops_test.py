@@ -37,7 +37,7 @@ class PosterizeOpsTest(tf.test.TestCase, absl.testing.parameterized.TestCase):
 
 
 def main(_):
-    """ main method to run the test_posterize method """
+    """ main to to run test_posterize method """
     test = PosterizeOpsTest()
     test.test_posterize()
 
