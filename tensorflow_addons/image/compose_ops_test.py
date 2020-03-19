@@ -20,7 +20,6 @@ import tensorflow as tf
 import numpy as np
 
 from tensorflow_addons.image import compose_ops
-from tensorflow_addons.utils import test_utils
 
 _DTYPES = {
     tf.dtypes.uint8,
@@ -40,39 +39,38 @@ def blend_np(image1, image2, factor):
     return temp.astype("uint8")
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class ComposeOpTest(tf.test.TestCase):
-    def test_blend(self):
-        for dtype in _DTYPES:
-            image1 = tf.constant(
-                [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], dtype=dtype
-            )
-            image2 = tf.constant(
-                [
-                    [255, 255, 255, 255],
-                    [255, 255, 255, 255],
-                    [255, 255, 255, 255],
-                    [255, 255, 255, 255],
-                ],
-                dtype=dtype,
-            )
-            blended = compose_ops.blend(image1, image2, 0.5)
-            self.assertAllEqual(
-                self.evaluate(blended),
-                [
-                    [128, 128, 128, 128],
-                    [128, 128, 128, 128],
-                    [128, 128, 128, 128],
-                    [128, 128, 128, 128],
-                ],
-            )
+@pytest.mark.parametrize("dtype", _DTYPES)
+def test_blend(dtype):
+    image1 = tf.constant(
+        [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], dtype=dtype
+    )
+    image2 = tf.constant(
+        [
+            [255, 255, 255, 255],
+            [255, 255, 255, 255],
+            [255, 255, 255, 255],
+            [255, 255, 255, 255],
+        ],
+        dtype=dtype,
+    )
+    blended = compose_ops.blend(image1, image2, 0.5).numpy()
+    np.testing.assert_equal(
+        blended,
+        [
+            [128, 128, 128, 128],
+            [128, 128, 128, 128],
+            [128, 128, 128, 128],
+            [128, 128, 128, 128],
+        ],
+    )
 
-            image1 = np.random.randint(0, 255, (4, 4, 3), np.uint8)
-            image2 = np.random.randint(0, 255, (4, 4, 3), np.uint8)
-            blended = compose_ops.blend(
-                tf.convert_to_tensor(image1), tf.convert_to_tensor(image2), 0.35
-            )
-            self.assertAllEqual(self.evaluate(blended), blend_np(image1, image2, 0.35))
+    image1 = np.random.randint(0, 255, (4, 4, 3), np.uint8)
+    image2 = np.random.randint(0, 255, (4, 4, 3), np.uint8)
+    blended = compose_ops.blend(
+        tf.convert_to_tensor(image1), tf.convert_to_tensor(image2), 0.35
+    ).numpy()
+    expected = blend_np(image1, image2, 0.35)
+    np.testing.assert_equal(blended, expected)
 
 
 if __name__ == "__main__":
