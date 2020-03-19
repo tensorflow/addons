@@ -47,38 +47,39 @@ def _forward(
     return output
 
 
+def _create_test_data(data_format):
+    # Produce test data for _forward_simple and _keras methods
+    val_a = np.array(
+        [
+            [
+                [[0, -6, 9, 5], [1, -5, 10, 3], [2, -4, 11, 1]],
+                [[3, -3, 12, -1], [4, -2, 13, -3], [5, -1, 14, -5]],
+            ],
+            [
+                [[6, 0, 15, -7], [7, 1, 16, -9], [8, 2, 17, -11]],
+                [[9, 3, 18, -13], [10, 4, 19, -15], [11, 5, 20, -17]],
+            ],
+        ],
+        dtype=np.float32,
+    )
+
+    # pylint: disable=too-many-function-args
+    val_b = val_a.transpose(2, 3, 0, 1).reshape(2, 2, 3, 4)
+    # pylint: enable=too-many-function-args
+
+    if data_format == "channels_last":
+        val_a = np.moveaxis(val_a, 1, -1)
+        val_b = np.moveaxis(val_b, 1, -1)
+
+    return val_a, val_b
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class CorrelationCostTest(tf.test.TestCase):
-    def _create_test_data(self, data_format):
-        # Produce test data for _forward_simple and _keras methods
-        val_a = np.array(
-            [
-                [
-                    [[0, -6, 9, 5], [1, -5, 10, 3], [2, -4, 11, 1]],
-                    [[3, -3, 12, -1], [4, -2, 13, -3], [5, -1, 14, -5]],
-                ],
-                [
-                    [[6, 0, 15, -7], [7, 1, 16, -9], [8, 2, 17, -11]],
-                    [[9, 3, 18, -13], [10, 4, 19, -15], [11, 5, 20, -17]],
-                ],
-            ],
-            dtype=np.float32,
-        )
-
-        # pylint: disable=too-many-function-args
-        val_b = val_a.transpose(2, 3, 0, 1).reshape(2, 2, 3, 4)
-        # pylint: enable=too-many-function-args
-
-        if data_format == "channels_last":
-            val_a = np.moveaxis(val_a, 1, -1)
-            val_b = np.moveaxis(val_b, 1, -1)
-
-        return val_a, val_b
-
     def _forward_simple(self, data_format, use_gpu=False):
         # We are just testing where the output has vanishing values.
         with test_utils.device(use_gpu):
-            val_a, val_b = self._create_test_data(data_format)
+            val_a, val_b = _create_test_data(data_format)
             input_a = tf.constant(val_a, dtype=tf.float32)
             input_b = tf.constant(val_b, dtype=tf.float32)
 
@@ -156,7 +157,7 @@ class CorrelationCostTest(tf.test.TestCase):
     def _keras(self, data_format, use_gpu=False):
         # Unable to use `layer_test` as this layer has multiple inputs.
         with test_utils.device(use_gpu):
-            val_a, val_b = self._create_test_data(data_format)
+            val_a, val_b = _create_test_data(data_format)
 
             # yapf: disable
             input_a = tf.keras.Input(shape=val_a.shape[1:])
