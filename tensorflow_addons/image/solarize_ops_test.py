@@ -1,4 +1,5 @@
 """Test of solarize_ops"""
+
 import sys
 import pytest
 import tensorflow as tf
