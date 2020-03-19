@@ -15,7 +15,7 @@
 """Test of solarize_ops"""
 
 import sys
-import absl
+import pytest
 import tensorflow as tf
 from tensorflow_addons.image import posterize_ops
 from tensorflow_addons.utils import test_utils
@@ -36,11 +36,5 @@ class PosterizeOpsTest(tf.test.TestCase, absl.testing.parameterized.TestCase):
             self.assertAllEqual(tf.shape(orig_image), tf.shape(posterize_image))
 
 
-def main(_):
-    """ main to to run test_posterize method """
-    test = PosterizeOpsTest()
-    test.test_posterize()
-
-
 if __name__ == "__main__":
-    sys.exit(absl.app.run(main))
+    sys.exit(pytest.main([__file__]))
