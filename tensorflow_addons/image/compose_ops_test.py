@@ -74,21 +74,6 @@ class ComposeOpTest(tf.test.TestCase):
             )
             self.assertAllEqual(self.evaluate(blended), blend_np(image1, image2, 0.35))
 
-            image1_file = tf.io.read_file(
-                "tensorflow_addons/image/test_data/Yellow_Smiley_Face.png"
-            )
-            test_image_1 = tf.io.decode_image(image1_file, channels=3, dtype=tf.uint8)
-            image2_file = tf.io.read_file(
-                "tensorflow_addons/image/test_data/Yellow_Smiley_Face_Warp-interp-3-clamp-4.png"
-            )
-            test_image_2 = tf.io.decode_image(image2_file, channels=3, dtype=tf.uint8)
-            result_image = compose_ops.blend(test_image_1, test_image_2, 0.5)
-            blended_file = tf.io.read_file(
-                "tensorflow_addons/image/test_data/Yellow_Smiley_Face_Blend-Half.png"
-            )
-            blended_image = tf.io.decode_image(blended_file)
-            self.assertAllEqual(result_image, blended_image)
-
 
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))
