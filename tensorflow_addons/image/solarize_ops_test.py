@@ -1,5 +1,6 @@
 """Test of solarize_ops"""
-
+import sys
+import pytest
 import tensorflow as tf
 from tensorflow_addons.image import solarize_ops
 from tensorflow_addons.utils import test_utils
@@ -12,27 +13,18 @@ class SolarizeOPSTest(tf.test.TestCase, parameterized.TestCase):
 
     def test_solarize(self):
         if tf.executing_eagerly():
-            test_image_file = tf.io.read_file("test_data/Yellow_Smiley_Face.png")
-            test_image_file = tf.io.decode_image(test_image_file, dtype=tf.uint8)
-            threshold = 10
-            solarize_img = solarize_ops.solarize(test_image_file, threshold)
-            self.assertAllEqual(tf.shape(solarize_img), tf.shape(test_image_file))
-
-    def test_solarize_add(self):
-        if tf.executing_eagerly():
-            test_image_file = tf.io.read_file("test_data/Yellow_Smiley_Face.png")
-            test_image_file = tf.io.decode_image(test_image_file, dtype=tf.uint8)
-            threshold = 10
-            solarize_img = solarize_ops.solarize_add(test_image_file, threshold)
-            self.assertAllEqual(tf.shape(solarize_img), tf.shape(test_image_file))
-
-
-def main(unused_argv):
-    del unused_argv
-    sol = SolarizeOPSTest()
-    sol.test_solarize()
-    sol.test_solarize_add()
-
+          image2 = tf.constant(
+                [
+                    [255, 255, 255, 255],
+                    [255, 255, 255, 255],
+                    [255, 255, 255, 255],
+                    [255, 255, 255, 255],
+                ],
+                dtype=tf.uint8,
+            )
+          threshold = 10
+          solarize_img = solarize_ops.solarize(image2, threshold)
+          self.assertAllEqual(tf.shape(solarize_img), tf.shape(image2))
 
 if __name__ == "__main__":
-    main(0)
+    sys.exit(pytest.main([__file__]))
