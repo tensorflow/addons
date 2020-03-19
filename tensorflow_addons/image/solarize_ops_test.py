@@ -3,7 +3,6 @@ import tensorflow as tf
 from tensorflow_addons.image import solarize_ops
 from tensorflow_addons.utils import test_utils
 from absl.testing import parameterized
-import absl
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -24,4 +23,4 @@ def main(unused_argv):
 
 
 if __name__ == "__main__":
-    absl.app.run(main)
+  main(0)
