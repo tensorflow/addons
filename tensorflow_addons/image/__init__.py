@@ -30,3 +30,4 @@ from tensorflow_addons.image.transform_ops import transform
 from tensorflow_addons.image.translate_ops import translate
 from tensorflow_addons.image.solarize_ops import solarize
 from tensorflow_addons.image.solarize_ops import solarize_add
+from tensorflow_addons.image.compose_ops import blend
