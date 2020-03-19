@@ -128,5 +128,4 @@ py_test(
     size="small",
     srcs=["solarize_ops_test.py",],
     main="solarize_ops_test.py",
-    deps=[":image",],
 )
