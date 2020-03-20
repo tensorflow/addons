@@ -37,11 +37,12 @@ def test_different_dtypes(dtype):
 
 
 def test_different_channels():
-    test_image = tf.ones([1, 40, 40, 1], dtype=np.uint8)
-    cutout_area = tf.zeros([4, 4], dtype=np.uint8)
-    cutout_area = tf.pad(cutout_area, ((0, 36), (0, 36)), constant_values=1)
-    expect_image = to_4D_image(cutout_area)
     for channel in [0, 1, 3, 4]:
+        test_image = tf.ones([1, 40, 40, channel], dtype=np.uint8)
+        cutout_area = tf.zeros([4, 4], dtype=np.uint8)
+        cutout_area = tf.pad(cutout_area, ((0, 36), (0, 36)), constant_values=1)
+        expect_image = to_4D_image(cutout_area)
+        expect_image = tf.tile(expect_image, [1, 1, 1, channel])
         result_image = random_cutout(test_image, 20, seed=1234)
         np.testing.assert_allclose(tf.shape(result_image), tf.shape(expect_image))
 
