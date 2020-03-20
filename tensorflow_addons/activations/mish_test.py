@@ -48,7 +48,7 @@ class MishTest(tf.test.TestCase, parameterized.TestCase):
 
     @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
     def test_same_as_py_func(self, dtype):
-        if dtype == np.float32 and tf.__version__ == "2.2.0-rc0":
+        if dtype == np.float32 and tf.__version__ == "2.2.0-rc1":
             pytest.skip("TODO: fix for tf 2.2.0")
         np.random.seed(1234)
         for _ in range(20):
