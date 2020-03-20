@@ -1,3 +1,17 @@
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
 import tensorflow as tf
 
 def autocontrast(image):
@@ -32,13 +46,8 @@ def autocontrast(image):
     ss=tf.unstack(image,axis=-1)
     for i in range(len(ss)):
         ss[i]=scale_channel(ss[i])
-    image = tf.stack(ss, 2)
+    image = tf.stack(ss, -1)
 
     return image
 
-file=tf.io.read_file("/media/fangsixie/data/keras-yolo3/Yellow_Smiley_Face_Warp-cutout-20.png")
-image=tf.io.decode_image(file)
-result=autocontrast(image)
-encoded=tf.image.encode_png(result)
-tf.io.write_file('./test.png',encoded)
 
