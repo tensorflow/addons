@@ -13,10 +13,10 @@ must:
 
 #### Testing Requirements
  * Simple unittests that demonstrate the metric is behaving as expected.
- * When applicable, run all unittests with TensorFlow's
-   `@run_in_graph_and_eager_modes` (for test method)
-   or `run_all_in_graph_and_eager_modes` (for TestCase subclass)
-   decorator.
+ * To run your `tf.functions` in eager mode and graph mode in the tests, 
+   you can use the `@pytest.mark.usefixtures("maybe_run_functions_eagerly")` 
+   decorator. This will run the tests twice, once normally, and once
+   with `tf.config.experimental_run_functions_eagerly(True)`.
  * Add a `py_test` to this sub-package's BUILD file.
 
 #### Documentation Requirements
