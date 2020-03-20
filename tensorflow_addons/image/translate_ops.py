@@ -106,33 +106,22 @@ def translate(
         )
 
 
-def translate_x(image: TensorLike, pixels: int, replace: int) -> TensorLike:
-    """Equivalent of PIL Translate in X dimension."""
-    image = translate(wrap(image), [-pixels, 0])
-    return unwrap(image, replace)
-
-
-def translate_y(image: TensorLike, pixels: int, replace: int) -> TensorLike:
-    """Equivalent of PIL Translate in Y dimension."""
-    image = translate(wrap(image), [0, -pixels])
-    return unwrap(image, replace)
-
-
-def shear_x(image: TensorLike, level: float, replace: int) -> TensorLike:
-    """Equivalent of PIL Shearing in X dimension."""
-    # Shear parallel to x axis is a projective transform
-    # with a matrix form of:
-    # [1  level
-    #  0  1].
-    image = transform(wrap(image), [1.0, level, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0])
-    return unwrap(image, replace)
-
-
-def shear_y(image: TensorLike, level: float, replace: int) -> TensorLike:
-    """Equivalent of PIL Shearing in Y dimension."""
-    # Shear parallel to y axis is a projective transform
-    # with a matrix form of:
-    # [1  0
-    #  level  1].
-    image = transform(wrap(image), [1.0, 0.0, 0.0, level, 1.0, 0.0, 0.0, 0.0])
+def translate_xy(image: TensorLike, pixels: int, replace: int, axis: int) -> TensorLike:
+    """Translates image in X or Y dimension.
+    Args:
+        image: A 3D image Tensor.
+        pixels: integer denoting number of pixels to translate by.
+        replace: Pixel value to replace blank space with.
+        axis: Either 0 (X-axis) or 1 (Y-axis).
+    Returns:
+        Translated image along X or Y axis, with blank space filled with
+        pixel value.
+    Raises:
+        ValueError: if axis is neither 0 nor 1."""
+    if axis not in [0, 1]:
+        raise ValueError("axis must be 0 (X-axis) or 1 (Y-axis)")
+    if axis == 0:
+        image = translate(wrap(image), [-pixels, 0])
+    if axis == 1:
+        image = translate(wrap(image), [0, -pixels])
     return unwrap(image, replace)

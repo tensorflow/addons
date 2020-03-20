@@ -350,3 +350,32 @@ def rotate(
             interpolation=interpolation,
         )
         return img_utils.from_4D_image(output, original_ndims)
+
+
+def shear_xy(image: TensorLike, level: float, replace: int, axis: int) -> TensorLike:
+    """Shear Operation with matrix of the form:
+    [1 level
+    0     1] (for X-axis)
+    [1    0
+    level 1] (for Y-axis)
+    Args:
+        image: A 3D image Tensor.
+        level: integer denoting scale to translate X/Y coordinates by.
+        replace: Pixel value to replace blank space with.
+        axis: Either 0 (X-axis) or 1 (Y-axis).
+    Returns:
+        Transformed image along X or Y axis, with blank plces filled wiht
+        pixel value.
+    Raises:
+        ValueError: if axis is neither 0 nor 1."""
+    if axis not in [0, 1]:
+        raise ValueError("axis must be 0 (X-axis) or 1 (Y-axis)")
+    if axis:
+        image = transform(
+            img_utils.wrap(image), [1.0, level, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
+        )
+    else:
+        image = transform(
+            img_utils.wrap(image), [1.0, 0.0, 0.0, level, 1.0, 0.0, 0.0, 0.0]
+        )
+    return img_utils.unwrap(image, replace)
