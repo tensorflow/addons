@@ -32,7 +32,7 @@ class AutoContrastTest(tf.test.TestCase, parameterized.TestCase):
             image = tf.constant([[1, 1], [1, 1]], dtype=tf.uint8)
             stacked_img = tf.stack([image] * 3, 2)
             contrast_image = auto_contrast_ops.autocontrast(stacked_img)
-            self.assertAllEqual(tf.shape(contrast_image), tf.shape(image))
+            self.assertAllEqual(tf.shape(contrast_image), tf.shape(stacked_img))
 
 
 if __name__ == "__main__":
