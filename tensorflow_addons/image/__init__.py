@@ -28,4 +28,6 @@ from tensorflow_addons.image.sparse_image_warp import sparse_image_warp
 from tensorflow_addons.image.transform_ops import rotate
 from tensorflow_addons.image.transform_ops import transform
 from tensorflow_addons.image.translate_ops import translate
+from tensorflow_addons.image.translate_ops import translate_x, translate_y
+from tensorflow_addons.image.translate_ops import shear_x, shear_y
 from tensorflow_addons.image.compose_ops import blend
