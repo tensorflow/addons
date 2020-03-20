@@ -132,11 +132,3 @@ py_test(
     main = "compose_ops_test.py",
     deps = [":image"],
 )
-
-py_test(
-    name = "color_ops_test",
-    size = "medium",
-    srcs = ["color_ops_test.py"],
-    main = "color_ops_test.py",
-    deps = [":image"],
-)
