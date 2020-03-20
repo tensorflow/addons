@@ -39,4 +39,3 @@ class ColorJitterTest(tf.test.TestCase, parameterized.TestCase):
 
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))
-
