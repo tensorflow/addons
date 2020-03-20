@@ -34,3 +34,4 @@ from tensorflow_addons.image.solarize_ops import solarize_add
 from tensorflow_addons.image.posterize_ops import posterize
 from tensorflow_addons.image.auto_contrast_ops import autocontrast
 from tensorflow_addons.image.to_grayscale_ops import to_grayscale
+from tensorflow_addons.image.color_jitter_ops import color_jitter

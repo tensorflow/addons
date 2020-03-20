@@ -22,6 +22,7 @@ py_library(
         "posterize_ops.py",
         "auto_contrast_ops.py",
         "to_grayscale_ops.py",
+        "color_jitter_ops.py",
     ]),
     data = [
         ":sparse_image_warp_test_data",
@@ -225,6 +226,18 @@ py_test(
         "to_grayscale_ops_test.py",
     ],
     main = "to_grayscale_ops_test.py",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "color_jitter_ops",
+    size = "medium",
+    srcs = [
+        "color_jitter_ops.py",
+    ],
+    main = "color_jitter_ops.py",
     deps = [
         ":image",
     ],
