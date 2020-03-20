@@ -61,5 +61,14 @@ def test_different_ranks():
     np.testing.assert_allclose(tf.shape(result_image_4d), tf.shape(expect_image_4d))
 
 
+def test_with_tf_function():
+    test_image = tf.ones([1, 40, 40, 1], dtype=tf.uint8)
+    result_image = tf.function(cutout)(test_image, 2, [2, 2])
+    cutout_area = tf.zeros([4, 4], dtype=tf.uint8)
+    cutout_area = tf.pad(cutout_area, ((0, 36), (0, 36)), constant_values=1)
+    expect_image = to_4D_image(cutout_area)
+    np.testing.assert_allclose(result_image, expect_image)
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))

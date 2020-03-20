@@ -66,8 +66,9 @@ def random_cutout(
     Returns:
       An image Tensor.
     """
+    mask_size = tf.convert_to_tensor(mask_size)
     if tf.equal(tf.rank(mask_size), 0):
-        mask_size = [mask_size, mask_size]
+        mask_size = tf.stack([mask_size, mask_size])
     data_format = conv_utils.normalize_data_format(data_format)
     # Sample the center location in the images where the zero mask will be applied.
     image_height, image_width = _get_image_wh(images, data_format)
@@ -120,8 +121,9 @@ def cutout(
       An image Tensor.
     """
     with tf.name_scope("cutout"):
+        mask_size = tf.convert_to_tensor(mask_size)
         if tf.equal(tf.rank(mask_size), 0):
-            mask_size = [mask_size, mask_size]
+            mask_size = tf.stack([mask_size, mask_size])
         data_format = conv_utils.normalize_data_format(data_format)
         image_height, image_width = _get_image_wh(images, data_format)
         cutout_center_height = offset[0]
