@@ -120,6 +120,7 @@ class CohenKappa(Metric):
             dtype=tf.float32,
         )
 
+    @tf.function
     def update_state(self, y_true, y_pred, sample_weight=None):
         """Accumulates the confusion matrix condition statistics.
 

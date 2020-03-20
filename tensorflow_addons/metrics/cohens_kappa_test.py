@@ -210,7 +210,6 @@ def test_keras_binary_clasasification_model():
     model.fit(x, y, epochs=1, verbose=0, batch_size=32)
 
 
-@pytest.mark.xfail(tf.__version__ == "2.2.0-rc1", reason="TODO: Fix this test")
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_keras_multiclass_classification_model():
     kp = CohenKappa(num_classes=5)
