@@ -31,10 +31,13 @@ def _reduce_average(
 ) -> tf.Tensor:
     """Computes the (weighted) mean of elements across dimensions of a tensor.
   """
-    return tf.divide(
-        tf.reduce_sum(tf.multiply(weights, input_tensor), axis=axis, keepdims=keepdims),
-        tf.reduce_sum(weights, axis=axis, keepdims=keepdims),
-    )
+    if weights is None:
+        return tf.reduce_mean(input_tensor, axis=None, keepdims=False)
+
+    weighted_sum = tf.reduce_sum(weights * input_tensor, axis=axis, keepdims=keepdims)
+    sum_of_weights = tf.reduce_sum(weights, axis=axis, keepdims=keepdims)
+    average = weighted_sum / sum_of_weights
+    return average
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -99,23 +102,20 @@ class RSquare(Metric):
         )
 
     def update_state(self, y_true, y_pred, sample_weight=None) -> None:
-        y_true = tf.cast(y_true, self._dtype)
-        y_pred = tf.cast(y_pred, self._dtype)
+        y_true = tf.cast(y_true, dtype=self._dtype)
+        y_pred = tf.cast(y_pred, dtype=self._dtype)
         if sample_weight is None:
             sample_weight = 1
-        sample_weight = tf.cast(sample_weight, self._dtype)
-        sample_weight = weights_broadcast_ops.broadcast_weights(sample_weight, y_true)
-
-        weighted_y_true = tf.multiply(y_true, sample_weight)
-        self.sum.assign_add(tf.reduce_sum(weighted_y_true, axis=0))
-        self.squared_sum.assign_add(
-            tf.reduce_sum(tf.multiply(y_true, weighted_y_true), axis=0)
+        sample_weight = tf.cast(sample_weight, dtype=self._dtype)
+        sample_weight = weights_broadcast_ops.broadcast_weights(
+            weights=sample_weight, values=y_true
         )
+
+        weighted_y_true = y_true * sample_weight
+        self.sum.assign_add(tf.reduce_sum(weighted_y_true, axis=0))
+        self.squared_sum.assign_add(tf.reduce_sum(y_true * weighted_y_true, axis=0))
         self.res.assign_add(
-            tf.reduce_sum(
-                tf.multiply(tf.square(tf.subtract(y_true, y_pred)), sample_weight),
-                axis=0,
-            )
+            tf.reduce_sum((y_true - y_pred) ** 2 * sample_weight, axis=0,)
         )
         self.count.assign_add(tf.reduce_sum(sample_weight, axis=0))
 
@@ -139,7 +139,7 @@ class RSquare(Metric):
 
     def reset_states(self) -> None:
         # The state of the metric will be reset at the start of each epoch.
-        self.squared_sum.assign(tf.zeros(shape=self.y_shape, dtype=self.dtype))
-        self.sum.assign(tf.zeros(shape=self.y_shape, dtype=self.dtype))
-        self.res.assign(tf.zeros(shape=self.y_shape, dtype=self.dtype))
-        self.count.assign(tf.zeros(shape=self.y_shape, dtype=self.dtype))
+        self.squared_sum.assign(0)
+        self.sum.assign(0)
+        self.res.assign(0)
+        self.count.assign(0)
