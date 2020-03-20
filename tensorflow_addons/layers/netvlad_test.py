@@ -22,7 +22,9 @@ from tensorflow_addons.layers.netvlad import NetVLAD
 from tensorflow_addons.utils import test_utils
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+pytestmark = pytest.mark.usefixtures("maybe_run_functions_eagerly")
+
+
 @pytest.mark.parametrize("num_clusters", [1, 4])
 def test_simple(num_clusters):
     test_utils.layer_test(
@@ -33,7 +35,6 @@ def test_simple(num_clusters):
     )
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_unknown():
     inputs = np.random.random((5, 4, 100)).astype("float32")
     test_utils.layer_test(
@@ -45,7 +46,6 @@ def test_unknown():
     )
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_invalid_shape():
     with pytest.raises(ValueError) as exception_info:
         test_utils.layer_test(
