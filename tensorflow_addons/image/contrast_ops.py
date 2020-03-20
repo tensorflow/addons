@@ -14,6 +14,7 @@
 # ==============================================================================
 import tensorflow as tf
 
+
 def autocontrast(image):
     """Implements Autocontrast function from PIL using TF ops.
 
@@ -24,8 +25,9 @@ def autocontrast(image):
       The image after it has had autocontrast applied to it and will be of type
       uint8.
     """
-    dtype=image.dtype
-    interval=dtype.max - dtype.min
+    dtype = image.dtype
+    interval = dtype.max - dtype.min
+
     def scale_channel(image_channel):
         """Scale the 2D image using the autocontrast rule."""
         # A possibly cheaper version can be done using cumsum/unique_with_counts
@@ -35,19 +37,17 @@ def autocontrast(image):
         hi = tf.reduce_max(image_channel)
 
         if hi > lo:
-            image_channel=tf.cast(image_channel,tf.float32)
-            image_channel=image_channel*(interval/(hi - lo))
-            image_channel=tf.cast(image_channel, dtype)
+            image_channel = tf.cast(image_channel, tf.float32)
+            image_channel = image_channel * (interval / (hi - lo))
+            image_channel = tf.cast(image_channel, dtype)
         return image_channel
 
     # Assumes RGB for now.  Scales each channel independently
     # and then stacks the result.
 
-    ss=tf.unstack(image,axis=-1)
+    ss = tf.unstack(image, axis=-1)
     for i in range(len(ss)):
-        ss[i]=scale_channel(ss[i])
+        ss[i] = scale_channel(ss[i])
     image = tf.stack(ss, -1)
 
     return image
-
-
