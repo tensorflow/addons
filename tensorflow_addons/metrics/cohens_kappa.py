@@ -120,7 +120,6 @@ class CohenKappa(Metric):
             dtype=tf.float32,
         )
 
-    @tf.function
     def update_state(self, y_true, y_pred, sample_weight=None):
         """Accumulates the confusion matrix condition statistics.
 
@@ -152,6 +151,12 @@ class CohenKappa(Metric):
         else:
             y_true = tf.cast(y_true, dtype=tf.int64)
 
+        y_pred = self._cast_ypred(y_pred)
+
+        return self._update_confusion_matrix(y_true, y_pred, sample_weight)
+
+    @tf.function
+    def _cast_ypred(self, y_pred):
         if tf.rank(y_pred) > 1:
             if not self.regression:
                 y_pred = tf.cast(tf.argmax(y_pred, axis=-1), dtype=tf.int64)
@@ -160,8 +165,7 @@ class CohenKappa(Metric):
                 y_pred = tf.cast(y_pred, dtype=tf.int64)
         else:
             y_pred = tf.cast(y_pred, dtype=tf.int64)
-
-        return self._update_confusion_matrix(y_true, y_pred, sample_weight)
+        return y_pred
 
     def _update_confusion_matrix(self, y_true, y_pred, sample_weight):
         y_true = tf.squeeze(y_true)
