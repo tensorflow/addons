@@ -13,9 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 import tensorflow as tf
+from tensorflow_addons.utils.types import TensorLike
 
 
-def autocontrast(image):
+def autocontrast(image: TensorLike) -> tf.Tensor:
     """Implements Autocontrast function from PIL using TF ops.
 
     Args:
