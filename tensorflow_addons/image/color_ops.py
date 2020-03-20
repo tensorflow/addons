@@ -16,17 +16,18 @@
 
 import tensorflow as tf
 
+from utils.types import TensorLike, Number
 from tensorflow_addons.image.compose_ops import blend
 
 
-def color(image, factor):
+def color(image: TensorLike, factor: Number) -> TensorLike:
     """Equivalent of PIL Color."""
     degenerate = tf.image.grayscale_to_rgb(tf.image.rgb_to_grayscale(image))
     degenerate = tf.cast(degenerate, dtype=tf.float32)
     return blend(degenerate, image, factor)
 
 
-def sharpness(image, factor):
+def sharpness(image: TensorLike, factor: Number) -> TensorLike:
     """Implements Sharpness function from PIL using TF ops."""
     orig_image = image
     image = tf.cast(image, tf.float32)
@@ -59,7 +60,7 @@ def sharpness(image, factor):
     return blend(result, orig_image, factor)
 
 
-def equalize(image):
+def equalize(image: TensorLike) -> TensorLike:
     """Implements Equalize function from PIL using TF ops."""
 
     def scale_channel(im, c):
@@ -100,7 +101,7 @@ def equalize(image):
     return image
 
 
-def invert(image):
+def invert(image: TensorLike) -> TensorLike:
     """Inverts the image pixels."""
     image = tf.convert_to_tensor(image)
     return 255 - image
