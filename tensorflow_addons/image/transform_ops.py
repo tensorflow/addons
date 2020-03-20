@@ -372,10 +372,10 @@ def shear_xy(image: TensorLike, level: float, replace: int, axis: int) -> Tensor
         raise ValueError("axis must be 0 (X-axis) or 1 (Y-axis)")
     if axis:
         image = transform(
-            img_utils.wrap(image), [1.0, level, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
+            img_utils.wrap(image), [1.0, 0.0, 0.0, level, 1.0, 0.0, 0.0, 0.0]
         )
     else:
         image = transform(
-            img_utils.wrap(image), [1.0, 0.0, 0.0, level, 1.0, 0.0, 0.0, 0.0]
+            img_utils.wrap(image), [1.0, level, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0]
         )
     return img_utils.unwrap(image, replace)

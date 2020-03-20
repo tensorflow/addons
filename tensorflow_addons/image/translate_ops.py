@@ -120,8 +120,8 @@ def translate_xy(image: TensorLike, pixels: int, replace: int, axis: int) -> Ten
         ValueError: if axis is neither 0 nor 1."""
     if axis not in [0, 1]:
         raise ValueError("axis must be 0 (X-axis) or 1 (Y-axis)")
-    if axis == 0:
-        image = translate(wrap(image), [-pixels, 0])
-    if axis == 1:
+    if axis:
         image = translate(wrap(image), [0, -pixels])
+    else:
+        image = translate(wrap(image), [-pixels, 0])
     return unwrap(image, replace)
