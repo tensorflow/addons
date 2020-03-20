@@ -30,15 +30,7 @@ class PosterizeOpsTest(tf.test.TestCase, parameterized.TestCase):
     def test_posterize(self):
         """ Method to test the posterize technique on images """
         if tf.executing_eagerly():
-            image = tf.constant(
-                [
-                    [255, 255, 255, 255],
-                    [255, 255, 255, 255],
-                    [255, 255, 255, 255],
-                    [255, 255, 255, 255],
-                ],
-                dtype=tf.uint8,
-            )
+            image = tf.constant(tf.ones([4, 4], dtype=tf.dtypes.uint8)) * 255
             bits = 2
             posterize_image = posterize_ops.posterize(image, bits)
             self.assertAllEqual(tf.shape(image), tf.shape(posterize_image))

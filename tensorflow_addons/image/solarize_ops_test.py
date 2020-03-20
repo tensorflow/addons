@@ -28,15 +28,7 @@ class SolarizeOPSTest(tf.test.TestCase, parameterized.TestCase):
 
     def test_solarize(self):
         if tf.executing_eagerly():
-            image2 = tf.constant(
-                [
-                    [255, 255, 255, 255],
-                    [255, 255, 255, 255],
-                    [255, 255, 255, 255],
-                    [255, 255, 255, 255],
-                ],
-                dtype=tf.uint8,
-            )
+            image2 = tf.constant(tf.ones([4, 4], dtype=tf.uint8)) * 255
             threshold = 10
             solarize_img = solarize_ops.solarize(image2, threshold)
             self.assertAllEqual(tf.shape(solarize_img), tf.shape(image2))
