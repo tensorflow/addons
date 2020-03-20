@@ -32,7 +32,7 @@ def _reduce_average(
     """Computes the (weighted) mean of elements across dimensions of a tensor.
   """
     if weights is None:
-        return tf.reduce_mean(input_tensor, axis=None, keepdims=False)
+        return tf.reduce_mean(input_tensor, axis=axis, keepdims=keepdims)
 
     weighted_sum = tf.reduce_sum(weights * input_tensor, axis=axis, keepdims=keepdims)
     sum_of_weights = tf.reduce_sum(weights, axis=axis, keepdims=keepdims)
