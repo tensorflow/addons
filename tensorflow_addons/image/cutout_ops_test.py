@@ -27,7 +27,6 @@ from tensorflow_addons.image.utils import from_4D_image, to_4D_image
 @parameterized.named_parameters(
     ("float16", np.float16), ("float32", np.float32), ("uint8", np.uint8)
 )
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_different_dtypes(dtype):
     test_image = tf.ones([1, 40, 40, 1], dtype=dtype)
     result_image = cutout(test_image, 2, [2, 2])
@@ -37,7 +36,6 @@ def test_different_dtypes(dtype):
     np.testing.assert_allclose(result_image, expect_image)
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_different_channels():
     test_image = tf.ones([1, 40, 40, 1], dtype=np.uint8)
     cutout_area = tf.zeros([4, 4], dtype=np.uint8)
@@ -48,7 +46,6 @@ def test_different_channels():
         np.testing.assert_allclose(tf.shape(result_image), tf.shape(expect_image))
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_different_ranks():
     test_image_4d = tf.ones([1, 40, 40, 1], dtype=np.uint8)
     cutout_area = tf.zeros([4, 4], dtype=np.uint8)
