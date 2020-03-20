@@ -21,6 +21,7 @@ py_library(
         "solarize_ops.py",
         "posterize_ops.py",
         "auto_contrast_ops.py",
+        "to_grayscale_ops.py",
     ]),
     data = [
         ":sparse_image_warp_test_data",
@@ -212,6 +213,18 @@ py_test(
         "auto_contrast_ops_test.py",
     ],
     main = "auto_contrast_ops_test.py",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "to_grayscale_ops_test",
+    size = "medium",
+    srcs = [
+        "to_grayscale_ops_test.py",
+    ],
+    main = "to_grayscale_ops_test.py",
     deps = [
         ":image",
     ],
