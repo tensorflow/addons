@@ -32,3 +32,4 @@ from tensorflow_addons.image.compose_ops import blend
 from tensorflow_addons.image.solarize_ops import solarize
 from tensorflow_addons.image.solarize_ops import solarize_add
 from tensorflow_addons.image.posterize_ops import posterize
+from tensorflow_addons.image.auto_contrast_ops import autocontrast
