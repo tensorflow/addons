@@ -413,4 +413,4 @@ class CRFLossLayer(tf.keras.layers.Layer):
         log_likelihood, _ = crf_log_likelihood(
             potentials, y_true, sequence_length, chain_kernel
         )
-        self.add_loss(-log_likelihood)
+        self.add_loss(tf.reduce_mean(-log_likelihood))
