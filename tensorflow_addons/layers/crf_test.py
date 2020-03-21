@@ -94,11 +94,16 @@ def get_test_data():
     return logits, tags, transitions, boundary_values, crf_layer
 
 
-def test_keras_model_compile():
-    crf_layer = get_test_data()[-1]
-    model = tf.keras.models.Sequential([tf.keras.layers.Input(shape=(3, 5)), crf_layer])
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_keras_model_inference():
+    logits, _, _, _, crf_layer = get_test_data()
 
-    model.compile(loss=None, optimizer="adam")
+    input_tensor = tf.keras.layers.Input(shape=(3, 5))
+    decoded_sequence, _, _, _ = crf_layer(input_tensor)
+    model = tf.keras.Model(input_tensor, decoded_sequence)
+
+    model.predict(logits)
+    model(logits).numpy()
 
 
 if __name__ == "__main__":
