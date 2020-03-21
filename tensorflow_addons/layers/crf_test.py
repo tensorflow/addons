@@ -23,7 +23,7 @@ import tensorflow as tf
 from tensorflow_addons.layers.crf import CRF, CRFLossLayer
 
 
-def test_unmasked_viterbi_decode():
+def get_test_data2():
     x = np.array(
         [
             [
@@ -40,8 +40,13 @@ def test_unmasked_viterbi_decode():
             ],
         ]
     )
+    y = np.array([[1, 2, 2], [1, 1, 1]])  # B-X  I-X  I-X  # B-X  B-X  B-X
+    return x, y
 
-    expected_y = np.array([[1, 2, 2], [1, 1, 1]])  # B-X  I-X  I-X  # B-X  B-X  B-X
+
+def test_unmasked_viterbi_decode():
+
+    x_np, y_np = get_test_data2()
 
     transitions = np.ones([5, 5])
     boundary_value = np.ones(5)
@@ -54,9 +59,9 @@ def test_unmasked_viterbi_decode():
         boundary_initializer=tf.keras.initializers.Constant(boundary_value),
     )
 
-    decoded_sequence, _, _, _ = layer(x)
+    decoded_sequence, _, _, _ = layer(x_np)
     decoded_sequence = decoded_sequence.numpy()
-    np.testing.assert_equal(decoded_sequence, expected_y)
+    np.testing.assert_equal(decoded_sequence, y_np)
     assert decoded_sequence.dtype == np.int32
 
 
@@ -105,27 +110,10 @@ def test_keras_model_inference():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_in_subclass_model():
-    train_x = np.array(
-        [
-            [
-                # O   B-X  I-X  B-Y  I-Y
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0, 0.0],
-            ],
-            [
-                # O   B-X  I-X  B-Y  I-Y
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-            ],
-        ]
-    )
+    x_np, y_np = get_test_data2()
 
-    train_y = np.array([[1, 2, 2], [1, 1, 1]])  # B-X  I-X  I-X  # B-X  B-X  B-X
-
-    x_input = tf.keras.layers.Input(shape=train_x.shape[1:])
-    y_input = tf.keras.layers.Input(shape=train_y.shape[1:])
+    x_input = tf.keras.layers.Input(shape=x_np.shape[1:])
+    y_input = tf.keras.layers.Input(shape=y_np.shape[1:])
 
     decoded_sequence, potentials, sequence_length, chain_kernel = CRF(5)(x_input)
 
@@ -135,10 +123,10 @@ def test_in_subclass_model():
     training_model = tf.keras.Model([x_input, y_input], crf_loss)
 
     training_model.compile("adam", loss="mae")
-    training_model.fit((train_x, train_y), y=np.zeros((2,)))
-    training_model.evaluate((train_x, train_y), y=np.zeros((2,)))
+    training_model.fit((x_np, y_np), y=np.zeros((2,)))
+    training_model.evaluate((x_np, y_np), y=np.zeros((2,)))
 
-    inference_model.predict(train_x)
+    inference_model.predict(x_np)
 
 
 def test_mask_right_padding():
