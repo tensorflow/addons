@@ -7,7 +7,6 @@ py_library(
     srcs = [
         "__init__.py",
         "contrastive.py",
-        "crf.py",
         "focal_loss.py",
         "giou_loss.py",
         "lifted.py",
@@ -19,18 +18,6 @@ py_library(
     ],
     deps = [
         "//tensorflow_addons/activations",
-        "//tensorflow_addons/layers",
-        "//tensorflow_addons/utils",
-    ],
-)
-
-py_library(
-    name = "crf",
-    srcs = [
-        "crf.py",
-    ],
-    deps = [
-        "//tensorflow_addons/layers:crf",
         "//tensorflow_addons/utils",
     ],
 )
@@ -44,20 +31,6 @@ py_test(
     main = "contrastive_test.py",
     deps = [
         ":losses",
-    ],
-)
-
-py_test(
-    name = "crf_test",
-    size = "small",
-    srcs = [
-        "crf_test.py",
-    ],
-    main = "crf_test.py",
-    srcs_version = "PY2AND3",
-    deps = [
-        "//tensorflow_addons/layers:crf",
-        "//tensorflow_addons/losses:crf",
     ],
 )
 

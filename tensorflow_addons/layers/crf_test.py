@@ -14,7 +14,9 @@
 # ==============================================================================
 """Tests for Conditional Random Field layer."""
 
+import itertools
 import os
+import math
 import tempfile
 import sys
 
@@ -229,6 +231,69 @@ def test_serialization(save_format):
         training_model.get_layer("L").get_weights(),
         new_training_model.get_layer("L").get_weights(),
     )
+
+
+def test_numerical_accuracy():
+    logits, tags, transitions, boundary_values, crf_layer = get_test_data_extended()
+
+    x_input = tf.keras.layers.Input(shape=logits.shape[1:])
+    y_input = tf.keras.layers.Input(shape=tags.shape[1:])
+
+    crf_outputs = crf_layer(x_input)
+    decoded_sequence, potentials, sequence_length, chain_kernel = crf_outputs
+
+    crf_loss = CRFLossLayer()([potentials, y_input, sequence_length, chain_kernel])
+    training_model = tf.keras.Model([x_input, y_input], crf_loss)
+
+    training_model.compile(loss="mae")
+    log_likelihood = training_model.train_on_batch((logits, tags), np.zeros((2,)))
+
+    # The manually computed log likelihood should
+    # equal the result of crf.forward.
+    expected_log_likelihood = compute_log_likelihood(
+        logits, tags, transitions, boundary_values
+    )
+    unbatched_log_likelihood = -2 * log_likelihood
+
+    np.testing.assert_allclose(
+        expected_log_likelihood, unbatched_log_likelihood, rtol=2e-7
+    )
+
+
+def compute_log_likelihood(logits, tags, transitions, boundary_values):
+    # Now compute the log-likelihood manually
+    manual_log_likelihood = 0.0
+
+    # For each instance, manually compute the numerator
+    # (which is just the score for the logits and actual tags)
+    # and the denominator
+    # (which is the log-sum-exp of the scores
+    # for the logits across all possible tags)
+    for logits_i, tags_i in zip(logits, tags):
+        numerator = score_logits(logits_i, tags_i, transitions, boundary_values)
+        all_scores = [
+            score_logits(logits_i, tags_j, transitions, boundary_values)
+            for tags_j in itertools.product(range(5), repeat=3)
+        ]
+        denominator = math.log(sum(math.exp(score) for score in all_scores))
+        # And include them in the manual calculation.
+        manual_log_likelihood += numerator - denominator
+
+    return manual_log_likelihood
+
+
+def score_logits(logits, tags, transitions, boundary_values):
+    """Computes the likelihood score for the given sequence of tags, given
+    the provided logits (and the transition weights in the CRF model)"""
+    # Start with transitions from START and to END
+    total = boundary_values[tags[0]] + boundary_values[tags[-1]]
+    # Add in all the intermediate transitions
+    for tag, next_tag in zip(tags, tags[1:]):
+        total += transitions[tag, next_tag]
+    # Add in the logits for the observed tags
+    for logit, tag in zip(logits, tags):
+        total += logit[tag]
+    return total
 
 
 if __name__ == "__main__":
