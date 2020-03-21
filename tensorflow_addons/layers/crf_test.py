@@ -106,8 +106,8 @@ def test_keras_model_inference():
     model(logits).numpy()
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_in_subclass_model():
-    tf.config.experimental_run_functions_eagerly(True)
     train_x = np.array(
         [
             [
@@ -137,7 +137,7 @@ def test_in_subclass_model():
 
     training_model = tf.keras.Model([x_input, y_input], crf_loss)
 
-    training_model.compile("adam", loss="mae", run_eagerly=True)
+    training_model.compile("adam", loss="mae")
     training_model.fit((train_x, train_y), y=np.zeros((2,)))
     training_model.evaluate((train_x, train_y), y=np.zeros((2,)))
 
