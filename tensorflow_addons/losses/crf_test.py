@@ -16,7 +16,6 @@
 
 import itertools
 import math
-import os
 import sys
 
 import numpy as np
@@ -144,48 +143,6 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
         unbatched_log_likelihood = -2 * log_likelihood
 
         self.assertAllClose(expected_log_likelihood, unbatched_log_likelihood)
-
-    def test_class_loss_function(self):
-        self._test_loss_function(crf.ConditionalRandomFieldLoss())
-
-    def test_func_loss_function(self):
-        self._test_loss_function(crf.crf_loss)
-
-
-@pytest.mark.parametrize("loss_obj", CRF_LOSS_OBJ_LIST)
-def test_model_fit(loss_obj):
-    logits, tags, _, _, crf_layer = get_test_data()
-    model = tf.keras.models.Sequential()
-    model.add(tf.keras.layers.Input(shape=(3, 5)))
-    model.add(crf_layer)
-    model.compile("adam", loss=loss_obj, metrics=[tf.keras.metrics.Accuracy()])
-
-    model.fit(logits, tags, epochs=10, batch_size=1)
-
-
-def _test_dump_and_load(loss_obj, tmp_path):
-    logits, tags, _, _, crf_layer = get_test_data()
-    MODEL_PERSISTENCE_PATH = os.path.join(tmp_path, "test_saving_crf_model.h5")
-
-    model = tf.keras.models.Sequential()
-    model.add(tf.keras.layers.Input(shape=(3, 5)))
-    model.add(crf_layer)
-    model.compile("adam", loss=loss_obj, metrics=[tf.keras.metrics.Accuracy()])
-
-    model.fit(logits, tags, epochs=10, batch_size=1)
-
-    model.save(MODEL_PERSISTENCE_PATH)
-
-    # no news is good news
-    new_model = tf.keras.models.load_model(MODEL_PERSISTENCE_PATH)
-    new_model.fit(logits, tags, epochs=10, batch_size=1)
-
-
-@pytest.mark.skip("require tensorflow/tensorflow#37018 merged")
-def test_dump_and_load_with_class_loss(tmp_path):
-    # TODO(howl-anderson): wait for the PR merged
-
-    _test_dump_and_load(crf.ConditionalRandomFieldLoss(), tmp_path)
 
 
 if __name__ == "__main__":

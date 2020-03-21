@@ -14,6 +14,8 @@
 # ==============================================================================
 """Tests for Conditional Random Field layer."""
 
+import os
+import tempfile
 import sys
 
 import pytest
@@ -75,6 +77,18 @@ def get_test_data_extended():
     return logits, tags, transitions, boundary_values, crf_layer
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_keras_model_inference():
+    logits, _, _, _, crf_layer = get_test_data_extended()
+
+    input_tensor = tf.keras.layers.Input(shape=(3, 5))
+    decoded_sequence, _, _, _ = crf_layer(input_tensor)
+    model = tf.keras.Model(input_tensor, decoded_sequence)
+
+    model.predict(logits)
+    model(logits).numpy()
+
+
 def test_unmasked_viterbi_decode():
 
     x_np, y_np = get_test_data()
@@ -97,25 +111,23 @@ def test_unmasked_viterbi_decode():
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_keras_model_inference():
-    logits, _, _, _, crf_layer = get_test_data_extended()
-
-    input_tensor = tf.keras.layers.Input(shape=(3, 5))
-    decoded_sequence, _, _, _ = crf_layer(input_tensor)
-    model = tf.keras.Model(input_tensor, decoded_sequence)
-
-    model.predict(logits)
-    model(logits).numpy()
+def test_in_subclass_model():
+    logits, tags, _, _, crf_layer = get_test_data_extended()
+    train_some_model(logits, tags)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_in_subclass_model():
+def test_in_subclass_model2():
     x_np, y_np = get_test_data()
+    train_some_model(x_np, y_np)
 
+
+def train_some_model(x_np, y_np):
     x_input = tf.keras.layers.Input(shape=x_np.shape[1:])
     y_input = tf.keras.layers.Input(shape=y_np.shape[1:])
 
-    decoded_sequence, potentials, sequence_length, chain_kernel = CRF(5)(x_input)
+    crf_outputs = CRF(5, name="L")(x_input)
+    decoded_sequence, potentials, sequence_length, chain_kernel = crf_outputs
 
     crf_loss = CRFLossLayer()([potentials, y_input, sequence_length, chain_kernel])
 
@@ -128,7 +140,10 @@ def test_in_subclass_model():
 
     inference_model.predict(x_np)
 
+    return inference_model, training_model
 
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_mask_right_padding():
     x_np, y_np = get_test_data()
     mask = np.array([[1, 1, 1], [1, 1, 0]])
@@ -171,6 +186,44 @@ def test_mask_left_padding():
         training_model.fit((x_np, y_np), np.zeros((2,)))
 
     assert "CRF layer do not support left padding" in str(context.value)
+
+
+def clone(model: tf.keras.Model):
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        file_path = os.path.join(tmpdir, "my_model.tf")
+        model.save(file_path, save_format="h5")
+        return tf.keras.models.load_model(file_path)
+
+
+def assert_all_equal(array_list1, array_list2):
+    for arr1, arr2 in zip(array_list1, array_list2):
+        np.testing.assert_equal(arr1, arr2)
+
+
+def test_serialization():
+    x_np, y_np = get_test_data()
+    inference_model, training_model = train_some_model(x_np, y_np)
+
+    assert inference_model.get_layer("L") == training_model.get_layer("L")
+
+    new_inference_model = clone(inference_model)
+    np.testing.assert_equal(
+        inference_model(x_np).numpy(), new_inference_model(x_np).numpy()
+    )
+    assert_all_equal(
+        inference_model.get_layer("L").get_weights(),
+        new_inference_model.get_layer("L").get_weights(),
+    )
+
+    new_training_model = clone(training_model)
+    np.testing.assert_equal(
+        training_model([x_np, y_np]).numpy(), new_training_model([x_np, y_np]).numpy()
+    )
+    assert_all_equal(
+        training_model.get_layer("L").get_weights(),
+        new_training_model.get_layer("L").get_weights(),
+    )
 
 
 if __name__ == "__main__":

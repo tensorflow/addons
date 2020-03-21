@@ -379,7 +379,7 @@ class CRF(tf.keras.layers.Layer):
             "bias_constraint": tf.keras.constraints.serialize(self.bias_constraint),
         }
         base_config = super().get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        return {**base_config, **config}
 
     def compute_output_shape(self, input_shape):
         output_shape = input_shape[:2]
@@ -395,9 +395,10 @@ class CRF(tf.keras.layers.Layer):
         return tf.int32
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class CRFLossLayer(tf.keras.layers.Layer):
-    def __init__(self, name=None):
-        super().__init__(trainable=False, name=name)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def call(self, inputs, **kwargs):
         potentials, y_true, sequence_length, chain_kernel = inputs
@@ -408,3 +409,6 @@ class CRFLossLayer(tf.keras.layers.Layer):
             potentials, y_true, sequence_length, chain_kernel
         )
         return -log_likelihood
+
+    def get_config(self):
+        return super().get_config()
