@@ -111,13 +111,13 @@ def test_unmasked_viterbi_decode():
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_in_subclass_model():
+def test_traing():
     logits, tags, _, _, crf_layer = get_test_data_extended()
     train_some_model(logits, tags)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_in_subclass_model2():
+def test_traing2():
     x_np, y_np = get_test_data()
     train_some_model(x_np, y_np)
 
@@ -188,11 +188,11 @@ def test_mask_left_padding():
     assert "CRF layer do not support left padding" in str(context.value)
 
 
-def clone(model: tf.keras.Model):
+def clone(model: tf.keras.Model, save_format: str):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         file_path = os.path.join(tmpdir, "my_model.tf")
-        model.save(file_path, save_format="h5")
+        model.save(file_path, save_format=save_format)
         return tf.keras.models.load_model(file_path)
 
 
@@ -201,13 +201,18 @@ def assert_all_equal(array_list1, array_list2):
         np.testing.assert_equal(arr1, arr2)
 
 
-def test_serialization():
+@pytest.mark.parametrize("save_format", ["h5", "tf"])
+def test_serialization(save_format):
+
     x_np, y_np = get_test_data()
     inference_model, training_model = train_some_model(x_np, y_np)
 
     assert inference_model.get_layer("L") == training_model.get_layer("L")
 
-    new_inference_model = clone(inference_model)
+    if save_format == "tf":
+        pytest.skip("TODO: fixme. Some strange bug with TF model saving.")
+
+    new_inference_model = clone(inference_model, save_format)
     np.testing.assert_equal(
         inference_model(x_np).numpy(), new_inference_model(x_np).numpy()
     )
@@ -216,7 +221,7 @@ def test_serialization():
         new_inference_model.get_layer("L").get_weights(),
     )
 
-    new_training_model = clone(training_model)
+    new_training_model = clone(training_model, save_format)
     np.testing.assert_equal(
         training_model([x_np, y_np]).numpy(), new_training_model([x_np, y_np]).numpy()
     )
