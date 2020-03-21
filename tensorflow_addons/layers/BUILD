@@ -29,17 +29,6 @@ py_library(
     ],
 )
 
-py_library(
-    name = "crf",
-    srcs = [
-        "crf.py",
-    ],
-    deps = [
-        "//tensorflow_addons/text:crf",
-        "//tensorflow_addons/utils",
-    ],
-)
-
 py_test(
     name = "crf_test",
     size = "small",
@@ -48,7 +37,7 @@ py_test(
     ],
     main = "crf_test.py",
     deps = [
-        "//tensorflow_addons/layers:crf",
+        ":layers",
     ],
 )
 
