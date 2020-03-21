@@ -23,7 +23,7 @@ import tensorflow as tf
 from tensorflow_addons.layers.crf import CRF, CRFLossLayer
 
 
-def get_test_data2():
+def get_test_data():
     x = np.array(
         [
             [
@@ -44,28 +44,7 @@ def get_test_data2():
     return x, y
 
 
-def test_unmasked_viterbi_decode():
-
-    x_np, y_np = get_test_data2()
-
-    transitions = np.ones([5, 5])
-    boundary_value = np.ones(5)
-
-    layer = CRF(
-        units=5,
-        use_kernel=False,  # disable kernel transform
-        chain_initializer=tf.keras.initializers.Constant(transitions),
-        use_boundary=True,
-        boundary_initializer=tf.keras.initializers.Constant(boundary_value),
-    )
-
-    decoded_sequence, _, _, _ = layer(x_np)
-    decoded_sequence = decoded_sequence.numpy()
-    np.testing.assert_equal(decoded_sequence, y_np)
-    assert decoded_sequence.dtype == np.int32
-
-
-def get_test_data():
+def get_test_data_extended():
     logits = np.array(
         [
             [[0, 0, 0.5, 0.5, 0.2], [0, 0, 0.3, 0.3, 0.1], [0, 0, 0.9, 10, 1]],
@@ -96,9 +75,30 @@ def get_test_data():
     return logits, tags, transitions, boundary_values, crf_layer
 
 
+def test_unmasked_viterbi_decode():
+
+    x_np, y_np = get_test_data()
+
+    transitions = np.ones([5, 5])
+    boundary_value = np.ones(5)
+
+    layer = CRF(
+        units=5,
+        use_kernel=False,  # disable kernel transform
+        chain_initializer=tf.keras.initializers.Constant(transitions),
+        use_boundary=True,
+        boundary_initializer=tf.keras.initializers.Constant(boundary_value),
+    )
+
+    decoded_sequence, _, _, _ = layer(x_np)
+    decoded_sequence = decoded_sequence.numpy()
+    np.testing.assert_equal(decoded_sequence, y_np)
+    assert decoded_sequence.dtype == np.int32
+
+
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_keras_model_inference():
-    logits, _, _, _, crf_layer = get_test_data()
+    logits, _, _, _, crf_layer = get_test_data_extended()
 
     input_tensor = tf.keras.layers.Input(shape=(3, 5))
     decoded_sequence, _, _, _ = crf_layer(input_tensor)
@@ -110,7 +110,7 @@ def test_keras_model_inference():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_in_subclass_model():
-    x_np, y_np = get_test_data2()
+    x_np, y_np = get_test_data()
 
     x_input = tf.keras.layers.Input(shape=x_np.shape[1:])
     y_input = tf.keras.layers.Input(shape=y_np.shape[1:])
@@ -130,7 +130,7 @@ def test_in_subclass_model():
 
 
 def test_mask_right_padding():
-    x_np, y_np = get_test_data2()
+    x_np, y_np = get_test_data()
     mask = np.array([[1, 1, 1], [1, 1, 0]])
 
     x = tf.keras.layers.Input(shape=x_np.shape[1:])
@@ -150,7 +150,7 @@ def test_mask_right_padding():
 
 
 def test_mask_left_padding():
-    x_np, y_np = get_test_data2()
+    x_np, y_np = get_test_data()
     mask = np.array([[0, 1, 1], [1, 1, 1]])
 
     x = tf.keras.layers.Input(shape=x_np.shape[1:])
