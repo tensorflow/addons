@@ -395,7 +395,7 @@ class CRF(tf.keras.layers.Layer):
 
 
 class CRFLossLayer(tf.keras.layers.Layer):
-    def __init__(self, name):
+    def __init__(self, name=None):
         super().__init__(trainable=False, name=name)
 
     def call(self, inputs, **kwargs):
@@ -406,4 +406,4 @@ class CRFLossLayer(tf.keras.layers.Layer):
         log_likelihood, _ = crf_log_likelihood(
             potentials, y_true, sequence_length, chain_kernel
         )
-        self.add_loss(tf.reduce_mean(-log_likelihood))
+        return -log_likelihood

@@ -19,18 +19,13 @@ import math
 import os
 import sys
 
-import pytest
 import numpy as np
+import pytest
 import tensorflow as tf
-from tensorflow.python.framework import tensor_util
-from tensorflow.python.keras.engine import base_layer_utils
-from tensorflow.python.util import nest
 
 from tensorflow_addons.layers.crf import CRF
 from tensorflow_addons.losses import crf
 from tensorflow_addons.utils import test_utils
-
-from unittest.mock import patch
 
 CRF_LOSS_OBJ_LIST = [crf.crf_loss, crf.ConditionalRandomFieldLoss()]
 
@@ -262,85 +257,6 @@ def test_mask_right_padding(loss_obj):
 
     # check shape inference
     model = tf.keras.models.Model(x, y)
-    model.compile("adam", loss_obj)
-    model.fit(train_x, train_y)
-
-
-@pytest.mark.parametrize("loss_obj", CRF_LOSS_OBJ_LIST)
-def test_in_subclass_model(loss_obj):
-
-    train_x = np.array(
-        [
-            [
-                # O   B-X  I-X  B-Y  I-Y
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0, 0.0],
-            ],
-            [
-                # O   B-X  I-X  B-Y  I-Y
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-            ],
-        ]
-    )
-
-    train_y = np.array([[1, 2, 2], [1, 1, 1]])  # B-X  I-X  I-X  # B-X  B-X  B-X
-
-    def patch_mark_as_return(outputs, acd):
-        """Marks `outputs` as the return values for automatic control
-        deps."""
-
-        def _mark_as_return(tensor):
-            """Marks `tensor` as the return value for automatic control
-            deps."""
-            if not tensor_util.is_tensor(tensor):
-                return tensor
-
-            # pylint: disable=protected-access
-            return_tensor = acd.mark_as_return(tensor)
-            if getattr(tensor, "_keras_mask", None) is not None:
-                return_tensor._keras_mask = acd.mark_as_return(tensor._keras_mask)
-            else:
-                return_tensor._keras_mask = None
-
-            # TODO(howl-anderson) a little hack here, handle _keras_history
-            if getattr(tensor, "_keras_history", None) is not None:
-                return_tensor._keras_history = tensor._keras_history
-
-            # Handle TensorFlow Probability attached metadata.
-            # TODO(b/132076537): Remove this once TFP uses `CompositeTensor`.
-            if getattr(tensor, "_tfp_distribution", None) is not None:
-                return_tensor._tfp_distribution = tensor._tfp_distribution
-
-            return return_tensor
-            # pylint: enable=protected-access
-
-        return nest.map_structure(_mark_as_return, outputs)
-
-    class CRFModel(tf.keras.Model):
-        def __init__(self):
-            super().__init__()
-
-            self.layer = CRF(5)
-
-        def call(self, inputs):
-            return self.layer(inputs)
-
-        @patch.object(base_layer_utils, "mark_as_return", patch_mark_as_return)
-        def __call__(self, inputs, *args, **kwargs):
-            outputs = super().__call__(inputs, *args, **kwargs)
-
-            # A hack that add _keras_history to EagerTensor, make it more like normal Tensor
-            for tensor in tf.nest.flatten(outputs):
-                if not hasattr(tensor, "_keras_history"):
-                    tensor._keras_history = (self, 0, 0)
-
-            return outputs
-
-    model = CRFModel()
-
     model.compile("adam", loss_obj)
     model.fit(train_x, train_y)
 

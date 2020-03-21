@@ -20,7 +20,7 @@ import pytest
 import numpy as np
 import tensorflow as tf
 
-from tensorflow_addons.layers.crf import CRF
+from tensorflow_addons.layers.crf import CRF, CRFLossLayer
 from tensorflow_addons.utils import test_utils
 
 
@@ -104,6 +104,44 @@ def test_keras_model_inference():
 
     model.predict(logits)
     model(logits).numpy()
+
+
+def test_in_subclass_model():
+    tf.config.experimental_run_functions_eagerly(True)
+    train_x = np.array(
+        [
+            [
+                # O   B-X  I-X  B-Y  I-Y
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0],
+            ],
+            [
+                # O   B-X  I-X  B-Y  I-Y
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+            ],
+        ]
+    )
+
+    train_y = np.array([[1, 2, 2], [1, 1, 1]])  # B-X  I-X  I-X  # B-X  B-X  B-X
+
+    x_input = tf.keras.layers.Input(shape=train_x.shape[1:])
+    y_input = tf.keras.layers.Input(shape=train_y.shape[1:])
+
+    decoded_sequence, potentials, sequence_length, chain_kernel = CRF(5)(x_input)
+    inference_model = tf.keras.Model(x_input, decoded_sequence)
+
+    crf_loss = CRFLossLayer()([potentials, y_input, sequence_length, chain_kernel])
+
+    training_model = tf.keras.Model([x_input, y_input], crf_loss)
+
+    training_model.compile("adam", loss="mae", run_eagerly=True)
+    training_model.fit((train_x, train_y), y=np.zeros((2,)))
+    training_model.evaluate((train_x, train_y), y=np.zeros((2,)))
+
+    inference_model.predict(train_x)
 
 
 if __name__ == "__main__":
