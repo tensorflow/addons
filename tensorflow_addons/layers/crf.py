@@ -216,7 +216,7 @@ class CRF(tf.keras.layers.Layer):
 
         super(CRF, self).build(input_shape)
 
-    def call(self, inputs, mask=None, **kwargs):
+    def call(self, inputs, mask=None):
         # mask: Tensor(shape=(batch_size, sequence_length), dtype=bool) or None
 
         if mask is not None:
@@ -259,6 +259,7 @@ class CRF(tf.keras.layers.Layer):
             self.potentials, self.sequence_length
         )
 
+        self.compute_loss(decoded_sequence)
         return decoded_sequence
 
     def _get_sequence_length(self, input_, mask):
@@ -415,9 +416,9 @@ class CRF(tf.keras.layers.Layer):
 
         return -log_likelihood
 
-    def get_loss(self, y_true, y_pred):
-        # we don't use y_pred, but caller pass it anyway, ignore it
-        return self.get_negative_log_likelihood(y_true)
+    def compute_loss(self, decoded_sequence):
+        loss = self.get_negative_log_likelihood(decoded_sequence)
+        self.add_loss(loss, inputs=True)
 
     def get_accuracy(self, y_true, y_pred):
         judge = tf.cast(tf.equal(y_pred, y_true), tf.keras.backend.floatx())
@@ -426,16 +427,6 @@ class CRF(tf.keras.layers.Layer):
         else:
             mask = tf.cast(self.mask, tf.keras.backend.floatx())
             return tf.reduce_sum(judge * mask) / tf.reduce_sum(mask)
-
-    def __call__(self, inputs, *args, **kwargs):
-        outputs = super(CRF, self).__call__(inputs, *args, **kwargs)
-
-        # A hack that add _keras_history to EagerTensor, make it more like normal Tensor
-        for tensor in tf.nest.flatten(outputs):
-            if not hasattr(tensor, "_keras_history"):
-                tensor._keras_history = (self, 0, 0)
-
-        return outputs
 
     @property
     def _compute_dtype(self):
