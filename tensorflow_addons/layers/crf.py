@@ -225,7 +225,8 @@ class CRF(tf.keras.layers.Layer):
             first_mask = left_boundary_mask[:, 0]
             if first_mask is not None and tf.executing_eagerly():
                 no_left_padding = tf.math.reduce_all(first_mask)
-                if no_left_padding:
+                left_padding = not no_left_padding
+                if left_padding:
                     raise NotImplementedError(
                         "Currently, CRF layer do not support left padding"
                     )

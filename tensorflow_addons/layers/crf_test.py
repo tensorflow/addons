@@ -21,7 +21,6 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.layers.crf import CRF, CRFLossLayer
-from tensorflow_addons.utils import test_utils
 
 
 def test_unmasked_viterbi_decode():
@@ -47,20 +46,18 @@ def test_unmasked_viterbi_decode():
     transitions = np.ones([5, 5])
     boundary_value = np.ones(5)
 
-    test_utils.layer_test(
-        CRF,
-        kwargs={
-            "units": 5,
-            "use_kernel": False,  # disable kernel transform
-            "chain_initializer": tf.keras.initializers.Constant(transitions),
-            "use_boundary": True,
-            "boundary_initializer": tf.keras.initializers.Constant(boundary_value),
-        },
-        input_data=x,
-        expected_output=expected_y,
-        expected_output_dtype=tf.int32,
-        validate_training=False,
+    layer = CRF(
+        units=5,
+        use_kernel=False,  # disable kernel transform
+        chain_initializer=tf.keras.initializers.Constant(transitions),
+        use_boundary=True,
+        boundary_initializer=tf.keras.initializers.Constant(boundary_value),
     )
+
+    decoded_sequence, _, _, _ = layer(x)
+    decoded_sequence = decoded_sequence.numpy()
+    np.testing.assert_equal(decoded_sequence, expected_y)
+    assert decoded_sequence.dtype == np.int32
 
 
 def get_test_data():
@@ -182,7 +179,6 @@ def test_mask_right_padding():
     inference_model.predict(train_x)
 
 
-@pytest.mark.xfail(strict=True)
 def test_mask_left_padding():
     train_x = np.array(
         [
