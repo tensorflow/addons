@@ -156,17 +156,16 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
     def test_func_loss_function(self):
         self._test_loss_function(crf.crf_loss)
 
-    def test_model_fit(self):
-        for loss_obj in CRF_LOSS_OBJ_LIST:
-            with self.subTest(loss_obj=loss_obj):
-                model = tf.keras.models.Sequential()
-                model.add(tf.keras.layers.Input(shape=(3, 5)))
-                model.add(self.crf)
-                model.compile(
-                    "adam", loss=loss_obj, metrics=[tf.keras.metrics.Accuracy()]
-                )
 
-                model.fit(self.logits, self.tags, epochs=10, batch_size=1)
+@pytest.mark.parametrize("loss_obj", CRF_LOSS_OBJ_LIST)
+def test_model_fit(loss_obj):
+    logits, tags, _, _, crf_layer = get_test_data()
+    model = tf.keras.models.Sequential()
+    model.add(tf.keras.layers.Input(shape=(3, 5)))
+    model.add(crf_layer)
+    model.compile("adam", loss=loss_obj, metrics=[tf.keras.metrics.Accuracy()])
+
+    model.fit(logits, tags, epochs=10, batch_size=1)
 
 
 def _test_dump_and_load(loss_obj, tmp_path):
