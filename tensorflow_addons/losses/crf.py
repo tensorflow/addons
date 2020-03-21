@@ -14,8 +14,6 @@
 # ==============================================================================
 """Implementing Conditional Random Field loss."""
 
-from __future__ import absolute_import, division, print_function
-
 import tensorflow as tf
 
 from tensorflow_addons.layers.crf import CRF
