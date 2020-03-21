@@ -156,11 +156,6 @@ class CRF(tf.keras.layers.Layer):
         # values will be assigned in method
         self.input_spec = None
 
-        # value remembered for loss/metrics function
-        self.potentials = None
-        self.sequence_length = None
-        self.mask = None
-
         # global variable
         self.chain_kernel = None
         self._dense_layer = None
@@ -230,9 +225,6 @@ class CRF(tf.keras.layers.Layer):
             left_boundary_mask = self._compute_mask_left_boundary(mask)
             first_mask = left_boundary_mask[:, 0]
 
-        # remember this value for later use
-        self.mask = mask
-
         if first_mask is not None:
             no_left_padding = tf.math.reduce_all(first_mask)
             msg = "Currently, CRF layer do not support left padding"
@@ -243,24 +235,21 @@ class CRF(tf.keras.layers.Layer):
                     )
                 ]
             ):
-                self.potentials = self._dense_layer(inputs)
+                potentials = self._dense_layer(inputs)
         else:
-            self.potentials = self._dense_layer(inputs)
+            potentials = self._dense_layer(inputs)
 
         # appending boundary probability info
         if self.use_boundary:
-            self.potentials = self.add_boundary_energy(
-                self.potentials, mask, self.left_boundary, self.right_boundary
+            potentials = self.add_boundary_energy(
+                potentials, mask, self.left_boundary, self.right_boundary
             )
 
-        self.sequence_length = self._get_sequence_length(inputs, mask)
+        sequence_length = self._get_sequence_length(inputs, mask)
 
-        decoded_sequence, _ = self.get_viterbi_decoding(
-            self.potentials, self.sequence_length
-        )
+        decoded_sequence, _ = self.get_viterbi_decoding(potentials, sequence_length)
 
-        self.compute_loss(decoded_sequence)
-        return decoded_sequence
+        return [decoded_sequence, potentials, sequence_length, self.chain_kernel]
 
     def _get_sequence_length(self, input_, mask):
         """Currently underline CRF fucntion (provided by
@@ -406,29 +395,22 @@ class CRF(tf.keras.layers.Layer):
         """keep mask shape [batch_size, max_seq_len]"""
         return mask
 
-    def get_negative_log_likelihood(self, y_true):
-        y_true = tf.cast(y_true, tf.int32)
-        self.sequence_length = tf.cast(self.sequence_length, tf.int32)
-
-        log_likelihood, _ = crf_log_likelihood(
-            self.potentials, y_true, self.sequence_length, self.chain_kernel
-        )
-
-        return -log_likelihood
-
-    def compute_loss(self, decoded_sequence):
-        loss = self.get_negative_log_likelihood(decoded_sequence)
-        self.add_loss(loss, inputs=True)
-
-    def get_accuracy(self, y_true, y_pred):
-        judge = tf.cast(tf.equal(y_pred, y_true), tf.keras.backend.floatx())
-        if self.mask is None:
-            return tf.reduce_mean(judge)
-        else:
-            mask = tf.cast(self.mask, tf.keras.backend.floatx())
-            return tf.reduce_sum(judge * mask) / tf.reduce_sum(mask)
-
     @property
     def _compute_dtype(self):
         # fixed output dtype from underline CRF functions
         return tf.int32
+
+
+class CRFLossLayer(tf.keras.layers.Layer):
+    def __init__(self, name):
+        super().__init__(trainable=False, name=name)
+
+    def call(self, inputs, **kwargs):
+        potentials, y_true, sequence_length, chain_kernel = inputs
+        y_true = tf.cast(y_true, tf.int32)
+        sequence_length = tf.cast(sequence_length, tf.int32)
+
+        log_likelihood, _ = crf_log_likelihood(
+            potentials, y_true, sequence_length, chain_kernel
+        )
+        self.add_loss(-log_likelihood)
