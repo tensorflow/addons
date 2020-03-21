@@ -205,11 +205,11 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
                             [0.0, 1.0, 0.0, 0.0, 0.0],
                         ],
                     ]
-                )  # yapf: disable
+                )
 
                 train_y = np.array(
                     [[1, 2, 2], [1, 1, 1]]  # B-X  I-X  I-X  # B-X  B-X  B-X
-                )  # yapf: disable
+                )
 
                 mask = np.array([[0, 1, 1], [1, 1, 1]])
 
@@ -247,11 +247,11 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
                             [0.0, 1.0, 0.0, 0.0, 0.0],
                         ],
                     ]
-                )  # yapf: disable
+                )
 
                 train_y = np.array(
                     [[1, 2, 2], [1, 1, 1]]  # B-X  I-X  I-X  # B-X  B-X  B-X
-                )  # yapf: disable
+                )
 
                 mask = np.array([[1, 1, 1], [1, 1, 0]])
 
@@ -265,97 +265,92 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
                 model.compile("adam", loss_obj)
                 model.fit(train_x, train_y)
 
-    def test_in_subclass_model(self):
-        for loss_obj in CRF_LOSS_OBJ_LIST:
-            with self.subTest(loss_obj=loss_obj):
-                train_x = np.array(
-                    [
-                        [
-                            # O   B-X  I-X  B-Y  I-Y
-                            [0.0, 1.0, 0.0, 0.0, 0.0],
-                            [0.0, 0.0, 1.0, 0.0, 0.0],
-                            [0.0, 0.0, 1.0, 0.0, 0.0],
-                        ],
-                        [
-                            # O   B-X  I-X  B-Y  I-Y
-                            [0.0, 1.0, 0.0, 0.0, 0.0],
-                            [0.0, 1.0, 0.0, 0.0, 0.0],
-                            [0.0, 1.0, 0.0, 0.0, 0.0],
-                        ],
-                    ]
-                )  # yapf: disable
 
-                train_y = np.array(
-                    [[1, 2, 2], [1, 1, 1]]  # B-X  I-X  I-X  # B-X  B-X  B-X
-                )  # yapf: disable
+@pytest.mark.parametrize("loss_obj", CRF_LOSS_OBJ_LIST)
+def test_in_subclass_model(loss_obj):
 
-                def patch_mark_as_return(outputs, acd):
-                    """Marks `outputs` as the return values for automatic control
-                    deps."""
+    train_x = np.array(
+        [
+            [
+                # O   B-X  I-X  B-Y  I-Y
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0],
+            ],
+            [
+                # O   B-X  I-X  B-Y  I-Y
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+            ],
+        ]
+    )
 
-                    def _mark_as_return(tensor):
-                        """Marks `tensor` as the return value for automatic control
-                        deps."""
-                        if not tensor_util.is_tensor(tensor):
-                            return tensor
+    train_y = np.array([[1, 2, 2], [1, 1, 1]])  # B-X  I-X  I-X  # B-X  B-X  B-X
 
-                        # pylint: disable=protected-access
-                        return_tensor = acd.mark_as_return(tensor)
-                        if getattr(tensor, "_keras_mask", None) is not None:
-                            return_tensor._keras_mask = acd.mark_as_return(
-                                tensor._keras_mask
-                            )
-                        else:
-                            return_tensor._keras_mask = None
+    def patch_mark_as_return(outputs, acd):
+        """Marks `outputs` as the return values for automatic control
+        deps."""
 
-                        # TODO(howl-anderson) a little hack here, handle _keras_history
-                        if getattr(tensor, "_keras_history", None) is not None:
-                            return_tensor._keras_history = tensor._keras_history
+        def _mark_as_return(tensor):
+            """Marks `tensor` as the return value for automatic control
+            deps."""
+            if not tensor_util.is_tensor(tensor):
+                return tensor
 
-                        # Handle TensorFlow Probability attached metadata.
-                        # TODO(b/132076537): Remove this once TFP uses `CompositeTensor`.
-                        if getattr(tensor, "_tfp_distribution", None) is not None:
-                            return_tensor._tfp_distribution = tensor._tfp_distribution
+            # pylint: disable=protected-access
+            return_tensor = acd.mark_as_return(tensor)
+            if getattr(tensor, "_keras_mask", None) is not None:
+                return_tensor._keras_mask = acd.mark_as_return(tensor._keras_mask)
+            else:
+                return_tensor._keras_mask = None
 
-                        return return_tensor
-                        # pylint: enable=protected-access
+            # TODO(howl-anderson) a little hack here, handle _keras_history
+            if getattr(tensor, "_keras_history", None) is not None:
+                return_tensor._keras_history = tensor._keras_history
 
-                    return nest.map_structure(_mark_as_return, outputs)
+            # Handle TensorFlow Probability attached metadata.
+            # TODO(b/132076537): Remove this once TFP uses `CompositeTensor`.
+            if getattr(tensor, "_tfp_distribution", None) is not None:
+                return_tensor._tfp_distribution = tensor._tfp_distribution
 
-                class CRFModel(tf.keras.Model):
-                    def __init__(self):
-                        super().__init__()
+            return return_tensor
+            # pylint: enable=protected-access
 
-                        self.layer = CRF(5)
+        return nest.map_structure(_mark_as_return, outputs)
 
-                    def call(self, inputs):
-                        return self.layer(inputs)
+    class CRFModel(tf.keras.Model):
+        def __init__(self):
+            super().__init__()
 
-                    @patch.object(
-                        base_layer_utils, "mark_as_return", patch_mark_as_return
-                    )
-                    def __call__(self, inputs, *args, **kwargs):
-                        outputs = super().__call__(inputs, *args, **kwargs)
+            self.layer = CRF(5)
 
-                        # A hack that add _keras_history to EagerTensor, make it more like normal Tensor
-                        for tensor in tf.nest.flatten(outputs):
-                            if not hasattr(tensor, "_keras_history"):
-                                tensor._keras_history = (self, 0, 0)
+        def call(self, inputs):
+            return self.layer(inputs)
 
-                        return outputs
+        @patch.object(base_layer_utils, "mark_as_return", patch_mark_as_return)
+        def __call__(self, inputs, *args, **kwargs):
+            outputs = super().__call__(inputs, *args, **kwargs)
 
-                model = CRFModel()
+            # A hack that add _keras_history to EagerTensor, make it more like normal Tensor
+            for tensor in tf.nest.flatten(outputs):
+                if not hasattr(tensor, "_keras_history"):
+                    tensor._keras_history = (self, 0, 0)
 
-                model.compile("adam", loss_obj)
-                model.fit(train_x, train_y)
+            return outputs
 
-    def test_serialization(self):
-        for loss_obj in CRF_LOSS_OBJ_LIST:
-            with self.subTest(loss_obj=loss_obj):
-                ref_fn = loss_obj
-                config = tf.keras.losses.serialize(ref_fn)
-                fn = tf.keras.losses.deserialize(config)
-                self.assertEqual(ref_fn.get_config(), fn.get_config())
+    model = CRFModel()
+
+    model.compile("adam", loss_obj)
+    model.fit(train_x, train_y)
+
+
+@pytest.mark.parametrize("loss_obj", CRF_LOSS_OBJ_LIST)
+def test_serialization(loss_obj):
+    ref_fn = loss_obj
+    config = tf.keras.losses.serialize(ref_fn)
+    fn = tf.keras.losses.deserialize(config)
+    assert ref_fn.get_config() == fn.get_config()
 
 
 @pytest.mark.parametrize("loss_obj", CRF_LOSS_OBJ_LIST)
