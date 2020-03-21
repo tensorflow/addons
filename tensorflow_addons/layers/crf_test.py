@@ -130,29 +130,11 @@ def test_in_subclass_model():
 
 
 def test_mask_right_padding():
-    train_x = np.array(
-        [
-            [
-                # O   B-X  I-X  B-Y  I-Y
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0, 0.0],
-            ],
-            [
-                # O   B-X  I-X  B-Y  I-Y
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-            ],
-        ]
-    )
-
-    train_y = np.array([[1, 2, 2], [1, 1, 1]])  # B-X  I-X  I-X  # B-X  B-X  B-X
-
+    x_np, y_np = get_test_data2()
     mask = np.array([[1, 1, 1], [1, 1, 0]])
 
-    x = tf.keras.layers.Input(shape=train_x.shape[1:])
-    y = tf.keras.layers.Input(shape=train_y.shape[1:])
+    x = tf.keras.layers.Input(shape=x_np.shape[1:])
+    y = tf.keras.layers.Input(shape=y_np.shape[1:])
     crf_layer_outputs = CRF(5)(x, mask=tf.constant(mask))
     decoded_sequence, potentials, sequence_length, chain_kernel = crf_layer_outputs
 
@@ -163,8 +145,8 @@ def test_mask_right_padding():
 
     # check shape inference
     training_model.compile("adam", "mae")
-    training_model.fit((train_x, train_y), np.zeros((2,)))
-    inference_model.predict(train_x)
+    training_model.fit((x_np, y_np), np.zeros((2,)))
+    inference_model.predict(x_np)
 
 
 def test_mask_left_padding():
