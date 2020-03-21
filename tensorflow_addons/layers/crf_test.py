@@ -131,10 +131,10 @@ def test_in_subclass_model():
     y_input = tf.keras.layers.Input(shape=train_y.shape[1:])
 
     decoded_sequence, potentials, sequence_length, chain_kernel = CRF(5)(x_input)
-    inference_model = tf.keras.Model(x_input, decoded_sequence)
 
     crf_loss = CRFLossLayer()([potentials, y_input, sequence_length, chain_kernel])
 
+    inference_model = tf.keras.Model(x_input, decoded_sequence)
     training_model = tf.keras.Model([x_input, y_input], crf_loss)
 
     training_model.compile("adam", loss="mae")
@@ -142,6 +142,87 @@ def test_in_subclass_model():
     training_model.evaluate((train_x, train_y), y=np.zeros((2,)))
 
     inference_model.predict(train_x)
+
+
+def test_mask_right_padding():
+    train_x = np.array(
+        [
+            [
+                # O   B-X  I-X  B-Y  I-Y
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0],
+            ],
+            [
+                # O   B-X  I-X  B-Y  I-Y
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+            ],
+        ]
+    )
+
+    train_y = np.array([[1, 2, 2], [1, 1, 1]])  # B-X  I-X  I-X  # B-X  B-X  B-X
+
+    mask = np.array([[1, 1, 1], [1, 1, 0]])
+
+    x = tf.keras.layers.Input(shape=train_x.shape[1:])
+    y = tf.keras.layers.Input(shape=train_y.shape[1:])
+    crf_layer_outputs = CRF(5)(x, mask=tf.constant(mask))
+    decoded_sequence, potentials, sequence_length, chain_kernel = crf_layer_outputs
+
+    crf_loss = CRFLossLayer()([potentials, y, sequence_length, chain_kernel])
+
+    inference_model = tf.keras.Model(x, decoded_sequence)
+    training_model = tf.keras.Model([x, y], crf_loss)
+
+    # check shape inference
+    training_model.compile("adam", "mae")
+    training_model.fit((train_x, train_y), np.zeros((2,)))
+    inference_model.predict(train_x)
+
+
+@pytest.mark.xfail(strict=True)
+def test_mask_left_padding():
+    train_x = np.array(
+        [
+            [
+                # O   B-X  I-X  B-Y  I-Y
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0],
+            ],
+            [
+                # O   B-X  I-X  B-Y  I-Y
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+            ],
+        ]
+    )
+
+    # B-X  I-X  I-X  # B-X  B-X  B-X
+    train_y = np.array([[1, 2, 2], [1, 1, 1]])
+
+    mask = np.array([[0, 1, 1], [1, 1, 1]])
+
+    x = tf.keras.layers.Input(shape=train_x.shape[1:])
+    y = tf.keras.layers.Input(shape=train_y.shape[1:])
+    crf_layer_outputs = CRF(5)(x, mask=tf.constant(mask))
+    decoded_sequence, potentials, sequence_length, chain_kernel = crf_layer_outputs
+
+    crf_loss = CRFLossLayer()([potentials, y, sequence_length, chain_kernel])
+
+    training_model = tf.keras.Model([x, y], crf_loss)
+
+    # we can only check the value of the mask
+    # if we run eagerly. It's kind of a debug mode.
+    training_model.compile("adam", "mae", run_eagerly=True)
+
+    with pytest.raises(NotImplementedError) as context:
+        training_model.fit((train_x, train_y), np.zeros((2,)))
+
+    assert "CRF layer do not support left padding" in str(context.value)
 
 
 if __name__ == "__main__":
