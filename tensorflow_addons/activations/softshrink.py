@@ -18,6 +18,7 @@ from tensorflow_addons.utils.types import Number
 
 from tensorflow_addons.utils import types
 from tensorflow_addons.utils.resource_loader import LazySO
+from tensorflow_addons import options
 
 _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
@@ -40,6 +41,17 @@ def softshrink(
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
+
+    if not options.TF_ADDONS_PY_OPS:
+        try:
+            return _softshrink_custom_op(x, lower, upper)
+        except tf.errors.NotFoundError:
+            options.warn_fallback("softshrink")
+
+    return _softshrink_py(x, lower, upper)
+
+
+def _softshrink_custom_op(x, lower, upper):
     return _activation_so.ops.addons_softshrink(x, lower, upper)
 
 
@@ -57,10 +69,6 @@ def _softshrink_py(x, lower, upper):
             " not be higher than the value "
             "variable upper, which is {} .".format(lower, upper)
         )
-    mask_lower = x < lower
-    mask_upper = upper < x
-    mask_middle = tf.logical_not(tf.logical_or(mask_lower, mask_upper))
-    mask_lower = tf.cast(mask_lower, x.dtype)
-    mask_upper = tf.cast(mask_upper, x.dtype)
-    mask_middle = tf.cast(mask_middle, x.dtype)
-    return x * (1 - mask_middle) - mask_lower * lower - mask_upper * upper
+    values_below_lower = tf.where(x < lower, x - lower, 0)
+    values_above_upper = tf.where(upper < x, x - upper, 0)
+    return values_below_lower + values_above_upper

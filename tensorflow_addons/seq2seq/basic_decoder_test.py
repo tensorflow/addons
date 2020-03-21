@@ -14,6 +14,8 @@
 # ==============================================================================
 """Tests for tfa.seq2seq.basic_decoder."""
 
+import sys
+import pytest
 from absl.testing import parameterized
 import numpy as np
 
@@ -195,7 +197,7 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
 
             self.assertLen(first_state, 2)
             self.assertLen(step_state, 2)
-            self.assertIsInstance(step_outputs, basic_decoder.BasicDecoderOutput)
+            assert isinstance(step_outputs, basic_decoder.BasicDecoderOutput)
             self.assertEqual(
                 (batch_size, expected_output_depth), step_outputs[0].get_shape()
             )
@@ -805,15 +807,15 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
             ) = my_decoder.step(tf.constant(0), first_inputs, first_state)
             batch_size_t = my_decoder.batch_size
 
-            self.assertLen(first_state, 2)
+            assert len(first_state) == 2
             self.assertLen(step_state, 2)
-            self.assertTrue(isinstance(step_outputs, basic_decoder.BasicDecoderOutput))
+            assert isinstance(step_outputs, basic_decoder.BasicDecoderOutput)
             self.assertEqual((batch_size, cell_depth), step_outputs[0].get_shape())
             self.assertEqual((batch_size, cell_depth), step_outputs[1].get_shape())
             self.assertEqual((batch_size, cell_depth), first_state[0].get_shape())
             self.assertEqual((batch_size, cell_depth), first_state[1].get_shape())
             self.assertEqual((batch_size, cell_depth), step_state[0].get_shape())
-            self.assertEqual((batch_size, cell_depth), step_state[1].get_shape())
+            assert (batch_size, cell_depth) == step_state[1].get_shape()
 
             self.evaluate(tf.compat.v1.global_variables_initializer())
             eval_result = self.evaluate(
@@ -866,4 +868,4 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

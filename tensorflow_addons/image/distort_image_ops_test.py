@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for python distort_image_ops."""
 
+import sys
+
+import pytest
 import numpy as np
 
 import tensorflow as tf
@@ -289,93 +292,5 @@ class AdjustSaturationInYiqTest(tf.test.TestCase):
                 self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
 
 
-# TODO: get rid of sessions
-class AdjustHueInYiqBenchmark(tf.test.Benchmark):
-    def _benchmark_adjust_hue_in_yiq(self, device, cpu_count):
-        image_shape = [299, 299, 3]
-        burn_iters = 100
-        benchmark_iters = 1000
-        config = tf.compat.v1.ConfigProto()
-        tag = device + "_%s" % (cpu_count if cpu_count is not None else "all")
-        if cpu_count is not None:
-            config.inter_op_parallelism_threads = 1
-            config.intra_op_parallelism_threads = cpu_count
-        with self.cached_session("", graph=tf.Graph(), config=config) as sess:
-            with tf.device(device):
-                inputs = tf.Variable(
-                    tf.random.uniform(image_shape, dtype=tf.dtypes.float32) * 255,
-                    trainable=False,
-                    dtype=tf.dtypes.float32,
-                )
-                delta = tf.constant(0.1, dtype=tf.dtypes.float32)
-                outputs = distort_image_ops.adjust_hsv_in_yiq(inputs, delta, 1, 1)
-                run_op = tf.group(outputs)
-                sess.run(tf.compat.v1.global_variables_initializer())
-                benchmark_values = self.run_op_benchmark(
-                    sess,
-                    run_op,
-                    burn_iters=burn_iters,
-                    min_iters=benchmark_iters,
-                    name="benchmarkAdjustSaturationInYiq_299_299_3_%s" % (tag),
-                )
-        print(
-            "benchmarkAdjustSaturationInYiq_299_299_3_%s step_time: %.2f us"
-            % (tag, benchmark_values["wall_time"] * 1e6)
-        )
-
-    def benchmark_adjust_hue_in_yiqCpu1(self):
-        self._benchmark_adjust_hue_in_yiq("/cpu:0", 1)
-
-    def benchmark_adjust_hue_in_yiqCpuAll(self):
-        self._benchmark_adjust_hue_in_yiq("/cpu:0", None)
-
-    def benchmark_adjust_hue_in_yiq_gpu_all(self):
-        self._benchmark_adjust_hue_in_yiq(tf.test.gpu_device_name(), None)
-
-
-# TODO: get rid of sessions
-class AdjustSaturationInYiqBenchmark(tf.test.Benchmark):
-    def _benchmark_adjust_saturation_in_yiq(self, device, cpu_count):
-        image_shape = [299, 299, 3]
-        burn_iters = 100
-        benchmark_iters = 1000
-        config = tf.compat.v1.ConfigProto()
-        tag = device + "_%s" % (cpu_count if cpu_count is not None else "all")
-        if cpu_count is not None:
-            config.inter_op_parallelism_threads = 1
-            config.intra_op_parallelism_threads = cpu_count
-        with self.cached_session("", graph=tf.Graph(), config=config) as sess:
-            with tf.device(device):
-                inputs = tf.Variable(
-                    tf.random.uniform(image_shape, dtype=tf.dtypes.float32) * 255,
-                    trainable=False,
-                    dtype=tf.dtypes.float32,
-                )
-                scale = tf.constant(0.1, dtype=tf.dtypes.float32)
-                outputs = distort_image_ops.adjust_hsv_in_yiq(inputs, 0, scale, 1)
-                run_op = tf.group(outputs)
-                sess.run(tf.compat.v1.global_variables_initializer())
-                benchmark_values = self.run_op_benchmark(
-                    sess,
-                    run_op,
-                    burn_iters=burn_iters,
-                    min_iters=benchmark_iters,
-                    name="benchmarkAdjustSaturationInYiq_299_299_3_%s" % (tag),
-                )
-        print(
-            "benchmarkAdjustSaturationInYiq_299_299_3_%s step_time: %.2f us"
-            % (tag, benchmark_values["wall_time"] * 1e6)
-        )
-
-    def benchmark_adjust_saturation_in_yiq_cpu1(self):
-        self._benchmark_adjust_saturation_in_yiq("/cpu:0", 1)
-
-    def benchmark_adjust_saturation_in_yiq_cpu_all(self):
-        self._benchmark_adjust_saturation_in_yiq("/cpu:0", None)
-
-    def benchmark_adjust_saturation_in_yiq_gpu_all(self):
-        self._benchmark_adjust_saturation_in_yiq(tf.test.gpu_device_name(), None)
-
-
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for dense_image_warp."""
 
+import sys
+
+import pytest
 import math
 
 import numpy as np
@@ -259,4 +262,4 @@ class DenseImageWarpTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

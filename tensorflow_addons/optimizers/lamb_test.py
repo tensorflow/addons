@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for LAMB Optimizer."""
 
+import sys
+
+import pytest
 import numpy as np
 from numpy import linalg
 
@@ -403,4 +406,4 @@ class LAMBTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

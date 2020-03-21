@@ -17,6 +17,7 @@ import tensorflow as tf
 
 from tensorflow_addons.utils import types
 from tensorflow_addons.utils.resource_loader import LazySO
+from tensorflow_addons import options
 
 _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
@@ -36,6 +37,17 @@ def mish(x: types.TensorLike) -> tf.Tensor:
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
+
+    if not options.TF_ADDONS_PY_OPS:
+        try:
+            return _mish_custom_op(x)
+        except tf.errors.NotFoundError:
+            options.warn_fallback("mish")
+
+    return _mish_custom_op(x)
+
+
+def _mish_custom_op(x):
     return _activation_so.ops.addons_mish(x)
 
 

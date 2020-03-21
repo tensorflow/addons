@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for Multilabel Confusion Matrix Metric."""
 
+import sys
+
+import pytest
 import tensorflow as tf
 from tensorflow_addons.metrics import MultiLabelConfusionMatrix
 from tensorflow_addons.utils import test_utils
@@ -24,11 +27,11 @@ class MultiLabelConfusionMatrixTest(tf.test.TestCase):
     def test_config(self):
         mcm_obj = MultiLabelConfusionMatrix(num_classes=3)
         self.assertEqual(mcm_obj.num_classes, 3)
-        self.assertEqual(mcm_obj.dtype, tf.int32)
+        self.assertEqual(mcm_obj.dtype, tf.float32)
         # Check save and restore config
         mcm_obj2 = MultiLabelConfusionMatrix.from_config(mcm_obj.get_config())
         self.assertEqual(mcm_obj2.num_classes, 3)
-        self.assertEqual(mcm_obj2.dtype, tf.int32)
+        self.assertEqual(mcm_obj2.dtype, tf.float32)
 
     def initialize_vars(self, n_classes, input_dtype):
         mcm_obj = MultiLabelConfusionMatrix(num_classes=n_classes, dtype=input_dtype)
@@ -154,3 +157,7 @@ class MultiLabelConfusionMatrixTest(tf.test.TestCase):
                     [[8, 0], [0, 2]],
                 ],
             )
+
+
+if __name__ == "__main__":
+    sys.exit(pytest.main([__file__]))

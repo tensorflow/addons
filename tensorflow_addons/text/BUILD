@@ -6,19 +6,12 @@ package(default_visibility = ["//visibility:public"])
 # https://github.com/tensorflow/addons/issues/782
 py_library(
     name = "text",
-    srcs = select({
-        "//tensorflow_addons:windows": [
-            "__init__.py",
-            "crf.py",
-            "skip_gram_ops.py",
-        ],
-        "//conditions:default": [
-            "__init__.py",
-            "crf.py",
-            "parse_time_op.py",
-            "skip_gram_ops.py",
-        ],
-    }),
+    srcs = [
+        "__init__.py",
+        "crf.py",
+        "parse_time_op.py",
+        "skip_gram_ops.py",
+    ],
     data = select({
         "//tensorflow_addons:windows": [
             "//tensorflow_addons/custom_ops/text:_skip_gram_ops.so",
@@ -30,6 +23,13 @@ py_library(
             "//tensorflow_addons/utils",
         ],
     }),
+)
+
+py_library(
+    name = "crf",
+    srcs = [
+        "crf.py",
+    ],
 )
 
 py_test(
@@ -56,18 +56,11 @@ py_test(
     ],
 )
 
-# Temporarily use dummy test for windows ParseTime
 py_test(
     name = "parse_time_op_test",
     size = "small",
-    srcs = select({
-        "//tensorflow_addons:windows": ["parse_time_dummy_test.py"],
-        "//conditions:default": ["parse_time_op_test.py"],
-    }),
-    main = select({
-        "//tensorflow_addons:windows": "parse_time_dummy_test.py",
-        "//conditions:default": "parse_time_op_test.py",
-    }),
+    srcs = ["parse_time_op_test.py"],
+    main = "parse_time_op_test.py",
     deps = [
         ":text",
     ],

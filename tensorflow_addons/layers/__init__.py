@@ -14,8 +14,10 @@
 # ==============================================================================
 """Additional layers that conform to Keras API."""
 
+from tensorflow_addons.layers.crf import CRF
 from tensorflow_addons.layers.gelu import GELU
 from tensorflow_addons.layers.maxout import Maxout
+from tensorflow_addons.layers.multihead_attention import MultiHeadAttention
 from tensorflow_addons.layers.normalizations import GroupNormalization
 from tensorflow_addons.layers.normalizations import InstanceNormalization
 from tensorflow_addons.layers.optical_flow import CorrelationCost

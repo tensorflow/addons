@@ -8,4 +8,4 @@ if [ "$DOCKER_BUILDKIT" == "" ]; then
   export DOCKER_BUILDKIT=1
 fi
 
-docker build -f tools/docker/cpu_tests.Dockerfile ./
+docker build --progress=plain -f tools/docker/cpu_tests.Dockerfile ./

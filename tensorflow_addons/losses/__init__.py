@@ -15,6 +15,7 @@
 """Additional losses that conform to Keras API."""
 
 from tensorflow_addons.losses.contrastive import contrastive_loss, ContrastiveLoss
+from tensorflow_addons.losses.crf import crf_loss, ConditionalRandomFieldLoss
 from tensorflow_addons.losses.focal_loss import (
     sigmoid_focal_crossentropy,
     SigmoidFocalCrossEntropy,
@@ -30,14 +31,10 @@ from tensorflow_addons.losses.triplet import (
 )
 from tensorflow_addons.losses.quantiles import pinball_loss, PinballLoss
 
-# Temporarily disable for windows
-# Remove after: https://github.com/tensorflow/addons/issues/838
-import os
 
-if os.name != "nt":
-    from tensorflow_addons.losses.npairs import (
-        npairs_loss,
-        NpairsLoss,
-        npairs_multilabel_loss,
-        NpairsMultilabelLoss,
-    )
+from tensorflow_addons.losses.npairs import (
+    npairs_loss,
+    NpairsLoss,
+    npairs_multilabel_loss,
+    NpairsMultilabelLoss,
+)
