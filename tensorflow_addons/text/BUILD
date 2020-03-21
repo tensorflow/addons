@@ -25,13 +25,6 @@ py_library(
     }),
 )
 
-py_library(
-    name = "crf",
-    srcs = [
-        "crf.py",
-    ],
-)
-
 py_test(
     name = "crf_test",
     size = "small",

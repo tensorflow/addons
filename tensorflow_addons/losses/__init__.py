@@ -15,7 +15,6 @@
 """Additional losses that conform to Keras API."""
 
 from tensorflow_addons.losses.contrastive import contrastive_loss, ContrastiveLoss
-from tensorflow_addons.losses.crf import crf_loss, ConditionalRandomFieldLoss
 from tensorflow_addons.losses.focal_loss import (
     sigmoid_focal_crossentropy,
     SigmoidFocalCrossEntropy,
