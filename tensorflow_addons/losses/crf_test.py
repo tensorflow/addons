@@ -187,47 +187,44 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
 
         self._test_dump_and_load(crf.ConditionalRandomFieldLoss())
 
-    def test_mask_left_padding(self):
-        for loss_obj in CRF_LOSS_OBJ_LIST:
-            with self.subTest(loss_obj=loss_obj):
-                train_x = np.array(
-                    [
-                        [
-                            # O   B-X  I-X  B-Y  I-Y
-                            [0.0, 1.0, 0.0, 0.0, 0.0],
-                            [0.0, 0.0, 1.0, 0.0, 0.0],
-                            [0.0, 0.0, 1.0, 0.0, 0.0],
-                        ],
-                        [
-                            # O   B-X  I-X  B-Y  I-Y
-                            [0.0, 1.0, 0.0, 0.0, 0.0],
-                            [0.0, 1.0, 0.0, 0.0, 0.0],
-                            [0.0, 1.0, 0.0, 0.0, 0.0],
-                        ],
-                    ]
-                )
 
-                train_y = np.array(
-                    [[1, 2, 2], [1, 1, 1]]  # B-X  I-X  I-X  # B-X  B-X  B-X
-                )
+@pytest.mark.parametrize("loss_obj", CRF_LOSS_OBJ_LIST)
+def test_mask_left_padding(loss_obj):
 
-                mask = np.array([[0, 1, 1], [1, 1, 1]])
+    train_x = np.array(
+        [
+            [
+                # O   B-X  I-X  B-Y  I-Y
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0],
+            ],
+            [
+                # O   B-X  I-X  B-Y  I-Y
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+            ],
+        ]
+    )
 
-                layer = CRF(5)
+    train_y = np.array([[1, 2, 2], [1, 1, 1]])  # B-X  I-X  I-X  # B-X  B-X  B-X
 
-                x = tf.keras.layers.Input(shape=(3, 5))
-                y = layer(x, mask=tf.constant(mask))
+    mask = np.array([[0, 1, 1], [1, 1, 1]])
 
-                # check shape inference
-                model = tf.keras.models.Model(x, y)
-                model.compile("adam", loss_obj)
+    layer = CRF(5)
 
-                with self.assertRaises(tf.errors.InvalidArgumentError) as context:
-                    model.fit(train_x, train_y)
+    x = tf.keras.layers.Input(shape=(3, 5))
+    y = layer(x, mask=tf.constant(mask))
 
-                self.assertTrue(
-                    "CRF layer do not support left padding" in context.exception.message
-                )
+    # check shape inference
+    model = tf.keras.models.Model(x, y)
+    model.compile("adam", loss_obj)
+
+    with pytest.raises(tf.errors.InvalidArgumentError) as context:
+        model.fit(train_x, train_y)
+
+    assert "CRF layer do not support left padding" in str(context.value)
 
 
 @pytest.mark.parametrize("loss_obj", CRF_LOSS_OBJ_LIST)
