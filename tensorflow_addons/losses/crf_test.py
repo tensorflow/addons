@@ -353,13 +353,5 @@ def test_serialization(loss_obj):
     assert ref_fn.get_config() == fn.get_config()
 
 
-@pytest.mark.parametrize("loss_obj", CRF_LOSS_OBJ_LIST)
-def test_keras_model_compile(loss_obj):
-    crf_layer = get_test_data()[-1]
-    model = tf.keras.models.Sequential([tf.keras.layers.Input(shape=(3, 5)), crf_layer])
-
-    model.compile(loss=loss_obj, optimizer="adam")
-
-
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))

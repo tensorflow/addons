@@ -63,5 +63,43 @@ def test_unmasked_viterbi_decode():
     )
 
 
+def get_test_data():
+    logits = np.array(
+        [
+            [[0, 0, 0.5, 0.5, 0.2], [0, 0, 0.3, 0.3, 0.1], [0, 0, 0.9, 10, 1]],
+            [[0, 0, 0.2, 0.5, 0.2], [0, 0, 3, 0.3, 0.1], [0, 0, 0.9, 1, 1]],
+        ]
+    )
+    tags = np.array([[2, 3, 4], [3, 2, 2]])
+
+    transitions = np.array(
+        [
+            [0.1, 0.2, 0.3, 0.4, 0.5],
+            [0.8, 0.3, 0.1, 0.7, 0.9],
+            [-0.3, 2.1, -5.6, 3.4, 4.0],
+            [0.2, 0.4, 0.6, -0.3, -0.4],
+            [1.0, 1.0, 1.0, 1.0, 1.0],
+        ]
+    )
+
+    boundary_values = np.ones((5,))
+    crf_layer = CRF(
+        units=5,
+        use_kernel=False,  # disable kernel transform
+        chain_initializer=tf.keras.initializers.Constant(transitions),
+        use_boundary=True,
+        boundary_initializer=tf.keras.initializers.Constant(boundary_values),
+        name="crf_layer",
+    )
+    return logits, tags, transitions, boundary_values, crf_layer
+
+
+def test_keras_model_compile():
+    crf_layer = get_test_data()[-1]
+    model = tf.keras.models.Sequential([tf.keras.layers.Input(shape=(3, 5)), crf_layer])
+
+    model.compile(loss=None, optimizer="adam")
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))
