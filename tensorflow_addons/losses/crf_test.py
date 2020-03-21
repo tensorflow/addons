@@ -229,41 +229,39 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
                     "CRF layer do not support left padding" in context.exception.message
                 )
 
-    def test_mask_right_padding(self):
-        for loss_obj in CRF_LOSS_OBJ_LIST:
-            with self.subTest(loss_obj=loss_obj):
-                train_x = np.array(
-                    [
-                        [
-                            # O   B-X  I-X  B-Y  I-Y
-                            [0.0, 1.0, 0.0, 0.0, 0.0],
-                            [0.0, 0.0, 1.0, 0.0, 0.0],
-                            [0.0, 0.0, 1.0, 0.0, 0.0],
-                        ],
-                        [
-                            # O   B-X  I-X  B-Y  I-Y
-                            [0.0, 1.0, 0.0, 0.0, 0.0],
-                            [0.0, 1.0, 0.0, 0.0, 0.0],
-                            [0.0, 1.0, 0.0, 0.0, 0.0],
-                        ],
-                    ]
-                )
 
-                train_y = np.array(
-                    [[1, 2, 2], [1, 1, 1]]  # B-X  I-X  I-X  # B-X  B-X  B-X
-                )
+@pytest.mark.parametrize("loss_obj", CRF_LOSS_OBJ_LIST)
+def test_mask_right_padding(loss_obj):
+    train_x = np.array(
+        [
+            [
+                # O   B-X  I-X  B-Y  I-Y
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0],
+            ],
+            [
+                # O   B-X  I-X  B-Y  I-Y
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 0.0],
+            ],
+        ]
+    )
 
-                mask = np.array([[1, 1, 1], [1, 1, 0]])
+    train_y = np.array([[1, 2, 2], [1, 1, 1]])  # B-X  I-X  I-X  # B-X  B-X  B-X
 
-                layer = CRF(5)
+    mask = np.array([[1, 1, 1], [1, 1, 0]])
 
-                x = tf.keras.layers.Input(shape=(3, 5))
-                y = layer(x, mask=tf.constant(mask))
+    layer = CRF(5)
 
-                # check shape inference
-                model = tf.keras.models.Model(x, y)
-                model.compile("adam", loss_obj)
-                model.fit(train_x, train_y)
+    x = tf.keras.layers.Input(shape=(3, 5))
+    y = layer(x, mask=tf.constant(mask))
+
+    # check shape inference
+    model = tf.keras.models.Model(x, y)
+    model.compile("adam", loss_obj)
+    model.fit(train_x, train_y)
 
 
 @pytest.mark.parametrize("loss_obj", CRF_LOSS_OBJ_LIST)
