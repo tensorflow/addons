@@ -150,30 +150,11 @@ def test_mask_right_padding():
 
 
 def test_mask_left_padding():
-    train_x = np.array(
-        [
-            [
-                # O   B-X  I-X  B-Y  I-Y
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0, 0.0],
-                [0.0, 0.0, 1.0, 0.0, 0.0],
-            ],
-            [
-                # O   B-X  I-X  B-Y  I-Y
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-                [0.0, 1.0, 0.0, 0.0, 0.0],
-            ],
-        ]
-    )
-
-    # B-X  I-X  I-X  # B-X  B-X  B-X
-    train_y = np.array([[1, 2, 2], [1, 1, 1]])
-
+    x_np, y_np = get_test_data2()
     mask = np.array([[0, 1, 1], [1, 1, 1]])
 
-    x = tf.keras.layers.Input(shape=train_x.shape[1:])
-    y = tf.keras.layers.Input(shape=train_y.shape[1:])
+    x = tf.keras.layers.Input(shape=x_np.shape[1:])
+    y = tf.keras.layers.Input(shape=y_np.shape[1:])
     crf_layer_outputs = CRF(5)(x, mask=tf.constant(mask))
     decoded_sequence, potentials, sequence_length, chain_kernel = crf_layer_outputs
 
@@ -182,11 +163,12 @@ def test_mask_left_padding():
     training_model = tf.keras.Model([x, y], crf_loss)
 
     # we can only check the value of the mask
-    # if we run eagerly. It's kind of a debug mode.
+    # if we run eagerly. It's kind of a debug mode
+    # otherwise we're wasting computation.
     training_model.compile("adam", "mae", run_eagerly=True)
 
     with pytest.raises(NotImplementedError) as context:
-        training_model.fit((train_x, train_y), np.zeros((2,)))
+        training_model.fit((x_np, y_np), np.zeros((2,)))
 
     assert "CRF layer do not support left padding" in str(context.value)
 
