@@ -106,22 +106,21 @@ def translate(
         )
 
 
-def translate_xy(image: TensorLike, pixels: int, replace: int, axis: int) -> TensorLike:
+def translate_xy(
+    image: TensorLike, translate_to: TensorLike, replace: int
+) -> TensorLike:
     """Translates image in X or Y dimension.
     Args:
         image: A 3D image Tensor.
-        pixels: integer denoting number of pixels to translate by.
-        replace: Pixel value to replace blank space with.
-        axis: Either 0 (X-axis) or 1 (Y-axis).
+        translate_to: A 1D tensor to translate [x, y]
+        replace: A one or three value 1D tensor to fill empty pixels.
     Returns:
-        Translated image along X or Y axis, with blank space filled with
-        pixel value.
+        Translated image along X or Y axis, with space outside image
+        filled with replace.
     Raises:
         ValueError: if axis is neither 0 nor 1."""
-    if axis not in [0, 1]:
-        raise ValueError("axis must be 0 (X-axis) or 1 (Y-axis)")
-    if axis:
-        image = translate(wrap(image), [0, -pixels])
-    else:
-        image = translate(wrap(image), [-pixels, 0])
+    image = wrap(image)
+    trans = tf.convert_to_tensor(translate_to)
+    image = translate(image, [trans.numpy()[0], 0])
+    image = translate(image, [0, trans.numpy()[1]])
     return unwrap(image, replace)

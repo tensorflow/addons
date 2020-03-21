@@ -18,9 +18,10 @@ import sys
 
 import pytest
 import tensorflow as tf
+import numpy as np
 
 from tensorflow_addons.image import translate_ops
-from tensorflow_addons.utils import test_utils
+from PIL import Image
 
 _DTYPES = {
     tf.dtypes.uint8,
@@ -32,24 +33,52 @@ _DTYPES = {
 }
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class TranslateOpTest(tf.test.TestCase):
-    def test_translate(self):
-        for dtype in _DTYPES:
-            image = tf.constant(
-                [[1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1]], dtype=dtype
-            )
-            translation = tf.constant([-1, -1], dtype=tf.float32)
-            image_translated = translate_ops.translate(image, translation)
-            self.assertAllEqual(
-                self.evaluate(image_translated),
-                [[1, 0, 1, 0], [0, 1, 0, 0], [1, 0, 1, 0], [0, 0, 0, 0]],
-            )
+# @test_utils.run_all_in_graph_and_eager_modes
+# class TranslateOpTest(tf.test.TestCase):
 
-    def test_translations_to_projective_transforms(self):
-        translation = tf.constant([-1, -1], dtype=tf.float32)
-        transform = translate_ops.translations_to_projective_transforms(translation)
-        self.assertAllEqual(self.evaluate(transform), [[1, 0, 1, 0, 1, 1, 0, 0]])
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", _DTYPES)
+def test_translate(dtype):
+    image = tf.constant(
+        [[1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1]], dtype=dtype
+    )
+    translation = tf.constant([-1, -1], dtype=tf.float32)
+    image_translated = translate_ops.translate(image, translation)
+    np.testing.assert_equal(
+        image_translated.numpy(),
+        [[1, 0, 1, 0], [0, 1, 0, 0], [1, 0, 1, 0], [0, 0, 0, 0]],
+    )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_translations_to_projective_transforms():
+    translation = tf.constant([-1, -1], dtype=tf.float32)
+    transform = translate_ops.translations_to_projective_transforms(translation)
+    np.testing.assert_equal(transform.numpy(), [[1, 0, 1, 0, 1, 1, 0, 0]])
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_translate_xy():
+    image = np.random.randint(low=0, high=255, size=(4, 4, 3), dtype=np.uint8)
+    translate = np.random.randint(low=0, high=4, size=(2,), dtype=np.uint8)
+    translate = tf.constant(translate)
+    color = tf.constant([255, 0, 255], tf.dtypes.uint8)
+
+    tf_image = tf.constant(image)
+    pil_image = Image.fromarray(image)
+
+    translated = translate_ops.translate_xy(
+        image=tf_image, translate_to=tf.constant(translate), replace=color
+    )
+    expected = pil_image.rotate(
+        angle=0,
+        resample=Image.NEAREST,
+        translate=tuple(translate.numpy()),
+        fillcolor=tuple(color.numpy()),
+    )
+
+    np.testing.assert_equal(translated.numpy(), expected)
 
 
 if __name__ == "__main__":
