@@ -17,7 +17,9 @@
 import itertools
 import math
 import os
+import sys
 
+import pytest
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.framework import tensor_util
@@ -31,6 +33,28 @@ from tensorflow_addons.utils import test_utils
 from unittest.mock import patch
 
 CRF_LOSS_OBJ_LIST = [crf.crf_loss, crf.ConditionalRandomFieldLoss()]
+
+
+def get_some_crf_layer():
+    transitions = np.array(
+        [
+            [0.1, 0.2, 0.3, 0.4, 0.5],
+            [0.8, 0.3, 0.1, 0.7, 0.9],
+            [-0.3, 2.1, -5.6, 3.4, 4.0],
+            [0.2, 0.4, 0.6, -0.3, -0.4],
+            [1.0, 1.0, 1.0, 1.0, 1.0],
+        ]
+    )
+
+    boundary_values = np.ones((5,))
+    return CRF(
+        units=5,
+        use_kernel=False,  # disable kernel transform
+        chain_initializer=tf.keras.initializers.Constant(transitions),
+        use_boundary=True,
+        boundary_initializer=tf.keras.initializers.Constant(boundary_values),
+        name="crf_layer",
+    )
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -333,15 +357,15 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
                 fn = tf.keras.losses.deserialize(config)
                 self.assertEqual(ref_fn.get_config(), fn.get_config())
 
-    def test_keras_model_compile(self):
-        for loss_obj in CRF_LOSS_OBJ_LIST:
-            with self.subTest(loss_obj=loss_obj):
-                model = tf.keras.models.Sequential(
-                    [tf.keras.layers.Input(shape=(3, 5)), self.crf]
-                )
 
-                model.compile(loss=loss_obj, optimizer="adam")
+@pytest.mark.parametrize("loss_obj", CRF_LOSS_OBJ_LIST)
+def test_keras_model_compile(loss_obj):
+    model = tf.keras.models.Sequential(
+        [tf.keras.layers.Input(shape=(3, 5)), get_some_crf_layer()]
+    )
+
+    model.compile(loss=loss_obj, optimizer="adam")
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))
