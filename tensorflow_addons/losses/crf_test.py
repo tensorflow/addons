@@ -35,7 +35,15 @@ from unittest.mock import patch
 CRF_LOSS_OBJ_LIST = [crf.crf_loss, crf.ConditionalRandomFieldLoss()]
 
 
-def get_some_crf_layer():
+def get_test_data():
+    logits = np.array(
+        [
+            [[0, 0, 0.5, 0.5, 0.2], [0, 0, 0.3, 0.3, 0.1], [0, 0, 0.9, 10, 1]],
+            [[0, 0, 0.2, 0.5, 0.2], [0, 0, 3, 0.3, 0.1], [0, 0, 0.9, 1, 1]],
+        ]
+    )
+    tags = np.array([[2, 3, 4], [3, 2, 2]])
+
     transitions = np.array(
         [
             [0.1, 0.2, 0.3, 0.4, 0.5],
@@ -47,7 +55,7 @@ def get_some_crf_layer():
     )
 
     boundary_values = np.ones((5,))
-    return CRF(
+    crf_layer = CRF(
         units=5,
         use_kernel=False,  # disable kernel transform
         chain_initializer=tf.keras.initializers.Constant(transitions),
@@ -55,6 +63,7 @@ def get_some_crf_layer():
         boundary_initializer=tf.keras.initializers.Constant(boundary_values),
         name="crf_layer",
     )
+    return logits, tags, transitions, boundary_values, crf_layer
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -159,33 +168,30 @@ class ConditionalRandomFieldLossTest(tf.test.TestCase):
 
                 model.fit(self.logits, self.tags, epochs=10, batch_size=1)
 
-    def _test_dump_and_load(self, loss_obj):
-        tmp_dir = self.get_temp_dir()
-        MODEL_PERSISTENCE_PATH = os.path.join(tmp_dir, "test_saving_crf_model.h5")
 
-        model = tf.keras.models.Sequential()
-        model.add(tf.keras.layers.Input(shape=(3, 5)))
-        model.add(self.crf)
-        model.compile("adam", loss=loss_obj, metrics=[tf.keras.metrics.Accuracy()])
+def _test_dump_and_load(loss_obj, tmp_path):
+    logits, tags, _, _, crf_layer = get_test_data()
+    MODEL_PERSISTENCE_PATH = os.path.join(tmp_path, "test_saving_crf_model.h5")
 
-        model.fit(self.logits, self.tags, epochs=10, batch_size=1)
+    model = tf.keras.models.Sequential()
+    model.add(tf.keras.layers.Input(shape=(3, 5)))
+    model.add(crf_layer)
+    model.compile("adam", loss=loss_obj, metrics=[tf.keras.metrics.Accuracy()])
 
-        model.save(MODEL_PERSISTENCE_PATH)
+    model.fit(logits, tags, epochs=10, batch_size=1)
 
-        # no news is good news
-        new_model = tf.keras.models.load_model(MODEL_PERSISTENCE_PATH)
-        new_model.fit(self.logits, self.tags, epochs=10, batch_size=1)
+    model.save(MODEL_PERSISTENCE_PATH)
 
-        try:
-            os.remove(MODEL_PERSISTENCE_PATH)
-        except OSError:
-            pass
+    # no news is good news
+    new_model = tf.keras.models.load_model(MODEL_PERSISTENCE_PATH)
+    new_model.fit(logits, tags, epochs=10, batch_size=1)
 
-    def test_dump_and_load_with_class_loss(self):
-        # TODO(howl-anderson): wait for the PR merged
-        self.skipTest("require tensorflow/tensorflow#37018 merged")
 
-        self._test_dump_and_load(crf.ConditionalRandomFieldLoss())
+@pytest.mark.skip("require tensorflow/tensorflow#37018 merged")
+def test_dump_and_load_with_class_loss(tmp_path):
+    # TODO(howl-anderson): wait for the PR merged
+
+    _test_dump_and_load(crf.ConditionalRandomFieldLoss(), tmp_path)
 
 
 @pytest.mark.parametrize("loss_obj", CRF_LOSS_OBJ_LIST)
@@ -350,9 +356,8 @@ def test_serialization(loss_obj):
 
 @pytest.mark.parametrize("loss_obj", CRF_LOSS_OBJ_LIST)
 def test_keras_model_compile(loss_obj):
-    model = tf.keras.models.Sequential(
-        [tf.keras.layers.Input(shape=(3, 5)), get_some_crf_layer()]
-    )
+    crf_layer = get_test_data()[-1]
+    model = tf.keras.models.Sequential([tf.keras.layers.Input(shape=(3, 5)), crf_layer])
 
     model.compile(loss=loss_obj, optimizer="adam")
 
