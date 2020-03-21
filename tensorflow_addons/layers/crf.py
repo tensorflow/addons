@@ -123,7 +123,7 @@ class CRF(tf.keras.layers.Layer):
         activation: types.Activation = "linear",
         **kwargs
     ):
-        super(CRF, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         # setup mask supporting flag, used by base class (the Layer)
         # because base class's init method will set it to False unconditionally
@@ -209,7 +209,7 @@ class CRF(tf.keras.layers.Layer):
         else:
             self._dense_layer = lambda x: tf.cast(x, dtype=self.dtype)
 
-        super(CRF, self).build(input_shape)
+        super().build(input_shape)
 
     def call(self, inputs, mask=None):
         # mask: Tensor(shape=(batch_size, sequence_length), dtype=bool) or None
@@ -218,26 +218,19 @@ class CRF(tf.keras.layers.Layer):
             if tf.keras.backend.ndim(mask) != 2:
                 raise ValueError("Input mask to CRF must have dim 2 if not None")
 
-        # left padding of mask is not supported, due the underline CRF function
-        # detect it and report it to user
-        first_mask = None
         if mask is not None:
+            # left padding of mask is not supported, due the underline CRF function
+            # detect it and report it to user
             left_boundary_mask = self._compute_mask_left_boundary(mask)
             first_mask = left_boundary_mask[:, 0]
-
-        if first_mask is not None:
-            no_left_padding = tf.math.reduce_all(first_mask)
-            msg = "Currently, CRF layer do not support left padding"
-            with tf.control_dependencies(
-                [
-                    tf.debugging.assert_equal(
-                        no_left_padding, tf.constant(True), message=msg
+            if first_mask is not None and tf.executing_eagerly():
+                no_left_padding = tf.math.reduce_all(first_mask)
+                if no_left_padding:
+                    raise NotImplementedError(
+                        "Currently, CRF layer do not support left padding"
                     )
-                ]
-            ):
-                potentials = self._dense_layer(inputs)
-        else:
-            potentials = self._dense_layer(inputs)
+
+        potentials = self._dense_layer(inputs)
 
         # appending boundary probability info
         if self.use_boundary:
@@ -384,7 +377,7 @@ class CRF(tf.keras.layers.Layer):
             ),
             "bias_constraint": tf.keras.constraints.serialize(self.bias_constraint),
         }
-        base_config = super(CRF, self).get_config()
+        base_config = super().get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
     def compute_output_shape(self, input_shape):
