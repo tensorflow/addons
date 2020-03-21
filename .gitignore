@@ -37,3 +37,8 @@ wheels/
 /bazel-*
 /artifacts
 .bazelrc
+
+.coverage*
+htmlcov
+
+wheelhouse/

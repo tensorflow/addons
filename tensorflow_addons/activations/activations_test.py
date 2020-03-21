@@ -13,6 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 
+import sys
+
+import pytest
 import tensorflow as tf
 from tensorflow_addons import activations
 from tensorflow_addons.utils import test_utils
@@ -53,4 +56,4 @@ class ActivationsTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))
