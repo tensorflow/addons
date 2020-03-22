@@ -115,13 +115,13 @@ def test_grad():
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_transform_data_types():
-    for dtype in _DTYPES:
-        image = tf.constant([[1, 2], [3, 4]], dtype=dtype)
-        np.testing.assert_equal(
-            np.array([[4, 4], [4, 4]]).astype(dtype.as_numpy_dtype),
-            transform_ops.transform(image, [1] * 8),
-        )
+@pytest.mark.parametrize("dtype", _DTYPES)
+def test_transform_data_types(dtype):
+    image = tf.constant([[1, 2], [3, 4]], dtype=dtype)
+    np.testing.assert_equal(
+        np.array([[4, 4], [4, 4]]).astype(dtype.as_numpy_dtype),
+        transform_ops.transform(image, [1] * 8),
+    )
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
