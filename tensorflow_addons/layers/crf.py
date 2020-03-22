@@ -83,17 +83,6 @@ class CRF(tf.keras.layers.Layer):
         self.boundary_constraint = tf.keras.constraints.get(boundary_constraint)
         self.bias_constraint = tf.keras.constraints.get(bias_constraint)
 
-        # values will be assigned in method
-        self.input_spec = None
-
-        # global variable
-        self.chain_kernel = None
-        self._dense_layer = None
-        self.left_boundary = None
-        self.right_boundary = None
-
-    def build(self, input_shape):
-
         # weights that work as transfer probability of each tags
         self.chain_kernel = self.add_weight(
             shape=(self.units, self.units),
@@ -134,8 +123,6 @@ class CRF(tf.keras.layers.Layer):
             )
         else:
             self._dense_layer = lambda x: tf.cast(x, dtype=self.dtype)
-
-        super().build(input_shape)
 
     def call(self, inputs, mask=None):
         # mask: Tensor(shape=(batch_size, sequence_length), dtype=bool) or None
