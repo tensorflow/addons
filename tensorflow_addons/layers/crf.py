@@ -114,10 +114,11 @@ class CRF(tf.keras.layers.Layer):
                 units=self.units,
                 activation=self.activation,
                 use_bias=self.use_bias,
-                bias_initializer=self.bias_initializer,
+                kernel_initializer=self.kernel_initializer,
                 kernel_regularizer=self.kernel_regularizer,
-                bias_regularizer=self.bias_regularizer,
                 kernel_constraint=self.kernel_constraint,
+                bias_initializer=self.bias_initializer,
+                bias_regularizer=self.bias_regularizer,
                 bias_constraint=self.bias_constraint,
                 dtype=self.dtype,
             )
