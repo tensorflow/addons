@@ -93,10 +93,6 @@ class CRF(tf.keras.layers.Layer):
         self.right_boundary = None
 
     def build(self, input_shape):
-        input_shape = tuple(tf.TensorShape(input_shape).as_list())
-
-        # see API docs of InputSpec for more detail
-        self.input_spec = [tf.keras.layers.InputSpec(shape=input_shape)]
 
         # weights that work as transfer probability of each tags
         self.chain_kernel = self.add_weight(

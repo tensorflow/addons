@@ -211,9 +211,6 @@ def test_serialization(save_format):
 
     assert inference_model.get_layer("L") == training_model.get_layer("L")
 
-    if save_format == "tf":
-        pytest.skip("TODO: fixme. Some strange bug with TF model saving.")
-
     new_inference_model = clone(inference_model, save_format)
     np.testing.assert_equal(
         inference_model(x_np).numpy(), new_inference_model(x_np).numpy()
@@ -224,6 +221,10 @@ def test_serialization(save_format):
     )
 
     new_training_model = clone(training_model, save_format)
+
+    if save_format == "tf":
+        pytest.skip("TODO: fixme. Some strange bug with TF model saving.")
+
     np.testing.assert_equal(
         training_model([x_np, y_np]).numpy(), new_training_model([x_np, y_np]).numpy()
     )
