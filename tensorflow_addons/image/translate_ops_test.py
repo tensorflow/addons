@@ -58,6 +58,7 @@ def test_translations_to_projective_transforms():
     np.testing.assert_equal(transform.numpy(), [[1, 0, 1, 0, 1, 1, 0, 0]])
 
 
+# TODO: Parameterize on dtypes
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_translate_xy():
     image = np.random.randint(low=0, high=255, size=(4, 4, 3), dtype=np.uint8)

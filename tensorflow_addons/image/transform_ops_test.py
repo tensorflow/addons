@@ -325,6 +325,7 @@ def test_unknown_shape():
         np.testing.assert_equal(image.numpy(), fn(image).numpy())
 
 
+# TODO: Parameterize on dtypes
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_shear_x():
     image = np.random.randint(low=0, high=255, size=(4, 4, 3), dtype=np.uint8)
@@ -346,6 +347,7 @@ def test_shear_x():
     np.testing.assert_equal(sheared_img.numpy(), expected_img)
 
 
+# TODO: Parameterize on dtypes
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_shear_y():
     image = np.random.randint(low=0, high=255, size=(4, 4, 3), dtype=np.uint8)
