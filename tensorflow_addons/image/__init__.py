@@ -27,5 +27,8 @@ from tensorflow_addons.image.resampler_ops import resampler
 from tensorflow_addons.image.sparse_image_warp import sparse_image_warp
 from tensorflow_addons.image.transform_ops import rotate
 from tensorflow_addons.image.transform_ops import transform
+from tensorflow_addons.image.transform_ops import shear_x
+from tensorflow_addons.image.transform_ops import shear_y
 from tensorflow_addons.image.translate_ops import translate
+from tensorflow_addons.image.translate_ops import translate_xy
 from tensorflow_addons.image.compose_ops import blend
