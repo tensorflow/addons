@@ -33,10 +33,6 @@ _DTYPES = {
 }
 
 
-# @test_utils.run_all_in_graph_and_eager_modes
-# class TranslateOpTest(tf.test.TestCase):
-
-
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", _DTYPES)
 def test_translate(dtype):
