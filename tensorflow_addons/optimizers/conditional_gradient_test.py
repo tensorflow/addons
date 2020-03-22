@@ -23,9 +23,6 @@ import platform
 
 @test_utils.run_all_in_graph_and_eager_modes
 class ConditionalGradientTest(tf.test.TestCase):
-    def _update_conditional_gradient_numpy(self, var, norm, g, lr, lambda_):
-        var = var * lr - (1 - lr) * lambda_ * g / norm
-        return var
 
     # Based on issue #347 in the following link,
     #        "https://github.com/tensorflow/addons/issues/347"

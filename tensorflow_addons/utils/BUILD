@@ -12,6 +12,9 @@ py_library(
         "resource_loader.py",
         "types.py",
     ]),
+    data = [
+        "//tensorflow_addons:conftest.py",
+    ],
 )
 
 py_test(

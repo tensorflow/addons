@@ -40,11 +40,6 @@ class SigmoidFocalCrossEntropyTest(tf.test.TestCase):
         logit = np.log(prob / (1.0 - prob))
         return logit
 
-    def log10(self, x):
-        numerator = tf.math.log(x)
-        denominator = tf.math.log(tf.constant(10, dtype=numerator.dtype))
-        return numerator / denominator
-
     # Test with logits
     def test_with_logits(self):
         # predictiions represented as logits
@@ -87,35 +82,7 @@ class SigmoidFocalCrossEntropyTest(tf.test.TestCase):
         )
 
         # order_of_ratio = np.power(10, np.floor(np.log10(bce/FL)))
-        order_of_ratio = tf.pow(10.0, tf.math.floor(self.log10(bce / fl)))
-        pow_values = tf.constant([1000, 100, 10, 10, 100, 1000])
-        self.assertAllClose(order_of_ratio, pow_values)
-
-    # Test without logits
-    def test_without_logits(self):
-        # predictiions represented as logits
-        prediction_tensor = tf.constant(
-            [[0.97], [0.91], [0.73], [0.27], [0.09], [0.03]], tf.float32
-        )
-        # Ground truth
-        target_tensor = tf.constant([[1], [1], [1], [0], [0], [0]], tf.float32)
-
-        fl = sigmoid_focal_crossentropy(
-            y_true=target_tensor, y_pred=prediction_tensor, alpha=None, gamma=None
-        )
-        bce = tf.reduce_sum(
-            K.binary_crossentropy(target_tensor, prediction_tensor), axis=-1
-        )
-
-        # When alpha and gamma are None, it should be equal to BCE
-        self.assertAllClose(fl, bce)
-
-        # When gamma==2.0
-        fl = sigmoid_focal_crossentropy(
-            y_true=target_tensor, y_pred=prediction_tensor, alpha=None, gamma=2.0
-        )
-
-        order_of_ratio = tf.pow(10.0, tf.math.floor(self.log10(bce / fl)))
+        order_of_ratio = tf.pow(10.0, tf.math.floor(log10(bce / fl)))
         pow_values = tf.constant([1000, 100, 10, 10, 100, 1000])
         self.assertAllClose(order_of_ratio, pow_values)
 
@@ -127,6 +94,42 @@ class SigmoidFocalCrossEntropyTest(tf.test.TestCase):
             ]
         )
         model.compile(loss="Addons>sigmoid_focal_crossentropy")
+
+
+def log10(x):
+    numerator = tf.math.log(x)
+    denominator = tf.math.log(tf.constant(10, dtype=numerator.dtype))
+    return numerator / denominator
+
+
+# Test without logits
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_without_logits():
+    # predictiions represented as logits
+    prediction_tensor = tf.constant(
+        [[0.97], [0.91], [0.73], [0.27], [0.09], [0.03]], tf.float32
+    )
+    # Ground truth
+    target_tensor = tf.constant([[1], [1], [1], [0], [0], [0]], tf.float32)
+
+    fl = sigmoid_focal_crossentropy(
+        y_true=target_tensor, y_pred=prediction_tensor, alpha=None, gamma=None
+    )
+    bce = tf.reduce_sum(
+        K.binary_crossentropy(target_tensor, prediction_tensor), axis=-1
+    )
+
+    # When alpha and gamma are None, it should be equal to BCE
+    assert np.allclose(fl, bce)
+
+    # When gamma==2.0
+    fl = sigmoid_focal_crossentropy(
+        y_true=target_tensor, y_pred=prediction_tensor, alpha=None, gamma=2.0
+    )
+
+    order_of_ratio = tf.pow(10.0, tf.math.floor(log10(bce / fl)))
+    pow_values = tf.constant([1000, 100, 10, 10, 100, 1000])
+    assert np.allclose(order_of_ratio, pow_values)
 
 
 if __name__ == "__main__":
