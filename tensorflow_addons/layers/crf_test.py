@@ -185,7 +185,7 @@ def test_mask_left_padding():
     training_model.compile("adam", "mae", run_eagerly=True)
 
     with pytest.raises(NotImplementedError) as context:
-        training_model.fit((x_np, y_np), np.zeros((2,)))
+        training_model((x_np, y_np)).numpy()
 
     assert "CRF layer do not support left padding" in str(context.value)
 
