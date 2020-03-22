@@ -36,21 +36,9 @@ class CRF(tf.keras.layers.Layer):
         self,
         units: int,
         chain_initializer: types.Initializer = "orthogonal",
-        chain_regularizer: types.Regularizer = None,
-        chain_constraint: types.Constraint = None,
         use_boundary: bool = True,
         boundary_initializer: types.Initializer = "zeros",
-        boundary_regularizer: types.Regularizer = None,
-        boundary_constraint: types.Constraint = None,
         use_kernel: bool = True,
-        kernel_initializer: types.Initializer = "glorot_uniform",
-        kernel_regularizer: types.Regularizer = None,
-        kernel_constraint: types.Constraint = None,
-        use_bias: bool = True,
-        bias_initializer: types.Initializer = "zeros",
-        bias_regularizer: types.Regularizer = None,
-        bias_constraint: types.Constraint = None,
-        activation: types.Activation = "linear",
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -63,33 +51,15 @@ class CRF(tf.keras.layers.Layer):
         self.units = units  # numbers of tags
 
         self.use_boundary = use_boundary
-        self.use_bias = use_bias
         self.use_kernel = use_kernel
-
-        self.activation = tf.keras.activations.get(activation)
-
-        self.kernel_initializer = tf.keras.initializers.get(kernel_initializer)
         self.chain_initializer = tf.keras.initializers.get(chain_initializer)
         self.boundary_initializer = tf.keras.initializers.get(boundary_initializer)
-        self.bias_initializer = tf.keras.initializers.get(bias_initializer)
-
-        self.kernel_regularizer = tf.keras.regularizers.get(kernel_regularizer)
-        self.chain_regularizer = tf.keras.regularizers.get(chain_regularizer)
-        self.boundary_regularizer = tf.keras.regularizers.get(boundary_regularizer)
-        self.bias_regularizer = tf.keras.regularizers.get(bias_regularizer)
-
-        self.kernel_constraint = tf.keras.constraints.get(kernel_constraint)
-        self.chain_constraint = tf.keras.constraints.get(chain_constraint)
-        self.boundary_constraint = tf.keras.constraints.get(boundary_constraint)
-        self.bias_constraint = tf.keras.constraints.get(bias_constraint)
 
         # weights that work as transfer probability of each tags
         self.chain_kernel = self.add_weight(
             shape=(self.units, self.units),
             name="chain_kernel",
             initializer=self.chain_initializer,
-            regularizer=self.chain_regularizer,
-            constraint=self.chain_constraint,
         )
 
         # weight of <START> to tag probability and tag to <END> probability
@@ -98,29 +68,16 @@ class CRF(tf.keras.layers.Layer):
                 shape=(self.units,),
                 name="left_boundary",
                 initializer=self.boundary_initializer,
-                regularizer=self.boundary_regularizer,
-                constraint=self.boundary_constraint,
             )
             self.right_boundary = self.add_weight(
                 shape=(self.units,),
                 name="right_boundary",
                 initializer=self.boundary_initializer,
-                regularizer=self.boundary_regularizer,
-                constraint=self.boundary_constraint,
             )
 
         if self.use_kernel:
             self._dense_layer = tf.keras.layers.Dense(
-                units=self.units,
-                activation=self.activation,
-                use_bias=self.use_bias,
-                kernel_initializer=self.kernel_initializer,
-                kernel_regularizer=self.kernel_regularizer,
-                kernel_constraint=self.kernel_constraint,
-                bias_initializer=self.bias_initializer,
-                bias_regularizer=self.bias_regularizer,
-                bias_constraint=self.bias_constraint,
-                dtype=self.dtype,
+                units=self.units, dtype=self.dtype,
             )
         else:
             self._dense_layer = lambda x: tf.cast(x, dtype=self.dtype)
@@ -261,36 +218,14 @@ class CRF(tf.keras.layers.Layer):
         # used for loading model from disk
         config = {
             "units": self.units,
-            "use_boundary": self.use_boundary,
-            "use_bias": self.use_bias,
-            "use_kernel": self.use_kernel,
-            "kernel_initializer": tf.keras.initializers.serialize(
-                self.kernel_initializer
-            ),
             "chain_initializer": tf.keras.initializers.serialize(
                 self.chain_initializer
             ),
+            "use_boundary": self.use_boundary,
             "boundary_initializer": tf.keras.initializers.serialize(
                 self.boundary_initializer
             ),
-            "bias_initializer": tf.keras.initializers.serialize(self.bias_initializer),
-            "activation": tf.keras.activations.serialize(self.activation),
-            "kernel_regularizer": tf.keras.regularizers.serialize(
-                self.kernel_regularizer
-            ),
-            "chain_regularizer": tf.keras.regularizers.serialize(
-                self.chain_regularizer
-            ),
-            "boundary_regularizer": tf.keras.regularizers.serialize(
-                self.boundary_regularizer
-            ),
-            "bias_regularizer": tf.keras.regularizers.serialize(self.bias_regularizer),
-            "kernel_constraint": tf.keras.constraints.serialize(self.kernel_constraint),
-            "chain_constraint": tf.keras.constraints.serialize(self.chain_constraint),
-            "boundary_constraint": tf.keras.constraints.serialize(
-                self.boundary_constraint
-            ),
-            "bias_constraint": tf.keras.constraints.serialize(self.bias_constraint),
+            "use_kernel": self.use_kernel,
         }
         base_config = super().get_config()
         return {**base_config, **config}
