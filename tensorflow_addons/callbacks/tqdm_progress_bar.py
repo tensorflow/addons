@@ -95,11 +95,9 @@ class TQDMProgressBar(Callback):
         self.epoch_progress_tqdm = None
         self.num_epochs = None
         self.logs = None
-        self.metrics = None
 
     def on_train_begin(self, logs=None):
         self.num_epochs = self.params["epochs"]
-        self.metrics = self.params["metrics"]
 
         if self.show_overall_progress:
             self.overall_progress_tqdm = self.tqdm(
@@ -208,7 +206,7 @@ class TQDMProgressBar(Callback):
         """
 
         metric_value_pairs = []
-        for metric in self.metrics:
+        for metric in self.model.metrics_names:
             if metric in logs:
                 value = logs[metric] / factor
                 pair = self.metrics_format.format(name=metric, value=value)
