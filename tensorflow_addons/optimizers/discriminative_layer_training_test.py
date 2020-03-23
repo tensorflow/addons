@@ -15,7 +15,6 @@
 """Tests for Discriminative Layer Training Manager for TensorFlow."""
 
 import tensorflow as tf
-from tensorflow_addons.utils import test_utils
 import numpy as np
 from tensorflow_addons.optimizers.discriminative_layer_training import (
     DiscriminativeLayerOptimizer,
@@ -25,6 +24,7 @@ import os
 import tempfile
 import pytest
 import sys
+
 
 def toy_cnn():
     """Consistently create model with same random weights.
@@ -200,7 +200,6 @@ def _assert_training_losses_are_close(model, model_lr, epochs=10):
     _assert_losses_are_close(hist, hist_lr)
 
 
-
 def test_a_initialize_model_weights():
     """This test should run first to initialize the model weights.
     There seem to be major issues in initializing model weights on the fly when testing,
@@ -213,6 +212,7 @@ def test_a_initialize_model_weights():
 
 
 @pytest.mark.parametrize("model_fn,loss,opt", _zipped_permutes())
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_equal_with_no_layer_lr(model_fn, loss, opt):
     """Confirm that discriminative learning is almost the same as regular learning."""
     learning_rate = 0.01
@@ -227,256 +227,215 @@ def test_equal_with_no_layer_lr(model_fn, loss, opt):
 
     _assert_training_losses_are_close(model, model_lr)
 
-class DiscriminativeLearningTest(tf.test.TestCase):
-    def _assert_losses_are_close(self, hist, hist_lr):
-        """Higher tolerance for graph and distributed bc unable to run deterministically."""
-        if not tf.executing_eagerly() or tf.distribute.has_strategy():
-            rtol, atol = 0.05, 1.00
-            # print('graph or dist')
-        else:
-            rtol, atol = 0.01, 0.01
 
-        return self.assertAllClose(
-            get_losses(hist), get_losses(hist_lr), rtol=rtol, atol=atol
+@pytest.mark.parametrize("model_fn,loss,opt", _zipped_permutes())
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def _test_equal_0_sub_layer_lr_to_sub_layer_trainable_false(model_fn, loss, opt):
+    """Confirm 0 lr_mult for the a specific layer is the same as setting layer to not trainable.
+    This also confirms that lr_mult propagates into that layer's trainable variables.
+    This also confirms that lr_mult does not propagate to the rest of the layers unintentionally.
+    """
+    learning_rate = 0.01
+    model = model_fn()
+
+    # Layers 0 represents the pretrained network
+    model.layers[0].trainable = False
+    model.compile(loss=loss, optimizer=opt(learning_rate))
+
+    model_lr = model_fn()
+    model_lr.layers[0].lr_mult = 0.0
+    d_opt = DiscriminativeLayerOptimizer(
+        opt, model_lr, verbose=False, learning_rate=learning_rate
+    )
+    model_lr.compile(loss=loss, optimizer=d_opt)
+
+    _assert_training_losses_are_close(model, model_lr)
+
+
+@pytest.mark.parametrize("model_fn,loss,opt", _zipped_permutes())
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def _test_equal_0_layer_lr_to_trainable_false(model_fn, loss, opt):
+    """Confirm 0 lr_mult for the model is the same as model not trainable.
+    This also confirms that lr_mult on the model level is propagated to all sublayers and their variables.
+    """
+    learning_rate = 0.01
+    model = model_fn()
+    model.trainable = False
+    model.compile(loss=loss, optimizer=opt(learning_rate))
+
+    model_lr = model_fn()
+    model_lr.lr_mult = 0.0
+    d_opt = DiscriminativeLayerOptimizer(
+        opt, model_lr, verbose=False, learning_rate=learning_rate
+    )
+    model_lr.compile(loss=loss, optimizer=d_opt)
+
+    # Only two epochs because we expect no training to occur, thus losses shouldn't change anyways.
+    _assert_training_losses_are_close(model, model_lr, epochs=2)
+
+
+@pytest.mark.parametrize("model_fn,loss,opt", _zipped_permutes())
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def _test_equal_half_layer_lr_to_half_lr_of_opt(model_fn, loss, opt):
+    """Confirm 0.5 lr_mult for the model is the same as optim with 0.5 lr.
+    This also confirms that lr_mult on the model level is propagated to all sublayers and their variables.
+    """
+
+    mult = 0.5
+    learning_rate = 0.01
+    model = model_fn()
+    model.compile(loss=loss, optimizer=opt(learning_rate * mult))
+
+    model_lr = model_fn()
+    model_lr.lr_mult = mult
+    d_opt = DiscriminativeLayerOptimizer(
+        opt, model_lr, verbose=False, learning_rate=learning_rate
+    )
+    model_lr.compile(loss=loss, optimizer=d_opt)
+
+    _assert_training_losses_are_close(model, model_lr)
+
+
+@pytest.mark.parametrize("model_fn,loss,opt", _zipped_permutes())
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def _test_sub_layers_keep_lr_mult(model_fn, loss, opt):
+    """Confirm that model trains with lower lr on specific layer,
+    while a different lr_mult is applied everywhere else.
+    Also confirms that sub layers with an lr mult do not get overridden.
+    """
+
+    learning_rate = 0.01
+    model_lr = model_fn()
+
+    # We set model to lrmult 0 and layer one to lrmult 5.
+    # If layer one is trainable, then the loss should decrease.
+    model_lr.lr_mult = 0.00
+    model_lr.layers[-1].lr_mult = 3
+
+    d_opt = DiscriminativeLayerOptimizer(
+        opt, model_lr, verbose=False, learning_rate=learning_rate
+    )
+    model_lr.compile(loss=loss, optimizer=d_opt)
+
+    loss_values = get_losses(_get_train_results(model_lr, epochs=5))
+    np.testing.assert_array_less([loss_values[-1]], [loss_values[0]])
+
+
+@pytest.mark.parametrize("model_fn,loss,opt", _zipped_permutes())
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def _test_variables_get_assigned(model_fn, loss, opt):
+    """Confirm that variables do get an lr_mult attribute and that they get the correct one.
+    """
+    learning_rate = 0.01
+    model_lr = model_fn()
+
+    # set lr mults.
+    model_lr.layers[0].lr_mult = 0.3
+    model_lr.layers[0].layers[-1].lr_mult = 0.1
+    model_lr.layers[-1].lr_mult = 0.5
+
+    d_opt = DiscriminativeLayerOptimizer(
+        opt, model_lr, verbose=False, learning_rate=learning_rate
+    )
+    model_lr.compile(loss=loss, optimizer=d_opt)
+
+    # We expect trainable vars at 0.3 to be reduced by the amount at 0.1.
+    # This tests that the 0.3 lr mult does not override the 0.1 lr mult.
+    np.testing.assert_equal(
+        len(model_lr.layers[0].trainable_variables)
+        - len(model_lr.layers[0].layers[-1].trainable_variables),
+        len([var for var in model_lr.trainable_variables if var.lr_mult == 0.3]),
+    )
+
+    # We expect trainable vars of model with lr_mult 0.1 to equal trainable vars of that layer.
+    np.testing.assert_equal(
+        len(model_lr.layers[0].layers[-1].trainable_variables),
+        len([var for var in model_lr.trainable_variables if var.lr_mult == 0.1]),
+    )
+
+    # Same logic as above.
+    np.testing.assert_equal(
+        len(model_lr.layers[-1].trainable_variables),
+        len([var for var in model_lr.trainable_variables if var.lr_mult == 0.5]),
+    )
+
+
+@pytest.mark.parametrize("model_fn,loss,opt", _zipped_permutes())
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def _test_model_checkpoint(model_fn, loss, opt):
+    """Confirm that model does save checkpoints and can load them properly."""
+
+    learning_rate = 0.01
+    model_lr = model_fn()
+    model_lr.layers[0].lr_mult = 0.3
+    model_lr.layers[0].layers[-1].lr_mult = 0.1
+    model_lr.layers[-1].lr_mult = 0.5
+
+    d_opt = DiscriminativeLayerOptimizer(
+        opt, model_lr, verbose=False, learning_rate=learning_rate
+    )
+    model_lr.compile(loss=loss, optimizer=d_opt)
+
+    x = np.ones(shape=(8, 32, 32, 3), dtype=np.float32)
+    y = np.zeros(shape=(8, 5), dtype=np.float32)
+    y[:, 0] = 1.0
+
+    filepath = os.path.join(tempfile.gettempdir(), model_fn.__name__ + "_cp.ckpt")
+
+    callbacks = [
+        tf.keras.callbacks.ModelCheckpoint(
+            filepath=filepath, save_weights_only=True, verbose=1
         )
+    ]
 
-    def _assert_training_losses_are_close(self, model, model_lr, epochs=10):
-        """Easy way to check if two models train in almost the same way.
-        Epochs set to 10 by default to allow momentum methods to pick up momentum and diverge,
-        if the disc training is not working.
-        """
-        hist = _get_train_results(model, verbose=False, epochs=epochs)
-        hist_lr = _get_train_results(model_lr, verbose=False, epochs=epochs)
-        self._assert_losses_are_close(hist, hist_lr)
+    model_lr.fit(
+        x, y, epochs=2, batch_size=4, verbose=False, shuffle=False, callbacks=callbacks,
+    )
 
-    # def test_a_initialize_model_weights(self):
-    #     """This test should run first to initialize the model weights.
-    #     There seem to be major issues in initializing model weights on the fly when testing,
-    #     so we initialize them and save them to an h5 file and reload them each time.
-    #     This ensures that when comparing two runs, they start at the same place.
-    #     This is not actually testing anything, so it does not need to run in eager and graph.
-    #     This needs to run distributed or else it will cause the cannot modify virtual devices error."""
-    #     toy_cnn()
-    #     toy_rnn()
+    # If this doesn't error out, then loading and checkpointing should be fine.
+    model_lr.load_weights(filepath=filepath)
 
-    @test_utils.run_in_graph_and_eager_modes
-    def _test_equal_with_no_layer_lr(self, model_fn, loss, opt):
-        """Confirm that discriminative learning is almost the same as regular learning."""
-        learning_rate = 0.01
-        model = model_fn()
-        model.compile(loss=loss, optimizer=opt(learning_rate))
 
-        model_lr = model_fn()
-        d_opt = DiscriminativeLayerOptimizer(
-            opt, model_lr, verbose=False, learning_rate=learning_rate
-        )
-        model_lr.compile(loss=loss, optimizer=d_opt)
+@pytest.mark.parametrize("model_fn,loss,opt", _zipped_permutes())
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def _test_config_tofrom(model_fn, loss, opt):
+    """Confirm that optimizer saves config and loads config."""
 
-        self._assert_training_losses_are_close(model, model_lr)
+    # build model and save the opt to a config as c.
+    learning_rate = 0.01
+    model_lr = model_fn()
+    model_lr.layers[0].lr_mult = 0.3
+    model_lr.layers[0].layers[-1].lr_mult = 0.1
+    model_lr.layers[-1].lr_mult = 0.5
 
-    @test_utils.run_in_graph_and_eager_modes
-    def _test_equal_0_sub_layer_lr_to_sub_layer_trainable_false(
-        self, model_fn, loss, opt
-    ):
-        """Confirm 0 lr_mult for the a specific layer is the same as setting layer to not trainable.
-        This also confirms that lr_mult propagates into that layer's trainable variables.
-        This also confirms that lr_mult does not propagate to the rest of the layers unintentionally.
-        """
-        learning_rate = 0.01
-        model = model_fn()
+    d_opt = DiscriminativeLayerOptimizer(
+        opt, model_lr, verbose=False, learning_rate=learning_rate
+    )
+    model_lr.compile(loss=loss, optimizer=d_opt)
 
-        # Layers 0 represents the pretrained network
-        model.layers[0].trainable = False
-        model.compile(loss=loss, optimizer=opt(learning_rate))
+    c = d_opt.get_config()
 
-        model_lr = model_fn()
-        model_lr.layers[0].lr_mult = 0.0
-        d_opt = DiscriminativeLayerOptimizer(
-            opt, model_lr, verbose=False, learning_rate=learning_rate
-        )
-        model_lr.compile(loss=loss, optimizer=d_opt)
+    # reconstruct the model and then build the opt from config.
 
-        self._assert_training_losses_are_close(model, model_lr)
+    model_lr = model_fn()
+    model_lr.layers[0].lr_mult = 0.3
+    model_lr.layers[0].layers[-1].lr_mult = 0.1
+    model_lr.layers[-1].lr_mult = 0.5
 
-    @test_utils.run_in_graph_and_eager_modes
-    def _test_equal_0_layer_lr_to_trainable_false(self, model_fn, loss, opt):
-        """Confirm 0 lr_mult for the model is the same as model not trainable.
-        This also confirms that lr_mult on the model level is propagated to all sublayers and their variables.
-        """
-        learning_rate = 0.01
-        model = model_fn()
-        model.trainable = False
-        model.compile(loss=loss, optimizer=opt(learning_rate))
+    d_opt_from_config = DiscriminativeLayerOptimizer.from_config(c, model_lr)
+    model_lr.compile(loss=loss, optimizer=d_opt_from_config)
 
-        model_lr = model_fn()
-        model_lr.lr_mult = 0.0
-        d_opt = DiscriminativeLayerOptimizer(
-            opt, model_lr, verbose=False, learning_rate=learning_rate
-        )
-        model_lr.compile(loss=loss, optimizer=d_opt)
+    # we expect both optimizers to have the same optimizer group and base optimizer.
+    np.testing.assert_equal(
+        len(d_opt.optimizer_group), len(d_opt_from_config.optimizer_group)
+    )
+    np.testing.assert_equal(d_opt.opt_class, d_opt_from_config.opt_class)
 
-        # Only two epochs because we expect no training to occur, thus losses shouldn't change anyways.
-        self._assert_training_losses_are_close(model, model_lr, epochs=2)
-
-    @test_utils.run_in_graph_and_eager_modes
-    def _test_equal_half_layer_lr_to_half_lr_of_opt(self, model_fn, loss, opt):
-        """Confirm 0.5 lr_mult for the model is the same as optim with 0.5 lr.
-        This also confirms that lr_mult on the model level is propagated to all sublayers and their variables.
-        """
-
-        mult = 0.5
-        learning_rate = 0.01
-        model = model_fn()
-        model.compile(loss=loss, optimizer=opt(learning_rate * mult))
-
-        model_lr = model_fn()
-        model_lr.lr_mult = mult
-        d_opt = DiscriminativeLayerOptimizer(
-            opt, model_lr, verbose=False, learning_rate=learning_rate
-        )
-        model_lr.compile(loss=loss, optimizer=d_opt)
-
-        self._assert_training_losses_are_close(model, model_lr)
-
-    @test_utils.run_in_graph_and_eager_modes
-    def _test_sub_layers_keep_lr_mult(self, model_fn, loss, opt):
-        """Confirm that model trains with lower lr on specific layer,
-        while a different lr_mult is applied everywhere else.
-        Also confirms that sub layers with an lr mult do not get overridden.
-        """
-
-        learning_rate = 0.01
-        model_lr = model_fn()
-
-        # We set model to lrmult 0 and layer one to lrmult 5.
-        # If layer one is trainable, then the loss should decrease.
-        model_lr.lr_mult = 0.00
-        model_lr.layers[-1].lr_mult = 3
-
-        d_opt = DiscriminativeLayerOptimizer(
-            opt, model_lr, verbose=False, learning_rate=learning_rate
-        )
-        model_lr.compile(loss=loss, optimizer=d_opt)
-
-        loss_values = get_losses(_get_train_results(model_lr, epochs=5))
-        self.assertLess(loss_values[-1], loss_values[0])
-
-    @test_utils.run_in_graph_and_eager_modes
-    def _test_variables_get_assigned(self, model_fn, loss, opt):
-        """Confirm that variables do get an lr_mult attribute and that they get the correct one.
-        """
-        learning_rate = 0.01
-        model_lr = model_fn()
-
-        # set lr mults.
-        model_lr.layers[0].lr_mult = 0.3
-        model_lr.layers[0].layers[-1].lr_mult = 0.1
-        model_lr.layers[-1].lr_mult = 0.5
-
-        d_opt = DiscriminativeLayerOptimizer(
-            opt, model_lr, verbose=False, learning_rate=learning_rate
-        )
-        model_lr.compile(loss=loss, optimizer=d_opt)
-
-        # We expect trainable vars at 0.3 to be reduced by the amount at 0.1.
-        # This tests that the 0.3 lr mult does not override the 0.1 lr mult.
-        self.assertEqual(
-            len(model_lr.layers[0].trainable_variables)
-            - len(model_lr.layers[0].layers[-1].trainable_variables),
-            len([var for var in model_lr.trainable_variables if var.lr_mult == 0.3]),
-        )
-
-        # We expect trainable vars of model with lr_mult 0.1 to equal trainable vars of that layer.
-        self.assertEqual(
-            len(model_lr.layers[0].layers[-1].trainable_variables),
-            len([var for var in model_lr.trainable_variables if var.lr_mult == 0.1]),
-        )
-
-        # Same logic as above.
-        self.assertEqual(
-            len(model_lr.layers[-1].trainable_variables),
-            len([var for var in model_lr.trainable_variables if var.lr_mult == 0.5]),
-        )
-
-    @test_utils.run_in_graph_and_eager_modes
-    def _test_model_checkpoint(self, model_fn, loss, opt):
-        """Confirm that model does save checkpoints and can load them properly."""
-
-        learning_rate = 0.01
-        model_lr = model_fn()
-        model_lr.layers[0].lr_mult = 0.3
-        model_lr.layers[0].layers[-1].lr_mult = 0.1
-        model_lr.layers[-1].lr_mult = 0.5
-
-        d_opt = DiscriminativeLayerOptimizer(
-            opt, model_lr, verbose=False, learning_rate=learning_rate
-        )
-        model_lr.compile(loss=loss, optimizer=d_opt)
-
-        x = np.ones(shape=(8, 32, 32, 3), dtype=np.float32)
-        y = np.zeros(shape=(8, 5), dtype=np.float32)
-        y[:, 0] = 1.0
-
-        filepath = os.path.join(tempfile.gettempdir(), model_fn.__name__ + "_cp.ckpt")
-
-        callbacks = [
-            tf.keras.callbacks.ModelCheckpoint(
-                filepath=filepath, save_weights_only=True, verbose=1
-            )
-        ]
-
-        model_lr.fit(
-            x,
-            y,
-            epochs=2,
-            batch_size=4,
-            verbose=False,
-            shuffle=False,
-            callbacks=callbacks,
-        )
-
-        # If this doesn't error out, then loading and checkpointing should be fine.
-        model_lr.load_weights(filepath=filepath)
-
-    def _test_config_tofrom(self, model_fn, loss, opt):
-        """Confirm that optimizer saves config and loads config."""
-
-        # build model and save the opt to a config as c.
-        learning_rate = 0.01
-        model_lr = model_fn()
-        model_lr.layers[0].lr_mult = 0.3
-        model_lr.layers[0].layers[-1].lr_mult = 0.1
-        model_lr.layers[-1].lr_mult = 0.5
-
-        d_opt = DiscriminativeLayerOptimizer(
-            opt, model_lr, verbose=False, learning_rate=learning_rate
-        )
-        model_lr.compile(loss=loss, optimizer=d_opt)
-
-        c = d_opt.get_config()
-
-        # reconstruct the model and then build the opt from config.
-
-        model_lr = model_fn()
-        model_lr.layers[0].lr_mult = 0.3
-        model_lr.layers[0].layers[-1].lr_mult = 0.1
-        model_lr.layers[-1].lr_mult = 0.5
-
-        d_opt_from_config = DiscriminativeLayerOptimizer.from_config(c, model_lr)
-        model_lr.compile(loss=loss, optimizer=d_opt_from_config)
-
-        # we expect both optimizers to have the same optimizer group and base optimizer.
-        self.assertAllEqual(
-            len(d_opt.optimizer_group), len(d_opt_from_config.optimizer_group)
-        )
-        self.assertAllEqual(d_opt.opt_class, d_opt_from_config.opt_class)
-
-        # we also expect the lr for each opt in the opt groups to be the same. Also confirms same lr mult.
-        self.assertAllEqual(
-            [opt.learning_rate for opt in d_opt.optimizer_group],
-            [opt.learning_rate for opt in d_opt_from_config.optimizer_group],
-        )
-
+    # we also expect the lr for each opt in the opt groups to be the same. Also confirms same lr mult.
+    np.testing.assert_array_equal(
+        [opt.learning_rate for opt in d_opt.optimizer_group],
+        [opt.learning_rate for opt in d_opt_from_config.optimizer_group],
+    )
 
 
 if __name__ == "__main__":
