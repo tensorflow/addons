@@ -24,11 +24,9 @@ import tensorflow as tf
 from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import basic_decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
-from tensorflow_addons.utils import test_utils
 
 
-@test_utils.keras_parameterized.run_all_keras_modes
-class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
+class BasicDecoderTest(tf.test.TestCase, parameterized.TestCase):
     """Unit test for basic_decoder.BasicDecoder."""
 
     @parameterized.named_parameters(
