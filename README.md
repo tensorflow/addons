@@ -66,9 +66,9 @@ import tensorflow_addons as tfa
 #### Linux Build Matrix
 | Version    | Compatible With |Python versions  | Compiler  | cuDNN | CUDA | 
 |:----------------------- |:---|:---------- |:---------|:---------|:---------|
-| tfa-nightly | tensorflow>=2.1.0 | 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
-| tensorflow-addons-0.8.2 | tensorflow>=2.1.0 |3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
-| tensorflow-addons-0.7.1 | tensorflow>=2.1.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
+| tfa-nightly | tensorflow==2.1.0 | 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.8.2 | tensorflow==2.1.0 |3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.7.1 | tensorflow==2.1.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.6.0 | tensorflow==2.0.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
 
 

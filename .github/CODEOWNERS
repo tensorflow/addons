@@ -49,6 +49,7 @@
 
 /tensorflow_addons/layers/gelu*.py @aakashkumarnain
 /tensorflow_addons/layers/maxout*.py @failure-to-thrive
+/tensorflow_addons/layers/multihead_attention*.py @cgarciae
 /tensorflow_addons/layers/netvlad*.py @joel-shor
 /tensorflow_addons/layers/normalizations*.py @smokrow
 /tensorflow_addons/layers/optical_flow*.py @failure-to-thrive
@@ -66,9 +67,9 @@
 /tensorflow_addons/losses/npairs*.py @windqaq
 /tensorflow_addons/losses/quantiles*.py @romainbrault
 /tensorflow_addons/losses/sparsemax*.py @andreasmadsen
-/tensorflow_addons/losses/triplet*.py
+/tensorflow_addons/losses/triplet*.py @lc0
 
-/tensorflow_addons/metrics/cohens_kappa*.py
+/tensorflow_addons/metrics/cohens_kappa*.py @aakashkumarnain
 /tensorflow_addons/metrics/f_scores*.py @ssaishruthi
 /tensorflow_addons/metrics/hamming*.py @ssaishruthi
 /tensorflow_addons/metrics/matthews_correlation_coefficient*.py @autoih

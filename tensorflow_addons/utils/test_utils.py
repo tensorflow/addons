@@ -16,9 +16,9 @@
 
 import contextlib
 import inspect
-import time
 import unittest
 
+import pytest
 import tensorflow as tf
 
 # TODO: find public API alternative to these
@@ -30,7 +30,6 @@ from tensorflow.python.framework.test_util import (  # noqa: F401
     run_in_graph_and_eager_modes,
 )
 from tensorflow.python.keras.testing_utils import layer_test  # noqa: F401
-from tensorflow.python.keras import keras_parameterized  # noqa: F401
 
 
 @contextlib.contextmanager
@@ -163,22 +162,15 @@ def run_with_types(dtypes):
     return decorator
 
 
-def time_function(f):
-    def decorated(self, *args, **kwargs):
-        start = time.time()
-        f(self, *args, **kwargs)
-        end = time.time()
-        print(f.__name__, "took", (end - start), "seconds")
-
-    return decorated
+def finalizer():
+    tf.config.experimental_run_functions_eagerly(False)
 
 
-def time_all_functions(cls):
-    for name, method in cls.__dict__.copy().items():
-        if (
-            callable(method)
-            and name.startswith(unittest.TestLoader.testMethodPrefix)
-            and name != "test_session"
-        ):
-            setattr(cls, name, time_function(method))
-    return cls
+@pytest.fixture(scope="function", params=["eager_mode", "tf_function"])
+def maybe_run_functions_eagerly(request):
+    if request.param == "eager_mode":
+        tf.config.experimental_run_functions_eagerly(True)
+    elif request.param == "tf_function":
+        tf.config.experimental_run_functions_eagerly(False)
+
+    request.addfinalizer(finalizer)
