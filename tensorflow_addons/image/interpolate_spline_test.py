@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for interpolate_spline."""
 
+import sys
+
+import pytest
 import numpy as np
 from scipy import interpolate as sc_interpolate
 
@@ -309,4 +312,4 @@ class InterpolateSplineTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

@@ -15,6 +15,9 @@
 """Tests for tfa.seq2seq.beam_search_ops."""
 
 import itertools
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -145,4 +148,4 @@ class GatherTreeTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

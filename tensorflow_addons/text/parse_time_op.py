@@ -13,17 +13,20 @@
 # limitations under the License.
 # ==============================================================================
 """Parse time ops."""
+import platform
 
 import tensorflow as tf
 
 from tensorflow_addons.utils.resource_loader import LazySO
+
+IS_WINDOWS = platform.system() == "Windows"
 
 _parse_time_so = LazySO("custom_ops/text/_parse_time_op.so")
 
 tf.no_gradient("Addons>ParseTime")
 
 
-def parse_time(time_string: str, time_format: str, output_unit: str) -> str:
+def parse_time(time_string: str, time_format: str, output_unit: str) -> tf.Tensor:
     """Parse an input string according to the provided format string into a
     Unix time.
 
@@ -78,4 +81,6 @@ def parse_time(time_string: str, time_format: str, output_unit: str) -> str:
       ValueError: If `output_unit` is not a valid value,
         if parsing `time_string` according to `time_format` failed.
     """
+    if IS_WINDOWS:
+        raise NotImplementedError("parse_time is not yet implemented on Windows.")
     return _parse_time_so.ops.addons_parse_time(time_string, time_format, output_unit)

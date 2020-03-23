@@ -1,9 +1,8 @@
 # TensorFlow Addons Codeowners
 
-# SIG maintainers are the catch all for reviews
-* @tensorflow/sig-addons-maintainers
-
+#####################################################################################
 # Subpackage Owners
+
 /tensorflow_addons/activations/ @facaiy @seanpmorgan
 /tensorflow_addons/callbacks/ @squadrick @shun-lin
 /tensorflow_addons/image/ @windqaq @facaiy 
@@ -17,19 +16,88 @@
 
 /tensorflow_addons/custom_ops/image/ @windqaq @facaiy
 /tensorflow_addons/custom_ops/seq2seq/ @qlzh727
-/tensorflow_addons/custom_ops/text/ @seanpmorgan @facaiy @helinwang
+/tensorflow_addons/custom_ops/text/ @seanpmorgan @facaiy
 
+#####################################################################################
 # Submodule Owners
-# These may not automatically trigger a review because submodule owners do not
-# always have write access. But still adding these here for
-# repository understanding.
+# These will not always trigger a GitHub review because submodule owners do not
+# always have write access. However, a bot will notify them of the needed review.
 
-/tensorflow_addons/activations/sparsemax*.py @AndreasMadsen
-/tensorflow_addons/image/dense_image_warp*.py @WindQAQ
-/tensorflow_addons/image/distort_image_ops*.py @WindQAQ
-/tensorflow_addons/image/filters*.py @Mainak431
+/tensorflow_addons/activations/gelu*.py @aakashkumarnain @windqaq
+/tensorflow_addons/activations/hardshrink*.py @windqaq
+/tensorflow_addons/activations/lisht*.py @windqaq
+/tensorflow_addons/activations/mish*.py @windqaq @digantamisra98
+/tensorflow_addons/activations/rrelu*.py @fsx950223
+/tensorflow_addons/activations/softshrink*.py @windqaq
+/tensorflow_addons/activations/sparsemax*.py @andreasmadsen
+/tensorflow_addons/activations/tanhshrink*.py @fsx950223
+
+/tensorflow_addons/callbacks/average_model_checkpoint*.py @squadrick
+/tensorflow_addons/callbacks/time_stopping*.py @shun-lin
+/tensorflow_addons/callbacks/tqdm_progress_bar*.py @shun-lin
+
+/tensorflow_addons/image/connected_components*.py @sayoojbk
+/tensorflow_addons/image/dense_image_warp*.py @windQAQ
+/tensorflow_addons/image/distance_transform*.py @mels630
+/tensorflow_addons/image/distort_image_ops*.py @windqaq
+/tensorflow_addons/image/filters*.py @mainak431
+/tensorflow_addons/image/interpolate_spline*.py
+/tensorflow_addons/image/resampler_ops*.py @autoih
+/tensorflow_addons/image/sparse_image_warp*.py
+/tensorflow_addons/image/transform_ops*.py @mels630
+/tensorflow_addons/image/translate_ops*.py @sayoojbk
+
+/tensorflow_addons/layers/gelu*.py @aakashkumarnain
+/tensorflow_addons/layers/maxout*.py @failure-to-thrive
+/tensorflow_addons/layers/multihead_attention*.py @cgarciae
+/tensorflow_addons/layers/netvlad*.py @joel-shor
 /tensorflow_addons/layers/normalizations*.py @smokrow
-/tensorflow_addons/layers/sparsemax*.py @AndreasMadsen
-/tensorflow_addons/losses/contrastive*.py @WindQAQ
-/tensorflow_addons/losses/sparsemax*.py @AndreasMadsen
+/tensorflow_addons/layers/optical_flow*.py @failure-to-thrive
+/tensorflow_addons/layers/poincare*.py @rahulunair
+/tensorflow_addons/layers/polynomial*.py @tanzhenyu
+/tensorflow_addons/layers/sparsemax*.py @andreasmadsen
+/tensorflow_addons/layers/tlu*.py @aakashkumarnain
+/tensorflow_addons/layers/wrappers*.py @seanpmorgan
+
+/tensorflow_addons/losses/contrastive*.py @windqaq
+/tensorflow_addons/losses/focal_loss*.py @aakashkumarnain @ssaishruthi
+/tensorflow_addons/losses/giou_loss*.py @fsx950223
+/tensorflow_addons/losses/lifted*.py @rahulunair
+/tensorflow_addons/losses/metric_learning*.py
+/tensorflow_addons/losses/npairs*.py @windqaq
+/tensorflow_addons/losses/quantiles*.py @romainbrault
+/tensorflow_addons/losses/sparsemax*.py @andreasmadsen
+/tensorflow_addons/losses/triplet*.py @lc0
+
+/tensorflow_addons/metrics/cohens_kappa*.py @aakashkumarnain
+/tensorflow_addons/metrics/f_scores*.py @ssaishruthi
+/tensorflow_addons/metrics/hamming*.py @ssaishruthi
+/tensorflow_addons/metrics/matthews_correlation_coefficient*.py @autoih
+/tensorflow_addons/metrics/multilabel_confusion_matrix*.py @ssaishruthi
+/tensorflow_addons/metrics/r_square*.py @ssaishruthi
+
+/tensorflow_addons/optimizers/average_wrapper*.py @squadrick
+/tensorflow_addons/optimizers/conditional_gradient*.py @pkan2
+/tensorflow_addons/optimizers/cyclical_learning_rate*.py @raphaelmeudec
+/tensorflow_addons/optimizers/lamb*.py @junjiek
+/tensorflow_addons/optimizers/lazy_adam*.py @ssaishruthi
+/tensorflow_addons/optimizers/lookahead*.py @cyberzhg
+/tensorflow_addons/optimizers/moving_average*.py @squadrick
+/tensorflow_addons/optimizers/novograd*.py @shreyashpatodia
+/tensorflow_addons/optimizers/rectified_adam*.py @cyberzhg
+/tensorflow_addons/optimizers/stochastic_weight_averaging*.py @shreyashpatodia
+/tensorflow_addons/optimizers/weight_decay_optimizers*.py @philjd
+/tensorflow_addons/optimizers/yogi*.py @manzilz
+
+/tensorflow_addons/rnn/cell*.py @qlzh727
+
+/tensorflow_addons/seq2seq/attention_wrapper*.py @qlzh727 @guillaumekln
+/tensorflow_addons/seq2seq/basic_decoder*.py @qlzh727 @guillaumekln
+/tensorflow_addons/seq2seq/beam_search*.py @qlzh727 @guillaumekln
+/tensorflow_addons/seq2seq/decoder*.py @qlzh727 @guillaumekln
+/tensorflow_addons/seq2seq/loss*.py @qlzh727 @guillaumekln
+/tensorflow_addons/seq2seq/sampler*.py @qlzh727 @guillaumekln
+
+/tensorflow_addons/text/crf*.py @squadrick
 /tensorflow_addons/text/parse_time*.py @helinwang
+/tensorflow_addons/text/skip_gram*.py @rahulunair

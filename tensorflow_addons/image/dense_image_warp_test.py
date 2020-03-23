@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for dense_image_warp."""
 
+import sys
+
+import pytest
 import math
 
 import numpy as np
@@ -209,7 +212,7 @@ class DenseImageWarpTest(tf.test.TestCase):
     def test_interpolation(self):
         """Apply _check_interpolation_correctness() for a few sizes and
         types."""
-        shapes_to_try = [[3, 4, 5, 6], [1, 5, 5, 3], [1, 2, 2, 1]]
+        shapes_to_try = [[3, 4, 5, 6], [1, 2, 2, 1]]
         for im_type in ["float32", "float64", "float16"]:
             for flow_type in ["float32", "float64", "float16"]:
                 for shape in shapes_to_try:
@@ -218,7 +221,7 @@ class DenseImageWarpTest(tf.test.TestCase):
     def test_unknown_shapes(self):
         """Apply _check_interpolation_correctness() for a few sizes and check
         for tf.Dataset compatibility."""
-        shapes_to_try = [[3, 4, 5, 6], [1, 5, 5, 3], [1, 2, 2, 1]]
+        shapes_to_try = [[3, 4, 5, 6], [1, 2, 2, 1]]
         for shape in shapes_to_try:
             self._check_interpolation_correctness(shape, "float32", "float32", True)
 
@@ -259,4 +262,4 @@ class DenseImageWarpTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

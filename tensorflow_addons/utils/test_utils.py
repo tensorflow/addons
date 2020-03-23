@@ -18,6 +18,7 @@ import contextlib
 import inspect
 import unittest
 
+import pytest
 import tensorflow as tf
 
 # TODO: find public API alternative to these
@@ -160,3 +161,17 @@ def run_with_types(dtypes):
         return decorated
 
     return decorator
+
+
+def finalizer():
+    tf.config.experimental_run_functions_eagerly(False)
+
+
+@pytest.fixture(scope="function", params=["eager_mode", "tf_function"])
+def maybe_run_functions_eagerly(request):
+    if request.param == "eager_mode":
+        tf.config.experimental_run_functions_eagerly(True)
+    elif request.param == "tf_function":
+        tf.config.experimental_run_functions_eagerly(False)
+
+    request.addfinalizer(finalizer)
