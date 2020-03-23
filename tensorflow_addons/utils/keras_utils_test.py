@@ -22,35 +22,33 @@ import tensorflow as tf
 from tensorflow_addons.utils import keras_utils
 
 
-class NormalizeTupleTest(tf.test.TestCase):
-    def test_normalize_tuple(self):
-        self.assertEqual((2, 2, 2), keras_utils.normalize_tuple(2, n=3, name="strides"))
-        self.assertEqual(
-            (2, 1, 2), keras_utils.normalize_tuple((2, 1, 2), n=3, name="strides")
-        )
+def test_normalize_tuple():
+    assert (2, 2, 2) == keras_utils.normalize_tuple(2, n=3, name="strides")
+    assert (2, 1, 2) == keras_utils.normalize_tuple((2, 1, 2), n=3, name="strides")
 
-        with self.assertRaises(ValueError):
-            keras_utils.normalize_tuple((2, 1), n=3, name="strides")
+    with pytest.raises(ValueError):
+        keras_utils.normalize_tuple((2, 1), n=3, name="strides")
 
-        with self.assertRaises(TypeError):
-            keras_utils.normalize_tuple(None, n=3, name="strides")
+    with pytest.raises(TypeError):
+        keras_utils.normalize_tuple(None, n=3, name="strides")
 
 
-class AssertRNNCellTest(tf.test.TestCase):
-    def test_standard_cell(self):
-        keras_utils.assert_like_rnncell("cell", tf.keras.layers.LSTMCell(10))
+def test_standard_cell():
+    keras_utils.assert_like_rnncell("cell", tf.keras.layers.LSTMCell(10))
 
-    def test_non_cell(self):
-        with self.assertRaises(TypeError):
-            keras_utils.assert_like_rnncell("cell", tf.keras.layers.Dense(10))
 
-    def test_custom_cell(self):
-        class CustomCell(tf.keras.layers.AbstractRNNCell):
-            @property
-            def output_size(self):
-                raise ValueError("assert_like_rnncell should not run code")
+def test_non_cell():
+    with pytest.raises(TypeError):
+        keras_utils.assert_like_rnncell("cell", tf.keras.layers.Dense(10))
 
-        keras_utils.assert_like_rnncell("cell", CustomCell())
+
+def test_custom_cell():
+    class CustomCell(tf.keras.layers.AbstractRNNCell):
+        @property
+        def output_size(self):
+            raise ValueError("assert_like_rnncell should not run code")
+
+    keras_utils.assert_like_rnncell("cell", CustomCell())
 
 
 if __name__ == "__main__":
