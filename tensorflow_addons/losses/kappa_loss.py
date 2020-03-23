@@ -19,12 +19,11 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow_addons.utils.types import FloatTensorLike, Number, TensorLike
+from tensorflow_addons.utils.types import Number
 from typeguard import typechecked
-from typing import Optional, Union
+from typing import Optional
 
 
-FloatTensorType = Union[tf.float32, tf.float64]
 
 
 def _weighted_kappa_loss(
@@ -108,8 +107,8 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
         num_classes: int,
         weightage: Optional[str] = "quadratic",
         name: Optional[str] = "cohen_kappa_loss",
-        epsilon: Number = 1e-6,
-        dtype: FloatTensorType = tf.float32,
+        epsilon: Optional[Number] = 1e-6,
+        dtype: Optional[tf.DType] = tf.float32,
     ):
         """Creates a `WeightedKappa` instance.
 
