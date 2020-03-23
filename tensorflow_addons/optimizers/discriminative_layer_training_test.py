@@ -439,7 +439,4 @@ def _test_config_tofrom(model_fn, loss, opt):
 
 
 if __name__ == "__main__":
-    # generate_tests()
-    # tf.test.main()
-
     sys.exit(pytest.main([__file__]))
