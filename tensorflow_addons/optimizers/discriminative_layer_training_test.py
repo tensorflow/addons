@@ -198,7 +198,6 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         hist_lr = _get_train_results(model_lr, verbose=False, epochs=epochs)
         self._assert_losses_are_close(hist, hist_lr)
 
-    @test_utils.run_distributed(2)
     def test_a_initialize_model_weights(self):
         """This test should run first to initialize the model weights.
         There seem to be major issues in initializing model weights on the fly when testing,
@@ -210,7 +209,6 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         toy_rnn()
 
     @test_utils.run_in_graph_and_eager_modes
-    @test_utils.run_distributed(2)
     def _test_equal_with_no_layer_lr(self, model_fn, loss, opt):
         """Confirm that discriminative learning is almost the same as regular learning."""
         learning_rate = 0.01
@@ -226,7 +224,6 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         self._assert_training_losses_are_close(model, model_lr)
 
     @test_utils.run_in_graph_and_eager_modes
-    @test_utils.run_distributed(2)
     def _test_equal_0_sub_layer_lr_to_sub_layer_trainable_false(
         self, model_fn, loss, opt
     ):
@@ -251,7 +248,6 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         self._assert_training_losses_are_close(model, model_lr)
 
     @test_utils.run_in_graph_and_eager_modes
-    @test_utils.run_distributed(2)
     def _test_equal_0_layer_lr_to_trainable_false(self, model_fn, loss, opt):
         """Confirm 0 lr_mult for the model is the same as model not trainable.
         This also confirms that lr_mult on the model level is propagated to all sublayers and their variables.
@@ -272,7 +268,6 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         self._assert_training_losses_are_close(model, model_lr, epochs=2)
 
     @test_utils.run_in_graph_and_eager_modes
-    @test_utils.run_distributed(2)
     def _test_equal_half_layer_lr_to_half_lr_of_opt(self, model_fn, loss, opt):
         """Confirm 0.5 lr_mult for the model is the same as optim with 0.5 lr.
         This also confirms that lr_mult on the model level is propagated to all sublayers and their variables.
@@ -293,7 +288,6 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         self._assert_training_losses_are_close(model, model_lr)
 
     @test_utils.run_in_graph_and_eager_modes
-    @test_utils.run_distributed(2)
     def _test_sub_layers_keep_lr_mult(self, model_fn, loss, opt):
         """Confirm that model trains with lower lr on specific layer,
         while a different lr_mult is applied everywhere else.
@@ -317,7 +311,6 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         self.assertLess(loss_values[-1], loss_values[0])
 
     @test_utils.run_in_graph_and_eager_modes
-    @test_utils.run_distributed(2)
     def _test_variables_get_assigned(self, model_fn, loss, opt):
         """Confirm that variables do get an lr_mult attribute and that they get the correct one.
         """
@@ -355,7 +348,6 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
 
     @test_utils.run_in_graph_and_eager_modes
-    @test_utils.run_distributed(2)
     def _test_model_checkpoint(self, model_fn, loss, opt):
         """Confirm that model does save checkpoints and can load them properly."""
 
@@ -435,11 +427,11 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
 
 
-def test_wrap(method, **kwargs):
+def wrap_test(func, **kwargs):
     """Wrap the test method so that it has pre assigned kwargs."""
 
     def test(self):
-        return method(self, **kwargs)
+        return func(self, **kwargs)
 
     return test
 
@@ -447,8 +439,8 @@ def test_wrap(method, **kwargs):
 def generate_tests():
     # Generate tests for each permutation in the zipped permutes.
     # This separates tests for each permuatation of model, optimizer, and loss.
-    for name, method in DiscriminativeLearningTest.__dict__.copy().items():
-        if callable(method) and name[:5] == "_test":
+    for name, func in DiscriminativeLearningTest.__dict__.copy().items():
+        if callable(func) and name[:5] == "_test":
             for model_fn, loss, opt in _zipped_permutes():
 
                 # Name the test as test_testname_model_loss_optimizer.
@@ -459,16 +451,14 @@ def generate_tests():
                 )
 
                 # Create test functions that use kwargs mentioned above.
-                testmethod_dist = test_wrap(
-                    method=method, model_fn=model_fn, loss=loss, opt=opt,
+                testmethod_dist = wrap_test(
+                    func=func, model_fn=model_fn, loss=loss, opt=opt,
                 )
 
                 # Set class attributes so we get multiple nicely named tests.
                 # Also all tests are set to run distributed, so append distributed to the end.
                 setattr(
-                    DiscriminativeLearningTest,
-                    testmethodname + "_distributed",
-                    testmethod_dist,
+                    DiscriminativeLearningTest, testmethodname, testmethod_dist,
                 )
 
 
