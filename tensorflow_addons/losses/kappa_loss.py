@@ -61,12 +61,15 @@ def _weighted_kappa_loss(
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class WeightedKappaLoss(tf.keras.losses.Loss):
     """Implements the Weighted Kappa loss function.
-    This Weighted Kappa loss was introduced in the
+
+    Weighted Kappa loss was introduced in the
     [Weighted kappa loss function for multi-class classification
     of ordinal data in deep learning]
     (https://www.sciencedirect.com/science/article/abs/pii/S0167865517301666).
-    Weighted Kappa is widely used in Ordinal Classification Problems
-    The loss value lies in [-∞, log2], where log2 means the random prediction
+    Weighted Kappa is widely used in Ordinal Classification Problems.
+    The loss value lies in [-\infty, \log 2],
+     where \log 2 means the random prediction.
+
     Usage:
 
     ```python
@@ -79,7 +82,7 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
     print('Loss: ', loss.numpy())  # Loss: -1.1611923
     ```
 
-    Usage with tf.keras API:
+    Usage with `tf.keras` API:
     ```python
     # outputs should be softmax results
     # if you want to weight the samples, just multiply the outputs
@@ -105,8 +108,8 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
             ['linear', 'quadratic']. Defaults to `quadratic` since it's
             mostly used.
           name: (Optional) String name of the metric instance.
-          epsilon: (Optional) increment to avoid log zero,
-            so the loss will be log(1 - k + epsilon), where k belongs to
+          epsilon: (Optional) increment to avoid \log zero,
+            so the loss will be \log (1 - k + epsilon), where k belongs to
             [-1, 1], usually you can use the default value which is 1e-6.
           dtype: (Optional) Data type of the metric result.
             Defaults to `tf.float32`.
