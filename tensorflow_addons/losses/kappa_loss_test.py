@@ -93,10 +93,7 @@ class WeightedKappaLossTest(tf.test.TestCase):
 
     def test_config(self):
         kappa_loss = WeightedKappaLoss(
-            num_classes=4,
-            weightage="linear",
-            name="kappa_loss",
-            epsilon=0.001,
+            num_classes=4, weightage="linear", name="kappa_loss", epsilon=0.001,
         )
         self.assertEqual(kappa_loss.num_classes, 4)
         self.assertEqual(kappa_loss.weightage, "linear")

@@ -35,13 +35,14 @@ def _weighted_kappa_loss(
     labels = tf.matmul(y_true, col_label_vec)
     if weightage == "linear":
         weight = tf.abs(
-            tf.tile(labels, [1, tf.shape(y_true)[1]]) -
-            tf.tile(row_label_vec, [tf.shape(y_true)[0], 1]))
+            tf.tile(labels, [1, tf.shape(y_true)[1]])
+            - tf.tile(row_label_vec, [tf.shape(y_true)[0], 1])
+        )
         weight /= tf.cast(tf.shape(y_true)[1] - 1, dtype=dtype)
     else:
         weight = tf.pow(
-            tf.tile(labels, [1, tf.shape(y_true)[1]]) -
-            tf.tile(row_label_vec, [tf.shape(y_true)[0], 1]),
+            tf.tile(labels, [1, tf.shape(y_true)[1]])
+            - tf.tile(row_label_vec, [tf.shape(y_true)[0], 1]),
             2,
         )
         weight /= tf.cast(tf.pow(tf.shape(y_true)[1] - 1, 2), dtype=dtype)
@@ -50,10 +51,13 @@ def _weighted_kappa_loss(
     denominator = tf.reduce_sum(
         tf.matmul(
             tf.reduce_sum(y_true, axis=0, keepdims=True),
-            tf.matmul(weight_mat,
-                      tf.reduce_sum(y_pred, axis=0, keepdims=True),
-                      transpose_b=True),
-        ))
+            tf.matmul(
+                weight_mat,
+                tf.reduce_sum(y_pred, axis=0, keepdims=True),
+                transpose_b=True,
+            ),
+        )
+    )
     denominator /= tf.cast(tf.shape(y_true)[0], dtype=dtype)
     return tf.math.log(tf.math.divide_no_nan(numerator, denominator) + epsilon)
 
@@ -91,6 +95,7 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
     model.compile('sgd', loss=tfa.losses.WeightedKappa(num_classes=4))
     ```
     """
+
     def __init__(
         self,
         num_classes,
@@ -118,9 +123,9 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
             i.e. not any one of ['linear', 'quadratic']
         """
 
-        super(WeightedKappaLoss,
-              self).__init__(name=name,
-                             reduction=tf.keras.losses.Reduction.NONE)
+        super(WeightedKappaLoss, self).__init__(
+            name=name, reduction=tf.keras.losses.Reduction.NONE
+        )
 
         if weightage not in ("linear", "quadratic"):
             raise ValueError("Unknown kappa weighting type.")
@@ -134,13 +139,13 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
         self.col_label_vec = tf.reshape(label_vec, [num_classes, 1])
         if weightage == "linear":
             self.weight_mat = tf.abs(
-                tf.tile(self.col_label_vec, [1, num_classes]) -
-                tf.tile(self.row_label_vec, [num_classes, 1]),) / tf.cast(
-                    num_classes - 1, dtype=dtype)
+                tf.tile(self.col_label_vec, [1, num_classes])
+                - tf.tile(self.row_label_vec, [num_classes, 1]),
+            ) / tf.cast(num_classes - 1, dtype=dtype)
         else:
             self.weight_mat = (
-                tf.tile(self.col_label_vec, [1, num_classes]) -
-                tf.tile(self.row_label_vec, [num_classes, 1])
+                tf.tile(self.col_label_vec, [1, num_classes])
+                - tf.tile(self.row_label_vec, [num_classes, 1])
             ) ** 2 / tf.cast((num_classes - 1) ** 2, dtype=dtype)
 
     def call(self, y_true, y_pred):
