@@ -17,6 +17,7 @@ py_library(
             "quantiles.py",
             "sparsemax_loss.py",
             "triplet.py",
+            "kappa_loss.py",
         ],
         "//conditions:default": [
             "__init__.py",
@@ -29,6 +30,7 @@ py_library(
             "quantiles.py",
             "sparsemax_loss.py",
             "triplet.py",
+            "kappa_loss.py"
         ],
     }),
     deps = [

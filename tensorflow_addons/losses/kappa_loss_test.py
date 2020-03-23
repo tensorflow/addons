@@ -25,9 +25,8 @@ from tensorflow_addons.utils import test_utils
 
 
 def weighted_kappa_loss_np(y_true, y_pred, weightage="quadratic", eps=1e-6):
-    """
-    Implemented in non-optimized python code to avoid mistakes
-    """
+    """Implemented in non-optimized python code to avoid mistakes"""
+
     num_samples, num_classes = y_true.shape
     numerator = 0
     true_classes = y_true.argmax(axis=1)
@@ -91,6 +90,18 @@ class WeightedKappaLossTest(tf.test.TestCase):
         loss = kappa_loss(y_true, y_pred)
         loss_np = weighted_kappa_loss_np(y_true, y_pred)
         self.assertAlmostEqual(self.evaluate(loss), loss_np, 5)
+
+    def test_config(self):
+        kappa_loss = WeightedKappaLoss(
+            num_classes=4,
+            weightage="linear",
+            name="kappa_loss",
+            epsilon=0.001,
+        )
+        self.assertEqual(kappa_loss.num_classes, 4)
+        self.assertEqual(kappa_loss.weightage, "linear")
+        self.assertEqual(kappa_loss.name, "kappa_loss")
+        self.assertAlmostEqual(kappa_loss.epsilon, 0.001, 1e-6)
 
 
 if __name__ == "__main__":
