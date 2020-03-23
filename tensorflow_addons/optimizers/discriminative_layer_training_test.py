@@ -23,7 +23,8 @@ from tensorflow_addons.optimizers.discriminative_layer_training import (
 import itertools
 import os
 import tempfile
-
+import pytest
+import sys
 
 def toy_cnn():
     """Consistently create model with same random weights.
@@ -176,6 +177,56 @@ def get_losses(hist):
     return np.array(hist.__dict__["history"]["loss"])
 
 
+def _assert_losses_are_close(hist, hist_lr):
+    """Higher tolerance for graph and distributed bc unable to run deterministically."""
+    if not tf.executing_eagerly() or tf.distribute.has_strategy():
+        rtol, atol = 0.05, 1.00
+        # print('graph or dist')
+    else:
+        rtol, atol = 0.01, 0.01
+
+    return np.testing.assert_allclose(
+        get_losses(hist), get_losses(hist_lr), rtol=rtol, atol=atol
+    )
+
+
+def _assert_training_losses_are_close(model, model_lr, epochs=10):
+    """Easy way to check if two models train in almost the same way.
+    Epochs set to 10 by default to allow momentum methods to pick up momentum and diverge,
+    if the disc training is not working.
+    """
+    hist = _get_train_results(model, verbose=False, epochs=epochs)
+    hist_lr = _get_train_results(model_lr, verbose=False, epochs=epochs)
+    _assert_losses_are_close(hist, hist_lr)
+
+
+
+def test_a_initialize_model_weights():
+    """This test should run first to initialize the model weights.
+    There seem to be major issues in initializing model weights on the fly when testing,
+    so we initialize them and save them to an h5 file and reload them each time.
+    This ensures that when comparing two runs, they start at the same place.
+    This is not actually testing anything, so it does not need to run in eager and graph.
+    This needs to run distributed or else it will cause the cannot modify virtual devices error."""
+    toy_cnn()
+    toy_rnn()
+
+
+@pytest.mark.parametrize("model_fn,loss,opt", _zipped_permutes())
+def test_equal_with_no_layer_lr(model_fn, loss, opt):
+    """Confirm that discriminative learning is almost the same as regular learning."""
+    learning_rate = 0.01
+    model = model_fn()
+    model.compile(loss=loss, optimizer=opt(learning_rate))
+
+    model_lr = model_fn()
+    d_opt = DiscriminativeLayerOptimizer(
+        opt, model_lr, verbose=False, learning_rate=learning_rate
+    )
+    model_lr.compile(loss=loss, optimizer=d_opt)
+
+    _assert_training_losses_are_close(model, model_lr)
+
 class DiscriminativeLearningTest(tf.test.TestCase):
     def _assert_losses_are_close(self, hist, hist_lr):
         """Higher tolerance for graph and distributed bc unable to run deterministically."""
@@ -198,15 +249,15 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         hist_lr = _get_train_results(model_lr, verbose=False, epochs=epochs)
         self._assert_losses_are_close(hist, hist_lr)
 
-    def test_a_initialize_model_weights(self):
-        """This test should run first to initialize the model weights.
-        There seem to be major issues in initializing model weights on the fly when testing,
-        so we initialize them and save them to an h5 file and reload them each time.
-        This ensures that when comparing two runs, they start at the same place.
-        This is not actually testing anything, so it does not need to run in eager and graph.
-        This needs to run distributed or else it will cause the cannot modify virtual devices error."""
-        toy_cnn()
-        toy_rnn()
+    # def test_a_initialize_model_weights(self):
+    #     """This test should run first to initialize the model weights.
+    #     There seem to be major issues in initializing model weights on the fly when testing,
+    #     so we initialize them and save them to an h5 file and reload them each time.
+    #     This ensures that when comparing two runs, they start at the same place.
+    #     This is not actually testing anything, so it does not need to run in eager and graph.
+    #     This needs to run distributed or else it will cause the cannot modify virtual devices error."""
+    #     toy_cnn()
+    #     toy_rnn()
 
     @test_utils.run_in_graph_and_eager_modes
     def _test_equal_with_no_layer_lr(self, model_fn, loss, opt):
@@ -427,41 +478,9 @@ class DiscriminativeLearningTest(tf.test.TestCase):
         )
 
 
-def wrap_test(func, **kwargs):
-    """Wrap the test method so that it has pre assigned kwargs."""
-
-    def test(self):
-        return func(self, **kwargs)
-
-    return test
-
-
-def generate_tests():
-    # Generate tests for each permutation in the zipped permutes.
-    # This separates tests for each permuatation of model, optimizer, and loss.
-    for name, func in DiscriminativeLearningTest.__dict__.copy().items():
-        if callable(func) and name[:5] == "_test":
-            for model_fn, loss, opt in _zipped_permutes():
-
-                # Name the test as test_testname_model_loss_optimizer.
-                testmethodname = name[1:] + "_%s_%s_%s" % (
-                    model_fn.__name__,
-                    loss.name,
-                    opt.__name__,
-                )
-
-                # Create test functions that use kwargs mentioned above.
-                testmethod_dist = wrap_test(
-                    func=func, model_fn=model_fn, loss=loss, opt=opt,
-                )
-
-                # Set class attributes so we get multiple nicely named tests.
-                # Also all tests are set to run distributed, so append distributed to the end.
-                setattr(
-                    DiscriminativeLearningTest, testmethodname, testmethod_dist,
-                )
-
 
 if __name__ == "__main__":
-    generate_tests()
-    tf.test.main()
+    # generate_tests()
+    # tf.test.main()
+
+    sys.exit(pytest.main([__file__]))
