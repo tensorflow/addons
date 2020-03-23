@@ -8,6 +8,8 @@ py_library(
         "__init__.py",
         "gelu.py",
         "maxout.py",
+        "multihead_attention.py",
+        "netvlad.py",
         "normalizations.py",
         "optical_flow.py",
         "poincare.py",
@@ -52,6 +54,18 @@ py_test(
 )
 
 py_test(
+    name = "poincare_test",
+    size = "small",
+    srcs = [
+        "poincare_test.py",
+    ],
+    main = "poincare_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
     name = "tlu_test",
     size = "small",
     srcs = [
@@ -69,8 +83,6 @@ py_test(
     srcs = [
         "wrappers_test.py",
     ],
-    # TODO: Investigate why flaky #830
-    flaky = True,
     main = "wrappers_test.py",
     deps = [
         ":layers",
@@ -120,6 +132,30 @@ py_test(
         "optical_flow_test.py",
     ],
     main = "optical_flow_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "netvlad_test",
+    size = "small",
+    srcs = [
+        "netvlad_test.py",
+    ],
+    main = "netvlad_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "multihead_attention_test",
+    size = "small",
+    srcs = [
+        "multihead_attention_test.py",
+    ],
+    main = "multihead_attention_test.py",
     deps = [
         ":layers",
     ],

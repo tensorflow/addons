@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for distance transform ops."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -115,20 +118,22 @@ class DistanceOpsTest(tf.test.TestCase):
         with self.assertRaisesRegex(ValueError, "`images` must have only one channel"):
             _ = dist_ops.euclidean_dist_transform(image)
 
-    def test_all_zeros(self):
-        image = tf.zeros([10, 10], tf.uint8)
-        expected_output = np.zeros([10, 10])
 
-        for output_dtype in [tf.float16, tf.float32, tf.float64]:
-            output = dist_ops.euclidean_dist_transform(image, dtype=output_dtype)
-            self.assertAllClose(output, expected_output)
+def test_all_zeros():
+    image = tf.zeros([10, 10], tf.uint8)
+    expected_output = np.zeros([10, 10])
 
-    def test_all_ones(self):
-        image = tf.ones([10, 10, 1], tf.uint8)
-        output = dist_ops.euclidean_dist_transform(image)
-        expected_output = np.full([10, 10, 1], tf.float32.max)
-        self.assertAllClose(output, expected_output)
+    for output_dtype in [tf.float16, tf.float32, tf.float64]:
+        output = dist_ops.euclidean_dist_transform(image, dtype=output_dtype)
+        np.testing.assert_allclose(output, expected_output)
+
+
+def test_all_ones():
+    image = tf.ones([10, 10, 1], tf.uint8)
+    output = dist_ops.euclidean_dist_transform(image)
+    expected_output = np.full([10, 10, 1], tf.float32.max)
+    np.testing.assert_allclose(output, expected_output)
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

@@ -13,6 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 
+import sys
+
+import pytest
 import tensorflow as tf
 import numpy as np
 
@@ -241,4 +244,4 @@ class SparsemaxTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

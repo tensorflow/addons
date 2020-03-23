@@ -15,7 +15,9 @@
 """Tests for tfa.seq2seq.attention_wrapper."""
 
 import collections
+import sys
 
+import pytest
 from absl.testing import parameterized
 import numpy as np
 import tensorflow as tf
@@ -476,7 +478,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             self.assertIsInstance(final_state, wrapper.AttentionWrapperState)
 
             expected_time = (
-                expected_final_state.time if tf.executing_eagerly() else None
+                max(decoder_sequence_length) if tf.executing_eagerly() else None
             )
             self.assertEqual(
                 (batch_size, expected_time, attention_depth),
@@ -645,7 +647,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             attention=ResultSummary(
                 shape=(5, 6), dtype=np.dtype(np.float32), mean=0.041453815
             ),
-            time=3,
             alignments=ResultSummary(
                 shape=(5, 8), dtype=np.dtype(np.float32), mean=0.125
             ),
@@ -686,7 +687,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             attention=ResultSummary(
                 shape=(5, 6), dtype=np.dtype("float32"), mean=0.042427111
             ),
-            time=3,
             alignments=ResultSummary(
                 shape=(5, 8), dtype=np.dtype("float32"), mean=0.125
             ),
@@ -723,7 +723,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             attention=ResultSummary(
                 shape=(5, 6), dtype=np.dtype("float32"), mean=-0.0318060
             ),
-            time=3,
             alignments=ResultSummary(
                 shape=(5, 8), dtype=np.dtype("float32"), mean=0.125
             ),
@@ -760,7 +759,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             attention=ResultSummary(
                 shape=(5, 6), dtype=np.dtype("float32"), mean=-0.0318060
             ),
-            time=3,
             alignments=ResultSummary(
                 shape=(5, 8), dtype=np.dtype("float32"), mean=0.125
             ),
@@ -796,7 +794,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             attention=ResultSummary(
                 shape=(5, 10), dtype=np.dtype("float32"), mean=0.026356646
             ),
-            time=3,
             alignments=ResultSummary(
                 shape=(5, 8), dtype=np.dtype("float32"), mean=0.125
             ),
@@ -835,7 +832,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             attention=ResultSummary(
                 shape=(5, 6), dtype=np.dtype("float32"), mean=0.038682378
             ),
-            time=3,
             alignments=ResultSummary(
                 shape=(5, 8), dtype=np.dtype("float32"), mean=0.09778417
             ),
@@ -877,7 +873,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             attention=ResultSummary(
                 shape=(5, 6), dtype=np.dtype("float32"), mean=0.068432882
             ),
-            time=3,
             alignments=ResultSummary(
                 shape=(5, 8), dtype=np.dtype("float32"), mean=0.0615656
             ),
@@ -919,7 +914,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             attention=ResultSummary(
                 shape=(5, 6), dtype=np.dtype("float32"), mean=0.059128221
             ),
-            time=3,
             alignments=ResultSummary(
                 shape=(5, 8), dtype=np.dtype("float32"), mean=0.05112994
             ),
@@ -961,7 +955,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             attention=ResultSummary(
                 shape=(5, 6), dtype=np.dtype("float32"), mean=0.059128221
             ),
-            time=3,
             alignments=ResultSummary(
                 shape=(5, 8), dtype=np.dtype("float32"), mean=0.05112994
             ),
@@ -1005,13 +998,17 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         cell = wrapper.AttentionWrapper(cell, mechanism)
 
         var_len = tf.random.uniform(shape=(), minval=2, maxval=10, dtype=tf.int32)
+        lengths = tf.random.uniform(
+            shape=(var_len,), minval=1, maxval=var_len + 1, dtype=tf.int32
+        )
         data = tf.ones(shape=(var_len, var_len, 3))
+        mask = tf.sequence_mask(lengths, maxlen=var_len)
 
         mechanism.setup_memory(data)
         layer = tf.keras.layers.RNN(cell)
 
-        _ = layer(data)
+        _ = layer(data, mask=mask)
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

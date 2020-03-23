@@ -13,6 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 
+import sys
+
+import pytest
 from absl.testing import parameterized
 
 import numpy as np
@@ -79,15 +82,5 @@ class RreluTest(tf.test.TestCase, parameterized.TestCase):
                     )
 
 
-# TODO: Benchmark fails for windows builds #839
-# class RreluBenchmarks(tf.test.Benchmark):
-#     def benchmarkRreluOp(self):
-#         with tf.compat.v1.Session(config=tf.test.benchmark_config()) as sess:
-#             x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=np.float32)
-#             lower = 0.1
-#             upper = 0.2
-#             result = rrelu(x, lower, upper, training=True)
-#             self.run_op_benchmark(sess, result.op, min_iters=25)
-
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

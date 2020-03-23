@@ -19,20 +19,20 @@ import tensorflow as tf
 from tensorflow_addons.utils import types
 from tensorflow_addons.utils.resource_loader import LazySO
 
-from typing import Optional
+from typing import Optional, Text
 
 _image_so = LazySO("custom_ops/image/_image_ops.so")
 
 
 @tf.function
 def connected_components(
-    images: types.TensorLike, name: Optional[str] = None
+    images: types.TensorLike, name: Optional[Text] = None
 ) -> tf.Tensor:
     """Labels the connected components in a batch of images.
 
     A component is a set of pixels in a single input image, which are
-    all adjacent     and all have the same non-zero value. The components
-    using a squared connectivity of one (all True entries are joined with
+    all adjacent and all have the same non-zero value. The components
+    using a squared connectivity of one (all equal entries are joined with
     their neighbors above,below, left, and right). Components across all
     images have consecutive ids 1 through n.
     Components are labeled according to the first pixel of the
@@ -42,13 +42,17 @@ def connected_components(
     This op is equivalent with `scipy.ndimage.measurements.label`
     on a 2D array with the default structuring element
     (which is the connectivity used here).
+
     Args:
-      images: A 2D (H, W) or 3D (N, H, W) Tensor of boolean image(s).
+      images: A 2D (H, W) or 3D (N, H, W) Tensor of image (integer,
+      floating point and boolean types are supported).
       name: The name of the op.
+
     Returns:
       Components with the same shape as `images`.
-      False entries in `images` have value 0, and
-      all True entries map to a component id > 0.
+      entries that evaluate to False (e.g. 0/0.0f, False) in `images` have
+      value 0, and all other entries map to a component id > 0.
+
     Raises:
       TypeError: if `images` is not 2D or 3D.
     """

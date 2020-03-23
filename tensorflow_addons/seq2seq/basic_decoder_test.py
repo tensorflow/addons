@@ -14,6 +14,8 @@
 # ==============================================================================
 """Tests for tfa.seq2seq.basic_decoder."""
 
+import sys
+import pytest
 from absl.testing import parameterized
 import numpy as np
 
@@ -22,11 +24,9 @@ import tensorflow as tf
 from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import basic_decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
-from tensorflow_addons.utils import test_utils
 
 
-@test_utils.keras_parameterized.run_all_keras_modes
-class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
+class BasicDecoderTest(tf.test.TestCase, parameterized.TestCase):
     """Unit test for basic_decoder.BasicDecoder."""
 
     @parameterized.named_parameters(
@@ -195,7 +195,7 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
 
             self.assertLen(first_state, 2)
             self.assertLen(step_state, 2)
-            self.assertIsInstance(step_outputs, basic_decoder.BasicDecoderOutput)
+            assert isinstance(step_outputs, basic_decoder.BasicDecoderOutput)
             self.assertEqual(
                 (batch_size, expected_output_depth), step_outputs[0].get_shape()
             )
@@ -805,15 +805,15 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
             ) = my_decoder.step(tf.constant(0), first_inputs, first_state)
             batch_size_t = my_decoder.batch_size
 
-            self.assertLen(first_state, 2)
+            assert len(first_state) == 2
             self.assertLen(step_state, 2)
-            self.assertTrue(isinstance(step_outputs, basic_decoder.BasicDecoderOutput))
+            assert isinstance(step_outputs, basic_decoder.BasicDecoderOutput)
             self.assertEqual((batch_size, cell_depth), step_outputs[0].get_shape())
             self.assertEqual((batch_size, cell_depth), step_outputs[1].get_shape())
             self.assertEqual((batch_size, cell_depth), first_state[0].get_shape())
             self.assertEqual((batch_size, cell_depth), first_state[1].get_shape())
             self.assertEqual((batch_size, cell_depth), step_state[0].get_shape())
-            self.assertEqual((batch_size, cell_depth), step_state[1].get_shape())
+            assert (batch_size, cell_depth) == step_state[1].get_shape()
 
             self.evaluate(tf.compat.v1.global_variables_initializer())
             eval_result = self.evaluate(
@@ -866,4 +866,4 @@ class BasicDecoderTest(test_utils.keras_parameterized.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))
