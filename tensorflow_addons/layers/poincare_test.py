@@ -18,54 +18,33 @@ import sys
 
 import pytest
 import numpy as np
-import tensorflow as tf
 
 from tensorflow_addons.layers.poincare import PoincareNormalize
 from tensorflow_addons.utils import test_utils
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class PoincareNormalizeTest(tf.test.TestCase):
-    def _PoincareNormalize(self, x, dim, epsilon=1e-5):
-        if isinstance(dim, list):
-            norm = np.linalg.norm(x, axis=tuple(dim))
-            for d in dim:
-                norm = np.expand_dims(norm, d)
-            norm_x = ((1.0 - epsilon) * x) / norm
-        else:
-            norm = np.expand_dims(np.apply_along_axis(np.linalg.norm, dim, x), dim)
-            norm_x = ((1.0 - epsilon) * x) / norm
-        return np.where(norm > 1.0 - epsilon, norm_x, x)
+def _poincare_normalize(x, dim, epsilon=1e-5):
+    if isinstance(dim, list):
+        norm = np.linalg.norm(x, axis=tuple(dim))
+        for d in dim:
+            norm = np.expand_dims(norm, d)
+        norm_x = ((1.0 - epsilon) * x) / norm
+    else:
+        norm = np.expand_dims(np.apply_along_axis(np.linalg.norm, dim, x), dim)
+        norm_x = ((1.0 - epsilon) * x) / norm
+    return np.where(norm > 1.0 - epsilon, norm_x, x)
 
-    def testPoincareNormalize(self):
-        x_shape = [20, 7, 3]
-        epsilon = 1e-5
-        tol = 1e-6
-        np.random.seed(1)
-        inputs = np.random.random_sample(x_shape).astype(np.float32)
 
-        for dim in range(len(x_shape)):
-            outputs_expected = self._PoincareNormalize(inputs, dim, epsilon)
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_poincare_normalize():
+    x_shape = [20, 7, 3]
+    epsilon = 1e-5
+    tol = 1e-6
+    np.random.seed(1)
+    inputs = np.random.random_sample(x_shape).astype(np.float32)
 
-            outputs = test_utils.layer_test(
-                PoincareNormalize,
-                kwargs={"axis": dim, "epsilon": epsilon},
-                input_data=inputs,
-                expected_output=outputs_expected,
-            )
-            for y in outputs_expected, outputs:
-                norm = np.linalg.norm(y, axis=dim)
-                self.assertLessEqual(norm.max(), 1.0 - epsilon + tol)
-
-    def testPoincareNormalizeDimArray(self):
-        x_shape = [20, 7, 3]
-        epsilon = 1e-5
-        tol = 1e-6
-        np.random.seed(1)
-        inputs = np.random.random_sample(x_shape).astype(np.float32)
-        dim = [1, 2]
-
-        outputs_expected = self._PoincareNormalize(inputs, dim, epsilon)
+    for dim in range(len(x_shape)):
+        outputs_expected = _poincare_normalize(inputs, dim, epsilon)
 
         outputs = test_utils.layer_test(
             PoincareNormalize,
@@ -74,8 +53,30 @@ class PoincareNormalizeTest(tf.test.TestCase):
             expected_output=outputs_expected,
         )
         for y in outputs_expected, outputs:
-            norm = np.linalg.norm(y, axis=tuple(dim))
-            self.assertLessEqual(norm.max(), 1.0 - epsilon + tol)
+            norm = np.linalg.norm(y, axis=dim)
+            assert norm.max() <= 1.0 - epsilon + tol
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_poincare_normalize_dim_array():
+    x_shape = [20, 7, 3]
+    epsilon = 1e-5
+    tol = 1e-6
+    np.random.seed(1)
+    inputs = np.random.random_sample(x_shape).astype(np.float32)
+    dim = [1, 2]
+
+    outputs_expected = _poincare_normalize(inputs, dim, epsilon)
+
+    outputs = test_utils.layer_test(
+        PoincareNormalize,
+        kwargs={"axis": dim, "epsilon": epsilon},
+        input_data=inputs,
+        expected_output=outputs_expected,
+    )
+    for y in outputs_expected, outputs:
+        norm = np.linalg.norm(y, axis=tuple(dim))
+        assert norm.max() <= 1.0 - epsilon + tol
 
 
 if __name__ == "__main__":
