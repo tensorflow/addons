@@ -24,8 +24,6 @@ from typeguard import typechecked
 from typing import Optional
 
 
-
-
 def _weighted_kappa_loss(
     y_true,
     y_pred,
