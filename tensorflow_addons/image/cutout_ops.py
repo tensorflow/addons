@@ -32,6 +32,15 @@ def _get_image_wh(images, data_format):
     return image_height, image_width
 
 
+def _norm_params(images, mask_size, data_format):
+    mask_size = tf.convert_to_tensor(mask_size)
+    if tf.equal(tf.rank(mask_size), 0):
+        mask_size = tf.stack([mask_size, mask_size])
+    data_format = conv_utils.normalize_data_format(data_format)
+    image_height, image_width = _get_image_wh(images, data_format)
+    return mask_size, data_format, image_height, image_width
+
+
 def random_cutout(
     images: TensorLike,
     mask_size: TensorLike,
@@ -66,12 +75,10 @@ def random_cutout(
     Returns:
       An image Tensor.
     """
-    mask_size = tf.convert_to_tensor(mask_size)
-    if tf.equal(tf.rank(mask_size), 0):
-        mask_size = tf.stack([mask_size, mask_size])
-    data_format = conv_utils.normalize_data_format(data_format)
-    # Sample the center location in the images where the zero mask will be applied.
-    image_height, image_width = _get_image_wh(images, data_format)
+    mask_size, data_format, image_height, image_width = _norm_params(
+        images, mask_size, data_format
+    )
+
     cutout_center_height = tf.random.uniform(
         shape=[], minval=0, maxval=image_height, dtype=tf.int32, seed=seed
     )
@@ -90,7 +97,7 @@ def random_cutout(
 def cutout(
     images: TensorLike,
     mask_size: TensorLike,
-    offset: TensorLike,
+    offset: TensorLike = (0, 0),
     constant_values: Number = 0,
     data_format: str = "channels_last",
 ) -> tf.Tensor:
@@ -121,11 +128,10 @@ def cutout(
       An image Tensor.
     """
     with tf.name_scope("cutout"):
-        mask_size = tf.convert_to_tensor(mask_size)
-        if tf.equal(tf.rank(mask_size), 0):
-            mask_size = tf.stack([mask_size, mask_size])
-        data_format = conv_utils.normalize_data_format(data_format)
-        image_height, image_width = _get_image_wh(images, data_format)
+        mask_size, data_format, image_height, image_width = _norm_params(
+            images, mask_size, data_format
+        )
+
         cutout_center_height = offset[0]
         cutout_center_width = offset[1]
 
