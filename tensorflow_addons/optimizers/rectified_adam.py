@@ -131,7 +131,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
             warnings.warn(
                 "The parameter `total_steps` passed to the __init__ of RectifiedAdam "
                 "is a float. This behavior is deprecated and in Addons 0.11, this "
-                "will raise an error. Use a int instead. If you get this message "
+                "will raise an error. Use an int instead. If you get this message "
                 "when loading a model, save it again and the `total_steps` parameter "
                 "will automatically be converted to a int.",
                 DeprecationWarning,
