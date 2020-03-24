@@ -55,58 +55,37 @@ def get_test_data():
     )
 
 
-def test_sequence_loss():
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("average_across_timesteps", [True, False])
+@pytest.mark.parametrize("average_across_batch", [True, False])
+def test_sequence_loss(average_across_timesteps, average_across_batch):
     (
         batch_size,
         sequence_length,
-        number_of_classes,
+        _,
         logits,
         targets,
         weights,
         expected_loss,
     ) = get_test_data()
-    average_loss_per_example = loss.sequence_loss(
-        logits,
-        targets,
-        weights,
-        average_across_timesteps=True,
-        average_across_batch=True,
-    )
-    res = average_loss_per_example.numpy()
-    np.testing.assert_allclose(expected_loss, res, rtol=1e-6, atol=1e-6)
 
-    average_loss_per_sequence = loss.sequence_loss(
+    res = loss.sequence_loss(
         logits,
         targets,
         weights,
-        average_across_timesteps=False,
-        average_across_batch=True,
+        average_across_timesteps=average_across_timesteps,
+        average_across_batch=average_across_batch,
     )
-    res = average_loss_per_sequence.numpy()
-    compare_per_sequence = np.full(sequence_length, expected_loss)
-    np.testing.assert_allclose(compare_per_sequence, res, rtol=1e-6, atol=1e-6)
-
-    average_loss_per_batch = loss.sequence_loss(
-        logits,
-        targets,
-        weights,
-        average_across_timesteps=True,
-        average_across_batch=False,
-    )
-    res = average_loss_per_batch.numpy()
-    compare_per_batch = np.full(batch_size, expected_loss)
-    np.testing.assert_allclose(compare_per_batch, res, rtol=1e-6, atol=1e-6)
-
-    total_loss = loss.sequence_loss(
-        logits,
-        targets,
-        weights,
-        average_across_timesteps=False,
-        average_across_batch=False,
-    )
-    res = total_loss.numpy()
-    compare_total = np.full((batch_size, sequence_length), expected_loss)
-    np.testing.assert_allclose(compare_total, res, rtol=1e-6, atol=1e-6)
+    res = res.numpy()
+    if average_across_timesteps and average_across_batch:
+        expected = expected_loss
+    elif not average_across_timesteps and average_across_batch:
+        expected = np.full(sequence_length, expected_loss)
+    elif average_across_timesteps and not average_across_batch:
+        expected = np.full(batch_size, expected_loss)
+    else:
+        expected = np.full((batch_size, sequence_length), expected_loss)
+    np.testing.assert_allclose(expected, res, rtol=1e-6, atol=1e-6)
 
 
 @test_utils.run_all_in_graph_and_eager_modes
