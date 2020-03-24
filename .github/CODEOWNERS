@@ -77,7 +77,7 @@
 /tensorflow_addons/metrics/r_square*.py @ssaishruthi
 
 /tensorflow_addons/optimizers/average_wrapper*.py @squadrick
-/tensorflow_addons/optimizers/conditional_gradient*.py @pkan2
+/tensorflow_addons/optimizers/conditional_gradient*.py @pkan2 @lokhande-vishnu
 /tensorflow_addons/optimizers/cyclical_learning_rate*.py @raphaelmeudec
 /tensorflow_addons/optimizers/lamb*.py @junjiek
 /tensorflow_addons/optimizers/lazy_adam*.py @ssaishruthi
