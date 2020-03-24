@@ -24,6 +24,37 @@ from tensorflow_addons.seq2seq import loss
 from tensorflow_addons.utils import test_utils
 
 
+def get_test_data():
+    batch_size = 2
+    sequence_length = 3
+    number_of_classes = 5
+    logits = [
+        tf.constant(i + 0.5, shape=[batch_size, number_of_classes])
+        for i in range(sequence_length)
+    ]
+    logits = tf.stack(logits, axis=1)
+    targets = [
+        tf.constant(i, tf.int32, shape=[batch_size]) for i in range(sequence_length)
+    ]
+    targets = tf.stack(targets, axis=1)
+
+    weights = [tf.constant(1.0, shape=[batch_size]) for _ in range(sequence_length)]
+    weights = tf.stack(weights, axis=1)
+    # expected_loss = sparse_softmax_cross_entropy_with_logits(targets,
+    # logits) where targets = [0, 1, 2],
+    # and logits = [[0.5] * 5, [1.5] * 5, [2.5] * 5]
+    expected_loss = 1.60944
+    return (
+        batch_size,
+        sequence_length,
+        number_of_classes,
+        logits,
+        targets,
+        weights,
+        expected_loss,
+    )
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class LossTest(tf.test.TestCase):
     def setup(self):
@@ -312,72 +343,68 @@ class LossTest(tf.test.TestCase):
             compare_total = np.zeros((self.batch_size, self.sequence_length))
             self.assertAllClose(compare_total, res)
 
-    def testAmbiguousOrder(self):
-        with self.assertRaisesRegexp(ValueError, "because of ambiguous order"):
-            with self.cached_session(use_gpu=True):
-                self.setup()
-                seq_loss = loss.SequenceLoss(
-                    average_across_timesteps=False,
-                    average_across_batch=True,
-                    sum_over_timesteps=True,
-                    sum_over_batch=False,
-                )
-                self.evaluate(seq_loss(self.targets, self.logits, self.weights))
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_ambiguous_order():
+    with pytest.raises(ValueError, match="because of ambiguous order"):
+        _, _, _, logits, targets, weights, _ = get_test_data()
+        seq_loss = loss.SequenceLoss(
+            average_across_timesteps=False,
+            average_across_batch=True,
+            sum_over_timesteps=True,
+            sum_over_batch=False,
+        )
+        seq_loss(targets, logits, weights).numpy()
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class DenseTargetLossTest(LossTest):
-    def setup(self):
-        super().setup()
-        self.targets = tf.one_hot(self.targets, depth=self.number_of_classes)
+@pytest.mark.xfail(tf.__version__ == "2.2.0-rc1", reason="TODO: Fix this test")
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_keras_compatibility():
+    """To test the compatibility of SequenceLoss with Keras's built-in
+    training loops, we create a fake model which always outputs a pre-
+    defined set of logits.
 
-    @pytest.mark.xfail(tf.__version__ == "2.2.0-rc1", reason="TODO: Fix this test")
-    def testKerasCompatibility(self):
-        """To test the compatibility of SequenceLoss with Keras's built-in
-        training loops, we create a fake model which always outputs a pre-
-        defined set of logits.
+    Then we check the calculated loss to be equal to the expected
+    loss. Note that since the fake model doesn't have any trainable
+    parameters, no matter how many steps we train it, it always
+    outputs the same loss value.
+    """
+    (
+        batch_size,
+        sequence_length,
+        number_of_classes,
+        logits,
+        targets,
+        weights,
+        expected_loss,
+    ) = get_test_data()
+    targets = tf.one_hot(targets, depth=number_of_classes)
 
-        Then we check the calculated loss to be equal to the expected
-        loss. Note that since the fake model doesn't have any trainable
-        parameters, no matter how many steps we train it, it always
-        outputs the same loss value.
-        """
-        with self.cached_session(use_gpu=True):
-            self.setup()
+    def return_logits(x):
+        logits_single_row = logits[0, :, :]
+        logits_batch = tf.tile(
+            tf.expand_dims(logits_single_row, 0), [tf.shape(x)[0], 1, 1]
+        )
+        return logits_batch
 
-            def return_logits(x):
-                batch_size = tf.shape(x)[0]
-                logits_single_row = self.logits[0, :, :]
-                logits_batch = tf.tile(
-                    tf.expand_dims(logits_single_row, 0), [batch_size, 1, 1]
-                )
-                return logits_batch
+    inp = tf.keras.layers.Input(shape=(sequence_length,))
+    out = tf.keras.layers.Lambda(
+        return_logits, output_shape=(sequence_length, number_of_classes),
+    )(inp)
+    model = tf.keras.models.Model(inp, out)
 
-            inp = tf.keras.layers.Input(shape=(self.sequence_length,))
-            out = tf.keras.layers.Lambda(
-                return_logits,
-                output_shape=(self.sequence_length, self.number_of_classes),
-            )(inp)
-            model = tf.keras.models.Model(inp, out)
+    loss_obj = loss.SequenceLoss()
+    model.compile(optimizer="adam", loss=loss_obj, sample_weight_mode="temporal")
 
-            loss_obj = loss.SequenceLoss()
-            model.compile(
-                optimizer="adam", loss=loss_obj, sample_weight_mode="temporal"
-            )
+    # This is a fake input.
+    x = tf.ones(shape=(batch_size, sequence_length))
 
-            # This is a fake input.
-            x = tf.ones(shape=(self.batch_size, self.sequence_length))
+    h = model.fit(
+        x, targets, sample_weight=weights, batch_size=batch_size, steps_per_epoch=1,
+    )
 
-            h = model.fit(
-                x,
-                self.targets,
-                sample_weight=self.weights,
-                batch_size=self.batch_size,
-                steps_per_epoch=1,
-            )
-
-            calculated_loss = h.history["loss"][0]
-            self.assertAllClose(calculated_loss, self.expected_loss)
+    calculated_loss = h.history["loss"][0]
+    np.testing.assert_allclose(calculated_loss, expected_loss, rtol=1e-6, atol=1e-6)
 
 
 if __name__ == "__main__":

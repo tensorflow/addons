@@ -30,7 +30,6 @@ from tensorflow.python.framework.test_util import (  # noqa: F401
     run_in_graph_and_eager_modes,
 )
 from tensorflow.python.keras.testing_utils import layer_test  # noqa: F401
-from tensorflow.python.keras import keras_parameterized  # noqa: F401
 
 
 @contextlib.contextmanager
