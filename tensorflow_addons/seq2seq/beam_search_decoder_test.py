@@ -55,75 +55,75 @@ def test_gather_tree():
     np.testing.assert_equal(expected_result, res)
 
 
+def _test_gather_tree_from_array(depth_ndims=0, merged_batch_beam=False):
+    array = np.array(
+        [
+            [[1, 2, 3], [4, 5, 6], [7, 8, 9], [0, 0, 0]],
+            [[2, 3, 4], [5, 6, 7], [8, 9, 10], [11, 12, 0]],
+        ]
+    ).transpose([1, 0, 2])
+    parent_ids = np.array(
+        [
+            [[0, 0, 0], [0, 1, 1], [2, 1, 2], [-1, -1, -1]],
+            [[0, 0, 0], [1, 1, 0], [2, 0, 1], [0, 1, 0]],
+        ]
+    ).transpose([1, 0, 2])
+    expected_array = np.array(
+        [
+            [[2, 2, 2], [6, 5, 6], [7, 8, 9], [0, 0, 0]],
+            [[2, 3, 2], [7, 5, 7], [8, 9, 8], [11, 12, 0]],
+        ]
+    ).transpose([1, 0, 2])
+    sequence_length = [[3, 3, 3], [4, 4, 3]]
+
+    array = tf.convert_to_tensor(array, dtype=tf.float32)
+    parent_ids = tf.convert_to_tensor(parent_ids, dtype=tf.int32)
+    expected_array = tf.convert_to_tensor(expected_array, dtype=tf.float32)
+
+    max_time = tf.shape(array)[0]
+    batch_size = tf.shape(array)[1]
+    beam_width = tf.shape(array)[2]
+
+    def _tile_in_depth(tensor):
+        # Generate higher rank tensors by concatenating tensor and
+        # tensor + 1.
+        for _ in range(depth_ndims):
+            tensor = tf.stack([tensor, tensor + 1], -1)
+        return tensor
+
+    if merged_batch_beam:
+        array = tf.reshape(array, [max_time, batch_size * beam_width])
+        expected_array = tf.reshape(expected_array, [max_time, batch_size * beam_width])
+
+    if depth_ndims > 0:
+        array = _tile_in_depth(array)
+        expected_array = _tile_in_depth(expected_array)
+
+    sorted_array = beam_search_decoder.gather_tree_from_array(
+        array, parent_ids, sequence_length
+    )
+
+    np.testing.assert_equal(expected_array.numpy(), sorted_array.numpy())
+
+
+def test_gather_tree_from_array_scalar():
+    _test_gather_tree_from_array()
+
+
+def test_gather_tree_from_array_1d():
+    _test_gather_tree_from_array(depth_ndims=1)
+
+
+def test_gather_tree_from_array_1d_with_merged_batch_beam():
+    _test_gather_tree_from_array(depth_ndims=1, merged_batch_beam=True)
+
+
+def test_gather_tree_from_array_2d():
+    _test_gather_tree_from_array(depth_ndims=2)
+
+
 class TestGatherTree(tf.test.TestCase):
     """Tests the gather_tree function."""
-
-    def _test_gather_tree_from_array(self, depth_ndims=0, merged_batch_beam=False):
-        array = np.array(
-            [
-                [[1, 2, 3], [4, 5, 6], [7, 8, 9], [0, 0, 0]],
-                [[2, 3, 4], [5, 6, 7], [8, 9, 10], [11, 12, 0]],
-            ]
-        ).transpose([1, 0, 2])
-        parent_ids = np.array(
-            [
-                [[0, 0, 0], [0, 1, 1], [2, 1, 2], [-1, -1, -1]],
-                [[0, 0, 0], [1, 1, 0], [2, 0, 1], [0, 1, 0]],
-            ]
-        ).transpose([1, 0, 2])
-        expected_array = np.array(
-            [
-                [[2, 2, 2], [6, 5, 6], [7, 8, 9], [0, 0, 0]],
-                [[2, 3, 2], [7, 5, 7], [8, 9, 8], [11, 12, 0]],
-            ]
-        ).transpose([1, 0, 2])
-        sequence_length = [[3, 3, 3], [4, 4, 3]]
-
-        array = tf.convert_to_tensor(array, dtype=tf.float32)
-        parent_ids = tf.convert_to_tensor(parent_ids, dtype=tf.int32)
-        expected_array = tf.convert_to_tensor(expected_array, dtype=tf.float32)
-
-        max_time = tf.shape(array)[0]
-        batch_size = tf.shape(array)[1]
-        beam_width = tf.shape(array)[2]
-
-        def _tile_in_depth(tensor):
-            # Generate higher rank tensors by concatenating tensor and
-            # tensor + 1.
-            for _ in range(depth_ndims):
-                tensor = tf.stack([tensor, tensor + 1], -1)
-            return tensor
-
-        if merged_batch_beam:
-            array = tf.reshape(array, [max_time, batch_size * beam_width])
-            expected_array = tf.reshape(
-                expected_array, [max_time, batch_size * beam_width]
-            )
-
-        if depth_ndims > 0:
-            array = _tile_in_depth(array)
-            expected_array = _tile_in_depth(expected_array)
-
-        sorted_array = beam_search_decoder.gather_tree_from_array(
-            array, parent_ids, sequence_length
-        )
-
-        with self.cached_session() as sess:
-            sorted_array = sess.run(sorted_array)
-            expected_array = sess.run(expected_array)
-            self.assertAllEqual(expected_array, sorted_array)
-
-    def test_gather_tree_from_array_scalar(self):
-        self._test_gather_tree_from_array()
-
-    def test_gather_tree_from_array_1d(self):
-        self._test_gather_tree_from_array(depth_ndims=1)
-
-    def test_gather_tree_from_array_1d_with_merged_batch_beam(self):
-        self._test_gather_tree_from_array(depth_ndims=1, merged_batch_beam=True)
-
-    def test_gather_tree_from_array_2d(self):
-        self._test_gather_tree_from_array(depth_ndims=2)
 
     def test_gather_tree_from_array_complex_trajectory(self):
         # Max. time = 7, batch = 1, beam = 5.
