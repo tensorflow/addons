@@ -55,6 +55,60 @@ def get_test_data():
     )
 
 
+def test_sequence_loss():
+    (
+        batch_size,
+        sequence_length,
+        number_of_classes,
+        logits,
+        targets,
+        weights,
+        expected_loss,
+    ) = get_test_data()
+    average_loss_per_example = loss.sequence_loss(
+        logits,
+        targets,
+        weights,
+        average_across_timesteps=True,
+        average_across_batch=True,
+    )
+    res = average_loss_per_example.numpy()
+    np.testing.assert_allclose(expected_loss, res, rtol=1e-6, atol=1e-6)
+
+    average_loss_per_sequence = loss.sequence_loss(
+        logits,
+        targets,
+        weights,
+        average_across_timesteps=False,
+        average_across_batch=True,
+    )
+    res = average_loss_per_sequence.numpy()
+    compare_per_sequence = np.full(sequence_length, expected_loss)
+    np.testing.assert_allclose(compare_per_sequence, res, rtol=1e-6, atol=1e-6)
+
+    average_loss_per_batch = loss.sequence_loss(
+        logits,
+        targets,
+        weights,
+        average_across_timesteps=True,
+        average_across_batch=False,
+    )
+    res = average_loss_per_batch.numpy()
+    compare_per_batch = np.full(batch_size, expected_loss)
+    np.testing.assert_allclose(compare_per_batch, res, rtol=1e-6, atol=1e-6)
+
+    total_loss = loss.sequence_loss(
+        logits,
+        targets,
+        weights,
+        average_across_timesteps=False,
+        average_across_batch=False,
+    )
+    res = total_loss.numpy()
+    compare_total = np.full((batch_size, sequence_length), expected_loss)
+    np.testing.assert_allclose(compare_total, res, rtol=1e-6, atol=1e-6)
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class LossTest(tf.test.TestCase):
     def setup(self):
@@ -80,54 +134,6 @@ class LossTest(tf.test.TestCase):
         # logits) where targets = [0, 1, 2],
         # and logits = [[0.5] * 5, [1.5] * 5, [2.5] * 5]
         self.expected_loss = 1.60944
-
-    def testSequenceLoss(self):
-        with self.cached_session(use_gpu=True):
-            self.setup()
-            average_loss_per_example = loss.sequence_loss(
-                self.logits,
-                self.targets,
-                self.weights,
-                average_across_timesteps=True,
-                average_across_batch=True,
-            )
-            res = self.evaluate(average_loss_per_example)
-            self.assertAllClose(self.expected_loss, res)
-
-            average_loss_per_sequence = loss.sequence_loss(
-                self.logits,
-                self.targets,
-                self.weights,
-                average_across_timesteps=False,
-                average_across_batch=True,
-            )
-            res = self.evaluate(average_loss_per_sequence)
-            compare_per_sequence = np.full((self.sequence_length), self.expected_loss)
-            self.assertAllClose(compare_per_sequence, res)
-
-            average_loss_per_batch = loss.sequence_loss(
-                self.logits,
-                self.targets,
-                self.weights,
-                average_across_timesteps=True,
-                average_across_batch=False,
-            )
-            res = self.evaluate(average_loss_per_batch)
-            compare_per_batch = np.full((self.batch_size), self.expected_loss)
-            self.assertAllClose(compare_per_batch, res)
-
-            total_loss = loss.sequence_loss(
-                self.logits,
-                self.targets,
-                self.weights,
-                average_across_timesteps=False,
-                average_across_batch=False,
-            )
-            res = self.evaluate(total_loss)
-            compare_total = np.full(
-                (self.batch_size, self.sequence_length), self.expected_loss
-            )
-            self.assertAllClose(compare_total, res)
 
     def testSequenceLossClass(self):
         with self.cached_session(use_gpu=True):
