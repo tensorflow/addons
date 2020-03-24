@@ -98,51 +98,50 @@ class GatherTreeTest(tf.test.TestCase):
             )
             self.assertAllEqual(expected_result, self.evaluate(beams))
 
-    def testGatherTreeBatch(self):
-        batch_size = 10
-        beam_width = 15
-        max_time = 8
-        max_sequence_lengths = [0, 1, 2, 4, 7, 8, 9, 10, 11, 0]
-        end_token = 5
 
-        with self.cached_session(use_gpu=True):
-            step_ids = np.random.randint(
-                0, high=end_token + 1, size=(max_time, batch_size, beam_width)
-            )
-            parent_ids = np.random.randint(
-                0, high=beam_width - 1, size=(max_time, batch_size, beam_width)
-            )
+def test_gather_tree_batch():
+    batch_size = 10
+    beam_width = 15
+    max_time = 8
+    max_sequence_lengths = [0, 1, 2, 4, 7, 8, 9, 10, 11, 0]
+    end_token = 5
 
-            beams = gather_tree(
-                step_ids=step_ids.astype(np.int32),
-                parent_ids=parent_ids.astype(np.int32),
-                max_sequence_lengths=max_sequence_lengths,
-                end_token=end_token,
-            )
+    step_ids = np.random.randint(
+        0, high=end_token + 1, size=(max_time, batch_size, beam_width)
+    )
+    parent_ids = np.random.randint(
+        0, high=beam_width - 1, size=(max_time, batch_size, beam_width)
+    )
 
-            self.assertEqual((max_time, batch_size, beam_width), beams.shape)
-            beams_value = self.evaluate(beams)
-            for b in range(batch_size):
-                # Past max_sequence_lengths[b], we emit all end tokens.
-                b_value = beams_value[max_sequence_lengths[b] :, b, :]
-                self.assertAllClose(b_value, end_token * np.ones_like(b_value))
-            for batch, beam in itertools.product(range(batch_size), range(beam_width)):
-                v = np.squeeze(beams_value[:, batch, beam])
-                if end_token in v:
-                    found_bad = np.where(v == -1)[0]
-                    self.assertEqual(0, len(found_bad))
-                    found = np.where(v == end_token)[0]
-                    found = found[0]  # First occurrence of end_token.
-                    # If an end_token is found, everything before it should be a
-                    # valid id and everything after it should be -1.
-                    if found > 0:
-                        self.assertAllEqual(
-                            v[: found - 1] >= 0,
-                            np.ones_like(v[: found - 1], dtype=bool),
-                        )
-                    self.assertAllClose(
-                        v[found + 1 :], end_token * np.ones_like(v[found + 1 :])
-                    )
+    beams = gather_tree(
+        step_ids=step_ids.astype(np.int32),
+        parent_ids=parent_ids.astype(np.int32),
+        max_sequence_lengths=max_sequence_lengths,
+        end_token=end_token,
+    )
+    beams = beams.numpy()
+
+    assert (max_time, batch_size, beam_width) == beams.shape
+    for b in range(batch_size):
+        # Past max_sequence_lengths[b], we emit all end tokens.
+        b_value = beams[max_sequence_lengths[b] :, b, :]
+        np.testing.assert_allclose(b_value, end_token * np.ones_like(b_value))
+    for batch, beam in itertools.product(range(batch_size), range(beam_width)):
+        v = np.squeeze(beams[:, batch, beam])
+        if end_token in v:
+            found_bad = np.where(v == -1)[0]
+            assert 0 == len(found_bad)
+            found = np.where(v == end_token)[0]
+            found = found[0]  # First occurrence of end_token.
+            # If an end_token is found, everything before it should be a
+            # valid id and everything after it should be -1.
+            if found > 0:
+                np.testing.assert_equal(
+                    v[: found - 1] >= 0, np.ones_like(v[: found - 1], dtype=bool),
+                )
+            np.testing.assert_allclose(
+                v[found + 1 :], end_token * np.ones_like(v[found + 1 :])
+            )
 
 
 if __name__ == "__main__":
