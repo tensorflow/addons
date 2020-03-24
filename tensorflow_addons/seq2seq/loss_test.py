@@ -328,17 +328,18 @@ class LossTest(tf.test.TestCase):
             compare_total = np.zeros((self.batch_size, self.sequence_length))
             self.assertAllClose(compare_total, res)
 
-    def testAmbiguousOrder(self):
-        with self.assertRaisesRegexp(ValueError, "because of ambiguous order"):
-            with self.cached_session(use_gpu=True):
-                self.setup()
-                seq_loss = loss.SequenceLoss(
-                    average_across_timesteps=False,
-                    average_across_batch=True,
-                    sum_over_timesteps=True,
-                    sum_over_batch=False,
-                )
-                self.evaluate(seq_loss(self.targets, self.logits, self.weights))
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_ambiguous_order():
+    with pytest.raises(ValueError, match="because of ambiguous order"):
+        _, _, _, logits, targets, weights, _ = get_test_data()
+        seq_loss = loss.SequenceLoss(
+            average_across_timesteps=False,
+            average_across_batch=True,
+            sum_over_timesteps=True,
+            sum_over_batch=False,
+        )
+        seq_loss(targets, logits, weights).numpy()
 
 
 @pytest.mark.xfail(tf.__version__ == "2.2.0-rc1", reason="TODO: Fix this test")
