@@ -25,40 +25,38 @@ from tensorflow_addons.seq2seq import beam_search_decoder, gather_tree
 from tensorflow_addons.utils import test_utils
 
 
+def test_gather_tree():
+    # (max_time = 3, batch_size = 2, beam_width = 3)
+
+    # create (batch_size, max_time, beam_width) matrix and transpose it
+    predicted_ids = np.array(
+        [[[1, 2, 3], [4, 5, 6], [7, 8, 9]], [[2, 3, 4], [5, 6, 7], [8, 9, 10]]],
+        dtype=np.int32,
+    ).transpose([1, 0, 2])
+    parent_ids = np.array(
+        [[[0, 0, 0], [0, 1, 1], [2, 1, 2]], [[0, 0, 0], [1, 2, 0], [2, 1, 1]]],
+        dtype=np.int32,
+    ).transpose([1, 0, 2])
+
+    # sequence_lengths is shaped (batch_size = 3)
+    max_sequence_lengths = [3, 3]
+
+    expected_result = np.array(
+        [[[2, 2, 2], [6, 5, 6], [7, 8, 9]], [[2, 4, 4], [7, 6, 6], [8, 9, 10]]]
+    ).transpose([1, 0, 2])
+
+    res = gather_tree(
+        predicted_ids,
+        parent_ids,
+        max_sequence_lengths=max_sequence_lengths,
+        end_token=11,
+    )
+
+    np.testing.assert_equal(expected_result, res)
+
+
 class TestGatherTree(tf.test.TestCase):
     """Tests the gather_tree function."""
-
-    def test_gather_tree(self):
-        # (max_time = 3, batch_size = 2, beam_width = 3)
-
-        # create (batch_size, max_time, beam_width) matrix and transpose it
-        predicted_ids = np.array(
-            [[[1, 2, 3], [4, 5, 6], [7, 8, 9]], [[2, 3, 4], [5, 6, 7], [8, 9, 10]]],
-            dtype=np.int32,
-        ).transpose([1, 0, 2])
-        parent_ids = np.array(
-            [[[0, 0, 0], [0, 1, 1], [2, 1, 2]], [[0, 0, 0], [1, 2, 0], [2, 1, 1]]],
-            dtype=np.int32,
-        ).transpose([1, 0, 2])
-
-        # sequence_lengths is shaped (batch_size = 3)
-        max_sequence_lengths = [3, 3]
-
-        expected_result = np.array(
-            [[[2, 2, 2], [6, 5, 6], [7, 8, 9]], [[2, 4, 4], [7, 6, 6], [8, 9, 10]]]
-        ).transpose([1, 0, 2])
-
-        res = gather_tree(
-            predicted_ids,
-            parent_ids,
-            max_sequence_lengths=max_sequence_lengths,
-            end_token=11,
-        )
-
-        with self.cached_session() as sess:
-            res_ = sess.run(res)
-
-        self.assertAllEqual(expected_result, res_)
 
     def _test_gather_tree_from_array(self, depth_ndims=0, merged_batch_beam=False):
         array = np.array(
