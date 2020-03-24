@@ -47,28 +47,37 @@ def test_different_channels():
         np.testing.assert_allclose(tf.shape(result_image), tf.shape(expect_image))
 
 
-def test_different_ranks():
-    test_image_4d = tf.ones([1, 40, 40, 1], dtype=np.uint8)
+def test_batch_size():
+    test_image = tf.ones([10, 40, 40, 1], dtype=np.uint8)
     cutout_area = tf.zeros([4, 4], dtype=np.uint8)
     cutout_area = tf.pad(cutout_area, ((0, 36), (0, 36)), constant_values=1)
-    expect_image_4d = to_4D_image(cutout_area)
-
-    test_image_2d = from_4D_image(test_image_4d, 2)
-    expect_image_2d = from_4D_image(expect_image_4d, 2)
-    result_image_2d = random_cutout(test_image_2d, 20, seed=1234)
-    np.testing.assert_allclose(tf.shape(result_image_2d), tf.shape(expect_image_2d))
-
-    result_image_4d = random_cutout(test_image_4d, 20, seed=1234)
-    np.testing.assert_allclose(tf.shape(result_image_4d), tf.shape(expect_image_4d))
+    expect_image = to_4D_image(cutout_area)
+    expect_image = tf.tile(expect_image, [10, 1, 1, 1])
+    result_image = random_cutout(test_image, 20, seed=1234)
+    np.testing.assert_allclose(tf.shape(result_image), tf.shape(expect_image))
 
 
+def test_channel_first():
+    test_image = tf.ones([10, 1, 40, 40], dtype=np.uint8)
+    cutout_area = tf.zeros([4, 4], dtype=np.uint8)
+    cutout_area = tf.pad(cutout_area, ((0, 36), (0, 36)), constant_values=1)
+    expect_image = tf.expand_dims(cutout_area, 0)
+    expect_image = tf.expand_dims(expect_image, 0)
+    expect_image = tf.tile(expect_image, [10, 1, 1, 1])
+    result_image = random_cutout(
+        test_image, 20, seed=1234, data_format="channels_first"
+    )
+    np.testing.assert_allclose(tf.shape(result_image), tf.shape(expect_image))
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_with_tf_function():
     test_image = tf.ones([1, 40, 40, 1], dtype=tf.uint8)
-    result_image = tf.function(cutout)(test_image, 2, [2, 2])
+    result_image = tf.function(random_cutout)(test_image, 2)
     cutout_area = tf.zeros([4, 4], dtype=tf.uint8)
     cutout_area = tf.pad(cutout_area, ((0, 36), (0, 36)), constant_values=1)
     expect_image = to_4D_image(cutout_area)
-    np.testing.assert_allclose(result_image, expect_image)
+    np.testing.assert_allclose(tf.shape(result_image), tf.shape(expect_image))
 
 
 if __name__ == "__main__":

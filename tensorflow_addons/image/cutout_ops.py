@@ -16,25 +16,21 @@
 
 import tensorflow as tf
 from tensorflow_addons.utils.types import TensorLike, Number
-from tensorflow_addons.image.utils import from_4D_image, to_4D_image
 from tensorflow.python.keras.utils import conv_utils
 
 
 def _get_image_wh(images, data_format):
-    if tf.equal(tf.rank(images), 4):
-        if data_format == "channels_last":
-            image_height, image_width = tf.shape(images)[1], tf.shape(images)[2]
-        else:
-            image_height, image_width = tf.shape(images)[2], tf.shape(images)[3]
+    if data_format == "channels_last":
+        image_height, image_width = tf.shape(images)[1], tf.shape(images)[2]
     else:
-        image_height, image_width = tf.shape(images)[0], tf.shape(images)[1]
+        image_height, image_width = tf.shape(images)[2], tf.shape(images)[3]
 
     return image_height, image_width
 
 
 def _norm_params(images, mask_size, data_format):
     mask_size = tf.convert_to_tensor(mask_size)
-    if tf.equal(tf.rank(mask_size), 0):
+    if tf.rank(mask_size) == 0:
         mask_size = tf.stack([mask_size, mask_size])
     data_format = conv_utils.normalize_data_format(data_format)
     image_height, image_width = _get_image_wh(images, data_format)
@@ -50,19 +46,18 @@ def random_cutout(
 ) -> tf.Tensor:
     """Apply cutout (https://arxiv.org/abs/1708.04552) to images.
 
-    This operation applies a (2*pad_size[0] x 2*pad_size[1]) mask of zeros to
+    This operation applies a (2 * mask_height x 2 * mask_width) mask of zeros to
     a random location within `img`. The pixel values filled in will be of the
     value `replace`. The located where the mask will be applied is randomly
     chosen uniformly over the whole images.
 
     Args:
       images: A tensor of shape
-        (num_images, num_rows, num_columns, num_channels)
-        (NHWC), (num_images, num_channels, num_rows, num_columns)(NCHW), (num_rows, num_columns, num_channels) (HWC), or
-        (num_rows, num_columns) (HW).
+        (batch_size, height, width, channels)
+        (NHWC), (batch_size, channels, height, width)(NCHW).
       mask_size: Specifies how big the zero mask that will be generated is that
         is applied to the images. The mask will be of size
-        (2*pad_size[0] x 2*pad_size[1]).
+        (2 * mask_height x 2 * mask_width).
       constant_values: What pixel value to fill in the images in the area that has
         the cutout mask applied to it.
       seed: A Python integer. Used in combination with `tf.random.set_seed` to
@@ -75,23 +70,20 @@ def random_cutout(
     Returns:
       An image Tensor.
     """
+    batch_size = tf.shape(images)[0]
     mask_size, data_format, image_height, image_width = _norm_params(
         images, mask_size, data_format
     )
 
     cutout_center_height = tf.random.uniform(
-        shape=[], minval=0, maxval=image_height, dtype=tf.int32, seed=seed
+        shape=[batch_size], minval=0, maxval=image_height, dtype=tf.int32, seed=seed
     )
     cutout_center_width = tf.random.uniform(
-        shape=[], minval=0, maxval=image_width, dtype=tf.int32, seed=seed
+        shape=[batch_size], minval=0, maxval=image_width, dtype=tf.int32, seed=seed
     )
-    return cutout(
-        images,
-        mask_size,
-        [cutout_center_height, cutout_center_width],
-        constant_values,
-        data_format,
-    )
+
+    offset = tf.transpose([cutout_center_height, cutout_center_width], [1, 0])
+    return cutout(images, mask_size, offset, constant_values, data_format,)
 
 
 def cutout(
@@ -103,19 +95,17 @@ def cutout(
 ) -> tf.Tensor:
     """Apply cutout (https://arxiv.org/abs/1708.04552) to images.
 
-    This operation applies a (2*pad_size[0] x 2*pad_size[1]) mask of zeros to
+    This operation applies a (2 * mask_height x 2 * mask_width) mask of zeros to
     a random location within `img`. The pixel values filled in will be of the
     value `replace`. The located where the mask will be applied is randomly
     chosen uniformly over the whole images.
 
     Args:
-      images: A tensor of shape
-        (num_images, num_rows, num_columns, num_channels)
-        (NHWC), (num_images, num_channels, num_rows, num_columns)(NCHW), (num_rows, num_columns, num_channels) (HWC), or
-        (num_rows, num_columns) (HW).
+      images: A tensor of shape (batch_size, height, width, channels)
+        (NHWC), (batch_size, channels, height, width)(NCHW).
       mask_size: Specifies how big the zero mask that will be generated is that
         is applied to the images. The mask will be of size
-        (2*pad_size[0] x 2*pad_size[1]).
+        (2 * mask_height x 2 * mask_width).
       offset: A tuple of (height, width)
       constant_values: What pixel value to fill in the images in the area that has
         the cutout mask applied to it.
@@ -128,40 +118,48 @@ def cutout(
       An image Tensor.
     """
     with tf.name_scope("cutout"):
+        offset = tf.convert_to_tensor(offset)
         mask_size, data_format, image_height, image_width = _norm_params(
             images, mask_size, data_format
         )
+        if tf.rank(offset) == 1:
+            offset = tf.expand_dims(offset, 0)
+        cutout_center_heights = offset[:, 0]
+        cutout_center_widths = offset[:, 1]
 
-        cutout_center_height = offset[0]
-        cutout_center_width = offset[1]
+        lower_pads = tf.maximum(0, cutout_center_heights - mask_size[0])
+        upper_pads = tf.maximum(0, image_height - cutout_center_heights - mask_size[0])
+        left_pads = tf.maximum(0, cutout_center_widths - mask_size[1])
+        right_pads = tf.maximum(0, image_width - cutout_center_widths - mask_size[1])
 
-        lower_pad = tf.maximum(0, cutout_center_height - mask_size[0])
-        upper_pad = tf.maximum(0, image_height - cutout_center_height - mask_size[0])
-        left_pad = tf.maximum(0, cutout_center_width - mask_size[1])
-        right_pad = tf.maximum(0, image_width - cutout_center_width - mask_size[1])
-
-        cutout_shape = [
-            image_height - (lower_pad + upper_pad),
-            image_width - (left_pad + right_pad),
-        ]
-        padding_dims = [[lower_pad, upper_pad], [left_pad, right_pad]]
-        mask = tf.pad(
-            tf.zeros(cutout_shape, dtype=images.dtype), padding_dims, constant_values=1
+        cutout_shape = tf.transpose(
+            [
+                image_height - (lower_pads + upper_pads),
+                image_width - (left_pads + right_pads),
+            ],
+            [1, 0],
         )
-        mask_4d = to_4D_image(mask)
-        if tf.equal(tf.rank(images), 3):
-            mask = tf.tile(from_4D_image(mask_4d, 3), [1, 1, tf.shape(images)[-1]])
-        elif tf.equal(tf.rank(images), 4):
-            if data_format == "channels_last":
-                mask = tf.tile(
-                    mask_4d, [tf.shape(images)[0], 1, 1, tf.shape(images)[-1]]
-                )
-            else:
-                mask = tf.tile(
-                    mask_4d, [tf.shape(images)[0], tf.shape(images)[1], 1, 1]
-                )
+        masks = tf.TensorArray(images.dtype, 0, dynamic_size=True)
+        for i in tf.range(tf.shape(cutout_shape)[0]):
+            padding_dims = [
+                [lower_pads[i], upper_pads[i]],
+                [left_pads[i], right_pads[i]],
+            ]
+            mask = tf.pad(
+                tf.zeros(cutout_shape[i], dtype=images.dtype),
+                padding_dims,
+                constant_values=1,
+            )
+            masks = masks.write(i, mask)
+
+        if data_format == "channels_last":
+            mask_4d = tf.expand_dims(masks.stack(), -1)
+            mask = tf.tile(mask_4d, [1, 1, 1, tf.shape(images)[-1]])
+        else:
+            mask_4d = tf.expand_dims(masks.stack(), 1)
+            mask = tf.tile(mask_4d, [1, tf.shape(images)[1], 1, 1])
         images = tf.where(
-            tf.equal(mask, 0),
+            mask == 0,
             tf.ones_like(images, dtype=images.dtype) * constant_values,
             images,
         )
