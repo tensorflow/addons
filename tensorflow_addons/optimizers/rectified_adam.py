@@ -79,7 +79,10 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         weight_decay: FloatTensorLike = 0.0,
         amsgrad: bool = False,
         sma_threshold: FloatTensorLike = 5.0,
-        total_steps: int = 0,
+        # float for total_steps is here to be able to load models created before
+        # https://github.com/tensorflow/addons/pull/1375 was merged. It should be
+        # removed at some point.
+        total_steps: Union[int, float] = 0,
         warmup_proportion: FloatTensorLike = 0.1,
         min_lr: FloatTensorLike = 0.0,
         name: str = "RectifiedAdam",
@@ -123,7 +126,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         self._set_hyper("decay", self._initial_decay)
         self._set_hyper("weight_decay", weight_decay)
         self._set_hyper("sma_threshold", sma_threshold)
-        self._set_hyper("total_steps", float(total_steps))
+        self._set_hyper("total_steps", total_steps)
         self._set_hyper("warmup_proportion", warmup_proportion)
         self._set_hyper("min_lr", min_lr)
         self.epsilon = epsilon or tf.keras.backend.epsilon()
