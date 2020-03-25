@@ -25,13 +25,16 @@ from tensorflow_addons.activations.hardshrink import _hardshrink_py
 from tensorflow_addons.utils import test_utils
 
 
+def test_invalid():
+    with pytest.raises(
+        tf.errors.OpError, match="lower must be less than or equal to upper."
+    ):
+        y = _hardshrink_custom_op(tf.ones(shape=(1, 2, 3)), lower=2.0, upper=-2.0)
+        y.numpy()
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class HardshrinkTest(tf.test.TestCase, parameterized.TestCase):
-    def test_invalid(self):
-        with self.assertRaisesOpError("lower must be less than or equal to upper."):
-            y = _hardshrink_custom_op(tf.ones(shape=(1, 2, 3)), lower=2.0, upper=-2.0)
-            self.evaluate(y)
-
     @parameterized.named_parameters(
         ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
     )
