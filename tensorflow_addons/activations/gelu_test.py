@@ -42,8 +42,6 @@ class GeluTest(tf.test.TestCase, parameterized.TestCase):
         )
         self.assertAllCloseAccordingToType(gelu(x, False), expected_result)
 
-
-
     @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
     def test_same_as_py_func(self, dtype):
         np.random.seed(100)
