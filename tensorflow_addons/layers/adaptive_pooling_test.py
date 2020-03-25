@@ -18,7 +18,8 @@ import sys
 
 import pytest
 import numpy as np
-from tensorflow_addons.layers.adaptive_pooling import *
+import tensorflow as tf
+from tensorflow_addons.layers.adaptive_pooling import AdaptiveAveragePooling1D
 from tensorflow_addons.utils import test_utils
 
 
