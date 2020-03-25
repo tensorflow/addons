@@ -18,41 +18,37 @@ import sys
 import pytest
 import tensorflow as tf
 from tensorflow_addons import activations
-from tensorflow_addons.utils import test_utils
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class ActivationsTest(tf.test.TestCase):
+ALL_ACTIVATIONS = [
+    "gelu",
+    "hardshrink",
+    "lisht",
+    "mish",
+    "rrelu",
+    "softshrink",
+    "sparsemax",
+    "tanhshrink",
+]
 
-    ALL_ACTIVATIONS = [
-        "gelu",
-        "hardshrink",
-        "lisht",
-        "mish",
-        "rrelu",
-        "softshrink",
-        "sparsemax",
-        "tanhshrink",
-    ]
 
-    def test_serialization(self):
-        for name in self.ALL_ACTIVATIONS:
-            fn = tf.keras.activations.get("Addons>" + name)
-            ref_fn = getattr(activations, name)
-            self.assertEqual(fn, ref_fn)
-            config = tf.keras.activations.serialize(fn)
-            fn = tf.keras.activations.deserialize(config)
-            self.assertEqual(fn, ref_fn)
+@pytest.mark.parametrize("name", ALL_ACTIVATIONS)
+def test_serialization(name):
+    fn = tf.keras.activations.get("Addons>" + name)
+    ref_fn = getattr(activations, name)
+    assert fn == ref_fn
+    config = tf.keras.activations.serialize(fn)
+    fn = tf.keras.activations.deserialize(config)
+    assert fn == ref_fn
 
-    def test_serialization_with_layers(self):
-        for name in self.ALL_ACTIVATIONS:
-            layer = tf.keras.layers.Dense(3, activation=getattr(activations, name))
-            config = tf.keras.layers.serialize(layer)
-            deserialized_layer = tf.keras.layers.deserialize(config)
-            self.assertEqual(
-                deserialized_layer.__class__.__name__, layer.__class__.__name__
-            )
-            self.assertEqual(deserialized_layer.activation.__name__, name)
+
+@pytest.mark.parametrize("name", ALL_ACTIVATIONS)
+def test_serialization_with_layers(name):
+    layer = tf.keras.layers.Dense(3, activation=getattr(activations, name))
+    config = tf.keras.layers.serialize(layer)
+    deserialized_layer = tf.keras.layers.deserialize(config)
+    assert deserialized_layer.__class__.__name__ == layer.__class__.__name__
+    assert deserialized_layer.activation.__name__ == name
 
 
 if __name__ == "__main__":
