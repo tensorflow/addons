@@ -101,3 +101,6 @@
 /tensorflow_addons/text/crf*.py @squadrick
 /tensorflow_addons/text/parse_time*.py @helinwang
 /tensorflow_addons/text/skip_gram*.py @rahulunair
+
+/tensorflow_addons/layers/crf*.py @howl-anderson
+/tensorflow_addons/losses/crf*.py @howl-anderson
