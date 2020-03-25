@@ -335,7 +335,7 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
 
     Arguments
         axis: List of axes that should be normalized. This should represent the
-        spatial dimensions.
+              spatial dimensions.
         epsilon: Small float value added to variance to avoid dividing by zero.
         beta_initializer: Initializer for the beta weight.
         gamma_initializer: Initializer for the gamma weight.
@@ -350,8 +350,10 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
     Input shape
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
-        when using this layer as the first layer in a model. This layer
-        wokrs on a 4-D tensor where the tensor should have the shape [N X H X W X C]
+        when using this layer as the first layer in a model. This layer, as of now,
+        works on a 4-D tensor where the tensor should have the shape [N X H X W X C]
+
+        TODO: Add support for more input shapes, especially for FC layers.
 
     Output shape
         Same shape as input.
@@ -377,7 +379,7 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         **kwargs
     ):
         super().__init__(name=name, **kwargs)
-        self.epsilon = epsilon
+        self.epsilon = tf.cast(epsilon, dtype=self.dtype)
         self.beta_initializer = tf.keras.initializers.get(beta_initializer)
         self.gamma_initializer = tf.keras.initializers.get(gamma_initializer)
         self.beta_regularizer = tf.keras.regularizers.get(beta_regularizer)
@@ -392,15 +394,14 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         else:
             self.eps_learned_initializer = None
 
-        if isinstance(axis, list):
-            self.axis = axis[:]
-        elif isinstance(axis, int):
-            self.axis = axis
-        else:
-            raise TypeError("axis must be int or list, type given: %s" % type(axis))
-        self._check_axis()
+        self._check_axis(axis)
 
     def build(self, input_shape):
+        if len(tf.TensorShape(input_shape)) != 4:
+            raise ValueError(
+                """Only 4-D tensors (CNNs) are supported
+        as of now."""
+            )
         self._check_if_input_shape_is_none(input_shape)
         self._create_input_spec(input_shape)
         self._add_gamma_weight(input_shape)
@@ -408,8 +409,15 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
 
         if self.use_eps_learned:
             self._add_eps_learned_weight()
-        self.built = True
         super().build(input_shape)
+
+    def call(self, inputs):
+        epsilon = tf.math.abs(self.epsilon)
+        if self.use_eps_learned:
+            epsilon += self.eps_learned
+        nu2 = tf.reduce_mean(tf.square(inputs), axis=self.axis, keepdims=True)
+        inputs *= tf.math.rsqrt(nu2 + epsilon)
+        return self.gamma * inputs + self.beta
 
     def compute_output_shape(self, input_shape):
         return input_shape
@@ -436,14 +444,6 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         base_config = super().get_config()
         return dict(**base_config, **config)
 
-    def call(self, inputs):
-        epsilon = tf.math.abs(self.epsilon)
-        if self.use_eps_learned:
-            epsilon += self.eps_learned
-        nu2 = tf.reduce_mean(tf.square(inputs), axis=self.axis, keepdims=True)
-        inputs *= tf.math.rsqrt(nu2 + epsilon)
-        return self.gamma * inputs + self.beta
-
     def _create_input_spec(self, input_shape):
         ndims = len(tf.TensorShape(input_shape))
         for idx, x in enumerate(self.axis):
@@ -461,30 +461,40 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         axis_to_dim = {x: input_shape[x] for x in self.axis}
         self.input_spec = tf.keras.layers.InputSpec(ndim=ndims, axes=axis_to_dim)
 
-    def _check_axis(self):
+    def _check_axis(self, axis):
+        if isinstance(axis, (int, list)):
+            self.axis = axis
+        else:
+            raise TypeError(
+                """axis must be int or list,
+                    type given: %s"""
+                % type(axis)
+            )
+
         if self.axis == 0:
             raise ValueError(
-                "You are trying to normalize your batch axis. You may want to "
-                "use tf.layer.batch_normalization instead"
+                """You are trying to normalize your batch axis. You may want to
+                use tf.keras.layers.batch_normalization instead."""
             )
         if self.axis == -1:
             raise ValueError(
-                "You are trying to normalize your channel axis. You may want to "
-                "use GroupNormalization layer instead from tf_addons"
+                """You are trying to normalize your channel axis. You may want to
+                use tfa.layers.GroupNormalization instead."""
             )
         if self.axis != [1, 2]:
             raise ValueError(
-                "FilterResponseNormalization operates on per-channel basis."
-                "Axis values should be spatial dimensions"
+                """FilterResponseNormalization operates on per-channel basis.
+                Axis values should be a list of spatial dimensions."""
             )
 
     def _check_if_input_shape_is_none(self, input_shape):
         dim1, dim2 = input_shape[self.axis[0]], input_shape[self.axis[1]]
         if dim1 is None or dim2 is None:
             raise ValueError(
-                "Axis " + str(self.axis) + " of "
-                "input tensor should have a defined dimension "
-                "but the layer received an input with shape " + str(input_shape) + "."
+                """Axis {} of input tensor should have a defined dimension but
+                the layer received an input with shape {}.""".format(
+                    self.axis, input_shape
+                )
             )
 
     def _add_gamma_weight(self, input_shape):

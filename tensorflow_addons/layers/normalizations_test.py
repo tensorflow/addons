@@ -19,9 +19,9 @@ import pytest
 import numpy as np
 import tensorflow as tf
 
+from tensorflow_addons.layers.normalizations import FilterResponseNormalization
 from tensorflow_addons.layers.normalizations import GroupNormalization
 from tensorflow_addons.layers.normalizations import InstanceNormalization
-from tensorflow_addons.layers.normalizations import FilterResponseNormalization
 from tensorflow_addons.utils import test_utils
 
 
@@ -332,72 +332,89 @@ class NormalizationTest(tf.test.TestCase):
         )
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class FilterResponseNormalizationTest(tf.test.TestCase):
-    def calculate_frn(self, x, beta=0.2, gamma=1, eps=1e-6, learned_epsilon=False):
-        if learned_epsilon:
-            eps = eps + 1e-4
-        nu2 = tf.reduce_mean(tf.square(x), axis=[1, 2], keepdims=True)
-        x = x * tf.math.rsqrt(nu2 + tf.abs(eps))
-        return gamma * x + beta
+def calculate_frn(
+    x, beta=0.2, gamma=1, eps=1e-6, learned_epsilon=False, dtype=np.float32
+):
+    if learned_epsilon:
+        eps = eps + 1e-4
+    eps = tf.cast(eps, dtype=dtype)
+    nu2 = tf.reduce_mean(tf.square(x), axis=[1, 2], keepdims=True)
+    x = x * tf.math.rsqrt(nu2 + tf.abs(eps))
+    return gamma * x + beta
 
-    def set_random_seed(self):
-        seed = 0x2020
-        np.random.seed(seed)
-        tf.random.set_seed(seed)
 
-    def test_with_gamma(self):
-        self.set_random_seed()
-        inputs = np.random.rand(28, 28, 1).astype(np.float32)
-        frn = FilterResponseNormalization(
-            beta_initializer="zeros", gamma_initializer="ones"
-        )
-        frn.build((28, 28, 1))
-        observed = frn(inputs)
-        self.evaluate(tf.compat.v1.global_variables_initializer())
-        expected = self.calculate_frn(inputs, beta=0, gamma=1)
-        self.assertAllClose(expected, observed[0])
+def set_random_seed():
+    seed = 0x2020
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
 
-    def test_with_beta(self):
-        self.set_random_seed()
-        inputs = np.random.rand(28, 28, 1).astype(np.float32)
-        frn = FilterResponseNormalization(
-            beta_initializer="ones", gamma_initializer="ones"
-        )
-        frn.build((28, 28, 1))
-        observed = frn(inputs)
-        self.evaluate(tf.compat.v1.global_variables_initializer())
-        expected = self.calculate_frn(inputs, beta=1, gamma=1)
-        self.assertAllClose(expected, observed[0])
 
-    def test_with_epsilon(self):
-        self.set_random_seed()
-        inputs = np.random.rand(28, 28, 1).astype(np.float32)
-        frn = FilterResponseNormalization(
-            beta_initializer=tf.keras.initializers.Constant(0.5),
-            gamma_initializer="ones",
-            learned_epsilon=True,
-        )
-        frn.build((28, 28, 1))
-        self.evaluate(tf.compat.v1.global_variables_initializer())
-        observed = frn(inputs)
-        expected = self.calculate_frn(inputs, beta=0.5, gamma=1, learned_epsilon=True)
-        self.assertAllClose(expected, observed[0])
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_with_beta(dtype):
+    set_random_seed()
+    inputs = np.random.rand(28, 28, 1).astype(dtype)
+    inputs = np.expand_dims(inputs, axis=0)
+    frn = FilterResponseNormalization(
+        beta_initializer="ones", gamma_initializer="ones", dtype=dtype
+    )
+    frn.build((None, 28, 28, 1))
+    observed = frn(inputs)
+    expected = calculate_frn(inputs, beta=1, gamma=1, dtype=dtype)
+    np.testing.assert_allclose(expected[0], observed[0])
 
-    def test_keras_model(self):
-        self.set_random_seed()
-        frn = FilterResponseNormalization(
-            beta_initializer="ones", gamma_initializer="ones"
-        )
-        random_inputs = np.random.rand(10, 32, 32, 3).astype(np.float32)
-        random_labels = np.random.randint(2, size=(10,)).astype(np.float32)
-        input_layer = tf.keras.layers.Input(shape=(32, 32, 3))
-        x = frn(input_layer)
-        x = tf.keras.layers.Flatten()(x)
-        out = tf.keras.layers.Dense(1, activation="sigmoid")(x)
-        model = tf.keras.models.Model(input_layer, out)
-        model.compile(loss="binary_crossentropy", optimizer="sgd")
-        model.fit(random_inputs, random_labels, epochs=2)
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_with_gamma(dtype):
+    set_random_seed()
+    inputs = np.random.rand(28, 28, 1).astype(dtype)
+    inputs = np.expand_dims(inputs, axis=0)
+    frn = FilterResponseNormalization(
+        beta_initializer="zeros", gamma_initializer="ones", dtype=dtype
+    )
+    frn.build((None, 28, 28, 1))
+    observed = frn(inputs)
+    expected = calculate_frn(inputs, beta=0, gamma=1, dtype=dtype)
+    np.testing.assert_allclose(expected[0], observed[0])
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_with_epsilon(dtype):
+    set_random_seed()
+    inputs = np.random.rand(28, 28, 1).astype(dtype)
+    inputs = np.expand_dims(inputs, axis=0)
+    frn = FilterResponseNormalization(
+        beta_initializer=tf.keras.initializers.Constant(0.5),
+        gamma_initializer="ones",
+        learned_epsilon=True,
+        dtype=dtype,
+    )
+    frn.build((None, 28, 28, 1))
+    observed = frn(inputs)
+    expected = calculate_frn(
+        inputs, beta=0.5, gamma=1, learned_epsilon=True, dtype=dtype
+    )
+    np.testing.assert_allclose(expected[0], observed[0])
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_keras_model(dtype):
+    set_random_seed()
+    frn = FilterResponseNormalization(
+        beta_initializer="ones", gamma_initializer="ones", dtype=dtype
+    )
+    random_inputs = np.random.rand(10, 32, 32, 3).astype(dtype)
+    random_labels = np.random.randint(2, size=(10,)).astype(dtype)
+    input_layer = tf.keras.layers.Input(shape=(32, 32, 3))
+    x = frn(input_layer)
+    x = tf.keras.layers.Flatten()(x)
+    out = tf.keras.layers.Dense(1, activation="sigmoid")(x)
+    model = tf.keras.models.Model(input_layer, out)
+    model.compile(loss="binary_crossentropy", optimizer="sgd")
+    model.fit(random_inputs, random_labels, epochs=2)
 
 
 if __name__ == "__main__":
