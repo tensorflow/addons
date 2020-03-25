@@ -25,25 +25,26 @@ from tensorflow_addons.activations.hardshrink import _hardshrink_py
 from tensorflow_addons.utils import test_utils
 
 
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_hardshrink(dtype):
+    x = tf.constant([-2.0, -0.5, 0.0, 0.5, 2.0], dtype=dtype)
+    expected_result = tf.constant([-2.0, 0.0, 0.0, 0.0, 2.0], dtype=dtype)
+    test_utils.assert_allclose_according_to_type(
+        _hardshrink_custom_op(x), expected_result
+    )
+
+    expected_result = tf.constant([-2.0, 0.0, 0.0, 0.0, 2.0], dtype=dtype)
+    test_utils.assert_allclose_according_to_type(
+        _hardshrink_custom_op(x, lower=-1.0, upper=1.0), expected_result
+    )
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class HardshrinkTest(tf.test.TestCase, parameterized.TestCase):
     def test_invalid(self):
         with self.assertRaisesOpError("lower must be less than or equal to upper."):
             y = _hardshrink_custom_op(tf.ones(shape=(1, 2, 3)), lower=2.0, upper=-2.0)
             self.evaluate(y)
-
-    @parameterized.named_parameters(
-        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
-    )
-    def test_hardshrink(self, dtype):
-        x = tf.constant([-2.0, -0.5, 0.0, 0.5, 2.0], dtype=dtype)
-        expected_result = tf.constant([-2.0, 0.0, 0.0, 0.0, 2.0], dtype=dtype)
-        self.assertAllCloseAccordingToType(_hardshrink_custom_op(x), expected_result)
-
-        expected_result = tf.constant([-2.0, 0.0, 0.0, 0.0, 2.0], dtype=dtype)
-        self.assertAllCloseAccordingToType(
-            _hardshrink_custom_op(x, lower=-1.0, upper=1.0), expected_result
-        )
 
     @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
     def test_theoretical_gradients(self, dtype):
