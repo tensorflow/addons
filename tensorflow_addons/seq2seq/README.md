@@ -1,21 +1,7 @@
 # Addons - Seq2seq
 
-## Maintainers
-| Submodule  |  Maintainers  | Contact Info   |
-|:---------- |:----------- |:--------------|
-| ALL | Google | @qlzh727 | 
-| ALL | Guillaume Klein | @guillaumekln |
-
-
 ## Contents
-| Module | Description                             |
-|:----------------------- |:-----------------------------|
-| attention_wrapper | Attention related functions and RNN cell wrapper |
-| basic_decoder | Basic decoder that does not use beam search |
-| beam_search_decoder | Decoder that uses beam search |
-| decoder | Base decoders object and functions for user to create customized decoder |
-| loss | Sequence loss which can sum/average over batch or timesteps dimention |
-| sampler | Objects that work with basic_decoder to provide input for each timestep |
+https://www.tensorflow.org/addons/api_docs/python/tfa/seq2seq
 
 ## Contribution Guidelines
 #### Standard API
@@ -28,9 +14,10 @@ In order to conform with the current API standard, all objects must:
 #### Testing Requirements
  * Simple unittests that demonstrate the class is behaving as expected on
    some set of known inputs and outputs.
- * When applicable, run all tests with TensorFlow's
-   `@run_in_graph_and_eager_modes` (for test method)
-   or `run_all_in_graph_and_eager_modes` (for TestCase subclass) decorator.
+ * To run your `tf.functions` in eager mode and graph mode in the tests, 
+   you can use the `@pytest.mark.usefixtures("maybe_run_functions_eagerly")` 
+   decorator. This will run the tests twice, once normally, and once
+   with `tf.config.experimental_run_functions_eagerly(True)`.
  * Add a `py_test` to this sub-package's BUILD file.
 
 ## Sample code and Migration guide from TF 1.X

@@ -14,8 +14,10 @@
 # ==============================================================================
 """Tests for tfa.seq2seq.seq2seq.beam_search_decoder."""
 
-import numpy as np
+import sys
 
+import pytest
+import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.seq2seq import attention_wrapper
@@ -23,107 +25,105 @@ from tensorflow_addons.seq2seq import beam_search_decoder, gather_tree
 from tensorflow_addons.utils import test_utils
 
 
+def test_gather_tree():
+    # (max_time = 3, batch_size = 2, beam_width = 3)
+
+    # create (batch_size, max_time, beam_width) matrix and transpose it
+    predicted_ids = np.array(
+        [[[1, 2, 3], [4, 5, 6], [7, 8, 9]], [[2, 3, 4], [5, 6, 7], [8, 9, 10]]],
+        dtype=np.int32,
+    ).transpose([1, 0, 2])
+    parent_ids = np.array(
+        [[[0, 0, 0], [0, 1, 1], [2, 1, 2]], [[0, 0, 0], [1, 2, 0], [2, 1, 1]]],
+        dtype=np.int32,
+    ).transpose([1, 0, 2])
+
+    # sequence_lengths is shaped (batch_size = 3)
+    max_sequence_lengths = [3, 3]
+
+    expected_result = np.array(
+        [[[2, 2, 2], [6, 5, 6], [7, 8, 9]], [[2, 4, 4], [7, 6, 6], [8, 9, 10]]]
+    ).transpose([1, 0, 2])
+
+    res = gather_tree(
+        predicted_ids,
+        parent_ids,
+        max_sequence_lengths=max_sequence_lengths,
+        end_token=11,
+    )
+
+    np.testing.assert_equal(expected_result, res)
+
+
+def _test_gather_tree_from_array(depth_ndims=0, merged_batch_beam=False):
+    array = np.array(
+        [
+            [[1, 2, 3], [4, 5, 6], [7, 8, 9], [0, 0, 0]],
+            [[2, 3, 4], [5, 6, 7], [8, 9, 10], [11, 12, 0]],
+        ]
+    ).transpose([1, 0, 2])
+    parent_ids = np.array(
+        [
+            [[0, 0, 0], [0, 1, 1], [2, 1, 2], [-1, -1, -1]],
+            [[0, 0, 0], [1, 1, 0], [2, 0, 1], [0, 1, 0]],
+        ]
+    ).transpose([1, 0, 2])
+    expected_array = np.array(
+        [
+            [[2, 2, 2], [6, 5, 6], [7, 8, 9], [0, 0, 0]],
+            [[2, 3, 2], [7, 5, 7], [8, 9, 8], [11, 12, 0]],
+        ]
+    ).transpose([1, 0, 2])
+    sequence_length = [[3, 3, 3], [4, 4, 3]]
+
+    array = tf.convert_to_tensor(array, dtype=tf.float32)
+    parent_ids = tf.convert_to_tensor(parent_ids, dtype=tf.int32)
+    expected_array = tf.convert_to_tensor(expected_array, dtype=tf.float32)
+
+    max_time = tf.shape(array)[0]
+    batch_size = tf.shape(array)[1]
+    beam_width = tf.shape(array)[2]
+
+    def _tile_in_depth(tensor):
+        # Generate higher rank tensors by concatenating tensor and
+        # tensor + 1.
+        for _ in range(depth_ndims):
+            tensor = tf.stack([tensor, tensor + 1], -1)
+        return tensor
+
+    if merged_batch_beam:
+        array = tf.reshape(array, [max_time, batch_size * beam_width])
+        expected_array = tf.reshape(expected_array, [max_time, batch_size * beam_width])
+
+    if depth_ndims > 0:
+        array = _tile_in_depth(array)
+        expected_array = _tile_in_depth(expected_array)
+
+    sorted_array = beam_search_decoder.gather_tree_from_array(
+        array, parent_ids, sequence_length
+    )
+
+    np.testing.assert_equal(expected_array.numpy(), sorted_array.numpy())
+
+
+def test_gather_tree_from_array_scalar():
+    _test_gather_tree_from_array()
+
+
+def test_gather_tree_from_array_1d():
+    _test_gather_tree_from_array(depth_ndims=1)
+
+
+def test_gather_tree_from_array_1d_with_merged_batch_beam():
+    _test_gather_tree_from_array(depth_ndims=1, merged_batch_beam=True)
+
+
+def test_gather_tree_from_array_2d():
+    _test_gather_tree_from_array(depth_ndims=2)
+
+
 class TestGatherTree(tf.test.TestCase):
     """Tests the gather_tree function."""
-
-    def test_gather_tree(self):
-        # (max_time = 3, batch_size = 2, beam_width = 3)
-
-        # create (batch_size, max_time, beam_width) matrix and transpose it
-        predicted_ids = np.array(
-            [[[1, 2, 3], [4, 5, 6], [7, 8, 9]], [[2, 3, 4], [5, 6, 7], [8, 9, 10]]],
-            dtype=np.int32,
-        ).transpose([1, 0, 2])
-        parent_ids = np.array(
-            [[[0, 0, 0], [0, 1, 1], [2, 1, 2]], [[0, 0, 0], [1, 2, 0], [2, 1, 1]]],
-            dtype=np.int32,
-        ).transpose([1, 0, 2])
-
-        # sequence_lengths is shaped (batch_size = 3)
-        max_sequence_lengths = [3, 3]
-
-        expected_result = np.array(
-            [[[2, 2, 2], [6, 5, 6], [7, 8, 9]], [[2, 4, 4], [7, 6, 6], [8, 9, 10]]]
-        ).transpose([1, 0, 2])
-
-        res = gather_tree(
-            predicted_ids,
-            parent_ids,
-            max_sequence_lengths=max_sequence_lengths,
-            end_token=11,
-        )
-
-        with self.cached_session() as sess:
-            res_ = sess.run(res)
-
-        self.assertAllEqual(expected_result, res_)
-
-    def _test_gather_tree_from_array(self, depth_ndims=0, merged_batch_beam=False):
-        array = np.array(
-            [
-                [[1, 2, 3], [4, 5, 6], [7, 8, 9], [0, 0, 0]],
-                [[2, 3, 4], [5, 6, 7], [8, 9, 10], [11, 12, 0]],
-            ]
-        ).transpose([1, 0, 2])
-        parent_ids = np.array(
-            [
-                [[0, 0, 0], [0, 1, 1], [2, 1, 2], [-1, -1, -1]],
-                [[0, 0, 0], [1, 1, 0], [2, 0, 1], [0, 1, 0]],
-            ]
-        ).transpose([1, 0, 2])
-        expected_array = np.array(
-            [
-                [[2, 2, 2], [6, 5, 6], [7, 8, 9], [0, 0, 0]],
-                [[2, 3, 2], [7, 5, 7], [8, 9, 8], [11, 12, 0]],
-            ]
-        ).transpose([1, 0, 2])
-        sequence_length = [[3, 3, 3], [4, 4, 3]]
-
-        array = tf.convert_to_tensor(array, dtype=tf.float32)
-        parent_ids = tf.convert_to_tensor(parent_ids, dtype=tf.int32)
-        expected_array = tf.convert_to_tensor(expected_array, dtype=tf.float32)
-
-        max_time = tf.shape(array)[0]
-        batch_size = tf.shape(array)[1]
-        beam_width = tf.shape(array)[2]
-
-        def _tile_in_depth(tensor):
-            # Generate higher rank tensors by concatenating tensor and
-            # tensor + 1.
-            for _ in range(depth_ndims):
-                tensor = tf.stack([tensor, tensor + 1], -1)
-            return tensor
-
-        if merged_batch_beam:
-            array = tf.reshape(array, [max_time, batch_size * beam_width])
-            expected_array = tf.reshape(
-                expected_array, [max_time, batch_size * beam_width]
-            )
-
-        if depth_ndims > 0:
-            array = _tile_in_depth(array)
-            expected_array = _tile_in_depth(expected_array)
-
-        sorted_array = beam_search_decoder.gather_tree_from_array(
-            array, parent_ids, sequence_length
-        )
-
-        with self.cached_session() as sess:
-            sorted_array = sess.run(sorted_array)
-            expected_array = sess.run(expected_array)
-            self.assertAllEqual(expected_array, sorted_array)
-
-    def test_gather_tree_from_array_scalar(self):
-        self._test_gather_tree_from_array()
-
-    def test_gather_tree_from_array_1d(self):
-        self._test_gather_tree_from_array(depth_ndims=1)
-
-    def test_gather_tree_from_array_1d_with_merged_batch_beam(self):
-        self._test_gather_tree_from_array(depth_ndims=1, merged_batch_beam=True)
-
-    def test_gather_tree_from_array_2d(self):
-        self._test_gather_tree_from_array(depth_ndims=2)
 
     def test_gather_tree_from_array_complex_trajectory(self):
         # Max. time = 7, batch = 1, beam = 5.
@@ -257,45 +257,35 @@ class TestArrayShapeChecks(tf.test.TestCase):
         )
 
 
-class TestEosMasking(tf.test.TestCase):
-    """Tests EOS masking used in beam search."""
-
-    def test_eos_masking(self):
-        probs = tf.constant(
+def test_eos_masking():
+    probs = tf.constant(
+        [
             [
-                [
-                    [-0.2, -0.2, -0.2, -0.2, -0.2],
-                    [-0.3, -0.3, -0.3, 3, 0],
-                    [5, 6, 0, 0, 0],
-                ],
-                [
-                    [-0.2, -0.2, -0.2, -0.2, 0],
-                    [-0.3, -0.3, -0.1, 3, 0],
-                    [5, 6, 3, 0, 0],
-                ],
-            ]
-        )
+                [-0.2, -0.2, -0.2, -0.2, -0.2],
+                [-0.3, -0.3, -0.3, 3, 0],
+                [5, 6, 0, 0, 0],
+            ],
+            [[-0.2, -0.2, -0.2, -0.2, 0], [-0.3, -0.3, -0.1, 3, 0], [5, 6, 3, 0, 0],],
+        ]
+    )
 
-        eos_token = 0
-        previously_finished = np.array([[0, 1, 0], [0, 1, 1]], dtype=bool)
-        masked = beam_search_decoder._mask_probs(probs, eos_token, previously_finished)
+    eos_token = 0
+    previously_finished = np.array([[0, 1, 0], [0, 1, 1]], dtype=bool)
+    masked = beam_search_decoder._mask_probs(probs, eos_token, previously_finished)
+    masked = masked.numpy()
 
-        with self.cached_session() as sess:
-            probs = sess.run(probs)
-            masked = sess.run(masked)
+    np.testing.assert_equal(probs[0][0], masked[0][0])
+    np.testing.assert_equal(probs[0][2], masked[0][2])
+    np.testing.assert_equal(probs[1][0], masked[1][0])
 
-            self.assertAllEqual(probs[0][0], masked[0][0])
-            self.assertAllEqual(probs[0][2], masked[0][2])
-            self.assertAllEqual(probs[1][0], masked[1][0])
+    np.testing.assert_equal(masked[0][1][0], 0)
+    np.testing.assert_equal(masked[1][1][0], 0)
+    np.testing.assert_equal(masked[1][2][0], 0)
 
-            self.assertEqual(masked[0][1][0], 0)
-            self.assertEqual(masked[1][1][0], 0)
-            self.assertEqual(masked[1][2][0], 0)
-
-            for i in range(1, 5):
-                self.assertAllClose(masked[0][1][i], np.finfo("float32").min)
-                self.assertAllClose(masked[1][1][i], np.finfo("float32").min)
-                self.assertAllClose(masked[1][2][i], np.finfo("float32").min)
+    for i in range(1, 5):
+        np.testing.assert_allclose(masked[0][1][i], np.finfo("float32").min)
+        np.testing.assert_allclose(masked[1][1][i], np.finfo("float32").min)
+        np.testing.assert_allclose(masked[1][2][i], np.finfo("float32").min)
 
 
 class TestBeamStep(tf.test.TestCase):
@@ -664,4 +654,4 @@ class BeamSearchDecoderTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

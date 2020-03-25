@@ -14,10 +14,20 @@
 # ==============================================================================
 """Implements npairs loss."""
 
+import platform
+
 import tensorflow as tf
 
 from tensorflow_addons.utils.types import TensorLike
 from typeguard import typechecked
+
+
+def check_if_windows(name):
+    if platform.system() != "Windows":
+        return
+    raise NotImplementedError(
+        "The function {} is not yet available on Windows.".format(name)
+    )
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -49,6 +59,7 @@ def npairs_loss(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
     Returns:
       npairs_loss: float scalar.
     """
+    check_if_windows("npairs_loss")
     y_pred = tf.convert_to_tensor(y_pred)
     y_true = tf.cast(y_true, y_pred.dtype)
 
@@ -108,6 +119,7 @@ def npairs_multilabel_loss(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
     Returns:
       npairs_multilabel_loss: float scalar.
     """
+    check_if_windows("npairs_multilabel_loss")
     y_pred = tf.convert_to_tensor(y_pred)
     y_true = tf.cast(y_true, y_pred.dtype)
 

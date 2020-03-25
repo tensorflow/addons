@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for Yogi optimizer."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -381,4 +384,4 @@ class YogiOptimizerTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

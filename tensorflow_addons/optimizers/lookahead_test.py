@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for Lookahead optimizer."""
 
+import sys
+
+import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -109,13 +112,13 @@ class LookaheadTest(tf.test.TestCase):
         np.random.seed(0x2019)
         tf.random.set_seed(0x2019)
 
-        x = np.random.standard_normal((100000, 3))
+        x = np.random.standard_normal((10000, 3))
         w = np.random.standard_normal((3, 1))
-        y = np.dot(x, w) + np.random.standard_normal((100000, 1)) * 1e-4
+        y = np.dot(x, w) + np.random.standard_normal((10000, 1)) * 1e-4
 
         model = tf.keras.models.Sequential()
         model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
-        model.compile(Lookahead("adam"), loss="mse")
+        model.compile(Lookahead("sgd"), loss="mse")
 
         model.fit(x, y, epochs=3)
 
@@ -124,7 +127,7 @@ class LookaheadTest(tf.test.TestCase):
         predicted = model.predict(x)
 
         max_abs_diff = np.max(np.abs(predicted - y))
-        self.assertLess(max_abs_diff, 1e-4)
+        self.assertLess(max_abs_diff, 1e-3)
 
     def test_model_dynamic_lr(self):
         grad = tf.Variable([[0.1]])
@@ -158,4 +161,4 @@ class LookaheadTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

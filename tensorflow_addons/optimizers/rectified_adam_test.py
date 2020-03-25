@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for Rectified Adam optimizer."""
 
+import sys
+
+import pytest
 import tensorflow as tf
 
 from tensorflow_addons.utils import test_utils
@@ -169,5 +172,14 @@ class RectifiedAdamTest(tf.test.TestCase):
         self.assertEqual(config["total_steps"], 0)
 
 
+def test_serialization():
+    optimizer = RectifiedAdam(
+        lr=1e-3, total_steps=10000, warmup_proportion=0.1, min_lr=1e-5,
+    )
+    config = tf.keras.optimizers.serialize(optimizer)
+    new_optimizer = tf.keras.optimizers.deserialize(config)
+    assert new_optimizer.get_config() == optimizer.get_config()
+
+
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

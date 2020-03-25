@@ -1,33 +1,7 @@
 # Addons - Losses
 
-## Maintainers
-| Submodule  |  Maintainers  | Contact Info   |
-|:---------- |:----------- |:------------- |
-| contrastive |  @WindQAQ | windqaq@gmail.com |
-| crf | @howl-anderson | u1mail2me@gmail.com |
-| focal_loss | @AakashKumarNain<br> @SSaishruthi  | aakashnain@outlook.com<br> saishruthi.tn@gmail.com |
-| giou_loss | @fsx950223  | fsx950223@gmail.com |
-| lifted | @rahulunair | rahulunair@gmail.com  |
-| npairs | @WindQAQ | windqaq@gmail.com |
-| sparsemax_loss | @AndreasMadsen | amwwebdk+github@gmail.com |
-| triplet |  @rahulunair | rahulunair@gmail.com  |
-| quantiles | @RomainBrault | mail@romainbrault.com |
-
-
 ## Components
-| Submodule | Loss  | Reference               |
-|:----------------------- |:---------------------|:--------------------------|
-| contrastive | ContrastiveLoss | http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf |
-| crf_loss | ConditionalRandomFieldLoss | https://en.wikipedia.org/wiki/Conditional_random_field |
-| focal_loss | SigmoidFocalCrossEntropy | https://arxiv.org/abs/1708.02002  |
-| giou_loss | GIoULoss | https://giou.stanford.edu/GIoU.pdf       |
-| lifted | LiftedStructLoss | https://arxiv.org/abs/1511.06452       |
-| npairs | NpairsLoss | http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf |
-| npairs | NpairsMultilabelLoss | http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf |
-| sparsemax_loss | SparsemaxLoss |  https://arxiv.org/abs/1602.02068 |
-| triplet | TripletSemiHardLoss | https://arxiv.org/abs/1503.03832       |
-| quantiles | PinballLoss | https://en.wikipedia.org/wiki/Quantile_regression |
-
+https://www.tensorflow.org/addons/api_docs/python/tfa/losses
 
 ## Contribution Guidelines
 #### Standard API
@@ -40,12 +14,12 @@ must:
 #### Testing Requirements
  * Simple unittests that demonstrate the loss is behaving as expected on
  some set of known inputs and outputs.
- * When applicable, run all tests with TensorFlow's
-   `@run_in_graph_and_eager_modes` (for test method)
-   or `run_all_in_graph_and_eager_modes` (for TestCase subclass)
-   decorator.
+ * To run your `tf.functions` in eager mode and graph mode in the tests, 
+   you can use the `@pytest.mark.usefixtures("maybe_run_functions_eagerly")` 
+   decorator. This will run the tests twice, once normally, and once
+   with `tf.config.experimental_run_functions_eagerly(True)`.
  * Add a `py_test` to this sub-package's BUILD file.
 
 #### Documentation Requirements
- * Update the table of contents in the project's central README.
- * Update the table of contents in this sub-package's README.
+ * Update the [CODEOWNERS file](https://github.com/tensorflow/addons/blob/master/.github/CODEOWNERS)
+
