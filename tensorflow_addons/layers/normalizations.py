@@ -391,6 +391,14 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
 
         if self.use_eps_learned:
             self.eps_learned_initializer = tf.keras.initializers.Constant(1e-4)
+            self.eps_learned = self.add_weight(
+                shape=(1,),
+                name="learned_epsilon",
+                dtype=self.dtype,
+                initializer=tf.keras.initializers.get(self.eps_learned_initializer),
+                regularizer=None,
+                constraint=tf.keras.constraints.non_neg,
+            )
         else:
             self.eps_learned_initializer = None
 
@@ -406,9 +414,6 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         self._create_input_spec(input_shape)
         self._add_gamma_weight(input_shape)
         self._add_beta_weight(input_shape)
-
-        if self.use_eps_learned:
-            self._add_eps_learned_weight()
         super().build(input_shape)
 
     def call(self, inputs):
@@ -520,15 +525,4 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
             initializer=self.beta_initializer,
             regularizer=self.beta_regularizer,
             constraint=self.beta_constraint,
-        )
-
-    def _add_eps_learned_weight(self):
-        shape = (1,)
-        self.eps_learned = self.add_weight(
-            shape=shape,
-            name="learned_epsilon",
-            dtype=self.dtype,
-            initializer=tf.keras.initializers.get(self.eps_learned_initializer),
-            regularizer=None,
-            constraint=tf.keras.constraints.non_neg,
         )
