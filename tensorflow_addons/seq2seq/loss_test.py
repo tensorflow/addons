@@ -21,7 +21,6 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.seq2seq import loss
-from tensorflow_addons.utils import test_utils
 
 
 def get_test_data():
