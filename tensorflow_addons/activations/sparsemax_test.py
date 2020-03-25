@@ -230,28 +230,6 @@ class SparsemaxTest(tf.test.TestCase):
             )
             self.assertShapeEqual(p_expected, tf_sparsemax_op)
 
-    def test_diffrence(self, dtype=None):
-        """check sparsemax proposition 4."""
-        random = np.random.RandomState(7)
-
-        z = random.uniform(low=-3, high=3, size=(test_obs, 10))
-        _, p = self._tf_sparsemax(z, dtype)
-
-        etol = {"float16": 1e-2, "float32": 1e-6, "float64": 1e-9}[dtype]
-
-        for val in range(0, test_obs):
-            for i in range(0, 10):
-                for j in range(0, 10):
-                    # check condition, the obesite pair will be checked anyway
-                    if z[val, i] > z[val, j]:
-                        continue
-
-                    self.assertTrue(
-                        0 <= p[val, j] - p[val, i] <= z[val, j] - z[val, i] + etol,
-                        "0 <= %.10f <= %.10f"
-                        % (p[val, j] - p[val, i], z[val, j] - z[val, i] + etol),
-                    )
-
     def test_two_dimentional(self, dtype=None):
         """check two dimentation sparsemax case."""
         t = np.linspace(-2, 2, test_obs, dtype=dtype)
@@ -264,6 +242,26 @@ class SparsemaxTest(tf.test.TestCase):
         self.assertAllCloseAccordingToType(p0_expected, tf_sparsemax_out[:, 0])
         self.assertAllCloseAccordingToType(1 - p0_expected, tf_sparsemax_out[:, 1])
         self.assertShapeEqual(z, tf_sparsemax_op)
+
+
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_diffrence(dtype):
+    """check sparsemax proposition 4."""
+    random = np.random.RandomState(7)
+
+    z = random.uniform(low=-3, high=3, size=(test_obs, 10))
+    p = sparsemax(z.astype(dtype)).numpy()
+
+    etol = {np.float32: 1e-6, np.float64: 1e-9}[dtype]
+
+    for val in range(0, test_obs):
+        for i in range(0, 10):
+            for j in range(0, 10):
+                # check condition, the obesite pair will be checked anyway
+                if z[val, i] > z[val, j]:
+                    continue
+
+                assert 0 <= p[val, j] - p[val, i] <= z[val, j] - z[val, i] + etol
 
 
 @pytest.mark.parametrize("dtype", ["float32", "float64"])
