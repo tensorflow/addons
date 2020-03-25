@@ -136,81 +136,58 @@ def test_sequence_loss_class(average_across_timesteps, average_across_batch):
     np.testing.assert_allclose(res, expected, atol=1e-6, rtol=1e-6)
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class LossTest(tf.test.TestCase):
-    def setup(self):
-        self.batch_size = 2
-        self.sequence_length = 3
-        self.number_of_classes = 5
-        logits = [
-            tf.constant(i + 0.5, shape=[self.batch_size, self.number_of_classes])
-            for i in range(self.sequence_length)
-        ]
-        self.logits = tf.stack(logits, axis=1)
-        targets = [
-            tf.constant(i, tf.int32, shape=[self.batch_size])
-            for i in range(self.sequence_length)
-        ]
-        self.targets = tf.stack(targets, axis=1)
-        weights = [
-            tf.constant(1.0, shape=[self.batch_size])
-            for _ in range(self.sequence_length)
-        ]
-        self.weights = tf.stack(weights, axis=1)
-        # expected_loss = sparse_softmax_cross_entropy_with_logits(targets,
-        # logits) where targets = [0, 1, 2],
-        # and logits = [[0.5] * 5, [1.5] * 5, [2.5] * 5]
-        self.expected_loss = 1.60944
+def test_sum_reduction():
+    (
+        batch_size,
+        sequence_length,
+        _,
+        logits,
+        targets,
+        weights,
+        expected_loss,
+    ) = get_test_data()
+    seq_loss = loss.SequenceLoss(
+        average_across_timesteps=False,
+        average_across_batch=False,
+        sum_over_timesteps=True,
+        sum_over_batch=True,
+    )
+    average_loss_per_example = seq_loss(targets, logits, weights)
+    res = average_loss_per_example.numpy()
+    np.testing.assert_allclose(expected_loss, res, atol=1e-6, rtol=1e-6)
 
-    def testSumReduction(self):
-        with self.cached_session(use_gpu=True):
-            self.setup()
-            seq_loss = loss.SequenceLoss(
-                average_across_timesteps=False,
-                average_across_batch=False,
-                sum_over_timesteps=True,
-                sum_over_batch=True,
-            )
-            average_loss_per_example = seq_loss(self.targets, self.logits, self.weights)
-            res = self.evaluate(average_loss_per_example)
-            self.assertAllClose(self.expected_loss, res)
+    seq_loss = loss.SequenceLoss(
+        average_across_timesteps=False,
+        average_across_batch=False,
+        sum_over_timesteps=False,
+        sum_over_batch=True,
+    )
+    average_loss_per_sequence = seq_loss(targets, logits, weights)
+    res = average_loss_per_sequence.numpy()
+    compare_per_sequence = np.full((sequence_length), expected_loss)
+    np.testing.assert_allclose(compare_per_sequence, res, atol=1e-6, rtol=1e-6)
 
-            seq_loss = loss.SequenceLoss(
-                average_across_timesteps=False,
-                average_across_batch=False,
-                sum_over_timesteps=False,
-                sum_over_batch=True,
-            )
-            average_loss_per_sequence = seq_loss(
-                self.targets, self.logits, self.weights
-            )
-            res = self.evaluate(average_loss_per_sequence)
-            compare_per_sequence = np.full((self.sequence_length), self.expected_loss)
-            self.assertAllClose(compare_per_sequence, res)
+    seq_loss = loss.SequenceLoss(
+        average_across_timesteps=False,
+        average_across_batch=False,
+        sum_over_timesteps=True,
+        sum_over_batch=False,
+    )
+    average_loss_per_batch = seq_loss(targets, logits, weights)
+    res = average_loss_per_batch.numpy()
+    compare_per_batch = np.full((batch_size), expected_loss)
+    np.testing.assert_allclose(compare_per_batch, res, atol=1e-6, rtol=1e-6)
 
-            seq_loss = loss.SequenceLoss(
-                average_across_timesteps=False,
-                average_across_batch=False,
-                sum_over_timesteps=True,
-                sum_over_batch=False,
-            )
-            average_loss_per_batch = seq_loss(self.targets, self.logits, self.weights)
-            res = self.evaluate(average_loss_per_batch)
-            compare_per_batch = np.full((self.batch_size), self.expected_loss)
-            self.assertAllClose(compare_per_batch, res)
-
-            seq_loss = loss.SequenceLoss(
-                average_across_timesteps=False,
-                average_across_batch=False,
-                sum_over_timesteps=False,
-                sum_over_batch=False,
-            )
-            total_loss = seq_loss(self.targets, self.logits, self.weights)
-            res = self.evaluate(total_loss)
-            compare_total = np.full(
-                (self.batch_size, self.sequence_length), self.expected_loss
-            )
-            self.assertAllClose(compare_total, res)
+    seq_loss = loss.SequenceLoss(
+        average_across_timesteps=False,
+        average_across_batch=False,
+        sum_over_timesteps=False,
+        sum_over_batch=False,
+    )
+    total_loss = seq_loss(targets, logits, weights)
+    res = total_loss.numpy()
+    compare_total = np.full((batch_size, sequence_length), expected_loss)
+    np.testing.assert_allclose(compare_total, res, atol=1e-6, rtol=1e-6)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
