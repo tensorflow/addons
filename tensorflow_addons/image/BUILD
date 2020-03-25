@@ -18,6 +18,7 @@ py_library(
         "connected_components.py",
         "resampler_ops.py",
         "compose_ops.py",
+        "color_ops.py",
     ]),
     data = [
         ":sparse_image_warp_test_data",
@@ -173,6 +174,18 @@ py_test(
         "compose_ops_test.py",
     ],
     main = "compose_ops_test.py",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "color_ops_test",
+    size = "small",
+    srcs = [
+        "color_ops_test.py",
+    ],
+    main = "color_ops_test.py",
     deps = [
         ":image",
     ],

@@ -5,7 +5,7 @@
 
 /tensorflow_addons/activations/ @facaiy @seanpmorgan
 /tensorflow_addons/callbacks/ @squadrick @shun-lin
-/tensorflow_addons/image/ @windqaq @facaiy 
+/tensorflow_addons/image/ @windqaq @facaiy
 /tensorflow_addons/layers/ @seanpmorgan @facaiy
 /tensorflow_addons/losses/ @facaiy @windqaq
 /tensorflow_addons/metrics/ @squadrick
@@ -36,7 +36,9 @@
 /tensorflow_addons/callbacks/time_stopping*.py @shun-lin
 /tensorflow_addons/callbacks/tqdm_progress_bar*.py @shun-lin
 
+/tensorflow_addons/image/compose_ops*.py @abhichou4
 /tensorflow_addons/image/connected_components*.py @sayoojbk
+/tensorflow_addons/image/color_ops*.py @abhichou4
 /tensorflow_addons/image/dense_image_warp*.py @windQAQ
 /tensorflow_addons/image/distance_transform*.py @mels630
 /tensorflow_addons/image/distort_image_ops*.py @windqaq
