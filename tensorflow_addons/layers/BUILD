@@ -6,6 +6,7 @@ py_library(
     name = "layers",
     srcs = [
         "__init__.py",
+        "adaptive_pooling.py",
         "gelu.py",
         "maxout.py",
         "multihead_attention.py",
@@ -24,6 +25,18 @@ py_library(
     deps = [
         "//tensorflow_addons/activations",
         "//tensorflow_addons/utils",
+    ],
+)
+
+py_test(
+    name = "adaptive_pooling_test",
+    size = "small",
+    srcs = [
+        "adaptive_pooling_test.py",
+    ],
+    main = "adaptive_pooling_test.py",
+    deps = [
+        ":layers",
     ],
 )
 
