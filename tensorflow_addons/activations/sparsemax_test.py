@@ -252,18 +252,22 @@ class SparsemaxTest(tf.test.TestCase):
                         % (p[val, j] - p[val, i], z[val, j] - z[val, i] + etol),
                     )
 
-    def test_two_dimentional(self, dtype=None):
-        """check two dimentation sparsemax case."""
-        t = np.linspace(-2, 2, test_obs, dtype=dtype)
-        z = np.vstack([t, np.zeros(test_obs, dtype=dtype)]).T
 
-        tf_sparsemax_op, tf_sparsemax_out = self._tf_sparsemax(z, dtype)
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_two_dimentional(dtype):
+    """check two dimentation sparsemax case."""
+    t = np.linspace(-2, 2, test_obs, dtype=dtype)
+    z = np.vstack([t, np.zeros(test_obs, dtype=dtype)]).T
 
-        p0_expected = np.select([t < -1, t <= 1, t > 1], [0, (t + 1) / 2, 1])
+    tf_sparsemax_out = sparsemax(z.astype(dtype)).numpy()
 
-        self.assertAllCloseAccordingToType(p0_expected, tf_sparsemax_out[:, 0])
-        self.assertAllCloseAccordingToType(1 - p0_expected, tf_sparsemax_out[:, 1])
-        self.assertShapeEqual(z, tf_sparsemax_op)
+    p0_expected = np.select([t < -1, t <= 1, t > 1], [0, (t + 1) / 2, 1])
+
+    test_utils.assert_allclose_according_to_type(p0_expected, tf_sparsemax_out[:, 0])
+    test_utils.assert_allclose_according_to_type(
+        1 - p0_expected, tf_sparsemax_out[:, 1]
+    )
+    assert z.shape == tf_sparsemax_out.shape
 
 
 @pytest.mark.parametrize("dtype", ["float32", "float64"])
