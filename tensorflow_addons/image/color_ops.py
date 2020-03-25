@@ -19,7 +19,7 @@ import tensorflow as tf
 from tensorflow_addons.utils.types import TensorLike
 
 
-def equalize(image):
+def equalize(image: TensorLike) -> tf.Tensor:
     """Implements Equalize function from PIL using TF ops."""
 
     def scale_channel(image, channel=None):

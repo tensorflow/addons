@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests of color ops"""
 
-import sys
 import pytest
 import tensorflow as tf
 import numpy as np
