@@ -229,6 +229,7 @@ class LossTest(tf.test.TestCase):
             self.assertAllClose(compare_total, res)
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_weighted_sum_reduction():
     (
         batch_size,
@@ -236,7 +237,7 @@ def test_weighted_sum_reduction():
         _,
         logits,
         targets,
-        weights,
+        _,
         expected_loss,
     ) = get_test_data()
     weights = [tf.constant(1.0, shape=[batch_size]) for _ in range(sequence_length)]
