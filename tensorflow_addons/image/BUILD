@@ -177,3 +177,15 @@ py_test(
         ":image",
     ],
 )
+
+py_test(
+    name = "color_ops_test",
+    size = "small",
+    srcs = [
+        "color_ops_test.py",
+    ],
+    main = "color_ops_test.py",
+    deps = [
+        ":image",
+    ],
+)
