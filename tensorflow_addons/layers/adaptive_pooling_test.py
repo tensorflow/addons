@@ -12,27 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for AdaptivePooling layers."""
+"""Tests for AdaptivePooling2D layer."""
 
 import sys
 
 import pytest
 import numpy as np
 import tensorflow as tf
-from tensorflow_addons.layers.adaptive_pooling import AdaptiveAveragePooling1D
+from tensorflow_addons.layers.adaptive_pooling import AdaptiveAveragePooling2D
 from tensorflow_addons.utils import test_utils
 
 
 @test_utils.run_all_in_graph_and_eager_modes
-class AdaptiveAveragePooling1DTest(tf.test.TestCase):
+class AdaptiveAveragePooling2DTest(tf.test.TestCase):
     def test(self):
-        valid_input = np.array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0], dtype=np.float32)
-        valid_input = np.reshape(valid_input, (1, 6, 1))
+        valid_input = np.arange(start=0.0, stop=40.0, step=1.0).astype(np.float32)
+        valid_input = np.reshape(valid_input, (1, 4, 10, 1))
         model = tf.keras.models.Sequential()
-        model.add(AdaptiveAveragePooling1D(2))
+        model.add(AdaptiveAveragePooling2D(2, 2))
         outputs = model.predict(valid_input, steps=1)
         result = np.squeeze(outputs).tolist()
-        self.assertEqual(result, [1.0, 4.0])
+        self.assertEqual(result, [[7.0, 12.0], [27.0, 32.0]])
 
 
 if __name__ == "__main__":
