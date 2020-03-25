@@ -25,23 +25,22 @@ from tensorflow_addons.activations.gelu import _gelu_py
 from tensorflow_addons.utils import test_utils
 
 
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_gelu(dtype):
+    x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
+    expected_result = tf.constant(
+        [-0.04540229, -0.158808, 0.0, 0.841192, 1.9545977], dtype=dtype
+    )
+    test_utils.assert_allclose_according_to_type(gelu(x), expected_result)
+
+    expected_result = tf.constant(
+        [-0.04550028, -0.15865526, 0.0, 0.8413447, 1.9544997], dtype=dtype
+    )
+    test_utils.assert_allclose_according_to_type(gelu(x, False), expected_result)
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class GeluTest(tf.test.TestCase, parameterized.TestCase):
-    @parameterized.named_parameters(
-        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
-    )
-    def test_gelu(self, dtype):
-        x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
-        expected_result = tf.constant(
-            [-0.04540229, -0.158808, 0.0, 0.841192, 1.9545977], dtype=dtype
-        )
-        self.assertAllCloseAccordingToType(gelu(x), expected_result)
-
-        expected_result = tf.constant(
-            [-0.04550028, -0.15865526, 0.0, 0.8413447, 1.9544997], dtype=dtype
-        )
-        self.assertAllCloseAccordingToType(gelu(x, False), expected_result)
-
     @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
     def test_theoretical_gradients(self, dtype):
         # Only test theoretical gradients for float32 and float64
