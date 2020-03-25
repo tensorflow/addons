@@ -27,7 +27,7 @@ def equalize(image: TensorLike) -> tf.Tensor:
         image_dtype = image.dtype
         image = tf.cast(image[:, :, channel], tf.int32)
         # Compute the histogram of the image channel.
-        histo = tf.histogram_fixed_width(image, [0, 255], nbins=256, dtype=image.dtype)
+        histo = tf.histogram_fixed_width(image, [0, 255], nbins=256)
 
         # For the purposes of computing the step, filter out the nonzeros.
         nonzero = tf.where(tf.not_equal(histo, 0))
@@ -54,19 +54,13 @@ def equalize(image: TensorLike) -> tf.Tensor:
 
         return tf.cast(result, image_dtype)
 
-    # Assumes RGB for now.  Scales each channel independently
-    # and then stacks the result.
     if tf.rank(image) == 2:
-        image = tf.expand_dims(image, axis=2)
-        image = scale_channel(image, 0)
+        image = scale_channel(image)
         return tf.squeeze(image)
 
-    if image.shape[2] == 1:
-        image = scale_channel(image, 0)
-        return tf.expand_dims(image, 2)
+    channels = []
+    for channel in range(image.shape[2]):
+        s = scale_channel(image, channel)
+        channels.append(s)
 
-    s1 = scale_channel(image, 0)
-    s2 = scale_channel(image, 1)
-    s3 = scale_channel(image, 2)
-    image = tf.stack([s1, s2, s3], 2)
-    return image
+    return tf.stack(channels, 2)
