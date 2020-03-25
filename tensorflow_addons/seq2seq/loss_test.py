@@ -55,6 +55,53 @@ def get_test_data():
     )
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("average_across_timesteps", [True, False])
+@pytest.mark.parametrize("average_across_batch", [True, False])
+@pytest.mark.parametrize("zero_weights", [True, False])
+def test_sequence_loss(average_across_timesteps, average_across_batch, zero_weights):
+    (
+        batch_size,
+        sequence_length,
+        _,
+        logits,
+        targets,
+        weights,
+        expected_loss,
+    ) = get_test_data()
+
+    if zero_weights:
+        weights = [tf.constant(0.0, shape=[batch_size]) for _ in range(sequence_length)]
+        weights = tf.stack(weights, axis=1)
+
+    computed = loss.sequence_loss(
+        logits,
+        targets,
+        weights,
+        average_across_timesteps=average_across_timesteps,
+        average_across_batch=average_across_batch,
+    )
+    computed = computed.numpy()
+    if average_across_timesteps and average_across_batch and zero_weights:
+        expected = 0.0
+    elif not average_across_timesteps and average_across_batch and zero_weights:
+        expected = np.zeros(sequence_length)
+    elif average_across_timesteps and not average_across_batch and zero_weights:
+        expected = np.zeros(batch_size)
+    elif not average_across_timesteps and not average_across_batch and zero_weights:
+        expected = np.zeros((batch_size, sequence_length))
+    elif average_across_timesteps and average_across_batch and not zero_weights:
+        expected = expected_loss
+    elif not average_across_timesteps and average_across_batch and not zero_weights:
+        expected = np.full(sequence_length, expected_loss)
+    elif average_across_timesteps and not average_across_batch and not zero_weights:
+        expected = np.full(batch_size, expected_loss)
+    else:
+        expected = np.full((batch_size, sequence_length), expected_loss)
+
+    np.testing.assert_allclose(computed, expected, rtol=1e-6, atol=1e-6)
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class LossTest(tf.test.TestCase):
     def setup(self):
@@ -80,54 +127,6 @@ class LossTest(tf.test.TestCase):
         # logits) where targets = [0, 1, 2],
         # and logits = [[0.5] * 5, [1.5] * 5, [2.5] * 5]
         self.expected_loss = 1.60944
-
-    def testSequenceLoss(self):
-        with self.cached_session(use_gpu=True):
-            self.setup()
-            average_loss_per_example = loss.sequence_loss(
-                self.logits,
-                self.targets,
-                self.weights,
-                average_across_timesteps=True,
-                average_across_batch=True,
-            )
-            res = self.evaluate(average_loss_per_example)
-            self.assertAllClose(self.expected_loss, res)
-
-            average_loss_per_sequence = loss.sequence_loss(
-                self.logits,
-                self.targets,
-                self.weights,
-                average_across_timesteps=False,
-                average_across_batch=True,
-            )
-            res = self.evaluate(average_loss_per_sequence)
-            compare_per_sequence = np.full((self.sequence_length), self.expected_loss)
-            self.assertAllClose(compare_per_sequence, res)
-
-            average_loss_per_batch = loss.sequence_loss(
-                self.logits,
-                self.targets,
-                self.weights,
-                average_across_timesteps=True,
-                average_across_batch=False,
-            )
-            res = self.evaluate(average_loss_per_batch)
-            compare_per_batch = np.full((self.batch_size), self.expected_loss)
-            self.assertAllClose(compare_per_batch, res)
-
-            total_loss = loss.sequence_loss(
-                self.logits,
-                self.targets,
-                self.weights,
-                average_across_timesteps=False,
-                average_across_batch=False,
-            )
-            res = self.evaluate(total_loss)
-            compare_total = np.full(
-                (self.batch_size, self.sequence_length), self.expected_loss
-            )
-            self.assertAllClose(compare_total, res)
 
     def testSequenceLossClass(self):
         with self.cached_session(use_gpu=True):
@@ -290,57 +289,6 @@ class LossTest(tf.test.TestCase):
             # The last element in every sequence are zeros, which will be
             # filtered.
             compare_total[:, -1] = 0
-            self.assertAllClose(compare_total, res)
-
-    def testZeroWeights(self):
-        self.setup()
-        weights = [
-            tf.constant(0.0, shape=[self.batch_size])
-            for _ in range(self.sequence_length)
-        ]
-        weights = tf.stack(weights, axis=1)
-        with self.test_session(use_gpu=True):
-            average_loss_per_example = loss.sequence_loss(
-                self.logits,
-                self.targets,
-                weights,
-                average_across_timesteps=True,
-                average_across_batch=True,
-            )
-            res = self.evaluate(average_loss_per_example)
-            self.assertAllClose(0.0, res)
-
-            average_loss_per_sequence = loss.sequence_loss(
-                self.logits,
-                self.targets,
-                weights,
-                average_across_timesteps=False,
-                average_across_batch=True,
-            )
-            res = self.evaluate(average_loss_per_sequence)
-            compare_per_sequence = np.zeros(self.sequence_length)
-            self.assertAllClose(compare_per_sequence, res)
-
-            average_loss_per_batch = loss.sequence_loss(
-                self.logits,
-                self.targets,
-                weights,
-                average_across_timesteps=True,
-                average_across_batch=False,
-            )
-            res = self.evaluate(average_loss_per_batch)
-            compare_per_batch = np.zeros(self.batch_size)
-            self.assertAllClose(compare_per_batch, res)
-
-            total_loss = loss.sequence_loss(
-                self.logits,
-                self.targets,
-                weights,
-                average_across_timesteps=False,
-                average_across_batch=False,
-            )
-            res = self.evaluate(total_loss)
-            compare_total = np.zeros((self.batch_size, self.sequence_length))
             self.assertAllClose(compare_total, res)
 
 
