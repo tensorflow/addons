@@ -265,21 +265,23 @@ class SparsemaxTest(tf.test.TestCase):
         self.assertAllCloseAccordingToType(1 - p0_expected, tf_sparsemax_out[:, 1])
         self.assertShapeEqual(z, tf_sparsemax_op)
 
-    def test_gradient_against_estimate(self, dtype=None):
-        """check sparsemax Rop, against estimated Rop."""
-        random = np.random.RandomState(9)
 
-        # sparsemax is not a smooth function so gradient estimation is only
-        # possible for float64.
-        if dtype != "float64":
-            return
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_gradient_against_estimate(dtype):
+    """check sparsemax Rop, against estimated Rop."""
+    random = np.random.RandomState(9)
 
-        z = random.uniform(low=-1, high=1, size=(test_obs, 10)).astype(dtype)
+    # sparsemax is not a smooth function so gradient estimation is only
+    # possible for float64.
+    if dtype != "float64":
+        return
 
-        (jacob_sym,), (jacob_num,) = tf.test.compute_gradient(
-            lambda logits: sparsemax(logits), [z], delta=1e-6
-        )
-        self.assertAllCloseAccordingToType(jacob_sym, jacob_num)
+    z = random.uniform(low=-1, high=1, size=(test_obs, 10)).astype(dtype)
+
+    (jacob_sym,), (jacob_num,) = tf.test.compute_gradient(
+        lambda logits: sparsemax(logits), [z], delta=1e-6
+    )
+    np.testing.assert_allclose(jacob_sym, jacob_num)
 
 
 if __name__ == "__main__":
