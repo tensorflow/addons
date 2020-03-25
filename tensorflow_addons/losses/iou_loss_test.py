@@ -118,10 +118,10 @@ class IoULossTest(tf.test.TestCase, parameterized.TestCase):
         expected_results = [
             tf.constant(expected_result, dtype=dtype)
             for expected_result in [
-                [0.875, 1.0],
-                [1.4088933645154844, 1.5487535732151345],
-                [1.4065315315315314, 1.5315315315315314],
-                [1.07500000298023224, 1.9333333373069763],
+                0.9375,
+                1.4788234688653095,
+                1.4690315315315314,
+                1.5041666701436043,
             ]
         ]
         for Loss, expected_result in zip(losses, expected_results):
@@ -129,7 +129,7 @@ class IoULossTest(tf.test.TestCase, parameterized.TestCase):
                 model = tf.keras.Sequential()
                 model.compile(
                     optimizer="adam",
-                    loss=Loss(reduction=tf.keras.losses.Reduction.NONE),
+                    loss=Loss(reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE),
                 )
                 loss = model.evaluate(boxes1, boxes2, batch_size=2, steps=1)
                 self.assertAllCloseAccordingToType(loss, expected_result)
