@@ -431,9 +431,6 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
             "gamma_initializer": tf.keras.initializers.serialize(
                 self.gamma_initializer
             ),
-            "eps_learned_initializer": tf.keras.initializers.serialize(
-                self.eps_learned_initializer
-            ),
             "beta_regularizer": tf.keras.regularizers.serialize(self.beta_regularizer),
             "gamma_regularizer": tf.keras.regularizers.serialize(
                 self.gamma_regularizer
