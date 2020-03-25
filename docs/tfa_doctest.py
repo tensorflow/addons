@@ -21,19 +21,15 @@ from __future__ import print_function
 import os
 import re
 import sys
+import pytest
 import textwrap
 import numpy as np
 
-# pylint: disable=unused-import
 from absl import flags
-from absl.testing import absltest
 import doctest
 
-# pylint: disable=unused-import
 import tensorflow_addons as tfa
-import tensorflow.compat.v2 as tf
-
-tf.compat.v1.enable_v2_behavior()
+import tensorflow as tf
 
 FLAGS = flags.FLAGS
 
@@ -54,12 +50,12 @@ def find_modules():
       A list containing all the modules in tensorflow.python.
     """
 
-    tf_modules = []
+    tfa_modules = []
     for name, module in sys.modules.items():
         if name.startswith(PACKAGE):
-            tf_modules.append(module)
+            tfa_modules.append(module)
 
-    return tf_modules
+    return tfa_modules
 
 
 def filter_on_submodules(all_modules, submodule):
@@ -141,22 +137,22 @@ class CustomOutputChecker(doctest.OutputChecker):
 def load_tests(unused_loader, tests, unused_ignore):
     """Loads all the tests in the docstrings and runs them."""
 
-    tf_modules = find_modules()
+    tfa_modules = find_modules()
 
     if FLAGS.module:
-        tf_modules = filter_on_submodules(tf_modules, FLAGS.module)
+        tfa_modules = filter_on_submodules(tfa_modules, FLAGS.module)
 
     if FLAGS.list:
         print("**************************************************")
-        for mod in tf_modules:
+        for mod in tfa_modules:
             print(mod.__name__)
         print("**************************************************")
         return tests
 
     if FLAGS.file:
-        tf_modules = get_module_and_inject_docstring(FLAGS.file)
+        tfa_modules = get_module_and_inject_docstring(FLAGS.file)
 
-    for module in tf_modules:
+    for module in tfa_modules:
         testcase = TfTestCase()
         tests.addTests(
             doctest.DocTestSuite(
@@ -178,4 +174,4 @@ def load_tests(unused_loader, tests, unused_ignore):
 
 
 if __name__ == "__main__":
-    absltest.main()
+    sys.exit(pytest.main([__file__]))
