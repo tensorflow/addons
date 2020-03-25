@@ -41,36 +41,38 @@ SNAKE = np.asarray(
 )
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_disconnected():
+    arr = tf.cast(
+        [
+            [1, 0, 0, 1, 0, 0, 0, 0, 1],
+            [0, 1, 0, 0, 0, 1, 0, 1, 0],
+            [1, 0, 1, 0, 0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0],
+            [0, 0, 1, 0, 0, 0, 0, 0, 0],
+        ],
+        tf.bool,
+    )
+    expected = [
+        [1, 0, 0, 2, 0, 0, 0, 0, 3],
+        [0, 4, 0, 0, 0, 5, 0, 6, 0],
+        [7, 0, 8, 0, 0, 0, 9, 0, 0],
+        [0, 0, 0, 0, 10, 0, 0, 0, 0],
+        [0, 0, 11, 0, 0, 0, 0, 0, 0],
+    ]
+    np.testing.assert_equal(connected_components(arr).numpy(), expected)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_simple():
+    arr = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
+
+    # Single component with id 1.
+    np.testing.assert_equal(connected_components(tf.cast(arr, tf.bool)).numpy(), arr)
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class ConnectedComponentsTest(tf.test.TestCase):
-    def testDisconnected(self):
-        arr = tf.cast(
-            [
-                [1, 0, 0, 1, 0, 0, 0, 0, 1],
-                [0, 1, 0, 0, 0, 1, 0, 1, 0],
-                [1, 0, 1, 0, 0, 0, 1, 0, 0],
-                [0, 0, 0, 0, 1, 0, 0, 0, 0],
-                [0, 0, 1, 0, 0, 0, 0, 0, 0],
-            ],
-            tf.bool,
-        )
-        expected = [
-            [1, 0, 0, 2, 0, 0, 0, 0, 3],
-            [0, 4, 0, 0, 0, 5, 0, 6, 0],
-            [7, 0, 8, 0, 0, 0, 9, 0, 0],
-            [0, 0, 0, 0, 10, 0, 0, 0, 0],
-            [0, 0, 11, 0, 0, 0, 0, 0, 0],
-        ]
-        self.assertAllEqual(self.evaluate(connected_components(arr)), expected)
-
-    def testSimple(self):
-        arr = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]
-
-        # Single component with id 1.
-        self.assertAllEqual(
-            self.evaluate(connected_components(tf.cast(arr, tf.bool))), arr
-        )
-
     def testSnake(self):
 
         # Single component with id 1.
