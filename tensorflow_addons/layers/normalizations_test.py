@@ -417,5 +417,15 @@ def test_keras_model(dtype):
     model.fit(random_inputs, random_labels, epochs=2)
 
 
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_serialization(dtype):
+    frn = FilterResponseNormalization(
+        beta_initializer="ones", gamma_initializer="ones", dtype=dtype
+    )
+    serialized_frn = tf.keras.layers.serialize(frn)
+    new_layer = tf.keras.layers.deserialize(serialized_frn)
+    assert frn.get_config() == new_layer.get_config()
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))
