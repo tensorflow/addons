@@ -42,7 +42,8 @@ class AdaptiveAveragePooling1D(tf.keras.layers.Layer):
             - If `data_format='channels_first'`:
                 3D tensor with shape `(batch_size, features, bins)`.
     """
-    def __init__(self, bins, data_format='channels_last', **kwargs):
+
+    def __init__(self, bins, data_format="channels_last", **kwargs):
         self._bins = bins
         self.data_format = data_format
         super().__init__(**kwargs)
@@ -51,7 +52,7 @@ class AdaptiveAveragePooling1D(tf.keras.layers.Layer):
         super().build(input_shape)
 
     def call(self, inputs, *args):
-        if self.data_format == 'channels_last':
+        if self.data_format == "channels_last":
             splits = tf.split(inputs, self._bins, axis=1)
             splits = tf.stack(splits, axis=1)
             out_vect = tf.reduce_mean(splits, axis=2)
@@ -81,7 +82,8 @@ class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
             - If `data_format='channels_first'`:
                 4D tensor with shape `(batch_size, features, h_bins, w_bins)`.
     """
-    def __init__(self, h_bins, w_bins, data_format='channels_last', **kwargs):
+
+    def __init__(self, h_bins, w_bins, data_format="channels_last", **kwargs):
         self._h_bins = h_bins
         self._w_bins = w_bins
         self.data_format = data_format
@@ -91,7 +93,7 @@ class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
         super().build(input_shape)
 
     def call(self, inputs, *args):
-        if self.data_format == 'channels_last':
+        if self.data_format == "channels_last":
             split_cols = tf.split(inputs, self._h_bins, axis=1)
             split_cols = tf.stack(split_cols, axis=1)
             split_rows = tf.split(split_cols, self._w_bins, axis=3)
@@ -126,7 +128,8 @@ class AdaptiveAveragePooling3D(tf.keras.layers.Layer):
                 - If `data_format='channels_first'`:
                     5D tensor with shape `(batch_size, features, h_bins, w_bins, d_bins)`.
         """
-    def __init__(self, h_bins, w_bins, d_bins, data_format='channels_last', **kwargs):
+
+    def __init__(self, h_bins, w_bins, d_bins, data_format="channels_last", **kwargs):
         self._h_bins = h_bins
         self._w_bins = w_bins
         self._d_bins = d_bins
@@ -137,7 +140,7 @@ class AdaptiveAveragePooling3D(tf.keras.layers.Layer):
         super().build(input_shape)
 
     def call(self, inputs, *args):
-        if self.data_format == 'channels_last':
+        if self.data_format == "channels_last":
             split_cols = tf.split(inputs, self._h_bins, axis=1)
             split_cols = tf.stack(split_cols, axis=1)
             split_rows = tf.split(split_cols, self._w_bins, axis=3)
@@ -181,7 +184,8 @@ class AdaptiveMaxPooling1D(tf.keras.layers.Layer):
             - If `data_format='channels_first'`:
                 3D tensor with shape `(batch_size, features, bins)`.
     """
-    def __init__(self, bins, data_format='channels_last', **kwargs):
+
+    def __init__(self, bins, data_format="channels_last", **kwargs):
         self._bins = bins
         self.data_format = data_format
         super().__init__(**kwargs)
@@ -190,7 +194,7 @@ class AdaptiveMaxPooling1D(tf.keras.layers.Layer):
         super().build(input_shape)
 
     def call(self, inputs, *args):
-        if self.data_format == 'channels_last':
+        if self.data_format == "channels_last":
             splits = tf.split(inputs, self._bins, axis=1)
             splits = tf.stack(splits, axis=1)
             out_vect = tf.reduce_max(splits, axis=2)
@@ -220,7 +224,8 @@ class AdaptiveMaxPooling2D(tf.keras.layers.Layer):
             - If `data_format='channels_first'`:
                 4D tensor with shape `(batch_size, features, h_bins, w_bins)`.
     """
-    def __init__(self, h_bins, w_bins, data_format='channels_last', **kwargs):
+
+    def __init__(self, h_bins, w_bins, data_format="channels_last", **kwargs):
         self._h_bins = h_bins
         self._w_bins = w_bins
         self.data_format = data_format
@@ -230,7 +235,7 @@ class AdaptiveMaxPooling2D(tf.keras.layers.Layer):
         super().build(input_shape)
 
     def call(self, inputs, *args):
-        if self.data_format == 'channels_last':
+        if self.data_format == "channels_last":
             split_cols = tf.split(inputs, self._h_bins, axis=1)
             split_cols = tf.stack(split_cols, axis=1)
             split_rows = tf.split(split_cols, self._w_bins, axis=3)
@@ -265,7 +270,8 @@ class AdaptiveMaxPooling3D(tf.keras.layers.Layer):
                 - If `data_format='channels_first'`:
                     5D tensor with shape `(batch_size, features, h_bins, w_bins, d_bins)`.
         """
-    def __init__(self, h_bins, w_bins, d_bins, data_format='channels_last', **kwargs):
+
+    def __init__(self, h_bins, w_bins, d_bins, data_format="channels_last", **kwargs):
         self._h_bins = h_bins
         self._w_bins = w_bins
         self._d_bins = d_bins
@@ -276,7 +282,7 @@ class AdaptiveMaxPooling3D(tf.keras.layers.Layer):
         super().build(input_shape)
 
     def call(self, inputs, *args):
-        if self.data_format == 'channels_last':
+        if self.data_format == "channels_last":
             split_cols = tf.split(inputs, self._h_bins, axis=1)
             split_cols = tf.stack(split_cols, axis=1)
             split_rows = tf.split(split_cols, self._w_bins, axis=3)
@@ -293,4 +299,3 @@ class AdaptiveMaxPooling3D(tf.keras.layers.Layer):
             split_depth = tf.stack(split_depth, axis=6)
             out_vect = tf.reduce_max(split_depth, axis=[3, 5, 7])
         return out_vect
-

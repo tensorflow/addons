@@ -28,8 +28,10 @@ class AdaptiveAveragePooling1DTest(tf.test.TestCase):
     def test(self):
         valid_input = np.array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0], dtype=np.float32)
         valid_input = np.reshape(valid_input, (1, 6, 1))
-        result = AdaptiveAveragePooling1D(2)(valid_input)
-        result = np.squeeze(result).tolist()
+        model = tf.keras.models.Sequential()
+        model.add(AdaptiveAveragePooling1D(2))
+        outputs = model.predict(valid_input, steps=1)
+        result = np.squeeze(outputs).tolist()
         self.assertEqual(result, [1.0, 4.0])
 
 
