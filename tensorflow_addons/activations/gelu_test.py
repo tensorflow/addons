@@ -43,19 +43,6 @@ class GeluTest(tf.test.TestCase, parameterized.TestCase):
         self.assertAllCloseAccordingToType(gelu(x, False), expected_result)
 
     @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
-    def test_theoretical_gradients(self, dtype):
-        # Only test theoretical gradients for float32 and float64
-        # because of the instability of float16 while computing jacobian
-        x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
-
-        for approximate in [True, False]:
-            with self.subTest(approximate=approximate):
-                theoretical, numerical = tf.test.compute_gradient(
-                    lambda x: gelu(x, approximate=approximate), [x]
-                )
-                self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
-
-    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
     def test_same_as_py_func(self, dtype):
         np.random.seed(100)
         for _ in range(20):
@@ -76,6 +63,19 @@ class GeluTest(tf.test.TestCase, parameterized.TestCase):
             # currently it doesn't work.
             # It necessitates changing the Python or C++ implementation.
             self.assertAllCloseAccordingToType(grad_native, grad_py, atol=1e-5)
+
+
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize("approximate", [True, False])
+def test_theoretical_gradients(dtype, approximate):
+    # Only test theoretical gradients for float32 and float64
+    # because of the instability of float16 while computing jacobian
+    x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
+
+    theoretical, numerical = tf.test.compute_gradient(
+        lambda x: gelu(x, approximate=approximate), [x]
+    )
+    test_utils.assert_allclose_according_to_type(theoretical, numerical, atol=1e-4)
 
 
 if __name__ == "__main__":
