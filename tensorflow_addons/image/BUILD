@@ -18,6 +18,7 @@ py_library(
         "connected_components.py",
         "resampler_ops.py",
         "compose_ops.py",
+        "color_ops.py",
     ]),
     data = [
         ":sparse_image_warp_test_data",
