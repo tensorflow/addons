@@ -16,6 +16,7 @@
 
 import sys
 
+import numpy as np
 import pytest
 import tensorflow as tf
 
@@ -23,16 +24,17 @@ from tensorflow_addons.image import utils as img_utils
 from tensorflow_addons.utils import test_utils
 
 
+def test_to_4d_image():
+    for shape in (2, 4), (2, 4, 1), (1, 2, 4, 1):
+        exp = tf.ones(shape=(1, 2, 4, 1))
+        res = img_utils.to_4D_image(tf.ones(shape=shape))
+        # static shape:
+        assert exp.get_shape() == res.get_shape()
+        np.testing.assert_equal(exp.numpy(), res.numpy())
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class UtilsOpsTest(tf.test.TestCase):
-    def test_to_4D_image(self):
-        for shape in (2, 4), (2, 4, 1), (1, 2, 4, 1):
-            exp = tf.ones(shape=(1, 2, 4, 1))
-            res = img_utils.to_4D_image(tf.ones(shape=shape))
-            # static shape:
-            self.assertAllEqual(exp.get_shape(), res.get_shape())
-            self.assertAllEqual(self.evaluate(exp), self.evaluate(res))
-
     def test_to_4D_image_with_unknown_shape(self):
         fn = tf.function(img_utils.to_4D_image).get_concrete_function(
             tf.TensorSpec(shape=None, dtype=tf.float32)
