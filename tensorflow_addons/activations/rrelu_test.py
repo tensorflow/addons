@@ -53,31 +53,26 @@ def test_rrelu(dtype, training):
     test_utils.assert_allclose_according_to_type(result, expect_result)
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class RreluTest(tf.test.TestCase, parameterized.TestCase):
-    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
-    def test_theoretical_gradients(self, dtype):
-        if tf.executing_eagerly():
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize("training", [True, False])
+def test_theoretical_gradients(dtype, training):
+    def rrelu_wrapper(lower, upper, training):
+        def inner(x):
+            tf.random.set_seed(SEED)
+            return rrelu(x, lower, upper, training=training, seed=SEED)
 
-            def rrelu_wrapper(lower, upper, training):
-                def inner(x):
-                    tf.random.set_seed(SEED)
-                    return rrelu(x, lower, upper, training=training, seed=SEED)
+        return inner
 
-                return inner
+    x = tf.constant([-2.0, -1.0, -0.1, 0.1, 1.0, 2.0], dtype=dtype)
+    lower = 0.1
+    upper = 0.2
 
-            x = tf.constant([-2.0, -1.0, -0.1, 0.1, 1.0, 2.0], dtype=dtype)
-            lower = 0.1
-            upper = 0.2
-
-            for training in [True, False]:
-                with self.subTest(training=training):
-                    theoretical, numerical = tf.test.compute_gradient(
-                        rrelu_wrapper(lower, upper, training), [x]
-                    )
-                    self.assertAllCloseAccordingToType(
-                        theoretical, numerical, rtol=5e-4, atol=5e-4
-                    )
+    theoretical, numerical = tf.test.compute_gradient(
+        rrelu_wrapper(lower, upper, training), [x]
+    )
+    test_utils.assert_allclose_according_to_type(
+        theoretical, numerical, rtol=5e-4, atol=5e-4
+    )
 
 
 if __name__ == "__main__":
