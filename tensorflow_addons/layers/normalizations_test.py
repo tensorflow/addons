@@ -24,22 +24,21 @@ from tensorflow_addons.layers.normalizations import InstanceNormalization
 from tensorflow_addons.utils import test_utils
 
 
+# ------------Tests to ensure proper inheritance. If these suceed you can
+# test for Instance norm by setting Groupnorm groups = -1
+def test_inheritance():
+    assert issubclass(InstanceNormalization, GroupNormalization)
+    assert InstanceNormalization.build == GroupNormalization.build
+    assert InstanceNormalization.call == GroupNormalization.call
+
+
+def test_groups_after_init():
+    layers = InstanceNormalization()
+    assert layers.groups == -1
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class NormalizationTest(tf.test.TestCase):
-
-    # ------------Tests to ensure proper inheritance. If these suceed you can
-    # test for Instance norm by setting Groupnorm groups = -1
-    def test_inheritance(self):
-        self.assertTrue(issubclass(InstanceNormalization, GroupNormalization))
-        self.assertTrue(InstanceNormalization.build == GroupNormalization.build)
-        self.assertTrue(InstanceNormalization.call == GroupNormalization.call)
-
-    def test_groups_after_init(self):
-        layers = InstanceNormalization()
-        self.assertTrue(layers.groups == -1)
-
-    # ------------------------------------------------------------------------------
-
     def test_reshape(self):
         def run_reshape_test(axis, group, input_shape, expected_shape):
             group_layer = GroupNormalization(groups=group, axis=axis)
