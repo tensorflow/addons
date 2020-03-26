@@ -427,5 +427,26 @@ def test_serialization(dtype):
     assert frn.get_config() == new_layer.get_config()
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_eps_gards(dtype):
+    set_random_seed()
+    random_inputs = np.random.rand(10, 32, 32, 3).astype(np.float32)
+    random_labels = np.random.randint(2, size=(10,)).astype(np.float32)
+    input_layer = tf.keras.layers.Input(shape=(32, 32, 3))
+    frn = FilterResponseNormalization(
+        beta_initializer="ones", gamma_initializer="ones", learned_epsilon=True
+    )
+    initial_eps_value = frn.eps_learned.numpy()[0]
+    x = frn(input_layer)
+    x = tf.keras.layers.Flatten()(x)
+    out = tf.keras.layers.Dense(1, activation="sigmoid")(x)
+    model = tf.keras.models.Model(input_layer, out)
+    model.compile(loss="binary_crossentropy", optimizer="sgd")
+    model.fit(random_inputs, random_labels, epochs=1)
+    final_eps_value = frn.eps_learned.numpy()[0]
+    assert initial_eps_value != final_eps_value
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))

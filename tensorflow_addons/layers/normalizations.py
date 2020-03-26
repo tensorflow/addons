@@ -336,7 +336,7 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
     Arguments
         axis: List of axes that should be normalized. This should represent the
               spatial dimensions.
-        epsilon: Small float value added to variance to avoid dividing by zero.
+        epsilon: Small positive float value added to variance to avoid dividing by zero.
         beta_initializer: Initializer for the beta weight.
         gamma_initializer: Initializer for the gamma weight.
         beta_regularizer: Optional regularizer for the beta weight.
@@ -353,7 +353,7 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         when using this layer as the first layer in a model. This layer, as of now,
         works on a 4-D tensor where the tensor should have the shape [N X H X W X C]
 
-        TODO: Add support for more input shapes, especially for FC layers.
+        TODO: Add support for NCHW data format and FC layers.
 
     Output shape
         Same shape as input.
@@ -375,11 +375,12 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         beta_constraint: types.Constraint = None,
         gamma_constraint: types.Constraint = None,
         learned_epsilon: bool = False,
+        learned_epsilon_constraint: types.Constraint = None,
         name: str = None,
         **kwargs
     ):
         super().__init__(name=name, **kwargs)
-        self.epsilon = tf.cast(epsilon, dtype=self.dtype)
+        self.epsilon = tf.math.abs(tf.cast(epsilon, dtype=self.dtype))
         self.beta_initializer = tf.keras.initializers.get(beta_initializer)
         self.gamma_initializer = tf.keras.initializers.get(gamma_initializer)
         self.beta_regularizer = tf.keras.regularizers.get(beta_regularizer)
@@ -391,16 +392,20 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
 
         if self.use_eps_learned:
             self.eps_learned_initializer = tf.keras.initializers.Constant(1e-4)
+            self.eps_learned_constraint = tf.keras.constraints.get(
+                learned_epsilon_constraint
+            )
             self.eps_learned = self.add_weight(
                 shape=(1,),
                 name="learned_epsilon",
                 dtype=self.dtype,
                 initializer=tf.keras.initializers.get(self.eps_learned_initializer),
                 regularizer=None,
-                constraint=tf.keras.constraints.non_neg,
+                constraint=self.eps_learned_constraint,
             )
         else:
             self.eps_learned_initializer = None
+            self.eps_learned_constraint = None
 
         self._check_axis(axis)
 
@@ -417,12 +422,12 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         super().build(input_shape)
 
     def call(self, inputs):
-        epsilon = tf.math.abs(self.epsilon)
+        epsilon = self.epsilon
         if self.use_eps_learned:
-            epsilon += self.eps_learned
+            epsilon += tf.math.abs(self.eps_learned)
         nu2 = tf.reduce_mean(tf.square(inputs), axis=self.axis, keepdims=True)
-        inputs *= tf.math.rsqrt(nu2 + epsilon)
-        return self.gamma * inputs + self.beta
+        normalized_inputs = inputs * tf.math.rsqrt(nu2 + epsilon)
+        return self.gamma * normalized_inputs + self.beta
 
     def compute_output_shape(self, input_shape):
         return input_shape
@@ -442,6 +447,9 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
             ),
             "beta_constraint": tf.keras.constraints.serialize(self.beta_constraint),
             "gamma_constraint": tf.keras.constraints.serialize(self.gamma_constraint),
+            "learned_epsilon_constraint": tf.keras.constraints.serialize(
+                self.eps_learned_constraint
+            ),
         }
         base_config = super().get_config()
         return dict(**base_config, **config)
@@ -464,25 +472,13 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         self.input_spec = tf.keras.layers.InputSpec(ndim=ndims, axes=axis_to_dim)
 
     def _check_axis(self, axis):
-        if isinstance(axis, (int, list)):
-            self.axis = axis
-        else:
+        if not isinstance(axis, list):
             raise TypeError(
-                """axis must be int or list,
-                    type given: %s"""
-                % type(axis)
+                """Expected a list of values but got {}.""".format(type(axis))
             )
+        else:
+            self.axis = axis
 
-        if self.axis == 0:
-            raise ValueError(
-                """You are trying to normalize your batch axis. You may want to
-                use tf.keras.layers.batch_normalization instead."""
-            )
-        if self.axis == -1:
-            raise ValueError(
-                """You are trying to normalize your channel axis. You may want to
-                use tfa.layers.GroupNormalization instead."""
-            )
         if self.axis != [1, 2]:
             raise ValueError(
                 """FilterResponseNormalization operates on per-channel basis.
