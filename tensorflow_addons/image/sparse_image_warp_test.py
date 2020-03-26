@@ -231,42 +231,35 @@ class SparseImageWarpTest(tf.test.TestCase):
                 # than that in the saved png file loaded into target_image.
                 self.assertAllClose(target_image, out_image, atol=2, rtol=1e-3)
 
-    def testThatBackpropRuns(self):
-        """Run optimization to ensure that gradients can be computed."""
-        batch_size = 1
-        image_height = 9
-        image_width = 12
-        image = tf.Variable(
-            np.random.uniform(size=[batch_size, image_height, image_width, 3]),
-            dtype=tf.float32,
-        )
-        control_point_locations = [[3.0, 3.0]]
-        control_point_locations = tf.constant(
-            np.float32(np.expand_dims(control_point_locations, 0))
-        )
-        control_point_displacements = [[0.25, -0.5]]
-        control_point_displacements = tf.constant(
-            np.float32(np.expand_dims(control_point_displacements, 0))
+
+def test_that_backprop_runs():
+    """Run optimization to ensure that gradients can be computed."""
+    batch_size = 1
+    image_height = 9
+    image_width = 12
+    image = tf.Variable(
+        np.random.uniform(size=[batch_size, image_height, image_width, 3]),
+        dtype=tf.float32,
+    )
+    control_point_locations = [[3.0, 3.0]]
+    control_point_locations = tf.constant(
+        np.float32(np.expand_dims(control_point_locations, 0))
+    )
+    control_point_displacements = [[0.25, -0.5]]
+    control_point_displacements = tf.constant(
+        np.float32(np.expand_dims(control_point_displacements, 0))
+    )
+
+    with tf.GradientTape() as t:
+        warped_image, _ = sparse_image_warp(
+            image,
+            control_point_locations,
+            control_point_locations + control_point_displacements,
+            num_boundary_points=3,
         )
 
-        def loss_fn():
-            warped_image, _ = sparse_image_warp(
-                image,
-                control_point_locations,
-                control_point_locations + control_point_displacements,
-                num_boundary_points=3,
-            )
-            loss = tf.reduce_mean(tf.abs(warped_image - image))
-            return loss
-
-        optimizer = tf.keras.optimizers.SGD(
-            learning_rate=0.001, momentum=0.9, clipnorm=1.0
-        )
-        opt_op = optimizer.minimize(loss_fn, [image])
-
-        self.evaluate(tf.compat.v1.global_variables_initializer())
-        for _ in range(5):
-            self.evaluate(opt_op)
+    gradients = t.gradient(warped_image, image).numpy()
+    assert np.sum(np.abs(gradients)) != 0
 
 
 if __name__ == "__main__":
