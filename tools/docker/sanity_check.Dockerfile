@@ -129,6 +129,7 @@ RUN python configure.py --no-deps
 RUN bash tools/install_so_files.sh
 RUN pip install --no-deps -e .
 RUN pytest -v -n auto ./tensorflow_addons/activations
+RUN pytest --ignore-glob=*_test.py
 RUN touch /ok.txt
 
 # -------------------------------
