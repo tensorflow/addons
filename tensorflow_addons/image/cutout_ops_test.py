@@ -19,21 +19,19 @@ import sys
 import pytest
 import tensorflow as tf
 import numpy as np
-from absl.testing import parameterized
 from tensorflow_addons.image.cutout_ops import cutout, random_cutout
 from tensorflow_addons.image.utils import to_4D_image
 
 
-@parameterized.named_parameters(
-    ("float16", np.float16), ("float32", np.float32), ("uint8", np.uint8)
-)
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.uint8])
 def test_different_dtypes(dtype):
     test_image = tf.ones([1, 40, 40, 1], dtype=dtype)
-    result_image = cutout(test_image, 2, [2, 2])
+    result_image = cutout(test_image, 4, [2, 2])
     cutout_area = tf.zeros([4, 4], dtype=dtype)
     cutout_area = tf.pad(cutout_area, ((0, 36), (0, 36)), constant_values=1)
     expect_image = to_4D_image(cutout_area)
     np.testing.assert_allclose(result_image, expect_image)
+    assert result_image.dtype == dtype
 
 
 def test_different_channels():
@@ -48,13 +46,11 @@ def test_different_channels():
 
 
 def test_batch_size():
-    test_image = tf.ones([10, 40, 40, 1], dtype=np.uint8)
-    cutout_area = tf.zeros([4, 4], dtype=np.uint8)
-    cutout_area = tf.pad(cutout_area, ((0, 36), (0, 36)), constant_values=1)
-    expect_image = to_4D_image(cutout_area)
-    expect_image = tf.tile(expect_image, [10, 1, 1, 1])
+    test_image = tf.random.uniform([10, 40, 40, 1], dtype=np.float32)
     result_image = random_cutout(test_image, 20, seed=1234)
-    np.testing.assert_allclose(tf.shape(result_image), tf.shape(expect_image))
+    np.testing.assert_allclose(tf.shape(result_image), [10, 40, 40, 1])
+    means = np.mean(result_image, axis=(1, 2, 3))
+    np.testing.assert_allclose(len(set(means)), 10)
 
 
 def test_channel_first():
@@ -73,7 +69,13 @@ def test_channel_first():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_with_tf_function():
     test_image = tf.ones([1, 40, 40, 1], dtype=tf.uint8)
-    result_image = tf.function(random_cutout)(test_image, 2)
+    result_image = tf.function(
+        random_cutout,
+        input_signature=[
+            tf.TensorSpec(shape=[None, 40, 40, 1], dtype=tf.uint8),
+            tf.TensorSpec(shape=[], dtype=tf.int32),
+        ],
+    )(test_image, 2)
     cutout_area = tf.zeros([4, 4], dtype=tf.uint8)
     cutout_area = tf.pad(cutout_area, ((0, 36), (0, 36)), constant_values=1)
     expect_image = to_4D_image(cutout_area)

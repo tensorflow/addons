@@ -30,11 +30,20 @@ def _get_image_wh(images, data_format):
 
 def _norm_params(images, mask_size, data_format):
     mask_size = tf.convert_to_tensor(mask_size)
-    if tf.rank(mask_size) == 0:
-        mask_size = tf.stack([mask_size, mask_size])
-    data_format = conv_utils.normalize_data_format(data_format)
-    image_height, image_width = _get_image_wh(images, data_format)
-    return mask_size, data_format, image_height, image_width
+    with tf.control_dependencies(
+        [
+            tf.assert_equal(
+                tf.reduce_any(mask_size % 2 != 0),
+                False,
+                "mask_size should be divisible by 2",
+            )
+        ]
+    ):
+        if tf.rank(mask_size) == 0:
+            mask_size = tf.stack([mask_size, mask_size])
+        data_format = conv_utils.normalize_data_format(data_format)
+        image_height, image_width = _get_image_wh(images, data_format)
+        return mask_size, data_format, image_height, image_width
 
 
 def random_cutout(
@@ -46,7 +55,7 @@ def random_cutout(
 ) -> tf.Tensor:
     """Apply cutout (https://arxiv.org/abs/1708.04552) to images.
 
-    This operation applies a (2 * mask_height x 2 * mask_width) mask of zeros to
+    This operation applies a (mask_height x mask_width) mask of zeros to
     a random location within `img`. The pixel values filled in will be of the
     value `replace`. The located where the mask will be applied is randomly
     chosen uniformly over the whole images.
@@ -57,7 +66,7 @@ def random_cutout(
         (NHWC), (batch_size, channels, height, width)(NCHW).
       mask_size: Specifies how big the zero mask that will be generated is that
         is applied to the images. The mask will be of size
-        (2 * mask_height x 2 * mask_width).
+        (mask_height x mask_width). Note: mask_size should be divisible by 2.
       constant_values: What pixel value to fill in the images in the area that has
         the cutout mask applied to it.
       seed: A Python integer. Used in combination with `tf.random.set_seed` to
@@ -95,8 +104,8 @@ def cutout(
 ) -> tf.Tensor:
     """Apply cutout (https://arxiv.org/abs/1708.04552) to images.
 
-    This operation applies a (2 * mask_height x 2 * mask_width) mask of zeros to
-    a random location within `img`. The pixel values filled in will be of the
+    This operation applies a (mask_height x mask_width) mask of zeros to
+    a location within `img` specified by the offset. The pixel values filled in will be of the
     value `replace`. The located where the mask will be applied is randomly
     chosen uniformly over the whole images.
 
@@ -105,8 +114,8 @@ def cutout(
         (NHWC), (batch_size, channels, height, width)(NCHW).
       mask_size: Specifies how big the zero mask that will be generated is that
         is applied to the images. The mask will be of size
-        (2 * mask_height x 2 * mask_width).
-      offset: A tuple of (height, width)
+        (mask_height x mask_width).
+      offset: A tuple of (height, width) or (batch_size, 2)
       constant_values: What pixel value to fill in the images in the area that has
         the cutout mask applied to it.
       data_format: A string, one of `channels_last` (default) or `channels_first`.
@@ -122,6 +131,8 @@ def cutout(
         mask_size, data_format, image_height, image_width = _norm_params(
             images, mask_size, data_format
         )
+        mask_size = mask_size // 2
+
         if tf.rank(offset) == 1:
             offset = tf.expand_dims(offset, 0)
         cutout_center_heights = offset[:, 0]
