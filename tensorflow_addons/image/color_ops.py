@@ -1,4 +1,4 @@
-# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Color Ops"""
+"""Color operations.
+    equalize: Equalizes image histogram
+"""
 
 import tensorflow as tf
 
@@ -22,7 +24,7 @@ from tensorflow_addons.image.utils import to_4D_image, from_4D_image
 from typing import Optional
 
 
-def equalize_batch(image: TensorLike, data_format: str = "channels_last") -> tf.Tensor:
+def equalize_image(image: TensorLike, data_format: str = "channels_last") -> tf.Tensor:
     """Implements Equalize function from PIL using TF ops."""
 
     def scale_channel(image, channel=None):
@@ -57,17 +59,10 @@ def equalize_batch(image: TensorLike, data_format: str = "channels_last") -> tf.
 
         return tf.cast(result, image_dtype)
 
-    if tf.rank(image) == 2:
-        image = scale_channel(image)
-        return tf.squeeze(image)
-
-    channels = []
     idx = 2 if data_format == "channels_last" else 0
-    for channel in range(image.shape[idx]):
-        s = scale_channel(image, channel)
-        channels.append(s)
+    image = tf.stack([scale_channel(image, c) for c in range(image.shape[idx])], idx)
 
-    return tf.stack(channels, idx)
+    return image
 
 
 def equalize(
@@ -91,5 +86,5 @@ def equalize(
     with tf.name_scope(name or "equalize"):
         image_dims = tf.rank(image)
         image = to_4D_image(image)
-        image = tf.map_fn(equalize_batch, image)
+        image = tf.map_fn(equalize_image, image)
         return from_4D_image(image, image_dims)

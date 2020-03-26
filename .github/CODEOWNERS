@@ -38,6 +38,7 @@
 
 /tensorflow_addons/image/color_ops*.py @abhichou4
 /tensorflow_addons/image/connected_components*.py @sayoojbk
+/tensorflow_addons/image/cutout_ops*.py @fsx950223
 /tensorflow_addons/image/dense_image_warp*.py @windQAQ
 /tensorflow_addons/image/distance_transform*.py @mels630
 /tensorflow_addons/image/distort_image_ops*.py @windqaq

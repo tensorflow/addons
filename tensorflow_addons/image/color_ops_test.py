@@ -1,4 +1,4 @@
-# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,9 @@ _DTYPES = {
 
 
 @pytest.mark.parametrize("dtype", _DTYPES)
-@pytest.mark.parametrize("shape", [(4, 4,), (4, 4, 1), (4, 4, 3), (5, 4, 4, 3)])
+@pytest.mark.parametrize(
+    "shape", [(7, 7), (5, 5, 1), (1, 5, 5), (3, 5, 5), (5, 5, 3), (5, 7, 7, 3)]
+)
 def test_equalize_dtype_shape(dtype, shape):
     image = np.ones(shape=shape, dtype=dtype)
     equalized = color_ops.equalize(tf.constant(image)).numpy()
@@ -42,10 +44,7 @@ def test_equalize_dtype_shape(dtype, shape):
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_equalize_with_PIL():
+    np.random.seed(0)
     image = np.random.randint(low=0, high=255, size=(4, 3, 3, 3), dtype=np.uint8)
-    batches = []
-    for i in range(4):
-        batch = ImageOps.equalize(Image.fromarray(image[i, :]))
-        batches.append(batch)
-    equalized = np.stack(batches)
+    equalized = np.stack([ImageOps.equalize(Image.fromarray(i)) for i in image])
     np.testing.assert_equal(color_ops.equalize(tf.constant(image)).numpy(), equalized)
