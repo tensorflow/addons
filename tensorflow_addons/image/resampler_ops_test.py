@@ -193,62 +193,64 @@ class ResamplerTest(tf.test.TestCase, parameterized.TestCase):
                         t, n, float_rtol=5e-5, float_atol=5e-5
                     )
 
-    def test_op_errors(self):
-        batch_size = 10
-        data_height = 9
-        data_width = 7
-        data_depth = 3
-        data_channels = 5
-        warp_width = 4
-        warp_height = 8
 
-        # Input data shape is not defined over a 2D grid, i.e. its shape is not like
-        # (batch_size, data_height, data_width, data_channels).
-        data_shape = (batch_size, data_height, data_width, data_depth, data_channels)
-        data = np.zeros(data_shape)
-        warp_shape = (batch_size, warp_height, warp_width, 2)
-        warp = np.zeros(warp_shape)
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_op_errors():
+    batch_size = 10
+    data_height = 9
+    data_width = 7
+    data_depth = 3
+    data_channels = 5
+    warp_width = 4
+    warp_height = 8
 
-        with self.assertRaisesRegexp(
-            tf.errors.UnimplementedError,
-            "Only bilinear interpolation is currently supported.",
-        ):
-            self.evaluate(resampler_ops.resampler(data, warp))
+    # Input data shape is not defined over a 2D grid, i.e. its shape is not like
+    # (batch_size, data_height, data_width, data_channels).
+    data_shape = (batch_size, data_height, data_width, data_depth, data_channels)
+    data = np.zeros(data_shape)
+    warp_shape = (batch_size, warp_height, warp_width, 2)
+    warp = np.zeros(warp_shape)
 
-        # Warp tensor must be at least a matrix, with shape [batch_size, 2].
-        data_shape = (batch_size, data_height, data_width, data_channels)
-        data = np.zeros(data_shape)
-        warp_shape = (batch_size,)
-        warp = np.zeros(warp_shape)
+    with pytest.raises(
+        tf.errors.UnimplementedError,
+        match="Only bilinear interpolation is currently supported.",
+    ):
+        resampler_ops.resampler(data, warp).numpy()
 
-        with self.assertRaisesRegexp(
-            tf.errors.InvalidArgumentError, "warp should be at least a matrix"
-        ):
-            self.evaluate(resampler_ops.resampler(data, warp))
+    # Warp tensor must be at least a matrix, with shape [batch_size, 2].
+    data_shape = (batch_size, data_height, data_width, data_channels)
+    data = np.zeros(data_shape)
+    warp_shape = (batch_size,)
+    warp = np.zeros(warp_shape)
 
-        # The batch size of the data and warp tensors must be the same.
-        data_shape = (batch_size, data_height, data_width, data_channels)
-        data = np.zeros(data_shape)
-        warp_shape = (batch_size + 1, warp_height, warp_width, 2)
-        warp = np.zeros(warp_shape)
+    with pytest.raises(
+        tf.errors.InvalidArgumentError, match="warp should be at least a matrix"
+    ):
+        resampler_ops.resampler(data, warp).numpy()
 
-        with self.assertRaisesRegexp(
-            tf.errors.InvalidArgumentError, "Batch size of data and warp tensor"
-        ):
-            self.evaluate(resampler_ops.resampler(data, warp))
+    # The batch size of the data and warp tensors must be the same.
+    data_shape = (batch_size, data_height, data_width, data_channels)
+    data = np.zeros(data_shape)
+    warp_shape = (batch_size + 1, warp_height, warp_width, 2)
+    warp = np.zeros(warp_shape)
 
-        # The warp tensor must contain 2D coordinates, i.e. its shape last dimension
-        # must be 2.
-        data_shape = (batch_size, data_height, data_width, data_channels)
-        data = np.zeros(data_shape)
-        warp_shape = (batch_size, warp_height, warp_width, 3)
-        warp = np.zeros(warp_shape)
+    with pytest.raises(
+        tf.errors.InvalidArgumentError, match="Batch size of data and warp tensor"
+    ):
+        resampler_ops.resampler(data, warp).numpy()
 
-        with self.assertRaisesRegexp(
-            tf.errors.UnimplementedError,
-            "Only bilinear interpolation is supported, warping",
-        ):
-            self.evaluate(resampler_ops.resampler(data, warp))
+    # The warp tensor must contain 2D coordinates, i.e. its shape last dimension
+    # must be 2.
+    data_shape = (batch_size, data_height, data_width, data_channels)
+    data = np.zeros(data_shape)
+    warp_shape = (batch_size, warp_height, warp_width, 3)
+    warp = np.zeros(warp_shape)
+
+    with pytest.raises(
+        tf.errors.UnimplementedError,
+        match="Only bilinear interpolation is supported, warping",
+    ):
+        resampler_ops.resampler(data, warp).numpy()
 
 
 if __name__ == "__main__":
