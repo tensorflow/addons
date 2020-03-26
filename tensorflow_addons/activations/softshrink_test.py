@@ -16,7 +16,6 @@
 import sys
 
 import pytest
-from absl.testing import parameterized
 
 import numpy as np
 import tensorflow as tf
@@ -46,21 +45,6 @@ def test_softshrink(dtype):
     test_utils.assert_allclose_according_to_type(
         softshrink(x, lower=-1.0, upper=1.0), expected_result
     )
-
-
-@test_utils.run_all_in_graph_and_eager_modes
-class SoftshrinkTest(tf.test.TestCase, parameterized.TestCase):
-    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
-    def test_theoretical_gradients(self, dtype):
-        # Only test theoretical gradients for float32 and float64
-        # because of the instability of float16 while computing jacobian
-
-        # Softshrink is not continuous at `lower` and `upper`.
-        # Avoid these two points to make gradients smooth.
-        x = tf.constant([-2.0, -1.5, 0.0, 1.5, 2.0], dtype=dtype)
-
-        theoretical, numerical = tf.test.compute_gradient(softshrink, [x])
-        self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
 
 
 @pytest.mark.parametrize("dtype", [np.float16, np.float32])
