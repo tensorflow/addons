@@ -28,26 +28,28 @@ from tensorflow_addons.activations.softshrink import (
 from tensorflow_addons.utils import test_utils
 
 
+def test_invalid():
+    with pytest.raises(
+        tf.errors.OpError, match="lower must be less than or equal to upper."
+    ):
+        y = _softshrink_custom_op(tf.ones(shape=(1, 2, 3)), lower=2.0, upper=-2.0)
+        y.numpy()
+
+
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_softshrink(dtype):
+    x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
+    expected_result = tf.constant([-1.5, -0.5, 0.0, 0.5, 1.5], dtype=dtype)
+    test_utils.assert_allclose_according_to_type(softshrink(x), expected_result)
+
+    expected_result = tf.constant([-1.0, 0.0, 0.0, 0.0, 1.0], dtype=dtype)
+    test_utils.assert_allclose_according_to_type(
+        softshrink(x, lower=-1.0, upper=1.0), expected_result
+    )
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class SoftshrinkTest(tf.test.TestCase, parameterized.TestCase):
-    def test_invalid(self):
-        with self.assertRaisesOpError("lower must be less than or equal to upper."):
-            y = _softshrink_custom_op(tf.ones(shape=(1, 2, 3)), lower=2.0, upper=-2.0)
-            self.evaluate(y)
-
-    @parameterized.named_parameters(
-        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
-    )
-    def test_softshrink(self, dtype):
-        x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
-        expected_result = tf.constant([-1.5, -0.5, 0.0, 0.5, 1.5], dtype=dtype)
-        self.assertAllCloseAccordingToType(softshrink(x), expected_result)
-
-        expected_result = tf.constant([-1.0, 0.0, 0.0, 0.0, 1.0], dtype=dtype)
-        self.assertAllCloseAccordingToType(
-            softshrink(x, lower=-1.0, upper=1.0), expected_result
-        )
-
     @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
     def test_theoretical_gradients(self, dtype):
         # Only test theoretical gradients for float32 and float64
@@ -60,29 +62,31 @@ class SoftshrinkTest(tf.test.TestCase, parameterized.TestCase):
         theoretical, numerical = tf.test.compute_gradient(softshrink, [x])
         self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
 
-    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
-    def test_same_as_py_func(self, dtype):
-        np.random.seed(1234)
-        for _ in range(20):
-            self.verify_funcs_are_equivalent(dtype)
 
-    def verify_funcs_are_equivalent(self, dtype):
-        x_np = np.random.uniform(-10, 10, size=(4, 4)).astype(dtype)
-        x = tf.convert_to_tensor(x_np)
-        lower = np.random.uniform(-10, 10)
-        upper = lower + np.random.uniform(0, 10)
+@pytest.mark.parametrize("dtype", [np.float16, np.float32])
+def test_same_as_py_func(dtype):
+    np.random.seed(1234)
+    for _ in range(20):
+        verify_funcs_are_equivalent(dtype)
 
-        with tf.GradientTape(persistent=True) as t:
-            t.watch(x)
-            y_native = softshrink(x, lower, upper)
-            y_py = _softshrink_py(x, lower, upper)
 
-        self.assertAllCloseAccordingToType(y_native, y_py)
+def verify_funcs_are_equivalent(dtype):
+    x_np = np.random.uniform(-10, 10, size=(4, 4)).astype(dtype)
+    x = tf.convert_to_tensor(x_np)
+    lower = np.random.uniform(-10, 10)
+    upper = lower + np.random.uniform(0, 10)
 
-        grad_native = t.gradient(y_native, x)
-        grad_py = t.gradient(y_py, x)
+    with tf.GradientTape(persistent=True) as t:
+        t.watch(x)
+        y_native = softshrink(x, lower, upper)
+        y_py = _softshrink_py(x, lower, upper)
 
-        self.assertAllCloseAccordingToType(grad_native, grad_py)
+    test_utils.assert_allclose_according_to_type(y_native, y_py)
+
+    grad_native = t.gradient(y_native, x)
+    grad_py = t.gradient(y_py, x)
+
+    test_utils.assert_allclose_according_to_type(grad_native, grad_py)
 
 
 if __name__ == "__main__":

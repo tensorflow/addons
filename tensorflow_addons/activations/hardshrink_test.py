@@ -25,37 +25,26 @@ from tensorflow_addons.activations.hardshrink import _hardshrink_py
 from tensorflow_addons.utils import test_utils
 
 
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_hardshrink(dtype):
+    x = tf.constant([-2.0, -0.5, 0.0, 0.5, 2.0], dtype=dtype)
+    expected_result = tf.constant([-2.0, 0.0, 0.0, 0.0, 2.0], dtype=dtype)
+    test_utils.assert_allclose_according_to_type(
+        _hardshrink_custom_op(x), expected_result
+    )
+
+    expected_result = tf.constant([-2.0, 0.0, 0.0, 0.0, 2.0], dtype=dtype)
+    test_utils.assert_allclose_according_to_type(
+        _hardshrink_custom_op(x, lower=-1.0, upper=1.0), expected_result
+    )
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class HardshrinkTest(tf.test.TestCase, parameterized.TestCase):
     def test_invalid(self):
         with self.assertRaisesOpError("lower must be less than or equal to upper."):
             y = _hardshrink_custom_op(tf.ones(shape=(1, 2, 3)), lower=2.0, upper=-2.0)
             self.evaluate(y)
-
-    @parameterized.named_parameters(
-        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
-    )
-    def test_hardshrink(self, dtype):
-        x = tf.constant([-2.0, -0.5, 0.0, 0.5, 2.0], dtype=dtype)
-        expected_result = tf.constant([-2.0, 0.0, 0.0, 0.0, 2.0], dtype=dtype)
-        self.assertAllCloseAccordingToType(_hardshrink_custom_op(x), expected_result)
-
-        expected_result = tf.constant([-2.0, 0.0, 0.0, 0.0, 2.0], dtype=dtype)
-        self.assertAllCloseAccordingToType(
-            _hardshrink_custom_op(x, lower=-1.0, upper=1.0), expected_result
-        )
-
-    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
-    def test_theoretical_gradients(self, dtype):
-        # Only test theoretical gradients for float32 and float64
-        # because of the instability of float16 while computing jacobian
-
-        # Hardshrink is not continuous at `lower` and `upper`.
-        # Avoid these two points to make gradients smooth.
-        x = tf.constant([-2.0, -1.5, 0.0, 1.5, 2.0], dtype=dtype)
-
-        theoretical, numerical = tf.test.compute_gradient(_hardshrink_custom_op, [x])
-        self.assertAllCloseAccordingToType(theoretical, numerical, atol=1e-4)
 
     @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
     def test_same_as_py_func(self, dtype):
@@ -80,6 +69,19 @@ class HardshrinkTest(tf.test.TestCase, parameterized.TestCase):
         grad_py = t.gradient(y_py, x)
 
         self.assertAllCloseAccordingToType(grad_native, grad_py)
+
+
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_theoretical_gradients(dtype):
+    # Only test theoretical gradients for float32 and float64
+    # because of the instability of float16 while computing jacobian
+
+    # Hardshrink is not continuous at `lower` and `upper`.
+    # Avoid these two points to make gradients smooth.
+    x = tf.constant([-2.0, -1.5, 0.0, 1.5, 2.0], dtype=dtype)
+
+    theoretical, numerical = tf.test.compute_gradient(_hardshrink_custom_op, [x])
+    test_utils.assert_allclose_according_to_type(theoretical, numerical, atol=1e-4)
 
 
 if __name__ == "__main__":

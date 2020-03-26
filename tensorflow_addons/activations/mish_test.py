@@ -16,7 +16,6 @@
 import sys
 
 import pytest
-from absl.testing import parameterized
 
 import numpy as np
 import tensorflow as tf
@@ -44,31 +43,28 @@ def test_theoretical_gradients(dtype):
     test_utils.assert_allclose_according_to_type(theoretical, numerical, atol=1e-4)
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class MishTest(tf.test.TestCase, parameterized.TestCase):
-    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
-    def test_same_as_py_func(self, dtype):
-        if dtype == np.float32 and tf.__version__ == "2.2.0-rc1":
-            pytest.skip("TODO: fix for tf 2.2.0")
-        np.random.seed(1234)
-        for _ in range(20):
-            self.verify_funcs_are_equivalent(dtype)
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_same_as_py_func(dtype):
+    np.random.seed(1234)
+    for _ in range(20):
+        verify_funcs_are_equivalent(dtype)
 
-    def verify_funcs_are_equivalent(self, dtype):
-        x_np = np.random.uniform(-10, 10, size=(4, 4)).astype(dtype)
-        x = tf.convert_to_tensor(x_np)
 
-        with tf.GradientTape(persistent=True) as t:
-            t.watch(x)
-            y_native = mish(x)
-            y_py = _mish_py(x)
+def verify_funcs_are_equivalent(dtype):
+    x_np = np.random.uniform(-10, 10, size=(4, 4)).astype(dtype)
+    x = tf.convert_to_tensor(x_np)
 
-        self.assertAllCloseAccordingToType(y_native, y_py)
+    with tf.GradientTape(persistent=True) as t:
+        t.watch(x)
+        y_native = mish(x)
+        y_py = _mish_py(x)
 
-        grad_native = t.gradient(y_native, x)
-        grad_py = t.gradient(y_py, x)
+    test_utils.assert_allclose_according_to_type(y_native, y_py)
 
-        self.assertAllCloseAccordingToType(grad_native, grad_py)
+    grad_native = t.gradient(y_native, x)
+    grad_py = t.gradient(y_py, x)
+
+    test_utils.assert_allclose_according_to_type(grad_native, grad_py, atol=1e-5)
 
 
 if __name__ == "__main__":
