@@ -390,32 +390,6 @@ class SkipGramOpsTest(tf.test.TestCase):
         )
         self.assertAllEqual([b"the", b"to", b"life", b"and"], output)
 
-    @staticmethod
-    def _make_text_vocab_freq_file(tmp_dir):
-        filepath = os.path.join(tmp_dir, "vocab_freq.txt")
-        with open(filepath, "w") as f:
-            writer = csv.writer(f)
-            writer.writerows(
-                [["and", 40], ["life", 8], ["the", 30], ["to", 20], ["universe", 2],]
-            )
-        return filepath
-
-    @staticmethod
-    def _make_text_vocab_float_file(tmp_dir):
-        filepath = os.path.join(tmp_dir, "vocab_freq_float.txt")
-        with open(filepath, "w") as f:
-            writer = csv.writer(f)
-            writer.writerows(
-                [
-                    ["and", 0.4],
-                    ["life", 0.08],
-                    ["the", 0.3],
-                    ["to", 0.2],
-                    ["universe", 0.02],
-                ]
-            )
-        return filepath
-
     def test_skip_gram_sample_with_text_vocab_filter_vocab(self):
         """Tests skip-gram sampling with text vocab and freq threshold
         filtering."""
@@ -433,7 +407,7 @@ class SkipGramOpsTest(tf.test.TestCase):
         # b"answer" is not in vocab file, and b"universe"'s frequency is below
         # threshold of 3.
         with tempfile.TemporaryDirectory() as tmp_dir:
-            vocab_freq_file = self._make_text_vocab_freq_file(tmp_dir)
+            vocab_freq_file = _make_text_vocab_freq_file(tmp_dir)
 
             tokens, labels = text.skip_gram_sample_with_text_vocab(
                 input_tensor=input_tensor,
@@ -514,7 +488,7 @@ class SkipGramOpsTest(tf.test.TestCase):
         #
         # corpus_size for the above vocab is 40+8+30+20+2 = 100.
         with tempfile.TemporaryDirectory() as tmp_dir:
-            text_vocab_freq_file = self._make_text_vocab_freq_file(tmp_dir)
+            text_vocab_freq_file = _make_text_vocab_freq_file(tmp_dir)
             self._skip_gram_sample_with_text_vocab_subsample_vocab(text_vocab_freq_file)
 
     def _skip_gram_sample_with_text_vocab_subsample_vocab(self, text_vocab_freq_file):
@@ -552,7 +526,7 @@ class SkipGramOpsTest(tf.test.TestCase):
         #
         # corpus_size for the above vocab is 0.4+0.08+0.3+0.2+0.02 = 1.
         with tempfile.TemporaryDirectory() as tmp_dir:
-            text_vocab_float_file = self._make_text_vocab_float_file(tmp_dir)
+            text_vocab_float_file = _make_text_vocab_float_file(tmp_dir)
             self._skip_gram_sample_with_text_vocab_subsample_vocab_float(
                 text_vocab_float_file
             )
@@ -582,37 +556,65 @@ class SkipGramOpsTest(tf.test.TestCase):
                 corpus_size=0.99,
             )
 
-    def test_skip_gram_sample_with_text_vocab_errors(self):
-        """Tests various errors raised by
-        skip_gram_sample_with_text_vocab()."""
 
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            vocab_freq_file = self._make_text_vocab_freq_file(tmp_dir)
-            self._skip_gram_sample_with_text_vocab_errors(vocab_freq_file)
+def test_skip_gram_sample_with_text_vocab_errors():
+    """Tests various errors raised by
+    skip_gram_sample_with_text_vocab()."""
 
-    def _skip_gram_sample_with_text_vocab_errors(self, vocab_freq_file):
-        dummy_input = tf.constant([""])
-        invalid_indices = (
-            # vocab_token_index can't be negative.
-            (-1, 0),
-            # vocab_freq_index can't be negative.
-            (0, -1),
-            # vocab_token_index can't be equal to vocab_freq_index.
-            (0, 0),
-            (1, 1),
-            # vocab_freq_file only has two columns.
-            (0, 2),
-            (2, 0),
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        vocab_freq_file = _make_text_vocab_freq_file(tmp_dir)
+        _skip_gram_sample_with_text_vocab_errors(vocab_freq_file)
+
+
+def _skip_gram_sample_with_text_vocab_errors(vocab_freq_file):
+    dummy_input = tf.constant([""])
+    invalid_indices = (
+        # vocab_token_index can't be negative.
+        (-1, 0),
+        # vocab_freq_index can't be negative.
+        (0, -1),
+        # vocab_token_index can't be equal to vocab_freq_index.
+        (0, 0),
+        (1, 1),
+        # vocab_freq_file only has two columns.
+        (0, 2),
+        (2, 0),
+    )
+
+    for vocab_token_index, vocab_freq_index in invalid_indices:
+        with pytest.raises(ValueError):
+            text.skip_gram_sample_with_text_vocab(
+                input_tensor=dummy_input,
+                vocab_freq_file=vocab_freq_file,
+                vocab_token_index=vocab_token_index,
+                vocab_freq_index=vocab_freq_index,
+            )
+
+
+def _make_text_vocab_freq_file(tmp_dir):
+    filepath = os.path.join(tmp_dir, "vocab_freq.txt")
+    with open(filepath, "w") as f:
+        writer = csv.writer(f)
+        writer.writerows(
+            [["and", 40], ["life", 8], ["the", 30], ["to", 20], ["universe", 2],]
         )
+    return filepath
 
-        for vocab_token_index, vocab_freq_index in invalid_indices:
-            with self.assertRaises(ValueError):
-                text.skip_gram_sample_with_text_vocab(
-                    input_tensor=dummy_input,
-                    vocab_freq_file=vocab_freq_file,
-                    vocab_token_index=vocab_token_index,
-                    vocab_freq_index=vocab_freq_index,
-                )
+
+def _make_text_vocab_float_file(tmp_dir):
+    filepath = os.path.join(tmp_dir, "vocab_freq_float.txt")
+    with open(filepath, "w") as f:
+        writer = csv.writer(f)
+        writer.writerows(
+            [
+                ["and", 0.4],
+                ["life", 0.08],
+                ["the", 0.3],
+                ["to", 0.2],
+                ["universe", 0.02],
+            ]
+        )
+    return filepath
 
 
 if __name__ == "__main__":

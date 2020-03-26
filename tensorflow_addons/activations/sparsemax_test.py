@@ -230,56 +230,60 @@ class SparsemaxTest(tf.test.TestCase):
             )
             self.assertShapeEqual(p_expected, tf_sparsemax_op)
 
-    def test_diffrence(self, dtype=None):
-        """check sparsemax proposition 4."""
-        random = np.random.RandomState(7)
 
-        z = random.uniform(low=-3, high=3, size=(test_obs, 10))
-        _, p = self._tf_sparsemax(z, dtype)
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_two_dimentional(dtype):
+    """check two dimentation sparsemax case."""
+    t = np.linspace(-2, 2, test_obs, dtype=dtype)
+    z = np.vstack([t, np.zeros(test_obs, dtype=dtype)]).T
 
-        etol = {"float16": 1e-2, "float32": 1e-6, "float64": 1e-9}[dtype]
+    tf_sparsemax_out = sparsemax(z.astype(dtype)).numpy()
 
-        for val in range(0, test_obs):
-            for i in range(0, 10):
-                for j in range(0, 10):
-                    # check condition, the obesite pair will be checked anyway
-                    if z[val, i] > z[val, j]:
-                        continue
+    p0_expected = np.select([t < -1, t <= 1, t > 1], [0, (t + 1) / 2, 1])
 
-                    self.assertTrue(
-                        0 <= p[val, j] - p[val, i] <= z[val, j] - z[val, i] + etol,
-                        "0 <= %.10f <= %.10f"
-                        % (p[val, j] - p[val, i], z[val, j] - z[val, i] + etol),
-                    )
+    test_utils.assert_allclose_according_to_type(p0_expected, tf_sparsemax_out[:, 0])
+    test_utils.assert_allclose_according_to_type(
+        1 - p0_expected, tf_sparsemax_out[:, 1]
+    )
+    assert z.shape == tf_sparsemax_out.shape
 
-    def test_two_dimentional(self, dtype=None):
-        """check two dimentation sparsemax case."""
-        t = np.linspace(-2, 2, test_obs, dtype=dtype)
-        z = np.vstack([t, np.zeros(test_obs, dtype=dtype)]).T
 
-        tf_sparsemax_op, tf_sparsemax_out = self._tf_sparsemax(z, dtype)
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_diffrence(dtype):
+    """check sparsemax proposition 4."""
+    random = np.random.RandomState(7)
 
-        p0_expected = np.select([t < -1, t <= 1, t > 1], [0, (t + 1) / 2, 1])
+    z = random.uniform(low=-3, high=3, size=(test_obs, 10))
+    p = sparsemax(z.astype(dtype)).numpy()
 
-        self.assertAllCloseAccordingToType(p0_expected, tf_sparsemax_out[:, 0])
-        self.assertAllCloseAccordingToType(1 - p0_expected, tf_sparsemax_out[:, 1])
-        self.assertShapeEqual(z, tf_sparsemax_op)
+    etol = {np.float32: 1e-6, np.float64: 1e-9}[dtype]
 
-    def test_gradient_against_estimate(self, dtype=None):
-        """check sparsemax Rop, against estimated Rop."""
-        random = np.random.RandomState(9)
+    for val in range(0, test_obs):
+        for i in range(0, 10):
+            for j in range(0, 10):
+                # check condition, the obesite pair will be checked anyway
+                if z[val, i] > z[val, j]:
+                    continue
 
-        # sparsemax is not a smooth function so gradient estimation is only
-        # possible for float64.
-        if dtype != "float64":
-            return
+                assert 0 <= p[val, j] - p[val, i] <= z[val, j] - z[val, i] + etol
 
-        z = random.uniform(low=-1, high=1, size=(test_obs, 10)).astype(dtype)
 
-        (jacob_sym,), (jacob_num,) = tf.test.compute_gradient(
-            lambda logits: sparsemax(logits), [z], delta=1e-6
-        )
-        self.assertAllCloseAccordingToType(jacob_sym, jacob_num)
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_gradient_against_estimate(dtype):
+    """check sparsemax Rop, against estimated Rop."""
+    random = np.random.RandomState(9)
+
+    # sparsemax is not a smooth function so gradient estimation is only
+    # possible for float64.
+    if dtype != "float64":
+        return
+
+    z = random.uniform(low=-1, high=1, size=(test_obs, 10)).astype(dtype)
+
+    (jacob_sym,), (jacob_num,) = tf.test.compute_gradient(
+        lambda logits: sparsemax(logits), [z], delta=1e-6
+    )
+    np.testing.assert_allclose(jacob_sym, jacob_num)
 
 
 if __name__ == "__main__":
