@@ -25,6 +25,7 @@ from tensorflow_addons.layers.multihead_attention import MultiHeadAttention
 from tensorflow_addons.utils import test_utils
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_output_shape():
     batch_size = 10
     num_heads = 8
