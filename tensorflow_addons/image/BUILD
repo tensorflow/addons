@@ -18,6 +18,7 @@ py_library(
         "connected_components.py",
         "resampler_ops.py",
         "compose_ops.py",
+        "cutout_ops.py",
     ]),
     data = [
         ":sparse_image_warp_test_data",
@@ -113,6 +114,18 @@ py_test(
         "utils_test.py",
     ],
     main = "utils_test.py",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
+    name = "cutout_ops_test",
+    size = "small",
+    srcs = [
+        "cutout_ops_test.py",
+    ],
+    main = "cutout_ops_test.py",
     deps = [
         ":image",
     ],
