@@ -20,7 +20,6 @@ import pytest
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
-from tensorflow_addons.utils import test_utils
 from tensorflow_addons.losses import (
     sigmoid_focal_crossentropy,
     SigmoidFocalCrossEntropy,
