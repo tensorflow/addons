@@ -21,6 +21,7 @@ from tensorflow_addons.image.utils import to_4D_image, from_4D_image
 
 from typing import Optional
 
+
 def equalize_batch(image: TensorLike, data_format: str = "channels_last") -> tf.Tensor:
     """Implements Equalize function from PIL using TF ops."""
 
@@ -69,7 +70,9 @@ def equalize_batch(image: TensorLike, data_format: str = "channels_last") -> tf.
     return tf.stack(channels, 2)
 
 
-def equalize(image: TensorLike, data_format: str = "channel_last", name: Optional[str] = None) -> tf.Tensor:
+def equalize(
+    image: TensorLike, data_format: str = "channel_last", name: Optional[str] = None
+) -> tf.Tensor:
     """Equalize image(s)
 
     Args:
