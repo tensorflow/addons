@@ -24,56 +24,56 @@ from tensorflow_addons.image import distance_transform as dist_ops
 from tensorflow_addons.utils import test_utils
 
 
+@pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
+def test_single_binary_image(dtype):
+    image = [
+        [[1], [1], [1], [1], [1]],
+        [[1], [1], [1], [1], [1]],
+        [[0], [1], [0], [1], [0]],
+        [[1], [0], [1], [0], [1]],
+        [[0], [1], [0], [1], [0]],
+    ]
+    expected_output = np.array(
+        [
+            2,
+            2.23606801,
+            2,
+            2.23606801,
+            2,
+            1,
+            1.41421354,
+            1,
+            1.41421354,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+        ]
+    )
+    image = tf.constant(image, dtype=tf.uint8)
+
+    output = dist_ops.euclidean_dist_transform(image, dtype=dtype)
+    output_flat = tf.reshape(output, [-1])
+
+    assert output.dtype == dtype
+    assert output.shape == [5, 5, 1]
+    test_utils.assert_allclose_according_to_type(output_flat, expected_output)
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class DistanceOpsTest(tf.test.TestCase):
-    def test_single_binary_image(self):
-        image = [
-            [[1], [1], [1], [1], [1]],
-            [[1], [1], [1], [1], [1]],
-            [[0], [1], [0], [1], [0]],
-            [[1], [0], [1], [0], [1]],
-            [[0], [1], [0], [1], [0]],
-        ]
-        expected_output = np.array(
-            [
-                2,
-                2.23606801,
-                2,
-                2.23606801,
-                2,
-                1,
-                1.41421354,
-                1,
-                1.41421354,
-                1,
-                0,
-                1,
-                0,
-                1,
-                0,
-                1,
-                0,
-                1,
-                0,
-                1,
-                0,
-                1,
-                0,
-                1,
-                0,
-            ]
-        )
-        image = tf.constant(image, dtype=tf.uint8)
-
-        for output_dtype in [tf.float16, tf.float32, tf.float64]:
-            output = dist_ops.euclidean_dist_transform(image, dtype=output_dtype)
-            output_flat = tf.reshape(output, [-1])
-
-            with self.subTest(output_dtype=output_dtype):
-                self.assertEqual(output.dtype, output_dtype)
-                self.assertEqual(output.shape, [5, 5, 1])
-                self.assertAllCloseAccordingToType(output_flat, expected_output)
-
     def test_batch_binary_images(self):
         batch_size = 3
         image = [
