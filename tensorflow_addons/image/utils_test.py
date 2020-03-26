@@ -67,14 +67,13 @@ class UtilsOpsTest(tf.test.TestCase):
             res = fn(tf.ones(shape=(1, 2, 4, 1)), tf.size(shape))
             self.assertAllEqual(self.evaluate(exp), self.evaluate(res))
 
-    def test_from_4D_image_with_invalid_data(self):
-        with self.assertRaises((ValueError, tf.errors.InvalidArgumentError)):
-            self.evaluate(img_utils.from_4D_image(tf.ones(shape=(2, 2, 4, 1)), 2))
 
-        with self.assertRaises((ValueError, tf.errors.InvalidArgumentError)):
-            self.evaluate(
-                img_utils.from_4D_image(tf.ones(shape=(2, 2, 4, 1)), tf.constant(2))
-            )
+def test_from_4d_image_with_invalid_data():
+    with pytest.raises((ValueError, tf.errors.InvalidArgumentError)):
+        img_utils.from_4D_image(tf.ones(shape=(2, 2, 4, 1)), 2).numpy()
+
+    with pytest.raises((ValueError, tf.errors.InvalidArgumentError)):
+        img_utils.from_4D_image(tf.ones(shape=(2, 2, 4, 1)), tf.constant(2)).numpy()
 
 
 @pytest.mark.parametrize("rank", [2, tf.constant(2)])
