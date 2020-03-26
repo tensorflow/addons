@@ -22,12 +22,12 @@ from tensorflow_addons.image import median_filter2d
 from tensorflow_addons.utils import test_utils
 
 _dtypes_to_test = [
-            tf.dtypes.uint8,
-            tf.dtypes.int32,
-            tf.dtypes.float16,
-            tf.dtypes.float32,
-            tf.dtypes.float64,
-        ]
+    tf.dtypes.uint8,
+    tf.dtypes.int32,
+    tf.dtypes.float16,
+    tf.dtypes.float32,
+    tf.dtypes.float64,
+]
 _image_shapes_to_test = [
     (3, 3, 1),
     (3, 3, 3),
@@ -55,7 +55,6 @@ def _tile_image(plane, image_shape):
 
 
 class _Filter2dTest(tf.test.TestCase):
-
     def _setup_values(self, image_shape, filter_shape, padding, constant_values, dtype):
         assert 3 <= len(image_shape) <= 4
         height, width = image_shape[-3], image_shape[-2]
