@@ -51,11 +51,11 @@ def equalize_image(image: TensorLike, data_format: str = "channels_last") -> tf.
 
         # If step is zero, return the original image.  Otherwise, build
         # lut from the full histogram and step and then index from it.
-        result = tf.cond(
-            tf.equal(step, 0),
-            lambda: image,
-            lambda: tf.gather(build_lut(histo, step), image),
-        )
+
+        if step == 0:
+            result = image
+        else:
+            result = tf.gather(build_lut(histo, step), image)
 
         return tf.cast(result, image_dtype)
 
