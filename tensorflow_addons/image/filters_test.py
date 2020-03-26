@@ -21,40 +21,40 @@ from tensorflow_addons.image import mean_filter2d
 from tensorflow_addons.image import median_filter2d
 from tensorflow_addons.utils import test_utils
 
-
-class _Filter2dTest(tf.test.TestCase):
-    def setUp(self):
-        self._dtypes_to_test = [
+_dtypes_to_test = [
             tf.dtypes.uint8,
             tf.dtypes.int32,
             tf.dtypes.float16,
             tf.dtypes.float32,
             tf.dtypes.float64,
         ]
-        self._image_shapes_to_test = [
-            (3, 3, 1),
-            (3, 3, 3),
-            (1, 3, 3, 1),
-            (1, 3, 3, 3),
-            (2, 3, 3, 1),
-            (2, 3, 3, 3),
-        ]
-        super().setUp()
+_image_shapes_to_test = [
+    (3, 3, 1),
+    (3, 3, 3),
+    (1, 3, 3, 1),
+    (1, 3, 3, 3),
+    (2, 3, 3, 1),
+    (2, 3, 3, 3),
+]
 
-    def _tile_image(self, plane, image_shape):
-        """Tile a 2-D image `plane` into 3-D or 4-D as per `image_shape`."""
-        assert 3 <= len(image_shape) <= 4
-        plane = tf.convert_to_tensor(plane)
-        plane = tf.expand_dims(plane, -1)
-        channels = image_shape[-1]
-        image = tf.tile(plane, (1, 1, channels))
 
-        if len(image_shape) == 4:
-            batch_size = image_shape[0]
-            image = tf.expand_dims(image, 0)
-            image = tf.tile(image, (batch_size, 1, 1, 1))
+def _tile_image(plane, image_shape):
+    """Tile a 2-D image `plane` into 3-D or 4-D as per `image_shape`."""
+    assert 3 <= len(image_shape) <= 4
+    plane = tf.convert_to_tensor(plane)
+    plane = tf.expand_dims(plane, -1)
+    channels = image_shape[-1]
+    image = tf.tile(plane, (1, 1, channels))
 
-        return image
+    if len(image_shape) == 4:
+        batch_size = image_shape[0]
+        image = tf.expand_dims(image, 0)
+        image = tf.tile(image, (batch_size, 1, 1, 1))
+
+    return image
+
+
+class _Filter2dTest(tf.test.TestCase):
 
     def _setup_values(self, image_shape, filter_shape, padding, constant_values, dtype):
         assert 3 <= len(image_shape) <= 4
@@ -64,7 +64,7 @@ class _Filter2dTest(tf.test.TestCase):
             shape=(height, width),
             dtype=dtype,
         )
-        image = self._tile_image(plane, image_shape=image_shape)
+        image = _tile_image(plane, image_shape=image_shape)
 
         result = self._filter2d_fn(
             image,
@@ -78,8 +78,8 @@ class _Filter2dTest(tf.test.TestCase):
     def _verify_values(
         self, image_shape, filter_shape, padding, constant_values, expected_plane
     ):
-        expected_output = self._tile_image(expected_plane, image_shape)
-        for dtype in self._dtypes_to_test:
+        expected_output = _tile_image(expected_plane, image_shape)
+        for dtype in _dtypes_to_test:
             result = self._setup_values(
                 image_shape, filter_shape, padding, constant_values, dtype
             )
@@ -159,7 +159,7 @@ class MeanFilter2dTest(_Filter2dTest):
             ]
         )
 
-        for image_shape in self._image_shapes_to_test:
+        for image_shape in _image_shapes_to_test:
             self._verify_values(
                 image_shape=image_shape,
                 filter_shape=(3, 3),
@@ -173,7 +173,7 @@ class MeanFilter2dTest(_Filter2dTest):
             [[5.0, 5.0, 5.0], [5.0, 5.0, 5.0], [5.0, 5.0, 5.0],]
         )
 
-        for image_shape in self._image_shapes_to_test:
+        for image_shape in _image_shapes_to_test:
             self._verify_values(
                 image_shape=image_shape,
                 filter_shape=(4, 4),
@@ -191,7 +191,7 @@ class MeanFilter2dTest(_Filter2dTest):
             ]
         )
 
-        for image_shape in self._image_shapes_to_test:
+        for image_shape in _image_shapes_to_test:
             self._verify_values(
                 image_shape=image_shape,
                 filter_shape=(3, 3),
@@ -208,7 +208,7 @@ class MeanFilter2dTest(_Filter2dTest):
             ]
         )
 
-        for image_shape in self._image_shapes_to_test:
+        for image_shape in _image_shapes_to_test:
             self._verify_values(
                 image_shape=image_shape,
                 filter_shape=(3, 3),
@@ -226,7 +226,7 @@ class MeanFilter2dTest(_Filter2dTest):
             ]
         )
 
-        for image_shape in self._image_shapes_to_test:
+        for image_shape in _image_shapes_to_test:
             self._verify_values(
                 image_shape=image_shape,
                 filter_shape=(3, 3),
@@ -301,7 +301,7 @@ class MedianFilter2dTest(_Filter2dTest):
     def test_reflect_padding_with_3x3_filter(self):
         expected_plane = tf.constant([[4, 4, 5], [5, 5, 5], [5, 6, 6]])
 
-        for image_shape in self._image_shapes_to_test:
+        for image_shape in _image_shapes_to_test:
             self._verify_values(
                 image_shape=image_shape,
                 filter_shape=(3, 3),
@@ -313,7 +313,7 @@ class MedianFilter2dTest(_Filter2dTest):
     def test_reflect_padding_with_4x4_filter(self):
         expected_plane = tf.constant([[5, 5, 5], [5, 5, 5], [5, 5, 5]])
 
-        for image_shape in self._image_shapes_to_test:
+        for image_shape in _image_shapes_to_test:
             self._verify_values(
                 image_shape=image_shape,
                 filter_shape=(4, 4),
@@ -325,7 +325,7 @@ class MedianFilter2dTest(_Filter2dTest):
     def test_constant_padding_with_3x3_filter(self):
         expected_plane = tf.constant([[0, 2, 0], [2, 5, 3], [0, 5, 0]])
 
-        for image_shape in self._image_shapes_to_test:
+        for image_shape in _image_shapes_to_test:
             self._verify_values(
                 image_shape=image_shape,
                 filter_shape=(3, 3),
@@ -336,7 +336,7 @@ class MedianFilter2dTest(_Filter2dTest):
 
         expected_plane = tf.constant([[1, 2, 1], [2, 5, 3], [1, 5, 1]])
 
-        for image_shape in self._image_shapes_to_test:
+        for image_shape in _image_shapes_to_test:
             self._verify_values(
                 image_shape=image_shape,
                 filter_shape=(3, 3),
@@ -348,7 +348,7 @@ class MedianFilter2dTest(_Filter2dTest):
     def test_symmetric_padding_with_3x3_filter(self):
         expected_plane = tf.constant([[2, 3, 3], [4, 5, 6], [7, 7, 8]])
 
-        for image_shape in self._image_shapes_to_test:
+        for image_shape in _image_shapes_to_test:
             self._verify_values(
                 image_shape=image_shape,
                 filter_shape=(3, 3),
