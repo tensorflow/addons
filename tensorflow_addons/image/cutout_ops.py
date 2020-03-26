@@ -30,20 +30,17 @@ def _get_image_wh(images, data_format):
 
 def _norm_params(images, mask_size, data_format):
     mask_size = tf.convert_to_tensor(mask_size)
-    with tf.control_dependencies(
-        [
-            tf.assert_equal(
-                tf.reduce_any(mask_size % 2 != 0),
-                False,
-                "mask_size should be divisible by 2",
-            )
-        ]
-    ):
-        if tf.rank(mask_size) == 0:
-            mask_size = tf.stack([mask_size, mask_size])
-        data_format = conv_utils.normalize_data_format(data_format)
-        image_height, image_width = _get_image_wh(images, data_format)
-        return mask_size, data_format, image_height, image_width
+    if tf.executing_eagerly():
+        tf.assert_equal(
+            tf.reduce_any(mask_size % 2 != 0),
+            False,
+            "mask_size should be divisible by 2",
+        )
+    if tf.rank(mask_size) == 0:
+        mask_size = tf.stack([mask_size, mask_size])
+    data_format = conv_utils.normalize_data_format(data_format)
+    image_height, image_width = _get_image_wh(images, data_format)
+    return mask_size, data_format, image_height, image_width
 
 
 def random_cutout(
