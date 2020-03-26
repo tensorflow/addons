@@ -17,9 +17,10 @@
 import tensorflow as tf
 
 from tensorflow_addons.utils.types import TensorLike
+from tensorflow_addons.image.utils import to_4D_image, from_4D_image
 
 
-def equalize(image: TensorLike) -> tf.Tensor:
+def equalize_batch(image: TensorLike, data_format: str = "channels_last") -> tf.Tensor:
     """Implements Equalize function from PIL using TF ops."""
 
     def scale_channel(image, channel=None):
@@ -59,8 +60,41 @@ def equalize(image: TensorLike) -> tf.Tensor:
         return tf.squeeze(image)
 
     channels = []
-    for channel in range(image.shape[2]):
+    idx = 2 if data_format == "channels_last" else 0
+    for channel in range(image.shape[idx]):
         s = scale_channel(image, channel)
         channels.append(s)
 
     return tf.stack(channels, 2)
+
+
+def equalize(image: TensorLike, data_format: str = "channel_last") -> tf.Tensor:
+    """Equalize image(s)
+
+    Args:
+      images: A tensor of shape
+          (num_images, num_rows, num_columns, num_channels) (NHWC),
+          (num_rows, num_columns, num_channels) (HWC), or
+          (num_rows, num_columns) (HW). The rank must be statically known (the
+          shape is not `TensorShape(None)`).
+      translations: A vector representing [dx, dy] or (if images has rank 4)
+          a matrix of length num_images, with a [dx, dy] vector for each image
+          in the batch.
+      interpolation: Interpolation mode. Supported values: "NEAREST",
+          "BILINEAR".
+      name: The name of the op.
+    Returns:
+      Image(s) with the same type and shape as `images`, translated by the
+      given vector(s). Empty space due to the translation will be filled with
+      zeros.
+    Raises:
+      TypeError: If `images` is an invalid type.
+    """
+    image_dims = tf.rank(image)
+    image = to_4D_image(image)
+    batches = []
+    for i in range(image.shape[0]):
+        batch = equalize_batch(image[i, :])
+        batches.append(batch)
+    image = tf.stack(batches)
+    return from_4D_image(image, image_dims)

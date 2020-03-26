@@ -32,7 +32,7 @@ _DTYPES = {
 
 
 @pytest.mark.parametrize("dtype", _DTYPES)
-@pytest.mark.parametrize("shape", [(3, 3,), (3, 3, 1), (3, 3, 3)])
+@pytest.mark.parametrize("shape", [(3, 3,), (3, 3, 1), (3, 3, 3), (4, 3, 3, 3)])
 def test_equalize_dtype_shape(dtype, shape):
     image = np.ones(shape=shape, dtype=dtype)
     equalized = color_ops.equalize(tf.constant(image)).numpy()
@@ -42,8 +42,12 @@ def test_equalize_dtype_shape(dtype, shape):
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_equalize_with_PIL():
-    image = np.random.randint(low=0, high=255, size=(3, 3, 3), dtype=np.uint8)
+    image = np.random.randint(low=0, high=255, size=(4, 3, 3, 3), dtype=np.uint8)
+    batches = []
+    for i in range(4):
+        batch = ImageOps.equalize(Image.fromarray(image[i, :]))
+        batches.append(batch)
+    equalized = np.stack(batches)
     np.testing.assert_equal(
-        color_ops.equalize(tf.constant(image)).numpy(),
-        ImageOps.equalize(Image.fromarray(image)),
+        color_ops.equalize(tf.constant(image)).numpy(), equalized,
     )
