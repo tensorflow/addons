@@ -67,7 +67,7 @@ def equalize_batch(image: TensorLike, data_format: str = "channels_last") -> tf.
         s = scale_channel(image, channel)
         channels.append(s)
 
-    return tf.stack(channels, 2)
+    return tf.stack(channels, idx)
 
 
 def equalize(
