@@ -272,23 +272,23 @@ docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/ten
 
 Configure:
 ```
-python3.5 ./configure.py  # Links project with TensorFlow dependency
+python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 
 Install in editable mode
 ```
-python3.5 -m pip install -e .
-python3.5 -m pip install pytest pytest-xdist
+python3 -m pip install -e .
+python3 -m pip install pytest pytest-xdist
 ```
 
 Compile the custom ops
 ```
-bash tools/install_custom_ops.sh
+bash tools/install_so_files.sh
 ```
 
 Run selected tests:
 ```bash
-python3.5 -m pytest path/to/file/or/directory/to/test
+python3 -m pytest path/to/file/or/directory/to/test
 ```
 
 #### Testing with Bazel

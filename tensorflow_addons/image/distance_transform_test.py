@@ -113,10 +113,11 @@ class DistanceOpsTest(tf.test.TestCase):
             ):
                 _ = dist_ops.euclidean_dist_transform(image, dtype=output_dtype)
 
-    def test_image_with_invalid_shape(self):
-        image = tf.zeros([2, 4, 3], tf.uint8)
-        with self.assertRaisesRegex(ValueError, "`images` must have only one channel"):
-            _ = dist_ops.euclidean_dist_transform(image)
+
+def test_image_with_invalid_shape():
+    image = tf.zeros([2, 4, 3], tf.uint8)
+    with pytest.raises(ValueError, match="`images` must have only one channel"):
+        _ = dist_ops.euclidean_dist_transform(image)
 
 
 def test_all_zeros():
