@@ -91,9 +91,5 @@ def equalize(
     with tf.name_scope(name or "equalize"):
         image_dims = tf.rank(image)
         image = to_4D_image(image)
-        batches = []
-        for i in range(image.shape[0]):
-            batch = equalize_batch(image[i, :])
-            batches.append(batch)
-        image = tf.stack(batches)
+        image = tf.map_fn(equalize_batch, image)
         return from_4D_image(image, image_dims)
