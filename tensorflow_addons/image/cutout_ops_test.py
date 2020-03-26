@@ -46,7 +46,7 @@ def test_different_channels():
 
 
 def test_batch_size():
-    test_image = tf.random.uniform([10, 40, 40, 1], dtype=np.float32)
+    test_image = tf.random.uniform([10, 40, 40, 1], dtype=np.float32, seed=1234)
     result_image = random_cutout(test_image, 20, seed=1234)
     np.testing.assert_allclose(tf.shape(result_image), [10, 40, 40, 1])
     means = np.mean(result_image, axis=(1, 2, 3))
