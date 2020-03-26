@@ -30,7 +30,11 @@ def equalize_image(image: TensorLike, data_format: str = "channels_last") -> tf.
     def scale_channel(image, channel=None):
         """Scale the data in the channel to implement equalize."""
         image_dtype = image.dtype
-        image = tf.cast(image[:, :, channel], tf.int32)
+
+        if data_format == "channels_last":
+            image = tf.cast(image[:, :, channel], tf.int32)
+        else:
+            image = tf.cast(image[channel, :, :], tf.int32)
         # Compute the histogram of the image channel.
         histo = tf.histogram_fixed_width(image, [0, 255], nbins=256)
 
