@@ -301,40 +301,42 @@ class MultiHeadAttentionTest(tf.test.TestCase):
 
         self.assertEqual(model.layers[1].get_config(), new_model.layers[1].get_config())
 
-    def test_fit_predict_eval(self):
 
-        num_heads = 8
-        head_size = 12
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_fit_predict_eval():
 
-        inputs = tf.keras.layers.Input(shape=[42, 13])
+    num_heads = 8
+    head_size = 12
 
-        net = MultiHeadAttention(head_size=head_size, num_heads=num_heads, dropout=0.5)(
-            [inputs, inputs, inputs]
-        )
-        net = tf.keras.layers.GlobalAveragePooling1D()(net)
-        net = tf.keras.layers.Dense(10, activation="softmax")(net)
+    inputs = tf.keras.layers.Input(shape=[42, 13])
 
-        model = tf.keras.Model(inputs=inputs, outputs=net)
+    net = MultiHeadAttention(head_size=head_size, num_heads=num_heads, dropout=0.5)(
+        [inputs, inputs, inputs]
+    )
+    net = tf.keras.layers.GlobalAveragePooling1D()(net)
+    net = tf.keras.layers.Dense(10, activation="softmax")(net)
 
-        model.compile(
-            loss=tf.losses.SparseCategoricalCrossentropy(),
-            optimizer=tf.keras.optimizers.Adam(0.001),
-        )
+    model = tf.keras.Model(inputs=inputs, outputs=net)
 
-        model.fit(
-            x=np.random.uniform(size=(50, 42, 13)),
-            y=np.random.randint(10, size=(50,)),
-            batch_size=10,
-            epochs=2,
-        )
+    model.compile(
+        loss=tf.losses.SparseCategoricalCrossentropy(),
+        optimizer=tf.keras.optimizers.Adam(0.001),
+    )
 
-        model.predict(np.random.uniform(size=(10, 42, 13)))
+    model.fit(
+        x=np.random.uniform(size=(50, 42, 13)),
+        y=np.random.randint(10, size=(50,)),
+        batch_size=10,
+        epochs=2,
+    )
 
-        model.evaluate(
-            x=np.random.uniform(size=(20, 42, 13)),
-            y=np.random.randint(0, 10, size=(20,)),
-            batch_size=10,
-        )
+    model.predict(np.random.uniform(size=(10, 42, 13)))
+
+    model.evaluate(
+        x=np.random.uniform(size=(20, 42, 13)),
+        y=np.random.randint(0, 10, size=(20,)),
+        batch_size=10,
+    )
 
 
 if __name__ == "__main__":
