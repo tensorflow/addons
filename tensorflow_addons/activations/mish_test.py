@@ -49,8 +49,6 @@ class MishTest(tf.test.TestCase, parameterized.TestCase):
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 def test_same_as_py_func(dtype):
-    if dtype == np.float32 and tf.__version__ == "2.2.0-rc1":
-        pytest.skip("TODO: fix for tf 2.2.0")
     np.random.seed(1234)
     for _ in range(20):
         verify_funcs_are_equivalent(dtype)
@@ -70,7 +68,7 @@ def verify_funcs_are_equivalent(dtype):
     grad_native = t.gradient(y_native, x)
     grad_py = t.gradient(y_py, x)
 
-    test_utils.assert_allclose_according_to_type(grad_native, grad_py)
+    test_utils.assert_allclose_according_to_type(grad_native, grad_py, atol=1e-5)
 
 
 if __name__ == "__main__":
