@@ -16,6 +16,7 @@
 
 import sys
 
+import numpy as np
 import pytest
 import tensorflow as tf
 from tensorflow_addons.losses import contrastive
@@ -132,21 +133,22 @@ class ContrastiveLossTest(tf.test.TestCase):
 
         self.assertAllClose(loss, [0.81, 0.49, 1.69, 0.49, 0.0, 0.25])
 
-    def test_sum_reduction(self):
-        cl_obj = contrastive.ContrastiveLoss(reduction=tf.keras.losses.Reduction.SUM)
-        y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
-        y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5], dtype=tf.dtypes.float32)
-        loss = cl_obj(y_true, y_pred)
 
-        # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
-        #      = [max(1 - 0.1, 0)^2, max(1 - 0.3, 0)^2,
-        #         1.3^2, 0.7^2, max(1 - 1.1, 0)^2, 0.5^2]
-        #      = [0.9^2, 0.7^2, 1.3^2, 0.7^2, 0^2, 0.5^2]
-        #      = [0.81, 0.49, 1.69, 0.49, 0, 0.25]
-        # Reduced loss = 0.81 + 0.49 + 1.69 + 0.49 + 0 + 0.25
-        #              = 3.73
+def test_sum_reduction():
+    cl_obj = contrastive.ContrastiveLoss(reduction=tf.keras.losses.Reduction.SUM)
+    y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
+    y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5], dtype=tf.dtypes.float32)
+    loss = cl_obj(y_true, y_pred)
 
-        self.assertAllClose(loss, 3.73)
+    # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
+    #      = [max(1 - 0.1, 0)^2, max(1 - 0.3, 0)^2,
+    #         1.3^2, 0.7^2, max(1 - 1.1, 0)^2, 0.5^2]
+    #      = [0.9^2, 0.7^2, 1.3^2, 0.7^2, 0^2, 0.5^2]
+    #      = [0.81, 0.49, 1.69, 0.49, 0, 0.25]
+    # Reduced loss = 0.81 + 0.49 + 1.69 + 0.49 + 0 + 0.25
+    #              = 3.73
+
+    np.testing.assert_allclose(loss, 3.73)
 
 
 if __name__ == "__main__":
