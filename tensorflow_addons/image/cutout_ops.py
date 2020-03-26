@@ -78,6 +78,8 @@ def random_cutout(
         inputs with shape `(batch_size, channels, ...)`.
     Returns:
       An image Tensor.
+    Raises:
+      InvalidArgumentError: if mask_size can't be divisible by 2.
     """
     batch_size = tf.shape(images)[0]
     mask_size, data_format, image_height, image_width = _norm_params(
@@ -114,7 +116,7 @@ def cutout(
         (NHWC), (batch_size, channels, height, width)(NCHW).
       mask_size: Specifies how big the zero mask that will be generated is that
         is applied to the images. The mask will be of size
-        (mask_height x mask_width).
+        (mask_height x mask_width). Note: mask_size should be divisible by 2.
       offset: A tuple of (height, width) or (batch_size, 2)
       constant_values: What pixel value to fill in the images in the area that has
         the cutout mask applied to it.
@@ -125,6 +127,8 @@ def cutout(
         inputs with shape `(batch_size, channels, ...)`.
     Returns:
       An image Tensor.
+    Raises:
+      InvalidArgumentError: if mask_size can't be divisible by 2.
     """
     with tf.name_scope("cutout"):
         offset = tf.convert_to_tensor(offset)
