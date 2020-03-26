@@ -129,21 +129,24 @@ class ConnectedComponentsTest(tf.test.TestCase):
             np.tile(np.arange(100)[:, None, None] + 1, [1, 20, 50]),
         )
 
-    def testOnes_small(self):
 
-        self.assertAllEqual(
-            self.evaluate(connected_components(tf.ones((3, 5), tf.bool))),
-            np.ones((3, 5)),
-        )
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_ones_small():
 
-    def testRandom_scipy(self):
-        np.random.seed(42)
-        images = np.random.randint(0, 2, size=(10, 100, 200)).astype(np.bool)
-        expected = connected_components_reference_implementation(images)
-        if expected is None:
-            return
+    np.testing.assert_equal(
+        connected_components(tf.ones((3, 5), tf.bool)).numpy(), np.ones((3, 5)),
+    )
 
-        self.assertAllEqual(self.evaluate(connected_components(images)), expected)
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_random_scipy():
+    np.random.seed(42)
+    images = np.random.randint(0, 2, size=(10, 100, 200)).astype(np.bool)
+    expected = connected_components_reference_implementation(images)
+    if expected is None:
+        return
+
+    np.testing.assert_equal(connected_components(images).numpy(), expected)
 
 
 def connected_components_reference_implementation(images):
