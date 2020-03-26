@@ -112,33 +112,29 @@ class DenseImageWarpTest(tf.test.TestCase):
                 shape, image_type="float32", flow_type="float32"
             )
 
-    def test_gradients_exist(self):
-        """Check that backprop can run.
 
-        The correctness of the gradients is assumed, since the forward
-        propagation is tested to be correct and we only use built-in tf
-        ops. However, we perform a simple test to make sure that
-        backprop can actually run. We treat the flows as a tf.Variable
-        and optimize them to minimize the difference between the
-        interpolated image and the input image.
-        """
-        batch_size, height, width, num_channels = [4, 5, 6, 7]
-        image_shape = [batch_size, height, width, num_channels]
-        image = tf.random.normal(image_shape)
-        flow_shape = [batch_size, height, width, 2]
-        flows = tf.Variable(tf.random.normal(shape=flow_shape) * 0.25, dtype=tf.float32)
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_gradients_exist():
+    """Check that backprop can run.
 
-        def loss():
-            interp = dense_image_warp(image, flows)
-            return tf.math.reduce_mean(tf.math.square(interp - image))
+    The correctness of the gradients is assumed, since the forward
+    propagation is tested to be correct and we only use built-in tf
+    ops. However, we perform a simple test to make sure that
+    backprop can actually run. We treat the flows as a tf.Variable
+    and optimize them to minimize the difference between the
+    interpolated image and the input image.
+    """
+    batch_size, height, width, num_channels = [4, 5, 6, 7]
+    image_shape = [batch_size, height, width, num_channels]
+    image = tf.random.normal(image_shape)
+    flow_shape = [batch_size, height, width, 2]
+    flows = tf.Variable(tf.random.normal(shape=flow_shape) * 0.25, dtype=tf.float32)
 
-        optimizer = tf.keras.optimizers.Adam(1.0)
-        minimize_op = optimizer.minimize(loss, var_list=[flows])
+    with tf.GradientTape() as t:
+        interp = dense_image_warp(image, flows)
 
-        self.evaluate(tf.compat.v1.global_variables_initializer())
-
-        for _ in range(10):
-            self.evaluate(minimize_op)
+    grads = t.gradient(interp, flows).numpy()
+    assert np.sum(np.abs(grads)) != 0
 
 
 def _assert_correct_interpolation_value(
