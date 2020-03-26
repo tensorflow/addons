@@ -26,22 +26,24 @@ from tensorflow_addons.layers import wrappers
 from tensorflow_addons.utils import test_utils
 
 
+def test_basic():
+    test_utils.layer_test(
+        wrappers.WeightNormalization,
+        kwargs={"layer": tf.keras.layers.Conv2D(5, (2, 2)),},
+        input_shape=(2, 4, 4, 3),
+    )
+
+
+def test_no_bias():
+    test_utils.layer_test(
+        wrappers.WeightNormalization,
+        kwargs={"layer": tf.keras.layers.Dense(5, use_bias=False),},
+        input_shape=(2, 4),
+    )
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
-    def test_basic(self):
-        test_utils.layer_test(
-            wrappers.WeightNormalization,
-            kwargs={"layer": tf.keras.layers.Conv2D(5, (2, 2)),},
-            input_shape=(2, 4, 4, 3),
-        )
-
-    def test_no_bias(self):
-        test_utils.layer_test(
-            wrappers.WeightNormalization,
-            kwargs={"layer": tf.keras.layers.Dense(5, use_bias=False),},
-            input_shape=(2, 4),
-        )
-
     def _check_data_init(self, data_init, input_data, expected_output):
         layer = tf.keras.layers.Dense(
             input_data.shape[-1],
