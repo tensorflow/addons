@@ -23,22 +23,24 @@ from tensorflow_addons.losses import contrastive
 from tensorflow_addons.utils import test_utils
 
 
+def test_config():
+    cl_obj = contrastive.ContrastiveLoss(
+        reduction=tf.keras.losses.Reduction.SUM, name="cl"
+    )
+    assert cl_obj.name == "cl"
+    assert cl_obj.reduction == tf.keras.losses.Reduction.SUM
+
+
+def test_zero_loss():
+    cl_obj = contrastive.ContrastiveLoss()
+    y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
+    y_pred = tf.constant([1.0, 1.0, 0.0, 0.0, 1.0, 0.0], dtype=tf.dtypes.float32)
+    loss = cl_obj(y_true, y_pred)
+    np.testing.assert_allclose(loss, 0.0)
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class ContrastiveLossTest(tf.test.TestCase):
-    def test_config(self):
-        cl_obj = contrastive.ContrastiveLoss(
-            reduction=tf.keras.losses.Reduction.SUM, name="cl"
-        )
-        self.assertEqual(cl_obj.name, "cl")
-        self.assertEqual(cl_obj.reduction, tf.keras.losses.Reduction.SUM)
-
-    def test_zero_loss(self):
-        cl_obj = contrastive.ContrastiveLoss()
-        y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
-        y_pred = tf.constant([1.0, 1.0, 0.0, 0.0, 1.0, 0.0], dtype=tf.dtypes.float32)
-        loss = cl_obj(y_true, y_pred)
-        self.assertAllClose(loss, 0.0)
-
     def test_unweighted(self):
         cl_obj = contrastive.ContrastiveLoss()
         y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
