@@ -44,6 +44,7 @@ def blend_np(image1, image2, factor):
     return temp
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", _DTYPES)
 def test_blend(dtype):
     image1 = tf.constant(
