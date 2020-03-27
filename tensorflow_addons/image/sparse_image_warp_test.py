@@ -233,7 +233,7 @@ class SparseImageWarpTest(tf.test.TestCase):
 
 
 def test_that_backprop_runs():
-    """Run optimization to ensure that gradients can be computed."""
+    """Making sure the gradients can be computed."""
     batch_size = 1
     image_height = 9
     image_width = 12
