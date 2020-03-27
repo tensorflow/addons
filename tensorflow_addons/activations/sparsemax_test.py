@@ -49,6 +49,19 @@ def _np_sparsemax(z):
     return np.maximum(0, z - tau_z)
 
 
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_sparsemax_against_numpy_axis(dtype):
+    """check sparsemax kernel against numpy."""
+    random = np.random.RandomState(1)
+
+    z = random.uniform(low=-3, high=3, size=(test_obs, 10))
+
+    tf_sparsemax_op = sparsemax(z.astype(dtype), axis=0).numpy()
+    np_sparsemax = np.transpose(_np_sparsemax(np.transpose(z))).astype(dtype)
+
+    assert np_sparsemax.shape == tf_sparsemax_op.shape
+
+
 @test_utils.run_all_with_types(["float32", "float64"])
 @test_utils.run_all_in_graph_and_eager_modes
 class SparsemaxTest(tf.test.TestCase):
@@ -66,18 +79,6 @@ class SparsemaxTest(tf.test.TestCase):
 
         tf_sparsemax_op, tf_sparsemax_out = self._tf_sparsemax(z, dtype)
         np_sparsemax = _np_sparsemax(z).astype(dtype)
-
-        self.assertAllCloseAccordingToType(np_sparsemax, tf_sparsemax_out)
-        self.assertShapeEqual(np_sparsemax, tf_sparsemax_op)
-
-    def test_sparsemax_against_numpy_axis(self, dtype=None):
-        """check sparsemax kernel against numpy."""
-        random = np.random.RandomState(1)
-
-        z = random.uniform(low=-3, high=3, size=(test_obs, 10))
-
-        tf_sparsemax_op, tf_sparsemax_out = self._tf_sparsemax(z, dtype, axis=0)
-        np_sparsemax = np.transpose(_np_sparsemax(np.transpose(z))).astype(dtype)
 
         self.assertAllCloseAccordingToType(np_sparsemax, tf_sparsemax_out)
         self.assertShapeEqual(np_sparsemax, tf_sparsemax_op)
