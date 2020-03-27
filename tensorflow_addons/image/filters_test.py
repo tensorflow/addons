@@ -95,6 +95,7 @@ def verify_values(
         super().setUp()
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("image_shape", [(1,), (16, 28, 28, 1, 1)])
 def test_invalid_image_mean(image_shape):
     with pytest.raises((ValueError, tf.errors.InvalidArgumentError)):
@@ -102,6 +103,7 @@ def test_invalid_image_mean(image_shape):
         mean_filter2d(image)
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("filter_shape", [(3, 3, 3), (3, None, 3)])
 def test_invalid_filter_shape_mean(filter_shape):
     image = tf.ones(shape=(1, 28, 28, 1))
@@ -114,6 +116,7 @@ def test_invalid_filter_shape_mean(filter_shape):
         mean_filter2d(image, filter_shape=filter_shape)
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_invalid_padding_mean():
     image = tf.ones(shape=(1, 28, 28, 1))
 
@@ -121,6 +124,7 @@ def test_invalid_padding_mean():
         mean_filter2d(image, padding="TEST")
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_none_channels_mean():
     # 3-D image
     fn = mean_filter2d.get_concrete_function(
@@ -137,6 +141,7 @@ def test_none_channels_mean():
     fn(tf.ones(shape=(1, 3, 3, 3)))
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("shape", [(3, 3), (3, 3, 3), (1, 3, 3, 3)])
 def test_unknown_shape_mean(shape):
     fn = mean_filter2d.get_concrete_function(
@@ -149,6 +154,7 @@ def test_unknown_shape_mean(shape):
     np.testing.assert_equal(image.numpy(), fn(image).numpy())
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("image_shape", _image_shapes_to_test)
 def test_reflect_padding_with_3x3_filter_mean(image_shape):
     expected_plane = tf.constant(
@@ -169,6 +175,7 @@ def test_reflect_padding_with_3x3_filter_mean(image_shape):
     )
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("image_shape", _image_shapes_to_test)
 def test_reflect_padding_with_4x4_filter_mean(image_shape):
     expected_plane = tf.constant([[5.0, 5.0, 5.0], [5.0, 5.0, 5.0], [5.0, 5.0, 5.0],])
@@ -183,6 +190,7 @@ def test_reflect_padding_with_4x4_filter_mean(image_shape):
     )
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("image_shape", _image_shapes_to_test)
 def test_constant_padding_with_3x3_filter_mean(image_shape):
     expected_plane = tf.constant(
@@ -220,6 +228,7 @@ def test_constant_padding_with_3x3_filter_mean(image_shape):
     )
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("image_shape", _image_shapes_to_test)
 def test_symmetric_padding_with_3x3_filter_mean(image_shape):
     expected_plane = tf.constant(
@@ -240,6 +249,7 @@ def test_symmetric_padding_with_3x3_filter_mean(image_shape):
     )
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("image_shape", [(1,), (16, 28, 28, 1, 1)])
 def test_invalid_image_median(image_shape):
     with pytest.raises((ValueError, tf.errors.InvalidArgumentError)):
@@ -247,6 +257,7 @@ def test_invalid_image_median(image_shape):
         median_filter2d(image)
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("filter_shape", [(3, 3, 3), (3, None, 3)])
 def test_invalid_filter_shape_median(filter_shape):
     image = tf.ones(shape=(1, 28, 28, 1))
@@ -259,6 +270,7 @@ def test_invalid_filter_shape_median(filter_shape):
         mean_filter2d(image, filter_shape=filter_shape)
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_invalid_padding_median():
     image = tf.ones(shape=(1, 28, 28, 1))
 
@@ -266,6 +278,7 @@ def test_invalid_padding_median():
         median_filter2d(image, padding="TEST")
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_none_channels_median():
     # 3-D image
     fn = median_filter2d.get_concrete_function(
@@ -282,6 +295,7 @@ def test_none_channels_median():
     fn(tf.ones(shape=(1, 3, 3, 3)))
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("shape", [(3, 3), (3, 3, 3), (1, 3, 3, 3)])
 def test_unknown_shape_median(shape):
     fn = median_filter2d.get_concrete_function(
@@ -294,6 +308,7 @@ def test_unknown_shape_median(shape):
     np.testing.assert_equal(image.numpy(), fn(image).numpy())
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("image_shape", _image_shapes_to_test)
 def test_reflect_padding_with_3x3_filter_median(image_shape):
     expected_plane = tf.constant([[4, 4, 5], [5, 5, 5], [5, 6, 6]])
@@ -308,6 +323,7 @@ def test_reflect_padding_with_3x3_filter_median(image_shape):
     )
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("image_shape", _image_shapes_to_test)
 def test_reflect_padding_with_4x4_filter_median(image_shape):
     expected_plane = tf.constant([[5, 5, 5], [5, 5, 5], [5, 5, 5]])
@@ -322,6 +338,7 @@ def test_reflect_padding_with_4x4_filter_median(image_shape):
     )
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("image_shape", _image_shapes_to_test)
 def test_constant_padding_with_3x3_filter(image_shape):
     expected_plane = tf.constant([[0, 2, 0], [2, 5, 3], [0, 5, 0]])
@@ -347,6 +364,7 @@ def test_constant_padding_with_3x3_filter(image_shape):
     )
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("image_shape", _image_shapes_to_test)
 def test_symmetric_padding_with_3x3_filter(image_shape):
     expected_plane = tf.constant([[2, 3, 3], [4, 5, 6], [7, 7, 8]])
