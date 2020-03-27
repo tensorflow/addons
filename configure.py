@@ -99,8 +99,6 @@ def install_dependencies(quiet):
 
     with open("requirements.txt") as f:
         install_cmd += f.read().splitlines()
-    with open("tools/install_deps/tensorflow.txt") as f:
-        install_cmd += f.read().splitlines()
 
     print("> Installing packages. Running ", " ".join(install_cmd))
     subprocess.check_call(install_cmd)
