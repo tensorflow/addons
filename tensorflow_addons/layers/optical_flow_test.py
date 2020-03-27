@@ -116,102 +116,81 @@ def test_forward_simple(data_format):
     assert actual.shape == (2, 9, 7, 8)
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class CorrelationCostTest(tf.test.TestCase):
-    def _gradients(self, data_format, use_gpu=False):
-        with test_utils.device(use_gpu):
-            batch, channels, height, width = 2, 3, 5, 6
-            input_a = np.random.randn(batch, channels, height, width).astype(np.float32)
-            input_b = np.random.randn(batch, channels, height, width).astype(np.float32)
+@pytest.mark.usefixtures("cpu_and_gpu")
+def test_gradients(data_format):
+    batch, channels, height, width = 2, 3, 5, 6
+    input_a = np.random.randn(batch, channels, height, width).astype(np.float32)
+    input_b = np.random.randn(batch, channels, height, width).astype(np.float32)
 
-            kernel_size = 1
-            max_displacement = 2
-            stride_1 = 1
-            stride_2 = 2
-            pad = 4
+    kernel_size = 1
+    max_displacement = 2
+    stride_1 = 1
+    stride_2 = 2
+    pad = 4
 
-            if data_format == "channels_last":
-                input_a = tf.transpose(input_a, [0, 2, 3, 1])
-                input_b = tf.transpose(input_b, [0, 2, 3, 1])
+    if data_format == "channels_last":
+        input_a = tf.transpose(input_a, [0, 2, 3, 1])
+        input_b = tf.transpose(input_b, [0, 2, 3, 1])
 
-            input_a_op = tf.convert_to_tensor(input_a)
-            input_b_op = tf.convert_to_tensor(input_b)
+    input_a_op = tf.convert_to_tensor(input_a)
+    input_b_op = tf.convert_to_tensor(input_b)
 
-            def correlation_fn(input_a, input_b):
-                return CorrelationCost(
-                    kernel_size=kernel_size,
-                    max_displacement=max_displacement,
-                    stride_1=stride_1,
-                    stride_2=stride_2,
-                    pad=pad,
-                    data_format=data_format,
-                )([input_a, input_b])
+    def correlation_fn(input_a, input_b):
+        return CorrelationCost(
+            kernel_size=kernel_size,
+            max_displacement=max_displacement,
+            stride_1=stride_1,
+            stride_2=stride_2,
+            pad=pad,
+            data_format=data_format,
+        )([input_a, input_b])
 
-            theoretical, numerical = tf.test.compute_gradient(
-                correlation_fn, [input_a_op, input_b_op]
-            )
+    theoretical, numerical = tf.test.compute_gradient(
+        correlation_fn, [input_a_op, input_b_op]
+    )
 
-            self.assertAllClose(theoretical[0], numerical[0], atol=1e-3)
+    np.testing.assert_allclose(theoretical[0], numerical[0], atol=1e-3)
 
-    def _keras(self, data_format, use_gpu=False):
-        # Unable to use `layer_test` as this layer has multiple inputs.
-        with test_utils.device(use_gpu):
-            val_a, val_b = _create_test_data(data_format)
 
-            # yapf: disable
-            input_a = tf.keras.Input(shape=val_a.shape[1:])
-            input_b = tf.keras.Input(shape=val_b.shape[1:])
+@pytest.mark.usefixtures("cpu_and_gpu")
+def test_keras(data_format):
+    # Unable to use `layer_test` as this layer has multiple inputs.
+    val_a, val_b = _create_test_data(data_format)
 
-            layer = CorrelationCost(
-                kernel_size=1,
-                max_displacement=2,
-                stride_1=1,
-                stride_2=2,
-                pad=4,
-                data_format=data_format)
+    input_a = tf.keras.Input(shape=val_a.shape[1:])
+    input_b = tf.keras.Input(shape=val_b.shape[1:])
 
-            expected_output_shape = tuple(
-                layer.compute_output_shape([input_a.shape, input_b.shape]))
-            # yapf: enable
+    layer = CorrelationCost(
+        kernel_size=1,
+        max_displacement=2,
+        stride_1=1,
+        stride_2=2,
+        pad=4,
+        data_format=data_format,
+    )
 
-            x = [input_a, input_b]
-            y = layer(x)
-            model = tf.keras.models.Model(x, y)
-            actual_output = model([val_a, val_b])
+    expected_output_shape = tuple(
+        layer.compute_output_shape([input_a.shape, input_b.shape])
+    )
 
-            expected_output_type = "float32"
-            if tf.keras.backend.dtype(y[0]) != expected_output_type:
-                raise AssertionError(
-                    "Inferred output type %s does not equal "
-                    "expected output type %s"
-                    % (tf.keras.backend.dtype(y[0]), expected_output_type)
-                )
+    x = [input_a, input_b]
+    y = layer(x)
+    model = tf.keras.models.Model(x, y)
+    actual_output = model([val_a, val_b])
 
-            if actual_output.shape[1:] != expected_output_shape[0][1:]:
-                raise AssertionError(
-                    "Expected shape %s does not equal output shape"
-                    "%s" % (actual_output.shape, expected_output_shape[0])
-                )
+    expected_output_type = "float32"
+    if tf.keras.backend.dtype(y[0]) != expected_output_type:
+        raise AssertionError(
+            "Inferred output type %s does not equal "
+            "expected output type %s"
+            % (tf.keras.backend.dtype(y[0]), expected_output_type)
+        )
 
-    def testBackwardNCHW(self):
-        self._gradients(data_format="channels_first", use_gpu=False)
-        if tf.test.is_gpu_available():
-            self._gradients(data_format="channels_first", use_gpu=True)
-
-    def testBackwardNHWC(self):
-        self._gradients(data_format="channels_last", use_gpu=False)
-        if tf.test.is_gpu_available():
-            self._gradients(data_format="channels_last", use_gpu=True)
-
-    def testKerasNCHW(self):
-        self._keras(data_format="channels_first", use_gpu=False)
-        if tf.test.is_gpu_available():
-            self._keras(data_format="channels_first", use_gpu=True)
-
-    def testKerasNHWC(self):
-        self._keras(data_format="channels_last", use_gpu=False)
-        if tf.test.is_gpu_available():
-            self._keras(data_format="channels_last", use_gpu=True)
+    if actual_output.shape[1:] != expected_output_shape[0][1:]:
+        raise AssertionError(
+            "Expected shape %s does not equal output shape"
+            "%s" % (actual_output.shape, expected_output_shape[0])
+        )
 
 
 if __name__ == "__main__":
