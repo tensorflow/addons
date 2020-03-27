@@ -74,51 +74,50 @@ def _create_test_data(data_format):
     return val_a, val_b
 
 
+@pytest.mark.usefixtures("cpu_and_gpu", "maybe_run_functions_eagerly")
+def test_forward_simple(data_format):
+    # We are just testing where the output has vanishing values.
+    val_a, val_b = _create_test_data(data_format)
+    input_a = tf.constant(val_a, dtype=tf.float32)
+    input_b = tf.constant(val_b, dtype=tf.float32)
+
+    input_a_tensor = tf.convert_to_tensor(input_a, dtype=tf.float32)
+    input_b_tensor = tf.convert_to_tensor(input_b, dtype=tf.float32)
+
+    kernel_size = 1
+    max_displacement = 2
+    stride_1 = 1
+    stride_2 = 2
+    pad = 4
+
+    actual = _forward(
+        input_a_tensor,
+        input_b_tensor,
+        kernel_size=kernel_size,
+        max_displacement=max_displacement,
+        stride_1=stride_1,
+        stride_2=stride_2,
+        pad=pad,
+        data_format=data_format,
+    )
+
+    if data_format == "channels_last":
+        # NHWC -> NCHW
+        actual = tf.transpose(actual, [0, 3, 1, 2])
+
+    # We can test fixed ids, as output is independent from data_format
+    expected_ids = np.concatenate([np.zeros(464,), np.ones(464,)])
+    np.testing.assert_allclose(tf.where(actual == 0)[:, 0].numpy(), expected_ids)
+
+    counts = [54, 52, 54, 50, 44, 50, 54, 52, 54]
+    expected_ids = np.concatenate([k * np.ones(v,) for k, v in enumerate(counts)])
+    expected_ids = np.concatenate([expected_ids, expected_ids])
+    np.testing.assert_allclose(tf.where(actual == 0)[:, 1], expected_ids)
+    assert actual.shape == (2, 9, 7, 8)
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class CorrelationCostTest(tf.test.TestCase):
-    def _forward_simple(self, data_format, use_gpu=False):
-        # We are just testing where the output has vanishing values.
-        with test_utils.device(use_gpu):
-            val_a, val_b = _create_test_data(data_format)
-            input_a = tf.constant(val_a, dtype=tf.float32)
-            input_b = tf.constant(val_b, dtype=tf.float32)
-
-            input_a_tensor = tf.convert_to_tensor(input_a, dtype=tf.float32)
-            input_b_tensor = tf.convert_to_tensor(input_b, dtype=tf.float32)
-
-            kernel_size = 1
-            max_displacement = 2
-            stride_1 = 1
-            stride_2 = 2
-            pad = 4
-
-            actual = _forward(
-                input_a_tensor,
-                input_b_tensor,
-                kernel_size=kernel_size,
-                max_displacement=max_displacement,
-                stride_1=stride_1,
-                stride_2=stride_2,
-                pad=pad,
-                data_format=data_format,
-            )
-
-            if data_format == "channels_last":
-                # NHWC -> NCHW
-                actual = tf.transpose(actual, [0, 3, 1, 2])
-
-            # We can test fixed ids, as output is independent from data_format
-            expected_ids = np.concatenate([np.zeros(464,), np.ones(464,)])
-            self.assertAllClose(tf.where(tf.equal(actual, 0))[:, 0], expected_ids)
-
-            counts = [54, 52, 54, 50, 44, 50, 54, 52, 54]
-            expected_ids = np.concatenate(
-                [k * np.ones(v,) for k, v in enumerate(counts)]
-            )
-            expected_ids = np.concatenate([expected_ids, expected_ids])
-            self.assertAllClose(tf.where(tf.equal(actual, 0))[:, 1], expected_ids)
-            self.assertEqual(actual.shape, (2, 9, 7, 8))
-
     def _gradients(self, data_format, use_gpu=False):
         with test_utils.device(use_gpu):
             batch, channels, height, width = 2, 3, 5, 6
@@ -193,16 +192,6 @@ class CorrelationCostTest(tf.test.TestCase):
                     "Expected shape %s does not equal output shape"
                     "%s" % (actual_output.shape, expected_output_shape[0])
                 )
-
-    def testForwardNCHW(self):
-        self._forward_simple(data_format="channels_first", use_gpu=False)
-        if tf.test.is_gpu_available():
-            self._forward_simple(data_format="channels_first", use_gpu=True)
-
-    def testForwardNHWC(self):
-        self._forward_simple(data_format="channels_last", use_gpu=False)
-        if tf.test.is_gpu_available():
-            self._forward_simple(data_format="channels_last", use_gpu=True)
 
     def testBackwardNCHW(self):
         self._gradients(data_format="channels_first", use_gpu=False)
