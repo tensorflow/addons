@@ -120,9 +120,7 @@ def test_gradients_exist():
     The correctness of the gradients is assumed, since the forward
     propagation is tested to be correct and we only use built-in tf
     ops. However, we perform a simple test to make sure that
-    backprop can actually run. We treat the flows as a tf.Variable
-    and optimize them to minimize the difference between the
-    interpolated image and the input image.
+    backprop can actually run. 
     """
     batch_size, height, width, num_channels = [4, 5, 6, 7]
     image_shape = [batch_size, height, width, num_channels]
