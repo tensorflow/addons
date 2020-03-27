@@ -1,10 +1,9 @@
 import tensorflow as tf
+import pytest
 from tensorflow_addons.layers.equi_conv import EquiConv
 
-from tensorflow_addons.utils import test_utils
 
-
-@test_utils.run_all_in_graph_and_eager_modes
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 class EquiConvTest(tf.test.TestCase):
     def testKerasNHWC(self):
         channel = 32
