@@ -177,6 +177,23 @@ def maybe_run_functions_eagerly(request):
     request.addfinalizer(finalizer)
 
 
+@pytest.fixture(scope="function", params=["CPU", "GPU"])
+def cpu_and_gpu(request):
+    if request.param == "CPU":
+        with tf.device("/device:CPU:0"):
+            yield
+    else:
+        if not tf.test.is_gpu_available():
+            pytest.skip("GPU is not available.")
+        with tf.device("/device:GPU:0"):
+            yield
+
+
+@pytest.fixture(scope="function", params=["channels_first", "channels_last"])
+def data_format(request):
+    return request.param
+
+
 def assert_allclose_according_to_type(
     a,
     b,
