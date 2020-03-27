@@ -217,79 +217,72 @@ class AdjustValueInYiqTest(tf.test.TestCase):
                 self.evaluate(self._adjust_value_in_yiq_tf(x_np, scale))
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class AdjustSaturationInYiqTest(tf.test.TestCase):
-    def _adjust_saturation_in_yiq_tf(self, x_np, scale):
-        x = tf.constant(x_np)
-        y = distort_image_ops.adjust_hsv_in_yiq(x, 0, scale, 1)
-        return y
+def _adjust_saturation_in_yiq_tf(x_np, scale):
+    x = tf.constant(x_np)
+    y = distort_image_ops.adjust_hsv_in_yiq(x, 0, scale, 1)
+    return y
 
-    def _adjust_saturation_in_yiq_np(self, x_np, scale):
-        """Adjust saturation using linear interpolation."""
-        rgb_weights = np.array([0.299, 0.587, 0.114])
-        gray = np.sum(x_np * rgb_weights, axis=-1, keepdims=True)
-        y_v = x_np * scale + gray * (1 - scale)
-        return y_v
 
-    def test_adjust_random_saturation_in_yiq(self):
-        x_shapes = [
-            [2, 2, 3],
-            [4, 2, 3],
-            [2, 4, 3],
-            [2, 5, 3],
-            [1000, 1, 3],
-        ]
-        test_styles = [
-            "all_random",
-            "rg_same",
-            "rb_same",
-            "gb_same",
-            "rgb_same",
-        ]
-        for x_shape in x_shapes:
-            for test_style in test_styles:
-                x_np = np.random.rand(*x_shape) * 255.0
-                scale = np.random.rand() * 2.0 - 1.0
-                if test_style == "all_random":
-                    pass
-                elif test_style == "rg_same":
-                    x_np[..., 1] = x_np[..., 0]
-                elif test_style == "rb_same":
-                    x_np[..., 2] = x_np[..., 0]
-                elif test_style == "gb_same":
-                    x_np[..., 2] = x_np[..., 1]
-                elif test_style == "rgb_same":
-                    x_np[..., 1] = x_np[..., 0]
-                    x_np[..., 2] = x_np[..., 0]
-                else:
-                    raise AssertionError("Invalid test style: %s" % (test_style))
-                y_baseline = self._adjust_saturation_in_yiq_np(x_np, scale)
-                y_tf = self._adjust_saturation_in_yiq_tf(x_np, scale)
-                self.assertAllClose(y_tf, y_baseline, rtol=2e-4, atol=1e-4)
+def _adjust_saturation_in_yiq_np(x_np, scale):
+    """Adjust saturation using linear interpolation."""
+    rgb_weights = np.array([0.299, 0.587, 0.114])
+    gray = np.sum(x_np * rgb_weights, axis=-1, keepdims=True)
+    y_v = x_np * scale + gray * (1 - scale)
+    return y_v
 
-    def test_invalid_rank(self):
-        x_np = np.random.rand(2, 3) * 255.0
-        scale = np.random.rand() * 2.0 - 1.0
-        if tf.executing_eagerly():
-            msg = "input must be at least 3-D"
-            with self.assertRaisesRegex(tf.errors.InvalidArgumentError, msg):
-                self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
-        else:
-            msg = "Shape must be at least rank 3 but is rank 2"
-            with self.assertRaisesRegex(ValueError, msg):
-                self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
 
-    def test_invalid_channels(self):
-        x_np = np.random.rand(4, 2, 4) * 255.0
-        scale = np.random.rand() * 2.0 - 1.0
-        if tf.executing_eagerly():
-            msg = "input must have 3 channels but instead has 4 "
-            with self.assertRaisesRegex(tf.errors.InvalidArgumentError, msg):
-                self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
-        else:
-            msg = "Dimension must be 3 but is 4"
-            with self.assertRaisesRegex(ValueError, msg):
-                self.evaluate(self._adjust_saturation_in_yiq_tf(x_np, scale))
+def test_adjust_random_saturation_in_yiq():
+    x_shapes = [
+        [2, 2, 3],
+        [4, 2, 3],
+        [2, 4, 3],
+        [2, 5, 3],
+        [1000, 1, 3],
+    ]
+    test_styles = [
+        "all_random",
+        "rg_same",
+        "rb_same",
+        "gb_same",
+        "rgb_same",
+    ]
+    for x_shape in x_shapes:
+        for test_style in test_styles:
+            x_np = np.random.rand(*x_shape) * 255.0
+            scale = np.random.rand() * 2.0 - 1.0
+            if test_style == "all_random":
+                pass
+            elif test_style == "rg_same":
+                x_np[..., 1] = x_np[..., 0]
+            elif test_style == "rb_same":
+                x_np[..., 2] = x_np[..., 0]
+            elif test_style == "gb_same":
+                x_np[..., 2] = x_np[..., 1]
+            elif test_style == "rgb_same":
+                x_np[..., 1] = x_np[..., 0]
+                x_np[..., 2] = x_np[..., 0]
+            else:
+                raise AssertionError("Invalid test style: %s" % (test_style))
+            y_baseline = _adjust_saturation_in_yiq_np(x_np, scale)
+            y_tf = _adjust_saturation_in_yiq_tf(x_np, scale)
+            np.testing.assert_allclose(y_tf, y_baseline, rtol=2e-4, atol=1e-4)
+
+
+def test_invalid_rank():
+    x_np = np.random.rand(2, 3) * 255.0
+    scale = np.random.rand() * 2.0 - 1.0
+
+    msg = "input must be at least 3-D"
+    with pytest.raises(tf.errors.InvalidArgumentError, match=msg):
+        _adjust_saturation_in_yiq_tf(x_np, scale).numpy()
+
+
+def test_invalid_channels():
+    x_np = np.random.rand(4, 2, 4) * 255.0
+    scale = np.random.rand() * 2.0 - 1.0
+    msg = "input must have 3 channels but instead has 4 "
+    with pytest.raises(tf.errors.InvalidArgumentError, match=msg):
+        _adjust_saturation_in_yiq_tf(x_np, scale).numpy()
 
 
 if __name__ == "__main__":
