@@ -159,6 +159,11 @@ py_test(
         "multihead_attention_test.py",
     ],
     main = "multihead_attention_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+py_test(
     name = "deformable_conv_test",
     size = "small",
     srcs = [
