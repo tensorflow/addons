@@ -179,18 +179,8 @@ def test_keras(data_format):
     actual_output = model([val_a, val_b])
 
     expected_output_type = "float32"
-    if tf.keras.backend.dtype(y[0]) != expected_output_type:
-        raise AssertionError(
-            "Inferred output type %s does not equal "
-            "expected output type %s"
-            % (tf.keras.backend.dtype(y[0]), expected_output_type)
-        )
-
-    if actual_output.shape[1:] != expected_output_shape[0][1:]:
-        raise AssertionError(
-            "Expected shape %s does not equal output shape"
-            "%s" % (actual_output.shape, expected_output_shape[0])
-        )
+    assert tf.keras.backend.dtype(y[0]) == expected_output_type
+    assert actual_output.shape[1:] == expected_output_shape[0][1:]
 
 
 if __name__ == "__main__":
