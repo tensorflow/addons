@@ -136,7 +136,9 @@ def test_no_reduction():
     #      = [0.9^2, 0.7^2, 1.3^2, 0.7^2, 0^2, 0.5^2]
     #      = [0.81, 0.49, 1.69, 0.49, 0, 0.25]
 
-    np.testing.assert_allclose(np.sum(loss.numpy()), 3.73)
+    np.testing.assert_array_almost_equal(
+        loss.numpy(), [0.81, 0.49, 1.69, 0.49, 0.0, 0.25]
+    )
 
 
 def test_sum_reduction():
