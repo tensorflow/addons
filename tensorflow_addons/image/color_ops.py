@@ -22,19 +22,24 @@ from tensorflow_addons.utils.types import TensorLike
 from tensorflow_addons.image.utils import to_4D_image, from_4D_image
 
 from typing import Optional
+from functools import partial
 
 
 def equalize_image(image: TensorLike, data_format: str = "channels_last") -> tf.Tensor:
     """Implements Equalize function from PIL using TF ops."""
 
-    def scale_channel(image, channel=None):
+    def scale_channel(image, channel):
         """Scale the data in the channel to implement equalize."""
         image_dtype = image.dtype
 
         if data_format == "channels_last":
             image = tf.cast(image[:, :, channel], tf.int32)
+        elif data_format == "channels_first":
+            image = tf.cast(image[channel], tf.int32)
         else:
-            image = tf.cast(image[channel, :, :], tf.int32)
+            raise ValueError(
+                "data_format can either be channels_last or channels_first"
+            )
         # Compute the histogram of the image channel.
         histo = tf.histogram_fixed_width(image, [0, 255], nbins=256)
 
@@ -70,7 +75,7 @@ def equalize_image(image: TensorLike, data_format: str = "channels_last") -> tf.
 
 
 def equalize(
-    image: TensorLike, data_format: str = "channel_last", name: Optional[str] = None
+    image: TensorLike, data_format: str = "channels_last", name: Optional[str] = None
 ) -> tf.Tensor:
     """Equalize image(s)
 
@@ -82,7 +87,7 @@ def equalize(
           (num_channels, num_rows, num_columns) (HWC), or
           (num_rows, num_columns) (HW). The rank must be statically known (the
           shape is not `TensorShape(None)`).
-      data_format: Either 'channel_first' or 'channel_last'
+      data_format: Either 'channels_first' or 'channels_last'
       name: The name of the op.
     Returns:
       Image(s) with the same type and shape as `images`, equalized.
@@ -90,5 +95,6 @@ def equalize(
     with tf.name_scope(name or "equalize"):
         image_dims = tf.rank(image)
         image = to_4D_image(image)
-        image = tf.map_fn(equalize_image, image)
+        fn = partial(equalize_image, data_format=data_format)
+        image = tf.map_fn(fn, image)
         return from_4D_image(image, image_dims)
