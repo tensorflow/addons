@@ -19,6 +19,7 @@ py_library(
         "resampler_ops.py",
         "compose_ops.py",
         "cutout_ops.py",
+        "gaussian_filter_ops.py",
     ]),
     data = [
         ":sparse_image_warp_test_data",
@@ -186,6 +187,17 @@ py_test(
         "compose_ops_test.py",
     ],
     main = "compose_ops_test.py",
+    deps = [
+        ":image",
+    ],
+)
+py_test(
+    name = "gaussian_filter_ops_test",
+    size = "medium",
+    srcs = [
+        "gaussian_filter_ops.py",
+    ],
+    main = "gaussian_filter_ops_test.py",
     deps = [
         ":image",
     ],
