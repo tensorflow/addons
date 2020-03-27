@@ -16,10 +16,10 @@
 
 import tensorflow as tf
 
-from tensorflow_addons.utils.types import TensorLike
+from tensorflow_addons.utils.types import TensorLike, Number
 
 
-def blend(image1: TensorLike, image2: TensorLike, factor: float) -> TensorLike:
+def blend(image1: TensorLike, image2: TensorLike, factor: Number) -> tf.Tensor:
     """Blend image1 and image2 using 'factor'.
 
   Factor can be above 0.0.  A value of 0.0 means only image1 is used.
@@ -39,8 +39,6 @@ def blend(image1: TensorLike, image2: TensorLike, factor: float) -> TensorLike:
 
   """
     with tf.name_scope("blend"):
-        if image1.dtype != tf.uint8 or image2.dtype != tf.uint8:
-            raise ValueError("Images must have dtype tf.uint8")
 
         if factor == 0.0:
             return tf.convert_to_tensor(image1)
@@ -60,10 +58,10 @@ def blend(image1: TensorLike, image2: TensorLike, factor: float) -> TensorLike:
         if factor > 0.0 and factor < 1.0:
             # Interpolation means we always stay within 0 and 255.
             temp = tf.round(temp)
-            return tf.cast(temp, tf.dtypes.uint8)
+            return temp
 
         # Extrapolate:
         #
         # We need to clip and then cast.
         temp = tf.round(tf.clip_by_value(temp, 0.0, 255.0))
-        return tf.cast(temp, tf.dtypes.uint8)
+        return temp
