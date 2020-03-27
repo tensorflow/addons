@@ -30,12 +30,16 @@ def blend(image1: TensorLike, image2: TensorLike, factor: Number) -> tf.Tensor:
   between 0 and 255.
 
   Args:
-    image1: An image Tensor of type uint8.
-    image2: An image Tensor of type uint8.
-    factor: A floating point value above 0.0.
+    image1: An image Tensor of shape (num_rows, num_columns,
+        num_channels) (HWC), or (num_rows, num_columns) (HW),
+        or (num_channels, num_rows, num_columns).
+    image2: An image Tensor of shape (num_rows, num_columns,
+        num_channels) (HWC), or (num_rows, num_columns) (HW),
+        or (num_channels, num_rows, num_columns).
+    factor: A floating point value or Tensor of type tf.float32 above 0.0.
 
   Returns:
-    A blended image Tensor of type uint8.
+    A blended image Tensor of tf.float32.
 
   """
     with tf.name_scope("blend"):

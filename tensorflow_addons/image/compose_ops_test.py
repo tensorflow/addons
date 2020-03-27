@@ -71,14 +71,15 @@ def test_blend(dtype):
     )
 
     np.random.seed(0)
-    image1 = np.random.randint(0, 255, (4, 4, 3), np.uint8)
-    image2 = np.random.randint(0, 255, (4, 4, 3), np.uint8)
+    image1 = np.random.randint(0, 255, (3, 5, 5), np.uint8)
+    image2 = np.random.randint(0, 255, (3, 5, 5), np.uint8)
     factor = tf.random.uniform(shape=[], maxval=1, dtype=tf.dtypes.float32, seed=0)
     blended = compose_ops.blend(
         tf.convert_to_tensor(image1), tf.convert_to_tensor(image2), factor
     ).numpy()
     expected = blend_np(image1, image2, factor.numpy())
     np.testing.assert_equal(blended, expected)
+    assert blended.dtype == expected.dtype
 
 
 if __name__ == "__main__":
