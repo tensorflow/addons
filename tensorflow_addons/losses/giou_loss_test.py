@@ -99,22 +99,19 @@ class GIoULossTest(tf.test.TestCase, parameterized.TestCase):
         loss = giou_loss(boxes1, boxes2)
         self.assertAllCloseAccordingToType(loss, expected_result)
 
-    @parameterized.named_parameters(
-        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
+
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_keras_model(dtype):
+    boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]], dtype=dtype)
+    boxes2 = tf.constant([[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]], dtype=dtype)
+    expected_result = tf.constant(1.5041667222976685, dtype=dtype)
+    model = tf.keras.Sequential()
+    model.compile(
+        optimizer="adam",
+        loss=GIoULoss(reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE),
     )
-    def test_keras_model(self, dtype):
-        boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]], dtype=dtype)
-        boxes2 = tf.constant(
-            [[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]], dtype=dtype
-        )
-        expected_result = tf.constant(1.5041667222976685, dtype=dtype)
-        model = tf.keras.Sequential()
-        model.compile(
-            optimizer="adam",
-            loss=GIoULoss(reduction=tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE),
-        )
-        loss = model.evaluate(boxes1, boxes2, batch_size=2, steps=1)
-        self.assertAllCloseAccordingToType(loss, expected_result)
+    loss = model.evaluate(boxes1, boxes2, batch_size=2, steps=1)
+    test_utils.assert_allclose_according_to_type(loss, expected_result)
 
 
 if __name__ == "__main__":
