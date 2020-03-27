@@ -1,9 +1,11 @@
 import tensorflow as tf
 import pytest
+import sys
 from tensorflow_addons.layers.equi_conv import EquiConv
+from tensorflow_addons.utils import test_utils
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@test_utils.run_all_in_graph_and_eager_modes
 class EquiConvTest(tf.test.TestCase):
     def testKerasNHWC(self):
         channel = 32
@@ -25,4 +27,4 @@ class EquiConvTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))

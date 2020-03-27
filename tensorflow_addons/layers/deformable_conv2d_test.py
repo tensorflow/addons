@@ -16,6 +16,7 @@
 import numpy as np
 import tensorflow as tf
 import pytest
+import sys
 from tensorflow_addons.layers.deformable_conv2d import (
     DeformableConv2D,
     DeformablePSROIAlign,
@@ -24,7 +25,7 @@ from tensorflow_addons.layers.deformable_conv2d import _deformable_conv2d_ops_so
 from tensorflow_addons.utils import test_utils
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@test_utils.run_all_in_graph_and_eager_modes
 class DeformableConv2DTest(tf.test.TestCase):
     def _forward(
         self,
@@ -214,7 +215,7 @@ class DeformableConv2DTest(tf.test.TestCase):
             self._keras(data_format="channels_last", use_gpu=True)
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@test_utils.run_all_in_graph_and_eager_modes
 class DeformablePSROIAlignTest(tf.test.TestCase):
     def _forward_simple(self, data_format, use_gpu=False):
         featuremap = tf.random.normal(shape=[1, 64, 100, 100])
@@ -266,4 +267,4 @@ class DeformablePSROIAlignTest(tf.test.TestCase):
 
 
 if __name__ == "__main__":
-    tf.test.main()
+    sys.exit(pytest.main([__file__]))
