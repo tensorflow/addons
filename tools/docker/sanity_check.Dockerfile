@@ -55,7 +55,7 @@ RUN bash finish_bazel_install.sh
 
 COPY ./ /addons
 WORKDIR /addons
-RUN python ./configure.py --no-deps
+RUN python ./configure.py
 RUN bazel build --nobuild -- //tensorflow_addons/...
 RUN touch /ok.txt
 
@@ -125,7 +125,7 @@ RUN bash finish_bazel_install.sh
 
 COPY ./ /addons
 WORKDIR /addons
-RUN python configure.py --no-deps
+RUN python configure.py
 RUN bash tools/install_so_files.sh
 RUN pip install --no-deps -e .
 RUN pytest -v -n auto ./tensorflow_addons/activations

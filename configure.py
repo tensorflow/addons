@@ -12,11 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# Usage: configure.py [--quiet] [--no-deps]
+# Usage: python configure.py
 #
-# Options:
-#  --quiet  Give less output.
-#  --no-deps  Don't install Python dependencies
 
 
 import os
