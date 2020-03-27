@@ -57,24 +57,6 @@ class ContrastiveLossTest(tf.test.TestCase):
 
         self.assertAllClose(loss, 0.621666)
 
-    def test_scalar_weighted(self):
-        cl_obj = contrastive.ContrastiveLoss()
-        y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
-        y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5], dtype=tf.dtypes.float32)
-        loss = cl_obj(y_true, y_pred, sample_weight=6.0)
-
-        # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
-        #      = [max(1 - 0.1, 0)^2, max(1 - 0.3, 0)^2,
-        #         1.3^2, 0.7^2, max(1 - 1.1, 0)^2, 0.5^2]
-        #      = [0.9^2, 0.7^2, 1.3^2, 0.7^2, 0^2, 0.5^2]
-        #      = [0.81, 0.49, 1.69, 0.49, 0, 0.25]
-        # Weighted loss = [0.81 * 6, 0.49 * 6, 1.69 * 6,
-        #                  0.49 * 6, 0 * 6, 0.25 * 6]
-        # Reduced loss = (0.81 + 0.49 + 1.69 + 0.49 + 0 + 0.25) * 6 / 6
-        #              = 3.73
-
-        self.assertAllClose(loss, 3.73)
-
     def test_sample_weighted(self):
         cl_obj = contrastive.ContrastiveLoss()
         y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
@@ -97,13 +79,6 @@ class ContrastiveLossTest(tf.test.TestCase):
 
         self.assertAllClose(loss, 0.4425)
 
-    def test_zero_weighted(self):
-        cl_obj = contrastive.ContrastiveLoss()
-        y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
-        y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5], dtype=tf.dtypes.float32)
-        loss = cl_obj(y_true, y_pred, sample_weight=0.0)
-        self.assertAllClose(loss, 0.0)
-
     def test_non_default_margin(self):
         cl_obj = contrastive.ContrastiveLoss(margin=2.0)
         y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
@@ -121,19 +96,49 @@ class ContrastiveLossTest(tf.test.TestCase):
         loss = self.evaluate(loss)
         self.assertAllClose(loss, 1.623333)
 
-    def test_no_reduction(self):
-        cl_obj = contrastive.ContrastiveLoss(reduction=tf.keras.losses.Reduction.NONE)
-        y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
-        y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5], dtype=tf.dtypes.float32)
-        loss = cl_obj(y_true, y_pred)
 
-        # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
-        #      = [max(1 - 0.1, 0)^2, max(1 - 0.3, 0)^2,
-        #         1.3^2, 0.7^2, max(1 - 1.1, 0)^2, 0.5^2]
-        #      = [0.9^2, 0.7^2, 1.3^2, 0.7^2, 0^2, 0.5^2]
-        #      = [0.81, 0.49, 1.69, 0.49, 0, 0.25]
+def test_scalar_weighted():
+    cl_obj = contrastive.ContrastiveLoss()
+    y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
+    y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5], dtype=tf.dtypes.float32)
+    loss = cl_obj(y_true, y_pred, sample_weight=6.0)
 
-        self.assertAllClose(loss, [0.81, 0.49, 1.69, 0.49, 0.0, 0.25])
+    # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
+    #      = [max(1 - 0.1, 0)^2, max(1 - 0.3, 0)^2,
+    #         1.3^2, 0.7^2, max(1 - 1.1, 0)^2, 0.5^2]
+    #      = [0.9^2, 0.7^2, 1.3^2, 0.7^2, 0^2, 0.5^2]
+    #      = [0.81, 0.49, 1.69, 0.49, 0, 0.25]
+    # Weighted loss = [0.81 * 6, 0.49 * 6, 1.69 * 6,
+    #                  0.49 * 6, 0 * 6, 0.25 * 6]
+    # Reduced loss = (0.81 + 0.49 + 1.69 + 0.49 + 0 + 0.25) * 6 / 6
+    #              = 3.73
+
+    np.testing.assert_allclose(loss, 3.73)
+
+
+def test_zero_weighted():
+    cl_obj = contrastive.ContrastiveLoss()
+    y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
+    y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5], dtype=tf.dtypes.float32)
+    loss = cl_obj(y_true, y_pred, sample_weight=0.0)
+    np.testing.assert_allclose(loss, 0.0)
+
+
+def test_no_reduction():
+    cl_obj = contrastive.ContrastiveLoss(reduction=tf.keras.losses.Reduction.NONE)
+    y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
+    y_pred = tf.constant([0.1, 0.3, 1.3, 0.7, 1.1, 0.5], dtype=tf.dtypes.float32)
+    loss = cl_obj(y_true, y_pred)
+
+    # Loss = y * (y`)^2 + (1 - y) * (max(m - y`, 0))^2
+    #      = [max(1 - 0.1, 0)^2, max(1 - 0.3, 0)^2,
+    #         1.3^2, 0.7^2, max(1 - 1.1, 0)^2, 0.5^2]
+    #      = [0.9^2, 0.7^2, 1.3^2, 0.7^2, 0^2, 0.5^2]
+    #      = [0.81, 0.49, 1.69, 0.49, 0, 0.25]
+
+    np.testing.assert_array_almost_equal(
+        loss.numpy(), [0.81, 0.49, 1.69, 0.49, 0.0, 0.25]
+    )
 
 
 def test_sum_reduction():
