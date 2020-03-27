@@ -21,7 +21,6 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.losses import lifted
-from tensorflow_addons.utils import test_utils
 
 
 def pairwise_distance_np(feature, squared=False):
@@ -53,64 +52,65 @@ def pairwise_distance_np(feature, squared=False):
     return pairwise_distances
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class LiftedStructLossTest(tf.test.TestCase):
-    def testLiftedStruct(self):
-        num_data = 10
-        feat_dim = 6
-        margin = 1.0
-        num_classes = 4
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_lifted_struct():
+    num_data = 10
+    feat_dim = 6
+    margin = 1.0
+    num_classes = 4
 
-        embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
-        labels = np.random.randint(0, num_classes, size=(num_data)).astype(np.float32)
-        # Reshape labels to compute adjacency matrix.
-        labels_reshaped = np.reshape(labels, (labels.shape[0], 1))
+    embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
+    labels = np.random.randint(0, num_classes, size=num_data).astype(np.float32)
+    # Reshape labels to compute adjacency matrix.
+    labels_reshaped = np.reshape(labels, (labels.shape[0], 1))
 
-        # Compute the loss in NP
-        adjacency = np.equal(labels_reshaped, labels_reshaped.T)
-        pdist_matrix = pairwise_distance_np(embedding)
-        loss_np = 0.0
-        num_constraints = 0.0
-        for i in range(num_data):
-            for j in range(num_data):
-                if adjacency[i][j] > 0.0 and i != j:
-                    d_pos = pdist_matrix[i][j]
-                    negs = []
-                    for k in range(num_data):
-                        if not adjacency[i][k]:
-                            negs.append(margin - pdist_matrix[i][k])
-                    for l in range(num_data):
-                        if not adjacency[j][l]:
-                            negs.append(margin - pdist_matrix[j][l])
+    # Compute the loss in NP
+    adjacency = np.equal(labels_reshaped, labels_reshaped.T)
+    pdist_matrix = pairwise_distance_np(embedding)
+    loss_np = 0.0
+    num_constraints = 0.0
+    for i in range(num_data):
+        for j in range(num_data):
+            if adjacency[i][j] > 0.0 and i != j:
+                d_pos = pdist_matrix[i][j]
+                negs = []
+                for k in range(num_data):
+                    if not adjacency[i][k]:
+                        negs.append(margin - pdist_matrix[i][k])
+                for l in range(num_data):
+                    if not adjacency[j][l]:
+                        negs.append(margin - pdist_matrix[j][l])
 
-                    negs = np.array(negs)
-                    max_elem = np.max(negs)
-                    negs -= max_elem
-                    negs = np.exp(negs)
-                    soft_maximum = np.log(np.sum(negs)) + max_elem
+                negs = np.array(negs)
+                max_elem = np.max(negs)
+                negs -= max_elem
+                negs = np.exp(negs)
+                soft_maximum = np.log(np.sum(negs)) + max_elem
 
-                    num_constraints += 1.0
-                    this_loss = max(soft_maximum + d_pos, 0)
-                    loss_np += this_loss * this_loss
+                num_constraints += 1.0
+                this_loss = max(soft_maximum + d_pos, 0)
+                loss_np += this_loss * this_loss
 
-        loss_np = loss_np / num_constraints / 2.0
+    loss_np = loss_np / num_constraints / 2.0
 
-        # Compute the loss in TF.
-        y_true = tf.constant(labels)
-        y_pred = tf.constant(embedding)
-        cce_obj = lifted.LiftedStructLoss()
-        loss = cce_obj(y_true, y_pred)
-        self.assertAlmostEqual(self.evaluate(loss), loss_np, 3)
+    # Compute the loss in TF.
+    y_true = tf.constant(labels)
+    y_pred = tf.constant(embedding)
+    cce_obj = lifted.LiftedStructLoss()
+    loss = cce_obj(y_true, y_pred)
+    np.testing.assert_almost_equal(loss.numpy(), loss_np, 3)
 
-    def test_keras_model_compile(self):
-        model = tf.keras.models.Sequential(
-            [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10),]
-        )
-        model.compile(loss="Addons>lifted_struct_loss", optimizer="adam")
 
-    def test_serialization(self):
-        loss = lifted.LiftedStructLoss()
-        tf.keras.losses.deserialize(tf.keras.losses.serialize(loss))
+def test_keras_model_compile():
+    model = tf.keras.models.Sequential(
+        [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10),]
+    )
+    model.compile(loss="Addons>lifted_struct_loss", optimizer="adam")
+
+
+def test_serialization():
+    loss = lifted.LiftedStructLoss()
+    tf.keras.losses.deserialize(tf.keras.losses.serialize(loss))
 
 
 if __name__ == "__main__":

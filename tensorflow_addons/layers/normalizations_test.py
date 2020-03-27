@@ -24,22 +24,21 @@ from tensorflow_addons.layers.normalizations import InstanceNormalization
 from tensorflow_addons.utils import test_utils
 
 
+# ------------Tests to ensure proper inheritance. If these suceed you can
+# test for Instance norm by setting Groupnorm groups = -1
+def test_inheritance():
+    assert issubclass(InstanceNormalization, GroupNormalization)
+    assert InstanceNormalization.build == GroupNormalization.build
+    assert InstanceNormalization.call == GroupNormalization.call
+
+
+def test_groups_after_init():
+    layers = InstanceNormalization()
+    assert layers.groups == -1
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class NormalizationTest(tf.test.TestCase):
-
-    # ------------Tests to ensure proper inheritance. If these suceed you can
-    # test for Instance norm by setting Groupnorm groups = -1
-    def test_inheritance(self):
-        self.assertTrue(issubclass(InstanceNormalization, GroupNormalization))
-        self.assertTrue(InstanceNormalization.build == GroupNormalization.build)
-        self.assertTrue(InstanceNormalization.call == GroupNormalization.call)
-
-    def test_groups_after_init(self):
-        layers = InstanceNormalization()
-        self.assertTrue(layers.groups == -1)
-
-    # ------------------------------------------------------------------------------
-
     def test_reshape(self):
         def run_reshape_test(axis, group, input_shape, expected_shape):
             group_layer = GroupNormalization(groups=group, axis=axis)
@@ -310,25 +309,27 @@ class NormalizationTest(tf.test.TestCase):
             np.std(out, axis=(0, 2, 3), dtype=np.float32), (1.0, 1.0, 1.0), atol=1e-1
         )
 
-    def test_groupnorm_convnet_no_center_no_scale(self):
-        np.random.seed(0x2020)
-        model = tf.keras.models.Sequential()
-        norm = GroupNormalization(
-            axis=-1, groups=2, center=False, scale=False, input_shape=(3, 4, 4)
-        )
-        model.add(norm)
-        model.compile(loss="mse", optimizer="sgd")
-        # centered and variance are  5.0 and 10.0, respectively
-        x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 3, 4, 4))
-        model.fit(x, x, epochs=4, verbose=0)
-        out = model.predict(x)
 
-        self.assertAllClose(
-            np.mean(out, axis=(0, 2, 3), dtype=np.float32), (0.0, 0.0, 0.0), atol=1e-1
-        )
-        self.assertAllClose(
-            np.std(out, axis=(0, 2, 3), dtype=np.float32), (1.0, 1.0, 1.0), atol=1e-1
-        )
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_groupnorm_convnet_no_center_no_scale():
+    np.random.seed(0x2020)
+    model = tf.keras.models.Sequential()
+    norm = GroupNormalization(
+        axis=-1, groups=2, center=False, scale=False, input_shape=(3, 4, 4)
+    )
+    model.add(norm)
+    model.compile(loss="mse", optimizer="sgd")
+    # centered and variance are  5.0 and 10.0, respectively
+    x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 3, 4, 4))
+    model.fit(x, x, epochs=4, verbose=0)
+    out = model.predict(x)
+
+    np.testing.assert_allclose(
+        np.mean(out, axis=(0, 2, 3), dtype=np.float32), (0.0, 0.0, 0.0), atol=1e-1
+    )
+    np.testing.assert_allclose(
+        np.std(out, axis=(0, 2, 3), dtype=np.float32), (1.0, 1.0, 1.0), atol=1e-1
+    )
 
 
 if __name__ == "__main__":
