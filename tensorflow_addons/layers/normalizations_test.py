@@ -310,25 +310,27 @@ class NormalizationTest(tf.test.TestCase):
             np.std(out, axis=(0, 2, 3), dtype=np.float32), (1.0, 1.0, 1.0), atol=1e-1
         )
 
-    def test_groupnorm_convnet_no_center_no_scale(self):
-        np.random.seed(0x2020)
-        model = tf.keras.models.Sequential()
-        norm = GroupNormalization(
-            axis=-1, groups=2, center=False, scale=False, input_shape=(3, 4, 4)
-        )
-        model.add(norm)
-        model.compile(loss="mse", optimizer="sgd")
-        # centered and variance are  5.0 and 10.0, respectively
-        x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 3, 4, 4))
-        model.fit(x, x, epochs=4, verbose=0)
-        out = model.predict(x)
 
-        self.assertAllClose(
-            np.mean(out, axis=(0, 2, 3), dtype=np.float32), (0.0, 0.0, 0.0), atol=1e-1
-        )
-        self.assertAllClose(
-            np.std(out, axis=(0, 2, 3), dtype=np.float32), (1.0, 1.0, 1.0), atol=1e-1
-        )
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_groupnorm_convnet_no_center_no_scale():
+    np.random.seed(0x2020)
+    model = tf.keras.models.Sequential()
+    norm = GroupNormalization(
+        axis=-1, groups=2, center=False, scale=False, input_shape=(3, 4, 4)
+    )
+    model.add(norm)
+    model.compile(loss="mse", optimizer="sgd")
+    # centered and variance are  5.0 and 10.0, respectively
+    x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 3, 4, 4))
+    model.fit(x, x, epochs=4, verbose=0)
+    out = model.predict(x)
+
+    np.testing.assert_allclose(
+        np.mean(out, axis=(0, 2, 3), dtype=np.float32), (0.0, 0.0, 0.0), atol=1e-1
+    )
+    np.testing.assert_allclose(
+        np.std(out, axis=(0, 2, 3), dtype=np.float32), (1.0, 1.0, 1.0), atol=1e-1
+    )
 
 
 if __name__ == "__main__":
