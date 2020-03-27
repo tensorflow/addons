@@ -53,6 +53,7 @@ jobs:
         env:
           PY_VERSION: ${{ matrix.python-version }}
           OS: ${{ runner.os }}
+          TF_VERSION: 2.1.0
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}.sh
       - uses: actions/upload-artifact@v1

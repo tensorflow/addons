@@ -19,12 +19,11 @@
 #  --no-deps  Don't install Python dependencies
 
 
-import argparse
 import os
 import platform
-import subprocess
-import sys
 import logging
+
+import tensorflow as tf
 
 _DEFAULT_CUDA_VERISON = "10.1"
 _DEFAULT_CUDNN_VERSION = "7"
@@ -92,43 +91,14 @@ def get_shared_lib_name():
         return namespec[1][3:]
 
 
-def install_dependencies(quiet):
-    install_cmd = [sys.executable, "-m", "pip", "install", "--upgrade"]
-    if quiet:
-        install_cmd.append("--quiet")
-
-    with open("requirements.txt") as f:
-        install_cmd += f.read().splitlines()
-
-    print("> Installing packages. Running ", " ".join(install_cmd))
-    subprocess.check_call(install_cmd)
-
-
 def create_build_configuration():
     print()
     print("Configuring TensorFlow Addons to be built from source...")
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--quiet", action="store_true", help="Give less output.")
-    parser.add_argument(
-        "--no-deps",
-        action="store_true",
-        help="Do not check and install Python dependencies.",
-    )
-    args = parser.parse_args()
-
-    print()
-    if args.no_deps:
-        print("> Using pre-installed Tensorflow.")
-    else:
-        install_dependencies(args.quiet)
 
     if os.path.isfile(_TFA_BAZELRC):
         os.remove(_TFA_BAZELRC)
 
     logging.disable(logging.WARNING)
-
-    import tensorflow as tf  # noqa: E402 module level import not at top of file
 
     write_action_env_to_bazelrc("TF_HEADER_DIR", get_tf_header_dir())
     write_action_env_to_bazelrc("TF_SHARED_LIBRARY_DIR", get_tf_shared_lib_dir())
