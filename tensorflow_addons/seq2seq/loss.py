@@ -196,8 +196,9 @@ class SequenceLoss(tf.keras.losses.Loss):
         # However, prior to TensorFlow 2.2 tf.keras will actually invokes "call"
         # when the loss object has the "reduction" attribute. So we remove it in
         # this case.
-        if (LooseVersion(tf.__version__) < LooseVersion("2.2.0")
-            and hasattr(self, "reduction")):
+        if LooseVersion(tf.__version__) < LooseVersion("2.2.0") and hasattr(
+            self, "reduction"
+        ):
             delattr(self, "reduction")
 
     def __call__(self, y_true, y_pred, sample_weight=None):
