@@ -20,80 +20,80 @@ import pytest
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
-from tensorflow_addons.utils import test_utils
 from tensorflow_addons.losses import (
     sigmoid_focal_crossentropy,
     SigmoidFocalCrossEntropy,
 )
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class SigmoidFocalCrossEntropyTest(tf.test.TestCase):
-    def test_config(self):
-        bce_obj = SigmoidFocalCrossEntropy(
-            reduction=tf.keras.losses.Reduction.NONE, name="sigmoid_focal_crossentropy"
-        )
-        self.assertEqual(bce_obj.name, "sigmoid_focal_crossentropy")
-        self.assertEqual(bce_obj.reduction, tf.keras.losses.Reduction.NONE)
+def test_config():
+    bce_obj = SigmoidFocalCrossEntropy(
+        reduction=tf.keras.losses.Reduction.NONE, name="sigmoid_focal_crossentropy"
+    )
+    assert bce_obj.name == "sigmoid_focal_crossentropy"
+    assert bce_obj.reduction == tf.keras.losses.Reduction.NONE
 
-    def to_logit(self, prob):
-        logit = np.log(prob / (1.0 - prob))
-        return logit
 
-    # Test with logits
-    def test_with_logits(self):
-        # predictiions represented as logits
-        prediction_tensor = tf.constant(
-            [
-                [self.to_logit(0.97)],
-                [self.to_logit(0.91)],
-                [self.to_logit(0.73)],
-                [self.to_logit(0.27)],
-                [self.to_logit(0.09)],
-                [self.to_logit(0.03)],
-            ],
-            tf.float32,
-        )
-        # Ground truth
-        target_tensor = tf.constant([[1], [1], [1], [0], [0], [0]], tf.float32)
+def to_logit(prob):
+    logit = np.log(prob / (1.0 - prob))
+    return logit
 
-        fl = sigmoid_focal_crossentropy(
-            y_true=target_tensor,
-            y_pred=prediction_tensor,
-            from_logits=True,
-            alpha=None,
-            gamma=None,
-        )
-        bce = tf.reduce_sum(
-            K.binary_crossentropy(target_tensor, prediction_tensor, from_logits=True),
-            axis=-1,
-        )
 
-        # When alpha and gamma are None, it should be equal to BCE
-        self.assertAllClose(fl, bce)
+# Test with logits
+def test_with_logits():
+    # predictiions represented as logits
+    prediction_tensor = tf.constant(
+        [
+            [to_logit(0.97)],
+            [to_logit(0.91)],
+            [to_logit(0.73)],
+            [to_logit(0.27)],
+            [to_logit(0.09)],
+            [to_logit(0.03)],
+        ],
+        tf.float32,
+    )
+    # Ground truth
+    target_tensor = tf.constant([[1], [1], [1], [0], [0], [0]], tf.float32)
 
-        # When gamma==2.0
-        fl = sigmoid_focal_crossentropy(
-            y_true=target_tensor,
-            y_pred=prediction_tensor,
-            from_logits=True,
-            alpha=None,
-            gamma=2.0,
-        )
+    fl = sigmoid_focal_crossentropy(
+        y_true=target_tensor,
+        y_pred=prediction_tensor,
+        from_logits=True,
+        alpha=None,
+        gamma=None,
+    )
+    bce = tf.reduce_sum(
+        K.binary_crossentropy(target_tensor, prediction_tensor, from_logits=True),
+        axis=-1,
+    )
 
-        # order_of_ratio = np.power(10, np.floor(np.log10(bce/FL)))
-        order_of_ratio = tf.pow(10.0, tf.math.floor(log10(bce / fl)))
-        pow_values = tf.constant([1000, 100, 10, 10, 100, 1000])
-        self.assertAllClose(order_of_ratio, pow_values)
+    # When alpha and gamma are None, it should be equal to BCE
+    np.testing.assert_allclose(fl, bce)
 
-    def test_keras_model_compile(self):
-        model = tf.keras.models.Sequential(
-            [
-                tf.keras.layers.Input(shape=(100,)),
-                tf.keras.layers.Dense(5, activation="softmax"),
-            ]
-        )
-        model.compile(loss="Addons>sigmoid_focal_crossentropy")
+    # When gamma==2.0
+    fl = sigmoid_focal_crossentropy(
+        y_true=target_tensor,
+        y_pred=prediction_tensor,
+        from_logits=True,
+        alpha=None,
+        gamma=2.0,
+    )
+
+    # order_of_ratio = np.power(10, np.floor(np.log10(bce/FL)))
+    order_of_ratio = tf.pow(10.0, tf.math.floor(log10(bce / fl)))
+    pow_values = tf.constant([1000, 100, 10, 10, 100, 1000])
+    np.testing.assert_allclose(order_of_ratio, pow_values)
+
+
+def test_keras_model_compile():
+    model = tf.keras.models.Sequential(
+        [
+            tf.keras.layers.Input(shape=(100,)),
+            tf.keras.layers.Dense(5, activation="softmax"),
+        ]
+    )
+    model.compile(loss="Addons>sigmoid_focal_crossentropy")
 
 
 def log10(x):
