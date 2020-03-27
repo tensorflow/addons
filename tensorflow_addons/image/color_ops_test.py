@@ -50,6 +50,7 @@ def test_equalize_with_PIL():
 
 @pytest.mark.parametrize("shape", [(1, 5, 5), (3, 5, 5), (10, 3, 7, 7)])
 def test_equalize_channel_first(shape):
-    image = tf.ones(shape=shape, dtype=tf.uint8)
-    equalized = color_ops.equalize(image, "channel_first")
-    np.testing.assert_equal(equalized.numpy(), image.numpy())
+    np.random.seed(0)
+    image = np.random.randint(low=0, high=255, size=(4, 3, 3, 3), dtype=np.uint8)
+    equalized = color_ops.equalize(tf.constant(image), "channel_first")
+    np.testing.assert_equal(equalized.numpy(), image)
