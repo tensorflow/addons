@@ -18,49 +18,45 @@ import sys
 
 import pytest
 import numpy as np
-import tensorflow as tf
 
 from tensorflow_addons.layers.maxout import Maxout
 from tensorflow_addons.utils import test_utils
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class MaxOutTest(tf.test.TestCase):
-    def test_simple(self):
-        test_utils.layer_test(
-            Maxout, kwargs={"num_units": 3}, input_shape=(5, 4, 2, 18)
-        )
+pytestmark = pytest.mark.usefixtures("maybe_run_functions_eagerly")
 
-    def test_nchw(self):
-        test_utils.layer_test(
-            Maxout, kwargs={"num_units": 4, "axis": 1}, input_shape=(2, 20, 3, 6)
-        )
 
-        test_utils.layer_test(
-            Maxout, kwargs={"num_units": 4, "axis": -3}, input_shape=(2, 20, 3, 6)
-        )
+def test_simple():
+    test_utils.layer_test(Maxout, kwargs={"num_units": 3}, input_shape=(5, 4, 2, 18))
 
-    def test_unknown(self):
-        inputs = np.random.random((5, 4, 2, 18)).astype("float32")
-        test_utils.layer_test(
-            Maxout,
-            kwargs={"num_units": 3},
-            input_shape=(5, 4, 2, None),
-            input_data=inputs,
-        )
 
-        test_utils.layer_test(
-            Maxout,
-            kwargs={"num_units": 3},
-            input_shape=(None, None, None, None),
-            input_data=inputs,
-        )
+def test_nchw():
+    test_utils.layer_test(
+        Maxout, kwargs={"num_units": 4, "axis": 1}, input_shape=(2, 20, 3, 6)
+    )
 
-    def test_invalid_shape(self):
-        with self.assertRaisesRegexp(ValueError, r"number of features"):
-            test_utils.layer_test(
-                Maxout, kwargs={"num_units": 3}, input_shape=(5, 4, 2, 7)
-            )
+    test_utils.layer_test(
+        Maxout, kwargs={"num_units": 4, "axis": -3}, input_shape=(2, 20, 3, 6)
+    )
+
+
+def test_unknown():
+    inputs = np.random.random((5, 4, 2, 18)).astype("float32")
+    test_utils.layer_test(
+        Maxout, kwargs={"num_units": 3}, input_shape=(5, 4, 2, None), input_data=inputs,
+    )
+
+    test_utils.layer_test(
+        Maxout,
+        kwargs={"num_units": 3},
+        input_shape=(None, None, None, None),
+        input_data=inputs,
+    )
+
+
+def test_invalid_shape():
+    with pytest.raises(ValueError, match="number of features"):
+        test_utils.layer_test(Maxout, kwargs={"num_units": 3}, input_shape=(5, 4, 2, 7))
 
 
 if __name__ == "__main__":
