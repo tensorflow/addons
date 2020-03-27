@@ -56,10 +56,13 @@ def test_sparsemax_against_numpy_axis(dtype):
 
     z = random.uniform(low=-3, high=3, size=(test_obs, 10))
 
-    tf_sparsemax_op = sparsemax(z.astype(dtype), axis=0).numpy()
+    tf_sparsemax_out = sparsemax(z.astype(dtype), axis=0).numpy()
     np_sparsemax = np.transpose(_np_sparsemax(np.transpose(z))).astype(dtype)
 
-    assert np_sparsemax.shape == tf_sparsemax_op.shape
+    test_utils.assert_allclose_according_to_type(
+            np_sparsemax, tf_sparsemax_out, half_atol=5e-3
+    )
+    assert np_sparsemax.shape == tf_sparsemax_out.shape
 
 
 @test_utils.run_all_with_types(["float32", "float64"])
