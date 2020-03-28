@@ -193,7 +193,7 @@ py_test(
 )
 py_test(
     name = "gaussian_filter_ops_test",
-    size = "medium",
+    size = "small",
     srcs = [
         "gaussian_filter_ops.py",
     ],
