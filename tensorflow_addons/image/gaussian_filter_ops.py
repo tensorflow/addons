@@ -19,7 +19,7 @@ import numpy as np
 import tensorflow as tf
 
 
-def gaussian_blur(img,sigma,kSize):
+def gaussian_blur(img, sigma, kSize):
     """
     This function is responsible for having Gaussian Blur. It takes the image as input, computes a gaussian-kernel
     which follows normal distribution then convolves the image with the kernel.Presently it works only on
@@ -35,31 +35,33 @@ def gaussian_blur(img,sigma,kSize):
           A kernel of size [kSize*kSize] is generated.
     """
 
-    if(sigma == 0):
+    if sigma == 0:
         raise ValueError("Sigma should not be zero")
 
-    if(kSize % 2 == 0):
+    if kSize % 2 == 0:
         raise ValueError("kSize should be odd")
 
-    gaussianFilter = tf.Variable(tf.zeros(shape=(kSize,kSize),dtype=tf.float64))
-    gaussianFilter = findKernel(sigma,kSize,gaussianFilter)
+    gaussianFilter = tf.Variable(tf.zeros(shape=(kSize, kSize), dtype=tf.float64))
+    gaussianFilter = findKernel(sigma, kSize, gaussianFilter)
 
-    gaussianKernel = (tf.expand_dims(gaussianFilter,axis=2))
-    gaussianKernel = (tf.expand_dims(gaussianKernel,axis=2))
+    gaussianKernel = tf.expand_dims(gaussianFilter, axis=2)
+    gaussianKernel = tf.expand_dims(gaussianKernel, axis=2)
 
-    conv_ops = tf.nn.convolution(input=img,
-                                 filters=gaussianKernel,
-                                 padding='SAME')
+    conv_ops = tf.nn.convolution(input=img, filters=gaussianKernel, padding="SAME")
     return conv_ops
 
 
-def findKernel(sigma,kSize,gaussianFilter):
+def findKernel(sigma, kSize, gaussianFilter):
     "This function creates a kernel of size [kSize*kSize]"
-    rowFilter = tf.Variable(tf.zeros(kSize,dtype=tf.float64),dtype=tf.float64)
-    for i in range(-kSize//2,kSize//2+1):
-        for j in range(-kSize//2,kSize//2+1):
-            rowFilter[j+kSize//2].assign(1/(2*np.pi*(sigma)**2)*tf.exp(tf.cast(-(i**2+j**2)/(2*sigma**2.00),tf.float64)))
-        gaussianFilter[i+kSize//2].assign(rowFilter)
+    rowFilter = tf.Variable(tf.zeros(kSize, dtype=tf.float64), dtype=tf.float64)
+    for i in range(-kSize // 2, kSize // 2 + 1):
+        for j in range(-kSize // 2, kSize // 2 + 1):
+            rowFilter[j + kSize // 2].assign(
+                1
+                / (2 * np.pi * (sigma) ** 2)
+                * tf.exp(tf.cast(-(i ** 2 + j ** 2) / (2 * sigma ** 2.00), tf.float64))
+            )
+        gaussianFilter[i + kSize // 2].assign(rowFilter)
     s = tf.math.reduce_sum(gaussianFilter)
-    gaussianFilter = tf.math.divide(gaussianFilter,s)
+    gaussianFilter = tf.math.divide(gaussianFilter, s)
     return gaussianFilter
