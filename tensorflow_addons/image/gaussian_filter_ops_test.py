@@ -6,8 +6,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 import pytest
-fp1=open("file1.txt","w")
-fp2=open("file2.txt","w")
+
 
 
 def test():
