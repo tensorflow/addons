@@ -36,9 +36,27 @@ def test_all_correct_unweighted():
     pin_obj = quantiles.PinballLoss()
     y_true = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3))
     loss = pin_obj(y_true, y_true)
-    print('.....', loss)
+
     assert loss == 0
 
+
+def test_unweighted():
+    pin_obj = quantiles.PinballLoss()
+    y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
+    y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3), dtype=tf.dtypes.float32)
+    loss = pin_obj(y_true, y_pred)
+    np.testing.assert_almost_equal(loss, 2.75, 3)
+
+
+@test_utils.run_all_in_graph_and_eager_modes
+class PinballLossTest(tf.test.TestCase):
+    def test_unweighted_quantile_0pc(self):
+        pin_obj = quantiles.PinballLoss(tau=0.0)
+        y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
+        y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3), dtype=tf.dtypes.float32)
+        loss = pin_obj(y_true, y_pred)
+        self.assertAlmostEqual(self.evaluate(loss), 4.8333, 3)
+>>>>>>> master
 
 def test_unweighted():
     pin_obj = quantiles.PinballLoss()
