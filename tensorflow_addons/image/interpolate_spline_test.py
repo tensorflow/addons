@@ -265,16 +265,8 @@ class InterpolateSplineTest(tf.test.TestCase):
 
 
 def test_interpolation_gradient():
-    """Make sure that backprop can run. Correctness of gradients is
-    assumed.
-
-    Here, we create a use a small 'training' set and a more densely-
-    sampled set of query points, for which we know the true value in
-    advance. The goal is to choose x locations for the training data
-    such that interpolating using this training data yields the best
-    reconstruction for the function values at the query points. The
-    training data locations are optimized iteratively using gradient
-    descent.
+    """Correctness of gradients is assumed. We compute them
+    and check they exist.
     """
     tp = _QuadraticPlusSinProblemND()
     (query_points, _, train_points, train_values) = tp.get_problem(optimizable=True)
