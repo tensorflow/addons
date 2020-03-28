@@ -161,75 +161,75 @@ class SparseImageWarpTest(tf.test.TestCase):
                     flow[0, i, j, :], np.zeros([2]), atol=1e-5, rtol=1e-5
                 )
 
-    def load_image(self, image_file):
-        image = tf.image.decode_png(
-            tf.io.read_file(image_file), dtype=tf.dtypes.uint8, channels=4
-        )[:, :, 0:3]
-        return self.evaluate(image)
 
-    def testSmileyFace(self):
-        """Check warping accuracy by comparing to hardcoded warped images."""
+def load_image(image_file):
+    image = tf.image.decode_png(
+        tf.io.read_file(image_file), dtype=tf.dtypes.uint8, channels=4
+    )[:, :, 0:3]
+    return image
 
-        input_file = get_path_to_datafile("image/test_data/Yellow_Smiley_Face.png")
-        input_image = self.load_image(input_file)
-        control_points = np.asarray(
-            [
-                [64, 59],
-                [180 - 64, 59],
-                [39, 111],
-                [180 - 39, 111],
-                [90, 143],
-                [58, 134],
-                [180 - 58, 134],
-            ]
-        )  # pyformat: disable
-        control_point_displacements = np.asarray(
-            [
-                [-10.5, 10.5],
-                [10.5, 10.5],
-                [0, 0],
-                [0, 0],
-                [0, -10],
-                [-20, 10.25],
-                [10, 10.75],
-            ]
-        )
-        control_points = tf.constant(
-            np.expand_dims(np.float32(control_points[:, [1, 0]]), 0)
-        )
-        control_point_displacements = tf.constant(
-            np.expand_dims(np.float32(control_point_displacements[:, [1, 0]]), 0)
-        )
-        float_image = np.expand_dims(np.float32(input_image) / 255, 0)
-        input_image = tf.constant(float_image)
 
-        for interpolation_order in (1, 2, 3):
-            for num_boundary_points in (0, 1, 4):
-                warped_image, _ = sparse_image_warp(
-                    input_image,
-                    control_points,
-                    control_points + control_point_displacements,
-                    interpolation_order=interpolation_order,
-                    num_boundary_points=num_boundary_points,
-                )
+def testSmileyFace():
+    """Check warping accuracy by comparing to hardcoded warped images."""
 
-                warped_image = self.evaluate(warped_image)
-                out_image = np.uint8(warped_image[0, :, :, :] * 255)
-                target_file = get_path_to_datafile(
-                    "image/test_data/Yellow_Smiley_Face_Warp-interp"
-                    + "-{}-clamp-{}.png".format(
-                        interpolation_order, num_boundary_points
-                    )
-                )
+    input_file = get_path_to_datafile("image/test_data/Yellow_Smiley_Face.png")
+    input_image = load_image(input_file)
+    control_points = np.asarray(
+        [
+            [64, 59],
+            [180 - 64, 59],
+            [39, 111],
+            [180 - 39, 111],
+            [90, 143],
+            [58, 134],
+            [180 - 58, 134],
+        ]
+    )  # pyformat: disable
+    control_point_displacements = np.asarray(
+        [
+            [-10.5, 10.5],
+            [10.5, 10.5],
+            [0, 0],
+            [0, 0],
+            [0, -10],
+            [-20, 10.25],
+            [10, 10.75],
+        ]
+    )
+    control_points = tf.constant(
+        np.expand_dims(np.float32(control_points[:, [1, 0]]), 0)
+    )
+    control_point_displacements = tf.constant(
+        np.expand_dims(np.float32(control_point_displacements[:, [1, 0]]), 0)
+    )
+    float_image = np.expand_dims(np.float32(input_image) / 255, 0)
+    input_image = tf.constant(float_image)
 
-                target_image = self.load_image(target_file)
+    for interpolation_order in (1, 2, 3):
+        for num_boundary_points in (0, 1, 4):
+            warped_image, _ = sparse_image_warp(
+                input_image,
+                control_points,
+                control_points + control_point_displacements,
+                interpolation_order=interpolation_order,
+                num_boundary_points=num_boundary_points,
+            )
 
-                # Check that the target_image and out_image difference is no
-                # bigger than 2 (on a scale of 0-255). Due to differences in
-                # floating point computation on different devices, the float
-                # output in warped_image may get rounded to a different int
-                # than that in the saved png file loaded into target_image.
-                self.assertAllClose(target_image, out_image, atol=2, rtol=1e-3)
+            warped_image = warped_image
+            out_image = np.uint8(warped_image[0, :, :, :] * 255)
+            target_file = get_path_to_datafile(
+                "image/test_data/Yellow_Smiley_Face_Warp-interp"
+                + "-{}-clamp-{}.png".format(interpolation_order, num_boundary_points)
+            )
+
+            target_image = load_image(target_file)
+
+            # Check that the target_image and out_image difference is no
+            # bigger than 2 (on a scale of 0-255). Due to differences in
+            # floating point computation on different devices, the float
+            # output in warped_image may get rounded to a different int
+            # than that in the saved png file loaded into target_image.
+            np.testing.assert_allclose(target_image, out_image, atol=2, rtol=1e-3)
 
 
 def test_that_backprop_runs():
