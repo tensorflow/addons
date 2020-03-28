@@ -49,34 +49,6 @@ def test_unweighted():
 
 @test_utils.run_all_in_graph_and_eager_modes
 class PinballLossTest(tf.test.TestCase):
-    def test_unweighted_quantile_0pc(self):
-        pin_obj = quantiles.PinballLoss(tau=0.0)
-        y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
-        y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3), dtype=tf.dtypes.float32)
-        loss = pin_obj(y_true, y_pred)
-        self.assertAlmostEqual(self.evaluate(loss), 4.8333, 3)
-
-    def test_unweighted_quantile_10pc(self):
-        pin_obj = quantiles.PinballLoss(tau=0.1)
-        y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
-        y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3), dtype=tf.dtypes.float32)
-        loss = pin_obj(y_true, y_pred)
-        self.assertAlmostEqual(self.evaluate(loss), 4.4166, 3)
-
-    def test_unweighted_quantile_90pc(self):
-        pin_obj = quantiles.PinballLoss(tau=0.9)
-        y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
-        y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3), dtype=tf.dtypes.float32)
-        loss = pin_obj(y_true, y_pred)
-        self.assertAlmostEqual(self.evaluate(loss), 1.0833, 3)
-
-    def test_unweighted_quantile_100pc(self):
-        pin_obj = quantiles.PinballLoss(tau=1.0)
-        y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
-        y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3), dtype=tf.dtypes.float32)
-        loss = pin_obj(y_true, y_pred)
-        self.assertAlmostEqual(self.evaluate(loss), 0.6666, 3)
-
     def test_scalar_weighted(self):
         pin_obj = quantiles.PinballLoss()
         y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
@@ -121,20 +93,53 @@ class PinballLossTest(tf.test.TestCase):
         ):
             pin_obj(y_true, y_pred, sample_weight=sample_weight)
 
-    def test_no_reduction(self):
-        pin_obj = quantiles.PinballLoss(reduction=tf.keras.losses.Reduction.NONE)
-        y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
-        y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3), dtype=tf.dtypes.float32)
-        loss = pin_obj(y_true, y_pred, sample_weight=2.3)
-        loss = self.evaluate(loss)
-        self.assertArrayNear(loss, [5.3666, 7.28333], 1e-3)
 
-    def test_sum_reduction(self):
-        pin_obj = quantiles.PinballLoss(reduction=tf.keras.losses.Reduction.SUM)
-        y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
-        y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3), dtype=tf.dtypes.float32)
-        loss = pin_obj(y_true, y_pred, sample_weight=2.3)
-        self.assertAlmostEqual(self.evaluate(loss), 12.65, 3)
+def test_unweighted_quantile_0pc():
+    pin_obj = quantiles.PinballLoss(tau=0.0)
+    y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
+    y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3), dtype=tf.dtypes.float32)
+    loss = pin_obj(y_true, y_pred)
+    np.testing.assert_almost_equal(loss, 4.8333, 3)
+
+
+def test_unweighted_quantile_10pc():
+    pin_obj = quantiles.PinballLoss(tau=0.1)
+    y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
+    y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3), dtype=tf.dtypes.float32)
+    loss = pin_obj(y_true, y_pred)
+    np.testing.assert_almost_equal(loss, 4.4166, 3)
+
+
+def test_unweighted_quantile_90pc():
+    pin_obj = quantiles.PinballLoss(tau=0.9)
+    y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
+    y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3), dtype=tf.dtypes.float32)
+    loss = pin_obj(y_true, y_pred)
+    np.testing.assert_almost_equal(loss, 1.0833, 3)
+
+
+def test_unweighted_quantile_100pc():
+    pin_obj = quantiles.PinballLoss(tau=1.0)
+    y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
+    y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3), dtype=tf.dtypes.float32)
+    loss = pin_obj(y_true, y_pred)
+    np.testing.assert_almost_equal(loss, 0.6666, 3)
+
+
+def test_no_reduction():
+    pin_obj = quantiles.PinballLoss(reduction=tf.keras.losses.Reduction.NONE)
+    y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
+    y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3), dtype=tf.dtypes.float32)
+    loss = pin_obj(y_true, y_pred, sample_weight=2.3)
+    np.testing.assert_almost_equal(loss, [5.3666, 7.28333], 1e-3)
+
+
+def test_sum_reduction():
+    pin_obj = quantiles.PinballLoss(reduction=tf.keras.losses.Reduction.SUM)
+    y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3))
+    y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3), dtype=tf.dtypes.float32)
+    loss = pin_obj(y_true, y_pred, sample_weight=2.3)
+    np.testing.assert_almost_equal(loss, 12.65, 3)
 
 
 if __name__ == "__main__":
