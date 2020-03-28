@@ -19,7 +19,6 @@ import pytest
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.layers.optical_flow import CorrelationCost
-from tensorflow_addons.utils import test_utils
 
 
 def _forward(
@@ -74,155 +73,113 @@ def _create_test_data(data_format):
     return val_a, val_b
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class CorrelationCostTest(tf.test.TestCase):
-    def _forward_simple(self, data_format, use_gpu=False):
-        # We are just testing where the output has vanishing values.
-        with test_utils.device(use_gpu):
-            val_a, val_b = _create_test_data(data_format)
-            input_a = tf.constant(val_a, dtype=tf.float32)
-            input_b = tf.constant(val_b, dtype=tf.float32)
+@pytest.mark.usefixtures("cpu_and_gpu", "maybe_run_functions_eagerly")
+def test_forward_simple(data_format):
+    # We are just testing where the output has vanishing values.
+    val_a, val_b = _create_test_data(data_format)
+    input_a = tf.constant(val_a, dtype=tf.float32)
+    input_b = tf.constant(val_b, dtype=tf.float32)
 
-            input_a_tensor = tf.convert_to_tensor(input_a, dtype=tf.float32)
-            input_b_tensor = tf.convert_to_tensor(input_b, dtype=tf.float32)
+    input_a_tensor = tf.convert_to_tensor(input_a, dtype=tf.float32)
+    input_b_tensor = tf.convert_to_tensor(input_b, dtype=tf.float32)
 
-            kernel_size = 1
-            max_displacement = 2
-            stride_1 = 1
-            stride_2 = 2
-            pad = 4
+    kernel_size = 1
+    max_displacement = 2
+    stride_1 = 1
+    stride_2 = 2
+    pad = 4
 
-            actual = _forward(
-                input_a_tensor,
-                input_b_tensor,
-                kernel_size=kernel_size,
-                max_displacement=max_displacement,
-                stride_1=stride_1,
-                stride_2=stride_2,
-                pad=pad,
-                data_format=data_format,
-            )
+    actual = _forward(
+        input_a_tensor,
+        input_b_tensor,
+        kernel_size=kernel_size,
+        max_displacement=max_displacement,
+        stride_1=stride_1,
+        stride_2=stride_2,
+        pad=pad,
+        data_format=data_format,
+    )
 
-            if data_format == "channels_last":
-                # NHWC -> NCHW
-                actual = tf.transpose(actual, [0, 3, 1, 2])
+    if data_format == "channels_last":
+        # NHWC -> NCHW
+        actual = tf.transpose(actual, [0, 3, 1, 2])
 
-            # We can test fixed ids, as output is independent from data_format
-            expected_ids = np.concatenate([np.zeros(464,), np.ones(464,)])
-            self.assertAllClose(tf.where(tf.equal(actual, 0))[:, 0], expected_ids)
+    # We can test fixed ids, as output is independent from data_format
+    expected_ids = np.concatenate([np.zeros(464,), np.ones(464,)])
+    np.testing.assert_allclose(tf.where(actual == 0)[:, 0].numpy(), expected_ids)
 
-            counts = [54, 52, 54, 50, 44, 50, 54, 52, 54]
-            expected_ids = np.concatenate(
-                [k * np.ones(v,) for k, v in enumerate(counts)]
-            )
-            expected_ids = np.concatenate([expected_ids, expected_ids])
-            self.assertAllClose(tf.where(tf.equal(actual, 0))[:, 1], expected_ids)
-            self.assertEqual(actual.shape, (2, 9, 7, 8))
+    counts = [54, 52, 54, 50, 44, 50, 54, 52, 54]
+    expected_ids = np.concatenate([k * np.ones(v,) for k, v in enumerate(counts)])
+    expected_ids = np.concatenate([expected_ids, expected_ids])
+    np.testing.assert_allclose(tf.where(actual == 0)[:, 1], expected_ids)
+    assert actual.shape == (2, 9, 7, 8)
 
-    def _gradients(self, data_format, use_gpu=False):
-        with test_utils.device(use_gpu):
-            batch, channels, height, width = 2, 3, 5, 6
-            input_a = np.random.randn(batch, channels, height, width).astype(np.float32)
-            input_b = np.random.randn(batch, channels, height, width).astype(np.float32)
 
-            kernel_size = 1
-            max_displacement = 2
-            stride_1 = 1
-            stride_2 = 2
-            pad = 4
+@pytest.mark.usefixtures("cpu_and_gpu")
+def test_gradients(data_format):
+    batch, channels, height, width = 2, 3, 5, 6
+    input_a = np.random.randn(batch, channels, height, width).astype(np.float32)
+    input_b = np.random.randn(batch, channels, height, width).astype(np.float32)
 
-            if data_format == "channels_last":
-                input_a = tf.transpose(input_a, [0, 2, 3, 1])
-                input_b = tf.transpose(input_b, [0, 2, 3, 1])
+    kernel_size = 1
+    max_displacement = 2
+    stride_1 = 1
+    stride_2 = 2
+    pad = 4
 
-            input_a_op = tf.convert_to_tensor(input_a)
-            input_b_op = tf.convert_to_tensor(input_b)
+    if data_format == "channels_last":
+        input_a = tf.transpose(input_a, [0, 2, 3, 1])
+        input_b = tf.transpose(input_b, [0, 2, 3, 1])
 
-            def correlation_fn(input_a, input_b):
-                return CorrelationCost(
-                    kernel_size=kernel_size,
-                    max_displacement=max_displacement,
-                    stride_1=stride_1,
-                    stride_2=stride_2,
-                    pad=pad,
-                    data_format=data_format,
-                )([input_a, input_b])
+    input_a_op = tf.convert_to_tensor(input_a)
+    input_b_op = tf.convert_to_tensor(input_b)
 
-            theoretical, numerical = tf.test.compute_gradient(
-                correlation_fn, [input_a_op, input_b_op]
-            )
+    def correlation_fn(input_a, input_b):
+        return CorrelationCost(
+            kernel_size=kernel_size,
+            max_displacement=max_displacement,
+            stride_1=stride_1,
+            stride_2=stride_2,
+            pad=pad,
+            data_format=data_format,
+        )([input_a, input_b])
 
-            self.assertAllClose(theoretical[0], numerical[0], atol=1e-3)
+    theoretical, numerical = tf.test.compute_gradient(
+        correlation_fn, [input_a_op, input_b_op]
+    )
 
-    def _keras(self, data_format, use_gpu=False):
-        # Unable to use `layer_test` as this layer has multiple inputs.
-        with test_utils.device(use_gpu):
-            val_a, val_b = _create_test_data(data_format)
+    np.testing.assert_allclose(theoretical[0], numerical[0], atol=1e-3)
 
-            # yapf: disable
-            input_a = tf.keras.Input(shape=val_a.shape[1:])
-            input_b = tf.keras.Input(shape=val_b.shape[1:])
 
-            layer = CorrelationCost(
-                kernel_size=1,
-                max_displacement=2,
-                stride_1=1,
-                stride_2=2,
-                pad=4,
-                data_format=data_format)
+@pytest.mark.usefixtures("cpu_and_gpu")
+def test_keras(data_format):
+    # Unable to use `layer_test` as this layer has multiple inputs.
+    val_a, val_b = _create_test_data(data_format)
 
-            expected_output_shape = tuple(
-                layer.compute_output_shape([input_a.shape, input_b.shape]))
-            # yapf: enable
+    input_a = tf.keras.Input(shape=val_a.shape[1:])
+    input_b = tf.keras.Input(shape=val_b.shape[1:])
 
-            x = [input_a, input_b]
-            y = layer(x)
-            model = tf.keras.models.Model(x, y)
-            actual_output = model([val_a, val_b])
+    layer = CorrelationCost(
+        kernel_size=1,
+        max_displacement=2,
+        stride_1=1,
+        stride_2=2,
+        pad=4,
+        data_format=data_format,
+    )
 
-            expected_output_type = "float32"
-            if tf.keras.backend.dtype(y[0]) != expected_output_type:
-                raise AssertionError(
-                    "Inferred output type %s does not equal "
-                    "expected output type %s"
-                    % (tf.keras.backend.dtype(y[0]), expected_output_type)
-                )
+    expected_output_shape = tuple(
+        layer.compute_output_shape([input_a.shape, input_b.shape])
+    )
 
-            if actual_output.shape[1:] != expected_output_shape[0][1:]:
-                raise AssertionError(
-                    "Expected shape %s does not equal output shape"
-                    "%s" % (actual_output.shape, expected_output_shape[0])
-                )
+    x = [input_a, input_b]
+    y = layer(x)
+    model = tf.keras.models.Model(x, y)
+    actual_output = model([val_a, val_b])
 
-    def testForwardNCHW(self):
-        self._forward_simple(data_format="channels_first", use_gpu=False)
-        if tf.test.is_gpu_available():
-            self._forward_simple(data_format="channels_first", use_gpu=True)
-
-    def testForwardNHWC(self):
-        self._forward_simple(data_format="channels_last", use_gpu=False)
-        if tf.test.is_gpu_available():
-            self._forward_simple(data_format="channels_last", use_gpu=True)
-
-    def testBackwardNCHW(self):
-        self._gradients(data_format="channels_first", use_gpu=False)
-        if tf.test.is_gpu_available():
-            self._gradients(data_format="channels_first", use_gpu=True)
-
-    def testBackwardNHWC(self):
-        self._gradients(data_format="channels_last", use_gpu=False)
-        if tf.test.is_gpu_available():
-            self._gradients(data_format="channels_last", use_gpu=True)
-
-    def testKerasNCHW(self):
-        self._keras(data_format="channels_first", use_gpu=False)
-        if tf.test.is_gpu_available():
-            self._keras(data_format="channels_first", use_gpu=True)
-
-    def testKerasNHWC(self):
-        self._keras(data_format="channels_last", use_gpu=False)
-        if tf.test.is_gpu_available():
-            self._keras(data_format="channels_last", use_gpu=True)
+    expected_output_type = "float32"
+    assert tf.keras.backend.dtype(y[0]) == expected_output_type
+    assert actual_output.shape[1:] == expected_output_shape[0][1:]
 
 
 if __name__ == "__main__":
