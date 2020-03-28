@@ -135,10 +135,8 @@ def test_no_reduction():
     #         1.3^2, 0.7^2, max(1 - 1.1, 0)^2, 0.5^2]
     #      = [0.9^2, 0.7^2, 1.3^2, 0.7^2, 0^2, 0.5^2]
     #      = [0.81, 0.49, 1.69, 0.49, 0, 0.25]
-    
-    np.testing.assert_allclose(
-        loss, [0.81, 0.49, 1.69, 0.49, 0.0, 0.25], rtol=1e-5
-    )
+
+    np.testing.assert_allclose(loss, [0.81, 0.49, 1.69, 0.49, 0.0, 0.25], rtol=1e-5)
 
 
 def test_sum_reduction():
