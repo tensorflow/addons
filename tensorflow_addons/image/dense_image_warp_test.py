@@ -42,37 +42,35 @@ def test_interpolate_small_grid_ij():
     np.testing.assert_allclose(expected_results, interp)
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class InterpolateBilinearTest(tf.test.TestCase):
-    def test_interpolate_small_grid_xy(self):
-        grid = tf.constant(
-            [[0.0, 1.0, 2.0], [3.0, 4.0, 5.0], [6.0, 7.0, 8.0], [9.0, 10.0, 11.0]],
-            shape=[1, 4, 3, 1],
-        )
-        query_points = tf.constant(
-            [[0.0, 0.0], [0.0, 1.0], [0.5, 2.0], [1.5, 1.5], [2.0, 3.0]],
-            shape=[1, 5, 2],
-        )
-        expected_results = np.reshape(np.array([0.0, 3.0, 6.5, 6.0, 11.0]), [1, 5, 1])
+def test_interpolate_small_grid_xy():
+    grid = tf.constant(
+        [[0.0, 1.0, 2.0], [3.0, 4.0, 5.0], [6.0, 7.0, 8.0], [9.0, 10.0, 11.0]],
+        shape=[1, 4, 3, 1],
+    )
+    query_points = tf.constant(
+        [[0.0, 0.0], [0.0, 1.0], [0.5, 2.0], [1.5, 1.5], [2.0, 3.0]], shape=[1, 5, 2],
+    )
+    expected_results = np.reshape(np.array([0.0, 3.0, 6.5, 6.0, 11.0]), [1, 5, 1])
 
-        interp = interpolate_bilinear(grid, query_points, indexing="xy")
+    interp = interpolate_bilinear(grid, query_points, indexing="xy")
 
-        self.assertAllClose(expected_results, interp)
+    np.testing.assert_allclose(expected_results, interp)
 
-    def test_interpolate_small_grid_batched(self):
-        grid = tf.constant(
-            [[[0.0, 1.0], [3.0, 4.0]], [[5.0, 6.0], [7.0, 8.0]]], shape=[2, 2, 2, 1]
-        )
-        query_points = tf.constant(
-            [[[0.0, 0.0], [1.0, 0.0], [0.5, 0.5]], [[0.5, 0.0], [1.0, 0.0], [1.0, 1.0]]]
-        )
-        expected_results = np.reshape(
-            np.array([[0.0, 3.0, 2.0], [6.0, 7.0, 8.0]]), [2, 3, 1]
-        )
 
-        interp = interpolate_bilinear(grid, query_points)
+def test_interpolate_small_grid_batched():
+    grid = tf.constant(
+        [[[0.0, 1.0], [3.0, 4.0]], [[5.0, 6.0], [7.0, 8.0]]], shape=[2, 2, 2, 1]
+    )
+    query_points = tf.constant(
+        [[[0.0, 0.0], [1.0, 0.0], [0.5, 0.5]], [[0.5, 0.0], [1.0, 0.0], [1.0, 1.0]]]
+    )
+    expected_results = np.reshape(
+        np.array([[0.0, 3.0, 2.0], [6.0, 7.0, 8.0]]), [2, 3, 1]
+    )
 
-        self.assertAllClose(expected_results, interp)
+    interp = interpolate_bilinear(grid, query_points)
+
+    np.testing.assert_allclose(expected_results, interp)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
