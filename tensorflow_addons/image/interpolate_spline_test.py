@@ -176,56 +176,57 @@ def test_1d_interpolation():
             np.testing.assert_allclose(interp[0, :, 0], target_interpolation)
 
 
+def test_nd_linear_interpolation():
+    """Regression test for interpolation with N-D points."""
+
+    tp = _QuadraticPlusSinProblemND()
+    (query_points, _, train_points, train_values) = tp.get_problem(dtype="float64")
+
+    for order in (1, 2, 3):
+        for reg_weight in (0, 0.01):
+            interp = interpolate_spline(
+                train_points, train_values, query_points, order, reg_weight
+            )
+
+            target_interpolation = tp.HARDCODED_QUERY_VALUES[(order, reg_weight)]
+            target_interpolation = np.array(target_interpolation)
+
+            np.testing.assert_allclose(interp[0, :, 0], target_interpolation)
+
+
+def test_nd_linear_interpolation_unspecified_shape():
+    """Ensure that interpolation supports dynamic batch_size and
+    num_points."""
+
+    tp = _QuadraticPlusSinProblemND()
+    (query_points, _, train_points, train_values) = tp.get_problem(dtype="float64")
+
+    feature_dim = query_points.shape[-1]
+    value_dim = train_values.shape[-1]
+
+    order = 1
+    reg_weight = 0.01
+
+    # Get concrete functions such that the batch size, number of train points,
+    # and number of query points are not known at graph construction time.
+    fn = tf.function(interpolate_spline).get_concrete_function(
+        tf.TensorSpec(shape=[None, None, feature_dim], dtype=train_points.dtype),
+        tf.TensorSpec(shape=[None, None, value_dim], dtype=train_values.dtype),
+        tf.TensorSpec(shape=[None, None, feature_dim], dtype=query_points.dtype),
+        order,
+        reg_weight,
+    )
+
+    target_interpolation = tp.HARDCODED_QUERY_VALUES[(order, reg_weight)]
+    target_interpolation = np.array(target_interpolation)
+
+    interp_val = fn(train_points, train_values, query_points)
+
+    np.testing.assert_allclose(interp_val[0, :, 0], target_interpolation)
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class InterpolateSplineTest(tf.test.TestCase):
-    def test_nd_linear_interpolation(self):
-        """Regression test for interpolation with N-D points."""
-
-        tp = _QuadraticPlusSinProblemND()
-        (query_points, _, train_points, train_values) = tp.get_problem(dtype="float64")
-
-        for order in (1, 2, 3):
-            for reg_weight in (0, 0.01):
-                interp = self.evaluate(
-                    interpolate_spline(
-                        train_points, train_values, query_points, order, reg_weight
-                    )
-                )
-
-                target_interpolation = tp.HARDCODED_QUERY_VALUES[(order, reg_weight)]
-                target_interpolation = np.array(target_interpolation)
-
-                self.assertAllClose(interp[0, :, 0], target_interpolation)
-
-    def test_nd_linear_interpolation_unspecified_shape(self):
-        """Ensure that interpolation supports dynamic batch_size and
-        num_points."""
-        tp = _QuadraticPlusSinProblemND()
-        (query_points, _, train_points, train_values) = tp.get_problem(dtype="float64")
-
-        feature_dim = query_points.shape[-1]
-        value_dim = train_values.shape[-1]
-
-        order = 1
-        reg_weight = 0.01
-
-        # Get concrete functions such that the batch size, number of train points,
-        # and number of query points are not known at graph construction time.
-        fn = tf.function(interpolate_spline).get_concrete_function(
-            tf.TensorSpec(shape=[None, None, feature_dim], dtype=train_points.dtype),
-            tf.TensorSpec(shape=[None, None, value_dim], dtype=train_values.dtype),
-            tf.TensorSpec(shape=[None, None, feature_dim], dtype=query_points.dtype),
-            order,
-            reg_weight,
-        )
-
-        target_interpolation = tp.HARDCODED_QUERY_VALUES[(order, reg_weight)]
-        target_interpolation = np.array(target_interpolation)
-
-        interp_val = self.evaluate(fn(train_points, train_values, query_points))
-
-        self.assertAllClose(interp_val[0, :, 0], target_interpolation)
-
     def test_fully_unspecified_shape(self):
         """Ensure that erreor is thrown when input/output dim unspecified."""
         tp = _QuadraticPlusSinProblemND()
