@@ -96,7 +96,7 @@ def _check_zero_flow_correctness(shape, image_type, flow_type):
         image=tf.convert_to_tensor(rand_image), flow=tf.convert_to_tensor(rand_flows),
     )
 
-    np.testing.assert_allclose(rand_image, interp, rtol=1e-3)
+    np.testing.assert_allclose(rand_image, interp, rtol=1e-6, atol=1e-6)
 
 
 def test_zero_flows():
