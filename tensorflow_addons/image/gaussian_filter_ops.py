@@ -67,6 +67,8 @@ def findKernel(sigma,kSize,gaussianFilter):
 				
 			gaussianFilter[i+kSize//2].assign(rowFilter)
 		#print(gaussianFilter)
+		s=tf.math.reduce_sum(gaussianFilter)
+		gaussianFilter=tf.math.divide(gaussianFilter,s)
 		return gaussianFilter
 
 		
