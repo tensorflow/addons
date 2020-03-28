@@ -39,6 +39,7 @@
 /tensorflow_addons/image/connected_components*.py @sayoojbk
 /tensorflow_addons/image/cutout_ops*.py @fsx950223
 /tensorflow_addons/image/dense_image_warp*.py @windQAQ
+/tensorflow_addons/image/gaussian_filter_ops*.py @ghosalsattam
 /tensorflow_addons/image/distance_transform*.py @mels630
 /tensorflow_addons/image/distort_image_ops*.py @windqaq
 /tensorflow_addons/image/filters*.py @mainak431
