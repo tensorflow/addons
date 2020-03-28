@@ -24,7 +24,6 @@ import tensorflow as tf
 
 from tensorflow_addons.image import dense_image_warp
 from tensorflow_addons.image import interpolate_bilinear
-from tensorflow_addons.utils import test_utils
 
 
 def test_interpolate_small_grid_ij():
@@ -88,29 +87,23 @@ def test_unknown_shape():
         assert res.shape == (shape[0], 4, shape[3])
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class DenseImageWarpTest(tf.test.TestCase):
-    def _check_zero_flow_correctness(self, shape, image_type, flow_type):
-        """Assert using zero flows doesn't change the input image."""
-        rand_image, rand_flows = _get_random_image_and_flows(
-            shape, image_type, flow_type
-        )
-        rand_flows *= 0
+def _check_zero_flow_correctness(shape, image_type, flow_type):
+    """Assert using zero flows doesn't change the input image."""
+    rand_image, rand_flows = _get_random_image_and_flows(shape, image_type, flow_type)
+    rand_flows *= 0
 
-        interp = dense_image_warp(
-            image=tf.convert_to_tensor(rand_image),
-            flow=tf.convert_to_tensor(rand_flows),
-        )
+    interp = dense_image_warp(
+        image=tf.convert_to_tensor(rand_image), flow=tf.convert_to_tensor(rand_flows),
+    )
 
-        self.assertAllClose(rand_image, interp)
+    np.testing.assert_allclose(rand_image, interp, rtol=1e-6, atol=1e-6)
 
-    def test_zero_flows(self):
-        """Apply _check_zero_flow_correctness() for a few sizes and types."""
-        shapes_to_try = [[3, 4, 5, 6], [1, 2, 2, 1]]
-        for shape in shapes_to_try:
-            self._check_zero_flow_correctness(
-                shape, image_type="float32", flow_type="float32"
-            )
+
+def test_zero_flows():
+    """Apply _check_zero_flow_correctness() for a few sizes and types."""
+    shapes_to_try = [[3, 4, 5, 6], [1, 2, 2, 1]]
+    for shape in shapes_to_try:
+        _check_zero_flow_correctness(shape, image_type="float32", flow_type="float32")
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
