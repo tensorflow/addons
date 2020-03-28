@@ -33,5 +33,5 @@ def test():
 	print(accuracy/1600)
 	assert accuracy>=.80
 	
-test()
-
+if __name__ == "__main__":
+    sys.exit(pytest.main([__file__]))
