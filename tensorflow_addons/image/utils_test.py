@@ -35,10 +35,10 @@ def test_to_4D_image_with_unknown_shape():
 
 def test_to_4D_image_with_invalid_shape():
     errors = (ValueError, tf.errors.InvalidArgumentError)
-    with np.testing.assert_raises_regex(errors, "`image` must be 2/3/4D tensor"):
+    with pytest.raises(errors, match="`image` must be 2/3/4D tensor"):
         img_utils.to_4D_image(tf.ones(shape=(1,)))
 
-    with np.testing.assert_raises_regex(errors, "`image` must be 2/3/4D tensor"):
+    with pytest.raises(errors, match="`image` must be 2/3/4D tensor"):
         img_utils.to_4D_image(tf.ones(shape=(1, 2, 4, 3, 2)))
 
 
