@@ -178,20 +178,6 @@ class NormalizationTest(tf.test.TestCase):
         model.fit(x=input_batch, y=output_batch, epochs=1, batch_size=1)
         return model
 
-    # def test_apply_normalization(self):
-    #     input_shape = (1, 4)
-    #     reshaped_inputs = tf.constant([[[2.0, 2.0], [3.0, 3.0]]])
-    #     layer = GroupNormalization(groups=2, axis=1, scale=False, center=False)
-    #     normalized_input = layer._apply_normalization(reshaped_inputs, input_shape)
-    #     self.assertTrue(
-    #         np.all(
-    #             np.equal(
-    #                 self.evaluate(normalized_input),
-    #                 np.array([[[0.0, 0.0], [0.0, 0.0]]]),
-    #             )
-    #         )
-    #     )
-
     def test_axis_error(self):
         with self.assertRaises(ValueError):
             GroupNormalization(axis=0)
