@@ -25,6 +25,28 @@ from tensorflow_addons.layers.multihead_attention import MultiHeadAttention
 from tensorflow_addons.utils import test_utils
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_output_size():
+    batch_size = 10
+    num_heads = 8
+    head_size = 12
+    output_size = 20
+
+    q = tf.random.uniform((batch_size, 5, 9), dtype=np.float32)
+    k = tf.random.uniform((batch_size, 7, 11), dtype=np.float32)
+    v = tf.random.uniform((batch_size, 7, 13), dtype=np.float32)
+
+    mha = MultiHeadAttention(
+        head_size=head_size, num_heads=num_heads, output_size=output_size
+    )
+
+    output = mha([q, k, v])
+
+    assert output.shape[0] == batch_size
+    assert output.shape[1] == q.shape[1]
+    assert output.shape[2] == output_size
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class MultiHeadAttentionTest(tf.test.TestCase):
     def test_output_shape(self):
@@ -43,26 +65,6 @@ class MultiHeadAttentionTest(tf.test.TestCase):
         self.assertEqual(output.shape[0], batch_size)
         self.assertEqual(output.shape[1], q.shape[1])
         self.assertEqual(output.shape[2], v.shape[2])
-
-    def test_output_size(self):
-        batch_size = 10
-        num_heads = 8
-        head_size = 12
-        output_size = 20
-
-        q = tf.random.uniform((batch_size, 5, 9), dtype=np.float32)
-        k = tf.random.uniform((batch_size, 7, 11), dtype=np.float32)
-        v = tf.random.uniform((batch_size, 7, 13), dtype=np.float32)
-
-        mha = MultiHeadAttention(
-            head_size=head_size, num_heads=num_heads, output_size=output_size
-        )
-
-        output = mha([q, k, v])
-
-        self.assertEqual(output.shape[0], batch_size)
-        self.assertEqual(output.shape[1], q.shape[1])
-        self.assertEqual(output.shape[2], output_size)
 
     def test_no_batch(self):
         num_heads = 8
