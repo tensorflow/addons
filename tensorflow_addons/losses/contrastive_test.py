@@ -113,7 +113,7 @@ def test_scalar_weighted():
     # Reduced loss = (0.81 + 0.49 + 1.69 + 0.49 + 0 + 0.25) * 6 / 6
     #              = 3.73
 
-    np.testing.assert_allclose(loss, 3.73)
+    np.testing.assert_allclose(loss, 3.73, atol=1e-6, rtol=1e-6)
 
 
 def test_zero_weighted():

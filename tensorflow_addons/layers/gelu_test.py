@@ -18,21 +18,17 @@ import sys
 
 import pytest
 import numpy as np
-import tensorflow as tf
-from absl.testing import parameterized
 from tensorflow_addons.layers.gelu import GELU
 from tensorflow_addons.utils import test_utils
 
 
-@parameterized.parameters([np.float16, np.float32, np.float64])
-@test_utils.run_all_in_graph_and_eager_modes
-class TestGELU(tf.test.TestCase):
-    def test_random(self, dtype):
-        x = np.array([[0.5, 1.2, -0.3]]).astype(dtype)
-        val = np.array([[0.345714, 1.0617027, -0.11462909]]).astype(dtype)
-        test_utils.layer_test(
-            GELU, kwargs={"dtype": dtype}, input_data=x, expected_output=val
-        )
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_random(dtype):
+    x = np.array([[0.5, 1.2, -0.3]]).astype(dtype)
+    val = np.array([[0.345714, 1.0617027, -0.11462909]]).astype(dtype)
+    test_utils.layer_test(
+        GELU, kwargs={"dtype": dtype}, input_data=x, expected_output=val
+    )
 
 
 if __name__ == "__main__":
