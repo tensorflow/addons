@@ -197,6 +197,7 @@ def test_nd_linear_interpolation():
 def test_nd_linear_interpolation_unspecified_shape():
     """Ensure that interpolation supports dynamic batch_size and
     num_points."""
+
     tp = _QuadraticPlusSinProblemND()
     (query_points, _, train_points, train_values) = tp.get_problem(dtype="float64")
 
@@ -263,45 +264,28 @@ class InterpolateSplineTest(tf.test.TestCase):
                 reg_weight,
             )
 
-    def test_interpolation_gradient(self):
-        """Make sure that backprop can run. Correctness of gradients is
-        assumed.
 
-        Here, we create a use a small 'training' set and a more densely-
-        sampled set of query points, for which we know the true value in
-        advance. The goal is to choose x locations for the training data
-        such that interpolating using this training data yields the best
-        reconstruction for the function values at the query points. The
-        training data locations are optimized iteratively using gradient
-        descent.
-        """
-        tp = _QuadraticPlusSinProblemND()
-        (query_points, query_values, train_points, train_values) = tp.get_problem(
-            optimizable=True
-        )
+def test_interpolation_gradient():
+    """Correctness of gradients is assumed. We compute them
+    and check they exist.
+    """
+    tp = _QuadraticPlusSinProblemND()
+    (query_points, _, train_points, train_values) = tp.get_problem(optimizable=True)
 
-        regularization = 0.001
-        for interpolation_order in (1, 2, 3, 4):
+    regularization = 0.001
+    for interpolation_order in (1, 2, 3, 4):
 
-            def loss_fn():
-                interpolator = interpolate_spline(
-                    train_points,
-                    train_values,
-                    query_points,
-                    interpolation_order,
-                    regularization,
-                )
-                loss = tf.reduce_mean(tf.square(query_values - interpolator))
-                return loss
-
-            optimizer = tf.keras.optimizers.SGD(
-                learning_rate=0.001, momentum=0.9, clipnorm=1.0
+        with tf.GradientTape() as g:
+            interpolator = interpolate_spline(
+                train_points,
+                train_values,
+                query_points,
+                interpolation_order,
+                regularization,
             )
-            opt_op = optimizer.minimize(loss_fn, [train_points])
 
-            self.evaluate(tf.compat.v1.global_variables_initializer())
-            for _ in range(100):
-                self.evaluate(opt_op)
+        gradients = g.gradient(interpolator, train_points).numpy()
+        assert np.sum(np.abs(gradients)) != 0
 
 
 if __name__ == "__main__":
