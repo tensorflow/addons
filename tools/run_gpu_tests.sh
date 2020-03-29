@@ -9,5 +9,5 @@ if [ "$DOCKER_BUILDKIT" == "" ]; then
   export DOCKER_BUILDKIT=1
 fi
 
-docker build -f tools/docker/gpu_tests.Dockerfile -t tfa_gpu_tests ./
+docker build -f tools/docker/gpu_tests.Dockerfile --build-arg PY_VERSION=3.5 -t tfa_gpu_tests ./
 docker run --rm -t --runtime=nvidia tfa_gpu_tests
