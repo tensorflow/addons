@@ -23,6 +23,11 @@ from tensorflow_addons.image import compose_ops
 
 _DTYPES = {
     tf.dtypes.uint8,
+    tf.dtypes.int32,
+    tf.dtypes.int64,
+    tf.dtypes.float16,
+    tf.dtypes.float32,
+    tf.dtypes.float64,
 }
 
 
@@ -34,11 +39,12 @@ def blend_np(image1, image2, factor):
     temp = image1 + scaled
     if factor >= 0.0 and factor <= 1.0:
         temp = np.round(temp)
-        return temp.astype("uint8")
+        return temp
     temp = np.round(np.clip(temp, 0.0, 255.0))
-    return temp.astype("uint8")
+    return temp
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", _DTYPES)
 def test_blend(dtype):
     image1 = tf.constant(
@@ -64,13 +70,17 @@ def test_blend(dtype):
         ],
     )
 
-    image1 = np.random.randint(0, 255, (4, 4, 3), np.uint8)
-    image2 = np.random.randint(0, 255, (4, 4, 3), np.uint8)
+    np.random.seed(0)
+    image1 = np.random.randint(0, 255, (3, 5, 5), np.uint8)
+    image2 = np.random.randint(0, 255, (3, 5, 5), np.uint8)
+    tf.random.set_seed(0)
+    factor = tf.random.uniform(shape=[], maxval=1, dtype=tf.dtypes.float32, seed=0)
     blended = compose_ops.blend(
-        tf.convert_to_tensor(image1), tf.convert_to_tensor(image2), 0.35
+        tf.convert_to_tensor(image1), tf.convert_to_tensor(image2), factor
     ).numpy()
-    expected = blend_np(image1, image2, 0.35)
+    expected = blend_np(image1, image2, factor.numpy())
     np.testing.assert_equal(blended, expected)
+    assert blended.dtype == expected.dtype
 
 
 if __name__ == "__main__":
