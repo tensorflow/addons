@@ -73,6 +73,7 @@ def test_blend(dtype):
     np.random.seed(0)
     image1 = np.random.randint(0, 255, (3, 5, 5), np.uint8)
     image2 = np.random.randint(0, 255, (3, 5, 5), np.uint8)
+    tf.random.set_seed(0)
     factor = tf.random.uniform(shape=[], maxval=1, dtype=tf.dtypes.float32, seed=0)
     blended = compose_ops.blend(
         tf.convert_to_tensor(image1), tf.convert_to_tensor(image2), factor
