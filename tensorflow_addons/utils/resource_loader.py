@@ -64,7 +64,7 @@ class LazySO:
         warnings.warn(
             "You are currently using TensorFlow {} and trying to load a custom op ( "
             "{}). TensorFlow Addons has compiled its custom ops against TensorFlow {}, "
-            "and there are no ABI compatibility guarantees between the two versions."
+            "and there are no ABI compatibility guarantees between the two versions. "
             "\n\n"
             "This means that you might get segfaults when loading the custom op, "
             "or other kind of low-level errors. If you do, do not file an issue "
@@ -76,7 +76,7 @@ class LazySO:
             "\n\n"
             "You can also change the TensorFlow version installed on your system. "
             "You would need a TensorFlow version equal to or above {} and strictly "
-            "below {}."
+            "below {}. Note that nightly versions of TensorFlow are not supported."
             "\n\n"
             "The last solution is to find the TensorFlow Addons version that is "
             "compatible on the ABI level with the TensorFlow installed on your "
@@ -94,6 +94,10 @@ class LazySO:
 
 
 def abi_is_compatible():
+    if "dev" in tf.__version__:
+        # tf-nightly
+        return False
+
     min_version = LooseVersion(MIN_TF_VERSION_FOR_ABI_COMPATIBILITY)
     max_version = LooseVersion(MAX_TF_VERSION_FOR_ABI_COMPATIBILITY)
     return min_version <= LooseVersion(tf.__version__) < max_version
