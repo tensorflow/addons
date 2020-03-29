@@ -120,119 +120,113 @@ class _QuadraticPlusSinProblemND(_InterpolationProblem):
         )
 
 
+def test_1d_linear_interpolation():
+    """For 1d linear interpolation, we can compare directly to scipy."""
+    tp = _QuadraticPlusSinProblem1D()
+    (query_points, _, train_points, train_values) = tp.get_problem(
+        extrapolate=False, dtype="float64"
+    )
+    interpolation_order = 1
+
+    with tf.name_scope("interpolator"):
+        interp = interpolate_spline(
+            train_points, train_values, query_points, interpolation_order
+        ).numpy()
+
+        # Just look at the first element of the minibatch.
+        # Also, trim the final singleton dimension.
+        interp = interp[0, :, 0]
+        query_points = query_points.numpy()[0, :, 0]
+        train_points = train_points.numpy()[0, :, 0]
+        train_values = train_values.numpy()[0, :, 0]
+
+        # Compute scipy interpolation.
+        scipy_interp_function = sc_interpolate.interp1d(
+            train_points, train_values, kind="linear"
+        )
+
+        scipy_interpolation = scipy_interp_function(query_points)
+        scipy_interpolation_on_train = scipy_interp_function(train_points)
+
+        # Even with float64 precision, the interpolants disagree with scipy a
+        # bit due to the fact that we add the EPSILON to prevent sqrt(0), etc.
+        tol = 1e-3
+
+        np.testing.assert_allclose(
+            train_values, scipy_interpolation_on_train, atol=tol, rtol=tol
+        )
+        np.testing.assert_allclose(interp, scipy_interpolation, atol=tol, rtol=tol)
+
+
+def test_1d_interpolation():
+    """Regression test for interpolation with 1-D points."""
+
+    tp = _QuadraticPlusSinProblem1D()
+    (query_points, _, train_points, train_values) = tp.get_problem(dtype="float64")
+
+    for order in (1, 2, 3):
+        for reg_weight in (0, 0.01):
+            interp = interpolate_spline(
+                train_points, train_values, query_points, order, reg_weight
+            )
+
+            target_interpolation = tp.HARDCODED_QUERY_VALUES[(order, reg_weight)]
+            target_interpolation = np.array(target_interpolation)
+
+            np.testing.assert_allclose(interp[0, :, 0], target_interpolation)
+
+
+def test_nd_linear_interpolation():
+    """Regression test for interpolation with N-D points."""
+
+    tp = _QuadraticPlusSinProblemND()
+    (query_points, _, train_points, train_values) = tp.get_problem(dtype="float64")
+
+    for order in (1, 2, 3):
+        for reg_weight in (0, 0.01):
+            interp = interpolate_spline(
+                train_points, train_values, query_points, order, reg_weight
+            )
+
+            target_interpolation = tp.HARDCODED_QUERY_VALUES[(order, reg_weight)]
+            target_interpolation = np.array(target_interpolation)
+
+            np.testing.assert_allclose(interp[0, :, 0], target_interpolation)
+
+
+def test_nd_linear_interpolation_unspecified_shape():
+    """Ensure that interpolation supports dynamic batch_size and
+    num_points."""
+
+    tp = _QuadraticPlusSinProblemND()
+    (query_points, _, train_points, train_values) = tp.get_problem(dtype="float64")
+
+    feature_dim = query_points.shape[-1]
+    value_dim = train_values.shape[-1]
+
+    order = 1
+    reg_weight = 0.01
+
+    # Get concrete functions such that the batch size, number of train points,
+    # and number of query points are not known at graph construction time.
+    fn = tf.function(interpolate_spline).get_concrete_function(
+        tf.TensorSpec(shape=[None, None, feature_dim], dtype=train_points.dtype),
+        tf.TensorSpec(shape=[None, None, value_dim], dtype=train_values.dtype),
+        tf.TensorSpec(shape=[None, None, feature_dim], dtype=query_points.dtype),
+        order,
+        reg_weight,
+    )
+
+    target_interpolation = tp.HARDCODED_QUERY_VALUES[(order, reg_weight)]
+    target_interpolation = np.array(target_interpolation)
+
+    interp_val = fn(train_points, train_values, query_points)
+
+    np.testing.assert_allclose(interp_val[0, :, 0], target_interpolation)
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class InterpolateSplineTest(tf.test.TestCase):
-    def test_1d_linear_interpolation(self):
-        """For 1d linear interpolation, we can compare directly to scipy."""
-
-        tp = _QuadraticPlusSinProblem1D()
-        (query_points, _, train_points, train_values) = tp.get_problem(
-            extrapolate=False, dtype="float64"
-        )
-        interpolation_order = 1
-
-        with tf.name_scope("interpolator"):
-            interp = self.evaluate(
-                interpolate_spline(
-                    train_points, train_values, query_points, interpolation_order
-                )
-            )
-
-            query_points, train_points, train_values, = self.evaluate(
-                [query_points, train_points, train_values]
-            )
-
-            # Just look at the first element of the minibatch.
-            # Also, trim the final singleton dimension.
-            interp = interp[0, :, 0]
-            query_points = query_points[0, :, 0]
-            train_points = train_points[0, :, 0]
-            train_values = train_values[0, :, 0]
-
-            # Compute scipy interpolation.
-            scipy_interp_function = sc_interpolate.interp1d(
-                train_points, train_values, kind="linear"
-            )
-
-            scipy_interpolation = scipy_interp_function(query_points)
-            scipy_interpolation_on_train = scipy_interp_function(train_points)
-
-            # Even with float64 precision, the interpolants disagree with scipy a
-            # bit due to the fact that we add the EPSILON to prevent sqrt(0), etc.
-            tol = 1e-3
-
-            self.assertAllClose(
-                train_values, scipy_interpolation_on_train, atol=tol, rtol=tol
-            )
-            self.assertAllClose(interp, scipy_interpolation, atol=tol, rtol=tol)
-
-    def test_1d_interpolation(self):
-        """Regression test for interpolation with 1-D points."""
-
-        tp = _QuadraticPlusSinProblem1D()
-        (query_points, _, train_points, train_values) = tp.get_problem(dtype="float64")
-
-        for order in (1, 2, 3):
-            for reg_weight in (0, 0.01):
-                interp = self.evaluate(
-                    interpolate_spline(
-                        train_points, train_values, query_points, order, reg_weight
-                    )
-                )
-
-                target_interpolation = tp.HARDCODED_QUERY_VALUES[(order, reg_weight)]
-                target_interpolation = np.array(target_interpolation)
-
-                self.assertAllClose(interp[0, :, 0], target_interpolation)
-
-    def test_nd_linear_interpolation(self):
-        """Regression test for interpolation with N-D points."""
-
-        tp = _QuadraticPlusSinProblemND()
-        (query_points, _, train_points, train_values) = tp.get_problem(dtype="float64")
-
-        for order in (1, 2, 3):
-            for reg_weight in (0, 0.01):
-                interp = self.evaluate(
-                    interpolate_spline(
-                        train_points, train_values, query_points, order, reg_weight
-                    )
-                )
-
-                target_interpolation = tp.HARDCODED_QUERY_VALUES[(order, reg_weight)]
-                target_interpolation = np.array(target_interpolation)
-
-                self.assertAllClose(interp[0, :, 0], target_interpolation)
-
-    def test_nd_linear_interpolation_unspecified_shape(self):
-        """Ensure that interpolation supports dynamic batch_size and
-        num_points."""
-        tp = _QuadraticPlusSinProblemND()
-        (query_points, _, train_points, train_values) = tp.get_problem(dtype="float64")
-
-        feature_dim = query_points.shape[-1]
-        value_dim = train_values.shape[-1]
-
-        order = 1
-        reg_weight = 0.01
-
-        # Get concrete functions such that the batch size, number of train points,
-        # and number of query points are not known at graph construction time.
-        fn = tf.function(interpolate_spline).get_concrete_function(
-            tf.TensorSpec(shape=[None, None, feature_dim], dtype=train_points.dtype),
-            tf.TensorSpec(shape=[None, None, value_dim], dtype=train_values.dtype),
-            tf.TensorSpec(shape=[None, None, feature_dim], dtype=query_points.dtype),
-            order,
-            reg_weight,
-        )
-
-        target_interpolation = tp.HARDCODED_QUERY_VALUES[(order, reg_weight)]
-        target_interpolation = np.array(target_interpolation)
-
-        interp_val = self.evaluate(fn(train_points, train_values, query_points))
-
-        self.assertAllClose(interp_val[0, :, 0], target_interpolation)
-
     def test_fully_unspecified_shape(self):
         """Ensure that erreor is thrown when input/output dim unspecified."""
         tp = _QuadraticPlusSinProblemND()
@@ -270,45 +264,28 @@ class InterpolateSplineTest(tf.test.TestCase):
                 reg_weight,
             )
 
-    def test_interpolation_gradient(self):
-        """Make sure that backprop can run. Correctness of gradients is
-        assumed.
 
-        Here, we create a use a small 'training' set and a more densely-
-        sampled set of query points, for which we know the true value in
-        advance. The goal is to choose x locations for the training data
-        such that interpolating using this training data yields the best
-        reconstruction for the function values at the query points. The
-        training data locations are optimized iteratively using gradient
-        descent.
-        """
-        tp = _QuadraticPlusSinProblemND()
-        (query_points, query_values, train_points, train_values) = tp.get_problem(
-            optimizable=True
-        )
+def test_interpolation_gradient():
+    """Correctness of gradients is assumed. We compute them
+    and check they exist.
+    """
+    tp = _QuadraticPlusSinProblemND()
+    (query_points, _, train_points, train_values) = tp.get_problem(optimizable=True)
 
-        regularization = 0.001
-        for interpolation_order in (1, 2, 3, 4):
+    regularization = 0.001
+    for interpolation_order in (1, 2, 3, 4):
 
-            def loss_fn():
-                interpolator = interpolate_spline(
-                    train_points,
-                    train_values,
-                    query_points,
-                    interpolation_order,
-                    regularization,
-                )
-                loss = tf.reduce_mean(tf.square(query_values - interpolator))
-                return loss
-
-            optimizer = tf.keras.optimizers.SGD(
-                learning_rate=0.001, momentum=0.9, clipnorm=1.0
+        with tf.GradientTape() as g:
+            interpolator = interpolate_spline(
+                train_points,
+                train_values,
+                query_points,
+                interpolation_order,
+                regularization,
             )
-            opt_op = optimizer.minimize(loss_fn, [train_points])
 
-            self.evaluate(tf.compat.v1.global_variables_initializer())
-            for _ in range(100):
-                self.evaluate(opt_op)
+        gradients = g.gradient(interpolator, train_points).numpy()
+        assert np.sum(np.abs(gradients)) != 0
 
 
 if __name__ == "__main__":
