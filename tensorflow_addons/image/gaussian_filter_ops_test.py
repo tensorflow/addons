@@ -18,7 +18,7 @@
 from tensorflow_addons.image.gaussian_filter_ops import gaussian_blur
 import numpy as np
 import numpy.core.multiarray
-import cv2
+from scipy.ndimage import gaussian_filter
 import tensorflow as tf
 import sys
 import pytest
@@ -37,7 +37,7 @@ def test():
     test_image_cv = test_image_tf.numpy()
     test_image_cv = np.resize(test_image_cv, [40, 40])
 
-    gb2 = cv2.GaussianBlur(test_image_cv, (7, 7), 1)
+    gb2 = gaussian_filter(test_image_cv, 1)
 
     accuracy = 0
 
