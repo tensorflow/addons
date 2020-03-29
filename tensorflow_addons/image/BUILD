@@ -20,13 +20,6 @@ py_library(
         "transform_ops.py",
         "translate_ops.py",
         "utils.py",
-
-        "sparse_image_warp.py",
-        "interpolate_spline.py",
-        "connected_components.py",
-        "resampler_ops.py",
-        "compose_ops.py",
-        "cutout_ops.py",
         "gaussian_filter_ops.py",
 ]),
     data = [
