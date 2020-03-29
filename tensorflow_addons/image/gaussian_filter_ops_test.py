@@ -17,6 +17,7 @@
 
 from tensorflow_addons.image.gaussian_filter_ops import gaussian_blur
 import numpy as np
+import numpy.core.multiarray
 import cv2
 import tensorflow as tf
 import sys
