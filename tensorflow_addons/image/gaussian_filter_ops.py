@@ -17,9 +17,10 @@
 
 import numpy as np
 import tensorflow as tf
+from tensorflow_addons.utils.types import FloatTensorLike, Number
 
 
-def gaussian_blur(img, sigma, kSize):
+def gaussian_blur(img: FloatTensorLike, sigma: tf.float64, kSize: tf.float64):
     """
     This function is responsible for having Gaussian Blur. It takes the image as input, computes a gaussian-kernel
     which follows normal distribution then convolves the image with the kernel.Presently it works only on
