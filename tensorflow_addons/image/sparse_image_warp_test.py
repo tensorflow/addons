@@ -169,7 +169,7 @@ def load_image(image_file):
     return image
 
 
-def testSmileyFace():
+def test_smiley_face():
     """Check warping accuracy by comparing to hardcoded warped images."""
 
     input_file = get_path_to_datafile("image/test_data/Yellow_Smiley_Face.png")
