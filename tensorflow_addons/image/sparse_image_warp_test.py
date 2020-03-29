@@ -26,6 +26,46 @@ from tensorflow_addons.utils import test_utils
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 
+def test_zero_shift():
+    """Run assert_zero_shift for various hyperparameters."""
+    for order in (1, 2):
+        for regularization in (0, 0.01):
+            for num_boundary_points in (0, 1):
+                assert_zero_shift(order, regularization, num_boundary_points)
+
+
+def assert_zero_shift(order, regularization, num_boundary_points):
+    """Check that warping with zero displacements doesn't change the
+    image."""
+    batch_size = 1
+    image_height = 4
+    image_width = 4
+    channels = 3
+
+    image = np.random.uniform(size=[batch_size, image_height, image_width, channels])
+
+    input_image = tf.constant(np.float32(image))
+
+    control_point_locations = [[1.0, 1.0], [2.0, 2.0], [2.0, 1.0]]
+    control_point_locations = tf.constant(
+        np.float32(np.expand_dims(control_point_locations, 0))
+    )
+
+    control_point_displacements = np.zeros(control_point_locations.shape.as_list())
+    control_point_displacements = tf.constant(np.float32(control_point_displacements))
+
+    (warped_image, _) = sparse_image_warp(
+        input_image,
+        control_point_locations,
+        control_point_locations + control_point_displacements,
+        interpolation_order=order,
+        regularization_weight=regularization,
+        num_boundary_points=num_boundary_points,
+    )
+
+    np.testing.assert_allclose(warped_image, input_image, rtol=1e-6, atol=1e-6)
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class SparseImageWarpTest(tf.test.TestCase):
     def setUp(self):
@@ -63,49 +103,6 @@ class SparseImageWarpTest(tf.test.TestCase):
             for j in range(image_width):
                 self.assertEqual(grid[i, j, 0], i)
                 self.assertEqual(grid[i, j, 1], j)
-
-    def testZeroShift(self):
-        """Run assertZeroShift for various hyperparameters."""
-        for order in (1, 2):
-            for regularization in (0, 0.01):
-                for num_boundary_points in (0, 1):
-                    self.assertZeroShift(order, regularization, num_boundary_points)
-
-    def assertZeroShift(self, order, regularization, num_boundary_points):
-        """Check that warping with zero displacements doesn't change the
-        image."""
-        batch_size = 1
-        image_height = 4
-        image_width = 4
-        channels = 3
-
-        image = np.random.uniform(
-            size=[batch_size, image_height, image_width, channels]
-        )
-
-        input_image = tf.constant(np.float32(image))
-
-        control_point_locations = [[1.0, 1.0], [2.0, 2.0], [2.0, 1.0]]
-        control_point_locations = tf.constant(
-            np.float32(np.expand_dims(control_point_locations, 0))
-        )
-
-        control_point_displacements = np.zeros(control_point_locations.shape.as_list())
-        control_point_displacements = tf.constant(
-            np.float32(control_point_displacements)
-        )
-
-        (warped_image, flow) = sparse_image_warp(
-            input_image,
-            control_point_locations,
-            control_point_locations + control_point_displacements,
-            interpolation_order=order,
-            regularization_weight=regularization,
-            num_boundary_points=num_boundary_points,
-        )
-
-        warped_image, input_image = self.evaluate([warped_image, input_image])
-        self.assertAllClose(warped_image, input_image)
 
     def testMoveSinglePixel(self):
         """Run assertMoveSinglePixel for various hyperparameters and data
