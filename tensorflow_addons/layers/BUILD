@@ -3,71 +3,160 @@ licenses(["notice"])  # Apache 2.0
 package(default_visibility = ["//visibility:public"])
 
 py_library(
-    name = "layers_py",
+    name = "layers",
     srcs = [
         "__init__.py",
-        "python/__init__.py",
-        "python/maxout.py",
-        "python/normalizations.py",
-        "python/poincare.py",
-        "python/sparsemax.py",
-        "python/wrappers.py",
+        "gelu.py",
+        "maxout.py",
+        "multihead_attention.py",
+        "netvlad.py",
+        "normalizations.py",
+        "optical_flow.py",
+        "poincare.py",
+        "polynomial.py",
+        "sparsemax.py",
+        "tlu.py",
+        "wrappers.py",
     ],
-    srcs_version = "PY2AND3",
+    data = [
+        "//tensorflow_addons/custom_ops/layers:_correlation_cost_ops.so",
+    ],
     deps = [
-        "//tensorflow_addons/utils:utils_py",
-        "//tensorflow_addons/activations:activations_py",
+        "//tensorflow_addons/activations",
+        "//tensorflow_addons/utils",
     ],
 )
 
 py_test(
-    name = "layers_wrappers_py_test",
+    name = "polynomial_test",
     size = "small",
     srcs = [
-        "python/wrappers_test.py",
+        "polynomial_test.py",
     ],
-    main = "python/wrappers_test.py",
+    main = "polynomial_test.py",
+    python_version = "PY3",
     srcs_version = "PY2AND3",
     deps = [
-        ":layers_py",
-    ]
+        ":layers",
+    ],
 )
 
 py_test(
-    name = "sparsemax_py_test",
+    name = "gelu_test",
     size = "small",
     srcs = [
-        "python/sparsemax_test.py",
+        "gelu_test.py",
     ],
-    main = "python/sparsemax_test.py",
-    srcs_version = "PY2AND3",
+    main = "gelu_test.py",
     deps = [
-        ":layers_py",
+        ":layers",
     ],
 )
 
 py_test(
-    name = "maxout_py_test",
+    name = "poincare_test",
     size = "small",
     srcs = [
-        "python/maxout_test.py",
+        "poincare_test.py",
     ],
-    main = "python/maxout_test.py",
-    srcs_version = "PY2AND3",
+    main = "poincare_test.py",
     deps = [
-        ":layers_py",
-    ]
+        ":layers",
+    ],
 )
 
 py_test(
-    name = "layers_normalizations_py_test",
-    size= "small",
+    name = "tlu_test",
+    size = "small",
     srcs = [
-        "python/normalizations_test.py",
+        "tlu_test.py",
     ],
-    main = "python/normalizations_test.py",
-    srcs_version = "PY2AND3",
+    main = "tlu_test.py",
     deps = [
-            ":layers_py",
-        ]
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "layers_wrappers_test",
+    size = "small",
+    srcs = [
+        "wrappers_test.py",
+    ],
+    main = "wrappers_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "sparsemax_test",
+    size = "small",
+    srcs = [
+        "sparsemax_test.py",
+    ],
+    main = "sparsemax_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "maxout_test",
+    size = "small",
+    srcs = [
+        "maxout_test.py",
+    ],
+    main = "maxout_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "normalizations_test",
+    size = "small",
+    srcs = [
+        "normalizations_test.py",
+    ],
+    main = "normalizations_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "optical_flow_test",
+    size = "small",
+    srcs = [
+        "optical_flow_test.py",
+    ],
+    main = "optical_flow_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "netvlad_test",
+    size = "small",
+    srcs = [
+        "netvlad_test.py",
+    ],
+    main = "netvlad_test.py",
+    deps = [
+        ":layers",
+    ],
+)
+
+py_test(
+    name = "multihead_attention_test",
+    size = "small",
+    srcs = [
+        "multihead_attention_test.py",
+    ],
+    main = "multihead_attention_test.py",
+    deps = [
+        ":layers",
+    ],
 )

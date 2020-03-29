@@ -1,0 +1,115 @@
+name: GitHub CI
+
+on:
+  push:
+    branches:
+      - master
+      - r*
+  pull_request:
+    branches:
+      - master
+      - r*
+
+env:
+  BAZEL_VERSION: 1.1.0
+
+jobs:
+  flake8-test:
+    name: Flake8
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run flake8
+        run: bash tools/run_build.sh flake8-test
+  black-test:
+    name: Black Python code format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Ensure contributor used ("black ./") before commit
+        run: bash tools/run_build.sh black-test
+  public-api-typed:
+    name: Check that the public API is typed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run type check
+        run: bash tools/run_build.sh public-api-typed
+  case-insensitive-filesystem:
+    name: Verify python filenames work on case insensitive FS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run type check
+        run: bash tools/run_build.sh case-insensitive-filesystem
+  valid_build_files:
+    name: Valid build files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run type check
+        run: bash tools/run_build.sh valid_build_files
+  clang-format:
+    name: Clang C++ code format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run type check
+        run: bash tools/run_build.sh clang-format
+  check-bazel-format:
+    name: Bazel code format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run type check
+        run: bash tools/run_build.sh check-bazel-format
+  pre-commit:
+    name: Check that the pre-commit works
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Checking the pre-commit
+        run: bash tools/pre-commit.sh
+  docs_tests:
+    name: Check that we can build the docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Building the docs
+        run: bash tools/run_build.sh docs_tests
+  test_editable_mode:
+    name: Check that we can fully work in editable mode
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: bash tools/run_build.sh test_editable_mode
+  test_cpu_in_small_docker_image:
+    name: Run the cpu tests in a small python docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: bash tools/run_cpu_tests.sh
+  test_tf220rc1_cpu_in_small_docker_image:
+    name: Run the tf 2.2.0rc1 cpu tests in a small python docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - env:
+          DOCKER_BUILDKIT: 1
+        run: |
+          docker build \
+              --build-arg TF_VERSION=2.2.0rc1 \
+              -f tools/docker/cpu_tests.Dockerfile \
+              --target=build_wheel \
+              ./
+  valid-codeowners:
+    name: Check that the CODEOWNERS is valid
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - run: pip install pygithub click
+      - name: Check that the CODEOWNERS is valid
+        run: python .github/workflows/notify_codeowners.py .github/CODEOWNERS

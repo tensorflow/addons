@@ -13,19 +13,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_CONTRIB_IMAGE_KERNELS_IMAGE_OPS_H_
-#define TENSORFLOW_CONTRIB_IMAGE_KERNELS_IMAGE_OPS_H_
+#ifndef TENSORFLOW_ADDONS_IMAGE_KERNELS_IMAGE_PROJECTIVE_TRANSFORM_OP_H__
+#define TENSORFLOW_ADDONS_IMAGE_KERNELS_IMAGE_PROJECTIVE_TRANSFORM_OP_H__
 
 // See docs in ../ops/image_ops.cc.
 
 #define EIGEN_USE_THREADS
 
-#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
-
 #include "tensorflow/core/framework/tensor_types.h"
 #include "tensorflow/core/platform/types.h"
+#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tensorflow {
+namespace addons {
 
 namespace generator {
 
@@ -45,9 +45,9 @@ class ProjectiveGenerator {
   static const int kNumParameters = 8;
 
   EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
-      ProjectiveGenerator(typename TTypes<T, 4>::ConstTensor input,
-                          typename TTypes<float>::ConstMatrix transforms,
-                          const Interpolation interpolation)
+  ProjectiveGenerator(typename TTypes<T, 4>::ConstTensor input,
+                      typename TTypes<float>::ConstMatrix transforms,
+                      const Interpolation interpolation)
       : input_(input), transforms_(transforms), interpolation_(interpolation) {}
 
   EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE T
@@ -167,6 +167,7 @@ struct FillProjectiveTransform {
 
 }  // end namespace functor
 
+}  // end namespace addons
 }  // end namespace tensorflow
 
-#endif  // TENSORFLOW_CONTRIB_IMAGE_KERNELS_IMAGE_OPS_H_
+#endif  // TENSORFLOW_ADDONS_IMAGE_KERNELS_IMAGE_PROJECTIVE_TRANSFORM_OP_H__

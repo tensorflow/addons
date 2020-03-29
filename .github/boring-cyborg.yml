@@ -1,0 +1,51 @@
+labelPRBasedOnFilePath:
+  # Subpackages
+  activations:
+    - tensorflow_addons/activations/**/*
+
+  callbacks:
+    - tensorflow_addons/callbacks/**/*
+
+  custom-ops:
+    - tensorflow_addons/custom_ops/**/*
+
+  image:
+    - tensorflow_addons/image/**/*
+
+  layers:
+    - tensorflow_addons/layers/**/*
+
+  losses:
+    - tensorflow_addons/losses/**/*
+
+  metrics:
+    - tensorflow_addons/metrics/**/*
+
+  optimizers:
+    - tensorflow_addons/optimizers/**/*
+
+  seq2seq:
+    - tensorflow_addons/seq2seq/**/*
+
+  text:
+    - tensorflow_addons/text/**/*
+
+  # Other labels
+  build:
+    - build_deps/**/*
+    - tools/releases/**/*
+
+  documentation:
+    - docs/**/*
+
+  tutorials:
+    - docs/tutorials/**/*
+
+  test-cases:
+    - tools/testing/**/
+
+  style:
+    - STYLE_GUIDE.md
+
+  github:
+    - .github/**/*

@@ -30,8 +30,15 @@ wheels/
 # IDE
 .vscode/
 .idea/
+*.iml
 
 # Build
 /.bazelrc
 /bazel-*
 /artifacts
+.bazelrc
+
+.coverage*
+htmlcov
+
+wheelhouse/

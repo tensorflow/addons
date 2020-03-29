@@ -17,6 +17,8 @@ limitations under the License.
 #define EIGEN_USE_GPU
 #endif  // GOOGLE_CUDA
 
+#include "tensorflow_addons/custom_ops/image/cc/kernels/adjust_hsv_in_yiq_op.h"
+
 #include <memory>
 
 #include "tensorflow/core/framework/register_types.h"
@@ -25,9 +27,9 @@ limitations under the License.
 #include "tensorflow/core/lib/core/status.h"
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/util/work_sharder.h"
-#include "tensorflow_addons/custom_ops/image/cc/kernels/adjust_hsv_in_yiq_op.h"
 
 namespace tensorflow {
+namespace addons {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
@@ -109,36 +111,37 @@ class AdjustHsvInYiqOp<CPUDevice> : public AdjustHsvInYiqOpBase {
     const float scale_s = options.scale_s->scalar<float>()();
     const float scale_v = options.scale_v->scalar<float>()();
     auto output_data = output->shaped<float, 2>({channel_count, kChannelSize});
-    float tranformation_matrix[kChannelSize * kChannelSize] = {0};
-    internal::compute_tranformation_matrix<kChannelSize * kChannelSize>(
-        delta_h, scale_s, scale_v, tranformation_matrix);
+    float transformation_matrix[kChannelSize * kChannelSize] = {0};
+    internal::compute_transformation_matrix<kChannelSize * kChannelSize>(
+        delta_h, scale_s, scale_v, transformation_matrix);
     const int kCostPerChannel = 10;
-    const DeviceBase::CpuWorkerThreads& worker_threads =
-        *context->device()->tensorflow_cpu_worker_threads();
-    Shard(worker_threads.num_threads, worker_threads.workers, channel_count,
-          kCostPerChannel, [&input_data, &output_data, &tranformation_matrix](
-                               int64 start_channel, int64 end_channel) {
-            // Applying projection matrix to input RGB vectors.
-            const float* p = input_data.data() + start_channel * kChannelSize;
-            float* q = output_data.data() + start_channel * kChannelSize;
-            for (int i = start_channel; i < end_channel; i++) {
-              for (int q_index = 0; q_index < kChannelSize; q_index++) {
-                q[q_index] = 0;
-                for (int p_index = 0; p_index < kChannelSize; p_index++) {
-                  q[q_index] +=
-                      p[p_index] *
-                      tranformation_matrix[q_index + kChannelSize * p_index];
-                }
+    auto thread_pool =
+        context->device()->tensorflow_cpu_worker_threads()->workers;
+    thread_pool->ParallelFor(
+        channel_count, kCostPerChannel,
+        [&input_data, &output_data, &transformation_matrix](int64 start_channel,
+                                                            int64 end_channel) {
+          // Applying projection matrix to input RGB vectors.
+          const float* p = input_data.data() + start_channel * kChannelSize;
+          float* q = output_data.data() + start_channel * kChannelSize;
+          for (int i = start_channel; i < end_channel; i++) {
+            for (int q_index = 0; q_index < kChannelSize; q_index++) {
+              q[q_index] = 0;
+              for (int p_index = 0; p_index < kChannelSize; p_index++) {
+                q[q_index] +=
+                    p[p_index] *
+                    transformation_matrix[q_index + kChannelSize * p_index];
               }
-              p += kChannelSize;
-              q += kChannelSize;
             }
-          });
+            p += kChannelSize;
+            q += kChannelSize;
+          }
+        });
   }
 };
 
 REGISTER_KERNEL_BUILDER(
-    Name("AdjustHsvInYiq").Device(DEVICE_CPU).TypeConstraint<float>("T"),
+    Name("Addons>AdjustHsvInYiq").Device(DEVICE_CPU).TypeConstraint<float>("T"),
     AdjustHsvInYiqOp<CPUDevice>);
 
 #if GOOGLE_CUDA
@@ -162,8 +165,9 @@ class AdjustHsvInYiqOp<GPUDevice> : public AdjustHsvInYiqOpBase {
 };
 
 REGISTER_KERNEL_BUILDER(
-    Name("AdjustHsvInYiq").Device(DEVICE_GPU).TypeConstraint<float>("T"),
+    Name("Addons>AdjustHsvInYiq").Device(DEVICE_GPU).TypeConstraint<float>("T"),
     AdjustHsvInYiqOp<GPUDevice>);
 #endif
 
+}  // end namespace addons
 }  // namespace tensorflow

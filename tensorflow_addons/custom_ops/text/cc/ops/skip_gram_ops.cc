@@ -17,7 +17,8 @@ limitations under the License.
 #include "tensorflow/core/framework/shape_inference.h"
 
 namespace tensorflow {
-REGISTER_OP("SkipGramGenerateCandidates")
+namespace addons {
+REGISTER_OP("Addons>SkipGramGenerateCandidates")
     .Input("input_tensor: T")
     .Input("min_skips: int32")
     .Input("max_skips: int32")
@@ -51,4 +52,5 @@ REGISTER_OP("SkipGramGenerateCandidates")
 Generates skip-gram token and label paired Tensors from the input tensor.
 See docs for the public-facing skip_gram_sample() Python op for more details.
 )doc");
+}  // end namespace addons
 }  // namespace tensorflow

@@ -1,15 +1,11 @@
 sh_binary(
     name = "build_pip_pkg",
-    srcs = ["build_pip_pkg.sh"],
+    srcs = ["build_deps/build_pip_pkg.sh"],
     data = [
         "LICENSE",
         "MANIFEST.in",
+        "requirements.txt",
         "setup.py",
         "//tensorflow_addons",
-        "//tensorflow_addons/activations:activations_py",
-        "//tensorflow_addons/custom_ops:custom_ops_py",
-        "//tensorflow_addons/layers:layers_py",
-        "//tensorflow_addons/losses:losses_py",
-        "//tensorflow_addons/optimizers:optimizers_py",
     ],
 )

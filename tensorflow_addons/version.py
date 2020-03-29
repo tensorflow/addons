@@ -13,27 +13,30 @@
 # limitations under the License.
 # ============================================================================
 """Define TensorFlow Addons version information."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 # We follow Semantic Versioning (https://semver.org/)
+<<<<<<< HEAD
 _MAJOR_VERSION = '0'
 _MINOR_VERSION = '1'
 _PATCH_VERSION = '1'
+=======
+_MAJOR_VERSION = "0"
+_MINOR_VERSION = "9"
+_PATCH_VERSION = "0"
+>>>>>>> 4b1fa53ece90218270c7c1a32594b51da3fad6dd
 
 # When building releases, we can update this value on the release branch to
 # reflect the current release candidate ('rc0', 'rc1') or, finally, the official
 # stable release (indicated by `_VERSION_SUFFIX = ''`). Outside the context of a
 # release branch, the current version is by default assumed to be a
 # 'development' version, labeled 'dev'.
+<<<<<<< HEAD
 _VERSION_SUFFIX = ''
+=======
+_VERSION_SUFFIX = "dev"
+>>>>>>> 4b1fa53ece90218270c7c1a32594b51da3fad6dd
 
 # Example, '0.1.0-dev'
-__version__ = '.'.join([
-    _MAJOR_VERSION,
-    _MINOR_VERSION,
-    _PATCH_VERSION,
-])
+__version__ = ".".join([_MAJOR_VERSION, _MINOR_VERSION, _PATCH_VERSION,])
 if _VERSION_SUFFIX:
-    __version__ = '{}-{}'.format(__version__, _VERSION_SUFFIX)
+    __version__ = "{}-{}".format(__version__, _VERSION_SUFFIX)
