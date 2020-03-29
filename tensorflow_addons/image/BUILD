@@ -191,11 +191,12 @@ py_test(
         ":image",
     ],
 )
+
 py_test(
     name = "gaussian_filter_ops_test",
     size = "small",
     srcs = [
-        "gaussian_filter_ops.py",
+        "gaussian_filter_ops_test.py",
     ],
     main = "gaussian_filter_ops_test.py",
     deps = [
