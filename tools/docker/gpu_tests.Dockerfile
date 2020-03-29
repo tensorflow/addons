@@ -1,12 +1,15 @@
 FROM tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16
 
-COPY tools/install_deps/tensorflow.txt ./
+ARG PY_VERSION
+RUN python$PY_VERSION -m pip install --upgrade pip setuptools auditwheel==2.0.0
 
-RUN python3 -m pip install -r tensorflow.txt
+COPY tools/install_deps/ /install_deps
+RUN python$PY_VERSION -m pip install \
+        -r /install_deps/tensorflow.txt \
+        -r /install_deps/pytest.txt
 
-COPY requirements.txt ./
-RUN python3 -m pip install -r requirements.txt
-
+COPY requirements.txt .
+RUN python$PY_VERSION -m pip install -r requirements.txt
 
 COPY ./ /addons
 WORKDIR addons
