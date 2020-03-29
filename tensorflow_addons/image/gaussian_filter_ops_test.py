@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for gaussian blur."""
+"""  Tests for gaussian blur.  """
 
 
 from tensorflow_addons.image.gaussian_filter_ops import gaussian_blur
