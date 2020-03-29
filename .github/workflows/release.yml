@@ -40,6 +40,7 @@ jobs:
       matrix:
         os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
         python-version: ['3.5', '3.6', '3.7']
+        tf-version: ['2.1.0', '2.2.0rc1']
       fail-fast: false
     steps:
       - if: github.event_name == 'push'
@@ -51,9 +52,9 @@ jobs:
       - name: Build wheels
         if: github.event_name == 'push' || github.event_name == 'release' || matrix.python-version == env.OLDEST_PY_VERSION
         env:
-          PY_VERSION: ${{ matrix.python-version }}
           OS: ${{ runner.os }}
-          TF_VERSION: 2.1.0
+          PY_VERSION: ${{ matrix.python-version }}
+          TF_VERSION: ${{ matrix.tf-version }}
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}.sh
       - uses: actions/upload-artifact@v1
