@@ -47,7 +47,7 @@ def _ensure_tf_install():
     """
 
     # Update this whenever we need to depend on a newer TensorFlow release.
-    required_tf_version = "2.1.0"
+    required_tf_version = "2.2.0"
 
     if LooseVersion(tf.__version__) != LooseVersion(required_tf_version):
         message = warning_template.format(
