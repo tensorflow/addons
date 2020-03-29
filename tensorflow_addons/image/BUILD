@@ -28,8 +28,7 @@ py_library(
         "compose_ops.py",
         "cutout_ops.py",
         "gaussian_filter_ops.py",
-r
-    ]),
+]),
     data = [
         ":sparse_image_warp_test_data",
         "//tensorflow_addons/custom_ops/image:_distort_image_ops.so",
