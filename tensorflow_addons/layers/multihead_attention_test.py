@@ -38,9 +38,9 @@ def test_output_shape():
 
     output = mha([q, k, v])
 
-    np.testing.assert_equal(output.shape[0], batch_size)
-    np.testing.assert_equal(output.shape[1], q.shape[1])
-    np.testing.assert_equal(output.shape[2], v.shape[2])
+    assert output.shape[0] == batch_size
+    assert output.shape[1] == q.shape[1]
+    assert output.shape[2] == v.shape[2]
 
 
 def test_output_size():
@@ -59,9 +59,9 @@ def test_output_size():
 
     output = mha([q, k, v])
 
-    np.testing.assert_equal(output.shape[0], batch_size)
-    np.testing.assert_equal(output.shape[1], q.shape[1])
-    np.testing.assert_equal(output.shape[2], output_size)
+    assert output.shape[0] == batch_size
+    assert output.shape[1] == q.shape[1]
+    assert output.shape[2] == output_size
 
 
 @test_utils.run_all_in_graph_and_eager_modes
