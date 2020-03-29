@@ -44,7 +44,7 @@ def mish(x: types.TensorLike) -> tf.Tensor:
         except tf.errors.NotFoundError:
             options.warn_fallback("mish")
 
-    return _mish_custom_op(x)
+    return _mish_py(x)
 
 
 def _mish_custom_op(x):
