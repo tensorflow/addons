@@ -19,6 +19,7 @@ import pytest
 import numpy as np
 import tensorflow as tf
 
+from tensorflow_addons.layers.normalizations import FilterResponseNormalization
 from tensorflow_addons.layers.normalizations import GroupNormalization
 from tensorflow_addons.layers.normalizations import InstanceNormalization
 from tensorflow_addons.utils import test_utils
@@ -330,6 +331,122 @@ def test_groupnorm_convnet_no_center_no_scale():
     np.testing.assert_allclose(
         np.std(out, axis=(0, 2, 3), dtype=np.float32), (1.0, 1.0, 1.0), atol=1e-1
     )
+
+
+def calculate_frn(
+    x, beta=0.2, gamma=1, eps=1e-6, learned_epsilon=False, dtype=np.float32
+):
+    if learned_epsilon:
+        eps = eps + 1e-4
+    eps = tf.cast(eps, dtype=dtype)
+    nu2 = tf.reduce_mean(tf.square(x), axis=[1, 2], keepdims=True)
+    x = x * tf.math.rsqrt(nu2 + tf.abs(eps))
+    return gamma * x + beta
+
+
+def set_random_seed():
+    seed = 0x2020
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_with_beta(dtype):
+    set_random_seed()
+    inputs = np.random.rand(28, 28, 1).astype(dtype)
+    inputs = np.expand_dims(inputs, axis=0)
+    frn = FilterResponseNormalization(
+        beta_initializer="ones", gamma_initializer="ones", dtype=dtype
+    )
+    frn.build((None, 28, 28, 1))
+    observed = frn(inputs)
+    expected = calculate_frn(inputs, beta=1, gamma=1, dtype=dtype)
+    np.testing.assert_allclose(expected[0], observed[0])
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_with_gamma(dtype):
+    set_random_seed()
+    inputs = np.random.rand(28, 28, 1).astype(dtype)
+    inputs = np.expand_dims(inputs, axis=0)
+    frn = FilterResponseNormalization(
+        beta_initializer="zeros", gamma_initializer="ones", dtype=dtype
+    )
+    frn.build((None, 28, 28, 1))
+    observed = frn(inputs)
+    expected = calculate_frn(inputs, beta=0, gamma=1, dtype=dtype)
+    np.testing.assert_allclose(expected[0], observed[0])
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_with_epsilon(dtype):
+    set_random_seed()
+    inputs = np.random.rand(28, 28, 1).astype(dtype)
+    inputs = np.expand_dims(inputs, axis=0)
+    frn = FilterResponseNormalization(
+        beta_initializer=tf.keras.initializers.Constant(0.5),
+        gamma_initializer="ones",
+        learned_epsilon=True,
+        dtype=dtype,
+    )
+    frn.build((None, 28, 28, 1))
+    observed = frn(inputs)
+    expected = calculate_frn(
+        inputs, beta=0.5, gamma=1, learned_epsilon=True, dtype=dtype
+    )
+    np.testing.assert_allclose(expected[0], observed[0])
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_keras_model(dtype):
+    set_random_seed()
+    frn = FilterResponseNormalization(
+        beta_initializer="ones", gamma_initializer="ones", dtype=dtype
+    )
+    random_inputs = np.random.rand(10, 32, 32, 3).astype(dtype)
+    random_labels = np.random.randint(2, size=(10,)).astype(dtype)
+    input_layer = tf.keras.layers.Input(shape=(32, 32, 3))
+    x = frn(input_layer)
+    x = tf.keras.layers.Flatten()(x)
+    out = tf.keras.layers.Dense(1, activation="sigmoid")(x)
+    model = tf.keras.models.Model(input_layer, out)
+    model.compile(loss="binary_crossentropy", optimizer="sgd")
+    model.fit(random_inputs, random_labels, epochs=2)
+
+
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_serialization(dtype):
+    frn = FilterResponseNormalization(
+        beta_initializer="ones", gamma_initializer="ones", dtype=dtype
+    )
+    serialized_frn = tf.keras.layers.serialize(frn)
+    new_layer = tf.keras.layers.deserialize(serialized_frn)
+    assert frn.get_config() == new_layer.get_config()
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_eps_gards(dtype):
+    set_random_seed()
+    random_inputs = np.random.rand(10, 32, 32, 3).astype(np.float32)
+    random_labels = np.random.randint(2, size=(10,)).astype(np.float32)
+    input_layer = tf.keras.layers.Input(shape=(32, 32, 3))
+    frn = FilterResponseNormalization(
+        beta_initializer="ones", gamma_initializer="ones", learned_epsilon=True
+    )
+    initial_eps_value = frn.eps_learned.numpy()[0]
+    x = frn(input_layer)
+    x = tf.keras.layers.Flatten()(x)
+    out = tf.keras.layers.Dense(1, activation="sigmoid")(x)
+    model = tf.keras.models.Model(input_layer, out)
+    model.compile(loss="binary_crossentropy", optimizer="sgd")
+    model.fit(random_inputs, random_labels, epochs=1)
+    final_eps_value = frn.eps_learned.numpy()[0]
+    assert initial_eps_value != final_eps_value
 
 
 if __name__ == "__main__":
