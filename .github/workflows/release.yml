@@ -48,7 +48,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
-          py-version: ${{ matrix.py-version }}
+          python-version: ${{ matrix.py-version }}
       - name: Build wheels
         if: github.event_name == 'push' || github.event_name == 'release' || matrix.py-version == env.OLDEST_PY_VERSION
         env:
@@ -75,7 +75,7 @@ jobs:
     steps:
       - uses: actions/setup-python@v1
         with:
-          py-version: ${{ matrix.py-version }}
+          python-version: ${{ matrix.py-version }}
       - uses: actions/download-artifact@v1
         if: github.event_name == 'push' || github.event_name == 'release' || matrix.py-version == env.OLDEST_PY_VERSION
         with:
