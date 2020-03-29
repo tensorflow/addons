@@ -26,15 +26,15 @@ from tensorflow_addons.utils import test_utils
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 
-def testZeroShift():
-    """Run assertZeroShift for various hyperparameters."""
+def test_zero_shift():
+    """Run assert_zero_shift for various hyperparameters."""
     for order in (1, 2):
         for regularization in (0, 0.01):
             for num_boundary_points in (0, 1):
-                assertZeroShift(order, regularization, num_boundary_points)
+                assert_zero_shift(order, regularization, num_boundary_points)
 
 
-def assertZeroShift(order, regularization, num_boundary_points):
+def assert_zero_shift(order, regularization, num_boundary_points):
     """Check that warping with zero displacements doesn't change the
     image."""
     batch_size = 1
