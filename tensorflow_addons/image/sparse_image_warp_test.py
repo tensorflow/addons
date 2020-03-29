@@ -26,7 +26,7 @@ from tensorflow_addons.utils import test_utils
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 
-def testGetBoundaryLocations():
+def test_get_boundary_locations():
     image_height = 11
     image_width = 11
     num_points_per_edge = 4
