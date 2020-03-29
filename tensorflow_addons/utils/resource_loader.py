@@ -62,12 +62,13 @@ class LazySO:
             return
 
         warnings.warn(
-            "You are currently using TensorFlow {} and trying to load a custom op ( "
-            "{}). TensorFlow Addons has compiled its custom ops against TensorFlow {}, "
+            "You are currently using TensorFlow {} and trying to load a custom op ({})."
+            "\n"
+            "TensorFlow Addons has compiled its custom ops against TensorFlow {}, "
             "and there are no ABI compatibility guarantees between the two versions. "
-            "\n\n"
+            "\n"
             "This means that you might get segfaults when loading the custom op, "
-            "or other kind of low-level errors. If you do, do not file an issue "
+            "or other kind of low-level errors.\n If you do, do not file an issue "
             "on Github. This is a known limitation."
             "\n\n"
             "It might help you to fallback to pure Python "
@@ -76,7 +77,7 @@ class LazySO:
             "\n\n"
             "You can also change the TensorFlow version installed on your system. "
             "You would need a TensorFlow version equal to or above {} and strictly "
-            "below {}. Note that nightly versions of TensorFlow are not supported."
+            "below {}.\n Note that nightly versions of TensorFlow are not supported."
             "\n\n"
             "The last solution is to find the TensorFlow Addons version that is "
             "compatible on the ABI level with the TensorFlow installed on your "
