@@ -16,8 +16,8 @@
 
 
 from tensorflow_addons.image.gaussian_filter_ops import gaussian_blur
-import cv2
 import numpy as np
+import cv2
 import tensorflow as tf
 import sys
 import pytest
