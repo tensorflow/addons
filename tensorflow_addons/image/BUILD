@@ -134,6 +134,18 @@ py_test(
 )
 
 py_test(
+    name = "gaussian_filter_ops_test",
+    size = "small",
+    srcs = [
+        "gaussian_filter_ops_test.py",
+    ],
+    main = "gaussian_filter_ops_test.py",
+    deps = [
+        ":image",
+    ],
+)
+
+py_test(
     name = "interpolate_spline_test",
     size = "medium",
     srcs = [
@@ -205,14 +217,3 @@ py_test(
     ],
 )
 
-py_test(
-    name = "gaussian_filter_ops_test",
-    size = "small",
-    srcs = [
-        "gaussian_filter_ops_test.py",
-    ],
-    main = "gaussian_filter_ops_test.py",
-    deps = [
-        ":image",
-    ],
-)
