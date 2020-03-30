@@ -38,6 +38,27 @@ def test_groups_after_init():
     assert layers.groups == -1
 
 
+def test_weights():
+    # Check if weights get initialized correctly
+    layer = GroupNormalization(groups=1, scale=False, center=False)
+    layer.build((None, 3, 4))
+    assert len(layer.trainable_weights) == 0
+    assert len(layer.weights) == 0
+
+    layer = InstanceNormalization()
+    layer.build((None, 3, 4))
+    assert len(layer.trainable_weights) == 2
+    assert len(layer.weights) == 2
+
+
+def test_apply_normalization():
+    input_shape = (1, 4)
+    reshaped_inputs = tf.constant([[[2.0, 2.0], [3.0, 3.0]]])
+    layer = GroupNormalization(groups=2, axis=1, scale=False, center=False)
+    normalized_input = layer._apply_normalization(reshaped_inputs, input_shape)
+    np.testing.assert_equal(normalized_input, np.array([[[0.0, 0.0], [0.0, 0.0]]]))
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class NormalizationTest(tf.test.TestCase):
     def test_reshape(self):
@@ -156,32 +177,6 @@ class NormalizationTest(tf.test.TestCase):
         output_batch = np.random.rand(*(10, 1))
         model.fit(x=input_batch, y=output_batch, epochs=1, batch_size=1)
         return model
-
-    def test_weights(self):
-        # Check if weights get initialized correctly
-        layer = GroupNormalization(groups=1, scale=False, center=False)
-        layer.build((None, 3, 4))
-        self.assertEqual(len(layer.trainable_weights), 0)
-        self.assertEqual(len(layer.weights), 0)
-
-        layer = InstanceNormalization()
-        layer.build((None, 3, 4))
-        self.assertEqual(len(layer.trainable_weights), 2)
-        self.assertEqual(len(layer.weights), 2)
-
-    def test_apply_normalization(self):
-        input_shape = (1, 4)
-        reshaped_inputs = tf.constant([[[2.0, 2.0], [3.0, 3.0]]])
-        layer = GroupNormalization(groups=2, axis=1, scale=False, center=False)
-        normalized_input = layer._apply_normalization(reshaped_inputs, input_shape)
-        self.assertTrue(
-            np.all(
-                np.equal(
-                    self.evaluate(normalized_input),
-                    np.array([[[0.0, 0.0], [0.0, 0.0]]]),
-                )
-            )
-        )
 
     def test_axis_error(self):
         with self.assertRaises(ValueError):
