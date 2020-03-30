@@ -61,7 +61,10 @@ jobs:
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}.sh
       - uses: actions/upload-artifact@v1
-        if: (matrix.os != 'macos-latest' || matrix.py-version != '3.8') && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc1') && (github.event_name == 'push' || github.event_name == 'release' || matrix.py-version == env.OLDEST_PY_VERSION)
+        if: |
+          (matrix.os != 'macos-latest' || matrix.py-version != '3.8')
+          && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc1')
+          && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
           path: wheelhouse
@@ -80,12 +83,18 @@ jobs:
         with:
           python-version: ${{ matrix.py-version }}
       - uses: actions/download-artifact@v1
-        if: (matrix.os != 'macos-latest' || matrix.py-version != '3.8') && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc1') && (github.event_name == 'push' || github.event_name == 'release' || matrix.py-version == env.OLDEST_PY_VERSION)
+        if: |
+          (matrix.os != 'macos-latest' || matrix.py-version != '3.8')
+          && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc1')
+          && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
           path: ./wheel
       - name: Test wheel
-        if: (matrix.os != 'macos-latest' || matrix.py-version != '3.8') && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc1') && (github.event_name == 'push' || github.event_name == 'release' || matrix.py-version == env.OLDEST_PY_VERSION)
+        if: |
+          (matrix.os != 'macos-latest' || matrix.py-version != '3.8')
+          && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc1')
+          && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
         env:
           TF_VERSION: ${{ matrix.tf-version }}
         shell: bash
@@ -104,11 +113,11 @@ jobs:
         py-version: ['3.5', '3.6', '3.7']
     steps:
       - uses: actions/download-artifact@v1
-        if: github.event_name == 'push' || github.event_name == 'release' || matrix.py-version == env.OLDEST_PY_VERSION
+        if: github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf2.1.0-wheel
           path: ./dist
-      - if: github.event_name == 'push' || github.event_name == 'release' || matrix.py-version == env.OLDEST_PY_VERSION
+      - if: github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION
         run: |
           set -e -x
           ls -la dist/
