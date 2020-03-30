@@ -14,7 +14,7 @@ py_library(
         "distance_transform.py",
         "distort_image_ops.py",
         "filters.py",
-        "gaussian_filters_op.py",
+        "gaussian_filter_ops.py",
         "interpolate_spline.py",
         "resampler_ops.py",
         "sparse_image_warp.py",
