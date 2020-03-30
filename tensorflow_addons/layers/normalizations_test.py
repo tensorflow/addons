@@ -59,37 +59,39 @@ def test_apply_normalization():
     np.testing.assert_equal(normalized_input, np.array([[[0.0, 0.0], [0.0, 0.0]]]))
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_reshape():
+    def run_reshape_test(axis, group, input_shape, expected_shape):
+        group_layer = GroupNormalization(groups=group, axis=axis)
+        group_layer._set_number_of_groups_for_instance_norm(input_shape)
+
+        inputs = np.ones(input_shape)
+        tensor_input_shape = tf.convert_to_tensor(input_shape)
+        reshaped_inputs, group_shape = group_layer._reshape_into_groups(
+            inputs, (10, 10, 10), tensor_input_shape
+        )
+        for i in range(len(expected_shape)):
+            assert group_shape[i] == expected_shape[i]
+
+    input_shape = (10, 10, 10)
+    expected_shape = [10, 10, 5, 2]
+    run_reshape_test(2, 5, input_shape, expected_shape)
+
+    input_shape = (10, 10, 10)
+    expected_shape = [10, 2, 5, 10]
+    run_reshape_test(1, 2, input_shape, expected_shape)
+
+    input_shape = (10, 10, 10)
+    expected_shape = [10, 10, 1, 10]
+    run_reshape_test(1, -1, input_shape, expected_shape)
+
+    input_shape = (10, 10, 10)
+    expected_shape = [10, 1, 10, 10]
+    run_reshape_test(1, 1, input_shape, expected_shape)
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class NormalizationTest(tf.test.TestCase):
-    def test_reshape(self):
-        def run_reshape_test(axis, group, input_shape, expected_shape):
-            group_layer = GroupNormalization(groups=group, axis=axis)
-            group_layer._set_number_of_groups_for_instance_norm(input_shape)
-
-            inputs = np.ones(input_shape)
-            tensor_input_shape = tf.convert_to_tensor(input_shape)
-            reshaped_inputs, group_shape = group_layer._reshape_into_groups(
-                inputs, (10, 10, 10), tensor_input_shape
-            )
-            for i in range(len(expected_shape)):
-                self.assertEqual(self.evaluate(group_shape[i]), expected_shape[i])
-
-        input_shape = (10, 10, 10)
-        expected_shape = [10, 10, 5, 2]
-        run_reshape_test(2, 5, input_shape, expected_shape)
-
-        input_shape = (10, 10, 10)
-        expected_shape = [10, 2, 5, 10]
-        run_reshape_test(1, 2, input_shape, expected_shape)
-
-        input_shape = (10, 10, 10)
-        expected_shape = [10, 10, 1, 10]
-        run_reshape_test(1, -1, input_shape, expected_shape)
-
-        input_shape = (10, 10, 10)
-        expected_shape = [10, 1, 10, 10]
-        run_reshape_test(1, 1, input_shape, expected_shape)
-
     def test_feature_input(self):
         shape = (10, 100)
         for center in [True, False]:
