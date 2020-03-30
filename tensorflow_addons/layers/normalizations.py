@@ -380,6 +380,7 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         **kwargs
     ):
         super().__init__(name=name, **kwargs)
+        self.channel_idx = channel_idx
         self.epsilon = tf.math.abs(tf.cast(epsilon, dtype=self.dtype))
         self.beta_initializer = tf.keras.initializers.get(beta_initializer)
         self.gamma_initializer = tf.keras.initializers.get(gamma_initializer)
