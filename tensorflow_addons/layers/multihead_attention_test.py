@@ -25,6 +25,28 @@ from tensorflow_addons.layers.multihead_attention import MultiHeadAttention
 from tensorflow_addons.utils import test_utils
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_output_size():
+    batch_size = 10
+    num_heads = 8
+    head_size = 12
+    output_size = 20
+
+    q = tf.random.uniform((batch_size, 5, 9), dtype=np.float32)
+    k = tf.random.uniform((batch_size, 7, 11), dtype=np.float32)
+    v = tf.random.uniform((batch_size, 7, 13), dtype=np.float32)
+
+    mha = MultiHeadAttention(
+        head_size=head_size, num_heads=num_heads, output_size=output_size
+    )
+
+    output = mha([q, k, v])
+
+    assert output.shape[0] == batch_size
+    assert output.shape[1] == q.shape[1]
+    assert output.shape[2] == output_size
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class MultiHeadAttentionTest(tf.test.TestCase):
     def test_output_shape(self):
@@ -43,26 +65,6 @@ class MultiHeadAttentionTest(tf.test.TestCase):
         self.assertEqual(output.shape[0], batch_size)
         self.assertEqual(output.shape[1], q.shape[1])
         self.assertEqual(output.shape[2], v.shape[2])
-
-    def test_output_size(self):
-        batch_size = 10
-        num_heads = 8
-        head_size = 12
-        output_size = 20
-
-        q = tf.random.uniform((batch_size, 5, 9), dtype=np.float32)
-        k = tf.random.uniform((batch_size, 7, 11), dtype=np.float32)
-        v = tf.random.uniform((batch_size, 7, 13), dtype=np.float32)
-
-        mha = MultiHeadAttention(
-            head_size=head_size, num_heads=num_heads, output_size=output_size
-        )
-
-        output = mha([q, k, v])
-
-        self.assertEqual(output.shape[0], batch_size)
-        self.assertEqual(output.shape[1], q.shape[1])
-        self.assertEqual(output.shape[2], output_size)
 
     def test_no_batch(self):
         num_heads = 8
@@ -205,37 +207,6 @@ class MultiHeadAttentionTest(tf.test.TestCase):
         self.assertEqual(output.shape[1], q.shape[1])
         self.assertEqual(output.shape[2], k.shape[2])
 
-    def test_mask(self):
-        batch_size = 10
-        num_heads = 8
-        head_size = 12
-
-        q = tf.random.uniform((batch_size, 5, 9), dtype=np.float32)
-        k = tf.random.uniform((batch_size, 7, 11), dtype=np.float32)
-        v = tf.random.uniform((batch_size, 7, 13), dtype=np.float32)
-        mask = tf.random.uniform((batch_size, num_heads, 5, 7), dtype=np.float32) > 0.1
-
-        mha = MultiHeadAttention(
-            head_size=head_size, num_heads=num_heads, return_attn_coef=True
-        )
-
-        output, attn_coef = mha([q, k, v], mask=mask)
-
-        self.assertEqual(attn_coef.shape[0], batch_size)
-        self.assertEqual(attn_coef.shape[1], num_heads)
-        self.assertEqual(attn_coef.shape[2], q.shape[1])
-        self.assertEqual(attn_coef.shape[3], k.shape[1])
-
-        self.assertEqual(output.shape[0], batch_size)
-        self.assertEqual(output.shape[1], q.shape[1])
-        self.assertEqual(output.shape[2], v.shape[2])
-
-        if tf.executing_eagerly():
-            attn_coef = attn_coef.numpy()
-            mask = mask.numpy()
-
-            self.assertTrue(((attn_coef != 0) == mask).all())
-
     def test_mask_no_batch(self):
         batch_size = 10
         num_heads = 8
@@ -335,6 +306,35 @@ class MultiHeadAttentionTest(tf.test.TestCase):
             y=np.random.randint(0, 10, size=(20,)),
             batch_size=10,
         )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_mask():
+    batch_size = 10
+    num_heads = 8
+    head_size = 12
+
+    q = tf.random.uniform((batch_size, 5, 9), dtype=np.float32)
+    k = tf.random.uniform((batch_size, 7, 11), dtype=np.float32)
+    v = tf.random.uniform((batch_size, 7, 13), dtype=np.float32)
+    mask = tf.random.uniform((batch_size, num_heads, 5, 7), dtype=np.float32) > 0.1
+
+    mha = MultiHeadAttention(
+        head_size=head_size, num_heads=num_heads, return_attn_coef=True
+    )
+
+    output, attn_coef = mha([q, k, v], mask=mask)
+
+    assert attn_coef.shape[0] == batch_size
+    assert attn_coef.shape[1] == num_heads
+    assert attn_coef.shape[2] == q.shape[1]
+    assert attn_coef.shape[3] == k.shape[1]
+
+    assert output.shape[0] == batch_size
+    assert output.shape[1] == q.shape[1]
+    assert output.shape[2] == v.shape[2]
+
+    np.testing.assert_array_equal((attn_coef != 0), mask)
 
 
 if __name__ == "__main__":
