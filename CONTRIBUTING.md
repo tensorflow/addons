@@ -244,7 +244,7 @@ If you need a custom C++/Cuda op for your test, compile your ops with
 
 ```bash
 python configure.py
-python configure.py --no-deps   # if you don't want any dependencies installed with pip
+pip install tensorflow==2.1.0 -e ./ -r tools/install_deps/pytest.txt
 bash tools/install_so_files.sh  # Linux/macos/WSL2
 sh tools/install_so_files.sh    # PowerShell
 ```
@@ -272,6 +272,7 @@ docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/ten
 
 Configure:
 ```
+python3 -m pip install tensorflow==2.1.0
 python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 
@@ -305,8 +306,9 @@ quickly, as Bazel has great support for caching and distributed testing.
 To test with Bazel:
 
 ```
-python configure.py
-pip install pytest
+python3 -m pip install tensorflow==2.1.0
+python3 configure.py
+python3 -m pip install pytest
 bazel test -c opt -k \
 --test_timeout 300,450,1200,3600 \
 --test_output=all \

@@ -31,7 +31,7 @@ jobs:
         run: |
           pip install -r tools/install_deps/pytest.txt -r tools/install_deps/tensorflow-cpu.txt -r requirements.txt
           bash tools/install_deps/bazel_linux.sh
-          python configure.py --no-deps
+          python configure.py
           bazel test -c opt -k --test_timeout 300,450,1200,3600 --test_output=errors //tensorflow_addons/...
   release-wheel:
     name: Build release wheels
@@ -53,6 +53,7 @@ jobs:
         env:
           PY_VERSION: ${{ matrix.python-version }}
           OS: ${{ runner.os }}
+          TF_VERSION: 2.1.0
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}.sh
       - uses: actions/upload-artifact@v1
