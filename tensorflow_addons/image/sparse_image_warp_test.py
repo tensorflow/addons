@@ -32,7 +32,7 @@ def test_get_boundary_locations():
     num_points_per_edge = 4
     locs = _get_boundary_locations(image_height, image_width, num_points_per_edge)
     num_points = locs.shape[0]
-    np.testing.assert_equal(num_points, 4 + 4 * num_points_per_edge)
+    assert num_points == (4 + 4 * num_points_per_edge)
     locs = [(locs[i, 0], locs[i, 1]) for i in range(num_points)]
     for i in (0, image_height - 1):
         for j in (0, image_width - 1):
@@ -40,7 +40,7 @@ def test_get_boundary_locations():
 
         for i in (2, 4, 6, 8):
             for j in (0, image_width - 1):
-                assert (i, j) in locs, "{},{} not in the locations".format(i, j)
+                assert (i, j) in locs
 
         for i in (0, image_height - 1):
             for j in (2, 4, 6, 8):
