@@ -1,3 +1,4 @@
+#syntax=docker/dockerfile:1.1.5-experimental
 FROM tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16 as make_wheel
 
 RUN apt-get update && apt-get install patchelf
@@ -13,13 +14,11 @@ RUN python$PY_VERSION -m pip install \
 COPY requirements.txt .
 RUN python$PY_VERSION -m pip install -r requirements.txt
 
-COPY tools/install_deps/finish_bazel_install.sh .
-RUN bash finish_bazel_install.sh
-
 COPY ./ /addons
 WORKDIR /addons
 ARG NIGHTLY_FLAG
-RUN bash tools/releases/release_linux.sh $PY_VERSION $NIGHTLY_FLAG
+RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
+    bash tools/releases/release_linux.sh $PY_VERSION $NIGHTLY_FLAG
 
 RUN bash tools/releases/tf_auditwheel_patch.sh
 RUN auditwheel repair --plat manylinux2010_x86_64 artifacts/*.whl
