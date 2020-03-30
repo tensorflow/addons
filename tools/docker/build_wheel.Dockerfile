@@ -1,4 +1,5 @@
 #syntax=docker/dockerfile:1.1.5-experimental
+ARG TF_VERSION
 FROM tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16 as make_wheel
 
 RUN apt-get update && apt-get install patchelf
@@ -7,8 +8,9 @@ ARG PY_VERSION
 RUN python$PY_VERSION -m pip install --upgrade pip setuptools auditwheel==2.0.0
 
 COPY tools/install_deps/ /install_deps
+ARG TF_VERSION
 RUN python$PY_VERSION -m pip install \
-        -r /install_deps/tensorflow.txt \
+        tensorflow==$TF_VERSION \
         -r /install_deps/pytest.txt
 
 COPY requirements.txt .
