@@ -456,18 +456,7 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
             if x < 0:
                 self.axis[idx] = ndims + x
 
-        axis_to_dim = {x: input_shape[x] for x in self.axis}
-        self.input_spec = tf.keras.layers.InputSpec(ndim=ndims, axes=axis_to_dim)
-
-    def _check_axis(self, axis):
-        if not isinstance(axis, list) and not isinstance(axis, int):
-            raise TypeError(
-                """Expected a list of values but got {}.""".format(type(axis))
-            )
-        else:
-            self.axis = axis
-
-        if isinstance(axis, list):
+        if isinstance(self.axis, list):
             for x in self.axis:
                 if x < 0 or x >= len(input_shape):
                     raise ValueError("Invalid axis: %d" % x)
@@ -480,6 +469,17 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
 
         else:
             self.axis = self.channel_idx = -1
+
+        axis_to_dim = {x: input_shape[x] for x in self.axis}
+        self.input_spec = tf.keras.layers.InputSpec(ndim=ndims, axes=axis_to_dim)
+
+    def _check_axis(self, axis):
+        if not isinstance(axis, list) and not isinstance(axis, int):
+            raise TypeError(
+                """Expected a list of values but got {}.""".format(type(axis))
+            )
+        else:
+            self.axis = axis
 
     def _check_if_input_shape_is_none(self, input_shape):
         dim1, dim2 = input_shape[self.axis[0]], input_shape[self.axis[1]]
