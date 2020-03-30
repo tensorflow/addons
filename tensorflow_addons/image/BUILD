@@ -142,7 +142,6 @@ py_test(
     main = "gaussian_filter_ops_test.py",
     deps = [
         ":image",
-        ":PIL",
     ],
 )
 
