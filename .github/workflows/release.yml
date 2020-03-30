@@ -52,6 +52,7 @@ jobs:
       - name: Build wheels
         if: |
           (matrix.os != 'macos-latest' || matrix.py-version != '3.8')
+          && (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
           && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc1')
           && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
         env:
@@ -63,6 +64,7 @@ jobs:
       - uses: actions/upload-artifact@v1
         if: |
           (matrix.os != 'macos-latest' || matrix.py-version != '3.8')
+          && (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
           && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc1')
           && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
         with:
@@ -85,6 +87,7 @@ jobs:
       - uses: actions/download-artifact@v1
         if: |
           (matrix.os != 'macos-latest' || matrix.py-version != '3.8')
+          && (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
           && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc1')
           && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
         with:
@@ -93,6 +96,7 @@ jobs:
       - name: Test wheel
         if: |
           (matrix.os != 'macos-latest' || matrix.py-version != '3.8')
+          && (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
           && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc1')
           && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
         env:
