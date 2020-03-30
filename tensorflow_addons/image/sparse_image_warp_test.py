@@ -76,7 +76,7 @@ def test_get_boundary_locations():
     locs = [(locs[i, 0], locs[i, 1]) for i in range(num_points)]
     for i in (0, image_height - 1):
         for j in (0, image_width - 1):
-            assert (i, j) in locs, "{},{} not in the locations".format(i, j)
+            assert (i, j) in locs
 
         for i in (2, 4, 6, 8):
             for j in (0, image_width - 1):
@@ -84,7 +84,7 @@ def test_get_boundary_locations():
 
         for i in (0, image_height - 1):
             for j in (2, 4, 6, 8):
-                assert (i, j) in locs, "{},{} not in the locations".format(i, j)
+                assert (i, j) in locs
 
 
 @test_utils.run_all_in_graph_and_eager_modes
