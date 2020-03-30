@@ -217,18 +217,6 @@ class NormalizationTest(tf.test.TestCase):
         negativ = weights[weights < 0.0]
         self.assertTrue(len(negativ) == 0)
 
-    def test_regularizations(self):
-        layer = GroupNormalization(
-            gamma_regularizer="l1", beta_regularizer="l1", groups=4, axis=2
-        )
-        layer.build((None, 4, 4))
-        self.assertEqual(len(layer.losses), 2)
-        max_norm = tf.keras.constraints.max_norm
-        layer = GroupNormalization(gamma_constraint=max_norm, beta_constraint=max_norm)
-        layer.build((None, 3, 4))
-        self.assertEqual(layer.gamma.constraint, max_norm)
-        self.assertEqual(layer.beta.constraint, max_norm)
-
     def test_groupnorm_conv(self):
         # Check if Axis is working for CONV nets
         # Testing for 1 == LayerNorm, 5 == GroupNorm, -1 == InstanceNorm
@@ -246,21 +234,37 @@ class NormalizationTest(tf.test.TestCase):
             model.fit(x=x, y=y, epochs=1)
             self.assertTrue(hasattr(model.layers[0], "gamma"))
 
-    def test_groupnorm_correctness_1d(self):
-        np.random.seed(0x2020)
-        model = tf.keras.models.Sequential()
-        norm = GroupNormalization(input_shape=(10,), groups=2)
-        model.add(norm)
-        model.compile(loss="mse", optimizer="rmsprop")
 
-        x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 10))
-        model.fit(x, x, epochs=5, verbose=0)
-        out = model.predict(x)
-        out -= self.evaluate(norm.beta)
-        out /= self.evaluate(norm.gamma)
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_regularizations():
+    layer = GroupNormalization(
+        gamma_regularizer="l1", beta_regularizer="l1", groups=4, axis=2
+    )
+    layer.build((None, 4, 4))
+    assert len(layer.losses) == 2
+    max_norm = tf.keras.constraints.max_norm
+    layer = GroupNormalization(gamma_constraint=max_norm, beta_constraint=max_norm)
+    layer.build((None, 3, 4))
+    assert layer.gamma.constraint == max_norm
+    assert layer.beta.constraint == max_norm
 
-        self.assertAllClose(out.mean(), 0.0, atol=1e-1)
-        self.assertAllClose(out.std(), 1.0, atol=1e-1)
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_groupnorm_correctness_1d():
+    np.random.seed(0x2020)
+    model = tf.keras.models.Sequential()
+    norm = GroupNormalization(input_shape=(10,), groups=2)
+    model.add(norm)
+    model.compile(loss="mse", optimizer="rmsprop")
+
+    x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 10))
+    model.fit(x, x, epochs=5, verbose=0)
+    out = model.predict(x)
+    out -= norm.beta.numpy()
+    out /= norm.gamma.numpy()
+
+    np.testing.assert_allclose(out.mean(), 0.0, atol=1e-1)
+    np.testing.assert_allclose(out.std(), 1.0, atol=1e-1)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
