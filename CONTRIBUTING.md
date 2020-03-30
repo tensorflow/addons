@@ -308,7 +308,7 @@ To test with Bazel:
 ```
 python3 -m pip install tensorflow==2.1.0
 python3 configure.py
-python3-m pip install pytest
+python3 -m pip install pytest
 bazel test -c opt -k \
 --test_timeout 300,450,1200,3600 \
 --test_output=all \
