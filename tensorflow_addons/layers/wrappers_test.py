@@ -16,7 +16,6 @@
 import sys
 import os
 import tempfile
-from absl.testing import parameterized
 
 import pytest
 import numpy as np
@@ -69,46 +68,54 @@ def test_with_data_init_is_true():
     )
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
-    def test_non_layer(self):
-        images = tf.random.uniform((2, 4, 3))
-        with self.assertRaises(AssertionError):
-            wrappers.WeightNormalization(images)
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_non_layer():
+    images = tf.random.uniform((2, 4, 3))
+    with pytest.raises(AssertionError):
+        wrappers.WeightNormalization(images)
 
-    def test_non_kernel_layer(self):
-        images = tf.random.uniform((2, 2, 2))
-        with self.assertRaisesRegexp(ValueError, "contains a `kernel`"):
-            non_kernel_layer = tf.keras.layers.MaxPooling2D(2, 2)
-            wn_wrapper = wrappers.WeightNormalization(non_kernel_layer)
-            wn_wrapper(images)
 
-    def test_with_time_dist(self):
-        batch_shape = (8, 8, 16, 16, 3)
-        inputs = tf.keras.layers.Input(batch_shape=batch_shape)
-        a = tf.keras.layers.Conv2D(3, 3)
-        b = wrappers.WeightNormalization(a)
-        out = tf.keras.layers.TimeDistributed(b)(inputs)
-        tf.keras.Model(inputs, out)
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_non_kernel_layer():
+    images = tf.random.uniform((2, 2, 2))
+    with pytest.raises(ValueError, match="contains a `kernel`"):
+        non_kernel_layer = tf.keras.layers.MaxPooling2D(2, 2)
+        wn_wrapper = wrappers.WeightNormalization(non_kernel_layer)
+        wn_wrapper(images)
 
-    @parameterized.named_parameters(
-        ["Dense", lambda: tf.keras.layers.Dense(1), False],
-        ["SimpleRNN", lambda: tf.keras.layers.SimpleRNN(1), True],
-        ["Conv2D", lambda: tf.keras.layers.Conv2D(3, 1), False],
-        ["LSTM", lambda: tf.keras.layers.LSTM(1), True],
-    )
-    def test_serialization(self, base_layer, rnn):
-        base_layer = base_layer()
-        wn_layer = wrappers.WeightNormalization(base_layer, not rnn)
-        new_wn_layer = tf.keras.layers.deserialize(tf.keras.layers.serialize(wn_layer))
-        self.assertEqual(wn_layer.data_init, new_wn_layer.data_init)
-        self.assertEqual(wn_layer.is_rnn, new_wn_layer.is_rnn)
-        self.assertEqual(wn_layer.is_rnn, rnn)
-        if not isinstance(base_layer, tf.keras.layers.LSTM):
-            # Issue with LSTM serialization, check with TF-core
-            # Before serialization: tensorflow.python.keras.layers.recurrent_v2.LSTM
-            # After serialization: tensorflow.python.keras.layers.recurrent.LSTM
-            self.assertTrue(isinstance(new_wn_layer.layer, base_layer.__class__))
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_with_time_dist():
+    batch_shape = (8, 8, 16, 16, 3)
+    inputs = tf.keras.layers.Input(batch_shape=batch_shape)
+    a = tf.keras.layers.Conv2D(3, 3)
+    b = wrappers.WeightNormalization(a)
+    out = tf.keras.layers.TimeDistributed(b)(inputs)
+    tf.keras.Model(inputs, out)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize(
+    "base_layer, rnn",
+    [
+        (lambda: tf.keras.layers.Dense(1), False),
+        (lambda: tf.keras.layers.SimpleRNN(1), True),
+        (lambda: tf.keras.layers.Conv2D(3, 1), False),
+        (lambda: tf.keras.layers.LSTM(1), True),
+    ],
+)
+def test_serialization(base_layer, rnn):
+    base_layer = base_layer()
+    wn_layer = wrappers.WeightNormalization(base_layer, not rnn)
+    new_wn_layer = tf.keras.layers.deserialize(tf.keras.layers.serialize(wn_layer))
+    assert wn_layer.data_init == new_wn_layer.data_init
+    assert wn_layer.is_rnn == new_wn_layer.is_rnn
+    assert wn_layer.is_rnn == rnn
+    if not isinstance(base_layer, tf.keras.layers.LSTM):
+        # Issue with LSTM serialization, check with TF-core
+        # Before serialization: tensorflow.python.keras.layers.recurrent_v2.LSTM
+        # After serialization: tensorflow.python.keras.layers.recurrent.LSTM
+        assert isinstance(new_wn_layer.layer, base_layer.__class__)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
