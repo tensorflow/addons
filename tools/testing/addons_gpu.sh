@@ -31,7 +31,7 @@ export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 
 # we use only "python3" because we can't run gpu tests on Windows
 # so no need to make it work with "python" like in the cpu tests.
-python3 -m pip install -r tools/install_deps/pytest.txt
+python3 -m pip install -r tools/install_deps/pytest.txt -e ./
 python3 ./configure.py
 cat ./.bazelrc
 bash tools/install_so_files.sh

@@ -38,37 +38,60 @@ def test_groups_after_init():
     assert layers.groups == -1
 
 
+def test_weights():
+    # Check if weights get initialized correctly
+    layer = GroupNormalization(groups=1, scale=False, center=False)
+    layer.build((None, 3, 4))
+    assert len(layer.trainable_weights) == 0
+    assert len(layer.weights) == 0
+
+    layer = InstanceNormalization()
+    layer.build((None, 3, 4))
+    assert len(layer.trainable_weights) == 2
+    assert len(layer.weights) == 2
+
+
+def test_apply_normalization():
+    input_shape = (1, 4)
+    reshaped_inputs = tf.constant([[[2.0, 2.0], [3.0, 3.0]]])
+    layer = GroupNormalization(groups=2, axis=1, scale=False, center=False)
+    normalized_input = layer._apply_normalization(reshaped_inputs, input_shape)
+    np.testing.assert_equal(normalized_input, np.array([[[0.0, 0.0], [0.0, 0.0]]]))
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_reshape():
+    def run_reshape_test(axis, group, input_shape, expected_shape):
+        group_layer = GroupNormalization(groups=group, axis=axis)
+        group_layer._set_number_of_groups_for_instance_norm(input_shape)
+
+        inputs = np.ones(input_shape)
+        tensor_input_shape = tf.convert_to_tensor(input_shape)
+        reshaped_inputs, group_shape = group_layer._reshape_into_groups(
+            inputs, (10, 10, 10), tensor_input_shape
+        )
+        for i in range(len(expected_shape)):
+            assert group_shape[i] == expected_shape[i]
+
+    input_shape = (10, 10, 10)
+    expected_shape = [10, 10, 5, 2]
+    run_reshape_test(2, 5, input_shape, expected_shape)
+
+    input_shape = (10, 10, 10)
+    expected_shape = [10, 2, 5, 10]
+    run_reshape_test(1, 2, input_shape, expected_shape)
+
+    input_shape = (10, 10, 10)
+    expected_shape = [10, 10, 1, 10]
+    run_reshape_test(1, -1, input_shape, expected_shape)
+
+    input_shape = (10, 10, 10)
+    expected_shape = [10, 1, 10, 10]
+    run_reshape_test(1, 1, input_shape, expected_shape)
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class NormalizationTest(tf.test.TestCase):
-    def test_reshape(self):
-        def run_reshape_test(axis, group, input_shape, expected_shape):
-            group_layer = GroupNormalization(groups=group, axis=axis)
-            group_layer._set_number_of_groups_for_instance_norm(input_shape)
-
-            inputs = np.ones(input_shape)
-            tensor_input_shape = tf.convert_to_tensor(input_shape)
-            reshaped_inputs, group_shape = group_layer._reshape_into_groups(
-                inputs, (10, 10, 10), tensor_input_shape
-            )
-            for i in range(len(expected_shape)):
-                self.assertEqual(self.evaluate(group_shape[i]), expected_shape[i])
-
-        input_shape = (10, 10, 10)
-        expected_shape = [10, 10, 5, 2]
-        run_reshape_test(2, 5, input_shape, expected_shape)
-
-        input_shape = (10, 10, 10)
-        expected_shape = [10, 2, 5, 10]
-        run_reshape_test(1, 2, input_shape, expected_shape)
-
-        input_shape = (10, 10, 10)
-        expected_shape = [10, 10, 1, 10]
-        run_reshape_test(1, -1, input_shape, expected_shape)
-
-        input_shape = (10, 10, 10)
-        expected_shape = [10, 1, 10, 10]
-        run_reshape_test(1, 1, input_shape, expected_shape)
-
     def test_feature_input(self):
         shape = (10, 100)
         for center in [True, False]:
@@ -157,36 +180,6 @@ class NormalizationTest(tf.test.TestCase):
         model.fit(x=input_batch, y=output_batch, epochs=1, batch_size=1)
         return model
 
-    def test_weights(self):
-        # Check if weights get initialized correctly
-        layer = GroupNormalization(groups=1, scale=False, center=False)
-        layer.build((None, 3, 4))
-        self.assertEqual(len(layer.trainable_weights), 0)
-        self.assertEqual(len(layer.weights), 0)
-
-        layer = InstanceNormalization()
-        layer.build((None, 3, 4))
-        self.assertEqual(len(layer.trainable_weights), 2)
-        self.assertEqual(len(layer.weights), 2)
-
-    def test_apply_normalization(self):
-        input_shape = (1, 4)
-        reshaped_inputs = tf.constant([[[2.0, 2.0], [3.0, 3.0]]])
-        layer = GroupNormalization(groups=2, axis=1, scale=False, center=False)
-        normalized_input = layer._apply_normalization(reshaped_inputs, input_shape)
-        self.assertTrue(
-            np.all(
-                np.equal(
-                    self.evaluate(normalized_input),
-                    np.array([[[0.0, 0.0], [0.0, 0.0]]]),
-                )
-            )
-        )
-
-    def test_axis_error(self):
-        with self.assertRaises(ValueError):
-            GroupNormalization(axis=0)
-
     def test_groupnorm_flat(self):
         # Check basic usage of groupnorm_flat
         # Testing for 1 == LayerNorm, 16 == GroupNorm, -1 == InstanceNorm
@@ -222,93 +215,108 @@ class NormalizationTest(tf.test.TestCase):
         negativ = weights[weights < 0.0]
         self.assertTrue(len(negativ) == 0)
 
-    def test_regularizations(self):
-        layer = GroupNormalization(
-            gamma_regularizer="l1", beta_regularizer="l1", groups=4, axis=2
-        )
-        layer.build((None, 4, 4))
-        self.assertEqual(len(layer.losses), 2)
-        max_norm = tf.keras.constraints.max_norm
-        layer = GroupNormalization(gamma_constraint=max_norm, beta_constraint=max_norm)
-        layer.build((None, 3, 4))
-        self.assertEqual(layer.gamma.constraint, max_norm)
-        self.assertEqual(layer.beta.constraint, max_norm)
 
-    def test_groupnorm_conv(self):
-        # Check if Axis is working for CONV nets
-        # Testing for 1 == LayerNorm, 5 == GroupNorm, -1 == InstanceNorm
-        np.random.seed(0x2020)
-        groups = [-1, 5, 1]
-        for i in groups:
-            model = tf.keras.models.Sequential()
-            model.add(GroupNormalization(axis=1, groups=i, input_shape=(20, 20, 3)))
-            model.add(tf.keras.layers.Conv2D(5, (1, 1), padding="same"))
-            model.add(tf.keras.layers.Flatten())
-            model.add(tf.keras.layers.Dense(1, activation="softmax"))
-            model.compile(optimizer=tf.keras.optimizers.RMSprop(0.01), loss="mse")
-            x = np.random.randint(1000, size=(10, 20, 20, 3))
-            y = np.random.randint(1000, size=(10, 1))
-            model.fit(x=x, y=y, epochs=1)
-            self.assertTrue(hasattr(model.layers[0], "gamma"))
+def test_axis_error():
+    with pytest.raises(ValueError):
+        GroupNormalization(axis=0)
 
-    def test_groupnorm_correctness_1d(self):
-        np.random.seed(0x2020)
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_groupnorm_conv():
+    # Check if Axis is working for CONV nets
+    # Testing for 1 == LayerNorm, 5 == GroupNorm, -1 == InstanceNorm
+    np.random.seed(0x2020)
+    groups = [-1, 5, 1]
+    for i in groups:
         model = tf.keras.models.Sequential()
-        norm = GroupNormalization(input_shape=(10,), groups=2)
-        model.add(norm)
-        model.compile(loss="mse", optimizer="rmsprop")
+        model.add(GroupNormalization(axis=1, groups=i, input_shape=(20, 20, 3)))
+        model.add(tf.keras.layers.Conv2D(5, (1, 1), padding="same"))
+        model.add(tf.keras.layers.Flatten())
+        model.add(tf.keras.layers.Dense(1, activation="softmax"))
+        model.compile(optimizer=tf.keras.optimizers.RMSprop(0.01), loss="mse")
+        x = np.random.randint(1000, size=(10, 20, 20, 3))
+        y = np.random.randint(1000, size=(10, 1))
+        model.fit(x=x, y=y, epochs=1)
+        assert hasattr(model.layers[0], "gamma")
 
-        x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 10))
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_regularizations():
+    layer = GroupNormalization(
+        gamma_regularizer="l1", beta_regularizer="l1", groups=4, axis=2
+    )
+    layer.build((None, 4, 4))
+    assert len(layer.losses) == 2
+    max_norm = tf.keras.constraints.max_norm
+    layer = GroupNormalization(gamma_constraint=max_norm, beta_constraint=max_norm)
+    layer.build((None, 3, 4))
+    assert layer.gamma.constraint == max_norm
+    assert layer.beta.constraint == max_norm
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_groupnorm_correctness_1d():
+    np.random.seed(0x2020)
+    model = tf.keras.models.Sequential()
+    norm = GroupNormalization(input_shape=(10,), groups=2)
+    model.add(norm)
+    model.compile(loss="mse", optimizer="rmsprop")
+
+    x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 10))
+    model.fit(x, x, epochs=5, verbose=0)
+    out = model.predict(x)
+    out -= norm.beta.numpy()
+    out /= norm.gamma.numpy()
+
+    np.testing.assert_allclose(out.mean(), 0.0, atol=1e-1)
+    np.testing.assert_allclose(out.std(), 1.0, atol=1e-1)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_groupnorm_2d_different_groups():
+    np.random.seed(0x2020)
+    groups = [2, 1, 10]
+    for i in groups:
+        model = tf.keras.models.Sequential()
+        norm = GroupNormalization(axis=1, groups=i, input_shape=(10, 3))
+        model.add(norm)
+        # centered and variance are 5.0 and 10.0, respectively
+        model.compile(loss="mse", optimizer="rmsprop")
+        x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 10, 3))
         model.fit(x, x, epochs=5, verbose=0)
         out = model.predict(x)
-        out -= self.evaluate(norm.beta)
-        out /= self.evaluate(norm.gamma)
+        out -= np.reshape(norm.beta.numpy(), (1, 10, 1))
+        out /= np.reshape(norm.gamma.numpy(), (1, 10, 1))
 
-        self.assertAllClose(out.mean(), 0.0, atol=1e-1)
-        self.assertAllClose(out.std(), 1.0, atol=1e-1)
-
-    def test_groupnorm_2d_different_groups(self):
-        np.random.seed(0x2020)
-        groups = [2, 1, 10]
-        for i in groups:
-            model = tf.keras.models.Sequential()
-            norm = GroupNormalization(axis=1, groups=i, input_shape=(10, 3))
-            model.add(norm)
-            # centered and variance are 5.0 and 10.0, respectively
-            model.compile(loss="mse", optimizer="rmsprop")
-            x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 10, 3))
-            model.fit(x, x, epochs=5, verbose=0)
-            out = model.predict(x)
-            out -= np.reshape(self.evaluate(norm.beta), (1, 10, 1))
-            out /= np.reshape(self.evaluate(norm.gamma), (1, 10, 1))
-
-            self.assertAllClose(
-                out.mean(axis=(0, 1), dtype=np.float32), (0.0, 0.0, 0.0), atol=1e-1
-            )
-            self.assertAllClose(
-                out.std(axis=(0, 1), dtype=np.float32), (1.0, 1.0, 1.0), atol=1e-1
-            )
-
-    def test_groupnorm_convnet(self):
-        np.random.seed(0x2020)
-        model = tf.keras.models.Sequential()
-        norm = GroupNormalization(axis=1, input_shape=(3, 4, 4), groups=3)
-        model.add(norm)
-        model.compile(loss="mse", optimizer="sgd")
-
-        # centered = 5.0, variance  = 10.0
-        x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 3, 4, 4))
-        model.fit(x, x, epochs=4, verbose=0)
-        out = model.predict(x)
-        out -= np.reshape(self.evaluate(norm.beta), (1, 3, 1, 1))
-        out /= np.reshape(self.evaluate(norm.gamma), (1, 3, 1, 1))
-
-        self.assertAllClose(
-            np.mean(out, axis=(0, 2, 3), dtype=np.float32), (0.0, 0.0, 0.0), atol=1e-1
+        np.testing.assert_allclose(
+            out.mean(axis=(0, 1), dtype=np.float32), (0.0, 0.0, 0.0), atol=1e-1
         )
-        self.assertAllClose(
-            np.std(out, axis=(0, 2, 3), dtype=np.float32), (1.0, 1.0, 1.0), atol=1e-1
+        np.testing.assert_allclose(
+            out.std(axis=(0, 1), dtype=np.float32), (1.0, 1.0, 1.0), atol=1e-1
         )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_groupnorm_convnet():
+    np.random.seed(0x2020)
+    model = tf.keras.models.Sequential()
+    norm = GroupNormalization(axis=1, input_shape=(3, 4, 4), groups=3)
+    model.add(norm)
+    model.compile(loss="mse", optimizer="sgd")
+
+    # centered = 5.0, variance  = 10.0
+    x = np.random.normal(loc=5.0, scale=10.0, size=(1000, 3, 4, 4))
+    model.fit(x, x, epochs=4, verbose=0)
+    out = model.predict(x)
+    out -= np.reshape(norm.beta.numpy(), (1, 3, 1, 1))
+    out /= np.reshape(norm.gamma.numpy(), (1, 3, 1, 1))
+
+    np.testing.assert_allclose(
+        np.mean(out, axis=(0, 2, 3), dtype=np.float32), (0.0, 0.0, 0.0), atol=1e-1
+    )
+    np.testing.assert_allclose(
+        np.std(out, axis=(0, 2, 3), dtype=np.float32), (1.0, 1.0, 1.0), atol=1e-1
+    )
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
