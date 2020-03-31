@@ -163,57 +163,59 @@ class NormalizationTest(tf.test.TestCase):
             self.evaluate(tf.reduce_mean(output_test - outputs)), 0, places=7
         )
 
-    def _create_and_fit_Sequential_model(self, layer, shape):
-        # Helperfunction for quick evaluation
-        np.random.seed(0x2020)
-        model = tf.keras.models.Sequential()
-        model.add(layer)
-        model.add(tf.keras.layers.Dense(32))
-        model.add(tf.keras.layers.Dense(1))
 
-        model.compile(
-            optimizer=tf.keras.optimizers.RMSprop(0.01), loss="categorical_crossentropy"
-        )
-        layer_shape = (10,) + shape
-        input_batch = np.random.rand(*layer_shape)
-        output_batch = np.random.rand(*(10, 1))
-        model.fit(x=input_batch, y=output_batch, epochs=1, batch_size=1)
-        return model
+def _create_and_fit_Sequential_model(layer, shape):
+    # Helperfunction for quick evaluation
+    np.random.seed(0x2020)
+    model = tf.keras.models.Sequential()
+    model.add(layer)
+    model.add(tf.keras.layers.Dense(32))
+    model.add(tf.keras.layers.Dense(1))
 
-    def test_groupnorm_flat(self):
-        # Check basic usage of groupnorm_flat
-        # Testing for 1 == LayerNorm, 16 == GroupNorm, -1 == InstanceNorm
+    model.compile(
+        optimizer=tf.keras.optimizers.RMSprop(0.01), loss="categorical_crossentropy"
+    )
+    layer_shape = (10,) + shape
+    input_batch = np.random.rand(*layer_shape)
+    output_batch = np.random.rand(*(10, 1))
+    model.fit(x=input_batch, y=output_batch, epochs=1, batch_size=1)
+    return model
 
-        groups = [-1, 16, 1]
-        shape = (64,)
-        for i in groups:
-            model = self._create_and_fit_Sequential_model(
-                GroupNormalization(groups=i), shape
-            )
-            self.assertTrue(hasattr(model.layers[0], "gamma"))
-            self.assertTrue(hasattr(model.layers[0], "beta"))
 
-    def test_instancenorm_flat(self):
-        # Check basic usage of instancenorm
-        model = self._create_and_fit_Sequential_model(InstanceNormalization(), (64,))
-        self.assertTrue(hasattr(model.layers[0], "gamma"))
-        self.assertTrue(hasattr(model.layers[0], "beta"))
+def test_groupnorm_flat():
+    # Check basic usage of groupnorm_flat
+    # Testing for 1 == LayerNorm, 16 == GroupNorm, -1 == InstanceNorm
 
-    def test_initializer(self):
-        # Check if the initializer for gamma and beta is working correctly
-        layer = GroupNormalization(
-            groups=32,
-            beta_initializer="random_normal",
-            beta_constraint="NonNeg",
-            gamma_initializer="random_normal",
-            gamma_constraint="NonNeg",
-        )
+    groups = [-1, 16, 1]
+    shape = (64,)
+    for i in groups:
+        model = _create_and_fit_Sequential_model(GroupNormalization(groups=i), shape)
+        assert hasattr(model.layers[0], "gamma")
+        assert hasattr(model.layers[0], "beta")
 
-        model = self._create_and_fit_Sequential_model(layer, (64,))
 
-        weights = np.array(model.layers[0].get_weights())
-        negativ = weights[weights < 0.0]
-        self.assertTrue(len(negativ) == 0)
+def test_instancenorm_flat():
+    # Check basic usage of instancenorm
+    model = _create_and_fit_Sequential_model(InstanceNormalization(), (64,))
+    assert hasattr(model.layers[0], "gamma")
+    assert hasattr(model.layers[0], "beta")
+
+
+def test_initializer():
+    # Check if the initializer for gamma and beta is working correctly
+    layer = GroupNormalization(
+        groups=32,
+        beta_initializer="random_normal",
+        beta_constraint="NonNeg",
+        gamma_initializer="random_normal",
+        gamma_constraint="NonNeg",
+    )
+
+    model = _create_and_fit_Sequential_model(layer, (64,))
+
+    weights = np.array(model.layers[0].get_weights())
+    negativ = weights[weights < 0.0]
+    assert len(negativ) == 0
 
 
 def test_axis_error():
