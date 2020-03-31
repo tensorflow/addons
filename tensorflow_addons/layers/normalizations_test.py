@@ -180,10 +180,6 @@ class NormalizationTest(tf.test.TestCase):
         model.fit(x=input_batch, y=output_batch, epochs=1, batch_size=1)
         return model
 
-    def test_axis_error(self):
-        with self.assertRaises(ValueError):
-            GroupNormalization(axis=0)
-
     def test_groupnorm_flat(self):
         # Check basic usage of groupnorm_flat
         # Testing for 1 == LayerNorm, 16 == GroupNorm, -1 == InstanceNorm
@@ -219,22 +215,29 @@ class NormalizationTest(tf.test.TestCase):
         negativ = weights[weights < 0.0]
         self.assertTrue(len(negativ) == 0)
 
-    def test_groupnorm_conv(self):
-        # Check if Axis is working for CONV nets
-        # Testing for 1 == LayerNorm, 5 == GroupNorm, -1 == InstanceNorm
-        np.random.seed(0x2020)
-        groups = [-1, 5, 1]
-        for i in groups:
-            model = tf.keras.models.Sequential()
-            model.add(GroupNormalization(axis=1, groups=i, input_shape=(20, 20, 3)))
-            model.add(tf.keras.layers.Conv2D(5, (1, 1), padding="same"))
-            model.add(tf.keras.layers.Flatten())
-            model.add(tf.keras.layers.Dense(1, activation="softmax"))
-            model.compile(optimizer=tf.keras.optimizers.RMSprop(0.01), loss="mse")
-            x = np.random.randint(1000, size=(10, 20, 20, 3))
-            y = np.random.randint(1000, size=(10, 1))
-            model.fit(x=x, y=y, epochs=1)
-            self.assertTrue(hasattr(model.layers[0], "gamma"))
+
+def test_axis_error():
+    with pytest.raises(ValueError):
+        GroupNormalization(axis=0)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_groupnorm_conv():
+    # Check if Axis is working for CONV nets
+    # Testing for 1 == LayerNorm, 5 == GroupNorm, -1 == InstanceNorm
+    np.random.seed(0x2020)
+    groups = [-1, 5, 1]
+    for i in groups:
+        model = tf.keras.models.Sequential()
+        model.add(GroupNormalization(axis=1, groups=i, input_shape=(20, 20, 3)))
+        model.add(tf.keras.layers.Conv2D(5, (1, 1), padding="same"))
+        model.add(tf.keras.layers.Flatten())
+        model.add(tf.keras.layers.Dense(1, activation="softmax"))
+        model.compile(optimizer=tf.keras.optimizers.RMSprop(0.01), loss="mse")
+        x = np.random.randint(1000, size=(10, 20, 20, 3))
+        y = np.random.randint(1000, size=(10, 1))
+        model.fit(x=x, y=y, epochs=1)
+        assert hasattr(model.layers[0], "gamma")
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
