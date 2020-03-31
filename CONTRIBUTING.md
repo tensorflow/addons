@@ -349,6 +349,113 @@ in [tools/testing/check_typing_info.py](tools/testing/check_typing_info.py).
 
 Help is welcome to make this TODO list smaller!
 
+## Writing tests
+
+If you add a new feature, you should add tests to ensure that new code changes 
+doesn't introduce bugs.
+
+If you fix a bug, you should add a tests which fails before your patch and passes 
+after your patch.
+
+We use [Pytest](https://docs.pytest.org/en/latest/) to write tests. We encourage you
+to read the documentation, but you'll find a quick summary here:
+
+* If you're testing code written in `xxx.py`, your tests should be in `xxx_test.py`.
+* In `xxx_test.py`, all functions starting with `test_` are collected and run by Pytest.
+* Tests are run with the TF 2.x behavior, meaning eager mode my default, unless you use a `tf.function`.
+* Ensure something is working by using `assert`. For example: `assert my_variable in my_list`.
+* When comparing numpy arrays, use 
+the [testing module of numpy](https://docs.scipy.org/doc/numpy/reference/routines.testing.html).
+Note that since TensorFlow ops often run with float32 of float16, you might need to 
+increase the default `atol` and `rtol`. You can take a look at [the default values used 
+in the TensorFlow repository](https://www.tensorflow.org/api_docs/python/tf/test/TestCase#assertAllClose).
+* Prefer using your code's public API when writing tests. It ensures future refactoring is possible
+without changing the tests.
+* When testing multiple configurations, prefer using
+ [parametrize](https://docs.pytest.org/en/latest/parametrize.html) rather than for 
+ loops for a clearer error report.
+* Running all the tests in a single file should take no more than 5 seconds. You very 
+rarely need to do heavy computation to test things. Your tests should be small and 
+focused on a specific feature/parameter.
+* Don't be afraid to write too many tests. This is fine as long as they're fast.
+
+
+### Fixtures and assert functions:
+We provide [fixtures](https://docs.pytest.org/en/latest/fixture.html) to help your write 
+your tests as well as helper functions. Those can be found in 
+[test_utils.py](https://github.com/tensorflow/addons/blob/master/tensorflow_addons/utils/test_utils.py).
+
+#### maybe_run_functions_eagerly
+
+Will run your test function twice, once normally and once with 
+`tf.config.experimental_run_functions_eagerly(True)`. To use it:
+
+```python
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_something():
+    assert ...== ...
+```
+
+##### When to use it?
+
+You should use it only if you are using `tf.function` and running some control flow
+on Tensors, `if` or `for` for example. Or with `TensorArray`. In short, when the 
+ conversion to graph is not trivial. No need to use it on all
+your tests. Having fast tests is important.
+
+#### cpu_and_gpu
+
+Will run your test function twice, once with `with tf.device("/device:CPU:0")` and 
+once with `with tf.device("/device:GPU:0")`. If a GPU is not present on the system, 
+the second test is skipped. To use it:
+
+```python
+@pytest.mark.usefixtures("cpu_and_gpu")
+def test_something():
+    assert ...== ...
+```
+
+##### When to use it?
+
+When you test custom CUDA code. We can expect existing TensorFlow ops to behave the same 
+on CPU and GPU.
+
+#### data_format
+
+Will run your test function twice, once with `data_format` being `channels_first` and 
+once with `data_format` being `channels_last`. To use it:
+
+```python
+def test_something(data_format):
+    assert my_function_to_test(..., data_format=data_format) == ...
+```
+
+##### When to use it?
+
+When your function has a `data_format` argument. You'll want to make sure your 
+function behaves correctly with both data format.
+
+
+#### assert_allclose_according_to_type
+
+Is the same as [tf.test.TestCase.assertAllCloseAccordingToType](https://www.tensorflow.org/api_docs/python/tf/test/TestCase#assertAllCloseAccordingToType)
+but doesn't require any subclassing to be done. Can be used as a plain function. To use it:
+
+```
+from tensorflow_addons.utils import test_utils
+
+def test_something():
+    expected = ...
+    computed = my_function_i_just_wrote(...).numpy()
+    test_utils.assert_allclose_according_to_type(computed, expected)
+```
+
+##### When to use it?
+
+When you want to test your function with multiple dtypes. Different dtypes requires 
+different tolerances when comparing values.
+
+
 ## Code Reviews
 
 All submissions, including submissions by project members, require review. We
