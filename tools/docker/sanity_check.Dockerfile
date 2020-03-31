@@ -29,7 +29,7 @@ RUN --mount=type=cache,id=cache_pip,target=/root/.cache/pip \
 
 COPY ./ /addons
 RUN pip install --no-deps -e /addons
-RUN python /addons/tools/testing/check_typing_info.py
+RUN pytest -v /addons/tools/testing/
 RUN touch /ok.txt
 
 # -------------------------------
