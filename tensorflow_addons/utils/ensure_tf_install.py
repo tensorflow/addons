@@ -30,7 +30,7 @@ MAX_TF_VERSION = "2.3.0"
 def _check_tf_version():
     """Warn the user if the version of TensorFlow used is not supported.
 
-    This is not a check for ABI compatibility. This check only ensure that
+    This is not a check for custom ops compatibility. This check only ensure that
     we support this TensorFlow version if the user uses only Addons' Python code.
     """
 
