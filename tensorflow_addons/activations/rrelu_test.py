@@ -72,7 +72,3 @@ def test_theoretical_gradients(dtype, training):
     test_utils.assert_allclose_according_to_type(
         theoretical, numerical, rtol=5e-4, atol=5e-4
     )
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

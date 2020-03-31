@@ -290,7 +290,3 @@ def test_gradient_against_estimate(dtype):
         lambda logits: sparsemax(logits), [z], delta=1e-6
     )
     np.testing.assert_allclose(jacob_sym, jacob_num)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

@@ -42,7 +42,3 @@ def verify_funcs_are_equivalent(dtype):
     grad_native = t.gradient(y_native, x)
     grad_py = t.gradient(y_py, x)
     test_utils.assert_allclose_according_to_type(grad_native, grad_py)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
