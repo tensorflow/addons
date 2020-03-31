@@ -196,6 +196,9 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
         differ significantly from a standard optimizer because it is a wrapper for multiple optimizers each with
         their own learning rate, hyper parameters, and slots.
 
+        This optimizer does not support learning rate schedules or changes to the learning rate multiplier
+        during the training process.
+
         Example usage
             model = tf.keras.Sequential()
             model.add(tf.keras.applications.resnet.ResNet50(include_top = False, pooling = 'avg'))
@@ -233,7 +236,7 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
             base_optimizer, tf.keras.optimizers.Optimizer
         ), "Base optimizer must be a class that inherits from tf.keras.optimizers.Optimizer"
 
-        # assume that users will follow the general guidelines and init thier opts within a dist scope.
+        # assume that users will follow the general guidelines and init their opts within a dist scope.
         if tf.distribute.has_strategy():
             logging.warning(
                 """The discriminative layer optimizer may not behave as expected
@@ -250,11 +253,16 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
         self.kwargs = kwargs
 
         # Find unique lr_mult.
-        variable_groups = {var.lr_mult: None for var in model.trainable_variables}
+        unique_lr_mults = set([var.lr_mult for var in model.trainable_variables])
+
+        # Store variables into their variable groups to doublecheck that lr mults for variables don't change.
+        self.variable_groups = {lr_mult: [] for lr_mult in unique_lr_mults}
+        for var in model.trainable_variables:
+            self.variable_groups[var.lr_mult].append(var)
 
         self.optimizer_group = []
 
-        for lr_mult in variable_groups.keys():
+        for lr_mult in unique_lr_mults:
             opt = self.opt_class(learning_rate=learning_rate * lr_mult, **kwargs)
             opt.lr_mult = lr_mult
             self.optimizer_group.append(opt)
@@ -272,7 +280,23 @@ class DiscriminativeLayerOptimizer(tf.keras.optimizers.Optimizer):
 
         # Load the gradvars into the appropriate bucket.
         for grad, var in tuple(grads_and_vars):
-            gvdict[var.lr_mult].append((grad, var))
+            try:
+                gvdict[var.lr_mult].append((grad, var))
+            except KeyError:
+                logging.error(
+                    "Variable named %s has lr multiplier %f, which does not exist in the lr multipliers when the optimizer wrapper was initialized."
+                    % (var.name, var.lr_mult)
+                )
+
+        # Doublecheck that each variable group has the same number of variables.
+        # While we could directly check every variable, the documentation states not to change lr mults.
+        # Checking each variable independently may add too much overhead and each update step.
+
+        for lr_mult in self.variable_groups.keys():
+            assert len(self.variable_groups[lr_mult]) == len(gvdict[lr_mult]), (
+                "Mismatch in lr multipliers for variables. Expected %i variables for lr multiplier %f, but got %i"
+                % (len(self.variable_groups[lr_mult]), lr_mult, (gvdict[lr_mult]))
+            )
 
         # Return results from each opt.
         # In eager mode, this will return a list of irrelevant results for each optimizer.
