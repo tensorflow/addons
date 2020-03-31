@@ -22,11 +22,7 @@ from typing import Union, Callable, Type
 
 
 def _ref(var):
-    release = tf.__version__[:5]
-    if release < "2.0.0":
-        return var
-    else:
-        return var.ref() if hasattr(var, "ref") else var.experimental_ref()
+    return var.ref() if hasattr(var, "ref") else var.experimental_ref()
 
 
 class DecoupledWeightDecayExtension:
