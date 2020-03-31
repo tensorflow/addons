@@ -13,15 +13,43 @@
 # limitations under the License.
 # ==============================================================================
 #
-# Test that checks if we have any issues with case insensitive filesystems.
-
 import glob
 import os
+
+from typedapi import ensure_api_is_typed
+
+import tensorflow_addons as tfa
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 
 
-def main():
+modules_list = [
+    tfa,
+    tfa.activations,
+    tfa.callbacks,
+    tfa.image,
+    tfa.losses,
+    tfa.metrics,
+    tfa.optimizers,
+    tfa.rnn,
+    tfa.seq2seq,
+    tfa.text,
+]
+
+
+def test_api_typed():
+    # Files within this list will be exempt from verification.
+    exception_list = []
+    HELP_MESSAGE = (
+        "You can also take a look at the section about it in the CONTRIBUTING.md:\n"
+        "https://github.com/tensorflow/addons/blob/master/CONTRIBUTING.md#about-type-hints"
+    )
+    ensure_api_is_typed(
+        modules_list, exception_list, init_only=True, additional_message=HELP_MESSAGE,
+    )
+
+
+def test_case_insensitive_filesystems():
     # Make sure BASE_DIR is project root.
     # If it doesn't, we probably computed the wrong directory.
     if not os.path.isdir(os.path.join(BASE_DIR, "tensorflow_addons")):
@@ -39,13 +67,11 @@ def main():
             )
 
 
-def check_no_private_tf_api():
-
+def test_no_private_tf_api():
     source_dir = os.path.join(BASE_DIR, "tensorflow_addons")
     for path in glob.glob(source_dir + "/**/*.py", recursive=True):
         if in_blacklist_private_api(path):
             continue
-
         with open(path) as f:
             for i, line in enumerate(f):
                 if (
@@ -82,8 +108,3 @@ def in_blacklist_private_api(file_path):
         if file_path.endswith(blacklisted_file):
             return True
     return False
-
-
-if __name__ == "__main__":
-    main()
-    check_no_private_tf_api()

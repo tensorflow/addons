@@ -18,27 +18,18 @@ RUN black --check /addons
 RUN touch /ok.txt
 
 # -------------------------------
-FROM python:3.6 as public-api-typed
+FROM python:3.6 as source_code_test
 
-COPY tools/install_deps/tensorflow-cpu.txt ./
-RUN pip install -r tensorflow-cpu.txt
-COPY requirements.txt ./
-RUN pip install -r requirements.txt
-COPY tools/install_deps/typedapi.txt ./
-RUN pip install -r typedapi.txt
-
+COPY tools/install_deps /install_deps
+RUN --mount=type=cache,id=cache_pip,target=/root/.cache/pip \
+    cd /install_deps && pip install \
+    -r tensorflow-cpu.txt \
+    -r typedapi.txt \
+    -r pytest.txt
 
 COPY ./ /addons
 RUN pip install --no-deps -e /addons
 RUN python /addons/tools/testing/check_typing_info.py
-RUN touch /ok.txt
-
-# -------------------------------
-FROM python:3.5-alpine as case-insensitive-filesystem
-
-COPY ./ /addons
-WORKDIR /addons
-RUN python /addons/tools/testing/check_file_name.py
 RUN touch /ok.txt
 
 # -------------------------------
@@ -145,4 +136,3 @@ COPY --from=4 /ok.txt /ok4.txt
 COPY --from=5 /ok.txt /ok5.txt
 COPY --from=6 /ok.txt /ok6.txt
 COPY --from=7 /ok.txt /ok7.txt
-COPY --from=8 /ok.txt /ok8.txt
