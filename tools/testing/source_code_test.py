@@ -23,29 +23,27 @@ import tensorflow_addons as tfa
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 
 
-modules_list = [
-    tfa,
-    tfa.activations,
-    tfa.callbacks,
-    tfa.image,
-    tfa.losses,
-    tfa.metrics,
-    tfa.optimizers,
-    tfa.rnn,
-    tfa.seq2seq,
-    tfa.text,
-]
-
-
 def test_api_typed():
+    modules_list = [
+        tfa,
+        tfa.activations,
+        tfa.callbacks,
+        tfa.image,
+        tfa.losses,
+        tfa.metrics,
+        tfa.optimizers,
+        tfa.rnn,
+        tfa.seq2seq,
+        tfa.text,
+    ]
     # Files within this list will be exempt from verification.
     exception_list = []
-    HELP_MESSAGE = (
+    help_message = (
         "You can also take a look at the section about it in the CONTRIBUTING.md:\n"
         "https://github.com/tensorflow/addons/blob/master/CONTRIBUTING.md#about-type-hints"
     )
     ensure_api_is_typed(
-        modules_list, exception_list, init_only=True, additional_message=HELP_MESSAGE,
+        modules_list, exception_list, init_only=True, additional_message=help_message,
     )
 
 
