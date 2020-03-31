@@ -22,7 +22,6 @@ import tensorflow as tf
 from tensorflow_addons.layers.normalizations import FilterResponseNormalization
 from tensorflow_addons.layers.normalizations import GroupNormalization
 from tensorflow_addons.layers.normalizations import InstanceNormalization
-from tensorflow_addons.utils import test_utils
 
 
 # ------------Tests to ensure proper inheritance. If these suceed you can
@@ -90,78 +89,72 @@ def test_reshape():
     run_reshape_test(1, 1, input_shape, expected_shape)
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class NormalizationTest(tf.test.TestCase):
-    def test_feature_input(self):
-        shape = (10, 100)
-        for center in [True, False]:
-            for scale in [True, False]:
-                for groups in [-1, 1, 2, 5]:
-                    self._test_random_shape_on_all_axis_except_batch(
-                        shape, groups, center, scale
-                    )
+@pytest.mark.parametrize("center", [True, False])
+@pytest.mark.parametrize("scale", [True, False])
+def test_feature_input(center, scale):
+    shape = (10, 100)
+    for groups in [-1, 1, 2, 5]:
+        _test_random_shape_on_all_axis_except_batch(shape, groups, center, scale)
 
-    def test_picture_input(self):
-        shape = (10, 30, 30, 3)
-        for center in [True, False]:
-            for scale in [True, False]:
-                for groups in [-1, 1, 3]:
-                    self._test_random_shape_on_all_axis_except_batch(
-                        shape, groups, center, scale
-                    )
 
-    def _test_random_shape_on_all_axis_except_batch(self, shape, groups, center, scale):
-        inputs = tf.random.normal(shape)
-        for axis in range(1, len(shape)):
-            self._test_specific_layer(inputs, axis, groups, center, scale)
+@pytest.mark.parametrize("center", [True, False])
+@pytest.mark.parametrize("scale", [True, False])
+def test_picture_input(center, scale):
+    shape = (10, 30, 30, 3)
+    for groups in [-1, 1, 3]:
+        _test_random_shape_on_all_axis_except_batch(shape, groups, center, scale)
 
-    def _test_specific_layer(self, inputs, axis, groups, center, scale):
 
-        input_shape = inputs.shape
+def _test_random_shape_on_all_axis_except_batch(shape, groups, center, scale):
+    inputs = tf.random.normal(shape)
+    for axis in range(1, len(shape)):
+        _test_specific_layer(inputs, axis, groups, center, scale)
 
-        # Get Output from Keras model
-        layer = GroupNormalization(axis=axis, groups=groups, center=center, scale=scale)
-        model = tf.keras.models.Sequential()
-        model.add(layer)
-        outputs = model.predict(inputs, steps=1)
-        self.assertFalse(np.isnan(outputs).any())
 
-        # Create shapes
-        if groups is -1:
-            groups = input_shape[axis]
-        np_inputs = self.evaluate(inputs)
-        reshaped_dims = list(np_inputs.shape)
-        reshaped_dims[axis] = reshaped_dims[axis] // groups
-        reshaped_dims.insert(axis, groups)
-        reshaped_inputs = np.reshape(np_inputs, tuple(reshaped_dims))
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def _test_specific_layer(inputs, axis, groups, center, scale):
 
-        group_reduction_axes = list(range(1, len(reshaped_dims)))
-        axis = -2 if axis == -1 else axis - 1
-        group_reduction_axes.pop(axis)
+    input_shape = inputs.shape
 
-        # Calculate mean and variance
-        mean = np.mean(reshaped_inputs, axis=tuple(group_reduction_axes), keepdims=True)
-        variance = np.var(
-            reshaped_inputs, axis=tuple(group_reduction_axes), keepdims=True
-        )
+    # Get Output from Keras model
+    layer = GroupNormalization(axis=axis, groups=groups, center=center, scale=scale)
+    model = tf.keras.models.Sequential()
+    model.add(layer)
+    outputs = model.predict(inputs, steps=1)
+    assert not np.isnan(outputs).any()
 
-        # Get gamma and beta initalized by layer
-        gamma, beta = layer._get_reshaped_weights(input_shape)
-        if gamma is None:
-            gamma = 1.0
-        if beta is None:
-            beta = 0.0
+    # Create shapes
+    if groups is -1:
+        groups = input_shape[axis]
+    np_inputs = inputs
+    reshaped_dims = list(np_inputs.shape)
+    reshaped_dims[axis] = reshaped_dims[axis] // groups
+    reshaped_dims.insert(axis, groups)
+    reshaped_inputs = np.reshape(np_inputs, tuple(reshaped_dims))
 
-        # Get ouput from Numpy
-        zeroed = reshaped_inputs - mean
-        rsqrt = 1 / np.sqrt(variance + 1e-5)
-        output_test = gamma * zeroed * rsqrt + beta
+    group_reduction_axes = list(range(1, len(reshaped_dims)))
+    axis = -2 if axis == -1 else axis - 1
+    group_reduction_axes.pop(axis)
 
-        # compare outputs
-        output_test = tf.reshape(output_test, input_shape)
-        self.assertAlmostEqual(
-            self.evaluate(tf.reduce_mean(output_test - outputs)), 0, places=7
-        )
+    # Calculate mean and variance
+    mean = np.mean(reshaped_inputs, axis=tuple(group_reduction_axes), keepdims=True)
+    variance = np.var(reshaped_inputs, axis=tuple(group_reduction_axes), keepdims=True)
+
+    # Get gamma and beta initalized by layer
+    gamma, beta = layer._get_reshaped_weights(input_shape)
+    if gamma is None:
+        gamma = 1.0
+    if beta is None:
+        beta = 0.0
+
+    # Get ouput from Numpy
+    zeroed = reshaped_inputs - mean
+    rsqrt = 1 / np.sqrt(variance + 1e-5)
+    output_test = gamma * zeroed * rsqrt + beta
+
+    # compare outputs
+    output_test = tf.reshape(output_test, input_shape)
+    np.testing.assert_almost_equal(tf.reduce_mean(output_test - outputs), 0, decimal=7)
 
 
 def _create_and_fit_Sequential_model(layer, shape):
