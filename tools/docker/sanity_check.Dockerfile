@@ -28,7 +28,7 @@ RUN --mount=type=cache,id=cache_pip,target=/root/.cache/pip \
     -r pytest.txt
 
 COPY ./ /addons
-RUN pip install --no-deps -e /addons
+RUN pip install -e /addons
 RUN pytest -v /addons/tools/testing/
 RUN touch /ok.txt
 
