@@ -35,7 +35,14 @@ class OptimizerTestBase(tf.test.TestCase):
     weight_decay_optimizers_test for an example.
     """
 
-    def doTest(self, optimizer, update_fn, do_sparse=False, do_decay_var_list=False, **optimizer_kwargs):
+    def doTest(
+        self,
+        optimizer,
+        update_fn,
+        do_sparse=False,
+        do_decay_var_list=False,
+        **optimizer_kwargs
+    ):
         """The major test function.
 
         Args:
@@ -90,7 +97,9 @@ class OptimizerTestBase(tf.test.TestCase):
             # Validate initial values.
             if not tf.executing_eagerly():
                 if do_decay_var_list:
-                    update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]), decay_var_list=[var0, var1])
+                    update = opt.apply_gradients(
+                        zip([grads0, grads1], [var0, var1]), decay_var_list=[var0, var1]
+                    )
                 else:
                     update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
                 self.evaluate(tf.compat.v1.global_variables_initializer())
@@ -101,7 +110,10 @@ class OptimizerTestBase(tf.test.TestCase):
             for _ in range(3):
                 if tf.executing_eagerly():
                     if do_decay_var_list:
-                        opt.apply_gradients(zip([grads0, grads1], [var0, var1]), decay_var_list=[var0, var1])
+                        opt.apply_gradients(
+                            zip([grads0, grads1], [var0, var1]),
+                            decay_var_list=[var0, var1],
+                        )
                     else:
                         opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
                 else:
