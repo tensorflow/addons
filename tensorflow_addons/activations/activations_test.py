@@ -13,8 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import sys
-
 import pytest
 import tensorflow as tf
 from tensorflow_addons import activations

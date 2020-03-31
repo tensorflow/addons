@@ -13,8 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import sys
-
 import pytest
 import numpy as np
 import tensorflow as tf
