@@ -29,10 +29,8 @@ export CUDA_TOOLKIT_PATH="/usr/local/cuda"
 export TF_CUDNN_VERSION="7"
 export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 
-# we use only "python3" because we can't run gpu tests on Windows
-# so no need to make it work with "python" like in the cpu tests.
-python3 -m pip install -r tools/install_deps/pytest.txt -e ./
-python3 ./configure.py
+python -m pip install -r tools/install_deps/pytest.txt -e ./
+python ./configure.py
 cat ./.bazelrc
 bash tools/install_so_files.sh
-python3 -m pytest -v --durations=25 ./tensorflow_addons
+python -m pytest -v --durations=25 ./tensorflow_addons

@@ -35,13 +35,12 @@ echo "#! /usr/bin/python2.7" >> /usr/bin/lsb_release2
 cat /usr/bin/lsb_release >> /usr/bin/lsb_release2
 mv /usr/bin/lsb_release2 /usr/bin/lsb_release
 
-ln -sf $(which python$1) /usr/bin/python3
-python3 -m pip install --upgrade pip
-python3 -m pip install --upgrade setuptools
+python -m pip install --upgrade pip
+python -m pip install --upgrade setuptools
 
 #Link TF dependency
-python3 --version
-python3 ./configure.py
+python --version
+python ./configure.py
 
 bash tools/testing/addons_cpu.sh
 bazel clean --expunge
