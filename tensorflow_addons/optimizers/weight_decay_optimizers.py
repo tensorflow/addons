@@ -26,7 +26,7 @@ def _ref(var):
     if release < "2.0.0":
         return var
     else:
-        return var.ref() if hasattr(var,"ref") else var.experimental_ref()
+        return var.ref() if hasattr(var, "ref") else var.experimental_ref()
 
 
 class DecoupledWeightDecayExtension:
@@ -125,7 +125,9 @@ class DecoupledWeightDecayExtension:
         Raises:
             ValueError: If some of the variables are not `Variable` objects.
         """
-        self._decay_var_list = set([_ref(v) for v in decay_var_list]) if decay_var_list else False
+        self._decay_var_list = (
+            set([_ref(v) for v in decay_var_list]) if decay_var_list else False
+        )
         return super().minimize(loss, var_list=var_list, grad_loss=grad_loss, name=name)
 
     def apply_gradients(self, grads_and_vars, name=None, decay_var_list=None):
@@ -146,7 +148,9 @@ class DecoupledWeightDecayExtension:
             TypeError: If `grads_and_vars` is malformed.
             ValueError: If none of the variables have gradients.
         """
-        self._decay_var_list = set([_ref(v) for v in decay_var_list]) if decay_var_list else False
+        self._decay_var_list = (
+            set([_ref(v) for v in decay_var_list]) if decay_var_list else False
+        )
         return super().apply_gradients(grads_and_vars, name=name)
 
     def _decay_weights_op(self, var):
