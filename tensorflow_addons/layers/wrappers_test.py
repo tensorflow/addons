@@ -42,34 +42,35 @@ def test_no_bias():
     )
 
 
+def _check_data_init(data_init, input_data, expected_output):
+    layer = tf.keras.layers.Dense(
+        input_data.shape[-1],
+        activation=None,
+        kernel_initializer="identity",
+        bias_initializer="zeros",
+    )
+    test_utils.layer_test(
+        wrappers.WeightNormalization,
+        kwargs={"layer": layer, "data_init": data_init,},
+        input_data=input_data,
+        expected_output=expected_output,
+    )
+
+
+def test_with_data_init_is_false():
+    input_data = np.array([[[-4, -4], [4, 4]]], dtype=np.float32)
+    _check_data_init(data_init=False, input_data=input_data, expected_output=input_data)
+
+
+def test_with_data_init_is_true():
+    input_data = np.array([[[-4, -4], [4, 4]]], dtype=np.float32)
+    _check_data_init(
+        data_init=True, input_data=input_data, expected_output=input_data / 4
+    )
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class WeightNormalizationTest(tf.test.TestCase, parameterized.TestCase):
-    def _check_data_init(self, data_init, input_data, expected_output):
-        layer = tf.keras.layers.Dense(
-            input_data.shape[-1],
-            activation=None,
-            kernel_initializer="identity",
-            bias_initializer="zeros",
-        )
-        test_utils.layer_test(
-            wrappers.WeightNormalization,
-            kwargs={"layer": layer, "data_init": data_init,},
-            input_data=input_data,
-            expected_output=expected_output,
-        )
-
-    def test_with_data_init_is_false(self):
-        input_data = np.array([[[-4, -4], [4, 4]]], dtype=np.float32)
-        self._check_data_init(
-            data_init=False, input_data=input_data, expected_output=input_data
-        )
-
-    def test_with_data_init_is_true(self):
-        input_data = np.array([[[-4, -4], [4, 4]]], dtype=np.float32)
-        self._check_data_init(
-            data_init=True, input_data=input_data, expected_output=input_data / 4
-        )
-
     def test_non_layer(self):
         images = tf.random.uniform((2, 4, 3))
         with self.assertRaises(AssertionError):
