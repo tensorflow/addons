@@ -19,7 +19,7 @@ See paper [Large Batch Optimization for Deep Learning: Training BERT in
 """
 
 import re
-from typing import Optional, Union, Callable
+from typing import Optional, Union, Callable, List
 from typeguard import typechecked
 
 import tensorflow as tf
