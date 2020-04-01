@@ -171,7 +171,7 @@ def test_unweighted():
     y_pred = tf.constant(embedding)
     cce_obj = triplet.TripletHardLoss()
     loss = cce_obj(y_true, y_pred)
-    np.testing.assert_almost_equal(loss, loss_np, 3)
+    np.testing.assert_allclose(loss, loss_np, rtol=1e-6, atol=1e-6)
 
 
 def test_unweighted_soft():
@@ -190,7 +190,7 @@ def test_unweighted_soft():
     y_pred = tf.constant(embedding)
     cce_obj = triplet.TripletHardLoss(soft=True)
     loss = cce_obj(y_true, y_pred)
-    np.testing.assert_almost_equal(loss, loss_np, 3)
+    np.testing.assert_allclose(loss, loss_np, rtol=1e-6, atol=1e-6)
 
 
 def test_keras_model_compile():
