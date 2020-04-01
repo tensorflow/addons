@@ -28,20 +28,13 @@ jobs:
       - uses: actions/checkout@v2
       - name: Ensure contributor used ("black ./") before commit
         run: bash tools/run_build.sh black-test
-  public-api-typed:
-    name: Check that the public API is typed
+  source_code_test:
+    name: Check that the source code is compliant
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Run type check
-        run: bash tools/run_build.sh public-api-typed
-  case-insensitive-filesystem:
-    name: Verify python filenames work on case insensitive FS
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Run type check
-        run: bash tools/run_build.sh case-insensitive-filesystem
+        run: bash tools/run_build.sh source_code_test
   valid_build_files:
     name: Valid build files
     runs-on: ubuntu-latest
