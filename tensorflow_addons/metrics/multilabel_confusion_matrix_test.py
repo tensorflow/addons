@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for Multilabel Confusion Matrix Metric."""
 
-import sys
-
-import pytest
 import tensorflow as tf
 from tensorflow_addons.metrics import MultiLabelConfusionMatrix
 from tensorflow_addons.utils import test_utils
@@ -157,7 +154,3 @@ class MultiLabelConfusionMatrixTest(tf.test.TestCase):
                     [[8, 0], [0, 2]],
                 ],
             )
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
