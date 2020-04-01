@@ -3,7 +3,7 @@ ARG TF_VERSION
 FROM tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16 as make_wheel
 
 # Remove pre-installed packages on python2 to free up disk space
-RUN pip uninstall -y tensorflow tensorflow scipy pandas numpy scikit-learn
+RUN python2 -m pip uninstall -y tensorflow tensorboard scipy pandas numpy scikit-learn
 
 RUN apt-get update && apt-get install patchelf
 
