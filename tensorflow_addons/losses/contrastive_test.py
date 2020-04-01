@@ -14,10 +14,7 @@
 # ==============================================================================
 """Tests for contrastive loss."""
 
-import sys
-
 import numpy as np
-import pytest
 import tensorflow as tf
 from tensorflow_addons.losses import contrastive
 
@@ -150,7 +147,3 @@ def test_sum_reduction():
     #              = 3.73
 
     np.testing.assert_allclose(loss, 3.73)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

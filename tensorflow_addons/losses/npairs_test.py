@@ -14,11 +14,9 @@
 # ==============================================================================
 """Tests for npairs loss."""
 
-import sys
 import platform
 import unittest
 
-import pytest
 import tensorflow as tf
 from tensorflow_addons.losses import npairs
 from tensorflow_addons.utils import test_utils
@@ -149,7 +147,3 @@ class NpairsMultilabelLossTest(tf.test.TestCase):
         y_true = tf.sparse.from_dense(y_true)
         loss = nml_obj(y_true, y_pred)
         self.assertAllClose(loss, 1.420522)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

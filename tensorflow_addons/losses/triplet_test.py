@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for triplet loss."""
 
-import sys
-
-import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -202,7 +199,3 @@ class TripletHardLossTest(tf.test.TestCase):
     def test_serialization(self):
         loss = triplet.TripletHardLoss()
         tf.keras.losses.deserialize(tf.keras.losses.serialize(loss))
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

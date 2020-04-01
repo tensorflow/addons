@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests for focal loss."""
 
-import sys
 
 import pytest
 import numpy as np
@@ -130,7 +129,3 @@ def test_without_logits():
     order_of_ratio = tf.pow(10.0, tf.math.floor(log10(bce / fl)))
     pow_values = tf.constant([1000, 100, 10, 10, 100, 1000])
     assert np.allclose(order_of_ratio, pow_values)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
