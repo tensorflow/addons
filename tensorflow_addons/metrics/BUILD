@@ -20,11 +20,11 @@ py_library(
 )
 
 py_test(
-    name = "activations_test",
+    name = "metrics_test",
     size = "small",
     srcs = glob(["*_test.py"]),
     main = "run_all_test.py",
     deps = [
-        ":activations",
+        ":metrics",
     ],
 )
