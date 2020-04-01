@@ -42,8 +42,8 @@ class LAMB(tf.keras.optimizers.Optimizer):
         beta_2: FloatTensorLike = 0.999,
         epsilon: FloatTensorLike = 1e-6,
         weight_decay_rate: FloatTensorLike = 0.0,
-        exclude_from_weight_decay: Optional[str] = None,
-        exclude_from_layer_adaptation: Optional[str] = None,
+        exclude_from_weight_decay: List[str] = None,
+        exclude_from_layer_adaptation: List[str] = None,
         name: str = "LAMB",
         **kwargs
     ):
@@ -59,10 +59,10 @@ class LAMB(tf.keras.optimizers.Optimizer):
               The exponential decay rate for the 2nd moment estimates.
             epsilon: A small constant for numerical stability.
             weight_decay_rate: weight decay rate.
-            exclude_from_weight_decay: comma separated name patterns of
+            exclude_from_weight_decay: List of regex patterns of
               variables excluded from weight decay. Variables whose name
               contain a substring matching the pattern will be excluded.
-            exclude_from_layer_adaptation: comma separated name patterns of
+            exclude_from_layer_adaptation: List of regex patterns of
               variables excluded from layer adaptation. Variables whose name
               contain a substring matching the pattern will be excluded.
             name: Optional name for the operations created when applying
