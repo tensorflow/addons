@@ -9,8 +9,9 @@ RUN python$PY_VERSION -m pip install --upgrade pip setuptools auditwheel==2.0.0
 
 COPY tools/install_deps/ /install_deps
 ARG TF_VERSION
-RUN python$PY_VERSION -m pip install tensorflow==$TF_VERSION && \
-    python$PY_VERSION -m pip install -r /install_deps/pytest.txt
+RUN python$PY_VERSION -m pip install \
+        tensorflow==$TF_VERSION \
+        -r /install_deps/pytest.txt
 
 COPY requirements.txt .
 RUN python$PY_VERSION -m pip install -r requirements.txt
