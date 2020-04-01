@@ -24,21 +24,18 @@ from tensorflow_addons.losses import npairs
 
 IS_WINDOWS = platform.system() == "Windows"
 
-
-@pytest.mark.skipif(
+pytestmark = pytest.mark.skipif(
     IS_WINDOWS,
     reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
 )
+
+
 def test_config():
     nl_obj = npairs.NpairsLoss(name="nl")
     assert nl_obj.name == "nl"
     assert nl_obj.reduction == tf.keras.losses.Reduction.NONE
 
 
-@pytest.mark.skipif(
-    IS_WINDOWS,
-    reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
-)
 def test_unweighted():
     nl_obj = npairs.NpairsLoss()
     # batch size = 4, hidden size = 2
@@ -66,20 +63,12 @@ def test_unweighted():
     np.testing.assert_allclose(loss, 0.253856, rtol=1e-06, atol=1e-06)
 
 
-@pytest.mark.skipif(
-    IS_WINDOWS,
-    reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
-)
 def config():
     nml_obj = npairs.NpairsMultilabelLoss(name="nml")
     assert nml_obj.name == "nml"
     assert nml_obj.reduction == tf.keras.losses.Reduction.NONE
 
 
-@pytest.mark.skipif(
-    IS_WINDOWS,
-    reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
-)
 def test_single_label():
     """Test single label, which is the same with `NpairsLoss`."""
     nml_obj = npairs.NpairsMultilabelLoss()
@@ -115,10 +104,6 @@ def test_single_label():
     np.testing.assert_allclose(loss, 0.253856, rtol=1e-06, atol=1e-06)
 
 
-@pytest.mark.skipif(
-    IS_WINDOWS,
-    reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
-)
 def test_multilabel():
     nml_obj = npairs.NpairsMultilabelLoss()
     # batch size = 4, hidden size = 2
