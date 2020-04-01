@@ -352,7 +352,9 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         Arbitrary. Use the keyword argument `input_shape`
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model. This layer supports
-        arbitrary tensors.
+        arbitrary tensors with the following assumptions:
+            -   Expected input tensor to be at least 2D.
+            -   0th index in tensor shape is expected to be the batch dimension.
 
     Output shape
         Same shape as input.
@@ -453,34 +455,41 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
 
     def _create_input_spec(self, input_shape):
         ndims = len(input_shape)
+
         for idx, x in enumerate(self.axis):
             if x < 0:
                 self.axis[idx] = ndims + x
 
-        if isinstance(self.axis, list):
-            for x in self.axis:
-                if x < 0 or x >= len(input_shape):
-                    raise ValueError("Invalid axis: %d" % x)
+        for x in self.axis:
+            if x < 0 or x >= len(input_shape):
+                raise ValueError("Invalid axis: %d" % x)
 
-                elif x == 0 or x == -len(input_shape):
-                    raise ValueError(
-                        "You are trying to normalize your batch axis. "
-                        "Use tf.layers.batch_normalization instead."
-                    )
-
-        else:
-            self.axis = self.channel_idx = -1
+            elif x == 0:
+                raise ValueError(
+                    "You are trying to normalize your batch axis. "
+                    "Use tf.layers.batch_normalization instead."
+                )
 
         axis_to_dim = {x: input_shape[x] for x in self.axis}
         self.input_spec = tf.keras.layers.InputSpec(ndim=ndims, axes=axis_to_dim)
 
     def _check_axis(self, axis):
-        if not isinstance(axis, list) and not isinstance(axis, int):
+        if isinstance(axis, list):
+            self.axis = axis
+
+        elif isinstance(axis, int):
+            if axis != -1 or self.channel_idx != -1:
+                raise ValueError("Expected index for 2D is -1 but got {}".format(axis))
+
+            self.axis = [axis]
+
+        else:
             raise TypeError(
                 """Expected a list of values but got {}.""".format(type(axis))
             )
-        else:
-            self.axis = axis
+
+        if len(self.axis) != len(set(self.axis)):
+            raise ValueError("Duplicate axis: %s" % self.axis)
 
     def _check_if_input_shape_is_none(self, input_shape):
         dim1, dim2 = input_shape[self.axis[0]], input_shape[self.axis[1]]
@@ -495,8 +504,9 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
     def _add_gamma_weight(self, input_shape):
         # Get the channel dimension
         dim = input_shape[self.channel_idx]
-        shape = [1 if i != self.channel_idx else dim for i in range(len(input_shape))]
-        # Initialize gamma with ones except the channel axis
+        shape = [1] * len(input_shape)
+        shape[self.channel_idx] = dim
+        # Initialize the shape of gamma with ones except the channel axis
         self.gamma = self.add_weight(
             shape=shape,
             name="gamma",
@@ -509,8 +519,9 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
     def _add_beta_weight(self, input_shape):
         # Get the channel dimension
         dim = input_shape[self.channel_idx]
-        shape = [1 if i != self.channel_idx else dim for i in range(len(input_shape))]
-        # Initialize beta with ones except the channel axis
+        shape = [1] * len(input_shape)
+        shape[self.channel_idx] = dim
+        # Initialize the shape of beta with ones except the channel axis
         self.beta = self.add_weight(
             shape=shape,
             name="beta",
