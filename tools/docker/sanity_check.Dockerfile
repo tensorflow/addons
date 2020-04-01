@@ -123,8 +123,7 @@ RUN bash bazel_linux.sh
 COPY ./ /addons
 WORKDIR /addons
 RUN python configure.py
-RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
-    bash tools/install_so_files.sh
+RUN bash tools/install_so_files.sh
 RUN pip install --no-deps -e .
 RUN pytest -v -n auto ./tensorflow_addons/activations
 RUN touch /ok.txt
