@@ -14,6 +14,7 @@
 # ==============================================================================
 
 
+import pytest
 import tensorflow as tf
 import numpy as np
 
@@ -66,6 +67,43 @@ def _np_sparsemax_loss(z, q):
     return 0.5 * S_sum + 0.5 * q_norm - z_k
 
 
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_sparsemax_loss_constructor_aginst_numpy(dtype):
+    """check sparsemax-loss construcor against numpy."""
+    random = np.random.RandomState(1)
+
+    z = random.uniform(low=-3, high=3, size=(test_obs, 10))
+    q = np.zeros((test_obs, 10))
+    q[np.arange(0, test_obs), random.randint(0, 10, size=test_obs)] = 1
+
+    loss_object = SparsemaxLoss()
+    tf_loss_op = loss_object(q, z)
+    np_loss = np.mean(_np_sparsemax_loss(z, q).astype(dtype))
+
+    test_utils.assert_allclose_according_to_type(np_loss, tf_loss_op)
+    assert np_loss.shape == tf_loss_op.shape
+
+
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_gradient_against_estimate(dtype):
+    """check sparsemax-loss Rop, against estimated-loss Rop."""
+    random = np.random.RandomState(7)
+
+    # sparsemax is not a smooth function so gradient estimation is only
+    # possible for float64.
+    if dtype != "float64":
+        return
+
+    z = random.uniform(low=-3, high=3, size=(test_obs, 10)).astype(dtype)
+    q = np.zeros((test_obs, 10)).astype(dtype)
+    q[np.arange(0, test_obs), np.random.randint(0, 10, size=test_obs)] = 1
+
+    (jacob_sym,), (jacob_num,) = tf.test.compute_gradient(
+        lambda logits: sparsemax_loss(logits, sparsemax(logits), q), [z]
+    )
+    test_utils.assert_allclose_according_to_type(jacob_sym, jacob_num)
+
+
 @test_utils.run_all_with_types(["float32", "float64"])
 @test_utils.run_all_in_graph_and_eager_modes
 class SparsemaxTest(tf.test.TestCase):
@@ -84,22 +122,6 @@ class SparsemaxTest(tf.test.TestCase):
         tf_loss_out = self.evaluate(tf_loss_op)
 
         return tf_loss_op, tf_loss_out
-
-    def test_sparsemax_loss_constructor_aginst_numpy(self, dtype=None):
-        """check sparsemax-loss construcor against numpy."""
-        random = np.random.RandomState(1)
-
-        z = random.uniform(low=-3, high=3, size=(test_obs, 10))
-        q = np.zeros((test_obs, 10))
-        q[np.arange(0, test_obs), random.randint(0, 10, size=test_obs)] = 1
-
-        loss_object = SparsemaxLoss()
-        tf_loss_op = loss_object(q, z)
-        tf_loss_out = self.evaluate(tf_loss_op)
-        np_loss = np.mean(_np_sparsemax_loss(z, q).astype(dtype))
-
-        self.assertAllCloseAccordingToType(np_loss, tf_loss_out)
-        self.assertShapeEqual(np_loss, tf_loss_op)
 
     def test_sparsemax_loss_constructor_not_from_logits(self, dtype=None):
         """check sparsemax-loss construcor throws when from_logits=True."""
@@ -215,24 +237,6 @@ class SparsemaxTest(tf.test.TestCase):
 
         self.assertAllCloseAccordingToType(q, tf_sparsemax_out)
         self.assertShapeEqual(q, tf_sparsemax_op)
-
-    def test_gradient_against_estimate(self, dtype=None):
-        """check sparsemax-loss Rop, against estimated-loss Rop."""
-        random = np.random.RandomState(7)
-
-        # sparsemax is not a smooth function so gradient estimation is only
-        # possible for float64.
-        if dtype != "float64":
-            return
-
-        z = random.uniform(low=-3, high=3, size=(test_obs, 10)).astype(dtype)
-        q = np.zeros((test_obs, 10)).astype(dtype)
-        q[np.arange(0, test_obs), np.random.randint(0, 10, size=test_obs)] = 1
-
-        (jacob_sym,), (jacob_num,) = tf.test.compute_gradient(
-            lambda logits: sparsemax_loss(logits, sparsemax(logits), q), [z]
-        )
-        self.assertAllCloseAccordingToType(jacob_sym, jacob_num)
 
     def test_serialization(self, dtype=None):
         ref_fn = sparsemax_loss
