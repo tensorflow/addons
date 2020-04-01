@@ -171,7 +171,7 @@ def test_forward_pass(base_layer, input_shape):
     base_output = base_layer(sample_data)
     wn_layer = wrappers.WeightNormalization(base_layer, False)
     wn_output = wn_layer(sample_data)
-    np.testing.assert_allclose(base_output, wn_output)
+    np.testing.assert_allclose(base_output, wn_output, rtol=1e-6, atol=1e-6)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
