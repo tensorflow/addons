@@ -16,7 +16,6 @@
 
 import sys
 import platform
-import unittest
 
 import numpy as np
 import pytest
@@ -26,7 +25,7 @@ from tensorflow_addons.losses import npairs
 IS_WINDOWS = platform.system() == "Windows"
 
 
-@unittest.skipIf(
+@pytest.mark.skipif(
     IS_WINDOWS,
     reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
 )
@@ -36,7 +35,7 @@ def test_config():
     assert nl_obj.reduction == tf.keras.losses.Reduction.NONE
 
 
-@unittest.skipIf(
+@pytest.mark.skipif(
     IS_WINDOWS,
     reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
 )
@@ -67,7 +66,7 @@ def test_unweighted():
     np.testing.assert_allclose(loss, 0.253856, rtol=1e-06, atol=1e-06)
 
 
-@unittest.skipIf(
+@pytest.mark.skipif(
     IS_WINDOWS,
     reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
 )
@@ -77,7 +76,7 @@ def config():
     assert nml_obj.reduction == tf.keras.losses.Reduction.NONE
 
 
-@unittest.skipIf(
+@pytest.mark.skipif(
     IS_WINDOWS,
     reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
 )
@@ -116,7 +115,7 @@ def test_single_label():
     np.testing.assert_allclose(loss, 0.253856, rtol=1e-06, atol=1e-06)
 
 
-@unittest.skipIf(
+@pytest.mark.skipif(
     IS_WINDOWS,
     reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
 )
