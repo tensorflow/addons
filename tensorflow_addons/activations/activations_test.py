@@ -13,8 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import sys
-
 import pytest
 import tensorflow as tf
 from tensorflow_addons import activations
@@ -49,7 +47,3 @@ def test_serialization_with_layers(name):
     deserialized_layer = tf.keras.layers.deserialize(config)
     assert deserialized_layer.__class__.__name__ == layer.__class__.__name__
     assert deserialized_layer.activation.__name__ == name
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
