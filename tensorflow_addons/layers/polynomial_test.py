@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests for PolynomialCrossing layer."""
 
-import sys
 
 import pytest
 import numpy as np
@@ -58,7 +57,3 @@ def test_serialization():
     serialized_layer = tf.keras.layers.serialize(layer)
     new_layer = tf.keras.layers.deserialize(serialized_layer)
     assert layer.get_config() == new_layer.get_config()
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

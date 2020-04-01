@@ -13,7 +13,6 @@
 # limitations under the License.
 # =============================================================================
 
-import sys
 import tempfile
 from pathlib import Path
 
@@ -335,7 +334,3 @@ def test_mask():
     assert output.shape[2] == v.shape[2]
 
     np.testing.assert_array_equal((attn_coef != 0), mask)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
