@@ -14,8 +14,6 @@
 # ==============================================================================
 """Tests for Cohen's Kappa Metric."""
 
-import sys
-
 import pytest
 import numpy as np
 import tensorflow as tf
@@ -234,7 +232,3 @@ def test_with_ohe_labels():
 
     obj.update_state(y_true, y_pred)
     np.testing.assert_allclose(0.19999999, obj.result().numpy())
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

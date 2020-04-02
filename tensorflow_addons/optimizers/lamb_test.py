@@ -14,9 +14,7 @@
 # ==============================================================================
 """Tests for LAMB Optimizer."""
 
-import sys
 
-import pytest
 import numpy as np
 from numpy import linalg
 
@@ -411,7 +409,3 @@ class LAMBTest(tf.test.TestCase):
         assert opt._do_use_weight_decay("var0")
         assert not opt._do_use_weight_decay("var1")
         assert not opt._do_use_weight_decay("var1_weight")
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests for PoincareNormalize layer."""
 
-import sys
 
 import pytest
 import numpy as np
@@ -77,7 +76,3 @@ def test_poincare_normalize_dim_array():
     for y in outputs_expected, outputs:
         norm = np.linalg.norm(y, axis=tuple(dim))
         assert norm.max() <= 1.0 - epsilon + tol
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

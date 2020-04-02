@@ -13,7 +13,6 @@
 # limitations under the License.
 # =============================================================================
 
-import sys
 
 import pytest
 import numpy as np
@@ -450,7 +449,3 @@ def test_eps_gards(dtype):
     model.fit(random_inputs, random_labels, epochs=1)
     final_eps_value = frn.eps_learned.numpy()[0]
     assert initial_eps_value != final_eps_value
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

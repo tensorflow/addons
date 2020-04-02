@@ -14,8 +14,6 @@
 # ==============================================================================
 """Tests for util ops."""
 
-import sys
-
 import pytest
 import numpy as np
 import tensorflow as tf
@@ -89,7 +87,3 @@ def test_from_4d_image_with_invalid_shape(rank):
 
     with pytest.raises(errors, match="`image` must be 4D tensor"):
         img_utils.from_4D_image(tf.ones(shape=(1, 2, 4, 1, 1)), rank)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

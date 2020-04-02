@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for interpolate_spline."""
 
-import sys
-
-import pytest
 import numpy as np
 from scipy import interpolate as sc_interpolate
 
@@ -286,7 +283,3 @@ def test_interpolation_gradient():
 
         gradients = g.gradient(interpolator, train_points).numpy()
         assert np.sum(np.abs(gradients)) != 0
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

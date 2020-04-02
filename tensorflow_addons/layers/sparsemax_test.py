@@ -13,7 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import sys
 
 import pytest
 import numpy as np
@@ -62,7 +61,3 @@ def test_sparsemax_layer_against_numpy(dtype):
         input_data=z,
         expected_output=_np_sparsemax(z).astype(dtype),
     )
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

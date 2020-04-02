@@ -15,9 +15,7 @@
 """Tests for CRF."""
 
 import itertools
-import sys
 
-import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -409,7 +407,3 @@ class CrfTest(tf.test.TestCase):
         transition_params = tf.random.uniform([num_tags, num_tags])
         sequence_length = tf.ones([batch_size], dtype=tf.int32)
         crf_decode(potentials, transition_params, sequence_length)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
