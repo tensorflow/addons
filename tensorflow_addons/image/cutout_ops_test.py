@@ -14,8 +14,6 @@
 # ==============================================================================
 """Tests for cutout."""
 
-import sys
-
 import pytest
 import tensorflow as tf
 import numpy as np
@@ -80,7 +78,3 @@ def test_with_tf_function():
     cutout_area = tf.pad(cutout_area, ((0, 36), (0, 36)), constant_values=1)
     expect_image = to_4D_image(cutout_area)
     np.testing.assert_allclose(tf.shape(result_image), tf.shape(expect_image))
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

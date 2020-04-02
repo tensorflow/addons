@@ -14,8 +14,6 @@
 # ==============================================================================
 """Tests for distance transform ops."""
 
-import sys
-
 import pytest
 import numpy as np
 import tensorflow as tf
@@ -134,7 +132,3 @@ def test_all_ones():
     output = dist_ops.euclidean_dist_transform(image)
     expected_output = np.full([10, 10, 1], tf.float32.max)
     np.testing.assert_allclose(output, expected_output)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

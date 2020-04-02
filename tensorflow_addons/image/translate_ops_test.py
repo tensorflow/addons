@@ -14,8 +14,6 @@
 # ==============================================================================
 """Tests for translate ops."""
 
-import sys
-
 import pytest
 import tensorflow as tf
 import numpy as np
@@ -76,7 +74,3 @@ def test_translate_xy():
     )
 
     np.testing.assert_equal(translated.numpy(), expected)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
