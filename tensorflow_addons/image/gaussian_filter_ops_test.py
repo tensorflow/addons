@@ -27,7 +27,7 @@ import pytest
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test():
     test_image_tf = tf.random.uniform(
-        [1, 40, 40, 1], minval=0, maxval=255, dtype=tf.float64
+        [2, 40, 40, 1], minval=0, maxval=255, dtype=tf.float64
     )
 
     gb = gaussian_blur(test_image_tf, 1, 7)
