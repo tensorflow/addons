@@ -14,8 +14,6 @@
 # ==============================================================================
 """Tests for python distort_image_ops."""
 
-import sys
-
 import pytest
 import numpy as np
 
@@ -283,7 +281,3 @@ def test_invalid_channels():
     msg = "input must have 3 channels but instead has 4 "
     with pytest.raises(tf.errors.InvalidArgumentError, match=msg):
         _adjust_saturation_in_yiq_tf(x_np, scale).numpy()
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

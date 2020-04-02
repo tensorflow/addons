@@ -17,7 +17,6 @@ must:
    you can use the `@pytest.mark.usefixtures("maybe_run_functions_eagerly")` 
    decorator. This will run the tests twice, once normally, and once
    with `tf.config.experimental_run_functions_eagerly(True)`.
- * Add a `py_test` to this sub-package's BUILD file.
 
 #### Documentation Requirements
  * Update the [CODEOWNERS file](https://github.com/tensorflow/addons/blob/master/.github/CODEOWNERS)

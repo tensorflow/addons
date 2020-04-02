@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests for lifted loss."""
 
-import sys
 
 import pytest
 import numpy as np
@@ -111,7 +110,3 @@ def test_keras_model_compile():
 def test_serialization():
     loss = lifted.LiftedStructLoss()
     tf.keras.losses.deserialize(tf.keras.losses.serialize(loss))
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

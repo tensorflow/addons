@@ -13,7 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import sys
 
 import pytest
 import numpy as np
@@ -180,7 +179,3 @@ def test_keras(data_format):
     expected_output_type = "float32"
     assert tf.keras.backend.dtype(y[0]) == expected_output_type
     assert actual_output.shape[1:] == expected_output_shape[0][1:]
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

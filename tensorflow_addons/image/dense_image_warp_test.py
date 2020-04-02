@@ -14,8 +14,6 @@
 # ==============================================================================
 """Tests for dense_image_warp."""
 
-import sys
-
 import pytest
 import math
 
@@ -253,7 +251,3 @@ def test_unknown_shapes():
     shapes_to_try = [[3, 4, 5, 6], [1, 2, 2, 1]]
     for shape in shapes_to_try:
         _check_interpolation_correctness(shape, "float32", "float32", True)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

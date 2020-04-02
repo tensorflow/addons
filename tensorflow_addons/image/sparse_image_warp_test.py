@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for sparse_image_warp."""
 
-import sys
-
-import pytest
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.image import sparse_image_warp
@@ -254,7 +251,3 @@ def test_that_backprop_runs():
 
     gradients = t.gradient(warped_image, image).numpy()
     assert np.sum(np.abs(gradients)) != 0
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

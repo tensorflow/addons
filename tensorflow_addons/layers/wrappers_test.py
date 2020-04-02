@@ -13,7 +13,6 @@
 # limitations under the License.
 # =============================================================================
 
-import sys
 import os
 import tempfile
 
@@ -196,7 +195,3 @@ def test_removal(base_layer_fn, input_shape, data_init):
     wn_removed_output = wn_removed_layer(sample_data)
     np.testing.assert_allclose(wn_removed_output.numpy(), wn_output.numpy())
     assert isinstance(wn_removed_layer, base_layer.__class__)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
