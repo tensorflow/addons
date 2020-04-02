@@ -26,7 +26,7 @@ py_library(
 )
 
 py_test(
-    name = "layers_test",
+    name = "text_test",
     size = "small",
     srcs = glob(["*_test.py"]),
     main = "run_all_test.py",
