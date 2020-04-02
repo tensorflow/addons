@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests of augmentation ops"""
 
-import sys
 import pytest
 import tensorflow as tf
 import numpy as np
@@ -81,7 +80,3 @@ def test_blend(dtype):
     expected = blend_np(image1, image2, factor.numpy())
     np.testing.assert_equal(blended, expected)
     assert blended.dtype == expected.dtype
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
