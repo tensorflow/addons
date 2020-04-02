@@ -126,7 +126,7 @@ jobs:
           set -e -x
           ls -la dist/
           sha256sum dist/*.whl
-      - uses: pypa/gh-action-pypi-publish@master
+      - uses: pypa/gh-action-pypi-publish@v1.1.0
         if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
         with:
           user: __token__
