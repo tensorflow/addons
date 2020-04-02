@@ -115,6 +115,7 @@ jobs:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
         py-version: ['3.5', '3.6', '3.7']
+        fail-fast: false
     steps:
       - uses: actions/download-artifact@v1
         if: github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION
