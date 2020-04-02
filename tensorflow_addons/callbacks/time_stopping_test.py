@@ -6,7 +6,7 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 
-from tensorflow_addons.callbacks import TimeStopping
+from tensorflow_addons.callbacks.time_stopping import TimeStopping
 
 
 class SleepLayer(tf.keras.layers.Layer):
