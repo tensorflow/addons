@@ -65,32 +65,22 @@ def test_case_insensitive_filesystems():
             )
 
 
-def test_no_private_tf_api():
+def get_lines_of_source_code():
     source_dir = os.path.join(BASE_DIR, "tensorflow_addons")
     for path in glob.glob(source_dir + "/**/*.py", recursive=True):
-        if in_blacklist_private_api(path):
-            continue
         with open(path) as f:
-            for i, line in enumerate(f):
-                if (
-                    "import tensorflow.python" in line
-                    or "from tensorflow.python" in line
-                ):
-                    raise ImportError(
-                        "A private tensorflow API import was found in {} at line {}.\n"
-                        "tensorflow.python refers to TensorFlow's internal source "
-                        "code and private functions/classes.\n"
-                        "The use of those is forbidden in Addons for stability reasons."
-                        "\nYou should find a public alternative or ask the "
-                        "TensorFlow team to expose publicly the function/class "
-                        "that you are using.\n"
-                        "If you're trying to do `import tensorflow.python.keras` "
-                        "it can be replaced with `import tensorflow.keras`."
-                        "".format(path, i + 1)
-                    )
+            for line_idx, line in enumerate(f):
+                yield path, line_idx, line
 
 
-def in_blacklist_private_api(file_path):
+def in_blacklist(file_path, blacklist):
+    for blacklisted_file in blacklist:
+        if file_path.endswith(blacklisted_file):
+            return True
+    return False
+
+
+def test_no_private_tf_api():
     # TODO: remove all elements of the list and remove the blacklist
     blacklist = [
         "tensorflow_addons/image/cutout_ops.py",
@@ -102,7 +92,90 @@ def in_blacklist_private_api(file_path):
         "tensorflow_addons/seq2seq/decoder.py",
         "tensorflow_addons/seq2seq/attention_wrapper.py",
     ]
-    for blacklisted_file in blacklist:
-        if file_path.endswith(blacklisted_file):
-            return True
-    return False
+
+    for file_path, line_idx, line in get_lines_of_source_code():
+        if in_blacklist(file_path, blacklist):
+            continue
+        if "import tensorflow.python" in line or "from tensorflow.python" in line:
+            raise ImportError(
+                "A private tensorflow API import was found in {} at line {}.\n"
+                "tensorflow.python refers to TensorFlow's internal source "
+                "code and private functions/classes.\n"
+                "The use of those is forbidden in Addons for stability reasons."
+                "\nYou should find a public alternative or ask the "
+                "TensorFlow team to expose publicly the function/class "
+                "that you are using.\n"
+                "If you're trying to do `import tensorflow.python.keras` "
+                "it can be replaced with `import tensorflow.keras`."
+                "".format(file_path, line_idx + 1)
+            )
+
+
+def test_no_experimental_api():
+    # TODO: remove all elements of the list and remove the blacklist
+    blacklist = [
+        "tensorflow_addons/optimizers/weight_decay_optimizers.py",
+    ]
+    for file_path, line_idx, line in get_lines_of_source_code():
+        if file_path.endswith("_test.py") or file_path.endswith("conftest.py"):
+            continue
+        if file_path.endswith("tensorflow_addons/utils/test_utils.py"):
+            continue
+        if in_blacklist(file_path, blacklist):
+            continue
+
+        if "experimental" in line:
+            raise NameError(
+                "The usage of a TensorFlow experimental API was found in file {} "
+                "at line {}:\n\n"
+                "   {}\n"
+                "Experimental APIs are ok in tests but not in user-facing code. "
+                "This is because Experimental APIs might have bugs and are not "
+                "widely used yet.\n"
+                "Addons should show how to write TensorFlow "
+                "code in a stable and forward-compatible way."
+                "".format(file_path, line_idx, line)
+            )
+
+
+def test_no_deprecated_v1():
+    # TODO: remove all elements of the list and remove the blacklist
+    blacklist = [
+        "tensorflow_addons/text/skip_gram_ops.py",
+        "tensorflow_addons/text/skip_gram_ops_test.py",
+        "tensorflow_addons/optimizers/lamb_test.py",
+        "tensorflow_addons/optimizers/lookahead_test.py",
+        "tensorflow_addons/optimizers/moving_average_test.py",
+        "tensorflow_addons/optimizers/conditional_gradient_test.py",
+        "tensorflow_addons/optimizers/yogi_test.py",
+        "tensorflow_addons/optimizers/stochastic_weight_averaging_test.py",
+        "tensorflow_addons/optimizers/novograd_test.py",
+        "tensorflow_addons/optimizers/weight_decay_optimizers_test.py",
+        "tensorflow_addons/optimizers/lazy_adam_test.py",
+        "tensorflow_addons/metrics/matthews_correlation_coefficient_test.py",
+        "tensorflow_addons/rnn/cell_test.py",
+        "tensorflow_addons/seq2seq/decoder_test.py",
+        "tensorflow_addons/metrics/cohens_kappa_test.py",
+        "tensorflow_addons/optimizers/cyclical_learning_rate_test.py",
+        "tensorflow_addons/metrics/f_test.py",
+        "tensorflow_addons/seq2seq/basic_decoder_test.py",
+        "tensorflow_addons/seq2seq/beam_search_decoder_test.py",
+        "tensorflow_addons/seq2seq/decoder.py",
+        "tensorflow_addons/optimizers/rectified_adam_test.py",
+        "tensorflow_addons/metrics/multilabel_confusion_matrix_test.py",
+        "tensorflow_addons/seq2seq/attention_wrapper_test.py",
+    ]
+    for file_path, line_idx, line in get_lines_of_source_code():
+        if in_blacklist(file_path, blacklist):
+            continue
+
+        if "tf.compat.v1" in line:
+            raise NameError(
+                "The usage of a tf.compat.v1 API was found in file {} at line {}:\n\n"
+                "   {}\n"
+                "TensorFlow Addons doesn't support running programs with "
+                "`tf.compat.v1.disable_v2_behavior()`.\n"
+                "As such, there should be no need for the compatibility module "
+                "tf.compat. Please find an alternative using only the TF2.x API."
+                "".format(file_path, line_idx, line)
+            )
