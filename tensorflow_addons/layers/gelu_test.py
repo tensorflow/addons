@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests for GELU activation."""
 
-import sys
 
 import pytest
 import numpy as np
@@ -29,7 +28,3 @@ def test_random(dtype):
     test_utils.layer_test(
         GELU, kwargs={"dtype": dtype}, input_data=x, expected_output=val
     )
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests for Maxout layer."""
 
-import sys
 
 import pytest
 import numpy as np
@@ -57,7 +56,3 @@ def test_unknown():
 def test_invalid_shape():
     with pytest.raises(ValueError, match="number of features"):
         test_utils.layer_test(Maxout, kwargs={"num_units": 3}, input_shape=(5, 4, 2, 7))
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
