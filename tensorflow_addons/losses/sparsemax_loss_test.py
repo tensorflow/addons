@@ -104,7 +104,6 @@ def test_gradient_against_estimate(dtype):
     test_utils.assert_allclose_according_to_type(jacob_sym, jacob_num)
 
 
-@pytest.mark.parametrize("dtype", ["float32", "float64"])
 def _tf_sparsemax_loss(z, q, dtype):
     z = z.astype(dtype)
     q = q.astype(dtype)
