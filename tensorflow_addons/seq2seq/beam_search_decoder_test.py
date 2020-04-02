@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for tfa.seq2seq.seq2seq.beam_search_decoder."""
 
-import sys
-
-import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -651,7 +648,3 @@ class BeamSearchDecoderTest(tf.test.TestCase):
         self._testDynamicDecodeRNN(
             time_major=False, has_attention=True, with_alignment_history=True
         )
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
