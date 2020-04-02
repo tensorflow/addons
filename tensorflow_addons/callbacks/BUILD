@@ -11,6 +11,7 @@ py_library(
         "tqdm_progress_bar.py",
     ],
     deps = [
+        "//tensorflow_addons/optimizers",
         "//tensorflow_addons/utils",
     ],
 )
