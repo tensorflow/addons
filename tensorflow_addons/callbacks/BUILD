@@ -14,3 +14,13 @@ py_library(
         "//tensorflow_addons/utils",
     ],
 )
+
+py_test(
+    name = "callbacks_test",
+    size = "small",
+    srcs = glob(["*_test.py"]),
+    main = "run_all_test.py",
+    deps = [
+        ":callbacks",
+    ],
+)
