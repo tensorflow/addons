@@ -414,4 +414,4 @@ class LAMBTest(tf.test.TestCase):
         opt = lamb.LAMB(0.01, exclude_from_layer_adaptation=["var1"])
         assert opt._do_layer_adaptation("var0")
         assert not opt._do_layer_adaptation("var1")
-        assert not opt._do_layer_adaptation("var1")
+        assert not opt._do_layer_adaptation("var1_weight")
