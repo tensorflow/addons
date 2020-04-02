@@ -22,9 +22,10 @@ py_library(
 )
 
 py_test(
-    name = "attention_wrapper_test",
+    name = "seq2seq_test",
     size = "medium",
-    srcs = ["attention_wrapper_test.py"],
+    srcs = glob(["*_test.py"]),
+    main = "run_all_test.py",
     deps = [
         ":seq2seq",
     ],
