@@ -404,6 +404,14 @@ class LAMBTest(tf.test.TestCase):
         config = opt.get_config()
         self.assertEqual(config["learning_rate"], 1e-4)
 
+    def test_exclude_weight_decay(self):
+        opt = lamb.LAMB(
+            0.01, weight_decay_rate=0.01, exclude_from_weight_decay=["var1"]
+        )
+        assert opt._do_use_weight_decay("var0")
+        assert not opt._do_use_weight_decay("var1")
+        assert not opt._do_use_weight_decay("var1_weight")
+
 
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__]))
