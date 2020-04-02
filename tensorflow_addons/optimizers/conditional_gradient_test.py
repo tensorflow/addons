@@ -23,15 +23,15 @@ from tensorflow_addons.utils import test_utils
 from tensorflow_addons.optimizers import conditional_gradient as cg_lib
 
 
-WINDOWS_CPU = platform.system() == "Windows"
-
-pytestmark = pytest.mark.skipif(
-    WINDOWS_CPU,
-    reason="Doesn't work on Windows CPU version, tf.half is not registered for tf.linalg.svd function on Windows CPU version. So we have to remove tf.half when testing with Windows CPU version. See https://github.com/tensorflow/tensorflow/issues/36764",
-)
-
-
 def _dtypes_to_test(use_gpu):
+    # Based on issue #347 in the following link,
+    #        "https://github.com/tensorflow/addons/issues/347"
+    # tf.half is not registered for 'ResourceScatterUpdate' OpKernel
+    # for 'GPU' devices.
+    # So we have to remove tf.half when testing with gpu.
+    # The function "_DtypesToTest" is from
+    #       "https://github.com/tensorflow/tensorflow/blob/5d4a6cee737a1dc6c20172a1dc1
+    #        5df10def2df72/tensorflow/python/kernel_tests/conv_ops_3d_test.py#L53-L62"
     if use_gpu:
         return [tf.float32, tf.float64]
     else:
@@ -39,6 +39,11 @@ def _dtypes_to_test(use_gpu):
 
 
 def _dtypes_with_checking_system(use_gpu, system):
+    # Based on issue #36764 in the following link,
+    #        "https://github.com/tensorflow/tensorflow/issues/36764"
+    # tf.half is not registered for tf.linalg.svd function on Windows
+    # CPU version.
+    # So we have to remove tf.half when testing with Windows CPU version.
     if system == "Windows":
         return [tf.float32, tf.float64]
     else:
