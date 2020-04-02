@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests for TLU activation."""
 
-import sys
 
 import pytest
 import numpy as np
@@ -60,7 +59,3 @@ def test_serialization(dtype):
     serialized_tlu = tf.keras.layers.serialize(tlu)
     new_layer = tf.keras.layers.deserialize(serialized_tlu)
     assert tlu.get_config() == new_layer.get_config()
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
