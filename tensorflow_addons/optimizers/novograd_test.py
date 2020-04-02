@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for NovoGrad Optimizer."""
 
-import sys
-
-import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -141,7 +138,3 @@ class NovoGradTest(tf.test.TestCase):
         self.assertEqual(config["learning_rate"], 1e-4)
         self.assertEqual(config["weight_decay"], 0.0)
         self.assertEqual(config["grad_averaging"], False)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

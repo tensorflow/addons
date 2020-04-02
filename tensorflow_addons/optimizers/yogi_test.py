@@ -14,9 +14,7 @@
 # ==============================================================================
 """Tests for Yogi optimizer."""
 
-import sys
 
-import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -381,7 +379,3 @@ class YogiOptimizerTest(tf.test.TestCase):
         opt = yogi.Yogi(1e-4)
         config = opt.get_config()
         self.assertEqual(config["learning_rate"], 1e-4)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
