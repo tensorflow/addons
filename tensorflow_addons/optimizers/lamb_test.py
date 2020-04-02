@@ -14,9 +14,7 @@
 # ==============================================================================
 """Tests for LAMB Optimizer."""
 
-import sys
 
-import pytest
 import numpy as np
 from numpy import linalg
 
@@ -403,7 +401,3 @@ class LAMBTest(tf.test.TestCase):
         opt = lamb.LAMB(1e-4)
         config = opt.get_config()
         self.assertEqual(config["learning_rate"], 1e-4)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

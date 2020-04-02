@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for optimizers with weight decay."""
 
-import sys
-
-import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -332,7 +329,3 @@ class ExtendWithWeightDecayTest(SGDWTest):
     optimizer = weight_decay_optimizers.extend_with_decoupled_weight_decay(
         tf.keras.optimizers.SGD
     )
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

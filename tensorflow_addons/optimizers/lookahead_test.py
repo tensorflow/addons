@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for Lookahead optimizer."""
 
-import sys
-
-import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -158,7 +155,3 @@ class LookaheadTest(tf.test.TestCase):
         config = opt.get_config()
         self.assertEqual(config["sync_period"], 10)
         self.assertEqual(config["slow_step_size"], 0.4)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
