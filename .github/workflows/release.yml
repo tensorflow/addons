@@ -163,6 +163,14 @@ jobs:
     name: Publish wheels to PyPi
     needs: [manylinux-release-wheel, macos-release-wheel, windows-release-wheel]
     runs-on: ubuntu-18.04
+<<<<<<< HEAD
+=======
+    strategy:
+      matrix:
+        os: ['macOS', 'Windows', 'Linux']
+        py-version: ['3.5', '3.6', '3.7']
+      fail-fast: false
+>>>>>>> 23b6870... Do not fail fast for pypi upload (#1537)
     steps:
       - uses: actions/download-artifact@v1
         with:
