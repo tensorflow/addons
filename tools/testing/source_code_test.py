@@ -65,9 +65,12 @@ def test_case_insensitive_filesystems():
             )
 
 
-def get_lines_of_source_code():
+def get_lines_of_source_code(blacklist=None):
+    blacklist = blacklist or []
     source_dir = os.path.join(BASE_DIR, "tensorflow_addons")
     for path in glob.glob(source_dir + "/**/*.py", recursive=True):
+        if in_blacklist(path, blacklist):
+            continue
         with open(path) as f:
             for line_idx, line in enumerate(f):
                 yield path, line_idx, line
@@ -93,9 +96,8 @@ def test_no_private_tf_api():
         "tensorflow_addons/seq2seq/attention_wrapper.py",
     ]
 
-    for file_path, line_idx, line in get_lines_of_source_code():
-        if in_blacklist(file_path, blacklist):
-            continue
+    for file_path, line_idx, line in get_lines_of_source_code(blacklist):
+
         if "import tensorflow.python" in line or "from tensorflow.python" in line:
             raise ImportError(
                 "A private tensorflow API import was found in {} at line {}.\n"
@@ -116,12 +118,11 @@ def test_no_experimental_api():
     blacklist = [
         "tensorflow_addons/optimizers/weight_decay_optimizers.py",
     ]
-    for file_path, line_idx, line in get_lines_of_source_code():
+    for file_path, line_idx, line in get_lines_of_source_code(blacklist):
+
         if file_path.endswith("_test.py") or file_path.endswith("conftest.py"):
             continue
         if file_path.endswith("tensorflow_addons/utils/test_utils.py"):
-            continue
-        if in_blacklist(file_path, blacklist):
             continue
 
         if "experimental" in line:
@@ -165,9 +166,7 @@ def test_no_deprecated_v1():
         "tensorflow_addons/metrics/multilabel_confusion_matrix_test.py",
         "tensorflow_addons/seq2seq/attention_wrapper_test.py",
     ]
-    for file_path, line_idx, line in get_lines_of_source_code():
-        if in_blacklist(file_path, blacklist):
-            continue
+    for file_path, line_idx, line in get_lines_of_source_code(blacklist):
 
         if "tf.compat.v1" in line:
             raise NameError(
