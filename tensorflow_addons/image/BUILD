@@ -212,8 +212,6 @@ py_test(
         "utils_test.py",
     ],
     main = "utils_test.py",
-    srcs = glob(["*_test.py"]),
-    main = "run_all_test.py",
     deps = [
         ":image",
     ],
