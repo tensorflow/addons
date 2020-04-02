@@ -184,7 +184,12 @@ jobs:
           cp Windows-wheels/*.whl dist/
           ls -la dist/
           sha256sum dist/*.whl
+<<<<<<< HEAD
       - uses: pypa/gh-action-pypi-publish@master
+=======
+      - uses: pypa/gh-action-pypi-publish@v1.1.0
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
+>>>>>>> cc77221... * Pin pypi github action (#1536)
         with:
           user: __token__
           password: ${{ secrets.pypi_token }}
