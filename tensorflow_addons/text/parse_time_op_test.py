@@ -14,7 +14,6 @@
 # ==============================================================================
 """Parse time op tests."""
 import platform
-import sys
 
 import numpy as np
 import pytest
@@ -81,7 +80,3 @@ def test_invalid_time_string():
             time_format="%Y-%m-%dT%H:%M:%E*S%Ez",
             output_unit="SECOND",
         )
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
