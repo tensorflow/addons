@@ -13,7 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import sys
 
 import pytest
 import tensorflow as tf
@@ -244,7 +243,3 @@ class SparsemaxTest(tf.test.TestCase):
         config = tf.keras.losses.serialize(ref_fn)
         fn = tf.keras.losses.deserialize(config)
         self.assertEqual(ref_fn, fn)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
