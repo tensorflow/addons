@@ -409,3 +409,9 @@ class LAMBTest(tf.test.TestCase):
         assert opt._do_use_weight_decay("var0")
         assert not opt._do_use_weight_decay("var1")
         assert not opt._do_use_weight_decay("var1_weight")
+
+    def test_exclude_layer_adaptation(self):
+        opt = lamb.LAMB(0.01, exclude_from_layer_adaptation=["var1"])
+        assert opt._do_layer_adaptation("var0")
+        assert not opt._do_layer_adaptation("var1")
+        assert not opt._do_layer_adaptation("var1")
