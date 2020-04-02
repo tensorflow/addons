@@ -18,7 +18,7 @@
 def normalize_tuple(value, n, name):
     """Transforms an integer or iterable of integers into an integer tuple.
 
-    Ported from tensorflow.python.keras.util.
+    A copy of tensorflow.python.keras.util.
 
     Arguments:
       value: The value to validate and convert. Could an int, or any iterable

@@ -14,15 +14,9 @@
 # limitations under the License.
 #
 # ==============================================================================
-# usage: bash tools/testing/addons_cpu.sh [--no-deps]
+# usage: bash tools/testing/addons_cpu.sh
 
 set -x -e
-
-
-if [ "$1" != "--no-deps" ] && [ "$1" != "" ]; then
-  echo Wrong argument $1
-  exit 1
-fi
 
 export CC_OPT_FLAGS='-mavx'
 export TF_NEED_CUDA=0
@@ -34,8 +28,8 @@ else
   PYTHON_BINARY=python
 fi
 
-$PYTHON_BINARY -m pip install -r tools/install_deps/pytest.txt
-$PYTHON_BINARY ./configure.py $1
+$PYTHON_BINARY -m pip install -r tools/install_deps/pytest.txt -e ./
+$PYTHON_BINARY ./configure.py
 cat ./.bazelrc
 bash tools/install_so_files.sh
 $PYTHON_BINARY -m pytest -v --durations=25 -n auto ./tensorflow_addons

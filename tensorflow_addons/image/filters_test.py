@@ -13,8 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import sys
-
 import pytest
 import numpy as np
 import tensorflow as tf
@@ -361,7 +359,3 @@ def test_symmetric_padding_with_3x3_filter_median(image_shape):
         constant_values=0,
         expected_plane=expected_plane,
     )
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
