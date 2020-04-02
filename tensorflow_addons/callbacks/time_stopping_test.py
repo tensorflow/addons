@@ -19,17 +19,22 @@ class SleepLayer(tf.keras.layers.Layer):
         return inputs
 
 
-def test_stop_at_the_right_time():
+def get_model_and_data(secs):
     X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
     y = np.array([[0], [1], [1], [0]])
 
     model = Sequential()
-    model.add(SleepLayer(0.1))
+    model.add(SleepLayer(secs))
     model.add(Dense(1))
     model.compile(loss="mean_squared_error")
 
     # In case there is some initialization going on.
     model.fit(X, y, epochs=1, verbose=0)
+    return X, y, model
+
+
+def test_stop_at_the_right_time():
+    X, y, model = get_model_and_data(0.1)
 
     time_stopping = TimeStopping(2, verbose=0)
     history = model.fit(X, y, epochs=30, verbose=0, callbacks=[time_stopping])
@@ -38,16 +43,7 @@ def test_stop_at_the_right_time():
 
 
 def test_default_value():
-    X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
-    y = np.array([[0], [1], [1], [0]])
-
-    model = Sequential()
-    model.add(SleepLayer(0.1))
-    model.add(Dense(1))
-    model.compile(loss="mean_squared_error")
-
-    # In case there is some initialization going on.
-    model.fit(X, y, epochs=1, verbose=0)
+    X, y, model = get_model_and_data(0.1)
 
     time_stopping = TimeStopping()
     history = model.fit(X, y, epochs=15, verbose=0, callbacks=[time_stopping])
@@ -57,16 +53,7 @@ def test_default_value():
 
 @pytest.mark.parametrize("verbose", [0, 1])
 def test_time_stopping_verbose(capsys, verbose):
-    X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
-    y = np.array([[0], [1], [1], [0]])
-
-    model = Sequential()
-    model.add(SleepLayer(0.25))
-    model.add(Dense(1))
-    model.compile(loss="mean_squared_error")
-
-    # In case there is some initialization going on.
-    model.fit(X, y, epochs=1, verbose=0)
+    X, y, model = get_model_and_data(0.25)
 
     time_stopping = TimeStopping(1, verbose=verbose)
 
