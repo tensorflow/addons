@@ -37,7 +37,7 @@ filegroup(
 )
 
 py_test(
-    name = "color_ops_test",
+    name = "image_test",
     size = "small",
     srcs = [
         "color_ops_test.py",
@@ -212,6 +212,8 @@ py_test(
         "utils_test.py",
     ],
     main = "utils_test.py",
+    srcs = glob(["*_test.py"]),
+    main = "run_all_test.py",
     deps = [
         ":image",
     ],

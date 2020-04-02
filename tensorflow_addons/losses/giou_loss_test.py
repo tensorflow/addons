@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests for GIoU loss."""
 
-import sys
 
 import pytest
 
@@ -93,7 +92,3 @@ def test_with_integer():
     )
     loss = giou_loss(boxes1, boxes2)
     test_utils.assert_allclose_according_to_type(loss, expected_result)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

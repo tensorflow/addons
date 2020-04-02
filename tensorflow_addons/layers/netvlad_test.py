@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests for NetVLAD layer."""
 
-import sys
 
 import pytest
 import numpy as np
@@ -58,7 +57,3 @@ def test_invalid_shape():
             NetVLAD, kwargs={"num_clusters": 2}, input_shape=(5, 4, 4, 20)
         )
     assert "must have rank 3" in str(exception_info.value)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

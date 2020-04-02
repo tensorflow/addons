@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests for metric learning."""
 
-import sys
 
 import pytest
 import numpy as np
@@ -59,7 +58,3 @@ def test_correct_distance_squared():
 
     distances = pairwise_distance(tf_embeddings, squared=True)
     np.testing.assert_allclose(expected_distance, distances)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

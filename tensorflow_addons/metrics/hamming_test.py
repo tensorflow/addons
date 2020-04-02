@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests Hamming metrics."""
 
-import sys
-
-import pytest
 import tensorflow as tf
 from tensorflow_addons.metrics import HammingLoss, hamming_distance
 from tensorflow_addons.utils import test_utils
@@ -184,7 +181,3 @@ class HammingMetricsTest(tf.test.TestCase):
         data = np.random.random((100, 10))
         labels = np.random.random((100, 3))
         model.fit(data, labels, epochs=1, batch_size=32, verbose=0)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
