@@ -14,9 +14,7 @@
 # ==============================================================================
 import unittest
 import inspect
-import sys
 
-import pytest
 from tensorflow.keras.metrics import Metric
 from tensorflow_addons import metrics
 
@@ -38,7 +36,3 @@ def check_update_state_signature(metric_class):
                 "it anyway and raise a UserWarning if it is "
                 "not None.".format(metric_class.__name__, expected_parameter)
             )
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

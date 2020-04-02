@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests F beta metrics."""
 
-import sys
-
-import pytest
 from absl.testing import parameterized
 
 import tensorflow as tf
@@ -155,7 +152,3 @@ class F1ScoreTest(tf.test.TestCase):
         f1 = F1Score(3)
         config = f1.get_config()
         self.assertFalse("beta" in config)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
