@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for tfa.seq2seq.decoder."""
 
-import sys
-
-import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -184,7 +181,3 @@ class DecodeRNNTest(tf.test.TestCase):
         self._testDynamicDecodeRNNWithTrainingHelperMatchesDynamicRNN(
             use_sequence_length=False
         )
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
