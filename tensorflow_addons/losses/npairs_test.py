@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests for npairs loss."""
 
-import sys
 import platform
 
 import numpy as np
@@ -144,7 +143,3 @@ def test_multilabel():
     y_true = tf.sparse.from_dense(y_true)
     loss = nml_obj(y_true, y_pred)
     np.testing.assert_allclose(loss, 1.420522, rtol=1e-06, atol=1e-06)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
