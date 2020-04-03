@@ -17,7 +17,6 @@
 import csv
 import os
 import tempfile
-import sys
 
 import pytest
 import tensorflow as tf
@@ -615,7 +614,3 @@ def _make_text_vocab_float_file(tmp_dir):
             ]
         )
     return filepath
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

@@ -14,8 +14,6 @@
 # ==============================================================================
 """Tests for tf.addons.seq2seq.python.loss_ops."""
 
-import sys
-
 import pytest
 import numpy as np
 import tensorflow as tf
@@ -267,7 +265,6 @@ def test_ambiguous_order():
         seq_loss(targets, logits, weights).numpy()
 
 
-@pytest.mark.xfail(tf.__version__ == "2.2.0-rc1", reason="TODO: Fix this test")
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_keras_compatibility():
     """To test the compatibility of SequenceLoss with Keras's built-in
@@ -315,7 +312,3 @@ def test_keras_compatibility():
 
     calculated_loss = h.history["loss"][0]
     np.testing.assert_allclose(calculated_loss, expected_loss, rtol=1e-6, atol=1e-6)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

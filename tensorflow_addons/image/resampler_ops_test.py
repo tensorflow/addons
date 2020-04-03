@@ -14,12 +14,10 @@
 # ============================================================================
 """Tests for resampler."""
 
-import sys
-
-import pytest
 from absl.testing import parameterized
 
 import numpy as np
+import pytest
 import tensorflow as tf
 from tensorflow_addons.image import resampler_ops
 from tensorflow_addons.utils import test_utils
@@ -251,7 +249,3 @@ def test_op_errors():
         match="Only bilinear interpolation is supported, warping",
     ):
         resampler_ops.resampler(data, warp).numpy()
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

@@ -14,8 +14,6 @@
 # ==============================================================================
 """Tests for distance transform ops."""
 
-import sys
-
 import pytest
 import numpy as np
 import tensorflow as tf
@@ -24,94 +22,90 @@ from tensorflow_addons.image import distance_transform as dist_ops
 from tensorflow_addons.utils import test_utils
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class DistanceOpsTest(tf.test.TestCase):
-    def test_single_binary_image(self):
-        image = [
-            [[1], [1], [1], [1], [1]],
-            [[1], [1], [1], [1], [1]],
-            [[0], [1], [0], [1], [0]],
-            [[1], [0], [1], [0], [1]],
-            [[0], [1], [0], [1], [0]],
+@pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
+def test_single_binary_image(dtype):
+    image = [
+        [[1], [1], [1], [1], [1]],
+        [[1], [1], [1], [1], [1]],
+        [[0], [1], [0], [1], [0]],
+        [[1], [0], [1], [0], [1]],
+        [[0], [1], [0], [1], [0]],
+    ]
+    expected_output = np.array(
+        [
+            2,
+            2.23606801,
+            2,
+            2.23606801,
+            2,
+            1,
+            1.41421354,
+            1,
+            1.41421354,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
         ]
-        expected_output = np.array(
-            [
-                2,
-                2.23606801,
-                2,
-                2.23606801,
-                2,
-                1,
-                1.41421354,
-                1,
-                1.41421354,
-                1,
-                0,
-                1,
-                0,
-                1,
-                0,
-                1,
-                0,
-                1,
-                0,
-                1,
-                0,
-                1,
-                0,
-                1,
-                0,
-            ]
-        )
-        image = tf.constant(image, dtype=tf.uint8)
+    )
+    image = tf.constant(image, dtype=tf.uint8)
 
-        for output_dtype in [tf.float16, tf.float32, tf.float64]:
-            output = dist_ops.euclidean_dist_transform(image, dtype=output_dtype)
-            output_flat = tf.reshape(output, [-1])
+    output = dist_ops.euclidean_dist_transform(image, dtype=dtype)
+    output_flat = tf.reshape(output, [-1])
 
-            with self.subTest(output_dtype=output_dtype):
-                self.assertEqual(output.dtype, output_dtype)
-                self.assertEqual(output.shape, [5, 5, 1])
-                self.assertAllCloseAccordingToType(output_flat, expected_output)
+    assert output.dtype == dtype
+    assert output.shape == [5, 5, 1]
+    test_utils.assert_allclose_according_to_type(output_flat, expected_output)
 
-    def test_batch_binary_images(self):
-        batch_size = 3
-        image = [
-            [[0], [0], [0], [0], [0]],
-            [[0], [1], [1], [1], [0]],
-            [[0], [1], [1], [1], [0]],
-            [[0], [1], [1], [1], [0]],
-            [[0], [0], [0], [0], [0]],
-        ]
-        expected_output = np.array(
-            [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 2, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0]
-            * batch_size
-        )
-        images = tf.constant([image] * batch_size, dtype=tf.uint8)
-        for output_dtype in [tf.float16, tf.float32, tf.float64]:
-            output = dist_ops.euclidean_dist_transform(images, dtype=output_dtype)
-            output_flat = tf.reshape(output, [-1])
 
-            with self.subTest(output_dtype=output_dtype):
-                self.assertEqual(output.dtype, output_dtype)
-                self.assertEqual(output.shape, [batch_size, 5, 5, 1])
-                self.assertAllCloseAccordingToType(output_flat, expected_output)
+@pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
+def test_batch_binary_images(dtype):
+    batch_size = 3
+    image = [
+        [[0], [0], [0], [0], [0]],
+        [[0], [1], [1], [1], [0]],
+        [[0], [1], [1], [1], [0]],
+        [[0], [1], [1], [1], [0]],
+        [[0], [0], [0], [0], [0]],
+    ]
+    expected_output = np.array(
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 2, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+        * batch_size
+    )
+    images = tf.constant([image] * batch_size, dtype=tf.uint8)
 
-    def test_image_with_invalid_dtype(self):
-        image = [
-            [[1], [1], [1], [1], [1]],
-            [[1], [1], [1], [1], [1]],
-            [[0], [1], [0], [1], [0]],
-            [[1], [0], [1], [0], [1]],
-            [[0], [1], [0], [1], [0]],
-        ]
-        image = tf.constant(image, dtype=tf.uint8)
+    output = dist_ops.euclidean_dist_transform(images, dtype=dtype)
+    output_flat = tf.reshape(output, [-1])
 
-        for output_dtype in [tf.uint8, tf.int32, tf.int64]:
-            with self.assertRaisesRegex(
-                TypeError, "`dtype` must be float16, float32 or float64"
-            ):
-                _ = dist_ops.euclidean_dist_transform(image, dtype=output_dtype)
+    assert output.shape == [batch_size, 5, 5, 1]
+    test_utils.assert_allclose_according_to_type(output_flat, expected_output)
+
+
+@pytest.mark.parametrize("dtype", [tf.uint8, tf.int32, tf.int64])
+def test_image_with_invalid_dtype(dtype):
+    image = [
+        [[1], [1], [1], [1], [1]],
+        [[1], [1], [1], [1], [1]],
+        [[0], [1], [0], [1], [0]],
+        [[1], [0], [1], [0], [1]],
+        [[0], [1], [0], [1], [0]],
+    ]
+    image = tf.constant(image, dtype=tf.uint8)
+
+    with pytest.raises(TypeError, match="`dtype` must be float16, float32 or float64"):
+        _ = dist_ops.euclidean_dist_transform(image, dtype=dtype)
 
 
 def test_image_with_invalid_shape():
@@ -134,7 +128,3 @@ def test_all_ones():
     output = dist_ops.euclidean_dist_transform(image)
     expected_output = np.full([10, 10, 1], tf.float32.max)
     np.testing.assert_allclose(output, expected_output)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

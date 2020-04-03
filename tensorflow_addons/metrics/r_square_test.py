@@ -14,8 +14,6 @@
 # ==============================================================================
 """Tests for R-Square Metric."""
 
-import sys
-
 import numpy as np
 import pytest
 import tensorflow as tf
@@ -119,7 +117,3 @@ def test_r2_sklearn_comparison():
 def test_unrecognized_multioutput():
     with pytest.raises(ValueError):
         initialize_vars(multioutput="meadian")
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

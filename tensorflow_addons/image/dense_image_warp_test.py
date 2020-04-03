@@ -14,8 +14,6 @@
 # ==============================================================================
 """Tests for dense_image_warp."""
 
-import sys
-
 import pytest
 import math
 
@@ -24,55 +22,52 @@ import tensorflow as tf
 
 from tensorflow_addons.image import dense_image_warp
 from tensorflow_addons.image import interpolate_bilinear
-from tensorflow_addons.utils import test_utils
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class InterpolateBilinearTest(tf.test.TestCase):
-    def test_interpolate_small_grid_ij(self):
-        grid = tf.constant(
-            [[0.0, 1.0, 2.0], [3.0, 4.0, 5.0], [6.0, 7.0, 8.0], [9.0, 10.0, 11.0]],
-            shape=[1, 4, 3, 1],
-        )
-        query_points = tf.constant(
-            [[0.0, 0.0], [1.0, 0.0], [2.0, 0.5], [1.5, 1.5], [3.0, 2.0]],
-            shape=[1, 5, 2],
-        )
-        expected_results = np.reshape(np.array([0.0, 3.0, 6.5, 6.0, 11.0]), [1, 5, 1])
+def test_interpolate_small_grid_ij():
+    grid = tf.constant(
+        [[0.0, 1.0, 2.0], [3.0, 4.0, 5.0], [6.0, 7.0, 8.0], [9.0, 10.0, 11.0]],
+        shape=[1, 4, 3, 1],
+    )
+    query_points = tf.constant(
+        [[0.0, 0.0], [1.0, 0.0], [2.0, 0.5], [1.5, 1.5], [3.0, 2.0]], shape=[1, 5, 2],
+    )
+    expected_results = np.reshape(np.array([0.0, 3.0, 6.5, 6.0, 11.0]), [1, 5, 1])
 
-        interp = interpolate_bilinear(grid, query_points)
+    interp = interpolate_bilinear(grid, query_points)
 
-        self.assertAllClose(expected_results, interp)
+    np.testing.assert_allclose(expected_results, interp)
 
-    def test_interpolate_small_grid_xy(self):
-        grid = tf.constant(
-            [[0.0, 1.0, 2.0], [3.0, 4.0, 5.0], [6.0, 7.0, 8.0], [9.0, 10.0, 11.0]],
-            shape=[1, 4, 3, 1],
-        )
-        query_points = tf.constant(
-            [[0.0, 0.0], [0.0, 1.0], [0.5, 2.0], [1.5, 1.5], [2.0, 3.0]],
-            shape=[1, 5, 2],
-        )
-        expected_results = np.reshape(np.array([0.0, 3.0, 6.5, 6.0, 11.0]), [1, 5, 1])
 
-        interp = interpolate_bilinear(grid, query_points, indexing="xy")
+def test_interpolate_small_grid_xy():
+    grid = tf.constant(
+        [[0.0, 1.0, 2.0], [3.0, 4.0, 5.0], [6.0, 7.0, 8.0], [9.0, 10.0, 11.0]],
+        shape=[1, 4, 3, 1],
+    )
+    query_points = tf.constant(
+        [[0.0, 0.0], [0.0, 1.0], [0.5, 2.0], [1.5, 1.5], [2.0, 3.0]], shape=[1, 5, 2],
+    )
+    expected_results = np.reshape(np.array([0.0, 3.0, 6.5, 6.0, 11.0]), [1, 5, 1])
 
-        self.assertAllClose(expected_results, interp)
+    interp = interpolate_bilinear(grid, query_points, indexing="xy")
 
-    def test_interpolate_small_grid_batched(self):
-        grid = tf.constant(
-            [[[0.0, 1.0], [3.0, 4.0]], [[5.0, 6.0], [7.0, 8.0]]], shape=[2, 2, 2, 1]
-        )
-        query_points = tf.constant(
-            [[[0.0, 0.0], [1.0, 0.0], [0.5, 0.5]], [[0.5, 0.0], [1.0, 0.0], [1.0, 1.0]]]
-        )
-        expected_results = np.reshape(
-            np.array([[0.0, 3.0, 2.0], [6.0, 7.0, 8.0]]), [2, 3, 1]
-        )
+    np.testing.assert_allclose(expected_results, interp)
 
-        interp = interpolate_bilinear(grid, query_points)
 
-        self.assertAllClose(expected_results, interp)
+def test_interpolate_small_grid_batched():
+    grid = tf.constant(
+        [[[0.0, 1.0], [3.0, 4.0]], [[5.0, 6.0], [7.0, 8.0]]], shape=[2, 2, 2, 1]
+    )
+    query_points = tf.constant(
+        [[[0.0, 0.0], [1.0, 0.0], [0.5, 0.5]], [[0.5, 0.0], [1.0, 0.0], [1.0, 1.0]]]
+    )
+    expected_results = np.reshape(
+        np.array([[0.0, 3.0, 2.0], [6.0, 7.0, 8.0]]), [2, 3, 1]
+    )
+
+    interp = interpolate_bilinear(grid, query_points)
+
+    np.testing.assert_allclose(expected_results, interp)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -90,57 +85,45 @@ def test_unknown_shape():
         assert res.shape == (shape[0], 4, shape[3])
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class DenseImageWarpTest(tf.test.TestCase):
-    def _check_zero_flow_correctness(self, shape, image_type, flow_type):
-        """Assert using zero flows doesn't change the input image."""
-        rand_image, rand_flows = _get_random_image_and_flows(
-            shape, image_type, flow_type
-        )
-        rand_flows *= 0
+def _check_zero_flow_correctness(shape, image_type, flow_type):
+    """Assert using zero flows doesn't change the input image."""
+    rand_image, rand_flows = _get_random_image_and_flows(shape, image_type, flow_type)
+    rand_flows *= 0
 
-        interp = dense_image_warp(
-            image=tf.convert_to_tensor(rand_image),
-            flow=tf.convert_to_tensor(rand_flows),
-        )
+    interp = dense_image_warp(
+        image=tf.convert_to_tensor(rand_image), flow=tf.convert_to_tensor(rand_flows),
+    )
 
-        self.assertAllClose(rand_image, interp)
+    np.testing.assert_allclose(rand_image, interp, rtol=1e-6, atol=1e-6)
 
-    def test_zero_flows(self):
-        """Apply _check_zero_flow_correctness() for a few sizes and types."""
-        shapes_to_try = [[3, 4, 5, 6], [1, 2, 2, 1]]
-        for shape in shapes_to_try:
-            self._check_zero_flow_correctness(
-                shape, image_type="float32", flow_type="float32"
-            )
 
-    def test_gradients_exist(self):
-        """Check that backprop can run.
+def test_zero_flows():
+    """Apply _check_zero_flow_correctness() for a few sizes and types."""
+    shapes_to_try = [[3, 4, 5, 6], [1, 2, 2, 1]]
+    for shape in shapes_to_try:
+        _check_zero_flow_correctness(shape, image_type="float32", flow_type="float32")
 
-        The correctness of the gradients is assumed, since the forward
-        propagation is tested to be correct and we only use built-in tf
-        ops. However, we perform a simple test to make sure that
-        backprop can actually run. We treat the flows as a tf.Variable
-        and optimize them to minimize the difference between the
-        interpolated image and the input image.
-        """
-        batch_size, height, width, num_channels = [4, 5, 6, 7]
-        image_shape = [batch_size, height, width, num_channels]
-        image = tf.random.normal(image_shape)
-        flow_shape = [batch_size, height, width, 2]
-        flows = tf.Variable(tf.random.normal(shape=flow_shape) * 0.25, dtype=tf.float32)
 
-        def loss():
-            interp = dense_image_warp(image, flows)
-            return tf.math.reduce_mean(tf.math.square(interp - image))
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_gradients_exist():
+    """Check that backprop can run.
 
-        optimizer = tf.keras.optimizers.Adam(1.0)
-        minimize_op = optimizer.minimize(loss, var_list=[flows])
+    The correctness of the gradients is assumed, since the forward
+    propagation is tested to be correct and we only use built-in tf
+    ops. However, we perform a simple test to make sure that
+    backprop can actually run.
+    """
+    batch_size, height, width, num_channels = [4, 5, 6, 7]
+    image_shape = [batch_size, height, width, num_channels]
+    image = tf.random.normal(image_shape)
+    flow_shape = [batch_size, height, width, 2]
+    flows = tf.Variable(tf.random.normal(shape=flow_shape) * 0.25, dtype=tf.float32)
 
-        self.evaluate(tf.compat.v1.global_variables_initializer())
+    with tf.GradientTape() as t:
+        interp = dense_image_warp(image, flows)
 
-        for _ in range(10):
-            self.evaluate(minimize_op)
+    grads = t.gradient(interp, flows).numpy()
+    assert np.sum(np.abs(grads)) != 0
 
 
 def _assert_correct_interpolation_value(
@@ -268,7 +251,3 @@ def test_unknown_shapes():
     shapes_to_try = [[3, 4, 5, 6], [1, 2, 2, 1]]
     for shape in shapes_to_try:
         _check_interpolation_correctness(shape, "float32", "float32", True)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

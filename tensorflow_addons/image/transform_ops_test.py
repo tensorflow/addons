@@ -14,8 +14,6 @@
 # ==============================================================================
 """Tests for transform ops."""
 
-import sys
-
 import pytest
 import numpy as np
 import tensorflow as tf
@@ -367,7 +365,3 @@ def test_shear_y():
     expected_img[mask[0], mask[1], :] = color
 
     np.testing.assert_equal(sheared_img.numpy(), expected_img)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

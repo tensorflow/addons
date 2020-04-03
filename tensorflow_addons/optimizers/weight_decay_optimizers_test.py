@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for optimizers with weight decay."""
 
-import sys
-
-import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -35,7 +32,14 @@ class OptimizerTestBase(tf.test.TestCase):
     weight_decay_optimizers_test for an example.
     """
 
-    def doTest(self, optimizer, update_fn, do_sparse=False, **optimizer_kwargs):
+    def doTest(
+        self,
+        optimizer,
+        update_fn,
+        do_sparse=False,
+        do_decay_var_list=False,
+        **optimizer_kwargs
+    ):
         """The major test function.
 
         Args:
@@ -51,6 +55,7 @@ class OptimizerTestBase(tf.test.TestCase):
                 update_fn.
             do_sparse: If True, test sparse update. Defaults to False, i.e.,
                 dense update.
+            do_decay_var_list: If True, test by passing a list of vars to ensure hashing is handled correctly
             **optimizer_kwargs:The parameters to pass to the construcor of the
                 optimizer. Either a constant or a callable. This also passed to
                 the optimizer_params in the update_fn.
@@ -88,7 +93,12 @@ class OptimizerTestBase(tf.test.TestCase):
             opt = optimizer(**optimizer_kwargs)
             # Validate initial values.
             if not tf.executing_eagerly():
-                update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+                if do_decay_var_list:
+                    update = opt.apply_gradients(
+                        zip([grads0, grads1], [var0, var1]), decay_var_list=[var0, var1]
+                    )
+                else:
+                    update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
                 self.evaluate(tf.compat.v1.global_variables_initializer())
                 self.assertAllClose([1.0, 2.0], self.evaluate(var0))
                 self.assertAllClose([3.0, 4.0], self.evaluate(var1))
@@ -96,7 +106,13 @@ class OptimizerTestBase(tf.test.TestCase):
             # Run 3 steps of the optimizer
             for _ in range(3):
                 if tf.executing_eagerly():
-                    opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+                    if do_decay_var_list:
+                        opt.apply_gradients(
+                            zip([grads0, grads1], [var0, var1]),
+                            decay_var_list=[var0, var1],
+                        )
+                    else:
+                        opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
                 else:
                     self.evaluate(update)
                 var0_np, np_slot_vars0 = update_fn(
@@ -245,6 +261,18 @@ class AdamWTest(OptimizerTestBase):
             weight_decay=lambda: WEIGHT_DECAY,
         )
 
+    def testBasicDecayVarList(self):
+        self.doTest(
+            self.optimizer,
+            adamw_update_numpy,
+            do_decay_var_list=True,
+            learning_rate=0.001,
+            beta_1=0.9,
+            beta_2=0.999,
+            epsilon=1e-8,
+            weight_decay=WEIGHT_DECAY,
+        )
+
 
 @test_utils.run_all_in_graph_and_eager_modes
 class SGDWTest(OptimizerTestBase):
@@ -284,6 +312,16 @@ class SGDWTest(OptimizerTestBase):
             weight_decay=lambda: WEIGHT_DECAY,
         )
 
+    def testBasicDecayVarList(self):
+        self.doTest(
+            self.optimizer,
+            sgdw_update_numpy,
+            do_decay_var_list=True,
+            learning_rate=0.001,
+            momentum=0.9,
+            weight_decay=WEIGHT_DECAY,
+        )
+
 
 class ExtendWithWeightDecayTest(SGDWTest):
     """Verify that the factory function SGDW is the same as SGDW."""
@@ -291,7 +329,3 @@ class ExtendWithWeightDecayTest(SGDWTest):
     optimizer = weight_decay_optimizers.extend_with_decoupled_weight_decay(
         tf.keras.optimizers.SGD
     )
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

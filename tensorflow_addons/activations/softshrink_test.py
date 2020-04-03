@@ -13,8 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-import sys
-
 import pytest
 
 import numpy as np
@@ -84,7 +82,3 @@ def test_theoretical_gradients(dtype):
 
     theoretical, numerical = tf.test.compute_gradient(softshrink, [x])
     test_utils.assert_allclose_according_to_type(theoretical, numerical, atol=1e-4)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
