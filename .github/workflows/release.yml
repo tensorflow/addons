@@ -184,7 +184,7 @@ jobs:
           cp Windows-wheels/*.whl dist/
           ls -la dist/
           sha256sum dist/*.whl
-      - uses: pypa/gh-action-pypi-publish@master
+      - uses: pypa/gh-action-pypi-publish@v1.1.0
         with:
           user: __token__
           password: ${{ secrets.pypi_token }}
