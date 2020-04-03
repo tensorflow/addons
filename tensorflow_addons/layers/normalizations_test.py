@@ -334,13 +334,27 @@ def test_groupnorm_convnet_no_center_no_scale():
 
 
 def calculate_frn(
-    x, beta=0.2, gamma=1, eps=1e-6, learned_epsilon=False, dtype=np.float32
+    x,
+    beta=0.2,
+    gamma=1,
+    eps=1e-6,
+    learned_epsilon=False,
+    dtype=np.float32,
+    axis=[1, 2],
+    channel_idx=-1,
 ):
     if learned_epsilon:
         eps = eps + 1e-4
     eps = tf.cast(eps, dtype=dtype)
-    nu2 = tf.reduce_mean(tf.square(x), axis=[1, 2], keepdims=True)
+    nu2 = tf.reduce_mean(tf.square(x), axis=axis, keepdims=True)
     x = x * tf.math.rsqrt(nu2 + tf.abs(eps))
+
+    input_shape = x.get_shape().as_list()
+    shape = [1] * len(input_shape)
+    shape[channel_idx] = input_shape[channel_idx]
+    gamma = np.full(shape, gamma)
+    beta = np.full(shape, beta)
+
     return gamma * x + beta
 
 
@@ -354,14 +368,37 @@ def set_random_seed():
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 def test_with_beta(dtype):
     set_random_seed()
-    inputs = np.random.rand(28, 28, 1).astype(dtype)
-    inputs = np.expand_dims(inputs, axis=0)
+
+    shape = np.random.choice(range(1, 30), np.random.randint(2, 7), replace=True)
+    inputs = np.random.random_sample(shape).astype(dtype)
+
+    if len(shape) == 2:
+        axis = channel_idx = 1
+
+    else:
+        axis = list(
+            np.random.choice(
+                range(1, len(shape) - 1),
+                np.random.randint(2, len(shape) - 1),
+                replace=False,
+            )
+        )
+        channel_idx = list(set(range(len(shape))) - set(axis) - set([0]))
+        channel_idx = int(np.random.choice(channel_idx, 1))
+
     frn = FilterResponseNormalization(
-        beta_initializer="ones", gamma_initializer="ones", dtype=dtype
+        beta_initializer="ones",
+        gamma_initializer="ones",
+        dtype=dtype,
+        axis=axis,
+        channel_idx=channel_idx,
     )
-    frn.build((None, 28, 28, 1))
+
+    frn.build(shape)
     observed = frn(inputs)
-    expected = calculate_frn(inputs, beta=1, gamma=1, dtype=dtype)
+    expected = calculate_frn(
+        inputs, beta=1, gamma=1, dtype=dtype, axis=axis, channel_idx=channel_idx
+    )
     np.testing.assert_allclose(expected[0], observed[0])
 
 
@@ -369,14 +406,37 @@ def test_with_beta(dtype):
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 def test_with_gamma(dtype):
     set_random_seed()
-    inputs = np.random.rand(28, 28, 1).astype(dtype)
-    inputs = np.expand_dims(inputs, axis=0)
+
+    shape = np.random.choice(range(1, 30), np.random.randint(2, 7), replace=True)
+    inputs = np.random.random_sample(shape).astype(dtype)
+
+    if len(shape) == 2:
+        axis = channel_idx = 1
+
+    else:
+        axis = list(
+            np.random.choice(
+                range(1, len(shape) - 1),
+                np.random.randint(2, len(shape) - 1),
+                replace=False,
+            )
+        )
+        channel_idx = list(set(range(len(shape))) - set(axis) - set([0]))
+        channel_idx = int(np.random.choice(channel_idx, 1))
+
     frn = FilterResponseNormalization(
-        beta_initializer="zeros", gamma_initializer="ones", dtype=dtype
+        beta_initializer="zeros",
+        gamma_initializer="ones",
+        dtype=dtype,
+        axis=axis,
+        channel_idx=channel_idx,
     )
-    frn.build((None, 28, 28, 1))
+
+    frn.build(shape)
     observed = frn(inputs)
-    expected = calculate_frn(inputs, beta=0, gamma=1, dtype=dtype)
+    expected = calculate_frn(
+        inputs, beta=0, gamma=1, dtype=dtype, axis=axis, channel_idx=channel_idx
+    )
     np.testing.assert_allclose(expected[0], observed[0])
 
 
@@ -384,18 +444,43 @@ def test_with_gamma(dtype):
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 def test_with_epsilon(dtype):
     set_random_seed()
-    inputs = np.random.rand(28, 28, 1).astype(dtype)
-    inputs = np.expand_dims(inputs, axis=0)
+
+    shape = np.random.choice(range(1, 30), np.random.randint(2, 7), replace=True)
+    inputs = np.random.random_sample(shape).astype(dtype)
+
+    if len(shape) == 2:
+        axis = channel_idx = 1
+
+    else:
+        axis = list(
+            np.random.choice(
+                range(1, len(shape) - 1),
+                np.random.randint(2, len(shape) - 1),
+                replace=False,
+            )
+        )
+        channel_idx = list(set(range(len(shape))) - set(axis) - set([0]))
+        channel_idx = int(np.random.choice(channel_idx, 1))
+
     frn = FilterResponseNormalization(
         beta_initializer=tf.keras.initializers.Constant(0.5),
         gamma_initializer="ones",
         learned_epsilon=True,
         dtype=dtype,
+        axis=axis,
+        channel_idx=channel_idx,
     )
-    frn.build((None, 28, 28, 1))
+
+    frn.build(shape)
     observed = frn(inputs)
     expected = calculate_frn(
-        inputs, beta=0.5, gamma=1, learned_epsilon=True, dtype=dtype
+        inputs,
+        beta=0.5,
+        gamma=1,
+        learned_epsilon=True,
+        dtype=dtype,
+        axis=axis,
+        channel_idx=channel_idx,
     )
     np.testing.assert_allclose(expected[0], observed[0])
 
@@ -404,12 +489,34 @@ def test_with_epsilon(dtype):
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 def test_keras_model(dtype):
     set_random_seed()
+
+    shape = np.random.choice(range(1, 30), np.random.randint(2, 7), replace=True)
+    random_inputs = np.random.random_sample(shape).astype(dtype)
+    random_labels = np.random.randint(2, size=(shape[0],)).astype(dtype)
+    input_layer = tf.keras.layers.Input(shape=tuple(shape[1:]))
+
+    if len(shape) == 2:
+        axis = channel_idx = 1
+
+    else:
+        axis = list(
+            np.random.choice(
+                range(1, len(shape) - 1),
+                np.random.randint(2, len(shape) - 1),
+                replace=False,
+            )
+        )
+        channel_idx = list(set(range(len(shape))) - set(axis) - set([0]))
+        channel_idx = int(np.random.choice(channel_idx, 1))
+
     frn = FilterResponseNormalization(
-        beta_initializer="ones", gamma_initializer="ones", dtype=dtype
+        beta_initializer="ones",
+        gamma_initializer="ones",
+        dtype=dtype,
+        axis=axis,
+        channel_idx=channel_idx,
     )
-    random_inputs = np.random.rand(10, 32, 32, 3).astype(dtype)
-    random_labels = np.random.randint(2, size=(10,)).astype(dtype)
-    input_layer = tf.keras.layers.Input(shape=(32, 32, 3))
+
     x = frn(input_layer)
     x = tf.keras.layers.Flatten()(x)
     out = tf.keras.layers.Dense(1, activation="sigmoid")(x)
@@ -430,14 +537,36 @@ def test_serialization(dtype):
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
-def test_eps_gards(dtype):
+def test_eps_grads(dtype):
     set_random_seed()
-    random_inputs = np.random.rand(10, 32, 32, 3).astype(np.float32)
-    random_labels = np.random.randint(2, size=(10,)).astype(np.float32)
-    input_layer = tf.keras.layers.Input(shape=(32, 32, 3))
+
+    shape = np.random.choice(range(1, 30), np.random.randint(2, 7), replace=True)
+    random_inputs = np.random.random_sample(shape).astype(dtype)
+    random_labels = np.random.randint(2, size=(shape[0],)).astype(dtype)
+    input_layer = tf.keras.layers.Input(shape=tuple(shape[1:]))
+
+    if len(shape) == 2:
+        axis = channel_idx = 1
+
+    else:
+        axis = list(
+            np.random.choice(
+                range(1, len(shape) - 1),
+                np.random.randint(2, len(shape) - 1),
+                replace=False,
+            )
+        )
+        channel_idx = list(set(range(len(shape))) - set(axis) - set([0]))
+        channel_idx = int(np.random.choice(channel_idx, 1))
+
     frn = FilterResponseNormalization(
-        beta_initializer="ones", gamma_initializer="ones", learned_epsilon=True
+        beta_initializer="ones",
+        gamma_initializer="ones",
+        learned_epsilon=True,
+        axis=axis,
+        channel_idx=channel_idx,
     )
+
     initial_eps_value = frn.eps_learned.numpy()[0]
     x = frn(input_layer)
     x = tf.keras.layers.Flatten()(x)
