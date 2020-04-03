@@ -93,7 +93,7 @@ def test_get_grid_locations():
             assert grid[i, j, 1] == j
 
 
-def testMoveSinglePixel():
+def test_move_single_pixel():
     """Run assert_move_single_pixel for various hyperparameters and data
     types."""
     for order in (1, 2):
