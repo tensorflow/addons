@@ -19,7 +19,6 @@ import tensorflow as tf
 from tensorflow_addons.image import sparse_image_warp
 from tensorflow_addons.image.sparse_image_warp import _get_boundary_locations
 from tensorflow_addons.image.sparse_image_warp import _get_grid_locations
-from tensorflow_addons.utils import test_utils
 from tensorflow_addons.utils.resource_loader import get_path_to_datafile
 
 
@@ -84,73 +83,70 @@ def test_get_boundary_locations():
                 assert (i, j) in locs
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class SparseImageWarpTest(tf.test.TestCase):
-    def setUp(self):
-        np.random.seed(0)
+def set_up():
+    np.random.seed(0)
 
-    def testGetGridLocations(self):
-        image_height = 5
-        image_width = 3
-        grid = _get_grid_locations(image_height, image_width)
-        for i in range(image_height):
-            for j in range(image_width):
-                self.assertEqual(grid[i, j, 0], i)
-                self.assertEqual(grid[i, j, 1], j)
 
-    def testMoveSinglePixel(self):
-        """Run assertMoveSinglePixel for various hyperparameters and data
-        types."""
-        for order in (1, 2):
-            for num_boundary_points in (1, 2):
-                for type_to_use in (tf.dtypes.float32, tf.dtypes.float64):
-                    self.assertMoveSinglePixel(order, num_boundary_points, type_to_use)
+def test_get_grid_locations():
+    image_height = 5
+    image_width = 3
+    grid = _get_grid_locations(image_height, image_width)
+    for i in range(image_height):
+        for j in range(image_width):
+            assert grid[i, j, 0] == i
+            assert grid[i, j, 1] == j
 
-    def assertMoveSinglePixel(self, order, num_boundary_points, type_to_use):
-        """Move a single block in a small grid using warping."""
-        batch_size = 1
-        image_height = 7
-        image_width = 7
-        channels = 3
 
-        image = np.zeros([batch_size, image_height, image_width, channels])
-        image[:, 3, 3, :] = 1.0
-        input_image = tf.constant(image, dtype=type_to_use)
+def testMoveSinglePixel():
+    """Run assert_move_single_pixel for various hyperparameters and data
+    types."""
+    for order in (1, 2):
+        for num_boundary_points in (1, 2):
+            for type_to_use in (tf.dtypes.float32, tf.dtypes.float64):
+                assert_move_single_pixel(order, num_boundary_points, type_to_use)
 
-        # Place a control point at the one white pixel.
-        control_point_locations = [[3.0, 3.0]]
-        control_point_locations = tf.constant(
-            np.float32(np.expand_dims(control_point_locations, 0)), dtype=type_to_use
-        )
-        # Shift it one pixel to the right.
-        control_point_displacements = [[0.0, 1.0]]
-        control_point_displacements = tf.constant(
-            np.float32(np.expand_dims(control_point_displacements, 0)),
-            dtype=type_to_use,
-        )
 
-        (warped_image, flow) = sparse_image_warp(
-            input_image,
-            control_point_locations,
-            control_point_locations + control_point_displacements,
-            interpolation_order=order,
-            num_boundary_points=num_boundary_points,
-        )
+def assert_move_single_pixel(order, num_boundary_points, type_to_use):
+    """Move a single block in a small grid using warping."""
+    batch_size = 1
+    image_height = 7
+    image_width = 7
+    channels = 3
 
-        warped_image, input_image, flow = self.evaluate(
-            [warped_image, input_image, flow]
-        )
-        # Check that it moved the pixel correctly.
-        self.assertAllClose(
-            warped_image[0, 4, 5, :], input_image[0, 4, 4, :], atol=1e-5, rtol=1e-5
-        )
+    image = np.zeros([batch_size, image_height, image_width, channels])
+    image[:, 3, 3, :] = 1.0
+    input_image = tf.constant(image, dtype=type_to_use)
 
-        # Test that there is no flow at the corners.
-        for i in (0, image_height - 1):
-            for j in (0, image_width - 1):
-                self.assertAllClose(
-                    flow[0, i, j, :], np.zeros([2]), atol=1e-5, rtol=1e-5
-                )
+    # Place a control point at the one white pixel.
+    control_point_locations = [[3.0, 3.0]]
+    control_point_locations = tf.constant(
+        np.float32(np.expand_dims(control_point_locations, 0)), dtype=type_to_use
+    )
+    # Shift it one pixel to the right.
+    control_point_displacements = [[0.0, 1.0]]
+    control_point_displacements = tf.constant(
+        np.float32(np.expand_dims(control_point_displacements, 0)), dtype=type_to_use,
+    )
+
+    (warped_image, flow) = sparse_image_warp(
+        input_image,
+        control_point_locations,
+        control_point_locations + control_point_displacements,
+        interpolation_order=order,
+        num_boundary_points=num_boundary_points,
+    )
+
+    # Check that it moved the pixel correctly.
+    np.testing.assert_allclose(
+        warped_image[0, 4, 5, :], input_image[0, 4, 4, :], atol=1e-5, rtol=1e-5
+    )
+
+    # Test that there is no flow at the corners.
+    for i in (0, image_height - 1):
+        for j in (0, image_width - 1):
+            np.testing.assert_allclose(
+                flow[0, i, j, :], np.zeros([2]), atol=1e-5, rtol=1e-5
+            )
 
 
 def load_image(image_file):
