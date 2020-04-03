@@ -18,6 +18,7 @@
 import logging
 import tensorflow as tf
 from typeguard import typechecked
+from typing import Union
 
 from tensorflow_addons.utils import types
 
@@ -368,7 +369,7 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
     def __init__(
         self,
         epsilon: float = 1e-6,
-        axis: list = [1, 2],
+        axis: Union[int, list] = [1, 2],
         channel_idx: int = -1,
         beta_initializer: types.Initializer = "zeros",
         gamma_initializer: types.Initializer = "ones",
@@ -470,6 +471,11 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
                     "Use tf.layers.batch_normalization instead."
                 )
 
+            elif x == self.channel_idx:
+                raise ValueError(
+                    "You are trying to normalize over your channel axis. Expected spatial dimensions."
+                )
+
         axis_to_dim = {x: input_shape[x] for x in self.axis}
         self.input_spec = tf.keras.layers.InputSpec(ndim=ndims, axes=axis_to_dim)
 
@@ -478,14 +484,16 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
             self.axis = axis
 
         elif isinstance(axis, int):
-            if axis != -1 or self.channel_idx != -1:
-                raise ValueError("Expected index for 2D is -1 but got {}".format(axis))
+            if abs(axis) != 1 or abs(self.channel_idx) != 1:
+                raise ValueError(
+                    "Expected index for 2D is -1/1 but got {}".format(axis)
+                )
 
             self.axis = [axis]
 
         else:
             raise TypeError(
-                """Expected a list of values but got {}.""".format(type(axis))
+                """Expected a list of values or int but got {}.""".format(type(axis))
             )
 
         if len(self.axis) != len(set(self.axis)):
