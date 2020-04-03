@@ -83,10 +83,6 @@ def test_get_boundary_locations():
                 assert (i, j) in locs
 
 
-def set_up():
-    np.random.seed(0)
-
-
 def test_get_grid_locations():
     image_height = 5
     image_width = 3
