@@ -401,11 +401,6 @@ class LAMBTest(tf.test.TestCase):
         config = opt.get_config()
         self.assertEqual(config["learning_rate"], 1e-4)
 
-<<<<<<< HEAD
-
-if __name__ == "__main__":
-    tf.test.main()
-=======
     def test_exclude_weight_decay(self):
         opt = lamb.LAMB(
             0.01, weight_decay_rate=0.01, exclude_from_weight_decay=["var1"]
@@ -419,4 +414,7 @@ if __name__ == "__main__":
         assert opt._do_layer_adaptation("var0")
         assert not opt._do_layer_adaptation("var1")
         assert not opt._do_layer_adaptation("var1_weight")
->>>>>>> ce16e62... Fix LAMB optimizer regex parsing (#1532)
+
+
+if __name__ == "__main__":
+    tf.test.main()
