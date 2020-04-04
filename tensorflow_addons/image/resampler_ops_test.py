@@ -108,18 +108,6 @@ class ResamplerTest(tf.test.TestCase, parameterized.TestCase):
     def test_op_forward_pass_cpu(self, dtype):
         self._test_op_forward_pass(False, dtype)
 
-    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
-    def test_op_backward_pass_gpu(self, dtype):
-        if not tf.test.is_gpu_available():
-            self.skipTest("gpu is not available.")
-        test_op_backward_pass(dtype)
-
-    @parameterized.named_parameters(
-        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
-    )
-    def test_op_backward_pass_cpu(self, dtype):
-        test_op_backward_pass(dtype)
-
     def _test_op_forward_pass(self, on_gpu, dtype):
         np.random.seed(0)
         data_width = 7
