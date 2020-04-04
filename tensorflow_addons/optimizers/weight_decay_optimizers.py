@@ -126,7 +126,7 @@ class DecoupledWeightDecayExtension:
         )
         return super().minimize(loss, var_list=var_list, grad_loss=grad_loss, name=name)
 
-    def apply_gradients(self, grads_and_vars, name=None, decay_var_list=None):
+    def apply_gradients(self, grads_and_vars, name=None, decay_var_list=None, **kwargs):
         """Apply gradients to variables.
 
         This is the second part of `minimize()`. It returns an `Operation` that
@@ -138,6 +138,9 @@ class DecoupledWeightDecayExtension:
                 name passed to the `Optimizer` constructor.
             decay_var_list: Optional list of variables to be decayed. Defaults
                 to all variables in var_list.
+            **kwargs: Additional arguments to pass to the base optimizer's
+                apply_gradient method, e.g., TF2.2 added an argument
+                `all_reduce_sum_gradients`.
         Returns:
             An `Operation` that applies the specified gradients.
         Raises:
@@ -147,7 +150,7 @@ class DecoupledWeightDecayExtension:
         self._decay_var_list = (
             set([_ref(v) for v in decay_var_list]) if decay_var_list else False
         )
-        return super().apply_gradients(grads_and_vars, name=name)
+        return super().apply_gradients(grads_and_vars, name=name, **kwargs)
 
     def _decay_weights_op(self, var):
         if not self._decay_var_list or _ref(var) in self._decay_var_list:
