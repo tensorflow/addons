@@ -130,14 +130,6 @@ def test_sparsemax_loss_positive(dtype):
     assert np.zeros(test_obs).shape == tf_loss_op.shape
 
 
-@pytest.mark.parametrize("dtype", ["float32", "float64"])
-def _tf_sparsemax(z, dtype):
-    tf_sparsemax_op = sparsemax(z.astype(dtype))
-    tf_sparsemax_out = tf_sparsemax_op
-
-    return tf_sparsemax_op, tf_sparsemax_out
-
-
 @test_utils.run_all_with_types(["float32", "float64"])
 @test_utils.run_all_in_graph_and_eager_modes
 class SparsemaxTest(tf.test.TestCase):
@@ -239,7 +231,9 @@ def test_sparsemax_loss_zero(dtype):
     q[:, 0] = 1
 
     tf_loss_op, tf_loss_out = _tf_sparsemax_loss(z, q, dtype)
-    tf_sparsemax_op, tf_sparsemax_out = _tf_sparsemax(z, dtype)
+
+    tf_sparsemax_op = sparsemax(z.astype(dtype))
+    tf_sparsemax_out = tf_sparsemax_op
 
     test_utils.assert_allclose_according_to_type(np.zeros(test_obs), tf_loss_out)
     assert np.zeros(test_obs).shape == tf_loss_op.shape
