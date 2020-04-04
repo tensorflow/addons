@@ -74,7 +74,7 @@ what it was built against.
 TensorFlow C++ APIs are not stable and thus we can only guarentee compatibility with the 
 version TFA was built against. It is possible custom-ops will work with multiple 
 versions of TF, but there is also a chance for segfault or other problematic crash.
-Warnings will be emitted during TFA import if your TensorFlow version does not match 
+Warnings will be emitted when loading a custom op if your TensorFlow version does not match 
 what it was built against.
 
 Additionally, registering custom-ops does not have an ABI stable interface so it is 
