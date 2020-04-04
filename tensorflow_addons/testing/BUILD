@@ -11,12 +11,10 @@ py_library(
 )
 
 py_test(
-    name = "test_serialization",
+    name = "serialization_test",
     size = "small",
-    srcs = [
-        "test_serialization.py",
-    ],
-    main = "test_serialization.py",
+    srcs = glob(["*_test.py"]),
+    main = "run_all_test.py",
     deps = [
         ":testing",
     ],
