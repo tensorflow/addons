@@ -145,7 +145,7 @@ def sharpness(image: TensorLike, factor: Number) -> tf.Tensor:
           (num_rows, num_columns, num_channels) (HWC)
       factor: A floating point value or Tensor above 0.0.
     Returns:
-      Image(s) with the same type and shape as `images`.
+      Image(s) with the same type and shape as `images`, sharper.
     """
     image_dims = tf.rank(image)
     image = to_4D_image(image)
