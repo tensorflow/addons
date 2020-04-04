@@ -11,6 +11,17 @@ py_library(
         "tqdm_progress_bar.py",
     ],
     deps = [
+        "//tensorflow_addons/optimizers",
         "//tensorflow_addons/utils",
+    ],
+)
+
+py_test(
+    name = "callbacks_test",
+    size = "small",
+    srcs = glob(["*_test.py"]),
+    main = "run_all_test.py",
+    deps = [
+        ":callbacks",
     ],
 )
