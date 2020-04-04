@@ -14,8 +14,6 @@
 # ==============================================================================
 """Tests for Cohen's Kappa Metric."""
 
-import sys
-
 import pytest
 import numpy as np
 import tensorflow as tf
@@ -171,17 +169,6 @@ class CohenKappaTest(tf.test.TestCase):
         self.evaluate(obj.update_state(y_true, y_pred))
         self.assertAllClose(0.19999999, obj.result())
 
-    def test_with_ohe_labels(self):
-        y_true = np.array([4, 4, 3, 4], dtype=np.int32)
-        y_true = tf.keras.utils.to_categorical(y_true, num_classes=5)
-        y_pred = np.array([4, 4, 1, 2], dtype=np.int32)
-
-        obj = CohenKappa(num_classes=5, sparse_labels=False)
-        self.evaluate(tf.compat.v1.variables_initializer(obj.variables))
-
-        self.evaluate(obj.update_state(y_true, y_pred))
-        self.assertAllClose(0.19999999, obj.result())
-
     def test_keras_binary_reg_model(self):
         kp = CohenKappa(num_classes=2)
         inputs = tf.keras.layers.Input(shape=(10,))
@@ -206,30 +193,46 @@ class CohenKappaTest(tf.test.TestCase):
 
         model.fit(x, y, epochs=1, verbose=0, batch_size=32)
 
-    def test_keras_binary_clasasification_model(self):
-        kp = CohenKappa(num_classes=2)
-        inputs = tf.keras.layers.Input(shape=(10,))
-        outputs = tf.keras.layers.Dense(1, activation="sigmoid")(inputs)
-        model = tf.keras.models.Model(inputs, outputs)
-        model.compile(optimizer="sgd", loss="binary_crossentropy", metrics=[kp])
 
-        x = np.random.rand(1000, 10).astype(np.float32)
-        y = np.random.randint(2, size=(1000, 1)).astype(np.float32)
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_keras_binary_clasasification_model():
+    kp = CohenKappa(num_classes=2)
+    inputs = tf.keras.layers.Input(shape=(10,))
+    outputs = tf.keras.layers.Dense(1, activation="sigmoid")(inputs)
+    model = tf.keras.models.Model(inputs, outputs)
+    model.compile(optimizer="sgd", loss="binary_crossentropy", metrics=[kp])
 
-        model.fit(x, y, epochs=1, verbose=0, batch_size=32)
+    x = np.random.rand(1000, 10).astype(np.float32)
+    y = np.random.randint(2, size=(1000, 1)).astype(np.float32)
 
-    def test_keras_multiclass_classification_model(self):
-        kp = CohenKappa(num_classes=5)
-        inputs = tf.keras.layers.Input(shape=(10,))
-        outputs = tf.keras.layers.Dense(5, activation="softmax")(inputs)
-        model = tf.keras.models.Model(inputs, outputs)
-        model.compile(optimizer="sgd", loss="categorical_crossentropy", metrics=[kp])
+    model.fit(x, y, epochs=1, verbose=0, batch_size=32)
 
-        x = np.random.rand(1000, 10).astype(np.float32)
-        y = np.random.randint(5, size=(1000,)).astype(np.float32)
-        y = tf.keras.utils.to_categorical(y, num_classes=5)
 
-        model.fit(x, y, epochs=1, verbose=0, batch_size=32)
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_keras_multiclass_classification_model():
+    kp = CohenKappa(num_classes=5)
+    inputs = tf.keras.layers.Input(shape=(10,))
+    outputs = tf.keras.layers.Dense(5, activation="softmax")(inputs)
+    model = tf.keras.models.Model(inputs, outputs)
+    model.compile(optimizer="sgd", loss="categorical_crossentropy", metrics=[kp])
+
+    x = np.random.rand(1000, 10).astype(np.float32)
+    y = np.random.randint(5, size=(1000,)).astype(np.float32)
+    y = tf.keras.utils.to_categorical(y, num_classes=5)
+
+    model.fit(x, y, epochs=1, verbose=0, batch_size=32)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_with_ohe_labels():
+    y_true = np.array([4, 4, 3, 4], dtype=np.int32)
+    y_true = tf.keras.utils.to_categorical(y_true, num_classes=5)
+    y_pred = np.array([4, 4, 1, 2], dtype=np.int32)
+
+    obj = CohenKappa(num_classes=5, sparse_labels=False)
+
+    obj.update_state(y_true, y_pred)
+    np.testing.assert_allclose(0.19999999, obj.result().numpy())
 
 
 def test_cohen_kappa_serialization():
@@ -239,7 +242,3 @@ def test_cohen_kappa_serialization():
 
     ck = CohenKappa(num_classes=5, sparse_labels=True, weightage="quadratic")
     check_metric_serialization(ck, actuals, preds, weights)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

@@ -14,10 +14,10 @@ In order to conform with the current API standard, all objects must:
 #### Testing Requirements
  * Simple unittests that demonstrate the class is behaving as expected on
    some set of known inputs and outputs.
- * When applicable, run all tests with TensorFlow's
-   `@run_in_graph_and_eager_modes` (for test method)
-   or `run_all_in_graph_and_eager_modes` (for TestCase subclass) decorator.
- * Add a `py_test` to this sub-package's BUILD file.
+ * To run your `tf.functions` in eager mode and graph mode in the tests, 
+   you can use the `@pytest.mark.usefixtures("maybe_run_functions_eagerly")` 
+   decorator. This will run the tests twice, once normally, and once
+   with `tf.config.experimental_run_functions_eagerly(True)`.
 
 ## Sample code and Migration guide from TF 1.X
 The code was originally written in tensorflow.contrib.seq2seq, and has been updated to work with

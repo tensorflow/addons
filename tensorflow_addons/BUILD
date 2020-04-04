@@ -11,6 +11,7 @@ py_library(
     name = "tensorflow_addons",
     data = [
         "__init__.py",
+        "conftest.py",
         "options.py",
         "register.py",
         "version.py",

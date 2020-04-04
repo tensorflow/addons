@@ -26,34 +26,10 @@ py_library(
 )
 
 py_test(
-    name = "crf_test",
+    name = "text_test",
     size = "small",
-    srcs = [
-        "crf_test.py",
-    ],
-    main = "crf_test.py",
-    deps = [
-        ":text",
-    ],
-)
-
-py_test(
-    name = "skip_gram_ops_test",
-    size = "small",
-    srcs = [
-        "skip_gram_ops_test.py",
-    ],
-    main = "skip_gram_ops_test.py",
-    deps = [
-        ":text",
-    ],
-)
-
-py_test(
-    name = "parse_time_op_test",
-    size = "small",
-    srcs = ["parse_time_op_test.py"],
-    main = "parse_time_op_test.py",
+    srcs = glob(["*_test.py"]),
+    main = "run_all_test.py",
     deps = [
         ":text",
     ],

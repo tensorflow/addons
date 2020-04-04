@@ -14,49 +14,48 @@
 # ==============================================================================
 """Tests for TLU activation."""
 
-import sys
 
 import pytest
 import numpy as np
 import tensorflow as tf
-from absl.testing import parameterized
+
 from tensorflow_addons.layers.tlu import TLU
 from tensorflow_addons.utils import test_utils
 
 
-@parameterized.parameters([np.float16, np.float32, np.float64])
-@test_utils.run_all_in_graph_and_eager_modes
-class TestTLU(tf.test.TestCase):
-    def test_random(self, dtype):
-        x = np.array([[-2.5, 0.0, 0.3]]).astype(dtype)
-        val = np.array([[0.0, 0.0, 0.3]]).astype(dtype)
-        test_utils.layer_test(
-            TLU, kwargs={"dtype": dtype}, input_data=x, expected_output=val
-        )
-
-    def test_affine(self, dtype):
-        x = np.array([[-2.5, 0.0, 0.3]]).astype(dtype)
-        val = np.array([[-1.5, 1.0, 1.3]]).astype(dtype)
-        test_utils.layer_test(
-            TLU,
-            kwargs={
-                "affine": True,
-                "dtype": dtype,
-                "alpha_initializer": "ones",
-                "tau_initializer": "ones",
-            },
-            input_data=x,
-            expected_output=val,
-        )
-
-    def test_serialization(self, dtype):
-        tlu = TLU(
-            affine=True, alpha_initializer="ones", tau_initializer="ones", dtype=dtype
-        )
-        serialized_tlu = tf.keras.layers.serialize(tlu)
-        new_layer = tf.keras.layers.deserialize(serialized_tlu)
-        self.assertEqual(tlu.get_config(), new_layer.get_config())
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_random(dtype):
+    x = np.array([[-2.5, 0.0, 0.3]]).astype(dtype)
+    val = np.array([[0.0, 0.0, 0.3]]).astype(dtype)
+    test_utils.layer_test(
+        TLU, kwargs={"dtype": dtype}, input_data=x, expected_output=val
+    )
 
 
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_affine(dtype):
+    x = np.array([[-2.5, 0.0, 0.3]]).astype(dtype)
+    val = np.array([[-1.5, 1.0, 1.3]]).astype(dtype)
+    test_utils.layer_test(
+        TLU,
+        kwargs={
+            "affine": True,
+            "dtype": dtype,
+            "alpha_initializer": "ones",
+            "tau_initializer": "ones",
+        },
+        input_data=x,
+        expected_output=val,
+    )
+
+
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_serialization(dtype):
+    tlu = TLU(
+        affine=True, alpha_initializer="ones", tau_initializer="ones", dtype=dtype
+    )
+    serialized_tlu = tf.keras.layers.serialize(tlu)
+    new_layer = tf.keras.layers.deserialize(serialized_tlu)
+    assert tlu.get_config() == new_layer.get_config()

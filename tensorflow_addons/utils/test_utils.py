@@ -16,9 +16,10 @@
 
 import contextlib
 import inspect
-import time
 import unittest
 
+import numpy as np
+import pytest
 import tensorflow as tf
 
 # TODO: find public API alternative to these
@@ -30,7 +31,6 @@ from tensorflow.python.framework.test_util import (  # noqa: F401
     run_in_graph_and_eager_modes,
 )
 from tensorflow.python.keras.testing_utils import layer_test  # noqa: F401
-from tensorflow.python.keras import keras_parameterized  # noqa: F401
 
 
 @contextlib.contextmanager
@@ -163,22 +163,64 @@ def run_with_types(dtypes):
     return decorator
 
 
-def time_function(f):
-    def decorated(self, *args, **kwargs):
-        start = time.time()
-        f(self, *args, **kwargs)
-        end = time.time()
-        print(f.__name__, "took", (end - start), "seconds")
-
-    return decorated
+def finalizer():
+    tf.config.experimental_run_functions_eagerly(False)
 
 
-def time_all_functions(cls):
-    for name, method in cls.__dict__.copy().items():
-        if (
-            callable(method)
-            and name.startswith(unittest.TestLoader.testMethodPrefix)
-            and name != "test_session"
-        ):
-            setattr(cls, name, time_function(method))
-    return cls
+@pytest.fixture(scope="function", params=["eager_mode", "tf_function"])
+def maybe_run_functions_eagerly(request):
+    if request.param == "eager_mode":
+        tf.config.experimental_run_functions_eagerly(True)
+    elif request.param == "tf_function":
+        tf.config.experimental_run_functions_eagerly(False)
+
+    request.addfinalizer(finalizer)
+
+
+@pytest.fixture(scope="function", params=["CPU", "GPU"])
+def cpu_and_gpu(request):
+    if request.param == "CPU":
+        with tf.device("/device:CPU:0"):
+            yield
+    else:
+        if not tf.test.is_gpu_available():
+            pytest.skip("GPU is not available.")
+        with tf.device("/device:GPU:0"):
+            yield
+
+
+@pytest.fixture(scope="function", params=["channels_first", "channels_last"])
+def data_format(request):
+    return request.param
+
+
+def assert_allclose_according_to_type(
+    a,
+    b,
+    rtol=1e-6,
+    atol=1e-6,
+    float_rtol=1e-6,
+    float_atol=1e-6,
+    half_rtol=1e-3,
+    half_atol=1e-3,
+):
+    """
+    Similar to tf.test.TestCase.assertAllCloseAccordingToType()
+    but this doesn't need a subclassing to run.
+    """
+    a = np.array(a)
+    b = np.array(b)
+    # types with lower tol are put later to overwrite previous ones.
+    if (
+        a.dtype == np.float32
+        or b.dtype == np.float32
+        or a.dtype == np.complex64
+        or b.dtype == np.complex64
+    ):
+        rtol = max(rtol, float_rtol)
+        atol = max(atol, float_atol)
+    if a.dtype == np.float16 or b.dtype == np.float16:
+        rtol = max(rtol, half_rtol)
+        atol = max(atol, half_atol)
+
+    np.testing.assert_allclose(a, b, rtol=rtol, atol=atol)
