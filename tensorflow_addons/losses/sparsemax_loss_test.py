@@ -233,12 +233,11 @@ def test_sparsemax_loss_zero(dtype):
     tf_loss_op, tf_loss_out = _tf_sparsemax_loss(z, q, dtype)
 
     tf_sparsemax_op = sparsemax(z.astype(dtype))
-    tf_sparsemax_out = tf_sparsemax_op
 
     test_utils.assert_allclose_according_to_type(np.zeros(test_obs), tf_loss_out)
     assert np.zeros(test_obs).shape == tf_loss_op.shape
 
-    test_utils.assert_allclose_according_to_type(q, tf_sparsemax_out)
+    test_utils.assert_allclose_according_to_type(q, tf_sparsemax_op)
     assert q.shape == tf_sparsemax_op.shape
 
 
