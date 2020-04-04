@@ -66,7 +66,7 @@ import tensorflow_addons as tfa
 ### Python Op Compatility
 TensorFlow Addons is actively working towards forward compatiblity with TF2.x. 
 However there are still a few private API uses within the respository so at the moment 
-we can only gurentee compatibility with the version of TF which it was built against. 
+we can only gurentee compatibility with the version of TF which it was tested against. 
 Warnings will be emitted during TFA import if your TensorFlow version does not match 
 what it was built against.
 
