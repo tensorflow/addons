@@ -44,12 +44,11 @@ def get_project_name_version():
     with open(os.path.join(base_dir, "tensorflow_addons", "version.py")) as fp:
         exec(fp.read(), version)
 
+    project_name = "tensorflow-addons"
     if "--nightly" in sys.argv:
         project_name = "tfa-nightly"
         version["__version__"] += datetime.now().strftime("%Y%m%d%H%M%S")
         sys.argv.remove("--nightly")
-    else:
-        project_name = "tensorflow-addons"
 
     return project_name, version
 
@@ -91,6 +90,7 @@ setup(
         "Intended Audience :: Education",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",

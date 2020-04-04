@@ -14,9 +14,6 @@
 # ============================================================================
 """Tests for resampler."""
 
-import sys
-
-import pytest
 from absl.testing import parameterized
 
 import numpy as np
@@ -249,7 +246,3 @@ class ResamplerTest(tf.test.TestCase, parameterized.TestCase):
             "Only bilinear interpolation is supported, warping",
         ):
             self.evaluate(resampler_ops.resampler(data, warp))
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

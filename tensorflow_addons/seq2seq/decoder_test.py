@@ -14,19 +14,14 @@
 # ==============================================================================
 """Tests for tfa.seq2seq.decoder."""
 
-import sys
-
-import pytest
 import numpy as np
 import tensorflow as tf
 
-from tensorflow_addons.utils import test_utils
 from tensorflow_addons.seq2seq import basic_decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
 
 
-@test_utils.keras_parameterized.run_all_keras_modes
-class DecodeRNNTest(test_utils.keras_parameterized.TestCase, tf.test.TestCase):
+class DecodeRNNTest(tf.test.TestCase):
     """Tests for Decoder."""
 
     def _testDecodeRNN(self, time_major, maximum_iterations=None):
@@ -186,7 +181,3 @@ class DecodeRNNTest(test_utils.keras_parameterized.TestCase, tf.test.TestCase):
         self._testDynamicDecodeRNNWithTrainingHelperMatchesDynamicRNN(
             use_sequence_length=False
         )
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

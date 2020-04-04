@@ -23,106 +23,10 @@ py_library(
 )
 
 py_test(
-    name = "contrastive_test",
+    name = "losses_test",
     size = "small",
-    srcs = [
-        "contrastive_test.py",
-    ],
-    main = "contrastive_test.py",
-    deps = [
-        ":losses",
-    ],
-)
-
-py_test(
-    name = "focal_loss_test",
-    size = "small",
-    srcs = [
-        "focal_loss_test.py",
-    ],
-    main = "focal_loss_test.py",
-    deps = [
-        ":losses",
-    ],
-)
-
-py_test(
-    name = "giou_loss_test",
-    size = "small",
-    srcs = [
-        "giou_loss_test.py",
-    ],
-    main = "giou_loss_test.py",
-    deps = [
-        ":losses",
-    ],
-)
-
-py_test(
-    name = "npairs_test",
-    size = "small",
-    srcs = ["npairs_test.py"],
-    main = "npairs_test.py",
-    deps = [
-        ":losses",
-    ],
-)
-
-py_test(
-    name = "quantiles_test",
-    size = "small",
-    srcs = [
-        "quantiles_test.py",
-    ],
-    main = "quantiles_test.py",
-    deps = [
-        ":losses",
-    ],
-)
-
-py_test(
-    name = "sparsemax_loss_test",
-    size = "small",
-    srcs = [
-        "sparsemax_loss_test.py",
-    ],
-    main = "sparsemax_loss_test.py",
-    deps = [
-        ":losses",
-    ],
-)
-
-py_test(
-    name = "triplet_test",
-    size = "small",
-    srcs = [
-        "triplet_test.py",
-    ],
-    main = "triplet_test.py",
-    deps = [
-        ":losses",
-    ],
-)
-
-py_test(
-    name = "lifted_test",
-    size = "small",
-    srcs = [
-        "lifted_test.py",
-    ],
-    main = "lifted_test.py",
-    deps = [
-        ":losses",
-    ],
-)
-
-py_test(
-    name = "metric_test",
-    size = "small",
-    srcs = [
-        "metric_test.py",
-    ],
-    main = "metric_test.py",
+    srcs = glob(["*_test.py"]),
+    main = "run_all_test.py",
     deps = [
         ":losses",
     ],

@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for Stochastic Weight Averaging optimizer."""
 
-import sys
-
-import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -70,33 +67,6 @@ class SWATest(tf.test.TestCase):
         self.assertAllClose(var_0.read_value(), [0.8, 0.8])
         self.assertAllClose(var_1.read_value(), [1.8, 1.8])
 
-    def test_fit_simple_linear_model(self):
-        seed = 0x2019
-        np.random.seed(seed)
-        tf.random.set_seed(seed)
-        num_examples = 100000
-        x = np.random.standard_normal((num_examples, 3))
-        w = np.random.standard_normal((3, 1))
-        y = np.dot(x, w) + np.random.standard_normal((num_examples, 1)) * 1e-4
-
-        model = tf.keras.models.Sequential()
-        model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
-        # using num_examples - 1 since steps starts from 0.
-        optimizer = SWA(
-            "sgd", start_averaging=num_examples // 32 - 1, average_period=100
-        )
-        model.compile(optimizer, loss="mse")
-        model.fit(x, y, epochs=2)
-        optimizer.assign_average_vars(model.variables)
-
-        x = np.random.standard_normal((100, 3))
-        y = np.dot(x, w)
-
-        predicted = model.predict(x)
-
-        max_abs_diff = np.max(np.abs(predicted - y))
-        self.assertLess(max_abs_diff, 1e-3)
-
     def test_optimizer_failure(self):
         with self.assertRaises(TypeError):
             _ = SWA(None, average_period=10)
@@ -128,5 +98,27 @@ class SWATest(tf.test.TestCase):
         fit_bn(model, x, y)
 
 
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
+def test_fit_simple_linear_model():
+    seed = 0x2019
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
+    num_examples = 100000
+    x = np.random.standard_normal((num_examples, 3))
+    w = np.random.standard_normal((3, 1))
+    y = np.dot(x, w) + np.random.standard_normal((num_examples, 1)) * 1e-4
+
+    model = tf.keras.models.Sequential()
+    model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
+    # using num_examples - 1 since steps starts from 0.
+    optimizer = SWA("sgd", start_averaging=num_examples // 32 - 1, average_period=100)
+    model.compile(optimizer, loss="mse")
+    model.fit(x, y, epochs=2)
+    optimizer.assign_average_vars(model.variables)
+
+    x = np.random.standard_normal((100, 3))
+    y = np.dot(x, w)
+
+    predicted = model.predict(x)
+
+    max_abs_diff = np.max(np.abs(predicted - y))
+    assert max_abs_diff < 1e-3

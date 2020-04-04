@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for RNN cells."""
 
-import sys
-
-import pytest
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -418,7 +415,3 @@ class LayerNormSimpleRNNTest(tf.test.TestCase):
         cell2 = LayerNormSimpleRNNCell(**config1)
         config2 = cell2.get_config()
         assert config1 == config2
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
