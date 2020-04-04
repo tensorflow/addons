@@ -133,12 +133,6 @@ def test_sparsemax_loss_positive(dtype):
 @test_utils.run_all_with_types(["float32", "float64"])
 @test_utils.run_all_in_graph_and_eager_modes
 class SparsemaxTest(tf.test.TestCase):
-    def _tf_sparsemax(self, z, dtype):
-        tf_sparsemax_op = sparsemax(z.astype(dtype))
-        tf_sparsemax_out = self.evaluate(tf_sparsemax_op)
-
-        return tf_sparsemax_op, tf_sparsemax_out
-
     def test_sparsemax_loss_constructor_not_from_logits(self, dtype=None):
         """check sparsemax-loss construcor throws when from_logits=True."""
         self.assertRaises(ValueError, lambda: SparsemaxLoss(from_logits=False))
@@ -204,42 +198,47 @@ class SparsemaxTest(tf.test.TestCase):
         _, tf_loss_mix = _tf_sparsemax_loss(z_mix, q, dtype)
         self.assertAllEqual([np.nan, np.nan, np.nan, np.nan], tf_loss_mix)
 
-    def test_constant_add(self, dtype=None):
-        """check sparsemax-loss proposition 3."""
-        random = np.random.RandomState(4)
 
-        z = random.uniform(low=-3, high=3, size=(test_obs, 10))
-        c = random.uniform(low=-3, high=3, size=(test_obs, 1))
-        q = np.zeros((test_obs, 10))
-        q[np.arange(0, test_obs), np.random.randint(0, 10, size=test_obs)] = 1
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_constant_add(dtype):
+    """check sparsemax-loss proposition 3."""
+    random = np.random.RandomState(4)
 
-        _, tf_loss_zpc = _tf_sparsemax_loss(z + c, q, dtype)
-        _, tf_loss_z = _tf_sparsemax_loss(z, q, dtype)
+    z = random.uniform(low=-3, high=3, size=(test_obs, 10))
+    c = random.uniform(low=-3, high=3, size=(test_obs, 1))
+    q = np.zeros((test_obs, 10))
+    q[np.arange(0, test_obs), np.random.randint(0, 10, size=test_obs)] = 1
 
-        self.assertAllCloseAccordingToType(
-            tf_loss_zpc, tf_loss_z, float_atol=5e-6, float_rtol=5e-6
-        )
+    _, tf_loss_zpc = _tf_sparsemax_loss(z + c, q, dtype)
+    _, tf_loss_z = _tf_sparsemax_loss(z, q, dtype)
 
-    def test_sparsemax_loss_zero(self, dtype=None):
-        """check sparsemax-loss proposition 5."""
-        random = np.random.RandomState(6)
+    test_utils.assert_allclose_according_to_type(
+        tf_loss_zpc, tf_loss_z, float_atol=5e-6, float_rtol=5e-6
+    )
 
-        # construct z and q, such that z_k >= 1 + max_{j!=k} z_k holds for
-        # delta_0 = 1.
-        z = random.uniform(low=-3, high=3, size=(test_obs, 10))
-        z[:, 0] = np.max(z, axis=1) + 1.05
 
-        q = np.zeros((test_obs, 10))
-        q[:, 0] = 1
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_sparsemax_loss_zero(dtype):
+    """check sparsemax-loss proposition 5."""
+    random = np.random.RandomState(6)
 
-        tf_loss_op, tf_loss_out = _tf_sparsemax_loss(z, q, dtype)
-        tf_sparsemax_op, tf_sparsemax_out = self._tf_sparsemax(z, dtype)
+    # construct z and q, such that z_k >= 1 + max_{j!=k} z_k holds for
+    # delta_0 = 1.
+    z = random.uniform(low=-3, high=3, size=(test_obs, 10))
+    z[:, 0] = np.max(z, axis=1) + 1.05
 
-        self.assertAllCloseAccordingToType(np.zeros(test_obs), tf_loss_out)
-        self.assertShapeEqual(np.zeros(test_obs), tf_loss_op)
+    q = np.zeros((test_obs, 10))
+    q[:, 0] = 1
 
-        self.assertAllCloseAccordingToType(q, tf_sparsemax_out)
-        self.assertShapeEqual(q, tf_sparsemax_op)
+    tf_loss_op, tf_loss_out = _tf_sparsemax_loss(z, q, dtype)
+
+    tf_sparsemax_op = sparsemax(z.astype(dtype))
+
+    test_utils.assert_allclose_according_to_type(np.zeros(test_obs), tf_loss_out)
+    assert np.zeros(test_obs).shape == tf_loss_op.shape
+
+    test_utils.assert_allclose_according_to_type(q, tf_sparsemax_op)
+    assert q.shape == tf_sparsemax_op.shape
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
