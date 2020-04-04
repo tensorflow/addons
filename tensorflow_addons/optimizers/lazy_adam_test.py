@@ -14,9 +14,7 @@
 # ==============================================================================
 """Tests for LazyAdam."""
 
-import sys
 
-import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -310,7 +308,3 @@ class LazyAdamTest(tf.test.TestCase):
         self.assertEqual(
             self.evaluate(opt.variables()[0]), self.evaluate(opt.iterations)
         )
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

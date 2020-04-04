@@ -70,46 +70,42 @@ def test_single_binary_image(dtype):
     test_utils.assert_allclose_according_to_type(output_flat, expected_output)
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class DistanceOpsTest(tf.test.TestCase):
-    def test_batch_binary_images(self):
-        batch_size = 3
-        image = [
-            [[0], [0], [0], [0], [0]],
-            [[0], [1], [1], [1], [0]],
-            [[0], [1], [1], [1], [0]],
-            [[0], [1], [1], [1], [0]],
-            [[0], [0], [0], [0], [0]],
-        ]
-        expected_output = np.array(
-            [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 2, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0]
-            * batch_size
-        )
-        images = tf.constant([image] * batch_size, dtype=tf.uint8)
-        for output_dtype in [tf.float16, tf.float32, tf.float64]:
-            output = dist_ops.euclidean_dist_transform(images, dtype=output_dtype)
-            output_flat = tf.reshape(output, [-1])
+@pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
+def test_batch_binary_images(dtype):
+    batch_size = 3
+    image = [
+        [[0], [0], [0], [0], [0]],
+        [[0], [1], [1], [1], [0]],
+        [[0], [1], [1], [1], [0]],
+        [[0], [1], [1], [1], [0]],
+        [[0], [0], [0], [0], [0]],
+    ]
+    expected_output = np.array(
+        [0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 2, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0]
+        * batch_size
+    )
+    images = tf.constant([image] * batch_size, dtype=tf.uint8)
 
-            with self.subTest(output_dtype=output_dtype):
-                self.assertEqual(output.dtype, output_dtype)
-                self.assertEqual(output.shape, [batch_size, 5, 5, 1])
-                self.assertAllCloseAccordingToType(output_flat, expected_output)
+    output = dist_ops.euclidean_dist_transform(images, dtype=dtype)
+    output_flat = tf.reshape(output, [-1])
 
-    def test_image_with_invalid_dtype(self):
-        image = [
-            [[1], [1], [1], [1], [1]],
-            [[1], [1], [1], [1], [1]],
-            [[0], [1], [0], [1], [0]],
-            [[1], [0], [1], [0], [1]],
-            [[0], [1], [0], [1], [0]],
-        ]
-        image = tf.constant(image, dtype=tf.uint8)
+    assert output.shape == [batch_size, 5, 5, 1]
+    test_utils.assert_allclose_according_to_type(output_flat, expected_output)
 
-        for output_dtype in [tf.uint8, tf.int32, tf.int64]:
-            with self.assertRaisesRegex(
-                TypeError, "`dtype` must be float16, float32 or float64"
-            ):
-                _ = dist_ops.euclidean_dist_transform(image, dtype=output_dtype)
+
+@pytest.mark.parametrize("dtype", [tf.uint8, tf.int32, tf.int64])
+def test_image_with_invalid_dtype(dtype):
+    image = [
+        [[1], [1], [1], [1], [1]],
+        [[1], [1], [1], [1], [1]],
+        [[0], [1], [0], [1], [0]],
+        [[1], [0], [1], [0], [1]],
+        [[0], [1], [0], [1], [0]],
+    ]
+    image = tf.constant(image, dtype=tf.uint8)
+
+    with pytest.raises(TypeError, match="`dtype` must be float16, float32 or float64"):
+        _ = dist_ops.euclidean_dist_transform(image, dtype=dtype)
 
 
 def test_image_with_invalid_shape():
