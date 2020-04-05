@@ -343,7 +343,7 @@ class LAMBTest(tf.test.TestCase):
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def do_test_basic():
+def test_resource():
     for i, dtype in enumerate(_dtypes_to_test(use_gpu=tf.test.is_gpu_available())):
         # Initialize variables for numpy implementation.
         m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
