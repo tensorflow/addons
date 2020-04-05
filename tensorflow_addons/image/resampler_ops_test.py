@@ -17,6 +17,8 @@
 from absl.testing import parameterized
 
 import numpy as np
+import pytest
+
 import tensorflow as tf
 from tensorflow_addons.image import resampler_ops
 from tensorflow_addons.utils import test_utils
@@ -106,18 +108,6 @@ class ResamplerTest(tf.test.TestCase, parameterized.TestCase):
     def test_op_forward_pass_cpu(self, dtype):
         self._test_op_forward_pass(False, dtype)
 
-    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
-    def test_op_backward_pass_gpu(self, dtype):
-        if not tf.test.is_gpu_available():
-            self.skipTest("gpu is not available.")
-        self._test_op_backward_pass(True, dtype)
-
-    @parameterized.named_parameters(
-        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
-    )
-    def test_op_backward_pass_cpu(self, dtype):
-        self._test_op_backward_pass(False, dtype)
-
     def _test_op_forward_pass(self, on_gpu, dtype):
         np.random.seed(0)
         data_width = 7
@@ -150,45 +140,6 @@ class ResamplerTest(tf.test.TestCase, parameterized.TestCase):
         self.assertAllCloseAccordingToType(
             outputs, reference_output, half_rtol=5e-3, half_atol=5e-3
         )
-
-    def _test_op_backward_pass(self, on_gpu, dtype):
-        np.random.seed(13)
-        data_width = 5
-        data_height = 4
-        data_channels = 3
-        warp_width = 2
-        warp_height = 6
-        batch_size = 3
-
-        warp = _make_warp(batch_size, warp_height, warp_width, dtype)
-        data_shape = (batch_size, data_height, data_width, data_channels)
-        data = np.random.rand(*data_shape).astype(dtype)
-        use_gpu = on_gpu and tf.test.is_gpu_available()
-        with test_utils.device(use_gpu):
-            data_tensor = tf.constant(data)
-            warp_tensor = tf.constant(warp)
-            theoretical, numerical = tf.test.compute_gradient(
-                resampler_ops.resampler, [data_tensor, warp_tensor]
-            )
-            if not use_gpu:
-                # On CPU we perform numerical differentiation at the best available
-                # precision, and compare against that. This is necessary for test to
-                # pass for float16.
-                data_tensor_64 = tf.constant(data, dtype=tf.float64)
-                warp_tensor_64 = tf.constant(warp, dtype=tf.float64)
-                theoretical_64, numerical_64 = tf.test.compute_gradient(
-                    resampler_ops.resampler, [data_tensor_64, warp_tensor_64]
-                )
-
-                for t, n in zip(theoretical, numerical_64):
-                    self.assertAllCloseAccordingToType(
-                        t, n, float_rtol=5e-5, float_atol=5e-5
-                    )
-            else:
-                for t, n in zip(theoretical, numerical):
-                    self.assertAllCloseAccordingToType(
-                        t, n, float_rtol=5e-5, float_atol=5e-5
-                    )
 
     def test_op_errors(self):
         batch_size = 10
@@ -246,3 +197,34 @@ class ResamplerTest(tf.test.TestCase, parameterized.TestCase):
             "Only bilinear interpolation is supported, warping",
         ):
             self.evaluate(resampler_ops.resampler(data, warp))
+
+
+@pytest.mark.usefixtures("cpu_and_gpu")
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_op_backward_pass(dtype):
+    np.random.seed(13)
+    data_width = 5
+    data_height = 4
+    data_channels = 3
+    warp_width = 2
+    warp_height = 6
+    batch_size = 3
+
+    warp = _make_warp(batch_size, warp_height, warp_width, dtype)
+    data_shape = (batch_size, data_height, data_width, data_channels)
+    data = np.random.rand(*data_shape).astype(dtype)
+    data_tensor = tf.constant(data)
+    warp_tensor = tf.constant(warp)
+    theoretical, _ = tf.test.compute_gradient(
+        resampler_ops.resampler, [data_tensor, warp_tensor]
+    )
+    data_tensor_64 = tf.constant(data, dtype=tf.float64)
+    warp_tensor_64 = tf.constant(warp, dtype=tf.float64)
+    _, numerical_64 = tf.test.compute_gradient(
+        resampler_ops.resampler, [data_tensor_64, warp_tensor_64]
+    )
+
+    for t, n in zip(theoretical, numerical_64):
+        test_utils.assert_allclose_according_to_type(
+            t, n, float_rtol=5e-5, float_atol=5e-5
+        )
