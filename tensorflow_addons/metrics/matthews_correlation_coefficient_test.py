@@ -14,9 +14,7 @@
 # ==============================================================================
 """Matthews Correlation Coefficient Test."""
 
-import sys
 
-import pytest
 import tensorflow as tf
 
 import numpy as np
@@ -89,7 +87,3 @@ class MatthewsCorrelationCoefficientTest(tf.test.TestCase):
         labels = np.random.random((10, 1))
         labels = np.where(labels > 0.5, 1.0, 0.0)
         model.fit(data, labels, epochs=1, batch_size=32, verbose=0)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

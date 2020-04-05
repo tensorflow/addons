@@ -13,13 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 
-import sys
 
 import pytest
 import numpy as np
-import tensorflow as tf
 
-from absl.testing import parameterized
 from tensorflow_addons.layers import Sparsemax
 from tensorflow_addons.utils import test_utils
 
@@ -50,22 +47,17 @@ def _np_sparsemax(z):
     return np.maximum(0, z - tau_z)
 
 
-@parameterized.parameters([np.float32, np.float64])
-@test_utils.run_all_in_graph_and_eager_modes
-class SparsemaxTest(tf.test.TestCase):
-    def test_sparsemax_layer_against_numpy(self, dtype):
-        """check sparsemax kernel against numpy."""
-        random = np.random.RandomState(1)
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_sparsemax_layer_against_numpy(dtype):
+    """check sparsemax kernel against numpy."""
+    random = np.random.RandomState(1)
 
-        z = random.uniform(low=-3, high=3, size=(test_obs, 10)).astype(dtype)
+    z = random.uniform(low=-3, high=3, size=(test_obs, 10)).astype(dtype)
 
-        test_utils.layer_test(
-            Sparsemax,
-            kwargs={"dtype": dtype},
-            input_data=z,
-            expected_output=_np_sparsemax(z).astype(dtype),
-        )
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
+    test_utils.layer_test(
+        Sparsemax,
+        kwargs={"dtype": dtype},
+        input_data=z,
+        expected_output=_np_sparsemax(z).astype(dtype),
+    )

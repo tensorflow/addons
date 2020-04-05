@@ -36,7 +36,9 @@
 /tensorflow_addons/callbacks/time_stopping*.py @shun-lin
 /tensorflow_addons/callbacks/tqdm_progress_bar*.py @shun-lin
 
+/tensorflow_addons/image/color_ops*.py @abhichou4
 /tensorflow_addons/image/connected_components*.py @sayoojbk
+/tensorflow_addons/image/cutout_ops*.py @fsx950223
 /tensorflow_addons/image/dense_image_warp*.py @windQAQ
 /tensorflow_addons/image/distance_transform*.py @mels630
 /tensorflow_addons/image/distort_image_ops*.py @windqaq
@@ -78,7 +80,7 @@
 /tensorflow_addons/metrics/r_square*.py @ssaishruthi
 
 /tensorflow_addons/optimizers/average_wrapper*.py @squadrick
-/tensorflow_addons/optimizers/conditional_gradient*.py @pkan2
+/tensorflow_addons/optimizers/conditional_gradient*.py @pkan2 @lokhande-vishnu
 /tensorflow_addons/optimizers/cyclical_learning_rate*.py @raphaelmeudec
 /tensorflow_addons/optimizers/lamb*.py @junjiek
 /tensorflow_addons/optimizers/lazy_adam*.py @ssaishruthi

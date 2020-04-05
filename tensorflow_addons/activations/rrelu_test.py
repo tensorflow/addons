@@ -13,10 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-import sys
-
 import pytest
-from absl.testing import parameterized
 
 import numpy as np
 import tensorflow as tf
@@ -26,61 +23,50 @@ from tensorflow_addons.utils import test_utils
 SEED = 111111
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class RreluTest(tf.test.TestCase, parameterized.TestCase):
-    @parameterized.named_parameters(
-        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
-    )
-    def test_rrelu(self, dtype):
-        x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
-        lower = 0.1
-        upper = 0.2
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+@pytest.mark.parametrize("training", [True, False])
+def test_rrelu(dtype, training):
+    x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
+    lower = 0.1
+    upper = 0.2
 
+    tf.random.set_seed(SEED)
+    result = rrelu(x, lower, upper, training=training, seed=SEED)
+    if training:
         training_results = {
             np.float16: [-0.288330078, -0.124206543, 0, 1, 2],
             np.float32: [-0.26851666, -0.116421416, 0, 1, 2],
             np.float64: [-0.3481333923206531, -0.17150176242558851, 0, 1, 2],
         }
-        for training in [True, False]:
-            with self.subTest(training=training):
-                tf.random.set_seed(SEED)
-                result = rrelu(x, lower, upper, training=training, seed=SEED)
-                if training:
-                    expect_result = training_results.get(dtype)
-                else:
-                    expect_result = [
-                        -0.30000001192092896,
-                        -0.15000000596046448,
-                        0,
-                        1,
-                        2,
-                    ]
-                self.assertAllCloseAccordingToType(result, expect_result)
-
-    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
-    def test_theoretical_gradients(self, dtype):
-        if tf.executing_eagerly():
-
-            def rrelu_wrapper(lower, upper, training):
-                def inner(x):
-                    tf.random.set_seed(SEED)
-                    return rrelu(x, lower, upper, training=training, seed=SEED)
-
-                return inner
-
-            x = tf.constant([-2.0, -1.0, -0.1, 0.1, 1.0, 2.0], dtype=dtype)
-            lower = 0.1
-            upper = 0.2
-
-            for training in [True, False]:
-                with self.subTest(training=training):
-                    theoretical, numerical = tf.test.compute_gradient(
-                        rrelu_wrapper(lower, upper, training), [x]
-                    )
-                    self.assertAllCloseAccordingToType(
-                        theoretical, numerical, rtol=5e-4, atol=5e-4
-                    )
+        expect_result = training_results.get(dtype)
+    else:
+        expect_result = [
+            -0.30000001192092896,
+            -0.15000000596046448,
+            0,
+            1,
+            2,
+        ]
+    test_utils.assert_allclose_according_to_type(result, expect_result)
 
 
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize("training", [True, False])
+def test_theoretical_gradients(dtype, training):
+    def rrelu_wrapper(lower, upper, training):
+        def inner(x):
+            tf.random.set_seed(SEED)
+            return rrelu(x, lower, upper, training=training, seed=SEED)
+
+        return inner
+
+    x = tf.constant([-2.0, -1.0, -0.1, 0.1, 1.0, 2.0], dtype=dtype)
+    lower = 0.1
+    upper = 0.2
+
+    theoretical, numerical = tf.test.compute_gradient(
+        rrelu_wrapper(lower, upper, training), [x]
+    )
+    test_utils.assert_allclose_according_to_type(
+        theoretical, numerical, rtol=5e-4, atol=5e-4
+    )
