@@ -14,11 +14,14 @@
 # ==============================================================================
 """Tests F beta metrics."""
 
+import pytest
+import numpy as np
 from absl.testing import parameterized
 
 import tensorflow as tf
 from tensorflow_addons.metrics import FBetaScore, F1Score, utils
 from tensorflow_addons.utils import test_utils
+from tensorflow_addons.testing.serialization import check_metric_serialization
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -152,3 +155,20 @@ class F1ScoreTest(tf.test.TestCase):
         f1 = F1Score(3)
         config = f1.get_config()
         self.assertFalse("beta" in config)
+
+
+@pytest.mark.parametrize("average", [None, "micro", "macro", "weighted"])
+@pytest.mark.parametrize("threshold", [None, 0.2])
+def test_serialization_f1_score(average, threshold):
+    f1 = F1Score(3, average, threshold)
+    preds = [
+        [0.9, 0.1, 0],
+        [0.2, 0.6, 0.2],
+        [0, 0, 1],
+        [0.4, 0.3, 0.3],
+        [0, 0.9, 0.1],
+        [0, 0, 1],
+    ]
+    actuals = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [1, 0, 0], [0, 0, 1]]
+
+    check_metric_serialization(f1, np.array(actuals), np.array(preds))
