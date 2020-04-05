@@ -17,11 +17,22 @@
 
 import numpy as np
 from numpy import linalg
+import pytest
 
 import tensorflow as tf
 
 from tensorflow_addons.optimizers import lamb
 from tensorflow_addons.utils import test_utils
+
+
+def _dtypes_to_test(use_gpu):
+    # Based on issue #347 (https://github.com/tensorflow/addons/issues/347)
+    # tf.half is not registered for 'ResourceScatterUpdate' OpKernel for 'GPU'.
+    # So we have to remove tf.half when testing with gpu.
+    if use_gpu:
+        return [tf.float32, tf.float64]
+    else:
+        return [tf.half, tf.float32, tf.float64]
 
 
 def lamb_update_numpy(
@@ -56,17 +67,8 @@ def get_beta_accumulators(opt, dtype):
 
 @test_utils.run_all_in_graph_and_eager_modes
 class LAMBTest(tf.test.TestCase):
-    # Based on issue #347 (https://github.com/tensorflow/addons/issues/347)
-    # tf.half is not registered for 'ResourceScatterUpdate' OpKernel for 'GPU'.
-    # So we have to remove tf.half when testing with gpu.
-    def _DtypesToTest(self, use_gpu):
-        if use_gpu:
-            return [tf.float32, tf.float64]
-        else:
-            return [tf.half, tf.float32, tf.float64]
-
     def testSparse(self):
-        for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
+        for dtype in _dtypes_to_test(use_gpu=tf.test.is_gpu_available()):
             # Initialize tf for numpy implementation.
             m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
             var0_np = np.array([1.0, 1.0, 2.0], dtype=dtype.as_numpy_dtype)
@@ -118,64 +120,8 @@ class LAMBTest(tf.test.TestCase):
                 self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
                 self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
 
-    def doTestBasic(self, use_callable_params=False):
-        for i, dtype in enumerate(
-            self._DtypesToTest(use_gpu=tf.test.is_gpu_available())
-        ):
-            # Initialize variables for numpy implementation.
-            m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
-            var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
-            grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
-            var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
-            grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
-
-            var0 = tf.Variable(var0_np, name="var0_%d" % i)
-            var1 = tf.Variable(var1_np, name="var1_%d" % i)
-            grads0 = tf.constant(grads0_np)
-            grads1 = tf.constant(grads1_np)
-
-            def learning_rate():
-                return 0.001
-
-            if not use_callable_params:
-                learning_rate = learning_rate()
-
-            opt = lamb.LAMB(learning_rate=learning_rate)
-            if not tf.executing_eagerly():
-                update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-                self.evaluate(tf.compat.v1.global_variables_initializer())
-
-            # Run 3 steps of LAMB
-            for t in range(3):
-                beta_1_power, beta_2_power = get_beta_accumulators(opt, dtype)
-                self.assertAllCloseAccordingToType(
-                    0.9 ** (t + 1), self.evaluate(beta_1_power)
-                )
-                self.assertAllCloseAccordingToType(
-                    0.999 ** (t + 1), self.evaluate(beta_2_power)
-                )
-                if not tf.executing_eagerly():
-                    self.evaluate(update)
-                else:
-                    opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-
-                var0_np, m0, v0 = lamb_update_numpy(var0_np, grads0_np, t, m0, v0)
-                var1_np, m1, v1 = lamb_update_numpy(var1_np, grads1_np, t, m1, v1)
-
-                # Validate updated params
-                self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
-                self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
-
-    def testResourceBasic(self):
-        self.doTestBasic()
-
-    def testBasicCallableParams(self):
-        self.doTestBasic(use_callable_params=True)
-
     def testBasicWithLearningRateDecay(self):
-        for i, dtype in enumerate(
-            self._DtypesToTest(use_gpu=tf.test.is_gpu_available())
-        ):
+        for i, dtype in enumerate(_dtypes_to_test(use_gpu=tf.test.is_gpu_available())):
             # Initialize variables for numpy implementation.
             m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
             var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
@@ -229,9 +175,7 @@ class LAMBTest(tf.test.TestCase):
                 self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
 
     def testBasicWithLearningRateInverseTimeDecay(self):
-        for i, dtype in enumerate(
-            self._DtypesToTest(use_gpu=tf.test.is_gpu_available())
-        ):
+        for i, dtype in enumerate(_dtypes_to_test(use_gpu=tf.test.is_gpu_available())):
             # Initialize variables for numpy implementation.
             m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
             var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
@@ -282,7 +226,7 @@ class LAMBTest(tf.test.TestCase):
                 self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
 
     def testTensorLearningRate(self):
-        for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
+        for dtype in _dtypes_to_test(use_gpu=tf.test.is_gpu_available()):
             # Initialize variables for numpy implementation.
             m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
             var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
@@ -326,7 +270,7 @@ class LAMBTest(tf.test.TestCase):
                 self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
 
     def testSharing(self):
-        for dtype in self._DtypesToTest(use_gpu=tf.test.is_gpu_available()):
+        for dtype in _dtypes_to_test(use_gpu=tf.test.is_gpu_available()):
             # Initialize variables for numpy implementation.
             m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
             var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
@@ -397,21 +341,58 @@ class LAMBTest(tf.test.TestCase):
         # Validate updated params
         self.assertAllClose(self.evaluate(w), [0.4, 0.2, -0.5], rtol=1e-2, atol=1e-2)
 
-    def test_get_config(self):
-        opt = lamb.LAMB(1e-4)
-        config = opt.get_config()
-        self.assertEqual(config["learning_rate"], 1e-4)
 
-    def test_exclude_weight_decay(self):
-        opt = lamb.LAMB(
-            0.01, weight_decay_rate=0.01, exclude_from_weight_decay=["var1"]
-        )
-        assert opt._do_use_weight_decay("var0")
-        assert not opt._do_use_weight_decay("var1")
-        assert not opt._do_use_weight_decay("var1_weight")
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def do_test_basic():
+    for i, dtype in enumerate(_dtypes_to_test(use_gpu=tf.test.is_gpu_available())):
+        # Initialize variables for numpy implementation.
+        m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
+        var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
+        grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
+        var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
+        grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
 
-    def test_exclude_layer_adaptation(self):
-        opt = lamb.LAMB(0.01, exclude_from_layer_adaptation=["var1"])
-        assert opt._do_layer_adaptation("var0")
-        assert not opt._do_layer_adaptation("var1")
-        assert not opt._do_layer_adaptation("var1_weight")
+        var0 = tf.Variable(var0_np, name="var0_%d" % i)
+        var1 = tf.Variable(var1_np, name="var1_%d" % i)
+        grads0 = tf.constant(grads0_np)
+        grads1 = tf.constant(grads1_np)
+
+        def learning_rate():
+            return 0.001
+
+        opt = lamb.LAMB(learning_rate=learning_rate)
+
+        # Run 3 steps of LAMB
+        for t in range(3):
+            beta_1_power, beta_2_power = get_beta_accumulators(opt, dtype)
+            test_utils.assert_allclose_according_to_type(0.9 ** (t + 1), beta_1_power)
+            test_utils.assert_allclose_according_to_type(0.999 ** (t + 1), beta_2_power)
+
+            opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+
+            var0_np, m0, v0 = lamb_update_numpy(var0_np, grads0_np, t, m0, v0)
+            var1_np, m1, v1 = lamb_update_numpy(var1_np, grads1_np, t, m1, v1)
+
+            # Validate updated params
+            test_utils.assert_allclose_according_to_type(var0_np, var0.numpy())
+            test_utils.assert_allclose_according_to_type(var1_np, var1.numpy())
+
+
+def test_get_config():
+    opt = lamb.LAMB(1e-4)
+    config = opt.get_config()
+    assert config["learning_rate"] == 1e-4
+
+
+def test_exclude_weight_decay():
+    opt = lamb.LAMB(0.01, weight_decay_rate=0.01, exclude_from_weight_decay=["var1"])
+    assert opt._do_use_weight_decay("var0")
+    assert not opt._do_use_weight_decay("var1")
+    assert not opt._do_use_weight_decay("var1_weight")
+
+
+def test_exclude_layer_adaptation():
+    opt = lamb.LAMB(0.01, exclude_from_layer_adaptation=["var1"])
+    assert opt._do_layer_adaptation("var0")
+    assert not opt._do_layer_adaptation("var1")
+    assert not opt._do_layer_adaptation("var1_weight")
