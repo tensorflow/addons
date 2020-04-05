@@ -16,7 +16,7 @@ must:
    you can use the `@pytest.mark.usefixtures("maybe_run_functions_eagerly")` 
    decorator. This will run the tests twice, once normally, and once
    with `tf.config.experimental_run_functions_eagerly(True)`. 
- * Add activation name to [activations_test.py](https://github.com/tensorflow/addons/tree/master/tensorflow_addons/activations/activations_test.py) to test serialization.
+ * Add activation name to [activations_test.py](https://github.com/tensorflow/addons/tree/master/tensorflow_addons/activations/tests/activations_test.py) to test serialization.
 
 #### Documentation Requirements
  * Update the [CODEOWNERS file](https://github.com/tensorflow/addons/blob/master/.github/CODEOWNERS)
