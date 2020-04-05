@@ -16,11 +16,18 @@
 
 from absl.testing import parameterized
 
-import tensorflow as tf
-from tensorflow_addons.utils import test_utils
 import numpy as np
+import pytest
 
+import tensorflow as tf
+
+from tensorflow_addons.utils import test_utils
 from tensorflow_addons.optimizers import cyclical_learning_rate
+
+
+pytestmark = pytest.mark.skipif(
+    True, reason="Failing. See https://github.com/tensorflow/addons/issues/1203",
+)
 
 
 def _maybe_serialized(lr_decay, serialize_and_deserialize):
@@ -35,7 +42,6 @@ def _maybe_serialized(lr_decay, serialize_and_deserialize):
 @parameterized.named_parameters(("NotSerialized", False), ("Serialized", True))
 class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
     def testTriangularCyclicalLearningRate(self, serialize):
-        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1203")
         initial_learning_rate = 0.1
         maximal_learning_rate = 1
         step_size = 4000
@@ -62,7 +68,6 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
             self.evaluate(step.assign_add(1))
 
     def testTriangular2CyclicalLearningRate(self, serialize):
-        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1203")
         initial_learning_rate = 0.1
         maximal_learning_rate = 1
         step_size = 4000
@@ -92,7 +97,6 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
             self.evaluate(step.assign_add(1))
 
     def testExponentialCyclicalLearningRate(self, serialize):
-        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1203")
         initial_learning_rate = 0.1
         maximal_learning_rate = 1
         step_size = 4000
@@ -121,32 +125,30 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
             )
             self.evaluate(step.assign_add(1))
 
-    def testCustomCyclicalLearningRate(self, serialize):
-        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1203")
-        initial_learning_rate = 0.1
-        maximal_learning_rate = 1
-        step_size = 4000
 
-        def scale_fn(x):
-            return 1 / (5 ** (x * 0.0001))
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("serialize", [True])
+def testCustomCyclicalLearningRate(serialize):
+    initial_learning_rate = 0.1
+    maximal_learning_rate = 1
+    step_size = 4000
 
-        step = tf.resource_variable_ops.ResourceVariable(0)
-        custom_cyclical_lr = cyclical_learning_rate.CyclicalLearningRate(
-            initial_learning_rate=initial_learning_rate,
-            maximal_learning_rate=maximal_learning_rate,
-            step_size=step_size,
-            scale_fn=scale_fn,
-        )
-        custom_cyclical_lr = _maybe_serialized(custom_cyclical_lr, serialize)
+    def scale_fn(x):
+        return 1 / (5 ** (x * 0.0001))
 
-        self.evaluate(tf.compat.v1.global_variables_initializer())
+    step = tf.resource_variable_ops.ResourceVariable(0)
+    custom_cyclical_lr = cyclical_learning_rate.CyclicalLearningRate(
+        initial_learning_rate=initial_learning_rate,
+        maximal_learning_rate=maximal_learning_rate,
+        step_size=step_size,
+        scale_fn=scale_fn,
+    )
+    custom_cyclical_lr = _maybe_serialized(custom_cyclical_lr, serialize)
 
-        for i in range(1, 8001):
-            non_bounded_value = np.abs(
-                i / 2000.0 - 2 * np.floor(1 + i / (2 * 2000)) + 1
-            )
-            expected = initial_learning_rate + (
-                maximal_learning_rate - initial_learning_rate
-            ) * np.maximum(0, 1 - non_bounded_value) * scale_fn(i)
-            self.assertAllClose(self.evaluate(custom_cyclical_lr(step)), expected, 1e-6)
-            self.evaluate(step.assign_add(1))
+    for i in range(1, 8001):
+        non_bounded_value = np.abs(i / 2000.0 - 2 * np.floor(1 + i / (2 * 2000)) + 1)
+        expected = initial_learning_rate + (
+            maximal_learning_rate - initial_learning_rate
+        ) * np.maximum(0, 1 - non_bounded_value) * scale_fn(i)
+        np.testing.assert_allclose(custom_cyclical_lr(step), expected, 1e-6)
+        step.assign_add(1)
