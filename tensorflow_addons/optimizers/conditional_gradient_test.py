@@ -111,8 +111,10 @@ def test_minimize_sparse_resource_variable_frobenius():
         )
 
 
-def do_test_basic_frobenius(dtype, use_resource, use_callable_params=False):
-    # for i, dtype in enumerate([tf.half, tf.float32, tf.float64]):
+@pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("use_resource", [True, False])
+def test_basic_frobenius(dtype, use_resource):
     if use_resource:
         var0 = tf.Variable([1.0, 2.0], dtype=dtype[0], name="var0_%d" % dtype[1])
         var1 = tf.Variable([3.0, 4.0], dtype=dtype[0], name="var0_%d" % dtype[1])
@@ -131,10 +133,6 @@ def do_test_basic_frobenius(dtype, use_resource, use_callable_params=False):
         return 0.01
 
     ord = "fro"
-
-    if not use_callable_params:
-        learning_rate = learning_rate()
-        lambda_ = lambda_()
 
     cg_opt = cg_lib.ConditionalGradient(
         learning_rate=learning_rate, lambda_=lambda_, ord=ord
@@ -191,13 +189,6 @@ def do_test_basic_frobenius(dtype, use_resource, use_callable_params=False):
         ),
         var1.numpy(),
     )
-
-
-@pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.parametrize("use_resource", [True, False])
-def test_basic_callable_params_frobenius(dtype, use_resource):
-    do_test_basic_frobenius(dtype, use_resource, use_callable_params=True)
 
 
 @test_utils.run_all_in_graph_and_eager_modes
