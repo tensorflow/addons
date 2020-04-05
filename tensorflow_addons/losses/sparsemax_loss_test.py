@@ -130,73 +130,82 @@ def test_sparsemax_loss_positive(dtype):
     assert np.zeros(test_obs).shape == tf_loss_op.shape
 
 
-@test_utils.run_all_with_types(["float32", "float64"])
-@test_utils.run_all_in_graph_and_eager_modes
-class SparsemaxTest(tf.test.TestCase):
-    def test_sparsemax_loss_constructor_not_from_logits(self, dtype=None):
-        """check sparsemax-loss construcor throws when from_logits=True."""
-        self.assertRaises(ValueError, lambda: SparsemaxLoss(from_logits=False))
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_sparsemax_loss_constructor_not_from_logits(dtype):
+    """check sparsemax-loss construcor throws when from_logits=True."""
+    with pytest.raises(ValueError):
+        SparsemaxLoss(from_logits=False)
 
-    def test_sparsemax_loss_against_numpy(self, dtype=None):
-        """check sparsemax-loss kernel against numpy."""
-        random = np.random.RandomState(1)
 
-        z = random.uniform(low=-3, high=3, size=(test_obs, 10))
-        q = np.zeros((test_obs, 10))
-        q[np.arange(0, test_obs), random.randint(0, 10, size=test_obs)] = 1
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_sparsemax_loss_against_numpy(dtype):
+    """check sparsemax-loss kernel against numpy."""
+    random = np.random.RandomState(1)
 
-        tf_loss_op, tf_loss_out = _tf_sparsemax_loss(z, q, dtype)
-        np_loss = _np_sparsemax_loss(z, q).astype(dtype)
+    z = random.uniform(low=-3, high=3, size=(test_obs, 10))
+    q = np.zeros((test_obs, 10))
+    q[np.arange(0, test_obs), random.randint(0, 10, size=test_obs)] = 1
 
-        self.assertAllCloseAccordingToType(np_loss, tf_loss_out)
-        self.assertShapeEqual(np_loss, tf_loss_op)
+    tf_loss_op, tf_loss_out = _tf_sparsemax_loss(z, q, dtype)
+    np_loss = _np_sparsemax_loss(z, q).astype(dtype)
 
-    def test_sparsemax_loss_of_nan(self, dtype=None):
-        """check sparsemax-loss transfers nan."""
-        q = np.asarray([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
-        z_nan = np.asarray(
-            [[0, np.nan, 0], [0, np.nan, np.nan], [np.nan, np.nan, np.nan]]
-        ).astype(dtype)
+    test_utils.assert_allclose_according_to_type(np_loss, tf_loss_out)
+    assert np_loss.shape == tf_loss_op.shape
 
-        _, tf_loss_nan = _tf_sparsemax_loss(z_nan, q, dtype)
-        self.assertAllEqual([np.nan, np.nan, np.nan], tf_loss_nan)
 
-    def test_sparsemax_loss_of_inf(self, dtype=None):
-        """check sparsemax-loss is infinity safe."""
-        q = np.asarray([[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]])
-        z_neg = np.asarray(
-            [
-                [0, -np.inf, 0],
-                [0, -np.inf, -np.inf],
-                [-np.inf, -np.inf, 0],
-                [-np.inf, -np.inf, -np.inf],
-            ]
-        ).astype(dtype)
-        z_pos = np.asarray(
-            [
-                [0, np.inf, 0],
-                [0, np.inf, np.inf],
-                [np.inf, np.inf, 0],
-                [np.inf, np.inf, np.inf],
-            ]
-        ).astype(dtype)
-        z_mix = np.asarray(
-            [
-                [0, np.inf, 0],
-                [0, np.inf, -np.inf],
-                [-np.inf, np.inf, 0],
-                [-np.inf, np.inf, -np.inf],
-            ]
-        ).astype(dtype)
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_sparsemax_loss_of_nan(dtype):
+    """check sparsemax-loss transfers nan."""
+    q = np.asarray([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
+    z_nan = np.asarray(
+        [[0, np.nan, 0], [0, np.nan, np.nan], [np.nan, np.nan, np.nan]]
+    ).astype(dtype)
 
-        _, tf_loss_neg = _tf_sparsemax_loss(z_neg, q, dtype)
-        self.assertAllEqual([0.25, np.inf, 0, np.nan], tf_loss_neg)
+    _, tf_loss_nan = _tf_sparsemax_loss(z_nan, q, dtype)
+    np.testing.assert_equal(np.asanyarray([np.nan, np.nan, np.nan]), tf_loss_nan)
 
-        _, tf_loss_pos = _tf_sparsemax_loss(z_pos, q, dtype)
-        self.assertAllEqual([np.nan, np.nan, np.nan, np.nan], tf_loss_pos)
 
-        _, tf_loss_mix = _tf_sparsemax_loss(z_mix, q, dtype)
-        self.assertAllEqual([np.nan, np.nan, np.nan, np.nan], tf_loss_mix)
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_sparsemax_loss_of_inf(dtype):
+    """check sparsemax-loss is infinity safe."""
+    q = np.asarray([[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]])
+    z_neg = np.asarray(
+        [
+            [0, -np.inf, 0],
+            [0, -np.inf, -np.inf],
+            [-np.inf, -np.inf, 0],
+            [-np.inf, -np.inf, -np.inf],
+        ]
+    ).astype(dtype)
+    z_pos = np.asarray(
+        [
+            [0, np.inf, 0],
+            [0, np.inf, np.inf],
+            [np.inf, np.inf, 0],
+            [np.inf, np.inf, np.inf],
+        ]
+    ).astype(dtype)
+    z_mix = np.asarray(
+        [
+            [0, np.inf, 0],
+            [0, np.inf, -np.inf],
+            [-np.inf, np.inf, 0],
+            [-np.inf, np.inf, -np.inf],
+        ]
+    ).astype(dtype)
+
+    _, tf_loss_neg = _tf_sparsemax_loss(z_neg, q, dtype)
+    np.testing.assert_equal(np.asanyarray([0.25, np.inf, 0, np.nan]), tf_loss_neg)
+
+    _, tf_loss_pos = _tf_sparsemax_loss(z_pos, q, dtype)
+    np.testing.assert_equal(
+        np.asanyarray([np.nan, np.nan, np.nan, np.nan]), tf_loss_pos
+    )
+
+    _, tf_loss_mix = _tf_sparsemax_loss(z_mix, q, dtype)
+    np.testing.assert_equal(
+        np.asanyarray([np.nan, np.nan, np.nan, np.nan]), tf_loss_mix
+    )
 
 
 @pytest.mark.parametrize("dtype", ["float32", "float64"])
