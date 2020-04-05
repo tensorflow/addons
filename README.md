@@ -66,11 +66,19 @@ import tensorflow_addons as tfa
 ### Python Op Compatility
 TensorFlow Addons is actively working towards forward compatiblity with TF2.x. 
 However there are still a few private API uses within the respository so at the moment 
-we can only gurentee compatibility with the version of TF which it was tested against. 
+we can only gurentee compatibility with the versions of TF which it was tested against. 
 Warnings will be emitted during TFA import if your TensorFlow version does not match 
-what it was built against.
+what it was tested against.
 
-### C++ Op Compatibility
+#### Python-Op Compatibility Matrix
+| TFA Version    | TensorFlow | Python  |
+|:----------------------- |:---|:---------- |
+| tfa-nightly | 2.1, 2.2 | 3.5, 3.6, 3.7 | 
+| tensorflow-addons-0.8.3 | 2.1 |3.5, 3.6, 3.7 |
+| tensorflow-addons-0.7.1 | 2.1 | 2.7, 3.5, 3.6, 3.7 | 
+| tensorflow-addons-0.6.0 | 2.0 | 2.7, 3.5, 3.6, 3.7 |
+
+### C++ Custom Op Compatibility
 TensorFlow C++ APIs are not stable and thus we can only guarentee compatibility with the 
 version TFA was built against. It is possible custom-ops will work with multiple 
 versions of TF, but there is also a chance for segfault or other problematic crash.
@@ -85,13 +93,13 @@ compiled differently. A typical reason for this would be conda installed TensorF
 [RFC #133](https://github.com/tensorflow/community/pull/133) aims to fix this.
 
 
-#### Linux Build Matrix
-| Version    | Compatible With |Python versions  | Compiler  | cuDNN | CUDA | 
-|:----------------------- |:---|:---------- |:---------|:---------|:---------|
-| tfa-nightly | tensorflow==2.1.0 | 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
-| tensorflow-addons-0.8.3 | tensorflow==2.1.0 |3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
-| tensorflow-addons-0.7.1 | tensorflow==2.1.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
-| tensorflow-addons-0.6.0 | tensorflow==2.0.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
+#### Custom-Op Compatibility Matrix
+| TFA Version    | TensorFlow | Compiler  | cuDNN | CUDA | 
+|:----------------------- |:---- |:---------|:---------|:---------|
+| tfa-nightly | 2.1 | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.8.3 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.7.1 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.6.0 | 2.0  | GCC 7.3.1 | 7.4 | 10.0 |
 
 
 #### Nightly Builds
