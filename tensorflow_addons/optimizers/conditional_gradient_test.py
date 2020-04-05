@@ -191,130 +191,96 @@ def test_basic_frobenius(dtype, use_resource):
     )
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("use_resource", [True, False])
+def test_basic_nuclear(use_resource):
+    # TODO:
+    #       to address issue #36764
+    for i, dtype in enumerate(
+        _dtypes_with_checking_system(
+            use_gpu=tf.test.is_gpu_available(), system=platform.system()
+        )
+    ):
+
+        if use_resource:
+            var0 = tf.Variable([1.0, 2.0], dtype=dtype, name="var0_%d" % i)
+            var1 = tf.Variable([3.0, 4.0], dtype=dtype, name="var1_%d" % i)
+        else:
+            var0 = tf.Variable([1.0, 2.0], dtype=dtype)
+            var1 = tf.Variable([3.0, 4.0], dtype=dtype)
+
+        grads0 = tf.constant([0.1, 0.1], dtype=dtype)
+        grads1 = tf.constant([0.01, 0.01], dtype=dtype)
+        top_singular_vector0 = cg_lib.ConditionalGradient._top_singular_vector(grads0)
+        top_singular_vector1 = cg_lib.ConditionalGradient._top_singular_vector(grads1)
+
+        def learning_rate():
+            return 0.5
+
+        def lambda_():
+            return 0.01
+
+        ord = "nuclear"
+
+        cg_opt = cg_lib.ConditionalGradient(
+            learning_rate=learning_rate, lambda_=lambda_, ord=ord
+        )
+        _ = cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+
+        # Check we have slots
+        assert ["conditional_gradient"] == cg_opt.get_slot_names()
+        slot0 = cg_opt.get_slot(var0, "conditional_gradient")
+        assert slot0.get_shape() == var0.get_shape()
+        slot1 = cg_opt.get_slot(var1, "conditional_gradient")
+        assert slot1.get_shape() == var1.get_shape()
+
+        test_utils.assert_allclose_according_to_type(
+            np.array(
+                [
+                    1.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector0[0],
+                    2.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector0[1],
+                ]
+            ),
+            var0.numpy(),
+        )
+        test_utils.assert_allclose_according_to_type(
+            np.array(
+                [
+                    3.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector1[0],
+                    4.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector1[1],
+                ]
+            ),
+            var1.numpy(),
+        )
+
+        # Step 2: the conditional_gradient contain the previous update.
+        cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+        test_utils.assert_allclose_according_to_type(
+            np.array(
+                [
+                    (1.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector0[0]) * 0.5
+                    - (1 - 0.5) * 0.01 * top_singular_vector0[0],
+                    (2.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector0[1]) * 0.5
+                    - (1 - 0.5) * 0.01 * top_singular_vector0[1],
+                ]
+            ),
+            var0.numpy(),
+        )
+        test_utils.assert_allclose_according_to_type(
+            np.array(
+                [
+                    (3.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector1[0]) * 0.5
+                    - (1 - 0.5) * 0.01 * top_singular_vector1[1],
+                    (4.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector1[0]) * 0.5
+                    - (1 - 0.5) * 0.01 * top_singular_vector1[1],
+                ]
+            ),
+            var1.numpy(),
+        )
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class ConditionalGradientTest(tf.test.TestCase):
-    def doTestBasicNuclear(self, use_resource=False, use_callable_params=False):
-        # TODO:
-        #       to address issue #36764
-        for i, dtype in enumerate(
-            _dtypes_with_checking_system(
-                use_gpu=tf.test.is_gpu_available(), system=platform.system()
-            )
-        ):
-
-            if use_resource:
-                var0 = tf.Variable([1.0, 2.0], dtype=dtype, name="var0_%d" % i)
-                var1 = tf.Variable([3.0, 4.0], dtype=dtype, name="var1_%d" % i)
-            else:
-                var0 = tf.Variable([1.0, 2.0], dtype=dtype)
-                var1 = tf.Variable([3.0, 4.0], dtype=dtype)
-
-            grads0 = tf.constant([0.1, 0.1], dtype=dtype)
-            grads1 = tf.constant([0.01, 0.01], dtype=dtype)
-            top_singular_vector0 = cg_lib.ConditionalGradient._top_singular_vector(
-                grads0
-            )
-            top_singular_vector1 = cg_lib.ConditionalGradient._top_singular_vector(
-                grads1
-            )
-
-            def learning_rate():
-                return 0.5
-
-            def lambda_():
-                return 0.01
-
-            ord = "nuclear"
-
-            if not use_callable_params:
-                learning_rate = learning_rate()
-                lambda_ = lambda_()
-
-            cg_opt = cg_lib.ConditionalGradient(
-                learning_rate=learning_rate, lambda_=lambda_, ord=ord
-            )
-            cg_update = cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-
-            if not tf.executing_eagerly():
-                self.evaluate(tf.compat.v1.global_variables_initializer())
-                # Fetch params to validate initial values
-                self.assertAllClose([1.0, 2.0], self.evaluate(var0))
-                self.assertAllClose([3.0, 4.0], self.evaluate(var1))
-
-            # Check we have slots
-            self.assertEqual(["conditional_gradient"], cg_opt.get_slot_names())
-            slot0 = cg_opt.get_slot(var0, "conditional_gradient")
-            self.assertEquals(slot0.get_shape(), var0.get_shape())
-            slot1 = cg_opt.get_slot(var1, "conditional_gradient")
-            self.assertEquals(slot1.get_shape(), var1.get_shape())
-
-            if not tf.executing_eagerly():
-                self.assertFalse(slot0 in tf.compat.v1.trainable_variables())
-                self.assertFalse(slot1 in tf.compat.v1.trainable_variables())
-
-            if not tf.executing_eagerly():
-                self.evaluate(cg_update)
-
-            top_singular_vector0 = self.evaluate(top_singular_vector0)
-            top_singular_vector1 = self.evaluate(top_singular_vector1)
-
-            self.assertAllCloseAccordingToType(
-                np.array(
-                    [
-                        1.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector0[0],
-                        2.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector0[1],
-                    ]
-                ),
-                self.evaluate(var0),
-            )
-            self.assertAllCloseAccordingToType(
-                np.array(
-                    [
-                        3.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector1[0],
-                        4.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector1[1],
-                    ]
-                ),
-                self.evaluate(var1),
-            )
-
-            # Step 2: the conditional_gradient contain the previous update.
-            if tf.executing_eagerly():
-                cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-            else:
-                self.evaluate(cg_update)
-            self.assertAllCloseAccordingToType(
-                np.array(
-                    [
-                        (1.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector0[0]) * 0.5
-                        - (1 - 0.5) * 0.01 * top_singular_vector0[0],
-                        (2.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector0[1]) * 0.5
-                        - (1 - 0.5) * 0.01 * top_singular_vector0[1],
-                    ]
-                ),
-                self.evaluate(var0),
-            )
-            self.assertAllCloseAccordingToType(
-                np.array(
-                    [
-                        (3.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector1[0]) * 0.5
-                        - (1 - 0.5) * 0.01 * top_singular_vector1[1],
-                        (4.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector1[0]) * 0.5
-                        - (1 - 0.5) * 0.01 * top_singular_vector1[1],
-                    ]
-                ),
-                self.evaluate(var1),
-            )
-
-    def testBasicNuclear(self):
-        with self.cached_session():
-            self.doTestBasicNuclear(use_resource=False)
-
-    def testResourceBasicNuclear(self):
-        self.doTestBasicNuclear(use_resource=True)
-
-    def testBasicCallableParamsNuclear(self):
-        self.doTestBasicNuclear(use_resource=True, use_callable_params=True)
-
     def testVariablesAcrossGraphsFrobenius(self):
         optimizer = cg_lib.ConditionalGradient(0.01, 0.5, ord="fro")
         with tf.Graph().as_default():
