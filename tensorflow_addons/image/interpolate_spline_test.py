@@ -15,11 +15,11 @@
 """Tests for interpolate_spline."""
 
 import numpy as np
+import pytest
 from scipy import interpolate as sc_interpolate
 
 import tensorflow as tf
 from tensorflow_addons.image import interpolate_spline
-from tensorflow_addons.utils import test_utils
 
 
 class _InterpolationProblem:
@@ -222,44 +222,36 @@ def test_nd_linear_interpolation_unspecified_shape():
     np.testing.assert_allclose(interp_val[0, :, 0], target_interpolation)
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class InterpolateSplineTest(tf.test.TestCase):
-    def test_fully_unspecified_shape(self):
-        """Ensure that erreor is thrown when input/output dim unspecified."""
-        tp = _QuadraticPlusSinProblemND()
-        (query_points, _, train_points, train_values) = tp.get_problem(dtype="float64")
+def test_fully_unspecified_shape():
+    """Ensure that erreor is thrown when input/output dim unspecified."""
+    tp = _QuadraticPlusSinProblemND()
+    (query_points, _, train_points, train_values) = tp.get_problem(dtype="float64")
 
-        feature_dim = query_points.shape[-1]
-        value_dim = train_values.shape[-1]
+    feature_dim = query_points.shape[-1]
+    value_dim = train_values.shape[-1]
 
-        order = 1
-        reg_weight = 0.01
+    order = 1
+    reg_weight = 0.01
 
-        # Get concrete functions such that the batch size, number of train points,
-        # and number of query points are not known at graph construction time.
-        with self.assertRaises(ValueError):
-            tf.function(interpolate_spline).get_concrete_function(
-                tf.TensorSpec(shape=[None, None, None], dtype=train_points.dtype),
-                tf.TensorSpec(shape=[None, None, value_dim], dtype=train_values.dtype),
-                tf.TensorSpec(
-                    shape=[None, None, feature_dim], dtype=query_points.dtype
-                ),
-                order,
-                reg_weight,
-            )
+    # Get concrete functions such that the batch size, number of train points,
+    # and number of query points are not known at graph construction time.
+    with pytest.raises(ValueError):
+        tf.function(interpolate_spline).get_concrete_function(
+            tf.TensorSpec(shape=[None, None, None], dtype=train_points.dtype),
+            tf.TensorSpec(shape=[None, None, value_dim], dtype=train_values.dtype),
+            tf.TensorSpec(shape=[None, None, feature_dim], dtype=query_points.dtype),
+            order,
+            reg_weight,
+        )
 
-        with self.assertRaises(ValueError):
-            tf.function(interpolate_spline).get_concrete_function(
-                tf.TensorSpec(
-                    shape=[None, None, feature_dim], dtype=train_points.dtype
-                ),
-                tf.TensorSpec(shape=[None, None, None], dtype=train_values.dtype),
-                tf.TensorSpec(
-                    shape=[None, None, feature_dim], dtype=query_points.dtype
-                ),
-                order,
-                reg_weight,
-            )
+    with pytest.raises(ValueError):
+        tf.function(interpolate_spline).get_concrete_function(
+            tf.TensorSpec(shape=[None, None, feature_dim], dtype=train_points.dtype),
+            tf.TensorSpec(shape=[None, None, None], dtype=train_values.dtype),
+            tf.TensorSpec(shape=[None, None, feature_dim], dtype=query_points.dtype),
+            order,
+            reg_weight,
+        )
 
 
 def test_interpolation_gradient():

@@ -3,22 +3,19 @@ licenses(["notice"])  # Apache 2.0
 package(default_visibility = ["//visibility:public"])
 
 py_library(
-    name = "rnn",
+    name = "testing",
     srcs = [
         "__init__.py",
-        "cell.py",
-    ],
-    deps = [
-        "//tensorflow_addons/utils",
+        "serialization.py",
     ],
 )
 
 py_test(
-    name = "rnn_test",
+    name = "serialization_test",
     size = "small",
     srcs = glob(["*_test.py"]),
     main = "run_all_test.py",
     deps = [
-        ":rnn",
+        ":testing",
     ],
 )

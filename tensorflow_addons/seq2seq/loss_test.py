@@ -14,8 +14,6 @@
 # ==============================================================================
 """Tests for tf.addons.seq2seq.python.loss_ops."""
 
-import sys
-
 import pytest
 import numpy as np
 import tensorflow as tf
@@ -314,7 +312,3 @@ def test_keras_compatibility():
 
     calculated_loss = h.history["loss"][0]
     np.testing.assert_allclose(calculated_loss, expected_loss, rtol=1e-6, atol=1e-6)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
