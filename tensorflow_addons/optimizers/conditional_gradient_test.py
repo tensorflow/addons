@@ -279,6 +279,126 @@ def test_basic_nuclear(use_resource):
         )
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_minimize_sparse_resource_variable_nuclear():
+    # TODO:
+    #       to address issue #347 and #36764.
+    for dtype in _dtypes_with_checking_system(
+        use_gpu=tf.test.is_gpu_available(), system=platform.system()
+    ):
+        var0 = tf.Variable([[1.0, 2.0]], dtype=dtype)
+
+        def loss():
+            x = tf.constant([[4.0], [5.0]], dtype=dtype)
+            pred = tf.matmul(tf.nn.embedding_lookup([var0], [0]), x)
+            return pred * pred
+
+        # the gradient based on the current loss function
+        grads0_0 = 32 * 1.0 + 40 * 2.0
+        grads0_1 = 40 * 1.0 + 50 * 2.0
+        grads0 = tf.constant([[grads0_0, grads0_1]], dtype=dtype)
+        top_singular_vector0 = cg_lib.ConditionalGradient._top_singular_vector(grads0)
+
+        learning_rate = 0.1
+        lambda_ = 0.1
+        ord = "nuclear"
+        opt = cg_lib.ConditionalGradient(
+            learning_rate=learning_rate, lambda_=lambda_, ord=ord
+        )
+        _ = opt.minimize(loss, var_list=[var0])
+
+        # Validate updated params
+        test_utils.assert_allclose_according_to_type(
+            [
+                [
+                    1.0 * learning_rate
+                    - (1 - learning_rate) * lambda_ * top_singular_vector0[0][0],
+                    2.0 * learning_rate
+                    - (1 - learning_rate) * lambda_ * top_singular_vector0[0][1],
+                ]
+            ],
+            var0.numpy(),
+        )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_tensor_learning_rate_and_conditional_gradient_nuclear():
+    for dtype in _dtypes_with_checking_system(
+        use_gpu=tf.test.is_gpu_available(), system=platform.system()
+    ):
+        # TODO:
+        # Based on issue #36764 in the following link,
+        #        "https://github.com/tensorflow/tensorflow/issues/36764"
+        # tf.half is not registered for tf.linalg.svd function on Windows
+        # CPU version.
+        # So we have to remove tf.half when testing with Windows CPU version.
+        var0 = tf.Variable([1.0, 2.0], dtype=dtype)
+        var1 = tf.Variable([3.0, 4.0], dtype=dtype)
+        grads0 = tf.constant([0.1, 0.1], dtype=dtype)
+        grads1 = tf.constant([0.01, 0.01], dtype=dtype)
+        top_singular_vector0 = cg_lib.ConditionalGradient._top_singular_vector(grads0)
+        top_singular_vector1 = cg_lib.ConditionalGradient._top_singular_vector(grads1)
+        ord = "nuclear"
+        cg_opt = cg_lib.ConditionalGradient(
+            learning_rate=tf.constant(0.5), lambda_=tf.constant(0.01), ord=ord
+        )
+        _ = cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+
+        # Check we have slots
+        assert ["conditional_gradient"] == cg_opt.get_slot_names()
+        slot0 = cg_opt.get_slot(var0, "conditional_gradient")
+        assert slot0.get_shape() == var0.get_shape()
+        slot1 = cg_opt.get_slot(var1, "conditional_gradient")
+        assert slot1.get_shape() == var1.get_shape()
+
+        # Check that the parameters have been updated.
+        test_utils.assert_allclose_according_to_type(
+            np.array(
+                [
+                    1.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector0[0],
+                    2.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector0[1],
+                ]
+            ),
+            var0.numpy(),
+        )
+        test_utils.assert_allclose_according_to_type(
+            np.array(
+                [
+                    3.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector1[0],
+                    4.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector1[1],
+                ]
+            ),
+            var1.numpy(),
+        )
+        # Step 2: the conditional_gradient contain the
+        # previous update.
+        cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+
+        # Check that the parameters have been updated.
+        test_utils.assert_allclose_according_to_type(
+            np.array(
+                [
+                    (1.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector0[0]) * 0.5
+                    - (1 - 0.5) * 0.01 * top_singular_vector0[0],
+                    (2.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector0[1]) * 0.5
+                    - (1 - 0.5) * 0.01 * top_singular_vector0[1],
+                ]
+            ),
+            var0.numpy(),
+        )
+        test_utils.assert_allclose_according_to_type(
+            np.array(
+                [
+                    (3.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector1[0]) * 0.5
+                    - (1 - 0.5) * 0.01 * top_singular_vector1[0],
+                    (4.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector1[1]) * 0.5
+                    - (1 - 0.5) * 0.01 * top_singular_vector1[1],
+                ]
+            ),
+            var1.numpy(),
+        )
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class ConditionalGradientTest(tf.test.TestCase):
     def testVariablesAcrossGraphsFrobenius(self):
@@ -322,53 +442,6 @@ class ConditionalGradientTest(tf.test.TestCase):
                 optimizer_variables[2].name, "ConditionalGradient/var1"
             )
             self.assertEqual(3, len(optimizer_variables))
-
-    def testMinimizeSparseResourceVariableNuclear(self):
-        # TODO:
-        #       to address issue #347 and #36764.
-        for dtype in _dtypes_with_checking_system(
-            use_gpu=tf.test.is_gpu_available(), system=platform.system()
-        ):
-            var0 = tf.Variable([[1.0, 2.0]], dtype=dtype)
-
-            def loss():
-                x = tf.constant([[4.0], [5.0]], dtype=dtype)
-                pred = tf.matmul(tf.nn.embedding_lookup([var0], [0]), x)
-                return pred * pred
-
-            # the gradient based on the current loss function
-            grads0_0 = 32 * 1.0 + 40 * 2.0
-            grads0_1 = 40 * 1.0 + 50 * 2.0
-            grads0 = tf.constant([[grads0_0, grads0_1]], dtype=dtype)
-            top_singular_vector0 = cg_lib.ConditionalGradient._top_singular_vector(
-                grads0
-            )
-
-            learning_rate = 0.1
-            lambda_ = 0.1
-            ord = "nuclear"
-            opt = cg_lib.ConditionalGradient(
-                learning_rate=learning_rate, lambda_=lambda_, ord=ord
-            )
-            cg_op = opt.minimize(loss, var_list=[var0])
-            self.evaluate(tf.compat.v1.global_variables_initializer())
-
-            # Run 1 step of cg_op
-            self.evaluate(cg_op)
-
-            # Validate updated params
-            top_singular_vector0 = self.evaluate(top_singular_vector0)
-            self.assertAllCloseAccordingToType(
-                [
-                    [
-                        1.0 * learning_rate
-                        - (1 - learning_rate) * lambda_ * top_singular_vector0[0][0],
-                        2.0 * learning_rate
-                        - (1 - learning_rate) * lambda_ * top_singular_vector0[0][1],
-                    ]
-                ],
-                self.evaluate(var0),
-            )
 
     def testMinimizeWith2DIndiciesForEmbeddingLookupFrobenius(self):
         # This test invokes the ResourceSparseApplyConditionalGradient
@@ -519,106 +592,6 @@ class ConditionalGradientTest(tf.test.TestCase):
                             - (1 - 0.5) * 0.01 * 0.01 / norm1,
                             (4.0 * 0.5 - (1 - 0.5) * 0.01 * 0.01 / norm1) * 0.5
                             - (1 - 0.5) * 0.01 * 0.01 / norm1,
-                        ]
-                    ),
-                    self.evaluate(var1),
-                )
-
-    def testTensorLearningRateAndConditionalGradientNuclear(self):
-        for dtype in _dtypes_with_checking_system(
-            use_gpu=tf.test.is_gpu_available(), system=platform.system()
-        ):
-            # TODO:
-            # Based on issue #36764 in the following link,
-            #        "https://github.com/tensorflow/tensorflow/issues/36764"
-            # tf.half is not registered for tf.linalg.svd function on Windows
-            # CPU version.
-            # So we have to remove tf.half when testing with Windows CPU version.
-            with self.cached_session():
-                var0 = tf.Variable([1.0, 2.0], dtype=dtype)
-                var1 = tf.Variable([3.0, 4.0], dtype=dtype)
-                grads0 = tf.constant([0.1, 0.1], dtype=dtype)
-                grads1 = tf.constant([0.01, 0.01], dtype=dtype)
-                top_singular_vector0 = cg_lib.ConditionalGradient._top_singular_vector(
-                    grads0
-                )
-                top_singular_vector1 = cg_lib.ConditionalGradient._top_singular_vector(
-                    grads1
-                )
-                ord = "nuclear"
-                cg_opt = cg_lib.ConditionalGradient(
-                    learning_rate=tf.constant(0.5), lambda_=tf.constant(0.01), ord=ord
-                )
-                cg_update = cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-                if not tf.executing_eagerly():
-                    self.evaluate(tf.compat.v1.global_variables_initializer())
-                    # Fetch params to validate initial values
-                    self.assertAllClose([1.0, 2.0], self.evaluate(var0))
-                    self.assertAllClose([3.0, 4.0], self.evaluate(var1))
-
-                # Check we have slots
-                self.assertEqual(["conditional_gradient"], cg_opt.get_slot_names())
-                slot0 = cg_opt.get_slot(var0, "conditional_gradient")
-                self.assertEquals(slot0.get_shape(), var0.get_shape())
-                slot1 = cg_opt.get_slot(var1, "conditional_gradient")
-                self.assertEquals(slot1.get_shape(), var1.get_shape())
-
-                if not tf.executing_eagerly():
-                    self.assertFalse(slot0 in tf.compat.v1.trainable_variables())
-                    self.assertFalse(slot1 in tf.compat.v1.trainable_variables())
-
-                if not tf.executing_eagerly():
-                    self.evaluate(cg_update)
-                # Check that the parameters have been updated.
-                top_singular_vector0 = self.evaluate(top_singular_vector0)
-                top_singular_vector1 = self.evaluate(top_singular_vector1)
-                self.assertAllCloseAccordingToType(
-                    np.array(
-                        [
-                            1.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector0[0],
-                            2.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector0[1],
-                        ]
-                    ),
-                    self.evaluate(var0),
-                )
-                self.assertAllCloseAccordingToType(
-                    np.array(
-                        [
-                            3.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector1[0],
-                            4.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector1[1],
-                        ]
-                    ),
-                    self.evaluate(var1),
-                )
-                # Step 2: the conditional_gradient contain the
-                # previous update.
-                if tf.executing_eagerly():
-                    cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-                else:
-                    self.evaluate(cg_update)
-                # Check that the parameters have been updated.
-                self.assertAllCloseAccordingToType(
-                    np.array(
-                        [
-                            (1.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector0[0])
-                            * 0.5
-                            - (1 - 0.5) * 0.01 * top_singular_vector0[0],
-                            (2.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector0[1])
-                            * 0.5
-                            - (1 - 0.5) * 0.01 * top_singular_vector0[1],
-                        ]
-                    ),
-                    self.evaluate(var0),
-                )
-                self.assertAllCloseAccordingToType(
-                    np.array(
-                        [
-                            (3.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector1[0])
-                            * 0.5
-                            - (1 - 0.5) * 0.01 * top_singular_vector1[0],
-                            (4.0 * 0.5 - (1 - 0.5) * 0.01 * top_singular_vector1[1])
-                            * 0.5
-                            - (1 - 0.5) * 0.01 * top_singular_vector1[1],
                         ]
                     ),
                     self.evaluate(var1),
