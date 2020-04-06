@@ -16,6 +16,8 @@
 
 
 import numpy as np
+import pytest
+
 import tensorflow as tf
 
 from tensorflow_addons.optimizers import lazy_adam
@@ -252,59 +254,57 @@ class LazyAdamTest(tf.test.TestCase):
                     self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
                     self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
 
-    @test_utils.run_deprecated_v1
-    def testSharing(self):
-        for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
-            with self.cached_session():
-                # Initialize tf for numpy implementation.
-                m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
-                var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
-                grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
-                var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
-                grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
 
-                var0 = tf.Variable(var0_np)
-                var1 = tf.Variable(var1_np)
-                grads0 = tf.constant(grads0_np)
-                grads1 = tf.constant(grads1_np)
-                opt = lazy_adam.LazyAdam()
-                update1 = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-                update2 = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-                self.evaluate(tf.compat.v1.global_variables_initializer())
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [tf.half, tf.float32, tf.float64])
+def testSharing(dtype):
+    # Initialize tf for numpy implementation.
+    m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
+    var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
+    grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
+    var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
+    grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
 
-                beta_1_power, beta_2_power = get_beta_accumulators(opt, dtype)
+    var0 = tf.Variable(var0_np)
+    var1 = tf.Variable(var1_np)
+    grads0 = tf.constant(grads0_np)
+    grads1 = tf.constant(grads1_np)
+    opt = lazy_adam.LazyAdam()
+    _ = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
-                # Fetch params to validate initial values
-                self.assertAllClose([1.0, 2.0], self.evaluate(var0))
-                self.assertAllClose([3.0, 4.0], self.evaluate(var1))
+    beta_1_power, beta_2_power = get_beta_accumulators(opt, dtype)
 
-                # Run 3 steps of intertwined Adam1 and Adam2.
-                for t in range(3):
-                    self.assertAllCloseAccordingToType(
-                        0.9 ** (t + 1), self.evaluate(beta_1_power)
-                    )
-                    self.assertAllCloseAccordingToType(
-                        0.999 ** (t + 1), self.evaluate(beta_2_power)
-                    )
-                    if t % 2 == 0:
-                        update1.run()
-                    else:
-                        update2.run()
+    # Fetch params to validate initial values
+    np.allclose(np.asanyarray([1.0, 2.0]), var0.numpy())
+    np.allclose(np.asanyarray([3.0, 4.0]), var1.numpy())
 
-                    var0_np, m0, v0 = adam_update_numpy(var0_np, grads0_np, t, m0, v0)
-                    var1_np, m1, v1 = adam_update_numpy(var1_np, grads1_np, t, m1, v1)
-
-                    # Validate updated params
-                    self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
-                    self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
-
-    def testSlotsUniqueEager(self):
-        v1 = tf.Variable(1.0)
-        v2 = tf.Variable(1.0)
-        opt = lazy_adam.LazyAdam(1.0)
-        opt.minimize(lambda: v1 + v2, var_list=[v1, v2])
-        # There should be iteration, and two unique slot variables for v1 and v2.
-        self.assertEqual(5, len(opt.variables()))
-        self.assertEqual(
-            self.evaluate(opt.variables()[0]), self.evaluate(opt.iterations)
+    # Run 3 steps of intertwined Adam1 and Adam2.
+    for t in range(3):
+        test_utils.assert_allclose_according_to_type(
+            0.9 ** (t + 1), beta_1_power, rtol=1e-1, atol=1e-1
         )
+        test_utils.assert_allclose_according_to_type(
+            0.999 ** (t + 1), beta_2_power, rtol=1e-1, atol=1e-1
+        )
+
+        var0_np, m0, v0 = adam_update_numpy(var0_np, grads0_np, t, m0, v0)
+        var1_np, m1, v1 = adam_update_numpy(var1_np, grads1_np, t, m1, v1)
+
+        # Validate updated params
+        test_utils.assert_allclose_according_to_type(
+            var0_np, var0.numpy(), rtol=1e-2, atol=1e-2
+        )
+        test_utils.assert_allclose_according_to_type(
+            var1_np, var1.numpy(), rtol=1e-2, atol=1e-2
+        )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_slots_unique_eager():
+    v1 = tf.Variable(1.0)
+    v2 = tf.Variable(1.0)
+    opt = lazy_adam.LazyAdam(1.0)
+    opt.minimize(lambda: v1 + v2, var_list=[v1, v2])
+    # There should be iteration, and two unique slot variables for v1 and v2.
+    assert 5 == len(opt.variables())
+    assert opt.variables()[0] == opt.iterations
