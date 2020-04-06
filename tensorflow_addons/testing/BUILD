@@ -4,17 +4,14 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "testing",
-    srcs = [
-        "__init__.py",
-        "serialization.py",
-    ],
+    srcs = glob(["*.py"]),
 )
 
 py_test(
     name = "serialization_test",
     size = "small",
-    srcs = glob(["*_test.py"]),
-    main = "run_all_test.py",
+    srcs = glob(["tests/*"]),
+    main = "tests/run_all_test.py",
     deps = [
         ":testing",
     ],
