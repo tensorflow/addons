@@ -63,7 +63,6 @@ def test_sample_weighted():
 
 
 def test_timestep_weighted():
-    pytest.skip("Failing. See https://github.com/tensorflow/addons/issues/1202")
     pin_obj = quantiles.PinballLoss()
     y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3, 1))
     y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3, 1), dtype=tf.dtypes.float32)
@@ -81,7 +80,6 @@ def test_zero_weighted():
 
 
 def test_invalid_sample_weight():
-    pytest.skip("Failing. See https://github.com/tensorflow/addons/issues/1202")
     pin_obj = quantiles.PinballLoss()
     y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3, 1))
     y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3, 1))
