@@ -412,8 +412,8 @@ def test_variables_across_graphs_frobenius():
     optimizer_variables = optimizer.variables()
     # There should be three items. The first item is iteration,
     # and one item for each variable.
-    assert "ConditionalGradient/var0" in optimizer_variables[1].name
-    assert "ConditionalGradient/var1" in optimizer_variables[2].name
+    assert optimizer_variables[1].name.startswith("ConditionalGradient/var0")
+    assert optimizer_variables[2].name.startswith("ConditionalGradient/var1")
     assert 3 == len(optimizer_variables)
 
 
@@ -430,8 +430,8 @@ def test_variables_across_graphs_nuclear():
     optimizer_variables = optimizer.variables()
     # There should be three items. The first item is iteration,
     # and one item for each variable.
-    assert "ConditionalGradient/var0" in optimizer_variables[1].name
-    assert "ConditionalGradient/var1" in optimizer_variables[2].name
+    assert optimizer_variables[1].name.startswith("ConditionalGradient/var0")
+    assert optimizer_variables[2].name.startswith("ConditionalGradient/var1")
     assert 3 == len(optimizer_variables)
 
 
