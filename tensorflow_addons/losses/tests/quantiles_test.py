@@ -86,7 +86,7 @@ def test_invalid_sample_weight():
     sample_weight = tf.constant([3, 6, 5, 0], shape=(2, 2))
     with pytest.raises(
         (ValueError, tf.errors.InvalidArgumentError),
-        match="weights can not be broadcast to values",
+        match="(weights can not be broadcast to values|Incompatible shapes)",
     ):
         pin_obj(y_true, y_pred, sample_weight=sample_weight)
 
