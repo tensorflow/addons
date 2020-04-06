@@ -57,15 +57,10 @@ def test_run(sequential_update):
     if sequential_update:
         np.testing.assert_allclose(var0.read_value(), [0.75, 1.75])
         np.testing.assert_allclose(var1.read_value(), [2.975, 3.975])
-
-    _ = tf.group(
-        [
-            var0.assign_add([1.0, 1.0]),
-            var1.assign_add([2.0, 2.0]),
-            ema_var0.assign_add([3.0, 3.0]),
-            ema_var1.assign_add([4.0, 4.0]),
-        ]
-    )
+        var0.assign_add([1.0, 1.0]),
+        var1.assign_add([2.0, 2.0]),
+        ema_var0.assign_add([3.0, 3.0]),
+        ema_var1.assign_add([4.0, 4.0]),
 
     if sequential_update:
         np.testing.assert_allclose(var0.read_value(), [1.75, 2.75])
