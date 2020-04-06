@@ -155,7 +155,7 @@ def load_image(image_file):
 def test_smiley_face():
     """Check warping accuracy by comparing to hardcoded warped images."""
 
-    input_file = get_path_to_datafile("image/test_data/Yellow_Smiley_Face.png")
+    input_file = get_path_to_datafile("image/tests/test_data/Yellow_Smiley_Face.png")
     input_image = load_image(input_file)
     control_points = np.asarray(
         [
@@ -201,7 +201,7 @@ def test_smiley_face():
             warped_image = warped_image
             out_image = np.uint8(warped_image[0, :, :, :] * 255)
             target_file = get_path_to_datafile(
-                "image/test_data/Yellow_Smiley_Face_Warp-interp"
+                "image/tests/test_data/Yellow_Smiley_Face_Warp-interp"
                 + "-{}-clamp-{}.png".format(interpolation_order, num_boundary_points)
             )
 
