@@ -4,17 +4,7 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "activations",
-    srcs = [
-        "__init__.py",
-        "gelu.py",
-        "hardshrink.py",
-        "lisht.py",
-        "mish.py",
-        "rrelu.py",
-        "softshrink.py",
-        "sparsemax.py",
-        "tanhshrink.py",
-    ],
+    srcs = glob(["*.py"]),
     data = [
         "//tensorflow_addons:options.py",
         "//tensorflow_addons/custom_ops/activations:_activation_ops.so",
@@ -25,7 +15,7 @@ py_library(
 py_test(
     name = "activations_test",
     size = "small",
-    srcs = glob(["*_test.py"]),
+    srcs = glob(["tests/*"]),
     main = "run_all_test.py",
     deps = [
         ":activations",

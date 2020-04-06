@@ -22,6 +22,7 @@ py_library(
         "translate_ops.py",
         "utils.py",
     ]),
+    srcs = glob(["*.py"]),
     data = [
         ":sparse_image_warp_test_data",
         "//tensorflow_addons/custom_ops/image:_distort_image_ops.so",
@@ -33,7 +34,7 @@ py_library(
 
 filegroup(
     name = "sparse_image_warp_test_data",
-    srcs = glob(["test_data/*.png"]),
+    srcs = glob(["tests/test_data/*.png"]),
 )
 
 py_test(
@@ -212,6 +213,8 @@ py_test(
         "utils_test.py",
     ],
     main = "utils_test.py",
+    srcs = glob(["tests/*"]),
+    main = "tests/run_all_test.py",
     deps = [
         ":image",
     ],
