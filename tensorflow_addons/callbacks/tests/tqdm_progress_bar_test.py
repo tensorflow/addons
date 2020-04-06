@@ -8,12 +8,6 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 
 
-pytestmark = pytest.mark.xfail(
-    LooseVersion(tf.__version__) >= LooseVersion("2.2.0"),
-    reason="TODO: Fixeme See #1495",
-)
-
-
 def get_data_and_model():
     x = np.random.random((5, 1))
     y = np.random.randint(0, 2, (5, 1), dtype=np.int)

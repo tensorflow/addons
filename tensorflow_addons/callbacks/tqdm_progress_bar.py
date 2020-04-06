@@ -19,7 +19,7 @@ import tensorflow as tf
 from collections import defaultdict
 from typeguard import typechecked
 
-from tensorflow.keras.callbacks import Callback
+from tensorflow.keras.callbacks import Callback, ProgbarLogger
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -95,11 +95,10 @@ class TQDMProgressBar(Callback):
         self.epoch_progress_tqdm = None
         self.num_epochs = None
         self.logs = None
-        self.metrics = None
+        super().__init__()
 
     def on_train_begin(self, logs=None):
         self.num_epochs = self.params["epochs"]
-        self.metrics = self.params["metrics"]
 
         if self.show_overall_progress:
             self.overall_progress_tqdm = self.tqdm(
@@ -208,11 +207,11 @@ class TQDMProgressBar(Callback):
         """
 
         metric_value_pairs = []
-        for metric in self.metrics:
-            if metric in logs:
-                value = logs[metric] / factor
-                pair = self.metrics_format.format(name=metric, value=value)
-                metric_value_pairs.append(pair)
+        for key, value in logs.items():
+            if key in ["batch", "size"]:
+                continue
+            pair = self.metrics_format.format(name=key, value=value / factor)
+            metric_value_pairs.append(pair)
         metrics_string = self.metrics_separator.join(metric_value_pairs)
         return metrics_string
 
