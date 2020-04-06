@@ -18,3 +18,5 @@ toc:
   path: /addons/tutorials/tqdm_progress_bar
 - title: Seq2Seq for Translation
   path: /addons/tutorials/networks_seq2seq_nmt
+- title: Gradient checkpointing
+  path: /addons/tutorials/gradient_checkpointing

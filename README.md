@@ -40,6 +40,7 @@ developments that cannot be integrated into core TensorFlow
 * [tfa.rnn](https://www.tensorflow.org/addons/api_docs/python/tfa/rnn) 
 * [tfa.seq2seq](https://www.tensorflow.org/addons/api_docs/python/tfa/seq2seq) 
 * [tfa.text](https://www.tensorflow.org/addons/api_docs/python/tfa/text) 
+* [tfa.training](https://www.tensorflow.org/addons/api_docs/python/tfa/training)
 
 ## Maintainership
 The maintainers of Addons can be found in the [CODEOWNERS](.github/CODEOWNERS) file of the repo. This file 
