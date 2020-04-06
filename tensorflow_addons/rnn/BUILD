@@ -14,9 +14,10 @@ py_library(
 )
 
 py_test(
-    name = "cell_test",
+    name = "rnn_test",
     size = "small",
-    srcs = ["cell_test.py"],
+    srcs = glob(["*_test.py"]),
+    main = "run_all_test.py",
     deps = [
         ":rnn",
     ],

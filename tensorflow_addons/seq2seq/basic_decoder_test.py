@@ -14,8 +14,6 @@
 # ==============================================================================
 """Tests for tfa.seq2seq.basic_decoder."""
 
-import sys
-import pytest
 from absl.testing import parameterized
 import numpy as np
 
@@ -863,7 +861,3 @@ class BasicDecoderTest(tf.test.TestCase, parameterized.TestCase):
                 left_padded_sequence, False
             )
             self.evaluate(assertion)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for Stochastic Weight Averaging optimizer."""
 
-import sys
-
-import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -125,7 +122,3 @@ def test_fit_simple_linear_model():
 
     max_abs_diff = np.max(np.abs(predicted - y))
     assert max_abs_diff < 1e-3
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

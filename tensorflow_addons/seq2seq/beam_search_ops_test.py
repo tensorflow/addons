@@ -15,9 +15,7 @@
 """Tests for tfa.seq2seq.beam_search_ops."""
 
 import itertools
-import sys
 
-import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -142,7 +140,3 @@ def test_gather_tree_batch():
             np.testing.assert_allclose(
                 v[found + 1 :], end_token * np.ones_like(v[found + 1 :])
             )
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
