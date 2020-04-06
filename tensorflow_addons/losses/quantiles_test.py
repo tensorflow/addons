@@ -84,7 +84,10 @@ def test_invalid_sample_weight():
     y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3, 1))
     y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3, 1))
     sample_weight = tf.constant([3, 6, 5, 0], shape=(2, 2))
-    with pytest.raises(InvalidArgumentError, match="weights can not be broadcast to values"):
+    with pytest.raises(
+        (ValueError, tf.errors.InvalidArgumentError),
+        match="weights can not be broadcast to values",
+    ):
         pin_obj(y_true, y_pred, sample_weight=sample_weight)
 
 
