@@ -70,7 +70,7 @@ def test_tqdm_progress_bar_epoch_bar_format_missing_parameter(capsys):
     capsys.readouterr()  # flush the buffer
     model.fit(x, y, batch_size=4, epochs=2, verbose=0, callbacks=[pb])
     fit_stderr = capsys.readouterr().err
-    assert "/5" not in fit_stderr
+    assert "/3" not in fit_stderr
 
 
 def test_tqdm_progress_bar_metrics_format(capsys):
