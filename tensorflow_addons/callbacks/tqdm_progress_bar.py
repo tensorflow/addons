@@ -111,12 +111,8 @@ class TQDMProgressBar(Callback):
             )
 
         # set counting mode
-        if "samples" in self.params:
-            self.mode = "samples"
-            self.total_steps = self.params["samples"]
-        else:
-            self.mode = "steps"
-            self.total_steps = self.params["steps"]
+        self.mode = "steps"
+        self.total_steps = self.params["steps"]
 
     def on_train_end(self, logs={}):
         if self.show_overall_progress:
