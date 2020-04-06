@@ -4,6 +4,7 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "image",
+<<<<<<< HEAD
     srcs = ([
         "__init__.py",
         "color_ops.py",
@@ -22,6 +23,9 @@ py_library(
         "translate_ops.py",
         "utils.py",
     ]),
+=======
+    srcs = glob(["*.py"]),
+>>>>>>> 1ffb283ca924eb33b43effc7ec2c449a595c1aff
     data = [
         ":sparse_image_warp_test_data",
         "//tensorflow_addons/custom_ops/image:_distort_image_ops.so",
@@ -33,12 +37,13 @@ py_library(
 
 filegroup(
     name = "sparse_image_warp_test_data",
-    srcs = glob(["test_data/*.png"]),
+    srcs = glob(["tests/test_data/*.png"]),
 )
 
 py_test(
     name = "image_test",
     size = "small",
+<<<<<<< HEAD
     srcs = [
         "color_ops_test.py",
     ],
@@ -212,6 +217,10 @@ py_test(
         "utils_test.py",
     ],
     main = "utils_test.py",
+=======
+    srcs = glob(["tests/*"]),
+    main = "tests/run_all_test.py",
+>>>>>>> 1ffb283ca924eb33b43effc7ec2c449a595c1aff
     deps = [
         ":image",
     ],

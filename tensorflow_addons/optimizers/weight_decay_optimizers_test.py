@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for optimizers with weight decay."""
 
-import sys
-
-import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -276,6 +273,15 @@ class AdamWTest(OptimizerTestBase):
             weight_decay=WEIGHT_DECAY,
         )
 
+    def testKerasFit(self):
+        """Check if calling model.fit works."""
+        model = tf.keras.models.Sequential([tf.keras.layers.Dense(2)])
+        loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+        optimizer = self.optimizer(learning_rate=1e-4, weight_decay=1e-4)
+        model.compile(optimizer=optimizer, loss=loss, metrics=["accuracy"])
+        X, y = np.random.uniform(size=(2, 4, 1))
+        model.fit(X, y, epochs=1)
+
 
 @test_utils.run_all_in_graph_and_eager_modes
 class SGDWTest(OptimizerTestBase):
@@ -332,7 +338,3 @@ class ExtendWithWeightDecayTest(SGDWTest):
     optimizer = weight_decay_optimizers.extend_with_decoupled_weight_decay(
         tf.keras.optimizers.SGD
     )
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))

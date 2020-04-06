@@ -82,8 +82,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: bash tools/run_cpu_tests.sh
-  test_tf220rc1_cpu_in_small_docker_image:
-    name: Run the tf 2.2.0rc1 cpu tests in a small python docker image
+  test_tf220rc2_cpu_in_small_docker_image:
+    name: Run the tf 2.2.0rc2 cpu tests in a small python docker image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -91,7 +91,7 @@ jobs:
           DOCKER_BUILDKIT: 1
         run: |
           docker build \
-              --build-arg TF_VERSION=2.2.0rc1 \
+              --build-arg TF_VERSION=2.2.0rc2 \
               -f tools/docker/cpu_tests.Dockerfile \
               --target=build_wheel \
               ./

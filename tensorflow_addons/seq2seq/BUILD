@@ -22,54 +22,10 @@ py_library(
 )
 
 py_test(
-    name = "attention_wrapper_test",
+    name = "seq2seq_test",
     size = "medium",
-    srcs = ["attention_wrapper_test.py"],
-    deps = [
-        ":seq2seq",
-    ],
-)
-
-py_test(
-    name = "basic_decoder_test",
-    size = "small",
-    srcs = ["basic_decoder_test.py"],
-    deps = [
-        ":seq2seq",
-    ],
-)
-
-py_test(
-    name = "beam_search_decoder_test",
-    size = "small",
-    srcs = ["beam_search_decoder_test.py"],
-    deps = [
-        ":seq2seq",
-    ],
-)
-
-py_test(
-    name = "beam_search_ops_test",
-    size = "small",
-    srcs = ["beam_search_ops_test.py"],
-    deps = [
-        ":seq2seq",
-    ],
-)
-
-py_test(
-    name = "decoder_test",
-    size = "small",
-    srcs = ["decoder_test.py"],
-    deps = [
-        ":seq2seq",
-    ],
-)
-
-py_test(
-    name = "loss_test",
-    size = "small",
-    srcs = ["loss_test.py"],
+    srcs = glob(["*_test.py"]),
+    main = "run_all_test.py",
     deps = [
         ":seq2seq",
     ],

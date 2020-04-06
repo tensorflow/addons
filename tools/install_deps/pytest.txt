@@ -3,4 +3,8 @@ pytest-xdist~=1.31
 scikit-learn~=0.22
 scikit-image~=0.15.0
 Pillow~=7.0.0
+<<<<<<< HEAD
 opencv-python~=4.1.1
+=======
+tqdm>=4.36.1
+>>>>>>> 1ffb283ca924eb33b43effc7ec2c449a595c1aff

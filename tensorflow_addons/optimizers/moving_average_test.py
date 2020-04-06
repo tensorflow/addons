@@ -14,9 +14,6 @@
 # ==============================================================================
 """Tests for MovingAverage optimizers."""
 
-import sys
-
-import pytest
 import numpy as np
 import tensorflow as tf
 
@@ -189,7 +186,3 @@ class MovingAverageTest(tf.test.TestCase):
 
         max_abs_diff = np.max(np.abs(predicted - y))
         self.assertLess(max_abs_diff, 5e-3)
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
