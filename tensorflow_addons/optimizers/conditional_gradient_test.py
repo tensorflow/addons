@@ -399,85 +399,78 @@ def test_tensor_learning_rate_and_conditional_gradient_nuclear():
         )
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_variables_across_graphs_frobenius():
+    optimizer = cg_lib.ConditionalGradient(0.01, 0.5, ord="fro")
+    var0 = tf.Variable([1.0, 2.0], dtype=tf.float32, name="var0")
+    var1 = tf.Variable([3.0, 4.0], dtype=tf.float32, name="var1")
+
+    def loss():
+        return tf.math.reduce_sum(var0 + var1)
+
+    optimizer.minimize(loss, var_list=[var0, var1])
+    optimizer_variables = optimizer.variables()
+    # There should be three items. The first item is iteration,
+    # and one item for each variable.
+    assert "ConditionalGradient/var0" in optimizer_variables[1].name
+    assert "ConditionalGradient/var1" in optimizer_variables[2].name
+    assert 3 == len(optimizer_variables)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_variables_across_graphs_nuclear():
+    optimizer = cg_lib.ConditionalGradient(0.01, 0.5, ord="nuclear")
+    var0 = tf.Variable([1.0, 2.0], dtype=tf.float32, name="var0")
+    var1 = tf.Variable([3.0, 4.0], dtype=tf.float32, name="var1")
+
+    def loss():
+        return tf.math.reduce_sum(var0 + var1)
+
+    optimizer.minimize(loss, var_list=[var0, var1])
+    optimizer_variables = optimizer.variables()
+    # There should be three items. The first item is iteration,
+    # and one item for each variable.
+    assert "ConditionalGradient/var0" in optimizer_variables[1].name
+    assert "ConditionalGradient/var1" in optimizer_variables[2].name
+    assert 3 == len(optimizer_variables)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_minimize_with_2D_indicies_for_embedding_lookup_frobenius():
+    # This test invokes the ResourceSparseApplyConditionalGradient
+    # operation.
+    var0 = tf.Variable(tf.ones([2, 2]))
+
+    def loss():
+        return tf.math.reduce_sum(tf.nn.embedding_lookup(var0, [[1]]))
+
+    # the gradient for this loss function:
+    grads0 = tf.constant([[0, 0], [1, 1]], dtype=tf.float32)
+    norm0 = tf.math.reduce_sum(grads0 ** 2) ** 0.5
+
+    learning_rate = 0.1
+    lambda_ = 0.1
+    ord = "fro"
+    opt = cg_lib.ConditionalGradient(
+        learning_rate=learning_rate, lambda_=lambda_, ord=ord
+    )
+    _ = opt.minimize(loss, var_list=[var0])
+
+    # Run 1 step of cg_op
+    test_utils.assert_allclose_according_to_type(
+        [
+            [1, 1],
+            [
+                learning_rate * 1 - (1 - learning_rate) * lambda_ * 1 / norm0,
+                learning_rate * 1 - (1 - learning_rate) * lambda_ * 1 / norm0,
+            ],
+        ],
+        var0.numpy(),
+    )
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class ConditionalGradientTest(tf.test.TestCase):
-    def testVariablesAcrossGraphsFrobenius(self):
-        optimizer = cg_lib.ConditionalGradient(0.01, 0.5, ord="fro")
-        with tf.Graph().as_default():
-            var0 = tf.Variable([1.0, 2.0], dtype=tf.float32, name="var0")
-            var1 = tf.Variable([3.0, 4.0], dtype=tf.float32, name="var1")
-
-            def loss():
-                return tf.math.reduce_sum(var0 + var1)
-
-            optimizer.minimize(loss, var_list=[var0, var1])
-            optimizer_variables = optimizer.variables()
-            # There should be three items. The first item is iteration,
-            # and one item for each variable.
-            self.assertStartsWith(
-                optimizer_variables[1].name, "ConditionalGradient/var0"
-            )
-            self.assertStartsWith(
-                optimizer_variables[2].name, "ConditionalGradient/var1"
-            )
-            self.assertEqual(3, len(optimizer_variables))
-
-    def testVariablesAcrossGraphsNuclear(self):
-        optimizer = cg_lib.ConditionalGradient(0.01, 0.5, ord="nuclear")
-        with tf.Graph().as_default():
-            var0 = tf.Variable([1.0, 2.0], dtype=tf.float32, name="var0")
-            var1 = tf.Variable([3.0, 4.0], dtype=tf.float32, name="var1")
-
-            def loss():
-                return tf.math.reduce_sum(var0 + var1)
-
-            optimizer.minimize(loss, var_list=[var0, var1])
-            optimizer_variables = optimizer.variables()
-            # There should be three items. The first item is iteration,
-            # and one item for each variable.
-            self.assertStartsWith(
-                optimizer_variables[1].name, "ConditionalGradient/var0"
-            )
-            self.assertStartsWith(
-                optimizer_variables[2].name, "ConditionalGradient/var1"
-            )
-            self.assertEqual(3, len(optimizer_variables))
-
-    def testMinimizeWith2DIndiciesForEmbeddingLookupFrobenius(self):
-        # This test invokes the ResourceSparseApplyConditionalGradient
-        # operation.
-        var0 = tf.Variable(tf.ones([2, 2]))
-
-        def loss():
-            return tf.math.reduce_sum(tf.nn.embedding_lookup(var0, [[1]]))
-
-        # the gradient for this loss function:
-        grads0 = tf.constant([[0, 0], [1, 1]], dtype=tf.float32)
-        norm0 = tf.math.reduce_sum(grads0 ** 2) ** 0.5
-
-        learning_rate = 0.1
-        lambda_ = 0.1
-        ord = "fro"
-        opt = cg_lib.ConditionalGradient(
-            learning_rate=learning_rate, lambda_=lambda_, ord=ord
-        )
-        cg_op = opt.minimize(loss, var_list=[var0])
-        self.evaluate(tf.compat.v1.global_variables_initializer())
-
-        # Run 1 step of cg_op
-        self.evaluate(cg_op)
-        norm0 = self.evaluate(norm0)
-        self.assertAllCloseAccordingToType(
-            [
-                [1, 1],
-                [
-                    learning_rate * 1 - (1 - learning_rate) * lambda_ * 1 / norm0,
-                    learning_rate * 1 - (1 - learning_rate) * lambda_ * 1 / norm0,
-                ],
-            ],
-            self.evaluate(var0),
-        )
-
     def testMinimizeWith2DIndiciesForEmbeddingLookupNuclear(self):
         # This test invokes the ResourceSparseApplyConditionalGradient
         # operation.
