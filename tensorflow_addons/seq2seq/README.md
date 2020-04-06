@@ -9,7 +9,6 @@ In order to conform with the current API standard, all objects must:
  * Inherit from proper base class within each module, eg `BaseDecoder` in decoder.py for customized
    decoder or `_BaseAttentionMechanism` for new attentions.
  * Register as a keras global object so it can be serialized properly: `@tf.keras.utils.register_keras_serializable(package='Addons')`
- * Add the addon to the `py_library` in this sub-package's BUILD file.
 
 #### Testing Requirements
  * Simple unittests that demonstrate the class is behaving as expected on
