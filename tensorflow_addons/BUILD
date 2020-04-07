@@ -9,13 +9,7 @@ config_setting(
 
 py_library(
     name = "tensorflow_addons",
-    data = [
-        "__init__.py",
-        "conftest.py",
-        "options.py",
-        "register.py",
-        "version.py",
-    ],
+    srcs = glob(["*.py"]),
     deps = [
         "//tensorflow_addons/activations",
         "//tensorflow_addons/callbacks",
@@ -33,12 +27,10 @@ py_library(
 )
 
 py_test(
-    name = "register_test",
+    name = "tensorflow_addons_test",
     size = "small",
-    srcs = [
-        "register_test.py",
-    ],
-    main = "register_test.py",
+    srcs = glob(["tests/*"]),
+    main = "tests/run_all_test.py",
     deps = [
         ":tensorflow_addons",
     ],
