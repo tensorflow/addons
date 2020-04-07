@@ -34,6 +34,6 @@ def test_gaussian_blur():
     test_image_cv = test_image_tf.numpy()
     test_image_cv = np.resize(test_image_cv, [40, 40])
     gb2 = gaussian_filter(test_image_cv, 1, truncate=4.6, mode="constant", cval=0)
-    gb1=gb1[:,:]/255
-    gb2=gb2[:,:]/255
+    gb1 = gb1[:, :] / 255
+    gb2 = gb2[:, :] / 255
     np.testing.assert_allclose(gb2, gb1, 0.5)
