@@ -257,7 +257,7 @@ class LazyAdamTest(tf.test.TestCase):
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [tf.half, tf.float32, tf.float64])
-def testSharing(dtype):
+def test_sharing(dtype):
     # Initialize tf for numpy implementation.
     m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
     var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
