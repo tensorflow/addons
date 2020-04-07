@@ -54,7 +54,7 @@ def find_kernel(sigma, kSize, axis="x"):
     "This function creates a kernel of size [kSize]"
     x = tf.range(-kSize // 2 + 1, kSize // 2 + 1)
     x = tf.math.square(x, tf.float64)
-    a = tf.cast(tf.exp(-(x ** 2) / (2 * (sigma ** 2))), tf.float64)
+    a = tf.cast(tf.exp(-(x) / (2 * (sigma ** 2))), tf.float64)
     a = a / tf.math.reduce_sum(a)
     if axis == "y":
         a = tf.reshape(a, [kSize, 1, 1, 1])
