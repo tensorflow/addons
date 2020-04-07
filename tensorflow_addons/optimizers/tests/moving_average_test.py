@@ -19,7 +19,6 @@ import pytest
 import tensorflow as tf
 
 from tensorflow_addons.optimizers import MovingAverage
-from tensorflow_addons.utils import test_utils
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -76,74 +75,6 @@ def test_opt_failure(sequential_update):
     base_opt = None
     with pytest.raises(TypeError):
         MovingAverage(base_opt, sequential_update, 0.5)
-
-
-@test_utils.run_all_in_graph_and_eager_modes
-class MovingAverageTest(tf.test.TestCase):
-    def test_run(self):
-        for sequential_update in [True, False]:
-            var0 = tf.Variable([1.0, 2.0])
-            var1 = tf.Variable([3.0, 4.0])
-
-            grads0 = tf.constant([0.1, 0.1])
-            grads1 = tf.constant([0.01, 0.01])
-
-            grads_and_vars = list(zip([grads0, grads1], [var0, var1]))
-            self.evaluate(tf.compat.v1.global_variables_initializer())
-
-            opt = MovingAverage(
-                tf.keras.optimizers.SGD(lr=2.0),
-                sequential_update=sequential_update,
-                average_decay=0.5,
-            )
-
-            if not tf.executing_eagerly():
-                update = opt.apply_gradients(grads_and_vars)
-                self.evaluate(tf.compat.v1.global_variables_initializer())
-                self.evaluate(update)
-                self.evaluate(update)
-            else:
-                opt.apply_gradients(grads_and_vars)
-                opt.apply_gradients(grads_and_vars)
-
-            self.assertAllClose(var0.read_value(), [0.6, 1.6])
-            self.assertAllClose(var1.read_value(), [2.96, 3.96])
-
-            ema_var0 = opt.get_slot(var0, "average")
-            ema_var1 = opt.get_slot(var1, "average")
-
-            if sequential_update:
-                self.assertAllClose(ema_var0.read_value(), [0.75, 1.75])
-                self.assertAllClose(ema_var1.read_value(), [2.975, 3.975])
-
-            assign = opt.assign_average_vars([var0, var1])
-            self.evaluate(assign)
-
-            if sequential_update:
-                self.assertAllClose(var0.read_value(), [0.75, 1.75])
-                self.assertAllClose(var1.read_value(), [2.975, 3.975])
-
-            perturb = tf.group(
-                [
-                    var0.assign_add([1.0, 1.0]),
-                    var1.assign_add([2.0, 2.0]),
-                    ema_var0.assign_add([3.0, 3.0]),
-                    ema_var1.assign_add([4.0, 4.0]),
-                ]
-            )
-            self.evaluate(perturb)
-
-            if sequential_update:
-                self.assertAllClose(var0.read_value(), [1.75, 2.75])
-                self.assertAllClose(var1.read_value(), [4.975, 5.975])
-                self.assertAllClose(ema_var0.read_value(), [3.75, 4.75])
-                self.assertAllClose(ema_var1.read_value(), [6.975, 7.975])
-
-    def test_opt_failure(self):
-        base_opt = None
-        for sequential_update in [True, False]:
-            with self.assertRaises(TypeError):
-                MovingAverage(base_opt, sequential_update, 0.5)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
