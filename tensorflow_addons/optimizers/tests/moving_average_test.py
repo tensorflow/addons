@@ -15,6 +15,7 @@
 """Tests for MovingAverage optimizers."""
 
 import numpy as np
+import pytest
 import tensorflow as tf
 
 from tensorflow_addons.optimizers import MovingAverage
@@ -88,101 +89,96 @@ class MovingAverageTest(tf.test.TestCase):
             with self.assertRaises(TypeError):
                 MovingAverage(base_opt, sequential_update, 0.5)
 
-    def test_model_weights_update(self):
-        grad = tf.Variable([[0.1]])
-        model = tf.keras.Sequential(
-            [
-                tf.keras.layers.Dense(
-                    1,
-                    kernel_initializer=tf.keras.initializers.Constant([[1.0]]),
-                    use_bias=False,
-                )
-            ]
-        )
-        model.build(input_shape=[1, 1])
-        self.evaluate(tf.compat.v1.global_variables_initializer())
 
-        opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
-        update = opt.apply_gradients(list(zip([grad], model.variables)))
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_model_weights_update():
+    grad = tf.Variable([[0.1]])
+    model = tf.keras.Sequential(
+        [
+            tf.keras.layers.Dense(
+                1,
+                kernel_initializer=tf.keras.initializers.Constant([[1.0]]),
+                use_bias=False,
+            )
+        ]
+    )
+    model.build(input_shape=[1, 1])
 
-        self.evaluate(tf.compat.v1.global_variables_initializer())
-        self.evaluate(update)
-        self.assertAllClose(model.variables[0].read_value(), [[0.8]])
+    opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
+    _ = opt.apply_gradients(list(zip([grad], model.variables)))
+    np.testing.assert_allclose(model.variables[0].read_value(), [[0.8]])
+    _ = opt.assign_average_vars(model.variables)
+    np.testing.assert_allclose(model.variables[0].read_value(), [[0.9]])
 
-        mean_update = opt.assign_average_vars(model.variables)
-        self.evaluate(mean_update)
-        self.assertAllClose(model.variables[0].read_value(), [[0.9]])
 
-    def test_model_dynamic_lr(self):
-        grad = tf.Variable([[0.1]])
-        model = tf.keras.Sequential(
-            [
-                tf.keras.layers.Dense(
-                    1,
-                    kernel_initializer=tf.keras.initializers.Constant([[1.0]]),
-                    use_bias=False,
-                )
-            ]
-        )
-        model.build(input_shape=[1, 1])
-        self.evaluate(tf.compat.v1.global_variables_initializer())
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_model_dynamic_lr():
+    grad = tf.Variable([[0.1]])
+    model = tf.keras.Sequential(
+        [
+            tf.keras.layers.Dense(
+                1,
+                kernel_initializer=tf.keras.initializers.Constant([[1.0]]),
+                use_bias=False,
+            )
+        ]
+    )
+    model.build(input_shape=[1, 1])
 
-        opt = MovingAverage(tf.keras.optimizers.SGD(lr=1e-3), average_decay=0.5)
-        update = opt.apply_gradients(list(zip([grad], model.variables)))
+    opt = MovingAverage(tf.keras.optimizers.SGD(lr=1e-3), average_decay=0.5)
+    _ = opt.apply_gradients(list(zip([grad], model.variables)))
+    np.testing.assert_allclose(opt.lr.read_value(), 1e-3)
+    opt.lr = 1e-4
+    np.testing.assert_allclose(opt.lr.read_value(), 1e-4)
 
-        self.evaluate(tf.compat.v1.global_variables_initializer())
-        self.evaluate(update)
-        self.assertAllClose(opt.lr.read_value(), 1e-3)
 
-        opt.lr = 1e-4
-        self.assertAllClose(opt.lr.read_value(), 1e-4)
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_optimizer_string():
+    _ = MovingAverage("adam")
 
-    def test_optimizer_string(self):
-        _ = MovingAverage("adam")
 
-    def test_config(self):
-        sgd_opt = tf.keras.optimizers.SGD(
-            lr=2.0, nesterov=True, momentum=0.3, decay=0.1
-        )
-        opt = MovingAverage(
-            sgd_opt, average_decay=0.5, num_updates=None, sequential_update=False
-        )
-        config = opt.get_config()
+def test_config():
+    sgd_opt = tf.keras.optimizers.SGD(lr=2.0, nesterov=True, momentum=0.3, decay=0.1)
+    opt = MovingAverage(
+        sgd_opt, average_decay=0.5, num_updates=None, sequential_update=False
+    )
+    config = opt.get_config()
 
-        self.assertEqual(config["average_decay"], 0.5)
-        self.assertEqual(config["num_updates"], None)
-        self.assertEqual(config["sequential_update"], False)
+    assert config["average_decay"] == 0.5
+    assert config["num_updates"] is None
+    assert config["sequential_update"] is False
 
-        new_opt = MovingAverage.from_config(config)
-        old_sgd_config = opt._optimizer.get_config()
-        new_sgd_config = new_opt._optimizer.get_config()
+    new_opt = MovingAverage.from_config(config)
+    old_sgd_config = opt._optimizer.get_config()
+    new_sgd_config = new_opt._optimizer.get_config()
 
-        for k1, k2 in zip(old_sgd_config, new_sgd_config):
-            self.assertEqual(old_sgd_config[k1], new_sgd_config[k2])
+    for k1, k2 in zip(old_sgd_config, new_sgd_config):
+        assert old_sgd_config[k1] == new_sgd_config[k2]
 
-    def test_fit_simple_linear_model(self):
-        seed = 0x2019
-        np.random.seed(seed)
-        tf.random.set_seed(seed)
-        num_examples = 5000
-        x = np.random.standard_normal((num_examples, 3))
-        w = np.random.standard_normal((3, 1))
-        y = np.dot(x, w) + np.random.standard_normal((num_examples, 1)) * 1e-4
 
-        model = tf.keras.models.Sequential()
-        model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
-        self.evaluate(tf.compat.v1.global_variables_initializer())
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_fit_simple_linear_model():
+    seed = 0x2019
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
+    num_examples = 5000
+    x = np.random.standard_normal((num_examples, 3))
+    w = np.random.standard_normal((3, 1))
+    y = np.dot(x, w) + np.random.standard_normal((num_examples, 1)) * 1e-4
 
-        opt = MovingAverage("sgd")
-        model.compile(opt, loss="mse")
+    model = tf.keras.models.Sequential()
+    model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
 
-        model.fit(x, y, epochs=5)
-        opt.assign_average_vars(model.variables)
+    opt = MovingAverage("sgd")
+    model.compile(opt, loss="mse")
 
-        x = np.random.standard_normal((100, 3))
-        y = np.dot(x, w)
+    model.fit(x, y, epochs=5)
+    opt.assign_average_vars(model.variables)
 
-        predicted = model.predict(x)
+    x = np.random.standard_normal((100, 3))
+    y = np.dot(x, w)
 
-        max_abs_diff = np.max(np.abs(predicted - y))
-        self.assertLess(max_abs_diff, 5e-3)
+    predicted = model.predict(x)
+
+    max_abs_diff = np.max(np.abs(predicted - y))
+    assert max_abs_diff < 5e-3
