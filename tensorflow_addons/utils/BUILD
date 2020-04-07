@@ -11,7 +11,7 @@ py_library(
 )
 
 py_test(
-    name = "keras_utils_test",
+    name = "utils_test",
     size = "small",
     srcs = glob(["tests/*"]),
     main = "tests/run_all_test.py",
