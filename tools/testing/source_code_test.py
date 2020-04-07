@@ -101,6 +101,7 @@ def in_blacklist_private_api(file_path):
         "tensorflow_addons/losses/giou_loss.py",
         "tensorflow_addons/seq2seq/decoder.py",
         "tensorflow_addons/seq2seq/attention_wrapper.py",
+        "tensorflow_addons/training/gradient_checkpointing.py"
     ]
     for blacklisted_file in blacklist:
         if file_path.endswith(blacklisted_file):

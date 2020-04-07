@@ -104,4 +104,4 @@
 /tensorflow_addons/text/parse_time*.py @helinwang
 /tensorflow_addons/text/skip_gram*.py @rahulunair
 
-/tensorflow_addons/training/training_gradient_checkpointing*.py @pidajay
+/tensorflow_addons/training/gradient_checkpointing*.py @pidajay
