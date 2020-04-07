@@ -20,35 +20,18 @@ import numpy as np
 import numpy.core.multiarray
 from scipy.ndimage import gaussian_filter
 import tensorflow as tf
-import sys
 import pytest
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test():
+def test_gaussian_blur():
     test_image_tf = tf.random.uniform(
-        [2, 40, 40, 1], minval=0, maxval=255, dtype=tf.float64
+        [1, 40, 40, 1], minval=0, maxval=255, dtype=tf.float64
     )
-
-    gb = gaussian_blur(test_image_tf, 1, 7)
+    gb = gaussian_blur(test_image_tf, 1, 5)
     gb = gb.numpy()
     gb1 = np.resize(gb, (40, 40))
-
     test_image_cv = test_image_tf.numpy()
     test_image_cv = np.resize(test_image_cv, [40, 40])
-
-    gb2 = gaussian_filter(test_image_cv, 1)
-
-    accuracy = 0
-
-    for i in range(len(gb1)):
-        for j in range(len(gb1[0])):
-            if abs(gb1[i][j] - gb2[i][j]) < 10:
-                accuracy += 1
-
-    print(accuracy / 1600)
-    assert accuracy >= 0.80
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
+    gb2 = gaussian_filter(test_image_cv, 1, truncate=4.6, mode="constant", cval=0)
+    np.testing.assert_allclose(gb2, gb1, 0.5)

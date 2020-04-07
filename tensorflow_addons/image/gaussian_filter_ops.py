@@ -15,7 +15,6 @@
 """GaussuanBlur Op"""
 
 
-import numpy as np
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
@@ -41,30 +40,24 @@ def gaussian_blur(
     if sigma == 0:
         raise ValueError("Sigma should not be zero")
 
-    if kSize % 2 == 0:
-        raise ValueError("kSize should be odd")
+    gaussian_filter_x = find_kernel(sigma, kSize, axis="x")
+    gaussian_filter_y = find_kernel(sigma, kSize, axis="y")
 
-    gaussianFilter = tf.Variable(tf.zeros(shape=(kSize, kSize), dtype=tf.float64))
-    gaussianFilter = findKernel(sigma, kSize, gaussianFilter)
-
-    gaussianKernel = tf.expand_dims(gaussianFilter, axis=2)
-    gaussianKernel = tf.expand_dims(gaussianKernel, axis=2)
-
-    conv_ops = tf.nn.convolution(input=img, filters=gaussianKernel, padding="SAME")
+    conv_ops_x = tf.nn.convolution(input=img, filters=gaussian_filter_x, padding="SAME")
+    conv_ops = tf.nn.convolution(
+        input=conv_ops_x, filters=gaussian_filter_y, padding="SAME"
+    )
     return conv_ops
 
 
-def findKernel(sigma, kSize, gaussianFilter):
-    "This function creates a kernel of size [kSize*kSize]"
-    rowFilter = tf.Variable(tf.zeros(kSize, dtype=tf.float64), dtype=tf.float64)
-    for i in range(-kSize // 2, kSize // 2 + 1):
-        for j in range(-kSize // 2, kSize // 2 + 1):
-            rowFilter[j + kSize // 2].assign(
-                1
-                / (2 * np.pi * (sigma) ** 2)
-                * tf.exp(tf.cast(-(i ** 2 + j ** 2) / (2 * sigma ** 2.00), tf.float64))
-            )
-        gaussianFilter[i + kSize // 2].assign(rowFilter)
-    s = tf.math.reduce_sum(gaussianFilter)
-    gaussianFilter = tf.math.divide(gaussianFilter, s)
-    return gaussianFilter
+def find_kernel(sigma, kSize, axis="x"):
+    "This function creates a kernel of size [kSize]"
+    x = tf.range(-kSize // 2 + 1, kSize // 2 + 1)
+    x = tf.math.square(x, tf.float64)
+    a = tf.cast(tf.exp(-(x ** 2) / (2 * (sigma ** 2))), tf.float64)
+    a = a / tf.math.reduce_sum(a)
+    if axis == "y":
+        a = tf.reshape(a, [kSize, 1, 1, 1])
+    else:
+        a = tf.reshape(a, [1, kSize, 1, 1])
+    return a
