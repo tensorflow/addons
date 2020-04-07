@@ -52,12 +52,12 @@ def recompute_sequential(f):
                 idx_back = len(model.layers) - idx_forward - 1
                 back_layer = model.layers[idx_back]
                 unique_vars = []
+                # Note - CI checks insist on using 'ref' instead of 'experimental ref'. But using 'ref' with nightly
+                # builds seems to consume more memory compared to 'experiemntal_ref'.
                 if back_layer.trainable_variables:
                     unique_vars = [
                         v.deref()
-                        for v in set(
-                            v.experimental_ref() for v in back_layer.trainable_variables
-                        )
+                        for v in set(v.ref() for v in back_layer.trainable_variables)
                     ]
                 prev_output = x
                 for idx_layer in range(idx_back):
