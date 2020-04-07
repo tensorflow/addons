@@ -51,14 +51,6 @@ def recompute_sequential(f):
             for idx_forward in range(len(model.layers)):
                 idx_back = len(model.layers) - idx_forward - 1
                 back_layer = model.layers[idx_back]
-                unique_vars = []
-                # Note - CI checks insist on using 'ref' instead of 'experimental ref'. But using 'ref' with nightly
-                # builds seems to consume more memory compared to 'experiemntal_ref'.
-                if back_layer.trainable_variables:
-                    unique_vars = [
-                        v.deref()
-                        for v in set(v.ref() for v in back_layer.trainable_variables)
-                    ]
                 prev_output = x
                 for idx_layer in range(idx_back):
                     prev_output = model.layers[idx_layer](prev_output)
@@ -70,7 +62,7 @@ def recompute_sequential(f):
                     recomputed_output = [tf.identity(x) for x in recomputed_output]
                     recomputed_output = tf.convert_to_tensor(recomputed_output)
                     prev_output = nest.flatten(prev_output)
-                    sources = prev_output + unique_vars
+                    sources = prev_output + back_layer.trainable_variables
                 grads_intermediate = tape.gradient(
                     recomputed_output, sources, output_gradients=grads_output
                 )
