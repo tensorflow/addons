@@ -10,7 +10,6 @@ must:
  * Be impossible to implement in one of the other API
  standards (Layers, Losses, etc.).
  * Be related to text processing.
- * Add the addon to the `py_library` in this sub-package's BUILD file.
 
 #### Testing Requirements
  * Simple unittests that demonstrate the text op is behaving as
