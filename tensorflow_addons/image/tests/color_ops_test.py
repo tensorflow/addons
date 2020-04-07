@@ -64,13 +64,13 @@ def test_sharpness_dtype_shape(dtype, shape):
     assert sharp.dtype == image.dtype
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_sharpness_with_PIL():
+@pytest.mark.parametrize("factor", [0, 0.25, 0.5, 0.75, 1])
+def test_sharpness_with_PIL(factor):
     np.random.seed(0)
     image = np.random.randint(low=0, high=255, size=(10, 5, 5, 3), dtype=np.uint8)
     sharpened = np.stack(
-        [ImageEnhance.Sharpness(Image.fromarray(i)).enhance(0.5) for i in image]
+        [ImageEnhance.Sharpness(Image.fromarray(i)).enhance(factor) for i in image]
     )
     np.testing.assert_allclose(
-        color_ops.sharpness(tf.constant(image), 0.5).numpy(), sharpened, atol=1
+        color_ops.sharpness(tf.constant(image), factor).numpy(), sharpened, atol=1
     )
