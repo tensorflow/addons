@@ -103,7 +103,6 @@
 /tensorflow_addons/losses/lifted.py @rahulunair
 /tensorflow_addons/losses/tests/lifted_test.py @rahulunair
 /tensorflow_addons/losses/metric_learning.py
-/tensorflow_addons/losses/tests/metric_learning_test.py
 /tensorflow_addons/losses/npairs.py @windqaq
 /tensorflow_addons/losses/tests/npairs_test.py @windqaq
 /tensorflow_addons/losses/quantiles.py @romainbrault
