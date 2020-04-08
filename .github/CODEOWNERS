@@ -108,7 +108,7 @@
 /tensorflow_addons/losses/quantiles.py @romainbrault
 /tensorflow_addons/losses/tests/quantiles_test.py @romainbrault
 /tensorflow_addons/losses/sparsemax_loss.py @andreasmadsen
-/tensorflow_addons/losses/tests/sparsemax_test.py @andreasmadsen
+/tensorflow_addons/losses/tests/sparsemax_loss_test.py @andreasmadsen
 /tensorflow_addons/losses/triplet.py @lc0
 /tensorflow_addons/losses/tests/triplet_test.py @lc0
 
