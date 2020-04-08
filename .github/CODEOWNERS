@@ -41,7 +41,6 @@
 /tensorflow_addons/activations/tests/tanhshrink_test.py @fsx950223
 
 /tensorflow_addons/callbacks/average_model_checkpoint.py @squadrick
-/tensorflow_addons/callbacks/tests/average_model_checkpoint_test.py @squadrick
 /tensorflow_addons/callbacks/time_stopping.py @shun-lin
 /tensorflow_addons/callbacks/tests/time_stopping_test.py @shun-lin
 /tensorflow_addons/callbacks/tqdm_progress_bar.py @shun-lin
