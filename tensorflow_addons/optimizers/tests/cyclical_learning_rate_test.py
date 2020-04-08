@@ -16,6 +16,7 @@
 
 from absl.testing import parameterized
 
+import pytest
 import tensorflow as tf
 from tensorflow_addons.utils import test_utils
 import numpy as np
@@ -25,42 +26,40 @@ from tensorflow_addons.optimizers import cyclical_learning_rate
 
 def _maybe_serialized(lr_decay, serialize_and_deserialize):
     if serialize_and_deserialize:
-        serialized = tf.keras.optimizers.learning_rate_schedule.serialize(lr_decay)
-        return tf.keras.optimizers.learning_rate_schedule.deserialize(serialized)
+        serialized = tf.keras.optimizers.schedules.serialize(lr_decay)
+        return tf.keras.optimizers.schedules.deserialize(serialized)
     else:
         return lr_decay
+
+
+@pytest.mark.parametrize("serialize", [True, False])
+def test_triangular_cyclical_learning_rate(serialize):
+    initial_learning_rate = 0.1
+    max_learning_rate = 1
+    step_size = 40
+    triangular_cyclical_lr = cyclical_learning_rate.TriangularCyclicalLearningRate(
+        initial_learning_rate=initial_learning_rate,
+        maximal_learning_rate=max_learning_rate,
+        step_size=step_size,
+    )
+    triangular_cyclical_lr = _maybe_serialized(triangular_cyclical_lr, serialize)
+
+    expected = np.concatenate(
+        [
+            np.linspace(initial_learning_rate, max_learning_rate, num=step_size + 1),
+            np.linspace(max_learning_rate, initial_learning_rate, num=step_size + 1)[
+                1:
+            ],
+        ]
+    )
+
+    for step, expected_value in enumerate(expected):
+        np.testing.assert_allclose(triangular_cyclical_lr(step), expected_value, 1e-6)
 
 
 @test_utils.run_all_in_graph_and_eager_modes
 @parameterized.named_parameters(("NotSerialized", False), ("Serialized", True))
 class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
-    def testTriangularCyclicalLearningRate(self, serialize):
-        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1203")
-        initial_learning_rate = 0.1
-        maximal_learning_rate = 1
-        step_size = 4000
-        step = tf.resource_variable_ops.ResourceVariable(0)
-        triangular_cyclical_lr = cyclical_learning_rate.TriangularCyclicalLearningRate(
-            initial_learning_rate=initial_learning_rate,
-            maximal_learning_rate=maximal_learning_rate,
-            step_size=step_size,
-        )
-        triangular_cyclical_lr = _maybe_serialized(triangular_cyclical_lr, serialize)
-
-        self.evaluate(tf.compat.v1.global_variables_initializer())
-        expected = np.concatenate(
-            [
-                np.linspace(initial_learning_rate, maximal_learning_rate, num=2001)[1:],
-                np.linspace(maximal_learning_rate, initial_learning_rate, num=2001)[1:],
-            ]
-        )
-
-        for expected_value in expected:
-            self.assertAllClose(
-                self.evaluate(triangular_cyclical_lr(step)), expected_value, 1e-6
-            )
-            self.evaluate(step.assign_add(1))
-
     def testTriangular2CyclicalLearningRate(self, serialize):
         self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1203")
         initial_learning_rate = 0.1
