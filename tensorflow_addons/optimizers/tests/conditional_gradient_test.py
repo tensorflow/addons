@@ -942,251 +942,144 @@ def test_sparse_frobenius():
         )
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class ConditionalGradientTest(tf.test.TestCase):
-    def testSharingFrobenius(self):
-        for dtype in [tf.half, tf.float32, tf.float64]:
-            with self.cached_session():
-                var0 = tf.Variable([1.0, 2.0], dtype=dtype)
-                var1 = tf.Variable([3.0, 4.0], dtype=dtype)
-                grads0 = tf.constant([0.1, 0.1], dtype=dtype)
-                grads1 = tf.constant([0.01, 0.01], dtype=dtype)
-                norm0 = tf.math.reduce_sum(grads0 ** 2) ** 0.5
-                norm1 = tf.math.reduce_sum(grads1 ** 2) ** 0.5
-                learning_rate = 0.1
-                lambda_ = 0.1
-                ord = "fro"
-                cg_opt = cg_lib.ConditionalGradient(
-                    learning_rate=learning_rate, lambda_=lambda_, ord=ord
-                )
-                cg_update1 = cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-                cg_update2 = cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-                if not tf.executing_eagerly():
-                    self.evaluate(tf.compat.v1.global_variables_initializer())
-                    # Fetch params to validate initial values
-                    self.assertAllClose([1.0, 2.0], self.evaluate(var0))
-                    self.assertAllClose([3.0, 4.0], self.evaluate(var1))
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [tf.half, tf.float32, tf.float64])
+def test_sharing_frobenius(dtype):
+    var0 = tf.Variable([1.0, 2.0], dtype=dtype)
+    var1 = tf.Variable([3.0, 4.0], dtype=dtype)
+    grads0 = tf.constant([0.1, 0.1], dtype=dtype)
+    grads1 = tf.constant([0.01, 0.01], dtype=dtype)
+    norm0 = tf.math.reduce_sum(grads0 ** 2) ** 0.5
+    norm1 = tf.math.reduce_sum(grads1 ** 2) ** 0.5
+    learning_rate = 0.1
+    lambda_ = 0.1
+    ord = "fro"
+    cg_opt = cg_lib.ConditionalGradient(
+        learning_rate=learning_rate, lambda_=lambda_, ord=ord
+    )
+    _ = cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
-                # Check we have slots
-                self.assertEqual(["conditional_gradient"], cg_opt.get_slot_names())
-                slot0 = cg_opt.get_slot(var0, "conditional_gradient")
-                self.assertEquals(slot0.get_shape(), var0.get_shape())
-                slot1 = cg_opt.get_slot(var1, "conditional_gradient")
-                self.assertEquals(slot1.get_shape(), var1.get_shape())
+    # Check we have slots
+    assert ["conditional_gradient"] == cg_opt.get_slot_names()
+    slot0 = cg_opt.get_slot(var0, "conditional_gradient")
+    assert slot0.get_shape() == var0.get_shape()
+    slot1 = cg_opt.get_slot(var1, "conditional_gradient")
+    assert slot1.get_shape() == var1.get_shape()
 
-                if not tf.executing_eagerly():
-                    self.assertFalse(slot0 in tf.compat.v1.trainable_variables())
-                    self.assertFalse(slot1 in tf.compat.v1.trainable_variables())
-                # Because in the eager mode, as we declare two cg_update
-                # variables, it already altomatically finish executing them.
-                # Thus, we cannot test the param value at this time for
-                # eager mode. We can only test the final value of param
-                # after the second execution.
-                if not tf.executing_eagerly():
-                    self.evaluate(cg_update1)
-                    # Check that the parameters have been updated.
-                    norm0 = self.evaluate(norm0)
-                    norm1 = self.evaluate(norm1)
-                    self.assertAllCloseAccordingToType(
-                        np.array(
-                            [
-                                1.0 * learning_rate
-                                - (1 - learning_rate) * lambda_ * 0.1 / norm0,
-                                2.0 * learning_rate
-                                - (1 - learning_rate) * lambda_ * 0.1 / norm0,
-                            ]
-                        ),
-                        self.evaluate(var0),
+    # Because in the eager mode, as we declare two cg_update
+    # variables, it already altomatically finish executing them.
+    # Thus, we cannot test the param value at this time for
+    # eager mode. We can only test the final value of param
+    # after the second execution.
+
+    # Step 2: the second conditional_gradient contain
+    # the previous update.
+    # Check that the parameters have been updated.
+    cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+    test_utils.assert_allclose_according_to_type(
+        np.array(
+            [
+                (1.0 * learning_rate - (1 - learning_rate) * lambda_ * 0.1 / norm0)
+                * learning_rate
+                - (1 - learning_rate) * lambda_ * 0.1 / norm0,
+                (2.0 * learning_rate - (1 - learning_rate) * lambda_ * 0.1 / norm0)
+                * learning_rate
+                - (1 - learning_rate) * lambda_ * 0.1 / norm0,
+            ]
+        ),
+        var0.numpy(),
+    )
+    test_utils.assert_allclose_according_to_type(
+        np.array(
+            [
+                (3.0 * learning_rate - (1 - learning_rate) * lambda_ * 0.01 / norm1)
+                * learning_rate
+                - (1 - learning_rate) * lambda_ * 0.01 / norm1,
+                (4.0 * learning_rate - (1 - learning_rate) * lambda_ * 0.01 / norm1)
+                * learning_rate
+                - (1 - learning_rate) * lambda_ * 0.01 / norm1,
+            ]
+        ),
+        var1.numpy(),
+    )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_sharing_nuclear():
+    # TODO:
+    #       To address the issue #36764.
+    for dtype in _dtypes_with_checking_system(
+        use_gpu=tf.test.is_gpu_available(), system=platform.system()
+    ):
+        var0 = tf.Variable([1.0, 2.0], dtype=dtype)
+        var1 = tf.Variable([3.0, 4.0], dtype=dtype)
+        grads0 = tf.constant([0.1, 0.1], dtype=dtype)
+        grads1 = tf.constant([0.01, 0.01], dtype=dtype)
+        top_singular_vector0 = cg_lib.ConditionalGradient._top_singular_vector(grads0)
+        top_singular_vector1 = cg_lib.ConditionalGradient._top_singular_vector(grads1)
+        learning_rate = 0.1
+        lambda_ = 0.1
+        ord = "nuclear"
+        cg_opt = cg_lib.ConditionalGradient(
+            learning_rate=learning_rate, lambda_=lambda_, ord=ord
+        )
+        _ = cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+
+        # Check we have slots
+        assert ["conditional_gradient"] == cg_opt.get_slot_names()
+        slot0 = cg_opt.get_slot(var0, "conditional_gradient")
+        assert slot0.get_shape() == var0.get_shape()
+        slot1 = cg_opt.get_slot(var1, "conditional_gradient")
+        assert slot1.get_shape() == var1.get_shape()
+
+        # Because in the eager mode, as we declare two cg_update
+        # variables, it already altomatically finish executing them.
+        # Thus, we cannot test the param value at this time for
+        # eager mode. We can only test the final value of param
+        # after the second execution.
+
+        # Step 2: the second conditional_gradient contain
+        # the previous update.
+        # Check that the parameters have been updated.
+        cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+        test_utils.assert_allclose_according_to_type(
+            np.array(
+                [
+                    (
+                        1.0 * learning_rate
+                        - (1 - learning_rate) * lambda_ * top_singular_vector0[0]
                     )
-                    self.assertAllCloseAccordingToType(
-                        np.array(
-                            [
-                                3.0 * learning_rate
-                                - (1 - learning_rate) * lambda_ * 0.01 / norm1,
-                                4.0 * learning_rate
-                                - (1 - learning_rate) * lambda_ * 0.01 / norm1,
-                            ]
-                        ),
-                        self.evaluate(var1),
+                    * learning_rate
+                    - (1 - learning_rate) * lambda_ * top_singular_vector0[0],
+                    (
+                        2.0 * learning_rate
+                        - (1 - learning_rate) * lambda_ * top_singular_vector0[1]
                     )
-
-                # Step 2: the second conditional_gradient contain
-                # the previous update.
-                if not tf.executing_eagerly():
-                    self.evaluate(cg_update2)
-                # Check that the parameters have been updated.
-                self.assertAllCloseAccordingToType(
-                    np.array(
-                        [
-                            (
-                                1.0 * learning_rate
-                                - (1 - learning_rate) * lambda_ * 0.1 / norm0
-                            )
-                            * learning_rate
-                            - (1 - learning_rate) * lambda_ * 0.1 / norm0,
-                            (
-                                2.0 * learning_rate
-                                - (1 - learning_rate) * lambda_ * 0.1 / norm0
-                            )
-                            * learning_rate
-                            - (1 - learning_rate) * lambda_ * 0.1 / norm0,
-                        ]
-                    ),
-                    self.evaluate(var0),
-                )
-                self.assertAllCloseAccordingToType(
-                    np.array(
-                        [
-                            (
-                                3.0 * learning_rate
-                                - (1 - learning_rate) * lambda_ * 0.01 / norm1
-                            )
-                            * learning_rate
-                            - (1 - learning_rate) * lambda_ * 0.01 / norm1,
-                            (
-                                4.0 * learning_rate
-                                - (1 - learning_rate) * lambda_ * 0.01 / norm1
-                            )
-                            * learning_rate
-                            - (1 - learning_rate) * lambda_ * 0.01 / norm1,
-                        ]
-                    ),
-                    self.evaluate(var1),
-                )
-
-    def testSharingNuclear(self):
-        # TODO:
-        #       To address the issue #36764.
-        for dtype in _dtypes_with_checking_system(
-            use_gpu=tf.test.is_gpu_available(), system=platform.system()
-        ):
-            with self.cached_session():
-                var0 = tf.Variable([1.0, 2.0], dtype=dtype)
-                var1 = tf.Variable([3.0, 4.0], dtype=dtype)
-                grads0 = tf.constant([0.1, 0.1], dtype=dtype)
-                grads1 = tf.constant([0.01, 0.01], dtype=dtype)
-                top_singular_vector0 = cg_lib.ConditionalGradient._top_singular_vector(
-                    grads0
-                )
-                top_singular_vector1 = cg_lib.ConditionalGradient._top_singular_vector(
-                    grads1
-                )
-                learning_rate = 0.1
-                lambda_ = 0.1
-                ord = "nuclear"
-                cg_opt = cg_lib.ConditionalGradient(
-                    learning_rate=learning_rate, lambda_=lambda_, ord=ord
-                )
-                cg_update1 = cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-                cg_update2 = cg_opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-                if not tf.executing_eagerly():
-                    self.evaluate(tf.compat.v1.global_variables_initializer())
-                    # Fetch params to validate initial values
-                    self.assertAllClose([1.0, 2.0], self.evaluate(var0))
-                    self.assertAllClose([3.0, 4.0], self.evaluate(var1))
-
-                # Check we have slots
-                self.assertEqual(["conditional_gradient"], cg_opt.get_slot_names())
-                slot0 = cg_opt.get_slot(var0, "conditional_gradient")
-                self.assertEquals(slot0.get_shape(), var0.get_shape())
-                slot1 = cg_opt.get_slot(var1, "conditional_gradient")
-                self.assertEquals(slot1.get_shape(), var1.get_shape())
-
-                if not tf.executing_eagerly():
-                    self.assertFalse(slot0 in tf.compat.v1.trainable_variables())
-                    self.assertFalse(slot1 in tf.compat.v1.trainable_variables())
-                # Because in the eager mode, as we declare two cg_update
-                # variables, it already altomatically finish executing them.
-                # Thus, we cannot test the param value at this time for
-                # eager mode. We can only test the final value of param
-                # after the second execution.
-                if not tf.executing_eagerly():
-                    self.evaluate(cg_update1)
-                    # Check that the parameters have been updated.
-                    top_singular_vector0 = self.evaluate(top_singular_vector0)
-                    top_singular_vector1 = self.evaluate(top_singular_vector1)
-                    self.assertAllCloseAccordingToType(
-                        np.array(
-                            [
-                                1.0 * learning_rate
-                                - (1 - learning_rate)
-                                * lambda_
-                                * top_singular_vector0[0],
-                                2.0 * learning_rate
-                                - (1 - learning_rate)
-                                * lambda_
-                                * top_singular_vector0[1],
-                            ]
-                        ),
-                        self.evaluate(var0),
+                    * learning_rate
+                    - (1 - learning_rate) * lambda_ * top_singular_vector0[1],
+                ]
+            ),
+            var0.numpy(),
+        )
+        test_utils.assert_allclose_according_to_type(
+            np.array(
+                [
+                    (
+                        3.0 * learning_rate
+                        - (1 - learning_rate) * lambda_ * top_singular_vector1[0]
                     )
-                    self.assertAllCloseAccordingToType(
-                        np.array(
-                            [
-                                3.0 * learning_rate
-                                - (1 - learning_rate)
-                                * lambda_
-                                * top_singular_vector1[0],
-                                4.0 * learning_rate
-                                - (1 - learning_rate)
-                                * lambda_
-                                * top_singular_vector1[1],
-                            ]
-                        ),
-                        self.evaluate(var1),
+                    * learning_rate
+                    - (1 - learning_rate) * lambda_ * top_singular_vector1[0],
+                    (
+                        4.0 * learning_rate
+                        - (1 - learning_rate) * lambda_ * top_singular_vector1[1]
                     )
-
-                # Step 2: the second conditional_gradient contain
-                # the previous update.
-                if not tf.executing_eagerly():
-                    self.evaluate(cg_update2)
-                # Check that the parameters have been updated.
-                self.assertAllCloseAccordingToType(
-                    np.array(
-                        [
-                            (
-                                1.0 * learning_rate
-                                - (1 - learning_rate)
-                                * lambda_
-                                * top_singular_vector0[0]
-                            )
-                            * learning_rate
-                            - (1 - learning_rate) * lambda_ * top_singular_vector0[0],
-                            (
-                                2.0 * learning_rate
-                                - (1 - learning_rate)
-                                * lambda_
-                                * top_singular_vector0[1]
-                            )
-                            * learning_rate
-                            - (1 - learning_rate) * lambda_ * top_singular_vector0[1],
-                        ]
-                    ),
-                    self.evaluate(var0),
-                )
-                self.assertAllCloseAccordingToType(
-                    np.array(
-                        [
-                            (
-                                3.0 * learning_rate
-                                - (1 - learning_rate)
-                                * lambda_
-                                * top_singular_vector1[0]
-                            )
-                            * learning_rate
-                            - (1 - learning_rate) * lambda_ * top_singular_vector1[0],
-                            (
-                                4.0 * learning_rate
-                                - (1 - learning_rate)
-                                * lambda_
-                                * top_singular_vector1[1]
-                            )
-                            * learning_rate
-                            - (1 - learning_rate) * lambda_ * top_singular_vector1[1],
-                        ]
-                    ),
-                    self.evaluate(var1),
-                )
+                    * learning_rate
+                    - (1 - learning_rate) * lambda_ * top_singular_vector1[1],
+                ]
+            ),
+            var1.numpy(),
+        )
 
 
 def _db_params_nuclear_cg01():
