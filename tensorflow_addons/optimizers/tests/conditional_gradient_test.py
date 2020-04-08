@@ -844,7 +844,9 @@ def test_like_dist_belief_frobenius_cg01():
     for i in range(num_samples):
         grads0 = tf.constant(db_grad[i])
         cg_opt.apply_gradients(zip([grads0], [var0]))
-        np.allclose(np.array(db_out[i]), var0.numpy())
+        np.testing.assert_allclose(
+            np.array(db_out[i]), var0.numpy(), rtol=1e-06, atol=1e-06
+        )
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
