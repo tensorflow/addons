@@ -15,35 +15,58 @@
 """Tests for NovoGrad Optimizer."""
 
 import numpy as np
+import pytest
 import tensorflow as tf
 
 from tensorflow_addons.optimizers import NovoGrad
 from tensorflow_addons.utils import test_utils
 
 
+def run_dense_sample(iterations, expected, optimizer):
+    var_0 = tf.Variable([1.0, 2.0], dtype=tf.dtypes.float32)
+    var_1 = tf.Variable([3.0, 4.0], dtype=tf.dtypes.float32)
+
+    grad_0 = tf.constant([0.1, 0.2], dtype=tf.dtypes.float32)
+    grad_1 = tf.constant([0.3, 0.4], dtype=tf.dtypes.float32)
+
+    grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
+
+    for _ in range(iterations):
+        optimizer.apply_gradients(grads_and_vars)
+
+    np.testing.assert_allclose(var_0.read_value(), expected[0], atol=2e-4)
+    np.testing.assert_allclose(var_1.read_value(), expected[1], atol=2e-4)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_dense_sample():
+    run_dense_sample(
+        iterations=1,
+        expected=[[0.9552786425, 1.9105572849], [2.9400000012, 3.9200000016]],
+        optimizer=NovoGrad(lr=0.1, epsilon=1e-8),
+    )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_dense_sample_with_weight_decay():
+    run_dense_sample(
+        iterations=1,
+        expected=[[0.945278642, 1.8905572849], [2.9100000012, 3.8800000016]],
+        optimizer=NovoGrad(lr=0.1, weight_decay=0.1, epsilon=1e-8),
+    )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_dense_sample_with_grad_averaging():
+    run_dense_sample(
+        iterations=2,
+        expected=[[0.9105572849, 1.8211145698], [2.8800000024, 3.8400000032]],
+        optimizer=NovoGrad(lr=0.1, grad_averaging=True, epsilon=1e-8),
+    )
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class NovoGradTest(tf.test.TestCase):
-    def run_dense_sample(self, iterations, expected, optimizer):
-        var_0 = tf.Variable([1.0, 2.0], dtype=tf.dtypes.float32)
-        var_1 = tf.Variable([3.0, 4.0], dtype=tf.dtypes.float32)
-
-        grad_0 = tf.constant([0.1, 0.2], dtype=tf.dtypes.float32)
-        grad_1 = tf.constant([0.3, 0.4], dtype=tf.dtypes.float32)
-
-        grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
-
-        if tf.executing_eagerly():
-            for _ in range(iterations):
-                optimizer.apply_gradients(grads_and_vars)
-        else:
-            update = optimizer.apply_gradients(grads_and_vars)
-            self.evaluate(tf.compat.v1.global_variables_initializer())
-            for _ in range(iterations):
-                self.evaluate(update)
-
-        self.assertAllClose(var_0.read_value(), expected[0], atol=2e-4)
-        self.assertAllClose(var_1.read_value(), expected[1], atol=2e-4)
-
     def run_sparse_sample(self, iterations, expected, optimizer):
         var_0 = tf.Variable([1.0, 2.0])
         var_1 = tf.Variable([3.0, 4.0])
@@ -69,13 +92,6 @@ class NovoGradTest(tf.test.TestCase):
         self.assertAllClose(var_0.read_value(), expected[0], atol=2e-4)
         self.assertAllClose(var_1.read_value(), expected[1], atol=2e-4)
 
-    def test_dense_sample(self):
-        self.run_dense_sample(
-            iterations=1,
-            expected=[[0.9552786425, 1.9105572849], [2.9400000012, 3.9200000016]],
-            optimizer=NovoGrad(lr=0.1, epsilon=1e-8),
-        )
-
     def test_sparse_sample(self):
         self.run_sparse_sample(
             iterations=1,
@@ -83,25 +99,11 @@ class NovoGradTest(tf.test.TestCase):
             optimizer=NovoGrad(lr=0.1, epsilon=1e-8),
         )
 
-    def test_dense_sample_with_weight_decay(self):
-        self.run_dense_sample(
-            iterations=1,
-            expected=[[0.945278642, 1.8905572849], [2.9100000012, 3.8800000016]],
-            optimizer=NovoGrad(lr=0.1, weight_decay=0.1, epsilon=1e-8),
-        )
-
     def test_sparse_sample_with_weight_decay(self):
         self.run_sparse_sample(
             iterations=1,
             expected=[[0.945278642, 1.8905572849], [2.9100000012, 3.8800000016]],
             optimizer=NovoGrad(lr=0.1, weight_decay=0.1, epsilon=1e-8),
-        )
-
-    def test_dense_sample_with_grad_averaging(self):
-        self.run_dense_sample(
-            iterations=2,
-            expected=[[0.9105572849, 1.8211145698], [2.8800000024, 3.8400000032]],
-            optimizer=NovoGrad(lr=0.1, grad_averaging=True, epsilon=1e-8),
         )
 
     def test_sparse_sample_with_grad_averaging(self):
@@ -132,9 +134,10 @@ class NovoGradTest(tf.test.TestCase):
         max_abs_diff = np.max(np.abs(predicted - y))
         self.assertLess(max_abs_diff, 1e-2)
 
-    def test_get_config(self):
-        opt = NovoGrad(lr=1e-4, weight_decay=0.0, grad_averaging=False)
-        config = opt.get_config()
-        self.assertEqual(config["learning_rate"], 1e-4)
-        self.assertEqual(config["weight_decay"], 0.0)
-        self.assertEqual(config["grad_averaging"], False)
+
+def test_get_config():
+    opt = NovoGrad(lr=1e-4, weight_decay=0.0, grad_averaging=False)
+    config = opt.get_config()
+    assert config["learning_rate"] == 1e-4
+    assert config["weight_decay"] == 0.0
+    assert config["grad_averaging"] is False
