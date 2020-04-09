@@ -40,9 +40,16 @@ jobs:
       matrix:
         os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
         py-version: ['3.5', '3.6', '3.7', '3.8']
-        tf-version: ['2.1.0', '2.2.0rc1']
+        tf-version: ['2.1.0', '2.2.0rc2']
       fail-fast: false
     steps:
+      - uses: actions/github-script@0.3.0
+        id: author-date
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const commit_details = await github.git.getCommit({owner: context.repo.owner, repo: context.repo.repo, commit_sha: context.sha});
+            return commit_details.data.author.date
       - if: github.event_name == 'push'
         run: echo "::set-env name=NIGHTLY_FLAG::--nightly"
       - uses: actions/checkout@v2
@@ -53,19 +60,20 @@ jobs:
         if: |
           (matrix.os != 'macos-latest' || matrix.py-version != '3.8')
           && (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
-          && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc1')
+          && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc2')
           && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
         env:
           OS: ${{ runner.os }}
           PY_VERSION: ${{ matrix.py-version }}
           TF_VERSION: ${{ matrix.tf-version }}
+          NIGHTLY_TIME: ${{ steps.author-date.outputs.result }}
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}.sh
       - uses: actions/upload-artifact@v1
         if: |
           (matrix.os != 'macos-latest' || matrix.py-version != '3.8')
           && (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
-          && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc1')
+          && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc2')
           && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
@@ -78,7 +86,7 @@ jobs:
       matrix:
         os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
         py-version: ['3.5', '3.6', '3.7']
-        tf-version: ['2.1.0', '2.2.0rc1']
+        tf-version: ['2.1.0', '2.2.0rc2']
       fail-fast: false
     steps:
       - uses: actions/setup-python@v1
@@ -88,7 +96,7 @@ jobs:
         if: |
           (matrix.os != 'macos-latest' || matrix.py-version != '3.8')
           && (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
-          && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc1')
+          && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc2')
           && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
@@ -97,7 +105,7 @@ jobs:
         if: |
           (matrix.os != 'macos-latest' || matrix.py-version != '3.8')
           && (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
-          && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc1')
+          && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc2')
           && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
         env:
           TF_VERSION: ${{ matrix.tf-version }}
@@ -115,18 +123,19 @@ jobs:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
         py-version: ['3.5', '3.6', '3.7']
+      fail-fast: false
     steps:
       - uses: actions/download-artifact@v1
         if: github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION
         with:
-          name: ${{ runner.os }}-${{ matrix.py-version }}-tf2.1.0-wheel
+          name: ${{ matrix.os }}-${{ matrix.py-version }}-tf2.1.0-wheel
           path: ./dist
       - if: github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION
         run: |
           set -e -x
           ls -la dist/
           sha256sum dist/*.whl
-      - uses: pypa/gh-action-pypi-publish@master
+      - uses: pypa/gh-action-pypi-publish@v1.1.0
         if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
         with:
           user: __token__

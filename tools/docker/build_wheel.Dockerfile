@@ -1,6 +1,6 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 ARG TF_VERSION
-FROM tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16 as make_wheel
+FROM seanpmorgan/tensorflow:2.1.0-custom-op-gpu-ubuntu16-minimal as make_wheel
 
 RUN apt-get update && apt-get install patchelf
 
@@ -20,6 +20,7 @@ RUN python -m pip install -r requirements.txt
 COPY ./ /addons
 WORKDIR /addons
 ARG NIGHTLY_FLAG
+ARG NIGHTLY_TIME
 RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
     bash tools/releases/release_linux.sh $NIGHTLY_FLAG
 
