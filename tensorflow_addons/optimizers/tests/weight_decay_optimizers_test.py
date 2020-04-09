@@ -24,9 +24,6 @@ from tensorflow_addons.optimizers import weight_decay_optimizers
 WEIGHT_DECAY = 0.01
 
 
-# Optimizer tests may inherit from this class and define test functions using doTest. Usually this should include the functions testSparse, testBasic, and testBasicCallableParams. See weight_decay_optimizers_test for an example.
-
-
 def do_test(
     dtype,
     optimizer,
@@ -173,15 +170,11 @@ def sgdw_update_numpy(param, grad_t, slot_vars, learning_rate, momentum, weight_
     return param_t, slot_vars
 
 
-optimizer_AdamW = weight_decay_optimizers.AdamW
-
-
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
 def test_sparse_adamw(dtype):
     do_test(
         dtype,
-        optimizer_AdamW,
+        weight_decay_optimizers.AdamW,
         adamw_update_numpy,
         do_sparse=True,
         learning_rate=0.001,
@@ -192,12 +185,11 @@ def test_sparse_adamw(dtype):
     )
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [tf.half, tf.float32, tf.float64])
 def test_sparse_repeated_indices_adamw(dtype):
     do_test_sparse_repeated_indices(
         dtype,
-        optimizer_AdamW,
+        weight_decay_optimizers.AdamW,
         learning_rate=0.001,
         beta_1=0.9,
         beta_2=0.999,
@@ -206,12 +198,11 @@ def test_sparse_repeated_indices_adamw(dtype):
     )
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
 def test_basic_adamw(dtype):
     do_test(
         dtype,
-        optimizer_AdamW,
+        weight_decay_optimizers.AdamW,
         adamw_update_numpy,
         learning_rate=0.001,
         beta_1=0.9,
@@ -221,12 +212,11 @@ def test_basic_adamw(dtype):
     )
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
 def test_basic_callable_params_adamw(dtype):
     do_test(
         dtype,
-        optimizer_AdamW,
+        weight_decay_optimizers.AdamW,
         adamw_update_numpy,
         learning_rate=lambda: 0.001,
         beta_1=lambda: 0.9,
@@ -236,12 +226,11 @@ def test_basic_callable_params_adamw(dtype):
     )
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
 def test_basic_decay_var_list_adamw(dtype):
     do_test(
         dtype,
-        optimizer_AdamW,
+        weight_decay_optimizers.AdamW,
         adamw_update_numpy,
         do_decay_var_list=True,
         learning_rate=0.001,
@@ -256,21 +245,17 @@ def test_keras_fit():
     """Check if calling model.fit works."""
     model = tf.keras.models.Sequential([tf.keras.layers.Dense(2)])
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-    optimizer = optimizer_AdamW(learning_rate=1e-4, weight_decay=1e-4)
+    optimizer = weight_decay_optimizers.AdamW(learning_rate=1e-4, weight_decay=1e-4)
     model.compile(optimizer=optimizer, loss=loss, metrics=["accuracy"])
     X, y = np.random.uniform(size=(2, 4, 1))
     model.fit(X, y, epochs=1)
 
 
-optimizer_SGDW = weight_decay_optimizers.SGDW
-
-
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
 def test_sparse_sgdw(dtype):
     do_test(
         dtype,
-        optimizer_SGDW,
+        weight_decay_optimizers.SGDW,
         sgdw_update_numpy,
         do_sparse=True,
         learning_rate=0.001,
@@ -279,24 +264,22 @@ def test_sparse_sgdw(dtype):
     )
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [tf.half, tf.float32, tf.float64])
 def test_sparse_repeated_indices_sgdw(dtype):
     do_test_sparse_repeated_indices(
         dtype,
-        optimizer_SGDW,
+        weight_decay_optimizers.SGDW,
         learning_rate=0.001,
         momentum=0.9,
         weight_decay=WEIGHT_DECAY,
     )
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
 def test_basic_sgdw(dtype):
     do_test(
         dtype,
-        optimizer_SGDW,
+        weight_decay_optimizers.SGDW,
         sgdw_update_numpy,
         learning_rate=0.001,
         momentum=0.9,
@@ -304,12 +287,11 @@ def test_basic_sgdw(dtype):
     )
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
 def test_basic_callable_params_sgdw(dtype):
     do_test(
         dtype,
-        optimizer_SGDW,
+        weight_decay_optimizers.SGDW,
         sgdw_update_numpy,
         learning_rate=lambda: 0.001,
         momentum=lambda: 0.9,
@@ -322,10 +304,47 @@ def test_basic_callable_params_sgdw(dtype):
 def test_basic_decay_var_list_sgdw(dtype):
     do_test(
         dtype,
-        optimizer_SGDW,
+        weight_decay_optimizers.SGDW,
         sgdw_update_numpy,
         do_decay_var_list=True,
         learning_rate=0.001,
         momentum=0.9,
         weight_decay=WEIGHT_DECAY,
+    )
+
+
+@pytest.mark.parametrize(
+    "optimizer",
+    [
+        weight_decay_optimizers.SGDW,
+        weight_decay_optimizers.extend_with_decoupled_weight_decay(
+            tf.keras.optimizers.SGD
+        ),
+    ],
+)
+@pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
+def test_optimizer_basic(dtype, optimizer):
+    do_test(
+        dtype,
+        optimizer,
+        sgdw_update_numpy,
+        learning_rate=0.001,
+        momentum=0.9,
+        weight_decay=WEIGHT_DECAY,
+    )
+
+
+@pytest.mark.parametrize(
+    "optimizer",
+    [
+        weight_decay_optimizers.SGDW,
+        weight_decay_optimizers.extend_with_decoupled_weight_decay(
+            tf.keras.optimizers.SGD
+        ),
+    ],
+)
+@pytest.mark.parametrize("dtype", [tf.half, tf.float32, tf.float64])
+def test_optimizer_sparse(dtype, optimizer):
+    do_test_sparse_repeated_indices(
+        dtype, optimizer, learning_rate=0.001, momentum=0.9, weight_decay=WEIGHT_DECAY,
     )
