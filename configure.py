@@ -17,6 +17,7 @@
 
 
 import os
+import pathlib
 import platform
 import logging
 
@@ -125,6 +126,7 @@ def create_build_configuration():
 
     print()
     print("Build configurations successfully written to", _TFA_BAZELRC)
+    print(pathlib.Path(_TFA_BAZELRC).read_text())
     print()
 
 
