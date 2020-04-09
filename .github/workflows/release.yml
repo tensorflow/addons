@@ -43,7 +43,7 @@ jobs:
         tf-version: ['2.1.0', '2.2.0rc2']
       fail-fast: false
     steps:
-      - if: github.event_name == 'push'
+      - if: github.event_name == 'pull_request'
         run: |
           echo "::set-env name=NIGHTLY_FLAG::--nightly"
           python -m pip install GitPython
