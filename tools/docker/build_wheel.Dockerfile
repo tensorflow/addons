@@ -1,6 +1,7 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 ARG TF_VERSION
 FROM seanpmorgan/tensorflow:2.1.0-custom-op-gpu-ubuntu16-minimal as make_wheel
+ENV TF_NEED_CUDA="1"
 
 RUN apt-get update && apt-get install patchelf
 

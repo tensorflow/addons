@@ -14,12 +14,11 @@
 # limitations under the License.
 #
 # ==============================================================================
-# usage: bash tools/testing/addons_cpu.sh
+# usage: bash tools/testing/build_and_run_tests.sh
 
 set -x -e
 
 export CC_OPT_FLAGS='-mavx'
-export TF_NEED_CUDA=0
 
 # Check if python3 is available. On Windows VM it is not.
 if [ -x "$(command -v python3)" ]; then
@@ -30,6 +29,5 @@ fi
 
 $PYTHON_BINARY -m pip install -r tools/install_deps/pytest.txt -e ./
 $PYTHON_BINARY ./configure.py
-cat ./.bazelrc
 bash tools/install_so_files.sh
-$PYTHON_BINARY -m pytest -v --durations=25 -n auto ./tensorflow_addons
+$PYTHON_BINARY -m pytest -v --durations=25 ./tensorflow_addons
