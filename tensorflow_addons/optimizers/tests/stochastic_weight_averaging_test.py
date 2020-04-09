@@ -15,87 +15,78 @@
 """Tests for Stochastic Weight Averaging optimizer."""
 
 import numpy as np
+import pytest
 import tensorflow as tf
 
 from tensorflow_addons.optimizers import stochastic_weight_averaging
 from tensorflow_addons.optimizers.utils import fit_bn
-from tensorflow_addons.utils import test_utils
 
 SWA = stochastic_weight_averaging.SWA
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class SWATest(tf.test.TestCase):
-    def test_averaging(self):
-        start_averaging = 0
-        average_period = 1
-        sgd = tf.keras.optimizers.SGD(lr=1.0)
-        optimizer = SWA(sgd, start_averaging, average_period)
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_averaging():
+    start_averaging = 0
+    average_period = 1
+    sgd = tf.keras.optimizers.SGD(lr=1.0)
+    optimizer = SWA(sgd, start_averaging, average_period)
 
-        val_0 = [1.0, 1.0]
-        val_1 = [2.0, 2.0]
-        var_0 = tf.Variable(val_0)
-        var_1 = tf.Variable(val_1)
+    val_0 = [1.0, 1.0]
+    val_1 = [2.0, 2.0]
+    var_0 = tf.Variable(val_0)
+    var_1 = tf.Variable(val_1)
 
-        grad_val_0 = [0.1, 0.1]
-        grad_val_1 = [0.1, 0.1]
-        grad_0 = tf.constant(grad_val_0)
-        grad_1 = tf.constant(grad_val_1)
-        grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
+    grad_val_0 = [0.1, 0.1]
+    grad_val_1 = [0.1, 0.1]
+    grad_0 = tf.constant(grad_val_0)
+    grad_1 = tf.constant(grad_val_1)
+    grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
-        if not tf.executing_eagerly():
-            update = optimizer.apply_gradients(grads_and_vars)
-            self.evaluate(tf.compat.v1.global_variables_initializer())
-            self.evaluate(update)
-            self.evaluate(update)
-            self.evaluate(update)
+    optimizer.apply_gradients(grads_and_vars)
+    optimizer.apply_gradients(grads_and_vars)
+    optimizer.apply_gradients(grads_and_vars)
 
-        else:
-            optimizer.apply_gradients(grads_and_vars)
-            optimizer.apply_gradients(grads_and_vars)
-            optimizer.apply_gradients(grads_and_vars)
+    np.testing.assert_allclose(var_1.read_value(), [1.7, 1.7], rtol=1e-06, atol=1e-06)
+    np.testing.assert_allclose(var_0.read_value(), [0.7, 0.7], rtol=1e-06, atol=1e-06)
 
-        self.assertAllClose(var_1.read_value(), [1.7, 1.7])
-        self.assertAllClose(var_0.read_value(), [0.7, 0.7])
+    optimizer.assign_average_vars([var_0, var_1])
 
-        if not tf.executing_eagerly():
-            update = optimizer.assign_average_vars([var_0, var_1])
-            self.evaluate(update)
-        else:
-            optimizer.assign_average_vars([var_0, var_1])
+    np.testing.assert_allclose(var_0.read_value(), [0.8, 0.8])
+    np.testing.assert_allclose(var_1.read_value(), [1.8, 1.8])
 
-        self.assertAllClose(var_0.read_value(), [0.8, 0.8])
-        self.assertAllClose(var_1.read_value(), [1.8, 1.8])
 
-    def test_optimizer_failure(self):
-        with self.assertRaises(TypeError):
-            _ = SWA(None, average_period=10)
+def test_optimizer_failure():
+    with pytest.raises(TypeError):
+        _ = SWA(None, average_period=10)
 
-    def test_optimizer_string(self):
-        _ = SWA("adam", average_period=10)
 
-    def test_get_config(self):
-        opt = SWA("adam", average_period=10, start_averaging=0)
-        opt = tf.keras.optimizers.deserialize(tf.keras.optimizers.serialize(opt))
-        config = opt.get_config()
-        self.assertEqual(config["average_period"], 10)
-        self.assertEqual(config["start_averaging"], 0)
+def test_optimizer_string():
+    _ = SWA("adam", average_period=10)
 
-    def test_assign_batchnorm(self):
-        x = np.random.standard_normal((10, 64))
-        y = np.random.standard_normal((10, 1))
 
-        model = tf.keras.Sequential()
-        model.add(tf.keras.layers.Dense(16, activation="relu"))
-        model.add(tf.keras.layers.BatchNormalization())
-        model.add(tf.keras.layers.Dense(1))
+def test_get_config():
+    opt = SWA("adam", average_period=10, start_averaging=0)
+    opt = tf.keras.optimizers.deserialize(tf.keras.optimizers.serialize(opt))
+    config = opt.get_config()
+    assert config["average_period"] == 10
+    assert config["start_averaging"] == 0
 
-        opt = SWA(tf.keras.optimizers.SGD())
-        model.compile(optimizer=opt, loss="mean_squared_error")
-        model.fit(x, y, epochs=1)
 
-        opt.assign_average_vars(model.variables)
-        fit_bn(model, x, y)
+def test_assign_batchnorm():
+    x = np.random.standard_normal((10, 64))
+    y = np.random.standard_normal((10, 1))
+
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Dense(16, activation="relu"))
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.Dense(1))
+
+    opt = SWA(tf.keras.optimizers.SGD())
+    model.compile(optimizer=opt, loss="mean_squared_error")
+    model.fit(x, y, epochs=1)
+
+    opt.assign_average_vars(model.variables)
+    fit_bn(model, x, y)
 
 
 def test_fit_simple_linear_model():
