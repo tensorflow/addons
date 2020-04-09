@@ -63,6 +63,7 @@ function main() {
   echo $(date) : "=== Using tmpdir: ${TMPDIR}"
   echo "=== Copy TensorFlow Addons files"
 
+  cp -r .git/ "${TMPDIR}"
   cp ${PIP_FILE_PREFIX}setup.py "${TMPDIR}"
   cp ${PIP_FILE_PREFIX}MANIFEST.in "${TMPDIR}"
   cp ${PIP_FILE_PREFIX}LICENSE "${TMPDIR}"
