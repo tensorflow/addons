@@ -19,6 +19,7 @@ RUN python$PY_VERSION -m pip install -r requirements.txt
 COPY ./ /addons
 WORKDIR /addons
 ARG NIGHTLY_FLAG
+ARG NIGHTLY_TIME
 RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
     bash tools/releases/release_linux.sh $PY_VERSION $NIGHTLY_FLAG
 

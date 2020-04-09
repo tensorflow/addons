@@ -37,6 +37,11 @@ from setuptools import Extension
 DOCLINES = __doc__.split("\n")
 
 
+def get_last_commit_time() -> str:
+    string_time = os.getenv("NIGHTLY_TIME").replace('"', "")
+    return datetime.strptime(string_time, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y%m%d%H%M%S")
+
+
 def get_project_name_version():
     # Version
     version = {}
@@ -47,7 +52,7 @@ def get_project_name_version():
     project_name = "tensorflow-addons"
     if "--nightly" in sys.argv:
         project_name = "tfa-nightly"
-        version["__version__"] += datetime.now().strftime("%Y%m%d%H%M%S")
+        version["__version__"] += get_last_commit_time()
         sys.argv.remove("--nightly")
 
     return project_name, version
