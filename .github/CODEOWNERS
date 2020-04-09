@@ -152,18 +152,7 @@
 /tensorflow_addons/rnn/cell.py @qlzh727
 /tensorflow_addons/rnn/tests/cell_test.py @qlzh727
 
-/tensorflow_addons/seq2seq/attention_wrapper.py @qlzh727 @guillaumekln
-/tensorflow_addons/seq2seq/tests/attention_wrapper_test.py @qlzh727 @guillaumekln
-/tensorflow_addons/seq2seq/basic_decoder.py @qlzh727 @guillaumekln
-/tensorflow_addons/seq2seq/tests/basic_decoder_test.py @qlzh727 @guillaumekln
-/tensorflow_addons/seq2seq/beam_search.py @qlzh727 @guillaumekln
-/tensorflow_addons/seq2seq/tests/beam_search_test.py @qlzh727 @guillaumekln
-/tensorflow_addons/seq2seq/decoder.py @qlzh727 @guillaumekln
-/tensorflow_addons/seq2seq/tests/decoder_test.py @qlzh727 @guillaumekln
-/tensorflow_addons/seq2seq/loss.py @qlzh727 @guillaumekln
-/tensorflow_addons/seq2seq/tests/loss_test.py @qlzh727 @guillaumekln
-/tensorflow_addons/seq2seq/sampler.py @qlzh727 @guillaumekln
-/tensorflow_addons/seq2seq/tests/sampler_test.py @qlzh727 @guillaumekln
+/tensorflow_addons/seq2seq/ @qlzh727 @guillaumekln
 
 /tensorflow_addons/text/crf.py @squadrick
 /tensorflow_addons/text/tests/crf_test.py @squadrick
