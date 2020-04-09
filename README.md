@@ -10,14 +10,12 @@
 [![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-### Nightly Tests
+### Continuous Build Status
 
-| Build Type      | Status |
+| Build      | Status |
 | ---             | ---    |
-| **MacOS**   | [![Status](https://github.com/tensorflow/addons/workflows/macos-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Amacos-nightly) |
-| **Windows**   | [![Status](https://github.com/tensorflow/addons/workflows/windows-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Awindows-nightly) |
-| **Ubuntu**   | [![Status](https://github.com/tensorflow/addons/workflows/manylinux-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Amanylinux-nightly) |
-| **Ubuntu custom GPU ops**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
+| **Ubuntu/MacOS/Windows**   | [![Status](https://github.com/tensorflow/addons/workflows/addons-release/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Aaddons-release) |
+| **Ubuntu GPU custom ops**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
 
 **TensorFlow Addons** is a repository of contributions that conform to
 well-established API patterns, but implement new functionality
