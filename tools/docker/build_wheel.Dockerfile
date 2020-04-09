@@ -11,10 +11,12 @@ COPY tools/install_deps/ /install_deps
 ARG TF_VERSION
 RUN python$PY_VERSION -m pip install \
         tensorflow==$TF_VERSION \
+        GitPython \
         -r /install_deps/pytest.txt
 
 COPY requirements.txt .
 RUN python$PY_VERSION -m pip install -r requirements.txt
+
 
 COPY ./ /addons
 WORKDIR /addons

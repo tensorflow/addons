@@ -44,7 +44,9 @@ jobs:
       fail-fast: false
     steps:
       - if: github.event_name == 'push'
-        run: echo "::set-env name=NIGHTLY_FLAG::--nightly"
+        run: |
+          echo "::set-env name=NIGHTLY_FLAG::--nightly"
+          python -m pip install GitPython
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:

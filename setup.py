@@ -28,13 +28,19 @@ import os
 from pathlib import Path
 import sys
 
-from datetime import datetime
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.dist import Distribution
 from setuptools import Extension
 
 DOCLINES = __doc__.split("\n")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def get_last_commit_time() -> str:
+    from git import Repo
+
+    return Repo(BASE_DIR).commit("HEAD").committed_datetime.strftime("%Y%m%d%H%M%S")
 
 
 def get_project_name_version():
@@ -47,7 +53,7 @@ def get_project_name_version():
     project_name = "tensorflow-addons"
     if "--nightly" in sys.argv:
         project_name = "tfa-nightly"
-        version["__version__"] += datetime.now().strftime("%Y%m%d%H%M%S")
+        version["__version__"] += get_last_commit_time()
         sys.argv.remove("--nightly")
 
     return project_name, version
