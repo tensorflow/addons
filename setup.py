@@ -25,6 +25,7 @@ of the community).
 """
 
 import os
+from datetime import datetime
 from pathlib import Path
 import sys
 
@@ -38,9 +39,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_last_commit_time() -> str:
-    from git import Repo
-
-    return Repo(BASE_DIR).commit("HEAD").committed_datetime.strftime("%Y%m%d%H%M%S")
+    string_time = os.getenv("NIGHTLY_TIME")
+    return datetime.strptime(string_time, "%Y-%m-%dT%H:%M:%SZ").strftime("%Y%m%d%H%M%S")
 
 
 def get_project_name_version():
