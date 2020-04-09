@@ -126,7 +126,6 @@
 /tensorflow_addons/metrics/tests/r_square_test.py @ssaishruthi
 
 /tensorflow_addons/optimizers/average_wrapper.py @squadrick
-/tensorflow_addons/optimizers/tests/average_wrapper_test.py @squadrick
 /tensorflow_addons/optimizers/conditional_gradient.py @pkan2 @lokhande-vishnu
 /tensorflow_addons/optimizers/tests/conditional_gradient_test.py @pkan2 @lokhande-vishnu
 /tensorflow_addons/optimizers/cyclical_learning_rate.py @raphaelmeudec
