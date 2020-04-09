@@ -120,7 +120,7 @@ jobs:
       - uses: actions/download-artifact@v1
         if: github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION
         with:
-          name: ${{ runner.os }}-${{ matrix.py-version }}-tf2.1.0-wheel
+          name: ${{ matrix.os }}-${{ matrix.py-version }}-tf2.1.0-wheel
           path: ./dist
       - if: github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION
         run: |
