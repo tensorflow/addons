@@ -52,5 +52,3 @@ bazel build \
 
 # Package Whl
 bazel-bin/build_pip_pkg artifacts ${PKG_OPS}
-
-du -h /addons/wheelhouse/
