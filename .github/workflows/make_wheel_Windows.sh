@@ -6,7 +6,7 @@ export BAZEL_VC="C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/
 python -m pip install wheel setuptools tensorflow==$TF_VERSION
 curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
 export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
-bash ./tools/testing/addons_cpu.sh
+bash ./tools/testing/build_and_run_tests.sh
 
 ./bazel-${BAZEL_VERSION}-windows-x86_64.exe build \
   -c opt \
