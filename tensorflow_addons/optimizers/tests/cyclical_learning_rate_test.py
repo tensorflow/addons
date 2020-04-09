@@ -57,6 +57,7 @@ def test_triangular_cyclical_learning_rate(serialize):
         np.testing.assert_allclose(triangular_cyclical_lr(step), expected_value, 1e-6)
 
 
+<<<<<<< HEAD
 @test_utils.run_all_in_graph_and_eager_modes
 @parameterized.named_parameters(("NotSerialized", False), ("Serialized", True))
 class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
@@ -96,30 +97,63 @@ class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
         maximal_learning_rate = 1
         step_size = 4000
         gamma = 0.996
+=======
+@pytest.mark.parametrize("serialize", [True, False])
+def test_triangular2_cyclical_learning_rate(serialize):
+    initial_lr = 0.1
+    maximal_lr = 1
+    step_size = 30
+    triangular2_lr = cyclical_learning_rate.Triangular2CyclicalLearningRate(
+        initial_learning_rate=initial_lr,
+        maximal_learning_rate=maximal_lr,
+        step_size=step_size,
+    )
+    triangular2_lr = _maybe_serialized(triangular2_lr, serialize)
 
-        step = tf.resource_variable_ops.ResourceVariable(0)
-        exponential_cyclical_lr = cyclical_learning_rate.ExponentialCyclicalLearningRate(
-            initial_learning_rate=initial_learning_rate,
-            maximal_learning_rate=maximal_learning_rate,
-            step_size=step_size,
-            gamma=gamma,
-        )
-        exponential_cyclical_lr = _maybe_serialized(exponential_cyclical_lr, serialize)
+    middle_lr = (maximal_lr + initial_lr) / 2
+    expected = np.concatenate(
+        [
+            np.linspace(initial_lr, maximal_lr, num=step_size + 1),
+            np.linspace(maximal_lr, initial_lr, num=step_size + 1)[1:],
+            np.linspace(initial_lr, middle_lr, num=step_size + 1)[1:],
+            np.linspace(middle_lr, initial_lr, num=step_size + 1)[1:],
+        ]
+    )
 
-        self.evaluate(tf.compat.v1.global_variables_initializer())
+    for step, expected_value in enumerate(expected):
+        np.testing.assert_allclose(triangular2_lr(step).numpy(), expected_value, 1e-6)
 
-        for i in range(1, 8001):
-            non_bounded_value = np.abs(
-                i / 2000.0 - 2 * np.floor(1 + i / (2 * 2000)) + 1
-            )
-            expected = initial_learning_rate + (
-                maximal_learning_rate - initial_learning_rate
-            ) * np.maximum(0, (1 - non_bounded_value)) * (gamma ** i)
-            self.assertAllClose(
-                self.evaluate(exponential_cyclical_lr(step)), expected, 1e-6
-            )
-            self.evaluate(step.assign_add(1))
 
+@pytest.mark.parametrize("serialize", [True, False])
+def test_exponential_cyclical_learning_rate(serialize):
+    initial_learning_rate = 0.1
+    maximal_learning_rate = 1
+    step_size = 2000
+    gamma = 0.996
+>>>>>>> 94ef789... Fixed serialization and test. (#1623)
+
+    step = 0
+    exponential_cyclical_lr = cyclical_learning_rate.ExponentialCyclicalLearningRate(
+        initial_learning_rate=initial_learning_rate,
+        maximal_learning_rate=maximal_learning_rate,
+        step_size=step_size,
+        gamma=gamma,
+    )
+    exponential_cyclical_lr = _maybe_serialized(exponential_cyclical_lr, serialize)
+
+    for i in range(0, 8001):
+        non_bounded_value = np.abs(i / 2000.0 - 2 * np.floor(1 + i / (2 * 2000)) + 1)
+        expected = initial_learning_rate + (
+            maximal_learning_rate - initial_learning_rate
+        ) * np.maximum(0, (1 - non_bounded_value)) * (gamma ** i)
+        computed = exponential_cyclical_lr(step).numpy()
+        np.testing.assert_allclose(computed, expected, 1e-6)
+        step += 1
+
+
+@test_utils.run_all_in_graph_and_eager_modes
+@parameterized.named_parameters(("NotSerialized", False), ("Serialized", True))
+class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
     def testCustomCyclicalLearningRate(self, serialize):
         self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1203")
         initial_learning_rate = 0.1
