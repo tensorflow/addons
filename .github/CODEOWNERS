@@ -156,7 +156,7 @@
 
 /tensorflow_addons/text/crf.py @squadrick
 /tensorflow_addons/text/tests/crf_test.py @squadrick
-/tensorflow_addons/text/parse_time.py @helinwang
-/tensorflow_addons/text/tests/parse_time_test.py @helinwang
-/tensorflow_addons/text/skip_gram.py @rahulunair
-/tensorflow_addons/text/tests/skip_gram_test.py @rahulunair
+/tensorflow_addons/text/parse_time_op.py @helinwang
+/tensorflow_addons/text/tests/parse_time_op_test.py @helinwang
+/tensorflow_addons/text/skip_gram_ops.py @rahulunair
+/tensorflow_addons/text/tests/skip_gram_ops_test.py @rahulunair
