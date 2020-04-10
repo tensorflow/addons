@@ -48,13 +48,6 @@ function main() {
     exit 1
   fi
 
-  # Check if python3 is available. On Windows VM it is not.
-  if [ -x "$(command -v python3)" ]; then
-      _PYTHON_BINARY=python3
-    else
-      _PYTHON_BINARY=python
-  fi
-
   mkdir -p ${DEST}
   DEST=$(abspath "${DEST}")
   echo "=== destination directory: ${DEST}"
@@ -89,9 +82,9 @@ function main() {
 
   if [[ -z ${NIGHTLY_FLAG} ]]; then
     # Windows has issues with locking library files for deletion so do not fail here
-    ${_PYTHON_BINARY} ${BUILD_CMD} || true
+    python ${BUILD_CMD} || true
   else
-    ${_PYTHON_BINARY} ${BUILD_CMD} ${NIGHTLY_FLAG} || true
+    python ${BUILD_CMD} ${NIGHTLY_FLAG} || true
   fi
 
   cp dist/*.whl "${DEST}"

@@ -5,25 +5,25 @@ ENV TF_NEED_CUDA="1"
 
 RUN apt-get update && apt-get install patchelf
 
-ARG PY_VERSION
-RUN ln -sf $(which python$PY_VERSION) /usr/bin/python3
-
-RUN python3 -m pip install --upgrade pip setuptools auditwheel==2.0.0
-
-COPY tools/install_deps/ /install_deps
-ARG TF_VERSION
-RUN python3 -m pip install \
-        tensorflow==$TF_VERSION \
-        -r /install_deps/pytest.txt
-
-COPY requirements.txt .
-RUN python3 -m pip install -r requirements.txt
-
 # Fix presented in
 # https://stackoverflow.com/questions/44967202/pip-is-showing-error-lsb-release-a-returned-non-zero-exit-status-1/44967506
 RUN echo "#! /usr/bin/python2.7" >> /usr/bin/lsb_release2
 RUN cat /usr/bin/lsb_release >> /usr/bin/lsb_release2
 RUN mv /usr/bin/lsb_release2 /usr/bin/lsb_release
+
+ARG PY_VERSION
+RUN ln -sf $(which python$PY_VERSION) /usr/bin/python
+
+RUN python -m pip install --upgrade pip setuptools auditwheel==2.0.0
+
+COPY tools/install_deps/ /install_deps
+ARG TF_VERSION
+RUN python -m pip install \
+        tensorflow==$TF_VERSION \
+        -r /install_deps/pytest.txt
+
+COPY requirements.txt .
+RUN python -m pip install -r requirements.txt
 
 COPY ./ /addons
 WORKDIR /addons
