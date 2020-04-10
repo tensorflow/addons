@@ -2,8 +2,8 @@ set -e -x
 
 export TF_NEED_CUDA=0
 
-python3 --version
-python3 -m pip install delocate wheel setuptools tensorflow==$TF_VERSION
+python --version
+python -m pip install delocate wheel setuptools tensorflow==$TF_VERSION
 
 bash tools/install_deps/bazel_macos.sh $BAZEL_VERSION
 bash tools/testing/build_and_run_tests.sh

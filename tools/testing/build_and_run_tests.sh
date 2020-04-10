@@ -20,14 +20,7 @@ set -x -e
 
 export CC_OPT_FLAGS='-mavx'
 
-# Check if python3 is available. On Windows VM it is not.
-if [ -x "$(command -v python3)" ]; then
-  PYTHON_BINARY=python3
-else
-  PYTHON_BINARY=python
-fi
-
-$PYTHON_BINARY -m pip install -r tools/install_deps/pytest.txt -e ./
-$PYTHON_BINARY ./configure.py
+python -m pip install -r tools/install_deps/pytest.txt -e ./
+python ./configure.py
 bash tools/install_so_files.sh
-$PYTHON_BINARY -m pytest -v --durations=25 ./tensorflow_addons
+python -m pytest -v --durations=25 ./tensorflow_addons
