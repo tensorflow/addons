@@ -4,22 +4,7 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "optimizers",
-    srcs = [
-        "__init__.py",
-        "average_wrapper.py",
-        "conditional_gradient.py",
-        "cyclical_learning_rate.py",
-        "lamb.py",
-        "lazy_adam.py",
-        "lookahead.py",
-        "moving_average.py",
-        "novograd.py",
-        "rectified_adam.py",
-        "stochastic_weight_averaging.py",
-        "utils.py",
-        "weight_decay_optimizers.py",
-        "yogi.py",
-    ],
+    srcs = glob(["*.py"]),
     deps = [
         "//tensorflow_addons/utils",
     ],
@@ -28,8 +13,8 @@ py_library(
 py_test(
     name = "optimizers_test",
     size = "small",
-    srcs = glob(["*_test.py"]),
-    main = "run_all_test.py",
+    srcs = glob(["tests/*"]),
+    main = "tests/run_all_test.py",
     deps = [
         ":optimizers",
     ],
