@@ -1,6 +1,6 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 ARG TF_VERSION
-FROM seanpmorgan/tensorflow:2.1.0-custom-op-gpu-ubuntu16-minimal as make_wheel
+FROM seanpmorgan/tensorflow:2.1.0-custom-op-gpu-ubuntu16-minimal as base_install
 ENV TF_NEED_CUDA="1"
 
 RUN apt-get update && apt-get install patchelf
@@ -19,6 +19,13 @@ RUN python$PY_VERSION -m pip install -r requirements.txt
 
 COPY ./ /addons
 WORKDIR /addons
+
+# -------------------------------------------------------------------
+FROM base_install as tfa_gpu_tests
+CMD ["bash", "tools/testing/build_and_run_tests.sh"]
+
+# -------------------------------------------------------------------
+FROM base_install as make_wheel
 ARG NIGHTLY_FLAG
 ARG NIGHTLY_TIME
 RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
@@ -28,6 +35,7 @@ RUN bash tools/releases/tf_auditwheel_patch.sh
 RUN auditwheel repair --plat manylinux2010_x86_64 artifacts/*.whl
 RUN ls -al wheelhouse/
 
+# -------------------------------------------------------------------
 FROM scratch as output
 
 COPY --from=make_wheel /addons/wheelhouse/ .
