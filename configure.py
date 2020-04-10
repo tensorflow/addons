@@ -111,8 +111,13 @@ def create_build_configuration():
 
 def configure_cuda():
     write_action_env_to_bazelrc("TF_NEED_CUDA", "1")
-    write_action_env_to_bazelrc("CUDA_TOOLKIT_PATH", os.getenv("CUDA_TOOLKIT_PATH", "/usr/local/cuda"))
-    write_action_env_to_bazelrc("CUDNN_INSTALL_PATH", os.getenv("CUDNN_INSTALL_PATH", "/usr/lib/x86_64-linux-gnu"))
+    write_action_env_to_bazelrc(
+        "CUDA_TOOLKIT_PATH", os.getenv("CUDA_TOOLKIT_PATH", "/usr/local/cuda")
+    )
+    write_action_env_to_bazelrc(
+        "CUDNN_INSTALL_PATH",
+        os.getenv("CUDNN_INSTALL_PATH", "/usr/lib/x86_64-linux-gnu"),
+    )
     write_action_env_to_bazelrc("TF_CUDA_VERSION", os.getenv("TF_CUDA_VERSION", "10.1"))
     write_action_env_to_bazelrc("TF_CUDNN_VERSION", os.getenv("TF_CUDNN_VERSION", "7"))
 
