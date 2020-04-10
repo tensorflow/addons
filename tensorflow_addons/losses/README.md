@@ -3,7 +3,6 @@
 ## Components
 https://www.tensorflow.org/addons/api_docs/python/tfa/losses
 
-
 ## Contribution Guidelines
 #### Standard API
 In order to conform with the current API standard, all losses
