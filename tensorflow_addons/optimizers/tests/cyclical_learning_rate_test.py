@@ -14,11 +14,8 @@
 # ==============================================================================
 """Tests for Cyclical Learning Rate."""
 
-from absl.testing import parameterized
-
 import pytest
 import tensorflow as tf
-from tensorflow_addons.utils import test_utils
 import numpy as np
 
 from tensorflow_addons.optimizers import cyclical_learning_rate
