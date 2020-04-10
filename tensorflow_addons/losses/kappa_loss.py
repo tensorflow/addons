@@ -137,16 +137,14 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
         label_vec = tf.range(num_classes, dtype=dtype)
         self.row_label_vec = tf.reshape(label_vec, [1, num_classes])
         self.col_label_vec = tf.reshape(label_vec, [num_classes, 1])
+        col_mat = tf.tile(self.col_label_vec, [1, num_classes])
+        row_mat = tf.tile(self.row_label_vec, [num_classes, 1])
         if weightage == "linear":
-            self.weight_mat = tf.abs(
-                tf.tile(self.col_label_vec, [1, num_classes])
-                - tf.tile(self.row_label_vec, [num_classes, 1]),
-            ) / tf.cast(num_classes - 1, dtype=dtype)
+            divisor = tf.cast(num_classes - 1, dtype=dtype)
+            self.weight_mat = tf.abs(col_mat - row_mat) / divisor
         else:
-            self.weight_mat = (
-                tf.tile(self.col_label_vec, [1, num_classes])
-                - tf.tile(self.row_label_vec, [num_classes, 1])
-            ) ** 2 / tf.cast((num_classes - 1) ** 2, dtype=dtype)
+            divisor = tf.cast((num_classes - 1) ** 2, dtype=dtype)
+            self.weight_mat = (col_mat - row_mat) ** 2 / divisor
 
     def call(self, y_true, y_pred):
         return _weighted_kappa_loss(

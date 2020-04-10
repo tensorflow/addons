@@ -13,15 +13,9 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for Weighted Kappa loss."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 
 import numpy as np
-import tensorflow as tf
-
 from tensorflow_addons.losses.kappa_loss import WeightedKappaLoss
-from tensorflow_addons.utils import test_utils
 
 
 def weighted_kappa_loss_np(y_true, y_pred, weightage="quadratic", eps=1e-6):
@@ -55,51 +49,46 @@ def weighted_kappa_loss_np(y_true, y_pred, weightage="quadratic", eps=1e-6):
     return np.log(numerator / denominator + eps)
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class WeightedKappaLossTest(tf.test.TestCase):
-    def test_linear_weighted_kappa_loss(self):
-        y_true = np.array([[0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])
+def test_linear_weighted_kappa_loss():
+    y_true = np.array([[0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])
 
-        y_pred = np.array(
-            [
-                [0.1, 0.2, 0.6, 0.1],
-                [0.1, 0.5, 0.3, 0.1],
-                [0.8, 0.05, 0.05, 0.1],
-                [0.01, 0.09, 0.1, 0.8],
-            ],
-            dtype=np.float32,
-        )
-        kappa_loss = WeightedKappaLoss(num_classes=4, weightage="linear")
-        loss = kappa_loss(y_true, y_pred)
-        loss_np = weighted_kappa_loss_np(y_true, y_pred, weightage="linear")
-        self.assertAlmostEqual(self.evaluate(loss), loss_np, 5)
-
-    def test_quadratic_weighted_kappa_loss(self):
-        y_true = np.array([[0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])
-
-        y_pred = np.array(
-            [
-                [0.1, 0.2, 0.6, 0.1],
-                [0.1, 0.5, 0.3, 0.1],
-                [0.8, 0.05, 0.05, 0.1],
-                [0.01, 0.09, 0.1, 0.8],
-            ],
-            dtype=np.float32,
-        )
-        kappa_loss = WeightedKappaLoss(num_classes=4)
-        loss = kappa_loss(y_true, y_pred)
-        loss_np = weighted_kappa_loss_np(y_true, y_pred)
-        self.assertAlmostEqual(self.evaluate(loss), loss_np, 5)
-
-    def test_config(self):
-        kappa_loss = WeightedKappaLoss(
-            num_classes=4, weightage="linear", name="kappa_loss", epsilon=0.001,
-        )
-        self.assertEqual(kappa_loss.num_classes, 4)
-        self.assertEqual(kappa_loss.weightage, "linear")
-        self.assertEqual(kappa_loss.name, "kappa_loss")
-        self.assertAlmostEqual(kappa_loss.epsilon, 0.001, 1e-6)
+    y_pred = np.array(
+        [
+            [0.1, 0.2, 0.6, 0.1],
+            [0.1, 0.5, 0.3, 0.1],
+            [0.8, 0.05, 0.05, 0.1],
+            [0.01, 0.09, 0.1, 0.8],
+        ],
+        dtype=np.float32,
+    )
+    kappa_loss = WeightedKappaLoss(num_classes=4, weightage="linear")
+    loss = kappa_loss(y_true, y_pred)
+    loss_np = weighted_kappa_loss_np(y_true, y_pred, weightage="linear")
+    np.testing.assert_allclose(loss, loss_np, rtol=5, atol=5)
 
 
-if __name__ == "__main__":
-    tf.test.main()
+def test_quadratic_weighted_kappa_loss():
+    y_true = np.array([[0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])
+    y_pred = np.array(
+        [
+            [0.1, 0.2, 0.6, 0.1],
+            [0.1, 0.5, 0.3, 0.1],
+            [0.8, 0.05, 0.05, 0.1],
+            [0.01, 0.09, 0.1, 0.8],
+        ],
+        dtype=np.float32,
+    )
+    kappa_loss = WeightedKappaLoss(num_classes=4)
+    loss = kappa_loss(y_true, y_pred)
+    loss_np = weighted_kappa_loss_np(y_true, y_pred)
+    np.testing.assert_allclose(loss, loss_np, rtol=5, atol=5)
+
+
+def test_config():
+    kappa_loss = WeightedKappaLoss(
+        num_classes=4, weightage="linear", name="kappa_loss", epsilon=0.001,
+    )
+    assert kappa_loss.num_classes == 4
+    assert kappa_loss.weightage == "linear"
+    assert kappa_loss.name == "kappa_loss"
+    np.testing.assert_allclose(kappa_loss.epsilon, 0.001, 1e-6)
