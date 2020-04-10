@@ -27,13 +27,13 @@ _TFA_BAZELRC = ".bazelrc"
 
 
 # Writes variables to bazelrc file
-def write_to_bazelrc(line):
+def write(line):
     with open(_TFA_BAZELRC, "a") as f:
         f.write(line + "\n")
 
 
-def write_action_env_to_bazelrc(var_name, var):
-    write_to_bazelrc('build --action_env %s="%s"' % (var_name, str(var)))
+def write_action_env(var_name, var):
+    write('build --action_env {}="{}"'.format(var_name, var))
 
 
 def is_macos():
@@ -89,14 +89,14 @@ def create_build_configuration():
 
     logging.disable(logging.WARNING)
 
-    write_action_env_to_bazelrc("TF_HEADER_DIR", get_tf_header_dir())
-    write_action_env_to_bazelrc("TF_SHARED_LIBRARY_DIR", get_tf_shared_lib_dir())
-    write_action_env_to_bazelrc("TF_SHARED_LIBRARY_NAME", get_shared_lib_name())
-    write_action_env_to_bazelrc("TF_CXX11_ABI_FLAG", tf.sysconfig.CXX11_ABI_FLAG)
+    write_action_env("TF_HEADER_DIR", get_tf_header_dir())
+    write_action_env("TF_SHARED_LIBRARY_DIR", get_tf_shared_lib_dir())
+    write_action_env("TF_SHARED_LIBRARY_NAME", get_shared_lib_name())
+    write_action_env("TF_CXX11_ABI_FLAG", tf.sysconfig.CXX11_ABI_FLAG)
 
-    write_to_bazelrc("build --spawn_strategy=standalone")
-    write_to_bazelrc("build --strategy=Genrule=standalone")
-    write_to_bazelrc("build -c opt")
+    write("build --spawn_strategy=standalone")
+    write("build --strategy=Genrule=standalone")
+    write("build -c opt")
 
     if os.getenv("TF_NEED_CUDA", "0") == "1":
         print("> Building GPU & CPU ops")
@@ -110,25 +110,21 @@ def create_build_configuration():
 
 
 def configure_cuda():
-    write_action_env_to_bazelrc("TF_NEED_CUDA", "1")
-    write_action_env_to_bazelrc(
+    write_action_env("TF_NEED_CUDA", "1")
+    write_action_env(
         "CUDA_TOOLKIT_PATH", os.getenv("CUDA_TOOLKIT_PATH", "/usr/local/cuda")
     )
-    write_action_env_to_bazelrc(
+    write_action_env(
         "CUDNN_INSTALL_PATH",
         os.getenv("CUDNN_INSTALL_PATH", "/usr/lib/x86_64-linux-gnu"),
     )
-    write_action_env_to_bazelrc("TF_CUDA_VERSION", os.getenv("TF_CUDA_VERSION", "10.1"))
-    write_action_env_to_bazelrc("TF_CUDNN_VERSION", os.getenv("TF_CUDNN_VERSION", "7"))
+    write_action_env("TF_CUDA_VERSION", os.getenv("TF_CUDA_VERSION", "10.1"))
+    write_action_env("TF_CUDNN_VERSION", os.getenv("TF_CUDNN_VERSION", "7"))
 
-    write_to_bazelrc("test --config=cuda")
-    write_to_bazelrc("build --config=cuda")
-    write_to_bazelrc(
-        "build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true"
-    )
-    write_to_bazelrc(
-        "build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain"
-    )
+    write("test --config=cuda")
+    write("build --config=cuda")
+    write("build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true")
+    write("build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain")
 
 
 if __name__ == "__main__":
