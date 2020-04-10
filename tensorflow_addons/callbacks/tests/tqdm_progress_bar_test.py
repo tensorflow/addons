@@ -1,4 +1,3 @@
-from distutils.version import LooseVersion
 import re
 
 import numpy as np
@@ -8,15 +7,9 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 
 
-pytestmark = pytest.mark.xfail(
-    LooseVersion(tf.__version__) >= LooseVersion("2.2.0"),
-    reason="TODO: Fixeme See #1495",
-)
-
-
 def get_data_and_model():
-    x = np.random.random((5, 1))
-    y = np.random.randint(0, 2, (5, 1), dtype=np.int)
+    x = np.random.random((12, 1))
+    y = np.random.randint(0, 2, (12, 1), dtype=np.int)
 
     inputs = tf.keras.layers.Input(shape=(1,))
     outputs = tf.keras.layers.Dense(1)(inputs)
@@ -74,9 +67,9 @@ def test_tqdm_progress_bar_epoch_bar_format_missing_parameter(capsys):
         epoch_bar_format=epoch_bar_format, show_overall_progress=False
     )
     capsys.readouterr()  # flush the buffer
-    model.fit(x, y, epochs=1, verbose=0, callbacks=[pb])
+    model.fit(x, y, batch_size=4, epochs=2, verbose=0, callbacks=[pb])
     fit_stderr = capsys.readouterr().err
-    assert "/5" not in fit_stderr
+    assert "/3" not in fit_stderr
 
 
 def test_tqdm_progress_bar_metrics_format(capsys):
@@ -104,11 +97,18 @@ def test_tqdm_progress_bar_show(capsys, show_epoch_progress, show_overall_progre
         show_overall_progress=show_overall_progress,
     )
     capsys.readouterr()  # flush the buffer
-    model.fit(x, y, epochs=1, verbose=0, callbacks=[pb])
+    model.fit(x, y, batch_size=4, epochs=2, verbose=0, callbacks=[pb])
     fit_stderr = capsys.readouterr().err
 
-    assert ("/5" in fit_stderr) is show_epoch_progress
+    assert ("/3" in fit_stderr) is show_epoch_progress
     assert ("epochs/s" in fit_stderr) is show_overall_progress
+
+    if show_epoch_progress and not show_overall_progress:
+        # in 2.1.0, they are present in the logs
+        # in 2.2.0+, they're not
+        # in any case, they shouldn't appear.
+        assert "size" not in fit_stderr
+        assert "batch" not in fit_stderr
 
 
 def test_tqdm_progress_bar_validation(capsys):

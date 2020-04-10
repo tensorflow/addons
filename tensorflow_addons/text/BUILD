@@ -6,12 +6,7 @@ package(default_visibility = ["//visibility:public"])
 # https://github.com/tensorflow/addons/issues/782
 py_library(
     name = "text",
-    srcs = [
-        "__init__.py",
-        "crf.py",
-        "parse_time_op.py",
-        "skip_gram_ops.py",
-    ],
+    srcs = glob(["*.py"]),
     data = select({
         "//tensorflow_addons:windows": [
             "//tensorflow_addons/custom_ops/text:_skip_gram_ops.so",
@@ -28,8 +23,8 @@ py_library(
 py_test(
     name = "text_test",
     size = "small",
-    srcs = glob(["*_test.py"]),
-    main = "run_all_test.py",
+    srcs = glob(["tests/*"]),
+    main = "tests/run_all_test.py",
     deps = [
         ":text",
     ],

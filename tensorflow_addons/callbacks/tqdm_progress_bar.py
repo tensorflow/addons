@@ -95,11 +95,10 @@ class TQDMProgressBar(Callback):
         self.epoch_progress_tqdm = None
         self.num_epochs = None
         self.logs = None
-        self.metrics = None
+        super().__init__()
 
     def on_train_begin(self, logs=None):
         self.num_epochs = self.params["epochs"]
-        self.metrics = self.params["metrics"]
 
         if self.show_overall_progress:
             self.overall_progress_tqdm = self.tqdm(
@@ -112,12 +111,8 @@ class TQDMProgressBar(Callback):
             )
 
         # set counting mode
-        if "samples" in self.params:
-            self.mode = "samples"
-            self.total_steps = self.params["samples"]
-        else:
-            self.mode = "steps"
-            self.total_steps = self.params["steps"]
+        self.mode = "steps"
+        self.total_steps = self.params["steps"]
 
     def on_train_end(self, logs={}):
         if self.show_overall_progress:
@@ -208,11 +203,11 @@ class TQDMProgressBar(Callback):
         """
 
         metric_value_pairs = []
-        for metric in self.metrics:
-            if metric in logs:
-                value = logs[metric] / factor
-                pair = self.metrics_format.format(name=metric, value=value)
-                metric_value_pairs.append(pair)
+        for key, value in logs.items():
+            if key in ["batch", "size"]:
+                continue
+            pair = self.metrics_format.format(name=key, value=value / factor)
+            metric_value_pairs.append(pair)
         metrics_string = self.metrics_separator.join(metric_value_pairs)
         return metrics_string
 
