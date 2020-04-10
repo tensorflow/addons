@@ -22,19 +22,6 @@ elif [[ -n "$2" ]]; then
     exit 1
 fi
 
-# Configs
-export TF_NEED_CUDA="1"
-
-# Fix presented in
-# https://stackoverflow.com/questions/44967202/pip-is-showing-error-lsb-release-a-returned-non-zero-exit-status-1/44967506
-echo "#! /usr/bin/python2.7" >> /usr/bin/lsb_release2
-cat /usr/bin/lsb_release >> /usr/bin/lsb_release2
-mv /usr/bin/lsb_release2 /usr/bin/lsb_release
-
-ln -sf $(which python$1) /usr/bin/python3
-python3 -m pip install --upgrade pip
-python3 -m pip install --upgrade setuptools
-
 #Link TF dependency
 python3 --version
 bash tools/testing/build_and_run_tests.sh
