@@ -144,14 +144,6 @@ def test_no_deprecated_v1():
     blacklist = [
         "tensorflow_addons/text/skip_gram_ops.py",
         "tensorflow_addons/text/tests/skip_gram_ops_test.py",
-        "tensorflow_addons/optimizers/tests/lamb_test.py",
-        "tensorflow_addons/optimizers/tests/lookahead_test.py",
-        "tensorflow_addons/optimizers/tests/moving_average_test.py",
-        "tensorflow_addons/optimizers/tests/conditional_gradient_test.py",
-        "tensorflow_addons/optimizers/tests/yogi_test.py",
-        "tensorflow_addons/optimizers/tests/stochastic_weight_averaging_test.py",
-        "tensorflow_addons/optimizers/tests/novograd_test.py",
-        "tensorflow_addons/optimizers/tests/weight_decay_optimizers_test.py",
         "tensorflow_addons/optimizers/tests/lazy_adam_test.py",
         "tensorflow_addons/metrics/tests/matthews_correlation_coefficient_test.py",
         "tensorflow_addons/rnn/tests/cell_test.py",
@@ -162,7 +154,6 @@ def test_no_deprecated_v1():
         "tensorflow_addons/seq2seq/tests/basic_decoder_test.py",
         "tensorflow_addons/seq2seq/tests/beam_search_decoder_test.py",
         "tensorflow_addons/seq2seq/decoder.py",
-        "tensorflow_addons/optimizers/tests/rectified_adam_test.py",
         "tensorflow_addons/metrics/tests/multilabel_confusion_matrix_test.py",
         "tensorflow_addons/seq2seq/tests/attention_wrapper_test.py",
     ]
