@@ -167,5 +167,5 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
             "epsilon": self.epsilon,
             "dtype": self.dtype,
         }
-        base_config = super(WeightedKappaLoss, self).get_config()
+        base_config = super().get_config()
         return dict(list(base_config.items()) + list(config.items()))
