@@ -158,7 +158,7 @@ def test_no_deprecated_v1():
         "tensorflow_addons/seq2seq/tests/decoder_test.py",
         "tensorflow_addons/metrics/tests/cohens_kappa_test.py",
         "tensorflow_addons/optimizers/tests/cyclical_learning_rate_test.py",
-        "tensorflow_addons/metrics/tests/f_test.py",
+        "tensorflow_addons/metrics/tests/f_scores_test.py",
         "tensorflow_addons/seq2seq/tests/basic_decoder_test.py",
         "tensorflow_addons/seq2seq/tests/beam_search_decoder_test.py",
         "tensorflow_addons/seq2seq/decoder.py",
