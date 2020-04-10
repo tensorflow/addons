@@ -71,8 +71,8 @@ what it was tested against.
 #### Python-Op Compatibility Matrix
 | TFA Version    | TensorFlow | Python  |
 |:----------------------- |:---|:---------- |
-| tfa-nightly | 2.1, 2.2 | 3.5, 3.6, 3.7, 3.8 | 
-| tensorflow-addons-0.8.3 | 2.1 |3.5, 3.6, 3.7 |
+| tfa-nightly | 2.1, 2.2 | 3.5, 3.6, 3.7 | 
+| tensorflow-addons-0.9.1 | 2.1 |3.5, 3.6, 3.7 |
 | tensorflow-addons-0.7.1 | 2.1 | 2.7, 3.5, 3.6, 3.7 | 
 | tensorflow-addons-0.6.0 | 2.0 | 2.7, 3.5, 3.6, 3.7 |
 
@@ -95,7 +95,7 @@ compiled differently. A typical reason for this would be conda installed TensorF
 | TFA Version    | TensorFlow | Compiler  | cuDNN | CUDA | 
 |:----------------------- |:---- |:---------|:---------|:---------|
 | tfa-nightly | 2.1 | GCC 7.3.1 | 7.6 | 10.1 |
-| tensorflow-addons-0.8.3 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.9.1 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.7.1 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.6.0 | 2.0  | GCC 7.3.1 | 7.4 | 10.0 |
 
