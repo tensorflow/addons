@@ -24,10 +24,6 @@ fi
 
 # Configs
 export TF_NEED_CUDA="1"
-export TF_CUDA_VERSION="10.1"
-export CUDA_TOOLKIT_PATH="/usr/local/cuda"
-export TF_CUDNN_VERSION="7"
-export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 
 # Fix presented in
 # https://stackoverflow.com/questions/44967202/pip-is-showing-error-lsb-release-a-returned-non-zero-exit-status-1/44967506
@@ -40,9 +36,7 @@ python -m pip install --upgrade setuptools
 
 #Link TF dependency
 python --version
-python ./configure.py
-
-bash tools/testing/addons_cpu.sh
+bash tools/testing/build_and_run_tests.sh
 bazel clean --expunge
 
 # Build

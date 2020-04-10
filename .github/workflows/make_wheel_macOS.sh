@@ -6,7 +6,7 @@ python --version
 python -m pip install delocate wheel setuptools tensorflow==$TF_VERSION
 
 bash tools/install_deps/bazel_macos.sh $BAZEL_VERSION
-bash tools/testing/addons_cpu.sh
+bash tools/testing/build_and_run_tests.sh
 
 bazel build \
   -c opt \
