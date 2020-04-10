@@ -5,6 +5,12 @@ ENV TF_NEED_CUDA="1"
 
 RUN apt-get update && apt-get install patchelf
 
+# Fix presented in
+# https://stackoverflow.com/questions/44967202/pip-is-showing-error-lsb-release-a-returned-non-zero-exit-status-1/44967506
+RUN echo "#! /usr/bin/python2.7" >> /usr/bin/lsb_release2
+RUN cat /usr/bin/lsb_release >> /usr/bin/lsb_release2
+RUN mv /usr/bin/lsb_release2 /usr/bin/lsb_release
+
 ARG PY_VERSION
 RUN ln -sf $(which python$PY_VERSION) /usr/bin/python
 
@@ -18,12 +24,6 @@ RUN python -m pip install \
 
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
-
-# Fix presented in
-# https://stackoverflow.com/questions/44967202/pip-is-showing-error-lsb-release-a-returned-non-zero-exit-status-1/44967506
-RUN echo "#! /usr/bin/python2.7" >> /usr/bin/lsb_release2
-RUN cat /usr/bin/lsb_release >> /usr/bin/lsb_release2
-RUN mv /usr/bin/lsb_release2 /usr/bin/lsb_release
 
 COPY ./ /addons
 WORKDIR /addons
