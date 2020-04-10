@@ -127,7 +127,7 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
             i.e. not any one of ['linear', 'quadratic']
         """
 
-        super(WeightedKappaLoss, self).__init__(
+        super().__init__(
             name=name, reduction=tf.keras.losses.Reduction.NONE
         )
 
