@@ -39,7 +39,17 @@ ARG NIGHTLY_FLAG
 ARG NIGHTLY_TIME
 RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
     bash tools/testing/build_and_run_tests.sh && \
-    bash tools/releases/release_linux.sh $NIGHTLY_FLAG
+    bazel clean --expunge && \
+    bazel build \
+        -c opt \
+        --noshow_progress \
+        --noshow_loading_progress \
+        --verbose_failures \
+        --test_output=errors \
+        --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.1:toolchain \
+        build_pip_pkg && \
+    # Package Whl
+    bazel-bin/build_pip_pkg artifacts $NIGHTLY_FLAG
 
 RUN bash tools/releases/tf_auditwheel_patch.sh
 RUN auditwheel repair --plat manylinux2010_x86_64 artifacts/*.whl
