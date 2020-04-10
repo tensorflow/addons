@@ -123,9 +123,7 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
             i.e. not any one of ['linear', 'quadratic']
         """
 
-        super().__init__(
-            name=name, reduction=tf.keras.losses.Reduction.NONE
-        )
+        super().__init__(name=name, reduction=tf.keras.losses.Reduction.NONE)
 
         if weightage not in ("linear", "quadratic"):
             raise ValueError("Unknown kappa weighting type.")
