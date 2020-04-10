@@ -24,7 +24,6 @@ fi
 
 #Link TF dependency
 python3 --version
-bash tools/testing/build_and_run_tests.sh
 bazel clean --expunge
 
 # Build
