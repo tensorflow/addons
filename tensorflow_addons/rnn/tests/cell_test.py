@@ -103,7 +103,7 @@ def test_base():
     assert len(res) == 2
     np.testing.assert_allclose(res[0], expected_output, rtol=1e-6, atol=1e-6)
     # There should be 2 states in the list.
-    np.testing.assert_allclose(len(res[1]), 2)
+    assert len(res[1]) == 2
     # Checking the shape of each state to be batch_size * num_units
     new_c, new_h = res[1]
     assert new_c.shape[0] == batch_size
