@@ -4,18 +4,7 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "losses",
-    srcs = [
-        "__init__.py",
-        "contrastive.py",
-        "focal_loss.py",
-        "giou_loss.py",
-        "lifted.py",
-        "metric_learning.py",
-        "npairs.py",
-        "quantiles.py",
-        "sparsemax_loss.py",
-        "triplet.py",
-    ],
+    srcs = glob(["*.py"]),
     deps = [
         "//tensorflow_addons/activations",
         "//tensorflow_addons/utils",
@@ -25,8 +14,8 @@ py_library(
 py_test(
     name = "losses_test",
     size = "small",
-    srcs = glob(["*_test.py"]),
-    main = "run_all_test.py",
+    srcs = glob(["tests/*"]),
+    main = "tests/run_all_test.py",
     deps = [
         ":losses",
     ],

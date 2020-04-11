@@ -10,14 +10,12 @@
 [![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-### Nightly Tests
+### Continuous Build Status
 
-| Build Type      | Status |
+| Build      | Status |
 | ---             | ---    |
-| **MacOS**   | [![Status](https://github.com/tensorflow/addons/workflows/macos-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Amacos-nightly) |
-| **Windows**   | [![Status](https://github.com/tensorflow/addons/workflows/windows-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Awindows-nightly) |
-| **Ubuntu**   | [![Status](https://github.com/tensorflow/addons/workflows/manylinux-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Amanylinux-nightly) |
-| **Ubuntu custom GPU ops**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
+| **Ubuntu/MacOS/Windows**   | [![Status](https://github.com/tensorflow/addons/workflows/addons-release/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Aaddons-release) |
+| **Ubuntu GPU custom ops**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
 
 **TensorFlow Addons** is a repository of contributions that conform to
 well-established API patterns, but implement new functionality
@@ -73,7 +71,7 @@ what it was tested against.
 #### Python-Op Compatibility Matrix
 | TFA Version    | TensorFlow | Python  |
 |:----------------------- |:---|:---------- |
-| tfa-nightly | 2.1, 2.2 | 3.5, 3.6, 3.7 | 
+| tfa-nightly | 2.1, 2.2 | 3.5, 3.6, 3.7, 3.8 | 
 | tensorflow-addons-0.8.3 | 2.1 |3.5, 3.6, 3.7 |
 | tensorflow-addons-0.7.1 | 2.1 | 2.7, 3.5, 3.6, 3.7 | 
 | tensorflow-addons-0.6.0 | 2.0 | 2.7, 3.5, 3.6, 3.7 |
@@ -107,7 +105,7 @@ There are also nightly builds of TensorFlow Addons under the pip package
 `tfa-nightly`, which is built against **the latest stable version of TensorFlow**. Nightly builds
 include newer features, but may be less stable than the versioned releases. Contrary to 
 what the name implies, nightly builds are not released every night, but at every commit 
-of the master branch. `0.9.0.dev20200306094440` means that the build time was 
+of the master branch. `0.9.0.dev20200306094440` means that the commit time was 
 2020/03/06 at 09:44:40 Coordinated Universal Time.
 
 ```
@@ -118,9 +116,32 @@ pip install tfa-nightly
 You can also install from source. This requires the [Bazel](
 https://bazel.build/) build system (version >= 1.0.0).
 
+##### CPU only custom-ops
 ```
 git clone https://github.com/tensorflow/addons.git
 cd addons
+
+# This script links project with TensorFlow dependency
+python3 ./configure.py
+
+bazel build --enable_runfiles build_pip_pkg
+bazel-bin/build_pip_pkg artifacts
+
+pip install artifacts/tensorflow_addons-*.whl
+```
+
+##### CPU+GPU Custom ops
+```
+git clone https://github.com/tensorflow/addons.git
+cd addons
+
+export TF_NEED_CUDA="1"
+
+# Set these if the below defaults are different on your system
+export TF_CUDA_VERSION="10.1"
+export TF_CUDNN_VERSION="7"
+export CUDA_TOOLKIT_PATH="/usr/local/cuda"
+export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 
 # This script links project with TensorFlow dependency
 python3 ./configure.py

@@ -286,6 +286,7 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
         Returns:
             Updated learning rate value.
         """
+        self.gamma = gamma
         super().__init__(
             initial_learning_rate=initial_learning_rate,
             maximal_learning_rate=maximal_learning_rate,
@@ -294,3 +295,6 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
             scale_mode=scale_mode,
             name=name,
         )
+
+    def get_config(self):
+        return {"gamma": self.gamma, **super().get_config()}
