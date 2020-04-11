@@ -15,6 +15,7 @@
 """Implements the general form of the loss."""
 
 import tensorflow as tf
+import numpy as np
 import tensorflow.keras.backend as K
 
 from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
