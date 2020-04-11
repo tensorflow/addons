@@ -16,7 +16,6 @@
 
 import tensorflow as tf
 import numpy as np
-import tensorflow.keras.backend as K
 
 from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 from typeguard import typechecked
@@ -221,9 +220,7 @@ def general_loss(
     """
     # If logits are provided then convert the predictions into probabilities
     if from_logits:
-        pred_prob = tf.sigmoid(y_pred)
-    else:
-        pred_prob = y_pred
+        y_pred = tf.sigmoid(y_pred)
 
     # Computing residual x from y_true and y_pred.
     x = y_true - y_pred
@@ -234,7 +231,7 @@ def general_loss(
     tf.debugging.assert_type(alpha, float_dtype)
 
     # `scale` must be > 0.
-    assert_ops = [tf.Assert(tf.reduce_all(tf.greater(scale, 0.)), [scale])]
+    assert_ops = [tf.Assert(tf.reduce_all(tf.greater(scale, 0.0)), [scale])]
 
     with tf.control_dependencies(assert_ops):
         # Broadcast `alpha` and `scale` to have the same shape as `x`.
@@ -243,17 +240,16 @@ def general_loss(
 
         if approximate:
             # `epsilon` must be greater than single-precision machine epsilon.
-            if(epsilon <= np.finfo(np.float32).eps):
-                raise ValueError("The value of epsilon must be greater than",
-                                 "single-precision machine epsilon")
+            if epsilon <= np.finfo(np.float32).eps:
+                raise ValueError(
+                    "The value of epsilon must be greater than",
+                    "single-precision machine epsilon",
+                )
             # Compute an approximate form of the loss which is faster.
             # But innacurate when x and alpha are near zero.
-            b = tf.abs(alpha - tf.cast(2., float_dtype)) + epsilon
-            d = tf.where(tf.greater_equal(alpha, 0.),
-                         alpha + epsilon,
-                         alpha - epsilon)
-            loss = (b / d) * (tf.pow(
-                                tf.square(x / scale) / b + 1., 0.5 * d) - 1.)
+            b = tf.abs(alpha - tf.cast(2.0, float_dtype)) + epsilon
+            d = tf.where(tf.greater_equal(alpha, 0.0), alpha + epsilon, alpha - epsilon)
+            loss = (b / d) * (tf.pow(tf.square(x / scale) / b + 1.0, 0.5 * d) - 1.0)
         else:
             # Compute the exact loss.
 
@@ -264,40 +260,50 @@ def general_loss(
             loss_two = 0.5 * squared_scaled_x
             # The loss when alpha = 0.
             loss_zero = tf.math.log1p(
-                tf.minimum(0.5 * squared_scaled_x,
-                           tf.cast(3e37, squared_scaled_x.dtype)))
+                tf.minimum(
+                    0.5 * squared_scaled_x, tf.cast(3e37, squared_scaled_x.dtype)
+                )
+            )
             # The loss when alpha = -infinity.
             loss_neginf = -tf.math.expm1(-0.5 * squared_scaled_x)
             # The loss when alpha = +infinity.
             loss_posinf = tf.math.expm1(
-                tf.minimum(0.5 * squared_scaled_x,
-                           tf.cast(87.5, squared_scaled_x.dtype)))
+                tf.minimum(
+                    0.5 * squared_scaled_x, tf.cast(87.5, squared_scaled_x.dtype)
+                )
+            )
 
             # The loss when not in one of the above special cases.
             machine_epsilon = tf.cast(np.finfo(np.float32).eps, float_dtype)
             # Clamp |2-alpha| to be >= machine epsilon.
             # So that it's safe to divide by.
-            beta_safe = tf.maximum(machine_epsilon, tf.abs(alpha - 2.))
+            beta_safe = tf.maximum(machine_epsilon, tf.abs(alpha - 2.0))
             # Clamp |alpha| to be >= machine epsilon.
             # So that it's safe to divide by.
             alpha_safe = tf.where(
-                tf.greater_equal(alpha, 0.), tf.ones_like(alpha),
-                -tf.ones_like(alpha)
-                ) * tf.maximum(machine_epsilon, tf.abs(alpha))
+                tf.greater_equal(alpha, 0.0), tf.ones_like(alpha), -tf.ones_like(alpha)
+            ) * tf.maximum(machine_epsilon, tf.abs(alpha))
             loss_otherwise = (beta_safe / alpha_safe) * (
-                tf.pow(squared_scaled_x / beta_safe + 1., 0.5 * alpha) - 1.)
+                tf.pow(squared_scaled_x / beta_safe + 1.0, 0.5 * alpha) - 1.0
+            )
 
             # Select which of the cases of the loss to return.
             loss = tf.where(
-                tf.equal(alpha, -tf.cast(float('inf'), float_dtype)),
+                tf.equal(alpha, -tf.cast(float("inf"), float_dtype)),
                 loss_neginf,
                 tf.where(
-                    tf.equal(alpha, 0.), loss_zero,
+                    tf.equal(alpha, 0.0),
+                    loss_zero,
                     tf.where(
-                        tf.equal(alpha, 2.), loss_two,
+                        tf.equal(alpha, 2.0),
+                        loss_two,
                         tf.where(
-                            tf.equal(alpha,
-                                     tf.cast(float('inf'), float_dtype)),
-                            loss_posinf, loss_otherwise))))
+                            tf.equal(alpha, tf.cast(float("inf"), float_dtype)),
+                            loss_posinf,
+                            loss_otherwise,
+                        ),
+                    ),
+                ),
+            )
 
         return loss

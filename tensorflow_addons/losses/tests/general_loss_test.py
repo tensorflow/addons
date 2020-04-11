@@ -15,10 +15,8 @@
 """Tests for General Loss."""
 
 
-import pytest
 import numpy as np
 import tensorflow as tf
-import tensorflow.keras.backend as K
 from tensorflow_addons.losses import (
     general_loss,
     GeneralLoss,
@@ -26,10 +24,7 @@ from tensorflow_addons.losses import (
 
 
 def testConfig():
-    bce_obj = GeneralLoss(
-        reduction=tf.keras.losses.Reduction.NONE,
-        name="general_loss"
-    )
+    bce_obj = GeneralLoss(reduction=tf.keras.losses.Reduction.NONE, name="general_loss")
     assert bce_obj.name == "general_loss"
     assert bce_obj.reduction == tf.keras.losses.Reduction.NONE
 
@@ -78,16 +73,14 @@ def precomputeLossfunInputs(float_dtype):
 
     # Uniformly distributed values in (-16, 3), quantized to the nearest 0.1
     # to ensure that we hit the special cases at 0, 2.
-    alpha = float_dtype(
-        np.round(np.random.uniform(-16, 3, num_samples) * 10) / 10.)
+    alpha = float_dtype(np.round(np.random.uniform(-16, 3, num_samples) * 10) / 10.0)
     # Push the sampled alphas at the extents of the range to +/- infinity, so
     # that we probe those cases too.
-    alpha[alpha == 3.] = float_dtype(float('inf'))
-    alpha[alpha == -16.] = -float_dtype(float('inf'))
+    alpha[alpha == 3.0] = float_dtype(float("inf"))
+    alpha[alpha == -16.0] = -float_dtype(float("inf"))
 
     # Random log-normally distributed values in approx (1e-5, 100000):
-    scale = float_dtype(
-        np.exp(np.random.normal(size=num_samples) * 4.) + 1e-5)
+    scale = float_dtype(np.exp(np.random.normal(size=num_samples) * 4.0) + 1e-5)
 
     x, alpha, scale = [tf.convert_to_tensor(z) for z in (x, alpha, scale)]
     with tf.GradientTape(persistent=True) as tape:
@@ -115,8 +108,7 @@ def testDerivativeIsMonotonicWrtX(float_dtype=np.float64):
     _, _, x, alpha, _, d_x, _, _ = precomputeLossfunInputs(float_dtype)
     # This is just to suppress a warning below.
     d_x = tf.where(tf.math.is_finite(d_x), d_x, tf.zeros_like(d_x))
-    mask = np.isfinite(alpha) & (
-        np.abs(d_x) > (300. * np.finfo(float_dtype).eps))
+    mask = np.isfinite(alpha) & (np.abs(d_x) > (300.0 * np.finfo(float_dtype).eps))
     assertAllEqual(np.sign(d_x[mask]), np.sign(x[mask]))
 
 
@@ -139,10 +131,10 @@ def testLossIsQuadraticNearOrigin(float_dtype=np.float64):
 def testLossIsBoundedWhenAlphaIsNegative(float_dtype=np.float64):
     # Assert that loss < (alpha - 2)/alpha when alpha < 0.
     _, loss, _, alpha, _, _, _, _ = precomputeLossfunInputs(float_dtype)
-    mask = alpha < 0.
+    mask = alpha < 0.0
     min_val = np.finfo(float_dtype).min
     alpha_clipped = np.maximum(min_val, alpha[mask])
-    assertTrue(np.all(loss[mask] <= ((alpha_clipped - 2.) / alpha_clipped)))
+    assertTrue(np.all(loss[mask] <= ((alpha_clipped - 2.0) / alpha_clipped)))
 
 
 def testDerivativeIsBoundedWhenAlphaIsBelow2(float_dtype=np.float64):
@@ -150,9 +142,16 @@ def testDerivativeIsBoundedWhenAlphaIsBelow2(float_dtype=np.float64):
     _, _, x, alpha, scale, d_x, _, _ = precomputeLossfunInputs(float_dtype)
     mask = np.isfinite(alpha) & (alpha <= 2)
     assertTrue(
-        np.all((np.abs(d_x[mask]) <=
-                ((np.abs(x[mask]) +
-                  (300. * np.finfo(float_dtype).eps)) / scale[mask]**2))))
+        np.all(
+            (
+                np.abs(d_x[mask])
+                <= (
+                    (np.abs(x[mask]) + (300.0 * np.finfo(float_dtype).eps))
+                    / scale[mask] ** 2
+                )
+            )
+        )
+    )
 
 
 def testDerivativeIsBoundedWhenAlphaIsBelow1(float_dtype=np.float64):
@@ -160,31 +159,34 @@ def testDerivativeIsBoundedWhenAlphaIsBelow1(float_dtype=np.float64):
     _, _, _, alpha, scale, d_x, _, _ = precomputeLossfunInputs(float_dtype)
     mask = np.isfinite(alpha) & (alpha <= 1)
     assertTrue(
-        np.all((np.abs(d_x[mask]) <=
-                ((1. + (300. * np.finfo(float_dtype).eps)) / scale[mask]))))
+        np.all(
+            (
+                np.abs(d_x[mask])
+                <= ((1.0 + (300.0 * np.finfo(float_dtype).eps)) / scale[mask])
+            )
+        )
+    )
 
 
 def testAlphaDerivativeIsPositive(float_dtype=np.float64):
     # Assert that d_loss / d_alpha > 0.
     _, _, _, alpha, _, _, d_alpha, _ = precomputeLossfunInputs(float_dtype)
     mask = np.isfinite(alpha)
-    assertTrue(np.all(d_alpha[mask] > (-300. * np.finfo(float_dtype).eps)))
+    assertTrue(np.all(d_alpha[mask] > (-300.0 * np.finfo(float_dtype).eps)))
 
 
 def testScaleDerivativeIsNegative(float_dtype=np.float64):
     # Assert that d_loss / d_scale < 0.
     _, _, _, alpha, _, _, _, d_scale = precomputeLossfunInputs(float_dtype)
     mask = np.isfinite(alpha)
-    assertTrue(np.all(d_scale[mask] < (300. * np.finfo(float_dtype).eps)))
+    assertTrue(np.all(d_scale[mask] < (300.0 * np.finfo(float_dtype).eps)))
 
 
 def testLossIsScaleInvariant(float_dtype=np.float64):
     # Check that loss(mult * x, alpha, mult * scale) == loss(x, alpha, scale)
-    (num_samples, loss, x, alpha, scale, _, _, _) = (
-        precomputeLossfunInputs(float_dtype))
+    (num_samples, loss, x, alpha, scale, _, _, _) = precomputeLossfunInputs(float_dtype)
     # Random log-normally distributed scalings in ~(0.2, 20)
-    mult = float_dtype(
-        np.maximum(0.2, np.exp(np.random.normal(size=num_samples))))
+    mult = float_dtype(np.maximum(0.2, np.exp(np.random.normal(size=num_samples))))
     # Compute the scaled loss.
     loss_scaled = general_loss(mult * x, mult * x, alpha, mult * scale)
     assertAllClose(loss, loss_scaled, atol=1e-4, rtol=1e-4)
@@ -193,48 +195,50 @@ def testLossIsScaleInvariant(float_dtype=np.float64):
 def testAlphaEqualsNegativeInfinity(float_dtype=np.float64):
     # Check that alpha == -Infinity reproduces Welsch aka Leclerc loss.
     x = np.arange(-20, 20, 0.1, float_dtype)
-    alpha = float_dtype(-float('inf'))
+    alpha = float_dtype(-float("inf"))
     scale = float_dtype(1.7)
     # Our loss.
     loss = general_loss(x, x, alpha, scale)
     # Welsch/Leclerc loss.
-    loss_true = (1. - tf.math.exp(-0.5 * tf.square((x - x) / scale)))
+    loss_true = 1.0 - tf.math.exp(-0.5 * tf.square((x - x) / scale))
     assertAllClose(loss, loss_true)
 
 
 def testAlphaEqualsNegativeTwo(float_dtype=np.float64):
     # Check that alpha == -2 reproduces Geman-McClure loss.
     x = np.arange(-20, 20, 0.1, float_dtype)
-    alpha = float_dtype(-2.)
+    alpha = float_dtype(-2.0)
     scale = float_dtype(1.7)
     # Our loss.
     loss = general_loss(x, x, alpha, scale)
     # Geman-McClure loss.
-    loss_true = (2. * tf.square((x - x) / scale) / (tf.square((x - x) / scale) + 4.))  # noqa
+    loss_true = (
+        2.0 * tf.square((x - x) / scale) / (tf.square((x - x) / scale) + 4.0)
+    )  # noqa
     assertAllClose(loss, loss_true)
 
 
 def testAlphaEqualsZero(float_dtype=np.float64):
     # Check that alpha == 0 reproduces Cauchy aka Lorentzian loss.
     x = np.arange(-20, 20, 0.1, float_dtype)
-    alpha = float_dtype(0.)
+    alpha = float_dtype(0.0)
     scale = float_dtype(1.7)
     # Our loss.
     loss = general_loss(x, x, alpha, scale)
     # Cauchy/Lorentzian loss.
-    loss_true = (tf.math.log(0.5 * tf.square((x - x) / scale) + 1.))
+    loss_true = tf.math.log(0.5 * tf.square((x - x) / scale) + 1.0)
     assertAllClose(loss, loss_true)
 
 
 def testAlphaEqualsOne(float_dtype=np.float64):
     # Check that alpha == 1 reproduces Charbonnier aka pseudo-Huber loss.
     x = np.arange(-20, 20, 0.1, float_dtype)
-    alpha = float_dtype(1.)
+    alpha = float_dtype(1.0)
     scale = float_dtype(1.7)
     # Our loss.
     loss = general_loss(x, x, alpha, scale)
     # Charbonnier loss.
-    loss_true = (tf.sqrt(tf.square((x - x) / scale) + 1.) - 1.)
+    loss_true = tf.sqrt(tf.square((x - x) / scale) + 1.0) - 1.0
     # print(max(loss_true))
     assertAllClose(loss, loss_true, rtol=1e-6, atol=1e-6)
 
@@ -242,38 +246,38 @@ def testAlphaEqualsOne(float_dtype=np.float64):
 def testAlphaEqualsTwo(float_dtype=np.float64):
     # Check that alpha == 2 reproduces L2 loss.
     x = np.arange(-20, 20, 0.1, float_dtype)
-    alpha = float_dtype(2.)
+    alpha = float_dtype(2.0)
     scale = float_dtype(1.7)
     # Our loss.
     loss = general_loss(x, x, alpha, scale)
     # L2 Loss.
-    loss_true = (0.5 * tf.square((x - x) / scale))
+    loss_true = 0.5 * tf.square((x - x) / scale)
     assertAllClose(loss, loss_true, rtol=1e-6, atol=1e-6)
 
 
 def testAlphaEqualsFour(float_dtype=np.float64):
     # Check that alpha == 4 reproduces a quartic.
     x = np.arange(-20, 20, 0.1, float_dtype)
-    alpha = float_dtype(4.)
+    alpha = float_dtype(4.0)
     scale = float_dtype(1.7)
     # Our loss.
     loss = general_loss(x, x, alpha, scale)
     # The true loss.
     loss_true = (
-        tf.square(
-            tf.square((x - x) / scale)) / 8. + tf.square((x - x) / scale) / 2.)
+        tf.square(tf.square((x - x) / scale)) / 8.0 + tf.square((x - x) / scale) / 2.0
+    )
     assertAllClose(loss, loss_true, rtol=1e-6, atol=1e-6)
 
 
 def testAlphaEqualsInfinity(float_dtype=np.float64):
     # Check that alpha == Infinity takes the correct form.
     x = np.arange(-20, 20, 0.1, float_dtype)
-    alpha = float_dtype(float('inf'))
+    alpha = float_dtype(float("inf"))
     scale = float_dtype(1.7)
     # Our loss.
     loss = general_loss(x, x, alpha, scale)
     # The true loss.
-    loss_true = (tf.math.exp(0.5 * tf.square((x - x) / scale)) - 1.)
+    loss_true = tf.math.exp(0.5 * tf.square((x - x) / scale)) - 1.0
     assertAllClose(loss, loss_true, rtol=1e-6, atol=1e-6)
 
 
@@ -300,10 +304,10 @@ def testLossAndGradientsAreFinite(float_dtype=np.float64):
         # Uniformly distributed values in (-16, 3), quantized to the nearest
         # 0.1 to ensure that we hit the special cases at 0, 2.
         alpha = float_dtype(
-            np.round(np.random.uniform(-16, 3, num_samples) * 10) / 10.)
+            np.round(np.random.uniform(-16, 3, num_samples) * 10) / 10.0
+        )
         # Random log-normally distributed values in approx (1e-5, 100000):
-        scale = float_dtype(
-            np.exp(np.random.normal(size=num_samples) * 4.) + 1e-5)
+        scale = float_dtype(np.exp(np.random.normal(size=num_samples) * 4.0) + 1e-5)
         # Compute the loss and its derivative with respect to all three inputs.
         x, alpha, scale = [tf.convert_to_tensor(z) for z in (x, alpha, scale)]
         with tf.GradientTape(persistent=True) as tape:
@@ -311,9 +315,7 @@ def testLossAndGradientsAreFinite(float_dtype=np.float64):
                 tape.watch(z)
             loss = general_loss(x, x, alpha, scale, approximate=approximate)
             d_x, d_alpha, d_scale = [
-                tape.gradient(
-                    tf.reduce_sum(loss), z
-                ) for z in (x, alpha, scale)
+                tape.gradient(tf.reduce_sum(loss), z) for z in (x, alpha, scale)
             ]
         for v in [loss, d_x, d_alpha, d_scale]:
             assertTrue(np.all(np.isfinite(v)))
@@ -334,7 +336,8 @@ def testGradientMatchesFiniteDifferences(float_dtype=np.float64):
         # 0.1 and then shifted by 0.05 so that we avoid the special cases at
         # 0 and 2 where the analytical gradient wont match finite differences.
         alpha = float_dtype(
-            np.round(np.random.uniform(-16, 3, num_samples) * 10) / 10.)
+            np.round(np.random.uniform(-16, 3, num_samples) * 10) / 10.0
+        )
         # Random uniformy distributed values in [0.5, 1.5]
         scale = float_dtype(np.random.uniform(0.5, 1.5, num_samples))
         # Compute the loss and its derivative with respect to all three inputs.
@@ -344,28 +347,19 @@ def testGradientMatchesFiniteDifferences(float_dtype=np.float64):
                 tape.watch(z)
             loss = general_loss(x, x, alpha, scale, approximate=approximate)
             d_x, d_alpha, d_scale = [
-                tape.gradient(
-                    tf.reduce_sum(loss), z
-                ) for z in (x, alpha, scale)
+                tape.gradient(tf.reduce_sum(loss), z) for z in (x, alpha, scale)
             ]
 
         # Assert that the 95th percentile of errors is <= 1e-2.
         def assert_percentile_close(v1, v2):
-            np.testing.assert_array_less(np.percentile(np.abs(v1 - v2), 95),
-                                         1e-2)
+            np.testing.assert_array_less(np.percentile(np.abs(v1 - v2), 95), 1e-2)
+
         step_size = float_dtype(1e-3)
-        n_x = (general_loss(x + step_size,
-                            x + step_size,
-                            alpha,
-                            scale) - loss) / step_size
-        n_alpha = (
-            general_loss(
-                x, x, alpha + step_size, scale
-            ) - loss) / step_size
-        n_scale = (
-            general_loss(
-                x, x, alpha, scale + step_size
-            ) - loss) / step_size
+        n_x = (
+            general_loss(x + step_size, x + step_size, alpha, scale) - loss
+        ) / step_size
+        n_alpha = (general_loss(x, x, alpha + step_size, scale) - loss) / step_size
+        n_scale = (general_loss(x, x, alpha, scale + step_size) - loss) / step_size
         assert_percentile_close(n_x, d_x)
         assert_percentile_close(n_alpha, d_alpha)
         assert_percentile_close(n_scale, d_scale)
