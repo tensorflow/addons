@@ -57,7 +57,7 @@
 /tensorflow_addons/image/distance_transform.py @mels630
 /tensorflow_addons/image/tests/distance_transform_test.py @mels630
 /tensorflow_addons/image/gaussian_filter_ops*.py @ghosalsattam
-/tensorflow_addons/image/gaussian_filter_ops_test*.py @ghosalsattam
+/tensorflow_addons/image/tests/gaussian_filter_ops_test*.py @ghosalsattam
 /tensorflow_addons/image/distort_image_ops.py @windqaq
 /tensorflow_addons/image/tests/distort_image_ops_test.py @windqaq
 /tensorflow_addons/image/filters.py @mainak431
