@@ -143,6 +143,10 @@ class TQDMProgressBar(Callback):
         else:
             batch_size = 1
 
+        self.num_samples_seen += batch_size
+        self.steps_to_update += 1
+        self.steps_so_far += 1
+
         if self.steps_so_far < self.total_steps:
 
             for metric, value in logs.items():
@@ -150,10 +154,6 @@ class TQDMProgressBar(Callback):
 
             now = time.time()
             time_diff = now - self.last_update_time
-
-            self.num_samples_seen += batch_size
-            self.steps_to_update += 1
-            self.steps_so_far += 1
 
             if self.show_epoch_progress and time_diff >= self.update_interval:
 
