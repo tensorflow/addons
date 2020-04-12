@@ -119,6 +119,9 @@ class TQDMProgressBar(Callback):
             self.overall_progress_tqdm.close()
 
     def on_test_begin(self, logs={}):
+        # set counting mode
+        self.mode = "steps"
+        self.total_steps = self.params["steps"]
         if self.show_epoch_progress:
             self.epoch_progress_tqdm = self.tqdm(
                 total=self.total_steps,
