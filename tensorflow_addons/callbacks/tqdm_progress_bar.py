@@ -160,7 +160,7 @@ class TQDMProgressBar(Callback):
             self.steps_to_update += 1
             self.steps_so_far += 1
 
-            if self.show_epoch_progress and time_diff >= self.update_interval:
+            if self.show_overall_progress and time_diff >= self.update_interval:
 
                 # update the epoch progress bar
                 metrics = self.format_metrics(self.logs, self.num_samples_seen)
