@@ -127,6 +127,7 @@ class TQDMProgressBar(Callback):
         # set counting mode
         self.mode = "steps"
         self.total_steps = self.params["steps"]
+        print("Total Steps : ", self.params["steps"], "Epochs", self.params["epochs"])
 
         if self.show_overall_progress:
             self.overall_progress_tqdm = self.tqdm(
