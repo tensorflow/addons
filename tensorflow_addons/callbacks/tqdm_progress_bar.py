@@ -138,9 +138,6 @@ class TQDMProgressBar(Callback):
                 unit="batches",
             )
 
-    def on_test_batch_begin(self, batch, logs={}):
-        print("Current Batch : ", batch)
-
     def on_test_batch_end(self, batch, logs={}):
         if self.mode == "samples":
             batch_size = logs["size"]
@@ -158,7 +155,7 @@ class TQDMProgressBar(Callback):
             self.num_samples_seen += batch_size
             self.steps_to_update += 1
             self.steps_so_far += 1
-            
+
             if self.show_epoch_progress and time_diff >= self.update_interval:
 
                 # update the epoch progress bar
