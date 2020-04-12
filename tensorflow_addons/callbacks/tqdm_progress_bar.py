@@ -126,7 +126,7 @@ class TQDMProgressBar(Callback):
         self.test_num_epochs = 1
         # set counting mode
         self.mode = "steps"
-        self.test_total_steps = 1
+        self.test_total_steps = self.params["steps"]
         if self.show_epoch_progress:
             self.test_epoch_progress_tqdm = self.tqdm(
                 total=self.test_total_steps,
@@ -176,7 +176,7 @@ class TQDMProgressBar(Callback):
 
     def on_test_end(self, logs={}):
         if self.show_epoch_progress:
-            metrics = self.format_metrics(logs)
+            metrics = self.format_metrics(self.test_logs)
             self.test_epoch_progress_tqdm.desc = metrics
 
             # set miniters and mininterval to 0 so last update displays
