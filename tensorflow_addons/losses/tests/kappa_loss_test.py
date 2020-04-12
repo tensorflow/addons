@@ -64,7 +64,7 @@ def test_linear_weighted_kappa_loss():
     kappa_loss = WeightedKappaLoss(num_classes=4, weightage="linear")
     loss = kappa_loss(y_true, y_pred)
     loss_np = weighted_kappa_loss_np(y_true, y_pred, weightage="linear")
-    np.testing.assert_allclose(loss, loss_np, rtol=5, atol=5)
+    np.testing.assert_allclose(loss, loss_np, rtol=1e-5, atol=1e-5)
 
 
 def test_quadratic_weighted_kappa_loss():
@@ -81,7 +81,7 @@ def test_quadratic_weighted_kappa_loss():
     kappa_loss = WeightedKappaLoss(num_classes=4)
     loss = kappa_loss(y_true, y_pred)
     loss_np = weighted_kappa_loss_np(y_true, y_pred)
-    np.testing.assert_allclose(loss, loss_np, rtol=5, atol=5)
+    np.testing.assert_allclose(loss, loss_np, rtol=1e-5, atol=1e-5)
 
 
 def test_config():
