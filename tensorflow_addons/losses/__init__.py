@@ -19,7 +19,7 @@ from tensorflow_addons.losses.focal_loss import (
     sigmoid_focal_crossentropy,
     SigmoidFocalCrossEntropy,
 )
-from tensorflow_addons.losses.general_loss import (general_loss, GeneralLoss)
+from tensorflow_addons.losses.general_loss import general_loss, GeneralLoss
 from tensorflow_addons.losses.giou_loss import giou_loss, GIoULoss
 from tensorflow_addons.losses.lifted import lifted_struct_loss, LiftedStructLoss
 from tensorflow_addons.losses.sparsemax_loss import sparsemax_loss, SparsemaxLoss
