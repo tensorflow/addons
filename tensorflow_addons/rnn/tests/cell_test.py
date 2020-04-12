@@ -267,7 +267,6 @@ def test_cell_output():
 
     cell = keras.layers.StackedRNNCells([single_cell() for _ in range(2)])
     output_v, output_states_v = cell(x, state)
-    # output_v, output_states_v = self.evaluate([output, output_states])
 
     expected_output = np.array([[-0.47406167, 0.47406143]])
     expected_state0_c = np.array([[-1.0, 1.0]])
@@ -299,7 +298,6 @@ def test_cell_output():
         norm_epsilon=1e-12,
     )
     output_v, output_states_v = cell(x, state)
-    # output_v, output_states_v = self.evaluate([output, output_states])
     expected_h = np.array([[-0.47406167, 0.47406143]])
     expected_c = np.array([[-1.0, 1.0]])
     np.testing.assert_allclose(output_v, expected_h, 1e-5)
