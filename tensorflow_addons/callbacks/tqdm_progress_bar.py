@@ -123,9 +123,7 @@ class TQDMProgressBar(Callback):
         self.steps_to_update = 0
         self.steps_so_far = 0
         self.logs = defaultdict(float)
-        self.num_epochs = 1
-
-    def on_test_batch_begin(self, batch, logs={}):
+        self.num_epochs = self.params["epochs"]
         # set counting mode
         self.mode = "steps"
         self.total_steps = self.params["steps"]
@@ -139,6 +137,9 @@ class TQDMProgressBar(Callback):
                 dynamic_ncols=True,
                 unit="batches",
             )
+
+    def on_test_batch_begin(self, batch, logs={}):
+        print("Current Batch : ", batch)
 
     def on_test_batch_end(self, batch, logs={}):
         if self.mode == "samples":
@@ -161,8 +162,8 @@ class TQDMProgressBar(Callback):
 
                 # update the epoch progress bar
                 metrics = self.format_metrics(self.logs, self.num_samples_seen)
-                self.epoch_progress_tqdm.desc = metrics
-                self.epoch_progress_tqdm.update(self.steps_to_update)
+                self.overall_progress_tqdm.desc = metrics
+                self.overall_progress_tqdm.update(self.steps_to_update)
 
                 # reset steps to update
                 self.steps_to_update = 0
