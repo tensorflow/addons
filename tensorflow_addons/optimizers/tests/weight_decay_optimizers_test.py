@@ -247,8 +247,8 @@ def test_keras_fit():
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
     optimizer = weight_decay_optimizers.AdamW(learning_rate=1e-4, weight_decay=1e-4)
     model.compile(optimizer=optimizer, loss=loss, metrics=["accuracy"])
-    X, y = np.random.uniform(size=(2, 4, 1))
-    model.fit(X, y, epochs=1)
+    x, y = np.random.uniform(size=(2, 4, 1))
+    model.fit(x, y, epochs=1)
 
 
 @pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])

@@ -59,12 +59,12 @@ def _np_sparsemax_loss(z, q):
     p = _np_sparsemax(z)
     s = p > 0
     # z_i^2 - tau(z)^2 = p_i (2 * z_i - p_i) for i \in S(z)
-    S_sum = np.sum(s * p * (2 * z - p), axis=1)
+    s_sum = np.sum(s * p * (2 * z - p), axis=1)
 
     # because q is binary, sum([q_1^2, q_2^2, ...]) is just sum(q)
     q_norm = np.sum(q, axis=1)
 
-    return 0.5 * S_sum + 0.5 * q_norm - z_k
+    return 0.5 * s_sum + 0.5 * q_norm - z_k
 
 
 @pytest.mark.parametrize("dtype", ["float32", "float64"])
