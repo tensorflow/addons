@@ -93,6 +93,10 @@ class TQDMProgressBar(Callback):
         self.last_update_time = time.time()
         self.overall_progress_tqdm = None
         self.epoch_progress_tqdm = None
+        self.test_last_update_time = time.time()
+        self.test_epoch_progress_tqdm = None
+        self.test_num_epochs = None
+        self.test_logs = None
         self.num_epochs = None
         self.logs = None
         super().__init__()
@@ -119,23 +123,23 @@ class TQDMProgressBar(Callback):
             self.overall_progress_tqdm.close()
 
     def on_test_begin(self, logs={}):
-        self.num_epochs = self.params["epochs"]
+        self.test_num_epochs = self.params["epochs"]
         # set counting mode
         self.mode = "steps"
-        self.total_steps = self.params["steps"]
+        self.test_total_steps = self.params["steps"]
         if self.show_epoch_progress:
-            self.epoch_progress_tqdm = self.tqdm(
-                total=self.total_steps,
+            self.test_epoch_progress_tqdm = self.tqdm(
+                total=self.test_total_steps,
                 desc="Evaluating",
                 bar_format=self.epoch_bar_format,
                 leave=self.leave_epoch_progress,
                 dynamic_ncols=True,
                 unit=self.mode,
             )
-        self.num_samples_seen = 0
-        self.steps_to_update = 0
-        self.steps_so_far = 0
-        self.logs = defaultdict(float)
+        self.test_num_samples_seen = 0
+        self.test_steps_to_update = 0
+        self.test_steps_so_far = 0
+        self.test_logs = defaultdict(float)
 
     def on_test_batch_end(self, batch, logs={}):
         if self.mode == "samples":
@@ -143,45 +147,46 @@ class TQDMProgressBar(Callback):
         else:
             batch_size = 1
 
-        self.num_samples_seen += batch_size
-        self.steps_to_update += 1
-        self.steps_so_far += 1
+        self.test_num_samples_seen += batch_size
+        self.test_steps_to_update += 1
+        self.test_steps_so_far += 1
 
-        if self.steps_so_far < self.total_steps:
+        if self.test_steps_so_far < self.test_total_steps:
 
             for metric, value in logs.items():
-                self.logs[metric] += value * batch_size
+                self.test_logs[metric] += value * batch_size
 
             now = time.time()
-            time_diff = now - self.last_update_time
+            time_diff = now - self.test_last_update_time
 
             if self.show_epoch_progress and time_diff >= self.update_interval:
 
                 # update the epoch progress bar
-                metrics = self.format_metrics(self.logs, self.num_samples_seen)
-                self.epoch_progress_tqdm.desc = metrics
-                self.epoch_progress_tqdm.update(self.steps_to_update)
+                metrics = self.format_metrics(self.test_logs,
+                                              self.test_num_samples_seen)
+                self.test_epoch_progress_tqdm.desc = metrics
+                self.test_epoch_progress_tqdm.update(self.test_steps_to_update)
 
                 # reset steps to update
-                self.steps_to_update = 0
+                self.test_steps_to_update = 0
 
                 # update timestamp for last update
-                self.last_update_time = now
+                self.test_last_update_time = now
 
     def on_test_end(self, logs={}):
         if self.show_epoch_progress:
             metrics = self.format_metrics(logs)
-            self.epoch_progress_tqdm.desc = metrics
+            self.test_epoch_progress_tqdm.desc = metrics
 
             # set miniters and mininterval to 0 so last update displays
-            self.epoch_progress_tqdm.miniters = 0
-            self.epoch_progress_tqdm.mininterval = 0
+            self.test_epoch_progress_tqdm.miniters = 0
+            self.test_epoch_progress_tqdm.mininterval = 0
 
             # update the rest of the steps in epoch progress bar
-            self.epoch_progress_tqdm.update(
-                self.total_steps - self.epoch_progress_tqdm.n
+            self.test_epoch_progress_tqdm.update(
+                self.test_total_steps - self.test_epoch_progress_tqdm.n
             )
-            self.epoch_progress_tqdm.close()
+            self.test_epoch_progress_tqdm.close()
 
     def on_epoch_begin(self, epoch, logs={}):
         current_epoch_description = "Epoch {epoch}/{num_epochs}".format(
