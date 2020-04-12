@@ -118,22 +118,57 @@ class TQDMProgressBar(Callback):
         if self.show_overall_progress:
             self.overall_progress_tqdm.close()
 
-    def on_test_batch_begin(self, batch, logs={}):
+    def on_test_begin(self, logs={}):
+        self.num_samples_seen = 0
+        self.steps_to_update = 0
+        self.steps_so_far = 0
+        self.logs = defaultdict(float)
         self.num_epochs = 1
+
+    def on_test_batch_begin(self, batch, logs={}):
+        # set counting mode
+        self.mode = "steps"
+        self.total_steps = self.params["steps"]
 
         if self.show_overall_progress:
             self.overall_progress_tqdm = self.tqdm(
                 desc="Evaluating",
-                total=self.num_epochs,
+                total=self.total_steps,
                 bar_format=self.overall_bar_format,
                 leave=self.leave_overall_progress,
                 dynamic_ncols=True,
-                unit="epochs",
+                unit="batches",
             )
 
-        # set counting mode
-        self.mode = "steps"
-        self.total_steps = self.params["steps"]
+    def on_test_batch_end(self, batch, logs={}):
+        if self.mode == "samples":
+            batch_size = logs["size"]
+        else:
+            batch_size = 1
+
+        self.num_samples_seen += batch_size
+        self.steps_to_update += 1
+        self.steps_so_far += 1
+
+        if self.steps_so_far < self.total_steps:
+
+            for metric, value in logs.items():
+                self.logs[metric] += value * batch_size
+
+            now = time.time()
+            time_diff = now - self.last_update_time
+            if self.show_epoch_progress and time_diff >= self.update_interval:
+
+                # update the epoch progress bar
+                metrics = self.format_metrics(self.logs, self.num_samples_seen)
+                self.epoch_progress_tqdm.desc = metrics
+                self.epoch_progress_tqdm.update(self.steps_to_update)
+
+                # reset steps to update
+                self.steps_to_update = 0
+
+                # update timestamp for last update
+                self.last_update_time = now
 
     def on_epoch_begin(self, epoch, logs={}):
         current_epoch_description = "Epoch {epoch}/{num_epochs}".format(
