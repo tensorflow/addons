@@ -138,6 +138,9 @@ class TQDMProgressBar(Callback):
                 unit="batches",
             )
 
+    def on_test_batch_begin(self, batch, logs={}):
+        print("Current batch: ", batch)
+
     def on_test_batch_end(self, batch, logs={}):
         if self.mode == "samples":
             batch_size = logs["size"]
