@@ -118,6 +118,27 @@ class TQDMProgressBar(Callback):
         if self.show_overall_progress:
             self.overall_progress_tqdm.close()
 
+    def on_test_batch_begin(self, batch, logs={}):
+        self.num_epochs = 1
+
+        if self.show_overall_progress:
+            self.overall_progress_tqdm = self.tqdm(
+                desc="Testing",
+                total=self.num_epochs,
+                bar_format=self.overall_bar_format,
+                leave=self.leave_overall_progress,
+                dynamic_ncols=True,
+                unit="epochs",
+            )
+
+        # set counting mode
+        self.mode = "steps"
+        self.total_steps = self.params["steps"]
+
+    def on_test_batch_end(self, batch, logs={}):
+        if self.show_overall_progress:
+            self.overall_progress_tqdm.close()
+
     def on_epoch_begin(self, epoch, logs={}):
         current_epoch_description = "Epoch {epoch}/{num_epochs}".format(
             epoch=epoch + 1, num_epochs=self.num_epochs
