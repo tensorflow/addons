@@ -123,10 +123,10 @@ class TQDMProgressBar(Callback):
             self.overall_progress_tqdm.close()
 
     def on_test_begin(self, logs={}):
-        self.test_num_epochs = self.params["epochs"]
+        self.test_num_epochs = 1
         # set counting mode
         self.mode = "steps"
-        self.test_total_steps = self.params["steps"]
+        self.test_total_steps = 1
         if self.show_epoch_progress:
             self.test_epoch_progress_tqdm = self.tqdm(
                 total=self.test_total_steps,
@@ -162,8 +162,9 @@ class TQDMProgressBar(Callback):
             if self.show_epoch_progress and time_diff >= self.update_interval:
 
                 # update the epoch progress bar
-                metrics = self.format_metrics(self.test_logs,
-                                              self.test_num_samples_seen)
+                metrics = self.format_metrics(
+                    self.test_logs, self.test_num_samples_seen
+                )
                 self.test_epoch_progress_tqdm.desc = metrics
                 self.test_epoch_progress_tqdm.update(self.test_steps_to_update)
 
@@ -273,11 +274,12 @@ class TQDMProgressBar(Callback):
         """
 
         metric_value_pairs = []
-        for key, value in logs.items():
-            if key in ["batch", "size"]:
-                continue
-            pair = self.metrics_format.format(name=key, value=value / factor)
-            metric_value_pairs.append(pair)
+        if logs is not None:
+            for key, value in logs.items():
+                if key in ["batch", "size"]:
+                    continue
+                pair = self.metrics_format.format(name=key, value=value / factor)
+                metric_value_pairs.append(pair)
         metrics_string = self.metrics_separator.join(metric_value_pairs)
         return metrics_string
 
