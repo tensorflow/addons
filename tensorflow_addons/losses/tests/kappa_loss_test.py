@@ -61,6 +61,7 @@ def gen_labels_and_preds(num_samples, num_classes, seed=3):
 def test_linear_weighted_kappa_loss(np_seed):
     y_true, y_pred = gen_labels_and_preds(50, 4, np_seed)
     kappa_loss = WeightedKappaLoss(num_classes=4, weightage="linear")
+    y_pred = y_pred.astype(kappa_loss.dtype.as_numpy_dtype)
     loss = kappa_loss(y_true, y_pred)
     loss_np = weighted_kappa_loss_np(y_true, y_pred, weightage="linear")
     np.testing.assert_allclose(loss, loss_np, rtol=1e-5, atol=1e-5)
@@ -70,6 +71,7 @@ def test_linear_weighted_kappa_loss(np_seed):
 def test_quadratic_weighted_kappa_loss(np_seed):
     y_true, y_pred = gen_labels_and_preds(100, 3, np_seed)
     kappa_loss = WeightedKappaLoss(num_classes=3)
+    y_pred = y_pred.astype(kappa_loss.dtype.as_numpy_dtype)
     loss = kappa_loss(y_true, y_pred)
     loss_np = weighted_kappa_loss_np(y_true, y_pred)
     np.testing.assert_allclose(loss, loss_np, rtol=1e-5, atol=1e-5)

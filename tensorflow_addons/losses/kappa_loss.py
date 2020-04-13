@@ -62,6 +62,7 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
         name: Optional[str] = "cohen_kappa_loss",
         epsilon: Optional[Number] = 1e-6,
         dtype: Optional[tf.DType] = tf.float32,
+        reduction: str = tf.keras.losses.Reduction.NONE,
     ):
         """Creates a `WeightedKappa` instance.
 
@@ -82,7 +83,7 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
             i.e. not any one of ['linear', 'quadratic']
         """
 
-        super().__init__(name=name, reduction=tf.keras.losses.Reduction.NONE)
+        super().__init__(name=name, reduction=reduction)
 
         if weightage not in ("linear", "quadratic"):
             raise ValueError("Unknown kappa weighting type.")
