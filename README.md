@@ -71,11 +71,18 @@ what it was tested against.
 #### Python-Op Compatibility Matrix
 | TFA Version    | TensorFlow | Python  |
 |:----------------------- |:---|:---------- |
-| tfa-nightly | 2.1, 2.2 | 3.5, 3.6, 3.7 | 
-| tensorflow-addons-0.9.1 | 2.1 |3.5, 3.6, 3.7 |
+| tfa-nightly | 2.1, 2.2 | 3.5, 3.6, 3.7, 3.8 | 
+| tensorflow-addons-0.9.1 | 2.1 |3.5, 3.6, 3.7, 3.8 |
 | tensorflow-addons-0.8.3 | 2.1 |3.5, 3.6, 3.7 |
 | tensorflow-addons-0.7.1 | 2.1 | 2.7, 3.5, 3.6, 3.7 | 
 | tensorflow-addons-0.6.0 | 2.0 | 2.7, 3.5, 3.6, 3.7 |
+
+While we wait for a TF2.2 stable release if you would like to use TFA with 
+python3.8 run: 
+```
+pip install tensorflow~=2.2
+pip install git+https://github.com/tensorflow/addons.git@r0.9
+```
 
 ### C++ Custom Op Compatibility
 TensorFlow C++ APIs are not stable and thus we can only guarentee compatibility with the 
