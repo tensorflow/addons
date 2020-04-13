@@ -72,9 +72,17 @@ what it was tested against.
 | TFA Version    | TensorFlow | Python  |
 |:----------------------- |:---|:---------- |
 | tfa-nightly | 2.1, 2.2 | 3.5, 3.6, 3.7, 3.8 | 
+| tensorflow-addons-0.9.1 | 2.1 |3.5, 3.6, 3.7, 3.8 |
 | tensorflow-addons-0.8.3 | 2.1 |3.5, 3.6, 3.7 |
 | tensorflow-addons-0.7.1 | 2.1 | 2.7, 3.5, 3.6, 3.7 | 
 | tensorflow-addons-0.6.0 | 2.0 | 2.7, 3.5, 3.6, 3.7 |
+
+While we wait for a TF2.2 stable release if you would like to use TFA with 
+python3.8 run: 
+```
+pip install tensorflow~=2.2
+pip install git+https://github.com/tensorflow/addons.git@r0.9
+```
 
 ### C++ Custom Op Compatibility
 TensorFlow C++ APIs are not stable and thus we can only guarentee compatibility with the 
@@ -95,6 +103,7 @@ compiled differently. A typical reason for this would be conda installed TensorF
 | TFA Version    | TensorFlow | Compiler  | cuDNN | CUDA | 
 |:----------------------- |:---- |:---------|:---------|:---------|
 | tfa-nightly | 2.1 | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.9.1 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.8.3 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.7.1 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.6.0 | 2.0  | GCC 7.3.1 | 7.4 | 10.0 |
@@ -116,9 +125,32 @@ pip install tfa-nightly
 You can also install from source. This requires the [Bazel](
 https://bazel.build/) build system (version >= 1.0.0).
 
+##### CPU only custom-ops
 ```
 git clone https://github.com/tensorflow/addons.git
 cd addons
+
+# This script links project with TensorFlow dependency
+python3 ./configure.py
+
+bazel build --enable_runfiles build_pip_pkg
+bazel-bin/build_pip_pkg artifacts
+
+pip install artifacts/tensorflow_addons-*.whl
+```
+
+##### CPU+GPU Custom ops
+```
+git clone https://github.com/tensorflow/addons.git
+cd addons
+
+export TF_NEED_CUDA="1"
+
+# Set these if the below defaults are different on your system
+export TF_CUDA_VERSION="10.1"
+export TF_CUDNN_VERSION="7"
+export CUDA_TOOLKIT_PATH="/usr/local/cuda"
+export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 
 # This script links project with TensorFlow dependency
 python3 ./configure.py
