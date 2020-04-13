@@ -23,7 +23,6 @@ per-file-ignores =
     # import not at top okay due to TF installation check
     tensorflow_addons/__init__.py:F401,E402
     # function name should be lowercase
-    tensorflow_addons/text/tests/crf_test.py:N802
     tensorflow_addons/image/utils.py:N802
     tensorflow_addons/image/tests/utils_test.py:N802
     tensorflow_addons/image/tests/color_ops_test.py:N802
