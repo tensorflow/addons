@@ -382,6 +382,7 @@ focused on a specific feature/parameter.
 ### Code example
 * It is required to contribute a code example in the docstring when adding new features.
 * It is strongly suggested to expand or contribute a new [tutoral](https://github.com/tensorflow/addons/blob/master/docs/tutorials/README.md) for more complex features that are hard to be expressed in the docstring only.
+
 ### Fixtures and assert functions:
 We provide [fixtures](https://docs.pytest.org/en/latest/fixture.html) to help your write 
 your tests as well as helper functions. Those can be found in 
