@@ -379,6 +379,9 @@ rarely need to do heavy computation to test things. Your tests should be small a
 focused on a specific feature/parameter.
 * Don't be afraid to write too many tests. This is fine as long as they're fast.
 
+### Code example
+* It is required to contribute a code example in the docstring when adding new features.
+* It is strongly suggested to expand or contribute a new [tutoral](https://github.com/tensorflow/addons/blob/master/docs/tutorials/README.md) for more complex features that are hard to be expressed in the docstring only.
 
 ### Fixtures and assert functions:
 We provide [fixtures](https://docs.pytest.org/en/latest/fixture.html) to help your write 
