@@ -211,7 +211,7 @@ def test_projection():
     )
 
 
-def test_keras_RNN():
+def test_keras_rnn():
     """Tests that NASCell works with keras RNN layer."""
     cell = rnn_cell.NASCell(10)
     seq_input = tf.convert_to_tensor(
