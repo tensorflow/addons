@@ -146,7 +146,6 @@ def test_no_deprecated_v1():
         "tensorflow_addons/text/tests/skip_gram_ops_test.py",
         "tensorflow_addons/optimizers/tests/lazy_adam_test.py",
         "tensorflow_addons/metrics/tests/matthews_correlation_coefficient_test.py",
-        "tensorflow_addons/rnn/tests/cell_test.py",
         "tensorflow_addons/seq2seq/tests/decoder_test.py",
         "tensorflow_addons/metrics/tests/cohens_kappa_test.py",
         "tensorflow_addons/optimizers/tests/cyclical_learning_rate_test.py",
