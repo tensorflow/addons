@@ -47,7 +47,7 @@ def weighted_kappa_loss_np(y_true, y_pred, weightage="quadratic", eps=1e-6):
     return np.log(np.nan_to_num(numerator / denominator) + eps)
 
 
-def gen_labels_and_preds(num_samples, num_classes, seed=3):
+def gen_labels_and_preds(num_samples, num_classes, seed):
     np.random.seed(seed)
     rands = np.random.uniform(size=(num_samples, num_classes))
     cat_labels = rands.argmax(axis=1)
