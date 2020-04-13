@@ -14,8 +14,6 @@
 # ============================================================================
 """Tests for resampler."""
 
-from absl.testing import parameterized
-
 import numpy as np
 import pytest
 
