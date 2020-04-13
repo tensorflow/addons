@@ -16,6 +16,7 @@
 
 import collections
 
+import pytest
 from absl.testing import parameterized
 import numpy as np
 import tensorflow as tf
@@ -26,10 +27,8 @@ from tensorflow_addons.seq2seq import basic_decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
-    def setUp(self):
-        super().setUp()
+class DummyData:
+    def __init__(self):
         self.batch = 10
         self.timestep = 5
         self.memory_size = 6
@@ -44,217 +43,241 @@ class AttentionMechanismTest(tf.test.TestCase, parameterized.TestCase):
         self.query = np.random.randn(self.batch, self.units).astype(np.float32)
         self.state = np.random.randn(self.batch, self.timestep).astype(np.float32)
 
-    @parameterized.named_parameters(
-        ("luong", wrapper.LuongAttention),
-        ("luong_monotonic", wrapper.LuongMonotonicAttention),
-        ("bahdanau", wrapper.BahdanauAttention),
-        ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttention),
+
+@pytest.mark.parametrize(
+    "attention_cls",
+    [
+        wrapper.LuongAttention,
+        wrapper.LuongMonotonicAttention,
+        wrapper.BahdanauAttention,
+        wrapper.BahdanauMonotonicAttention,
+    ],
+)
+def test_attention_shape_inference(attention_cls):
+    dummy_data = DummyData()
+    attention = attention_cls(dummy_data.units, dummy_data.memory)
+    attention_score = attention([dummy_data.query, dummy_data.state])
+    assert len(attention_score) == 2
+    assert attention_score[0].shape == (dummy_data.batch, dummy_data.timestep)
+    assert attention_score[1].shape == (dummy_data.batch, dummy_data.timestep)
+
+
+@pytest.mark.parametrize(
+    "attention_cls",
+    [
+        wrapper.LuongAttention,
+        wrapper.LuongMonotonicAttention,
+        wrapper.BahdanauAttention,
+        wrapper.BahdanauMonotonicAttention,
+    ],
+)
+def test_get_config(attention_cls):
+    dummy_data = DummyData()
+    attention = attention_cls(dummy_data.units, dummy_data.memory)
+    config = attention.get_config()
+
+    attention_from_config = attention_cls.from_config(config)
+    config_from_clone = attention_from_config.get_config()
+
+    assert config == config_from_clone
+
+
+@pytest.mark.parametrize(
+    "attention_cls",
+    [
+        wrapper.LuongAttention,
+        wrapper.LuongMonotonicAttention,
+        wrapper.BahdanauAttention,
+        wrapper.BahdanauMonotonicAttention,
+    ],
+)
+def test_layer_output(attention_cls):
+    dummy_data = DummyData()
+    attention = attention_cls(dummy_data.units, dummy_data.memory)
+    score = attention([dummy_data.query, dummy_data.state])
+
+    assert len(score) == 2
+    assert score[0].shape == (dummy_data.batch, dummy_data.timestep)
+    assert score[1].shape == (dummy_data.batch, dummy_data.timestep)
+
+
+@pytest.mark.parametrize(
+    "attention_cls",
+    [
+        wrapper.LuongAttention,
+        wrapper.LuongMonotonicAttention,
+        wrapper.BahdanauAttention,
+        wrapper.BahdanauMonotonicAttention,
+    ],
+)
+def test_passing_memory_from_call(attention_cls):
+    dummy_data = DummyData()
+    attention = attention_cls(dummy_data.units, dummy_data.memory)
+    weights_before_query = attention.get_weights()
+    ref_score = attention([dummy_data.query, dummy_data.state])
+
+    all_weights = attention.get_weights()
+    config = attention.get_config()
+    # Simulate the twice invocation of calls here.
+    attention_from_config = attention_cls.from_config(config)
+    attention_from_config.build(dummy_data.memory.shape)
+    attention_from_config.set_weights(weights_before_query)
+    attention_from_config(dummy_data.memory, setup_memory=True)
+    attention_from_config.build([dummy_data.query.shape, dummy_data.state.shape])
+    attention_from_config.set_weights(all_weights)
+    score = attention_from_config([dummy_data.query, dummy_data.state])
+
+    np.testing.assert_allclose(ref_score, score)
+
+
+@pytest.mark.parametrize(
+    "attention_cls",
+    [
+        wrapper.LuongAttention,
+        wrapper.LuongMonotonicAttention,
+        wrapper.BahdanauAttention,
+        wrapper.BahdanauMonotonicAttention,
+    ],
+)
+def test_save_load_layer(attention_cls):
+    dummy_data = DummyData()
+    vocab = 20
+    embedding_dim = 6
+    inputs = tf.keras.Input(shape=[dummy_data.timestep])
+    encoder_input = tf.keras.layers.Embedding(vocab, embedding_dim, mask_zero=True)(
+        inputs
     )
-    def test_attention_shape_inference(self, attention_cls):
-        attention = attention_cls(self.units, self.memory)
-        attention_score = attention([self.query, self.state])
-        self.assertLen(attention_score, 2)
-        self.assertEqual(attention_score[0].shape, (self.batch, self.timestep))
-        self.assertEqual(attention_score[1].shape, (self.batch, self.timestep))
+    encoder_output = tf.keras.layers.LSTM(
+        dummy_data.memory_size, return_sequences=True
+    )(encoder_input)
 
-    @parameterized.named_parameters(
-        ("luong", wrapper.LuongAttention),
-        ("luong_monotonic", wrapper.LuongMonotonicAttention),
-        ("bahdanau", wrapper.BahdanauAttention),
-        ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttention),
+    attention = attention_cls(dummy_data.units, encoder_output)
+    query = tf.keras.Input(shape=[dummy_data.units])
+    state = tf.keras.Input(shape=[dummy_data.timestep])
+
+    score = attention([query, state])
+
+    x_test = np.random.randint(vocab, size=(dummy_data.batch, dummy_data.timestep))
+    model = tf.keras.Model([inputs, query, state], score)
+    # Fall back to v1 style Keras training loop until issue with
+    # using outputs of a layer in another layer's constructor.
+    model.compile("rmsprop", "mse")
+    y_ref = model.predict_on_batch([x_test, dummy_data.query, dummy_data.state])
+
+    config = model.get_config()
+    weights = model.get_weights()
+    loaded_model = tf.keras.Model.from_config(
+        config, custom_objects={attention_cls.__name__: attention_cls}
     )
-    def test_get_config(self, attention_cls):
-        attention = attention_cls(self.units, self.memory)
-        config = attention.get_config()
+    loaded_model.set_weights(weights)
 
-        attention_from_config = attention_cls.from_config(config)
-        config_from_clone = attention_from_config.get_config()
+    # Fall back to v1 style Keras training loop until issue with
+    # using outputs of a layer in another layer's constructor.
+    loaded_model.compile("rmsprop", "mse")
 
-        self.assertDictEqual(config, config_from_clone)
+    y = loaded_model.predict_on_batch([x_test, dummy_data.query, dummy_data.state])
 
-    @parameterized.named_parameters(
-        ("luong", wrapper.LuongAttention),
-        ("luong_monotonic", wrapper.LuongMonotonicAttention),
-        ("bahdanau", wrapper.BahdanauAttention),
-        ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttention),
-    )
-    def test_layer_output(self, attention_cls):
-        attention = attention_cls(self.units, self.memory)
-        score = attention([self.query, self.state])
-        self.evaluate(tf.compat.v1.variables_initializer(attention.variables))
+    np.testing.assert_allclose(y_ref, y)
 
-        score_val = self.evaluate(score)
-        self.assertLen(score_val, 2)
-        self.assertEqual(score_val[0].shape, (self.batch, self.timestep))
-        self.assertEqual(score_val[1].shape, (self.batch, self.timestep))
 
-    @parameterized.named_parameters(
-        ("luong", wrapper.LuongAttention),
-        ("luong_monotonic", wrapper.LuongMonotonicAttention),
-        ("bahdanau", wrapper.BahdanauAttention),
-        ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttention),
-    )
-    def test_passing_memory_from_call(self, attention_cls):
-        attention = attention_cls(self.units, self.memory)
-        weights_before_query = attention.get_weights()
-        ref_score = attention([self.query, self.state])
+@pytest.mark.parametrize(
+    "attention_cls",
+    [
+        wrapper.LuongAttention,
+        wrapper.LuongMonotonicAttention,
+        wrapper.BahdanauAttention,
+        wrapper.BahdanauMonotonicAttention,
+    ],
+)
+def test_manual_memory_reset(attention_cls):
+    dummy_data = DummyData()
+    attention = attention_cls(dummy_data.units)
 
-        self.evaluate(tf.compat.v1.global_variables_initializer())
-        ref_score_val = self.evaluate(ref_score)
-
-        all_weights = attention.get_weights()
-        config = attention.get_config()
-        # Simulate the twice invocation of calls here.
-        attention_from_config = attention_cls.from_config(config)
-        attention_from_config.build(self.memory.shape)
-        attention_from_config.set_weights(weights_before_query)
-        attention_from_config(self.memory, setup_memory=True)
-        attention_from_config.build([self.query.shape, self.state.shape])
-        attention_from_config.set_weights(all_weights)
-        score = attention_from_config([self.query, self.state])
-
-        score_val = self.evaluate(score)
-        self.assertAllClose(ref_score_val, score_val)
-
-    @parameterized.named_parameters(
-        ("luong", wrapper.LuongAttention),
-        ("luong_monotonic", wrapper.LuongMonotonicAttention),
-        ("bahdanau", wrapper.BahdanauAttention),
-        ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttention),
-    )
-    def test_save_load_layer(self, attention_cls):
-        vocab = 20
-        embedding_dim = 6
-        inputs = tf.keras.Input(shape=[self.timestep])
-        encoder_input = tf.keras.layers.Embedding(vocab, embedding_dim, mask_zero=True)(
-            inputs
+    def _compute_score(batch_size=None):
+        if batch_size is None:
+            batch_size = dummy_data.batch
+        memory = dummy_data.memory[:batch_size]
+        attention.setup_memory(
+            memory, memory_sequence_length=dummy_data.memory_length[:batch_size]
         )
-        encoder_output = tf.keras.layers.LSTM(self.memory_size, return_sequences=True)(
-            encoder_input
-        )
+        assert attention.values.shape.as_list() == list(memory.shape)
+        assert attention.keys.shape.as_list() == list(memory.shape)[:-1] + [
+            dummy_data.units
+        ]
+        return attention([dummy_data.query[:batch_size], dummy_data.state[:batch_size]])
 
-        attention = attention_cls(self.units, encoder_output)
-        query = tf.keras.Input(shape=[self.units])
-        state = tf.keras.Input(shape=[self.timestep])
+    _compute_score(batch_size=dummy_data.batch)
+    variables = list(attention.variables)
+    _compute_score(batch_size=dummy_data.batch - 1)
 
-        score = attention([query, state])
+    # No new variables were created.
+    for var_1, var_2 in zip(variables, list(attention.variables)):
+        assert var_1 is var_2
 
-        x_test = np.random.randint(vocab, size=(self.batch, self.timestep))
-        model = tf.keras.Model([inputs, query, state], score)
-        # Fall back to v1 style Keras training loop until issue with
-        # using outputs of a layer in another layer's constructor.
+
+def test_masking():
+    memory = tf.ones([4, 4, 5], dtype=tf.float32)
+    memory_sequence_length = tf.constant([1, 2, 3, 4], dtype=tf.int32)
+    query = tf.ones([4, 5], dtype=tf.float32)
+    state = None
+    attention = wrapper.LuongAttention(5, memory, memory_sequence_length)
+    alignment, _ = attention([query, state])
+    assert np.sum(np.triu(alignment, k=1)) == 0
+
+
+@pytest.mark.parametrize(
+    "attention_cls",
+    [
+        wrapper.LuongAttention,
+        wrapper.LuongMonotonicAttention,
+        wrapper.BahdanauAttention,
+        wrapper.BahdanauMonotonicAttention,
+    ],
+)
+def test_memory_re_setup(attention_cls):
+    class MyModel(tf.keras.models.Model):
+        def __init__(self, vocab, embedding_dim, memory_size, units):
+            super().__init__()
+            self.emb = tf.keras.layers.Embedding(vocab, embedding_dim, mask_zero=True)
+            self.encoder = tf.keras.layers.LSTM(memory_size, return_sequences=True)
+            self.attn_mch = attention_cls(units)
+
+        def call(self, inputs):
+            enc_input, query, state = inputs
+            mask = self.emb.compute_mask(enc_input)
+            enc_input = self.emb(enc_input)
+            enc_output = self.encoder(enc_input, mask=mask)
+            # To ensure manual resetting also works in the graph mode,
+            # we call the attention mechanism twice.
+            self.attn_mch(enc_output, mask=mask, setup_memory=True)
+            self.attn_mch(enc_output, mask=mask, setup_memory=True)
+            score = self.attn_mch([query, state])
+            return score
+
+    vocab = 20
+    embedding_dim = 6
+    num_batches = 5
+
+    dummy_data = DummyData()
+    model = MyModel(vocab, embedding_dim, dummy_data.memory_size, dummy_data.units)
+    if tf.executing_eagerly():
+        model.compile("rmsprop", "mse", run_eagerly=True)
+    else:
         model.compile("rmsprop", "mse")
-        y_ref = model.predict_on_batch([x_test, self.query, self.state])
 
-        config = model.get_config()
-        weights = model.get_weights()
-        loaded_model = tf.keras.Model.from_config(
-            config, custom_objects={attention_cls.__name__: attention_cls}
-        )
-        loaded_model.set_weights(weights)
-
-        # Fall back to v1 style Keras training loop until issue with
-        # using outputs of a layer in another layer's constructor.
-        loaded_model.compile("rmsprop", "mse")
-
-        y = loaded_model.predict_on_batch([x_test, self.query, self.state])
-
-        self.assertAllClose(y_ref, y)
-
-    @parameterized.named_parameters(
-        ("luong", wrapper.LuongAttention),
-        ("luong_monotonic", wrapper.LuongMonotonicAttention),
-        ("bahdanau", wrapper.BahdanauAttention),
-        ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttention),
+    x = np.random.randint(
+        vocab, size=(num_batches * dummy_data.batch, dummy_data.timestep)
     )
-    def test_manual_memory_reset(self, attention_cls):
-        attention = attention_cls(self.units)
-
-        def _compute_score(batch_size=None):
-            if batch_size is None:
-                batch_size = self.batch
-            memory = self.memory[:batch_size]
-            attention.setup_memory(
-                memory, memory_sequence_length=self.memory_length[:batch_size]
-            )
-            self.assertListEqual(attention.values.shape.as_list(), list(memory.shape))
-            self.assertListEqual(
-                attention.keys.shape.as_list(), list(memory.shape)[:-1] + [self.units]
-            )
-            return attention([self.query[:batch_size], self.state[:batch_size]])
-
-        score = _compute_score(batch_size=self.batch)
-        variables = list(attention.variables)
-        score = _compute_score(batch_size=self.batch - 1)
-
-        # No new variables were created.
-        for var_1, var_2 in zip(variables, list(attention.variables)):
-            self.assertIs(var_1, var_2)
-
-        # Score can be computed without errors.
-        self.evaluate(tf.compat.v1.global_variables_initializer())
-        self.evaluate(score)
-
-    def test_masking(self):
-        memory = tf.ones([4, 4, 5], dtype=tf.float32)
-        memory_sequence_length = tf.constant([1, 2, 3, 4], dtype=tf.int32)
-        query = tf.ones([4, 5], dtype=tf.float32)
-        state = None
-        attention = wrapper.LuongAttention(5, memory, memory_sequence_length)
-        alignment, _ = attention([query, state])
-        self.evaluate(tf.compat.v1.global_variables_initializer())
-        alignment = self.evaluate(alignment)
-        self.assertEqual(np.sum(np.triu(alignment, k=1)), 0)
-
-    @parameterized.named_parameters(
-        ("luong", wrapper.LuongAttention),
-        ("luong_monotonic", wrapper.LuongMonotonicAttention),
-        ("bahdanau", wrapper.BahdanauAttention),
-        ("bahdanau_monotonic", wrapper.BahdanauMonotonicAttention),
+    x_test = np.random.randint(
+        vocab, size=(num_batches * dummy_data.batch, dummy_data.timestep)
     )
-    def test_memory_re_setup(self, attention_cls):
-        class MyModel(tf.keras.models.Model):
-            def __init__(self, vocab, embedding_dim, memory_size, units):
-                super().__init__()
-                self.emb = tf.keras.layers.Embedding(
-                    vocab, embedding_dim, mask_zero=True
-                )
-                self.encoder = tf.keras.layers.LSTM(memory_size, return_sequences=True)
-                self.attn_mch = attention_cls(units)
+    y = np.random.randn(num_batches * dummy_data.batch, dummy_data.timestep)
 
-            def call(self, inputs):
-                enc_input, query, state = inputs
-                mask = self.emb.compute_mask(enc_input)
-                enc_input = self.emb(enc_input)
-                enc_output = self.encoder(enc_input, mask=mask)
-                # To ensure manual resetting also works in the graph mode,
-                # we call the attention mechanism twice.
-                self.attn_mch(enc_output, mask=mask, setup_memory=True)
-                self.attn_mch(enc_output, mask=mask, setup_memory=True)
-                score = self.attn_mch([query, state])
-                return score
+    query = np.tile(dummy_data.query, [num_batches, 1])
+    state = np.tile(dummy_data.state, [num_batches, 1])
 
-        vocab = 20
-        embedding_dim = 6
-        num_batches = 5
-
-        model = MyModel(vocab, embedding_dim, self.memory_size, self.units)
-        if tf.executing_eagerly():
-            model.compile("rmsprop", "mse", run_eagerly=True)
-        else:
-            model.compile("rmsprop", "mse")
-
-        x = np.random.randint(vocab, size=(num_batches * self.batch, self.timestep))
-        x_test = np.random.randint(
-            vocab, size=(num_batches * self.batch, self.timestep)
-        )
-        y = np.random.randn(num_batches * self.batch, self.timestep)
-
-        query = np.tile(self.query, [num_batches, 1])
-        state = np.tile(self.state, [num_batches, 1])
-
-        model.fit([x, query, state], (y, y), batch_size=self.batch)
-        model.predict_on_batch([x_test, query, state])
+    model.fit([x, query, state], (y, y), batch_size=dummy_data.batch)
+    model.predict_on_batch([x_test, query, state])
 
 
 class ResultSummary(
