@@ -20,47 +20,6 @@ from typeguard import typechecked
 from typing import Optional
 
 
-def _weighted_kappa_loss(
-    y_true,
-    y_pred,
-    row_label_vec,
-    col_label_vec,
-    weight_mat,
-    epsilon=1e-6,
-    weightage="quadratic",
-    dtype=tf.float32,
-):
-    y_true = tf.cast(y_true, dtype=dtype)
-    labels = tf.matmul(y_true, col_label_vec)
-    if weightage == "linear":
-        weight = tf.abs(
-            tf.tile(labels, [1, tf.shape(y_true)[1]])
-            - tf.tile(row_label_vec, [tf.shape(y_true)[0], 1])
-        )
-        weight /= tf.cast(tf.shape(y_true)[1] - 1, dtype=dtype)
-    else:
-        weight = tf.pow(
-            tf.tile(labels, [1, tf.shape(y_true)[1]])
-            - tf.tile(row_label_vec, [tf.shape(y_true)[0], 1]),
-            2,
-        )
-        weight /= tf.cast(tf.pow(tf.shape(y_true)[1] - 1, 2), dtype=dtype)
-    numerator = tf.reduce_sum(weight * y_pred)
-
-    denominator = tf.reduce_sum(
-        tf.matmul(
-            tf.reduce_sum(y_true, axis=0, keepdims=True),
-            tf.matmul(
-                weight_mat,
-                tf.reduce_sum(y_pred, axis=0, keepdims=True),
-                transpose_b=True,
-            ),
-        )
-    )
-    denominator /= tf.cast(tf.shape(y_true)[0], dtype=dtype)
-    return tf.math.log(tf.math.divide_no_nan(numerator, denominator) + epsilon)
-
-
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class WeightedKappaLoss(tf.keras.losses.Loss):
     """Implements the Weighted Kappa loss function.
@@ -138,23 +97,29 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
         col_mat = tf.tile(self.col_label_vec, [1, num_classes])
         row_mat = tf.tile(self.row_label_vec, [num_classes, 1])
         if weightage == "linear":
-            divisor = tf.cast(num_classes - 1, dtype=dtype)
-            self.weight_mat = tf.abs(col_mat - row_mat) / divisor
+            self.weight_mat = tf.abs(col_mat - row_mat)
         else:
-            divisor = tf.cast((num_classes - 1) ** 2, dtype=dtype)
-            self.weight_mat = (col_mat - row_mat) ** 2 / divisor
+            self.weight_mat = (col_mat - row_mat) ** 2
 
     def call(self, y_true, y_pred):
-        return _weighted_kappa_loss(
-            y_true,
-            y_pred,
-            self.row_label_vec,
-            self.col_label_vec,
-            self.weight_mat,
-            self.epsilon,
-            self.weightage,
-            self.dtype,
-        )
+        y_true = tf.cast(y_true, dtype=self.dtype)
+        batch_size = tf.shape(y_true)[0]
+        cat_labels = tf.matmul(y_true, self.col_label_vec)
+        cat_label_mat = tf.tile(cat_labels, [1, self.num_classes])
+        row_label_mat = tf.tile(self.row_label_vec, [batch_size, 1])
+        if self.weightage == "linear":
+            weight = tf.abs(cat_label_mat - row_label_mat)
+        else:
+            weight = (cat_label_mat - row_label_mat) ** 2
+        numerator = tf.reduce_sum(weight * y_pred)
+        label_dist = tf.reduce_sum(y_true, axis=0, keepdims=True)
+        pred_dist = tf.reduce_sum(y_pred, axis=0, keepdims=True)
+        weighted_pred_dist = tf.matmul(self.weight_mat, pred_dist,
+                                       transpose_b=True)
+        denominator = tf.reduce_sum(tf.matmul(label_dist, weighted_pred_dist))
+        denominator /= tf.cast(batch_size, dtype=self.dtype)
+        loss = tf.math.divide_no_nan(numerator, denominator)
+        return tf.math.log(loss + self.epsilon)
 
     def get_config(self):
         config = {
