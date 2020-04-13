@@ -22,7 +22,10 @@ from tensorflow_addons.seq2seq import basic_decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
 
 
-def _test_decode_rnn(time_major, maximum_iterations):
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("maximum_iterations", [None, 0, 1])
+@pytest.mark.parametrize("time_major", [True, False])
+def test_dynamic_decode_rnn(time_major, maximum_iterations):
 
     sequence_length = [3, 4, 3, 1, 0]
     batch_size = 5
@@ -55,13 +58,14 @@ def _test_decode_rnn(time_major, maximum_iterations):
             return (shape[1], shape[0]) + shape[2:]
         return shape
 
+    assert (batch_size,) == tuple(final_sequence_length.get_shape().as_list())
     # Mostly a smoke test
     time_steps = max_out
     expected_length = sequence_length
     if maximum_iterations is not None:
         time_steps = min(max_out, maximum_iterations)
         expected_length = [min(x, maximum_iterations) for x in expected_length]
-    if tf.executing_eagerly() and maximum_iterations != 0:
+    if maximum_iterations != 0:
         assert (
             _t((batch_size, time_steps, cell_depth)) == final_outputs.rnn_output.shape
         )
@@ -69,14 +73,8 @@ def _test_decode_rnn(time_major, maximum_iterations):
     np.testing.assert_array_equal(expected_length, final_sequence_length)
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.parametrize("maximum_iterations", [None, 0, 1])
-@pytest.mark.parametrize("time_major", [True, False])
-def test_dynamic_decode_rnn(time_major, maximum_iterations):
-    _test_decode_rnn(time_major, maximum_iterations)
-
-
-def _test_dynamic_decode_rnn_with_training_helper_matches_dynamic_rnn(
+@pytest.mark.parametrize("use_sequence_length", [True, False])
+def test_dynamic_decode_rnn_with_training_helper_matches_dynamic_rnn(
     use_sequence_length,
 ):
     sequence_length = [3, 4, 3, 1, 0]
@@ -130,12 +128,3 @@ def _test_dynamic_decode_rnn_with_training_helper_matches_dynamic_rnn(
         np.testing.assert_allclose(
             eval_result["final_decoder_state"], eval_result["final_rnn_state"]
         )
-
-
-@pytest.mark.parametrize("use_sequence_length", [True, False])
-def test_dynamic_decode_rnn_with_training_helper_matches_dynamic_rnn_seq_len(
-    use_sequence_length,
-):
-    _test_dynamic_decode_rnn_with_training_helper_matches_dynamic_rnn(
-        use_sequence_length
-    )
