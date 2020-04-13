@@ -93,6 +93,7 @@ class TQDMProgressBar(Callback):
         self.last_update_time = time.time()
         self.overall_progress_tqdm = None
         self.epoch_progress_tqdm = None
+        self.is_training = False
         self.test_last_update_time = time.time()
         self.test_epoch_progress_tqdm = None
         self.test_num_epochs = None
@@ -102,6 +103,7 @@ class TQDMProgressBar(Callback):
         super().__init__()
 
     def on_train_begin(self, logs=None):
+        self.is_training = True
         self.num_epochs = self.params["epochs"]
 
         if self.show_overall_progress:
@@ -119,63 +121,66 @@ class TQDMProgressBar(Callback):
         self.total_steps = self.params["steps"]
 
     def on_train_end(self, logs={}):
+        self.is_training = False
         if self.show_overall_progress:
             self.overall_progress_tqdm.close()
 
     def on_test_begin(self, logs={}):
-        self.test_num_epochs = 1
-        # set counting mode
-        self.mode = "steps"
-        self.test_total_steps = self.params["steps"]
-        if self.show_epoch_progress:
-            self.test_epoch_progress_tqdm = self.tqdm(
-                total=self.test_total_steps,
-                desc="Evaluating",
-                bar_format=self.epoch_bar_format,
-                leave=self.leave_epoch_progress,
-                dynamic_ncols=True,
-                unit=self.mode,
-            )
-        self.test_num_samples_seen = 0
-        self.test_steps_to_update = 0
-        self.test_steps_so_far = 0
-        self.test_logs = defaultdict(float)
+        if self.is_training is False:
+            self.test_num_epochs = self.params["epochs"]
+            # set counting mode
+            self.mode = "steps"
+            self.test_total_steps = self.params["steps"]
+            if self.show_epoch_progress:
+                self.test_epoch_progress_tqdm = self.tqdm(
+                    total=self.test_total_steps,
+                    desc="Evaluating",
+                    bar_format=self.epoch_bar_format,
+                    leave=self.leave_epoch_progress,
+                    dynamic_ncols=True,
+                    unit=self.mode,
+                )
+            self.test_num_samples_seen = 0
+            self.test_steps_to_update = 0
+            self.test_steps_so_far = 0
+            self.test_logs = defaultdict(float)
 
     def on_test_batch_end(self, batch, logs={}):
-        if self.mode == "samples":
-            batch_size = logs["size"]
-        else:
-            batch_size = 1
+        if self.is_training is False:
+            if self.mode == "samples":
+                batch_size = logs["size"]
+            else:
+                batch_size = 1
 
-        self.test_num_samples_seen += batch_size
-        self.test_steps_to_update += 1
-        self.test_steps_so_far += 1
+            self.test_num_samples_seen += batch_size
+            self.test_steps_to_update += 1
+            self.test_steps_so_far += 1
 
-        if self.test_steps_so_far < self.test_total_steps:
+            if self.test_steps_so_far < self.test_total_steps:
 
-            for metric, value in logs.items():
-                self.test_logs[metric] += value * batch_size
+                for metric, value in logs.items():
+                    self.test_logs[metric] += value * batch_size
 
-            now = time.time()
-            time_diff = now - self.test_last_update_time
+                now = time.time()
+                time_diff = now - self.test_last_update_time
 
-            if self.show_epoch_progress and time_diff >= self.update_interval:
+                if self.show_epoch_progress and time_diff >= self.update_interval:
 
-                # update the epoch progress bar
-                metrics = self.format_metrics(
-                    self.test_logs, self.test_num_samples_seen
-                )
-                self.test_epoch_progress_tqdm.desc = metrics
-                self.test_epoch_progress_tqdm.update(self.test_steps_to_update)
+                    # update the epoch progress bar
+                    metrics = self.format_metrics(
+                        self.test_logs, self.test_num_samples_seen
+                    )
+                    self.test_epoch_progress_tqdm.desc = metrics
+                    self.test_epoch_progress_tqdm.update(self.test_steps_to_update)
 
-                # reset steps to update
-                self.test_steps_to_update = 0
+                    # reset steps to update
+                    self.test_steps_to_update = 0
 
-                # update timestamp for last update
-                self.test_last_update_time = now
+                    # update timestamp for last update
+                    self.test_last_update_time = now
 
     def on_test_end(self, logs={}):
-        if self.show_epoch_progress:
+        if self.is_training is False and self.show_epoch_progress:
             metrics = self.format_metrics(logs)
             self.test_epoch_progress_tqdm.desc = metrics
 
