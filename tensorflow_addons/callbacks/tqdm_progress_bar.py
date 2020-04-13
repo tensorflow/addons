@@ -18,6 +18,7 @@ import time
 import tensorflow as tf
 from collections import defaultdict
 from typeguard import typechecked
+import json
 
 from tensorflow.keras.callbacks import Callback
 
@@ -155,7 +156,7 @@ class TQDMProgressBar(Callback):
             self.test_num_samples_seen += batch_size
             self.test_steps_to_update += 1
             self.test_steps_so_far += 1
-
+            print(json.dumps(logs), json.dumps(self.test_logs))
             if self.test_steps_so_far < self.test_total_steps:
 
                 for metric, value in logs.items():
