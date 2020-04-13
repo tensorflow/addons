@@ -18,7 +18,6 @@ import time
 import tensorflow as tf
 from collections import defaultdict
 from typeguard import typechecked
-import json
 
 from tensorflow.keras.callbacks import Callback
 
@@ -156,7 +155,7 @@ class TQDMProgressBar(Callback):
             self.test_num_samples_seen += batch_size
             self.test_steps_to_update += 1
             self.test_steps_so_far += 1
-            print(json.dumps(logs), json.dumps(self.test_logs))
+
             if self.test_steps_so_far < self.test_total_steps:
 
                 for metric, value in logs.items():
@@ -179,10 +178,12 @@ class TQDMProgressBar(Callback):
 
                     # update timestamp for last update
                     self.test_last_update_time = now
+            else:
+                self.test_logs = logs
 
     def on_test_end(self, logs={}):
         if self.is_training is False and self.show_epoch_progress:
-            metrics = self.format_metrics(logs)
+            metrics = self.format_metrics(self.test_logs)
             self.test_epoch_progress_tqdm.desc = metrics
 
             # set miniters and mininterval to 0 so last update displays
@@ -280,12 +281,11 @@ class TQDMProgressBar(Callback):
         """
 
         metric_value_pairs = []
-        if logs is not None:
-            for key, value in logs.items():
-                if key in ["batch", "size"]:
-                    continue
-                pair = self.metrics_format.format(name=key, value=value / factor)
-                metric_value_pairs.append(pair)
+        for key, value in logs.items():
+            if key in ["batch", "size"]:
+                continue
+            pair = self.metrics_format.format(name=key, value=value / factor)
+            metric_value_pairs.append(pair)
         metrics_string = self.metrics_separator.join(metric_value_pairs)
         return metrics_string
 
