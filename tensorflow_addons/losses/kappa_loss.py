@@ -114,9 +114,8 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
         numerator = tf.reduce_sum(weight * y_pred)
         label_dist = tf.reduce_sum(y_true, axis=0, keepdims=True)
         pred_dist = tf.reduce_sum(y_pred, axis=0, keepdims=True)
-        weighted_pred_dist = tf.matmul(self.weight_mat, pred_dist,
-                                       transpose_b=True)
-        denominator = tf.reduce_sum(tf.matmul(label_dist, weighted_pred_dist))
+        w_pred_dist = tf.matmul(self.weight_mat, pred_dist, transpose_b=True)
+        denominator = tf.reduce_sum(tf.matmul(label_dist, w_pred_dist))
         denominator /= tf.cast(batch_size, dtype=self.dtype)
         loss = tf.math.divide_no_nan(numerator, denominator)
         return tf.math.log(loss + self.epsilon)

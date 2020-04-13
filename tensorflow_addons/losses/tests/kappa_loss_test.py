@@ -22,13 +22,10 @@ from tensorflow_addons.losses.kappa_loss import WeightedKappaLoss
 
 def weighted_kappa_loss_np(y_true, y_pred, weightage="quadratic", eps=1e-6):
     num_samples, num_classes = y_true.shape
-    numerator = 0
     cat_labels = y_true.argmax(axis=1).reshape((-1, 1))
     label_mat = np.tile(cat_labels, (1, num_classes))
-    label_mat_ = np.tile(
-        np.arange(num_classes).reshape(1, -1),
-        (num_samples, 1)
-    )
+    row_label_vec = np.arange(num_classes).reshape((1, num_classes))
+    label_mat_ = np.tile(row_label_vec, (num_samples, 1))
     if weightage == "linear":
         weight = np.abs(label_mat - label_mat_)
     else:
@@ -37,7 +34,6 @@ def weighted_kappa_loss_np(y_true, y_pred, weightage="quadratic", eps=1e-6):
     label_dist = y_true.sum(axis=0, keepdims=True)
     pred_dist = y_pred.sum(axis=0, keepdims=True)
 
-    row_label_vec = np.arange(num_classes).reshape((1, num_classes))
     col_label_vec = row_label_vec.T
     row_mat = np.tile(row_label_vec, (num_classes, 1))
     col_mat = np.tile(col_label_vec, (1, num_classes))
@@ -53,9 +49,9 @@ def weighted_kappa_loss_np(y_true, y_pred, weightage="quadratic", eps=1e-6):
 
 def gen_labels_and_preds(num_samples, num_classes, seed=3):
     np.random.seed(seed)
-    cat_labels = np.random.uniform(size=(num_samples, num_classes)) \
-                   .argmax(axis=1)
-    y_true = np.eye(num_classes, dtype='int')[cat_labels]
+    rands = np.random.uniform(size=(num_samples, num_classes))
+    cat_labels = rands.argmax(axis=1)
+    y_true = np.eye(num_classes, dtype="int")[cat_labels]
     y_pred = np.random.uniform(size=(num_samples, num_classes))
     y_pred /= y_pred.sum(axis=1, keepdims=True)
     return y_true, y_pred
