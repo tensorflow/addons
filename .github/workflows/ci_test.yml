@@ -116,5 +116,5 @@ jobs:
           python-version: 3.7
       - run: pip install pyyaml
       - name: Check that all tutorials are included in table of contents
-        run: python .github/workflow/verify_tutorial_toc.py
+        run: python .github/workflows/verify_tutorial_toc.py
 
