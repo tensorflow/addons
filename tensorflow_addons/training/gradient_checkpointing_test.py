@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """ Tests for methods implementing gradient checkpointing."""
+import pytest
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.training import recompute_sequential
@@ -33,6 +34,20 @@ def _get_simple_cnn_model(img_dim, n_channels):
             layers.Dense(2),
         ]
     )
+    return model
+
+
+def _get_many_layered_model(img_dim, n_channels):
+    model = tf.keras.Sequential()
+    model.add(
+        layers.Reshape(
+            target_shape=(img_dim * img_dim * n_channels,),
+            input_shape=(img_dim, img_dim, n_channels),
+        )
+    )
+    for _ in range(10):
+        model.add(layers.Dense(100, activation="relu"))
+    model.add(layers.Dense(2))
     return model
 
 
@@ -60,6 +75,20 @@ def test_recompute_sequential_forward_pass():
     np.testing.assert_allclose(logits_no_recompute, logits_with_recompute)
 
 
+def test_recompute_sequential_with_checkpoints_forward_pass():
+    img_dim = 2
+    n_channels = 1
+    bs = 1
+    x = tf.random.uniform([bs, img_dim, img_dim, n_channels])
+    model = _get_many_layered_model(img_dim, n_channels)
+    logits_no_recompute = _model_fn(model, x)
+    recompute_model_fn = recompute_sequential(_model_fn)
+    logits_with_recompute = recompute_model_fn(
+        model, x, num_checkpoints=2, _watch_vars=model.trainable_variables
+    )
+    np.testing.assert_allclose(logits_no_recompute, logits_with_recompute)
+
+
 def test_recompute_sequential_gradients():
     img_dim = 2
     n_channels = 1
@@ -83,3 +112,46 @@ def test_recompute_sequential_gradients():
     assert len(grads_no_recompute) == len(grads_with_recompute)
     for i in range(len(grads_no_recompute)):
         np.testing.assert_allclose(grads_no_recompute[i], grads_with_recompute[i])
+
+
+def test_recompute_sequential_gradients_with_checkpoints():
+    img_dim = 2
+    n_channels = 1
+    bs = 1
+    x = tf.random.uniform([bs, img_dim, img_dim, n_channels])
+    y = tf.ones([bs], dtype=tf.int64)
+    model = _get_many_layered_model(img_dim, n_channels)
+    recompute_model_fn = recompute_sequential(_model_fn)
+    with tf.GradientTape() as tape:
+        logits_no_recompute = _model_fn(model, x)
+        loss_no_recompute = _compute_loss(logits_no_recompute, y)
+    grads_no_recompute = tape.gradient(loss_no_recompute, model.trainable_variables)
+    del tape
+    with tf.GradientTape() as tape:
+        logits_with_recompute = recompute_model_fn(
+            model, x, num_checkpoints=2, _watch_vars=model.trainable_variables
+        )
+        loss_with_recompute = _compute_loss(logits_with_recompute, y)
+    grads_with_recompute = tape.gradient(loss_with_recompute, model.trainable_variables)
+    del tape
+    assert len(grads_no_recompute) == len(grads_with_recompute)
+    for i in range(len(grads_no_recompute)):
+        np.testing.assert_allclose(grads_no_recompute[i], grads_with_recompute[i])
+
+
+def test_valid_number_of_checkpoints():
+    img_dim = 2
+    n_channels = 1
+    bs = 1
+    x = tf.random.uniform([bs, img_dim, img_dim, n_channels])
+    model = _get_simple_cnn_model(img_dim, n_channels)
+    n_layers = len(model.layers)
+    recompute_model_fn = recompute_sequential(_model_fn)
+    with pytest.raises(
+        ValueError,
+        match="The number of checkpoints is {} and should be less than number of"
+        "layers in the model, which is {} .".format(n_layers, n_layers),
+    ):
+        recompute_model_fn(
+            model, x, num_checkpoints=n_layers, _watch_vars=model.trainable_variables
+        )
