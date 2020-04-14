@@ -80,7 +80,7 @@ jobs:
           path: wheelhouse
   upload-wheels:
     name: Publish wheels to PyPi
-    needs: [release-wheel, test-release-wheel, test-with-bazel]
+    needs: [release-wheel, test-with-bazel]
     runs-on: ubuntu-18.04
     strategy:
       matrix:
