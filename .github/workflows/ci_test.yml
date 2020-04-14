@@ -78,7 +78,7 @@ jobs:
       - run: bash tools/run_build.sh test_editable_mode
   test_python_code_only:
     name: Fast build to run python-only tests
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v1
         with:
