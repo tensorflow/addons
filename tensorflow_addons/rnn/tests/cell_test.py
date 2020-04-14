@@ -223,7 +223,7 @@ def test_keras_rnn():
 
 
 def test_config_nas():
-    cell = rnn_cell.NASCell(10, projection=5, use_bias=True)
+    cell = rnn_cell.NASCell(10, projection=5, use_bias=True, name="nas_cell_3")
 
     expected_config = {
         "dtype": "float32",
