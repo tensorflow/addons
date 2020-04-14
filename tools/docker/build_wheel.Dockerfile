@@ -28,6 +28,8 @@ RUN python -m pip install -r requirements.txt
 COPY ./ /addons
 WORKDIR /addons
 
+RUN python configure.py
+
 ARG NIGHTLY_FLAG
 ARG NIGHTLY_TIME
 RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \

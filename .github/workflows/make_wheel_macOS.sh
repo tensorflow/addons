@@ -8,6 +8,7 @@ python -m pip install delocate wheel setuptools tensorflow==$TF_VERSION
 bash tools/install_deps/bazel_macos.sh $BAZEL_VERSION
 
 export CC_OPT_FLAGS='-mavx'
+python configure.py
 bazel build \
   -c opt \
   --copt -mmacosx-version-min=10.13 \
