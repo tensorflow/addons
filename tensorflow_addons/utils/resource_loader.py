@@ -19,6 +19,7 @@ import os
 import warnings
 
 import tensorflow as tf
+from tensorflow_addons import register
 
 MIN_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.1.0"
 MAX_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.2.0"
@@ -46,6 +47,7 @@ def get_path_to_datafile(path):
 
 class LazySO:
     def __init__(self, relative_path):
+        register.register_all()
         self.relative_path = relative_path
         self._ops = None
 
