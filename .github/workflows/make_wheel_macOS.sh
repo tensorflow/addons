@@ -6,8 +6,8 @@ python --version
 python -m pip install delocate wheel setuptools tensorflow==$TF_VERSION
 
 bash tools/install_deps/bazel_macos.sh $BAZEL_VERSION
-bash tools/testing/build_and_run_tests.sh
 
+export CC_OPT_FLAGS='-mavx'
 bazel build \
   -c opt \
   --copt -mmacosx-version-min=10.13 \
@@ -21,3 +21,5 @@ bazel build \
 bazel-bin/build_pip_pkg artifacts $NIGHTLY_FLAG
 delocate-wheel -w wheelhouse artifacts/*.whl
 
+pip install wheelhouse/*.whl
+bash tools/testing/build_and_run_tests.sh

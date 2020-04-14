@@ -18,9 +18,11 @@
 
 set -x -e
 
-export CC_OPT_FLAGS='-mavx'
+python -m pip install -r tools/install_deps/pytest.txt
 
-python -m pip install -r tools/install_deps/pytest.txt -e ./
-python ./configure.py
-bash tools/install_so_files.sh
-python -m pytest -v --durations=25 ./tensorflow_addons
+# we make sure that the "import tensorflow_addons" uses the wheel
+# from the python installation and not the source files.
+# This is to make sure the wheel is working.
+CWD=$(pwd)
+cd /tmp
+python -m pytest -v --durations=25 "${CWD}"/tensorflow_addons
