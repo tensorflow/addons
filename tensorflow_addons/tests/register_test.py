@@ -14,7 +14,6 @@ def test_multiple_register():
         )
     register_all()
     register_all()
-    assert False
 
 
 def test_get_all_shared_objects():
