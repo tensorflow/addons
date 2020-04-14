@@ -54,7 +54,7 @@ RUN bash tools/releases/tf_auditwheel_patch.sh
 RUN auditwheel repair --plat manylinux2010_x86_64 artifacts/*.whl
 RUN ls -al wheelhouse/
 
-
+# -------------------------------------------------------------------
 FROM python:3.5 as test_wheel_in_fresh_environement
 
 ARG TF_VERSION
@@ -67,6 +67,5 @@ RUN python -c "import tensorflow_addons as tfa; print(tfa.activations.lisht(0.2)
 
 # -------------------------------------------------------------------
 FROM scratch as output
-
 
 COPY --from=test_wheel_in_fresh_environement /addons/wheelhouse/ .
