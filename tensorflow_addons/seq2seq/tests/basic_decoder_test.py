@@ -105,7 +105,7 @@ def test_step_with_training_helper_output_layer(use_output_layer=True):
     )
 
 
-@pytest.mark.parametrize("use_mask", [True, False])
+@pytest.mark.parametrize("use_mask", [True, False, None])
 def test_step_with_training_helper_masked_input(use_mask):
     batch_size = 5
     max_time = 8
