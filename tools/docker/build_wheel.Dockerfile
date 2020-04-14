@@ -18,7 +18,7 @@ RUN python -m pip install --upgrade pip setuptools auditwheel==2.0.0
 
 COPY tools/install_deps/ /install_deps
 ARG TF_VERSION
-RUN python -m pip install \
+RUN python -m pip install --no-cache-dir \
         tensorflow==$TF_VERSION \
         -r /install_deps/pytest.txt
 
