@@ -84,6 +84,10 @@ jobs:
         with:
           python-version: 3.5
       - uses: actions/checkout@v2
+      - uses: actions/cache@v1
+          with:
+            path: ~/.cache/pip
+            key: ${{ runner.os }}-pip-${{ hashFiles('tools/install_deps/*.txt') }}
       - run: pip install -r tools/install_deps/tensorflow-cpu.txt -r tools/install_deps/pytest.txt
       - run: pip install -e ./
       - run: pytest -v -n auto --skip-custom-ops ./tensorflow_addons
