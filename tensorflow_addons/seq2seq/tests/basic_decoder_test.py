@@ -25,7 +25,8 @@ from tensorflow_addons.seq2seq import basic_decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
 
 
-def test_step_with_training_helper_output_layer(use_output_layer=True):
+@pytest.mark.parametrize("use_output_layer", [True, False])
+def test_step_with_training_helper_output_layer(use_output_layer):
     sequence_length = [3, 4, 3, 1, 0]
     batch_size = 5
     max_time = 8
