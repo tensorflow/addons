@@ -76,6 +76,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: bash tools/run_build.sh test_editable_mode
+  test_python_code_only:
+    name: Fast build to run python-only tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: bash tools/run_build.sh python_only_tests
   test_cpu_in_small_docker_image:
     name: Run the cpu tests in a small python docker image
     runs-on: ubuntu-latest

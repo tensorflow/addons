@@ -121,6 +121,20 @@ RUN pytest -v -n auto ./tensorflow_addons/activations
 RUN touch /ok.txt
 
 # -------------------------------
+FROM python:3.5 as python_only_tests
+
+COPY tools/install_deps /install_deps
+RUN --mount=type=cache,id=cache_pip,target=/root/.cache/pip \
+    cd /install_deps && pip install \
+    -r tensorflow-cpu.txt \
+    -r pytest.txt
+
+COPY ./ /addons
+RUN pip install -e /addons
+RUN pytest -v -n auto --skip-custom-ops /addons/tensorflow_addons
+RUN touch /ok.txt
+
+# -------------------------------
 # ensure that all checks were successful
 # this is necessary if using docker buildkit
 # with "export DOCKER_BUILDKIT=1"
@@ -136,3 +150,4 @@ COPY --from=4 /ok.txt /ok4.txt
 COPY --from=5 /ok.txt /ok5.txt
 COPY --from=6 /ok.txt /ok6.txt
 COPY --from=7 /ok.txt /ok7.txt
+COPY --from=8 /ok.txt /ok8.txt
