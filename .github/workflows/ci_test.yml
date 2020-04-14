@@ -77,7 +77,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: bash tools/run_build.sh test_editable_mode
   test_python_code_only:
-    name: Fast build to run python-only tests on macos
+    name: Fast build to run python-only tests
     runs-on: macos-latest
     steps:
       - uses: actions/setup-python@v1
@@ -86,7 +86,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: pip install -r tools/install_deps/tensorflow-cpu.txt -r tools/install_deps/pytest.txt
       - run: pip install -e ./
-      - run: pytest -v -n auto --skip-custom-ops /addons/tensorflow_addons
+      - run: pytest -v -n auto --skip-custom-ops ./tensorflow_addons
   test_cpu_in_small_docker_image:
     name: Run the cpu tests in a small python docker image
     runs-on: ubuntu-latest
