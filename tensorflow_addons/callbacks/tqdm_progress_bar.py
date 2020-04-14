@@ -168,10 +168,9 @@ class TQDMProgressBar(Callback):
 
         self.num_samples_seen += batch_size
         self.steps_to_update += 1
-        self.steps_so_far += 1
 
-        if self.steps_so_far < self.total_steps:
-
+        if self.steps_so_far <= self.total_steps:
+            self.steps_so_far += 1
             for metric, value in logs.items():
                 self.logs[metric] += value * batch_size
 
