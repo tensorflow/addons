@@ -146,7 +146,10 @@ class TQDMProgressBar(Callback):
                 self.overall_progress_tqdm.close()
         elif hook == "test" or hook == "train_epoch":
             if self.show_epoch_progress:
-                metrics = self.format_metrics(logs, self.num_samples_seen)
+                if hook == "test":
+                    metrics = self.format_metrics(logs, self.num_samples_seen)
+                else:
+                    metrics = self.format_metrics(logs)
                 self.epoch_progress_tqdm.desc = metrics
                 # set miniters and mininterval to 0 so last update displays
                 self.epoch_progress_tqdm.miniters = 0
