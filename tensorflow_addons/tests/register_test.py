@@ -1,8 +1,8 @@
 import sys
 
 import pytest
-import tensorflow as tf
 from tensorflow_addons.register import register_all, _get_all_shared_objects
+from tensorflow_addons.utils.resource_loader import load_op_library
 
 
 def test_multiple_register():
@@ -15,7 +15,7 @@ def test_get_all_shared_objects():
     assert len(all_shared_objects) >= 4
 
     for file in all_shared_objects:
-        tf.load_op_library(file)
+        load_op_library(file)
 
 
 if __name__ == "__main__":

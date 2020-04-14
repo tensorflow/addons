@@ -4,7 +4,7 @@ from pathlib import Path
 
 import tensorflow as tf
 
-from tensorflow_addons.utils.resource_loader import get_project_root
+from tensorflow_addons.utils.resource_loader import get_project_root, load_op_library
 
 
 def register_all(keras_objects: bool = True, custom_kernels: bool = True) -> None:
@@ -89,7 +89,7 @@ def register_custom_kernels() -> None:
         )
     try:
         for shared_object in all_shared_objects:
-            tf.load_op_library(shared_object)
+            load_op_library(shared_object)
     except tf.errors.NotFoundError as e:
         raise RuntimeError(
             "One of the shared objects ({}) could not be loaded. This may be "

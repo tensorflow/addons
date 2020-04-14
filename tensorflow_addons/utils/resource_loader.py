@@ -45,6 +45,17 @@ def get_path_to_datafile(path):
     return os.path.join(root_dir, path.replace("/", os.sep))
 
 
+def load_op_library(so_path):
+    if SKIP_CUSTOM_OPS:
+        import pytest
+
+        pytest.skip(
+            "Skipping the test because a custom ops "
+            "was being loaded while --skip-custom-ops was set."
+        )
+    return tf.load_op_library(so_path)
+
+
 class LazySO:
     def __init__(self, relative_path):
         self.relative_path = relative_path
@@ -52,16 +63,9 @@ class LazySO:
 
     @property
     def ops(self):
-        if SKIP_CUSTOM_OPS:
-            import pytest
-
-            pytest.skip(
-                "Skipping the test because a custom ops "
-                "was being loaded while --skip-custom-ops was set."
-            )
         if self._ops is None:
             self.display_warning_if_incompatible()
-            self._ops = tf.load_op_library(get_path_to_datafile(self.relative_path))
+            self._ops = load_op_library(get_path_to_datafile(self.relative_path))
         return self._ops
 
     def display_warning_if_incompatible(self):
