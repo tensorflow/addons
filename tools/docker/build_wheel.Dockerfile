@@ -3,6 +3,14 @@ ARG TF_VERSION
 FROM seanpmorgan/tensorflow:2.1.0-custom-op-gpu-ubuntu16-minimal as base_install
 ENV TF_NEED_CUDA="1"
 
+# is needed because when we sqashed the image, we lost all environment variables.
+ENV NVIDIA_REQUIRE_CUDA=cuda>=10.1 brand=tesla,driver>=384,driver<385 brand=tesla,driver>=396,driver<397 brand=tesla,driver>=410,driver<411
+ENV LIBRARY_PATH=/usr/local/cuda/lib64/stubs
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
+ENV PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
 RUN apt-get update && apt-get install patchelf
 
 # Fix presented in
