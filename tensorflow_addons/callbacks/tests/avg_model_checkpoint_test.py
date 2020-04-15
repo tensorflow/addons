@@ -238,7 +238,7 @@ def _run_load_weights_on_restart_test_common_iterations():
     return model, train_ds, filepath, weights_after_one_more_epoch
 
 
-def get_checkpoint_load_weights_on_restart_true_test():
+def test_checkpoint_load_weights():
     (
         model,
         train_ds,
@@ -258,6 +258,6 @@ def get_checkpoint_load_weights_on_restart_true_test():
     np.testing.assert_almost_equal(
         weights_after_one_more_epoch, weights_after_model_restoring_and_one_more_epoch
     )
-    not np.testing.assert_almost_equal(
+    np.testing.assert_almost_equal(
         weights_after_one_more_epoch, weights_with_one_final_extra_epoch
     )
