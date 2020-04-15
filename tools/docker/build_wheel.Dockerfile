@@ -18,7 +18,7 @@ RUN python -m pip install --upgrade pip setuptools auditwheel==2.0.0
 
 COPY tools/install_deps/ /install_deps
 ARG TF_VERSION
-RUN python -m pip install --no-cache-dir \
+RUN python -m pip install \
         tensorflow==$TF_VERSION \
         -r /install_deps/pytest.txt
 
@@ -58,12 +58,12 @@ RUN ls -al wheelhouse/
 FROM python:3.5 as test_wheel_in_fresh_environement
 
 ARG TF_VERSION
-RUN python -m pip install --no-cache-dir tensorflow==$TF_VERSION
+RUN python -m pip install tensorflow==$TF_VERSION
 
 COPY --from=make_wheel /addons/wheelhouse/ /addons/wheelhouse/
 RUN pip install /addons/wheelhouse/*.whl
 
-RUN python -c "import tensorflow_addons as tfa; print(tfa.activations.lisht(0.2))"
+RUN python -c "import tensorflow_addons as tfa; print(tfa.register_all())"
 
 # -------------------------------------------------------------------
 FROM scratch as output
