@@ -1,14 +1,9 @@
+import os
 import pytest
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow_addons.callbacks import AverageModelCheckpoint
 from tensorflow_addons.optimizers import MovingAverage
-import os
-
-try:
-    import h5py
-except ImportError:
-    h5py = None
 
 TRAIN_SAMPLES = 10
 NUM_CLASSES = 2
@@ -18,19 +13,20 @@ BATCH_SIZE = 5
 EPOCHS = 5
 test_model_filepath = "test_model.h5"
 
-moving_avg = MovingAverage(
-    tf.keras.optimizers.SGD(lr=2.0), sequential_update=True, average_decay=0.5,
-)
 
-
-def get_data_and_model(optimizer=moving_avg):
+def get_data_and_model(optimizer="moving_avg"):
     x = tf.random.normal([TRAIN_SAMPLES, INPUT_DIM])
     y = tf.random.normal([TRAIN_SAMPLES, NUM_CLASSES])
-    inputs = keras.layers.Input(INPUT_DIM)
-    layer1 = keras.layers.Dense(NUM_HIDDEN, input_dim=INPUT_DIM, activation="relu")(
-        inputs
+    moving_avg = MovingAverage(
+        tf.keras.optimizers.SGD(lr=2.0), sequential_update=True, average_decay=0.5
     )
-    outputs = keras.layers.Dense(NUM_CLASSES, activation="softmax")(layer1)
+    if optimizer == "moving_avg":
+        optimizer = moving_avg
+    inputs = keras.layers.Input(INPUT_DIM)
+    hidden_layer = keras.layers.Dense(
+        NUM_HIDDEN, input_dim=INPUT_DIM, activation="relu"
+    )(inputs)
+    outputs = keras.layers.Dense(NUM_CLASSES, activation="softmax")(hidden_layer)
     model = keras.Model(inputs=inputs, outputs=outputs)
     model.compile(loss="categorical_crossentropy", optimizer=optimizer, metrics=["acc"])
     return x, y, model
@@ -44,9 +40,9 @@ def test_compatibility_with_some_opts_only():
     with pytest.raises(
         TypeError,
         match="AverageModelCheckpoint is only used when trainingwith"
-        + " MovingAverage or StochasticAverage",
+        " MovingAverage or StochasticAverage",
     ):
-        assert model.fit(
+        model.fit(
             x, y, epochs=EPOCHS, batch_size=BATCH_SIZE, callbacks=[avg_model_ckpt]
         )
 
@@ -201,6 +197,6 @@ def test_save_freq():
 def test_invalid_save_freq():
     save_freq = "invalid_save_freq"
     with pytest.raises(ValueError, match="Unrecognized save_freq"):
-        assert AverageModelCheckpoint(
+        AverageModelCheckpoint(
             update_weights=True, filepath=test_model_filepath, save_freq=save_freq
         )
