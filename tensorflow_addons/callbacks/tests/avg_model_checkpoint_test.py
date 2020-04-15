@@ -11,7 +11,6 @@ INPUT_DIM = 3
 NUM_HIDDEN = 5
 BATCH_SIZE = 5
 EPOCHS = 5
-test_model_filepath = "test_model.h5"
 
 
 def get_data_and_model(optimizer="moving_avg"):
@@ -32,7 +31,8 @@ def get_data_and_model(optimizer="moving_avg"):
     return x, y, model
 
 
-def test_compatibility_with_some_opts_only():
+def test_compatibility_with_some_opts_only(tmp_path):
+    test_model_filepath = tmp_path / "test_model.h5"
     x, y, model = get_data_and_model(optimizer="rmsprop")
     avg_model_ckpt = AverageModelCheckpoint(
         update_weights=True, filepath=test_model_filepath
@@ -47,17 +47,18 @@ def test_compatibility_with_some_opts_only():
         )
 
 
-def test_model_file_creation():
+def test_model_file_creation(tmp_path):
+    test_model_filepath = tmp_path / "test_model.h5"
     x, y, model = get_data_and_model()
     avg_model_ckpt = AverageModelCheckpoint(
         update_weights=True, filepath=test_model_filepath
     )
     model.fit(x, y, epochs=EPOCHS, batch_size=BATCH_SIZE, callbacks=[avg_model_ckpt])
     assert os.path.exists(test_model_filepath)
-    os.remove(test_model_filepath)
 
 
-def test_mode_auto():
+def test_mode_auto(tmp_path):
+    test_model_filepath = tmp_path / "test_model.h5"
     x, y, model = get_data_and_model()
     monitor = "val_loss"
     save_best_only = False
@@ -78,10 +79,10 @@ def test_mode_auto():
         callbacks=[avg_model_ckpt],
     )
     assert os.path.exists(test_model_filepath)
-    os.remove(test_model_filepath)
 
 
-def test_mode_min():
+def test_mode_min(tmp_path):
+    test_model_filepath = tmp_path / "test_model.h5"
     x, y, model = get_data_and_model()
     monitor = "val_loss"
     save_best_only = False
@@ -102,10 +103,10 @@ def test_mode_min():
         callbacks=[avg_model_ckpt],
     )
     assert os.path.exists(test_model_filepath)
-    os.remove(test_model_filepath)
 
 
-def test_mode_max():
+def test_mode_max(tmp_path):
+    test_model_filepath = tmp_path / "test_model.h5"
     x, y, model = get_data_and_model()
     mode = "max"
     monitor = "val_acc"
@@ -126,10 +127,10 @@ def test_mode_max():
         callbacks=[avg_model_ckpt],
     )
     assert os.path.exists(test_model_filepath)
-    os.remove(test_model_filepath)
 
 
-def test_save_best_only():
+def test_save_best_only(tmp_path):
+    test_model_filepath = tmp_path / "test_model.h5"
     x, y, model = get_data_and_model()
     save_best_only = True
     avg_model_ckpt = AverageModelCheckpoint(
@@ -144,10 +145,10 @@ def test_save_best_only():
         callbacks=[avg_model_ckpt],
     )
     assert os.path.exists(test_model_filepath)
-    os.remove(test_model_filepath)
 
 
-def test_metric_unavailable():
+def test_metric_unavailable(tmp_path):
+    test_model_filepath = tmp_path / "test_model.h5"
     x, y, model = get_data_and_model()
     monitor = "unknown"
     avg_model_ckpt = AverageModelCheckpoint(
@@ -167,9 +168,9 @@ def test_metric_unavailable():
     assert not os.path.exists(test_model_filepath)
 
 
-def test_save_freq():
+def test_save_freq(tmp_path):
+    test_filepath = tmp_path / "test_model.{epoch:02d}.h5"
     x, y, model = get_data_and_model()
-    test_filepath = "test_model.{epoch:02d}.h5"
     save_freq = "epoch"
     avg_model_ckpt = AverageModelCheckpoint(
         update_weights=False, filepath=test_filepath, save_freq=save_freq
@@ -187,14 +188,10 @@ def test_save_freq():
     assert os.path.exists(test_filepath.format(epoch=3))
     assert os.path.exists(test_filepath.format(epoch=4))
     assert os.path.exists(test_filepath.format(epoch=5))
-    os.remove(test_filepath.format(epoch=1))
-    os.remove(test_filepath.format(epoch=2))
-    os.remove(test_filepath.format(epoch=3))
-    os.remove(test_filepath.format(epoch=4))
-    os.remove(test_filepath.format(epoch=5))
 
 
-def test_invalid_save_freq():
+def test_invalid_save_freq(tmp_path):
+    test_model_filepath = tmp_path / "test_model.h5"
     save_freq = "invalid_save_freq"
     with pytest.raises(ValueError, match="Unrecognized save_freq"):
         AverageModelCheckpoint(
