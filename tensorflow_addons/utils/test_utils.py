@@ -17,6 +17,7 @@
 import contextlib
 import inspect
 import unittest
+import random
 
 import numpy as np
 import pytest
@@ -192,6 +193,13 @@ def cpu_and_gpu(request):
 @pytest.fixture(scope="function", params=["channels_first", "channels_last"])
 def data_format(request):
     return request.param
+
+
+@pytest.fixture(scope="function", autouse=True)
+def set_seeds():
+    random.seed(0)
+    np.random.seed(0)
+    tf.random.set_seed(0)
 
 
 def assert_allclose_according_to_type(
