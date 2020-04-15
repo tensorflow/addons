@@ -1,4 +1,9 @@
 set -e -x
+
+df -h
+
+du -h --max-depth=2 /
+
 DOCKER_BUILDKIT=1 docker build \
     -f tools/docker/build_wheel.Dockerfile \
     --output type=local,dest=wheelhouse \
