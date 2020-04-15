@@ -4,8 +4,8 @@ df -h
 
 docker info
 
-du -h --max-depth=2 /usr/share
-du -h --max-depth=2 /usr/local
+du -h --max-depth=1 /usr/share
+du -h --max-depth=1 /usr/local
 du -h --max-depth=2 /
 
 
