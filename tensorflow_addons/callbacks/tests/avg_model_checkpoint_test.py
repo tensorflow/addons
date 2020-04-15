@@ -218,7 +218,7 @@ def _get_dummy_resource_for_checkpoint_testing(tmp_path):
     train_ds = get_input_datasets()
     filepath = str(tmp_path / "test_model.{epoch:02d}.h5")
     callback = AverageModelCheckpoint(
-        update_weights=False, filepath=filepath, save_weights_only=True
+        update_weights=True, filepath=filepath, save_weights_only=True
     )
     return model, train_ds, callback, filepath
 
@@ -248,7 +248,7 @@ def test_checkpoint_load_weights(tmp_path):
         weights_after_one_more_epoch,
     ) = _run_load_weights_on_restart_test_common_iterations(tmp_path)
     callback = AverageModelCheckpoint(
-        update_weights=False,
+        update_weights=True,
         filepath=filepath,
         save_weights_only=True,
         load_weights_on_restart=True,
@@ -257,9 +257,11 @@ def test_checkpoint_load_weights(tmp_path):
     weights_after_model_restoring_and_one_more_epoch = model.get_weights()
     model.fit(train_ds, epochs=1, callbacks=[callback])
     weights_with_one_final_extra_epoch = model.get_weights()
-    np.testing.assert_almost_equal(
-        weights_after_one_more_epoch, weights_after_model_restoring_and_one_more_epoch
-    )
-    np.testing.assert_almost_equal(
-        weights_after_one_more_epoch, weights_with_one_final_extra_epoch
-    )
+    with np.testing.assert_raises(AssertionError):
+        np.testing.assert_almost_equal(
+            weights_after_one_more_epoch,
+            weights_after_model_restoring_and_one_more_epoch,
+        )
+        np.testing.assert_almost_equal(
+            weights_after_one_more_epoch, weights_with_one_final_extra_epoch
+        )
