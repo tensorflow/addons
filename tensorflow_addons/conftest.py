@@ -54,7 +54,7 @@ def report_funtions_durations(terminalreporter):
     durations_by_file = defaultdict(float)
     for test_report in dlist:
         if "[" in test_report.nodeid:
-            file_and_function = test_report.nodeid[:test_report.nodeid.index("[")]
+            file_and_function = test_report.nodeid[: test_report.nodeid.index("[")]
         else:
             file_and_function = test_report.nodeid
         durations_by_file[file_and_function] += test_report.duration
@@ -81,6 +81,7 @@ def report_sum_durations(terminalreporter):
 
     terminalreporter.write_sep("=", "Sum of all tests durations")
     terminalreporter.write_line("{:02.2f}s".format(sum(x.duration for x in dlist)))
+
 
 def pytest_terminal_summary(terminalreporter):
     report_file_durations(terminalreporter)
