@@ -17,6 +17,7 @@
 import itertools
 
 import numpy as np
+import pytest
 import tensorflow as tf
 
 from tensorflow_addons.seq2seq import gather_tree
@@ -46,55 +47,49 @@ def test_gather_tree_one():
     np.testing.assert_equal(expected_result, beams.numpy())
 
 
-class GatherTreeTest(tf.test.TestCase):
-    def testBadParentValuesOnCPU(self):
-        # (batch_size = 1, max_time = 4, beams = 3)
-        # bad parent in beam 1 time 1
-        end_token = 10
-        step_ids = _transpose_batch_time(
-            [[[1, 2, 3], [4, 5, 6], [7, 8, 9], [-1, -1, -1]]]
-        )
-        parent_ids = _transpose_batch_time(
-            [[[0, 0, 0], [0, -1, 1], [2, 1, 2], [-1, -1, -1]]]
-        )
-        max_sequence_lengths = [3]
-        with tf.device("/cpu:0"):
-            msg = r"parent id -1 at \(batch, time, beam\) == \(0, 0, 1\)"
-            with self.assertRaisesOpError(msg):
-                beams = gather_tree(
-                    step_ids=step_ids,
-                    parent_ids=parent_ids,
-                    max_sequence_lengths=max_sequence_lengths,
-                    end_token=end_token,
-                )
-                self.evaluate(beams)
-
-    def testBadParentValuesOnGPU(self):
-        # Only want to run this test on CUDA devices, as gather_tree is not
-        # registered for SYCL devices.
-        if not tf.test.is_gpu_available(cuda_only=True):
-            return
-        # (max_time = 4, batch_size = 1, beams = 3)
-        # bad parent in beam 1 time 1; appears as a negative index at time 0
-        end_token = 10
-        step_ids = _transpose_batch_time(
-            [[[1, 2, 3], [4, 5, 6], [7, 8, 9], [-1, -1, -1]]]
-        )
-        parent_ids = _transpose_batch_time(
-            [[[0, 0, 0], [0, -1, 1], [2, 1, 2], [-1, -1, -1]]]
-        )
-        max_sequence_lengths = [3]
-        expected_result = _transpose_batch_time(
-            [[[2, -1, 2], [6, 5, 6], [7, 8, 9], [10, 10, 10]]]
-        )
-        with tf.device("/device:GPU:0"):
-            beams = gather_tree(
+def test_bad_parent_values_on_cpu():
+    # (batch_size = 1, max_time = 4, beams = 3)
+    # bad parent in beam 1 time 1
+    end_token = 10
+    step_ids = _transpose_batch_time([[[1, 2, 3], [4, 5, 6], [7, 8, 9], [-1, -1, -1]]])
+    parent_ids = _transpose_batch_time(
+        [[[0, 0, 0], [0, -1, 1], [2, 1, 2], [-1, -1, -1]]]
+    )
+    max_sequence_lengths = [3]
+    with tf.device("/cpu:0"):
+        with pytest.raises(tf.errors.InvalidArgumentError):
+            _ = gather_tree(
                 step_ids=step_ids,
                 parent_ids=parent_ids,
                 max_sequence_lengths=max_sequence_lengths,
                 end_token=end_token,
             )
-            self.assertAllEqual(expected_result, self.evaluate(beams))
+
+
+def test_bad_parent_values_on_gpu():
+    # Only want to run this test on CUDA devices, as gather_tree is not
+    # registered for SYCL devices.
+    if not tf.test.is_gpu_available(cuda_only=True):
+        return
+    # (max_time = 4, batch_size = 1, beams = 3)
+    # bad parent in beam 1 time 1; appears as a negative index at time 0
+    end_token = 10
+    step_ids = _transpose_batch_time([[[1, 2, 3], [4, 5, 6], [7, 8, 9], [-1, -1, -1]]])
+    parent_ids = _transpose_batch_time(
+        [[[0, 0, 0], [0, -1, 1], [2, 1, 2], [-1, -1, -1]]]
+    )
+    max_sequence_lengths = [3]
+    expected_result = _transpose_batch_time(
+        [[[2, -1, 2], [6, 5, 6], [7, 8, 9], [10, 10, 10]]]
+    )
+    with tf.device("/device:GPU:0"):
+        beams = gather_tree(
+            step_ids=step_ids,
+            parent_ids=parent_ids,
+            max_sequence_lengths=max_sequence_lengths,
+            end_token=end_token,
+        )
+        np.testing.assert_equal(expected_result, beams.numpy())
 
 
 def test_gather_tree_batch():
