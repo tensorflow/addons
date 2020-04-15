@@ -4,6 +4,8 @@ df -h
 
 du -h --max-depth=2 /
 
+docker info
+
 DOCKER_BUILDKIT=1 docker build \
     -f tools/docker/build_wheel.Dockerfile \
     --output type=local,dest=wheelhouse \
