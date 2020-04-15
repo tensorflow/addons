@@ -32,7 +32,7 @@ def get_data_and_model(optimizer="moving_avg"):
 
 
 def test_compatibility_with_some_opts_only(tmpdir):
-    test_model_filepath = tmpdir / "test_model.h5"
+    test_model_filepath = str(tmpdir.join("test_model.h5"))
     x, y, model = get_data_and_model(optimizer="rmsprop")
     avg_model_ckpt = AverageModelCheckpoint(
         update_weights=True, filepath=test_model_filepath
@@ -48,7 +48,7 @@ def test_compatibility_with_some_opts_only(tmpdir):
 
 
 def test_model_file_creation(tmpdir):
-    test_model_filepath = tmpdir / "test_model.h5"
+    test_model_filepath = str(tmpdir.join("test_model.h5"))
     x, y, model = get_data_and_model()
     avg_model_ckpt = AverageModelCheckpoint(
         update_weights=True, filepath=test_model_filepath
@@ -58,7 +58,7 @@ def test_model_file_creation(tmpdir):
 
 
 def test_mode_auto(tmpdir):
-    test_model_filepath = tmpdir / "test_model.h5"
+    test_model_filepath = str(tmpdir.join("test_model.h5"))
     x, y, model = get_data_and_model()
     monitor = "val_loss"
     save_best_only = False
@@ -82,7 +82,7 @@ def test_mode_auto(tmpdir):
 
 
 def test_mode_min(tmpdir):
-    test_model_filepath = tmpdir / "test_model.h5"
+    test_model_filepath = str(tmpdir.join("test_model.h5"))
     x, y, model = get_data_and_model()
     monitor = "val_loss"
     save_best_only = False
@@ -106,7 +106,7 @@ def test_mode_min(tmpdir):
 
 
 def test_mode_max(tmpdir):
-    test_model_filepath = tmpdir / "test_model.h5"
+    test_model_filepath = str(tmpdir.join("test_model.h5"))
     x, y, model = get_data_and_model()
     mode = "max"
     monitor = "val_acc"
@@ -130,7 +130,7 @@ def test_mode_max(tmpdir):
 
 
 def test_save_best_only(tmpdir):
-    test_model_filepath = tmpdir / "test_model.h5"
+    test_model_filepath = str(tmpdir.join("test_model.h5"))
     x, y, model = get_data_and_model()
     save_best_only = True
     avg_model_ckpt = AverageModelCheckpoint(
@@ -148,7 +148,7 @@ def test_save_best_only(tmpdir):
 
 
 def test_metric_unavailable(tmpdir):
-    test_model_filepath = tmpdir / "test_model.h5"
+    test_model_filepath = str(tmpdir.join("test_model.h5"))
     x, y, model = get_data_and_model()
     monitor = "unknown"
     avg_model_ckpt = AverageModelCheckpoint(
@@ -169,7 +169,7 @@ def test_metric_unavailable(tmpdir):
 
 
 def test_save_freq(tmpdir):
-    test_filepath = tmpdir / "test_model.{epoch:02d}.h5"
+    test_filepath = str(tmpdir.join("test_model.{epoch:02d}.h5"))
     x, y, model = get_data_and_model()
     save_freq = "epoch"
     avg_model_ckpt = AverageModelCheckpoint(
@@ -191,7 +191,7 @@ def test_save_freq(tmpdir):
 
 
 def test_invalid_save_freq(tmpdir):
-    test_model_filepath = tmpdir / "test_model.h5"
+    test_model_filepath = str(tmpdir.join("test_model.h5"))
     save_freq = "invalid_save_freq"
     with pytest.raises(ValueError, match="Unrecognized save_freq"):
         AverageModelCheckpoint(
