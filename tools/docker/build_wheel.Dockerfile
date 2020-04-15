@@ -11,7 +11,6 @@ ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64
 ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 ENV PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-
 RUN apt-get update && apt-get install patchelf
 
 # Fix presented in
@@ -39,11 +38,6 @@ WORKDIR /addons
 
 # -------------------------------------------------------------------
 FROM base_install as tfa_gpu_tests
-
-#ENV LD_LIBRARY_PATH="/usr/local/nvidia/lib:/usr/local/nvidia/lib64"
-
-
-
 CMD ["bash", "tools/testing/build_and_run_tests.sh"]
 
 # -------------------------------------------------------------------
