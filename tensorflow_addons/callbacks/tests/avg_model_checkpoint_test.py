@@ -223,8 +223,10 @@ def _get_dummy_resource_for_checkpoint_testing(tmp_path):
     return model, train_ds, callback, filepath
 
 
-def _run_load_weights_on_restart_test_common_iterations():
-    (model, train_ds, callback, filepath) = _get_dummy_resource_for_checkpoint_testing()
+def _run_load_weights_on_restart_test_common_iterations(tmp_path):
+    (model, train_ds, callback, filepath) = _get_dummy_resource_for_checkpoint_testing(
+        tmp_path
+    )
     initial_epochs = 3
     model.fit(train_ds, epochs=initial_epochs, callbacks=[callback])
     # The files should exist after fitting with callback.
@@ -238,13 +240,13 @@ def _run_load_weights_on_restart_test_common_iterations():
     return model, train_ds, filepath, weights_after_one_more_epoch
 
 
-def test_checkpoint_load_weights():
+def test_checkpoint_load_weights(tmp_path):
     (
         model,
         train_ds,
         filepath,
         weights_after_one_more_epoch,
-    ) = _run_load_weights_on_restart_test_common_iterations()
+    ) = _run_load_weights_on_restart_test_common_iterations(tmp_path)
     callback = AverageModelCheckpoint(
         update_weights=False,
         filepath=filepath,
