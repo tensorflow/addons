@@ -57,8 +57,7 @@ def test_bad_parent_values_on_cpu():
     )
     max_sequence_lengths = [3]
     with tf.device("/cpu:0"):
-        with pytest.raises(
-            tf.errors.InvalidArgumentError):
+        with pytest.raises(tf.errors.InvalidArgumentError):
             _ = gather_tree(
                 step_ids=step_ids,
                 parent_ids=parent_ids,
