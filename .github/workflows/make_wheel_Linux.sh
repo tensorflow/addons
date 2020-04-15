@@ -1,13 +1,8 @@
 set -e -x
 
 df -h
-
 docker info
-
-du -h --max-depth=1 /usr/share
-du -h --max-depth=1 /usr/local
-du -h --max-depth=2 /
-
+rm -rf /usr/share/dotnet
 
 DOCKER_BUILDKIT=1 docker build \
     -f tools/docker/build_wheel.Dockerfile \
