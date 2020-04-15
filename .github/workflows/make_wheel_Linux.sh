@@ -2,7 +2,8 @@ set -e -x
 
 df -h
 docker info
-rm -rf /usr/share/dotnet
+mkdir /tmp/empty
+rsync -a --delete /tmp/empty/ /usr/share/dotnet/
 df -h
 
 DOCKER_BUILDKIT=1 docker build \
