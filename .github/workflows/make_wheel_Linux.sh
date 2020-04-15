@@ -2,9 +2,10 @@ set -e -x
 
 df -h
 
+docker info
+
 du -h --max-depth=2 /
 
-docker info
 
 DOCKER_BUILDKIT=1 docker build \
     -f tools/docker/build_wheel.Dockerfile \
