@@ -46,7 +46,6 @@ ARG NIGHTLY_FLAG
 ARG NIGHTLY_TIME
 RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
     bash tools/testing/build_and_run_tests.sh && \
-    bazel clean --expunge && \
     bazel build \
         -c opt \
         --noshow_progress \
