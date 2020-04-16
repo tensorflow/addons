@@ -188,6 +188,44 @@ def test_unweighted_soft():
     np.testing.assert_allclose(loss, loss_np, rtol=1e-6, atol=1e-6)
 
 
+def test_dtypes_float16():
+    num_data = 20
+    feat_dim = 6
+    margin = 1.0
+    num_classes = 4
+
+    embedding = np.random.rand(num_data, feat_dim).astype(np.float16)
+    labels = np.random.randint(0, num_classes, size=(num_data))
+
+    loss_np = triplet_hard_loss_np(labels, embedding, margin)
+
+    # Compute the loss in TF.
+    y_true = tf.constant(labels)
+    y_pred = tf.constant(embedding, dtype=tf.float16)
+    cce_obj = triplet.TripletHardLoss()
+    loss = cce_obj(y_true, y_pred)
+    np.testing.assert_allclose(loss, loss_np, rtol=1e-5, atol=1e-5)
+
+
+def test_dtypes_bfloat16():
+    num_data = 20
+    feat_dim = 6
+    margin = 1.0
+    num_classes = 4
+
+    embedding = np.random.rand(num_data, feat_dim).astype(np.float16)
+    labels = np.random.randint(0, num_classes, size=(num_data))
+
+    loss_np = triplet_hard_loss_np(labels, embedding, margin)
+
+    # Compute the loss in TF.
+    y_true = tf.constant(labels)
+    y_pred = tf.constant(embedding, dtype=tf.bfloat16)
+    cce_obj = triplet.TripletHardLoss()
+    loss = cce_obj(y_true, y_pred)
+    np.testing.assert_allclose(loss.numpy(), loss_np, rtol=1e-2, atol=1e-2)
+
+
 def test_keras_model_compile_hard():
     model = tf.keras.models.Sequential(
         [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10),]
