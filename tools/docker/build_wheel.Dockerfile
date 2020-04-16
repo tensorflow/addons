@@ -77,4 +77,4 @@ RUN python -c "import tensorflow_addons as tfa; print(tfa.register_all())"
 # -------------------------------------------------------------------
 FROM scratch as output
 
-COPY --from=test_wheel_in_fresh_environement /addons/wheelhouse/ .
+COPY --from=test_wheel_in_fresh_environment /addons/wheelhouse/ .
