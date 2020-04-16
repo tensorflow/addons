@@ -368,39 +368,34 @@ def test_step_with_scheduled_embedding_training_helper():
     assert (batch_size, input_depth) == step_next_inputs.get_shape()
 
     eval_result = {
-        "batch_size": batch_size_t,
-        "first_finished": first_finished,
-        "first_inputs": first_inputs,
-        "first_state": first_state,
+        "batch_size": batch_size_t.numpy(),
+        "first_finished": first_finished.numpy(),
+        "first_inputs": first_inputs.numpy(),
+        "first_state": np.asanyarray(first_state),
         "step_outputs": step_outputs,
-        "step_state": step_state,
-        "step_next_inputs": step_next_inputs,
-        "step_finished": step_finished,
+        "step_state": np.asanyarray(step_state),
+        "step_next_inputs": step_next_inputs.numpy(),
+        "step_finished": step_finished.numpy(),
     }
 
     np.testing.assert_equal(
         np.asanyarray([False, False, False, False, True]),
-        eval_result["first_finished"].numpy(),
+        eval_result["first_finished"],
     )
     np.testing.assert_equal(
-        np.asanyarray([False, False, False, True, True]),
-        eval_result["step_finished"].numpy(),
+        np.asanyarray([False, False, False, True, True]), eval_result["step_finished"],
     )
-    sample_ids = eval_result["step_outputs"].sample_id
+    sample_ids = eval_result["step_outputs"].sample_id.numpy()
     assert output_dtype.sample_id == sample_ids.dtype
-    batch_where_not_sampling = tf.cast(np.where(sample_ids == -1), dtype=tf.int32)
-    batch_where_sampling = tf.cast(np.where(sample_ids > -1), dtype=tf.int32)
+    batch_where_not_sampling = np.where(sample_ids == -1)
+    batch_where_sampling = np.where(sample_ids > -1)
 
     np.testing.assert_equal(
-        tf.squeeze(
-            tf.gather(eval_result["step_next_inputs"], batch_where_sampling)
-        ).numpy(),
-        tf.squeeze(tf.gather(embeddings[sample_ids, :], batch_where_sampling)).numpy(),
+        eval_result["step_next_inputs"][batch_where_sampling],
+        embeddings[sample_ids[batch_where_sampling]],
     )
     np.testing.assert_equal(
-        tf.squeeze(
-            tf.gather(eval_result["step_next_inputs"], batch_where_not_sampling)
-        ),
+        eval_result["step_next_inputs"][batch_where_not_sampling],
         np.squeeze(inputs[batch_where_not_sampling, 1], axis=0),
     )
 
@@ -481,15 +476,16 @@ def test_step_with_scheduled_output_training_helper(
     assert (batch_size, cell_depth) == step_state[1].get_shape()
 
     fetches = {
-        "batch_size": batch_size_t,
-        "first_finished": first_finished,
-        "first_inputs": first_inputs,
-        "first_state": first_state,
+        "batch_size": batch_size_t.numpy(),
+        "first_finished": first_finished.numpy(),
+        "first_inputs": first_inputs.numpy(),
+        "first_state": np.asanyarray(first_state),
         "step_outputs": step_outputs,
-        "step_state": step_state,
-        "step_next_inputs": step_next_inputs,
-        "step_finished": step_finished,
+        "step_state": np.asanyarray(step_state),
+        "step_next_inputs": step_next_inputs.numpy(),
+        "step_finished": step_finished.numpy(),
     }
+
     if use_next_inputs_fn:
         fetches["output_after_next_inputs_fn"] = output_after_next_inputs_fn
 
@@ -497,19 +493,16 @@ def test_step_with_scheduled_output_training_helper(
 
     np.testing.assert_equal(
         np.asanyarray([False, False, False, False, True]),
-        eval_result["first_finished"].numpy(),
+        eval_result["first_finished"],
     )
     np.testing.assert_equal(
-        np.asanyarray([False, False, False, True, True]),
-        eval_result["step_finished"].numpy(),
+        np.asanyarray([False, False, False, True, True]), eval_result["step_finished"],
     )
 
-    sample_ids = eval_result["step_outputs"].sample_id
+    sample_ids = eval_result["step_outputs"].sample_id.numpy()
     assert output_dtype.sample_id == sample_ids.dtype
-    batch_where_not_sampling = tf.cast(
-        np.where(np.logical_not(sample_ids)), dtype=tf.int32
-    )
-    batch_where_sampling = tf.cast(np.where(sample_ids), dtype=tf.int32)
+    batch_where_not_sampling = np.where(np.logical_not(sample_ids))
+    batch_where_sampling = np.where(sample_ids)
 
     auxiliary_inputs_to_concat = (
         auxiliary_inputs[:, 1]
@@ -519,35 +512,25 @@ def test_step_with_scheduled_output_training_helper(
 
     expected_next_sampling_inputs = np.concatenate(
         (
-            tf.squeeze(
-                tf.gather(
-                    eval_result["output_after_next_inputs_fn"], batch_where_sampling
-                )
-            ).numpy()
+            eval_result["output_after_next_inputs_fn"].numpy()[batch_where_sampling]
             if use_next_inputs_fn
-            else tf.squeeze(
-                tf.gather(eval_result["step_outputs"].rnn_output, batch_where_sampling)
-            ).numpy(),
-            tf.squeeze(tf.gather(auxiliary_inputs_to_concat, batch_where_sampling)),
+            else eval_result["step_outputs"].rnn_output.numpy()[batch_where_sampling],
+            auxiliary_inputs_to_concat[batch_where_sampling],
         ),
         axis=-1,
     )
 
     np.testing.assert_equal(
-        tf.squeeze(tf.gather(eval_result["step_next_inputs"], batch_where_sampling)),
+        eval_result["step_next_inputs"][batch_where_sampling],
         expected_next_sampling_inputs,
     )
 
     np.testing.assert_equal(
-        tf.squeeze(
-            tf.gather(eval_result["step_next_inputs"], batch_where_not_sampling)
-        ),
+        eval_result["step_next_inputs"][batch_where_not_sampling],
         np.concatenate(
             (
                 np.squeeze(inputs[batch_where_not_sampling, 1], axis=0),
-                tf.squeeze(
-                    tf.gather(auxiliary_inputs_to_concat, batch_where_not_sampling)
-                ),
+                auxiliary_inputs_to_concat[batch_where_not_sampling],
             ),
             axis=-1,
         ),
