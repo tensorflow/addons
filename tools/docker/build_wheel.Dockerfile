@@ -64,7 +64,7 @@ RUN ls -al wheelhouse/
 
 # -------------------------------------------------------------------
 
-FROM python:$PY_VERSION as test_wheel_in_fresh_environement
+FROM python:$PY_VERSION as test_wheel_in_fresh_environment
 
 ARG TF_VERSION
 RUN python -m pip install tensorflow==$TF_VERSION
