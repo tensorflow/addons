@@ -55,7 +55,8 @@ RUN auditwheel repair --plat manylinux2010_x86_64 artifacts/*.whl
 RUN ls -al wheelhouse/
 
 # -------------------------------------------------------------------
-FROM python:3.5 as test_wheel_in_fresh_environement
+ARG PY_VERSION
+FROM python:$PY_VERSION as test_wheel_in_fresh_environement
 
 ARG TF_VERSION
 RUN python -m pip install tensorflow==$TF_VERSION
