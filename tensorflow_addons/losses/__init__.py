@@ -38,3 +38,7 @@ from tensorflow_addons.losses.npairs import (
     NpairsMultilabelLoss,
 )
 from tensorflow_addons.losses.kappa_loss import WeightedKappaLoss
+from tensorflow_addons.losses.multi_similarity_loss import (
+    multi_similarity_loss,
+    MultiSimilarityLoss,
+)
