@@ -1,6 +1,5 @@
 import os
 import pytest
-import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow_addons.callbacks import AverageModelCheckpoint
@@ -197,71 +196,4 @@ def test_invalid_save_freq(tmp_path):
     with pytest.raises(ValueError, match="Unrecognized save_freq"):
         AverageModelCheckpoint(
             update_weights=True, filepath=test_model_filepath, save_freq=save_freq
-        )
-
-
-def _get_dummy_resource_for_checkpoint_testing(tmp_path):
-    def get_input_datasets():
-        # Simple training input.
-        train_input = [[1.0]] * 16
-        train_label = [[0.0]] * 16
-        ds = tf.data.Dataset.from_tensor_slices((train_input, train_label))
-        return ds.batch(8, drop_remainder=True)
-
-    # Very simple model to eliminate randomness.
-    optimizer = MovingAverage(
-        tf.keras.optimizers.SGD(lr=2.0), sequential_update=True, average_decay=0.5
-    )
-    model = keras.Sequential()
-    model.add(keras.layers.Dense(units=1, input_shape=(1,)))
-    model.compile(loss="mae", optimizer=optimizer, metrics=["mae"])
-    train_ds = get_input_datasets()
-    filepath = str(tmp_path / "test_model.{epoch:02d}.h5")
-    callback = AverageModelCheckpoint(
-        update_weights=True, filepath=filepath, save_weights_only=True
-    )
-    return model, train_ds, callback, filepath
-
-
-def _run_load_weights_on_restart_test_common_iterations(tmp_path):
-    (model, train_ds, callback, filepath) = _get_dummy_resource_for_checkpoint_testing(
-        tmp_path
-    )
-    initial_epochs = 3
-    model.fit(train_ds, epochs=initial_epochs, callbacks=[callback])
-    # The files should exist after fitting with callback.
-    for epoch in range(initial_epochs):
-        assert os.path.exists(filepath.format(epoch=epoch + 1))
-    model.fit(train_ds, epochs=1)
-    weights_after_one_more_epoch = model.get_weights()
-    # The filepath should continue to exist after fitting without callback.
-    for epoch in range(initial_epochs):
-        assert os.path.exists(filepath.format(epoch=epoch + 1))
-    return model, train_ds, filepath, weights_after_one_more_epoch
-
-
-def test_checkpoint_load_weights(tmp_path):
-    (
-        model,
-        train_ds,
-        filepath,
-        weights_after_one_more_epoch,
-    ) = _run_load_weights_on_restart_test_common_iterations(tmp_path)
-    callback = AverageModelCheckpoint(
-        update_weights=True,
-        filepath=filepath,
-        save_weights_only=True,
-        load_weights_on_restart=True,
-    )
-    model.fit(train_ds, epochs=1, callbacks=[callback])
-    weights_after_model_restoring_and_one_more_epoch = model.get_weights()
-    model.fit(train_ds, epochs=1, callbacks=[callback])
-    weights_with_one_final_extra_epoch = model.get_weights()
-    with np.testing.assert_raises(AssertionError):
-        np.testing.assert_almost_equal(
-            weights_after_one_more_epoch,
-            weights_after_model_restoring_and_one_more_epoch,
-        )
-        np.testing.assert_almost_equal(
-            weights_after_one_more_epoch, weights_with_one_final_extra_epoch
         )
