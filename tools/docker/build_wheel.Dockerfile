@@ -1,5 +1,6 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 ARG TF_VERSION
+ARG PY_VERSION
 FROM seanpmorgan/tensorflow:2.1.0-custom-op-gpu-ubuntu16-minimal as base_install
 ENV TF_NEED_CUDA="1"
 
@@ -55,7 +56,7 @@ RUN auditwheel repair --plat manylinux2010_x86_64 artifacts/*.whl
 RUN ls -al wheelhouse/
 
 # -------------------------------------------------------------------
-ARG PY_VERSION
+
 FROM python:$PY_VERSION as test_wheel_in_fresh_environement
 
 ARG TF_VERSION
