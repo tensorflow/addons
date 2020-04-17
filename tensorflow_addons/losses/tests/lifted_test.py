@@ -58,7 +58,6 @@ def lifted_struct_loss_np(labels, embedding, margin):
     # Reshape labels to compute adjacency matrix.
     labels_reshaped = np.reshape(labels, (labels.shape[0], 1))
 
-    # Compute the loss in NP
     adjacency = np.equal(labels_reshaped, labels_reshaped.T)
     pdist_matrix = pairwise_distance_np(embedding)
     loss_np = 0.0
@@ -100,6 +99,7 @@ def test_lifted_struct(dtype):
     embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
     labels = np.random.randint(0, num_classes, size=num_data).astype(np.float32)
 
+    # Compute the loss in NP
     loss_np = lifted_struct_loss_np(labels, embedding, margin)
 
     # Compute the loss in TF.

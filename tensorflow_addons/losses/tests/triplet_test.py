@@ -56,9 +56,8 @@ def triplet_semihard_loss_np(labels, embedding, margin):
     num_data = embedding.shape[0]
     # Reshape labels to compute adjacency matrix.
     labels_reshaped = np.reshape(labels.astype(np.float32), (labels.shape[0], 1))
-    # Compute the loss in NP.
-    adjacency = np.equal(labels_reshaped, labels_reshaped.T)
 
+    adjacency = np.equal(labels_reshaped, labels_reshaped.T)
     pdist_matrix = pairwise_distance_np(embedding, squared=True)
     loss_np = 0.0
     num_positives = 0.0
@@ -94,9 +93,8 @@ def triplet_hard_loss_np(labels, embedding, margin, soft=False):
     num_data = embedding.shape[0]
     # Reshape labels to compute adjacency matrix.
     labels_reshaped = np.reshape(labels.astype(np.float32), (labels.shape[0], 1))
-    # Compute the loss in NP.
-    adjacency = np.equal(labels_reshaped, labels_reshaped.T)
 
+    adjacency = np.equal(labels_reshaped, labels_reshaped.T)
     pdist_matrix = pairwise_distance_np(embedding, squared=True)
     loss_np = 0.0
     for i in range(num_data):
@@ -137,6 +135,7 @@ def test_semihard_tripled_loss(dtype):
     embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
     labels = np.random.randint(0, num_classes, size=(num_data))
 
+    # Compute the loss in NP.
     loss_np = triplet_semihard_loss_np(labels, embedding, margin)
 
     # Compute the loss in TF.
@@ -170,6 +169,7 @@ def test_hard_tripled_loss(dtype, soft):
     embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
     labels = np.random.randint(0, num_classes, size=(num_data))
 
+    # Compute the loss in NP.
     loss_np = triplet_hard_loss_np(labels, embedding, margin, soft)
 
     # Compute the loss in TF.
