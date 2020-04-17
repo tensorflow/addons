@@ -141,8 +141,8 @@ class GeneralLoss(tf.keras.losses.Loss):
 def general_loss(
     y_true: TensorLike,
     y_pred: TensorLike,
-    alpha: FloatTensorLike = tf.constant(2.0, dtype=tf.dtypes.float64),
-    scale: FloatTensorLike = tf.constant(1.0, dtype=tf.dtypes.float64),
+    alpha: FloatTensorLike = 2.0,
+    scale: FloatTensorLike = 1.0,
     approximate: bool = False,
     epsilon: FloatTensorLike = 1e-6,
     from_logits: bool = False,
@@ -219,7 +219,7 @@ def general_loss(
         and `y_pred`.
     """
     y_true = tf.convert_to_tensor(y_true)
-    y_pred = tf.convert_to_tesnor(y_pred)
+    y_pred = tf.convert_to_tensor(y_pred)
     # If logits are provided then convert the predictions into probabilities
     if from_logits:
         y_pred = tf.sigmoid(y_pred)
@@ -227,8 +227,11 @@ def general_loss(
     # Computing residual x from y_true and y_pred.
     x = y_true - y_pred
 
-    # `scale` and `alpha` must have the same type as `x`.
     float_dtype = x.dtype
+    alpha = tf.convert_to_tensor(alpha, dtype=float_dtype)
+    scale = tf.convert_to_tensor(scale, dtype=float_dtype)
+
+    # `scale` and `alpha` must have the same type as `x`.
     tf.debugging.assert_type(scale, float_dtype)
     tf.debugging.assert_type(alpha, float_dtype)
 
