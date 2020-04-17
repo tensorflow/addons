@@ -15,6 +15,7 @@
 """Tests for General Loss."""
 
 
+import pytest
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.losses import (
@@ -23,25 +24,13 @@ from tensorflow_addons.losses import (
 )
 
 
-def testConfig():
+def test_config():
     bce_obj = GeneralLoss(reduction=tf.keras.losses.Reduction.NONE, name="general_loss")
     assert bce_obj.name == "general_loss"
     assert bce_obj.reduction == tf.keras.losses.Reduction.NONE
 
 
-def assertAllClose(a, b, rtol=1e-15, atol=1e-15):
-    np.testing.assert_allclose(a, b, rtol=rtol, atol=atol)
-
-
-def assertAllEqual(a, b):
-    np.testing.assert_array_equal(a, b)
-
-
-def assertTrue(a):
-    assert a == True  # noqa
-
-
-def precomputeLossfunInputs(float_dtype):
+def precompute_loss_fun_inputs(float_dtype):
     """Precompute a loss and its derivatives for random inputs and parameters.
     Generates a large number of random inputs to the loss, and random
     shape/scale parameters for the loss function at each sample, and
@@ -93,7 +82,8 @@ def precomputeLossfunInputs(float_dtype):
     return (num_samples, loss, x, alpha, scale, d_x, d_alpha, d_scale)
 
 
-def testLossfunPreservesDtype(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_loss_fun_preserves_dtype(float_dtype):
     """Check the loss's output has the same precision as its input."""
     n = 16
     x = float_dtype(np.random.normal(size=n))
@@ -103,96 +93,104 @@ def testLossfunPreservesDtype(float_dtype=np.float64):
     assert y.dtype == float_dtype
 
 
-def testDerivativeIsMonotonicWrtX(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_derivative_is_monotonic_wrt_x(float_dtype):
     # Check that the loss increases monotonically with |x|.
-    _, _, x, alpha, _, d_x, _, _ = precomputeLossfunInputs(float_dtype)
+    _, _, x, alpha, _, d_x, _, _ = precompute_loss_fun_inputs(float_dtype)
     # This is just to suppress a warning below.
     d_x = tf.where(tf.math.is_finite(d_x), d_x, tf.zeros_like(d_x))
     mask = np.isfinite(alpha) & (np.abs(d_x) > (300.0 * np.finfo(float_dtype).eps))
-    assertAllEqual(np.sign(d_x[mask]), np.sign(x[mask]))
+    np.testing.assert_array_equal(np.sign(d_x[mask]), np.sign(x[mask]))
 
 
-def testLossIsNearZeroAtOrigin(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_loss_is_near_zero_at_origin(float_dtype):
     # Check that the loss is near-zero when x is near-zero.
-    _, loss, x, _, _, _, _, _ = precomputeLossfunInputs(float_dtype)
-    assertTrue(np.all(np.abs(loss[np.abs(x) < 1e-5]) < 1e-5))
+    _, loss, x, _, _, _, _, _ = precompute_loss_fun_inputs(float_dtype)
+    assert np.all(np.abs(loss[np.abs(x) < 1e-5]) < 1e-5)
 
 
-def testLossIsQuadraticNearOrigin(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_loss_is_quadratic_near_origin(float_dtype):
     # Check that the loss is well-approximated by a quadratic bowl when
     # |x| < scale
-    _, loss, x, _, scale, _, _, _ = precomputeLossfunInputs(float_dtype)
+    _, loss, x, _, scale, _, _, _ = precompute_loss_fun_inputs(float_dtype)
     mask = np.abs(x) < (0.5 * scale)
     loss_quad = 0.5 * np.square((x - x) / scale)
     # print(max(loss_quad[mask]))
-    assertAllClose(loss_quad[mask], loss[mask], rtol=1e-5, atol=1e-2)
+    np.testing.assert_allclose(loss_quad[mask], loss[mask], rtol=1e-5, atol=1e-2)
 
 
-def testLossIsBoundedWhenAlphaIsNegative(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_loss_is_bounded_when_alpha_is_negative(float_dtype):
     # Assert that loss < (alpha - 2)/alpha when alpha < 0.
-    _, loss, _, alpha, _, _, _, _ = precomputeLossfunInputs(float_dtype)
+    _, loss, _, alpha, _, _, _, _ = precompute_loss_fun_inputs(float_dtype)
     mask = alpha < 0.0
     min_val = np.finfo(float_dtype).min
     alpha_clipped = np.maximum(min_val, alpha[mask])
-    assertTrue(np.all(loss[mask] <= ((alpha_clipped - 2.0) / alpha_clipped)))
+    assert np.all(loss[mask] <= ((alpha_clipped - 2.0) / alpha_clipped))
 
 
-def testDerivativeIsBoundedWhenAlphaIsBelow2(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_derivative_is_bounded_when_alpha_is_below_2(float_dtype):
     # Assert that |d_x| < |x|/scale^2 when alpha <= 2.
-    _, _, x, alpha, scale, d_x, _, _ = precomputeLossfunInputs(float_dtype)
+    _, _, x, alpha, scale, d_x, _, _ = precompute_loss_fun_inputs(float_dtype)
     mask = np.isfinite(alpha) & (alpha <= 2)
-    assertTrue(
-        np.all(
-            (
-                np.abs(d_x[mask])
-                <= (
-                    (np.abs(x[mask]) + (300.0 * np.finfo(float_dtype).eps))
-                    / scale[mask] ** 2
-                )
+    assert np.all(
+        (
+            np.abs(d_x[mask])
+            <= (
+                (np.abs(x[mask]) + (300.0 * np.finfo(float_dtype).eps))
+                / scale[mask] ** 2
             )
         )
     )
 
 
-def testDerivativeIsBoundedWhenAlphaIsBelow1(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_derivative_is_bounded_when_alpha_is_below_1(float_dtype):
     # Assert that |d_x| < 1/scale when alpha <= 1.
-    _, _, _, alpha, scale, d_x, _, _ = precomputeLossfunInputs(float_dtype)
+    _, _, _, alpha, scale, d_x, _, _ = precompute_loss_fun_inputs(float_dtype)
     mask = np.isfinite(alpha) & (alpha <= 1)
-    assertTrue(
-        np.all(
-            (
-                np.abs(d_x[mask])
-                <= ((1.0 + (300.0 * np.finfo(float_dtype).eps)) / scale[mask])
-            )
+    assert np.all(
+        (
+            np.abs(d_x[mask])
+            <= ((1.0 + (300.0 * np.finfo(float_dtype).eps)) / scale[mask])
         )
     )
 
 
-def testAlphaDerivativeIsPositive(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_alpha_derivative_is_positive(float_dtype):
     # Assert that d_loss / d_alpha > 0.
-    _, _, _, alpha, _, _, d_alpha, _ = precomputeLossfunInputs(float_dtype)
+    _, _, _, alpha, _, _, d_alpha, _ = precompute_loss_fun_inputs(float_dtype)
     mask = np.isfinite(alpha)
-    assertTrue(np.all(d_alpha[mask] > (-300.0 * np.finfo(float_dtype).eps)))
+    assert np.all(d_alpha[mask] > (-300.0 * np.finfo(float_dtype).eps))
 
 
-def testScaleDerivativeIsNegative(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_scale_derivative_is_negative(float_dtype):
     # Assert that d_loss / d_scale < 0.
-    _, _, _, alpha, _, _, _, d_scale = precomputeLossfunInputs(float_dtype)
+    _, _, _, alpha, _, _, _, d_scale = precompute_loss_fun_inputs(float_dtype)
     mask = np.isfinite(alpha)
-    assertTrue(np.all(d_scale[mask] < (300.0 * np.finfo(float_dtype).eps)))
+    assert np.all(d_scale[mask] < (300.0 * np.finfo(float_dtype).eps))
 
 
-def testLossIsScaleInvariant(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_loss_is_scale_invariant(float_dtype):
     # Check that loss(mult * x, alpha, mult * scale) == loss(x, alpha, scale)
-    (num_samples, loss, x, alpha, scale, _, _, _) = precomputeLossfunInputs(float_dtype)
+    (num_samples, loss, x, alpha, scale, _, _, _) = precompute_loss_fun_inputs(
+        float_dtype
+    )
     # Random log-normally distributed scalings in ~(0.2, 20)
     mult = float_dtype(np.maximum(0.2, np.exp(np.random.normal(size=num_samples))))
     # Compute the scaled loss.
     loss_scaled = general_loss(mult * x, mult * x, alpha, mult * scale)
-    assertAllClose(loss, loss_scaled, atol=1e-4, rtol=1e-4)
+    np.testing.assert_allclose(loss, loss_scaled, atol=1e-4, rtol=1e-4)
 
 
-def testAlphaEqualsNegativeInfinity(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_alpha_equals_negative_infinity(float_dtype):
     # Check that alpha == -Infinity reproduces Welsch aka Leclerc loss.
     x = np.arange(-20, 20, 0.1, float_dtype)
     alpha = float_dtype(-float("inf"))
@@ -201,10 +199,11 @@ def testAlphaEqualsNegativeInfinity(float_dtype=np.float64):
     loss = general_loss(x, x, alpha, scale)
     # Welsch/Leclerc loss.
     loss_true = 1.0 - tf.math.exp(-0.5 * tf.square((x - x) / scale))
-    assertAllClose(loss, loss_true)
+    np.testing.assert_allclose(loss, loss_true)
 
 
-def testAlphaEqualsNegativeTwo(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_alpha_equals_negative_two(float_dtype):
     # Check that alpha == -2 reproduces Geman-McClure loss.
     x = np.arange(-20, 20, 0.1, float_dtype)
     alpha = float_dtype(-2.0)
@@ -215,10 +214,11 @@ def testAlphaEqualsNegativeTwo(float_dtype=np.float64):
     loss_true = (
         2.0 * tf.square((x - x) / scale) / (tf.square((x - x) / scale) + 4.0)
     )  # noqa
-    assertAllClose(loss, loss_true)
+    np.testing.assert_allclose(loss, loss_true)
 
 
-def testAlphaEqualsZero(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_alpha_equals_zero(float_dtype):
     # Check that alpha == 0 reproduces Cauchy aka Lorentzian loss.
     x = np.arange(-20, 20, 0.1, float_dtype)
     alpha = float_dtype(0.0)
@@ -227,10 +227,11 @@ def testAlphaEqualsZero(float_dtype=np.float64):
     loss = general_loss(x, x, alpha, scale)
     # Cauchy/Lorentzian loss.
     loss_true = tf.math.log(0.5 * tf.square((x - x) / scale) + 1.0)
-    assertAllClose(loss, loss_true)
+    np.testing.assert_allclose(loss, loss_true)
 
 
-def testAlphaEqualsOne(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_alpha_equals_one(float_dtype):
     # Check that alpha == 1 reproduces Charbonnier aka pseudo-Huber loss.
     x = np.arange(-20, 20, 0.1, float_dtype)
     alpha = float_dtype(1.0)
@@ -240,10 +241,11 @@ def testAlphaEqualsOne(float_dtype=np.float64):
     # Charbonnier loss.
     loss_true = tf.sqrt(tf.square((x - x) / scale) + 1.0) - 1.0
     # print(max(loss_true))
-    assertAllClose(loss, loss_true, rtol=1e-6, atol=1e-6)
+    np.testing.assert_allclose(loss, loss_true, rtol=1e-6, atol=1e-6)
 
 
-def testAlphaEqualsTwo(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_alpha_equals_two(float_dtype):
     # Check that alpha == 2 reproduces L2 loss.
     x = np.arange(-20, 20, 0.1, float_dtype)
     alpha = float_dtype(2.0)
@@ -252,10 +254,11 @@ def testAlphaEqualsTwo(float_dtype=np.float64):
     loss = general_loss(x, x, alpha, scale)
     # L2 Loss.
     loss_true = 0.5 * tf.square((x - x) / scale)
-    assertAllClose(loss, loss_true, rtol=1e-6, atol=1e-6)
+    np.testing.assert_allclose(loss, loss_true, rtol=1e-6, atol=1e-6)
 
 
-def testAlphaEqualsFour(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_alpha_equals_four(float_dtype):
     # Check that alpha == 4 reproduces a quartic.
     x = np.arange(-20, 20, 0.1, float_dtype)
     alpha = float_dtype(4.0)
@@ -266,10 +269,11 @@ def testAlphaEqualsFour(float_dtype=np.float64):
     loss_true = (
         tf.square(tf.square((x - x) / scale)) / 8.0 + tf.square((x - x) / scale) / 2.0
     )
-    assertAllClose(loss, loss_true, rtol=1e-6, atol=1e-6)
+    np.testing.assert_allclose(loss, loss_true, rtol=1e-6, atol=1e-6)
 
 
-def testAlphaEqualsInfinity(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_alpha_equals_infinity(float_dtype):
     # Check that alpha == Infinity takes the correct form.
     x = np.arange(-20, 20, 0.1, float_dtype)
     alpha = float_dtype(float("inf"))
@@ -278,10 +282,11 @@ def testAlphaEqualsInfinity(float_dtype=np.float64):
     loss = general_loss(x, x, alpha, scale)
     # The true loss.
     loss_true = tf.math.exp(0.5 * tf.square((x - x) / scale)) - 1.0
-    assertAllClose(loss, loss_true, rtol=1e-6, atol=1e-6)
+    np.testing.assert_allclose(loss, loss_true, rtol=1e-6, atol=1e-6)
 
 
-def testApproximateLossIsAccurate(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_approximate_loss_is_accurate(float_dtype):
     # Check that the approximate loss (lossfun() with epsilon=1e-6) reasonably
     # approximates the true loss (lossfun() with epsilon=0.) for a range of
     # values of alpha (skipping alpha=0, where the approximation is poor).
@@ -291,10 +296,11 @@ def testApproximateLossIsAccurate(float_dtype=np.float64):
         alpha = float_dtype(alpha)
         loss = general_loss(x, x, alpha, scale)
         loss_approx = general_loss(x, x, alpha, scale, approximate=True)
-        assertAllClose(loss, loss_approx, rtol=1e-5, atol=1e-4)
+        np.testing.assert_allclose(loss, loss_approx, rtol=1e-5, atol=1e-4)
 
 
-def testLossAndGradientsAreFinite(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_loss_and_gradients_are_finite(float_dtype):
     # Test that the loss and its approximation both give finite losses and
     # derivatives everywhere that they should for a wide range of values.
     for approximate in [False, True]:
@@ -318,10 +324,11 @@ def testLossAndGradientsAreFinite(float_dtype=np.float64):
                 tape.gradient(tf.reduce_sum(loss), z) for z in (x, alpha, scale)
             ]
         for v in [loss, d_x, d_alpha, d_scale]:
-            assertTrue(np.all(np.isfinite(v)))
+            assert np.all(np.isfinite(v))
 
 
-def testGradientMatchesFiniteDifferences(float_dtype=np.float64):
+@pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
+def test_gradient_matches_finite_differences(float_dtype):
     # Test that the loss and its approximation both return gradients that are
     # close to the numerical gradient from finite differences, with forward
     # differencing. Returning correct gradients is TensorFlow's job, so this is
@@ -363,25 +370,3 @@ def testGradientMatchesFiniteDifferences(float_dtype=np.float64):
         assert_percentile_close(n_x, d_x)
         assert_percentile_close(n_alpha, d_alpha)
         assert_percentile_close(n_scale, d_scale)
-
-
-testLossfunPreservesDtype(np.float32)
-testDerivativeIsMonotonicWrtX(np.float32)
-testLossIsNearZeroAtOrigin(np.float32)
-testLossIsQuadraticNearOrigin(np.float32)
-testLossIsBoundedWhenAlphaIsNegative(np.float32)
-testDerivativeIsBoundedWhenAlphaIsBelow2(np.float32)
-testDerivativeIsBoundedWhenAlphaIsBelow1(np.float32)
-testAlphaDerivativeIsPositive(np.float32)
-testScaleDerivativeIsNegative(np.float32)
-testLossIsScaleInvariant(np.float32)
-testAlphaEqualsNegativeInfinity(np.float32)
-testAlphaEqualsNegativeTwo(np.float32)
-testAlphaEqualsZero(np.float32)
-testAlphaEqualsOne(np.float32)
-testAlphaEqualsTwo(np.float32)
-testAlphaEqualsFour(np.float32)
-testAlphaEqualsInfinity(np.float32)
-testApproximateLossIsAccurate(np.float32)
-testLossAndGradientsAreFinite(np.float32)
-testGradientMatchesFiniteDifferences(np.float32)

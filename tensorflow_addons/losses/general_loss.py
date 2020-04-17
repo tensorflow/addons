@@ -77,7 +77,7 @@ class GeneralLoss(tf.keras.losses.Loss):
         single-precision floats. Default value for `scale` is 1.
       approximate: a bool, where if True, this function returns an approximate
         and faster form of the loss, as described in the appendix of the paper.
-        This approximation holds well everywhere except as residual `x` and
+        This approximation holds well everywhere except as residual and
         `alpha` approach zero. By default, `approximate` is set to False.
       epsilon: A float that determines how inaccurate the "approximate" version
         of the loss will be. Larger values are less accurate but more
@@ -85,7 +85,7 @@ class GeneralLoss(tf.keras.losses.Loss):
         epsilon. Default value of `epsilon` is 1e-6.
 
     Returns:
-      The losses for each element of residual `x`, in the same shape as `x`.
+      The losses for each element of residual, in the same shape as residual.
       This is returned as a TensorFlow graph node of single precision floats.
 
     Raises:
@@ -201,7 +201,7 @@ def general_loss(
         single-precision floats. Default value for `scale` is 1.
       approximate: a bool, where if True, this function returns an approximate
         and faster form of the loss, as described in the appendix of the paper.
-        This approximation holds well everywhere except as residual `x` and
+        This approximation holds well everywhere except as residual and
         `alpha` approach zero. By default, `approximate` is set to False.
       epsilon: A float that determines how inaccurate the "approximate" version
         of the loss will be. Larger values are less accurate but more
@@ -209,7 +209,7 @@ def general_loss(
         epsilon. Default value of `epsilon` is 1e-6.
 
     Returns:
-      The losses for each element of residual `x`, in the same shape as `x`.
+      The losses for each element of residual, in the same shape as residual.
       This is returned as a TensorFlow graph node of single precision floats.
 
     Raises:
@@ -218,6 +218,8 @@ def general_loss(
       TypeError: If `alpha` or `scale` is of different dtype than `y_true`
         and `y_pred`.
     """
+    y_true = tf.convert_to_tensor(y_true)
+    y_pred = tf.convert_to_tesnor(y_pred)
     # If logits are provided then convert the predictions into probabilities
     if from_logits:
         y_pred = tf.sigmoid(y_pred)
