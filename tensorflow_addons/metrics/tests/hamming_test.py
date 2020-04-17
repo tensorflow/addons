@@ -32,7 +32,6 @@ def check_results(obj, value):
     np.testing.assert_allclose(value, obj.result().numpy(), atol=1e-5)
 
 
-@pytest.mark.xfail(reason="See https://github.com/tensorflow/addons/issues/1200")
 def test_mc_4_classes():
     actuals = tf.constant(
         [
@@ -65,7 +64,6 @@ def test_mc_4_classes():
     check_results(hl_obj, 0.2857143)
 
 
-@pytest.mark.xfail(reason="See https://github.com/tensorflow/addons/issues/1200")
 def test_mc_5_classes():
     actuals = tf.constant(
         [
@@ -101,7 +99,6 @@ def test_mc_5_classes():
     check_results(hl_obj, 0.25)
 
 
-@pytest.mark.xfail(reason="See https://github.com/tensorflow/addons/issues/1200")
 def test_ml_4_classes():
     actuals = tf.constant([[1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 0, 1]], dtype=tf.float32)
     predictions = tf.constant(
@@ -115,7 +112,6 @@ def test_ml_4_classes():
     check_results(hl_obj, 0.16666667)
 
 
-@pytest.mark.xfail(reason="See https://github.com/tensorflow/addons/issues/1200")
 def test_ml_5_classes():
     actuals = tf.constant(
         [
