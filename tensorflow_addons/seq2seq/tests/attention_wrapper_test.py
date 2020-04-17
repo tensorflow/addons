@@ -52,9 +52,7 @@ attention_classes = [
 ]
 
 
-@pytest.mark.parametrize(
-    "attention_cls", attention_classes,
-)
+@pytest.mark.parametrize("attention_cls", attention_classes)
 def test_attention_shape_inference(attention_cls):
     dummy_data = DummyData()
     attention = attention_cls(dummy_data.units, dummy_data.memory)
@@ -64,9 +62,7 @@ def test_attention_shape_inference(attention_cls):
     assert attention_score[1].shape == (dummy_data.batch, dummy_data.timestep)
 
 
-@pytest.mark.parametrize(
-    "attention_cls", attention_classes,
-)
+@pytest.mark.parametrize("attention_cls", attention_classes)
 def test_get_config(attention_cls):
     dummy_data = DummyData()
     attention = attention_cls(dummy_data.units, dummy_data.memory)
@@ -78,9 +74,7 @@ def test_get_config(attention_cls):
     assert config == config_from_clone
 
 
-@pytest.mark.parametrize(
-    "attention_cls", attention_classes,
-)
+@pytest.mark.parametrize("attention_cls", attention_classes)
 def test_layer_output(attention_cls):
     dummy_data = DummyData()
     attention = attention_cls(dummy_data.units, dummy_data.memory)
@@ -91,9 +85,7 @@ def test_layer_output(attention_cls):
     assert score[1].shape == (dummy_data.batch, dummy_data.timestep)
 
 
-@pytest.mark.parametrize(
-    "attention_cls", attention_classes,
-)
+@pytest.mark.parametrize("attention_cls", attention_classes)
 def test_passing_memory_from_call(attention_cls):
     dummy_data = DummyData()
     attention = attention_cls(dummy_data.units, dummy_data.memory)
@@ -114,9 +106,7 @@ def test_passing_memory_from_call(attention_cls):
     np.testing.assert_allclose(ref_score, score)
 
 
-@pytest.mark.parametrize(
-    "attention_cls", attention_classes,
-)
+@pytest.mark.parametrize("attention_cls", attention_classes)
 def test_save_load_layer(attention_cls):
     dummy_data = DummyData()
     vocab = 20
@@ -158,9 +148,7 @@ def test_save_load_layer(attention_cls):
     np.testing.assert_allclose(y_ref, y)
 
 
-@pytest.mark.parametrize(
-    "attention_cls", attention_classes,
-)
+@pytest.mark.parametrize("attention_cls", attention_classes)
 def test_manual_memory_reset(attention_cls):
     dummy_data = DummyData()
     attention = attention_cls(dummy_data.units)
@@ -197,9 +185,7 @@ def test_masking():
     assert np.sum(np.triu(alignment, k=1)) == 0
 
 
-@pytest.mark.parametrize(
-    "attention_cls", attention_classes,
-)
+@pytest.mark.parametrize("attention_cls", attention_classes)
 def test_memory_re_setup(attention_cls):
     class MyModel(tf.keras.models.Model):
         def __init__(self, vocab, embedding_dim, memory_size, units):
