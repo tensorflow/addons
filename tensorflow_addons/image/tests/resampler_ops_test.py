@@ -94,7 +94,7 @@ def _make_warp(batch_size, warp_height, warp_width, dtype):
 
 @pytest.mark.usefixtures("cpu_and_gpu")
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
-def test_op_forward_pass_gpu(dtype):
+def test_op_forward_pass(dtype):
     np.random.seed(0)
     data_width = 7
     data_height = 9
