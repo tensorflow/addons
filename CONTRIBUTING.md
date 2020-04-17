@@ -200,6 +200,9 @@ Pytest has many cool options to help you make great tests:
 pytest -n 3 tensorflow_addons/
 pytest -n auto tensorflow_addons/
 
+# Run the whole test suite without compiling any custom ops (.so files).
+pytest -v --skip-custom-ops tensorflow_addons/
+
 # Open the debugger to inspect variables and execute code when 
 # an exception is raised.
 pytest --pdb tensorflow_addons/ 
