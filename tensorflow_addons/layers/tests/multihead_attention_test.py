@@ -46,265 +46,274 @@ def test_output_size():
     assert output.shape[2] == output_size
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class MultiHeadAttentionTest(tf.test.TestCase):
-    def test_output_shape(self):
-        batch_size = 10
-        num_heads = 8
-        head_size = 12
+def test_output_shape():
+    batch_size = 10
+    num_heads = 8
+    head_size = 12
 
-        q = tf.random.uniform((batch_size, 5, 9), dtype=np.float32)
-        k = tf.random.uniform((batch_size, 7, 11), dtype=np.float32)
-        v = tf.random.uniform((batch_size, 7, 13), dtype=np.float32)
+    q = tf.random.uniform((batch_size, 5, 9), dtype=np.float32)
+    k = tf.random.uniform((batch_size, 7, 11), dtype=np.float32)
+    v = tf.random.uniform((batch_size, 7, 13), dtype=np.float32)
 
-        mha = MultiHeadAttention(head_size=head_size, num_heads=num_heads)
+    mha = MultiHeadAttention(head_size=head_size, num_heads=num_heads)
 
-        output = mha([q, k, v])
+    output = mha([q, k, v])
 
-        self.assertEqual(output.shape[0], batch_size)
-        self.assertEqual(output.shape[1], q.shape[1])
-        self.assertEqual(output.shape[2], v.shape[2])
+    assert output.shape[0] == batch_size
+    assert output.shape[1] == q.shape[1]
+    assert output.shape[2] == v.shape[2]
 
-    def test_no_batch(self):
-        num_heads = 8
-        head_size = 12
 
-        q = tf.random.uniform((5, 9), dtype=np.float32)
-        k = tf.random.uniform((7, 11), dtype=np.float32)
-        v = tf.random.uniform((7, 13), dtype=np.float32)
+def test_no_batch():
+    num_heads = 8
+    head_size = 12
 
-        mha = MultiHeadAttention(head_size=head_size, num_heads=num_heads)
+    q = tf.random.uniform((5, 9), dtype=np.float32)
+    k = tf.random.uniform((7, 11), dtype=np.float32)
+    v = tf.random.uniform((7, 13), dtype=np.float32)
 
-        output = mha([q, k, v])
+    mha = MultiHeadAttention(head_size=head_size, num_heads=num_heads)
 
-        self.assertEqual(output.shape[0], q.shape[0])
-        self.assertEqual(output.shape[1], v.shape[1])
+    output = mha([q, k, v])
 
-    def test_extra_dims(self):
-        batch_size = 10
-        extra_dim = 17
-        num_heads = 8
-        head_size = 12
+    assert output.shape[0] == q.shape[0]
+    assert output.shape[1] == v.shape[1]
 
-        q = tf.random.uniform((batch_size, extra_dim, 5, 9), dtype=np.float32)
-        k = tf.random.uniform((batch_size, extra_dim, 7, 11), dtype=np.float32)
-        v = tf.random.uniform((batch_size, extra_dim, 7, 13), dtype=np.float32)
 
-        mha = MultiHeadAttention(head_size=head_size, num_heads=num_heads)
+def test_extra_dims():
+    batch_size = 10
+    extra_dim = 17
+    num_heads = 8
+    head_size = 12
 
-        output = mha([q, k, v])
+    q = tf.random.uniform((batch_size, extra_dim, 5, 9), dtype=np.float32)
+    k = tf.random.uniform((batch_size, extra_dim, 7, 11), dtype=np.float32)
+    v = tf.random.uniform((batch_size, extra_dim, 7, 13), dtype=np.float32)
 
-        self.assertEqual(output.shape[0], batch_size)
-        self.assertEqual(output.shape[1], extra_dim)
-        self.assertEqual(output.shape[2], q.shape[2])
-        self.assertEqual(output.shape[3], v.shape[3])
+    mha = MultiHeadAttention(head_size=head_size, num_heads=num_heads)
 
-    def test_extra_dims_atten_coef(self):
-        batch_size = 10
-        extra_dim = 17
-        num_heads = 8
-        head_size = 12
+    output = mha([q, k, v])
 
-        q = tf.random.uniform((batch_size, extra_dim, 5, 9), dtype=np.float32)
-        k = tf.random.uniform((batch_size, extra_dim, 7, 11), dtype=np.float32)
-        v = tf.random.uniform((batch_size, extra_dim, 7, 13), dtype=np.float32)
+    assert output.shape[0] == batch_size
+    assert output.shape[1] == extra_dim
+    assert output.shape[2] == q.shape[2]
+    assert output.shape[3] == v.shape[3]
 
-        mha = MultiHeadAttention(
-            head_size=head_size, num_heads=num_heads, return_attn_coef=True
-        )
 
-        output, attn_coef = mha([q, k, v])
+def test_extra_dims_atten_coef():
+    batch_size = 10
+    extra_dim = 17
+    num_heads = 8
+    head_size = 12
 
-        self.assertEqual(output.shape[0], batch_size)
-        self.assertEqual(output.shape[1], extra_dim)
-        self.assertEqual(output.shape[2], q.shape[2])
-        self.assertEqual(output.shape[3], v.shape[3])
+    q = tf.random.uniform((batch_size, extra_dim, 5, 9), dtype=np.float32)
+    k = tf.random.uniform((batch_size, extra_dim, 7, 11), dtype=np.float32)
+    v = tf.random.uniform((batch_size, extra_dim, 7, 13), dtype=np.float32)
 
-        self.assertEqual(attn_coef.shape[0], batch_size)
-        self.assertEqual(attn_coef.shape[1], extra_dim)
-        self.assertEqual(attn_coef.shape[2], num_heads)
-        self.assertEqual(attn_coef.shape[3], q.shape[2])
-        self.assertEqual(attn_coef.shape[4], k.shape[2])
+    mha = MultiHeadAttention(
+        head_size=head_size, num_heads=num_heads, return_attn_coef=True
+    )
 
-    def test_attention_coefficients_shape(self):
-        batch_size = 10
-        num_heads = 8
-        head_size = 12
+    output, attn_coef = mha([q, k, v])
 
-        q = tf.random.uniform((batch_size, 5, 9), dtype=np.float32)
-        k = tf.random.uniform((batch_size, 7, 11), dtype=np.float32)
-        v = tf.random.uniform((batch_size, 7, 13), dtype=np.float32)
+    assert output.shape[0] == batch_size
+    assert output.shape[1] == extra_dim
+    assert output.shape[2] == q.shape[2]
+    assert output.shape[3] == v.shape[3]
 
-        mha = MultiHeadAttention(
-            head_size=head_size, num_heads=num_heads, return_attn_coef=True
-        )
+    assert attn_coef.shape[0] == batch_size
+    assert attn_coef.shape[1] == extra_dim
+    assert attn_coef.shape[2] == num_heads
+    assert attn_coef.shape[3] == q.shape[2]
+    assert attn_coef.shape[4] == k.shape[2]
 
-        output, attn_coef = mha([q, k, v])
 
-        self.assertEqual(attn_coef.shape[0], batch_size)
-        self.assertEqual(attn_coef.shape[1], num_heads)
-        self.assertEqual(attn_coef.shape[2], q.shape[1])
-        self.assertEqual(attn_coef.shape[3], k.shape[1])
+def test_attention_coefficients_shape():
+    batch_size = 10
+    num_heads = 8
+    head_size = 12
 
-        self.assertEqual(output.shape[1], q.shape[1])
-        self.assertEqual(output.shape[2], v.shape[2])
+    q = tf.random.uniform((batch_size, 5, 9), dtype=np.float32)
+    k = tf.random.uniform((batch_size, 7, 11), dtype=np.float32)
+    v = tf.random.uniform((batch_size, 7, 13), dtype=np.float32)
 
-    def test_compute_output_shape(self):
-        batch_size = 10
-        num_heads = 8
-        head_size = 12
+    mha = MultiHeadAttention(
+        head_size=head_size, num_heads=num_heads, return_attn_coef=True
+    )
 
-        mha = MultiHeadAttention(head_size=head_size, num_heads=num_heads)
+    output, attn_coef = mha([q, k, v])
 
-        output_shape = mha.compute_output_shape(
-            [(batch_size, 5, 9), (batch_size, 7, 11), (batch_size, 7, 13)]
-        )
+    assert attn_coef.shape[0] == batch_size
+    assert attn_coef.shape[1] == num_heads
+    assert attn_coef.shape[2] == q.shape[1]
+    assert attn_coef.shape[3] == k.shape[1]
 
-        self.assertEqual(output_shape[1], 5)
-        self.assertEqual(output_shape[2], 13)
+    assert output.shape[1] == q.shape[1]
+    assert output.shape[2] == v.shape[2]
 
-    def test_compute_output_shape_return_attn(self):
-        batch_size = 10
-        num_heads = 8
-        head_size = 12
 
-        mha = MultiHeadAttention(
-            head_size=head_size, num_heads=num_heads, return_attn_coef=True
-        )
+def test_compute_output_shape():
+    batch_size = 10
+    num_heads = 8
+    head_size = 12
 
-        output_shape, attn_coef_shape = mha.compute_output_shape(
-            [(batch_size, 5, 9), (batch_size, 7, 11), (batch_size, 7, 13)]
-        )
+    mha = MultiHeadAttention(head_size=head_size, num_heads=num_heads)
 
-        self.assertEqual(output_shape[1], 5)
-        self.assertEqual(output_shape[2], 13)
+    output_shape = mha.compute_output_shape(
+        [(batch_size, 5, 9), (batch_size, 7, 11), (batch_size, 7, 13)]
+    )
 
-        self.assertEqual(attn_coef_shape[0], batch_size)
-        self.assertEqual(attn_coef_shape[1], num_heads)
-        self.assertEqual(attn_coef_shape[2], 5)
-        self.assertEqual(attn_coef_shape[3], 7)
+    assert output_shape[1] == 5
+    assert output_shape[2] == 13
 
-    def test_no_value(self):
-        batch_size = 10
-        num_heads = 8
-        head_size = 12
 
-        q = tf.random.uniform((batch_size, 5, 9), dtype=np.float32)
-        k = tf.random.uniform((batch_size, 7, 11), dtype=np.float32)
+def test_compute_output_shape_return_attn():
+    batch_size = 10
+    num_heads = 8
+    head_size = 12
 
-        mha = MultiHeadAttention(
-            head_size=head_size, num_heads=num_heads, return_attn_coef=True
-        )
+    mha = MultiHeadAttention(
+        head_size=head_size, num_heads=num_heads, return_attn_coef=True
+    )
 
-        output, attn_coef = mha([q, k])
+    output_shape, attn_coef_shape = mha.compute_output_shape(
+        [(batch_size, 5, 9), (batch_size, 7, 11), (batch_size, 7, 13)]
+    )
 
-        self.assertEqual(attn_coef.shape[0], batch_size)
-        self.assertEqual(attn_coef.shape[1], num_heads)
-        self.assertEqual(attn_coef.shape[2], q.shape[1])
-        self.assertEqual(attn_coef.shape[3], k.shape[1])
+    assert output_shape[1] == 5
+    assert output_shape[2] == 13
 
-        self.assertEqual(output.shape[1], q.shape[1])
-        self.assertEqual(output.shape[2], k.shape[2])
+    assert attn_coef_shape[0] == batch_size
+    assert attn_coef_shape[1] == num_heads
+    assert attn_coef_shape[2] == 5
+    assert attn_coef_shape[3] == 7
 
-    def test_mask_no_batch(self):
-        batch_size = 10
-        num_heads = 8
-        head_size = 12
 
-        q = tf.random.uniform((batch_size, 5, 9), dtype=np.float32)
-        k = tf.random.uniform((batch_size, 7, 11), dtype=np.float32)
-        v = tf.random.uniform((batch_size, 7, 13), dtype=np.float32)
-        mask = tf.random.uniform((5, 7), dtype=np.float32) > 0.1
+def test_no_value():
+    batch_size = 10
+    num_heads = 8
+    head_size = 12
 
-        mha = MultiHeadAttention(
-            head_size=head_size, num_heads=num_heads, return_attn_coef=True
-        )
+    q = tf.random.uniform((batch_size, 5, 9), dtype=np.float32)
+    k = tf.random.uniform((batch_size, 7, 11), dtype=np.float32)
 
-        output, attn_coef = mha([q, k, v], mask=mask)
+    mha = MultiHeadAttention(
+        head_size=head_size, num_heads=num_heads, return_attn_coef=True
+    )
 
-        self.assertEqual(output.shape[0], batch_size)
-        self.assertEqual(output.shape[1], q.shape[1])
-        self.assertEqual(output.shape[2], v.shape[2])
+    output, attn_coef = mha([q, k])
 
-        if tf.executing_eagerly():
-            attn_coef = attn_coef.numpy()
-            mask = mask.numpy()
+    assert attn_coef.shape[0] == batch_size
+    assert attn_coef.shape[1] == num_heads
+    assert attn_coef.shape[2] == q.shape[1]
+    assert attn_coef.shape[3] == k.shape[1]
 
-            self.assertTrue(((attn_coef != 0) == mask).all())
+    assert output.shape[1] == q.shape[1]
+    assert output.shape[2] == k.shape[2]
 
-    def test_from_to_config(self):
-        num_heads = 8
-        head_size = 12
 
-        mha = MultiHeadAttention(head_size=head_size, num_heads=num_heads, dropout=0.5)
+def test_mask_no_batch():
+    batch_size = 10
+    num_heads = 8
+    head_size = 12
 
-        config = mha.get_config()
+    q = tf.random.uniform((batch_size, 5, 9), dtype=np.float32)
+    k = tf.random.uniform((batch_size, 7, 11), dtype=np.float32)
+    v = tf.random.uniform((batch_size, 7, 13), dtype=np.float32)
+    mask = tf.random.uniform((5, 7), dtype=np.float32) > 0.1
 
-        new_mha = MultiHeadAttention.from_config(config)
+    mha = MultiHeadAttention(
+        head_size=head_size, num_heads=num_heads, return_attn_coef=True
+    )
 
-        self.assertEqual(mha.head_size, new_mha.head_size)
-        self.assertEqual(mha.num_heads, new_mha.num_heads)
-        self.assertEqual(mha._droput_rate, new_mha._droput_rate)
+    output, attn_coef = mha([q, k, v], mask=mask)
 
-    def test_save_load_model(self):
+    assert output.shape[0] == batch_size
+    assert output.shape[1] == q.shape[1]
+    assert output.shape[2] == v.shape[2]
 
-        num_heads = 8
-        head_size = 12
+    if tf.executing_eagerly():
+        attn_coef = attn_coef.numpy()
+        mask = mask.numpy()
 
-        inputs = tf.keras.layers.Input(shape=[42, 13])
+        assert ((attn_coef != 0) == mask).all()
 
-        net, attn_coef = MultiHeadAttention(
-            head_size=head_size, num_heads=num_heads, dropout=0.5, return_attn_coef=True
-        )([inputs, inputs, inputs])
-        net = tf.keras.layers.GlobalAveragePooling1D()(net)
-        net = tf.keras.layers.Dense(10, activation="softmax")(net)
 
-        model = tf.keras.Model(inputs=inputs, outputs=[net, attn_coef])
+def test_from_to_config():
+    num_heads = 8
+    head_size = 12
 
-        # initialize model
-        model.predict(np.random.uniform(size=(10, 42, 13)))
+    mha = MultiHeadAttention(head_size=head_size, num_heads=num_heads, dropout=0.5)
 
-        with tempfile.TemporaryDirectory() as model_dir:
-            model_path = str(Path(model_dir) / "saved_model")
-            model.save(model_path)
-            new_model = tf.keras.models.load_model(model_path)
+    config = mha.get_config()
 
-        self.assertEqual(model.layers[1].get_config(), new_model.layers[1].get_config())
+    new_mha = MultiHeadAttention.from_config(config)
 
-    def test_fit_predict_eval(self):
+    assert mha.head_size == new_mha.head_size
+    assert mha.num_heads == new_mha.num_heads
+    assert mha._droput_rate == new_mha._droput_rate
 
-        num_heads = 8
-        head_size = 12
 
-        inputs = tf.keras.layers.Input(shape=[42, 13])
+def test_save_load_model():
 
-        net = MultiHeadAttention(head_size=head_size, num_heads=num_heads, dropout=0.5)(
-            [inputs, inputs, inputs]
-        )
-        net = tf.keras.layers.GlobalAveragePooling1D()(net)
-        net = tf.keras.layers.Dense(10, activation="softmax")(net)
+    num_heads = 8
+    head_size = 12
 
-        model = tf.keras.Model(inputs=inputs, outputs=net)
+    inputs = tf.keras.layers.Input(shape=[42, 13])
 
-        model.compile(
-            loss=tf.losses.SparseCategoricalCrossentropy(),
-            optimizer=tf.keras.optimizers.Adam(0.001),
-        )
+    net, attn_coef = MultiHeadAttention(
+        head_size=head_size, num_heads=num_heads, dropout=0.5, return_attn_coef=True
+    )([inputs, inputs, inputs])
+    net = tf.keras.layers.GlobalAveragePooling1D()(net)
+    net = tf.keras.layers.Dense(10, activation="softmax")(net)
 
-        model.fit(
-            x=np.random.uniform(size=(50, 42, 13)),
-            y=np.random.randint(10, size=(50,)),
-            batch_size=10,
-            epochs=2,
-        )
+    model = tf.keras.Model(inputs=inputs, outputs=[net, attn_coef])
 
-        model.predict(np.random.uniform(size=(10, 42, 13)))
+    # initialize model
+    model.predict(np.random.uniform(size=(10, 42, 13)))
 
-        model.evaluate(
-            x=np.random.uniform(size=(20, 42, 13)),
-            y=np.random.randint(0, 10, size=(20,)),
-            batch_size=10,
-        )
+    with tempfile.TemporaryDirectory() as model_dir:
+        model_path = str(Path(model_dir) / "saved_model")
+        model.save(model_path)
+        new_model = tf.keras.models.load_model(model_path)
+
+    assert model.layers[1].get_config() == new_model.layers[1].get_config()
+
+
+def test_fit_predict_eval():
+
+    num_heads = 8
+    head_size = 12
+
+    inputs = tf.keras.layers.Input(shape=[42, 13])
+
+    net = MultiHeadAttention(head_size=head_size, num_heads=num_heads, dropout=0.5)(
+        [inputs, inputs, inputs]
+    )
+    net = tf.keras.layers.GlobalAveragePooling1D()(net)
+    net = tf.keras.layers.Dense(10, activation="softmax")(net)
+
+    model = tf.keras.Model(inputs=inputs, outputs=net)
+
+    model.compile(
+        loss=tf.losses.SparseCategoricalCrossentropy(),
+        optimizer=tf.keras.optimizers.Adam(0.001),
+    )
+
+    model.fit(
+        x=np.random.uniform(size=(50, 42, 13)),
+        y=np.random.randint(10, size=(50,)),
+        batch_size=10,
+        epochs=2,
+    )
+
+    model.predict(np.random.uniform(size=(10, 42, 13)))
+
+    model.evaluate(
+        x=np.random.uniform(size=(20, 42, 13)),
+        y=np.random.randint(0, 10, size=(20,)),
+        batch_size=10,
+    )
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
