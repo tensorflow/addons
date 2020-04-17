@@ -47,6 +47,13 @@ def get_beta_accumulators(opt, dtype):
 @pytest.mark.parametrize("dtype", [tf.half, tf.float32, tf.float64])
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_sparse(dtype):
+    # TODO: remove the with tf.device when the execution on cpu is enforced
+    # See #1682 to track it.
+    with tf.device("CPU:0"):
+        _test_sparse(dtype)
+
+
+def _test_sparse(dtype):
     # Initialize tf for numpy implementation.
     m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
     var0_np = np.array([1.0, 1.0, 2.0], dtype=dtype.as_numpy_dtype)
