@@ -87,7 +87,7 @@ def test_ms_loss_for_shapes(out_shape):
     tf_loss = multi_similarity_loss(
         tf.convert_to_tensor(y_true), tf.convert_to_tensor(y_pred)
     ).numpy()
-    np.testing.assert_equal(np_loss, tf_loss)
+    np.testing.assert_almost_equal(np_loss, tf_loss, decimal=5)
 
 
 @pytest.mark.parametrize("alpha", [1.0, 2.0, 4.0, 10.0])
@@ -97,7 +97,7 @@ def test_ms_loss_for_alpha(alpha):
     tf_loss = multi_similarity_loss(
         tf.convert_to_tensor(y_true), tf.convert_to_tensor(y_pred), alpha=alpha
     ).numpy()
-    np.testing.assert_equal(np_loss, tf_loss)
+    np.testing.assert_almost_equal(np_loss, tf_loss, decimal=5)
 
 
 @pytest.mark.parametrize("beta", [1.0, 2.0, 4.0, 10.0])
@@ -107,7 +107,7 @@ def test_ms_loss_for_beta(beta):
     tf_loss = multi_similarity_loss(
         tf.convert_to_tensor(y_true), tf.convert_to_tensor(y_pred), beta=beta
     ).numpy()
-    np.testing.assert_equal(np_loss, tf_loss)
+    np.testing.assert_almost_equal(np_loss, tf_loss, decimal=5)
 
 
 @pytest.mark.parametrize("lamb", [2.0, 4.0, 8.0, 10.0])
@@ -117,7 +117,7 @@ def test_ms_loss_for_lamb(lamb):
     tf_loss = multi_similarity_loss(
         tf.convert_to_tensor(y_true), tf.convert_to_tensor(y_pred), lamb=lamb
     ).numpy()
-    np.testing.assert_equal(np_loss, tf_loss)
+    np.testing.assert_almost_equal(np_loss, tf_loss, decimal=5)
 
 
 @pytest.mark.parametrize("eps", [1e-1, 1e-3, 1e-5, 1e-7])
@@ -127,7 +127,7 @@ def test_ms_loss_for_eps(eps):
     tf_loss = multi_similarity_loss(
         tf.convert_to_tensor(y_true), tf.convert_to_tensor(y_pred), eps=eps
     ).numpy()
-    np.testing.assert_equal(np_loss, tf_loss)
+    np.testing.assert_almost_equal(np_loss, tf_loss, decimal=5)
 
 
 @pytest.mark.parametrize("ms_mining", [False, True])
@@ -137,7 +137,7 @@ def test_ms_loss_for_mining(ms_mining):
     tf_loss = multi_similarity_loss(
         tf.convert_to_tensor(y_true), tf.convert_to_tensor(y_pred), ms_mining=ms_mining
     ).numpy()
-    np.testing.assert_equal(np_loss, tf_loss)
+    np.testing.assert_almost_equal(np_loss, tf_loss, decimal=5)
 
 
 @pytest.mark.parametrize("from_logits", [False, True])
@@ -149,7 +149,7 @@ def test_ms_loss_for_logits(from_logits):
         tf.convert_to_tensor(y_pred),
         from_logits=from_logits,
     ).numpy()
-    np.testing.assert_equal(np_loss, tf_loss)
+    np.testing.assert_almost_equal(np_loss, tf_loss, decimal=5)
 
 
 def test_serialization():
