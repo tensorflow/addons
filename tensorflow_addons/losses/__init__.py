@@ -38,3 +38,4 @@ from tensorflow_addons.losses.npairs import (
     npairs_multilabel_loss,
     NpairsMultilabelLoss,
 )
+from tensorflow_addons.losses.kappa_loss import WeightedKappaLoss
