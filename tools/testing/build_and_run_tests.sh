@@ -14,22 +14,22 @@
 # limitations under the License.
 #
 # ==============================================================================
-# usage: bash tools/testing/addons_cpu.sh
+# usage: bash tools/testing/build_and_run_tests.sh
 
 set -x -e
 
 export CC_OPT_FLAGS='-mavx'
-export TF_NEED_CUDA=0
 
-# Check if python3 is available. On Windows VM it is not.
-if [ -x "$(command -v python3)" ]; then
-  PYTHON_BINARY=python3
-else
-  PYTHON_BINARY=python
+python -m pip install -r tools/install_deps/pytest.txt -e ./
+python ./configure.py
+bash tools/install_so_files.sh
+python -c "import tensorflow as tf; print(tf.config.list_physical_devices())"
+
+# If there are no gpus, we can use multiple workers
+# Multiple workers will be supported with gpus later.
+if ! [ -x "$(command -v nvidia-smi)" ]; then
+  EXTRA_ARGS="-n auto"
 fi
 
-$PYTHON_BINARY -m pip install -r tools/install_deps/pytest.txt -e ./
-$PYTHON_BINARY ./configure.py
-cat ./.bazelrc
-bash tools/install_so_files.sh
-$PYTHON_BINARY -m pytest -v --durations=25 -n auto ./tensorflow_addons
+
+python -m pytest -v --durations=25 $EXTRA_ARGS ./tensorflow_addons

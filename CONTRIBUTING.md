@@ -200,6 +200,9 @@ Pytest has many cool options to help you make great tests:
 pytest -n 3 tensorflow_addons/
 pytest -n auto tensorflow_addons/
 
+# Run the whole test suite without compiling any custom ops (.so files).
+pytest -v --skip-custom-ops tensorflow_addons/
+
 # Open the debugger to inspect variables and execute code when 
 # an exception is raised.
 pytest --pdb tensorflow_addons/ 
@@ -379,6 +382,9 @@ rarely need to do heavy computation to test things. Your tests should be small a
 focused on a specific feature/parameter.
 * Don't be afraid to write too many tests. This is fine as long as they're fast.
 
+### Code example
+* It is required to contribute a code example in the docstring when adding new features.
+* It is strongly suggested to expand or contribute a new [tutorial](https://github.com/tensorflow/addons/blob/master/docs/tutorials/README.md) for more complex features that are hard to be expressed in the docstring only.
 
 ### Fixtures and assert functions:
 We provide [fixtures](https://docs.pytest.org/en/latest/fixture.html) to help your write 

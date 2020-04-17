@@ -17,10 +17,13 @@
 import contextlib
 import inspect
 import unittest
+import random
 
 import numpy as np
 import pytest
 import tensorflow as tf
+
+from tensorflow_addons.utils import resource_loader
 
 # TODO: find public API alternative to these
 from tensorflow.python.framework.test_util import (  # noqa: F401
@@ -192,6 +195,27 @@ def cpu_and_gpu(request):
 @pytest.fixture(scope="function", params=["channels_first", "channels_last"])
 def data_format(request):
     return request.param
+
+
+@pytest.fixture(scope="function", autouse=True)
+def set_seeds():
+    random.seed(0)
+    np.random.seed(0)
+    tf.random.set_seed(0)
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--skip-custom-ops",
+        action="store_true",
+        help="When a custom op is being loaded in a test, skip this test.",
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def set_global_variables(request):
+    if request.config.getoption("--skip-custom-ops"):
+        resource_loader.SKIP_CUSTOM_OPS = True
 
 
 def assert_allclose_according_to_type(
