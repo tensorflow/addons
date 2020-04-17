@@ -17,24 +17,23 @@
 
 
 import os
+import pathlib
 import platform
 import logging
 
 import tensorflow as tf
 
-_DEFAULT_CUDA_VERISON = "10.1"
-_DEFAULT_CUDNN_VERSION = "7"
 _TFA_BAZELRC = ".bazelrc"
 
 
 # Writes variables to bazelrc file
-def write_to_bazelrc(line):
+def write(line):
     with open(_TFA_BAZELRC, "a") as f:
         f.write(line + "\n")
 
 
-def write_action_env_to_bazelrc(var_name, var):
-    write_to_bazelrc('build --action_env %s="%s"' % (var_name, str(var)))
+def write_action_env(var_name, var):
+    write('build --action_env {}="{}"'.format(var_name, var))
 
 
 def is_macos():
@@ -43,13 +42,6 @@ def is_macos():
 
 def is_windows():
     return platform.system() == "Windows"
-
-
-def get_input(question):
-    try:
-        return input(question)
-    except EOFError:
-        return ""
 
 
 def get_tf_header_dir():
@@ -97,106 +89,42 @@ def create_build_configuration():
 
     logging.disable(logging.WARNING)
 
-    write_action_env_to_bazelrc("TF_HEADER_DIR", get_tf_header_dir())
-    write_action_env_to_bazelrc("TF_SHARED_LIBRARY_DIR", get_tf_shared_lib_dir())
-    write_action_env_to_bazelrc("TF_SHARED_LIBRARY_NAME", get_shared_lib_name())
-    write_action_env_to_bazelrc("TF_CXX11_ABI_FLAG", tf.sysconfig.CXX11_ABI_FLAG)
+    write_action_env("TF_HEADER_DIR", get_tf_header_dir())
+    write_action_env("TF_SHARED_LIBRARY_DIR", get_tf_shared_lib_dir())
+    write_action_env("TF_SHARED_LIBRARY_NAME", get_shared_lib_name())
+    write_action_env("TF_CXX11_ABI_FLAG", tf.sysconfig.CXX11_ABI_FLAG)
 
-    write_to_bazelrc("build --spawn_strategy=standalone")
-    write_to_bazelrc("build --strategy=Genrule=standalone")
-    write_to_bazelrc("build -c opt")
+    write("build --spawn_strategy=standalone")
+    write("build --strategy=Genrule=standalone")
+    write("build -c opt")
 
-    _TF_NEED_CUDA = os.getenv("TF_NEED_CUDA")
-
-    while _TF_NEED_CUDA is None:
-        print()
-        answer = get_input("Do you want to build GPU ops? [y/N] ")
-        if answer in ("Y", "y"):
-            print("> Building GPU & CPU ops")
-            _TF_NEED_CUDA = "1"
-        elif answer in ("N", "n", ""):
-            print("> Building only CPU ops")
-            _TF_NEED_CUDA = "0"
-        else:
-            print("Invalid selection:", answer)
-
-    if _TF_NEED_CUDA == "1":
+    if os.getenv("TF_NEED_CUDA", "0") == "1":
+        print("> Building GPU & CPU ops")
         configure_cuda()
+    else:
+        print("> Building only CPU ops")
 
     print()
-    print("Build configurations successfully written to", _TFA_BAZELRC)
-    print()
-
-
-def get_cuda_toolkit_path():
-    default = "/usr/local/cuda"
-    cuda_toolkit_path = os.getenv("CUDA_TOOLKIT_PATH")
-    if cuda_toolkit_path is None:
-        answer = get_input(
-            "Please specify the location of CUDA. [Default is {}]: ".format(default)
-        )
-        cuda_toolkit_path = answer or default
-    print("> CUDA installation path:", cuda_toolkit_path)
-    print()
-    return cuda_toolkit_path
-
-
-def get_cudnn_install_path():
-    default = "/usr/lib/x86_64-linux-gnu"
-    cudnn_install_path = os.getenv("CUDNN_INSTALL_PATH")
-    if cudnn_install_path is None:
-        answer = get_input(
-            "Please specify the location of cuDNN installation. [Default is {}]: ".format(
-                default
-            )
-        )
-        cudnn_install_path = answer or default
-    print("> cuDNN installation path:", cudnn_install_path)
-    print()
-    return cudnn_install_path
+    print("Build configurations successfully written to", _TFA_BAZELRC, ":\n")
+    print(pathlib.Path(_TFA_BAZELRC).read_text())
 
 
 def configure_cuda():
-    _TF_CUDA_VERSION = os.getenv("TF_CUDA_VERSION")
-    _TF_CUDNN_VERSION = os.getenv("TF_CUDNN_VERSION")
-
-    print()
-    print("Configuring GPU setup...")
-
-    if _TF_CUDA_VERSION is None:
-        answer = get_input(
-            "Please specify the CUDA version [Default is {}]: ".format(
-                _DEFAULT_CUDA_VERISON
-            )
-        )
-        _TF_CUDA_VERSION = answer or _DEFAULT_CUDA_VERISON
-    print("> Using CUDA version:", _TF_CUDA_VERSION)
-    print()
-
-    if _TF_CUDNN_VERSION is None:
-        answer = get_input(
-            "Please specify the cuDNN major version [Default is {}]: ".format(
-                _DEFAULT_CUDNN_VERSION
-            )
-        )
-        _TF_CUDNN_VERSION = answer or _DEFAULT_CUDNN_VERSION
-    print("> Using cuDNN version:", _TF_CUDNN_VERSION)
-    print()
-
-    write_action_env_to_bazelrc("TF_NEED_CUDA", "1")
-    write_action_env_to_bazelrc("CUDA_TOOLKIT_PATH", get_cuda_toolkit_path())
-    write_action_env_to_bazelrc("CUDNN_INSTALL_PATH", get_cudnn_install_path())
-    write_action_env_to_bazelrc("TF_CUDA_VERSION", _TF_CUDA_VERSION)
-    write_action_env_to_bazelrc("TF_CUDNN_VERSION", _TF_CUDNN_VERSION)
-
-    write_to_bazelrc("test --config=cuda")
-    write_to_bazelrc("build --config=cuda")
-    write_to_bazelrc(
-        "build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true"
+    write_action_env("TF_NEED_CUDA", "1")
+    write_action_env(
+        "CUDA_TOOLKIT_PATH", os.getenv("CUDA_TOOLKIT_PATH", "/usr/local/cuda")
     )
-    write_to_bazelrc(
-        "build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain"
+    write_action_env(
+        "CUDNN_INSTALL_PATH",
+        os.getenv("CUDNN_INSTALL_PATH", "/usr/lib/x86_64-linux-gnu"),
     )
+    write_action_env("TF_CUDA_VERSION", os.getenv("TF_CUDA_VERSION", "10.1"))
+    write_action_env("TF_CUDNN_VERSION", os.getenv("TF_CUDNN_VERSION", "7"))
+
+    write("test --config=cuda")
+    write("build --config=cuda")
+    write("build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true")
+    write("build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain")
 
 
 if __name__ == "__main__":

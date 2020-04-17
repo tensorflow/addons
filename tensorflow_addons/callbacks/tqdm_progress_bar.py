@@ -93,76 +93,74 @@ class TQDMProgressBar(Callback):
         self.last_update_time = time.time()
         self.overall_progress_tqdm = None
         self.epoch_progress_tqdm = None
+        self.is_training = False
         self.num_epochs = None
         self.logs = None
-        self.metrics = None
+        super().__init__()
 
-    def on_train_begin(self, logs=None):
-        self.num_epochs = self.params["epochs"]
-        self.metrics = self.params["metrics"]
-
-        if self.show_overall_progress:
-            self.overall_progress_tqdm = self.tqdm(
-                desc="Training",
-                total=self.num_epochs,
-                bar_format=self.overall_bar_format,
-                leave=self.leave_overall_progress,
-                dynamic_ncols=True,
-                unit="epochs",
-            )
-
-        # set counting mode
-        if "samples" in self.params:
-            self.mode = "samples"
-            self.total_steps = self.params["samples"]
-        else:
-            self.mode = "steps"
-            self.total_steps = self.params["steps"]
-
-    def on_train_end(self, logs={}):
-        if self.show_overall_progress:
-            self.overall_progress_tqdm.close()
-
-    def on_epoch_begin(self, epoch, logs={}):
-        current_epoch_description = "Epoch {epoch}/{num_epochs}".format(
-            epoch=epoch + 1, num_epochs=self.num_epochs
-        )
-
-        if self.show_epoch_progress:
-            print(current_epoch_description)
-            self.epoch_progress_tqdm = self.tqdm(
-                total=self.total_steps,
-                bar_format=self.epoch_bar_format,
-                leave=self.leave_epoch_progress,
-                dynamic_ncols=True,
-                unit=self.mode,
-            )
-
+    def _initialize_progbar(self, hook, epoch, logs=None):
         self.num_samples_seen = 0
         self.steps_to_update = 0
         self.steps_so_far = 0
         self.logs = defaultdict(float)
-
-    def on_epoch_end(self, epoch, logs={}):
-
-        if self.show_epoch_progress:
-            metrics = self.format_metrics(logs)
-            self.epoch_progress_tqdm.desc = metrics
-
-            # set miniters and mininterval to 0 so last update displays
-            self.epoch_progress_tqdm.miniters = 0
-            self.epoch_progress_tqdm.mininterval = 0
-
-            # update the rest of the steps in epoch progress bar
-            self.epoch_progress_tqdm.update(
-                self.total_steps - self.epoch_progress_tqdm.n
+        self.num_epochs = self.params["epochs"]
+        self.mode = "steps"
+        self.total_steps = self.params["steps"]
+        if hook == "train_overall":
+            if self.show_overall_progress:
+                self.overall_progress_tqdm = self.tqdm(
+                    desc="Training",
+                    total=self.num_epochs,
+                    bar_format=self.overall_bar_format,
+                    leave=self.leave_overall_progress,
+                    dynamic_ncols=True,
+                    unit="epochs",
+                )
+        elif hook == "test":
+            if self.show_epoch_progress:
+                self.epoch_progress_tqdm = self.tqdm(
+                    total=self.total_steps,
+                    desc="Evaluating",
+                    bar_format=self.epoch_bar_format,
+                    leave=self.leave_epoch_progress,
+                    dynamic_ncols=True,
+                    unit=self.mode,
+                )
+        elif hook == "train_epoch":
+            current_epoch_description = "Epoch {epoch}/{num_epochs}".format(
+                epoch=epoch + 1, num_epochs=self.num_epochs
             )
-            self.epoch_progress_tqdm.close()
+            if self.show_epoch_progress:
+                print(current_epoch_description)
+                self.epoch_progress_tqdm = self.tqdm(
+                    total=self.total_steps,
+                    bar_format=self.epoch_bar_format,
+                    leave=self.leave_epoch_progress,
+                    dynamic_ncols=True,
+                    unit=self.mode,
+                )
 
-        if self.show_overall_progress:
-            self.overall_progress_tqdm.update(1)
+    def _clean_up_progbar(self, hook, logs):
+        if hook == "train_overall":
+            if self.show_overall_progress:
+                self.overall_progress_tqdm.close()
+        else:
+            if hook == "test":
+                metrics = self.format_metrics(logs, self.num_samples_seen)
+            else:
+                metrics = self.format_metrics(logs)
+            if self.show_epoch_progress:
+                self.epoch_progress_tqdm.desc = metrics
+                # set miniters and mininterval to 0 so last update displays
+                self.epoch_progress_tqdm.miniters = 0
+                self.epoch_progress_tqdm.mininterval = 0
+                # update the rest of the steps in epoch progress bar
+                self.epoch_progress_tqdm.update(
+                    self.total_steps - self.epoch_progress_tqdm.n
+                )
+                self.epoch_progress_tqdm.close()
 
-    def on_batch_end(self, batch, logs={}):
+    def _update_progbar(self, logs):
         if self.mode == "samples":
             batch_size = logs["size"]
         else:
@@ -172,8 +170,7 @@ class TQDMProgressBar(Callback):
         self.steps_to_update += 1
         self.steps_so_far += 1
 
-        if self.steps_so_far < self.total_steps:
-
+        if self.steps_so_far <= self.total_steps:
             for metric, value in logs.items():
                 self.logs[metric] += value * batch_size
 
@@ -192,6 +189,37 @@ class TQDMProgressBar(Callback):
                 # update timestamp for last update
                 self.last_update_time = now
 
+    def on_train_begin(self, logs=None):
+        self.is_training = True
+        self._initialize_progbar("train_overall", None, logs)
+
+    def on_train_end(self, logs={}):
+        self.is_training = False
+        self._clean_up_progbar("train_overall", logs)
+
+    def on_test_begin(self, logs={}):
+        if not self.is_training:
+            self._initialize_progbar("test", None, logs)
+
+    def on_test_end(self, logs={}):
+        if not self.is_training:
+            self._clean_up_progbar("test", self.logs)
+
+    def on_epoch_begin(self, epoch, logs={}):
+        self._initialize_progbar("train_epoch", epoch, logs)
+
+    def on_epoch_end(self, epoch, logs={}):
+        self._clean_up_progbar("train_epoch", logs)
+        if self.show_overall_progress:
+            self.overall_progress_tqdm.update(1)
+
+    def on_test_batch_end(self, batch, logs={}):
+        if not self.is_training:
+            self._update_progbar(logs)
+
+    def on_batch_end(self, batch, logs={}):
+        self._update_progbar(logs)
+
     def format_metrics(self, logs={}, factor=1):
         """Format metrics in logs into a string.
 
@@ -208,11 +236,11 @@ class TQDMProgressBar(Callback):
         """
 
         metric_value_pairs = []
-        for metric in self.metrics:
-            if metric in logs:
-                value = logs[metric] / factor
-                pair = self.metrics_format.format(name=metric, value=value)
-                metric_value_pairs.append(pair)
+        for key, value in logs.items():
+            if key in ["batch", "size"]:
+                continue
+            pair = self.metrics_format.format(name=key, value=value / factor)
+            metric_value_pairs.append(pair)
         metrics_string = self.metrics_separator.join(metric_value_pairs)
         return metrics_string
 
