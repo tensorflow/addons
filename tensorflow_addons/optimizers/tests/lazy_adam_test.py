@@ -20,6 +20,7 @@ import tensorflow as tf
 
 from tensorflow_addons.optimizers import lazy_adam
 from tensorflow_addons.utils import test_utils
+import pytest
 
 
 def adam_update_numpy(
@@ -43,60 +44,58 @@ def get_beta_accumulators(opt, dtype):
     return (beta_1_power, beta_2_power)
 
 
+@pytest.mark.parametrize("dtype", [tf.half, tf.float32, tf.float64])
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_sparse(dtype):
+    # Initialize tf for numpy implementation.
+    m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
+    var0_np = np.array([1.0, 1.0, 2.0], dtype=dtype.as_numpy_dtype)
+    grads0_np = np.array([0.1, 0.0, 0.1], dtype=dtype.as_numpy_dtype)
+    var1_np = np.array([3.0, 3.0, 4.0], dtype=dtype.as_numpy_dtype)
+    grads1_np = np.array([0.01, 0.0, 0.01], dtype=dtype.as_numpy_dtype)
+
+    var0 = tf.Variable(var0_np)
+    var1 = tf.Variable(var1_np)
+    grads0_np_indices = np.array([0, 2], dtype=np.int32)
+    grads0 = tf.IndexedSlices(
+        tf.constant(grads0_np[grads0_np_indices]),
+        tf.constant(grads0_np_indices),
+        tf.constant([3]),
+    )
+    grads1_np_indices = np.array([0, 2], dtype=np.int32)
+    grads1 = tf.IndexedSlices(
+        tf.constant(grads1_np[grads1_np_indices]),
+        tf.constant(grads1_np_indices),
+        tf.constant([3]),
+    )
+    opt = lazy_adam.LazyAdam()
+
+    # Fetch params to validate initial values
+    np.testing.assert_allclose([1.0, 1.0, 2.0], var0.numpy(), 1e-6, 1e-6)
+    np.testing.assert_allclose([3.0, 3.0, 4.0], var1.numpy(), 1e-6, 1e-6)
+
+    # Run 3 steps of Adam
+    for t in range(3):
+        beta_1_power, beta_2_power = get_beta_accumulators(opt, dtype)
+        test_utils.assert_allclose_according_to_type(
+            0.9 ** (t + 1), beta_1_power.numpy()
+        )
+        test_utils.assert_allclose_according_to_type(
+            0.999 ** (t + 1), beta_2_power.numpy()
+        )
+        opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+
+        var0_np, m0, v0 = adam_update_numpy(var0_np, grads0_np, t, m0, v0)
+        var1_np, m1, v1 = adam_update_numpy(var1_np, grads1_np, t, m1, v1)
+
+        # Validate updated params
+        test_utils.assert_allclose_according_to_type(var0_np, var0.numpy())
+        test_utils.assert_allclose_according_to_type(var1_np, var1.numpy())
+
+
 class LazyAdamTest(tf.test.TestCase):
 
     # TODO: remove v1 tests (keep pace with adam_test.py in keras).
-    @test_utils.run_deprecated_v1
-    def testSparse(self):
-        for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
-            with self.cached_session():
-                # Initialize tf for numpy implementation.
-                m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
-                var0_np = np.array([1.0, 1.0, 2.0], dtype=dtype.as_numpy_dtype)
-                grads0_np = np.array([0.1, 0.0, 0.1], dtype=dtype.as_numpy_dtype)
-                var1_np = np.array([3.0, 3.0, 4.0], dtype=dtype.as_numpy_dtype)
-                grads1_np = np.array([0.01, 0.0, 0.01], dtype=dtype.as_numpy_dtype)
-
-                var0 = tf.Variable(var0_np)
-                var1 = tf.Variable(var1_np)
-                grads0_np_indices = np.array([0, 2], dtype=np.int32)
-                grads0 = tf.IndexedSlices(
-                    tf.constant(grads0_np[grads0_np_indices]),
-                    tf.constant(grads0_np_indices),
-                    tf.constant([3]),
-                )
-                grads1_np_indices = np.array([0, 2], dtype=np.int32)
-                grads1 = tf.IndexedSlices(
-                    tf.constant(grads1_np[grads1_np_indices]),
-                    tf.constant(grads1_np_indices),
-                    tf.constant([3]),
-                )
-                opt = lazy_adam.LazyAdam()
-                update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-                self.evaluate(tf.compat.v1.global_variables_initializer())
-
-                # Fetch params to validate initial values
-                self.assertAllClose([1.0, 1.0, 2.0], self.evaluate(var0))
-                self.assertAllClose([3.0, 3.0, 4.0], self.evaluate(var1))
-
-                beta_1_power, beta_2_power = get_beta_accumulators(opt, dtype)
-                # Run 3 steps of Adam
-                for t in range(3):
-                    self.assertAllCloseAccordingToType(
-                        0.9 ** (t + 1), self.evaluate(beta_1_power)
-                    )
-                    self.assertAllCloseAccordingToType(
-                        0.999 ** (t + 1), self.evaluate(beta_2_power)
-                    )
-                    self.evaluate(update)
-
-                    var0_np, m0, v0 = adam_update_numpy(var0_np, grads0_np, t, m0, v0)
-                    var1_np, m1, v1 = adam_update_numpy(var1_np, grads1_np, t, m1, v1)
-
-                    # Validate updated params
-                    self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
-                    self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
-
     @test_utils.run_deprecated_v1
     def testSparseDevicePlacement(self):
         for index_dtype in [tf.dtypes.int32, tf.dtypes.int64]:
