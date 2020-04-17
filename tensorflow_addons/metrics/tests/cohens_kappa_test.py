@@ -18,7 +18,6 @@ import pytest
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.metrics import CohenKappa
-from tensorflow_addons.utils import test_utils
 from tensorflow_addons.testing.serialization import check_metric_serialization
 
 
