@@ -14,10 +14,12 @@
 # ==============================================================================
 """Tests for triplet loss."""
 
+import pytest
 import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.losses import triplet
+from tensorflow_addons.utils import test_utils
 
 
 def pairwise_distance_np(feature, squared=False):
@@ -47,6 +49,44 @@ def pairwise_distance_np(feature, squared=False):
         - np.diag(pairwise_distances.diagonal())
     )
     return pairwise_distances
+
+
+def triplet_semihard_loss_np(labels, embedding, margin):
+
+    num_data = embedding.shape[0]
+    # Reshape labels to compute adjacency matrix.
+    labels_reshaped = np.reshape(labels.astype(np.float32), (labels.shape[0], 1))
+    # Compute the loss in NP.
+    adjacency = np.equal(labels_reshaped, labels_reshaped.T)
+
+    pdist_matrix = pairwise_distance_np(embedding, squared=True)
+    loss_np = 0.0
+    num_positives = 0.0
+    for i in range(num_data):
+        for j in range(num_data):
+            if adjacency[i][j] > 0.0 and i != j:
+                num_positives += 1.0
+
+                pos_distance = pdist_matrix[i][j]
+                neg_distances = []
+
+                for k in range(num_data):
+                    if adjacency[i][k] == 0:
+                        neg_distances.append(pdist_matrix[i][k])
+
+                # Sort by distance.
+                neg_distances.sort()
+                chosen_neg_distance = neg_distances[0]
+
+                for l in range(len(neg_distances)):
+                    chosen_neg_distance = neg_distances[l]
+                    if chosen_neg_distance > pos_distance:
+                        break
+
+                loss_np += np.maximum(0.0, margin - chosen_neg_distance + pos_distance)
+
+    loss_np /= num_positives
+    return loss_np
 
 
 def triplet_hard_loss_np(labels, embedding, margin, soft=False):
@@ -87,7 +127,8 @@ def triplet_hard_loss_np(labels, embedding, margin, soft=False):
     return loss_np
 
 
-def test_unweighted_triple_loss():
+@pytest.mark.parametrize("dtype", [tf.float32, tf.float16, tf.bfloat16])
+def test_semihard_tripled_loss(dtype):
     num_data = 10
     feat_dim = 6
     margin = 1.0
@@ -96,46 +137,14 @@ def test_unweighted_triple_loss():
     embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
     labels = np.random.randint(0, num_classes, size=(num_data))
 
-    # Reshape labels to compute adjacency matrix.
-    labels_reshaped = np.reshape(labels.astype(np.float32), (labels.shape[0], 1))
-    # Compute the loss in NP.
-    adjacency = np.equal(labels_reshaped, labels_reshaped.T)
-
-    pdist_matrix = pairwise_distance_np(embedding, squared=True)
-    loss_np = 0.0
-    num_positives = 0.0
-    for i in range(num_data):
-        for j in range(num_data):
-            if adjacency[i][j] > 0.0 and i != j:
-                num_positives += 1.0
-
-                pos_distance = pdist_matrix[i][j]
-                neg_distances = []
-
-                for k in range(num_data):
-                    if adjacency[i][k] == 0:
-                        neg_distances.append(pdist_matrix[i][k])
-
-                # Sort by distance.
-                neg_distances.sort()
-                chosen_neg_distance = neg_distances[0]
-
-                for l in range(len(neg_distances)):
-                    chosen_neg_distance = neg_distances[l]
-                    if chosen_neg_distance > pos_distance:
-                        break
-
-                loss_np += np.maximum(0.0, margin - chosen_neg_distance + pos_distance)
-
-    loss_np /= num_positives
+    loss_np = triplet_semihard_loss_np(labels, embedding, margin)
 
     # Compute the loss in TF.
     y_true = tf.constant(labels)
-    y_pred = tf.constant(embedding)
+    y_pred = tf.constant(embedding, dtype=dtype)
     cce_obj = triplet.TripletSemiHardLoss()
     loss = cce_obj(y_true, y_pred)
-    # self.assertAlmostEqual(self.evaluate(loss), loss_np, 3)
-    np.testing.assert_allclose(loss, loss_np, rtol=1e-6, atol=1e-6)
+    test_utils.assert_allclose_according_to_type(loss.numpy(), loss_np)
 
 
 def test_keras_model_compile_semihard():
@@ -150,7 +159,9 @@ def test_serialization_semihard():
     tf.keras.losses.deserialize(tf.keras.losses.serialize(loss))
 
 
-def test_unweighted():
+@pytest.mark.parametrize("dtype", [tf.float32, tf.float16, tf.bfloat16])
+@pytest.mark.parametrize("soft", [False, True])
+def test_hard_tripled_loss(dtype, soft):
     num_data = 20
     feat_dim = 6
     margin = 1.0
@@ -159,71 +170,14 @@ def test_unweighted():
     embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
     labels = np.random.randint(0, num_classes, size=(num_data))
 
-    loss_np = triplet_hard_loss_np(labels, embedding, margin)
+    loss_np = triplet_hard_loss_np(labels, embedding, margin, soft)
 
     # Compute the loss in TF.
     y_true = tf.constant(labels)
-    y_pred = tf.constant(embedding)
-    cce_obj = triplet.TripletHardLoss()
+    y_pred = tf.constant(embedding, dtype=dtype)
+    cce_obj = triplet.TripletHardLoss(soft=soft)
     loss = cce_obj(y_true, y_pred)
-    np.testing.assert_allclose(loss, loss_np, rtol=1e-6, atol=1e-6)
-
-
-def test_unweighted_soft():
-    num_data = 20
-    feat_dim = 6
-    margin = 1.0
-    num_classes = 4
-
-    embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
-    labels = np.random.randint(0, num_classes, size=(num_data))
-
-    loss_np = triplet_hard_loss_np(labels, embedding, margin, soft=True)
-
-    # Compute the loss in TF.
-    y_true = tf.constant(labels)
-    y_pred = tf.constant(embedding)
-    cce_obj = triplet.TripletHardLoss(soft=True)
-    loss = cce_obj(y_true, y_pred)
-    np.testing.assert_allclose(loss, loss_np, rtol=1e-6, atol=1e-6)
-
-
-def test_dtypes_float16():
-    num_data = 20
-    feat_dim = 6
-    margin = 1.0
-    num_classes = 4
-
-    embedding = np.random.rand(num_data, feat_dim).astype(np.float16)
-    labels = np.random.randint(0, num_classes, size=(num_data))
-
-    loss_np = triplet_hard_loss_np(labels, embedding, margin)
-
-    # Compute the loss in TF.
-    y_true = tf.constant(labels)
-    y_pred = tf.constant(embedding, dtype=tf.float16)
-    cce_obj = triplet.TripletHardLoss()
-    loss = cce_obj(y_true, y_pred)
-    np.testing.assert_allclose(loss, loss_np, rtol=1e-5, atol=1e-5)
-
-
-def test_dtypes_bfloat16():
-    num_data = 20
-    feat_dim = 6
-    margin = 1.0
-    num_classes = 4
-
-    embedding = np.random.rand(num_data, feat_dim).astype(np.float16)
-    labels = np.random.randint(0, num_classes, size=(num_data))
-
-    loss_np = triplet_hard_loss_np(labels, embedding, margin)
-
-    # Compute the loss in TF.
-    y_true = tf.constant(labels)
-    y_pred = tf.constant(embedding, dtype=tf.bfloat16)
-    cce_obj = triplet.TripletHardLoss()
-    loss = cce_obj(y_true, y_pred)
-    np.testing.assert_allclose(loss.numpy(), loss_np, rtol=1e-2, atol=1e-2)
+    test_utils.assert_allclose_according_to_type(loss.numpy(), loss_np)
 
 
 def test_keras_model_compile_hard():
