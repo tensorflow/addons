@@ -96,7 +96,7 @@ def multi_similarity_loss(
     y_true: TensorLike,
     y_pred: TensorLike,
     alpha: FloatTensorLike = 2.0,
-    beta: FloatTensorLike = 50.0,
+    beta: FloatTensorLike = 2.0,
     lamb: FloatTensorLike = 1.0,
     eps: FloatTensorLike = 0.1,
     ms_mining: bool = False,
@@ -141,6 +141,7 @@ def multi_similarity_loss(
     if from_logits:
         y_pred = tf.sigmoid(y_pred)
     y_true = tf.reshape(y_true, [-1, 1])
+    y_pred = tf.reshape(y_pred, [-1, 1])
     batch_size = tf.size(y_true)
     adjacency = tf.equal(y_true, tf.transpose(y_true))
     adjacency_not = tf.logical_not(adjacency)
