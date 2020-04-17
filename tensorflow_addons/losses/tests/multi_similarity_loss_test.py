@@ -150,8 +150,3 @@ def test_ms_loss_for_logits(from_logits):
         from_logits=from_logits,
     ).numpy()
     np.testing.assert_almost_equal(np_loss, tf_loss, decimal=5)
-
-
-def test_serialization():
-    loss = MultiSimilarityLoss()
-    tf.keras.losses.deserialize(tf.keras.losses.serialize(loss))
