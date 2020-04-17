@@ -141,12 +141,12 @@ def test_sparsemax_of_inf(dtype):
         [[0, np.inf, 0], [0, np.inf, -np.inf], [-np.inf, np.inf, -np.inf]]
     ).astype(dtype)
 
-    tf_sparsemax_neg = sparsemax(z_neg.astype(dtype))
+    tf_sparsemax_neg = sparsemax(z_neg)
     np.testing.assert_equal(
         np.array([[0.5, 0, 0.5], [1, 0, 0], [np.nan, np.nan, np.nan]]), tf_sparsemax_neg
     )
 
-    tf_sparsemax_pos = sparsemax(z_pos.astype(dtype))
+    tf_sparsemax_pos = sparsemax(z_pos)
     np.testing.assert_equal(
         np.array(
             [
@@ -158,7 +158,7 @@ def test_sparsemax_of_inf(dtype):
         tf_sparsemax_pos,
     )
 
-    tf_sparsemax_mix = sparsemax(z_mix.astype(dtype))
+    tf_sparsemax_mix = sparsemax(z_mix)
     np.testing.assert_equal(
         np.array(
             [
@@ -212,9 +212,9 @@ def test_constant_add(dtype):
     z = random.uniform(low=-3, high=3, size=(test_obs, 10)).astype(dtype)
     c = random.uniform(low=-3, high=3, size=(test_obs, 1)).astype(dtype)
 
-    tf_sparsemax_zpc = sparsemax((z + c).astype(dtype))
+    tf_sparsemax_zpc = sparsemax((z + c))
 
-    tf_sparsemax_z = sparsemax(z.astype(dtype))
+    tf_sparsemax_z = sparsemax(z)
 
     test_utils.assert_allclose_according_to_type(
         tf_sparsemax_zpc, tf_sparsemax_z, half_atol=5e-3
