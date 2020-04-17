@@ -44,14 +44,16 @@ class DummyData:
         self.state = np.random.randn(self.batch, self.timestep).astype(np.float32)
 
 
+attention_classes = [
+    wrapper.LuongAttention,
+    wrapper.LuongMonotonicAttention,
+    wrapper.BahdanauAttention,
+    wrapper.BahdanauMonotonicAttention,
+]
+
+
 @pytest.mark.parametrize(
-    "attention_cls",
-    [
-        wrapper.LuongAttention,
-        wrapper.LuongMonotonicAttention,
-        wrapper.BahdanauAttention,
-        wrapper.BahdanauMonotonicAttention,
-    ],
+    "attention_cls", attention_classes,
 )
 def test_attention_shape_inference(attention_cls):
     dummy_data = DummyData()
@@ -63,13 +65,7 @@ def test_attention_shape_inference(attention_cls):
 
 
 @pytest.mark.parametrize(
-    "attention_cls",
-    [
-        wrapper.LuongAttention,
-        wrapper.LuongMonotonicAttention,
-        wrapper.BahdanauAttention,
-        wrapper.BahdanauMonotonicAttention,
-    ],
+    "attention_cls", attention_classes,
 )
 def test_get_config(attention_cls):
     dummy_data = DummyData()
@@ -83,13 +79,7 @@ def test_get_config(attention_cls):
 
 
 @pytest.mark.parametrize(
-    "attention_cls",
-    [
-        wrapper.LuongAttention,
-        wrapper.LuongMonotonicAttention,
-        wrapper.BahdanauAttention,
-        wrapper.BahdanauMonotonicAttention,
-    ],
+    "attention_cls", attention_classes,
 )
 def test_layer_output(attention_cls):
     dummy_data = DummyData()
@@ -102,13 +92,7 @@ def test_layer_output(attention_cls):
 
 
 @pytest.mark.parametrize(
-    "attention_cls",
-    [
-        wrapper.LuongAttention,
-        wrapper.LuongMonotonicAttention,
-        wrapper.BahdanauAttention,
-        wrapper.BahdanauMonotonicAttention,
-    ],
+    "attention_cls", attention_classes,
 )
 def test_passing_memory_from_call(attention_cls):
     dummy_data = DummyData()
@@ -131,13 +115,7 @@ def test_passing_memory_from_call(attention_cls):
 
 
 @pytest.mark.parametrize(
-    "attention_cls",
-    [
-        wrapper.LuongAttention,
-        wrapper.LuongMonotonicAttention,
-        wrapper.BahdanauAttention,
-        wrapper.BahdanauMonotonicAttention,
-    ],
+    "attention_cls", attention_classes,
 )
 def test_save_load_layer(attention_cls):
     dummy_data = DummyData()
@@ -181,13 +159,7 @@ def test_save_load_layer(attention_cls):
 
 
 @pytest.mark.parametrize(
-    "attention_cls",
-    [
-        wrapper.LuongAttention,
-        wrapper.LuongMonotonicAttention,
-        wrapper.BahdanauAttention,
-        wrapper.BahdanauMonotonicAttention,
-    ],
+    "attention_cls", attention_classes,
 )
 def test_manual_memory_reset(attention_cls):
     dummy_data = DummyData()
@@ -226,13 +198,7 @@ def test_masking():
 
 
 @pytest.mark.parametrize(
-    "attention_cls",
-    [
-        wrapper.LuongAttention,
-        wrapper.LuongMonotonicAttention,
-        wrapper.BahdanauAttention,
-        wrapper.BahdanauMonotonicAttention,
-    ],
+    "attention_cls", attention_classes,
 )
 def test_memory_re_setup(attention_cls):
     class MyModel(tf.keras.models.Model):
