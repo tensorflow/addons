@@ -21,7 +21,6 @@ import pytest
 import tensorflow as tf
 
 from tensorflow_addons.layers.multihead_attention import MultiHeadAttention
-from tensorflow_addons.utils import test_utils
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
