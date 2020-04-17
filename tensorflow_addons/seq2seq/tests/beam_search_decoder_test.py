@@ -420,9 +420,6 @@ def test_step_with_eos():
         np.asanyarray([[True, False, False], [False, True, False]]),
     )
 
-    print("=====", state_)
-    print("=====", log_probs)
-    print("------", next_state_.log_probs.numpy())
     expected_log_probs = []
     expected_log_probs.append(state_.log_probs[0].numpy())
     expected_log_probs.append(state_.log_probs[1].numpy())
