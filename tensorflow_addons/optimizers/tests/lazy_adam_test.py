@@ -298,13 +298,12 @@ class LazyAdamTest(tf.test.TestCase):
                     self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
                     self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
 
-    def testSlotsUniqueEager(self):
-        v1 = tf.Variable(1.0)
-        v2 = tf.Variable(1.0)
-        opt = lazy_adam.LazyAdam(1.0)
-        opt.minimize(lambda: v1 + v2, var_list=[v1, v2])
-        # There should be iteration, and two unique slot variables for v1 and v2.
-        self.assertEqual(5, len(opt.variables()))
-        self.assertEqual(
-            self.evaluate(opt.variables()[0]), self.evaluate(opt.iterations)
-        )
+
+def test_slots_unique_eager():
+    v1 = tf.Variable(1.0)
+    v2 = tf.Variable(1.0)
+    opt = lazy_adam.LazyAdam(1.0)
+    opt.minimize(lambda: v1 + v2, var_list=[v1, v2])
+    # There should be iteration, and two unique slot variables for v1 and v2.
+    assert 5 == len(opt.variables())
+    assert opt.variables()[0] == opt.iterations
