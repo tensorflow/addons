@@ -79,13 +79,6 @@ def test_sparsemax_against_numpy_low_rank(dtype):
     assert np_sparsemax.shape == tf_sparsemax_out.shape
 
 
-# def _tf_sparsemax(self, z, dtype, **kwargs):
-#    tf_sparsemax_op = sparsemax(z.astype(dtype), **kwargs)
-#    tf_sparsemax_out = self.evaluate(tf_sparsemax_op)
-#
-#    return tf_sparsemax_op, tf_sparsemax_out
-
-
 @pytest.mark.parametrize("dtype", ["float32", "float64"])
 def test_sparsemax_against_numpy(dtype):
     """check sparsemax kernel against numpy."""
