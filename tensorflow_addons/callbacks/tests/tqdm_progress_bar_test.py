@@ -120,3 +120,14 @@ def test_tqdm_progress_bar_validation(capsys):
     fit_stderr = capsys.readouterr().err
     assert re.search(r"val_loss: [0-9]\.[0-9][0-9][0-9][0-9]", fit_stderr)
     assert re.search(r"val_acc: [0-9]\.[0-9][0-9][0-9][0-9]", fit_stderr)
+
+
+def test_tqdm_progress_bar_evaluate(capsys):
+    x, y, model = get_data_and_model()
+
+    pb = tfa.callbacks.TQDMProgressBar()
+    capsys.readouterr()  # flush the buffer
+    model.evaluate(x, y, callbacks=[pb], verbose=0)
+    evaluate_stderr = capsys.readouterr().err
+    assert re.search(r"loss: [0-9]\.[0-9][0-9][0-9][0-9]", evaluate_stderr)
+    assert re.search(r"acc: [0-9]\.[0-9][0-9][0-9][0-9]", evaluate_stderr)
