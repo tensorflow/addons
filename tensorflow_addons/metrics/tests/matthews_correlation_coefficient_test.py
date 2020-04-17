@@ -18,7 +18,6 @@
 import tensorflow as tf
 
 import numpy as np
-from tensorflow_addons.utils import test_utils
 from tensorflow_addons.metrics import MatthewsCorrelationCoefficient
 
 
