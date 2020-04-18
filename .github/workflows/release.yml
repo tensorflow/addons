@@ -59,7 +59,6 @@ jobs:
       - name: Build wheels
         if: |
           (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
-          && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
         env:
           OS: ${{ runner.os }}
           PY_VERSION: ${{ matrix.py-version }}
@@ -70,7 +69,6 @@ jobs:
       - uses: actions/upload-artifact@v1
         if: |
           (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
-          && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
           path: wheelhouse
@@ -85,11 +83,9 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/download-artifact@v1
-        if: github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION
         with:
           name: ${{ matrix.os }}-${{ matrix.py-version }}-tf2.1.0-wheel
           path: ./dist
-      - if: github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION
         run: |
           set -e -x
           ls -la dist/
