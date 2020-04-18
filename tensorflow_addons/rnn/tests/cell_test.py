@@ -306,7 +306,7 @@ def test_cell_output():
 
 
 def test_config_layer_norm():
-    cell = rnn_cell.LayerNormLSTMCell(10)
+    cell = rnn_cell.LayerNormLSTMCell(10, name="layer_norm_lstm_cell_3")
 
     expected_config = {
         "dtype": "float32",

@@ -23,6 +23,8 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
+from tensorflow_addons.utils import resource_loader
+
 # TODO: find public API alternative to these
 from tensorflow.python.framework.test_util import (  # noqa: F401
     run_all_in_graph_and_eager_modes,
@@ -202,6 +204,20 @@ def set_seeds():
     tf.random.set_seed(0)
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--skip-custom-ops",
+        action="store_true",
+        help="When a custom op is being loaded in a test, skip this test.",
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def set_global_variables(request):
+    if request.config.getoption("--skip-custom-ops"):
+        resource_loader.SKIP_CUSTOM_OPS = True
+
+
 def assert_allclose_according_to_type(
     a,
     b,
@@ -211,6 +227,8 @@ def assert_allclose_according_to_type(
     float_atol=1e-6,
     half_rtol=1e-3,
     half_atol=1e-3,
+    bfloat16_rtol=1e-2,
+    bfloat16_atol=1e-2,
 ):
     """
     Similar to tf.test.TestCase.assertAllCloseAccordingToType()
@@ -230,5 +248,8 @@ def assert_allclose_according_to_type(
     if a.dtype == np.float16 or b.dtype == np.float16:
         rtol = max(rtol, half_rtol)
         atol = max(atol, half_atol)
+    if a.dtype == tf.bfloat16.as_numpy_dtype or b.dtype == tf.bfloat16.as_numpy_dtype:
+        rtol = max(rtol, bfloat16_rtol)
+        atol = max(atol, bfloat16_atol)
 
     np.testing.assert_allclose(a, b, rtol=rtol, atol=atol)

@@ -18,6 +18,7 @@ import numpy as np
 import pytest
 import tensorflow as tf
 from tensorflow_addons.metrics import FBetaScore, F1Score, utils
+from tensorflow_addons.testing.serialization import check_metric_serialization
 
 
 def test_config_fbeta():
@@ -155,3 +156,20 @@ def test_config_f1():
     f1 = F1Score(3)
     config = f1.get_config()
     assert "beta" not in config
+
+
+@pytest.mark.parametrize("average", [None, "micro", "macro", "weighted"])
+@pytest.mark.parametrize("threshold", [None, 0.2])
+def test_serialization_f1_score(average, threshold):
+    f1 = F1Score(3, average, threshold)
+    preds = [
+        [0.9, 0.1, 0],
+        [0.2, 0.6, 0.2],
+        [0, 0, 1],
+        [0.4, 0.3, 0.3],
+        [0, 0.9, 0.1],
+        [0, 0, 1],
+    ]
+    actuals = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0], [1, 0, 0], [0, 0, 1]]
+
+    check_metric_serialization(f1, np.array(actuals), np.array(preds))
