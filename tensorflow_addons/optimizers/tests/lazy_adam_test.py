@@ -195,10 +195,6 @@ def test_tensor_learning_rate(dtype):
     grads1 = tf.constant(grads1_np)
     opt = lazy_adam.LazyAdam(tf.constant(0.001))
 
-    # Fetch params to validate initial values
-    np.testing.assert_allclose([1.0, 2.0], var0.numpy())
-    np.testing.assert_allclose([3.0, 4.0], var1.numpy())
-
     # Run 3 steps of Adam
     for t in range(3):
         beta_1_power, beta_2_power = get_beta_accumulators(opt, dtype)
