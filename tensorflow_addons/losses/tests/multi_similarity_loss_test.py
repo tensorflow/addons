@@ -74,7 +74,7 @@ def ms_loss_np(
 
 
 def get_labels_and_preds(out_shape=(2, 3)):
-    y_true = np.array(np.random.uniform(size=(2, 3)), dtype=np.float32)
+    y_true = np.array(np.random.uniform(size=out_shape), dtype=np.float32)
     eps = np.finfo(float).eps
     y_pred = y_true + eps
     return y_true, y_pred
