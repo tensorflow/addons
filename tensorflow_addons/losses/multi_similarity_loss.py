@@ -104,31 +104,15 @@ def multi_similarity_loss(
 ):
     """Implements the multi similarity loss function.
 
-    Multi Similarity Loss was first introduced in "Multi-Similarity Loss with
-    General Pair Weighting for Deep Metric Learning" (https://arxiv.org/pdf/1904.06627.pdf).
     This loss is implemented in two iterative steps (i.e., mining and weighting).
     This allows it to fully consider three similarities for pair weighting,
     providing a more principled approach for collecting and weighting informative pairs.
     Finally, the proposed MS loss obtains new state-of-the-art performance on four image
     retrieval benchmarks, where it outperforms the most recent approaches.
 
-    Usage:
-
-    ```python
-    msl = tfa.losses.MultiSimilarityLoss()
-    loss = msl(
-      [[0.97], [0.91], [0.03]],
-      [[1.0], [1.0], [0.0]])
-    print('Loss: ', loss.numpy())
-    ```
-    Usage with tf.keras API:
-
-    ```python
-    model = tf.keras.Model(inputs, outputs)
-    model.compile('sgd', loss=tf.keras.losses.MultiSimilarityLoss())
-    ```
-
     Args:
+      y_true: True targets tensor.
+      y_pred: Predictions tensor.
       alpha: Hyper-parameter similar as Binomial Deviance Loss.
       beta: Hyper-parameter similar as Binomial Deviance Loss.
       lamb: Hyper-parameter similar as Binomial Deviance Loss.
