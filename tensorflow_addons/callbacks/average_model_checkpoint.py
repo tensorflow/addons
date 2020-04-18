@@ -13,7 +13,7 @@
 # limitations under the License.
 # =============================================================================
 
-from typing import Optional
+from typing import Union
 import tensorflow as tf
 from typeguard import typechecked
 from tensorflow_addons.optimizers.average_wrapper import AveragedOptimizerWrapper
@@ -43,7 +43,7 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
         save_best_only: bool = False,
         save_weights_only: bool = False,
         mode: str = "auto",
-        save_freq: Optional[str, int] = "epoch",
+        save_freq: Union[str, int] = "epoch",
         **kwargs
     ):
         self.update_weights = update_weights
