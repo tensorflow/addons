@@ -37,14 +37,21 @@ def lifted_struct_loss(
       margin: Float, margin term in the loss definition.
 
     Returns:
-      lifted_loss: tf.float32 scalar.
+      lifted_loss: float scalar with dtype of embeddings.
     """
+    convert_to_float32 = (
+        embeddings.dtype == tf.dtypes.float16 or embeddings.dtype == tf.dtypes.bfloat16
+    )
+    precise_embeddings = (
+        tf.cast(embeddings, tf.dtypes.float32) if convert_to_float32 else embeddings
+    )
+
     # Reshape [batch_size] label tensor to a [batch_size, 1] label tensor.
     lshape = tf.shape(labels)
     labels = tf.reshape(labels, [lshape[0], 1])
 
     # Build pairwise squared distance matrix.
-    pairwise_distances = metric_learning.pairwise_distance(embeddings)
+    pairwise_distances = metric_learning.pairwise_distance(precise_embeddings)
 
     # Build pairwise binary adjacency matrix.
     adjacency = tf.math.equal(labels, tf.transpose(labels))
@@ -108,7 +115,11 @@ def lifted_struct_loss(
         ),
         num_positives,
     )
-    return lifted_loss
+
+    if convert_to_float32:
+        return tf.cast(lifted_loss, embeddings.dtype)
+    else:
+        return lifted_loss
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")

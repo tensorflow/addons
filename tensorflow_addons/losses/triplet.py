@@ -78,14 +78,25 @@ def triplet_semihard_loss(
       y_pred: 2-D float `Tensor` of embedding vectors. Embeddings should
         be l2 normalized.
       margin: Float, margin term in the loss definition.
+
+    Returns:
+      triplet_loss: float scalar with dtype of y_pred.
     """
     labels, embeddings = y_true, y_pred
+
+    convert_to_float32 = (
+        embeddings.dtype == tf.dtypes.float16 or embeddings.dtype == tf.dtypes.bfloat16
+    )
+    precise_embeddings = (
+        tf.cast(embeddings, tf.dtypes.float32) if convert_to_float32 else embeddings
+    )
+
     # Reshape label tensor to [batch_size, 1].
     lshape = tf.shape(labels)
     labels = tf.reshape(labels, [lshape[0], 1])
 
     # Build pairwise squared distance matrix.
-    pdist_matrix = metric_learning.pairwise_distance(embeddings, squared=True)
+    pdist_matrix = metric_learning.pairwise_distance(precise_embeddings, squared=True)
     # Build pairwise binary adjacency matrix.
     adjacency = tf.math.equal(labels, tf.transpose(labels))
     # Invert so we can select negatives only.
@@ -144,7 +155,10 @@ def triplet_semihard_loss(
         num_positives,
     )
 
-    return triplet_loss
+    if convert_to_float32:
+        return tf.cast(triplet_loss, embeddings.dtype)
+    else:
+        return triplet_loss
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -164,14 +178,25 @@ def triplet_hard_loss(
         be l2 normalized.
       margin: Float, margin term in the loss definition.
       soft: Boolean, if set, use the soft margin version.
+
+    Returns:
+      triplet_loss: float scalar with dtype of y_pred.
     """
     labels, embeddings = y_true, y_pred
+
+    convert_to_float32 = (
+        embeddings.dtype == tf.dtypes.float16 or embeddings.dtype == tf.dtypes.bfloat16
+    )
+    precise_embeddings = (
+        tf.cast(embeddings, tf.dtypes.float32) if convert_to_float32 else embeddings
+    )
+
     # Reshape label tensor to [batch_size, 1].
     lshape = tf.shape(labels)
     labels = tf.reshape(labels, [lshape[0], 1])
 
     # Build pairwise squared distance matrix.
-    pdist_matrix = metric_learning.pairwise_distance(embeddings, squared=True)
+    pdist_matrix = metric_learning.pairwise_distance(precise_embeddings, squared=True)
     # Build pairwise binary adjacency matrix.
     adjacency = tf.math.equal(labels, tf.transpose(labels))
     # Invert so we can select negatives only.
@@ -200,7 +225,10 @@ def triplet_hard_loss(
     # Get final mean triplet loss
     triplet_loss = tf.reduce_mean(triplet_loss)
 
-    return triplet_loss
+    if convert_to_float32:
+        return tf.cast(triplet_loss, embeddings.dtype)
+    else:
+        return triplet_loss
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
