@@ -96,61 +96,51 @@ def _test_sparse(dtype):
         test_utils.assert_allclose_according_to_type(var1_np, var1.numpy())
 
 
+@pytest.mark.parametrize("dtype", [tf.int32, tf.int64])
+@pytest.mark.usefixtures("cpu_and_gpu")
+def test_sparse_device_placement(dtype):
+
+    # If a GPU is available, tests that all optimizer ops can be placed on
+    # it (i.e. they have GPU kernels).
+    var = tf.Variable([[1.0], [2.0]])
+    indices = tf.constant([0, 1], dtype=dtype)
+
+    def g_sum():
+        return tf.math.reduce_sum(tf.gather(var, indices))
+
+    optimizer = lazy_adam.LazyAdam(3.0)
+    optimizer.minimize(g_sum, var_list=[var])
+
+
+@pytest.mark.parametrize("dtype", [tf.half, tf.float32, tf.float64])
+def test_sparse_repeated_indices(dtype):
+    repeated_index_update_var = tf.Variable([[1], [2]], dtype=dtype)
+    aggregated_update_var = tf.Variable([[1], [2]], dtype=dtype)
+    grad_repeated_index = tf.IndexedSlices(
+        tf.constant([0.1, 0.1], shape=[2, 1], dtype=dtype),
+        tf.constant([1, 1]),
+        tf.constant([2, 1]),
+    )
+    grad_aggregated = tf.IndexedSlices(
+        tf.constant([0.2], shape=[1, 1], dtype=dtype),
+        tf.constant([1]),
+        tf.constant([2, 1]),
+    )
+    repeated_update_opt = lazy_adam.LazyAdam()
+    aggregated_update_opt = lazy_adam.LazyAdam()
+    for _ in range(3):
+        repeated_update_opt.apply_gradients(
+            [(grad_repeated_index, repeated_index_update_var)]
+        )
+        aggregated_update_opt.apply_gradients(
+            [(grad_aggregated, aggregated_update_var)]
+        )
+        np.testing.assert_allclose(
+            aggregated_update_var.numpy(), repeated_index_update_var.numpy()
+        )
+
+
 class LazyAdamTest(tf.test.TestCase):
-
-    # TODO: remove v1 tests (keep pace with adam_test.py in keras).
-    @test_utils.run_deprecated_v1
-    def testSparseDevicePlacement(self):
-        for index_dtype in [tf.dtypes.int32, tf.dtypes.int64]:
-            with self.cached_session(force_gpu=tf.test.is_gpu_available()):
-                # If a GPU is available, tests that all optimizer ops can be placed on
-                # it (i.e. they have GPU kernels).
-                var = tf.Variable([[1.0], [2.0]])
-                indices = tf.constant([0, 1], dtype=index_dtype)
-
-                def g_sum():
-                    return tf.math.reduce_sum(tf.gather(var, indices))
-
-                optimizer = lazy_adam.LazyAdam(3.0)
-                minimize_op = optimizer.minimize(g_sum, var_list=[var])
-                self.evaluate(tf.compat.v1.global_variables_initializer())
-                self.evaluate(minimize_op)
-
-    @test_utils.run_deprecated_v1
-    def testSparseRepeatedIndices(self):
-        for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
-            with self.cached_session():
-                repeated_index_update_var = tf.Variable([[1.0], [2.0]], dtype=dtype)
-                aggregated_update_var = tf.Variable([[1.0], [2.0]], dtype=dtype)
-                grad_repeated_index = tf.IndexedSlices(
-                    tf.constant([0.1, 0.1], shape=[2, 1], dtype=dtype),
-                    tf.constant([1, 1]),
-                    tf.constant([2, 1]),
-                )
-                grad_aggregated = tf.IndexedSlices(
-                    tf.constant([0.2], shape=[1, 1], dtype=dtype),
-                    tf.constant([1]),
-                    tf.constant([2, 1]),
-                )
-                repeated_update_opt = lazy_adam.LazyAdam()
-                repeated_update = repeated_update_opt.apply_gradients(
-                    [(grad_repeated_index, repeated_index_update_var)]
-                )
-                aggregated_update_opt = lazy_adam.LazyAdam()
-                aggregated_update = aggregated_update_opt.apply_gradients(
-                    [(grad_aggregated, aggregated_update_var)]
-                )
-                self.evaluate(tf.compat.v1.global_variables_initializer())
-                self.assertAllClose(
-                    aggregated_update_var.eval(), repeated_index_update_var.eval()
-                )
-                for _ in range(3):
-                    repeated_update.run()
-                    aggregated_update.run()
-                    self.assertAllClose(
-                        aggregated_update_var.eval(), repeated_index_update_var.eval()
-                    )
-
     def doTestBasic(self, use_callable_params=False):
         for i, dtype in enumerate(
             [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]
