@@ -166,12 +166,8 @@ def test_basic(use_callable_params, dtype):
     # Run 3 steps of Adam
     for t in range(3):
         beta_1_power, beta_2_power = get_beta_accumulators(opt, dtype)
-        test_utils.assert_allclose_according_to_type(
-            0.9 ** (t + 1), beta_1_power.numpy()
-        )
-        test_utils.assert_allclose_according_to_type(
-            0.999 ** (t + 1), beta_2_power.numpy()
-        )
+        test_utils.assert_allclose_according_to_type(0.9 ** (t + 1), beta_1_power)
+        test_utils.assert_allclose_according_to_type(0.999 ** (t + 1), beta_2_power)
         opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
         var0_np, m0, v0 = adam_update_numpy(var0_np, grads0_np, t, m0, v0)
@@ -204,12 +200,8 @@ def test_tensor_learning_rate(dtype):
     # Run 3 steps of Adam
     for t in range(3):
         beta_1_power, beta_2_power = get_beta_accumulators(opt, dtype)
-        test_utils.assert_allclose_according_to_type(
-            0.9 ** (t + 1), beta_1_power.numpy()
-        )
-        test_utils.assert_allclose_according_to_type(
-            0.999 ** (t + 1), beta_2_power.numpy()
-        )
+        test_utils.assert_allclose_according_to_type(0.9 ** (t + 1), beta_1_power)
+        test_utils.assert_allclose_according_to_type(0.999 ** (t + 1), beta_2_power)
         opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
 
         var0_np, m0, v0 = adam_update_numpy(var0_np, grads0_np, t, m0, v0)
