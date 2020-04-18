@@ -15,6 +15,7 @@
 
 import tensorflow as tf
 from tensorflow_addons.activations.sparsemax import sparsemax
+
 from tensorflow_addons.utils.types import TensorLike
 from typeguard import typechecked
 from typing import Optional
