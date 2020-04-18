@@ -140,69 +140,49 @@ def test_sparse_repeated_indices(dtype):
         )
 
 
+@pytest.mark.parametrize("use_callable_params", [True, False])
+@pytest.mark.parametrize("dtype", [tf.half, tf.float32, tf.float64])
+def test_basic(use_callable_params, dtype):
+    # Initialize tf for numpy implementation.
+    m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
+    var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
+    grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
+    var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
+    grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
+
+    var0 = tf.Variable(var0_np)
+    var1 = tf.Variable(var1_np)
+    grads0 = tf.constant(grads0_np)
+    grads1 = tf.constant(grads1_np)
+
+    def learning_rate():
+        return 0.001
+
+    if not use_callable_params:
+        learning_rate = learning_rate()
+
+    opt = lazy_adam.LazyAdam(learning_rate=learning_rate)
+
+    # Run 3 steps of Adam
+    for t in range(3):
+        beta_1_power, beta_2_power = get_beta_accumulators(opt, dtype)
+        test_utils.assert_allclose_according_to_type(
+            0.9 ** (t + 1), beta_1_power.numpy()
+        )
+        test_utils.assert_allclose_according_to_type(
+            0.999 ** (t + 1), beta_2_power.numpy()
+        )
+        opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
+
+        var0_np, m0, v0 = adam_update_numpy(var0_np, grads0_np, t, m0, v0)
+        var1_np, m1, v1 = adam_update_numpy(var1_np, grads1_np, t, m1, v1)
+
+        # Validate updated params
+        test_utils.assert_allclose_according_to_type(var0_np, var0.numpy())
+        test_utils.assert_allclose_according_to_type(var1_np, var1.numpy())
+
+
 class LazyAdamTest(tf.test.TestCase):
-    def doTestBasic(self, use_callable_params=False):
-        for i, dtype in enumerate(
-            [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]
-        ):
-            with self.session(graph=tf.Graph()):
-                # Initialize tf for numpy implementation.
-                m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
-                var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
-                grads0_np = np.array([0.1, 0.1], dtype=dtype.as_numpy_dtype)
-                var1_np = np.array([3.0, 4.0], dtype=dtype.as_numpy_dtype)
-                grads1_np = np.array([0.01, 0.01], dtype=dtype.as_numpy_dtype)
-
-                var0 = tf.Variable(var0_np, name="var0_%d" % i)
-                var1 = tf.Variable(var1_np, name="var1_%d" % i)
-                grads0 = tf.constant(grads0_np)
-                grads1 = tf.constant(grads1_np)
-
-                def learning_rate():
-                    return 0.001
-
-                if not use_callable_params:
-                    learning_rate = learning_rate()
-
-                opt = lazy_adam.LazyAdam(learning_rate=learning_rate)
-                if not tf.executing_eagerly():
-                    update = opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-                    self.evaluate(tf.compat.v1.global_variables_initializer())
-                    # Fetch params to validate initial values
-                    self.assertAllClose([1.0, 2.0], self.evaluate(var0))
-                    self.assertAllClose([3.0, 4.0], self.evaluate(var1))
-
-                # Run 3 steps of Adam
-                for t in range(3):
-                    beta_1_power, beta_2_power = get_beta_accumulators(opt, dtype)
-                    self.assertAllCloseAccordingToType(
-                        0.9 ** (t + 1), self.evaluate(beta_1_power)
-                    )
-                    self.assertAllCloseAccordingToType(
-                        0.999 ** (t + 1), self.evaluate(beta_2_power)
-                    )
-                    if not tf.executing_eagerly():
-                        self.evaluate(update)
-                    else:
-                        opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
-
-                    var0_np, m0, v0 = adam_update_numpy(var0_np, grads0_np, t, m0, v0)
-                    var1_np, m1, v1 = adam_update_numpy(var1_np, grads1_np, t, m1, v1)
-
-                    # Validate updated params
-                    self.assertAllCloseAccordingToType(var0_np, self.evaluate(var0))
-                    self.assertAllCloseAccordingToType(var1_np, self.evaluate(var1))
-                    self.assertEqual(
-                        "LazyAdam/var0_%d/m:0" % (i,), opt.get_slot(var0, "m").name
-                    )
-
-    @test_utils.run_in_graph_and_eager_modes
-    def testResourceBasic(self):
-        self.doTestBasic()
-
-    def testBasicCallableParams(self):
-        self.doTestBasic(use_callable_params=True)
-
     @test_utils.run_deprecated_v1
     def testTensorLearningRate(self):
         for dtype in [tf.dtypes.half, tf.dtypes.float32, tf.dtypes.float64]:
