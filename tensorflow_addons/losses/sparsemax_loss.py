@@ -15,7 +15,6 @@
 
 import tensorflow as tf
 from tensorflow_addons.activations.sparsemax import sparsemax
-from tensorflow.python.keras.losses import LossFunctionWrapper
 from tensorflow_addons.utils.types import TensorLike
 from typeguard import typechecked
 from typing import Optional
@@ -95,7 +94,7 @@ def sparsemax_loss_from_logits(
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class SparsemaxLoss(LossFunctionWrapper):
+class SparsemaxLoss(tf.keras.losses.Loss):
     """Sparsemax loss function.
 
     Computes the generalized multi-label classification loss for the sparsemax
@@ -125,9 +124,15 @@ class SparsemaxLoss(LossFunctionWrapper):
         if from_logits is not True:
             raise ValueError("from_logits must be True")
 
-        super().__init__(
-            sparsemax_loss_from_logits,
-            name=name,
-            reduction=reduction,
-            from_logits=from_logits,
-        )
+        super().__init__(name=name, reduction=reduction)
+        self.from_logits = from_logits
+
+    def call(self, y_true, y_pred):
+        return sparsemax_loss_from_logits(y_true, y_pred)
+
+    def get_config(self):
+        config = {
+            "from_logits": self.from_logits,
+        }
+        base_config = super().get_config()
+        return {**base_config, **config}
