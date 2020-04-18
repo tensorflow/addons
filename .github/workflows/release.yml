@@ -16,7 +16,8 @@ on:
 
 env:
   BAZEL_VERSION: 1.1.0
-  OLDEST_PY_VERSION: '3.5'
+  MIN_PY_VERSION: '3.5'
+  MAX_PY_VERSION: '3.8'
 
 jobs:
   test-with-bazel:
@@ -26,7 +27,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
-          python-version: ${{ env.OLDEST_PY_VERSION }}
+          python-version: ${{ env.MIN_PY_VERSION }}
       - name: Build wheels
         run: |
           pip install -r tools/install_deps/pytest.txt -r tools/install_deps/tensorflow-cpu.txt -r requirements.txt
@@ -59,6 +60,7 @@ jobs:
       - name: Build wheels
         if: |
           (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
+          && (github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION || matrix.py-version == env.MAX_PY_VERSION)
         env:
           OS: ${{ runner.os }}
           PY_VERSION: ${{ matrix.py-version }}
@@ -69,6 +71,7 @@ jobs:
       - uses: actions/upload-artifact@v1
         if: |
           (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
+          && (github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION || matrix.py-version == env.MAX_PY_VERSION)
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
           path: wheelhouse
@@ -83,9 +86,11 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/download-artifact@v1
+        if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION  || matrix.py-version == env.MAX_PY_VERSION
         with:
           name: ${{ matrix.os }}-${{ matrix.py-version }}-tf2.1.0-wheel
           path: ./dist
+      - if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION  || matrix.py-version == env.MAX_PY_VERSION
         run: |
           set -e -x
           ls -la dist/
