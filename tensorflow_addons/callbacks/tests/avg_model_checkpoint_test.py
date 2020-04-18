@@ -190,6 +190,31 @@ def test_save_freq(tmp_path):
     assert os.path.exists(test_filepath.format(epoch=5))
 
 
+def test_save_freq_integer(tmp_path):
+    test_filepath = str(tmp_path / "test_model.{epoch:02d}.h5")
+    x, y, model = get_data_and_model()
+    save_freq = 2
+    avg_model_ckpt = AverageModelCheckpoint(
+        update_weights=False,
+        save_best_only=False,
+        filepath=test_filepath,
+        save_freq=save_freq,
+    )
+    model.fit(
+        x,
+        y,
+        epochs=EPOCHS,
+        batch_size=BATCH_SIZE,
+        validation_data=(x, y),
+        callbacks=[avg_model_ckpt],
+    )
+    assert os.path.exists(test_filepath.format(epoch=1))
+    assert os.path.exists(test_filepath.format(epoch=2))
+    assert os.path.exists(test_filepath.format(epoch=3))
+    assert os.path.exists(test_filepath.format(epoch=4))
+    assert os.path.exists(test_filepath.format(epoch=5))
+
+
 def test_invalid_save_freq(tmp_path):
     test_model_filepath = str(tmp_path / "test_model.h5")
     save_freq = "invalid_save_freq"
