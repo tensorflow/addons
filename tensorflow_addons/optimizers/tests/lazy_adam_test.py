@@ -114,30 +114,32 @@ def test_sparse_device_placement(dtype):
 
 @pytest.mark.parametrize("dtype", [tf.half, tf.float32, tf.float64])
 def test_sparse_repeated_indices(dtype):
-    repeated_index_update_var = tf.Variable([[1], [2]], dtype=dtype)
-    aggregated_update_var = tf.Variable([[1], [2]], dtype=dtype)
-    grad_repeated_index = tf.IndexedSlices(
-        tf.constant([0.1, 0.1], shape=[2, 1], dtype=dtype),
-        tf.constant([1, 1]),
-        tf.constant([2, 1]),
-    )
-    grad_aggregated = tf.IndexedSlices(
-        tf.constant([0.2], shape=[1, 1], dtype=dtype),
-        tf.constant([1]),
-        tf.constant([2, 1]),
-    )
-    repeated_update_opt = lazy_adam.LazyAdam()
-    aggregated_update_opt = lazy_adam.LazyAdam()
-    for _ in range(3):
-        repeated_update_opt.apply_gradients(
-            [(grad_repeated_index, repeated_index_update_var)]
+    # todo: remove the with tf.device once the placement on cpu is enforced.
+    with tf.device("CPU:0"):
+        repeated_index_update_var = tf.Variable([[1], [2]], dtype=dtype)
+        aggregated_update_var = tf.Variable([[1], [2]], dtype=dtype)
+        grad_repeated_index = tf.IndexedSlices(
+            tf.constant([0.1, 0.1], shape=[2, 1], dtype=dtype),
+            tf.constant([1, 1]),
+            tf.constant([2, 1]),
         )
-        aggregated_update_opt.apply_gradients(
-            [(grad_aggregated, aggregated_update_var)]
+        grad_aggregated = tf.IndexedSlices(
+            tf.constant([0.2], shape=[1, 1], dtype=dtype),
+            tf.constant([1]),
+            tf.constant([2, 1]),
         )
-        np.testing.assert_allclose(
-            aggregated_update_var.numpy(), repeated_index_update_var.numpy()
-        )
+        repeated_update_opt = lazy_adam.LazyAdam()
+        aggregated_update_opt = lazy_adam.LazyAdam()
+        for _ in range(3):
+            repeated_update_opt.apply_gradients(
+                [(grad_repeated_index, repeated_index_update_var)]
+            )
+            aggregated_update_opt.apply_gradients(
+                [(grad_aggregated, aggregated_update_var)]
+            )
+            np.testing.assert_allclose(
+                aggregated_update_var.numpy(), repeated_index_update_var.numpy()
+            )
 
 
 @pytest.mark.parametrize("use_callable_params", [True, False])
