@@ -533,6 +533,37 @@ def test_bahdanau_normalized_dtype(dtype):
     assert isinstance(final_state, wrapper.AttentionWrapperState)
 
 
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_luong_scaled_dtype(dtype):
+    dummy_data = DummyData2()
+    # Test case for GitHub issue 18099
+    encoder_outputs = dummy_data.encoder_outputs.astype(dtype)
+    decoder_inputs = dummy_data.decoder_inputs.astype(dtype)
+    attention_mechanism = wrapper.LuongAttention(
+        units=dummy_data.units,
+        memory=encoder_outputs,
+        memory_sequence_length=dummy_data.encoder_sequence_length,
+        scale=True,
+        dtype=dtype,
+    )
+    cell = tf.keras.layers.LSTMCell(
+        dummy_data.units, recurrent_activation="sigmoid", dtype=dtype
+    )
+    cell = wrapper.AttentionWrapper(cell, attention_mechanism, dtype=dtype)
+
+    sampler = sampler_py.TrainingSampler()
+    my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler, dtype=dtype)
+
+    final_outputs, final_state, _ = my_decoder(
+        decoder_inputs,
+        initial_state=cell.get_initial_state(batch_size=dummy_data.batch, dtype=dtype),
+        sequence_length=dummy_data.decoder_sequence_length,
+    )
+    assert isinstance(final_outputs, basic_decoder.BasicDecoderOutput)
+    assert final_outputs.rnn_output.dtype == dtype
+    assert isinstance(final_state, wrapper.AttentionWrapperState)
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
     def setUp(self):
@@ -554,38 +585,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         self.decoder_sequence_length = np.random.randint(
             self.decoder_timestep, size=(self.batch,)
         ).astype(np.int32)
-
-    @parameterized.parameters([np.float32, np.float64])
-    def testLuongScaledDType(self, dtype):
-        dummy_data = DummyData2()
-        # Test case for GitHub issue 18099
-        encoder_outputs = dummy_data.encoder_outputs.astype(dtype)
-        decoder_inputs = dummy_data.decoder_inputs.astype(dtype)
-        attention_mechanism = wrapper.LuongAttention(
-            units=dummy_data.units,
-            memory=encoder_outputs,
-            memory_sequence_length=dummy_data.encoder_sequence_length,
-            scale=True,
-            dtype=dtype,
-        )
-        cell = tf.keras.layers.LSTMCell(
-            dummy_data.units, recurrent_activation="sigmoid", dtype=dtype
-        )
-        cell = wrapper.AttentionWrapper(cell, attention_mechanism, dtype=dtype)
-
-        sampler = sampler_py.TrainingSampler()
-        my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler, dtype=dtype)
-
-        final_outputs, final_state, _ = my_decoder(
-            decoder_inputs,
-            initial_state=cell.get_initial_state(
-                batch_size=dummy_data.batch, dtype=dtype
-            ),
-            sequence_length=dummy_data.decoder_sequence_length,
-        )
-        assert isinstance(final_outputs, basic_decoder.BasicDecoderOutput)
-        assert final_outputs.rnn_output.dtype == dtype
-        assert isinstance(final_state, wrapper.AttentionWrapperState)
 
     def testBahdanauNotNormalized(self):
         create_attention_mechanism = wrapper.BahdanauAttention
