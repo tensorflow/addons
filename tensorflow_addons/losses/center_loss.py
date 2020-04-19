@@ -107,6 +107,7 @@ class CenterLoss(tf.keras.losses.Loss):
     def get_config(self):
         config = {
             "alpha": self.alpha,
+            "centers": self.centers
         }
         base_config = super().get_config()
         return {**base_config, **config}
