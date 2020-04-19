@@ -347,36 +347,9 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             [attention_layer_size] if attention_layer_size is not None else None
         )
         attention_layers = [attention_layer] if attention_layer is not None else None
-        self._testWithMaybeMultiAttention(
-            is_multi=False,
-            create_attention_mechanisms=[create_attention_mechanism],
-            expected_final_output=expected_final_output,
-            expected_final_state=expected_final_state,
-            attention_mechanism_depths=[attention_mechanism_depth],
-            alignment_history=alignment_history,
-            expected_final_alignment_history=expected_final_alignment_history,
-            attention_layer_sizes=attention_layer_sizes,
-            attention_layers=attention_layers,
-            create_query_layer=create_query_layer,
-            create_memory_layer=create_memory_layer,
-            create_attention_kwargs=create_attention_kwargs,
-        )
-
-    def _testWithMaybeMultiAttention(
-        self,
-        is_multi,
-        create_attention_mechanisms,
-        expected_final_output,
-        expected_final_state,
-        attention_mechanism_depths,
-        alignment_history=False,
-        expected_final_alignment_history=None,
-        attention_layer_sizes=None,
-        attention_layers=None,
-        create_query_layer=False,
-        create_memory_layer=True,
-        create_attention_kwargs=None,
-    ):
+        create_attention_mechanisms = [create_attention_mechanism]
+        attention_mechanism_depths = [attention_mechanism_depth]
+        is_multi = False
         # Allow is_multi to be True with a single mechanism to enable test for
         # passing in a single mechanism in a list.
         assert len(create_attention_mechanisms) == 1 or is_multi
