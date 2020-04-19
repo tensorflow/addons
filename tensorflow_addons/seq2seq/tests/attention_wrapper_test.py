@@ -482,8 +482,6 @@ def _test_with_attention(
     final_state_info = tf.nest.map_structure(
         get_result_summary, eval_result["final_state"]
     )
-    print("final_output_info: ", final_output_info)
-    print("final_state_info: ", final_state_info)
 
     tf.nest.map_structure(
         self.assertAllCloseOrEqual, expected_final_output, final_output_info
@@ -496,7 +494,6 @@ def _test_with_attention(
         final_alignment_history_info = tf.nest.map_structure(
             get_result_summary, eval_result["state_alignment_history"]
         )
-        print("final_alignment_history_info: ", final_alignment_history_info)
         tf.nest.map_structure(
             self.assertAllCloseOrEqual,
             # outputs are batch major but the stacked TensorArray is
