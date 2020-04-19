@@ -535,12 +535,6 @@ def test_bahdanau_normalized_dtype(dtype):
 
 @test_utils.run_all_in_graph_and_eager_modes
 class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
-    def assertAllCloseOrEqual(self, x, y, **kwargs):
-        if isinstance(x, np.ndarray) or isinstance(x, float):
-            return super().assertAllClose(x, y, atol=1e-3, **kwargs)
-        else:
-            self.assertAllEqual(x, y, **kwargs)
-
     def setUp(self):
         super().setUp()
         self.batch = 64
