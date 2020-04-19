@@ -36,10 +36,12 @@ def center_loss(labels: TensorLike, feature: TensorLike, alpha: FloatTensorLike 
     feature = tf.convert_to_tensor(feature)
     len_features = feature.shape[-1]
     num_classes = labels.shape[-1]
-    centers = tf.Variable(
-        tf.constant(0.0, shape=[num_classes, len_features]),
-        name="centers",
+    centers = tf.get_variable(
+        "centers",
+        [num_classes, len_features],
         dtype=tf.float32,
+        initializer=tf.constant_initializer(0),
+        trainable=False,
     )
     labels = tf.reshape(labels, [-1])
     centers_batch = tf.gather(centers, labels)
