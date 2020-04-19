@@ -320,10 +320,7 @@ def _test_with_attention(
     attention_layers = [attention_layer] if attention_layer is not None else None
     create_attention_mechanisms = [create_attention_mechanism]
     attention_mechanism_depths = [attention_mechanism_depth]
-    is_multi = False
-    # Allow is_multi to be True with a single mechanism to enable test for
-    # passing in a single mechanism in a list.
-    assert len(create_attention_mechanisms) == 1 or is_multi
+    assert len(create_attention_mechanisms) == 1
     encoder_sequence_length = [3, 2, 3, 1, 1]
     decoder_sequence_length = [2, 0, 1, 2, 3]
     batch_size = 5
@@ -385,11 +382,10 @@ def _test_with_attention(
 
     attention_layer_size = attention_layer_sizes
     attention_layer = attention_layers
-    if not is_multi:
-        if attention_layer_size is not None:
-            attention_layer_size = attention_layer_size[0]
-        if attention_layer is not None:
-            attention_layer = attention_layer[0]
+    if attention_layer_size is not None:
+        attention_layer_size = attention_layer_size[0]
+    if attention_layer is not None:
+        attention_layer = attention_layer[0]
     cell = tf.keras.layers.LSTMCell(
         cell_depth,
         recurrent_activation="sigmoid",
@@ -398,7 +394,7 @@ def _test_with_attention(
     )
     cell = wrapper.AttentionWrapper(
         cell,
-        attention_mechanisms if is_multi else attention_mechanisms[0],
+        attention_mechanisms[0],
         attention_layer_size=attention_layer_size,
         alignment_history=alignment_history,
         attention_layer=attention_layer,
@@ -440,20 +436,10 @@ def _test_with_attention(
     )
 
     if alignment_history:
-        if is_multi:
-            state_alignment_history = []
-            for history_array in final_state.alignment_history:
-                history = history_array.stack()
-                assert (expected_time, batch_size, encoder_max_time) == tuple(
-                    history.get_shape().as_list()
-                )
-                state_alignment_history.append(history)
-            state_alignment_history = tuple(state_alignment_history)
-        else:
-            state_alignment_history = final_state.alignment_history.stack()
-            assert (expected_time, batch_size, encoder_max_time) == tuple(
-                state_alignment_history.get_shape().as_list()
-            )
+        state_alignment_history = final_state.alignment_history.stack()
+        assert (expected_time, batch_size, encoder_max_time) == tuple(
+            state_alignment_history.get_shape().as_list()
+        )
         tf.nest.assert_same_structure(
             cell.state_size,
             cell.get_initial_state(batch_size=batch_size, dtype=tf.float32),
