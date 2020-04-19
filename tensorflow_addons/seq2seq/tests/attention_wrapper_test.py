@@ -484,7 +484,7 @@ def _test_with_attention(
     )
 
     tf.nest.map_structure(
-        self.assertAllCloseOrEqual, expected_final_output, final_output_info
+        assert_allclose_or_equal, expected_final_output, final_output_info
     )
     tf.nest.map_structure(
         self.assertAllCloseOrEqual, expected_final_state, final_state_info
