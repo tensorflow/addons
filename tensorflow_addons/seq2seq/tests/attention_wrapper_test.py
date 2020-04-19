@@ -487,7 +487,7 @@ def _test_with_attention(
         assert_allclose_or_equal, expected_final_output, final_output_info
     )
     tf.nest.map_structure(
-        self.assertAllCloseOrEqual, expected_final_state, final_state_info
+        assert_allclose_or_equal, expected_final_state, final_state_info
     )
     # by default, the wrapper emits attention as output
     if alignment_history:
@@ -495,7 +495,7 @@ def _test_with_attention(
             get_result_summary, eval_result["state_alignment_history"]
         )
         tf.nest.map_structure(
-            self.assertAllCloseOrEqual,
+            assert_allclose_or_equal,
             # outputs are batch major but the stacked TensorArray is
             # time major
             expected_final_alignment_history,
