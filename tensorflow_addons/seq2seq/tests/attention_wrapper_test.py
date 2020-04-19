@@ -541,22 +541,10 @@ def test_luong_scaled_dtype(dtype):
     assert isinstance(final_state, wrapper.AttentionWrapperState)
 
 
-def do_some_stuff():
-    np.random.seed(87654321)
-    batch = 64
-    units = 128
-    encoder_timestep = 10
-    encoder_dim = 256
-    decoder_timestep = 12
-    np.random.randn(batch, encoder_timestep, encoder_dim)
-    np.random.randint(1, high=encoder_timestep, size=(batch,)).astype(np.int32)
-    np.random.randn(batch, decoder_timestep, units)
-    np.random.randint(decoder_timestep, size=(batch,)).astype(np.int32)
-
-
 def set_random_state_for_tf_and_np():
     tf.random.set_seed(87654321)
-    do_some_stuff()
+    np.random.seed(87654321)
+    DummyData2()
 
 
 def test_bahdanau_not_normalized():
