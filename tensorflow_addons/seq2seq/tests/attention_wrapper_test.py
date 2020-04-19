@@ -950,34 +950,36 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             create_attention_kwargs=create_attention_kwargs,
         )
 
-    def test_attention_state_with_keras_rnn(self):
-        # See https://github.com/tensorflow/addons/issues/1095.
-        cell = tf.keras.layers.LSTMCell(8)
 
-        mechanism = wrapper.LuongAttention(units=8, memory=tf.ones((2, 4, 8)))
+def test_attention_state_with_keras_rnn():
+    # See https://github.com/tensorflow/addons/issues/1095.
+    cell = tf.keras.layers.LSTMCell(8)
 
-        cell = wrapper.AttentionWrapper(cell=cell, attention_mechanism=mechanism)
+    mechanism = wrapper.LuongAttention(units=8, memory=tf.ones((2, 4, 8)))
 
-        layer = tf.keras.layers.RNN(cell)
-        _ = layer(inputs=tf.ones((2, 4, 8)))
+    cell = wrapper.AttentionWrapper(cell=cell, attention_mechanism=mechanism)
 
-        # Make sure the explicit initial_state also works.
-        initial_state = cell.get_initial_state(batch_size=2, dtype=tf.float32)
-        _ = layer(inputs=tf.ones((2, 4, 8)), initial_state=initial_state)
+    layer = tf.keras.layers.RNN(cell)
+    _ = layer(inputs=tf.ones((2, 4, 8)))
 
-    def test_attention_state_with_variable_length_input(self):
-        cell = tf.keras.layers.LSTMCell(3)
-        mechanism = wrapper.LuongAttention(units=3)
-        cell = wrapper.AttentionWrapper(cell, mechanism)
+    # Make sure the explicit initial_state also works.
+    initial_state = cell.get_initial_state(batch_size=2, dtype=tf.float32)
+    _ = layer(inputs=tf.ones((2, 4, 8)), initial_state=initial_state)
 
-        var_len = tf.random.uniform(shape=(), minval=2, maxval=10, dtype=tf.int32)
-        lengths = tf.random.uniform(
-            shape=(var_len,), minval=1, maxval=var_len + 1, dtype=tf.int32
-        )
-        data = tf.ones(shape=(var_len, var_len, 3))
-        mask = tf.sequence_mask(lengths, maxlen=var_len)
 
-        mechanism.setup_memory(data)
-        layer = tf.keras.layers.RNN(cell)
+def test_attention_state_with_variable_length_input():
+    cell = tf.keras.layers.LSTMCell(3)
+    mechanism = wrapper.LuongAttention(units=3)
+    cell = wrapper.AttentionWrapper(cell, mechanism)
 
-        _ = layer(data, mask=mask)
+    var_len = tf.random.uniform(shape=(), minval=2, maxval=10, dtype=tf.int32)
+    lengths = tf.random.uniform(
+        shape=(var_len,), minval=1, maxval=var_len + 1, dtype=tf.int32
+    )
+    data = tf.ones(shape=(var_len, var_len, 3))
+    mask = tf.sequence_mask(lengths, maxlen=var_len)
+
+    mechanism.setup_memory(data)
+    layer = tf.keras.layers.RNN(cell)
+
+    _ = layer(data, mask=mask)
