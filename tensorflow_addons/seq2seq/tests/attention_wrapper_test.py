@@ -557,14 +557,10 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         encoder_timestep = 10
         encoder_dim = 256
         decoder_timestep = 12
-        self.encoder_outputs = np.random.randn(batch, encoder_timestep, encoder_dim)
-        self.encoder_sequence_length = np.random.randint(
-            1, high=encoder_timestep, size=(batch,)
-        ).astype(np.int32)
-        self.decoder_inputs = np.random.randn(batch, decoder_timestep, units)
-        self.decoder_sequence_length = np.random.randint(
-            decoder_timestep, size=(batch,)
-        ).astype(np.int32)
+        np.random.randn(batch, encoder_timestep, encoder_dim)
+        np.random.randint(1, high=encoder_timestep, size=(batch,)).astype(np.int32)
+        np.random.randn(batch, decoder_timestep, units)
+        np.random.randint(decoder_timestep, size=(batch,)).astype(np.int32)
 
     def testBahdanauNotNormalized(self):
         create_attention_mechanism = wrapper.BahdanauAttention
