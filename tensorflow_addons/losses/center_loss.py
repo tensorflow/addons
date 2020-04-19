@@ -36,7 +36,7 @@ def center_loss(labels: TensorLike, feature: TensorLike, alpha: FloatTensorLike 
     feature = tf.convert_to_tensor(feature)
     len_features = feature.shape[-1]
     num_classes = labels.shape[-1]
-    centers = tf.get_variable(
+    centers = tf.compat.v1.get_variable(
         "centers",
         [num_classes, len_features],
         dtype=tf.float32,
