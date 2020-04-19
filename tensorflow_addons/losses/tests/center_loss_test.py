@@ -30,7 +30,7 @@ def test_config():
 
 @pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
 def test_zero_loss(float_dtype):
-    y_true = tf.constant([0.0, 0.0, 1.0, 1.0, 0.0, 1.0], dtype=float_dtype)
+    y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=np.int64)
     y_pred = tf.constant([1.0, 1.0, 0.0, 0.0, 1.0, 0.0], dtype=float_dtype)
     loss = center_loss(y_true, y_pred)
     np.testing.assert_allclose(loss, 0.0)

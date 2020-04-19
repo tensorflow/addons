@@ -34,7 +34,7 @@ def center_loss(labels: TensorLike, feature: TensorLike, alpha: FloatTensorLike 
     """
     labels = tf.convert_to_tensor(labels)
     feature = tf.convert_to_tensor(feature)
-    float_dtype = labels.dtype
+    float_dtype = feature.dtype
     len_features = feature.shape[-1]
     num_classes = labels.shape[-1]
     centers = tf.Variable(
@@ -95,7 +95,7 @@ class CenterLoss(tf.keras.losses.Loss):
         super().__init__(reduction=reduction, name=name)
         self.alpha = alpha
 
-    def call(self, y_true, y_pred, x):
+    def call(self, y_true, y_pred):
         return center_loss(y_true, y_pred, self.alpha)
 
     def get_config(self):
