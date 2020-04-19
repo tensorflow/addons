@@ -586,6 +586,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         ).astype(np.int32)
 
     def testBahdanauNotNormalized(self):
+        tf.config.experimental_run_functions_eagerly(True)
         create_attention_mechanism = wrapper.BahdanauAttention
         create_attention_kwargs = {"kernel_initializer": "ones"}
         expected_final_output = basic_decoder.BasicDecoderOutput(
@@ -630,6 +631,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
     def testBahdanauNormalized(self):
+        tf.config.experimental_run_functions_eagerly(True)
         create_attention_mechanism = wrapper.BahdanauAttention
         create_attention_kwargs = {"kernel_initializer": "ones", "normalize": True}
 
@@ -666,6 +668,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
     def testLuongNotNormalized(self):
+        tf.config.experimental_run_functions_eagerly(True)
         create_attention_mechanism = wrapper.LuongAttention
 
         expected_final_output = basic_decoder.BasicDecoderOutput(
@@ -702,6 +705,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
     def testLuongScaled(self):
+        tf.config.experimental_run_functions_eagerly(True)
         create_attention_mechanism = wrapper.LuongAttention
         create_attention_kwargs = {"scale": True}
 
@@ -740,6 +744,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
     def testNotUseAttentionLayer(self):
+        tf.config.experimental_run_functions_eagerly(True)
         create_attention_mechanism = wrapper.BahdanauAttention
         create_attention_kwargs = {"kernel_initializer": "ones"}
 
@@ -777,6 +782,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
     def testBahdanauMonotonicNotNormalized(self):
+        tf.config.experimental_run_functions_eagerly(True)
         create_attention_mechanism = wrapper.BahdanauMonotonicAttention
         create_attention_kwargs = {"kernel_initializer": "ones"}
 
@@ -820,6 +826,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
     def testBahdanauMonotonicNormalized(self):
+        tf.config.experimental_run_functions_eagerly(True)
         create_attention_mechanism = wrapper.BahdanauMonotonicAttention
         create_attention_kwargs = {"kernel_initializer": "ones", "normalize": True}
         expected_final_output = basic_decoder.BasicDecoderOutput(
@@ -862,6 +869,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
     def testLuongMonotonicNotNormalized(self):
+        tf.config.experimental_run_functions_eagerly(True)
         create_attention_mechanism = wrapper.LuongMonotonicAttention
 
         expected_final_output = basic_decoder.BasicDecoderOutput(
@@ -903,6 +911,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
     def testLuongMonotonicScaled(self):
+        tf.config.experimental_run_functions_eagerly(True)
         create_attention_mechanism = wrapper.LuongMonotonicAttention
         create_attention_kwargs = {"scale": True}
 
