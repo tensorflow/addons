@@ -452,32 +452,27 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
                 sequence_length=decoder_sequence_length,
             )
 
-            self.assertIsInstance(final_outputs, basic_decoder.BasicDecoderOutput)
-            self.assertIsInstance(final_state, wrapper.AttentionWrapperState)
+            assert isinstance(final_outputs, basic_decoder.BasicDecoderOutput)
+            assert isinstance(final_state, wrapper.AttentionWrapperState)
 
             expected_time = (
                 max(decoder_sequence_length) if tf.executing_eagerly() else None
             )
-            self.assertEqual(
-                (batch_size, expected_time, attention_depth),
-                tuple(final_outputs.rnn_output.get_shape().as_list()),
+            assert (batch_size, expected_time, attention_depth) == tuple(
+                final_outputs.rnn_output.get_shape().as_list()
             )
-            self.assertEqual(
-                (batch_size, expected_time),
-                tuple(final_outputs.sample_id.get_shape().as_list()),
+            assert (batch_size, expected_time) == tuple(
+                final_outputs.sample_id.get_shape().as_list()
             )
 
-            self.assertEqual(
-                (batch_size, attention_depth),
-                tuple(final_state.attention.get_shape().as_list()),
+            assert (batch_size, attention_depth) == tuple(
+                final_state.attention.get_shape().as_list()
             )
-            self.assertEqual(
-                (batch_size, cell_depth),
-                tuple(final_state.cell_state[0].get_shape().as_list()),
+            assert (batch_size, cell_depth) == tuple(
+                final_state.cell_state[0].get_shape().as_list()
             )
-            self.assertEqual(
-                (batch_size, cell_depth),
-                tuple(final_state.cell_state[1].get_shape().as_list()),
+            assert (batch_size, cell_depth) == tuple(
+                final_state.cell_state[1].get_shape().as_list()
             )
 
             if alignment_history:
@@ -485,17 +480,15 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
                     state_alignment_history = []
                     for history_array in final_state.alignment_history:
                         history = history_array.stack()
-                        self.assertEqual(
-                            (expected_time, batch_size, encoder_max_time),
-                            tuple(history.get_shape().as_list()),
+                        assert (expected_time, batch_size, encoder_max_time) == tuple(
+                            history.get_shape().as_list()
                         )
                         state_alignment_history.append(history)
                     state_alignment_history = tuple(state_alignment_history)
                 else:
                     state_alignment_history = final_state.alignment_history.stack()
-                    self.assertEqual(
-                        (expected_time, batch_size, encoder_max_time),
-                        tuple(state_alignment_history.get_shape().as_list()),
+                    assert (expected_time, batch_size, encoder_max_time) == tuple(
+                        state_alignment_history.get_shape().as_list()
                     )
                 tf.nest.assert_same_structure(
                     cell.state_size,
@@ -571,9 +564,9 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             initial_state=cell.get_initial_state(batch_size=self.batch, dtype=dtype),
             sequence_length=self.decoder_sequence_length,
         )
-        self.assertIsInstance(final_outputs, basic_decoder.BasicDecoderOutput)
-        self.assertEqual(final_outputs.rnn_output.dtype, dtype)
-        self.assertIsInstance(final_state, wrapper.AttentionWrapperState)
+        assert isinstance(final_outputs, basic_decoder.BasicDecoderOutput)
+        assert final_outputs.rnn_output.dtype == dtype
+        assert isinstance(final_state, wrapper.AttentionWrapperState)
 
     @parameterized.parameters([np.float32, np.float64])
     def testLuongScaledDType(self, dtype):
@@ -600,9 +593,9 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             initial_state=cell.get_initial_state(batch_size=self.batch, dtype=dtype),
             sequence_length=self.decoder_sequence_length,
         )
-        self.assertIsInstance(final_outputs, basic_decoder.BasicDecoderOutput)
-        self.assertEqual(final_outputs.rnn_output.dtype, dtype)
-        self.assertIsInstance(final_state, wrapper.AttentionWrapperState)
+        assert isinstance(final_outputs, basic_decoder.BasicDecoderOutput)
+        assert final_outputs.rnn_output.dtype == dtype
+        assert isinstance(final_state, wrapper.AttentionWrapperState)
 
     def testBahdanauNotNormalized(self):
         create_attention_mechanism = wrapper.BahdanauAttention
