@@ -553,7 +553,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
     def setUp(self):
         super().setUp()
         batch = 64
-        self.units = 128
+        units = 128
         self.encoder_timestep = 10
         self.encoder_dim = 256
         self.decoder_timestep = 12
@@ -563,7 +563,7 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         self.encoder_sequence_length = np.random.randint(
             1, high=self.encoder_timestep, size=(batch,)
         ).astype(np.int32)
-        self.decoder_inputs = np.random.randn(batch, self.decoder_timestep, self.units)
+        self.decoder_inputs = np.random.randn(batch, self.decoder_timestep, units)
         self.decoder_sequence_length = np.random.randint(
             self.decoder_timestep, size=(batch,)
         ).astype(np.int32)
