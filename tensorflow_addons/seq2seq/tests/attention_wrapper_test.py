@@ -244,6 +244,63 @@ def get_result_summary(x):
     return x
 
 
+def assert_allclose_or_equal(x, y, **kwargs):
+    if isinstance(x, np.ndarray) or isinstance(x, float):
+        np.testing.assert_allclose(x, y, atol=1e-3, **kwargs)
+    else:
+        assert x == y
+
+
+class DummyData2:
+    def __init__(self):
+        self.batch = 64
+        self.units = 128
+        self.encoder_timestep = 10
+        self.encoder_dim = 256
+        self.decoder_timestep = 12
+        self.encoder_outputs = np.random.randn(
+            self.batch, self.encoder_timestep, self.encoder_dim
+        )
+        self.encoder_sequence_length = np.random.randint(
+            1, high=self.encoder_timestep, size=(self.batch,)
+        ).astype(np.int32)
+        self.decoder_inputs = np.random.randn(
+            self.batch, self.decoder_timestep, self.units
+        )
+        self.decoder_sequence_length = np.random.randint(
+            self.decoder_timestep, size=(self.batch,)
+        ).astype(np.int32)
+
+
+def test_custom_attention_layer():
+    dummy_data = DummyData2()
+    attention_mechanism = wrapper.LuongAttention(dummy_data.units)
+    cell = tf.keras.layers.LSTMCell(dummy_data.units)
+    attention_layer = tf.keras.layers.Dense(
+        dummy_data.units * 2, use_bias=False, activation=tf.math.tanh
+    )
+    attention_wrapper = wrapper.AttentionWrapper(
+        cell, attention_mechanism, attention_layer=attention_layer
+    )
+    with pytest.raises(ValueError):
+        # Should fail because the attention mechanism has not been
+        # initialized.
+        attention_wrapper.get_initial_state(
+            batch_size=dummy_data.batch, dtype=tf.float32
+        )
+    attention_mechanism.setup_memory(
+        dummy_data.encoder_outputs.astype(np.float32),
+        memory_sequence_length=dummy_data.encoder_sequence_length,
+    )
+    initial_state = attention_wrapper.get_initial_state(
+        batch_size=dummy_data.batch, dtype=tf.float32
+    )
+    assert initial_state.attention.shape[-1] == dummy_data.units * 2
+    first_input = dummy_data.decoder_inputs[:, 0].astype(np.float32)
+    output, _ = attention_wrapper(first_input, initial_state)
+    assert output.shape[-1] == dummy_data.units * 2
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
     def assertAllCloseOrEqual(self, x, y, **kwargs):
@@ -271,31 +328,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         self.decoder_sequence_length = np.random.randint(
             self.decoder_timestep, size=(self.batch,)
         ).astype(np.int32)
-
-    def testCustomAttentionLayer(self):
-        attention_mechanism = wrapper.LuongAttention(self.units)
-        cell = tf.keras.layers.LSTMCell(self.units)
-        attention_layer = tf.keras.layers.Dense(
-            self.units * 2, use_bias=False, activation=tf.math.tanh
-        )
-        attention_wrapper = wrapper.AttentionWrapper(
-            cell, attention_mechanism, attention_layer=attention_layer
-        )
-        with self.assertRaises(ValueError):
-            # Should fail because the attention mechanism has not been
-            # initialized.
-            attention_wrapper.get_initial_state(batch_size=self.batch, dtype=tf.float32)
-        attention_mechanism.setup_memory(
-            self.encoder_outputs.astype(np.float32),
-            memory_sequence_length=self.encoder_sequence_length,
-        )
-        initial_state = attention_wrapper.get_initial_state(
-            batch_size=self.batch, dtype=tf.float32
-        )
-        self.assertEqual(initial_state.attention.shape[-1], self.units * 2)
-        first_input = self.decoder_inputs[:, 0].astype(np.float32)
-        output, _ = attention_wrapper(first_input, initial_state)
-        self.assertEqual(output.shape[-1], self.units * 2)
 
     def _testWithAttention(
         self,
