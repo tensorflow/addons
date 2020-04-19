@@ -552,22 +552,20 @@ def test_luong_scaled_dtype(dtype):
 class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
     def setUp(self):
         super().setUp()
-        self.batch = 64
+        batch = 64
         self.units = 128
         self.encoder_timestep = 10
         self.encoder_dim = 256
         self.decoder_timestep = 12
         self.encoder_outputs = np.random.randn(
-            self.batch, self.encoder_timestep, self.encoder_dim
+            batch, self.encoder_timestep, self.encoder_dim
         )
         self.encoder_sequence_length = np.random.randint(
-            1, high=self.encoder_timestep, size=(self.batch,)
+            1, high=self.encoder_timestep, size=(batch,)
         ).astype(np.int32)
-        self.decoder_inputs = np.random.randn(
-            self.batch, self.decoder_timestep, self.units
-        )
+        self.decoder_inputs = np.random.randn(batch, self.decoder_timestep, self.units)
         self.decoder_sequence_length = np.random.randint(
-            self.decoder_timestep, size=(self.batch,)
+            self.decoder_timestep, size=(batch,)
         ).astype(np.int32)
 
     def testBahdanauNotNormalized(self):
