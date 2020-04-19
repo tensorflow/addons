@@ -25,7 +25,7 @@ def test_config():
         reduction=tf.keras.losses.Reduction.NONE, name="center_loss"
     )
     np.testing.assert_equal(center_obj.name, "center_loss")
-    np.testing.assert_equal(center_obj.reduction, tf.keras.losses.Reduction.SUM)
+    np.testing.assert_equal(center_obj.reduction, tf.keras.losses.Reduction.NONE)
 
 
 @pytest.mark.parametrize("float_dtype", [np.float32, np.float64])
@@ -37,7 +37,8 @@ def test_zero_loss(float_dtype):
 
 
 def test_keras_model_compile():
-    model = tf.keras.models.Sequential(
-        [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10),]
-    )
+    model = tf.keras.models.Sequential()
+    model.add(tf.keras.layers.Input(shape=(784,)))
+    model.add(tf.keras.layers.Dense(400))
+    model.add(tf.keras.layers.Dense(10))
     model.compile(loss=center_loss, optimizer="adam")
