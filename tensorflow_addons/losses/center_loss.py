@@ -20,7 +20,12 @@ from typeguard import typechecked
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
-def center_loss(labels: TensorLike, feature: TensorLike, alpha: FloatTensorLike = 0.2):
+def center_loss(
+    labels: TensorLike,
+    feature: TensorLike,
+    alpha: FloatTensorLike = 0.2,
+    centers: TensorLike = None,
+):
     """Computes the center loss.
 
     Args:
@@ -32,17 +37,6 @@ def center_loss(labels: TensorLike, feature: TensorLike, alpha: FloatTensorLike 
     Return：
         loss: Tensor
     """
-    labels = tf.convert_to_tensor(labels)
-    feature = tf.convert_to_tensor(feature)
-    len_features = feature.shape[-1]
-    num_classes = labels.shape[-1]
-    centers = tf.compat.v1.get_variable(
-        "centers",
-        [num_classes, len_features],
-        dtype=tf.float32,
-        initializer=tf.constant_initializer(0),
-        trainable=False,
-    )
     labels = tf.reshape(labels, [-1])
     centers_batch = tf.gather(centers, labels)
     diff = centers_batch - feature
@@ -95,9 +89,20 @@ class CenterLoss(tf.keras.losses.Loss):
     ):
         super().__init__(reduction=reduction, name=name)
         self.alpha = alpha
+        self.centers = None
 
     def call(self, y_true, y_pred):
-        return center_loss(y_true, y_pred, self.alpha)
+        y_true = tf.convert_to_tensor(y_true)
+        y_pred = tf.convert_to_tensor(y_pred)
+        len_features = y_pred.shape[-1]
+        num_classes = y_true.shape[-1]
+        if not self.centers:
+            self.centers = tf.Variable(
+                tf.constant(0.0, shape=[num_classes, len_features]),
+                name="centers",
+                dtype=tf.float32,
+            )
+        return center_loss(y_true, y_pred, self.alpha, self.centers)
 
     def get_config(self):
         config = {

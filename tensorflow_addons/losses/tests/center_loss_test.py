@@ -16,7 +16,7 @@
 
 import tensorflow as tf
 from tensorflow_addons.utils import test_utils
-from tensorflow_addons.losses import center_loss, CenterLoss
+from tensorflow_addons.losses import CenterLoss
 
 
 @test_utils.run_all_in_graph_and_eager_modes
@@ -36,10 +36,11 @@ class CenterLossTest(tf.test.TestCase):
         self.assertAllClose(loss, 0.0)
 
     def test_keras_model_compile(self):
+        center_obj = CenterLoss()
         model = tf.keras.models.Sequential(
             [tf.keras.layers.Dense(400), tf.keras.layers.Dense(10),]
         )
-        model.compile(loss=center_loss, optimizer="adam")
+        model.compile(loss=center_obj, optimizer="adam")
 
 
 if __name__ == "__main__":
