@@ -17,7 +17,6 @@
 import collections
 
 import pytest
-from absl.testing import parameterized
 import numpy as np
 import tensorflow as tf
 
