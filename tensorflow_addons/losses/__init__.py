@@ -29,7 +29,7 @@ from tensorflow_addons.losses.triplet import (
     TripletHardLoss,
 )
 from tensorflow_addons.losses.quantiles import pinball_loss, PinballLoss
-
+from tensorflow_addons.losses.center_loss import center_loss, CenterLoss
 
 from tensorflow_addons.losses.npairs import (
     npairs_loss,
