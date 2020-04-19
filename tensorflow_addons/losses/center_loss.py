@@ -19,7 +19,6 @@ from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-@tf.function
 def center_loss(labels: TensorLike, feature: TensorLike, alpha: FloatTensorLike = 0.2):
     """Computes the center loss.
 
