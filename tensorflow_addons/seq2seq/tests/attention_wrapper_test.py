@@ -557,18 +557,19 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
 
     @parameterized.parameters([np.float32, np.float64])
     def testLuongScaledDType(self, dtype):
+        dummy_data = DummyData2()
         # Test case for GitHub issue 18099
-        encoder_outputs = self.encoder_outputs.astype(dtype)
-        decoder_inputs = self.decoder_inputs.astype(dtype)
+        encoder_outputs = dummy_data.encoder_outputs.astype(dtype)
+        decoder_inputs = dummy_data.decoder_inputs.astype(dtype)
         attention_mechanism = wrapper.LuongAttention(
-            units=self.units,
+            units=dummy_data.units,
             memory=encoder_outputs,
-            memory_sequence_length=self.encoder_sequence_length,
+            memory_sequence_length=dummy_data.encoder_sequence_length,
             scale=True,
             dtype=dtype,
         )
         cell = tf.keras.layers.LSTMCell(
-            self.units, recurrent_activation="sigmoid", dtype=dtype
+            dummy_data.units, recurrent_activation="sigmoid", dtype=dtype
         )
         cell = wrapper.AttentionWrapper(cell, attention_mechanism, dtype=dtype)
 
@@ -577,8 +578,10 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
 
         final_outputs, final_state, _ = my_decoder(
             decoder_inputs,
-            initial_state=cell.get_initial_state(batch_size=self.batch, dtype=dtype),
-            sequence_length=self.decoder_sequence_length,
+            initial_state=cell.get_initial_state(
+                batch_size=dummy_data.batch, dtype=dtype
+            ),
+            sequence_length=dummy_data.decoder_sequence_length,
         )
         assert isinstance(final_outputs, basic_decoder.BasicDecoderOutput)
         assert final_outputs.rnn_output.dtype == dtype
