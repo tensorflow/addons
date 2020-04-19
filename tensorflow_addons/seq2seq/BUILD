@@ -4,15 +4,7 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "seq2seq",
-    srcs = [
-        "__init__.py",
-        "attention_wrapper.py",
-        "basic_decoder.py",
-        "beam_search_decoder.py",
-        "decoder.py",
-        "loss.py",
-        "sampler.py",
-    ],
+    srcs = glob(["*.py"]),
     data = [
         "//tensorflow_addons/custom_ops/seq2seq:_beam_search_ops.so",
     ],
@@ -22,54 +14,10 @@ py_library(
 )
 
 py_test(
-    name = "attention_wrapper_test",
+    name = "seq2seq_test",
     size = "medium",
-    srcs = ["attention_wrapper_test.py"],
-    deps = [
-        ":seq2seq",
-    ],
-)
-
-py_test(
-    name = "basic_decoder_test",
-    size = "small",
-    srcs = ["basic_decoder_test.py"],
-    deps = [
-        ":seq2seq",
-    ],
-)
-
-py_test(
-    name = "beam_search_decoder_test",
-    size = "small",
-    srcs = ["beam_search_decoder_test.py"],
-    deps = [
-        ":seq2seq",
-    ],
-)
-
-py_test(
-    name = "beam_search_ops_test",
-    size = "small",
-    srcs = ["beam_search_ops_test.py"],
-    deps = [
-        ":seq2seq",
-    ],
-)
-
-py_test(
-    name = "decoder_test",
-    size = "small",
-    srcs = ["decoder_test.py"],
-    deps = [
-        ":seq2seq",
-    ],
-)
-
-py_test(
-    name = "loss_test",
-    size = "small",
-    srcs = ["loss_test.py"],
+    srcs = glob(["tests/*"]),
+    main = "tests/run_all_test.py",
     deps = [
         ":seq2seq",
     ],

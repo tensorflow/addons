@@ -3,3 +3,4 @@ pytest-xdist~=1.31
 scikit-learn~=0.22
 scikit-image~=0.15.0
 Pillow~=7.0.0
+tqdm>=4.36.1

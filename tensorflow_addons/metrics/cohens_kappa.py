@@ -71,7 +71,6 @@ class CohenKappa(Metric):
         sparse_labels: bool = False,
         regression: bool = False,
         dtype: AcceptableDTypes = None,
-        **kwargs
     ):
         """Creates a `CohenKappa` instance.
 
