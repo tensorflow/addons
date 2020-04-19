@@ -34,13 +34,12 @@ def center_loss(labels: TensorLike, feature: TensorLike, alpha: FloatTensorLike 
     """
     labels = tf.convert_to_tensor(labels)
     feature = tf.convert_to_tensor(feature)
-    float_dtype = feature.dtype
     len_features = feature.shape[-1]
     num_classes = labels.shape[-1]
     centers = tf.Variable(
         tf.constant(0.0, shape=[num_classes, len_features]),
         name="centers",
-        dtype=float_dtype,
+        dtype=tf.float32,
     )
     labels = tf.reshape(labels, [-1])
     centers_batch = tf.gather(centers, labels)
@@ -48,7 +47,7 @@ def center_loss(labels: TensorLike, feature: TensorLike, alpha: FloatTensorLike 
     unique_label, unique_idx, unique_count = tf.unique_with_counts(labels)
     appear_times = tf.gather(unique_count, unique_idx)
     appear_times = tf.reshape(appear_times, [-1, 1])
-    diff = diff / tf.cast((1 + appear_times), float_dtype)
+    diff = diff / tf.cast((1 + appear_times), tf.float32)
     diff = alpha * diff
     # update centers
     centers_update_op = tf.compat.v1.scatter_sub(centers, labels, diff)
