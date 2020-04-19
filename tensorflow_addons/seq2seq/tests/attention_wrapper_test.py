@@ -301,6 +301,212 @@ def test_custom_attention_layer():
     assert output.shape[-1] == dummy_data.units * 2
 
 
+def _test_with_attention(
+    self,
+    create_attention_mechanism,
+    expected_final_output,
+    expected_final_state,
+    attention_mechanism_depth=3,
+    alignment_history=False,
+    expected_final_alignment_history=None,
+    attention_layer_size=6,
+    attention_layer=None,
+    create_query_layer=False,
+    create_memory_layer=True,
+    create_attention_kwargs=None,
+):
+    attention_layer_sizes = (
+        [attention_layer_size] if attention_layer_size is not None else None
+    )
+    attention_layers = [attention_layer] if attention_layer is not None else None
+    create_attention_mechanisms = [create_attention_mechanism]
+    attention_mechanism_depths = [attention_mechanism_depth]
+    is_multi = False
+    # Allow is_multi to be True with a single mechanism to enable test for
+    # passing in a single mechanism in a list.
+    assert len(create_attention_mechanisms) == 1 or is_multi
+    encoder_sequence_length = [3, 2, 3, 1, 1]
+    decoder_sequence_length = [2, 0, 1, 2, 3]
+    batch_size = 5
+    encoder_max_time = 8
+    decoder_max_time = 4
+    input_depth = 7
+    encoder_output_depth = 10
+    cell_depth = 9
+    create_attention_kwargs = create_attention_kwargs or {}
+
+    if attention_layer_sizes is not None:
+        # Compute sum of attention_layer_sizes. Use encoder_output_depth if
+        # None.
+        attention_depth = sum(
+            attention_layer_size or encoder_output_depth
+            for attention_layer_size in attention_layer_sizes
+        )
+    elif attention_layers is not None:
+        # Compute sum of attention_layers output depth.
+        attention_depth = sum(
+            attention_layer.compute_output_shape(
+                [batch_size, cell_depth + encoder_output_depth]
+            )
+            .dims[-1]
+            .value
+            for attention_layer in attention_layers
+        )
+    else:
+        attention_depth = encoder_output_depth * len(create_attention_mechanisms)
+
+    decoder_inputs = np.random.randn(batch_size, decoder_max_time, input_depth).astype(
+        np.float32
+    )
+    encoder_outputs = np.random.randn(
+        batch_size, encoder_max_time, encoder_output_depth
+    ).astype(np.float32)
+
+    attention_mechanisms = []
+    for creator, depth in zip(create_attention_mechanisms, attention_mechanism_depths):
+        # Create a memory layer with deterministic initializer to avoid
+        # randomness in the test between graph and eager.
+        if create_query_layer:
+            create_attention_kwargs["query_layer"] = tf.keras.layers.Dense(
+                depth, kernel_initializer="ones", use_bias=False
+            )
+        if create_memory_layer:
+            create_attention_kwargs["memory_layer"] = tf.keras.layers.Dense(
+                depth, kernel_initializer="ones", use_bias=False
+            )
+
+        attention_mechanisms.append(
+            creator(
+                units=depth,
+                memory=encoder_outputs,
+                memory_sequence_length=encoder_sequence_length,
+                **create_attention_kwargs,
+            )
+        )
+
+    with self.cached_session(use_gpu=True):
+        attention_layer_size = attention_layer_sizes
+        attention_layer = attention_layers
+        if not is_multi:
+            if attention_layer_size is not None:
+                attention_layer_size = attention_layer_size[0]
+            if attention_layer is not None:
+                attention_layer = attention_layer[0]
+        cell = tf.keras.layers.LSTMCell(
+            cell_depth,
+            recurrent_activation="sigmoid",
+            kernel_initializer="ones",
+            recurrent_initializer="ones",
+        )
+        cell = wrapper.AttentionWrapper(
+            cell,
+            attention_mechanisms if is_multi else attention_mechanisms[0],
+            attention_layer_size=attention_layer_size,
+            alignment_history=alignment_history,
+            attention_layer=attention_layer,
+        )
+        if cell._attention_layers is not None:
+            for layer in cell._attention_layers:
+                layer.kernel_initializer = tf.compat.v1.keras.initializers.glorot_uniform(
+                    seed=1337
+                )
+
+        sampler = sampler_py.TrainingSampler()
+        my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
+        initial_state = cell.get_initial_state(dtype=tf.float32, batch_size=batch_size)
+        final_outputs, final_state, _ = my_decoder(
+            decoder_inputs,
+            initial_state=initial_state,
+            sequence_length=decoder_sequence_length,
+        )
+
+        assert isinstance(final_outputs, basic_decoder.BasicDecoderOutput)
+        assert isinstance(final_state, wrapper.AttentionWrapperState)
+
+        expected_time = max(decoder_sequence_length) if tf.executing_eagerly() else None
+        assert (batch_size, expected_time, attention_depth) == tuple(
+            final_outputs.rnn_output.get_shape().as_list()
+        )
+        assert (batch_size, expected_time) == tuple(
+            final_outputs.sample_id.get_shape().as_list()
+        )
+
+        assert (batch_size, attention_depth) == tuple(
+            final_state.attention.get_shape().as_list()
+        )
+        assert (batch_size, cell_depth) == tuple(
+            final_state.cell_state[0].get_shape().as_list()
+        )
+        assert (batch_size, cell_depth) == tuple(
+            final_state.cell_state[1].get_shape().as_list()
+        )
+
+        if alignment_history:
+            if is_multi:
+                state_alignment_history = []
+                for history_array in final_state.alignment_history:
+                    history = history_array.stack()
+                    assert (expected_time, batch_size, encoder_max_time) == tuple(
+                        history.get_shape().as_list()
+                    )
+                    state_alignment_history.append(history)
+                state_alignment_history = tuple(state_alignment_history)
+            else:
+                state_alignment_history = final_state.alignment_history.stack()
+                assert (expected_time, batch_size, encoder_max_time) == tuple(
+                    state_alignment_history.get_shape().as_list()
+                )
+            tf.nest.assert_same_structure(
+                cell.state_size,
+                cell.get_initial_state(batch_size=batch_size, dtype=tf.float32),
+            )
+            # Remove the history from final_state for purposes of the
+            # remainder of the tests.
+            final_state = final_state._replace(
+                alignment_history=()
+            )  # pylint: disable=protected-access
+        else:
+            state_alignment_history = ()
+
+        self.evaluate(tf.compat.v1.global_variables_initializer())
+        eval_result = self.evaluate(
+            {
+                "final_outputs": final_outputs,
+                "final_state": final_state,
+                "state_alignment_history": state_alignment_history,
+            }
+        )
+
+        final_output_info = tf.nest.map_structure(
+            get_result_summary, eval_result["final_outputs"]
+        )
+        final_state_info = tf.nest.map_structure(
+            get_result_summary, eval_result["final_state"]
+        )
+        print("final_output_info: ", final_output_info)
+        print("final_state_info: ", final_state_info)
+
+        tf.nest.map_structure(
+            self.assertAllCloseOrEqual, expected_final_output, final_output_info
+        )
+        tf.nest.map_structure(
+            self.assertAllCloseOrEqual, expected_final_state, final_state_info
+        )
+        # by default, the wrapper emits attention as output
+        if alignment_history:
+            final_alignment_history_info = tf.nest.map_structure(
+                get_result_summary, eval_result["state_alignment_history"]
+            )
+            print("final_alignment_history_info: ", final_alignment_history_info)
+            tf.nest.map_structure(
+                self.assertAllCloseOrEqual,
+                # outputs are batch major but the stacked TensorArray is
+                # time major
+                expected_final_alignment_history,
+                final_alignment_history_info,
+            )
+
+
 @test_utils.run_all_in_graph_and_eager_modes
 class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
     def assertAllCloseOrEqual(self, x, y, **kwargs):
@@ -328,217 +534,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         self.decoder_sequence_length = np.random.randint(
             self.decoder_timestep, size=(self.batch,)
         ).astype(np.int32)
-
-    def _testWithAttention(
-        self,
-        create_attention_mechanism,
-        expected_final_output,
-        expected_final_state,
-        attention_mechanism_depth=3,
-        alignment_history=False,
-        expected_final_alignment_history=None,
-        attention_layer_size=6,
-        attention_layer=None,
-        create_query_layer=False,
-        create_memory_layer=True,
-        create_attention_kwargs=None,
-    ):
-        attention_layer_sizes = (
-            [attention_layer_size] if attention_layer_size is not None else None
-        )
-        attention_layers = [attention_layer] if attention_layer is not None else None
-        create_attention_mechanisms = [create_attention_mechanism]
-        attention_mechanism_depths = [attention_mechanism_depth]
-        is_multi = False
-        # Allow is_multi to be True with a single mechanism to enable test for
-        # passing in a single mechanism in a list.
-        assert len(create_attention_mechanisms) == 1 or is_multi
-        encoder_sequence_length = [3, 2, 3, 1, 1]
-        decoder_sequence_length = [2, 0, 1, 2, 3]
-        batch_size = 5
-        encoder_max_time = 8
-        decoder_max_time = 4
-        input_depth = 7
-        encoder_output_depth = 10
-        cell_depth = 9
-        create_attention_kwargs = create_attention_kwargs or {}
-
-        if attention_layer_sizes is not None:
-            # Compute sum of attention_layer_sizes. Use encoder_output_depth if
-            # None.
-            attention_depth = sum(
-                attention_layer_size or encoder_output_depth
-                for attention_layer_size in attention_layer_sizes
-            )
-        elif attention_layers is not None:
-            # Compute sum of attention_layers output depth.
-            attention_depth = sum(
-                attention_layer.compute_output_shape(
-                    [batch_size, cell_depth + encoder_output_depth]
-                )
-                .dims[-1]
-                .value
-                for attention_layer in attention_layers
-            )
-        else:
-            attention_depth = encoder_output_depth * len(create_attention_mechanisms)
-
-        decoder_inputs = np.random.randn(
-            batch_size, decoder_max_time, input_depth
-        ).astype(np.float32)
-        encoder_outputs = np.random.randn(
-            batch_size, encoder_max_time, encoder_output_depth
-        ).astype(np.float32)
-
-        attention_mechanisms = []
-        for creator, depth in zip(
-            create_attention_mechanisms, attention_mechanism_depths
-        ):
-            # Create a memory layer with deterministic initializer to avoid
-            # randomness in the test between graph and eager.
-            if create_query_layer:
-                create_attention_kwargs["query_layer"] = tf.keras.layers.Dense(
-                    depth, kernel_initializer="ones", use_bias=False
-                )
-            if create_memory_layer:
-                create_attention_kwargs["memory_layer"] = tf.keras.layers.Dense(
-                    depth, kernel_initializer="ones", use_bias=False
-                )
-
-            attention_mechanisms.append(
-                creator(
-                    units=depth,
-                    memory=encoder_outputs,
-                    memory_sequence_length=encoder_sequence_length,
-                    **create_attention_kwargs,
-                )
-            )
-
-        with self.cached_session(use_gpu=True):
-            attention_layer_size = attention_layer_sizes
-            attention_layer = attention_layers
-            if not is_multi:
-                if attention_layer_size is not None:
-                    attention_layer_size = attention_layer_size[0]
-                if attention_layer is not None:
-                    attention_layer = attention_layer[0]
-            cell = tf.keras.layers.LSTMCell(
-                cell_depth,
-                recurrent_activation="sigmoid",
-                kernel_initializer="ones",
-                recurrent_initializer="ones",
-            )
-            cell = wrapper.AttentionWrapper(
-                cell,
-                attention_mechanisms if is_multi else attention_mechanisms[0],
-                attention_layer_size=attention_layer_size,
-                alignment_history=alignment_history,
-                attention_layer=attention_layer,
-            )
-            if cell._attention_layers is not None:
-                for layer in cell._attention_layers:
-                    layer.kernel_initializer = tf.compat.v1.keras.initializers.glorot_uniform(
-                        seed=1337
-                    )
-
-            sampler = sampler_py.TrainingSampler()
-            my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
-            initial_state = cell.get_initial_state(
-                dtype=tf.float32, batch_size=batch_size
-            )
-            final_outputs, final_state, _ = my_decoder(
-                decoder_inputs,
-                initial_state=initial_state,
-                sequence_length=decoder_sequence_length,
-            )
-
-            assert isinstance(final_outputs, basic_decoder.BasicDecoderOutput)
-            assert isinstance(final_state, wrapper.AttentionWrapperState)
-
-            expected_time = (
-                max(decoder_sequence_length) if tf.executing_eagerly() else None
-            )
-            assert (batch_size, expected_time, attention_depth) == tuple(
-                final_outputs.rnn_output.get_shape().as_list()
-            )
-            assert (batch_size, expected_time) == tuple(
-                final_outputs.sample_id.get_shape().as_list()
-            )
-
-            assert (batch_size, attention_depth) == tuple(
-                final_state.attention.get_shape().as_list()
-            )
-            assert (batch_size, cell_depth) == tuple(
-                final_state.cell_state[0].get_shape().as_list()
-            )
-            assert (batch_size, cell_depth) == tuple(
-                final_state.cell_state[1].get_shape().as_list()
-            )
-
-            if alignment_history:
-                if is_multi:
-                    state_alignment_history = []
-                    for history_array in final_state.alignment_history:
-                        history = history_array.stack()
-                        assert (expected_time, batch_size, encoder_max_time) == tuple(
-                            history.get_shape().as_list()
-                        )
-                        state_alignment_history.append(history)
-                    state_alignment_history = tuple(state_alignment_history)
-                else:
-                    state_alignment_history = final_state.alignment_history.stack()
-                    assert (expected_time, batch_size, encoder_max_time) == tuple(
-                        state_alignment_history.get_shape().as_list()
-                    )
-                tf.nest.assert_same_structure(
-                    cell.state_size,
-                    cell.get_initial_state(batch_size=batch_size, dtype=tf.float32),
-                )
-                # Remove the history from final_state for purposes of the
-                # remainder of the tests.
-                final_state = final_state._replace(
-                    alignment_history=()
-                )  # pylint: disable=protected-access
-            else:
-                state_alignment_history = ()
-
-            self.evaluate(tf.compat.v1.global_variables_initializer())
-            eval_result = self.evaluate(
-                {
-                    "final_outputs": final_outputs,
-                    "final_state": final_state,
-                    "state_alignment_history": state_alignment_history,
-                }
-            )
-
-            final_output_info = tf.nest.map_structure(
-                get_result_summary, eval_result["final_outputs"]
-            )
-            final_state_info = tf.nest.map_structure(
-                get_result_summary, eval_result["final_state"]
-            )
-            print("final_output_info: ", final_output_info)
-            print("final_state_info: ", final_state_info)
-
-            tf.nest.map_structure(
-                self.assertAllCloseOrEqual, expected_final_output, final_output_info
-            )
-            tf.nest.map_structure(
-                self.assertAllCloseOrEqual, expected_final_state, final_state_info
-            )
-            # by default, the wrapper emits attention as output
-            if alignment_history:
-                final_alignment_history_info = tf.nest.map_structure(
-                    get_result_summary, eval_result["state_alignment_history"]
-                )
-                print("final_alignment_history_info: ", final_alignment_history_info)
-                tf.nest.map_structure(
-                    self.assertAllCloseOrEqual,
-                    # outputs are batch major but the stacked TensorArray is
-                    # time major
-                    expected_final_alignment_history,
-                    final_alignment_history_info,
-                )
 
     @parameterized.parameters([np.float32, np.float64])
     def testBahdanauNormalizedDType(self, dtype):
@@ -630,7 +625,8 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             shape=(3, 5, 8), dtype=np.dtype(np.float32), mean=0.125
         )
 
-        self._testWithAttention(
+        _test_with_attention(
+            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
@@ -667,7 +663,8 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             alignment_history=(),
         )
 
-        self._testWithAttention(
+        _test_with_attention(
+            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
@@ -703,7 +700,8 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             alignment_history=(),
         )
 
-        self._testWithAttention(
+        _test_with_attention(
+            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
@@ -739,7 +737,8 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             alignment_history=(),
         )
 
-        self._testWithAttention(
+        _test_with_attention(
+            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
@@ -774,7 +773,8 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             alignment_history=(),
         )
 
-        self._testWithAttention(
+        _test_with_attention(
+            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
@@ -815,7 +815,8 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             shape=(3, 5, 8), dtype=np.dtype("float32"), mean=0.10261579603
         )
 
-        self._testWithAttention(
+        _test_with_attention(
+            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
@@ -856,7 +857,8 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             shape=(3, 5, 8), dtype=np.dtype("float32"), mean=0.07909643
         )
 
-        self._testWithAttention(
+        _test_with_attention(
+            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
@@ -897,7 +899,8 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             shape=(3, 5, 8), dtype=np.dtype("float32"), mean=0.06994973868
         )
 
-        self._testWithAttention(
+        _test_with_attention(
+            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
@@ -938,7 +941,8 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
             shape=(3, 5, 8), dtype=np.dtype("float32"), mean=0.06994973868
         )
 
-        self._testWithAttention(
+        _test_with_attention(
+            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
