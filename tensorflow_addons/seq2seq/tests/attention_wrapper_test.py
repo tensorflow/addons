@@ -554,51 +554,47 @@ def do_some_stuff():
     np.random.randint(decoder_timestep, size=(batch,)).astype(np.int32)
 
 
+def test_bahdanau_not_normalized():
+    tf.random.set_seed(87654321)
+    do_some_stuff()
+    create_attention_mechanism = wrapper.BahdanauAttention
+    create_attention_kwargs = {"kernel_initializer": "ones"}
+    expected_final_output = basic_decoder.BasicDecoderOutput(
+        rnn_output=ResultSummary(
+            shape=(5, 3, 6), dtype=np.dtype(np.float32), mean=-0.003204414
+        ),
+        sample_id=ResultSummary(shape=(5, 3), dtype=np.dtype(np.int32), mean=3.2),
+    )
+    expected_final_state = wrapper.AttentionWrapperState(
+        cell_state=[
+            ResultSummary(shape=(5, 9), dtype=np.dtype(np.float32), mean=0.40868404),
+            ResultSummary(shape=(5, 9), dtype=np.dtype(np.float32), mean=0.89017969),
+        ],
+        attention=ResultSummary(
+            shape=(5, 6), dtype=np.dtype(np.float32), mean=0.041453815
+        ),
+        alignments=ResultSummary(shape=(5, 8), dtype=np.dtype(np.float32), mean=0.125),
+        attention_state=ResultSummary(
+            shape=(5, 8), dtype=np.dtype(np.float32), mean=0.125
+        ),
+        alignment_history=(),
+    )
+    expected_final_alignment_history = ResultSummary(
+        shape=(3, 5, 8), dtype=np.dtype(np.float32), mean=0.125
+    )
+
+    _test_with_attention(
+        create_attention_mechanism,
+        expected_final_output,
+        expected_final_state,
+        alignment_history=True,
+        create_query_layer=True,
+        expected_final_alignment_history=expected_final_alignment_history,
+        create_attention_kwargs=create_attention_kwargs,
+    )
+
+
 class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
-    def testBahdanauNotNormalized(self):
-        do_some_stuff()
-        create_attention_mechanism = wrapper.BahdanauAttention
-        create_attention_kwargs = {"kernel_initializer": "ones"}
-        expected_final_output = basic_decoder.BasicDecoderOutput(
-            rnn_output=ResultSummary(
-                shape=(5, 3, 6), dtype=np.dtype(np.float32), mean=-0.003204414
-            ),
-            sample_id=ResultSummary(shape=(5, 3), dtype=np.dtype(np.int32), mean=3.2),
-        )
-        expected_final_state = wrapper.AttentionWrapperState(
-            cell_state=[
-                ResultSummary(
-                    shape=(5, 9), dtype=np.dtype(np.float32), mean=0.40868404
-                ),
-                ResultSummary(
-                    shape=(5, 9), dtype=np.dtype(np.float32), mean=0.89017969
-                ),
-            ],
-            attention=ResultSummary(
-                shape=(5, 6), dtype=np.dtype(np.float32), mean=0.041453815
-            ),
-            alignments=ResultSummary(
-                shape=(5, 8), dtype=np.dtype(np.float32), mean=0.125
-            ),
-            attention_state=ResultSummary(
-                shape=(5, 8), dtype=np.dtype(np.float32), mean=0.125
-            ),
-            alignment_history=(),
-        )
-        expected_final_alignment_history = ResultSummary(
-            shape=(3, 5, 8), dtype=np.dtype(np.float32), mean=0.125
-        )
-
-        _test_with_attention(
-            create_attention_mechanism,
-            expected_final_output,
-            expected_final_state,
-            alignment_history=True,
-            create_query_layer=True,
-            expected_final_alignment_history=expected_final_alignment_history,
-            create_attention_kwargs=create_attention_kwargs,
-        )
-
     def testBahdanauNormalized(self):
         do_some_stuff()
         create_attention_mechanism = wrapper.BahdanauAttention
