@@ -564,7 +564,6 @@ def test_luong_scaled_dtype(dtype):
     assert isinstance(final_state, wrapper.AttentionWrapperState)
 
 
-@test_utils.run_all_in_graph_and_eager_modes
 class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
     def setUp(self):
         super().setUp()
