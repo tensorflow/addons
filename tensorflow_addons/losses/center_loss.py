@@ -96,12 +96,11 @@ class CenterLoss(tf.keras.losses.Loss):
         y_pred = tf.convert_to_tensor(y_pred)
         len_features = y_pred.shape[-1]
         num_classes = y_true.shape[-1]
-        if not self.centers:
-            self.centers = tf.Variable(
-                tf.constant(0.0, shape=[num_classes, len_features]),
-                name="centers",
-                dtype=tf.float32,
-            )
+        self.centers = tf.Variable(
+            tf.constant(0.0, shape=[num_classes, len_features]),
+            name="centers",
+            dtype=tf.float32,
+        )
         return center_loss(y_true, y_pred, self.alpha, self.centers)
 
     def get_config(self):
