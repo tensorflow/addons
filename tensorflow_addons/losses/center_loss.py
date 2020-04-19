@@ -51,7 +51,7 @@ def center_loss(labels: TensorLike, feature: TensorLike, alpha: FloatTensorLike 
     diff = diff / tf.cast((1 + appear_times), float_dtype)
     diff = alpha * diff
     # update centers
-    centers_update_op = tf.scatter_sub(centers, labels, diff)
+    centers_update_op = tf.tensor_scatter_nd_sub(centers, labels, diff)
 
     # enforce computing centers before updating center loss
     with tf.control_dependencies([centers_update_op]):
