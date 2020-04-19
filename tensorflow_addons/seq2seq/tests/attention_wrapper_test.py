@@ -540,6 +540,10 @@ def test_luong_scaled_dtype(dtype):
 
 
 def set_random_state_for_tf_and_np():
+    """Since the results of the tests have been hardcoded, we need to make sure,
+    when we refactor code that the random state is the same. Meaning that all
+    random functions should be called in the same order.
+    """
     tf.random.set_seed(87654321)
     np.random.seed(87654321)
     DummyData2()
