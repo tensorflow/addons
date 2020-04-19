@@ -452,19 +452,14 @@ def _test_with_attention(
     else:
         state_alignment_history = ()
 
-    self.evaluate(tf.compat.v1.global_variables_initializer())
-    eval_result = self.evaluate(
-        {
-            "final_state": final_state,
-            "state_alignment_history": state_alignment_history,
-        }
-    )
     final_outputs = tf.nest.map_structure(lambda x: x.numpy(), final_outputs)
-
-    final_output_info = tf.nest.map_structure(get_result_summary, final_outputs)
-    final_state_info = tf.nest.map_structure(
-        get_result_summary, eval_result["final_state"]
+    final_state = tf.nest.map_structure(lambda x: x.numpy(), final_state)
+    state_alignment_history = tf.nest.map_structure(
+        lambda x: x.numpy(), state_alignment_history
     )
+    final_output_info = tf.nest.map_structure(get_result_summary, final_outputs)
+
+    final_state_info = tf.nest.map_structure(get_result_summary, final_state)
 
     tf.nest.map_structure(
         assert_allclose_or_equal, expected_final_output, final_output_info
@@ -475,7 +470,7 @@ def _test_with_attention(
     # by default, the wrapper emits attention as output
     if alignment_history:
         final_alignment_history_info = tf.nest.map_structure(
-            get_result_summary, eval_result["state_alignment_history"]
+            get_result_summary, state_alignment_history
         )
         tf.nest.map_structure(
             assert_allclose_or_equal,
