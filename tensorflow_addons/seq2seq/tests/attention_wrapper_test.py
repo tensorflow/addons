@@ -455,10 +455,12 @@ def _test_with_attention(
     self.evaluate(tf.compat.v1.global_variables_initializer())
     eval_result = self.evaluate(
         {
-            "final_outputs": final_outputs,
             "final_state": final_state,
             "state_alignment_history": state_alignment_history,
         }
+    )
+    eval_result["final_outputs"] = tf.nest.map_structure(
+        lambda x: x.numpy(), final_outputs
     )
 
     final_output_info = tf.nest.map_structure(
