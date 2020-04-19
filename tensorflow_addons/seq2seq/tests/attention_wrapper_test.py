@@ -451,11 +451,9 @@ def _test_with_attention(
     else:
         state_alignment_history = ()
 
-    final_outputs = tf.nest.map_structure(lambda x: x.numpy(), final_outputs)
-    final_state = tf.nest.map_structure(lambda x: x.numpy(), final_state)
-    state_alignment_history = tf.nest.map_structure(
-        lambda x: x.numpy(), state_alignment_history
-    )
+    final_outputs = tf.nest.map_structure(np.array, final_outputs)
+    final_state = tf.nest.map_structure(np.array, final_state)
+    state_alignment_history = tf.nest.map_structure(np.array, state_alignment_history)
     final_output_info = tf.nest.map_structure(get_result_summary, final_outputs)
 
     final_state_info = tf.nest.map_structure(get_result_summary, final_state)
