@@ -384,127 +384,126 @@ def _test_with_attention(
             )
         )
 
-    with self.cached_session(use_gpu=True):
-        attention_layer_size = attention_layer_sizes
-        attention_layer = attention_layers
-        if not is_multi:
-            if attention_layer_size is not None:
-                attention_layer_size = attention_layer_size[0]
-            if attention_layer is not None:
-                attention_layer = attention_layer[0]
-        cell = tf.keras.layers.LSTMCell(
-            cell_depth,
-            recurrent_activation="sigmoid",
-            kernel_initializer="ones",
-            recurrent_initializer="ones",
-        )
-        cell = wrapper.AttentionWrapper(
-            cell,
-            attention_mechanisms if is_multi else attention_mechanisms[0],
-            attention_layer_size=attention_layer_size,
-            alignment_history=alignment_history,
-            attention_layer=attention_layer,
-        )
-        if cell._attention_layers is not None:
-            for layer in cell._attention_layers:
-                layer.kernel_initializer = tf.compat.v1.keras.initializers.glorot_uniform(
-                    seed=1337
-                )
+    attention_layer_size = attention_layer_sizes
+    attention_layer = attention_layers
+    if not is_multi:
+        if attention_layer_size is not None:
+            attention_layer_size = attention_layer_size[0]
+        if attention_layer is not None:
+            attention_layer = attention_layer[0]
+    cell = tf.keras.layers.LSTMCell(
+        cell_depth,
+        recurrent_activation="sigmoid",
+        kernel_initializer="ones",
+        recurrent_initializer="ones",
+    )
+    cell = wrapper.AttentionWrapper(
+        cell,
+        attention_mechanisms if is_multi else attention_mechanisms[0],
+        attention_layer_size=attention_layer_size,
+        alignment_history=alignment_history,
+        attention_layer=attention_layer,
+    )
+    if cell._attention_layers is not None:
+        for layer in cell._attention_layers:
+            layer.kernel_initializer = tf.compat.v1.keras.initializers.glorot_uniform(
+                seed=1337
+            )
 
-        sampler = sampler_py.TrainingSampler()
-        my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
-        initial_state = cell.get_initial_state(dtype=tf.float32, batch_size=batch_size)
-        final_outputs, final_state, _ = my_decoder(
-            decoder_inputs,
-            initial_state=initial_state,
-            sequence_length=decoder_sequence_length,
-        )
+    sampler = sampler_py.TrainingSampler()
+    my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
+    initial_state = cell.get_initial_state(dtype=tf.float32, batch_size=batch_size)
+    final_outputs, final_state, _ = my_decoder(
+        decoder_inputs,
+        initial_state=initial_state,
+        sequence_length=decoder_sequence_length,
+    )
 
-        assert isinstance(final_outputs, basic_decoder.BasicDecoderOutput)
-        assert isinstance(final_state, wrapper.AttentionWrapperState)
+    assert isinstance(final_outputs, basic_decoder.BasicDecoderOutput)
+    assert isinstance(final_state, wrapper.AttentionWrapperState)
 
-        expected_time = max(decoder_sequence_length) if tf.executing_eagerly() else None
-        assert (batch_size, expected_time, attention_depth) == tuple(
-            final_outputs.rnn_output.get_shape().as_list()
-        )
-        assert (batch_size, expected_time) == tuple(
-            final_outputs.sample_id.get_shape().as_list()
-        )
+    expected_time = max(decoder_sequence_length) if tf.executing_eagerly() else None
+    assert (batch_size, expected_time, attention_depth) == tuple(
+        final_outputs.rnn_output.get_shape().as_list()
+    )
+    assert (batch_size, expected_time) == tuple(
+        final_outputs.sample_id.get_shape().as_list()
+    )
 
-        assert (batch_size, attention_depth) == tuple(
-            final_state.attention.get_shape().as_list()
-        )
-        assert (batch_size, cell_depth) == tuple(
-            final_state.cell_state[0].get_shape().as_list()
-        )
-        assert (batch_size, cell_depth) == tuple(
-            final_state.cell_state[1].get_shape().as_list()
-        )
+    assert (batch_size, attention_depth) == tuple(
+        final_state.attention.get_shape().as_list()
+    )
+    assert (batch_size, cell_depth) == tuple(
+        final_state.cell_state[0].get_shape().as_list()
+    )
+    assert (batch_size, cell_depth) == tuple(
+        final_state.cell_state[1].get_shape().as_list()
+    )
 
-        if alignment_history:
-            if is_multi:
-                state_alignment_history = []
-                for history_array in final_state.alignment_history:
-                    history = history_array.stack()
-                    assert (expected_time, batch_size, encoder_max_time) == tuple(
-                        history.get_shape().as_list()
-                    )
-                    state_alignment_history.append(history)
-                state_alignment_history = tuple(state_alignment_history)
-            else:
-                state_alignment_history = final_state.alignment_history.stack()
+    if alignment_history:
+        if is_multi:
+            state_alignment_history = []
+            for history_array in final_state.alignment_history:
+                history = history_array.stack()
                 assert (expected_time, batch_size, encoder_max_time) == tuple(
-                    state_alignment_history.get_shape().as_list()
+                    history.get_shape().as_list()
                 )
-            tf.nest.assert_same_structure(
-                cell.state_size,
-                cell.get_initial_state(batch_size=batch_size, dtype=tf.float32),
-            )
-            # Remove the history from final_state for purposes of the
-            # remainder of the tests.
-            final_state = final_state._replace(
-                alignment_history=()
-            )  # pylint: disable=protected-access
+                state_alignment_history.append(history)
+            state_alignment_history = tuple(state_alignment_history)
         else:
-            state_alignment_history = ()
-
-        self.evaluate(tf.compat.v1.global_variables_initializer())
-        eval_result = self.evaluate(
-            {
-                "final_outputs": final_outputs,
-                "final_state": final_state,
-                "state_alignment_history": state_alignment_history,
-            }
-        )
-
-        final_output_info = tf.nest.map_structure(
-            get_result_summary, eval_result["final_outputs"]
-        )
-        final_state_info = tf.nest.map_structure(
-            get_result_summary, eval_result["final_state"]
-        )
-        print("final_output_info: ", final_output_info)
-        print("final_state_info: ", final_state_info)
-
-        tf.nest.map_structure(
-            self.assertAllCloseOrEqual, expected_final_output, final_output_info
-        )
-        tf.nest.map_structure(
-            self.assertAllCloseOrEqual, expected_final_state, final_state_info
-        )
-        # by default, the wrapper emits attention as output
-        if alignment_history:
-            final_alignment_history_info = tf.nest.map_structure(
-                get_result_summary, eval_result["state_alignment_history"]
+            state_alignment_history = final_state.alignment_history.stack()
+            assert (expected_time, batch_size, encoder_max_time) == tuple(
+                state_alignment_history.get_shape().as_list()
             )
-            print("final_alignment_history_info: ", final_alignment_history_info)
-            tf.nest.map_structure(
-                self.assertAllCloseOrEqual,
-                # outputs are batch major but the stacked TensorArray is
-                # time major
-                expected_final_alignment_history,
-                final_alignment_history_info,
-            )
+        tf.nest.assert_same_structure(
+            cell.state_size,
+            cell.get_initial_state(batch_size=batch_size, dtype=tf.float32),
+        )
+        # Remove the history from final_state for purposes of the
+        # remainder of the tests.
+        final_state = final_state._replace(
+            alignment_history=()
+        )  # pylint: disable=protected-access
+    else:
+        state_alignment_history = ()
+
+    self.evaluate(tf.compat.v1.global_variables_initializer())
+    eval_result = self.evaluate(
+        {
+            "final_outputs": final_outputs,
+            "final_state": final_state,
+            "state_alignment_history": state_alignment_history,
+        }
+    )
+
+    final_output_info = tf.nest.map_structure(
+        get_result_summary, eval_result["final_outputs"]
+    )
+    final_state_info = tf.nest.map_structure(
+        get_result_summary, eval_result["final_state"]
+    )
+    print("final_output_info: ", final_output_info)
+    print("final_state_info: ", final_state_info)
+
+    tf.nest.map_structure(
+        self.assertAllCloseOrEqual, expected_final_output, final_output_info
+    )
+    tf.nest.map_structure(
+        self.assertAllCloseOrEqual, expected_final_state, final_state_info
+    )
+    # by default, the wrapper emits attention as output
+    if alignment_history:
+        final_alignment_history_info = tf.nest.map_structure(
+            get_result_summary, eval_result["state_alignment_history"]
+        )
+        print("final_alignment_history_info: ", final_alignment_history_info)
+        tf.nest.map_structure(
+            self.assertAllCloseOrEqual,
+            # outputs are batch major but the stacked TensorArray is
+            # time major
+            expected_final_alignment_history,
+            final_alignment_history_info,
+        )
 
 
 @test_utils.run_all_in_graph_and_eager_modes
