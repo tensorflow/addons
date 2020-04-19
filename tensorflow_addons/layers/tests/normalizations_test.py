@@ -123,7 +123,7 @@ def _test_specific_layer(inputs, axis, groups, center, scale):
     assert not np.isnan(outputs).any()
 
     # Create shapes
-    if groups is -1:
+    if groups == -1:
         groups = input_shape[axis]
     np_inputs = inputs
     reshaped_dims = list(np_inputs.shape)
