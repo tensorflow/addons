@@ -143,6 +143,7 @@ def test_no_deprecated_v1():
     # TODO: remove all elements of the list and remove the blacklist
     blacklist = [
         "tensorflow_addons/text/skip_gram_ops.py",
+        "tensorflow_addons/losses/center_loss.py",
         "tensorflow_addons/text/tests/skip_gram_ops_test.py",
         "tensorflow_addons/optimizers/tests/lazy_adam_test.py",
         "tensorflow_addons/metrics/tests/matthews_correlation_coefficient_test.py",
