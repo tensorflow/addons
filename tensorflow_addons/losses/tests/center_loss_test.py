@@ -27,7 +27,7 @@ def test_config():
     np.testing.assert_equal(center_obj.reduction, tf.keras.losses.Reduction.NONE)
 
 
-def test_zero_loss(float_dtype):
+def test_zero_loss():
     y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
     y_pred = tf.constant([1.0, 1.0, 0.0, 0.0, 1.0, 0.0], dtype=tf.dtypes.float32)
     loss = center_loss(y_true, y_pred)
