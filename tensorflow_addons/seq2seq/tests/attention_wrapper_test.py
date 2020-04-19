@@ -301,7 +301,6 @@ def test_custom_attention_layer():
 
 
 def _test_with_attention(
-    self,
     create_attention_mechanism,
     expected_final_output,
     expected_final_state,
@@ -591,7 +590,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
         _test_with_attention(
-            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
@@ -630,7 +628,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
         _test_with_attention(
-            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
@@ -668,7 +665,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
         _test_with_attention(
-            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
@@ -706,7 +702,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
         _test_with_attention(
-            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
@@ -743,7 +738,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
         _test_with_attention(
-            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
@@ -786,7 +780,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
         _test_with_attention(
-            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
@@ -829,7 +822,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
         _test_with_attention(
-            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
@@ -872,7 +864,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
         _test_with_attention(
-            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
@@ -915,7 +906,6 @@ class AttentionWrapperTest(tf.test.TestCase, parameterized.TestCase):
         )
 
         _test_with_attention(
-            self,
             create_attention_mechanism,
             expected_final_output,
             expected_final_state,
