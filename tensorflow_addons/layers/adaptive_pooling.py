@@ -63,8 +63,8 @@ class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
 
     def get_config(self):
         config = {
-            'output_shape': (self._h_bins, self._w_bins),
-            'data_format': self.data_format
+            "output_shape": (self._h_bins, self._w_bins),
+            "data_format": self.data_format,
         }
         base_config = super().get_config()
         return {**base_config, **config}
