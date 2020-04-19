@@ -16,16 +16,20 @@
 
 import pytest
 import numpy as np
-import tensorflow as tf
 from tensorflow_addons.layers.adaptive_pooling import AdaptiveAveragePooling2D
+
+from tensorflow_addons.utils import test_utils
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_simple():
     valid_input = np.arange(start=0.0, stop=40.0, step=1.0).astype(np.float32)
     valid_input = np.reshape(valid_input, (1, 4, 10, 1))
-    model = tf.keras.models.Sequential()
-    model.add(AdaptiveAveragePooling2D(2, 2))
-    outputs = model.predict(valid_input, steps=1)
-    result = np.squeeze(outputs).tolist()
-    self.assertEqual(result, [[7.0, 12.0], [27.0, 32.0]])
+    output = np.array([[7.0, 12.0], [27.0, 32.0]]).astype(np.float32)
+    output = np.reshape(output, (1, 2, 2, 1))
+    test_utils.layer_test(
+        AdaptiveAveragePooling2D,
+        kwargs={"output_shape": (2, 2)},
+        input_data=valid_input,
+        expected_output=output,
+    )
