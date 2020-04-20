@@ -13,51 +13,15 @@
 # limitations under the License.
 # ==============================================================================
 """Implements center loss."""
+
+
 import tensorflow as tf
-from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
+from tensorflow_addons.utils.types import FloatTensorLike
 from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-@tf.function
-def center_loss(
-    labels: TensorLike,
-    feature: TensorLike,
-    alpha: FloatTensorLike = 0.2,
-    centers: TensorLike = None,
-):
-    """Computes the center loss.
-
-    Args:
-        labels: ground truth labels with shape (batch_size)
-        feature: feature with shape (batch_size, num_classes)
-        alpha: a scalar between 0-1 to control the leanring rate of the centers
-        num_classes: an `int`. The number of possible classes
-
-    Return：
-        loss: Tensor
-    """
-    labels = tf.reshape(labels, [-1])
-    centers_batch = tf.gather(centers, labels)
-    diff = centers_batch - feature
-    unique_label, unique_idx, unique_count = tf.unique_with_counts(labels)
-    appear_times = tf.gather(unique_count, unique_idx)
-    appear_times = tf.reshape(appear_times, [-1, 1])
-    diff = diff / tf.cast((1 + appear_times), tf.float32)
-    diff = alpha * diff
-    # update centers
-    centers_update_op = tf.compat.v1.scatter_sub(centers, labels, diff)
-
-    # enforce computing centers before updating center loss
-    with tf.control_dependencies([centers_update_op]):
-        # compute center-loss
-        loss = tf.nn.l2_loss(feature - centers_batch)
-
-    return loss
-
-
-@tf.keras.utils.register_keras_serializable(package="Addons")
-class CenterLoss(tf.keras.losses.Loss):
+class CenterLoss(tf.keras.layers.Layer):
     """Computes the center loss.
 
     See: https://ydwen.github.io/papers/WenECCV16.pdf
@@ -82,28 +46,41 @@ class CenterLoss(tf.keras.losses.Loss):
 
     @typechecked
     def __init__(
-        self,
-        alpha: FloatTensorLike = 0.2,
-        reduction: str = tf.keras.losses.Reduction.AUTO,
-        name: str = "center_loss",
+        self, alpha: FloatTensorLike = 0.2, name: str = "center_loss", **kwargs
     ):
-        super().__init__(reduction=reduction, name=name)
+        super().__init__(name=name, **kwargs)
         self.alpha = alpha
-        self.centers = None
 
     def call(self, y_true, y_pred):
-        y_true = tf.convert_to_tensor(y_true)
-        y_pred = tf.convert_to_tensor(y_pred)
-        len_features = y_pred.shape[-1]
-        num_classes = y_true.shape[-1]
-        self.centers = tf.Variable(
+        return self.loss_fn(y_true, y_pred, self.alpha)
+
+    def loss_fn(self, labels, feature, alpha):
+        labels = tf.convert_to_tensor(labels)
+        feature = tf.convert_to_tensor(feature)
+        len_features = feature.shape[-1]
+        num_classes = labels.shape[-1]
+        centers = tf.Variable(
             tf.constant(0.0, shape=[num_classes, len_features]),
             name="centers",
             dtype=tf.float32,
         )
-        return center_loss(y_true, y_pred, self.alpha, self.centers)
+        labels = tf.reshape(labels, [-1])
+        centers_batch = tf.gather(centers, labels)
+        diff = centers_batch - feature
+        unique_label, unique_idx, unique_count = tf.unique_with_counts(labels)
+        appear_times = tf.gather(unique_count, unique_idx)
+        appear_times = tf.reshape(appear_times, [-1, 1])
+        diff = diff / tf.cast((1 + appear_times), tf.float32)
+        diff = alpha * diff
+        # update centers
+        centers_update_op = tf.compat.v1.scatter_sub(centers, labels, diff)
+        # enforce computing centers before updating center loss
+        with tf.control_dependencies([centers_update_op]):
+            # compute center-loss
+            loss = tf.nn.l2_loss(feature - centers_batch)
+        return loss
 
     def get_config(self):
-        config = {"alpha": self.alpha, "centers": self.centers}
+        config = {"alpha": self.alpha}
         base_config = super().get_config()
         return {**base_config, **config}
