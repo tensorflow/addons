@@ -18,6 +18,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow_addons.image import mean_filter2d
 from tensorflow_addons.image import median_filter2d
+from tensorflow_addons.image import gaussian_filter2d
+from scipy.ndimage import gaussian_filter
 
 _dtypes_to_test = {
     tf.dtypes.uint8,
@@ -359,3 +361,45 @@ def test_symmetric_padding_with_3x3_filter_median(image_shape):
         constant_values=0,
         expected_plane=expected_plane,
     )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_gaussian_filter2d_constant():
+    test_image_tf = tf.random.uniform(
+        [1, 40, 40, 1], minval=0, maxval=255, dtype=tf.float64
+    )
+    gb = gaussian_filter2d(test_image_tf, 1, 5, padding="CONSTANT")
+    gb = gb.numpy()
+    gb1 = np.resize(gb, (40, 40))
+    test_image_cv = test_image_tf.numpy()
+    test_image_cv = np.resize(test_image_cv, [40, 40])
+    gb2 = gaussian_filter(test_image_cv, 1, truncate=4.6, mode="constant")
+    np.testing.assert_allclose(gb2, gb1, 0.05)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_gaussian_filter2d_reflect():
+    test_image_tf = tf.random.uniform(
+        [1, 40, 40, 1], minval=0, maxval=255, dtype=tf.float64
+    )
+    gb = gaussian_filter2d(test_image_tf, 1, 5, padding="REFLECT")
+    gb = gb.numpy()
+    gb1 = np.resize(gb, (40, 40))
+    test_image_cv = test_image_tf.numpy()
+    test_image_cv = np.resize(test_image_cv, [40, 40])
+    gb2 = gaussian_filter(test_image_cv, 1, truncate=4.6, mode="mirror")
+    np.testing.assert_allclose(gb2, gb1, 0.05)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_gaussian_filter2d_symmetric():
+    test_image_tf = tf.random.uniform(
+        [1, 40, 40, 1], minval=0, maxval=255, dtype=tf.float64
+    )
+    gb = gaussian_filter2d(test_image_tf, 1, 5, padding="SYMMETRIC")
+    gb = gb.numpy()
+    gb1 = np.resize(gb, (40, 40))
+    test_image_cv = test_image_tf.numpy()
+    test_image_cv = np.resize(test_image_cv, [40, 40])
+    gb2 = gaussian_filter(test_image_cv, 1, truncate=4.6, mode="reflect")
+    np.testing.assert_allclose(gb2, gb1, 0.05)

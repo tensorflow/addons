@@ -204,3 +204,57 @@ def median_filter2d(
         output = tf.cast(median, image.dtype)
         output = img_utils.from_4D_image(output, original_ndims)
         return output
+
+
+def gaussian_filter2d(
+    image: FloatTensorLike,
+    sigma: FloatTensorLike,
+    kernel_size: int,
+    padding: str = "REFLECT",
+    constant_values: TensorLike = 0,
+) -> FloatTensorLike:
+    """
+    This function is responsible for having Gaussian Blur. It takes the image as input, computes a gaussian-kernel
+    which follows normal distribution then convolves the image with the kernel.Presently it works only on
+    grayscale images.
+    Args:
+    image: A tensor of shape
+        (batch_size, height, width, channels)
+        (NHWC), (batch_size, channels, height, width)(NCHW).
+    sigma:A constant of type float64. It is the standard deviation of the normal distribution.
+          The more the sigma, the more the blurring effect.
+          G(x,y)=1/(2*3.14*sigma**2)e^((x**2+y**2)/2sigma**2)
+    kSize:It is the kernel-size for the Gaussian Kernel. kSize should be odd.
+          A kernel of size [kSize*kSize] is generated.
+    """
+
+    if sigma == 0:
+        raise ValueError("Sigma should not be zero")
+    if padding not in ["REFLECT", "CONSTANT", "SYMMETRIC"]:
+        raise ValueError("Padding should be REFLECT, CONSTANT, OR SYMMETRIC")
+
+    gaussian_filter_x = find_kernel(sigma, kernel_size)
+    gaussian_filter_x = tf.reshape(gaussian_filter_x, [1, kernel_size, 1, 1])
+    gaussian_filter_x = tf.cast(gaussian_filter_x, tf.float64)
+    gaussian_filter_y = find_kernel(sigma, kernel_size)
+    gaussian_filter_y = tf.reshape(gaussian_filter_y, [kernel_size, 1, 1, 1])
+    gaussian_filter_y = tf.cast(gaussian_filter_y, tf.float64)
+    image = _pad(
+        image, (kernel_size, kernel_size), mode=padding, constant_values=constant_values
+    )
+    conv_ops_x = tf.nn.convolution(
+        input=image, filters=gaussian_filter_x, padding="VALID"
+    )
+    conv_ops = tf.nn.convolution(
+        input=conv_ops_x, filters=gaussian_filter_y, padding="VALID"
+    )
+    return conv_ops
+
+
+def find_kernel(sigma, kernel_size):
+    "This function creates a kernel of size [kSize]"
+    x = tf.range(-kernel_size // 2 + 1, kernel_size // 2 + 1)
+    x = tf.math.square(x, tf.float64)
+    a = tf.exp(-(x) / (2 * (sigma ** 2)))
+    a = a / tf.math.reduce_sum(a)
+    return a

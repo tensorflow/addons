@@ -35,4 +35,4 @@ from tensorflow_addons.image.sparse_image_warp import sparse_image_warp
 from tensorflow_addons.image.transform_ops import transform
 from tensorflow_addons.image.translate_ops import translate
 from tensorflow_addons.image.translate_ops import translate_xy
-from tensorflow_addons.image.gaussian_filter_ops import gaussian_blur
+from tensorflow_addons.image.filters import gaussian_filter2d
