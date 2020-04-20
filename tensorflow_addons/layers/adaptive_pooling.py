@@ -59,7 +59,9 @@ class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
 
     def compute_output_shape(self, input_shape):
         input_shape = input_shape.as_list()
-        return [input_shape[0], self._h_bins, self._w_bins, input_shape[-1]]
+        return tf.TensorShape(
+            [input_shape[0], self._h_bins, self._w_bins, input_shape[-1]]
+        )
 
     def get_config(self):
         config = {
