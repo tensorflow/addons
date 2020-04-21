@@ -32,4 +32,4 @@ if ! [ -x "$(command -v nvidia-smi)" ]; then
 fi
 
 
-python -m pytest -v --durations=25 $EXTRA_ARGS ./tensorflow_addons
+python -m pytest -v --functions-durations=20 --modules-durations=5 $EXTRA_ARGS ./tensorflow_addons
