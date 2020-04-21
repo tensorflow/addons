@@ -1,13 +1,12 @@
 # usage: bash tools/run_gpu_tests.sh
-# by default uses docker buildkit.
-# to disable it:
-# DOCKER_BUILDKIT=0 bash tools/run_gpu_tests.sh
 
 set -x -e
 
-if [ "$DOCKER_BUILDKIT" == "" ]; then
-  export DOCKER_BUILDKIT=1
-fi
-
-docker build -f tools/docker/gpu_tests.Dockerfile -t tfa_gpu_tests ./
-docker run --rm -t --runtime=nvidia tfa_gpu_tests
+export DOCKER_BUILDKIT=1
+docker build \
+       -f tools/docker/build_wheel.Dockerfile \
+       --target tfa_gpu_tests \
+       --build-arg TF_VERSION=2.1.0 \
+       --build-arg PY_VERSION=3.5 \
+       -t tfa_gpu_tests ./
+docker run --rm -t -v cache_bazel:/root/.cache/bazel --gpus=all tfa_gpu_tests

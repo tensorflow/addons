@@ -17,15 +17,18 @@
 import contextlib
 import inspect
 import unittest
+import random
 
+import numpy as np
 import pytest
 import tensorflow as tf
+
+from tensorflow_addons.utils import resource_loader
 
 # TODO: find public API alternative to these
 from tensorflow.python.framework.test_util import (  # noqa: F401
     run_all_in_graph_and_eager_modes,
 )
-from tensorflow.python.framework.test_util import run_deprecated_v1  # noqa: F401
 from tensorflow.python.framework.test_util import (  # noqa: F401
     run_in_graph_and_eager_modes,
 )
@@ -174,3 +177,78 @@ def maybe_run_functions_eagerly(request):
         tf.config.experimental_run_functions_eagerly(False)
 
     request.addfinalizer(finalizer)
+
+
+@pytest.fixture(scope="function", params=["CPU", "GPU"])
+def cpu_and_gpu(request):
+    if request.param == "CPU":
+        with tf.device("/device:CPU:0"):
+            yield
+    else:
+        if not tf.test.is_gpu_available():
+            pytest.skip("GPU is not available.")
+        with tf.device("/device:GPU:0"):
+            yield
+
+
+@pytest.fixture(scope="function", params=["channels_first", "channels_last"])
+def data_format(request):
+    return request.param
+
+
+@pytest.fixture(scope="function", autouse=True)
+def set_seeds():
+    random.seed(0)
+    np.random.seed(0)
+    tf.random.set_seed(0)
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--skip-custom-ops",
+        action="store_true",
+        help="When a custom op is being loaded in a test, skip this test.",
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def set_global_variables(request):
+    if request.config.getoption("--skip-custom-ops"):
+        resource_loader.SKIP_CUSTOM_OPS = True
+
+
+def assert_allclose_according_to_type(
+    a,
+    b,
+    rtol=1e-6,
+    atol=1e-6,
+    float_rtol=1e-6,
+    float_atol=1e-6,
+    half_rtol=1e-3,
+    half_atol=1e-3,
+    bfloat16_rtol=1e-2,
+    bfloat16_atol=1e-2,
+):
+    """
+    Similar to tf.test.TestCase.assertAllCloseAccordingToType()
+    but this doesn't need a subclassing to run.
+    """
+    a = np.array(a)
+    b = np.array(b)
+    # types with lower tol are put later to overwrite previous ones.
+    if (
+        a.dtype == np.float32
+        or b.dtype == np.float32
+        or a.dtype == np.complex64
+        or b.dtype == np.complex64
+    ):
+        rtol = max(rtol, float_rtol)
+        atol = max(atol, float_atol)
+    if a.dtype == np.float16 or b.dtype == np.float16:
+        rtol = max(rtol, half_rtol)
+        atol = max(atol, half_atol)
+    if a.dtype == tf.bfloat16.as_numpy_dtype or b.dtype == tf.bfloat16.as_numpy_dtype:
+        rtol = max(rtol, bfloat16_rtol)
+        atol = max(atol, bfloat16_atol)
+
+    np.testing.assert_allclose(a, b, rtol=rtol, atol=atol)

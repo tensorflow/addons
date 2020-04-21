@@ -19,8 +19,8 @@ from typeguard import typechecked
 from tensorflow_addons.utils.types import TensorLike, FloatTensorLike
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
+@tf.keras.utils.register_keras_serializable(package="Addons")
 def pinball_loss(
     y_true: TensorLike, y_pred: TensorLike, tau: FloatTensorLike = 0.5
 ) -> tf.Tensor:
@@ -62,14 +62,13 @@ def pinball_loss(
     y_pred = tf.convert_to_tensor(y_pred)
     y_true = tf.cast(y_true, y_pred.dtype)
 
-    # broadcast the pinball slope along the batch dimension, and clip to
-    # acceptable values
+    # Broadcast the pinball slope along the batch dimension
     tau = tf.expand_dims(tf.cast(tau, y_pred.dtype), 0)
     one = tf.cast(1, tau.dtype)
 
     delta_y = y_true - y_pred
     pinball = tf.math.maximum(tau * delta_y, (tau - one) * delta_y)
-    return tf.reduce_mean(tf.keras.backend.batch_flatten(pinball), axis=-1)
+    return tf.reduce_mean(pinball, axis=-1)
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
