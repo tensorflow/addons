@@ -37,11 +37,11 @@ class Sampler(metaclass=abc.ABCMeta):
     (initial_finished, initial_inputs) = sampler.initialize(input_tensors)
     cell_input = initial_inputs
     cell_state = cell.get_initial_state(...)
-    for time_step in range(max_output_length):
+    for time_step in tf.range(max_output_length):
       cell_output, cell_state = cell(cell_input, cell_state)
       sample_ids = sampler.sample(time_step, cell_output, cell_state)
       (finished, cell_input, cell_state) = sampler.next_inputs(
-          time_step, cell_output, cell_state, sample_ids)
+        time_step, cell_output, cell_state, sample_ids)
       if tf.reduce_all(finished):
         break
     ```
