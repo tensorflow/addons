@@ -58,8 +58,8 @@
 /tensorflow_addons/image/tests/distance_transform_test.py @mels630
 /tensorflow_addons/image/distort_image_ops.py @windqaq
 /tensorflow_addons/image/tests/distort_image_ops_test.py @windqaq
-/tensorflow_addons/image/filters.py @mainak431
-/tensorflow_addons/image/tests/filters_test.py @mainak431
+/tensorflow_addons/image/filters.py @mainak431 @ghosalsattam
+/tensorflow_addons/image/tests/filters_test.py @mainak431 @ghosalsattam
 /tensorflow_addons/image/interpolate_spline.py
 /tensorflow_addons/image/tests/interpolate_spline_test.py
 /tensorflow_addons/image/resampler_ops.py @autoih
