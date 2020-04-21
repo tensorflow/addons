@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Discriminative Layer Training Manager for TensorFlow."""
+"""Discriminative Layer Training Optimizer for TensorFlow."""
 
 import tensorflow as tf
 import numpy as np
