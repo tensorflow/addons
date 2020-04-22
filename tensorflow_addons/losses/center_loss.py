@@ -37,8 +37,7 @@ class CenterLoss(tf.keras.layers.Layer):
 
     Args:
       name: Optional name for the op.
-      reduction: (Optional) Type of `tf.keras.losses.Reduction` to apply to
-        loss. Default value is `SUM_OVER_BATCH_SIZE`.
+      alpha: A scalar between 0-1 to control the leanring rate of the centers.
 
     Returns:
       Tensor containing calculated center loss.
@@ -72,8 +71,9 @@ class CenterLoss(tf.keras.layers.Layer):
         appear_times = tf.reshape(appear_times, [-1, 1])
         diff = diff / tf.cast((1 + appear_times), tf.float32)
         diff = alpha * diff
+        labels = tf.reshape(labels, [-1, 1])
         # update centers
-        centers_update_op = tf.compat.v1.scatter_sub(centers, labels, diff)
+        centers_update_op = tf.tensor_scatter_nd_sub(centers, labels, diff)
         # enforce computing centers before updating center loss
         with tf.control_dependencies([centers_update_op]):
             # compute center-loss

@@ -15,6 +15,7 @@
 """Tests for center loss."""
 
 
+import pytest
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.losses import CenterLoss
@@ -26,8 +27,9 @@ def test_config():
     # self.assertEqual(center_obj.reduction, tf.keras.losses.Reduction.SUM)
 
 
-def test_zero_loss():
-    center_obj = CenterLoss()
+@pytest.mark.parametrize("alpha", [0.2, 0.5, 1.0, 2.0])
+def test_loss_for_alpha(alpha):
+    center_obj = CenterLoss(alpha=alpha)
     y_true = tf.constant([0, 0, 1, 1, 0, 1], dtype=tf.dtypes.int64)
     y_pred = tf.constant([1.0, 1.0, 0.0, 0.0, 1.0, 0.0], dtype=tf.dtypes.float32)
     loss = center_obj(y_true, y_pred)
