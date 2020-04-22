@@ -22,7 +22,7 @@ from tensorflow_addons.utils import test_utils
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_channels_first():
+def test_simple():
     valid_input = np.arange(start=0.0, stop=40.0, step=1.0).astype(np.float32)
     valid_input = np.reshape(valid_input, (1, 4, 10, 1))
     output = np.array([[7.0, 12.0], [27.0, 32.0]]).astype(np.float32)
@@ -33,10 +33,6 @@ def test_channels_first():
         input_data=valid_input,
         expected_output=output,
     )
-
-
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_channels_last():
     valid_input = np.arange(start=0.0, stop=40.0, step=1.0).astype(np.float32)
     valid_input = np.reshape(valid_input, (1, 1, 4, 10))
     output = np.array([[7.0, 12.0], [27.0, 32.0]]).astype(np.float32)
