@@ -29,7 +29,7 @@ def test_simple():
     output = np.reshape(output, (1, 2, 2, 1))
     test_utils.layer_test(
         AdaptiveAveragePooling2D,
-        kwargs={"output_shape": (2, 2)},
+        kwargs={"output_size": (2, 2)},
         input_data=valid_input,
         expected_output=output,
     )
@@ -40,7 +40,7 @@ def test_simple():
     output = np.reshape(output, (1, 1, 2, 2))
     test_utils.layer_test(
         AdaptiveAveragePooling2D,
-        kwargs={"output_shape": (2, 2), "data_format": "channels_first"},
+        kwargs={"output_size": (2, 2), "data_format": "channels_first"},
         input_data=valid_input,
         expected_output=output,
     )

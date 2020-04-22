@@ -21,7 +21,7 @@ import tensorflow as tf
 class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
     """Average Pooling with adaptive kernel size and strides.
         Arguments:
-            output_shape: Tuple of integers specifying (Output Height, Output Width)
+            output_size: Tuple of integers specifying (Output Height, Output Width)
 
         Input shape:
             - If `data_format='channels_last'`:
@@ -35,18 +35,18 @@ class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
             - If `data_format='channels_first'`:
                 4D tensor with shape `(batch_size, channels, pooled_rows, pooled_cols)`.
 
-                Here, pooled_rows = output_shape[0], and
-                      pooled_cols = output_shape[1]
+                Here, pooled_rows = output_size[0], and
+                      pooled_cols = output_size[1]
     """
 
-    def __init__(self, output_shape, data_format="channels_last", **kwargs):
-        self.output_image_shape = output_shape
+    def __init__(self, output_size, data_format="channels_last", **kwargs):
+        self.output_size = output_size
         self.data_format = data_format
         super().__init__(**kwargs)
 
     def call(self, inputs, *args):
-        h_bins = self.output_image_shape[0]
-        w_bins = self.output_image_shape[1]
+        h_bins = self.output_size[0]
+        w_bins = self.output_size[1]
         if self.data_format == "channels_last":
             split_cols = tf.split(inputs, h_bins, axis=1)
             split_cols = tf.stack(split_cols, axis=1)
@@ -67,8 +67,8 @@ class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
             shape = tf.TensorShape(
                 [
                     input_shape[0],
-                    self.output_image_shape[0],
-                    self.output_image_shape[1],
+                    self.output_size[0],
+                    self.output_size[1],
                     input_shape[-1],
                 ]
             )
@@ -77,15 +77,15 @@ class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
                 [
                     input_shape[0],
                     input_shape[1],
-                    self.output_image_shape[0],
-                    self.output_image_shape[1],
+                    self.output_size[0],
+                    self.output_size[1],
                 ]
             )
         return shape
 
     def get_config(self):
         config = {
-            "output_shape": self.output_image_shape,
+            "output_size": self.output_size,
             "data_format": self.data_format,
         }
         base_config = super().get_config()
