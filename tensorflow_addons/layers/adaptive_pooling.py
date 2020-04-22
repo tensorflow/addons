@@ -31,28 +31,32 @@ class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
 
         Output shape:
             - If `data_format='channels_last'`:
-                4D tensor with shape `(batch_size, h_bins, w_bins, features)`.
+                4D tensor with shape `(batch_size, pooled_rows, pooled_cols, channels)`.
             - If `data_format='channels_first'`:
-                4D tensor with shape `(batch_size, features, h_bins, w_bins)`.
+                4D tensor with shape `(batch_size, channels, pooled_rows, pooled_cols)`.
+
+                Here, pooled_rows = output_shape[0], and
+                      pooled_cols = output_shape[1]
     """
 
     def __init__(self, output_shape, data_format="channels_last", **kwargs):
-        self._h_bins = output_shape[0]
-        self._w_bins = output_shape[1]
+        self.output_image_shape = output_shape
         self.data_format = data_format
         super().__init__(**kwargs)
 
     def call(self, inputs, *args):
+        h_bins = self.output_image_shape[0]
+        w_bins = self.output_image_shape[1]
         if self.data_format == "channels_last":
-            split_cols = tf.split(inputs, self._h_bins, axis=1)
+            split_cols = tf.split(inputs, h_bins, axis=1)
             split_cols = tf.stack(split_cols, axis=1)
-            split_rows = tf.split(split_cols, self._w_bins, axis=3)
+            split_rows = tf.split(split_cols, w_bins, axis=3)
             split_rows = tf.stack(split_rows, axis=3)
             out_vect = tf.reduce_mean(split_rows, axis=[2, 4])
         else:
-            split_cols = tf.split(inputs, self._h_bins, axis=2)
+            split_cols = tf.split(inputs, h_bins, axis=2)
             split_cols = tf.stack(split_cols, axis=2)
-            split_rows = tf.split(split_cols, self._w_bins, axis=4)
+            split_rows = tf.split(split_cols, w_bins, axis=4)
             split_rows = tf.stack(split_rows, axis=4)
             out_vect = tf.reduce_mean(split_rows, axis=[3, 5])
         return out_vect
@@ -65,7 +69,7 @@ class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
 
     def get_config(self):
         config = {
-            "output_shape": (self._h_bins, self._w_bins),
+            "output_shape": self.output_image_shape,
             "data_format": self.data_format,
         }
         base_config = super().get_config()
