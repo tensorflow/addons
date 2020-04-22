@@ -71,6 +71,8 @@
 /tensorflow_addons/image/translate_ops.py @sayoojbk
 /tensorflow_addons/image/tests/translate_ops_test.py @sayoojbk
 
+/tensorflow_addons/layers/adaptive_pooling.py @Susmit-A
+/tensorflow_addons/layers/tests/adaptive_pooling_test.py @Susmit-A
 /tensorflow_addons/layers/gelu.py @aakashkumarnain
 /tensorflow_addons/layers/tests/gelu_test.py @aakashkumarnain
 /tensorflow_addons/layers/maxout.py @failure-to-thrive
