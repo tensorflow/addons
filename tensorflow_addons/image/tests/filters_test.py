@@ -20,6 +20,7 @@ from tensorflow_addons.image import mean_filter2d
 from tensorflow_addons.image import median_filter2d
 from tensorflow_addons.image import gaussian_filter2d
 from scipy.ndimage import gaussian_filter
+from skimage.filters import gaussian
 
 _dtypes_to_test = {
     tf.dtypes.uint8,
@@ -374,7 +375,7 @@ def test_gaussian_filter2d_constant():
     test_image_cv = test_image_tf.numpy()
     test_image_cv = np.resize(test_image_cv, [40, 40])
     gb2 = gaussian_filter(test_image_cv, 1, truncate=4.6, mode="constant")
-    np.testing.assert_allclose(gb2, gb1, 0.05)
+    np.testing.assert_allclose(gb2, gb1, 0.06)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -388,7 +389,7 @@ def test_gaussian_filter2d_reflect():
     test_image_cv = test_image_tf.numpy()
     test_image_cv = np.resize(test_image_cv, [40, 40])
     gb2 = gaussian_filter(test_image_cv, 1, truncate=4.6, mode="mirror")
-    np.testing.assert_allclose(gb2, gb1, 0.05)
+    np.testing.assert_allclose(gb2, gb1, 0.06)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -402,4 +403,57 @@ def test_gaussian_filter2d_symmetric():
     test_image_cv = test_image_tf.numpy()
     test_image_cv = np.resize(test_image_cv, [40, 40])
     gb2 = gaussian_filter(test_image_cv, 1, truncate=4.6, mode="reflect")
-    np.testing.assert_allclose(gb2, gb1, 0.05)
+    np.testing.assert_allclose(gb2, gb1, 0.06)
+
+
+@pytest.mark.parametrize("image_shape", [[2,5,5,3]])
+def test_gaussian_filter2d_batch(image_shape):
+    test_image_tf = tf.random.uniform(
+        [1, 40, 40, 1], minval=0, maxval=255, dtype=tf.float64
+    )
+    gb = gaussian_filter2d(test_image_tf, 1, 5, padding="SYMMETRIC")
+    gb = gb.numpy()
+    gb1 = np.resize(gb, (40, 40))
+    test_image_cv = test_image_tf.numpy()
+    test_image_cv = np.resize(test_image_cv, [40, 40])
+    gb2 = gaussian(test_image_cv, 1, truncate=4.6, mode="reflect")
+    np.testing.assert_allclose(gb2, gb1, 0.06)
+
+
+def test_gaussian_filter2d_channels():
+    test_image_tf = tf.constant([[[[0., 0., 0.],
+                                   [2., 2., 0.],
+                                   [4., 4., 0.],
+                                   [6., 6., 0.],
+                                   [8., 8., 0.]],
+
+                                  [[10., 10., 0.],
+                                   [12., 12., 0.],
+                                   [14., 14., 0.],
+                                   [16., 16., 0.],
+                                   [18., 18., 0.]],
+
+                                  [[20., 20., 0.],
+                                   [22., 22., 0.],
+                                   [24., 24., 0.],
+                                   [26., 26., 0.],
+                                   [28., 28., 0.]],
+
+                                  [[30., 30., 0.],
+                                   [32., 32., 0.],
+                                   [34., 34., 0.],
+                                   [36., 36., 0.],
+                                   [38., 38., 0.]],
+
+                                  [[40., 40., 0.],
+                                   [42., 42., 0.],
+                                   [44., 44., 0.],
+                                   [46., 46., 0.],
+                                   [48., 48., 0.]]]],dtype=tf.float64)
+    gb = gaussian_filter2d(test_image_tf, 1, 5, padding="SYMMETRIC")
+    gb = gb.numpy()
+    gb1 = np.resize(gb, (5, 5,3))
+    test_image_cv = test_image_tf.numpy()
+    test_image_cv = np.resize(test_image_cv, [5, 5,3])
+    gb2 = gaussian(test_image_cv,sigma=1,mode="reflect",multichannel=True)
+    np.testing.assert_allclose(gb2, gb1, 0.06)

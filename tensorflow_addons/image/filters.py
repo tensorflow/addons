@@ -28,12 +28,10 @@ def _pad(
     constant_values: TensorLike = 0,
 ) -> tf.Tensor:
     """Explicitly pad a 4-D image.
-
     Equivalent to the implicit padding method offered in `tf.nn.conv2d` and
     `tf.nn.depthwise_conv2d`, but supports non-zero, reflect and symmetric
     padding mode. For the even-sized filter, it pads one more value to the
     right or the bottom side.
-
     Args:
       image: A 4-D `Tensor` of shape `[batch_size, height, width, channels]`.
       filter_shape: A `tuple`/`list` of 2 integers, specifying the height
@@ -64,7 +62,6 @@ def mean_filter2d(
     name: Optional[str] = None,
 ) -> tf.Tensor:
     """Perform mean filtering on image(s).
-
     Args:
       image: Either a 2-D `Tensor` of shape `[height, width]`,
         a 3-D `Tensor` of shape `[height, width, channels]`,
@@ -132,7 +129,6 @@ def median_filter2d(
     name: Optional[str] = None,
 ) -> tf.Tensor:
     """Perform median filtering on image(s).
-
     Args:
       image: Either a 2-D `Tensor` of shape `[height, width]`,
         a 3-D `Tensor` of shape `[height, width, channels]`,
@@ -209,14 +205,13 @@ def median_filter2d(
 def gaussian_filter2d(
     image: FloatTensorLike,
     sigma: FloatTensorLike,
-    kernel_size: int,
+    filter_shape: int,
     padding: str = "REFLECT",
     constant_values: TensorLike = 0,
 ) -> FloatTensorLike:
     """
     This function is responsible for having Gaussian Blur. It takes the image as input, computes a gaussian-kernel
-    which follows normal distribution then convolves the image with the kernel.Presently it works only on
-    grayscale images.
+    which follows normal distribution then convolves the image with the kernel. It is implemented as 2 1D convolutions.
     Args:
     image: A tensor of shape
         (batch_size, height, width, channels)
@@ -224,36 +219,52 @@ def gaussian_filter2d(
     sigma:A constant of type float64. It is the standard deviation of the normal distribution.
           The more the sigma, the more the blurring effect.
           G(x,y)=1/(2*3.14*sigma**2)e^((x**2+y**2)/2sigma**2)
-    kSize:It is the kernel-size for the Gaussian Kernel. kSize should be odd.
+          In 1D,
+          G(x)=e^(-x**2)/2*sigma**2
+    filter_shape:It is the kernel-size for the Gaussian Kernel. kSize should be odd.
           A kernel of size [kSize*kSize] is generated.
+    padding:A string. It takes values in ["REFLECT", "CONSTANT", "SYMMETRIC"].
+    constant_values:A constant to be used for padding in case of CONSTANT padding.
+    Returns:
+        3D or 4D 'Tensor' of same type float64.
+    Raises:
+        Value error if:
+            1). Sigma=0
+            2). passing some string other than ["REFLECT", "CONSTANT", "SYMMETRIC"] in padding.
     """
 
     if sigma == 0:
         raise ValueError("Sigma should not be zero")
     if padding not in ["REFLECT", "CONSTANT", "SYMMETRIC"]:
         raise ValueError("Padding should be REFLECT, CONSTANT, OR SYMMETRIC")
+    image = img_utils.to_4D_image(image)
+    channels = tf.shape(image)[3]
 
-    gaussian_filter_x = find_kernel(sigma, kernel_size)
-    gaussian_filter_x = tf.reshape(gaussian_filter_x, [1, kernel_size, 1, 1])
+    gaussian_filter_x = _get_gaussian_kernel(sigma, filter_shape, channels)
+    gaussian_filter_x = tf.repeat(gaussian_filter_x,channels)
+    gaussian_filter_x = tf.reshape(gaussian_filter_x, [1, filter_shape, channels, 1])
+
     gaussian_filter_x = tf.cast(gaussian_filter_x, tf.float64)
-    gaussian_filter_y = find_kernel(sigma, kernel_size)
-    gaussian_filter_y = tf.reshape(gaussian_filter_y, [kernel_size, 1, 1, 1])
+    gaussian_filter_y = _get_gaussian_kernel(sigma, filter_shape,channels)
+    gaussian_filter_y = tf.repeat(gaussian_filter_y,channels)
+    gaussian_filter_y = tf.reshape(gaussian_filter_y, [filter_shape, 1, channels, 1])
+
     gaussian_filter_y = tf.cast(gaussian_filter_y, tf.float64)
     image = _pad(
-        image, (kernel_size, kernel_size), mode=padding, constant_values=constant_values
+        image, (filter_shape, filter_shape), mode=padding, constant_values=constant_values
     )
-    conv_ops_x = tf.nn.convolution(
-        input=image, filters=gaussian_filter_x, padding="VALID"
+    conv_ops_x = tf.nn.depthwise_conv2d(
+        input=image, filter=gaussian_filter_x, strides=(1,1,1,1), padding="VALID"
     )
-    conv_ops = tf.nn.convolution(
-        input=conv_ops_x, filters=gaussian_filter_y, padding="VALID"
+    conv_ops = tf.nn.depthwise_conv2d(
+        input=conv_ops_x, filter=gaussian_filter_y, strides=(1,1,1,1), padding="VALID"
     )
     return conv_ops
 
 
-def find_kernel(sigma, kernel_size):
-    "This function creates a kernel of size [kSize]"
-    x = tf.range(-kernel_size // 2 + 1, kernel_size // 2 + 1)
+def _get_gaussian_kernel(sigma, filter_shape, channels):
+    "This function creates a kernel of size [filter_shape]"
+    x = tf.range(-filter_shape // 2 + 1, filter_shape // 2 + 1)
     x = tf.math.square(x, tf.float64)
     a = tf.exp(-(x) / (2 * (sigma ** 2)))
     a = a / tf.math.reduce_sum(a)
