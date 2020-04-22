@@ -33,6 +33,7 @@ def test_simple():
         input_data=valid_input,
         expected_output=output,
     )
+
     valid_input = np.arange(start=0.0, stop=40.0, step=1.0).astype(np.float32)
     valid_input = np.reshape(valid_input, (1, 1, 4, 10))
     output = np.array([[7.0, 12.0], [27.0, 32.0]]).astype(np.float32)
