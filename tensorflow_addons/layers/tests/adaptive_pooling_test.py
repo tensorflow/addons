@@ -43,7 +43,7 @@ def test_channels_last():
     output = np.reshape(output, (1, 1, 2, 2))
     test_utils.layer_test(
         AdaptiveAveragePooling2D,
-        kwargs={"output_shape": (2, 2), "data_format": "channels_last"},
+        kwargs={"output_shape": (2, 2), "data_format": "channels_first"},
         input_data=valid_input,
         expected_output=output,
     )
