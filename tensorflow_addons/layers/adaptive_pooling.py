@@ -21,7 +21,7 @@ import tensorflow as tf
 class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
     """Average Pooling with adaptive kernel size and strides.
     Arguments:
-      output_size: Tuple of integers specifying (Output Height, Output Width).
+      output_size: Tuple of integers specifying (pooled_rows, pooled_cols).
         The new size of output channels.
       data_format: A string,
         one of `channels_last` (default) or `channels_first`.
@@ -41,10 +41,6 @@ class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
         4D tensor with shape `(batch_size, pooled_rows, pooled_cols, channels)`.
       - If `data_format='channels_first'`:
         4D tensor with shape `(batch_size, channels, pooled_rows, pooled_cols)`.
-
-    Returns:
-      A tensor of rank 4 representing the average pooled values. See above for
-      output shape
     """
 
     def __init__(self, output_size, data_format="channels_last", **kwargs):
