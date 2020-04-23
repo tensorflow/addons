@@ -412,7 +412,7 @@ def _test_with_attention(
     assert isinstance(final_outputs, basic_decoder.BasicDecoderOutput)
     assert isinstance(final_state, wrapper.AttentionWrapperState)
 
-    expected_time = max(decoder_sequence_length) if tf.executing_eagerly() else None
+    expected_time = max(decoder_sequence_length)
     assert (batch_size, expected_time, attention_depth) == tuple(
         final_outputs.rnn_output.get_shape().as_list()
     )
