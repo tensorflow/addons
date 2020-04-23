@@ -409,7 +409,7 @@ def test_gaussian_filter2d_symmetric():
 @pytest.mark.parametrize("image_shape", [[2, 5, 5, 3]])
 def test_gaussian_filter2d_batch(image_shape):
     test_image_tf = tf.random.uniform(
-        [1, 40, 40, 1], minval=0, maxval=255, dtype=tf.float64
+        [1, 40, 40, 1], minval=0, maxval=255, dtype=tf.float32
     )
     gb = gaussian_filter2d(test_image_tf, 1, 5, padding="SYMMETRIC")
     gb = gb.numpy()

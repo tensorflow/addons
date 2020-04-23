@@ -245,7 +245,7 @@ def gaussian_filter2d(
     if padding not in ["REFLECT", "CONSTANT", "SYMMETRIC"]:
         raise ValueError("Padding should be REFLECT, CONSTANT, OR SYMMETRIC")
 
-    image=tf.cast(image,tf.float64)
+    image = tf.cast(image, tf.float64)
     image = img_utils.to_4D_image(image)
     channels = tf.shape(image)[3]
 
