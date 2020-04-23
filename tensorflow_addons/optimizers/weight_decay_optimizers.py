@@ -39,10 +39,11 @@ class DecoupledWeightDecayExtension:
 
     This class alone is not an optimizer but rather extends existing
     optimizers with decoupled weight decay. We explicitly define the two
-    examples used in the above paper (SGDW and AdamW), but in general this
-    can extend any OptimizerX by using
-    `extend_with_decoupled_weight_decay(
-        OptimizerX, weight_decay=weight_decay)`.
+    examples used in the above paper (SGDW and AdamW), but in general this can 
+    extend any OptimizerX class by using 
+        'OptimizerX = extend_with_decoupled_weight_decay(OptimizerX)'. 
+    Weight decay can then be set when we initialize the optimizer: 
+        'optimizerX = OptimizerX(weight_decay=0.001, learning_rate=0.001)'.
     In order for it to work, it must be the first class the Optimizer with
     weight decay inherits from, e.g.
 
