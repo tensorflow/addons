@@ -202,12 +202,14 @@ def median_filter2d(
         return output
 
 
+@tf.function
 def gaussian_filter2d(
     image: FloatTensorLike,
     sigma: FloatTensorLike,
     filter_shape: Union[List[int], Tuple[int]] = [3, 3],
     padding: str = "REFLECT",
     constant_values: TensorLike = 0,
+    name: Optional[str] = None,
 ) -> FloatTensorLike:
     """
     This function is responsible for having Gaussian Blur. It takes the image as input, computes a gaussian-kernel
@@ -234,7 +236,7 @@ def gaussian_filter2d(
 
     constant_values:A `scalar`, the pad value to use in "CONSTANT"
         padding mode.
-      name: A name for this operation (optional).
+    name: A name for this operation (optional).
     Returns:
         3D or 4D 'Tensor' of same type float64.
     Raises:
@@ -243,43 +245,50 @@ def gaussian_filter2d(
             2). passing some string other than ["REFLECT", "CONSTANT", "SYMMETRIC"] in padding.
     """
 
-    if sigma == 0:
-        raise ValueError("Sigma should not be zero")
-    if padding not in ["REFLECT", "CONSTANT", "SYMMETRIC"]:
-        raise ValueError("Padding should be REFLECT, CONSTANT, OR SYMMETRIC")
+    with tf.name_scope(name or "gaussian_filter2d"):
+        if sigma == 0:
+            raise ValueError("Sigma should not be zero")
+        if padding not in ["REFLECT", "CONSTANT", "SYMMETRIC"]:
+            raise ValueError("Padding should be REFLECT, CONSTANT, OR SYMMETRIC")
 
-    image = tf.cast(image, tf.float32)
-    image = img_utils.to_4D_image(image)
-    channels = tf.shape(image)[3]
-    filter_shape = keras_utils.normalize_tuple(filter_shape, 2, "filter_shape")
+        image = tf.cast(image, tf.float32)
+        image = img_utils.to_4D_image(image)
+        channels = tf.shape(image)[3]
+        filter_shape = keras_utils.normalize_tuple(filter_shape, 2, "filter_shape")
 
-    gaussian_filter_x = _get_gaussian_kernel(sigma, filter_shape[1], channels)
-    gaussian_filter_x = tf.repeat(gaussian_filter_x, channels)
-    gaussian_filter_x = tf.reshape(gaussian_filter_x, [1, filter_shape[1], channels, 1])
+        gaussian_filter_x = _get_gaussian_kernel(sigma, filter_shape[1], channels)
+        gaussian_filter_x = tf.repeat(gaussian_filter_x, channels)
+        gaussian_filter_x = tf.reshape(
+            gaussian_filter_x, [1, filter_shape[1], channels, 1]
+        )
 
-    gaussian_filter_x = tf.cast(gaussian_filter_x, tf.float32)
-    gaussian_filter_y = _get_gaussian_kernel(sigma, filter_shape[0], channels)
-    gaussian_filter_y = tf.repeat(gaussian_filter_y, channels)
-    gaussian_filter_y = tf.reshape(gaussian_filter_y, [filter_shape[0], 1, channels, 1])
+        gaussian_filter_x = tf.cast(gaussian_filter_x, tf.float32)
+        gaussian_filter_y = _get_gaussian_kernel(sigma, filter_shape[0], channels)
+        gaussian_filter_y = tf.repeat(gaussian_filter_y, channels)
+        gaussian_filter_y = tf.reshape(
+            gaussian_filter_y, [filter_shape[0], 1, channels, 1]
+        )
 
-    gaussian_filter_y = tf.cast(gaussian_filter_y, tf.float32)
-    image = _pad(image, filter_shape, mode=padding, constant_values=constant_values,)
-    conv_ops_x = tf.nn.depthwise_conv2d(
-        input=image, filter=gaussian_filter_x, strides=(1, 1, 1, 1), padding="VALID"
-    )
-    conv_ops = tf.nn.depthwise_conv2d(
-        input=conv_ops_x,
-        filter=gaussian_filter_y,
-        strides=(1, 1, 1, 1),
-        padding="VALID",
-    )
-    return conv_ops
+        gaussian_filter_y = tf.cast(gaussian_filter_y, tf.float32)
+        image = _pad(
+            image, filter_shape, mode=padding, constant_values=constant_values,
+        )
+        conv_ops_x = tf.nn.depthwise_conv2d(
+            input=image, filter=gaussian_filter_x, strides=(1, 1, 1, 1), padding="VALID"
+        )
+        conv_ops = tf.nn.depthwise_conv2d(
+            input=conv_ops_x,
+            filter=gaussian_filter_y,
+            strides=(1, 1, 1, 1),
+            padding="VALID",
+        )
+        return conv_ops
 
 
-def _get_gaussian_kernel(sigma, filter_shape, channels):
+def _get_gaussian_kernel(sigma, filter_shape_1d, channels):
     "This function creates a kernel of size [filter_shape]"
-    x = tf.range(-filter_shape // 2 + 1, filter_shape // 2 + 1)
-    x = tf.math.square(x, tf.float32)
+    x = tf.range(-filter_shape_1d // 2 + 1, filter_shape_1d // 2 + 1)
+    x = tf.math.square(x)
     a = tf.exp(-(x) / (2 * (sigma ** 2)))
     a = a / tf.math.reduce_sum(a)
     return a

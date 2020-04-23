@@ -406,6 +406,7 @@ def test_gaussian_filter2d_symmetric():
     np.testing.assert_allclose(gb2, gb1, 0.06)
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("image_shape", [[2, 5, 5, 3]])
 def test_gaussian_filter2d_batch(image_shape):
     test_image_tf = tf.random.uniform(
@@ -420,6 +421,7 @@ def test_gaussian_filter2d_batch(image_shape):
     np.testing.assert_allclose(gb2, gb1, 0.06)
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_gaussian_filter2d_channels():
     test_image_tf = tf.constant(
         [
@@ -463,7 +465,7 @@ def test_gaussian_filter2d_channels():
         ],
         dtype=tf.float32,
     )
-    gb = gaussian_filter2d(test_image_tf, 1, 5, padding="SYMMETRIC")
+    gb = gaussian_filter2d(test_image_tf, 1, 5, padding="SYMMETRIC", name="gaussian")
     gb = gb.numpy()
     gb1 = np.resize(gb, (5, 5, 3))
     test_image_cv = test_image_tf.numpy()
