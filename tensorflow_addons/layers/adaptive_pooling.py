@@ -22,6 +22,7 @@ from typing import Union, List, Tuple
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
     """Average Pooling with adaptive kernel size.
+
     Arguments:
       output_size: Tuple of integers specifying (pooled_rows, pooled_cols).
         The new size of output channels.
