@@ -40,6 +40,8 @@ def transform(
     transforms: TensorLike,
     interpolation: str = "NEAREST",
     output_shape: Optional[list] = None,
+    extend: str = "CONSTANT",
+    constant_values: TensorLike = 0.0,
     name: Optional[str] = None,
 ) -> tf.Tensor:
     """Applies the given transform(s) to the image(s).
@@ -60,6 +62,9 @@ def transform(
         Supported values: "NEAREST", "BILINEAR".
       output_shape: Output dimesion after the transform, [height, width].
         If None, output is the same size as input image.
+      extend: Extend mode. Supported values: "REFLECT",
+        "CONSTANT", "NEAREST", "MIRROR", "WRAP".
+      constant_values: The fill value to use in "CONSTANT" extend mode.
 
       name: The name of the op.
 
@@ -113,6 +118,8 @@ def transform(
             output_shape=output_shape,
             transforms=transforms,
             interpolation=interpolation.upper(),
+            extend=extend.upper(),
+            constant_values=constant_values,
         )
         return img_utils.from_4D_image(output, original_ndims)
 
@@ -277,6 +284,8 @@ def _image_projective_transform_grad(op, grad):
     images = op.inputs[0]
     transforms = op.inputs[1]
     interpolation = op.get_attr("interpolation")
+    extend = op.get_attr("extend")
+    constant_values = op.get_attr("constant_values")
 
     image_or_images = tf.convert_to_tensor(images, name="images")
     transform_or_transforms = tf.convert_to_tensor(
@@ -305,6 +314,8 @@ def _image_projective_transform_grad(op, grad):
         transforms=transforms,
         output_shape=tf.shape(image_or_images)[1:3],
         interpolation=interpolation,
+        extend=extend,
+        constant_values=constant_values,
     )
     return [output, None, None]
 
@@ -313,6 +324,8 @@ def rotate(
     images: TensorLike,
     angles: TensorLike,
     interpolation: str = "NEAREST",
+    extend: str = "CONSTANT",
+    constant_values: TensorLike = 0.0,
     name: Optional[str] = None,
 ) -> tf.Tensor:
     """Rotate image(s) counterclockwise by the passed angle(s) in radians.
@@ -327,6 +340,9 @@ def rotate(
         batch.
       interpolation: Interpolation mode. Supported values: "NEAREST",
         "BILINEAR".
+      extend: Extend mode. Supported values: "REFLECT",
+        "CONSTANT", "NEAREST", "MIRROR", "WRAP".
+      constant_values: The fill value to use in "CONSTANT" extend mode.
       name: The name of the op.
 
     Returns:
@@ -349,6 +365,8 @@ def rotate(
             images,
             angles_to_projective_transforms(angles, image_height, image_width),
             interpolation=interpolation,
+            extend=extend,
+            constant_values=constant_values,
         )
         return img_utils.from_4D_image(output, original_ndims)
 
