@@ -221,7 +221,7 @@ def gaussian_filter2d(
           G(x,y)=1/(2*3.14*sigma**2)e^((x**2+y**2)/2sigma**2)
           In 1D,
           G(x)=e^(-x**2)/2*sigma**2
-    filter_shape:It is the kernel-size for the Gaussian Kernel. 
+    filter_shape:It is the kernel-size for the Gaussian Kernel.
           A kernel of size [kernel_shape*kernel_shape] is generated.
     padding:A string. It takes values in ["REFLECT", "CONSTANT", "SYMMETRIC"].
     constant_values:A constant to be used for padding in case of CONSTANT padding.
