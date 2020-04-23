@@ -15,11 +15,13 @@
 """Pooling layers with fixed size outputs"""
 
 import tensorflow as tf
+from typeguard import typechecked
+from typing import Union, List, Tuple
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
-    """Average Pooling with adaptive kernel size and strides.
+    """Average Pooling with adaptive kernel size.
     Arguments:
       output_size: Tuple of integers specifying (pooled_rows, pooled_cols).
         The new size of output channels.
@@ -43,7 +45,17 @@ class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
         4D tensor with shape `(batch_size, channels, pooled_rows, pooled_cols)`.
     """
 
-    def __init__(self, output_size, data_format="channels_last", **kwargs):
+    @typechecked
+    def __init__(
+        self,
+        output_size: Union[List[int], Tuple[int, int]],
+        data_format: str = "channels_last",
+        **kwargs
+    ):
+        if data_format != "channels_first" and data_format != "channels_last":
+            raise ValueError(
+                "data_format must be one of 'channels_first' or 'channels_last'"
+            )
         self.output_size = output_size
         self.data_format = data_format
         super().__init__(**kwargs)
@@ -76,7 +88,7 @@ class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
                     input_shape[-1],
                 ]
             )
-        elif self.data_format == "channels_first":
+        else:
             shape = tf.TensorShape(
                 [
                     input_shape[0],
@@ -84,10 +96,6 @@ class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
                     self.output_size[0],
                     self.output_size[1],
                 ]
-            )
-        else:
-            raise ValueError(
-                "data_format must be one of 'channels_first' or 'channels_last'"
             )
 
         return shape
