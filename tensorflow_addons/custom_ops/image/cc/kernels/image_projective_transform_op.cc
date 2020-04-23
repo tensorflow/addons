@@ -43,32 +43,70 @@ template struct FillProjectiveTransform<CPUDevice, double>;
 
 }  // end namespace functor
 
-typedef Eigen::ThreadPoolDevice CPUDevice;
+using CPUDevice = Eigen::ThreadPoolDevice;
 
 using functor::FillProjectiveTransform;
+using generator::Extend;
 using generator::Interpolation;
-using generator::INTERPOLATION_BILINEAR;
-using generator::INTERPOLATION_NEAREST;
 using generator::ProjectiveGenerator;
+
+bool InterpolationFromString(const string& interpolation_str,
+                             Interpolation* interpolation) {
+  if (interpolation_str == "NEAREST") {
+    *interpolation = Interpolation::INTERPOLATION_NEAREST;
+  } else if (interpolation_str == "BILINEAR") {
+    *interpolation = Interpolation::INTERPOLATION_BILINEAR;
+  } else {
+    return false;
+  }
+  return true;
+}
+
+bool ExtendFromString(const string& extend_str, Extend* extend) {
+  if (extend_str == "REFLECT") {
+    *extend = Extend::EXTEND_REFLECT;
+  } else if (extend_str == "CONSTANT") {
+    *extend = Extend::EXTEND_CONSTANT;
+  } else if (extend_str == "NEAREST") {
+    *extend = Extend::EXTEND_NEAREST;
+  } else if (extend_str == "MIRROR") {
+    *extend = Extend::EXTEND_MIRROR;
+  } else if (extend_str == "WRAP") {
+    *extend = Extend::EXTEND_WRAP;
+  } else {
+    return false;
+  }
+  return true;
+}
 
 template <typename Device, typename T>
 class ImageProjectiveTransformV2 : public OpKernel {
  private:
   Interpolation interpolation_;
+  Extend extend_;
+  T constant_values_;
 
  public:
   explicit ImageProjectiveTransformV2(OpKernelConstruction* ctx)
       : OpKernel(ctx) {
     string interpolation_str;
     OP_REQUIRES_OK(ctx, ctx->GetAttr("interpolation", &interpolation_str));
-    if (interpolation_str == "NEAREST") {
-      interpolation_ = INTERPOLATION_NEAREST;
-    } else if (interpolation_str == "BILINEAR") {
-      interpolation_ = INTERPOLATION_BILINEAR;
-    } else {
-      LOG(FATAL) << "Invalid interpolation " << interpolation_str
-                 << ". Supported types: NEAREST, BILINEAR";
-    }
+    OP_REQUIRES(
+        ctx, InterpolationFromString(interpolation_str, &interpolation_),
+        errors::InvalidArgument("Invalid interpolation ", interpolation_str,
+                                ". Supported types: NEAREST, BILINEAR."));
+
+    string extend_str;
+    OP_REQUIRES_OK(ctx, ctx->GetAttr("extend", &extend_str));
+    OP_REQUIRES(
+        ctx, ExtendFromString(extend_str, &extend_),
+        errors::InvalidArgument(
+            "Invalid extend ", extend_str,
+            ". Supported types: REFLECT, CONSTANT, NEAREST, MIRROR, WRAP."));
+
+    float constant_values;
+    OP_REQUIRES_OK(ctx, ctx->GetAttr("constant_values", &constant_values));
+    constant_values_ = static_cast<T>(constant_values);
   }
 
   void Compute(OpKernelContext* ctx) override {
@@ -117,8 +155,9 @@ class ImageProjectiveTransformV2 : public OpKernel {
     auto images = images_t.tensor<T, 4>();
     auto transform = transform_t.matrix<float>();
 
-    (FillProjectiveTransform<Device, T>(interpolation_))(
-        ctx->eigen_device<Device>(), &output, images, transform);
+    (FillProjectiveTransform<Device, T>(
+        interpolation_, extend_, constant_values_))(ctx->eigen_device<Device>(),
+                                                    &output, images, transform);
   }
 };
 

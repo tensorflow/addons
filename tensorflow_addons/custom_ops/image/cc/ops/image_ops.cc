@@ -135,6 +135,8 @@ REGISTER_OP("Addons>ImageProjectiveTransformV2")
     .Input("output_shape: int32")
     .Attr("dtype: {uint8, int32, int64, float16, float32, float64}")
     .Attr("interpolation: string")
+    .Attr("extend: string")
+    .Attr("constant_values: float = 0.0")
     .Output("transformed_images: dtype")
     .SetShapeFn(ResizeShapeFn)
     .Doc(kImageProjectiveTransformDoc);
