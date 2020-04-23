@@ -1,3 +1,4 @@
+#syntax=docker/dockerfile:1.1.5-experimental
 FROM python:3.5-alpine as flake8-test
 
 COPY tools/install_deps/flake8.txt ./
@@ -17,27 +18,18 @@ RUN black --check /addons
 RUN touch /ok.txt
 
 # -------------------------------
-FROM python:3.6 as public-api-typed
+FROM python:3.6 as source_code_test
 
-COPY tools/install_deps/tensorflow-cpu.txt ./
-RUN pip install -r tensorflow-cpu.txt
-COPY requirements.txt ./
-RUN pip install -r requirements.txt
-COPY tools/install_deps/typedapi.txt ./
-RUN pip install -r typedapi.txt
-
-
-COPY ./ /addons
-RUN pip install --no-deps -e /addons
-RUN python /addons/tools/testing/check_typing_info.py
-RUN touch /ok.txt
-
-# -------------------------------
-FROM python:3.5-alpine as case-insensitive-filesystem
+COPY tools/install_deps /install_deps
+RUN --mount=type=cache,id=cache_pip,target=/root/.cache/pip \
+    cd /install_deps && pip install \
+    -r tensorflow-cpu.txt \
+    -r typedapi.txt \
+    -r pytest.txt
 
 COPY ./ /addons
-WORKDIR /addons
-RUN python /addons/tools/testing/check_file_name.py
+RUN pip install -e /addons
+RUN pytest -v /addons/tools/testing/
 RUN touch /ok.txt
 
 # -------------------------------
@@ -50,13 +42,11 @@ RUN apt-get update && apt-get install sudo
 COPY tools/install_deps/bazel_linux.sh ./
 RUN bash bazel_linux.sh
 
-COPY tools/install_deps/finish_bazel_install.sh ./
-RUN bash finish_bazel_install.sh
-
 COPY ./ /addons
 WORKDIR /addons
-RUN python ./configure.py --no-deps
-RUN bazel build --nobuild -- //tensorflow_addons/...
+RUN python ./configure.py
+RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
+    bazel build --nobuild -- //tensorflow_addons/...
 RUN touch /ok.txt
 
 # -------------------------------
@@ -120,13 +110,12 @@ RUN pip install -r pytest.txt
 RUN apt-get update && apt-get install -y sudo rsync
 COPY tools/install_deps/bazel_linux.sh ./
 RUN bash bazel_linux.sh
-COPY tools/install_deps/finish_bazel_install.sh ./
-RUN bash finish_bazel_install.sh
 
 COPY ./ /addons
 WORKDIR /addons
-RUN python configure.py --no-deps
-RUN bash tools/install_so_files.sh
+RUN python configure.py
+RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
+    bash tools/install_so_files.sh
 RUN pip install --no-deps -e .
 RUN pytest -v -n auto ./tensorflow_addons/activations
 RUN pytest --ignore-glob=*_test.py
@@ -148,4 +137,3 @@ COPY --from=4 /ok.txt /ok4.txt
 COPY --from=5 /ok.txt /ok5.txt
 COPY --from=6 /ok.txt /ok6.txt
 COPY --from=7 /ok.txt /ok7.txt
-COPY --from=8 /ok.txt /ok8.txt
