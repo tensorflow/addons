@@ -381,7 +381,7 @@ def test_gaussian_filter2d_constant():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_gaussian_filter2d_reflect():
     test_image_tf = tf.random.uniform(
-        [1, 40, 40, 1], minval=0, maxval=255, dtype=tf.float64
+        [1, 40, 40, 1], minval=0, maxval=255, dtype=tf.int32
     )
     gb = gaussian_filter2d(test_image_tf, 1, 5, padding="REFLECT")
     gb = gb.numpy()
@@ -397,7 +397,7 @@ def test_gaussian_filter2d_symmetric():
     test_image_tf = tf.random.uniform(
         [1, 40, 40, 1], minval=0, maxval=255, dtype=tf.float64
     )
-    gb = gaussian_filter2d(test_image_tf, 1, 5, padding="SYMMETRIC")
+    gb = gaussian_filter2d(test_image_tf, 1, (5, 5), padding="SYMMETRIC")
     gb = gb.numpy()
     gb1 = np.resize(gb, (40, 40))
     test_image_cv = test_image_tf.numpy()
@@ -461,7 +461,7 @@ def test_gaussian_filter2d_channels():
                 ],
             ]
         ],
-        dtype=tf.float64,
+        dtype=tf.float32,
     )
     gb = gaussian_filter2d(test_image_tf, 1, 5, padding="SYMMETRIC")
     gb = gb.numpy()
