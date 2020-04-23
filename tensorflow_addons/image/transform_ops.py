@@ -434,6 +434,3 @@ def shear_y(image: TensorLike, level: float, replace: int) -> TensorLike:
     #  level  1].
     image = transform(wrap(image), [1.0, 0.0, 0.0, level, 1.0, 0.0, 0.0, 0.0])
     return unwrap(image, replace)
-
-
-
