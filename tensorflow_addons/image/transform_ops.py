@@ -20,7 +20,7 @@ from tensorflow_addons.utils.resource_loader import LazySO
 from tensorflow_addons.utils.types import TensorLike
 from tensorflow_addons.image.utils import wrap, unwrap
 
-from typing import Optional
+from typing import Optional, Tuple, Union
 
 _image_so = LazySO("custom_ops/image/_image_ops.so")
 
@@ -309,6 +309,53 @@ def _image_projective_transform_grad(op, grad):
     return [output, None, None]
 
 
+def extend(
+    images: TensorLike,
+    length: Union[int, Tuple[int, int]],
+) -> tf.Tensor:
+    """Extend image(s) by some length by copying pixels on border.
+
+    Args:
+      images: A tensor of shape
+        (num_images, num_rows, num_columns, num_channels) (NHWC),
+        (num_rows, num_columns, num_channels) (HWC), 
+        or (num_rows, num_columns) (HW).
+      length: One of the following
+        A scalar length to extend the image by on each side. 
+        A tuple of pairs (LH, LW) to extend the image by in each dimension.
+        A tuple of tuple pairs ((LT, LB), (LL, LR)) to extend the image by for
+        each individual side
+
+    Returns:
+      Image(s) with the same type and new shape (H', W') for each image of 
+      shape (H, W) depending on the length parameter. New space is filled with
+      the color of the closest pixel (from the border of the original image).
+    """
+    image_or_images = tf.convert_to_tensor(images)
+    if image_or_images.dtype.base_dtype not in _IMAGE_DTYPES:
+        raise TypeError("Invalid dtype {}.".format(image_or_images.dtype))
+    images = img_utils.to_4D_image(image_or_images)
+    original_ndims = img_utils.get_ndims(image_or_images)
+
+    if type(length) == int:
+        pad_sizes = tf.constant([
+            [0, 0], 
+            [length, length], 
+            [length, length], 
+            [0, 0]
+        ])
+    else:
+        height, width = length
+        pad_sizes = tf.constant([
+            [0, 0],
+            [height, height],
+            [width, width]
+        ])
+
+    augmented_images = tf.pad(images, pad_sizes, mode='SYMMETRIC')
+    return img_utils.from_4D_image(augmented_images, original_ndims)
+
+
 def rotate(
     images: TensorLike,
     angles: TensorLike,
@@ -387,3 +434,6 @@ def shear_y(image: TensorLike, level: float, replace: int) -> TensorLike:
     #  level  1].
     image = transform(wrap(image), [1.0, 0.0, 0.0, level, 1.0, 0.0, 0.0, 0.0])
     return unwrap(image, replace)
+
+
+

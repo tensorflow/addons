@@ -132,6 +132,38 @@ def test_transform_eager():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", _DTYPES)
+def test_extend_basic(dtype):
+    image = tf.reshape(tf.range(4, dtype=dtype), (2, 2))
+    image_extended = transform_ops.extend(image, 1)
+    np.testing.assert_equal(
+        image_extended.numpy(),
+        [
+            [0, 0, 1, 1],
+            [0, 0, 1, 1],
+            [2, 2, 3, 3],
+            [2, 2, 3, 3],
+        ]
+    )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", _DTYPES)
+def test_extend_uneven(dtype):
+    image = tf.reshape(tf.range(4, dtype=dtype), (2, 2))
+    image_extended = transform_ops.extend(image, (1, 2))
+    np.testing.assert_equal(
+        image_extended.numpy(),
+        [
+            [0, 0, 0, 1, 1, 1],
+            [0, 0, 0, 1, 1, 1],
+            [2, 2, 2, 3, 3, 3],
+            [2, 2, 2, 3, 3, 3],
+        ]
+    )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", _DTYPES)
 def test_zeros(dtype):
     for shape in [(5, 5), (24, 24), (2, 24, 24, 3)]:
         for angle in [0, 1, np.pi / 2.0]:
