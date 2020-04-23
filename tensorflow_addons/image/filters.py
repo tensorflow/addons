@@ -219,7 +219,7 @@ def gaussian_filter2d(
         (batch_size, height, width, channels)
         (NHWC), (batch_size, channels, height, width)(NCHW).
 
-    sigma:A constant of type float64. It is the standard deviation of the normal distribution.
+    sigma:A constant of type float32. It is the standard deviation of the normal distribution.
           The more the sigma, the more the blurring effect.
           G(x,y)=1/(2*3.14*sigma**2)e^((x**2+y**2)/2sigma**2)
           In 1D,
