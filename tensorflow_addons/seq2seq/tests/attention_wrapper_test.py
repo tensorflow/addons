@@ -210,10 +210,7 @@ def test_memory_re_setup(attention_cls):
 
     dummy_data = DummyData()
     model = MyModel(vocab, embedding_dim, dummy_data.memory_size, dummy_data.units)
-    if tf.executing_eagerly():
-        model.compile("rmsprop", "mse", run_eagerly=True)
-    else:
-        model.compile("rmsprop", "mse")
+    model.compile("rmsprop", "mse")
 
     x = np.random.randint(
         vocab, size=(num_batches * dummy_data.batch, dummy_data.timestep)
