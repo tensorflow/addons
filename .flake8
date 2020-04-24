@@ -27,12 +27,5 @@ per-file-ignores =
     tensorflow_addons/image/tests/utils_test.py:N802
     tensorflow_addons/image/tests/color_ops_test.py:N802
     tensorflow_addons/optimizers/tests/conditional_gradient_test.py:N802
-    tensorflow_addons/optimizers/tests/lazy_adam_test.py:N802
-    tensorflow_addons/seq2seq/tests/attention_wrapper_test.py:N802
-    tensorflow_addons/seq2seq/tests/basic_decoder_test.py:N802
-    tensorflow_addons/seq2seq/tests/decoder_test.py:N802
-    tensorflow_addons/seq2seq/tests/beam_search_decoder_test.py:N802
-    tensorflow_addons/seq2seq/tests/beam_search_ops_test.py:N802
-    tensorflow_addons/optimizers/tests/cyclical_learning_rate_test.py:N802
     # variable ... in function should be lowercase
     tensorflow_addons/callbacks/tests/time_stopping_test.py:N806
