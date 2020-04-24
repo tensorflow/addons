@@ -21,9 +21,9 @@ from tensorflow_addons.image.connected_components import connected_components
 from tensorflow_addons.image.cutout_ops import cutout
 from tensorflow_addons.image.dense_image_warp import dense_image_warp
 from tensorflow_addons.image.distance_transform import euclidean_dist_transform
-from tensorflow_addons.image.filters import gaussian_filter2d
 from tensorflow_addons.image.dense_image_warp import interpolate_bilinear
 from tensorflow_addons.image.interpolate_spline import interpolate_spline
+from tensorflow_addons.image.filters import gaussian_filter2d
 from tensorflow_addons.image.filters import mean_filter2d
 from tensorflow_addons.image.filters import median_filter2d
 from tensorflow_addons.image.cutout_ops import random_cutout
