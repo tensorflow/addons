@@ -259,9 +259,11 @@ def assert_allclose_according_to_type(
 def add_np(doctest_namespace):
     doctest_namespace["np"] = np
 
+
 @pytest.fixture(autouse=True)
 def add_tf(doctest_namespace):
     doctest_namespace["tf"] = tf
+
 
 @pytest.fixture(autouse=True)
 def add_tfa(doctest_namespace):
