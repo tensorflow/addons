@@ -217,7 +217,7 @@ def test_rotate_odd(dtype):
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.parametrize("extend", ["MIRROR", "CONSTANT", "NEAREST", "WRAP"])
+@pytest.mark.parametrize("extend", ["CONSTANT", "MIRROR", "NEAREST", "WRAP"])
 def test_rotate_extend(extend):
     image = tf.constant(
         [
