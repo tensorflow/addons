@@ -15,7 +15,7 @@
 """Pooling layers with fixed size outputs"""
 
 import tensorflow as tf
-from tensorflow.python.keras.utils import conv_utils
+import tensorflow_addons.utils.keras_utils as conv_utils
 
 from typeguard import typechecked
 from typing import Union, Callable, Iterable
