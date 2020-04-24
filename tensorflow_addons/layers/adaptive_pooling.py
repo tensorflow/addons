@@ -16,11 +16,87 @@
 
 import tensorflow as tf
 from typeguard import typechecked
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Callable
+
+
+class AdaptivePooling2D(tf.keras.layers.Layer):
+    """Parent class for pooling layers with adaptive kernel size.
+
+    This class only exists for code reuse. It will never be an exposed API.
+
+    Arguments:
+      reduce_function: The reduction method to apply, e.g. `tf.reduce_max`.
+      output_size: Tuple of integers specifying (pooled_rows, pooled_cols).
+        The new size of output channels.
+      data_format: A string,
+        one of `channels_last` (default) or `channels_first`.
+        The ordering of the dimensions in the inputs.
+        `channels_last` corresponds to inputs with shape
+        `(batch, steps, features)` while `channels_first`
+        corresponds to inputs with shape
+        `(batch, features, steps)`.
+    """
+
+    @typechecked
+    def __init__(
+        self,
+        reduce_function: Callable,
+        output_size: Union[List[int], Tuple[int, int]],
+        data_format: str = "channels_last",
+        **kwargs
+    ):
+        if data_format != "channels_first" and data_format != "channels_last":
+            raise ValueError(
+                "data_format must be one of 'channels_first' or 'channels_last'"
+            )
+        self.reduce_function = reduce_function
+        self.output_size = output_size
+        self.data_format = data_format
+        super().__init__(**kwargs)
+
+    def call(self, inputs, *args):
+        h_bins = self.output_size[0]
+        w_bins = self.output_size[1]
+        if self.data_format == "channels_last":
+            split_cols = tf.split(inputs, h_bins, axis=1)
+            split_cols = tf.stack(split_cols, axis=1)
+            split_rows = tf.split(split_cols, w_bins, axis=3)
+            split_rows = tf.stack(split_rows, axis=3)
+            out_vect = self.reduce_function(split_rows, axis=[2, 4])
+        else:
+            split_cols = tf.split(inputs, h_bins, axis=2)
+            split_cols = tf.stack(split_cols, axis=2)
+            split_rows = tf.split(split_cols, w_bins, axis=4)
+            split_rows = tf.stack(split_rows, axis=4)
+            out_vect = self.reduce_function(split_rows, axis=[3, 5])
+        return out_vect
+
+    def compute_output_shape(self, input_shape):
+        input_shape = tf.TensorShape(input_shape).as_list()
+        if self.data_format == "channels_last":
+            shape = tf.TensorShape(
+                [
+                    input_shape[0],
+                    self.output_size[0],
+                    self.output_size[1],
+                    input_shape[-1],
+                ]
+            )
+        else:
+            shape = tf.TensorShape(
+                [
+                    input_shape[0],
+                    input_shape[1],
+                    self.output_size[0],
+                    self.output_size[1],
+                ]
+            )
+
+        return shape
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
+class AdaptiveAveragePooling2D(AdaptivePooling2D):
     """Average Pooling with adaptive kernel size.
 
     Arguments:
@@ -53,53 +129,7 @@ class AdaptiveAveragePooling2D(tf.keras.layers.Layer):
         data_format: str = "channels_last",
         **kwargs
     ):
-        if data_format != "channels_first" and data_format != "channels_last":
-            raise ValueError(
-                "data_format must be one of 'channels_first' or 'channels_last'"
-            )
-        self.output_size = output_size
-        self.data_format = data_format
-        super().__init__(**kwargs)
-
-    def call(self, inputs, *args):
-        h_bins = self.output_size[0]
-        w_bins = self.output_size[1]
-        if self.data_format == "channels_last":
-            split_cols = tf.split(inputs, h_bins, axis=1)
-            split_cols = tf.stack(split_cols, axis=1)
-            split_rows = tf.split(split_cols, w_bins, axis=3)
-            split_rows = tf.stack(split_rows, axis=3)
-            out_vect = tf.reduce_mean(split_rows, axis=[2, 4])
-        else:
-            split_cols = tf.split(inputs, h_bins, axis=2)
-            split_cols = tf.stack(split_cols, axis=2)
-            split_rows = tf.split(split_cols, w_bins, axis=4)
-            split_rows = tf.stack(split_rows, axis=4)
-            out_vect = tf.reduce_mean(split_rows, axis=[3, 5])
-        return out_vect
-
-    def compute_output_shape(self, input_shape):
-        input_shape = tf.TensorShape(input_shape).as_list()
-        if self.data_format == "channels_last":
-            shape = tf.TensorShape(
-                [
-                    input_shape[0],
-                    self.output_size[0],
-                    self.output_size[1],
-                    input_shape[-1],
-                ]
-            )
-        else:
-            shape = tf.TensorShape(
-                [
-                    input_shape[0],
-                    input_shape[1],
-                    self.output_size[0],
-                    self.output_size[1],
-                ]
-            )
-
-        return shape
+        super().__init__(tf.reduce_mean, output_size, data_format, **kwargs)
 
     def get_config(self):
         config = {
