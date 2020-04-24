@@ -18,7 +18,7 @@ import tensorflow as tf
 from tensorflow.python.keras.utils import conv_utils
 
 from typeguard import typechecked
-from typing import Union, List, Tuple, Callable, Iterable
+from typing import Union, Callable, Iterable
 
 
 class AdaptivePooling1D(tf.keras.layers.Layer):

@@ -17,7 +17,7 @@
 from tensorflow_addons.layers.adaptive_pooling import (
     AdaptiveAveragePooling1D,
     AdaptiveAveragePooling2D,
-    AdaptiveAveragePooling3D
+    AdaptiveAveragePooling3D,
 )
 from tensorflow_addons.layers.gelu import GELU
 from tensorflow_addons.layers.maxout import Maxout
