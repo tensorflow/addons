@@ -29,7 +29,6 @@ from tensorflow_addons.utils import resource_loader
 from tensorflow.python.framework.test_util import (  # noqa: F401
     run_all_in_graph_and_eager_modes,
 )
-from tensorflow.python.framework.test_util import run_deprecated_v1  # noqa: F401
 from tensorflow.python.framework.test_util import (  # noqa: F401
     run_in_graph_and_eager_modes,
 )
