@@ -65,7 +65,6 @@ def transform(
       extend: Extend mode. Supported values: "REFLECT",
         "CONSTANT", "NEAREST", "MIRROR", "WRAP".
       constant_values: The fill value to use in "CONSTANT" extend mode.
-
       name: The name of the op.
 
     Returns:
