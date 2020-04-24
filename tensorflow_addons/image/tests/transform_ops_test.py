@@ -20,6 +20,7 @@ import tensorflow as tf
 
 from tensorflow_addons.image import transform_ops
 from tensorflow_addons.utils import test_utils
+from scipy import ndimage
 from skimage import transform
 
 _DTYPES = {
@@ -212,6 +213,31 @@ def test_rotate_odd(dtype):
                 [24, 19, 14, 9, 4],
             ],
         ],
+    )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("extend", ["MIRROR", "CONSTANT", "NEAREST", "WRAP"])
+def test_rotate_extend(extend):
+    image = tf.constant(
+        [
+            [0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 0],
+            [0, 1, 0, 1, 0],
+            [0, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0],
+        ],
+        tf.float32,
+    )
+
+    transformed = transform_ops.rotate(
+        image, np.pi / 4.0, interpolation="BILINEAR", extend=extend
+    )
+    np.testing.assert_allclose(
+        transformed.numpy(),
+        ndimage.rotate(image.numpy(), 45, order=1, mode=extend.lower(), reshape=False),
+        rtol=1e-6,
+        atol=5e-6,
     )
 
 
