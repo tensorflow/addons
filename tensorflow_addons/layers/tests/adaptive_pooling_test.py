@@ -12,24 +12,53 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for AdaptivePooling2D layer."""
+"""Tests for AdaptivePooling layers."""
 
 import pytest
 import numpy as np
-from tensorflow_addons.layers.adaptive_pooling import AdaptiveAveragePooling2D
+from tensorflow_addons.layers.adaptive_pooling import (
+    AdaptiveAveragePooling1D,
+    AdaptiveAveragePooling2D,
+    AdaptiveAveragePooling3D,
+)
 
 from tensorflow_addons.utils import test_utils
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_simple():
+def test_avg_1d():
+    valid_input = np.arange(start=0.0, stop=12.0, step=1.0).astype(np.float32)
+    valid_input = np.reshape(valid_input, (1, 12, 1))
+    output = np.array([1.0, 4.0, 7.0, 10.0]).astype(np.float32)
+    output = np.reshape(output, (1, 4, 1))
+    test_utils.layer_test(
+        AdaptiveAveragePooling1D,
+        kwargs={"output_size": 4, "data_format": "channels_last"},
+        input_data=valid_input,
+        expected_output=output,
+    )
+
+    valid_input = np.arange(start=0.0, stop=12.0, step=1.0).astype(np.float32)
+    valid_input = np.reshape(valid_input, (1, 1, 12))
+    output = np.array([1.0, 4.0, 7.0, 10.0]).astype(np.float32)
+    output = np.reshape(output, (1, 1, 4))
+    test_utils.layer_test(
+        AdaptiveAveragePooling1D,
+        kwargs={"output_size": 4, "data_format": "channels_first"},
+        input_data=valid_input,
+        expected_output=output,
+    )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_avg_2d():
     valid_input = np.arange(start=0.0, stop=40.0, step=1.0).astype(np.float32)
     valid_input = np.reshape(valid_input, (1, 4, 10, 1))
     output = np.array([[7.0, 12.0], [27.0, 32.0]]).astype(np.float32)
     output = np.reshape(output, (1, 2, 2, 1))
     test_utils.layer_test(
         AdaptiveAveragePooling2D,
-        kwargs={"output_size": (2, 2)},
+        kwargs={"output_size": (2, 2), "data_format": "channels_last"},
         input_data=valid_input,
         expected_output=output,
     )
@@ -41,6 +70,35 @@ def test_simple():
     test_utils.layer_test(
         AdaptiveAveragePooling2D,
         kwargs={"output_size": (2, 2), "data_format": "channels_first"},
+        input_data=valid_input,
+        expected_output=output,
+    )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_avg_3d():
+    valid_input = np.arange(start=0.0, stop=80.0, step=1.0).astype(np.float32)
+    valid_input = np.reshape(valid_input, (1, 4, 10, 2, 1))
+    output = np.array(
+        [[[14.0, 15.0], [24.0, 25.0]], [[54.0, 55.0], [64.0, 65.0]]]
+    ).astype(np.float32)
+    output = np.reshape(output, (1, 2, 2, 2, 1))
+    test_utils.layer_test(
+        AdaptiveAveragePooling3D,
+        kwargs={"output_size": (2, 2, 2), "data_format": "channels_last"},
+        input_data=valid_input,
+        expected_output=output,
+    )
+
+    valid_input = np.arange(start=0.0, stop=80.0, step=1.0).astype(np.float32)
+    valid_input = np.reshape(valid_input, (1, 1, 4, 10, 2))
+    output = np.array(
+        [[[14.0, 15.0], [24.0, 25.0]], [[54.0, 55.0], [64.0, 65.0]]]
+    ).astype(np.float32)
+    output = np.reshape(output, (1, 1, 2, 2, 2))
+    test_utils.layer_test(
+        AdaptiveAveragePooling3D,
+        kwargs={"output_size": (2, 2, 2), "data_format": "channels_first"},
         input_data=valid_input,
         expected_output=output,
     )
