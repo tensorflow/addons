@@ -18,7 +18,7 @@ import tensorflow as tf
 from tensorflow.python.keras.utils import conv_utils
 
 from typeguard import typechecked
-from typing import Union, Callable, Iterable
+from typing import Union, List, Tuple, Callable, Iterable
 
 
 class AdaptivePooling1D(tf.keras.layers.Layer):
@@ -74,51 +74,6 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
         return shape
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
-class AdaptiveAveragePooling1D(AdaptivePooling1D):
-    """Average Pooling with adaptive kernel size.
-
-    Arguments:
-      output_size: An integer or tuple/list of a single integer, specifying pooled_features.
-        The new size of output channels.
-      data_format: A string,
-        one of `channels_last` (default) or `channels_first`.
-        The ordering of the dimensions in the inputs.
-        `channels_last` corresponds to inputs with shape
-        `(batch, steps, features)` while `channels_first`
-        corresponds to inputs with shape `(batch, features, steps)`.
-
-    Input shape:
-      - If `data_format='channels_last'`:
-        3D tensor with shape `(batch_size, steps, features)`.
-      - If `data_format='channels_first'`:
-        3D tensor with shape `(batch_size, features, steps)`.
-
-    Output shape:
-      - If `data_format='channels_last'`:
-        4D tensor with shape `(batch_size, pooled_rows, pooled_cols, channels)`.
-      - If `data_format='channels_first'`:
-        4D tensor with shape `(batch_size, channels, pooled_rows, pooled_cols)`.
-    """
-
-    @typechecked
-    def __init__(
-        self,
-        output_size: Union[int, Iterable[int]],
-        data_format=None,
-        **kwargs
-    ):
-        super().__init__(tf.reduce_mean, output_size, data_format, **kwargs)
-
-    def get_config(self):
-        config = {
-            "output_size": self.output_size,
-            "data_format": self.data_format,
-        }
-        base_config = super().get_config()
-        return {**base_config, **config}
-
-
 class AdaptivePooling2D(tf.keras.layers.Layer):
     """Parent class for 2D pooling layers with adaptive kernel size.
 
@@ -141,7 +96,7 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
     def __init__(
         self,
         reduce_function: Callable,
-        output_size: Union[int, Iterable[int]],
+        output_size: Union[int, Iterable[int, int]],
         data_format=None,
         **kwargs
     ):
@@ -191,51 +146,6 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
         return shape
 
 
-@tf.keras.utils.register_keras_serializable(package="Addons")
-class AdaptiveAveragePooling2D(AdaptivePooling2D):
-    """Average Pooling with adaptive kernel size.
-
-    Arguments:
-      output_size: Tuple of integers specifying (pooled_rows, pooled_cols).
-        The new size of output channels.
-      data_format: A string,
-        one of `channels_last` (default) or `channels_first`.
-        The ordering of the dimensions in the inputs.
-        `channels_last` corresponds to inputs with shape
-        `(batch, height, width, channels)` while `channels_first`
-        corresponds to inputs with shape `(batch, channels, height, width)`.
-
-    Input shape:
-      - If `data_format='channels_last'`:
-        4D tensor with shape `(batch_size, height, width, channels)`.
-      - If `data_format='channels_first'`:
-        4D tensor with shape `(batch_size, channels, height, width)`.
-
-    Output shape:
-      - If `data_format='channels_last'`:
-        4D tensor with shape `(batch_size, pooled_rows, pooled_cols, channels)`.
-      - If `data_format='channels_first'`:
-        4D tensor with shape `(batch_size, channels, pooled_rows, pooled_cols)`.
-    """
-
-    @typechecked
-    def __init__(
-        self,
-        output_size: Union[int, Iterable[int]],
-        data_format=None,
-        **kwargs
-    ):
-        super().__init__(tf.reduce_mean, output_size, data_format, **kwargs)
-
-    def get_config(self):
-        config = {
-            "output_size": self.output_size,
-            "data_format": self.data_format,
-        }
-        base_config = super().get_config()
-        return {**base_config, **config}
-
-
 class AdaptivePooling3D(tf.keras.layers.Layer):
     """Parent class for 3D pooling layers with adaptive kernel size.
 
@@ -258,7 +168,7 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
     def __init__(
         self,
         reduce_function: Callable,
-        output_size: Union[int, Iterable[int]],
+        output_size: Union[int, Iterable[int, int, int]],
         data_format=None,
         **kwargs
     ):
@@ -316,37 +226,36 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class AdaptiveAveragePooling3D(AdaptivePooling3D):
+class AdaptiveAveragePooling2D(AdaptivePooling2D):
     """Average Pooling with adaptive kernel size.
 
     Arguments:
-      output_size: An integer or tuple/list of 3 integers specifying (pooled_depth, pooled_height, pooled_width).
+      output_size: Tuple of integers specifying (pooled_rows, pooled_cols).
         The new size of output channels.
       data_format: A string,
         one of `channels_last` (default) or `channels_first`.
         The ordering of the dimensions in the inputs.
         `channels_last` corresponds to inputs with shape
-        `(batch, height, width, depth, channels)` while `channels_first`
-        corresponds to inputs with shape
-        `(batch, channels, depth, height, width)`.
+        `(batch, height, width, channels)` while `channels_first`
+        corresponds to inputs with shape `(batch, channels, height, width)`.
 
     Input shape:
       - If `data_format='channels_last'`:
-        5D tensor with shape `(batch_size, spatial_dim1, spatial_dim2, spatial_dim3, channels)`.
+        4D tensor with shape `(batch_size, height, width, channels)`.
       - If `data_format='channels_first'`:
-        5D tensor with shape `(batch_size, channels, spatial_dim1, spatial_dim2, spatial_dim3)`.
+        4D tensor with shape `(batch_size, channels, height, width)`.
 
     Output shape:
       - If `data_format='channels_last'`:
-        5D tensor with shape `(batch_size, pooled_dim1, pooled_dim2, pooled_dim3, channels)`.
+        4D tensor with shape `(batch_size, pooled_rows, pooled_cols, channels)`.
       - If `data_format='channels_first'`:
-        5D tensor with shape `(batch_size, channels, pooled_dim1, pooled_dim2, pooled_dim3)`.
+        4D tensor with shape `(batch_size, channels, pooled_rows, pooled_cols)`.
     """
 
     @typechecked
     def __init__(
         self,
-        output_size: Union[int, Iterable[int]],
+        output_size: Union[int, Iterable[int, int]],
         data_format=None,
         **kwargs
     ):
