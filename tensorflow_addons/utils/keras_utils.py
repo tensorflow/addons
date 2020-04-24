@@ -14,12 +14,12 @@
 # ==============================================================================
 """Utilities for tf.keras."""
 
-from tensorflow.keras import backend
+import tensorflow as tf
 
 
 def normalize_data_format(value):
     if value is None:
-        value = backend.image_data_format()
+        value = tf.keras.backend.image_data_format()
     data_format = value.lower()
     if data_format not in {"channels_first", "channels_last"}:
         raise ValueError(
