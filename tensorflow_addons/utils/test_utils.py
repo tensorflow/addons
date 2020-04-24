@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Utilities for tf.test.TestCase."""
+"""Utilities for testing Addons."""
 
 import contextlib
 import inspect
@@ -25,13 +25,7 @@ import tensorflow as tf
 
 from tensorflow_addons.utils import resource_loader
 
-# TODO: find public API alternative to these
-from tensorflow.python.framework.test_util import (  # noqa: F401
-    run_all_in_graph_and_eager_modes,
-)
-from tensorflow.python.framework.test_util import (  # noqa: F401
-    run_in_graph_and_eager_modes,
-)
+# TODO: copy the layer_test implementation in Addons.
 from tensorflow.python.keras.testing_utils import layer_test  # noqa: F401
 
 
@@ -125,40 +119,6 @@ def run_distributed(num_devices):
             strategy = tf.distribute.MirroredStrategy(logical_devices)
             with strategy.scope():
                 f(self, *args, **kwargs)
-
-        return decorated
-
-    return decorator
-
-
-def run_all_with_types(dtypes):
-    """Execute all test methods in the given class with and without eager."""
-    base_decorator = run_with_types(dtypes)
-
-    def decorator(cls):
-        for name, method in cls.__dict__.copy().items():
-            if (
-                callable(method)
-                and name.startswith(unittest.TestLoader.testMethodPrefix)
-                and name != "test_session"
-            ):
-                setattr(cls, name, base_decorator(method))
-        return cls
-
-    return decorator
-
-
-def run_with_types(dtypes):
-    def decorator(f):
-        if inspect.isclass(f):
-            raise TypeError(
-                "`run_with_types` only supports test methods. "
-                "Did you mean to use `run_all_with_types`?"
-            )
-
-        def decorated(self, *args, **kwargs):
-            for t in dtypes:
-                f(self, *args, dtype=t, **kwargs)
 
         return decorated
 
