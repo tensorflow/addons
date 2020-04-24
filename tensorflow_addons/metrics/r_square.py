@@ -16,7 +16,6 @@
 from typing import Tuple
 
 import tensorflow as tf
-import tensorflow_addons as tfa
 
 from tensorflow.keras.metrics import Metric
 from tensorflow.python.ops import weights_broadcast_ops

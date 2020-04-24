@@ -17,7 +17,6 @@
 import warnings
 
 import tensorflow as tf
-import tensorflow_addons as tfa
 
 from tensorflow.keras.metrics import Metric
 import numpy as np

@@ -15,7 +15,6 @@
 """Implements Cohen's Kappa."""
 
 import tensorflow as tf
-import tensorflow_addons as tfa
 
 import numpy as np
 import tensorflow.keras.backend as K
@@ -29,32 +28,26 @@ from typing import Optional
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class CohenKappa(Metric):
     """Computes Kappa score between two raters.
-
     The score lies in the range [-1, 1]. A score of -1 represents
     complete disagreement between two raters whereas a score of 1
     represents complete agreement between the two raters.
     A score of 0 means agreement by chance.
-
     Note: As of now, this implementation considers all labels
     while calculating the Cohen's Kappa score.
-
     Usage:
-
-    >>> actuals = np.array([4, 4, 3, 4, 2, 4, 1, 1], dtype=np.int32)
-    >>> preds = np.array([4, 4, 3, 4, 4, 2, 1, 1], dtype=np.int32)
-    >>> weights = np.array([1, 1, 2, 5, 10, 2, 3, 3], dtype=np.int32)
-    >>> m = tfa.metrics.CohenKappa(num_classes=5)
-    >>> m_update = m.update_state(actuals, preds)
-    >>> m.result()
-    <tf.Tensor: shape=(), dtype=float32, numpy=0.61904764>
-
-    >>> m = tfa.metrics.CohenKappa(num_classes=5)
-    >>> m_update = m.update_state(actuals, preds, sample_weight=weights)
-    >>> m.result()
-    <tf.Tensor: shape=(), dtype=float32, numpy=0.37209308>
-
+    ```python
+    actuals = np.array([4, 4, 3, 4, 2, 4, 1, 1], dtype=np.int32)
+    preds = np.array([4, 4, 3, 4, 4, 2, 1, 1], dtype=np.int32)
+    weights = np.array([1, 1, 2, 5, 10, 2, 3, 3], dtype=np.int32)
+    m = tfa.metrics.CohenKappa(num_classes=5)
+    m.update_state(actuals, preds)
+    print('Final result: ', m.result().numpy()) # Result: 0.61904764
+    # To use this with weights, sample_weight argument can be used.
+    m = tfa.metrics.CohenKappa(num_classes=5)
+    m.update_state(actuals, preds, sample_weight=weights)
+    print('Final result: ', m.result().numpy()) # Result: 0.37209308
+    ```
     Usage with tf.keras API:
-
     ```python
     model = tf.keras.models.Model(inputs, outputs)
     model.add_metric(tfa.metrics.CohenKappa(num_classes=5)(outputs))
