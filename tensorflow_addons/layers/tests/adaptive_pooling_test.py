@@ -19,7 +19,7 @@ import numpy as np
 from tensorflow_addons.layers.adaptive_pooling import (
     AdaptiveAveragePooling1D,
     AdaptiveAveragePooling2D,
-    AdaptiveAveragePooling3D
+    AdaptiveAveragePooling3D,
 )
 
 from tensorflow_addons.utils import test_utils
@@ -58,7 +58,7 @@ def test_avg_2d():
     output = np.reshape(output, (1, 2, 2, 1))
     test_utils.layer_test(
         AdaptiveAveragePooling2D,
-        kwargs={"output_size": (2, 2),  "data_format": "channels_last"},
+        kwargs={"output_size": (2, 2), "data_format": "channels_last"},
         input_data=valid_input,
         expected_output=output,
     )
@@ -79,7 +79,9 @@ def test_avg_2d():
 def test_avg_3d():
     valid_input = np.arange(start=0.0, stop=80.0, step=1.0).astype(np.float32)
     valid_input = np.reshape(valid_input, (1, 4, 10, 2, 1))
-    output = np.array([[[14.0, 15.0], [24.0, 25.0]], [[54.0, 55.0], [64.0, 65.0]]]).astype(np.float32)
+    output = np.array(
+        [[[14.0, 15.0], [24.0, 25.0]], [[54.0, 55.0], [64.0, 65.0]]]
+    ).astype(np.float32)
     output = np.reshape(output, (1, 2, 2, 2, 1))
     test_utils.layer_test(
         AdaptiveAveragePooling3D,
@@ -90,7 +92,9 @@ def test_avg_3d():
 
     valid_input = np.arange(start=0.0, stop=80.0, step=1.0).astype(np.float32)
     valid_input = np.reshape(valid_input, (1, 1, 4, 10, 2))
-    output = np.array([[[14.0, 15.0], [24.0, 25.0]], [[54.0, 55.0], [64.0, 65.0]]]).astype(np.float32)
+    output = np.array(
+        [[[14.0, 15.0], [24.0, 25.0]], [[54.0, 55.0], [64.0, 65.0]]]
+    ).astype(np.float32)
     output = np.reshape(output, (1, 1, 2, 2, 2))
     test_utils.layer_test(
         AdaptiveAveragePooling3D,

@@ -49,7 +49,7 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
     ):
         self.data_format = conv_utils.normalize_data_format(data_format)
         self.reduce_function = reduce_function
-        self.output_size = conv_utils.normalize_tuple(output_size, 1, 'output_size')
+        self.output_size = conv_utils.normalize_tuple(output_size, 1, "output_size")
         super().__init__(**kwargs)
 
     def call(self, inputs, *args):
@@ -103,10 +103,7 @@ class AdaptiveAveragePooling1D(AdaptivePooling1D):
 
     @typechecked
     def __init__(
-        self,
-        output_size: Union[int, Iterable[int]],
-        data_format=None,
-        **kwargs
+        self, output_size: Union[int, Iterable[int]], data_format=None, **kwargs
     ):
         super().__init__(tf.reduce_mean, output_size, data_format, **kwargs)
 
@@ -147,7 +144,7 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
     ):
         self.data_format = conv_utils.normalize_data_format(data_format)
         self.reduce_function = reduce_function
-        self.output_size = conv_utils.normalize_tuple(output_size, 2, 'output_size')
+        self.output_size = conv_utils.normalize_tuple(output_size, 2, "output_size")
         super().__init__(**kwargs)
 
     def call(self, inputs, *args):
@@ -220,10 +217,7 @@ class AdaptiveAveragePooling2D(AdaptivePooling2D):
 
     @typechecked
     def __init__(
-        self,
-        output_size: Union[int, Iterable[int]],
-        data_format=None,
-        **kwargs
+        self, output_size: Union[int, Iterable[int]], data_format=None, **kwargs
     ):
         super().__init__(tf.reduce_mean, output_size, data_format, **kwargs)
 
@@ -264,7 +258,7 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
     ):
         self.data_format = conv_utils.normalize_data_format(data_format)
         self.reduce_function = reduce_function
-        self.output_size = conv_utils.normalize_tuple(output_size, 3, 'output_size')
+        self.output_size = conv_utils.normalize_tuple(output_size, 3, "output_size")
         super().__init__(**kwargs)
 
     def call(self, inputs, *args):
@@ -344,10 +338,7 @@ class AdaptiveAveragePooling3D(AdaptivePooling3D):
 
     @typechecked
     def __init__(
-        self,
-        output_size: Union[int, Iterable[int]],
-        data_format=None,
-        **kwargs
+        self, output_size: Union[int, Iterable[int]], data_format=None, **kwargs
     ):
         super().__init__(tf.reduce_mean, output_size, data_format, **kwargs)
 
