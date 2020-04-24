@@ -14,7 +14,11 @@
 # ==============================================================================
 """Additional layers that conform to Keras API."""
 
-from tensorflow_addons.layers.adaptive_pooling import AdaptiveAveragePooling2D
+from tensorflow_addons.layers.adaptive_pooling import (
+    AdaptiveAveragePooling1D,
+    AdaptiveAveragePooling2D,
+    AdaptiveAveragePooling3D,
+)
 from tensorflow_addons.layers.gelu import GELU
 from tensorflow_addons.layers.maxout import Maxout
 from tensorflow_addons.layers.multihead_attention import MultiHeadAttention
