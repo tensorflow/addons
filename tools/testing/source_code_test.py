@@ -91,6 +91,7 @@ def test_no_private_tf_api():
         "tensorflow_addons/optimizers/moving_average.py",
         "tensorflow_addons/metrics/r_square.py",
         "tensorflow_addons/utils/test_utils.py",
+        "tensorflow_addons/layers/adaptive_pooling.py",
         "tensorflow_addons/losses/contrastive.py",
         "tensorflow_addons/losses/focal_loss.py",
         "tensorflow_addons/losses/lifted.py",

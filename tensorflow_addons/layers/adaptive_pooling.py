@@ -15,8 +15,10 @@
 """Pooling layers with fixed size outputs"""
 
 import tensorflow as tf
+from tensorflow.python.keras.utils import conv_utils
+
 from typeguard import typechecked
-from typing import Union, List, Tuple, Callable
+from typing import Union, List, Tuple, Callable, Iterable
 
 
 class AdaptivePooling1D(tf.keras.layers.Layer):
@@ -26,7 +28,7 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
 
     Arguments:
       reduce_function: The reduction method to apply, e.g. `tf.reduce_max`.
-      output_size: Integer specifying pooled_features
+      output_size: An integer or tuple/list of a single integer, specifying pooled_features.
         The new size of output channels.
       data_format: A string,
         one of `channels_last` (default) or `channels_first`.
@@ -41,17 +43,13 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
     def __init__(
         self,
         reduce_function: Callable,
-        output_size: int,
-        data_format: str = "channels_last",
+        output_size: Union[int, Iterable[int]],
+        data_format=None,
         **kwargs
     ):
-        if data_format != "channels_first" and data_format != "channels_last":
-            raise ValueError(
-                "data_format must be one of 'channels_first' or 'channels_last'"
-            )
+        self.data_format = conv_utils.normalize_data_format(data_format)
         self.reduce_function = reduce_function
-        self.output_size = output_size
-        self.data_format = data_format
+        self.output_size = conv_utils.normalize_tuple(output_size, 1, 'output_size')
         super().__init__(**kwargs)
 
     def call(self, inputs, *args):
@@ -83,7 +81,7 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
 
     Arguments:
       reduce_function: The reduction method to apply, e.g. `tf.reduce_max`.
-      output_size: Tuple of integers specifying (pooled_rows, pooled_cols).
+      output_size: An integer or tuple/list of 2 integers specifying (pooled_rows, pooled_cols).
         The new size of output channels.
       data_format: A string,
         one of `channels_last` (default) or `channels_first`.
@@ -98,17 +96,13 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
     def __init__(
         self,
         reduce_function: Callable,
-        output_size: Union[List[int], Tuple[int, int]],
-        data_format: str = "channels_last",
+        output_size: Union[int, Iterable[int, int]],
+        data_format=None,
         **kwargs
     ):
-        if data_format != "channels_first" and data_format != "channels_last":
-            raise ValueError(
-                "data_format must be one of 'channels_first' or 'channels_last'"
-            )
+        self.data_format = conv_utils.normalize_data_format(data_format)
         self.reduce_function = reduce_function
-        self.output_size = output_size
-        self.data_format = data_format
+        self.output_size = conv_utils.normalize_tuple(output_size, 2, 'output_size')
         super().__init__(**kwargs)
 
     def call(self, inputs, *args):
@@ -159,7 +153,7 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
 
     Arguments:
       reduce_function: The reduction method to apply, e.g. `tf.reduce_max`.
-      output_size: Tuple of integers specifying (pooled_height, pooled_width, pooled_depth).
+      output_size: An integer or tuple/list of 3 integers specifying (pooled_depth, pooled_height, pooled_width).
         The new size of output channels.
       data_format: A string,
         one of `channels_last` (default) or `channels_first`.
@@ -167,24 +161,20 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
         `channels_last` corresponds to inputs with shape
         `(batch, height, width, depth, channels)` while `channels_first`
         corresponds to inputs with shape
-        `(batch, channels, height, width, depth)`.
+        `(batch, channels, depth, height, width)`.
     """
 
     @typechecked
     def __init__(
         self,
         reduce_function: Callable,
-        output_size: Union[List[int], Tuple[int, int, int]],
-        data_format: str = "channels_last",
+        output_size: Union[int, Iterable[int, int, int]],
+        data_format=None,
         **kwargs
     ):
-        if data_format != "channels_first" and data_format != "channels_last":
-            raise ValueError(
-                "data_format must be one of 'channels_first' or 'channels_last'"
-            )
+        self.data_format = conv_utils.normalize_data_format(data_format)
         self.reduce_function = reduce_function
-        self.output_size = output_size
-        self.data_format = data_format
+        self.output_size = conv_utils.normalize_tuple(output_size, 3, 'output_size')
         super().__init__(**kwargs)
 
     def call(self, inputs, *args):
@@ -265,8 +255,8 @@ class AdaptiveAveragePooling2D(AdaptivePooling2D):
     @typechecked
     def __init__(
         self,
-        output_size: Union[List[int], Tuple[int, int]],
-        data_format: str = "channels_last",
+        output_size: Union[int, Iterable[int, int]],
+        data_format=None,
         **kwargs
     ):
         super().__init__(tf.reduce_mean, output_size, data_format, **kwargs)
