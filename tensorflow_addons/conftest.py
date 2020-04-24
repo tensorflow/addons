@@ -4,6 +4,10 @@ from tensorflow_addons.utils.test_utils import data_format  # noqa: F401
 from tensorflow_addons.utils.test_utils import set_seeds  # noqa: F401
 from tensorflow_addons.utils.test_utils import pytest_addoption  # noqa: F401
 from tensorflow_addons.utils.test_utils import set_global_variables  # noqa: F401
+from tensorflow_addons.utils.test_utils import np  # noqa: F401
+from tensorflow_addons.utils.test_utils import tf  # noqa: F401
+from tensorflow_addons.utils.test_utils import tfa  # noqa: F401
+
 
 # fixtures present in this file will be available
 # when running tests and can be referenced with strings

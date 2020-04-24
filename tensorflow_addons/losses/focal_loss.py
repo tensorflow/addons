@@ -15,6 +15,8 @@
 """Implements Focal loss."""
 
 import tensorflow as tf
+import tensorflow_addons as tfa
+
 import tensorflow.keras.backend as K
 
 from tensorflow.python.keras.losses import LossFunctionWrapper

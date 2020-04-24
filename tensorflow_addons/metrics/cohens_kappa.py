@@ -15,6 +15,8 @@
 """Implements Cohen's Kappa."""
 
 import tensorflow as tf
+import tensorflow_addons as tfa
+
 import numpy as np
 import tensorflow.keras.backend as K
 from tensorflow.keras.metrics import Metric

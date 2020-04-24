@@ -17,6 +17,8 @@
 import warnings
 
 import tensorflow as tf
+import tensorflow_addons as tfa
+
 from tensorflow.keras.metrics import Metric
 import numpy as np
 
@@ -45,27 +47,33 @@ class MultiLabelConfusionMatrix(Metric):
     - false negatives for class i in M(1,0)
     - true positives for class i in M(1,1)
 
-    Usage:
+#     Usage:
 
-    # multilabel confusion matrix
-    >>> y_true = tf.constant([[1, 0, 1], [0, 1, 0]], dtype=tf.int32)
-    >>> y_pred = tf.constant([[1, 0, 0],[0, 1, 1]], dtype=tf.int32)
-    >>> output = tfa.metrics.MultiLabelConfusionMatrix(num_classes=3)
-    >>> output.update_state(y_true, y_pred)
-    >>> output.result()
-    <tf.Tensor: shape=(3, 2, 2), dtype=int32, numpy=
-    array([[[1, 0], [0, 1]], [[1, 0], [0, 1]], [[0, 1],
-    [1, 0]]], dtype=int32)>
+#     # multilabel confusion matrix
+#     >>> y_true = tf.constant([[1, 0, 1], [0, 1, 0]], dtype=tf.int32)
+#     >>> y_pred = tf.constant([[1, 0, 0],[0, 1, 1]], dtype=tf.int32)
+#     >>> output = tfa.metrics.MultiLabelConfusionMatrix(num_classes=3)
+#     >>> output.update_state(y_true, y_pred)
+#     >>> output.result()
+#     <tf.Tensor: shape=(3, 2, 2), dtype=float32, numpy=
+#      array([[[1., 0.],
+#              [0., 1.]],
+# <BLANKLINE>
+#             [[1., 0.],
+#              [0., 1.]],
+# <BLANKLINE>
+#             [[0., 1.],
+#              [1., 0.]]], dtype=float32)>
 
-    # if multiclass input is provided
-    >>> y_true = tf.constant([[1, 0, 0], [0, 1, 0]], dtype=tf.int32)
-    >>> y_pred = tf.constant([[1, 0, 0],[0, 0, 1]], dtype=tf.int32)
-    >>> output = tfa.metrics.MultiLabelConfusionMatrix(num_classes=3)
-    >>> output.update_state(y_true, y_pred)
-    >>> output.result()
-    <tf.Tensor: shape=(3, 2, 2), dtype=int32, numpy=
-    array([[[1, 0], [0, 1]], [[1, 0], [1, 0]], [[1, 1], [0, 0]]],
-    dtype=int32)>
+#     # if multiclass input is provided
+#     >>> y_true = tf.constant([[1, 0, 0], [0, 1, 0]], dtype=tf.int32)
+#     >>> y_pred = tf.constant([[1, 0, 0],[0, 0, 1]], dtype=tf.int32)
+#     >>> output = tfa.metrics.MultiLabelConfusionMatrix(num_classes=3)
+#     >>> output.update_state(y_true, y_pred)
+#     >>> output.result()
+#     <tf.Tensor: shape=(3, 2, 2), dtype=int32, numpy=
+#     array([[[1, 0], [0, 1]], [[1, 0], [1, 0]], [[1, 1], [0, 0]]],
+#     dtype=int32)>
     """
 
     @typechecked

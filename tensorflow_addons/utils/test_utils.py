@@ -22,6 +22,7 @@ import random
 import numpy as np
 import pytest
 import tensorflow as tf
+import tensorflow_addons as tfa
 
 from tensorflow_addons.utils import resource_loader
 
@@ -252,3 +253,16 @@ def assert_allclose_according_to_type(
         atol = max(atol, bfloat16_atol)
 
     np.testing.assert_allclose(a, b, rtol=rtol, atol=atol)
+
+
+@pytest.fixture(autouse=True)
+def add_np(doctest_namespace):
+    doctest_namespace["np"] = np
+
+@pytest.fixture(autouse=True)
+def add_tf(doctest_namespace):
+    doctest_namespace["tf"] = tf
+
+@pytest.fixture(autouse=True)
+def add_tfa(doctest_namespace):
+    doctest_namespace["tfa"] = tfa

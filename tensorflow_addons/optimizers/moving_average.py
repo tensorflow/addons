@@ -14,6 +14,8 @@
 # ==============================================================================
 
 import tensorflow as tf
+import tensorflow_addons as tfa
+
 from tensorflow.python.training.moving_averages import assign_moving_average
 from tensorflow_addons.optimizers import AveragedOptimizerWrapper
 from tensorflow_addons.utils.types import FloatTensorLike

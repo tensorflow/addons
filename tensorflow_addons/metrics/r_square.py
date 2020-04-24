@@ -16,6 +16,8 @@
 from typing import Tuple
 
 import tensorflow as tf
+import tensorflow_addons as tfa
+
 from tensorflow.keras.metrics import Metric
 from tensorflow.python.ops import weights_broadcast_ops
 
@@ -66,7 +68,7 @@ class RSquare(Metric):
     >>> ans = tfa.metrics.RSquare()
     >>> ans.update_state(actuals, preds)
     >>> ans.result()
-    <tf.Tensor: shape=(), dtype=float32, numpy=0.57142866>
+    <tf.Tensor: shape=(), dtype=float32, numpy=0.57142854>
     """
 
     @typechecked

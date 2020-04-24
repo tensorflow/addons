@@ -15,6 +15,7 @@
 """Matthews Correlation Coefficient Implementation."""
 
 import tensorflow as tf
+import tensorflow_addons as tfa
 
 from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
 from typeguard import typechecked
