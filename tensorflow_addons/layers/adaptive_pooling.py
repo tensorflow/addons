@@ -79,26 +79,26 @@ class AdaptiveAveragePooling1D(AdaptivePooling1D):
     """Average Pooling with adaptive kernel size.
 
     Arguments:
-      output_size: Tuple of integers specifying (pooled_rows, pooled_cols).
+      output_size: An integer or tuple/list of a single integer, specifying pooled_features.
         The new size of output channels.
       data_format: A string,
         one of `channels_last` (default) or `channels_first`.
         The ordering of the dimensions in the inputs.
         `channels_last` corresponds to inputs with shape
-        `(batch, height, width, channels)` while `channels_first`
-        corresponds to inputs with shape `(batch, channels, height, width)`.
+        `(batch, steps, channels)` while `channels_first`
+        corresponds to inputs with shape `(batch, channels, steps)`.
 
     Input shape:
       - If `data_format='channels_last'`:
-        4D tensor with shape `(batch_size, height, width, channels)`.
+        3D tensor with shape `(batch, steps, channels)`.
       - If `data_format='channels_first'`:
-        4D tensor with shape `(batch_size, channels, height, width)`.
+        3D tensor with shape `(batch, channels, steps)`.
 
     Output shape:
       - If `data_format='channels_last'`:
-        4D tensor with shape `(batch_size, pooled_rows, pooled_cols, channels)`.
+        3D tensor with shape `(batch_size, pooled_steps, channels)`.
       - If `data_format='channels_first'`:
-        4D tensor with shape `(batch_size, channels, pooled_rows, pooled_cols)`.
+        3D tensor with shape `(batch_size, channels, pooled_steps)`.
     """
 
     @typechecked
@@ -243,15 +243,15 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
 
     Arguments:
       reduce_function: The reduction method to apply, e.g. `tf.reduce_max`.
-      output_size: An integer or tuple/list of 3 integers specifying (pooled_depth, pooled_height, pooled_width).
+      output_size: An integer or tuple/list of 3 integers specifying (pooled_dim1, pooled_dim2, pooled_dim3).
         The new size of output channels.
       data_format: A string,
         one of `channels_last` (default) or `channels_first`.
         The ordering of the dimensions in the inputs.
         `channels_last` corresponds to inputs with shape
-        `(batch, height, width, depth, channels)` while `channels_first`
+        `(batch, spatial_dim1, spatial_dim2, spatial_dim3, channels)` while `channels_first`
         corresponds to inputs with shape
-        `(batch, channels, depth, height, width)`.
+        `(batch, channels, spatial_dim1, spatial_dim2, spatial_dim3)`.
     """
 
     @typechecked
@@ -320,7 +320,7 @@ class AdaptiveAveragePooling3D(AdaptivePooling3D):
     """Average Pooling with adaptive kernel size.
 
     Arguments:
-      output_size: Tuple of integers specifying (pooled_rows, pooled_cols).
+      output_size: An integer or tuple/list of 3 integers specifying (pooled_depth, pooled_height, pooled_width).
         The new size of output channels.
       data_format: A string,
         one of `channels_last` (default) or `channels_first`.
@@ -331,15 +331,15 @@ class AdaptiveAveragePooling3D(AdaptivePooling3D):
 
     Input shape:
       - If `data_format='channels_last'`:
-        4D tensor with shape `(batch_size, height, width, channels)`.
+        5D tensor with shape `(batch_size, spatial_dim1, spatial_dim2, spatial_dim3, channels)`.
       - If `data_format='channels_first'`:
-        4D tensor with shape `(batch_size, channels, height, width)`.
+        5D tensor with shape `(batch_size, channels, spatial_dim1, spatial_dim2, spatial_dim3)`.
 
     Output shape:
       - If `data_format='channels_last'`:
-        4D tensor with shape `(batch_size, pooled_rows, pooled_cols, channels)`.
+        5D tensor with shape `(batch_size, pooled_dim1, pooled_dim2, pooled_dim3, channels)`.
       - If `data_format='channels_first'`:
-        4D tensor with shape `(batch_size, channels, pooled_rows, pooled_cols)`.
+        5D tensor with shape `(batch_size, channels, pooled_dim1, pooled_dim2, pooled_dim3)`.
     """
 
     @typechecked
