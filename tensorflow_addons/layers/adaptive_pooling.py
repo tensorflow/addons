@@ -67,9 +67,13 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
     def compute_output_shape(self, input_shape):
         input_shape = tf.TensorShape(input_shape).as_list()
         if self.data_format == "channels_last":
-            shape = tf.TensorShape([input_shape[0], self.output_size, input_shape[-1]])
+            shape = tf.TensorShape(
+                [input_shape[0], self.output_size[0], input_shape[2]]
+            )
         else:
-            shape = tf.TensorShape([input_shape[0], input_shape[1], self.output_size])
+            shape = tf.TensorShape(
+                [input_shape[0], input_shape[1], self.output_size[0]]
+            )
 
         return shape
 
@@ -172,7 +176,7 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
                     input_shape[0],
                     self.output_size[0],
                     self.output_size[1],
-                    input_shape[-1],
+                    input_shape[3],
                 ]
             )
         else:
@@ -292,7 +296,7 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
                     self.output_size[0],
                     self.output_size[1],
                     self.output_size[2],
-                    input_shape[-1],
+                    input_shape[4],
                 ]
             )
         else:
