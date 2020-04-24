@@ -77,6 +77,14 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
 
         return shape
 
+    def get_config(self):
+        config = {
+            "output_size": self.output_size,
+            "data_format": self.data_format,
+        }
+        base_config = super().get_config()
+        return {**base_config, **config}
+
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class AdaptiveAveragePooling1D(AdaptivePooling1D):
@@ -110,14 +118,6 @@ class AdaptiveAveragePooling1D(AdaptivePooling1D):
         self, output_size: Union[int, Iterable[int]], data_format=None, **kwargs
     ):
         super().__init__(tf.reduce_mean, output_size, data_format, **kwargs)
-
-    def get_config(self):
-        config = {
-            "output_size": self.output_size,
-            "data_format": self.data_format,
-        }
-        base_config = super().get_config()
-        return {**base_config, **config}
 
 
 class AdaptivePooling2D(tf.keras.layers.Layer):
@@ -191,6 +191,14 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
 
         return shape
 
+    def get_config(self):
+        config = {
+            "output_size": self.output_size,
+            "data_format": self.data_format,
+        }
+        base_config = super().get_config()
+        return {**base_config, **config}
+
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class AdaptiveAveragePooling2D(AdaptivePooling2D):
@@ -224,14 +232,6 @@ class AdaptiveAveragePooling2D(AdaptivePooling2D):
         self, output_size: Union[int, Iterable[int]], data_format=None, **kwargs
     ):
         super().__init__(tf.reduce_mean, output_size, data_format, **kwargs)
-
-    def get_config(self):
-        config = {
-            "output_size": self.output_size,
-            "data_format": self.data_format,
-        }
-        base_config = super().get_config()
-        return {**base_config, **config}
 
 
 class AdaptivePooling3D(tf.keras.layers.Layer):
@@ -312,6 +312,14 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
 
         return shape
 
+    def get_config(self):
+        config = {
+            "output_size": self.output_size,
+            "data_format": self.data_format,
+        }
+        base_config = super().get_config()
+        return {**base_config, **config}
+
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class AdaptiveAveragePooling3D(AdaptivePooling3D):
@@ -345,11 +353,3 @@ class AdaptiveAveragePooling3D(AdaptivePooling3D):
         self, output_size: Union[int, Iterable[int]], data_format=None, **kwargs
     ):
         super().__init__(tf.reduce_mean, output_size, data_format, **kwargs)
-
-    def get_config(self):
-        config = {
-            "output_size": self.output_size,
-            "data_format": self.data_format,
-        }
-        base_config = super().get_config()
-        return {**base_config, **config}
