@@ -69,7 +69,10 @@ def _masked_minimum(data, mask, dim=1):
 @tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def triplet_semihard_loss(
-    y_true: TensorLike, y_pred: TensorLike, margin: FloatTensorLike = 1.0, angular: bool = False
+    y_true: TensorLike,
+    y_pred: TensorLike,
+    margin: FloatTensorLike = 1.0,
+    angular: bool = False,
 ) -> tf.Tensor:
     """Computes the triplet loss with semi-hard negative mining.
 
@@ -101,7 +104,9 @@ def triplet_semihard_loss(
     if angular:
         pdist_matrix = metric_learning.angular_distances(precise_embeddings)
     else:
-        pdist_matrix = metric_learning.pairwise_distance(precise_embeddings, squared=True)
+        pdist_matrix = metric_learning.pairwise_distance(
+            precise_embeddings, squared=True
+        )
 
     # Build pairwise binary adjacency matrix.
     adjacency = tf.math.equal(labels, tf.transpose(labels))
