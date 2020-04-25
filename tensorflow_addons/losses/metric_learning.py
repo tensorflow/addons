@@ -70,7 +70,7 @@ def pairwise_distance(feature, squared=False):
 def angular_distance(feature):
     """Computes the angular distance matrix
 
-    output[i, j] = cosine_similarity(feature[i, :], feature[j, :])
+    output[i, j] = 1 - cosine_similarity(feature[i, :], feature[j, :])
 
     Args:
       feature: 2-D Tensor of size [number of data, feature dimension].
