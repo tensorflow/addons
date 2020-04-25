@@ -178,6 +178,7 @@ def triplet_hard_loss(
     y_true: TensorLike,
     y_pred: TensorLike,
     margin: FloatTensorLike = 1.0,
+    angular: bool = False,
     soft: bool = False,
 ) -> tf.Tensor:
     """Computes the triplet loss with hard negative and hard positive mining.
@@ -207,7 +208,13 @@ def triplet_hard_loss(
     labels = tf.reshape(labels, [lshape[0], 1])
 
     # Build pairwise squared distance matrix.
-    pdist_matrix = metric_learning.pairwise_distance(precise_embeddings, squared=True)
+    if angular:
+        pdist_matrix = metric_learning.angular_distances(precise_embeddings)
+    else:
+        pdist_matrix = metric_learning.pairwise_distance(
+            precise_embeddings, squared=True
+        )
+
     # Build pairwise binary adjacency matrix.
     adjacency = tf.math.equal(labels, tf.transpose(labels))
     # Invert so we can select negatives only.
