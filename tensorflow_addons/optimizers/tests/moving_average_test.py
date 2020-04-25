@@ -169,3 +169,13 @@ def test_fit_simple_linear_model():
 
     max_abs_diff = np.max(np.abs(predicted - y))
     assert max_abs_diff < 5e-3
+
+
+def test_serialization():
+    sgd_opt = tf.keras.optimizers.SGD(lr=2.0, nesterov=True, momentum=0.3, decay=0.1)
+    optimizer = MovingAverage(
+        sgd_opt, average_decay=0.5, num_updates=None, sequential_update=False
+    )
+    config = tf.keras.optimizers.serialize(optimizer)
+    new_optimizer = tf.keras.optimizers.deserialize(config)
+    assert new_optimizer.get_config() == optimizer.get_config()
