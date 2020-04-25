@@ -25,8 +25,7 @@ python ./configure.py
 bash tools/install_so_files.sh
 python -c "import tensorflow as tf; print(tf.config.list_physical_devices())"
 
-# If there are no gpus, we can use multiple workers
-# Multiple workers will be supported with gpus later.
+EXTRA_ARGS="-n 10"
 if ! [ -x "$(command -v nvidia-smi)" ]; then
   EXTRA_ARGS="-n auto"
 fi
