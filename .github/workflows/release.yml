@@ -16,7 +16,8 @@ on:
 
 env:
   BAZEL_VERSION: 1.1.0
-  OLDEST_PY_VERSION: '3.5'
+  MIN_PY_VERSION: '3.5'
+  MAX_PY_VERSION: '3.8'
 
 jobs:
   test-with-bazel:
@@ -26,7 +27,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
-          python-version: ${{ env.OLDEST_PY_VERSION }}
+          python-version: ${{ env.MIN_PY_VERSION }}
       - name: Build wheels
         run: |
           pip install -r tools/install_deps/pytest.txt -r tools/install_deps/tensorflow-cpu.txt -r requirements.txt
@@ -40,7 +41,7 @@ jobs:
       matrix:
         os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
         py-version: ['3.5', '3.6', '3.7', '3.8']
-        tf-version: ['2.1.0', '2.2.0rc2']
+        tf-version: ['2.1.0', '2.2.0rc3']
       fail-fast: false
     steps:
       - uses: actions/github-script@0.3.0
@@ -58,10 +59,8 @@ jobs:
           python-version: ${{ matrix.py-version }}
       - name: Build wheels
         if: |
-          (matrix.os != 'macos-latest' || matrix.py-version != '3.8')
-          && (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
-          && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc2')
-          && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
+          (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
+          && (github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION || matrix.py-version == env.MAX_PY_VERSION)
         env:
           OS: ${{ runner.os }}
           PY_VERSION: ${{ matrix.py-version }}
@@ -71,53 +70,14 @@ jobs:
         run: bash .github/workflows/make_wheel_${OS}.sh
       - uses: actions/upload-artifact@v1
         if: |
-          (matrix.os != 'macos-latest' || matrix.py-version != '3.8')
-          && (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
-          && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc2')
-          && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
+          (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
+          && (github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION || matrix.py-version == env.MAX_PY_VERSION)
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
           path: wheelhouse
-  test-release-wheel:
-    name: Test release wheels
-    runs-on: ${{ matrix.os }}
-    needs: [release-wheel]
-    strategy:
-      matrix:
-        os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
-        py-version: ['3.5', '3.6', '3.7']
-        tf-version: ['2.1.0', '2.2.0rc2']
-      fail-fast: false
-    steps:
-      - uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.py-version }}
-      - uses: actions/download-artifact@v1
-        if: |
-          (matrix.os != 'macos-latest' || matrix.py-version != '3.8')
-          && (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
-          && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc2')
-          && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
-        with:
-          name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
-          path: ./wheel
-      - name: Test wheel
-        if: |
-          (matrix.os != 'macos-latest' || matrix.py-version != '3.8')
-          && (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
-          && (matrix.os != 'ubuntu-18.04' || matrix.tf-version != '2.2.0rc2')
-          && (github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION)
-        env:
-          TF_VERSION: ${{ matrix.tf-version }}
-        shell: bash
-        run: |
-          pip install tensorflow==$TF_VERSION
-          pip install wheel/*.whl
-          python -c "import tensorflow_addons as tfa; print(tfa.activations.lisht(0.2))"
-
   upload-wheels:
     name: Publish wheels to PyPi
-    needs: [release-wheel, test-release-wheel, test-with-bazel]
+    needs: [release-wheel, test-with-bazel]
     runs-on: ubuntu-18.04
     strategy:
       matrix:
@@ -126,11 +86,11 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/download-artifact@v1
-        if: github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION
+        if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION  || matrix.py-version == env.MAX_PY_VERSION
         with:
           name: ${{ matrix.os }}-${{ matrix.py-version }}-tf2.1.0-wheel
           path: ./dist
-      - if: github.event_name != 'pull_request' || matrix.py-version == env.OLDEST_PY_VERSION
+      - if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION  || matrix.py-version == env.MAX_PY_VERSION
         run: |
           set -e -x
           ls -la dist/

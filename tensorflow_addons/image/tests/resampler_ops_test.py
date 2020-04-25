@@ -14,8 +14,6 @@
 # ============================================================================
 """Tests for resampler."""
 
-from absl.testing import parameterized
-
 import numpy as np
 import pytest
 
@@ -94,109 +92,94 @@ def _make_warp(batch_size, warp_height, warp_width, dtype):
     return warp.astype(dtype)
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class ResamplerTest(tf.test.TestCase, parameterized.TestCase):
-    @parameterized.named_parameters(("float32", np.float32), ("float64", np.float64))
-    def test_op_forward_pass_gpu(self, dtype):
-        if not tf.test.is_gpu_available():
-            self.skipTest("gpu is not available.")
-        self._test_op_forward_pass(True, dtype)
+@pytest.mark.usefixtures("cpu_and_gpu")
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_op_forward_pass(dtype):
+    np.random.seed(0)
+    data_width = 7
+    data_height = 9
+    data_channels = 5
+    warp_width = 4
+    warp_height = 8
+    batch_size = 10
 
-    @parameterized.named_parameters(
-        ("float16", np.float16), ("float32", np.float32), ("float64", np.float64)
-    )
-    def test_op_forward_pass_cpu(self, dtype):
-        self._test_op_forward_pass(False, dtype)
+    warp = _make_warp(batch_size, warp_height, warp_width, dtype)
+    data_shape = (batch_size, data_height, data_width, data_channels)
+    data = np.random.rand(*data_shape).astype(dtype)
+    data_ph = tf.constant(data)
+    warp_ph = tf.constant(warp)
+    outputs = resampler_ops.resampler(data=data_ph, warp=warp_ph)
+    assert outputs.shape == (10, warp_height, warp_width, data_channels)
 
-    def _test_op_forward_pass(self, on_gpu, dtype):
-        np.random.seed(0)
-        data_width = 7
-        data_height = 9
-        data_channels = 5
-        warp_width = 4
-        warp_height = 8
-        batch_size = 10
-
-        warp = _make_warp(batch_size, warp_height, warp_width, dtype)
-        data_shape = (batch_size, data_height, data_width, data_channels)
-        data = np.random.rand(*data_shape).astype(dtype)
-        use_gpu = on_gpu and tf.test.is_gpu_available()
-        with test_utils.device(use_gpu):
-            data_ph = tf.constant(data)
-            warp_ph = tf.constant(warp)
-            outputs = self.evaluate(resampler_ops.resampler(data=data_ph, warp=warp_ph))
-            self.assertEqual(
-                outputs.shape, (10, warp_height, warp_width, data_channels)
+    # Generate reference output via bilinear interpolation in numpy
+    reference_output = np.zeros_like(outputs)
+    for batch in range(batch_size):
+        for c in range(data_channels):
+            reference_output[batch, :, :, c] = _bilinearly_interpolate(
+                data[batch, :, :, c], warp[batch, :, :, 0], warp[batch, :, :, 1]
             )
 
-        # Generate reference output via bilinear interpolation in numpy
-        reference_output = np.zeros_like(outputs)
-        for batch in range(batch_size):
-            for c in range(data_channels):
-                reference_output[batch, :, :, c] = _bilinearly_interpolate(
-                    data[batch, :, :, c], warp[batch, :, :, 0], warp[batch, :, :, 1]
-                )
+    test_utils.assert_allclose_according_to_type(
+        outputs, reference_output, half_rtol=5e-3, half_atol=5e-3
+    )
 
-        self.assertAllCloseAccordingToType(
-            outputs, reference_output, half_rtol=5e-3, half_atol=5e-3
-        )
 
-    def test_op_errors(self):
-        batch_size = 10
-        data_height = 9
-        data_width = 7
-        data_depth = 3
-        data_channels = 5
-        warp_width = 4
-        warp_height = 8
+def test_op_errors():
+    batch_size = 10
+    data_height = 9
+    data_width = 7
+    data_depth = 3
+    data_channels = 5
+    warp_width = 4
+    warp_height = 8
 
-        # Input data shape is not defined over a 2D grid, i.e. its shape is not like
-        # (batch_size, data_height, data_width, data_channels).
-        data_shape = (batch_size, data_height, data_width, data_depth, data_channels)
-        data = np.zeros(data_shape)
-        warp_shape = (batch_size, warp_height, warp_width, 2)
-        warp = np.zeros(warp_shape)
+    # Input data shape is not defined over a 2D grid, i.e. its shape is not like
+    # (batch_size, data_height, data_width, data_channels).
+    data_shape = (batch_size, data_height, data_width, data_depth, data_channels)
+    data = np.zeros(data_shape)
+    warp_shape = (batch_size, warp_height, warp_width, 2)
+    warp = np.zeros(warp_shape)
 
-        with self.assertRaisesRegexp(
-            tf.errors.UnimplementedError,
-            "Only bilinear interpolation is currently supported.",
-        ):
-            self.evaluate(resampler_ops.resampler(data, warp))
+    with pytest.raises(
+        tf.errors.UnimplementedError,
+        match="Only bilinear interpolation is currently supported.",
+    ):
+        resampler_ops.resampler(data, warp)
 
-        # Warp tensor must be at least a matrix, with shape [batch_size, 2].
-        data_shape = (batch_size, data_height, data_width, data_channels)
-        data = np.zeros(data_shape)
-        warp_shape = (batch_size,)
-        warp = np.zeros(warp_shape)
+    # Warp tensor must be at least a matrix, with shape [batch_size, 2].
+    data_shape = (batch_size, data_height, data_width, data_channels)
+    data = np.zeros(data_shape)
+    warp_shape = (batch_size,)
+    warp = np.zeros(warp_shape)
 
-        with self.assertRaisesRegexp(
-            tf.errors.InvalidArgumentError, "warp should be at least a matrix"
-        ):
-            self.evaluate(resampler_ops.resampler(data, warp))
+    with pytest.raises(
+        tf.errors.InvalidArgumentError, match="warp should be at least a matrix"
+    ):
+        resampler_ops.resampler(data, warp)
 
-        # The batch size of the data and warp tensors must be the same.
-        data_shape = (batch_size, data_height, data_width, data_channels)
-        data = np.zeros(data_shape)
-        warp_shape = (batch_size + 1, warp_height, warp_width, 2)
-        warp = np.zeros(warp_shape)
+    # The batch size of the data and warp tensors must be the same.
+    data_shape = (batch_size, data_height, data_width, data_channels)
+    data = np.zeros(data_shape)
+    warp_shape = (batch_size + 1, warp_height, warp_width, 2)
+    warp = np.zeros(warp_shape)
 
-        with self.assertRaisesRegexp(
-            tf.errors.InvalidArgumentError, "Batch size of data and warp tensor"
-        ):
-            self.evaluate(resampler_ops.resampler(data, warp))
+    with pytest.raises(
+        tf.errors.InvalidArgumentError, match="Batch size of data and warp tensor"
+    ):
+        resampler_ops.resampler(data, warp)
 
-        # The warp tensor must contain 2D coordinates, i.e. its shape last dimension
-        # must be 2.
-        data_shape = (batch_size, data_height, data_width, data_channels)
-        data = np.zeros(data_shape)
-        warp_shape = (batch_size, warp_height, warp_width, 3)
-        warp = np.zeros(warp_shape)
+    # The warp tensor must contain 2D coordinates, i.e. its shape last dimension
+    # must be 2.
+    data_shape = (batch_size, data_height, data_width, data_channels)
+    data = np.zeros(data_shape)
+    warp_shape = (batch_size, warp_height, warp_width, 3)
+    warp = np.zeros(warp_shape)
 
-        with self.assertRaisesRegexp(
-            tf.errors.UnimplementedError,
-            "Only bilinear interpolation is supported, warping",
-        ):
-            self.evaluate(resampler_ops.resampler(data, warp))
+    with pytest.raises(
+        tf.errors.UnimplementedError,
+        match="Only bilinear interpolation is supported, warping",
+    ):
+        resampler_ops.resampler(data, warp)
 
 
 @pytest.mark.usefixtures("cpu_and_gpu")

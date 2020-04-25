@@ -20,6 +20,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.losses import lifted
+from tensorflow_addons.utils import test_utils
 
 
 def pairwise_distance_np(feature, squared=False):
@@ -51,19 +52,12 @@ def pairwise_distance_np(feature, squared=False):
     return pairwise_distances
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_lifted_struct():
-    num_data = 10
-    feat_dim = 6
-    margin = 1.0
-    num_classes = 4
+def lifted_struct_loss_np(labels, embedding, margin):
 
-    embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
-    labels = np.random.randint(0, num_classes, size=num_data).astype(np.float32)
+    num_data = embedding.shape[0]
     # Reshape labels to compute adjacency matrix.
     labels_reshaped = np.reshape(labels, (labels.shape[0], 1))
 
-    # Compute the loss in NP
     adjacency = np.equal(labels_reshaped, labels_reshaped.T)
     pdist_matrix = pairwise_distance_np(embedding)
     loss_np = 0.0
@@ -91,13 +85,29 @@ def test_lifted_struct():
                 loss_np += this_loss * this_loss
 
     loss_np = loss_np / num_constraints / 2.0
+    return loss_np
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", [tf.float32, tf.float16, tf.bfloat16])
+def test_lifted_struct(dtype):
+    num_data = 10
+    feat_dim = 6
+    margin = 1.0
+    num_classes = 4
+
+    embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
+    labels = np.random.randint(0, num_classes, size=num_data).astype(np.float32)
+
+    # Compute the loss in NP
+    loss_np = lifted_struct_loss_np(labels, embedding, margin)
 
     # Compute the loss in TF.
     y_true = tf.constant(labels)
-    y_pred = tf.constant(embedding)
+    y_pred = tf.constant(embedding, dtype=dtype)
     cce_obj = lifted.LiftedStructLoss()
     loss = cce_obj(y_true, y_pred)
-    np.testing.assert_almost_equal(loss.numpy(), loss_np, 3)
+    test_utils.assert_allclose_according_to_type(loss.numpy(), loss_np)
 
 
 def test_keras_model_compile():

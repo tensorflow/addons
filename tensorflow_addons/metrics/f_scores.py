@@ -174,10 +174,8 @@ class FBetaScore(tf.keras.metrics.Metric):
             "num_classes": self.num_classes,
             "average": self.average,
             "beta": self.beta,
+            "threshold": self.threshold,
         }
-
-        if self.threshold is not None:
-            config["threshold"] = self.threshold
 
         base_config = super().get_config()
         return {**base_config, **config}
@@ -238,7 +236,6 @@ class F1Score(FBetaScore):
         threshold: Optional[FloatTensorLike] = None,
         name: str = "f1_score",
         dtype: AcceptableDTypes = None,
-        **kwargs
     ):
         super().__init__(num_classes, average, 1.0, threshold, name=name, dtype=dtype)
 

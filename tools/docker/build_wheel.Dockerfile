@@ -1,5 +1,6 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 ARG TF_VERSION
+ARG PY_VERSION
 FROM seanpmorgan/tensorflow:2.1.0-custom-op-gpu-ubuntu16-minimal as base_install
 ENV TF_NEED_CUDA="1"
 
@@ -24,11 +25,11 @@ RUN ln -sf $(which python$PY_VERSION) /usr/bin/python
 
 RUN python -m pip install --upgrade pip setuptools auditwheel==2.0.0
 
-COPY tools/install_deps/ /install_deps
 ARG TF_VERSION
-RUN python -m pip install \
-        tensorflow==$TF_VERSION \
-        -r /install_deps/pytest.txt
+RUN python -m pip install tensorflow==$TF_VERSION
+
+COPY tools/install_deps/ /install_deps
+RUN python -m pip install -r /install_deps/pytest.txt
 
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
@@ -46,7 +47,6 @@ ARG NIGHTLY_FLAG
 ARG NIGHTLY_TIME
 RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
     bash tools/testing/build_and_run_tests.sh && \
-    bazel clean --expunge && \
     bazel build \
         -c opt \
         --noshow_progress \
@@ -63,6 +63,18 @@ RUN auditwheel repair --plat manylinux2010_x86_64 artifacts/*.whl
 RUN ls -al wheelhouse/
 
 # -------------------------------------------------------------------
+
+FROM python:$PY_VERSION as test_wheel_in_fresh_environment
+
+ARG TF_VERSION
+RUN python -m pip install tensorflow==$TF_VERSION
+
+COPY --from=make_wheel /addons/wheelhouse/ /addons/wheelhouse/
+RUN pip install /addons/wheelhouse/*.whl
+
+RUN python -c "import tensorflow_addons as tfa; print(tfa.register_all())"
+
+# -------------------------------------------------------------------
 FROM scratch as output
 
-COPY --from=make_wheel /addons/wheelhouse/ .
+COPY --from=test_wheel_in_fresh_environment /addons/wheelhouse/ .
