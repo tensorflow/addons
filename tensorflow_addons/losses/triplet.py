@@ -178,8 +178,8 @@ def triplet_hard_loss(
     y_true: TensorLike,
     y_pred: TensorLike,
     margin: FloatTensorLike = 1.0,
-    angular: bool = False,
     soft: bool = False,
+    angular: bool = False,
 ) -> tf.Tensor:
     """Computes the triplet loss with hard negative and hard positive mining.
 

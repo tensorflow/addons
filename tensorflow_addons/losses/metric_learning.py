@@ -68,7 +68,7 @@ def pairwise_distance(feature, squared=False):
 
 @tf.function
 def angular_distance(feature):
-    """Computes the angular distance matrix
+    """Computes the angular distance matrix.
 
     output[i, j] = 1 - cosine_similarity(feature[i, :], feature[j, :])
 
@@ -82,9 +82,9 @@ def angular_distance(feature):
     feature = tf.math.l2_normalize(feature, axis=1)
 
     # create adjaceny matrix of cosine similarity
-    angular_distances = 1 - tf.matmul(feature, tf.transpose(feature))
+    angular_distances = 1 - tf.matmul(feature, feature, transpose_b=True)
 
     # ensure all distances > 1e-16
-    angular_distances = tf.maximum(angular_distances, 1e-16)
+    angular_distances = tf.maximum(angular_distances, 0.0)
 
     return angular_distances
