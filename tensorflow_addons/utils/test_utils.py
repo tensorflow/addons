@@ -91,6 +91,25 @@ def layer_test(
     if adapt_data is not None:
         layer.adapt(adapt_data)
 
+    x = tf.keras.Input(shape=input_shape[1:], dtype=input_dtype)
+    y = layer(x)
+    model = tf.keras.Model(x, y)
+    actual_output = model.predict(input_data)
+    model_config = model.get_config()
+    recovered_model = tf.keras.models.model_from_config(model_config, custom_objects)
+    if model.weights:
+        weights = model.get_weights()
+        recovered_model.set_weights(weights)
+        output = recovered_model.predict(input_data)
+        np.testing.assert_allclose(output, actual_output, rtol=1e-3, atol=1e-6)
+
+    output_tensor = layer(input_data).numpy()
+    # model = tf.keras.Sequential()
+    # model.add(tf.keras.Input(shape=input_shape[1:], dtype=input_dtype))
+    # model.add(layer)
+    # actual_output = model.predict(input_data)
+    return output_tensor
+
 
 @contextlib.contextmanager
 def device(use_gpu):
