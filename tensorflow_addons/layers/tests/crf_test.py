@@ -23,7 +23,7 @@ import pytest
 import numpy as np
 import tensorflow as tf
 
-from tensorflow_addons.layers.crf import CRF, CRFLossLayer
+from tensorflow_addons.layers.crf import CRF
 from tensorflow_addons.text.crf import crf_log_likelihood
 
 
@@ -79,7 +79,6 @@ def get_test_data_extended():
     return logits, tags, transitions, boundary_values, crf_layer
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_keras_model_inference():
     logits, _, _, _, crf_layer = get_test_data_extended()
 
@@ -162,7 +161,7 @@ class ModelWithCRFLoss(tf.keras.models.Model):
         if sample_weights is not None:
             crf_loss = crf_loss * sample_weights
 
-        return tf.reduce_sum(crf_loss), sum(self.losses)
+        return tf.reduce_mean(crf_loss), sum(self.losses)
 
     def train_step(self, data):
         data = expand_1d(data)
@@ -188,19 +187,12 @@ class ModelWithCRFLoss(tf.keras.models.Model):
         return {"crf_loss_val": crf_loss, "internal_losses_val": internal_losses}
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_traing():
-    logits, tags, _, _, crf_layer = get_test_data_extended()
-    train_some_model(logits, tags)
-
-
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_traing2():
     x_np, y_np = get_test_data()
     train_some_model(x_np, y_np)
 
 
-def train_some_model(x_np, y_np):
+def train_some_model(x_np, y_np, sanity_check=True):
     x_input = tf.keras.layers.Input(shape=x_np.shape[1:])
     crf_outputs = CRF(5, name="L")(x_input)
     base_model = tf.keras.Model(x_input, crf_outputs)
@@ -208,31 +200,35 @@ def train_some_model(x_np, y_np):
     wrapper_model = ModelWithCRFLoss(base_model)
 
     wrapper_model.compile("adam")
-    wrapper_model.fit(x=x_np, y=y_np)
-    wrapper_model.evaluate(x_np, y_np)
+    if sanity_check:
+        wrapper_model.fit(x=x_np, y=y_np)
+        wrapper_model.evaluate(x_np, y_np)
     wrapper_model.predict(x_np)
     return wrapper_model
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_mask_right_padding():
     x_np, y_np = get_test_data()
     mask = np.array([[1, 1, 1], [1, 1, 0]])
 
     x = tf.keras.layers.Input(shape=x_np.shape[1:])
-    y = tf.keras.layers.Input(shape=y_np.shape[1:])
+
     crf_layer_outputs = CRF(5)(x, mask=tf.constant(mask))
-    decoded_sequence, potentials, sequence_length, chain_kernel = crf_layer_outputs
 
-    crf_loss = CRFLossLayer()([potentials, y, sequence_length, chain_kernel])
-
-    inference_model = tf.keras.Model(x, decoded_sequence)
-    training_model = tf.keras.Model([x, y], crf_loss)
+    base_model = tf.keras.Model(x, crf_layer_outputs)
+    model = ModelWithCRFLoss(base_model)
 
     # check shape inference
-    training_model.compile("adam", "mae")
-    training_model.fit((x_np, y_np), np.zeros((2,)))
-    inference_model.predict(x_np)
+    model.compile("adam")
+    old_weights = model.get_weights()
+    model.fit(x_np, y_np)
+    new_weights = model.get_weights()
+
+    # we check that the weights were updated during the training phase.
+    with pytest.raises(AssertionError):
+        assert_all_equal(old_weights, new_weights)
+
+    model.predict(x_np)
 
 
 def test_mask_left_padding():
@@ -240,21 +236,18 @@ def test_mask_left_padding():
     mask = np.array([[0, 1, 1], [1, 1, 1]])
 
     x = tf.keras.layers.Input(shape=x_np.shape[1:])
-    y = tf.keras.layers.Input(shape=y_np.shape[1:])
     crf_layer_outputs = CRF(5)(x, mask=tf.constant(mask))
-    decoded_sequence, potentials, sequence_length, chain_kernel = crf_layer_outputs
 
-    crf_loss = CRFLossLayer()([potentials, y, sequence_length, chain_kernel])
-
-    training_model = tf.keras.Model([x, y], crf_loss)
+    base_model = tf.keras.Model(x, crf_layer_outputs)
+    model = ModelWithCRFLoss(base_model)
 
     # we can only check the value of the mask
     # if we run eagerly. It's kind of a debug mode
     # otherwise we're wasting computation.
-    training_model.compile("adam", "mae", run_eagerly=True)
+    model.compile("adam", run_eagerly=True)
 
     with pytest.raises(NotImplementedError) as context:
-        training_model((x_np, y_np)).numpy()
+        model(x_np).numpy()
 
     assert "CRF layer do not support left padding" in str(context.value)
 
@@ -275,27 +268,24 @@ def assert_all_equal(array_list1, array_list2):
 def test_serialization():
 
     x_np, y_np = get_test_data()
-    model = train_some_model(x_np, y_np)
+    model = train_some_model(x_np, y_np, sanity_check=False)
 
     new_model = clone(model)
     assert_all_equal(model.predict(x_np), new_model.predict(x_np))
     assert_all_equal(model.get_weights(), new_model.get_weights())
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_numerical_accuracy():
     logits, tags, transitions, boundary_values, crf_layer = get_test_data_extended()
 
     x_input = tf.keras.layers.Input(shape=logits.shape[1:])
-    y_input = tf.keras.layers.Input(shape=tags.shape[1:])
-
     crf_outputs = crf_layer(x_input)
-    decoded_sequence, potentials, sequence_length, chain_kernel = crf_outputs
+    base_model = tf.keras.Model(x_input, crf_outputs)
+    model = ModelWithCRFLoss(base_model)
 
-    crf_loss = CRFLossLayer()([potentials, y_input, sequence_length, chain_kernel])
-    training_model = tf.keras.Model([x_input, y_input], crf_loss)
-
-    training_model.compile(loss="mae")
-    log_likelihood = training_model.train_on_batch((logits, tags), np.zeros((2,)))
+    model.compile()
+    log_likelihood = model.train_on_batch(logits, tags, return_dict=True)["crf_loss"]
 
     # The manually computed log likelihood should
     # equal the result of crf.forward.

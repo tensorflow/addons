@@ -242,22 +242,3 @@ class CRF(tf.keras.layers.Layer):
     def _compute_dtype(self):
         # fixed output dtype from underline CRF functions
         return tf.int32
-
-
-@tf.keras.utils.register_keras_serializable(package="Addons")
-class CRFLossLayer(tf.keras.layers.Layer):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def call(self, inputs, **kwargs):
-        potentials, y_true, sequence_length, chain_kernel = inputs
-        y_true = tf.cast(y_true, tf.int32)
-        sequence_length = tf.cast(sequence_length, tf.int32)
-
-        log_likelihood, _ = crf_log_likelihood(
-            potentials, y_true, sequence_length, chain_kernel
-        )
-        return -log_likelihood
-
-    def get_config(self):
-        return super().get_config()
