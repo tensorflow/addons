@@ -164,10 +164,10 @@ class ModelWithCRFLoss(tf.keras.Model):
 
 def test_traing():
     x_np, y_np = get_test_data()
-    train_some_model(x_np, y_np)
+    get_some_model(x_np, y_np)
 
 
-def train_some_model(x_np, y_np, sanity_check=True):
+def get_some_model(x_np, y_np, sanity_check=True):
     x_input = tf.keras.layers.Input(shape=x_np.shape[1:])
     crf_outputs = CRF(5, name="L")(x_input)
     base_model = tf.keras.Model(x_input, crf_outputs)
@@ -227,12 +227,24 @@ def test_mask_left_padding():
     assert "CRF layer do not support left padding" in str(context.value)
 
 
-def clone(model: tf.keras.Model):
+def clone(model: ModelWithCRFLoss, inference_only=True):
 
     with tempfile.TemporaryDirectory() as tmpdir:
         file_path = os.path.join(tmpdir, "my_model.tf")
         model.save(file_path)
-        return tf.keras.models.load_model(file_path)
+        new_model = tf.keras.models.load_model(file_path)
+
+    if not inference_only:
+        # since tf doesn't save the python code of train_step and test_step
+        # we need to call the wrapper again.
+        # This may change, maybe later on tf will save train_step and test_step.
+        new_model_with_wrapper = ModelWithCRFLoss(new_model.base_model)
+
+        # this works, but it may be cleaner to do a copy of the optimizer
+        new_model_with_wrapper.compile(optimizer=new_model.optimizer)
+        new_model = new_model_with_wrapper
+
+    return new_model
 
 
 def assert_all_equal(array_list1, array_list2):
@@ -240,14 +252,21 @@ def assert_all_equal(array_list1, array_list2):
         np.testing.assert_equal(np.array(arr1), np.array(arr2))
 
 
-def test_serialization():
+@pytest.mark.parametrize("inference_only", [True, False])
+def test_serialization(inference_only):
 
     x_np, y_np = get_test_data()
-    model = train_some_model(x_np, y_np, sanity_check=False)
+    model = get_some_model(x_np, y_np, sanity_check=False)
 
-    new_model = clone(model)
-    assert_all_equal(model.predict(x_np), new_model.predict(x_np))
-    assert_all_equal(model.get_weights(), new_model.get_weights())
+    new_model = clone(model, inference_only)
+    if inference_only:
+        assert_all_equal(model.predict(x_np), new_model.predict(x_np))
+        assert_all_equal(model.get_weights(), new_model.get_weights())
+    else:
+        original_loss = model.train_on_batch(x_np, y_np, return_dict=True)["crf_loss"]
+        clone_loss = new_model.train_on_batch(x_np, y_np, return_dict=True)["crf_loss"]
+        assert_all_equal(model.get_weights(), new_model.get_weights())
+        assert original_loss == clone_loss
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
