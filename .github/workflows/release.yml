@@ -41,7 +41,7 @@ jobs:
       matrix:
         os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
         py-version: ['3.5', '3.6', '3.7', '3.8']
-        tf-version: ['2.1.0', '2.2.0rc3']
+        tf-version: ['2.2.0rc3']
       fail-fast: false
     steps:
       - uses: actions/github-script@0.3.0
@@ -58,9 +58,7 @@ jobs:
         with:
           python-version: ${{ matrix.py-version }}
       - name: Build wheels
-        if: |
-          (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
-          && (github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION || matrix.py-version == env.MAX_PY_VERSION)
+        if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION || matrix.py-version == env.MAX_PY_VERSION
         env:
           OS: ${{ runner.os }}
           PY_VERSION: ${{ matrix.py-version }}
@@ -69,9 +67,7 @@ jobs:
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}.sh
       - uses: actions/upload-artifact@v1
-        if: |
-          (matrix.py-version != '3.8' || matrix.tf-version != '2.1.0')
-          && (github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION || matrix.py-version == env.MAX_PY_VERSION)
+        if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION || matrix.py-version == env.MAX_PY_VERSION
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
           path: wheelhouse
@@ -88,7 +84,7 @@ jobs:
       - uses: actions/download-artifact@v1
         if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION  || matrix.py-version == env.MAX_PY_VERSION
         with:
-          name: ${{ matrix.os }}-${{ matrix.py-version }}-tf2.1.0-wheel
+          name: ${{ matrix.os }}-${{ matrix.py-version }}-tf2.2.0rc3-wheel
           path: ./dist
       - if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION  || matrix.py-version == env.MAX_PY_VERSION
         run: |
