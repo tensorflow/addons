@@ -18,3 +18,7 @@ toc:
   path: /addons/tutorials/tqdm_progress_bar
 - title: Seq2Seq for Translation
   path: /addons/tutorials/networks_seq2seq_nmt
+- title: Moving Average Optimizer Checkpoint
+  path: /addons/tutorials/average_optimizers_callback
+- title: Time Stopping Callback
+  path: /addons/tutorials/time_stopping
