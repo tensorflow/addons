@@ -111,37 +111,16 @@ def test_unmasked_viterbi_decode():
     assert decoded_sequence.dtype == np.int32
 
 
-def expand_1d(data):
-    """Expands 1-dimensional `Tensor`s into 2-dimensional `Tensor`s."""
-
-    def _expand_single_1d_tensor(t):
-        # Leaves `CompositeTensor`s as-is.
-        if (
-            isinstance(t, tf.Tensor)
-            and isinstance(t.shape, tf.TensorShape)
-            and t.shape.rank == 1
-        ):
-            return tf.expand_dims(t, axis=-1)
-        return t
-
-    return tf.nest.map_structure(_expand_single_1d_tensor, data)
-
-
-def unpack_x_y_sample_weight(data):
-    """Unpacks user-provided data tuple."""
-    if not isinstance(data, tuple):
-        return data, None, None
-    elif len(data) == 1:
-        return data[0], None, None
-    elif len(data) == 2:
+def unpack_data(data):
+    if len(data) == 2:
         return data[0], data[1], None
     elif len(data) == 3:
-        return data[0], data[1], data[2]
+        return data
+    else:
+        raise TypeError("Expected data to be a tuple of size 2 or 3.")
 
-    raise ValueError("Data not understood.")
 
-
-class ModelWithCRFLoss(tf.keras.models.Model):
+class ModelWithCRFLoss(tf.keras.Model):
     """Wrapper around the base model for custom training logic."""
 
     def __init__(self, base_model):
@@ -151,7 +130,7 @@ class ModelWithCRFLoss(tf.keras.models.Model):
     def call(self, inputs):
         return self.base_model(inputs)
 
-    def compute_loss(self, x, y, sample_weights, training):
+    def compute_loss(self, x, y, sample_weights, training=False):
         y_pred = self(x, training=training)
         _, potentials, sequence_length, chain_kernel = y_pred
 
@@ -164,8 +143,7 @@ class ModelWithCRFLoss(tf.keras.models.Model):
         return tf.reduce_mean(crf_loss), sum(self.losses)
 
     def train_step(self, data):
-        data = expand_1d(data)
-        x, y, sample_weight = unpack_x_y_sample_weight(data)
+        x, y, sample_weight = unpack_data(data)
 
         with tf.GradientTape() as tape:
             crf_loss, internal_losses = self.compute_loss(
@@ -179,11 +157,8 @@ class ModelWithCRFLoss(tf.keras.models.Model):
         return {"crf_loss": crf_loss, "internal_losses": internal_losses}
 
     def test_step(self, data):
-        data = expand_1d(data)
-        x, y, sample_weight = unpack_x_y_sample_weight(data)
-        crf_loss, internal_losses = self.compute_loss(
-            x, y, sample_weight, training=False
-        )
+        x, y, sample_weight = unpack_data(data)
+        crf_loss, internal_losses = self.compute_loss(x, y, sample_weight)
         return {"crf_loss_val": crf_loss, "internal_losses_val": internal_losses}
 
 
@@ -197,14 +172,14 @@ def train_some_model(x_np, y_np, sanity_check=True):
     crf_outputs = CRF(5, name="L")(x_input)
     base_model = tf.keras.Model(x_input, crf_outputs)
 
-    wrapper_model = ModelWithCRFLoss(base_model)
+    model = ModelWithCRFLoss(base_model)
 
-    wrapper_model.compile("adam")
+    model.compile("adam")
     if sanity_check:
-        wrapper_model.fit(x=x_np, y=y_np)
-        wrapper_model.evaluate(x_np, y_np)
-    wrapper_model.predict(x_np)
-    return wrapper_model
+        model.fit(x=x_np, y=y_np)
+        model.evaluate(x_np, y_np)
+    model.predict(x_np)
+    return model
 
 
 def test_mask_right_padding():
