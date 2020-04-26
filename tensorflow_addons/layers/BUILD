@@ -4,21 +4,7 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "layers",
-    srcs = [
-        "__init__.py",
-        "crf.py",
-        "gelu.py",
-        "maxout.py",
-        "multihead_attention.py",
-        "netvlad.py",
-        "normalizations.py",
-        "optical_flow.py",
-        "poincare.py",
-        "polynomial.py",
-        "sparsemax.py",
-        "tlu.py",
-        "wrappers.py",
-    ],
+    srcs = glob(["*.py"]),
     data = [
         "//tensorflow_addons/custom_ops/layers:_correlation_cost_ops.so",
     ],
@@ -30,146 +16,10 @@ py_library(
 )
 
 py_test(
-    name = "crf_test",
+    name = "layers_test",
     size = "small",
-    srcs = [
-        "crf_test.py",
-    ],
-    main = "crf_test.py",
-    deps = [
-        ":layers",
-    ],
-)
-
-py_test(
-    name = "polynomial_test",
-    size = "small",
-    srcs = [
-        "polynomial_test.py",
-    ],
-    main = "polynomial_test.py",
-    python_version = "PY3",
-    srcs_version = "PY2AND3",
-    deps = [
-        ":layers",
-    ],
-)
-
-py_test(
-    name = "gelu_test",
-    size = "small",
-    srcs = [
-        "gelu_test.py",
-    ],
-    main = "gelu_test.py",
-    deps = [
-        ":layers",
-    ],
-)
-
-py_test(
-    name = "poincare_test",
-    size = "small",
-    srcs = [
-        "poincare_test.py",
-    ],
-    main = "poincare_test.py",
-    deps = [
-        ":layers",
-    ],
-)
-
-py_test(
-    name = "tlu_test",
-    size = "small",
-    srcs = [
-        "tlu_test.py",
-    ],
-    main = "tlu_test.py",
-    deps = [
-        ":layers",
-    ],
-)
-
-py_test(
-    name = "layers_wrappers_test",
-    size = "small",
-    srcs = [
-        "wrappers_test.py",
-    ],
-    main = "wrappers_test.py",
-    deps = [
-        ":layers",
-    ],
-)
-
-py_test(
-    name = "sparsemax_test",
-    size = "small",
-    srcs = [
-        "sparsemax_test.py",
-    ],
-    main = "sparsemax_test.py",
-    deps = [
-        ":layers",
-    ],
-)
-
-py_test(
-    name = "maxout_test",
-    size = "small",
-    srcs = [
-        "maxout_test.py",
-    ],
-    main = "maxout_test.py",
-    deps = [
-        ":layers",
-    ],
-)
-
-py_test(
-    name = "normalizations_test",
-    size = "small",
-    srcs = [
-        "normalizations_test.py",
-    ],
-    main = "normalizations_test.py",
-    deps = [
-        ":layers",
-    ],
-)
-
-py_test(
-    name = "optical_flow_test",
-    size = "small",
-    srcs = [
-        "optical_flow_test.py",
-    ],
-    main = "optical_flow_test.py",
-    deps = [
-        ":layers",
-    ],
-)
-
-py_test(
-    name = "netvlad_test",
-    size = "small",
-    srcs = [
-        "netvlad_test.py",
-    ],
-    main = "netvlad_test.py",
-    deps = [
-        ":layers",
-    ],
-)
-
-py_test(
-    name = "multihead_attention_test",
-    size = "small",
-    srcs = [
-        "multihead_attention_test.py",
-    ],
-    main = "multihead_attention_test.py",
+    srcs = glob(["tests/*"]),
+    main = "tests/run_all_test.py",
     deps = [
         ":layers",
     ],
