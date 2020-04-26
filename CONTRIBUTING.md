@@ -284,7 +284,7 @@ python3 ./configure.py  # Links project with TensorFlow dependency
 Install in editable mode
 ```
 python3 -m pip install -e .
-python3 -m pip install pytest pytest-xdist
+python3 -m pip install -r tools/install_deps/pytest.txt
 ```
 
 Compile the custom ops
@@ -313,7 +313,7 @@ To test with Bazel:
 ```
 python3 -m pip install tensorflow==2.2.0rc3
 python3 configure.py
-python3 -m pip install pytest
+python3 -m pip install -r tools/install_deps/pytest.txt
 bazel test -c opt -k \
 --test_timeout 300,450,1200,3600 \
 --test_output=all \
