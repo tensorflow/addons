@@ -21,6 +21,7 @@ import platform
 import tensorflow as tf
 from tensorflow_addons.utils import test_utils
 from tensorflow_addons.optimizers import conditional_gradient as cg_lib
+from tensorflow_addons.testing import serialization
 
 
 def _dtypes_to_test(use_gpu):
@@ -1468,4 +1469,4 @@ def test_serialization():
     )
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)
-    assert new_optimizer.get_config() == optimizer.get_config()
+    serialization.check_config(new_optimizer.get_config(), optimizer, False)

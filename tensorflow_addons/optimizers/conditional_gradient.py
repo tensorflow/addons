@@ -86,6 +86,7 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
                 compatibility, recommended to use `learning_rate` instead.
         """
         super().__init__(name=name, **kwargs)
+        self.__name__ = name
         self._set_hyper("learning_rate", kwargs.get("lr", learning_rate))
         self._set_hyper("lambda_", lambda_)
         self.epsilon = epsilon or tf.keras.backend.epsilon()
