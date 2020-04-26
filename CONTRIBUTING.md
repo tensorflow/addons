@@ -160,6 +160,8 @@ conda activate my_dev_environement
 Just run from the root:
 
 ```
+pip install tensorflow==2.2.0rc3
+# you can use "pip install tensorflow-cpu==2.2.0rc3" too if you're not testing on gpu.
 pip install -e ./
 ```
 
