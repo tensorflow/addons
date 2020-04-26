@@ -295,7 +295,3 @@ def score_logits(logits, tags, transitions, boundary_values):
     for logit, tag in zip(logits, tags):
         total += logit[tag]
     return total
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__]))
