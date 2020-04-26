@@ -18,7 +18,6 @@ import itertools
 import os
 import math
 import tempfile
-import sys
 
 import pytest
 import numpy as np
