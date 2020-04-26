@@ -275,7 +275,7 @@ docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/ten
 
 Configure:
 ```
-python3 -m pip install tensorflow==2.2.0
+python3 -m pip install tensorflow==2.2.0rc3
 python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 
