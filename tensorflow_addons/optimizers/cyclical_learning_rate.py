@@ -171,9 +171,12 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
         )
 
     def get_config(self):
-        super_config = super().get_config()
-        super_config = {k: v for k, v in super_config.items() if k != "scale_fn"}
-        return {**super_config}
+        return {
+            "initial_learning_rate": self.initial_learning_rate,
+            "maximal_learning_rate": self.maximal_learning_rate,
+            "step_size": self.step_size,
+            "scale_mode": self.scale_mode,
+        }
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -237,9 +240,12 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
         )
 
     def get_config(self):
-        super_config = super().get_config()
-        super_config = {k: v for k, v in super_config.items() if k != "scale_fn"}
-        return {**super_config}
+        return {
+            "initial_learning_rate": self.initial_learning_rate,
+            "maximal_learning_rate": self.maximal_learning_rate,
+            "step_size": self.step_size,
+            "scale_mode": self.scale_mode,
+        }
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -308,6 +314,10 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
         )
 
     def get_config(self):
-        super_config = super().get_config()
-        super_config = {k: v for k, v in super_config.items() if k != "scale_fn"}
-        return {"gamma": self.gamma, **super_config}
+        return {
+            "initial_learning_rate": self.initial_learning_rate,
+            "maximal_learning_rate": self.maximal_learning_rate,
+            "step_size": self.step_size,
+            "scale_mode": self.scale_mode,
+            "gamma": self.gamma,
+        }
