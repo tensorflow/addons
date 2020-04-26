@@ -10,11 +10,13 @@ py_library(
     data = select({
         "//tensorflow_addons:windows": [
             "//tensorflow_addons/custom_ops/text:_skip_gram_ops.so",
+            "//tensorflow_addons/testing",
             "//tensorflow_addons/utils",
         ],
         "//conditions:default": [
             "//tensorflow_addons/custom_ops/text:_parse_time_op.so",
             "//tensorflow_addons/custom_ops/text:_skip_gram_ops.so",
+            "//tensorflow_addons/testing",
             "//tensorflow_addons/utils",
         ],
     }),
