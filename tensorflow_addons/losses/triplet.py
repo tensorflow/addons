@@ -271,13 +271,18 @@ class TripletSemiHardLoss(LossFunctionWrapper):
 
     @typechecked
     def __init__(
-        self, margin: FloatTensorLike = 1.0, name: Optional[str] = None, **kwargs
+        self,
+        margin: FloatTensorLike = 1.0,
+        angular: bool = False,
+        name: Optional[str] = None,
+        **kwargs
     ):
         super().__init__(
             triplet_semihard_loss,
             name=name,
             reduction=tf.keras.losses.Reduction.NONE,
             margin=margin,
+            angular=angular,
         )
 
 
@@ -307,6 +312,7 @@ class TripletHardLoss(LossFunctionWrapper):
         self,
         margin: FloatTensorLike = 1.0,
         soft: bool = False,
+        angular: bool = False,
         name: Optional[str] = None,
         **kwargs
     ):
@@ -316,4 +322,5 @@ class TripletHardLoss(LossFunctionWrapper):
             reduction=tf.keras.losses.Reduction.NONE,
             margin=margin,
             soft=soft,
+            angular=angular,
         )
