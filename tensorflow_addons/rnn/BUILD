@@ -6,6 +6,7 @@ py_library(
     name = "rnn",
     srcs = glob(["*.py"]),
     deps = [
+        "//tensorflow_addons/testing",
         "//tensorflow_addons/utils",
     ],
 )
