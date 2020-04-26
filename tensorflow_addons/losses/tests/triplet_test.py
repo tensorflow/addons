@@ -51,6 +51,25 @@ def pairwise_distance_np(feature, squared=False):
     return pairwise_distances
 
 
+def angular_distance_np(feature):
+    """Computes the angular distance matrix in numpy.
+    Args:
+      feature: 2-D numpy array of size [number of data, feature dimension]
+    Returns:
+      angular_distances: 2-D numpy array of size
+        [number of data, number of data].
+    """
+
+    # l2-normalize all features
+    normed = feature / np.linalg.norm(feature, ord=2, axis=1, keepdims=True)
+
+    cosine_similarity = normed @ normed.T
+
+    inverse_cos_sim = 1 - cosine_similarity
+
+    return inverse_cos_sim
+
+
 def triplet_semihard_loss_np(labels, embedding, margin):
 
     num_data = embedding.shape[0]
@@ -122,6 +141,45 @@ def triplet_hard_loss_np(labels, embedding, margin, soft=False):
             loss_np += np.maximum(0.0, max_pos_distance - min_neg_distance + margin)
 
     loss_np /= num_data
+    return loss_np
+
+
+def triplet_semihard_loss_angular_np(labels, embedding, margin):
+
+    num_data = embedding.shape[0]
+    # Reshape labels to compute adjacency matrix.
+    labels_reshaped = np.reshape(labels.astype(np.float32), (labels.shape[0], 1))
+
+    print(labels_reshaped.shape)
+
+    adjacency = np.equal(labels_reshaped, labels_reshaped.T)
+    pdist_matrix = angular_distance_np(embedding)
+    loss_np = 0.0
+    num_positives = 0.0
+    for i in range(num_data):
+        for j in range(num_data):
+            if adjacency[i][j] > 0.0 and i != j:
+                num_positives += 1.0
+
+                pos_distance = pdist_matrix[i][j]
+                neg_distances = []
+
+                for k in range(num_data):
+                    if adjacency[i][k] == 0:
+                        neg_distances.append(pdist_matrix[i][k])
+
+                # Sort by distance.
+                neg_distances.sort()
+                chosen_neg_distance = neg_distances[0]
+
+                for l in range(len(neg_distances)):
+                    chosen_neg_distance = neg_distances[l]
+                    if chosen_neg_distance > pos_distance:
+                        break
+                print(chosen_neg_distance, pos_distance)
+                loss_np += np.maximum(0.0, margin - chosen_neg_distance + pos_distance)
+
+    loss_np /= num_positives
     return loss_np
 
 
