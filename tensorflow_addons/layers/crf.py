@@ -19,7 +19,7 @@
 import tensorflow as tf
 from typeguard import typechecked
 
-from tensorflow_addons.text.crf import crf_decode, crf_log_likelihood
+from tensorflow_addons.text.crf import crf_decode
 from tensorflow_addons.utils import types
 
 
