@@ -1457,3 +1457,15 @@ def test_sparse_nuclear():
             ),
             var1[2].numpy(),
         )
+
+
+def test_serialization():
+    learning_rate = 0.1
+    lambda_ = 0.1
+    ord = "nuclear"
+    optimizer = cg_lib.ConditionalGradient(
+        learning_rate=learning_rate, lambda_=lambda_, ord=ord
+    )
+    config = tf.keras.optimizers.serialize(optimizer)
+    new_optimizer = tf.keras.optimizers.deserialize(config)
+    assert optimizer.get_config() == new_optimizer.get_config()
