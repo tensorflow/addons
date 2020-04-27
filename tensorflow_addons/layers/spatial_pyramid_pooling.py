@@ -29,12 +29,16 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
     Original Paper: https://arxiv.org/pdf/1406.4729.pdf
 
     Spatial Pyramid Pooling generates a fixed-length representation
-    regardless of input size/scale. It is typically used before layers
-    that require a constant input shape, for example before Dense Layers.
+    regardless of input size/scale. It is typically used before a layer
+    that requires a constant input shape, for example before a Dense Layer.
 
     Arguments:
       bins: Either a collection of integers or a collection of collections of 2 integers.
         Each element in the inner collection must contain 2 integers, (pooled_rows, pooled_cols)
+        For example, providing [1, 3, 5] or [[1, 1], [3, 3], [5, 5]] preforms pooling
+        using three different pooling layers, having outputs with dimensions 1x1, 3x3 and 5x5 respectively.
+        These are flattened along height and width to give an output of shape
+        [batch_size, (1 + 9 + 25), channels] = [batch_size, 35, channels].
       data_format: A string,
         one of `channels_last` (default) or `channels_first`.
         The ordering of the dimensions in the inputs.
@@ -77,11 +81,13 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
         index = 0
         if self.data_format == "channels_last":
             for bin in self.bins:
+                height_overflow = dynamic_input_shape[1] % bin[0]
+                width_overflow = dynamic_input_shape[2] % bin[1]
+                new_input_height = dynamic_input_shape[1] - height_overflow
+                new_input_width = dynamic_input_shape[2] - width_overflow
+
                 new_inp = inputs[
-                    :,
-                    : dynamic_input_shape[1] - dynamic_input_shape[1] % bin[0],
-                    : dynamic_input_shape[2] - dynamic_input_shape[2] % bin[1],
-                    :,
+                    :, :new_input_height, :new_input_width, :,
                 ]
                 output = self.pool_layers[index](new_inp)
                 output = tf.reshape(
@@ -92,11 +98,13 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
             outputs = tf.concat(outputs, axis=1)
         else:
             for bin in self.bins:
+                height_overflow = dynamic_input_shape[2] % bin[0]
+                width_overflow = dynamic_input_shape[3] % bin[1]
+                new_input_height = dynamic_input_shape[2] - height_overflow
+                new_input_width = dynamic_input_shape[3] - width_overflow
+
                 new_inp = inputs[
-                    :,
-                    :,
-                    : dynamic_input_shape[2] - dynamic_input_shape[2] % bin[0],
-                    : dynamic_input_shape[3] - dynamic_input_shape[3] % bin[1],
+                    :, :, :new_input_height, :new_input_width,
                 ]
                 output = self.pool_layers[index](new_inp)
                 output = tf.reshape(
