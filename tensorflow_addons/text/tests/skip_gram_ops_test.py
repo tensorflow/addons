@@ -172,7 +172,7 @@ def test_skip_gram_sample_random_skips():
     """Tests skip-gram with min_skips != max_skips, with random output."""
     # The number of outputs is non-deterministic in this case, so set random
     # seed to help ensure the outputs remain constant for this test case.
-    tf.random.set_seed(42)
+    np.random.seed(42)
 
     input_tensor = tf.constant([b"the", b"quick", b"brown", b"fox", b"jumps", b"over"])
     tokens, labels = text.skip_gram_sample(
@@ -211,7 +211,7 @@ def test_skip_gram_sample_random_skips_default_seed():
     # provide a seed to us. This results in random_seed.get_seed() returning
     # None for both seeds, forcing the C++ kernel to execute its default
     # seed logic.
-    tf.random.set_seed(None)
+    np.random.seed(None)
 
     # Uses an input tensor with 10 words, with possible skip ranges in
     # [1, 5]. Thus, the probability that two random samplings would result
@@ -362,7 +362,7 @@ def test_filter_input_subsample_vocab():
     """Tests input filtering based on vocab subsampling."""
     # The outputs are non-deterministic, so set random seed to help ensure
     # that the outputs remain constant for testing.
-    tf.random.set_seed(42)
+    np.random.seed(42)
 
     input_tensor = tf.constant(
         [
@@ -442,7 +442,7 @@ def _text_vocab_subsample_vocab_helper(
 ):
     # The outputs are non-deterministic, so set random seed to help ensure
     # that the outputs remain constant for testing.
-    tf.random.set_seed(42)
+    np.random.seed(42)
 
     input_tensor = tf.constant(
         [
