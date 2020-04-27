@@ -28,6 +28,10 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
 
     Original Paper: https://arxiv.org/pdf/1406.4729.pdf
 
+    Spatial Pyramid Pooling generates a fixed-length representation
+    regardless of input size/scale. It is typically used before layers
+    that require a constant input shape, for example before Dense Layers.
+
     Arguments:
       bins: Either a collection of integers or a collection of collections of 2 integers.
         Each element in the inner collection must contain 2 integers, (pooled_rows, pooled_cols)
