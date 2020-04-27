@@ -22,6 +22,7 @@ from typeguard import typechecked
 from typing import Union, Callable, Iterable
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class SpatialPyramidPooling2D(tf.keras.layers.Layer):
     """Performs Spatial Pyramid Pooling.
 
@@ -53,11 +54,11 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
 
     @typechecked
     def __init__(
-            self,
-            bins: Union[Iterable[int], Iterable[Iterable[int]]],
-            data_format=None,
-            *args,
-            **kwargs
+        self,
+        bins: Union[Iterable[int], Iterable[Iterable[int]]],
+        data_format=None,
+        *args,
+        **kwargs
     ):
         self.bins = [conv_utils.normalize_tuple(bin, 2, "bin") for bin in bins]
         self.data_format = conv_utils.normalize_data_format(data_format)
@@ -72,16 +73,30 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
         index = 0
         if self.data_format == "channels_last":
             for bin in self.bins:
-                new_inp = inputs[:, :dynamic_input_shape[1] % bin[0], :dynamic_input_shape[2] % bin[1], :]
+                new_inp = inputs[
+                    :,
+                    : dynamic_input_shape[1] % bin[0],
+                    : dynamic_input_shape[2] % bin[1],
+                    :,
+                ]
                 output = self.pool_layers[index](new_inp)
-                output = tf.reshape(output, [dynamic_input_shape[0], bin[0] * bin[1], inputs.shape[-1]])
+                output = tf.reshape(
+                    output, [dynamic_input_shape[0], bin[0] * bin[1], inputs.shape[-1]]
+                )
                 outputs.append(output)
                 index += 1
         else:
             for bin in self.bins:
-                new_inp = inputs[:, :, dynamic_input_shape[1] % bin[0], :dynamic_input_shape[2] % bin[1]]
+                new_inp = inputs[
+                    :,
+                    :,
+                    dynamic_input_shape[1] % bin[0],
+                    : dynamic_input_shape[2] % bin[1],
+                ]
                 output = self.pool_layers[index](new_inp)
-                output = tf.reshape(output, [dynamic_input_shape[0], inputs.shape[1], bin[0] * bin[1]])
+                output = tf.reshape(
+                    output, [dynamic_input_shape[0], inputs.shape[1], bin[0] * bin[1]]
+                )
                 outputs.append(output)
                 index += 1
 
@@ -98,9 +113,6 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
             return tf.TensorShape([input_shape[0], input_shape[1], pooled_shape])
 
     def get_config(self):
-        config = {
-            "bins": self.bins,
-            "data_format": self.data_format
-        }
+        config = {"bins": self.bins, "data_format": self.data_format}
         base_config = super().get_config()
         return {**base_config, **config}
