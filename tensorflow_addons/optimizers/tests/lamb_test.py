@@ -345,3 +345,10 @@ def test_exclude_layer_adaptation():
     assert opt._do_layer_adaptation("var0")
     assert not opt._do_layer_adaptation("var1")
     assert not opt._do_layer_adaptation("var1_weight")
+
+
+def test_serialization():
+    optimizer = lamb.LAMB(1e-4)
+    config = tf.keras.optimizers.serialize(optimizer)
+    new_optimizer = tf.keras.optimizers.deserialize(config)
+    assert new_optimizer.get_config() == optimizer.get_config()
