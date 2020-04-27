@@ -140,7 +140,7 @@ class DecoupledWeightDecayExtension:
                 to all variables in var_list.
             **kwargs: Additional arguments to pass to the base optimizer's
                 apply_gradient method, e.g., TF2.2 added an argument
-                `all_reduce_sum_gradients`.
+                `experimental_aggregate_gradients`.
         Returns:
             An `Operation` that applies the specified gradients.
         Raises:
