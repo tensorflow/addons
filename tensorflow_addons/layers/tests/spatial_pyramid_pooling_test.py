@@ -17,7 +17,7 @@
 import pytest
 import numpy as np
 import tempfile
-from pathlib import Path
+import os
 
 import tensorflow as tf
 from tensorflow_addons.layers.spatial_pyramid_pooling import SpatialPyramidPooling2D
@@ -76,7 +76,7 @@ def test_keras():
     spp = SpatialPyramidPooling2D([1, 2])(inputs)
     model = tf.keras.Model(inputs=[inputs], outputs=[spp])
     with tempfile.TemporaryDirectory() as tmp_dir:
-        model_path = Path(tmp_dir).joinpath("/spp_model.h5")
+        model_path = os.path.join(tmp_dir, "spp_model.h5")
         model.save(model_path)
         model = tf.keras.models.load_model(model_path)
     model_output = model.predict(test_inputs).tolist()
