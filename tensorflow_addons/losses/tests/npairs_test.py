@@ -14,19 +14,9 @@
 # ==============================================================================
 """Tests for npairs loss."""
 
-import platform
-
 import numpy as np
-import pytest
 import tensorflow as tf
 from tensorflow_addons.losses import npairs
-
-IS_WINDOWS = platform.system() == "Windows"
-
-pytestmark = pytest.mark.skipif(
-    IS_WINDOWS,
-    reason="Doesn't work on Windows, see https://github.com/tensorflow/addons/issues/838",
-)
 
 
 def test_config():
