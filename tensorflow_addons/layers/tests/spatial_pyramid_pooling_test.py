@@ -16,6 +16,7 @@
 
 import pytest
 import numpy as np
+import tempfile
 
 import tensorflow as tf
 from tensorflow_addons.layers.spatial_pyramid_pooling import SpatialPyramidPooling2D
@@ -62,3 +63,22 @@ def test_serialization():
     serialized_layer = tf.keras.layers.serialize(layer)
     new_layer = tf.keras.layers.deserialize(serialized_layer)
     assert layer.get_config() == new_layer.get_config()
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_keras():
+    test_inputs = np.arange(start=0.0, stop=16.0, step=1.0).astype(np.float32)
+    test_inputs = np.reshape(test_inputs, (1, 4, 4, 1))
+    test_output = [[[7.5], [2.5], [4.5], [10.5], [12.5]]]
+
+    inputs = tf.keras.layers.Input((None, None, 1))
+    spp = SpatialPyramidPooling2D([1, 2])(inputs)
+    model = tf.keras.Model(inputs=[inputs], outputs=[spp])
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        model.save(tmp_dir + "/spp_model.h5")
+        model = tf.keras.models.load_model(tmp_dir + '/spp_model.h5')
+    model_output = model.predict(test_inputs).tolist()
+    assert model_output == test_output
+
+
+test_keras()
