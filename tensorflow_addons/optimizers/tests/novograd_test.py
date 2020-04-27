@@ -139,3 +139,10 @@ def test_get_config():
     assert config["learning_rate"] == 1e-4
     assert config["weight_decay"] == 0.0
     assert config["grad_averaging"] is False
+
+
+def test_serialization():
+    optimizer = NovoGrad(lr=1e-4, weight_decay=0.0, grad_averaging=False)
+    config = tf.keras.optimizers.serialize(optimizer)
+    new_optimizer = tf.keras.optimizers.deserialize(config)
+    assert new_optimizer.get_config() == optimizer.get_config()
