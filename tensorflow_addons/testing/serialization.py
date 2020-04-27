@@ -76,7 +76,7 @@ def check_config(config, class_, strict):
                     class_.__name__
                 )
             )
-        if parameter_name != "kwargs" and parameter_name not in config:
+        if parameter_name not in config:
             raise KeyError(
                 "The constructor parameter {} is not present in the config dict "
                 "obtained with `.get_config()` of {}. All parameters should be set to "
