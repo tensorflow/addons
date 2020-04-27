@@ -15,7 +15,11 @@
 """Tests for AdaptivePooling layers."""
 
 import pytest
+import numpy as np
+
+import tensorflow as tf
 from tensorflow_addons.layers.spatial_pyramid_pooling import SpatialPyramidPooling2D
+from tensorflow_addons.utils import test_utils
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -23,3 +27,38 @@ def test_spp_shape_2d():
     spp = SpatialPyramidPooling2D([1, 3, 5])
     output_shape = [256, 35, 64]
     assert spp.compute_output_shape([256, None, None, 64]).as_list() == output_shape
+
+    spp = SpatialPyramidPooling2D([1, 3, 5], data_format="channels_first")
+    output_shape = [256, 64, 35]
+    assert spp.compute_output_shape([256, 64, None, None]).as_list() == output_shape
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_spp_output_2d():
+    inputs = np.arange(start=0.0, stop=16.0, step=1.0).astype(np.float32)
+    inputs = np.reshape(inputs, (1, 4, 4, 1))
+    output = np.array([[[7.5], [2.5], [4.5], [10.5], [12.5]]]).astype(np.float32)
+    test_utils.layer_test(
+        SpatialPyramidPooling2D,
+        kwargs={"bins": [[1, 1], [2, 2]], "data_format": "channels_last"},
+        input_data=inputs,
+        expected_output=output,
+    )
+
+    inputs = np.arange(start=0.0, stop=16.0, step=1.0).astype(np.float32)
+    inputs = np.reshape(inputs, (1, 1, 4, 4))
+    output = np.array([[[7.5, 2.5, 4.5, 10.5, 12.5]]]).astype(np.float32)
+    test_utils.layer_test(
+        SpatialPyramidPooling2D,
+        kwargs={"bins": [[1, 1], [2, 2]], "data_format": "channels_first"},
+        input_data=inputs,
+        expected_output=output,
+    )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_serialization():
+    layer = SpatialPyramidPooling2D([[1, 1], [3, 3]])
+    serialized_layer = tf.keras.layers.serialize(layer)
+    new_layer = tf.keras.layers.deserialize(serialized_layer)
+    assert layer.get_config() == new_layer.get_config()

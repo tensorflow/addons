@@ -75,8 +75,8 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
             for bin in self.bins:
                 new_inp = inputs[
                     :,
-                    : dynamic_input_shape[1] % bin[0],
-                    : dynamic_input_shape[2] % bin[1],
+                    : dynamic_input_shape[1] - dynamic_input_shape[1] % bin[0],
+                    : dynamic_input_shape[2] - dynamic_input_shape[2] % bin[1],
                     :,
                 ]
                 output = self.pool_layers[index](new_inp)
@@ -85,13 +85,14 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
                 )
                 outputs.append(output)
                 index += 1
+            outputs = tf.concat(outputs, axis=1)
         else:
             for bin in self.bins:
                 new_inp = inputs[
                     :,
                     :,
-                    dynamic_input_shape[1] % bin[0],
-                    : dynamic_input_shape[2] % bin[1],
+                    : dynamic_input_shape[2] - dynamic_input_shape[2] % bin[0],
+                    : dynamic_input_shape[3] - dynamic_input_shape[3] % bin[1],
                 ]
                 output = self.pool_layers[index](new_inp)
                 output = tf.reshape(
@@ -100,7 +101,7 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
                 outputs.append(output)
                 index += 1
 
-        outputs = tf.concat(outputs, axis=1)
+            outputs = tf.concat(outputs, axis=2)
         return outputs
 
     def compute_output_shape(self, input_shape):
