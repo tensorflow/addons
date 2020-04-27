@@ -396,9 +396,7 @@ def _test_with_attention(
     )
     if cell._attention_layers is not None:
         for layer in cell._attention_layers:
-            layer.kernel_initializer = tf.keras.initializers.GlorotUniform(
-                seed=1337
-            )
+            layer.kernel_initializer = tf.keras.initializers.GlorotUniform(seed=1337)
 
     sampler = sampler_py.TrainingSampler()
     my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
