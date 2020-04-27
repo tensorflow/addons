@@ -13,7 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-from absl.testing import parameterized
+import pytest
 
 import numpy as np
 import tensorflow as tf
@@ -26,64 +26,42 @@ SEED = 111111
 def rrelu_wrapper(lower, upper, training):
     gs = tf.random.Generator.from_seed(SEED)
 
-    @tf.function
     def inner(x):
         return rrelu(x, lower, upper, training=training, seed=SEED, gs=gs)
 
     return inner
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class RreluTest(tf.test.TestCase, parameterized.TestCase):
-    @parameterized.named_parameters(("float16", np.float16),
-                                    ("float32", np.float32),
-                                    ("float64", np.float64))
-    def test_rrelu(self, dtype):
-        x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
-        lower = 0.1
-        upper = 0.2
-
-        training_results = {
-            np.float16: [-0.382568359, -0.165039062, 0, 1, 2],
-            np.float32: [-0.282151192, -0.199812651, 0, 1, 2],
-            np.float64: [-0.25720976665546241, -0.12215860075258811, 0, 1, 2],
-        }
-        for training in [True, False]:
-            with self.subTest(training=training):
-                result = rrelu_wrapper(lower, upper, training=training)(x)
-                if training:
-                    expect_result = training_results.get(dtype)
-                else:
-                    expect_result = [
-                        -0.30000001192092896, -0.15000000596046448, 0, 1, 2
-                    ]
-                self.assertAllCloseAccordingToType(result, expect_result)
-
-    @parameterized.named_parameters(("float32", np.float32),
-                                    ("float64", np.float64))
-    def test_theoretical_gradients(self, dtype):
-        x = tf.constant([-2.0, -1.0, -0.1, 0.1, 1.0, 2.0], dtype=dtype)
-        lower = 0.1
-        upper = 0.2
-
-        for training in [True, False]:
-            with self.subTest(training=training):
-                theoretical, numerical = tf.test.compute_gradient(
-                    rrelu_wrapper(lower, upper, training), [x])
-                self.assertAllCloseAccordingToType(
-                    theoretical, numerical, rtol=5e-4, atol=5e-4)
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+@pytest.mark.parametrize("training", [True, False])
+def test_rrelu(dtype, training):
+    x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
+    lower = 0.1
+    upper = 0.2
+    training_results = {
+        np.float16: [-0.3826, -0.165, 0, 1, 2],
+        np.float32: [-0.282151192, -0.199812651, 0, 1, 2],
+        np.float64: [-0.25720977, -0.1221586, 0, 1, 2],
+    }
+    gs = tf.random.Generator.from_seed(SEED)
+    result = rrelu(x, lower, upper, training=training, seed=SEED, gs=gs)
+    if training:
+        expect_result = training_results.get(dtype)
+    else:
+        expect_result = [-0.30000001192092896, -0.15000000596046448, 0, 1, 2]
+    test_utils.assert_allclose_according_to_type(result, expect_result)
 
 
-# TODO: Benchmark fails for windows builds #839
-class RreluBenchmarks(tf.test.Benchmark):
-    def benchmarkRreluOp(self):
-        with tf.compat.v1.Session(config=tf.test.benchmark_config()) as sess:
-            x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=np.float32)
-            lower = 0.1
-            upper = 0.2
-            result = rrelu_wrapper(lower, upper, training=True)(x)
-            self.run_op_benchmark(sess, result.op, min_iters=25)
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize("training", [True, False])
+def test_theoretical_gradients(dtype, training):
+    x = tf.constant([-2.0, -1.0, -0.1, 0.1, 1.0, 2.0], dtype=dtype)
+    lower = 0.1
+    upper = 0.2
 
-
-if __name__ == "__main__":
-    tf.test.main()
+    theoretical, numerical = tf.test.compute_gradient(
+        rrelu_wrapper(lower, upper, training), [x]
+    )
+    test_utils.assert_allclose_according_to_type(
+        theoretical, numerical, rtol=5e-4, atol=5e-4
+    )

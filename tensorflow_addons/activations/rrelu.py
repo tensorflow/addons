@@ -16,18 +16,13 @@
 import tensorflow as tf
 
 try:
-    tf.no_gradient('StatefulUniform')
-except:
+    tf.no_gradient("StatefulUniform")
+except:  # noqa: E722
     pass
 
 
-@tf.keras.utils.register_keras_serializable(package='Addons')
-def rrelu(x,
-          lower=0.125,
-          upper=0.3333333333333333,
-          training=None,
-          seed=None,
-          gs=None):
+@tf.keras.utils.register_keras_serializable(package="Addons")
+def rrelu(x, lower=0.125, upper=0.3333333333333333, training=None, seed=None, gs=None):
     """rrelu function.
 
     Computes rrelu function:
@@ -50,8 +45,8 @@ def rrelu(x,
         result: A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
-    lower = tf.convert_to_tensor(lower)
-    upper = tf.convert_to_tensor(upper)
+    lower = tf.cast(lower, x.dtype)
+    upper = tf.cast(upper, x.dtype)
     if gs is None:
         gs = tf.random.get_global_generator()
 
@@ -62,9 +57,8 @@ def rrelu(x,
     if training:
         if seed is not None:
             gs.reset_from_seed(seed)
-        alpha = gs.uniform(
-            tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype)
+        alpha = gs.uniform(tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype)
     else:
-        alpha = tf.cast((lower + upper) / 2, x.dtype)
+        alpha = (lower + upper) / 2
 
     return tf.where(x >= 0, x, alpha * x)
