@@ -76,9 +76,6 @@ def test_keras():
     model = tf.keras.Model(inputs=[inputs], outputs=[spp])
     with tempfile.TemporaryDirectory() as tmp_dir:
         model.save(tmp_dir + "/spp_model.h5")
-        model = tf.keras.models.load_model(tmp_dir + '/spp_model.h5')
+        model = tf.keras.models.load_model(tmp_dir + "/spp_model.h5")
     model_output = model.predict(test_inputs).tolist()
     assert model_output == test_output
-
-
-test_keras()
