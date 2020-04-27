@@ -30,7 +30,7 @@ def rrelu(
     training: bool = None,
     seed: Number = None,
     gs: tf.random.Generator = None,
-):
+) -> tf.Tensor:
     """rrelu function.
 
     Computes rrelu function:
