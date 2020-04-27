@@ -19,7 +19,7 @@ from tensorflow_addons.layers.adaptive_pooling import AdaptiveAveragePooling2D
 import tensorflow_addons.utils.keras_utils as conv_utils
 
 from typeguard import typechecked
-from typing import Union, Callable, Iterable
+from typing import Union, Iterable
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
