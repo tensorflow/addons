@@ -15,7 +15,6 @@
 """Skip-gram sampling ops from https://arxiv.org/abs/1301.3781."""
 
 import csv
-import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.utils.resource_loader import LazySO
@@ -176,9 +175,7 @@ def skip_gram_sample(
             seed=seed,
         )
 
-        seed1 = np.random.get_state()[1][0]
-        seed2 = np.random.get_state()[1][1]
-        # seed1, seed2 = tf.compat.v1.get_seed(seed)
+        seed1, seed2 = tf.compat.v1.get_seed(seed)
         tokens, labels = _skip_gram_so.ops.addons_skip_gram_generate_candidates(
             input_tensor=input_tensor,
             min_skips=min_skips,
