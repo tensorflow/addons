@@ -38,12 +38,12 @@ class Sampler(metaclass=abc.ABCMeta):
     cell_input = initial_inputs
     cell_state = cell.get_initial_state(...)
     for time_step in tf.range(max_output_length):
-      cell_output, cell_state = cell(cell_input, cell_state)
-      sample_ids = sampler.sample(time_step, cell_output, cell_state)
-      (finished, cell_input, cell_state) = sampler.next_inputs(
-        time_step, cell_output, cell_state, sample_ids)
-      if tf.reduce_all(finished):
-        break
+        cell_output, cell_state = cell(cell_input, cell_state)
+        sample_ids = sampler.sample(time_step, cell_output, cell_state)
+        (finished, cell_input, cell_state) = sampler.next_inputs(
+            time_step, cell_output, cell_state, sample_ids)
+        if tf.reduce_all(finished):
+            break
     ```
 
     Note that the input_tensors should not be fed to the Sampler as __init__()
