@@ -28,10 +28,12 @@ def _pad(
     constant_values: TensorLike = 0,
 ) -> tf.Tensor:
     """Explicitly pad a 4-D image.
+
     Equivalent to the implicit padding method offered in `tf.nn.conv2d` and
     `tf.nn.depthwise_conv2d`, but supports non-zero, reflect and symmetric
     padding mode. For the even-sized filter, it pads one more value to the
     right or the bottom side.
+
     Args:
       image: A 4-D `Tensor` of shape `[batch_size, height, width, channels]`.
       filter_shape: A `tuple`/`list` of 2 integers, specifying the height
@@ -62,6 +64,7 @@ def mean_filter2d(
     name: Optional[str] = None,
 ) -> tf.Tensor:
     """Perform mean filtering on image(s).
+
     Args:
       image: Either a 2-D `Tensor` of shape `[height, width]`,
         a 3-D `Tensor` of shape `[height, width, channels]`,
@@ -129,6 +132,7 @@ def median_filter2d(
     name: Optional[str] = None,
 ) -> tf.Tensor:
     """Perform median filtering on image(s).
+
     Args:
       image: Either a 2-D `Tensor` of shape `[height, width]`,
         a 3-D `Tensor` of shape `[height, width, channels]`,
@@ -202,51 +206,59 @@ def median_filter2d(
         return output
 
 
+def _get_gaussian_kernel(sigma, filter_shape_1d):
+    "This function creates a kernel of size [filter_shape]"
+    x = tf.range(-filter_shape_1d // 2 + 1, filter_shape_1d // 2 + 1)
+    x = tf.math.square(x)
+    a = tf.exp(-(x) / (2 * (sigma ** 2)))
+    a = a / tf.math.reduce_sum(a)
+    return a
+
+
+def _get_gaussian_filter_2d(gaussian_filter_x, gaussian_filter_y):
+    "Compute 2D Gaussian Kernel"
+    gaussian_kernel = tf.matmul(gaussian_filter_x, gaussian_filter_y)
+    return gaussian_kernel
+
+
 @tf.function
 def gaussian_filter2d(
     image: FloatTensorLike,
-    sigma: FloatTensorLike,
     filter_shape: Union[List[int], Tuple[int]] = [3, 3],
+    sigma: FloatTensorLike = 1,
     padding: str = "REFLECT",
     constant_values: TensorLike = 0,
     name: Optional[str] = None,
 ) -> FloatTensorLike:
-    """
-    This function is responsible for having Gaussian Blur. It takes the image as input, computes a gaussian-kernel
-    which follows normal distribution then convolves the image with the kernel. It is implemented as 2 1D convolutions.
+    """Perform Gaussian Filter. If the program is running on a CPU device, it will be implemented as a sequence of 1d convolution of
+    gausian kernel (in x- direction and fillowed by in y direction).
+    In 1-D, G(x)=e**((-x**2)/2*(sigma**2))
+    If program is running in GPU, then it is implemented as convolution of image with 2-d gaussian kernel.
+
     Args:
-    image: A tensor of shape
-        (batch_size, height, width, channels)
-        (NHWC), (batch_size, channels, height, width)(NCHW).
-
-    sigma:A constant of type float32. It is the standard deviation of the normal distribution.
-          The more the sigma, the more the blurring effect.
-          G(x,y)=1/(2*3.14*sigma**2)e^((x**2+y**2)/2sigma**2)
-          In 1D,
-          G(x)=e^(-x**2)/2*sigma**2
-
-    filter_shape:An `integer` or `tuple`/`list` of 2 integers, specifying
-        the height and width of the 2-D gaussian filter. Can be a single integer
+      image: Either a 2-D `Tensor` of shape `[height, width]`,
+        a 3-D `Tensor` of shape `[height, width, channels]`,
+        or a 4-D `Tensor` of shape `[batch_size, height, width, channels]`.
+      filter_shape: An `integer` or `tuple`/`list` of 2 integers, specifying
+        the height and width of the 2-D median filter. Can be a single integer
         to specify the same value for all spatial dimensions.
-
-    padding:A `string`, one of "REFLECT", "CONSTANT", or "SYMMETRIC".
+      sigma: Standard deviation of Gaussian.
+      padding: A `string`, one of "REFLECT", "CONSTANT", or "SYMMETRIC".
         The type of padding algorithm to use, which is compatible with
         `mode` argument in `tf.pad`. For more details, please refer to
         https://www.tensorflow.org/api_docs/python/tf/pad.
-
-    constant_values:A `scalar`, the pad value to use in "CONSTANT"
+      constant_values: A `scalar`, the pad value to use in "CONSTANT"
         padding mode.
-    name: A name for this operation (optional).
+      name: A name for this operation (optional).
     Returns:
-        3D or 4D 'Tensor' of same type float64.
+      3-D or 4-D `Tensor` of the same dtype as input.
     Raises:
-        Value error if:
-            1). Sigma=0
-            2). passing some string other than ["REFLECT", "CONSTANT", "SYMMETRIC"] in padding.
+      ValueError: If `image` is not 2, 3 or 4-dimensional,
+        if `padding` is other than "REFLECT", "CONSTANT" or "SYMMETRIC",
+        or if `filter_shape` is invalid or sigma<=0.
     """
-
     with tf.name_scope(name or "gaussian_filter2d"):
-        if sigma == 0:
+        if sigma <= 0:
             raise ValueError("Sigma should not be zero")
         if padding not in ["REFLECT", "CONSTANT", "SYMMETRIC"]:
             raise ValueError("Padding should be REFLECT, CONSTANT, OR SYMMETRIC")
@@ -256,39 +268,60 @@ def gaussian_filter2d(
         channels = tf.shape(image)[3]
         filter_shape = keras_utils.normalize_tuple(filter_shape, 2, "filter_shape")
 
-        gaussian_filter_x = _get_gaussian_kernel(sigma, filter_shape[1], channels)
-        gaussian_filter_x = tf.repeat(gaussian_filter_x, channels)
-        gaussian_filter_x = tf.reshape(
-            gaussian_filter_x, [1, filter_shape[1], channels, 1]
-        )
+        if tf.test.is_gpu_available():
+            gaussian_filter_x = _get_gaussian_kernel(sigma, filter_shape[1])
+            gaussian_filter_x = tf.cast(gaussian_filter_x, tf.float32)
+            gaussian_filter_x = tf.reshape(gaussian_filter_x, [1, filter_shape[1]])
 
-        gaussian_filter_x = tf.cast(gaussian_filter_x, tf.float32)
-        gaussian_filter_y = _get_gaussian_kernel(sigma, filter_shape[0], channels)
-        gaussian_filter_y = tf.repeat(gaussian_filter_y, channels)
-        gaussian_filter_y = tf.reshape(
-            gaussian_filter_y, [filter_shape[0], 1, channels, 1]
-        )
+            gaussian_filter_y = _get_gaussian_kernel(sigma, filter_shape[0])
+            gaussian_filter_y = tf.reshape(gaussian_filter_y, [filter_shape[0], 1])
+            gaussian_filter_y = tf.cast(gaussian_filter_y, tf.float32)
 
-        gaussian_filter_y = tf.cast(gaussian_filter_y, tf.float32)
-        image = _pad(
-            image, filter_shape, mode=padding, constant_values=constant_values,
-        )
-        conv_ops_x = tf.nn.depthwise_conv2d(
-            input=image, filter=gaussian_filter_x, strides=(1, 1, 1, 1), padding="VALID"
-        )
-        conv_ops = tf.nn.depthwise_conv2d(
-            input=conv_ops_x,
-            filter=gaussian_filter_y,
-            strides=(1, 1, 1, 1),
-            padding="VALID",
-        )
-        return conv_ops
+            gaussian_filter_2d = tf.matmul(gaussian_filter_y, gaussian_filter_x)
+            gaussian_filter_2d = tf.repeat(gaussian_filter_2d, channels)
+            gaussian_filter_2d = tf.reshape(
+                gaussian_filter_2d, [filter_shape[0], filter_shape[1], channels, 1]
+            )
 
+            image = _pad(
+                image, filter_shape, mode=padding, constant_values=constant_values,
+            )
 
-def _get_gaussian_kernel(sigma, filter_shape_1d, channels):
-    "This function creates a kernel of size [filter_shape]"
-    x = tf.range(-filter_shape_1d // 2 + 1, filter_shape_1d // 2 + 1)
-    x = tf.math.square(x)
-    a = tf.exp(-(x) / (2 * (sigma ** 2)))
-    a = a / tf.math.reduce_sum(a)
-    return a
+            conv_ops = tf.nn.depthwise_conv2d(
+                input=image,
+                filter=gaussian_filter_2d,
+                strides=(1, 1, 1, 1),
+                padding="VALID",
+            )
+            return conv_ops
+        else:
+            gaussian_filter_x = _get_gaussian_kernel(sigma, filter_shape[1])
+            gaussian_filter_x = tf.repeat(gaussian_filter_x, channels)
+            gaussian_filter_x = tf.reshape(
+                gaussian_filter_x, [1, filter_shape[1], channels, 1]
+            )
+
+            gaussian_filter_x = tf.cast(gaussian_filter_x, tf.float32)
+            gaussian_filter_y = _get_gaussian_kernel(sigma, filter_shape[0])
+            gaussian_filter_y = tf.repeat(gaussian_filter_y, channels)
+            gaussian_filter_y = tf.reshape(
+                gaussian_filter_y, [filter_shape[0], 1, channels, 1]
+            )
+
+            gaussian_filter_y = tf.cast(gaussian_filter_y, tf.float32)
+            image = _pad(
+                image, filter_shape, mode=padding, constant_values=constant_values,
+            )
+            conv_ops_x = tf.nn.depthwise_conv2d(
+                input=image,
+                filter=gaussian_filter_x,
+                strides=(1, 1, 1, 1),
+                padding="VALID",
+            )
+            conv_ops = tf.nn.depthwise_conv2d(
+                input=conv_ops_x,
+                filter=gaussian_filter_y,
+                strides=(1, 1, 1, 1),
+                padding="VALID",
+            )
+            return conv_ops
