@@ -336,9 +336,12 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
             raise ValueError(
                 "embedding_fn is expected to be callable, got %s" % type(embedding_fn)
             )
-        self.sampling_probability = tf.convert_to_tensor(
-            sampling_probability, name="sampling_probability"
-        )
+        if isinstance(sampling_probability, tf.Variable):
+            self.sampling_probability = sampling_probability
+        else:
+            self.sampling_probability = tf.convert_to_tensor(
+                sampling_probability, name="sampling_probability"
+            )
         if self.sampling_probability.get_shape().ndims not in (0, 1):
             raise ValueError(
                 "sampling_probability must be either a scalar or a vector. "
@@ -430,13 +433,16 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
         Raises:
           ValueError: if `sampling_probability` is not a scalar or vector.
         """
-        self.sampling_probability = tf.convert_to_tensor(
-            sampling_probability, name="sampling_probability"
-        )
+        if isinstance(sampling_probability, tf.Variable):
+            self.sampling_probability = sampling_probability
+        else:
+            self.sampling_probability = tf.convert_to_tensor(
+                sampling_probability, name="sampling_probability"
+            )
         if self.sampling_probability.get_shape().ndims not in (0, 1):
             raise ValueError(
                 "sampling_probability must be either a scalar or a vector. "
-                "saw shape: %s" % (self._sampling_probability.get_shape())
+                "saw shape: %s" % (self.sampling_probability.get_shape())
             )
 
         self.seed = seed
