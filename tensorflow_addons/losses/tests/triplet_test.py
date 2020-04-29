@@ -150,8 +150,6 @@ def triplet_semihard_loss_angular_np(labels, embedding, margin):
     # Reshape labels to compute adjacency matrix.
     labels_reshaped = np.reshape(labels.astype(np.float32), (labels.shape[0], 1))
 
-    print(labels_reshaped.shape)
-
     adjacency = np.equal(labels_reshaped, labels_reshaped.T)
     pdist_matrix = angular_distance_np(embedding)
     loss_np = 0.0
@@ -176,7 +174,6 @@ def triplet_semihard_loss_angular_np(labels, embedding, margin):
                     chosen_neg_distance = neg_distances[l]
                     if chosen_neg_distance > pos_distance:
                         break
-                print(chosen_neg_distance, pos_distance)
                 loss_np += np.maximum(0.0, margin - chosen_neg_distance + pos_distance)
 
     loss_np /= num_positives
