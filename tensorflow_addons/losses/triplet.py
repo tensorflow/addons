@@ -72,6 +72,7 @@ def triplet_semihard_loss(
     y_true: TensorLike,
     y_pred: TensorLike,
     margin: FloatTensorLike = 1.0,
+    squared: bool = True,
     angular: bool = False,
 ) -> tf.Tensor:
     """Computes the triplet loss with semi-hard negative mining.
@@ -105,7 +106,7 @@ def triplet_semihard_loss(
         pdist_matrix = metric_learning.angular_distance(precise_embeddings)
     else:
         pdist_matrix = metric_learning.pairwise_distance(
-            precise_embeddings, squared=True
+            precise_embeddings, squared=squared
         )
 
     # Build pairwise binary adjacency matrix.
@@ -179,6 +180,7 @@ def triplet_hard_loss(
     y_pred: TensorLike,
     margin: FloatTensorLike = 1.0,
     soft: bool = False,
+    squared: bool = True,
     angular: bool = False,
 ) -> tf.Tensor:
     """Computes the triplet loss with hard negative and hard positive mining.
@@ -212,7 +214,7 @@ def triplet_hard_loss(
         pdist_matrix = metric_learning.angular_distance(precise_embeddings)
     else:
         pdist_matrix = metric_learning.pairwise_distance(
-            precise_embeddings, squared=True
+            precise_embeddings, squared=squared
         )
 
     # Build pairwise binary adjacency matrix.
@@ -273,6 +275,7 @@ class TripletSemiHardLoss(LossFunctionWrapper):
     def __init__(
         self,
         margin: FloatTensorLike = 1.0,
+        squared: bool = True,
         angular: bool = False,
         name: Optional[str] = None,
         **kwargs
@@ -282,7 +285,8 @@ class TripletSemiHardLoss(LossFunctionWrapper):
             name=name,
             reduction=tf.keras.losses.Reduction.NONE,
             margin=margin,
-            angular=angular,
+            squared=squared,
+            angular=angular
         )
 
 
@@ -312,6 +316,7 @@ class TripletHardLoss(LossFunctionWrapper):
         self,
         margin: FloatTensorLike = 1.0,
         soft: bool = False,
+        squared: bool = True,
         angular: bool = False,
         name: Optional[str] = None,
         **kwargs
@@ -322,5 +327,6 @@ class TripletHardLoss(LossFunctionWrapper):
             reduction=tf.keras.losses.Reduction.NONE,
             margin=margin,
             soft=soft,
-            angular=angular,
+            squared=squared,
+            angular=angular
         )
