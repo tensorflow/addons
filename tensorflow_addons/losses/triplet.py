@@ -103,7 +103,7 @@ def triplet_semihard_loss(
     # Build pairwise squared distance matrix.
 
     if angular:
-        pdist_matrix = metric_learning.angular_distances(precise_embeddings)
+        pdist_matrix = metric_learning.angular_distance(precise_embeddings)
     else:
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=squared
@@ -211,7 +211,7 @@ def triplet_hard_loss(
 
     # Build pairwise squared distance matrix.
     if angular:
-        pdist_matrix = metric_learning.angular_distances(precise_embeddings)
+        pdist_matrix = metric_learning.angular_distance(precise_embeddings)
     else:
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=squared
