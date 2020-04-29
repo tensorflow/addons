@@ -19,7 +19,7 @@ from tensorflow_addons.losses import metric_learning
 from tensorflow.python.keras.losses import LossFunctionWrapper
 from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 from typeguard import typechecked
-from typing import Optional
+from typing import Optional, Union, Callable
 
 
 def _masked_maximum(data, mask, dim=1):
@@ -73,7 +73,7 @@ def triplet_semihard_loss(
     y_pred: TensorLike,
     margin: FloatTensorLike = 1.0,
     squared: bool = True,
-    angular: bool = False,
+    dist_metric: Union[str, Callable] = "L_2"
 ) -> tf.Tensor:
     """Computes the triplet loss with semi-hard negative mining.
 
@@ -83,6 +83,11 @@ def triplet_semihard_loss(
       y_pred: 2-D float `Tensor` of embedding vectors. Embeddings should
         be l2 normalized.
       margin: Float, margin term in the loss definition.
+      squared: bool, determines whether L-1 or L-2 norm is used
+      dist_metric: str or function, determines distance metric:
+                   "L_2" for euclidean distance
+                   "angular" for cosine similarity 
+                    function for custom metric
 
     Returns:
       triplet_loss: float scalar with dtype of y_pred.
@@ -102,12 +107,17 @@ def triplet_semihard_loss(
 
     # Build pairwise squared distance matrix.
 
-    if angular:
-        pdist_matrix = metric_learning.angular_distance(precise_embeddings)
-    else:
+    if dist_metric == "L_2":
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=squared
         )
+        
+    elif dist_metric == "angular":
+        pdist_matrix = metric_learning.angular_distance(precise_embeddings)
+    
+    else:
+        pdist_matrix = dist_metric(precise_embeddings)
+
 
     # Build pairwise binary adjacency matrix.
     adjacency = tf.math.equal(labels, tf.transpose(labels))
@@ -181,7 +191,7 @@ def triplet_hard_loss(
     margin: FloatTensorLike = 1.0,
     soft: bool = False,
     squared: bool = True,
-    angular: bool = False,
+    dist_metric: Union[str, Callable] = "L_2"
 ) -> tf.Tensor:
     """Computes the triplet loss with hard negative and hard positive mining.
 
@@ -192,6 +202,11 @@ def triplet_hard_loss(
         be l2 normalized.
       margin: Float, margin term in the loss definition.
       soft: Boolean, if set, use the soft margin version.
+      squared: bool, determines whether L-1 or L-2 norm is used
+      dist_metric: str or function, determines distance metric:
+                   "L_2" for euclidean distance
+                   "angular" for cosine similarity 
+                    function for custom metric
 
     Returns:
       triplet_loss: float scalar with dtype of y_pred.
@@ -210,12 +225,16 @@ def triplet_hard_loss(
     labels = tf.reshape(labels, [lshape[0], 1])
 
     # Build pairwise squared distance matrix.
-    if angular:
-        pdist_matrix = metric_learning.angular_distance(precise_embeddings)
-    else:
+    if dist_metric == "L_2":
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=squared
         )
+        
+    elif dist_metric == "angular":
+        pdist_matrix = metric_learning.angular_distance(precise_embeddings)
+    
+    else:
+        pdist_matrix = dist_metric(precise_embeddings)
 
     # Build pairwise binary adjacency matrix.
     adjacency = tf.math.equal(labels, tf.transpose(labels))
@@ -276,7 +295,7 @@ class TripletSemiHardLoss(LossFunctionWrapper):
         self,
         margin: FloatTensorLike = 1.0,
         squared: bool = True,
-        angular: bool = False,
+        dist_metric: Union[str, Callable] = "L_2",
         name: Optional[str] = None,
         **kwargs
     ):
@@ -286,7 +305,7 @@ class TripletSemiHardLoss(LossFunctionWrapper):
             reduction=tf.keras.losses.Reduction.NONE,
             margin=margin,
             squared=squared,
-            angular=angular
+            dist_metric=dist_metric
         )
 
 
@@ -317,7 +336,7 @@ class TripletHardLoss(LossFunctionWrapper):
         margin: FloatTensorLike = 1.0,
         soft: bool = False,
         squared: bool = True,
-        angular: bool = False,
+        dist_metric: Union[str, Callable] = "L_2",
         name: Optional[str] = None,
         **kwargs
     ):
@@ -328,5 +347,5 @@ class TripletHardLoss(LossFunctionWrapper):
             margin=margin,
             soft=soft,
             squared=squared,
-            angular=angular
+            dist_metric=dist_metric
         )
