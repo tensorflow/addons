@@ -190,7 +190,7 @@ def triplet_hard_loss_angular_np(labels, embedding, margin, soft=False):
     labels_reshaped = np.reshape(labels.astype(np.float32), (labels.shape[0], 1))
 
     adjacency = np.equal(labels_reshaped, labels_reshaped.T)
-    pdist_matrix = angular_distance_np(embedding, squared=True)
+    pdist_matrix = angular_distance_np(embedding)
     loss_np = 0.0
     for i in range(num_data):
         pos_distances = []
