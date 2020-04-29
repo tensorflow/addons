@@ -20,13 +20,5 @@ import tensorflow_addons as tfa
 @pytest.fixture(autouse=True)
 def add_np(doctest_namespace):
     doctest_namespace["np"] = np
-
-
-@pytest.fixture(autouse=True)
-def add_tf(doctest_namespace):
     doctest_namespace["tf"] = tf
-
-
-@pytest.fixture(autouse=True)
-def add_tfa(doctest_namespace):
     doctest_namespace["tfa"] = tfa
