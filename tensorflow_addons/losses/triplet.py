@@ -73,7 +73,7 @@ def triplet_semihard_loss(
     y_pred: TensorLike,
     margin: FloatTensorLike = 1.0,
     squared: bool = True,
-    dist_metric: Union[str, Callable] = "L_2"
+    dist_metric: Union[str, Callable] = "L_2",
 ) -> tf.Tensor:
     """Computes the triplet loss with semi-hard negative mining.
 
@@ -111,13 +111,12 @@ def triplet_semihard_loss(
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=squared
         )
-        
+
     elif dist_metric == "angular":
         pdist_matrix = metric_learning.angular_distance(precise_embeddings)
-    
+
     else:
         pdist_matrix = dist_metric(precise_embeddings)
-
 
     # Build pairwise binary adjacency matrix.
     adjacency = tf.math.equal(labels, tf.transpose(labels))
@@ -191,7 +190,7 @@ def triplet_hard_loss(
     margin: FloatTensorLike = 1.0,
     soft: bool = False,
     squared: bool = True,
-    dist_metric: Union[str, Callable] = "L_2"
+    dist_metric: Union[str, Callable] = "L_2",
 ) -> tf.Tensor:
     """Computes the triplet loss with hard negative and hard positive mining.
 
@@ -229,10 +228,10 @@ def triplet_hard_loss(
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=squared
         )
-        
+
     elif dist_metric == "angular":
         pdist_matrix = metric_learning.angular_distance(precise_embeddings)
-    
+
     else:
         pdist_matrix = dist_metric(precise_embeddings)
 
@@ -305,7 +304,7 @@ class TripletSemiHardLoss(LossFunctionWrapper):
             reduction=tf.keras.losses.Reduction.NONE,
             margin=margin,
             squared=squared,
-            dist_metric=dist_metric
+            dist_metric=dist_metric,
         )
 
 
@@ -347,5 +346,5 @@ class TripletHardLoss(LossFunctionWrapper):
             margin=margin,
             soft=soft,
             squared=squared,
-            dist_metric=dist_metric
+            dist_metric=dist_metric,
         )
