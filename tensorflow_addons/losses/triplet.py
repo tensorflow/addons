@@ -73,7 +73,7 @@ def triplet_semihard_loss(
     y_pred: TensorLike,
     margin: FloatTensorLike = 1.0,
     squared: bool = True,
-    dist_metric: Union[str, Callable] = "L_2",
+    distance_metric: Union[str, Callable] = "L_2",
 ) -> tf.Tensor:
     """Computes the triplet loss with semi-hard negative mining.
 
@@ -83,11 +83,11 @@ def triplet_semihard_loss(
       y_pred: 2-D float `Tensor` of embedding vectors. Embeddings should
         be l2 normalized.
       margin: Float, margin term in the loss definition.
-      squared: bool, determines whether L-1 or L-2 norm is used
-      dist_metric: str or function, determines distance metric:
-                   "L_2" for euclidean distance
-                   "angular" for cosine similarity
-                    function for custom metric
+      distance_metric: str or function, determines distance metric:
+                       "L_1" for l1-norm distance
+                       "L_2" for l2-norm distance
+                       "angular" for cosine similarity
+                        function for custom metric
 
     Returns:
       triplet_loss: float scalar with dtype of y_pred.
@@ -106,17 +106,22 @@ def triplet_semihard_loss(
     labels = tf.reshape(labels, [lshape[0], 1])
 
     # Build pairwise squared distance matrix.
-
-    if dist_metric == "L_2":
+    
+    if distance_metric == "L_1":
         pdist_matrix = metric_learning.pairwise_distance(
-            precise_embeddings, squared=squared
+            precise_embeddings, squared=False
+        )
+    
+    elif distance_metric == "L_2":
+        pdist_matrix = metric_learning.pairwise_distance(
+            precise_embeddings, squared=True
         )
 
-    elif dist_metric == "angular":
+    elif distance_metric == "angular":
         pdist_matrix = metric_learning.angular_distance(precise_embeddings)
 
     else:
-        pdist_matrix = dist_metric(precise_embeddings)
+        pdist_matrix = distance_metric(precise_embeddings)
 
     # Build pairwise binary adjacency matrix.
     adjacency = tf.math.equal(labels, tf.transpose(labels))
@@ -189,8 +194,7 @@ def triplet_hard_loss(
     y_pred: TensorLike,
     margin: FloatTensorLike = 1.0,
     soft: bool = False,
-    squared: bool = True,
-    dist_metric: Union[str, Callable] = "L_2",
+    distance_metric: Union[str, Callable] = "L_2",
 ) -> tf.Tensor:
     """Computes the triplet loss with hard negative and hard positive mining.
 
@@ -201,11 +205,11 @@ def triplet_hard_loss(
         be l2 normalized.
       margin: Float, margin term in the loss definition.
       soft: Boolean, if set, use the soft margin version.
-      squared: bool, determines whether L-1 or L-2 norm is used
-      dist_metric: str or function, determines distance metric:
-                   "L_2" for euclidean distance
-                   "angular" for cosine similarity
-                    function for custom metric
+      distance_metric: str or function, determines distance metric:
+                       "L_1" for l1-norm distance
+                       "L_2" for l2-norm distance
+                       "angular" for cosine similarity
+                        function for custom metric
 
     Returns:
       triplet_loss: float scalar with dtype of y_pred.
@@ -224,16 +228,21 @@ def triplet_hard_loss(
     labels = tf.reshape(labels, [lshape[0], 1])
 
     # Build pairwise squared distance matrix.
-    if dist_metric == "L_2":
+    if distance_metric == "L_1":
         pdist_matrix = metric_learning.pairwise_distance(
-            precise_embeddings, squared=squared
+            precise_embeddings, squared=False
+        )
+    
+    elif distance_metric == "L_2":
+        pdist_matrix = metric_learning.pairwise_distance(
+            precise_embeddings, squared=True
         )
 
-    elif dist_metric == "angular":
+    elif distance_metric == "angular":
         pdist_matrix = metric_learning.angular_distance(precise_embeddings)
 
     else:
-        pdist_matrix = dist_metric(precise_embeddings)
+        pdist_matrix = distance_metric(precise_embeddings)
 
     # Build pairwise binary adjacency matrix.
     adjacency = tf.math.equal(labels, tf.transpose(labels))
@@ -293,8 +302,7 @@ class TripletSemiHardLoss(LossFunctionWrapper):
     def __init__(
         self,
         margin: FloatTensorLike = 1.0,
-        squared: bool = True,
-        dist_metric: Union[str, Callable] = "L_2",
+        distance_metric: Union[str, Callable] = "L_2",
         name: Optional[str] = None,
         **kwargs
     ):
@@ -303,8 +311,7 @@ class TripletSemiHardLoss(LossFunctionWrapper):
             name=name,
             reduction=tf.keras.losses.Reduction.NONE,
             margin=margin,
-            squared=squared,
-            dist_metric=dist_metric,
+            distance_metric=distance_metric,
         )
 
 
@@ -334,8 +341,7 @@ class TripletHardLoss(LossFunctionWrapper):
         self,
         margin: FloatTensorLike = 1.0,
         soft: bool = False,
-        squared: bool = True,
-        dist_metric: Union[str, Callable] = "L_2",
+        distance_metric: Union[str, Callable] = "L_2",
         name: Optional[str] = None,
         **kwargs
     ):
@@ -345,6 +351,5 @@ class TripletHardLoss(LossFunctionWrapper):
             reduction=tf.keras.losses.Reduction.NONE,
             margin=margin,
             soft=soft,
-            squared=squared,
-            dist_metric=dist_metric,
+            distance_metric=distance_metric,
         )
