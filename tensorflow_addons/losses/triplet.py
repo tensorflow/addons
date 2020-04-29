@@ -86,7 +86,7 @@ def triplet_semihard_loss(
       squared: bool, determines whether L-1 or L-2 norm is used
       dist_metric: str or function, determines distance metric:
                    "L_2" for euclidean distance
-                   "angular" for cosine similarity 
+                   "angular" for cosine similarity
                     function for custom metric
 
     Returns:
@@ -204,7 +204,7 @@ def triplet_hard_loss(
       squared: bool, determines whether L-1 or L-2 norm is used
       dist_metric: str or function, determines distance metric:
                    "L_2" for euclidean distance
-                   "angular" for cosine similarity 
+                   "angular" for cosine similarity
                     function for custom metric
 
     Returns:
