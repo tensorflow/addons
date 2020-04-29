@@ -215,7 +215,7 @@ def _get_gaussian_kernel(sigma, filter_shape_1d):
     return a
 
 
-def _get_gaussian_filter_2d(gaussian_filter_x, gaussian_filter_y):
+def _get_gaussian_kernel_2d(gaussian_filter_x, gaussian_filter_y):
     "Compute 2D Gaussian Kernel"
     gaussian_kernel = tf.matmul(gaussian_filter_x, gaussian_filter_y)
     return gaussian_kernel
@@ -230,10 +230,7 @@ def gaussian_filter2d(
     constant_values: TensorLike = 0,
     name: Optional[str] = None,
 ) -> FloatTensorLike:
-    """Perform Gaussian Filter. If the program is running on a CPU device, it will be implemented as a sequence of 1d convolution of
-    gausian kernel (in x- direction and fillowed by in y direction).
-    In 1-D, G(x)=e**((-x**2)/2*(sigma**2))
-    If program is running in GPU, then it is implemented as convolution of image with 2-d gaussian kernel.
+    """Perform Gaussian Blur.
 
     Args:
       image: Either a 2-D `Tensor` of shape `[height, width]`,
@@ -268,60 +265,30 @@ def gaussian_filter2d(
         channels = tf.shape(image)[3]
         filter_shape = keras_utils.normalize_tuple(filter_shape, 2, "filter_shape")
 
-        if tf.test.is_gpu_available():
-            gaussian_filter_x = _get_gaussian_kernel(sigma, filter_shape[1])
-            gaussian_filter_x = tf.cast(gaussian_filter_x, tf.float32)
-            gaussian_filter_x = tf.reshape(gaussian_filter_x, [1, filter_shape[1]])
+        gaussian_filter_x = _get_gaussian_kernel(sigma, filter_shape[1])
+        gaussian_filter_x = tf.cast(gaussian_filter_x, tf.float32)
+        gaussian_filter_x = tf.reshape(gaussian_filter_x, [1, filter_shape[1]])
 
-            gaussian_filter_y = _get_gaussian_kernel(sigma, filter_shape[0])
-            gaussian_filter_y = tf.reshape(gaussian_filter_y, [filter_shape[0], 1])
-            gaussian_filter_y = tf.cast(gaussian_filter_y, tf.float32)
+        gaussian_filter_y = _get_gaussian_kernel(sigma, filter_shape[0])
+        gaussian_filter_y = tf.reshape(gaussian_filter_y, [filter_shape[0], 1])
+        gaussian_filter_y = tf.cast(gaussian_filter_y, tf.float32)
 
-            gaussian_filter_2d = tf.matmul(gaussian_filter_y, gaussian_filter_x)
-            gaussian_filter_2d = tf.repeat(gaussian_filter_2d, channels)
-            gaussian_filter_2d = tf.reshape(
-                gaussian_filter_2d, [filter_shape[0], filter_shape[1], channels, 1]
-            )
+        gaussian_filter_2d = _get_gaussian_kernel_2d(
+            gaussian_filter_y, gaussian_filter_x
+        )
+        gaussian_filter_2d = tf.repeat(gaussian_filter_2d, channels)
+        gaussian_filter_2d = tf.reshape(
+            gaussian_filter_2d, [filter_shape[0], filter_shape[1], channels, 1]
+        )
 
-            image = _pad(
-                image, filter_shape, mode=padding, constant_values=constant_values,
-            )
+        image = _pad(
+            image, filter_shape, mode=padding, constant_values=constant_values,
+        )
 
-            conv_ops = tf.nn.depthwise_conv2d(
-                input=image,
-                filter=gaussian_filter_2d,
-                strides=(1, 1, 1, 1),
-                padding="VALID",
-            )
-            return conv_ops
-        else:
-            gaussian_filter_x = _get_gaussian_kernel(sigma, filter_shape[1])
-            gaussian_filter_x = tf.repeat(gaussian_filter_x, channels)
-            gaussian_filter_x = tf.reshape(
-                gaussian_filter_x, [1, filter_shape[1], channels, 1]
-            )
-
-            gaussian_filter_x = tf.cast(gaussian_filter_x, tf.float32)
-            gaussian_filter_y = _get_gaussian_kernel(sigma, filter_shape[0])
-            gaussian_filter_y = tf.repeat(gaussian_filter_y, channels)
-            gaussian_filter_y = tf.reshape(
-                gaussian_filter_y, [filter_shape[0], 1, channels, 1]
-            )
-
-            gaussian_filter_y = tf.cast(gaussian_filter_y, tf.float32)
-            image = _pad(
-                image, filter_shape, mode=padding, constant_values=constant_values,
-            )
-            conv_ops_x = tf.nn.depthwise_conv2d(
-                input=image,
-                filter=gaussian_filter_x,
-                strides=(1, 1, 1, 1),
-                padding="VALID",
-            )
-            conv_ops = tf.nn.depthwise_conv2d(
-                input=conv_ops_x,
-                filter=gaussian_filter_y,
-                strides=(1, 1, 1, 1),
-                padding="VALID",
-            )
-            return conv_ops
+        conv_ops = tf.nn.depthwise_conv2d(
+            input=image,
+            filter=gaussian_filter_2d,
+            strides=(1, 1, 1, 1),
+            padding="VALID",
+        )
+        return conv_ops
