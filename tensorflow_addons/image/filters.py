@@ -221,7 +221,7 @@ def _get_gaussian_filter_2d(gaussian_filter_x, gaussian_filter_y):
     return gaussian_kernel
 
 
-@tf.function(experimental_compile=True)
+@tf.function
 def gaussian_filter2d(
     image: FloatTensorLike,
     filter_shape: Union[List[int], Tuple[int]] = [3, 3],
