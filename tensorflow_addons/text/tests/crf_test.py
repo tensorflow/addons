@@ -20,263 +20,280 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons import text
-from tensorflow_addons.utils import test_utils
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-class CrfTest(tf.test.TestCase):
-    def calculateSequenceScore(
-        self, inputs, transition_params, tag_indices, sequence_lengths
+def calculate_sequence_score(inputs, transition_params, tag_indices, sequence_lengths):
+    expected_unary_score = sum(
+        inputs[i][tag_indices[i]] for i in range(sequence_lengths)
+    )
+    expected_binary_score = sum(
+        transition_params[tag_indices[i], tag_indices[i + 1]]
+        for i in range(sequence_lengths - 1)
+    )
+    return expected_unary_score + expected_binary_score
+
+
+def test_crf_sequence_score():
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32)
+    # Test both the length-1 and regular cases.
+    sequence_lengths_list = [
+        np.array(3, dtype=np.int32),
+        np.array(1, dtype=np.int32),
+    ]
+    inputs_list = [
+        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32),
+        np.array([[4, 5, -3]], dtype=np.float32),
+    ]
+    tag_indices_list = [
+        np.array([1, 2, 1, 0], dtype=np.int32),
+        np.array([1], dtype=np.int32),
+    ]
+    for sequence_lengths, inputs, tag_indices in zip(
+        sequence_lengths_list, inputs_list, tag_indices_list
     ):
-        expected_unary_score = sum(
-            inputs[i][tag_indices[i]] for i in range(sequence_lengths)
-        )
-        expected_binary_score = sum(
-            transition_params[tag_indices[i], tag_indices[i + 1]]
-            for i in range(sequence_lengths - 1)
-        )
-        return expected_unary_score + expected_binary_score
-
-    def testCrfSequenceScore(self):
-        transition_params = np.array(
-            [[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32
-        )
-        # Test both the length-1 and regular cases.
-        sequence_lengths_list = [
-            np.array(3, dtype=np.int32),
-            np.array(1, dtype=np.int32),
-        ]
-        inputs_list = [
-            np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32),
-            np.array([[4, 5, -3]], dtype=np.float32),
-        ]
-        tag_indices_list = [
-            np.array([1, 2, 1, 0], dtype=np.int32),
-            np.array([1], dtype=np.int32),
-        ]
-        for sequence_lengths, inputs, tag_indices in zip(
-            sequence_lengths_list, inputs_list, tag_indices_list
-        ):
-            sequence_score = text.crf_sequence_score(
-                inputs=tf.expand_dims(inputs, 0),
-                tag_indices=tf.expand_dims(tag_indices, 0),
-                sequence_lengths=tf.expand_dims(sequence_lengths, 0),
-                transition_params=tf.constant(transition_params),
-            )
-            sequence_score = tf.squeeze(sequence_score, [0])
-
-            tf_sequence_score = self.evaluate(sequence_score)
-
-            expected_sequence_score = self.calculateSequenceScore(
-                inputs, transition_params, tag_indices, sequence_lengths
-            )
-            self.assertAllClose(tf_sequence_score, expected_sequence_score)
-
-    def testCrfMultiTagSequenceScore(self):
-        transition_params = np.array(
-            [[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32
-        )
-        # Test both the length-1 and regular cases.
-        sequence_lengths_list = [
-            np.array(3, dtype=np.int32),
-            np.array(1, dtype=np.int32),
-        ]
-        inputs_list = [
-            np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32),
-            np.array([[4, 5, -3]], dtype=np.float32),
-        ]
-        tag_bitmap_list = [
-            np.array(
-                [
-                    [True, True, False],
-                    [True, False, True],
-                    [False, True, True],
-                    [True, False, True],
-                ],
-                dtype=np.bool,
-            ),
-            np.array([[True, True, False]], dtype=np.bool),
-        ]
-        for sequence_lengths, inputs, tag_bitmap in zip(
-            sequence_lengths_list, inputs_list, tag_bitmap_list
-        ):
-            sequence_score = text.crf_multitag_sequence_score(
-                inputs=tf.expand_dims(inputs, 0),
-                tag_bitmap=tf.expand_dims(tag_bitmap, 0),
-                sequence_lengths=tf.expand_dims(sequence_lengths, 0),
-                transition_params=tf.constant(transition_params),
-            )
-            sequence_score = tf.squeeze(sequence_score, [0])
-            tf_sum_sequence_score = self.evaluate(sequence_score)
-            all_indices_list = [
-                single_index_bitmap.nonzero()[0]
-                for single_index_bitmap in tag_bitmap[:sequence_lengths]
-            ]
-            expected_sequence_scores = [
-                self.calculateSequenceScore(
-                    inputs, transition_params, indices, sequence_lengths
-                )
-                for indices in itertools.product(*all_indices_list)
-            ]
-            expected_log_sum_exp_sequence_scores = np.logaddexp.reduce(
-                expected_sequence_scores
-            )
-            self.assertAllClose(
-                tf_sum_sequence_score, expected_log_sum_exp_sequence_scores
-            )
-
-    def testCrfUnaryScore(self):
-        inputs = np.array(
-            [[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32
-        )
-        for dtype in (np.int32, np.int64):
-            tag_indices = np.array([1, 2, 1, 0], dtype=dtype)
-            sequence_lengths = np.array(3, dtype=np.int32)
-            unary_score = text.crf_unary_score(
-                tag_indices=tf.expand_dims(tag_indices, 0),
-                sequence_lengths=tf.expand_dims(sequence_lengths, 0),
-                inputs=tf.expand_dims(inputs, 0),
-            )
-            unary_score = tf.squeeze(unary_score, [0])
-            tf_unary_score = self.evaluate(unary_score)
-            expected_unary_score = sum(
-                inputs[i][tag_indices[i]] for i in range(sequence_lengths)
-            )
-            self.assertAllClose(tf_unary_score, expected_unary_score)
-
-    def testCrfBinaryScore(self):
-        tag_indices = np.array([1, 2, 1, 0], dtype=np.int32)
-        transition_params = np.array(
-            [[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32
-        )
-        sequence_lengths = np.array(3, dtype=np.int32)
-        binary_score = text.crf_binary_score(
+        sequence_score = text.crf_sequence_score(
+            inputs=tf.expand_dims(inputs, 0),
             tag_indices=tf.expand_dims(tag_indices, 0),
             sequence_lengths=tf.expand_dims(sequence_lengths, 0),
             transition_params=tf.constant(transition_params),
         )
-        binary_score = tf.squeeze(binary_score, [0])
-        tf_binary_score = self.evaluate(binary_score)
-        expected_binary_score = sum(
-            transition_params[tag_indices[i], tag_indices[i + 1]]
-            for i in range(sequence_lengths - 1)
+        sequence_score = tf.squeeze(sequence_score, [0])
+
+        expected_sequence_score = calculate_sequence_score(
+            inputs, transition_params, tag_indices, sequence_lengths
         )
-        self.assertAllClose(tf_binary_score, expected_binary_score)
+        np.testing.assert_allclose(sequence_score, expected_sequence_score)
 
-    def testCrfLogNorm(self):
-        transition_params = np.array(
-            [[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32
+
+def test_crf_multi_tag_sequence_score():
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32)
+    # Test both the length-1 and regular cases.
+    sequence_lengths_list = [
+        np.array(3, dtype=np.int32),
+        np.array(1, dtype=np.int32),
+    ]
+    inputs_list = [
+        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32),
+        np.array([[4, 5, -3]], dtype=np.float32),
+    ]
+    tag_bitmap_list = [
+        np.array(
+            [
+                [True, True, False],
+                [True, False, True],
+                [False, True, True],
+                [True, False, True],
+            ],
+            dtype=np.bool,
+        ),
+        np.array([[True, True, False]], dtype=np.bool),
+    ]
+    for sequence_lengths, inputs, tag_bitmap in zip(
+        sequence_lengths_list, inputs_list, tag_bitmap_list
+    ):
+        sequence_score = text.crf_multitag_sequence_score(
+            inputs=tf.expand_dims(inputs, 0),
+            tag_bitmap=tf.expand_dims(tag_bitmap, 0),
+            sequence_lengths=tf.expand_dims(sequence_lengths, 0),
+            transition_params=tf.constant(transition_params),
         )
-        # Test both the length-1 and regular cases.
-        sequence_lengths_list = [
-            np.array(3, dtype=np.int32),
-            np.array(1, dtype=np.int64),
+        sequence_score = tf.squeeze(sequence_score, [0])
+        all_indices_list = [
+            single_index_bitmap.nonzero()[0]
+            for single_index_bitmap in tag_bitmap[:sequence_lengths]
         ]
-        inputs_list = [
-            np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32),
-            np.array([[3, -1, 3]], dtype=np.float32),
-        ]
-        tag_indices_list = [
-            np.array([1, 2, 1, 0], dtype=np.int32),
-            np.array([2], dtype=np.int32),
-        ]
-
-        for sequence_lengths, inputs, tag_indices in zip(
-            sequence_lengths_list, inputs_list, tag_indices_list
-        ):
-            num_words = inputs.shape[0]
-            num_tags = inputs.shape[1]
-            all_sequence_scores = []
-
-            # Compare the dynamic program with brute force computation.
-            for tag_indices in itertools.product(
-                range(num_tags), repeat=sequence_lengths
-            ):
-                tag_indices = list(tag_indices)
-                tag_indices.extend([0] * (num_words - sequence_lengths))
-                all_sequence_scores.append(
-                    text.crf_sequence_score(
-                        inputs=tf.expand_dims(inputs, 0),
-                        tag_indices=tf.expand_dims(tag_indices, 0),
-                        sequence_lengths=tf.expand_dims(sequence_lengths, 0),
-                        transition_params=tf.constant(transition_params),
-                    )
-                )
-
-            brute_force_log_norm = tf.reduce_logsumexp(all_sequence_scores)
-            log_norm = text.crf_log_norm(
-                inputs=tf.expand_dims(inputs, 0),
-                sequence_lengths=tf.expand_dims(sequence_lengths, 0),
-                transition_params=tf.constant(transition_params),
+        expected_sequence_scores = [
+            calculate_sequence_score(
+                inputs, transition_params, indices, sequence_lengths
             )
-            log_norm = tf.squeeze(log_norm, [0])
-            tf_brute_force_log_norm, tf_log_norm = self.evaluate(
-                [brute_force_log_norm, log_norm]
-            )
-
-            self.assertAllClose(tf_log_norm, tf_brute_force_log_norm)
-
-    def testCrfLogNormZeroSeqLength(self):
-        """Test `crf_log_norm` when `sequence_lengths` contains one or more
-        zeros."""
-        inputs = tf.constant(np.ones([2, 10, 5], dtype=np.float32))
-        transition_params = tf.constant(np.ones([5, 5], dtype=np.float32))
-        sequence_lengths = tf.constant(np.zeros([2], dtype=np.int32))
-        expected_log_norm = np.zeros([2], dtype=np.float32)
-        log_norm = text.crf_log_norm(inputs, sequence_lengths, transition_params)
-        tf_log_norm = self.evaluate(log_norm)
-        self.assertAllClose(tf_log_norm, expected_log_norm)
-
-    def testCrfLogLikelihood(self):
-        inputs = np.array(
-            [[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32
+            for indices in itertools.product(*all_indices_list)
+        ]
+        expected_log_sum_exp_sequence_scores = np.logaddexp.reduce(
+            expected_sequence_scores
         )
-        transition_params = np.array(
-            [[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32
-        )
+        np.testing.assert_allclose(sequence_score, expected_log_sum_exp_sequence_scores)
+
+
+def test_crf_unary_score():
+    inputs = np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32)
+    for dtype in (np.int32, np.int64):
+        tag_indices = np.array([1, 2, 1, 0], dtype=dtype)
         sequence_lengths = np.array(3, dtype=np.int32)
-        # TODO: https://github.com/PyCQA/pylint/issues/3139
-        # pylint: disable=E1136
+        unary_score = text.crf_unary_score(
+            tag_indices=tf.expand_dims(tag_indices, 0),
+            sequence_lengths=tf.expand_dims(sequence_lengths, 0),
+            inputs=tf.expand_dims(inputs, 0),
+        )
+        unary_score = tf.squeeze(unary_score, [0])
+        expected_unary_score = sum(
+            inputs[i][tag_indices[i]] for i in range(sequence_lengths)
+        )
+        np.testing.assert_allclose(unary_score, expected_unary_score)
+
+
+def test_crf_binary_score():
+    tag_indices = np.array([1, 2, 1, 0], dtype=np.int32)
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32)
+    sequence_lengths = np.array(3, dtype=np.int32)
+    binary_score = text.crf_binary_score(
+        tag_indices=tf.expand_dims(tag_indices, 0),
+        sequence_lengths=tf.expand_dims(sequence_lengths, 0),
+        transition_params=tf.constant(transition_params),
+    )
+    binary_score = tf.squeeze(binary_score, [0])
+    expected_binary_score = sum(
+        transition_params[tag_indices[i], tag_indices[i + 1]]
+        for i in range(sequence_lengths - 1)
+    )
+    np.testing.assert_allclose(binary_score, expected_binary_score)
+
+
+def test_crf_log_norm():
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32)
+    # Test both the length-1 and regular cases.
+    sequence_lengths_list = [
+        np.array(3, dtype=np.int32),
+        np.array(1, dtype=np.int64),
+    ]
+    inputs_list = [
+        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32),
+        np.array([[3, -1, 3]], dtype=np.float32),
+    ]
+    tag_indices_list = [
+        np.array([1, 2, 1, 0], dtype=np.int32),
+        np.array([2], dtype=np.int32),
+    ]
+
+    for sequence_lengths, inputs, tag_indices in zip(
+        sequence_lengths_list, inputs_list, tag_indices_list
+    ):
         num_words = inputs.shape[0]
         num_tags = inputs.shape[1]
-        # pylint: enable=E1136
-        all_sequence_log_likelihoods = []
+        all_sequence_scores = []
 
-        # Make sure all probabilities sum to 1.
+        # Compare the dynamic program with brute force computation.
         for tag_indices in itertools.product(range(num_tags), repeat=sequence_lengths):
             tag_indices = list(tag_indices)
             tag_indices.extend([0] * (num_words - sequence_lengths))
-            sequence_log_likelihood, _ = text.crf_log_likelihood(
-                inputs=tf.expand_dims(inputs, 0),
-                tag_indices=tf.expand_dims(tag_indices, 0),
-                sequence_lengths=tf.expand_dims(sequence_lengths, 0),
-                transition_params=tf.constant(transition_params),
+            all_sequence_scores.append(
+                text.crf_sequence_score(
+                    inputs=tf.expand_dims(inputs, 0),
+                    tag_indices=tf.expand_dims(tag_indices, 0),
+                    sequence_lengths=tf.expand_dims(sequence_lengths, 0),
+                    transition_params=tf.constant(transition_params),
+                )
             )
-            all_sequence_log_likelihoods.append(sequence_log_likelihood)
-        total_log_likelihood = tf.reduce_logsumexp(all_sequence_log_likelihoods)
-        tf_total_log_likelihood = self.evaluate(total_log_likelihood)
-        self.assertAllClose(tf_total_log_likelihood, 0.0)
 
-        # check if `transition_params = None` raises an error
-        text.crf_log_likelihood(
+        brute_force_log_norm = tf.reduce_logsumexp(all_sequence_scores)
+        log_norm = text.crf_log_norm(
+            inputs=tf.expand_dims(inputs, 0),
+            sequence_lengths=tf.expand_dims(sequence_lengths, 0),
+            transition_params=tf.constant(transition_params),
+        )
+        log_norm = tf.squeeze(log_norm, [0])
+
+        np.testing.assert_allclose(log_norm, brute_force_log_norm)
+
+
+def test_crf_log_norm_zero_seq_length():
+    """Test `crf_log_norm` when `sequence_lengths` contains one or more
+    zeros."""
+    inputs = tf.constant(np.ones([2, 10, 5], dtype=np.float32))
+    transition_params = tf.constant(np.ones([5, 5], dtype=np.float32))
+    sequence_lengths = tf.constant(np.zeros([2], dtype=np.int32))
+    expected_log_norm = np.zeros([2], dtype=np.float32)
+    log_norm = text.crf_log_norm(inputs, sequence_lengths, transition_params)
+    np.testing.assert_allclose(log_norm, expected_log_norm)
+
+
+def test_crf_log_likelihood():
+    inputs = np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32)
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32)
+    sequence_lengths = np.array(3, dtype=np.int32)
+
+    num_words = inputs.shape[0]
+    num_tags = inputs.shape[1]
+    all_sequence_log_likelihoods = []
+
+    # Make sure all probabilities sum to 1.
+    for tag_indices in itertools.product(range(num_tags), repeat=sequence_lengths):
+        tag_indices = list(tag_indices)
+        tag_indices.extend([0] * (num_words - sequence_lengths))
+        sequence_log_likelihood, _ = text.crf_log_likelihood(
             inputs=tf.expand_dims(inputs, 0),
             tag_indices=tf.expand_dims(tag_indices, 0),
             sequence_lengths=tf.expand_dims(sequence_lengths, 0),
+            transition_params=tf.constant(transition_params),
         )
+        all_sequence_log_likelihoods.append(sequence_log_likelihood)
+    total_log_likelihood = tf.reduce_logsumexp(all_sequence_log_likelihoods)
+    np.testing.assert_allclose(total_log_likelihood, 0.0, 1e-6, 1e-6)
 
-    def testViterbiDecode(self):
-        inputs = np.array(
-            [[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32
+    # check if `transition_params = None` raises an error
+    text.crf_log_likelihood(
+        inputs=tf.expand_dims(inputs, 0),
+        tag_indices=tf.expand_dims(tag_indices, 0),
+        sequence_lengths=tf.expand_dims(sequence_lengths, 0),
+    )
+
+
+def test_viterbi_decode():
+    inputs = np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32)
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32)
+    sequence_lengths = np.array(3, dtype=np.int32)
+    num_words = inputs.shape[0]
+    num_tags = inputs.shape[1]
+
+    all_sequence_scores = []
+    all_sequences = []
+
+    # Compare the dynamic program with brute force computation.
+    for tag_indices in itertools.product(range(num_tags), repeat=sequence_lengths):
+        tag_indices = list(tag_indices)
+        tag_indices.extend([0] * (num_words - sequence_lengths))
+        all_sequences.append(tag_indices)
+        sequence_score = text.crf_sequence_score(
+            inputs=tf.expand_dims(inputs, 0),
+            tag_indices=tf.expand_dims(tag_indices, 0),
+            sequence_lengths=tf.expand_dims(sequence_lengths, 0),
+            transition_params=tf.constant(transition_params),
         )
-        transition_params = np.array(
-            [[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32
-        )
-        sequence_lengths = np.array(3, dtype=np.int32)
-        # TODO: https://github.com/PyCQA/pylint/issues/3139
-        # pylint: disable=E1136
+        sequence_score = tf.squeeze(sequence_score, [0])
+        all_sequence_scores.append(sequence_score)
+
+    expected_max_sequence_index = np.argmax(all_sequence_scores)
+    expected_max_sequence = all_sequences[expected_max_sequence_index]
+    expected_max_score = all_sequence_scores[expected_max_sequence_index]
+
+    actual_max_sequence, actual_max_score = text.viterbi_decode(
+        inputs[:sequence_lengths], transition_params
+    )
+
+    np.testing.assert_allclose(actual_max_score, expected_max_score)
+    assert actual_max_sequence == expected_max_sequence[:sequence_lengths]
+
+
+def test_crf_decode():
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32)
+    # Test both the length-1 and regular cases.
+    sequence_lengths_list = [
+        np.array(3, dtype=np.int32),
+        np.array(1, dtype=np.int64),
+    ]
+    inputs_list = [
+        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32),
+        np.array([[-1, 2, 1]], dtype=np.float32),
+    ]
+    tag_indices_list = [
+        np.array([1, 2, 1, 0], dtype=np.int32),
+        np.array([2], dtype=np.int32),
+    ]
+
+    for sequence_lengths, inputs, tag_indices in zip(
+        sequence_lengths_list, inputs_list, tag_indices_list
+    ):
         num_words = inputs.shape[0]
         num_tags = inputs.shape[1]
-        # pylint: enable=E1136
 
         all_sequence_scores = []
         all_sequences = []
@@ -295,115 +312,56 @@ class CrfTest(tf.test.TestCase):
             sequence_score = tf.squeeze(sequence_score, [0])
             all_sequence_scores.append(sequence_score)
 
-        tf_all_sequence_scores = self.evaluate(all_sequence_scores)
-
-        expected_max_sequence_index = np.argmax(tf_all_sequence_scores)
+        expected_max_sequence_index = np.argmax(all_sequence_scores)
         expected_max_sequence = all_sequences[expected_max_sequence_index]
-        expected_max_score = tf_all_sequence_scores[expected_max_sequence_index]
+        expected_max_score = all_sequence_scores[expected_max_sequence_index]
 
-        actual_max_sequence, actual_max_score = text.viterbi_decode(
-            inputs[:sequence_lengths], transition_params
+        actual_max_sequence, actual_max_score = text.crf_decode(
+            tf.expand_dims(inputs, 0),
+            tf.constant(transition_params),
+            tf.expand_dims(sequence_lengths, 0),
+        )
+        actual_max_sequence = tf.squeeze(actual_max_sequence, [0])
+        actual_max_score = tf.squeeze(actual_max_score, [0])
+
+        np.testing.assert_allclose(actual_max_score, expected_max_score, 1e-6, 1e-6)
+        assert (
+            list(actual_max_sequence[:sequence_lengths])
+            == expected_max_sequence[:sequence_lengths]
         )
 
-        self.assertAllClose(actual_max_score, expected_max_score)
-        self.assertEqual(actual_max_sequence, expected_max_sequence[:sequence_lengths])
 
-    def testCrfDecode(self):
-        transition_params = np.array(
-            [[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32
-        )
-        # Test both the length-1 and regular cases.
-        sequence_lengths_list = [
-            np.array(3, dtype=np.int32),
-            np.array(1, dtype=np.int64),
-        ]
-        inputs_list = [
-            np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32),
-            np.array([[-1, 2, 1]], dtype=np.float32),
-        ]
-        tag_indices_list = [
-            np.array([1, 2, 1, 0], dtype=np.int32),
-            np.array([2], dtype=np.int32),
-        ]
+def test_crf_decode_zero_seq_length():
+    """Test that crf_decode works when sequence_length contains one or more
+    zeros."""
+    inputs = tf.constant(np.ones([2, 10, 5], dtype=np.float32))
+    transition_params = tf.constant(np.ones([5, 5], dtype=np.float32))
+    sequence_lengths = tf.constant(np.zeros([2], dtype=np.int32))
+    tags, scores = text.crf_decode(inputs, transition_params, sequence_lengths)
+    assert len(tags.shape) == 2
+    assert len(scores.shape) == 1
 
-        for sequence_lengths, inputs, tag_indices in zip(
-            sequence_lengths_list, inputs_list, tag_indices_list
-        ):
-            num_words = inputs.shape[0]
-            num_tags = inputs.shape[1]
 
-            all_sequence_scores = []
-            all_sequences = []
+def test_different_dtype():
+    inputs = np.ones([16, 20, 5], dtype=np.float32)
+    tags = tf.convert_to_tensor(np.ones([16, 20], dtype=np.int64))
+    seq_lens = np.ones([16], dtype=np.int64) * 20
 
-            # Compare the dynamic program with brute force computation.
-            for tag_indices in itertools.product(
-                range(num_tags), repeat=sequence_lengths
-            ):
-                tag_indices = list(tag_indices)
-                tag_indices.extend([0] * (num_words - sequence_lengths))
-                all_sequences.append(tag_indices)
-                sequence_score = text.crf_sequence_score(
-                    inputs=tf.expand_dims(inputs, 0),
-                    tag_indices=tf.expand_dims(tag_indices, 0),
-                    sequence_lengths=tf.expand_dims(sequence_lengths, 0),
-                    transition_params=tf.constant(transition_params),
-                )
-                sequence_score = tf.squeeze(sequence_score, [0])
-                all_sequence_scores.append(sequence_score)
+    loss, _ = text.crf_log_likelihood(
+        inputs=inputs, tag_indices=tags, sequence_lengths=seq_lens
+    )
 
-            tf_all_sequence_scores = self.evaluate(all_sequence_scores)
 
-            expected_max_sequence_index = np.argmax(tf_all_sequence_scores)
-            expected_max_sequence = all_sequences[expected_max_sequence_index]
-            expected_max_score = tf_all_sequence_scores[expected_max_sequence_index]
-
-            actual_max_sequence, actual_max_score = text.crf_decode(
-                tf.expand_dims(inputs, 0),
-                tf.constant(transition_params),
-                tf.expand_dims(sequence_lengths, 0),
-            )
-            actual_max_sequence = tf.squeeze(actual_max_sequence, [0])
-            actual_max_score = tf.squeeze(actual_max_score, [0])
-            tf_actual_max_sequence, tf_actual_max_score = self.evaluate(
-                [actual_max_sequence, actual_max_score]
-            )
-
-            self.assertAllClose(tf_actual_max_score, expected_max_score)
-            self.assertEqual(
-                list(tf_actual_max_sequence[:sequence_lengths]),
-                expected_max_sequence[:sequence_lengths],
-            )
-
-    def testCrfDecodeZeroSeqLength(self):
-        """Test that crf_decode works when sequence_length contains one or more
-        zeros."""
-        inputs = tf.constant(np.ones([2, 10, 5], dtype=np.float32))
-        transition_params = tf.constant(np.ones([5, 5], dtype=np.float32))
-        sequence_lengths = tf.constant(np.zeros([2], dtype=np.int32))
-        tags, scores = text.crf_decode(inputs, transition_params, sequence_lengths)
-        tf_tags, tf_scores = self.evaluate([tags, scores])
-        self.assertEqual(len(tf_tags.shape), 2)
-        self.assertEqual(len(tf_scores.shape), 1)
-
-    def testDifferentDtype(self):
-        inputs = np.ones([16, 20, 5], dtype=np.float32)
-        tags = tf.convert_to_tensor(np.ones([16, 20], dtype=np.int64))
-        seq_lens = np.ones([16], dtype=np.int64) * 20
-
-        loss, _ = text.crf_log_likelihood(
-            inputs=inputs, tag_indices=tags, sequence_lengths=seq_lens
-        )
-
-    def testTfFunction(self):
-        batch_size = 4
-        num_tags = 10
-        input_signature = (
-            tf.TensorSpec([None, None, num_tags]),
-            tf.TensorSpec([num_tags, num_tags]),
-            tf.TensorSpec([None], dtype=tf.int32),
-        )
-        crf_decode = tf.function(input_signature=input_signature)(text.crf_decode)
-        potentials = tf.random.uniform([batch_size, 1, num_tags])
-        transition_params = tf.random.uniform([num_tags, num_tags])
-        sequence_length = tf.ones([batch_size], dtype=tf.int32)
-        crf_decode(potentials, transition_params, sequence_length)
+def test_tf_function():
+    batch_size = 4
+    num_tags = 10
+    input_signature = (
+        tf.TensorSpec([None, None, num_tags]),
+        tf.TensorSpec([num_tags, num_tags]),
+        tf.TensorSpec([None], dtype=tf.int32),
+    )
+    crf_decode = tf.function(input_signature=input_signature)(text.crf_decode)
+    potentials = tf.random.uniform([batch_size, 1, num_tags])
+    transition_params = tf.random.uniform([num_tags, num_tags])
+    sequence_length = tf.ones([batch_size], dtype=tf.int32)
+    crf_decode(potentials, transition_params, sequence_length)

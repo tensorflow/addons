@@ -149,3 +149,10 @@ def test_get_config():
     config = opt.get_config()
     assert config["sync_period"] == 10
     assert config["slow_step_size"] == 0.4
+
+
+def test_serialization():
+    optimizer = Lookahead("adam", sync_period=10, slow_step_size=0.4)
+    config = tf.keras.optimizers.serialize(optimizer)
+    new_optimizer = tf.keras.optimizers.deserialize(config)
+    assert new_optimizer.get_config() == optimizer.get_config()

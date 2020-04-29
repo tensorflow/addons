@@ -40,13 +40,14 @@ def check_metric_serialization(
     assert_all_arrays_close(metric.get_weights(), metric_copy.get_weights())
     metric_result = metric.result().numpy()
     metric_copy_result = metric_copy.result().numpy()
-    if metric_result != metric_copy_result:
+
+    try:
+        np.testing.assert_allclose(metric_result, metric_copy_result)
+    except AssertionError as e:
         raise ValueError(
-            "The original gave a result of {} after an "
-            "`.update_states()` call, but the copy gave "
-            "a result of {} after the same "
-            "call.".format(metric_result, metric_copy_result)
-        )
+            "The original and the copy of the metric give different results after "
+            "the same `.update_states()` call."
+        ) from e
 
 
 def check_config(config, class_, strict):

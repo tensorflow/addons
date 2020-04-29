@@ -16,6 +16,7 @@
 
 import tensorflow as tf
 from typeguard import typechecked
+from tensorflow.python.keras.losses import LossFunctionWrapper
 from tensorflow_addons.utils.types import TensorLike, FloatTensorLike
 
 
@@ -72,7 +73,7 @@ def pinball_loss(
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class PinballLoss(tf.keras.losses.Loss):
+class PinballLoss(LossFunctionWrapper):
     """Computes the pinball loss between `y_true` and `y_pred`.
 
     `loss = maximum(tau * (y_true - y_pred), (tau - 1) * (y_true - y_pred))`
@@ -129,15 +130,4 @@ class PinballLoss(tf.keras.losses.Loss):
         reduction: str = tf.keras.losses.Reduction.AUTO,
         name: str = "pinball_loss",
     ):
-        super().__init__(reduction=reduction, name=name)
-        self.tau = tau
-
-    def call(self, y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
-        return pinball_loss(y_true, y_pred, self.tau)
-
-    def get_config(self):
-        config = {
-            "tau": self.tau,
-        }
-        base_config = super().get_config()
-        return {**base_config, **config}
+        super().__init__(pinball_loss, reduction=reduction, name=name, tau=tau)

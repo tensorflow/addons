@@ -160,6 +160,8 @@ conda activate my_dev_environement
 Just run from the root:
 
 ```
+pip install tensorflow==2.2.0rc3
+# you can use "pip install tensorflow-cpu==2.2.0rc3" too if you're not testing on gpu.
 pip install -e ./
 ```
 
@@ -199,6 +201,9 @@ Pytest has many cool options to help you make great tests:
 # Use multiprocessing to run the tests, 3 workers
 pytest -n 3 tensorflow_addons/
 pytest -n auto tensorflow_addons/
+
+# Run the whole test suite without compiling any custom ops (.so files).
+pytest -v --skip-custom-ops tensorflow_addons/
 
 # Open the debugger to inspect variables and execute code when 
 # an exception is raised.
@@ -244,7 +249,7 @@ If you need a custom C++/Cuda op for your test, compile your ops with
 
 ```bash
 python configure.py
-pip install tensorflow==2.1.0 -e ./ -r tools/install_deps/pytest.txt
+pip install tensorflow==2.2.0rc3 -e ./ -r tools/install_deps/pytest.txt
 bash tools/install_so_files.sh  # Linux/macos/WSL2
 sh tools/install_so_files.sh    # PowerShell
 ```
@@ -272,14 +277,14 @@ docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/ten
 
 Configure:
 ```
-python3 -m pip install tensorflow==2.1.0
+python3 -m pip install tensorflow==2.2.0rc3
 python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 
 Install in editable mode
 ```
 python3 -m pip install -e .
-python3 -m pip install pytest pytest-xdist
+python3 -m pip install -r tools/install_deps/pytest.txt
 ```
 
 Compile the custom ops
@@ -306,9 +311,9 @@ quickly, as Bazel has great support for caching and distributed testing.
 To test with Bazel:
 
 ```
-python3 -m pip install tensorflow==2.1.0
+python3 -m pip install tensorflow==2.2.0rc3
 python3 configure.py
-python3 -m pip install pytest
+python3 -m pip install -r tools/install_deps/pytest.txt
 bazel test -c opt -k \
 --test_timeout 300,450,1200,3600 \
 --test_output=all \
@@ -379,6 +384,9 @@ rarely need to do heavy computation to test things. Your tests should be small a
 focused on a specific feature/parameter.
 * Don't be afraid to write too many tests. This is fine as long as they're fast.
 
+### Code example
+* It is required to contribute a code example in the docstring when adding new features.
+* It is strongly suggested to expand or contribute a new [tutorial](https://github.com/tensorflow/addons/blob/master/docs/tutorials/README.md) for more complex features that are hard to be expressed in the docstring only.
 
 ### Fixtures and assert functions:
 We provide [fixtures](https://docs.pytest.org/en/latest/fixture.html) to help your write 

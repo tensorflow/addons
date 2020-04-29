@@ -15,11 +15,11 @@
 """Tests for tfa.seq2seq.seq2seq.beam_search_decoder."""
 
 import numpy as np
+import pytest
 import tensorflow as tf
 
 from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import beam_search_decoder, gather_tree
-from tensorflow_addons.utils import test_utils
 
 
 def test_gather_tree():
@@ -119,139 +119,134 @@ def test_gather_tree_from_array_2d():
     _test_gather_tree_from_array(depth_ndims=2)
 
 
-class TestGatherTree(tf.test.TestCase):
-    """Tests the gather_tree function."""
-
-    def test_gather_tree_from_array_complex_trajectory(self):
-        # Max. time = 7, batch = 1, beam = 5.
-        array = np.expand_dims(
-            np.array(
-                [
-                    [[25, 12, 114, 89, 97]],
-                    [[9, 91, 64, 11, 162]],
-                    [[34, 34, 34, 34, 34]],
-                    [[2, 4, 2, 2, 4]],
-                    [[2, 3, 6, 2, 2]],
-                    [[2, 2, 2, 3, 2]],
-                    [[2, 2, 2, 2, 2]],
-                ]
-            ),
-            -1,
-        )
-        parent_ids = np.array(
+def test_gather_tree_from_array_complex_trajectory():
+    # Max. time = 7, batch = 1, beam = 5.
+    array = np.expand_dims(
+        np.array(
             [
-                [[0, 0, 0, 0, 0]],
-                [[0, 0, 0, 0, 0]],
-                [[0, 1, 2, 3, 4]],
-                [[0, 0, 1, 2, 1]],
-                [[0, 1, 1, 2, 3]],
-                [[0, 1, 3, 1, 2]],
-                [[0, 1, 2, 3, 4]],
+                [[25, 12, 114, 89, 97]],
+                [[9, 91, 64, 11, 162]],
+                [[34, 34, 34, 34, 34]],
+                [[2, 4, 2, 2, 4]],
+                [[2, 3, 6, 2, 2]],
+                [[2, 2, 2, 3, 2]],
+                [[2, 2, 2, 2, 2]],
             ]
-        )
-        expected_array = np.expand_dims(
-            np.array(
-                [
-                    [[25, 25, 25, 25, 25]],
-                    [[9, 9, 91, 9, 9]],
-                    [[34, 34, 34, 34, 34]],
-                    [[2, 4, 2, 4, 4]],
-                    [[2, 3, 6, 3, 6]],
-                    [[2, 2, 2, 3, 2]],
-                    [[2, 2, 2, 2, 2]],
-                ]
-            ),
-            -1,
-        )
-        sequence_length = [[4, 6, 4, 7, 6]]
+        ),
+        -1,
+    )
+    parent_ids = np.array(
+        [
+            [[0, 0, 0, 0, 0]],
+            [[0, 0, 0, 0, 0]],
+            [[0, 1, 2, 3, 4]],
+            [[0, 0, 1, 2, 1]],
+            [[0, 1, 1, 2, 3]],
+            [[0, 1, 3, 1, 2]],
+            [[0, 1, 2, 3, 4]],
+        ]
+    )
+    expected_array = np.expand_dims(
+        np.array(
+            [
+                [[25, 25, 25, 25, 25]],
+                [[9, 9, 91, 9, 9]],
+                [[34, 34, 34, 34, 34]],
+                [[2, 4, 2, 4, 4]],
+                [[2, 3, 6, 3, 6]],
+                [[2, 2, 2, 3, 2]],
+                [[2, 2, 2, 2, 2]],
+            ]
+        ),
+        -1,
+    )
+    sequence_length = [[4, 6, 4, 7, 6]]
 
-        array = tf.convert_to_tensor(array, dtype=tf.float32)
-        parent_ids = tf.convert_to_tensor(parent_ids, dtype=tf.int32)
-        expected_array = tf.convert_to_tensor(expected_array, dtype=tf.float32)
+    array = tf.convert_to_tensor(array, dtype=tf.float32)
+    parent_ids = tf.convert_to_tensor(parent_ids, dtype=tf.int32)
+    expected_array = tf.convert_to_tensor(expected_array, dtype=tf.float32)
 
-        sorted_array = beam_search_decoder.gather_tree_from_array(
-            array, parent_ids, sequence_length
-        )
+    sorted_array = beam_search_decoder.gather_tree_from_array(
+        array, parent_ids, sequence_length
+    )
 
-        with self.cached_session() as sess:
-            sorted_array, expected_array = sess.run([sorted_array, expected_array])
-            self.assertAllEqual(expected_array, sorted_array)
+    np.testing.assert_equal(expected_array.numpy(), sorted_array.numpy())
 
 
-class TestArrayShapeChecks(tf.test.TestCase):
-    def _test_array_shape_dynamic_checks(
-        self, static_shape, dynamic_shape, batch_size, beam_width, is_valid=True
-    ):
-        t = tf.compat.v1.placeholder_with_default(
-            np.random.randn(*static_shape).astype(np.float32), shape=dynamic_shape
-        )
+def basic_test_array_shape_dynamic_checks(
+    static_shape, dynamic_shape, batch_size, beam_width, is_valid=True
+):
+    t = tf.compat.v1.placeholder_with_default(
+        np.random.randn(*static_shape).astype(np.float32), shape=dynamic_shape
+    )
 
-        batch_size = tf.constant(batch_size)
+    batch_size = tf.constant(batch_size)
 
-        def _test_body():
-            if tf.executing_eagerly():
-                beam_search_decoder._check_batch_beam(t, batch_size, beam_width)
-            else:
-                with self.cached_session():
-                    check_op = beam_search_decoder._check_batch_beam(
-                        t, batch_size, beam_width
-                    )
-                    self.evaluate(check_op)
+    def _test_body():
+        beam_search_decoder._check_batch_beam(t, batch_size, beam_width)
 
-        if is_valid:
+    if is_valid:
+        _test_body()
+    else:
+        with pytest.raises(tf.errors.InvalidArgumentError):
             _test_body()
-        else:
-            with self.assertRaises(tf.errors.InvalidArgumentError):
-                _test_body()
 
-    def test_array_shape_dynamic_checks(self):
-        self._test_array_shape_dynamic_checks(
-            (8, 4, 5, 10), (None, None, 5, 10), 4, 5, is_valid=True
-        )
-        self._test_array_shape_dynamic_checks(
-            (8, 20, 10), (None, None, 10), 4, 5, is_valid=True
-        )
-        self._test_array_shape_dynamic_checks(
-            (8, 21, 10), (None, None, 10), 4, 5, is_valid=False
-        )
-        self._test_array_shape_dynamic_checks(
-            (8, 4, 6, 10), (None, None, None, 10), 4, 5, is_valid=False
-        )
-        self._test_array_shape_dynamic_checks(
-            (8, 4), (None, None), 4, 5, is_valid=False
-        )
 
-    def test_array_shape_static_checks(self):
-        self.assertTrue(
-            beam_search_decoder._check_static_batch_beam_maybe(
-                tf.TensorShape([None, None, None]), 3, 5
-            )
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_array_shape_dynamic_checks():
+    basic_test_array_shape_dynamic_checks(
+        (8, 4, 5, 10), (None, None, 5, 10), 4, 5, is_valid=True
+    )
+    basic_test_array_shape_dynamic_checks(
+        (8, 20, 10), (None, None, 10), 4, 5, is_valid=True
+    )
+    basic_test_array_shape_dynamic_checks(
+        (8, 21, 10), (None, None, 10), 4, 5, is_valid=False
+    )
+    basic_test_array_shape_dynamic_checks(
+        (8, 4, 6, 10), (None, None, None, 10), 4, 5, is_valid=False
+    )
+    basic_test_array_shape_dynamic_checks((8, 4), (None, None), 4, 5, is_valid=False)
+
+
+def test_array_shape_static_checks():
+    assert (
+        beam_search_decoder._check_static_batch_beam_maybe(
+            tf.TensorShape([None, None, None]), 3, 5
         )
-        self.assertTrue(
-            beam_search_decoder._check_static_batch_beam_maybe(
-                tf.TensorShape([15, None, None]), 3, 5
-            )
+        is True
+    )
+
+    assert (
+        beam_search_decoder._check_static_batch_beam_maybe(
+            tf.TensorShape([15, None, None]), 3, 5
         )
-        self.assertFalse(
-            beam_search_decoder._check_static_batch_beam_maybe(
-                tf.TensorShape([16, None, None]), 3, 5
-            )
+        is True
+    )
+    assert (
+        beam_search_decoder._check_static_batch_beam_maybe(
+            tf.TensorShape([16, None, None]), 3, 5
         )
-        self.assertTrue(
-            beam_search_decoder._check_static_batch_beam_maybe(
-                tf.TensorShape([3, 5, None]), 3, 5
-            )
+        is False
+    )
+    assert (
+        beam_search_decoder._check_static_batch_beam_maybe(
+            tf.TensorShape([3, 5, None]), 3, 5
         )
-        self.assertFalse(
-            beam_search_decoder._check_static_batch_beam_maybe(
-                tf.TensorShape([3, 6, None]), 3, 5
-            )
+        is True
+    )
+    assert (
+        beam_search_decoder._check_static_batch_beam_maybe(
+            tf.TensorShape([3, 6, None]), 3, 5
         )
-        self.assertFalse(
-            beam_search_decoder._check_static_batch_beam_maybe(
-                tf.TensorShape([5, 3, None]), 3, 5
-            )
+        is False
+    )
+    assert (
+        beam_search_decoder._check_static_batch_beam_maybe(
+            tf.TensorShape([5, 3, None]), 3, 5
         )
+        is False
+    )
 
 
 def test_eos_masking():
@@ -285,366 +280,349 @@ def test_eos_masking():
         np.testing.assert_allclose(masked[1][2][i], np.finfo("float32").min)
 
 
-class TestBeamStep(tf.test.TestCase):
-    """Tests a single step of beam search."""
+def test_beam_step():
+    batch_size = 2
+    beam_width = 3
+    vocab_size = 5
+    end_token = 0
+    length_penalty_weight = 0.6
+    coverage_penalty_weight = 0.0
 
-    def setUp(self):
-        super().setUp()
-        self.batch_size = 2
-        self.beam_width = 3
-        self.vocab_size = 5
-        self.end_token = 0
-        self.length_penalty_weight = 0.6
-        self.coverage_penalty_weight = 0.0
+    dummy_cell_state = tf.zeros([batch_size, beam_width])
+    beam_state = beam_search_decoder.BeamSearchDecoderState(
+        cell_state=dummy_cell_state,
+        log_probs=tf.nn.log_softmax(tf.ones([batch_size, beam_width])),
+        lengths=tf.constant(2, shape=[batch_size, beam_width], dtype=tf.int64),
+        finished=tf.zeros([batch_size, beam_width], dtype=tf.bool),
+        accumulated_attention_probs=(),
+    )
 
-    def test_step(self):
-        dummy_cell_state = tf.zeros([self.batch_size, self.beam_width])
-        beam_state = beam_search_decoder.BeamSearchDecoderState(
-            cell_state=dummy_cell_state,
-            log_probs=tf.nn.log_softmax(tf.ones([self.batch_size, self.beam_width])),
-            lengths=tf.constant(
-                2, shape=[self.batch_size, self.beam_width], dtype=tf.int64
-            ),
-            finished=tf.zeros([self.batch_size, self.beam_width], dtype=tf.bool),
-            accumulated_attention_probs=(),
-        )
+    logits_ = np.full([batch_size, beam_width, vocab_size], 0.0001)
+    logits_[0, 0, 2] = 1.9
+    logits_[0, 0, 3] = 2.1
+    logits_[0, 1, 3] = 3.1
+    logits_[0, 1, 4] = 0.9
+    logits_[1, 0, 1] = 0.5
+    logits_[1, 1, 2] = 2.7
+    logits_[1, 2, 2] = 10.0
+    logits_[1, 2, 3] = 0.2
+    logits = tf.convert_to_tensor(logits_, dtype=tf.float32)
+    log_probs = tf.nn.log_softmax(logits)
 
-        logits_ = np.full([self.batch_size, self.beam_width, self.vocab_size], 0.0001)
-        logits_[0, 0, 2] = 1.9
-        logits_[0, 0, 3] = 2.1
-        logits_[0, 1, 3] = 3.1
-        logits_[0, 1, 4] = 0.9
-        logits_[1, 0, 1] = 0.5
-        logits_[1, 1, 2] = 2.7
-        logits_[1, 2, 2] = 10.0
-        logits_[1, 2, 3] = 0.2
-        logits = tf.convert_to_tensor(logits_, dtype=tf.float32)
-        log_probs = tf.nn.log_softmax(logits)
+    outputs, next_beam_state = beam_search_decoder._beam_search_step(
+        time=2,
+        logits=logits,
+        next_cell_state=dummy_cell_state,
+        beam_state=beam_state,
+        batch_size=tf.convert_to_tensor(batch_size),
+        beam_width=beam_width,
+        end_token=end_token,
+        length_penalty_weight=length_penalty_weight,
+        coverage_penalty_weight=coverage_penalty_weight,
+    )
 
-        outputs, next_beam_state = beam_search_decoder._beam_search_step(
-            time=2,
-            logits=logits,
-            next_cell_state=dummy_cell_state,
-            beam_state=beam_state,
-            batch_size=tf.convert_to_tensor(self.batch_size),
-            beam_width=self.beam_width,
-            end_token=self.end_token,
-            length_penalty_weight=self.length_penalty_weight,
-            coverage_penalty_weight=self.coverage_penalty_weight,
-        )
+    outputs_, next_state_, state_, log_probs_ = [
+        outputs,
+        next_beam_state,
+        beam_state,
+        log_probs,
+    ]
 
-        with self.cached_session() as sess:
-            outputs_, next_state_, state_, log_probs_ = sess.run(
-                [outputs, next_beam_state, beam_state, log_probs]
-            )
+    np.testing.assert_equal(
+        outputs_.predicted_ids.numpy(), np.asanyarray([[3, 3, 2], [2, 2, 1]])
+    )
+    np.testing.assert_equal(
+        outputs_.parent_ids.numpy(), np.asanyarray([[1, 0, 0], [2, 1, 0]])
+    )
+    np.testing.assert_equal(
+        next_state_.lengths.numpy(), np.asanyarray([[3, 3, 3], [3, 3, 3]])
+    )
+    np.testing.assert_equal(
+        next_state_.finished.numpy(),
+        np.asanyarray([[False, False, False], [False, False, False]]),
+    )
 
-        self.assertAllEqual(outputs_.predicted_ids, [[3, 3, 2], [2, 2, 1]])
-        self.assertAllEqual(outputs_.parent_ids, [[1, 0, 0], [2, 1, 0]])
-        self.assertAllEqual(next_state_.lengths, [[3, 3, 3], [3, 3, 3]])
-        self.assertAllEqual(
-            next_state_.finished, [[False, False, False], [False, False, False]]
-        )
-
-        expected_log_probs = []
-        expected_log_probs.append(state_.log_probs[0][[1, 0, 0]])
-        expected_log_probs.append(state_.log_probs[1][[2, 1, 0]])  # 0 --> 1
-        expected_log_probs[0][0] += log_probs_[0, 1, 3]
-        expected_log_probs[0][1] += log_probs_[0, 0, 3]
-        expected_log_probs[0][2] += log_probs_[0, 0, 2]
-        expected_log_probs[1][0] += log_probs_[1, 2, 2]
-        expected_log_probs[1][1] += log_probs_[1, 1, 2]
-        expected_log_probs[1][2] += log_probs_[1, 0, 1]
-        self.assertAllEqual(next_state_.log_probs, expected_log_probs)
-
-    def test_step_with_eos(self):
-        dummy_cell_state = tf.zeros([self.batch_size, self.beam_width])
-        beam_state = beam_search_decoder.BeamSearchDecoderState(
-            cell_state=dummy_cell_state,
-            log_probs=tf.nn.log_softmax(tf.ones([self.batch_size, self.beam_width])),
-            lengths=tf.convert_to_tensor([[2, 1, 2], [2, 2, 1]], dtype=tf.int64),
-            finished=tf.convert_to_tensor(
-                [[False, True, False], [False, False, True]], dtype=tf.bool
-            ),
-            accumulated_attention_probs=(),
-        )
-
-        logits_ = np.full([self.batch_size, self.beam_width, self.vocab_size], 0.0001)
-        logits_[0, 0, 2] = 1.9
-        logits_[0, 0, 3] = 2.1
-        logits_[0, 1, 3] = 3.1
-        logits_[0, 1, 4] = 0.9
-        logits_[1, 0, 1] = 0.5
-        logits_[1, 1, 2] = 5.7  # why does this not work when it's 2.7?
-        logits_[1, 2, 2] = 1.0
-        logits_[1, 2, 3] = 0.2
-        logits = tf.convert_to_tensor(logits_, dtype=tf.float32)
-        log_probs = tf.nn.log_softmax(logits)
-
-        outputs, next_beam_state = beam_search_decoder._beam_search_step(
-            time=2,
-            logits=logits,
-            next_cell_state=dummy_cell_state,
-            beam_state=beam_state,
-            batch_size=tf.convert_to_tensor(self.batch_size),
-            beam_width=self.beam_width,
-            end_token=self.end_token,
-            length_penalty_weight=self.length_penalty_weight,
-            coverage_penalty_weight=self.coverage_penalty_weight,
-        )
-
-        with self.cached_session() as sess:
-            outputs_, next_state_, state_, log_probs_ = sess.run(
-                [outputs, next_beam_state, beam_state, log_probs]
-            )
-
-        self.assertAllEqual(outputs_.parent_ids, [[1, 0, 0], [1, 2, 0]])
-        self.assertAllEqual(outputs_.predicted_ids, [[0, 3, 2], [2, 0, 1]])
-        self.assertAllEqual(next_state_.lengths, [[1, 3, 3], [3, 1, 3]])
-        self.assertAllEqual(
-            next_state_.finished, [[True, False, False], [False, True, False]]
-        )
-
-        expected_log_probs = []
-        expected_log_probs.append(state_.log_probs[0][[1, 0, 0]])
-        expected_log_probs.append(state_.log_probs[1][[1, 2, 0]])
-        expected_log_probs[0][1] += log_probs_[0, 0, 3]
-        expected_log_probs[0][2] += log_probs_[0, 0, 2]
-        expected_log_probs[1][0] += log_probs_[1, 1, 2]
-        expected_log_probs[1][2] += log_probs_[1, 0, 1]
-        self.assertAllEqual(next_state_.log_probs, expected_log_probs)
+    expected_log_probs = []
+    expected_log_probs.append(state_.log_probs[0].numpy())
+    expected_log_probs.append(state_.log_probs[1].numpy())
+    expected_log_probs[0][0] += log_probs_[0, 1, 3]
+    expected_log_probs[0][1] += log_probs_[0, 0, 3]
+    expected_log_probs[0][2] += log_probs_[0, 0, 2]
+    expected_log_probs[1][0] += log_probs_[1, 2, 2]
+    expected_log_probs[1][1] += log_probs_[1, 1, 2]
+    expected_log_probs[1][2] += log_probs_[1, 0, 1]
+    np.testing.assert_equal(
+        next_state_.log_probs.numpy(), np.asanyarray(expected_log_probs)
+    )
 
 
-class TestLargeBeamStep(tf.test.TestCase):
-    """Tests large beam step.
+def test_step_with_eos():
+    batch_size = 2
+    beam_width = 3
+    vocab_size = 5
+    end_token = 0
+    length_penalty_weight = 0.6
+    coverage_penalty_weight = 0.0
 
-    Tests a single step of beam search in such case that beam size is
-    larger than vocabulary size.
-    """
+    dummy_cell_state = tf.zeros([batch_size, beam_width])
+    beam_state = beam_search_decoder.BeamSearchDecoderState(
+        cell_state=dummy_cell_state,
+        log_probs=tf.nn.log_softmax(tf.ones([batch_size, beam_width])),
+        lengths=tf.convert_to_tensor([[2, 1, 2], [2, 2, 1]], dtype=tf.int64),
+        finished=tf.convert_to_tensor(
+            [[False, True, False], [False, False, True]], dtype=tf.bool
+        ),
+        accumulated_attention_probs=(),
+    )
 
-    def setUp(self):
-        super().setUp()
-        self.batch_size = 2
-        self.beam_width = 8
-        self.vocab_size = 5
-        self.end_token = 0
-        self.length_penalty_weight = 0.6
-        self.coverage_penalty_weight = 0.0
+    logits_ = np.full([batch_size, beam_width, vocab_size], 0.0001)
+    logits_[0, 0, 2] = 1.9
+    logits_[0, 0, 3] = 2.1
+    logits_[0, 1, 3] = 3.1
+    logits_[0, 1, 4] = 0.9
+    logits_[1, 0, 1] = 0.5
+    logits_[1, 1, 2] = 5.7  # why does this not work when it's 2.7?
+    logits_[1, 2, 2] = 1.0
+    logits_[1, 2, 3] = 0.2
+    logits = tf.convert_to_tensor(logits_, dtype=tf.float32)
+    log_probs = tf.nn.log_softmax(logits)
 
-    def test_step(self):
-        def get_probs():
-            """this simulates the initialize method in BeamSearchDecoder."""
-            log_prob_mask = tf.one_hot(
-                tf.zeros([self.batch_size], dtype=tf.int32),
-                depth=self.beam_width,
-                on_value=True,
-                off_value=False,
-                dtype=tf.bool,
-            )
+    outputs, next_beam_state = beam_search_decoder._beam_search_step(
+        time=2,
+        logits=logits,
+        next_cell_state=dummy_cell_state,
+        beam_state=beam_state,
+        batch_size=tf.convert_to_tensor(batch_size),
+        beam_width=beam_width,
+        end_token=end_token,
+        length_penalty_weight=length_penalty_weight,
+        coverage_penalty_weight=coverage_penalty_weight,
+    )
 
-            log_prob_zeros = tf.zeros(
-                [self.batch_size, self.beam_width], dtype=tf.float32
-            )
-            log_prob_neg_inf = (
-                tf.ones([self.batch_size, self.beam_width], dtype=tf.float32) * -np.Inf
-            )
+    outputs_, next_state_, state_, log_probs_ = [
+        outputs,
+        next_beam_state,
+        beam_state,
+        log_probs,
+    ]
 
-            log_probs = tf.where(log_prob_mask, log_prob_zeros, log_prob_neg_inf)
-            return log_probs
+    np.testing.assert_equal(
+        outputs_.parent_ids.numpy(), np.asanyarray([[1, 0, 0], [1, 2, 0]])
+    )
+    np.testing.assert_equal(
+        outputs_.predicted_ids.numpy(), np.asanyarray([[0, 3, 2], [2, 0, 1]])
+    )
+    np.testing.assert_equal(
+        next_state_.lengths.numpy(), np.asanyarray([[1, 3, 3], [3, 1, 3]])
+    )
+    np.testing.assert_equal(
+        next_state_.finished.numpy(),
+        np.asanyarray([[True, False, False], [False, True, False]]),
+    )
 
-        log_probs = get_probs()
-        dummy_cell_state = tf.zeros([self.batch_size, self.beam_width])
+    expected_log_probs = []
+    expected_log_probs.append(state_.log_probs[0].numpy())
+    expected_log_probs.append(state_.log_probs[1].numpy())
+    expected_log_probs[0][1] += log_probs_[0, 0, 3]
+    expected_log_probs[0][2] += log_probs_[0, 0, 2]
+    expected_log_probs[1][0] += log_probs_[1, 1, 2]
+    expected_log_probs[1][2] += log_probs_[1, 0, 1]
+    np.testing.assert_equal(
+        next_state_.log_probs.numpy(), np.asanyarray(expected_log_probs)
+    )
 
-        _finished = tf.one_hot(
-            tf.zeros([self.batch_size], dtype=tf.int32),
-            depth=self.beam_width,
-            on_value=False,
-            off_value=True,
+
+def test_large_beam_step():
+    batch_size = 2
+    beam_width = 8
+    vocab_size = 5
+    end_token = 0
+    length_penalty_weight = 0.6
+    coverage_penalty_weight = 0.0
+
+    def get_probs():
+        """this simulates the initialize method in BeamSearchDecoder."""
+        log_prob_mask = tf.one_hot(
+            tf.zeros([batch_size], dtype=tf.int32),
+            depth=beam_width,
+            on_value=True,
+            off_value=False,
             dtype=tf.bool,
         )
-        _lengths = np.zeros([self.batch_size, self.beam_width], dtype=np.int64)
-        _lengths[:, 0] = 2
-        _lengths = tf.constant(_lengths, dtype=tf.int64)
 
-        beam_state = beam_search_decoder.BeamSearchDecoderState(
-            cell_state=dummy_cell_state,
-            log_probs=log_probs,
-            lengths=_lengths,
-            finished=_finished,
-            accumulated_attention_probs=(),
+        log_prob_zeros = tf.zeros([batch_size, beam_width], dtype=tf.float32)
+        log_prob_neg_inf = tf.ones([batch_size, beam_width], dtype=tf.float32) * -np.Inf
+
+        log_probs = tf.where(log_prob_mask, log_prob_zeros, log_prob_neg_inf)
+        return log_probs
+
+    log_probs = get_probs()
+    dummy_cell_state = tf.zeros([batch_size, beam_width])
+
+    _finished = tf.one_hot(
+        tf.zeros([batch_size], dtype=tf.int32),
+        depth=beam_width,
+        on_value=False,
+        off_value=True,
+        dtype=tf.bool,
+    )
+    _lengths = np.zeros([batch_size, beam_width], dtype=np.int64)
+    _lengths[:, 0] = 2
+    _lengths = tf.constant(_lengths, dtype=tf.int64)
+
+    beam_state = beam_search_decoder.BeamSearchDecoderState(
+        cell_state=dummy_cell_state,
+        log_probs=log_probs,
+        lengths=_lengths,
+        finished=_finished,
+        accumulated_attention_probs=(),
+    )
+
+    logits_ = np.full([batch_size, beam_width, vocab_size], 0.0001)
+    logits_[0, 0, 2] = 1.9
+    logits_[0, 0, 3] = 2.1
+    logits_[0, 1, 3] = 3.1
+    logits_[0, 1, 4] = 0.9
+    logits_[1, 0, 1] = 0.5
+    logits_[1, 1, 2] = 2.7
+    logits_[1, 2, 2] = 10.0
+    logits_[1, 2, 3] = 0.2
+    logits = tf.constant(logits_, dtype=tf.float32)
+    log_probs = tf.nn.log_softmax(logits)
+
+    outputs, next_beam_state = beam_search_decoder._beam_search_step(
+        time=2,
+        logits=logits,
+        next_cell_state=dummy_cell_state,
+        beam_state=beam_state,
+        batch_size=tf.convert_to_tensor(batch_size),
+        beam_width=beam_width,
+        end_token=end_token,
+        length_penalty_weight=length_penalty_weight,
+        coverage_penalty_weight=coverage_penalty_weight,
+    )
+
+    outputs_, next_state_ = [outputs, next_beam_state]
+
+    assert outputs_.predicted_ids[0, 0] == 3
+    assert outputs_.predicted_ids[0, 1] == 2
+    assert outputs_.predicted_ids[1, 0] == 1
+    neg_inf = -np.Inf
+    np.testing.assert_equal(
+        next_state_.log_probs[:, -3:].numpy(),
+        np.asanyarray([[neg_inf, neg_inf, neg_inf], [neg_inf, neg_inf, neg_inf]]),
+    )
+    np.testing.assert_equal(
+        np.asanyarray(next_state_.log_probs[:, :-3] > neg_inf), True
+    )
+    np.testing.assert_equal(np.asanyarray(next_state_.lengths[:, :-3] > 0), True)
+    np.testing.assert_equal(
+        next_state_.lengths[:, -3:].numpy(), np.asanyarray([[0, 0, 0], [0, 0, 0]])
+    )
+
+
+@pytest.mark.parametrize("with_alignment_history", [True, False])
+@pytest.mark.parametrize("has_attention", [True, False])
+@pytest.mark.parametrize("time_major", [True, False])
+def test_dynamic_decode_rnn(time_major, has_attention, with_alignment_history):
+    encoder_sequence_length = np.array([3, 2, 3, 1, 1])
+    decoder_sequence_length = np.array([2, 0, 1, 2, 3])
+    batch_size = 5
+    decoder_max_time = 4
+    input_depth = 7
+    cell_depth = 9
+    attention_depth = 6
+    vocab_size = 20
+    end_token = vocab_size - 1
+    start_token = 0
+    embedding_dim = 50
+    max_out = max(decoder_sequence_length)
+    output_layer = tf.keras.layers.Dense(vocab_size, use_bias=True, activation=None)
+    beam_width = 3
+
+    batch_size_tensor = tf.constant(batch_size)
+    embedding = np.random.randn(vocab_size, embedding_dim).astype(np.float32)
+    cell = tf.keras.layers.LSTMCell(cell_depth)
+    initial_state = cell.get_initial_state(batch_size=batch_size, dtype=tf.float32)
+    coverage_penalty_weight = 0.0
+    if has_attention:
+        coverage_penalty_weight = 0.2
+        inputs = tf.compat.v1.placeholder_with_default(
+            np.random.randn(batch_size, decoder_max_time, input_depth).astype(
+                np.float32
+            ),
+            shape=(None, None, input_depth),
         )
-
-        logits_ = np.full([self.batch_size, self.beam_width, self.vocab_size], 0.0001)
-        logits_[0, 0, 2] = 1.9
-        logits_[0, 0, 3] = 2.1
-        logits_[0, 1, 3] = 3.1
-        logits_[0, 1, 4] = 0.9
-        logits_[1, 0, 1] = 0.5
-        logits_[1, 1, 2] = 2.7
-        logits_[1, 2, 2] = 10.0
-        logits_[1, 2, 3] = 0.2
-        logits = tf.constant(logits_, dtype=tf.float32)
-        log_probs = tf.nn.log_softmax(logits)
-
-        outputs, next_beam_state = beam_search_decoder._beam_search_step(
-            time=2,
-            logits=logits,
-            next_cell_state=dummy_cell_state,
-            beam_state=beam_state,
-            batch_size=tf.convert_to_tensor(self.batch_size),
-            beam_width=self.beam_width,
-            end_token=self.end_token,
-            length_penalty_weight=self.length_penalty_weight,
-            coverage_penalty_weight=self.coverage_penalty_weight,
+        tiled_inputs = beam_search_decoder.tile_batch(inputs, multiplier=beam_width)
+        tiled_sequence_length = beam_search_decoder.tile_batch(
+            encoder_sequence_length, multiplier=beam_width
         )
-
-        with self.cached_session() as sess:
-            outputs_, next_state_, _, _ = sess.run(
-                [outputs, next_beam_state, beam_state, log_probs]
-            )
-
-        self.assertEqual(outputs_.predicted_ids[0, 0], 3)
-        self.assertEqual(outputs_.predicted_ids[0, 1], 2)
-        self.assertEqual(outputs_.predicted_ids[1, 0], 1)
-        neg_inf = -np.Inf
-        self.assertAllEqual(
-            next_state_.log_probs[:, -3:],
-            [[neg_inf, neg_inf, neg_inf], [neg_inf, neg_inf, neg_inf]],
+        attention_mechanism = attention_wrapper.BahdanauAttention(
+            units=attention_depth,
+            memory=tiled_inputs,
+            memory_sequence_length=tiled_sequence_length,
         )
-        self.assertEqual((next_state_.log_probs[:, :-3] > neg_inf).all(), True)
-        self.assertEqual((next_state_.lengths[:, :-3] > 0).all(), True)
-        self.assertAllEqual(next_state_.lengths[:, -3:], [[0, 0, 0], [0, 0, 0]])
-
-
-@test_utils.run_all_in_graph_and_eager_modes
-class BeamSearchDecoderTest(tf.test.TestCase):
-    def _testDynamicDecodeRNN(
-        self, time_major, has_attention, with_alignment_history=False
-    ):
-        encoder_sequence_length = np.array([3, 2, 3, 1, 1])
-        decoder_sequence_length = np.array([2, 0, 1, 2, 3])
-        batch_size = 5
-        decoder_max_time = 4
-        input_depth = 7
-        cell_depth = 9
-        attention_depth = 6
-        vocab_size = 20
-        end_token = vocab_size - 1
-        start_token = 0
-        embedding_dim = 50
-        max_out = max(decoder_sequence_length)
-        output_layer = tf.keras.layers.Dense(vocab_size, use_bias=True, activation=None)
-        beam_width = 3
-
-        with self.cached_session():
-            batch_size_tensor = tf.constant(batch_size)
-            embedding = np.random.randn(vocab_size, embedding_dim).astype(np.float32)
-            cell = tf.keras.layers.LSTMCell(cell_depth)
-            initial_state = cell.get_initial_state(
-                batch_size=batch_size, dtype=tf.float32
-            )
-            coverage_penalty_weight = 0.0
-            if has_attention:
-                coverage_penalty_weight = 0.2
-                inputs = tf.compat.v1.placeholder_with_default(
-                    np.random.randn(batch_size, decoder_max_time, input_depth).astype(
-                        np.float32
-                    ),
-                    shape=(None, None, input_depth),
-                )
-                tiled_inputs = beam_search_decoder.tile_batch(
-                    inputs, multiplier=beam_width
-                )
-                tiled_sequence_length = beam_search_decoder.tile_batch(
-                    encoder_sequence_length, multiplier=beam_width
-                )
-                attention_mechanism = attention_wrapper.BahdanauAttention(
-                    units=attention_depth,
-                    memory=tiled_inputs,
-                    memory_sequence_length=tiled_sequence_length,
-                )
-                initial_state = beam_search_decoder.tile_batch(
-                    initial_state, multiplier=beam_width
-                )
-                cell = attention_wrapper.AttentionWrapper(
-                    cell=cell,
-                    attention_mechanism=attention_mechanism,
-                    attention_layer_size=attention_depth,
-                    alignment_history=with_alignment_history,
-                )
-            cell_state = cell.get_initial_state(
-                batch_size=batch_size_tensor * beam_width, dtype=tf.float32
-            )
-            if has_attention:
-                cell_state = cell_state.clone(cell_state=initial_state)
-            bsd = beam_search_decoder.BeamSearchDecoder(
-                cell=cell,
-                beam_width=beam_width,
-                output_layer=output_layer,
-                length_penalty_weight=0.0,
-                coverage_penalty_weight=coverage_penalty_weight,
-                output_time_major=time_major,
-                maximum_iterations=max_out,
-            )
-
-            final_outputs, final_state, final_sequence_lengths = bsd(
-                embedding,
-                start_tokens=tf.fill([batch_size_tensor], start_token),
-                end_token=end_token,
-                initial_state=cell_state,
-            )
-
-            def _t(shape):
-                if time_major:
-                    return (shape[1], shape[0]) + shape[2:]
-                return shape
-
-            self.assertIsInstance(
-                final_outputs, beam_search_decoder.FinalBeamSearchDecoderOutput
-            )
-            self.assertIsInstance(
-                final_state, beam_search_decoder.BeamSearchDecoderState
-            )
-
-            beam_search_decoder_output = final_outputs.beam_search_decoder_output
-            expected_seq_length = 3 if tf.executing_eagerly() else None
-            self.assertEqual(
-                _t((batch_size, expected_seq_length, beam_width)),
-                tuple(beam_search_decoder_output.scores.get_shape().as_list()),
-            )
-            self.assertEqual(
-                _t((batch_size, expected_seq_length, beam_width)),
-                tuple(final_outputs.predicted_ids.get_shape().as_list()),
-            )
-
-            self.evaluate(tf.compat.v1.global_variables_initializer())
-            eval_results = self.evaluate(
-                {
-                    "final_outputs": final_outputs,
-                    "final_sequence_lengths": final_sequence_lengths,
-                }
-            )
-
-            max_sequence_length = np.max(eval_results["final_sequence_lengths"])
-
-            # A smoke test
-            self.assertEqual(
-                _t((batch_size, max_sequence_length, beam_width)),
-                eval_results["final_outputs"].beam_search_decoder_output.scores.shape,
-            )
-            self.assertEqual(
-                _t((batch_size, max_sequence_length, beam_width)),
-                eval_results[
-                    "final_outputs"
-                ].beam_search_decoder_output.predicted_ids.shape,
-            )
-
-    def testDynamicDecodeRNNBatchMajorNoAttention(self):
-        self._testDynamicDecodeRNN(time_major=False, has_attention=False)
-
-    def testDynamicDecodeRNNBatchMajorYesAttention(self):
-        self._testDynamicDecodeRNN(time_major=False, has_attention=True)
-
-    def testDynamicDecodeRNNBatchMajorYesAttentionWithAlignmentHistory(self):
-        self._testDynamicDecodeRNN(
-            time_major=False, has_attention=True, with_alignment_history=True
+        initial_state = beam_search_decoder.tile_batch(
+            initial_state, multiplier=beam_width
         )
+        cell = attention_wrapper.AttentionWrapper(
+            cell=cell,
+            attention_mechanism=attention_mechanism,
+            attention_layer_size=attention_depth,
+            alignment_history=with_alignment_history,
+        )
+    cell_state = cell.get_initial_state(
+        batch_size=batch_size_tensor * beam_width, dtype=tf.float32
+    )
+    if has_attention:
+        cell_state = cell_state.clone(cell_state=initial_state)
+    bsd = beam_search_decoder.BeamSearchDecoder(
+        cell=cell,
+        beam_width=beam_width,
+        output_layer=output_layer,
+        length_penalty_weight=0.0,
+        coverage_penalty_weight=coverage_penalty_weight,
+        output_time_major=time_major,
+        maximum_iterations=max_out,
+    )
+
+    final_outputs, final_state, final_sequence_lengths = bsd(
+        embedding,
+        start_tokens=tf.fill([batch_size_tensor], start_token),
+        end_token=end_token,
+        initial_state=cell_state,
+    )
+
+    def _t(shape):
+        if time_major:
+            return (shape[1], shape[0]) + shape[2:]
+        return shape
+
+    assert isinstance(final_outputs, beam_search_decoder.FinalBeamSearchDecoderOutput)
+    assert isinstance(final_state, beam_search_decoder.BeamSearchDecoderState)
+
+    beam_search_decoder_output = final_outputs.beam_search_decoder_output
+    expected_seq_length = 3 if tf.executing_eagerly() else None
+    assert _t((batch_size, expected_seq_length, beam_width)) == tuple(
+        beam_search_decoder_output.scores.get_shape().as_list()
+    )
+    assert _t((batch_size, expected_seq_length, beam_width)) == tuple(
+        final_outputs.predicted_ids.get_shape().as_list()
+    )
+
+    eval_results = {
+        "final_outputs": final_outputs,
+        "final_sequence_lengths": final_sequence_lengths.numpy(),
+    }
+
+    max_sequence_length = np.max(eval_results["final_sequence_lengths"])
+
+    # A smoke test
+    assert (
+        _t((batch_size, max_sequence_length, beam_width))
+        == eval_results["final_outputs"].beam_search_decoder_output.scores.shape
+    )
+    assert (
+        _t((batch_size, max_sequence_length, beam_width))
+        == eval_results["final_outputs"].beam_search_decoder_output.predicted_ids.shape
+    )

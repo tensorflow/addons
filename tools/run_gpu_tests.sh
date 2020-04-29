@@ -6,7 +6,7 @@ export DOCKER_BUILDKIT=1
 docker build \
        -f tools/docker/build_wheel.Dockerfile \
        --target tfa_gpu_tests \
-       --build-arg TF_VERSION=2.1.0 \
+       --build-arg TF_VERSION=2.2.0rc3 \
        --build-arg PY_VERSION=3.5 \
        -t tfa_gpu_tests ./
-docker run --rm -t -v cache_bazel:/root/.cache/bazel --runtime=nvidia tfa_gpu_tests
+docker run --rm -t -v cache_bazel:/root/.cache/bazel --gpus=all tfa_gpu_tests

@@ -14,11 +14,7 @@
 # ==============================================================================
 """Tests for Cyclical Learning Rate."""
 
-from absl.testing import parameterized
-
 import pytest
-import tensorflow as tf
-from tensorflow_addons.utils import test_utils
 import numpy as np
 
 from tensorflow_addons.optimizers import cyclical_learning_rate
@@ -26,8 +22,8 @@ from tensorflow_addons.optimizers import cyclical_learning_rate
 
 def _maybe_serialized(lr_decay, serialize_and_deserialize):
     if serialize_and_deserialize:
-        serialized = tf.keras.optimizers.schedules.serialize(lr_decay)
-        return tf.keras.optimizers.schedules.deserialize(serialized)
+        serialized = lr_decay.get_config()
+        return lr_decay.from_config(serialized)
     else:
         return lr_decay
 
@@ -109,35 +105,59 @@ def test_exponential_cyclical_learning_rate(serialize):
         step += 1
 
 
-@test_utils.run_all_in_graph_and_eager_modes
-@parameterized.named_parameters(("NotSerialized", False), ("Serialized", True))
-class CyclicalLearningRateTest(tf.test.TestCase, parameterized.TestCase):
-    def testCustomCyclicalLearningRate(self, serialize):
-        self.skipTest("Failing. See https://github.com/tensorflow/addons/issues/1203")
-        initial_learning_rate = 0.1
-        maximal_learning_rate = 1
-        step_size = 4000
+@pytest.mark.parametrize("serialize", [True, False])
+def test_custom_cyclical_learning_rate(serialize):
+    initial_learning_rate = 0.1
+    maximal_learning_rate = 1
+    step_size = 4000
 
-        def scale_fn(x):
-            return 1 / (5 ** (x * 0.0001))
+    def scale_fn(x):
+        return 1 / (5 ** (x * 0.0001))
 
-        step = tf.resource_variable_ops.ResourceVariable(0)
-        custom_cyclical_lr = cyclical_learning_rate.CyclicalLearningRate(
-            initial_learning_rate=initial_learning_rate,
-            maximal_learning_rate=maximal_learning_rate,
-            step_size=step_size,
-            scale_fn=scale_fn,
+    custom_cyclical_lr = cyclical_learning_rate.CyclicalLearningRate(
+        initial_learning_rate=initial_learning_rate,
+        maximal_learning_rate=maximal_learning_rate,
+        step_size=step_size,
+        scale_fn=scale_fn,
+    )
+    custom_cyclical_lr = _maybe_serialized(custom_cyclical_lr, serialize)
+
+    for step in range(1, 8001):
+        cycle = np.floor(1 + step / (2 * step_size))
+        non_bounded_value = np.abs(step / step_size - 2 * cycle + 1)
+        expected = initial_learning_rate + (
+            maximal_learning_rate - initial_learning_rate
+        ) * np.maximum(0, 1 - non_bounded_value) * scale_fn(cycle)
+        np.testing.assert_allclose(
+            custom_cyclical_lr(step).numpy(), expected, 1e-6, 1e-6
         )
-        custom_cyclical_lr = _maybe_serialized(custom_cyclical_lr, serialize)
 
-        self.evaluate(tf.compat.v1.global_variables_initializer())
 
-        for i in range(1, 8001):
-            non_bounded_value = np.abs(
-                i / 2000.0 - 2 * np.floor(1 + i / (2 * 2000)) + 1
-            )
-            expected = initial_learning_rate + (
-                maximal_learning_rate - initial_learning_rate
-            ) * np.maximum(0, 1 - non_bounded_value) * scale_fn(i)
-            self.assertAllClose(self.evaluate(custom_cyclical_lr(step)), expected, 1e-6)
-            self.evaluate(step.assign_add(1))
+@pytest.mark.parametrize("serialize", [True, False])
+def test_custom_cyclical_learning_rate_with_scale_mode(serialize):
+    initial_learning_rate = 0.1
+    maximal_learning_rate = 1
+    step_size = 4000
+    scale_mode = "iterations"
+
+    def scale_fn(x):
+        return 1 / (5 ** (x * 0.0001))
+
+    custom_cyclical_lr = cyclical_learning_rate.CyclicalLearningRate(
+        initial_learning_rate=initial_learning_rate,
+        maximal_learning_rate=maximal_learning_rate,
+        step_size=step_size,
+        scale_fn=scale_fn,
+        scale_mode=scale_mode,
+    )
+    custom_cyclical_lr = _maybe_serialized(custom_cyclical_lr, serialize)
+
+    for step in range(1, 8001):
+        cycle = np.floor(1 + step / (2 * step_size))
+        non_bounded_value = np.abs(step / step_size - 2 * cycle + 1)
+        expected = initial_learning_rate + (
+            maximal_learning_rate - initial_learning_rate
+        ) * np.maximum(0, 1 - non_bounded_value) * scale_fn(step)
+        np.testing.assert_allclose(
+            custom_cyclical_lr(step).numpy(), expected, 1e-6, 1e-6
+        )

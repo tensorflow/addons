@@ -123,7 +123,7 @@ def _test_specific_layer(inputs, axis, groups, center, scale):
     assert not np.isnan(outputs).any()
 
     # Create shapes
-    if groups is -1:
+    if groups == -1:
         groups = input_shape[axis]
     np_inputs = inputs
     reshaped_dims = list(np_inputs.shape)
@@ -156,7 +156,7 @@ def _test_specific_layer(inputs, axis, groups, center, scale):
     np.testing.assert_almost_equal(tf.reduce_mean(output_test - outputs), 0, decimal=7)
 
 
-def _create_and_fit_Sequential_model(layer, shape):
+def _create_and_fit_sequential_model(layer, shape):
     # Helperfunction for quick evaluation
     np.random.seed(0x2020)
     model = tf.keras.models.Sequential()
@@ -181,14 +181,14 @@ def test_groupnorm_flat():
     groups = [-1, 16, 1]
     shape = (64,)
     for i in groups:
-        model = _create_and_fit_Sequential_model(GroupNormalization(groups=i), shape)
+        model = _create_and_fit_sequential_model(GroupNormalization(groups=i), shape)
         assert hasattr(model.layers[0], "gamma")
         assert hasattr(model.layers[0], "beta")
 
 
 def test_instancenorm_flat():
     # Check basic usage of instancenorm
-    model = _create_and_fit_Sequential_model(InstanceNormalization(), (64,))
+    model = _create_and_fit_sequential_model(InstanceNormalization(), (64,))
     assert hasattr(model.layers[0], "gamma")
     assert hasattr(model.layers[0], "beta")
 
@@ -203,7 +203,7 @@ def test_initializer():
         gamma_constraint="NonNeg",
     )
 
-    model = _create_and_fit_Sequential_model(layer, (64,))
+    model = _create_and_fit_sequential_model(layer, (64,))
 
     weights = np.array(model.layers[0].get_weights())
     negativ = weights[weights < 0.0]

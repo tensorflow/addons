@@ -104,9 +104,6 @@ def test_tqdm_progress_bar_show(capsys, show_epoch_progress, show_overall_progre
     assert ("epochs/s" in fit_stderr) is show_overall_progress
 
     if show_epoch_progress and not show_overall_progress:
-        # in 2.1.0, they are present in the logs
-        # in 2.2.0+, they're not
-        # in any case, they shouldn't appear.
         assert "size" not in fit_stderr
         assert "batch" not in fit_stderr
 
@@ -120,3 +117,14 @@ def test_tqdm_progress_bar_validation(capsys):
     fit_stderr = capsys.readouterr().err
     assert re.search(r"val_loss: [0-9]\.[0-9][0-9][0-9][0-9]", fit_stderr)
     assert re.search(r"val_acc: [0-9]\.[0-9][0-9][0-9][0-9]", fit_stderr)
+
+
+def test_tqdm_progress_bar_evaluate(capsys):
+    x, y, model = get_data_and_model()
+
+    pb = tfa.callbacks.TQDMProgressBar()
+    capsys.readouterr()  # flush the buffer
+    model.evaluate(x, y, callbacks=[pb], verbose=0)
+    evaluate_stderr = capsys.readouterr().err
+    assert re.search(r"loss: [0-9]\.[0-9][0-9][0-9][0-9]", evaluate_stderr)
+    assert re.search(r"acc: [0-9]\.[0-9][0-9][0-9][0-9]", evaluate_stderr)

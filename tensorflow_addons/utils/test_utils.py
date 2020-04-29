@@ -12,24 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Utilities for tf.test.TestCase."""
+"""Utilities for testing Addons."""
 
 import contextlib
 import inspect
 import unittest
+import random
 
 import numpy as np
 import pytest
 import tensorflow as tf
 
-# TODO: find public API alternative to these
-from tensorflow.python.framework.test_util import (  # noqa: F401
-    run_all_in_graph_and_eager_modes,
-)
-from tensorflow.python.framework.test_util import run_deprecated_v1  # noqa: F401
-from tensorflow.python.framework.test_util import (  # noqa: F401
-    run_in_graph_and_eager_modes,
-)
+from tensorflow_addons.utils import resource_loader
+
+# TODO: copy the layer_test implementation in Addons.
 from tensorflow.python.keras.testing_utils import layer_test  # noqa: F401
 
 
@@ -129,40 +125,6 @@ def run_distributed(num_devices):
     return decorator
 
 
-def run_all_with_types(dtypes):
-    """Execute all test methods in the given class with and without eager."""
-    base_decorator = run_with_types(dtypes)
-
-    def decorator(cls):
-        for name, method in cls.__dict__.copy().items():
-            if (
-                callable(method)
-                and name.startswith(unittest.TestLoader.testMethodPrefix)
-                and name != "test_session"
-            ):
-                setattr(cls, name, base_decorator(method))
-        return cls
-
-    return decorator
-
-
-def run_with_types(dtypes):
-    def decorator(f):
-        if inspect.isclass(f):
-            raise TypeError(
-                "`run_with_types` only supports test methods. "
-                "Did you mean to use `run_all_with_types`?"
-            )
-
-        def decorated(self, *args, **kwargs):
-            for t in dtypes:
-                f(self, *args, dtype=t, **kwargs)
-
-        return decorated
-
-    return decorator
-
-
 def finalizer():
     tf.config.experimental_run_functions_eagerly(False)
 
@@ -194,6 +156,27 @@ def data_format(request):
     return request.param
 
 
+@pytest.fixture(scope="function", autouse=True)
+def set_seeds():
+    random.seed(0)
+    np.random.seed(0)
+    tf.random.set_seed(0)
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--skip-custom-ops",
+        action="store_true",
+        help="When a custom op is being loaded in a test, skip this test.",
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def set_global_variables(request):
+    if request.config.getoption("--skip-custom-ops"):
+        resource_loader.SKIP_CUSTOM_OPS = True
+
+
 def assert_allclose_according_to_type(
     a,
     b,
@@ -203,6 +186,8 @@ def assert_allclose_according_to_type(
     float_atol=1e-6,
     half_rtol=1e-3,
     half_atol=1e-3,
+    bfloat16_rtol=1e-2,
+    bfloat16_atol=1e-2,
 ):
     """
     Similar to tf.test.TestCase.assertAllCloseAccordingToType()
@@ -222,5 +207,8 @@ def assert_allclose_according_to_type(
     if a.dtype == np.float16 or b.dtype == np.float16:
         rtol = max(rtol, half_rtol)
         atol = max(atol, half_atol)
+    if a.dtype == tf.bfloat16.as_numpy_dtype or b.dtype == tf.bfloat16.as_numpy_dtype:
+        rtol = max(rtol, bfloat16_rtol)
+        atol = max(atol, bfloat16_atol)
 
     np.testing.assert_allclose(a, b, rtol=rtol, atol=atol)

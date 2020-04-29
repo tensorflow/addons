@@ -20,9 +20,10 @@ import warnings
 
 import tensorflow as tf
 
-MIN_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.1.0"
-MAX_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.2.0"
+MIN_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.2.0"
+MAX_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.3.0"
 abi_warning_already_raised = False
+SKIP_CUSTOM_OPS = False
 
 
 def get_project_root():
@@ -51,6 +52,13 @@ class LazySO:
 
     @property
     def ops(self):
+        if SKIP_CUSTOM_OPS:
+            import pytest
+
+            pytest.skip(
+                "Skipping the test because a custom ops "
+                "was being loaded while --skip-custom-ops was set."
+            )
         if self._ops is None:
             self.display_warning_if_incompatible()
             self._ops = tf.load_op_library(get_path_to_datafile(self.relative_path))
