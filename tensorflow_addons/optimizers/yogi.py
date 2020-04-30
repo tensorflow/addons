@@ -320,8 +320,12 @@ class Yogi(tf.keras.optimizers.Optimizer):
                 "beta1": self._serialize_hyperparameter("beta_1"),
                 "beta2": self._serialize_hyperparameter("beta_2"),
                 "epsilon": self._serialize_hyperparameter("epsilon"),
-                "l1_t": self._serialize_hyperparameter("l1_regularization_strength"),
-                "l2_t": self._serialize_hyperparameter("l2_regularization_strength"),
+                "l1_regularization_strength": self._serialize_hyperparameter(
+                    "l1_regularization_strength"
+                ),
+                "l2_regularization_strength": self._serialize_hyperparameter(
+                    "l2_regularization_strength"
+                ),
                 "activation": self._activation,
                 "initial_accumulator_value": self._initial_accumulator_value,
             }

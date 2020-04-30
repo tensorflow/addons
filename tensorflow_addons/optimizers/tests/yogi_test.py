@@ -337,3 +337,10 @@ def test_get_config():
     opt = yogi.Yogi(1e-4)
     config = opt.get_config()
     assert config["learning_rate"] == 1e-4
+
+
+def test_serialization():
+    optimizer = yogi.Yogi(1e-4)
+    config = tf.keras.optimizers.serialize(optimizer)
+    new_optimizer = tf.keras.optimizers.deserialize(config)
+    assert new_optimizer.get_config() == optimizer.get_config()

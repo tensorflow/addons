@@ -348,3 +348,10 @@ def test_optimizer_sparse(dtype, optimizer):
     do_test_sparse_repeated_indices(
         dtype, optimizer, learning_rate=0.001, momentum=0.9, weight_decay=WEIGHT_DECAY,
     )
+
+
+def test_serialization():
+    optimizer = weight_decay_optimizers.AdamW(learning_rate=1e-4, weight_decay=1e-4)
+    config = tf.keras.optimizers.serialize(optimizer)
+    new_optimizer = tf.keras.optimizers.deserialize(config)
+    assert new_optimizer.get_config() == optimizer.get_config()
