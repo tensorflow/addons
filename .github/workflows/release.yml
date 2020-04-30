@@ -15,7 +15,7 @@ on:
       - r*
 
 env:
-  BAZEL_VERSION: 1.1.0
+  BAZEL_VERSION: '1.1.0'
   MIN_PY_VERSION: '3.5'
   MAX_PY_VERSION: '3.8'
 
@@ -54,6 +54,11 @@ jobs:
       - if: github.event_name == 'push'
         run: echo "::set-env name=NIGHTLY_FLAG::--nightly"
       - uses: actions/checkout@v2
+      - name: Setup bazel
+          uses: jwlawson/actions-setup-bazel@v1.0
+          with:
+            bazel-version: env.BAZEL_VERSION
+            github-api-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.py-version }}
