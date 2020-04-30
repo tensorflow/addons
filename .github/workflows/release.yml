@@ -79,7 +79,6 @@ jobs:
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
           path: wheelhouse
-
   upload-wheels:
     name: Publish wheels to PyPi
     needs: [release-wheel, test-with-bazel]
