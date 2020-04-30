@@ -72,7 +72,6 @@ def triplet_semihard_loss(
     y_true: TensorLike,
     y_pred: TensorLike,
     margin: FloatTensorLike = 1.0,
-    squared: bool = True,
     distance_metric: Union[str, Callable] = "L_2",
 ) -> tf.Tensor:
     """Computes the triplet loss with semi-hard negative mining.
@@ -105,13 +104,13 @@ def triplet_semihard_loss(
     lshape = tf.shape(labels)
     labels = tf.reshape(labels, [lshape[0], 1])
 
-    # Build pairwise squared distance matrix.
-    
+    # Build pairwise squared distance matrix
+
     if distance_metric == "L_1":
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=False
         )
-    
+
     elif distance_metric == "L_2":
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=True
@@ -232,7 +231,7 @@ def triplet_hard_loss(
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=False
         )
-    
+
     elif distance_metric == "L_2":
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=True
