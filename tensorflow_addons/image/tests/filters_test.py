@@ -19,7 +19,6 @@ import tensorflow as tf
 from tensorflow_addons.image import mean_filter2d
 from tensorflow_addons.image import median_filter2d
 from tensorflow_addons.image import gaussian_filter2d
-from scipy.ndimage import gaussian_filter
 from skimage.filters import gaussian
 
 _dtypes_to_test = {
@@ -372,23 +371,23 @@ def test_gaussian_filter2d_constant():
     gb = gaussian_filter2d(test_image_tf, 5, 1, padding="CONSTANT")
     gb = gb.numpy()
     gb1 = np.resize(gb, (40, 40))
-    test_image_cv = test_image_tf.numpy()
-    test_image_cv = np.resize(test_image_cv, [40, 40])
-    gb2 = gaussian_filter(test_image_cv, 1, truncate=4.6, mode="constant")
+    test_image_np = test_image_tf.numpy()
+    test_image_np = np.resize(test_image_np, [40, 40])
+    gb2 = gaussian(test_image_np, 1, mode="constant")
     np.testing.assert_allclose(gb2, gb1, 0.06)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_gaussian_filter2d_reflect():
     test_image_tf = tf.random.uniform(
-        [1, 40, 40, 1], minval=0, maxval=255, dtype=tf.int32
+        [1, 40, 40, 1], minval=0, maxval=255, dtype=tf.float32
     )
     gb = gaussian_filter2d(test_image_tf, 5, 1, padding="REFLECT")
     gb = gb.numpy()
     gb1 = np.resize(gb, (40, 40))
-    test_image_cv = test_image_tf.numpy()
-    test_image_cv = np.resize(test_image_cv, [40, 40])
-    gb2 = gaussian_filter(test_image_cv, 1, truncate=4.6, mode="mirror")
+    test_image_np = test_image_tf.numpy()
+    test_image_np = np.resize(test_image_np, [40, 40])
+    gb2 = gaussian(test_image_np, 1, mode="mirror")
     np.testing.assert_allclose(gb2, gb1, 0.06)
 
 
@@ -400,9 +399,9 @@ def test_gaussian_filter2d_symmetric():
     gb = gaussian_filter2d(test_image_tf, (5, 5), 1, padding="SYMMETRIC")
     gb = gb.numpy()
     gb1 = np.resize(gb, (40, 40))
-    test_image_cv = test_image_tf.numpy()
-    test_image_cv = np.resize(test_image_cv, [40, 40])
-    gb2 = gaussian_filter(test_image_cv, 1, truncate=4.6, mode="reflect")
+    test_image_np = test_image_tf.numpy()
+    test_image_np = np.resize(test_image_np, [40, 40])
+    gb2 = gaussian(test_image_np, 1, mode="reflect")
     np.testing.assert_allclose(gb2, gb1, 0.06)
 
 
@@ -415,9 +414,9 @@ def test_gaussian_filter2d_batch(image_shape):
     gb = gaussian_filter2d(test_image_tf, 5, 1, padding="SYMMETRIC")
     gb = gb.numpy()
     gb1 = np.resize(gb, (40, 40))
-    test_image_cv = test_image_tf.numpy()
-    test_image_cv = np.resize(test_image_cv, [40, 40])
-    gb2 = gaussian(test_image_cv, 1, truncate=4.6, mode="reflect")
+    test_image_np = test_image_tf.numpy()
+    test_image_np = np.resize(test_image_np, [40, 40])
+    gb2 = gaussian(test_image_np, 1, mode="reflect")
     np.testing.assert_allclose(gb2, gb1, 0.06)
 
 
@@ -468,7 +467,7 @@ def test_gaussian_filter2d_channels():
     gb = gaussian_filter2d(test_image_tf, 5, 1, padding="SYMMETRIC", name="gaussian")
     gb = gb.numpy()
     gb1 = np.resize(gb, (5, 5, 3))
-    test_image_cv = test_image_tf.numpy()
-    test_image_cv = np.resize(test_image_cv, [5, 5, 3])
-    gb2 = gaussian(test_image_cv, sigma=1, mode="reflect", multichannel=True)
+    test_image_np = test_image_tf.numpy()
+    test_image_np = np.resize(test_image_np, [5, 5, 3])
+    gb2 = gaussian(test_image_np, sigma=1, mode="reflect", multichannel=True)
     np.testing.assert_allclose(gb2, gb1, 0.06)

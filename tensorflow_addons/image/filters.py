@@ -261,6 +261,7 @@ def gaussian_filter2d(
             raise ValueError("Padding should be REFLECT, CONSTANT, OR SYMMETRIC")
 
         image = tf.cast(image, tf.float32)
+        original_ndims = img_utils.get_ndims(image)
         image = img_utils.to_4D_image(image)
         channels = tf.shape(image)[3]
         filter_shape = keras_utils.normalize_tuple(filter_shape, 2, "filter_shape")
@@ -285,10 +286,11 @@ def gaussian_filter2d(
             image, filter_shape, mode=padding, constant_values=constant_values,
         )
 
-        conv_ops = tf.nn.depthwise_conv2d(
+        output = tf.nn.depthwise_conv2d(
             input=image,
             filter=gaussian_filter_2d,
             strides=(1, 1, 1, 1),
             padding="VALID",
         )
-        return conv_ops
+        output = img_utils.from_4D_image(output, original_ndims)
+        return output
