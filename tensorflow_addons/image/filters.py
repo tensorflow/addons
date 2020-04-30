@@ -80,7 +80,7 @@ def mean_filter2d(
         padding mode.
       name: A name for this operation (optional).
     Returns:
-      3-D or 4-D `Tensor` of the same dtype as input.
+      2-D, 3-D or 4-D `Tensor` of the same dtype as input.
     Raises:
       ValueError: If `image` is not 2, 3 or 4-dimensional,
         if `padding` is other than "REFLECT", "CONSTANT" or "SYMMETRIC",
@@ -148,7 +148,7 @@ def median_filter2d(
         padding mode.
       name: A name for this operation (optional).
     Returns:
-      3-D or 4-D `Tensor` of the same dtype as input.
+      2-D, 3-D or 4-D `Tensor` of the same dtype as input.
     Raises:
       ValueError: If `image` is not 2, 3 or 4-dimensional,
         if `padding` is other than "REFLECT", "CONSTANT" or "SYMMETRIC",
@@ -230,15 +230,15 @@ def gaussian_filter2d(
     constant_values: TensorLike = 0,
     name: Optional[str] = None,
 ) -> FloatTensorLike:
-    """Perform Gaussian Blur.
+    """Perform Gaussian blur on image(s).
 
     Args:
       image: Either a 2-D `Tensor` of shape `[height, width]`,
         a 3-D `Tensor` of shape `[height, width, channels]`,
         or a 4-D `Tensor` of shape `[batch_size, height, width, channels]`.
       filter_shape: An `integer` or `tuple`/`list` of 2 integers, specifying
-        the height and width of the 2-D median filter. Can be a single integer
-        to specify the same value for all spatial dimensions.
+        the height and width of the 2-D gaussian filter. Can be a single
+        integer to specify the same value for all spatial dimensions.
       sigma: Standard deviation of Gaussian.
       padding: A `string`, one of "REFLECT", "CONSTANT", or "SYMMETRIC".
         The type of padding algorithm to use, which is compatible with
@@ -248,11 +248,12 @@ def gaussian_filter2d(
         padding mode.
       name: A name for this operation (optional).
     Returns:
-      3-D or 4-D `Tensor` of the same dtype as input.
+      2-D, 3-D or 4-D `Tensor` of the same dtype as input.
     Raises:
       ValueError: If `image` is not 2, 3 or 4-dimensional,
         if `padding` is other than "REFLECT", "CONSTANT" or "SYMMETRIC",
-        or if `filter_shape` is invalid or sigma<=0.
+        if `filter_shape` is invalid,
+        or if `sigma` is less than or equal to 0.
     """
     with tf.name_scope(name or "gaussian_filter2d"):
         if sigma <= 0:
