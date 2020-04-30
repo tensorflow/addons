@@ -51,11 +51,11 @@ def pairwise_distance_np(feature, squared=False):
     return pairwise_distances
 
 
-def L_2_dists(embs):
+def l_2_dists(embs):
     return pairwise_distance_np(embs, True)
 
 
-def L_1_dists(embs):
+def l_1_dists(embs):
     return pairwise_distance_np(embs, False)
 
 
@@ -186,7 +186,7 @@ def test_semihard_tripled_loss_l2(dtype):
     labels = np.random.randint(0, num_classes, size=(num_data))
 
     # Compute the loss in NP.
-    loss_np = triplet_semihard_loss_np(labels, embedding, margin, L_2_dists)
+    loss_np = triplet_semihard_loss_np(labels, embedding, margin, l_2_dists)
 
     # Compute the loss in TF.
     y_true = tf.constant(labels)
@@ -208,7 +208,7 @@ def test_semihard_tripled_loss_l1(dtype):
     labels = np.random.randint(0, num_classes, size=(num_data))
 
     # Compute the loss in NP.
-    loss_np = triplet_semihard_loss_np(labels, embedding, margin, L_1_dists)
+    loss_np = triplet_semihard_loss_np(labels, embedding, margin, l_1_dists)
 
     # Compute the loss in TF.
     y_true = tf.constant(labels)
@@ -266,7 +266,7 @@ def test_hard_tripled_loss_l2(dtype, soft):
     labels = np.random.randint(0, num_classes, size=(num_data))
 
     # Compute the loss in NP.
-    loss_np = triplet_hard_loss_np(labels, embedding, margin, L_2_dists, soft)
+    loss_np = triplet_hard_loss_np(labels, embedding, margin, l_2_dists, soft)
 
     # Compute the loss in TF.
     y_true = tf.constant(labels)
@@ -289,7 +289,7 @@ def test_hard_tripled_loss_l1(dtype, soft):
     labels = np.random.randint(0, num_classes, size=(num_data))
 
     # Compute the loss in NP.
-    loss_np = triplet_hard_loss_np(labels, embedding, margin, L_1_dists, soft)
+    loss_np = triplet_hard_loss_np(labels, embedding, margin, l_1_dists, soft)
 
     # Compute the loss in TF.
     y_true = tf.constant(labels)
