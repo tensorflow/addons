@@ -152,9 +152,13 @@ def triplet_hard_loss_np(labels, embedding, margin, dist_func, soft=False):
     return loss_np
 
 
-# test cosine similarity
+# triplet semihard
 @pytest.mark.parametrize("dtype", [tf.float32, tf.float16, tf.bfloat16])
-def test_semihard_tripled_loss_angular(dtype):
+@pytest.mark.parametrize(
+    "dist_func, dist_metric",
+    [(angular_distance_np, "angular"), (l_2_dists, "L_2"), (l_1_dists, "L_1")],
+)
+def test_semihard_tripled_loss_angular(dtype, dist_func, dist_metric):
     num_data = 10
     feat_dim = 6
     margin = 1.0
@@ -164,56 +168,12 @@ def test_semihard_tripled_loss_angular(dtype):
     labels = np.random.randint(0, num_classes, size=(num_data))
 
     # Compute the loss in NP.
-    loss_np = triplet_semihard_loss_np(labels, embedding, margin, angular_distance_np)
+    loss_np = triplet_semihard_loss_np(labels, embedding, margin, dist_func)
 
     # Compute the loss in TF.
     y_true = tf.constant(labels)
     y_pred = tf.constant(embedding, dtype=dtype)
-    cce_obj = triplet.TripletSemiHardLoss(distance_metric="angular")
-    loss = cce_obj(y_true, y_pred)
-    test_utils.assert_allclose_according_to_type(loss.numpy(), loss_np)
-
-
-# test L-2 distance
-@pytest.mark.parametrize("dtype", [tf.float32, tf.float16, tf.bfloat16])
-def test_semihard_tripled_loss_l2(dtype):
-    num_data = 10
-    feat_dim = 6
-    margin = 1.0
-    num_classes = 4
-
-    embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
-    labels = np.random.randint(0, num_classes, size=(num_data))
-
-    # Compute the loss in NP.
-    loss_np = triplet_semihard_loss_np(labels, embedding, margin, l_2_dists)
-
-    # Compute the loss in TF.
-    y_true = tf.constant(labels)
-    y_pred = tf.constant(embedding, dtype=dtype)
-    cce_obj = triplet.TripletSemiHardLoss()
-    loss = cce_obj(y_true, y_pred)
-    test_utils.assert_allclose_according_to_type(loss.numpy(), loss_np)
-
-
-# test L-1 distance
-@pytest.mark.parametrize("dtype", [tf.float32, tf.float16, tf.bfloat16])
-def test_semihard_tripled_loss_l1(dtype):
-    num_data = 10
-    feat_dim = 6
-    margin = 1.0
-    num_classes = 4
-
-    embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
-    labels = np.random.randint(0, num_classes, size=(num_data))
-
-    # Compute the loss in NP.
-    loss_np = triplet_semihard_loss_np(labels, embedding, margin, l_1_dists)
-
-    # Compute the loss in TF.
-    y_true = tf.constant(labels)
-    y_pred = tf.constant(embedding, dtype=dtype)
-    cce_obj = triplet.TripletSemiHardLoss(distance_metric="L_1")
+    cce_obj = triplet.TripletSemiHardLoss(distance_metric=dist_metric)
     loss = cce_obj(y_true, y_pred)
     test_utils.assert_allclose_according_to_type(loss.numpy(), loss_np)
 
@@ -233,7 +193,11 @@ def test_serialization_semihard():
 # test cosine similarity
 @pytest.mark.parametrize("dtype", [tf.float32, tf.float16, tf.bfloat16])
 @pytest.mark.parametrize("soft", [False, True])
-def test_hard_tripled_loss_angular(dtype, soft):
+@pytest.mark.parametrize(
+    "dist_func, dist_metric",
+    [(angular_distance_np, "angular"), (l_2_dists, "L_2"), (l_1_dists, "L_1")],
+)
+def test_hard_tripled_loss_angular(dtype, soft, dist_func, dist_metric):
     num_data = 20
     feat_dim = 6
     margin = 1.0
@@ -243,58 +207,12 @@ def test_hard_tripled_loss_angular(dtype, soft):
     labels = np.random.randint(0, num_classes, size=(num_data))
 
     # Compute the loss in NP.
-    loss_np = triplet_hard_loss_np(labels, embedding, margin, angular_distance_np, soft)
+    loss_np = triplet_hard_loss_np(labels, embedding, margin, dist_func, soft)
 
     # Compute the loss in TF.
     y_true = tf.constant(labels)
     y_pred = tf.constant(embedding, dtype=dtype)
-    cce_obj = triplet.TripletHardLoss(soft=soft, distance_metric="angular")
-    loss = cce_obj(y_true, y_pred)
-    test_utils.assert_allclose_according_to_type(loss.numpy(), loss_np)
-
-
-# test L-2 distance
-@pytest.mark.parametrize("dtype", [tf.float32, tf.float16, tf.bfloat16])
-@pytest.mark.parametrize("soft", [False, True])
-def test_hard_tripled_loss_l2(dtype, soft):
-    num_data = 20
-    feat_dim = 6
-    margin = 1.0
-    num_classes = 4
-
-    embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
-    labels = np.random.randint(0, num_classes, size=(num_data))
-
-    # Compute the loss in NP.
-    loss_np = triplet_hard_loss_np(labels, embedding, margin, l_2_dists, soft)
-
-    # Compute the loss in TF.
-    y_true = tf.constant(labels)
-    y_pred = tf.constant(embedding, dtype=dtype)
-    cce_obj = triplet.TripletHardLoss(soft=soft, distance_metric="L_2")
-    loss = cce_obj(y_true, y_pred)
-    test_utils.assert_allclose_according_to_type(loss.numpy(), loss_np)
-
-
-# test L-1 distance
-@pytest.mark.parametrize("dtype", [tf.float32, tf.float16, tf.bfloat16])
-@pytest.mark.parametrize("soft", [False, True])
-def test_hard_tripled_loss_l1(dtype, soft):
-    num_data = 20
-    feat_dim = 6
-    margin = 1.0
-    num_classes = 4
-
-    embedding = np.random.rand(num_data, feat_dim).astype(np.float32)
-    labels = np.random.randint(0, num_classes, size=(num_data))
-
-    # Compute the loss in NP.
-    loss_np = triplet_hard_loss_np(labels, embedding, margin, l_1_dists, soft)
-
-    # Compute the loss in TF.
-    y_true = tf.constant(labels)
-    y_pred = tf.constant(embedding, dtype=dtype)
-    cce_obj = triplet.TripletHardLoss(soft=soft, distance_metric="L_1")
+    cce_obj = triplet.TripletHardLoss(soft=soft, distance_metric=dist_metric)
     loss = cce_obj(y_true, y_pred)
     test_utils.assert_allclose_according_to_type(loss.numpy(), loss_np)
 
