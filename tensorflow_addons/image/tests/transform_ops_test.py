@@ -19,7 +19,6 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.image import transform_ops
-from tensorflow_addons.utils import test_utils
 from skimage import transform
 
 _DTYPES = {
@@ -32,39 +31,39 @@ _DTYPES = {
 }
 
 
+@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", _DTYPES)
 def test_compose(dtype):
-    with test_utils.use_gpu():
-        image = tf.constant(
-            [[1, 1, 1, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]], dtype=dtype,
-        )
-        # Rotate counter-clockwise by pi / 2.
-        rotation = transform_ops.angles_to_projective_transforms(np.pi / 2, 4, 4)
-        # Translate right by 1 (the transformation matrix is always inverted,
-        # hence the -1).
-        translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0], dtype=tf.dtypes.float32)
-        composed = transform_ops.compose_transforms([rotation, translation])
-        image_transformed = transform_ops.transform(image, composed)
-        np.testing.assert_equal(
-            [[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 0, 1], [0, 1, 1, 1]],
-            image_transformed.numpy(),
-        )
+    image = tf.constant(
+        [[1, 1, 1, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]], dtype=dtype,
+    )
+    # Rotate counter-clockwise by pi / 2.
+    rotation = transform_ops.angles_to_projective_transforms(np.pi / 2, 4, 4)
+    # Translate right by 1 (the transformation matrix is always inverted,
+    # hence the -1).
+    translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0], dtype=tf.dtypes.float32)
+    composed = transform_ops.compose_transforms([rotation, translation])
+    image_transformed = transform_ops.transform(image, composed)
+    np.testing.assert_equal(
+        [[0, 0, 0, 0], [0, 1, 0, 1], [0, 1, 0, 1], [0, 1, 1, 1]],
+        image_transformed.numpy(),
+    )
 
 
+@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", _DTYPES)
 def test_extreme_projective_transform(dtype):
-    with test_utils.use_gpu():
-        image = tf.constant(
-            [[1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1]], dtype=dtype,
-        )
-        transformation = tf.constant([1, 0, 0, 0, 1, 0, -1, 0], tf.dtypes.float32)
-        image_transformed = transform_ops.transform(image, transformation)
-        np.testing.assert_equal(
-            [[1, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0], [0, 0, 0, 0]],
-            image_transformed.numpy(),
-        )
+    image = tf.constant(
+        [[1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1]], dtype=dtype,
+    )
+    transformation = tf.constant([1, 0, 0, 0, 1, 0, -1, 0], tf.dtypes.float32)
+    image_transformed = transform_ops.transform(image, transformation)
+    np.testing.assert_equal(
+        [[1, 0, 0, 0], [0, 0, 0, 0], [1, 0, 0, 0], [0, 0, 0, 0]],
+        image_transformed.numpy(),
+    )
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")

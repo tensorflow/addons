@@ -92,7 +92,7 @@ def _make_warp(batch_size, warp_height, warp_width, dtype):
     return warp.astype(dtype)
 
 
-@pytest.mark.usefixtures("cpu_and_gpu")
+@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 def test_op_forward_pass(dtype):
     np.random.seed(0)
@@ -182,7 +182,7 @@ def test_op_errors():
         resampler_ops.resampler(data, warp)
 
 
-@pytest.mark.usefixtures("cpu_and_gpu")
+@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 def test_op_backward_pass(dtype):
     np.random.seed(13)
