@@ -85,12 +85,19 @@ def in_blacklist(file_path, blacklist):
 
 def test_no_private_tf_api():
     # TODO: remove all elements of the list and remove the blacklist
+    # Unlike the exception list for functions/classes missing types,
+    # this blacklist should not grow. Do not add elements to this list.
     blacklist = [
         "tensorflow_addons/image/cutout_ops.py",
         "tensorflow_addons/optimizers/novograd.py",
         "tensorflow_addons/optimizers/moving_average.py",
         "tensorflow_addons/metrics/r_square.py",
         "tensorflow_addons/utils/test_utils.py",
+        "tensorflow_addons/losses/contrastive.py",
+        "tensorflow_addons/losses/focal_loss.py",
+        "tensorflow_addons/losses/lifted.py",
+        "tensorflow_addons/losses/quantiles.py",
+        "tensorflow_addons/losses/triplet.py",
         "tensorflow_addons/losses/giou_loss.py",
         "tensorflow_addons/seq2seq/decoder.py",
         "tensorflow_addons/seq2seq/attention_wrapper.py",
@@ -115,6 +122,8 @@ def test_no_private_tf_api():
 
 def test_no_experimental_api():
     # TODO: remove all elements of the list and remove the blacklist
+    # Unlike the exception list for functions/classes missing types,
+    # this blacklist should not grow. Do not add elements to this list.
     blacklist = [
         "tensorflow_addons/optimizers/weight_decay_optimizers.py",
     ]
@@ -141,19 +150,14 @@ def test_no_experimental_api():
 
 def test_no_deprecated_v1():
     # TODO: remove all elements of the list and remove the blacklist
+    # Unlike the exception list for functions/classes missing types,
+    # this blacklist should not grow. Do not add elements to this list.
     blacklist = [
         "tensorflow_addons/text/skip_gram_ops.py",
-        "tensorflow_addons/text/tests/skip_gram_ops_test.py",
-        "tensorflow_addons/optimizers/tests/lazy_adam_test.py",
-        "tensorflow_addons/metrics/tests/matthews_correlation_coefficient_test.py",
-        "tensorflow_addons/seq2seq/tests/decoder_test.py",
-        "tensorflow_addons/metrics/tests/cohens_kappa_test.py",
-        "tensorflow_addons/optimizers/tests/cyclical_learning_rate_test.py",
         "tensorflow_addons/metrics/tests/f_scores_test.py",
         "tensorflow_addons/seq2seq/tests/basic_decoder_test.py",
         "tensorflow_addons/seq2seq/tests/beam_search_decoder_test.py",
         "tensorflow_addons/seq2seq/decoder.py",
-        "tensorflow_addons/metrics/tests/multilabel_confusion_matrix_test.py",
         "tensorflow_addons/seq2seq/tests/attention_wrapper_test.py",
     ]
     for file_path, line_idx, line in get_lines_of_source_code(blacklist):

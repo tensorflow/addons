@@ -39,10 +39,11 @@ class DecoupledWeightDecayExtension:
 
     This class alone is not an optimizer but rather extends existing
     optimizers with decoupled weight decay. We explicitly define the two
-    examples used in the above paper (SGDW and AdamW), but in general this
-    can extend any OptimizerX by using
-    `extend_with_decoupled_weight_decay(
-        OptimizerX, weight_decay=weight_decay)`.
+    examples used in the above paper (SGDW and AdamW), but in general this can
+    extend any OptimizerX class by using
+        `ExtendedCls = extend_with_decoupled_weight_decay(OptimizerX)`.
+    Weight decay can then be set when instantiating the optimizer:
+        `optimizerX = ExtendedCls(weight_decay=0.001, learning_rate=0.001)`.
     In order for it to work, it must be the first class the Optimizer with
     weight decay inherits from, e.g.
 
@@ -140,7 +141,7 @@ class DecoupledWeightDecayExtension:
                 to all variables in var_list.
             **kwargs: Additional arguments to pass to the base optimizer's
                 apply_gradient method, e.g., TF2.2 added an argument
-                `all_reduce_sum_gradients`.
+                `experimental_aggregate_gradients`.
         Returns:
             An `Operation` that applies the specified gradients.
         Raises:
