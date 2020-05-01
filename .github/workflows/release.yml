@@ -66,7 +66,6 @@ jobs:
           bazel-version: ${{ env.BAZEL_VERSION}}
           github-api-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build wheels
-        if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION || matrix.py-version == env.MAX_PY_VERSION
         env:
           OS: ${{ runner.os }}
           PY_VERSION: ${{ matrix.py-version }}
@@ -75,7 +74,6 @@ jobs:
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}.sh
       - uses: actions/upload-artifact@v1
-        if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION || matrix.py-version == env.MAX_PY_VERSION
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
           path: wheelhouse
@@ -90,12 +88,10 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/download-artifact@v1
-        if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION  || matrix.py-version == env.MAX_PY_VERSION
         with:
           name: ${{ matrix.os }}-${{ matrix.py-version }}-tf2.2.0rc3-wheel
           path: ./dist
-      - if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION  || matrix.py-version == env.MAX_PY_VERSION
-        run: |
+      - run: |
           set -e -x
           ls -la dist/
           sha256sum dist/*.whl
