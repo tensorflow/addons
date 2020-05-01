@@ -72,7 +72,7 @@ def triplet_semihard_loss(
     y_true: TensorLike,
     y_pred: TensorLike,
     margin: FloatTensorLike = 1.0,
-    distance_metric: Union[str, Callable] = "L_2",
+    distance_metric: Union[str, Callable] = "L2",
 ) -> tf.Tensor:
     """Computes the triplet loss with semi-hard negative mining.
 
@@ -83,14 +83,26 @@ def triplet_semihard_loss(
         be l2 normalized.
       margin: Float, margin term in the loss definition.
       distance_metric: str or function, determines distance metric:
-                       "L_1" for l1-norm distance
-                       "L_2" for l2-norm distance
+                       "L1" for l1-norm distance
+                       "L2" for l2-norm distance
                        "angular" for cosine similarity
-                        function for custom metric
+                        A custom function returning a 2d adjacency
+                          matrix of a chosen distance metric can
+                          also be passed here. e.g.
+
+                          def custom_distance(batch):
+                              batch = 1 - batch @ batch.T
+                              return batch
+
+                          triplet_semihard_loss(batch, labels,
+                                        distance_metric=custom_distance
+                                    )
+
 
     Returns:
       triplet_loss: float scalar with dtype of y_pred.
     """
+
     labels, embeddings = y_true, y_pred
 
     convert_to_float32 = (
@@ -106,12 +118,12 @@ def triplet_semihard_loss(
 
     # Build pairwise squared distance matrix
 
-    if distance_metric == "L_1":
+    if distance_metric == "L1":
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=False
         )
 
-    elif distance_metric == "L_2":
+    elif distance_metric == "L2":
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=True
         )
@@ -193,7 +205,7 @@ def triplet_hard_loss(
     y_pred: TensorLike,
     margin: FloatTensorLike = 1.0,
     soft: bool = False,
-    distance_metric: Union[str, Callable] = "L_2",
+    distance_metric: Union[str, Callable] = "L2",
 ) -> tf.Tensor:
     """Computes the triplet loss with hard negative and hard positive mining.
 
@@ -205,10 +217,20 @@ def triplet_hard_loss(
       margin: Float, margin term in the loss definition.
       soft: Boolean, if set, use the soft margin version.
       distance_metric: str or function, determines distance metric:
-                       "L_1" for l1-norm distance
-                       "L_2" for l2-norm distance
+                       "L1" for l1-norm distance
+                       "L2" for l2-norm distance
                        "angular" for cosine similarity
-                        function for custom metric
+                        A custom function returning a 2d adjacency
+                          matrix of a chosen distance metric can
+                          also be passed here. e.g.
+
+                          def custom_distance(batch):
+                              batch = 1 - batch @ batch.T
+                              return batch
+
+                          triplet_semihard_loss(batch, labels,
+                                        distance_metric=custom_distance
+                                    )
 
     Returns:
       triplet_loss: float scalar with dtype of y_pred.
@@ -227,12 +249,12 @@ def triplet_hard_loss(
     labels = tf.reshape(labels, [lshape[0], 1])
 
     # Build pairwise squared distance matrix.
-    if distance_metric == "L_1":
+    if distance_metric == "L1":
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=False
         )
 
-    elif distance_metric == "L_2":
+    elif distance_metric == "L2":
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=True
         )
@@ -301,7 +323,7 @@ class TripletSemiHardLoss(LossFunctionWrapper):
     def __init__(
         self,
         margin: FloatTensorLike = 1.0,
-        distance_metric: Union[str, Callable] = "L_2",
+        distance_metric: Union[str, Callable] = "L2",
         name: Optional[str] = None,
         **kwargs
     ):
@@ -340,7 +362,7 @@ class TripletHardLoss(LossFunctionWrapper):
         self,
         margin: FloatTensorLike = 1.0,
         soft: bool = False,
-        distance_metric: Union[str, Callable] = "L_2",
+        distance_metric: Union[str, Callable] = "L2",
         name: Optional[str] = None,
         **kwargs
     ):
