@@ -39,8 +39,6 @@ NUMBER_OF_GPUS = len(tf.config.list_physical_devices("GPU"))
 tf.config.threading.set_intra_op_parallelism_threads(1)
 tf.config.threading.set_inter_op_parallelism_threads(1)
 
-tf.debugging.set_log_device_placement(True)
-
 if NUMBER_OF_GPUS != 0:
     # We use only the first gpu at the moment. That's enough for most use cases.
     # split the first gpu into chunks of 100MB per pytest worker.
