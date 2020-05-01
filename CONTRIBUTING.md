@@ -295,8 +295,8 @@ Run selected tests:
 python3 -m pytest path/to/file/or/directory/to/test
 ```
 
-Run the cpu only tests with `pytest -m 'not needs_gpu' ./tensorflow_addons`.
 Run the gpu only tests with `pytest -m needs_gpu ./tensorflow_addons`.
+Run the cpu only tests with `pytest -m 'not needs_gpu' ./tensorflow_addons`.
 
 
 #### Testing with Bazel
