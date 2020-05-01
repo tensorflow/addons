@@ -16,7 +16,6 @@
 
 import numpy as np
 import pytest
-import platform
 
 import tensorflow as tf
 from tensorflow_addons.utils import test_utils
