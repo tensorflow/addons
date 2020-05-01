@@ -253,3 +253,10 @@ def test_slots_unique_eager():
     # There should be iteration, and two unique slot variables for v1 and v2.
     assert 5 == len(opt.variables())
     assert opt.variables()[0] == opt.iterations
+
+
+def test_serialization():
+    optimizer = lazy_adam.LazyAdam()
+    config = tf.keras.optimizers.serialize(optimizer)
+    new_optimizer = tf.keras.optimizers.deserialize(config)
+    assert new_optimizer.get_config() == optimizer.get_config()

@@ -160,6 +160,8 @@ conda activate my_dev_environement
 Just run from the root:
 
 ```
+pip install tensorflow==2.2.0rc3
+# you can use "pip install tensorflow-cpu==2.2.0rc3" too if you're not testing on gpu.
 pip install -e ./
 ```
 
@@ -247,7 +249,7 @@ If you need a custom C++/Cuda op for your test, compile your ops with
 
 ```bash
 python configure.py
-pip install tensorflow==2.1.0 -e ./ -r tools/install_deps/pytest.txt
+pip install tensorflow==2.2.0rc3 -e ./ -r tools/install_deps/pytest.txt
 bash tools/install_so_files.sh  # Linux/macos/WSL2
 sh tools/install_so_files.sh    # PowerShell
 ```
@@ -275,14 +277,14 @@ docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/ten
 
 Configure:
 ```
-python3 -m pip install tensorflow==2.1.0
+python3 -m pip install tensorflow==2.2.0rc3
 python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 
 Install in editable mode
 ```
 python3 -m pip install -e .
-python3 -m pip install pytest pytest-xdist
+python3 -m pip install -r tools/install_deps/pytest.txt
 ```
 
 Compile the custom ops
@@ -313,9 +315,9 @@ quickly, as Bazel has great support for caching and distributed testing.
 To test with Bazel:
 
 ```
-python3 -m pip install tensorflow==2.1.0
+python3 -m pip install tensorflow==2.2.0rc3
 python3 configure.py
-python3 -m pip install pytest
+python3 -m pip install -r tools/install_deps/pytest.txt
 bazel test -c opt -k \
 --test_timeout 300,450,1200,3600 \
 --test_output=all \
