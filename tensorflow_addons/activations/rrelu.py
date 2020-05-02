@@ -15,11 +15,7 @@
 
 import tensorflow as tf
 from tensorflow_addons.utils.types import TensorLike, Number
-
-try:
-    tf.no_gradient("StatefulUniform")
-except:  # noqa: E722
-    pass
+from typing import Optional
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -27,8 +23,8 @@ def rrelu(
     x: TensorLike,
     lower: Number = 0.125,
     upper: Number = 0.3333333333333333,
-    training: bool = None,
-    seed: Number = None,
+    training: Optional[bool] = None,
+    seed: Optional[int] = None,
     gs: tf.random.Generator = None,
 ) -> tf.Tensor:
     """rrelu function.
