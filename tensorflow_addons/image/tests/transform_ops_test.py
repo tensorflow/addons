@@ -19,7 +19,6 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.image import transform_ops
-from tensorflow_addons.utils import test_utils
 from scipy import ndimage
 from skimage import transform
 
