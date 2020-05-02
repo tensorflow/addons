@@ -61,7 +61,7 @@ jobs:
         # Ubuntu bazel is run inside of the docker image
         if: matrix.os != 'ubuntu-18.04'
         # MacOS VMs share IP addr on GH actions. This bazel installation authenticates token to prevent api rate limiting.
-        uses: jwlawson/actions-setup-bazel@v1.0
+        uses: jwlawson/actions-setup-bazel@784af34 # Version 1.1
         with:
           bazel-version: ${{ env.BAZEL_VERSION}}
           github-api-token: ${{ secrets.GITHUB_TOKEN }}
