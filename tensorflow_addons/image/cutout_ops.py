@@ -15,8 +15,8 @@
 """Cutout op"""
 
 import tensorflow as tf
+from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils.types import TensorLike, Number
-from tensorflow.python.keras.utils import conv_utils
 
 
 def _get_image_wh(images, data_format):
@@ -38,7 +38,7 @@ def _norm_params(images, mask_size, data_format):
         )
     if tf.rank(mask_size) == 0:
         mask_size = tf.stack([mask_size, mask_size])
-    data_format = conv_utils.normalize_data_format(data_format)
+    data_format = keras_utils.normalize_data_format(data_format)
     image_height, image_width = _get_image_wh(images, data_format)
     return mask_size, data_format, image_height, image_width
 
