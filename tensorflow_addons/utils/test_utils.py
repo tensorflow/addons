@@ -41,15 +41,21 @@ tf.config.threading.set_inter_op_parallelism_threads(1)
 
 if NUMBER_OF_GPUS != 0:
     # We use only the first gpu at the moment. That's enough for most use cases.
-    # split the first gpu into chunks of 100MB per pytest worker.
+    # split the first gpu into chunks of 100MB per virtual device.
     # It's the user's job to limit the amount of pytest workers depending
     # on the available memory.
     # In practice, each process takes a bit more memory.
     # There must be some kind of overhead but it's not very big (~200MB more)
+    # Each worker has two virtual devices.
+    # When running on gpu, only the first device is used. The other one is used
+    # in distributed strategies.
     first_gpu = tf.config.list_physical_devices("GPU")[0]
+    virtual_gpus = [
+        tf.config.LogicalDeviceConfiguration(memory_limit=100) for _ in range(2)
+    ]
 
     tf.config.set_logical_device_configuration(
-        first_gpu, [tf.config.LogicalDeviceConfiguration(memory_limit=100)],
+        first_gpu, virtual_gpus,
     )
 
 
@@ -105,7 +111,11 @@ def device(request):
     requested_device = request.param
     if requested_device == "no_device":
         yield requested_device
-    else:
+    elif requested_device == tf.distribute.MirroredStrategy:
+        strategy = requested_device(["gpu:0", "gpu:1"])
+        with strategy.scope():
+            yield strategy
+    elif isinstance(requested_device, str):
         if requested_device in ["cpu", "gpu"]:
             # we use GPU:0 because the virtual device we created is the
             # only one in the first GPU (so first in the list of virtual devices).
@@ -118,7 +128,7 @@ def device(request):
 
 def get_marks(device_name):
     marks = []
-    if device_name == "gpu":
+    if device_name == "gpu" or device_name == tf.distribute.MirroredStrategy:
         marks.append(pytest.mark.needs_gpu)
         if NUMBER_OF_GPUS == 0:
             skip_message = "The gpu is not available."
