@@ -74,7 +74,8 @@ def pytest_make_parametrize_id(config, val, argname):
 
     if isinstance(val, tf.DType):
         return val.name
-    if val in numpy_dtypes:
+    # need isinstance here because tf tensors don't like to be compared to np dtypes.
+    if isinstance(val, type) and val in numpy_dtypes:
         return val.__name__
     if val is False:
         return "no_" + argname
