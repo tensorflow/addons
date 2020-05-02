@@ -96,7 +96,7 @@ def pytest_addoption(parser):
     )
 
 
-def gpu_for_testing():
+def gpus_for_testing():
     """For the moment it's very simple, but it might change in the future,
     with multiple physical gpus for example. So it's better if this function
     is called rather than hardcoding the gpu devices in the tests.
@@ -123,7 +123,7 @@ def device(request):
     if requested_device == "no_device":
         yield requested_device
     elif requested_device == tf.distribute.MirroredStrategy:
-        strategy = requested_device(gpu_for_testing())
+        strategy = requested_device(gpus_for_testing())
         with strategy.scope():
             yield strategy
     elif isinstance(requested_device, str):

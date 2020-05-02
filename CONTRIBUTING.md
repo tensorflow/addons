@@ -488,7 +488,7 @@ def test_something_more2():
     # test will fail if no gpu is available on the system.
     # for example
     ...
-    strategy = tf.distribute.MirroredStrategy(test_utils.gpu_for_testing())
+    strategy = tf.distribute.MirroredStrategy(test_utils.gpus_for_testing())
     with strategy.scope():
         print("I'm doing whatever I want.") 
     ...

@@ -37,9 +37,9 @@ def test_distributed_strategy(device):
 @pytest.mark.with_device(["no_device"])
 @pytest.mark.needs_gpu
 def test_custom_device_placement():
-    with tf.device(test_utils.gpu_for_testing()[0]):
+    with tf.device(test_utils.gpus_for_testing()[0]):
         train_small_model()
 
-    strategy = tf.distribute.MirroredStrategy(test_utils.gpu_for_testing())
+    strategy = tf.distribute.MirroredStrategy(test_utils.gpus_for_testing())
     with strategy.scope():
         train_small_model()
