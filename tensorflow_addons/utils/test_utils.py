@@ -57,6 +57,31 @@ def finalizer():
     tf.config.experimental_run_functions_eagerly(False)
 
 
+def pytest_make_parametrize_id(config, val, argname):
+    numpy_dtypes = [
+        np.float16,
+        np.float32,
+        np.float64,
+        np.int8,
+        np.int16,
+        np.int32,
+        np.int64,
+        np.uint8,
+        np.uint16,
+        np.uint32,
+        np.uint64,
+    ]
+
+    if isinstance(val, tf.DType):
+        return val.name
+    if val in numpy_dtypes:
+        return val.__name__
+    if val is False:
+        return "no_" + argname
+    if val is True:
+        return argname
+
+
 @pytest.fixture(scope="function", params=["eager_mode", "tf_function"])
 def maybe_run_functions_eagerly(request):
     if request.param == "eager_mode":
