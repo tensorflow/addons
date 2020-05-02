@@ -31,23 +31,30 @@ class Sampler(metaclass=abc.ABCMeta):
 
     Sampler instances are used by `BasicDecoder`. The normal usage of a sampler
     is like below:
+
+    ```python
     sampler = Sampler(init_args)
     (initial_finished, initial_inputs) = sampler.initialize(input_tensors)
-    for time_step in range(time):
-      cell_output, cell_state = cell.call(cell_input, previous_state)
-      sample_ids = sampler.sample(time_step, cell_output, cell_state)
-      (finished, next_inputs, next_state) = sampler.next_inputs(
-          time_step,cell_output, cell_state)
+    cell_input = initial_inputs
+    cell_state = cell.get_initial_state(...)
+    for time_step in tf.range(max_output_length):
+        cell_output, cell_state = cell(cell_input, cell_state)
+        sample_ids = sampler.sample(time_step, cell_output, cell_state)
+        (finished, cell_input, cell_state) = sampler.next_inputs(
+            time_step, cell_output, cell_state, sample_ids)
+        if tf.reduce_all(finished):
+            break
+    ```
 
-    Note that all the tensor input should not be feed to Sampler as __init__()
-    parameters, instead, they should be feed by decoders via initialize().
+    Note that the input_tensors should not be fed to the Sampler as __init__()
+    parameters. Instead, they should be fed by decoders via initialize().
     """
 
     @abc.abstractmethod
     def initialize(self, inputs, **kwargs):
         """initialize the sampler with the input tensors.
 
-        This method suppose to be only invoke once before the calling other
+        This method must be invoked exactly once before calling other
         methods of the Sampler.
 
         Args:
@@ -336,9 +343,12 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
             raise ValueError(
                 "embedding_fn is expected to be callable, got %s" % type(embedding_fn)
             )
-        self.sampling_probability = tf.convert_to_tensor(
-            sampling_probability, name="sampling_probability"
-        )
+        if isinstance(sampling_probability, tf.Variable):
+            self.sampling_probability = sampling_probability
+        else:
+            self.sampling_probability = tf.convert_to_tensor(
+                sampling_probability, name="sampling_probability"
+            )
         if self.sampling_probability.get_shape().ndims not in (0, 1):
             raise ValueError(
                 "sampling_probability must be either a scalar or a vector. "
@@ -430,13 +440,16 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
         Raises:
           ValueError: if `sampling_probability` is not a scalar or vector.
         """
-        self.sampling_probability = tf.convert_to_tensor(
-            sampling_probability, name="sampling_probability"
-        )
+        if isinstance(sampling_probability, tf.Variable):
+            self.sampling_probability = sampling_probability
+        else:
+            self.sampling_probability = tf.convert_to_tensor(
+                sampling_probability, name="sampling_probability"
+            )
         if self.sampling_probability.get_shape().ndims not in (0, 1):
             raise ValueError(
                 "sampling_probability must be either a scalar or a vector. "
-                "saw shape: %s" % (self._sampling_probability.get_shape())
+                "saw shape: %s" % (self.sampling_probability.get_shape())
             )
 
         self.seed = seed
