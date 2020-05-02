@@ -455,6 +455,13 @@ def test_something_else():
 def test_something_more():
     # Don't do that, this is the default behavior. 
     ...
+
+
+@pytest.mark.with_device(["no_device"])
+def test_something_more2():
+    # When running the function, there will be no `with tf.device` wrapper.
+    # You are free to do whatever you wish with the devices in there.
+    ...
 ```
 
 Note that if a gpu is not detected on the system, the test will be 
