@@ -31,6 +31,11 @@ NUMBER_OF_WORKERS = int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", "1"))
 WORKER_ID = int(os.environ.get("PYTEST_XDIST_WORKER", "gw0")[2])
 NUMBER_OF_GPUS = len(tf.config.list_physical_devices("GPU"))
 
+
+def is_gpu_available():
+    return NUMBER_OF_GPUS >= 1
+
+
 # Some configuration before starting the tests.
 
 # we only need one core per worker.
@@ -39,7 +44,7 @@ NUMBER_OF_GPUS = len(tf.config.list_physical_devices("GPU"))
 tf.config.threading.set_intra_op_parallelism_threads(1)
 tf.config.threading.set_inter_op_parallelism_threads(1)
 
-if NUMBER_OF_GPUS != 0:
+if is_gpu_available():
     # We use only the first gpu at the moment. That's enough for most use cases.
     # split the first gpu into chunks of 100MB per virtual device.
     # It's the user's job to limit the amount of pytest workers depending
