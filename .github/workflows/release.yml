@@ -89,7 +89,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v1
         with:
-          name: ${{ matrix.os }}-${{ matrix.py-version }}-tf2.2.0rc4-wheel
+          name: ${{ matrix.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
           path: ./dist
       - run: |
           set -e -x
