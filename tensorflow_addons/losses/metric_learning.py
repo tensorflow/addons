@@ -15,10 +15,11 @@
 """Functions of metric learning."""
 
 import tensorflow as tf
+from tensorflow_addons.utils.types import TensorLike
 
 
 @tf.function
-def pairwise_distance(feature, squared=False):
+def pairwise_distance(feature: TensorLike, squared: bool = False):
     """Computes the pairwise distance matrix with numerical stability.
 
     output[i, j] = || feature[i, :] - feature[j, :] ||_2
@@ -64,3 +65,27 @@ def pairwise_distance(feature, squared=False):
     )
     pairwise_distances = tf.math.multiply(pairwise_distances, mask_offdiagonals)
     return pairwise_distances
+
+
+@tf.function
+def angular_distance(feature: TensorLike):
+    """Computes the angular distance matrix.
+
+    output[i, j] = 1 - cosine_similarity(feature[i, :], feature[j, :])
+
+    Args:
+      feature: 2-D Tensor of size [number of data, feature dimension].
+
+    Returns:
+      angular_distances: 2-D Tensor of size [number of data, number of data].
+    """
+    # normalize input
+    feature = tf.math.l2_normalize(feature, axis=1)
+
+    # create adjaceny matrix of cosine similarity
+    angular_distances = 1 - tf.matmul(feature, feature, transpose_b=True)
+
+    # ensure all distances > 1e-16
+    angular_distances = tf.maximum(angular_distances, 0.0)
+
+    return angular_distances
