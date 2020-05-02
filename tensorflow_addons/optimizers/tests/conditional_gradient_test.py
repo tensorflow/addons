@@ -41,7 +41,9 @@ def test_like_dist_belief_nuclear_cg01():
 
 @pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
-def test_minimize_sparse_resource_variable_frobenius(dtype):
+def test_minimize_sparse_resource_variable_frobenius(dtype, device):
+    if "gpu" in device and dtype == tf.float16:
+        pytest.xfail("See https://github.com/tensorflow/addons/issues/347")
     var0 = tf.Variable([[1.0, 2.0]], dtype=dtype)
 
     def loss():
@@ -157,7 +159,9 @@ def test_basic_frobenius(dtype, use_resource):
 @pytest.mark.parametrize("use_resource", [True, False])
 @pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
-def test_basic_nuclear(use_resource, dtype):
+def test_basic_nuclear(use_resource, dtype, device):
+    if "gpu" in device and dtype == tf.float16:
+        pytest.xfail("See https://github.com/tensorflow/addons/issues/347")
     if use_resource:
         var0 = tf.Variable([1.0, 2.0], dtype=dtype)
         var1 = tf.Variable([3.0, 4.0], dtype=dtype)
@@ -238,7 +242,9 @@ def test_basic_nuclear(use_resource, dtype):
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
-def test_minimize_sparse_resource_variable_nuclear(dtype):
+def test_minimize_sparse_resource_variable_nuclear(dtype, device):
+    if "gpu" in device and dtype == tf.float16:
+        pytest.xfail("See https://github.com/tensorflow/addons/issues/347")
 
     var0 = tf.Variable([[1.0, 2.0]], dtype=dtype)
 
@@ -278,7 +284,9 @@ def test_minimize_sparse_resource_variable_nuclear(dtype):
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
-def test_tensor_learning_rate_and_conditional_gradient_nuclear(dtype):
+def test_tensor_learning_rate_and_conditional_gradient_nuclear(dtype, device):
+    if "gpu" in device and dtype == tf.float16:
+        pytest.xfail("See https://github.com/tensorflow/addons/issues/347")
     var0 = tf.Variable([1.0, 2.0], dtype=dtype)
     var1 = tf.Variable([3.0, 4.0], dtype=dtype)
     grads0 = tf.constant([0.1, 0.1], dtype=dtype)
@@ -799,7 +807,9 @@ def test_like_dist_belief_frobenius_cg01():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
-def test_sparse_frobenius(dtype):
+def test_sparse_frobenius(dtype, device):
+    if "gpu" in device and dtype == tf.float16:
+        pytest.xfail("See https://github.com/tensorflow/addons/issues/347")
     var0 = tf.Variable(tf.zeros([4, 2], dtype=dtype))
     var1 = tf.Variable(tf.constant(1.0, dtype, [4, 2]))
     grads0 = tf.IndexedSlices(
@@ -951,7 +961,9 @@ def test_sharing_frobenius(dtype):
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
-def test_sharing_nuclear(dtype):
+def test_sharing_nuclear(dtype, device):
+    if "gpu" in device and dtype == tf.float16:
+        pytest.xfail("See https://github.com/tensorflow/addons/issues/347")
     var0 = tf.Variable([1.0, 2.0], dtype=dtype)
     var1 = tf.Variable([3.0, 4.0], dtype=dtype)
     grads0 = tf.constant([0.1, 0.1], dtype=dtype)
@@ -1287,8 +1299,9 @@ def _db_params_nuclear_cg01():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
-def test_sparse_nuclear(dtype):
-
+def test_sparse_nuclear(dtype, device):
+    if "gpu" in device and dtype == tf.float16:
+        pytest.xfail("See https://github.com/tensorflow/addons/issues/347")
     var0 = tf.Variable(tf.zeros([4, 2], dtype=dtype))
     var1 = tf.Variable(tf.constant(1.0, dtype, [4, 2]))
     grads0 = tf.IndexedSlices(

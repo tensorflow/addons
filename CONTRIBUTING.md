@@ -434,6 +434,17 @@ def test_something():
     # the code here will run twice, once on gpu, once on cpu.
     ...
 
+
+@pytest.mark.with_device(["cpu", "gpu"])
+def test_something2(device):
+    # the code here will run twice, once on gpu, once on cpu.
+    # device will be "cpu:0" or "gpu:0" or "gpu:1" or "gpu:2" ...   
+    if "cpu" in device:
+        print("do something.")
+    if "gpu" in device:
+        print("do something else.")
+
+
 @pytest.mark.with_device(["gpu"])
 def test_something_else():
     # This test will be only run on gpu.

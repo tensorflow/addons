@@ -101,10 +101,10 @@ def pytest_configure(config):
 
 
 @pytest.fixture(autouse=True, scope="function")
-def _device_placement(request):
+def device(request):
     device = request.param
     if device == "no_device":
-        yield
+        yield device
     else:
         if device in ["cpu", "gpu"]:
             # we use GPU:0 because the virtual device we created is the
@@ -113,7 +113,7 @@ def _device_placement(request):
         else:
             raise KeyError("Invalid device: " + device)
         with tf.device(device):
-            yield
+            yield device
 
 
 def get_marks(device_name):
@@ -137,7 +137,7 @@ def pytest_generate_tests(metafunc):
         devices = marker.args[0]
 
     parameters = [pytest.param(x, marks=get_marks(x)) for x in devices]
-    metafunc.parametrize("_device_placement", parameters, indirect=True)
+    metafunc.parametrize("device", parameters, indirect=True)
 
 
 def assert_allclose_according_to_type(
