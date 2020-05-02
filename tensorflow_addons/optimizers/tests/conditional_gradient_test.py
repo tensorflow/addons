@@ -39,7 +39,6 @@ def test_like_dist_belief_nuclear_cg01():
         )
 
 
-@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
 def test_minimize_sparse_resource_variable_frobenius(dtype):
     var0 = tf.Variable([[1.0, 2.0]], dtype=dtype)
@@ -155,7 +154,6 @@ def test_basic_frobenius(dtype, use_resource):
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("use_resource", [True, False])
-@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
 def test_basic_nuclear(use_resource, dtype):
     if use_resource:
@@ -236,7 +234,6 @@ def test_basic_nuclear(use_resource, dtype):
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
 def test_minimize_sparse_resource_variable_nuclear(dtype):
 
@@ -276,7 +273,6 @@ def test_minimize_sparse_resource_variable_nuclear(dtype):
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
 def test_tensor_learning_rate_and_conditional_gradient_nuclear(dtype):
     var0 = tf.Variable([1.0, 2.0], dtype=dtype)
@@ -797,7 +793,6 @@ def test_like_dist_belief_frobenius_cg01():
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
 def test_sparse_frobenius(dtype):
     var0 = tf.Variable(tf.zeros([4, 2], dtype=dtype))
@@ -949,7 +944,6 @@ def test_sharing_frobenius(dtype):
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
 def test_sharing_nuclear(dtype):
     var0 = tf.Variable([1.0, 2.0], dtype=dtype)
@@ -1285,7 +1279,6 @@ def _db_params_nuclear_cg01():
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
 def test_sparse_nuclear(dtype):
 
