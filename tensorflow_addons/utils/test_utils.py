@@ -101,6 +101,12 @@ def gpus_for_testing():
     with multiple physical gpus for example. So it's better if this function
     is called rather than hardcoding the gpu devices in the tests.
     """
+    if not is_gpu_available():
+        raise SystemError(
+            "You are trying to get some gpus for testing but no gpu is available on "
+            "your system. \nDid you forget to use `@pytest.mark.needs_gpu` on your test"
+            " so that it's skipped automatically when no gpu is available?"
+        )
     return ["gpu:0", "gpu:1"]
 
 
