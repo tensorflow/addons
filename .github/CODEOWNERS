@@ -64,6 +64,8 @@
 /tensorflow_addons/image/tests/interpolate_spline_test.py
 /tensorflow_addons/image/resampler_ops.py @autoih
 /tensorflow_addons/image/tests/resampler_ops_test.py @autoih
+/tensorflow_addons/image/rgb_to_grayscale_op.py @ghosalsattam
+/tensorflow_addons/image/tests/rgb_to_grayscale_op_test.py @ghosalsattam
 /tensorflow_addons/image/sparse_image_warp.py
 /tensorflow_addons/image/tests/sparse_image_warp_test.py
 /tensorflow_addons/image/transform_ops.py @mels630

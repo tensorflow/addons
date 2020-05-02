@@ -29,6 +29,7 @@ from tensorflow_addons.image.filters import median_filter2d
 from tensorflow_addons.image.cutout_ops import random_cutout
 from tensorflow_addons.image.distort_image_ops import random_hsv_in_yiq
 from tensorflow_addons.image.resampler_ops import resampler
+from tensorflow_addons.image.rgb_to_grayscale_op import rgb_to_grayscale
 from tensorflow_addons.image.transform_ops import rotate
 from tensorflow_addons.image.transform_ops import shear_x
 from tensorflow_addons.image.transform_ops import shear_y
