@@ -41,7 +41,7 @@ jobs:
       matrix:
         os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
         py-version: ['3.5', '3.6', '3.7', '3.8']
-        tf-version: ['2.2.0rc3']
+        tf-version: ['2.2.0rc4']
       fail-fast: false
     steps:
       - uses: actions/github-script@0.3.0
@@ -86,13 +86,13 @@ jobs:
     strategy:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
-        py-version: ['3.5', '3.6', '3.7']
+        py-version: ['3.5', '3.6', '3.7', '3.8']
       fail-fast: false
     steps:
       - uses: actions/download-artifact@v1
         if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION  || matrix.py-version == env.MAX_PY_VERSION
         with:
-          name: ${{ matrix.os }}-${{ matrix.py-version }}-tf2.2.0rc3-wheel
+          name: ${{ matrix.os }}-${{ matrix.py-version }}-tf2.2.0rc4-wheel
           path: ./dist
       - if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION  || matrix.py-version == env.MAX_PY_VERSION
         run: |
