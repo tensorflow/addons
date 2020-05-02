@@ -59,9 +59,7 @@ if is_gpu_available():
         tf.config.LogicalDeviceConfiguration(memory_limit=100) for _ in range(2)
     ]
 
-    tf.config.set_logical_device_configuration(
-        first_gpu, virtual_gpus,
-    )
+    tf.config.set_logical_device_configuration(first_gpu, virtual_gpus)
 
 
 def finalizer():
@@ -98,6 +96,14 @@ def pytest_addoption(parser):
     )
 
 
+def gpu_for_testing():
+    """For the moment it's very simple, but it might change in the future,
+    with multiple physical gpus for example. So it's better if this function
+    is called rather than hardcoding the gpu devices in the tests.
+    """
+    return ["gpu:0", "gpu:1"]
+
+
 @pytest.fixture(scope="session", autouse=True)
 def set_global_variables(request):
     if request.config.getoption("--skip-custom-ops"):
@@ -117,7 +123,7 @@ def device(request):
     if requested_device == "no_device":
         yield requested_device
     elif requested_device == tf.distribute.MirroredStrategy:
-        strategy = requested_device(["gpu:0", "gpu:1"])
+        strategy = requested_device(gpu_for_testing())
         with strategy.scope():
             yield strategy
     elif isinstance(requested_device, str):
