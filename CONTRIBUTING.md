@@ -477,12 +477,15 @@ def test_something_more():
 
 
 @pytest.mark.with_device(["no_device"])
+@pytest.mark.needs_gpu
 def test_something_more2():
     # When running the function, there will be no `with tf.device` wrapper.
     # You are free to do whatever you wish with the devices in there.
     # Make sure to use only the cpu, or only gpus available to the current process with
     # test_utils.gpu_for_testing() , otherwise, it might not play nice with 
     # pytest's multiprocessing.
+    # If you use a gpu, mark the test with @pytest.mark.needs_gpu , otherwise the 
+    # test will fail if no gpu is available on the system.
     # for example
     ...
     strategy = tf.distribute.MirroredStrategy(test_utils.gpu_for_testing())
