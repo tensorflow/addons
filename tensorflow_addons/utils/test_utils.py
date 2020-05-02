@@ -138,13 +138,10 @@ def device(request):
 
 
 def get_marks(device_name):
-    marks = []
     if device_name == "gpu" or device_name == tf.distribute.MirroredStrategy:
-        marks.append(pytest.mark.needs_gpu)
-        if NUMBER_OF_GPUS == 0:
-            skip_message = "The gpu is not available."
-            marks.append(pytest.mark.skip(reason=skip_message))
-    return marks
+        return [pytest.mark.needs_gpu]
+    else:
+        return []
 
 
 def pytest_generate_tests(metafunc):
@@ -159,6 +156,13 @@ def pytest_generate_tests(metafunc):
 
     parameters = [pytest.param(x, marks=get_marks(x)) for x in devices]
     metafunc.parametrize("device", parameters, indirect=True)
+
+
+def pytest_collection_modifyitems(items):
+    for item in items:
+        if item.get_closest_marker("needs_gpu") is not None:
+            if not is_gpu_available():
+                item.add_marker(pytest.mark.skip("The gpu is not available."))
 
 
 def assert_allclose_according_to_type(
