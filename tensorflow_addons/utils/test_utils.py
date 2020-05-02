@@ -58,25 +58,8 @@ def finalizer():
 
 
 def pytest_make_parametrize_id(config, val, argname):
-    numpy_dtypes = [
-        np.float16,
-        np.float32,
-        np.float64,
-        np.int8,
-        np.int16,
-        np.int32,
-        np.int64,
-        np.uint8,
-        np.uint16,
-        np.uint32,
-        np.uint64,
-    ]
-
     if isinstance(val, tf.DType):
         return val.name
-    # need isinstance here because tf tensors don't like to be compared to np dtypes.
-    if isinstance(val, type) and val in numpy_dtypes:
-        return val.__name__
     if val is False:
         return "no_" + argname
     if val is True:
