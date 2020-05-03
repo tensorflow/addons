@@ -85,6 +85,7 @@ jobs:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
         py-version: ['3.5', '3.6', '3.7', '3.8']
+        tf-version: ['2.2.0rc4']
       fail-fast: false
     steps:
       - uses: actions/download-artifact@v1
