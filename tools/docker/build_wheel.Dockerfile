@@ -23,7 +23,7 @@ RUN mv /usr/bin/lsb_release2 /usr/bin/lsb_release
 ARG PY_VERSION
 RUN ln -sf $(which python$PY_VERSION) /usr/bin/python
 
-RUN python -m pip install --upgrade pip==20.0.2 auditwheel==2.0.0
+RUN python -m pip install --upgrade pip==19.0 auditwheel==2.0.0
 
 ARG TF_VERSION
 RUN python -m pip install tensorflow==$TF_VERSION
