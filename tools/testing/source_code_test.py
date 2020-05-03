@@ -88,7 +88,6 @@ def test_no_private_tf_api():
     # Unlike the exception list for functions/classes missing types,
     # this blacklist should not grow. Do not add elements to this list.
     blacklist = [
-        "tensorflow_addons/image/cutout_ops.py",
         "tensorflow_addons/optimizers/novograd.py",
         "tensorflow_addons/optimizers/moving_average.py",
         "tensorflow_addons/metrics/r_square.py",
