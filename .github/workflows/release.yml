@@ -72,6 +72,8 @@ jobs:
           PY_VERSION: ${{ matrix.py-version }}
           TF_VERSION: ${{ matrix.tf-version }}
           NIGHTLY_TIME: ${{ steps.author-date.outputs.result }}
+          DOCKER_LOGIN: ${{ secrets.DOCKER_LOGIN }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}.sh
       - uses: actions/upload-artifact@v1
