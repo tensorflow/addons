@@ -85,11 +85,12 @@ jobs:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
         py-version: ['3.5', '3.6', '3.7', '3.8']
+        tf-version: ['2.2.0rc4']
       fail-fast: false
     steps:
       - uses: actions/download-artifact@v1
         with:
-          name: ${{ matrix.os }}-${{ matrix.py-version }}-tf2.2.0rc4-wheel
+          name: ${{ matrix.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
           path: ./dist
       - run: |
           set -e -x
