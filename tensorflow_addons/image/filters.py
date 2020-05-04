@@ -206,10 +206,10 @@ def median_filter2d(
         return output
 
 
-def _get_gaussian_kernel(sigma, filter_shape_1d):
-    "This function creates a kernel of size [filter_shape]."
+def _get_gaussian_kernel(sigma, filter_shape):
+    """Compute 1D Gaussian kernel."""
     sigma = tf.convert_to_tensor(sigma)
-    x = tf.range(-filter_shape_1d // 2 + 1, filter_shape_1d // 2 + 1)
+    x = tf.range(-filter_shape // 2 + 1, filter_shape // 2 + 1)
     x = tf.cast(x ** 2, sigma.dtype)
     x = tf.exp(-x / (2.0 * (sigma ** 2)))
     x = x / tf.math.reduce_sum(x)
@@ -217,7 +217,7 @@ def _get_gaussian_kernel(sigma, filter_shape_1d):
 
 
 def _get_gaussian_kernel_2d(gaussian_filter_x, gaussian_filter_y):
-    "Compute 2D Gaussian kernel."
+    """Compute 2D Gaussian kernel given 1D kernels."""
     gaussian_kernel = tf.matmul(gaussian_filter_x, gaussian_filter_y)
     return gaussian_kernel
 
