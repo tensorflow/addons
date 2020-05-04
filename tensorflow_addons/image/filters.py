@@ -209,7 +209,6 @@ def median_filter2d(
 def _get_gaussian_kernel(sigma, filter_shape_1d):
     "This function creates a kernel of size [filter_shape]."
     sigma = tf.convert_to_tensor(sigma)
-    sigma = tf.cast(sigma, tf.float32)
     x = tf.range(-filter_shape_1d // 2 + 1, filter_shape_1d // 2 + 1)
     x = tf.cast(x ** 2, sigma.dtype)
     x = tf.exp(-x / (2.0 * (sigma ** 2)))
@@ -276,6 +275,8 @@ def gaussian_filter2d(
             )
 
         image = tf.convert_to_tensor(image, name="image")
+        sigma = tf.convert_to_tensor(sigma, name="sigma")
+
         original_ndims = img_utils.get_ndims(image)
         image = img_utils.to_4D_image(image)
 
@@ -288,12 +289,11 @@ def gaussian_filter2d(
         channels = tf.shape(image)[3]
         filter_shape = keras_utils.normalize_tuple(filter_shape, 2, "filter_shape")
 
+        sigma = tf.cast(sigma, image.dtype)
         gaussian_kernel_x = _get_gaussian_kernel(sigma[1], filter_shape[1])
-        gaussian_kernel_x = tf.cast(gaussian_kernel_x, image.dtype)
         gaussian_kernel_x = tf.reshape(gaussian_kernel_x, [1, filter_shape[1]])
 
         gaussian_kernel_y = _get_gaussian_kernel(sigma[0], filter_shape[0])
-        gaussian_kernel_y = tf.cast(gaussian_kernel_y, image.dtype)
         gaussian_kernel_y = tf.reshape(gaussian_kernel_y, [filter_shape[0], 1])
 
         gaussian_kernel_2d = _get_gaussian_kernel_2d(
