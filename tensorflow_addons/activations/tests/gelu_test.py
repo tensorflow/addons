@@ -36,6 +36,7 @@ def test_gelu(dtype):
     test_utils.assert_allclose_according_to_type(gelu(x, False), expected_result)
 
 
+@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
 @pytest.mark.parametrize("approximate", [True, False])
 def test_same_as_py_func(dtype, approximate):
