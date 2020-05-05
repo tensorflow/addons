@@ -77,8 +77,8 @@ def main(argv):
         # This callback usually cleans up a lot of aliases caused by internal imports.
         callbacks=[
             public_api.local_definitions_filter,
-            public_api.explicit_package_contents_filter
-	],
+            public_api.explicit_package_contents_filter,
+        ],
         search_hints=FLAGS.search_hints,
         site_path=FLAGS.site_path,
     )
