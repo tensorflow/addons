@@ -23,7 +23,9 @@ from tensorflow_addons.seq2seq import sampler as sampler_py
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.parametrize("maximum_iterations", [None, 0, 1])
+@pytest.mark.parametrize(
+    "maximum_iterations", [None, 0, 1, tf.constant(1, dtype=tf.int32)]
+)
 @pytest.mark.parametrize("time_major", [True, False])
 def test_dynamic_decode_rnn(time_major, maximum_iterations):
 
