@@ -51,17 +51,20 @@ def rrelu(
     x = tf.convert_to_tensor(x)
     lower = tf.cast(lower, x.dtype)
     upper = tf.cast(upper, x.dtype)
-    if gs is None:
-        gs = tf.random.get_global_generator()
 
     if training is None:
         training = tf.keras.backend.learning_phase()
         training = bool(tf.keras.backend.get_value(training))
 
     if training:
-        if seed is not None:
-            gs.reset_from_seed(seed)
-        alpha = gs.uniform(tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype)
+        if gs is None:
+            alpha = tf.random.uniform(
+                tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype, seed=seed
+            )
+        else:
+            if seed is not None:
+                gs.reset_from_seed(seed)
+            alpha = gs.uniform(tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype)
     else:
         alpha = (lower + upper) / 2
 
