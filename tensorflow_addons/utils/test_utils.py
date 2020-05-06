@@ -12,159 +12,58 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Utilities for tf.test.TestCase."""
+"""Utilities for testing Addons."""
 
-import contextlib
-import inspect
-import unittest
+import os
+import random
 
 import numpy as np
 import pytest
 import tensorflow as tf
 
-# TODO: find public API alternative to these
-from tensorflow.python.framework.test_util import (  # noqa: F401
-    run_all_in_graph_and_eager_modes,
-)
-from tensorflow.python.framework.test_util import run_deprecated_v1  # noqa: F401
-from tensorflow.python.framework.test_util import (  # noqa: F401
-    run_in_graph_and_eager_modes,
-)
+from tensorflow_addons.utils import resource_loader
+
+# TODO: copy the layer_test implementation in Addons.
 from tensorflow.python.keras.testing_utils import layer_test  # noqa: F401
 
 
-@contextlib.contextmanager
-def device(use_gpu):
-    """Uses gpu when requested and available."""
-    if use_gpu and tf.test.is_gpu_available():
-        dev = "/device:GPU:0"
-    else:
-        dev = "/device:CPU:0"
-    with tf.device(dev):
-        yield
+NUMBER_OF_WORKERS = int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", "1"))
+WORKER_ID = int(os.environ.get("PYTEST_XDIST_WORKER", "gw0")[2])
+NUMBER_OF_GPUS = len(tf.config.list_physical_devices("GPU"))
 
+# Some configuration before starting the tests.
 
-@contextlib.contextmanager
-def use_gpu():
-    """Uses gpu when requested and available."""
-    with device(use_gpu=True):
-        yield
+# we only need one core per worker.
+# This avoids context switching for speed, but it also prevents TensorFlow to go
+# crazy on systems with many cores (kokoro has 30+ cores).
+tf.config.threading.set_intra_op_parallelism_threads(1)
+tf.config.threading.set_inter_op_parallelism_threads(1)
 
+if NUMBER_OF_GPUS != 0:
+    # We use only the first gpu at the moment. That's enough for most use cases.
+    # split the first gpu into chunks of 100MB per pytest worker.
+    # It's the user's job to limit the amount of pytest workers depending
+    # on the available memory.
+    # In practice, each process takes a bit more memory.
+    # There must be some kind of overhead but it's not very big (~200MB more)
+    first_gpu = tf.config.list_physical_devices("GPU")[0]
 
-def create_virtual_devices(
-    num_devices, force_device=None, memory_limit_per_device=1024
-):
-    """Virtualize a the physical device into logical devices.
-
-    Args:
-        num_devices: The number of virtual devices needed.
-        force_device: 'CPU'/'GPU'. Defaults to None, where the
-            devices is selected based on the system.
-        memory_limit_per_device: Specify memory for each
-            virtual GPU. Only for GPUs.
-
-    Returns:
-        virtual_devices: A list of virtual devices which can be passed to
-            tf.distribute.MirroredStrategy()
-    """
-    if force_device is None:
-        device_type = (
-            "GPU" if len(tf.config.list_physical_devices("GPU")) > 0 else "CPU"
-        )
-    else:
-        assert force_device in ["CPU", "GPU"]
-        device_type = force_device
-
-    physical_devices = tf.config.list_physical_devices(device_type)
-
-    if device_type == "CPU":
-        memory_limit_per_device = None
-
-    tf.config.experimental.set_virtual_device_configuration(
-        physical_devices[0],
-        [
-            tf.config.experimental.VirtualDeviceConfiguration(
-                memory_limit=memory_limit_per_device
-            )
-            for _ in range(num_devices)
-        ],
+    tf.config.set_logical_device_configuration(
+        first_gpu, [tf.config.LogicalDeviceConfiguration(memory_limit=100)],
     )
-
-    return tf.config.experimental.list_logical_devices(device_type)
-
-
-def run_all_distributed(num_devices):
-    base_decorator = run_distributed(num_devices)
-
-    def decorator(cls):
-        for name, method in cls.__dict__.copy().items():
-            if (
-                callable(method)
-                and name.startswith(unittest.TestLoader.testMethodPrefix)
-                and name != "test_session"
-            ):
-                setattr(cls, name, base_decorator(method))
-        return cls
-
-    return decorator
-
-
-# TODO: Add support for other distribution strategies
-def run_distributed(num_devices):
-    def decorator(f):
-        if inspect.isclass(f):
-            raise TypeError(
-                "`run_distributed` only supports test methods. "
-                "Did you mean to use `run_all_distributed`?"
-            )
-
-        def decorated(self, *args, **kwargs):
-            logical_devices = create_virtual_devices(num_devices)
-            strategy = tf.distribute.MirroredStrategy(logical_devices)
-            with strategy.scope():
-                f(self, *args, **kwargs)
-
-        return decorated
-
-    return decorator
-
-
-def run_all_with_types(dtypes):
-    """Execute all test methods in the given class with and without eager."""
-    base_decorator = run_with_types(dtypes)
-
-    def decorator(cls):
-        for name, method in cls.__dict__.copy().items():
-            if (
-                callable(method)
-                and name.startswith(unittest.TestLoader.testMethodPrefix)
-                and name != "test_session"
-            ):
-                setattr(cls, name, base_decorator(method))
-        return cls
-
-    return decorator
-
-
-def run_with_types(dtypes):
-    def decorator(f):
-        if inspect.isclass(f):
-            raise TypeError(
-                "`run_with_types` only supports test methods. "
-                "Did you mean to use `run_all_with_types`?"
-            )
-
-        def decorated(self, *args, **kwargs):
-            for t in dtypes:
-                f(self, *args, dtype=t, **kwargs)
-
-        return decorated
-
-    return decorator
 
 
 def finalizer():
     tf.config.experimental_run_functions_eagerly(False)
+
+
+def pytest_make_parametrize_id(config, val, argname):
+    if isinstance(val, tf.DType):
+        return val.name
+    if val is False:
+        return "no_" + argname
+    if val is True:
+        return argname
 
 
 @pytest.fixture(scope="function", params=["eager_mode", "tf_function"])
@@ -177,21 +76,77 @@ def maybe_run_functions_eagerly(request):
     request.addfinalizer(finalizer)
 
 
-@pytest.fixture(scope="function", params=["CPU", "GPU"])
-def cpu_and_gpu(request):
-    if request.param == "CPU":
-        with tf.device("/device:CPU:0"):
-            yield
-    else:
-        if not tf.test.is_gpu_available():
-            pytest.skip("GPU is not available.")
-        with tf.device("/device:GPU:0"):
-            yield
-
-
 @pytest.fixture(scope="function", params=["channels_first", "channels_last"])
 def data_format(request):
     return request.param
+
+
+@pytest.fixture(scope="function", autouse=True)
+def set_seeds():
+    random.seed(0)
+    np.random.seed(0)
+    tf.random.set_seed(0)
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--skip-custom-ops",
+        action="store_true",
+        help="When a custom op is being loaded in a test, skip this test.",
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def set_global_variables(request):
+    if request.config.getoption("--skip-custom-ops"):
+        resource_loader.SKIP_CUSTOM_OPS = True
+
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "with_device(devices): mark test to run on specific devices."
+    )
+    config.addinivalue_line("markers", "needs_gpu: mark test that needs a gpu.")
+
+
+@pytest.fixture(autouse=True, scope="function")
+def _device_placement(request):
+    device = request.param
+    if device == "no_device":
+        yield
+    else:
+        if device in ["cpu", "gpu"]:
+            # we use GPU:0 because the virtual device we created is the
+            # only one in the first GPU (so first in the list of virtual devices).
+            device += ":0"
+        else:
+            raise KeyError("Invalid device: " + device)
+        with tf.device(device):
+            yield
+
+
+def get_marks(device_name):
+    marks = []
+    if device_name == "gpu":
+        marks.append(pytest.mark.needs_gpu)
+        if NUMBER_OF_GPUS == 0:
+            skip_message = "The gpu is not available."
+            marks.append(pytest.mark.skip(reason=skip_message))
+    return marks
+
+
+def pytest_generate_tests(metafunc):
+    marker = metafunc.definition.get_closest_marker("with_device")
+    if marker is None:
+        # tests which don't have the "with_device" mark are executed on CPU
+        # to ensure reproducibility. We can't let TensorFlow decide
+        # where to place the ops.
+        devices = ["cpu"]
+    else:
+        devices = marker.args[0]
+
+    parameters = [pytest.param(x, marks=get_marks(x)) for x in devices]
+    metafunc.parametrize("_device_placement", parameters, indirect=True)
 
 
 def assert_allclose_according_to_type(
@@ -203,6 +158,8 @@ def assert_allclose_according_to_type(
     float_atol=1e-6,
     half_rtol=1e-3,
     half_atol=1e-3,
+    bfloat16_rtol=1e-2,
+    bfloat16_atol=1e-2,
 ):
     """
     Similar to tf.test.TestCase.assertAllCloseAccordingToType()
@@ -222,5 +179,8 @@ def assert_allclose_according_to_type(
     if a.dtype == np.float16 or b.dtype == np.float16:
         rtol = max(rtol, half_rtol)
         atol = max(atol, half_atol)
+    if a.dtype == tf.bfloat16.as_numpy_dtype or b.dtype == tf.bfloat16.as_numpy_dtype:
+        rtol = max(rtol, bfloat16_rtol)
+        atol = max(atol, bfloat16_atol)
 
     np.testing.assert_allclose(a, b, rtol=rtol, atol=atol)
