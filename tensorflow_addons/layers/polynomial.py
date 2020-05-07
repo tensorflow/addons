@@ -85,7 +85,7 @@ class PolynomialCrossing(tf.keras.layers.Layer):
         bias_initializer: types.Initializer = "zeros",
         kernel_regularizer: types.Regularizer = None,
         bias_regularizer: types.Regularizer = None,
-        **kwargs
+        **kwargs,
     ):
         super(PolynomialCrossing, self).__init__(**kwargs)
 
@@ -187,4 +187,5 @@ class PolynomialCrossing(tf.keras.layers.Layer):
                 "A `PolynomialCrossing` layer should be called " "on a list of inputs."
             )
         return input_shape[0]
+
 
