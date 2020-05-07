@@ -24,10 +24,9 @@ SEED = 111111
 
 
 def rrelu_wrapper(lower, upper, training):
-    gs = tf.random.Generator.from_seed(SEED)
-
     def inner(x):
-        return rrelu(x, lower, upper, training=training, seed=SEED, gs=gs)
+        gs = tf.random.Generator.from_seed(SEED)
+        return rrelu(x, lower, upper, training=training, seed=None, gs=gs)
 
     return inner
 
@@ -44,7 +43,7 @@ def test_rrelu(dtype, training):
         np.float64: [-0.25720977, -0.1221586, 0, 1, 2],
     }
     gs = tf.random.Generator.from_seed(SEED)
-    result = rrelu(x, lower, upper, training=training, seed=SEED, gs=gs)
+    result = rrelu(x, lower, upper, training=training, seed=None, gs=gs)
     if training:
         expect_result = training_results.get(dtype)
     else:

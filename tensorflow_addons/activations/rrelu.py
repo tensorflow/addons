@@ -63,7 +63,7 @@ def rrelu(
             )
         else:
             if seed is not None:
-                gs.reset_from_seed(seed)
+                raise ValueError("Either seed or gs should be specific")
             alpha = gs.uniform(tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype)
     else:
         alpha = (lower + upper) / 2
