@@ -30,6 +30,13 @@ def test_full_matrix():
     output = layer([x0, x])
     np.testing.assert_allclose([[0.55, 0.8, 1.05]], output)
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_low_rank_matrix():
+    x0 = np.asarray([[0.1, 0.2, 0.3]]).astype(np.float32)
+    x = np.asarray([[0.4, 0.5, 0.6]]).astype(np.float32)
+    layer = PolynomialCrossing(projection_dim=1, kernel_initializer="ones")
+    output = layer([x0, x])
+    np.testing.assert_allclose([[0.55, 0.8, 1.05]], output)
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_invalid_proj_dim():
@@ -38,7 +45,7 @@ def test_invalid_proj_dim():
         x = np.random.random((12, 5))
         layer = PolynomialCrossing(projection_dim=6)
         layer([x0, x])
-    assert "is not supported yet" in str(exception_info.value)
+    assert "should be smaller than last_dim / 2" in str(exception_info.value)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -57,3 +64,13 @@ def test_serialization():
     serialized_layer = tf.keras.layers.serialize(layer)
     new_layer = tf.keras.layers.deserialize(serialized_layer)
     assert layer.get_config() == new_layer.get_config()
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_diag_scale():
+    x0 = np.asarray([[0.1, 0.2, 0.3]]).astype(np.float32)
+    x = np.asarray([[0.4, 0.5, 0.6]]).astype(np.float32)
+    layer = PolynomialCrossing(
+        projection_dim=None, diag_scale=1., kernel_initializer="ones")
+    output = layer([x0, x])
+    np.testing.assert_allclose([[0.59, 0.9, 1.23]], output)
+
