@@ -157,6 +157,30 @@ def test_save_file_h5(base_layer, input_shape):
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize(
+    "input_layer, base_layer",
+    [
+        (lambda: tf.keras.layers.Input((1,)), lambda: tf.keras.layers.Dense(1)),
+        (lambda: tf.keras.layers.Input((10, 10)), lambda: tf.keras.layers.SimpleRNN(1)),
+        (
+            lambda: tf.keras.layers.Input((3, 3, 1)),
+            lambda: tf.keras.layers.Conv2D(3, 1),
+        ),
+        (lambda: tf.keras.layers.Input((10, 10)), lambda: tf.keras.layers.LSTM(1)),
+    ],
+)
+def test_savedmodel_format(input_layer, base_layer):
+    input_layer = input_layer()
+    base_layer = base_layer()
+    wn_layer = wrappers.WeightNormalization(base_layer)
+    model = tf.keras.models.Model(inputs=[input_layer], outputs=[wn_layer(input_layer)])
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        save_path = os.path.join(tmp_dir, "wrapper_test_model")
+        model.save(save_path, save_format="tf")
+        tf.keras.models.load_model(save_path)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize(
     "base_layer, input_shape",
     [
         (lambda: tf.keras.layers.Dense(1), [1]),
