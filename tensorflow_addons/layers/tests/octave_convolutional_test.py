@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from tensorflow.python import keras
+from tensorflow import keras
 from tensorflow_addons.layers.octave_convolutional import OctaveConv1D
 
 

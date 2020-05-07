@@ -92,6 +92,19 @@ def normalize_tuple(value, n, name):
         return value_tuple
 
 
+def normalize_padding(value):
+    if isinstance(value, (list, tuple)):
+        return value
+    padding = value.lower()
+    if padding not in {"valid", "same", "causal"}:
+        raise ValueError(
+            "The `padding` argument must be a list/tuple or one of "
+            '"valid", "same" (or "causal", only for `Conv1D). '
+            "Received: " + str(padding)
+        )
+    return padding
+
+
 def _hasattr(obj, attr_name):
     # If possible, avoid retrieving the attribute as the object might run some
     # lazy computation in it.

@@ -23,20 +23,20 @@ import warnings
 
 import tensorflow as tf
 
-from tensorflow.python.keras import activations
-from tensorflow.python.keras import backend
-from tensorflow.python.keras import constraints
-from tensorflow.python.keras import initializers
-from tensorflow.python.keras import regularizers
-from tensorflow.python.keras.engine.base_layer import Layer
-from tensorflow.python.keras.engine.input_spec import InputSpec
+from tensorflow.keras import activations
+from tensorflow.keras import backend
+from tensorflow.keras import constraints
+from tensorflow.keras import initializers
+from tensorflow.keras import regularizers
+from tensorflow.keras.layers import Layer
+from tensorflow.keras.layers import InputSpec
 
-from tensorflow.python.keras.layers.pooling import AveragePooling1D
-from tensorflow.python.keras.layers import UpSampling1D
+from tensorflow.keras.layers import AveragePooling1D
+from tensorflow.keras.layers import UpSampling1D
 
-from tensorflow.python.keras.layers.convolutional import Conv1D
+from tensorflow.keras.layers import Conv1D
 
-from tensorflow.python.keras.utils import conv_utils
+import tensorflow_addons.utils.keras_utils as conv_utils
 
 
 class OctaveConv(Layer):
