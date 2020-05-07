@@ -90,6 +90,7 @@ class PolynomialCrossing(tf.keras.layers.Layer):
         super(PolynomialCrossing, self).__init__(**kwargs)
 
         self.projection_dim = projection_dim
+        self.diag_scale = diag_scale
         self.use_bias = use_bias
         self.kernel_initializer = tf.keras.initializers.get(kernel_initializer)
         self.bias_initializer = tf.keras.initializers.get(bias_initializer)
