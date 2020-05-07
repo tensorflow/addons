@@ -25,7 +25,7 @@ def rrelu(
     upper: Number = 0.3333333333333333,
     training: Optional[bool] = None,
     seed: Optional[int] = None,
-    gs: tf.random.Generator = None,
+    gs: Optional[tf.random.Generator] = None,
 ) -> tf.Tensor:
     """rrelu function.
 
