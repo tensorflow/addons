@@ -115,44 +115,42 @@ class OctaveConv(Layer):
         (https://arxiv.org/pdf/1904.05049.pdf)
     """
 
-    def __init__(self,
-                 rank,
-                 filters,
-                 kernel_size,
-                 octave=2,
-                 low_freq_ratio=0.25,
-                 strides=1,
-                 padding='same',
-                 data_format=None,
-                 dilation_rate=1,
-                 activation=None,
-                 use_bias=True,
-                 kernel_initializer='glorot_uniform',
-                 bias_initializer='zeros',
-                 kernel_regularizer=None,
-                 bias_regularizer=None,
-                 activity_regularizer=None,
-                 kernel_constraint=None,
-                 bias_constraint=None,
-                 trainable=True,
-                 name=None,
-                 **kwargs):
-        super(OctaveConv, self).__init__(
-            trainable=trainable,
-            name=name,
-            **kwargs
-        )
+    def __init__(
+        self,
+        rank,
+        filters,
+        kernel_size,
+        octave=2,
+        low_freq_ratio=0.25,
+        strides=1,
+        padding="same",
+        data_format=None,
+        dilation_rate=1,
+        activation=None,
+        use_bias=True,
+        kernel_initializer="glorot_uniform",
+        bias_initializer="zeros",
+        kernel_regularizer=None,
+        bias_regularizer=None,
+        activity_regularizer=None,
+        kernel_constraint=None,
+        bias_constraint=None,
+        trainable=True,
+        name=None,
+        **kwargs
+    ):
+        super(OctaveConv, self).__init__(trainable=trainable, name=name, **kwargs)
         self.rank = rank
         self.filters = filters
-        self.kernel_size = conv_utils.normalize_tuple(
-            kernel_size, rank, 'kernel_size')
+        self.kernel_size = conv_utils.normalize_tuple(kernel_size, rank, "kernel_size")
         self.octave = octave
         self.low_freq_ratio = low_freq_ratio
-        self.strides = conv_utils.normalize_tuple(strides, rank, 'strides')
+        self.strides = conv_utils.normalize_tuple(strides, rank, "strides")
         self.padding = conv_utils.normalize_padding(padding)
         self.data_format = conv_utils.normalize_data_format(data_format)
         self.dilation_rate = conv_utils.normalize_tuple(
-            dilation_rate, rank, 'dilation_rate')
+            dilation_rate, rank, "dilation_rate"
+        )
         self.activation = activations.get(activation)
         self.use_bias = use_bias
         self.kernel_initializer = initializers.get(kernel_initializer)
@@ -171,11 +169,13 @@ class OctaveConv(Layer):
 
         self._trainable = trainable
 
-        if self.padding != 'same':
-            warnings.warn('Padding set to {} for the octave convolution layer '
-                          'with name {}. '
-                          'For an optimal use of octave convolutions, set '
-                          'padding to same.'.format(self.padding, self.name))
+        if self.padding != "same":
+            warnings.warn(
+                "Padding set to {} for the octave convolution layer "
+                "with name {}. "
+                "For an optimal use of octave convolutions, set "
+                "padding to same.".format(self.padding, self.name)
+            )
 
         self.kernel, self.bias = [], []
         self.conv_high_to_high, self.conv_low_to_high = None, None
@@ -229,23 +229,19 @@ class OctaveConv(Layer):
 
     def generate_convolutions(self):
         if self.filters_high > 0:
-            self.conv_high_to_high = self._init_conv(self.filters_high,
-                                                     name='{}-Conv{}D-HH'.format(
-                                                         self.name,
-                                                         self.rank))
-            self.conv_low_to_high = self._init_conv(self.filters_high,
-                                                    name='{}-Conv{}D-LH'.format(
-                                                        self.name,
-                                                        self.rank))
+            self.conv_high_to_high = self._init_conv(
+                self.filters_high, name="{}-Conv{}D-HH".format(self.name, self.rank)
+            )
+            self.conv_low_to_high = self._init_conv(
+                self.filters_high, name="{}-Conv{}D-LH".format(self.name, self.rank)
+            )
         if self.filters_low > 0:
-            self.conv_low_to_low = self._init_conv(self.filters_low,
-                                                   name='{}-Conv{}D-LL'.format(
-                                                       self.name,
-                                                       self.rank))
-            self.conv_high_to_low = self._init_conv(self.filters_low,
-                                                    name='{}-Conv{}D-HL'.format(
-                                                        self.name,
-                                                        self.rank))
+            self.conv_low_to_low = self._init_conv(
+                self.filters_low, name="{}-Conv{}D-LL".format(self.name, self.rank)
+            )
+            self.conv_high_to_low = self._init_conv(
+                self.filters_low, name="{}-Conv{}D-HL".format(self.name, self.rank)
+            )
 
     def build(self, input_shape):
         if isinstance(input_shape, list):
@@ -289,16 +285,14 @@ class OctaveConv(Layer):
         if self.conv_high_to_high is not None:
             outputs_high_to_high = self.conv_high_to_high(inputs_high)
         if self.conv_low_to_high is not None:
-            outputs_low_to_high = self.up_sampling(
-                self.conv_low_to_high(inputs_low))
+            outputs_low_to_high = self.up_sampling(self.conv_low_to_high(inputs_low))
         outputs_high = outputs_high_to_high + outputs_low_to_high
 
         outputs_low_to_low, outputs_high_to_low = 0.0, 0.0
         if self.conv_low_to_low is not None:
             outputs_low_to_low = self.conv_low_to_low(inputs_low)
         if self.conv_high_to_low is not None:
-            outputs_high_to_low = self.conv_high_to_low(
-                self.pooling(inputs_high))
+            outputs_high_to_low = self.conv_high_to_low(self.pooling(inputs_high))
         outputs_low = outputs_low_to_low + outputs_high_to_low
 
         if self.filters_low == 0:
@@ -311,7 +305,7 @@ class OctaveConv(Layer):
         if isinstance(input_shape, list):
             input_shape_high, input_shape_low = input_shape
         else:
-            input_shape_high, input_shape_low = input_shape, None
+            input_shape_high = input_shape
 
         output_shape_high = None
         if self.filters_high > 0:
@@ -319,7 +313,8 @@ class OctaveConv(Layer):
             # outputs_low_to_high so we only need to compute the output shape
             # of either one of them (output_high_to_high in this case)
             output_shape_high = self.conv_high_to_high.compute_output_shape(
-                input_shape_high)
+                input_shape_high
+            )
         output_shape_low = None
         if self.filters_low > 0:
             # outputs_low is the sum of outputs_high_to_low with
@@ -337,31 +332,24 @@ class OctaveConv(Layer):
 
     def get_config(self):
         config = {
-            'rank': self.rank,
-            'filters': self.filters,
-            'kernel_size': self.kernel_size,
-            'octave': self.octave,
-            'low_freq_ratio': self.low_freq_ratio,
-            'strides': self.strides,
-            'padding': self.padding,
-            'data_format': self.data_format,
-            'dilation_rate': self.dilation_rate,
-            'activation': activations.serialize(self.activation),
-            'use_bias': self.use_bias,
-            'kernel_initializer':
-                initializers.serialize(self.kernel_initializer),
-            'bias_initializer':
-                initializers.serialize(self.bias_initializer),
-            'kernel_regularizer':
-                regularizers.serialize(self.kernel_regularizer),
-            'bias_regularizer':
-                regularizers.serialize(self.bias_regularizer),
-            'activity_regularizer':
-                regularizers.serialize(self.activity_regularizer),
-            'kernel_constraint':
-                constraints.serialize(self.kernel_constraint),
-            'bias_constraint':
-                constraints.serialize(self.bias_constraint)
+            "rank": self.rank,
+            "filters": self.filters,
+            "kernel_size": self.kernel_size,
+            "octave": self.octave,
+            "low_freq_ratio": self.low_freq_ratio,
+            "strides": self.strides,
+            "padding": self.padding,
+            "data_format": self.data_format,
+            "dilation_rate": self.dilation_rate,
+            "activation": activations.serialize(self.activation),
+            "use_bias": self.use_bias,
+            "kernel_initializer": initializers.serialize(self.kernel_initializer),
+            "bias_initializer": initializers.serialize(self.bias_initializer),
+            "kernel_regularizer": regularizers.serialize(self.kernel_regularizer),
+            "bias_regularizer": regularizers.serialize(self.bias_regularizer),
+            "activity_regularizer": regularizers.serialize(self.activity_regularizer),
+            "kernel_constraint": constraints.serialize(self.kernel_constraint),
+            "bias_constraint": constraints.serialize(self.bias_constraint),
         }
         base_config = super(OctaveConv, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
@@ -509,25 +497,27 @@ class OctaveConv1D(OctaveConv):
           (https://arxiv.org/pdf/1904.05049.pdf)
     """
 
-    def __init__(self,
-                 filters,
-                 kernel_size,
-                 octave=2,
-                 low_freq_ratio=0.25,
-                 strides=1,
-                 padding='same',
-                 data_format=None,
-                 dilation_rate=1,
-                 activation=None,
-                 use_bias=True,
-                 kernel_initializer='glorot_uniform',
-                 bias_initializer='zeros',
-                 kernel_regularizer=None,
-                 bias_regularizer=None,
-                 activity_regularizer=None,
-                 kernel_constraint=None,
-                 bias_constraint=None,
-                 **kwargs):
+    def __init__(
+        self,
+        filters,
+        kernel_size,
+        octave=2,
+        low_freq_ratio=0.25,
+        strides=1,
+        padding="same",
+        data_format=None,
+        dilation_rate=1,
+        activation=None,
+        use_bias=True,
+        kernel_initializer="glorot_uniform",
+        bias_initializer="zeros",
+        kernel_regularizer=None,
+        bias_regularizer=None,
+        activity_regularizer=None,
+        kernel_constraint=None,
+        bias_constraint=None,
+        **kwargs
+    ):
         super(OctaveConv1D, self).__init__(
             rank=1,
             filters=filters,
@@ -547,17 +537,17 @@ class OctaveConv1D(OctaveConv):
             activity_regularizer=activity_regularizer,
             kernel_constraint=kernel_constraint,
             bias_constraint=bias_constraint,
-            **kwargs)
+            **kwargs,
+        )
 
         self.pooling = AveragePooling1D(
             pool_size=self.octave,
-            padding='valid',
+            padding="valid",
             data_format=data_format,
-            name='{}-AveragePooling1D'.format(self.name),
+            name="{}-AveragePooling1D".format(self.name),
         )
         self.up_sampling = UpSampling1D(
-            size=self.octave,
-            name='{}-UpSampling1D'.format(self.name),
+            size=self.octave, name="{}-UpSampling1D".format(self.name),
         )
 
     def _init_conv(self, filters, name):
@@ -578,7 +568,7 @@ class OctaveConv1D(OctaveConv):
             kernel_constraint=self.kernel_constraint,
             bias_constraint=self.bias_constraint,
             trainable=self.trainable,
-            name=name
+            name=name,
         )
 
     def build(self, input_shape):
@@ -588,27 +578,32 @@ class OctaveConv1D(OctaveConv):
             input_shape_high, input_shape_low = input_shape, None
         if len(input_shape_high) != 3:
             raise ValueError(
-                'High frequency input should have rank 3; Received '
-                'input shape {}'.format(str(input_shape_high)))
-        if self.data_format == 'channels_first':
+                "High frequency input should have rank 3; Received "
+                "input shape {}".format(str(input_shape_high))
+            )
+        if self.data_format == "channels_first":
             channel_axis, data_axis = 1, 2
         else:
             data_axis, channel_axis = 1, 2
         if input_shape_high[channel_axis] is None:
             raise ValueError(
-                'The channel dimension of the higher spatial inputs '
-                'should be defined. Found `None`.')
-        if input_shape_low is not None and input_shape_low[
-            channel_axis] is None:
+                "The channel dimension of the higher spatial inputs "
+                "should be defined. Found `None`."
+            )
+        if input_shape_low is not None and input_shape_low[channel_axis] is None:
             raise ValueError(
-                'The channel dimension of the lower spatial inputs '
-                'should be defined. Found `None`.')
-        if input_shape_high[data_axis] is not None and \
-                input_shape_high[data_axis] % self.octave != 0:
+                "The channel dimension of the lower spatial inputs "
+                "should be defined. Found `None`."
+            )
+        if (
+            input_shape_high[data_axis] is not None
+            and input_shape_high[data_axis] % self.octave != 0
+        ):
             raise ValueError(
-                'The dimension with the data of the higher spatial inputs '
-                'should be divisible by the octave. '
-                'Found {} and {}.'.format(input_shape_high, self.octave))
+                "The dimension with the data of the higher spatial inputs "
+                "should be divisible by the octave. "
+                "Found {} and {}.".format(input_shape_high, self.octave)
+            )
 
         super(OctaveConv1D, self).build(input_shape)
 
@@ -732,25 +727,27 @@ class OctaveConv2D(OctaveConv):
         (https://arxiv.org/pdf/1904.05049.pdf)
     """
 
-    def __init__(self,
-                 filters,
-                 kernel_size,
-                 octave=2,
-                 low_freq_ratio=0.5,
-                 strides=(1, 1),
-                 padding='same',
-                 data_format=None,
-                 dilation_rate=(1, 1),
-                 activation=None,
-                 use_bias=True,
-                 kernel_initializer='glorot_uniform',
-                 bias_initializer='zeros',
-                 kernel_regularizer=None,
-                 bias_regularizer=None,
-                 activity_regularizer=None,
-                 kernel_constraint=None,
-                 bias_constraint=None,
-                 **kwargs):
+    def __init__(
+        self,
+        filters,
+        kernel_size,
+        octave=2,
+        low_freq_ratio=0.5,
+        strides=(1, 1),
+        padding="same",
+        data_format=None,
+        dilation_rate=(1, 1),
+        activation=None,
+        use_bias=True,
+        kernel_initializer="glorot_uniform",
+        bias_initializer="zeros",
+        kernel_regularizer=None,
+        bias_regularizer=None,
+        activity_regularizer=None,
+        kernel_constraint=None,
+        bias_constraint=None,
+        **kwargs
+    ):
         super(OctaveConv2D, self).__init__(
             rank=2,
             filters=filters,
@@ -770,19 +767,20 @@ class OctaveConv2D(OctaveConv):
             activity_regularizer=activity_regularizer,
             kernel_constraint=kernel_constraint,
             bias_constraint=bias_constraint,
-            **kwargs)
+            **kwargs,
+        )
 
         self.pooling = AveragePooling2D(
             pool_size=self.octave,
-            padding='valid',
+            padding="valid",
             data_format=data_format,
-            name='{}-AveragePooling2D'.format(self.name),
+            name="{}-AveragePooling2D".format(self.name),
         )
         self.up_sampling = UpSampling2D(
             size=self.octave,
             data_format=data_format,
-            interpolation='nearest',
-            name='{}-UpSampling2D'.format(self.name),
+            interpolation="nearest",
+            name="{}-UpSampling2D".format(self.name),
         )
 
     def _init_conv(self, filters, name):
@@ -803,7 +801,7 @@ class OctaveConv2D(OctaveConv):
             kernel_constraint=self.kernel_constraint,
             bias_constraint=self.bias_constraint,
             trainable=self.trainable,
-            name=name
+            name=name,
         )
 
     def build(self, input_shape):
@@ -813,33 +811,39 @@ class OctaveConv2D(OctaveConv):
             input_shape_high, input_shape_low = input_shape, None
         if len(input_shape_high) != 4:
             raise ValueError(
-                'High frequency input should have rank 4; Received '
-                'input shape {}'.format(str(input_shape_high)))
+                "High frequency input should have rank 4; Received "
+                "input shape {}".format(str(input_shape_high))
+            )
         if input_shape_low is not None and len(input_shape_low) != 4:
             raise ValueError(
-                'Low frequency input should have rank 4; Received '
-                'input shape {}'.format(str(input_shape_low)))
-        if self.data_format == 'channels_first':
+                "Low frequency input should have rank 4; Received "
+                "input shape {}".format(str(input_shape_low))
+            )
+        if self.data_format == "channels_first":
             channel_axis, rows_axis, cols_axis = 1, 2, 3
         else:
             rows_axis, cols_axis, channel_axis = 1, 2, 3
         if input_shape_high[channel_axis] is None:
             raise ValueError(
-                'The channel dimension of the higher spatial inputs '
-                'should be defined. Found `None`.')
-        if input_shape_low is not None and input_shape_low[
-            channel_axis] is None:
+                "The channel dimension of the higher spatial inputs "
+                "should be defined. Found `None`."
+            )
+        if input_shape_low is not None and input_shape_low[channel_axis] is None:
             raise ValueError(
-                'The channel dimension of the lower spatial inputs '
-                'should be defined. Found `None`.')
-        if input_shape_high[rows_axis] is not None and input_shape_high[
-            rows_axis] % self.octave != 0 or \
-                input_shape_high[cols_axis] is not None and input_shape_high[
-            cols_axis] % self.octave != 0:
+                "The channel dimension of the lower spatial inputs "
+                "should be defined. Found `None`."
+            )
+        if (
+            input_shape_high[rows_axis] is not None
+            and input_shape_high[rows_axis] % self.octave != 0
+            or input_shape_high[cols_axis] is not None
+            and input_shape_high[cols_axis] % self.octave != 0
+        ):
             raise ValueError(
-                'The rows and columns of the higher spatial inputs should be '
-                'divisible by the octave. '
-                'Found {} and {}.'.format(input_shape_high, self.octave))
+                "The rows and columns of the higher spatial inputs should be "
+                "divisible by the octave. "
+                "Found {} and {}.".format(input_shape_high, self.octave)
+            )
 
         super(OctaveConv2D, self).build(input_shape)
 
@@ -969,25 +973,27 @@ class OctaveConv3D(OctaveConv):
         (https://arxiv.org/pdf/1904.05049.pdf)
     """
 
-    def __init__(self,
-                 filters,
-                 kernel_size,
-                 octave=2,
-                 low_freq_ratio=0.25,
-                 strides=(1, 1, 1),
-                 padding='same',
-                 data_format=None,
-                 dilation_rate=(1, 1, 1),
-                 activation=None,
-                 use_bias=True,
-                 kernel_initializer='glorot_uniform',
-                 bias_initializer='zeros',
-                 kernel_regularizer=None,
-                 bias_regularizer=None,
-                 activity_regularizer=None,
-                 kernel_constraint=None,
-                 bias_constraint=None,
-                 **kwargs):
+    def __init__(
+        self,
+        filters,
+        kernel_size,
+        octave=2,
+        low_freq_ratio=0.25,
+        strides=(1, 1, 1),
+        padding="same",
+        data_format=None,
+        dilation_rate=(1, 1, 1),
+        activation=None,
+        use_bias=True,
+        kernel_initializer="glorot_uniform",
+        bias_initializer="zeros",
+        kernel_regularizer=None,
+        bias_regularizer=None,
+        activity_regularizer=None,
+        kernel_constraint=None,
+        bias_constraint=None,
+        **kwargs
+    ):
         super(OctaveConv3D, self).__init__(
             rank=3,
             filters=filters,
@@ -1007,18 +1013,19 @@ class OctaveConv3D(OctaveConv):
             activity_regularizer=activity_regularizer,
             kernel_constraint=kernel_constraint,
             bias_constraint=bias_constraint,
-            **kwargs)
+            **kwargs,
+        )
 
         self.pooling = AveragePooling3D(
             pool_size=self.octave,
-            padding='valid',
+            padding="valid",
             data_format=data_format,
-            name='{}-AveragePooling3D'.format(self.name),
+            name="{}-AveragePooling3D".format(self.name),
         )
         self.up_sampling = UpSampling3D(
             size=self.octave,
             data_format=data_format,
-            name='{}-UpSampling3D'.format(self.name),
+            name="{}-UpSampling3D".format(self.name),
         )
 
     def _init_conv(self, filters, name):
@@ -1039,7 +1046,7 @@ class OctaveConv3D(OctaveConv):
             kernel_constraint=self.kernel_constraint,
             bias_constraint=self.bias_constraint,
             trainable=self.trainable,
-            name=name
+            name=name,
         )
 
     def build(self, input_shape):
@@ -1049,35 +1056,41 @@ class OctaveConv3D(OctaveConv):
             input_shape_high, input_shape_low = input_shape, None
         if len(input_shape_high) != 5:
             raise ValueError(
-                'High frequency input should have rank 5; Received '
-                'input shape {}'.format(str(input_shape_high)))
+                "High frequency input should have rank 5; Received "
+                "input shape {}".format(str(input_shape_high))
+            )
         if input_shape_low is not None and len(input_shape_low) != 5:
             raise ValueError(
-                'Low frequency input should have rank 5; Received '
-                'input shape {}'.format(str(input_shape_low)))
-        if self.data_format == 'channels_first':
+                "Low frequency input should have rank 5; Received "
+                "input shape {}".format(str(input_shape_low))
+            )
+        if self.data_format == "channels_first":
             channel_axis, depth_axis, height_axis, width_axis = 1, 2, 3, 4
         else:
             depth_axis, height_axis, width_axis, channel_axis = 1, 2, 3, 4
         if input_shape_high[channel_axis] is None:
             raise ValueError(
-                'The channel dimension of the higher spatial inputs '
-                'should be defined. Found `None`.')
-        if input_shape_low is not None and \
-                input_shape_low[channel_axis] is None:
+                "The channel dimension of the higher spatial inputs "
+                "should be defined. Found `None`."
+            )
+        if input_shape_low is not None and input_shape_low[channel_axis] is None:
             raise ValueError(
-                'The channel dimension of the lower spatial inputs '
-                'should be defined. Found `None`.')
-        if input_shape_high[depth_axis] is not None and \
-                input_shape_high[depth_axis] % self.octave != 0 or \
-                input_shape_high[height_axis] is not None and \
-                input_shape_high[height_axis] % self.octave != 0 or \
-                input_shape_high[width_axis] is not None and \
-                input_shape_high[width_axis] % self.octave != 0:
+                "The channel dimension of the lower spatial inputs "
+                "should be defined. Found `None`."
+            )
+        if (
+            input_shape_high[depth_axis] is not None
+            and input_shape_high[depth_axis] % self.octave != 0
+            or input_shape_high[height_axis] is not None
+            and input_shape_high[height_axis] % self.octave != 0
+            or input_shape_high[width_axis] is not None
+            and input_shape_high[width_axis] % self.octave != 0
+        ):
             raise ValueError(
-                'The depths, heights and widths of the higher spatial inputs '
-                'should be divisible by the octave. '
-                'Found {} and {}.'.format(input_shape_high, self.octave))
+                "The depths, heights and widths of the higher spatial inputs "
+                "should be divisible by the octave. "
+                "Found {} and {}.".format(input_shape_high, self.octave)
+            )
         super(OctaveConv3D, self).build(input_shape)
 
 
@@ -1199,36 +1212,42 @@ class OctaveConv2DTranspose(OctaveConv2D):
         (https://arxiv.org/pdf/1904.05049.pdf)
     """
 
-    def __init__(self,
-                 filters,
-                 kernel_size,
-                 octave=2,
-                 low_freq_ratio=0.25,
-                 strides=(1, 1),
-                 padding='same',
-                 output_padding=None,
-                 data_format=None,
-                 dilation_rate=(1, 1),
-                 activation=None,
-                 use_bias=True,
-                 kernel_initializer='glorot_uniform',
-                 bias_initializer='zeros',
-                 kernel_regularizer=None,
-                 bias_regularizer=None,
-                 activity_regularizer=None,
-                 kernel_constraint=None,
-                 bias_constraint=None,
-                 **kwargs):
+    def __init__(
+        self,
+        filters,
+        kernel_size,
+        octave=2,
+        low_freq_ratio=0.25,
+        strides=(1, 1),
+        padding="same",
+        output_padding=None,
+        data_format=None,
+        dilation_rate=(1, 1),
+        activation=None,
+        use_bias=True,
+        kernel_initializer="glorot_uniform",
+        bias_initializer="zeros",
+        kernel_regularizer=None,
+        bias_regularizer=None,
+        activity_regularizer=None,
+        kernel_constraint=None,
+        bias_constraint=None,
+        **kwargs
+    ):
 
         self.output_padding = output_padding
         if self.output_padding is not None:
             self.output_padding = conv_utils.normalize_tuple(
-                self.output_padding, 2, 'output_padding')
+                self.output_padding, 2, "output_padding"
+            )
             for stride, out_pad in zip(self.strides, self.output_padding):
                 if out_pad >= stride:
-                    raise ValueError('Stride ' + str(self.strides)
-                                     + ' must be greater than output padding ' +
-                                     str(self.output_padding))
+                    raise ValueError(
+                        "Stride "
+                        + str(self.strides)
+                        + " must be greater than output padding "
+                        + str(self.output_padding)
+                    )
 
         super(OctaveConv2DTranspose, self).__init__(
             filters=filters,
@@ -1248,14 +1267,15 @@ class OctaveConv2DTranspose(OctaveConv2D):
             activity_regularizer=activity_regularizer,
             kernel_constraint=kernel_constraint,
             bias_constraint=bias_constraint,
-            **kwargs)
+            **kwargs,
+        )
 
         if self.filters_high > 0:
-            self.conv_high_to_high._name = '{}-ConvTrans2D-HH'.format(self.name)
-            self.conv_low_to_high._name = '{}-ConvTrans2D-LH'.format(self.name)
+            self.conv_high_to_high._name = "{}-ConvTrans2D-HH".format(self.name)
+            self.conv_low_to_high._name = "{}-ConvTrans2D-LH".format(self.name)
         if self.filters_low > 0:
-            self.conv_low_to_low._name = '{}-ConvTrans2D-LL'.format(self.name)
-            self.conv_high_to_low._name = '{}-ConvTrans2D-HL'.format(self.name)
+            self.conv_low_to_low._name = "{}-ConvTrans2D-LL".format(self.name)
+            self.conv_high_to_low._name = "{}-ConvTrans2D-HL".format(self.name)
 
     def _init_conv(self, filters, name):
         return Conv2DTranspose(
@@ -1276,13 +1296,11 @@ class OctaveConv2DTranspose(OctaveConv2D):
             kernel_constraint=self.kernel_constraint,
             bias_constraint=self.bias_constraint,
             trainable=self.trainable,
-            name=name
+            name=name,
         )
 
     def get_config(self):
-        config = {
-            'output_padding': self.output_padding
-        }
+        config = {"output_padding": self.output_padding}
         base_config = super(OctaveConv, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
@@ -1407,35 +1425,41 @@ class OctaveConv3DTranspose(OctaveConv3D):
         (https://arxiv.org/pdf/1904.05049.pdf)
     """
 
-    def __init__(self,
-                 filters,
-                 kernel_size,
-                 octave=2,
-                 low_freq_ratio=0.25,
-                 strides=(1, 1, 1),
-                 padding='same',
-                 output_padding=None,
-                 data_format=None,
-                 dilation_rate=(1, 1, 1),
-                 activation=None,
-                 use_bias=True,
-                 kernel_initializer='glorot_uniform',
-                 bias_initializer='zeros',
-                 kernel_regularizer=None,
-                 bias_regularizer=None,
-                 activity_regularizer=None,
-                 kernel_constraint=None,
-                 bias_constraint=None,
-                 **kwargs):
+    def __init__(
+        self,
+        filters,
+        kernel_size,
+        octave=2,
+        low_freq_ratio=0.25,
+        strides=(1, 1, 1),
+        padding="same",
+        output_padding=None,
+        data_format=None,
+        dilation_rate=(1, 1, 1),
+        activation=None,
+        use_bias=True,
+        kernel_initializer="glorot_uniform",
+        bias_initializer="zeros",
+        kernel_regularizer=None,
+        bias_regularizer=None,
+        activity_regularizer=None,
+        kernel_constraint=None,
+        bias_constraint=None,
+        **kwargs
+    ):
         self.output_padding = output_padding
         if self.output_padding is not None:
             self.output_padding = conv_utils.normalize_tuple(
-                self.output_padding, 2, 'output_padding')
+                self.output_padding, 2, "output_padding"
+            )
             for stride, out_pad in zip(self.strides, self.output_padding):
                 if out_pad >= stride:
-                    raise ValueError('Stride ' + str(self.strides)
-                                     + ' must be greater than output padding ' +
-                                     str(self.output_padding))
+                    raise ValueError(
+                        "Stride "
+                        + str(self.strides)
+                        + " must be greater than output padding "
+                        + str(self.output_padding)
+                    )
 
         super(OctaveConv3DTranspose, self).__init__(
             filters=filters,
@@ -1455,14 +1479,15 @@ class OctaveConv3DTranspose(OctaveConv3D):
             activity_regularizer=activity_regularizer,
             kernel_constraint=kernel_constraint,
             bias_constraint=bias_constraint,
-            **kwargs)
+            **kwargs,
+        )
 
         if self.filters_high > 0:
-            self.conv_high_to_high._name = '{}-ConvTrans2D-HH'.format(self.name)
-            self.conv_low_to_high._name = '{}-ConvTrans2D-LH'.format(self.name)
+            self.conv_high_to_high._name = "{}-ConvTrans2D-HH".format(self.name)
+            self.conv_low_to_high._name = "{}-ConvTrans2D-LH".format(self.name)
         if self.filters_low > 0:
-            self.conv_low_to_low._name = '{}-ConvTrans2D-LL'.format(self.name)
-            self.conv_high_to_low._name = '{}-ConvTrans2D-HL'.format(self.name)
+            self.conv_low_to_low._name = "{}-ConvTrans2D-LL".format(self.name)
+            self.conv_high_to_low._name = "{}-ConvTrans2D-HL".format(self.name)
 
     def _init_conv(self, filters, name):
         return Conv3DTranspose(
@@ -1483,13 +1508,11 @@ class OctaveConv3DTranspose(OctaveConv3D):
             kernel_constraint=self.kernel_constraint,
             bias_constraint=self.bias_constraint,
             trainable=self.trainable,
-            name=name
+            name=name,
         )
 
     def get_config(self):
-        config = {
-            'output_padding': self.output_padding
-        }
+        config = {"output_padding": self.output_padding}
         base_config = super(OctaveConv, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
 
@@ -1524,24 +1547,28 @@ class OctaveConvAdd(Layer):
         super(OctaveConvAdd, self).__init__()
 
     def call(self, inputs, **kwargs):
-        builder = kwargs.get('builder', None)
+        builder = kwargs.get("builder", None)
         if builder is None:
-            raise ValueError('A builder layer must be passed as argument.')
+            raise ValueError("A builder layer must be passed as argument.")
         if not isinstance(inputs, (list, tuple)):
             inputs = [inputs]
         if len(inputs) > 2:
-            raise ValueError('The maximum number of inputs is 2, {} were '
-                             'given'.format(str(len(inputs))))
+            raise ValueError(
+                "The maximum number of inputs is 2, {} were "
+                "given".format(str(len(inputs)))
+            )
         if isinstance(builder, Layer):
-            intermediates = [builder] + [copy.copy(builder) for _ in
-                                         range(len(inputs) - 1)]
+            intermediates = [builder] + [
+                copy.copy(builder) for _ in range(len(inputs) - 1)
+            ]
         else:
             intermediates = [builder() for _ in range(len(inputs))]
-        for i, name in enumerate(['H', 'L']):
+        for i, name in enumerate(["H", "L"]):
             if i < len(intermediates):
-                intermediates[i]._name += '-' + name
-        outputs = [intermediate(inputs[i]) for i, intermediate in
-                   enumerate(intermediates)]
+                intermediates[i]._name += "-" + name
+        outputs = [
+            intermediate(inputs[i]) for i, intermediate in enumerate(intermediates)
+        ]
         if len(outputs) == 1:
             outputs = outputs[0]
         return outputs

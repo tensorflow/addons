@@ -23,12 +23,13 @@ from tensorflow_addons.layers.adaptive_pooling import (
     AdaptiveMaxPooling3D,
 )
 from tensorflow_addons.layers.octave_convolutional import (
+    OctaveConv,
     OctaveConv1D,
     OctaveConv2D,
     OctaveConv3D,
     OctaveConv2DTranspose,
     OctaveConv3DTranspose,
-    OctaveConvAdd
+    OctaveConvAdd,
 )
 from tensorflow_addons.layers.gelu import GELU
 from tensorflow_addons.layers.maxout import Maxout
