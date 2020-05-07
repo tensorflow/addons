@@ -122,6 +122,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
         self.built = True
 
+    @tf.function
     def call(self, inputs):
         """Call `Layer`"""
 
@@ -140,10 +141,10 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             kernel = tf.nn.l2_normalize(self.v, axis=self.kernel_norm_axes) * g
 
             if self.is_rnn:
-                self.layer.cell.recurrent_kernel = kernel
+                self.layer.cell.recurrent_kernel.assign(kernel)
                 update_kernel = tf.identity(self.layer.cell.recurrent_kernel)
             else:
-                self.layer.kernel = kernel
+                self.layer.kernel.assign(kernel)
                 update_kernel = tf.identity(self.layer.kernel)
 
             # Ensure we calculate result after updating kernel.

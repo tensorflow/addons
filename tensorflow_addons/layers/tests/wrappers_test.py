@@ -155,7 +155,6 @@ def test_save_file_h5(base_layer, input_shape):
         model.save_weights(os.path.join(tmp_dir, "wrapper_test_model.h5"))
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize(
     "input_layer, base_layer",
     [
@@ -217,5 +216,5 @@ def test_removal(base_layer_fn, input_shape, data_init):
     wn_output = wn_layer(sample_data)
     wn_removed_layer = wn_layer.remove()
     wn_removed_output = wn_removed_layer(sample_data)
-    np.testing.assert_allclose(wn_removed_output.numpy(), wn_output.numpy())
+    np.testing.assert_allclose(wn_removed_output.numpy(), wn_output.numpy(), 1e-6, 1e-6)
     assert isinstance(wn_removed_layer, base_layer.__class__)
