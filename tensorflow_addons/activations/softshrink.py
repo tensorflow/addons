@@ -54,7 +54,7 @@ def softshrink(
 
 def _softshrink_custom_op(x, lower, upper):
     warnings.warn(
-        "The softshrink custom op is deprecated and will be "
+        "The activations custom ops are deprecated and will be "
         "removed in TensorFlow Addons "
         "v0.12.0. \nPlease use the pure python version of softshrink instead "
         "by using the "

@@ -55,7 +55,7 @@ def hardshrink(
 def _hardshrink_custom_op(x, lower=-0.5, upper=0.5):
     """Alias with lazy loading of the .so file"""
     warnings.warn(
-        "The hardshrink custom op is deprecated and will be removed in "
+        "The activations custom ops are deprecated and will be removed in "
         "TensorFlow Addons v0.12.0. \nPlease use the pure python version of "
         "hardshrink instead by using the "
         "`TF_ADDONS_PY_OPS` flag. \nFor more info about this flag, see "

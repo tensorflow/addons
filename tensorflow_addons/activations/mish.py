@@ -50,9 +50,9 @@ def mish(x: types.TensorLike) -> tf.Tensor:
 
 def _mish_custom_op(x):
     warnings.warn(
-        "The mish custom op is deprecated and will be removed in TensorFlow Addons "
-        "v0.12.0. \nPlease use the pure python version of mish instead by using the "
-        "`TF_ADDONS_PY_OPS` flag. \nFor more info about this flag, see "
+        "The activations custom ops are deprecated and will be removed in TensorFlow "
+        "Addons v0.12.0. \nPlease use the pure python version of mish instead by using "
+        "the `TF_ADDONS_PY_OPS` flag. \nFor more info about this flag, see "
         "https://github.com/tensorflow/addons#gpucpu-custom-ops ",
         DeprecationWarning,
     )

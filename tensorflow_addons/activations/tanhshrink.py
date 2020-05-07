@@ -46,7 +46,7 @@ def tanhshrink(x: types.TensorLike) -> tf.Tensor:
 
 def _tanhshrink_custom_op(x):
     warnings.warn(
-        "The tanhshrink custom op is deprecated and will be removed in "
+        "The activations custom ops are deprecated and will be removed in "
         "TensorFlow Addons v0.12.0. \nPlease use the pure python version of "
         "tanhshrink instead by using the "
         "`TF_ADDONS_PY_OPS` flag. \nFor more info about this flag, see "
