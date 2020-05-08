@@ -12,18 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-import unittest
 import inspect
 
 from tensorflow.keras.metrics import Metric
 from tensorflow_addons import metrics
 
 
-class MetricsTests(unittest.TestCase):
-    def test_update_state_signature(self):
-        for name, obj in inspect.getmembers(metrics):
-            if inspect.isclass(obj) and issubclass(obj, Metric):
-                check_update_state_signature(obj)
+def test_update_state_signature():
+    for name, obj in inspect.getmembers(metrics):
+        if inspect.isclass(obj) and issubclass(obj, Metric):
+            check_update_state_signature(obj)
 
 
 def check_update_state_signature(metric_class):
