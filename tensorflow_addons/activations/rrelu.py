@@ -25,7 +25,7 @@ def rrelu(
     upper: Number = 0.3333333333333333,
     training: Optional[bool] = None,
     seed: Optional[int] = None,
-    gs: Optional[tf.random.Generator] = None,
+    rng: Optional[tf.random.Generator] = None,
 ) -> tf.Tensor:
     """rrelu function.
 
@@ -44,7 +44,7 @@ def rrelu(
         training: `bool`, indicating whether the `call`
         is meant for training or inference.
         seed: `int`, this sets the operation-level seed.
-        gs: A `Generator`. Default value is tf.random.get_global_generator().
+        rng: A `Generator`.
     Returns:
         result: A `Tensor`. Has the same type as `x`.
     """
@@ -57,14 +57,16 @@ def rrelu(
         training = bool(tf.keras.backend.get_value(training))
 
     if training:
-        if gs is None:
+        if rng is not None and seed is not None:
+            raise ValueError(
+                "Either seed or rng should be specified. Not both at the same time."
+            )
+        elif rng is not None:
+            alpha = rng.uniform(tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype)
+        else:
             alpha = tf.random.uniform(
                 tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype, seed=seed
             )
-        else:
-            if seed is not None:
-                raise ValueError("Either seed or gs should be specific")
-            alpha = gs.uniform(tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype)
     else:
         alpha = (lower + upper) / 2
 
