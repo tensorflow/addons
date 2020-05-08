@@ -55,7 +55,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     """
 
     @typechecked
-    def __init__(self, layer: tf.keras.layers.Layer, data_init: bool=True, **kwargs):
+    def __init__(self, layer: tf.keras.layers.Layer, data_init: bool　=　True, **kwargs):
         super().__init__(layer, **kwargs)
         self.data_init = data_init
         self._track_trackable(layer, name="layer")
