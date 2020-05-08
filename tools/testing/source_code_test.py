@@ -171,3 +171,34 @@ def test_no_deprecated_v1():
                 "tf.compat. Please find an alternative using only the TF2.x API."
                 "".format(file_path, line_idx, line)
             )
+
+
+def test_no_tf_debugging_assert():
+    # TODO: remove all elements of the list and remove the blacklist
+    # Unlike the exception list for functions/classes missing types,
+    # this blacklist should not grow. Do not add elements to this list.
+    blacklist = [
+        "tensorflow_addons/layers/wrappers.py",
+        "tensorflow_addons/image/utils.py",
+        "tensorflow_addons/image/dense_image_warp.py",
+        "tensorflow_addons/seq2seq/attention_wrapper.py",
+    ]
+    for file_path, line_idx, line in get_lines_of_source_code(blacklist):
+
+        if "tf.debugging.assert_" in line:
+            raise NameError(
+                "The usage of a tf.debugging.assert_*() function call was found in "
+                "file {} at line {}:\n\n"
+                "   {}\n"
+                "In TensorFlow Addons, checking values at runtime is done only in "
+                "specific conditions to ensure maximum performance and make it "
+                "easier to perform complicated checks. \n"
+                "If you use \n\n"
+                "tf.debugging.assert_equal(tensor_1, tensor_2, 'tensors are different')\n\n"
+                "for example, use \n\n"
+                "if __debug__ and tf.executing_eagerly():\n"
+                "    if not tf.reduce_all(tensor_1 == tensor_2):\n"
+                "       raise ValueError('Tensors are different')\n\n"
+                "instead."
+                "".format(file_path, line_idx, line)
+            )
