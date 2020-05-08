@@ -23,7 +23,7 @@ from typeguard import typechecked
 class WeightNormalization(tf.keras.layers.Wrapper):
     """This wrapper reparameterizes a layer by decoupling the weight's
     magnitude and direction.
-    
+
     This speeds up convergence by improving the
     conditioning of the optimization problem.
     Weight Normalization: A Simple Reparameterization to Accelerate
@@ -53,9 +53,9 @@ class WeightNormalization(tf.keras.layers.Wrapper):
       ValueError: If `Layer` does not contain a `kernel` of weights
       NotImplementedError: If `data_init` is True and running graph execution
     """
-    
+
     @typechecked
-    def __init__(self, layer, data_init=True, **kwargs):
+    def __init__(self, layer: tf.keras.layers.Layer, data_init: bool=True, **kwargs):
         super().__init__(layer, **kwargs)
         self.data_init = data_init
         self._track_trackable(layer, name="layer")
@@ -77,8 +77,8 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         kernel_layer = self.layer.cell if self.is_rnn else self.layer
 
         if not hasattr(kernel_layer, "kernel"):
-            raise ValueError('`WeightNormalization` must wrap a layer that'
-                             ' contains a `kernel` for weights')
+            raise ValueError("`WeightNormalization` must wrap a layer that"
+                             " contains a `kernel` for weights")
 
         if self.is_rnn:
             kernel = kernel_layer.recurrent_kernel
@@ -222,7 +222,6 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             data_norm_axes = list(range(x_init.shape.rank - 1))
 
             m_init, v_init = self._calculate_moments(x_init, data_norm_axes)
-
             scale_init = 1. / tf.math.sqrt(v_init + 1e-10)
 
             # RNNs have fused kernels that are tiled
@@ -245,7 +244,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         config = {"data_init": self.data_init}
         base_config = super().get_config()
         return {**base_config, **config}
-    
+
     def remove(self):
         kernel = tf.Variable(
             tf.nn.l2_normalize(self.v, axis=self.kernel_norm_axes) * self.g,
