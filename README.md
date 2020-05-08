@@ -208,6 +208,29 @@ tfa.options.TF_ADDONS_PY_OPS=True
 
 This variable will default to `True` on Windows and Mac, and `False` for Linux.
 
+#### Runtime checks
+TensorFlow Addons performs some checks at runtime to ensure the tensors used
+are the ones expected, and prevent user mistakes. For example, it may 
+run a check on the shape of a tensor to provide a useful error message.
+
+Since those checks can be expensive, they are only performed in eager mode.
+
+So if you want to debug something strange in your model, make sure to turn
+on the eager mode, even inside `@tf.function`, you might get useful error messages. 
+You can do so with
+```
+tf.config.experimental_run_functions_eagerly(True)
+```
+
+If you want to use eager mode, but don't want the runtime penalty of those runtime 
+checks, just run python in optimized mode, it's going to turn off the 
+runtime checks:
+
+```
+python -O my_script.py
+```
+
+
 #### Proxy Maintainership
 Addons has been designed to compartmentalize subpackages and submodules so 
 that they can be maintained by users who have expertise and a vested interest 
