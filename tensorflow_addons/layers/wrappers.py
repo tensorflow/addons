@@ -227,7 +227,9 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             x_init = self._naked_clone_layer(inputs)
             data_norm_axes = list(range(x_init.shape.rank - 1))
 
-            m_init, v_init = self._calculate_moments(x_init, data_norm_axes, keep_dims=False)
+            m_init, v_init = self._calculate_moments(
+                x_init, data_norm_axes, keep_dims=False
+            )
             scale_init = 1.0 / tf.math.sqrt(v_init + 1e-10)
 
             # RNNs have fused kernels that are tiled
