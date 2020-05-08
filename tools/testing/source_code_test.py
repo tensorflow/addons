@@ -130,7 +130,7 @@ def test_no_tf_cond():
         "tensorflow_addons/optimizers/novograd.py",
         "tensorflow_addons/metrics/cohens_kappa.py",
         "tensorflow_addons/seq2seq/sampler.py",
-        # "tensorflow_addons/seq2seq/beam_search_decoder.py",
+        "tensorflow_addons/seq2seq/beam_search_decoder.py",
     ]
     for file_path, line_idx, line in get_lines_of_source_code(blacklist):
 
@@ -143,7 +143,9 @@ def test_no_tf_cond():
                 "with `@tf.function` is equivalent to a tf.cond() thanks to Autograph. \n"
                 "TensorFlow Addons aims to be written with idiomatic TF 2.x code. \n"
                 "As such, using tf.cond() is not allowed in the codebase. \n"
-                "Use a `if` and decorate your function with @tf.function instead."
+                "Use a `if` and decorate your function with @tf.function instead. \n"
+                "You can take a look at "
+                "https://www.tensorflow.org/guide/function#use_python_control_flow"
                 "".format(file_path, line_idx, line)
             )
 
