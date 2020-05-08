@@ -73,6 +73,7 @@ def test_diag_scale():
     x0 = np.asarray([[0.1, 0.2, 0.3]]).astype(np.float32)
     x = np.asarray([[0.4, 0.5, 0.6]]).astype(np.float32)
     layer = PolynomialCrossing(
-        projection_dim=None, diag_scale=1., kernel_initializer="ones")
+        projection_dim=None, diag_scale=1.0, kernel_initializer="ones"
+    )
     output = layer([x0, x])
     np.testing.assert_allclose([[0.59, 0.9, 1.23]], output)

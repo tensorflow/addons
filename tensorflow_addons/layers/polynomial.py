@@ -79,7 +79,7 @@ class PolynomialCrossing(tf.keras.layers.Layer):
     def __init__(
         self,
         projection_dim: int = None,
-        diag_scale: float = 0.,
+        diag_scale: float = 0.0,
         use_bias: bool = True,
         kernel_initializer: types.Initializer = "truncated_normal",
         bias_initializer: types.Initializer = "zeros",
@@ -113,28 +113,33 @@ class PolynomialCrossing(tf.keras.layers.Layer):
                 initializer=self.kernel_initializer,
                 regularizer=self.kernel_regularizer,
                 dtype=self.dtype,
-                trainable=True)
+                trainable=True,
+            )
         else:
             if self.projection_dim < 0 or self.projection_dim > last_dim / 2:
                 raise ValueError(
                     "`projection_dim` should be smaller than last_dim / 2 to improve"
                     "the model efficiency, and should be positive. Got "
                     "`projection_dim` {}, and last dimension of input {}".format(
-                        self.projection_dim, last_dim))
+                        self.projection_dim, last_dim
+                    )
+                )
             self.kernel_u = self.add_weight(
                 "kernel_u",
                 shape=[last_dim, self.projection_dim],
                 initializer=self.kernel_initializer,
                 regularizer=self.kernel_regularizer,
                 dtype=self.dtype,
-                trainable=True)
+                trainable=True,
+            )
             self.kernel_v = self.add_weight(
                 "kernel_v",
                 shape=[self.projection_dim, last_dim],
                 initializer=self.kernel_initializer,
                 regularizer=self.kernel_regularizer,
                 dtype=self.dtype,
-                trainable=True)
+                trainable=True,
+            )
         if self.use_bias:
             self.bias = self.add_weight(
                 "bias",
