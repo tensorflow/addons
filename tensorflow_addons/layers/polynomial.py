@@ -188,5 +188,3 @@ class PolynomialCrossing(tf.keras.layers.Layer):
                 "A `PolynomialCrossing` layer should be called " "on a list of inputs."
             )
         return input_shape[0]
-
-

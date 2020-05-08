@@ -30,6 +30,7 @@ def test_full_matrix():
     output = layer([x0, x])
     np.testing.assert_allclose([[0.55, 0.8, 1.05]], output)
 
+
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_low_rank_matrix():
     x0 = np.asarray([[0.1, 0.2, 0.3]]).astype(np.float32)
@@ -37,6 +38,7 @@ def test_low_rank_matrix():
     layer = PolynomialCrossing(projection_dim=1, kernel_initializer="ones")
     output = layer([x0, x])
     np.testing.assert_allclose([[0.55, 0.8, 1.05]], output)
+
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_invalid_proj_dim():
@@ -65,6 +67,7 @@ def test_serialization():
     new_layer = tf.keras.layers.deserialize(serialized_layer)
     assert layer.get_config() == new_layer.get_config()
 
+
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_diag_scale():
     x0 = np.asarray([[0.1, 0.2, 0.3]]).astype(np.float32)
@@ -73,4 +76,3 @@ def test_diag_scale():
         projection_dim=None, diag_scale=1., kernel_initializer="ones")
     output = layer([x0, x])
     np.testing.assert_allclose([[0.59, 0.9, 1.23]], output)
-
