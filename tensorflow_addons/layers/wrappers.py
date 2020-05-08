@@ -54,7 +54,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     """
 
     @typechecked
-    def __init__(self, layer: tf.keras.layers.Layer, data_init: bool = True, **kwargs):
+    def __init__(self, layer: tf.keras.layers, data_init: bool = True, **kwargs):
         super().__init__(layer, **kwargs)
         self.data_init = data_init
         self._track_trackable(layer, name="layer")
@@ -212,6 +212,9 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             variance = tf.reduce_mean(
                 tf.squared_difference(y, tf.stop_gradient(mean)), axes, keepdims=True
             )
+        if not keep_dims:
+            mean = tf.squeeze(mean, axes)
+            variance = tf.squeeze(variance, axes)
         if x.dtype == tf.float16:
             return (tf.cast(mean, tf.float16), tf.cast(variance, tf.float16))
         else:
@@ -224,7 +227,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
             x_init = self._naked_clone_layer(inputs)
             data_norm_axes = list(range(x_init.shape.rank - 1))
 
-            m_init, v_init = self._calculate_moments(x_init, data_norm_axes)
+            m_init, v_init = self._calculate_moments(x_init, data_norm_axes, keep_dims=False)
             scale_init = 1.0 / tf.math.sqrt(v_init + 1e-10)
 
             # RNNs have fused kernels that are tiled
