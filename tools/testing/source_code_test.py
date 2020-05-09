@@ -89,7 +89,6 @@ def test_no_private_tf_api():
     # this blacklist should not grow. Do not add elements to this list.
     blacklist = [
         "tensorflow_addons/optimizers/novograd.py",
-        "tensorflow_addons/optimizers/moving_average.py",
         "tensorflow_addons/metrics/r_square.py",
         "tensorflow_addons/utils/test_utils.py",
         "tensorflow_addons/losses/contrastive.py",

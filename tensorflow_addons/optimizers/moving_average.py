@@ -14,12 +14,64 @@
 # ==============================================================================
 
 import tensorflow as tf
-from tensorflow.python.training.moving_averages import assign_moving_average
 from tensorflow_addons.optimizers import AveragedOptimizerWrapper
-from tensorflow_addons.utils.types import FloatTensorLike
+from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 
 from typing import Optional, Union
 from typeguard import typechecked
+
+
+@typechecked
+def assign_moving_average(
+    variable: TensorLike,
+    value: TensorLike,
+    decay: FloatTensorLike,
+    name: str = "AssignMovingAverage",
+) -> TensorLike:
+    r"""Compute the moving average of a variable.
+    The moving average of 'variable' updated with 'value' is:
+        variable * decay + value * (1 - decay)
+    The returned Operation sets 'variable' to the newly computed moving average,
+    by performing this subtraction:
+        variable -= (1 - decay) * (variable - value)
+
+    Args:
+        variable: A Variable.
+        value: A tensor with the same shape as 'variable'.
+        decay: A float Tensor or float value.  The moving average decay.
+        name: Optional name of the returned operation.
+
+    Returns:
+        A tensor which if evaluated will compute and return the new moving average.
+    """
+
+    with tf.name_scope(name) as scope:
+        decay = tf.convert_to_tensor(1.0 - decay, name="decay")
+        decay = tf.cast(decay, variable.dtype)
+
+        def update_fn(v, value):
+            # TODO(squadrick): Replace with `v.assign_sub(...)`.
+            # This requires a change in `average_wrapper.py`,
+            # since it expects a TensorFlow op, not NoneType
+            return tf.compat.v1.assign_sub(v, (v - value) * decay, name=scope)
+
+        def update(strategy, v, value):
+            return strategy.extended.update(v, update_fn, args=(value,))
+
+        replica_context = tf.distribute.get_replica_context()
+        if replica_context:
+            # In a replica context, we update variable using the mean of value across
+            # replicas.
+            def merge_fn(strategy, v, value):
+                value = strategy.extended.reduce_to(
+                    tf.distribute.ReduceOp.MEAN, value, v
+                )
+                return update(strategy, v, value)
+
+            return replica_context.merge_call(merge_fn, args=(variable, value))
+        else:
+            strategy = tf.distribute.get_strategy()
+            return update(strategy, variable, value)
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -85,7 +137,7 @@ class MovingAverage(AveragedOptimizerWrapper):
 
     def average_op(self, var, average_var):
         decay = self._get_hyper("average_decay", tf.dtypes.float32)
-        return assign_moving_average(average_var, var, decay, False)
+        return assign_moving_average(average_var, var, decay)
 
     def get_config(self):
         config = {
