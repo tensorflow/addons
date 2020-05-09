@@ -50,8 +50,7 @@ def assign_moving_average(
         decay = tf.cast(decay, variable.dtype)
 
         def update_fn(v, value):
-            v.assign_sub((v - value) * decay, name=scope)
-            return tf.convert_to_tensor(v)
+            return v.assign_sub((v - value) * decay, name=scope)
 
         def update(strategy, v, value):
             return strategy.extended.update(v, update_fn, args=(value,))
