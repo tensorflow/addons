@@ -50,10 +50,8 @@ def assign_moving_average(
         decay = tf.cast(decay, variable.dtype)
 
         def update_fn(v, value):
-            # TODO(squadrick): Replace with `v.assign_sub(...)`.
-            # This requires a change in `average_wrapper.py`,
-            # since it expects a TensorFlow op, not NoneType
-            return tf.compat.v1.assign_sub(v, (v - value) * decay, name=scope)
+            v.assign_sub((v - value) * decay, name=scope)
+            return tf.convert_to_tensor(v)
 
         def update(strategy, v, value):
             return strategy.extended.update(v, update_fn, args=(value,))
