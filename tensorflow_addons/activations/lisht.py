@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import warnings
 import tensorflow as tf
 
 from tensorflow_addons.utils import types
@@ -48,6 +49,13 @@ def lisht(x: types.TensorLike) -> tf.Tensor:
 
 
 def _lisht_custom_op(x):
+    warnings.warn(
+        "The activations custom ops are deprecated and will be removed in TensorFlow "
+        "Addons v0.12.0. \nPlease use the pure python version of lisht instead by "
+        "using the `TF_ADDONS_PY_OPS` flag. \nFor more info about this flag, see "
+        "https://github.com/tensorflow/addons#gpucpu-custom-ops ",
+        DeprecationWarning,
+    )
     return _activation_so.ops.addons_lisht(x)
 
 
