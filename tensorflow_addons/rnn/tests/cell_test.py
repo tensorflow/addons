@@ -453,11 +453,14 @@ def test_esn_echo_state_property_eig():
     use_norm2 = False
     units = 3
     cell = rnn_cell.ESNCell(
-        units=units, use_norm2=use_norm2, recurrent_initializer="ones",
+        units=units,
+        use_norm2=use_norm2,
+        recurrent_initializer="ones",
+        connectivity=1.0,
     )
     cell.build((3, 3))
-    recurrent_weights = tf.constant(cell.get_weights()[0])
-    max_eig = tf.reduce_max(tf.abs(tf.linalg.eig(recurrent_weights)))
+    recurrent_weights = tf.constant(cell.get_weights()[0], dtype=tf.float32)
+    max_eig = tf.reduce_max(tf.abs(tf.linalg.eig(recurrent_weights)[0]))
     assert max_eig < 1, "max(eig(W)) < 1"
 
 
@@ -465,7 +468,7 @@ def test_esn_echo_state_property_norm2():
     use_norm2 = True
     units = 3
     cell = rnn_cell.ESNCell(
-        units=units, use_norm2=use_norm2, recurrent_initializer="ones",
+        units=units, use_norm2=use_norm2, recurrent_initializer="ones", connectivity=1.0
     )
     cell.build((3, 3))
     recurrent_weights = tf.constant(cell.get_weights()[0])

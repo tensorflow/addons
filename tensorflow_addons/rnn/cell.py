@@ -727,7 +727,9 @@ class ESNCell(keras.layers.AbstractRNNCell):
                 )
             else:
                 abs_eig_values = tf.abs(tf.linalg.eig(recurrent_weights)[0])
-                scaling_factor = self.spectral_radius / tf.reduce_max(abs_eig_values)
+                scaling_factor = tf.math.divide_no_nan(
+                    self.spectral_radius, tf.reduce_max(abs_eig_values)
+                )
 
             recurrent_weights = tf.multiply(recurrent_weights, scaling_factor)
 
