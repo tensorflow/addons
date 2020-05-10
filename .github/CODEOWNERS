@@ -95,6 +95,8 @@
 /tensorflow_addons/layers/tests/tlu_test.py @aakashkumarnain
 /tensorflow_addons/layers/wrappers.py @seanpmorgan
 /tensorflow_addons/layers/tests/wrappers_test.py @seanpmorgan
+/tensorflow_addons/layers/esn.py @pedrolarben
+/tensorflow_addons/layers/tests/esn_test.py @pedrolarben
 
 /tensorflow_addons/losses/contrastive.py @windqaq
 /tensorflow_addons/losses/tests/contrastive_test.py @windqaq
