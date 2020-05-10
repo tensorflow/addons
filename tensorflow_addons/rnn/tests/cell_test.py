@@ -457,7 +457,7 @@ def test_esn_echo_state_property_eig():
     )
     cell.build((3, 3))
     recurrent_weights = tf.constant(cell.get_weights()[0])
-    max_eig = tf.reduce_max(tf.abs(tf.linalg.eig(recurrent_weights)[0]))
+    max_eig = tf.reduce_max(tf.abs(tf.linalg.eig(recurrent_weights)))
     assert max_eig < 1, "max(eig(W)) < 1"
 
 
