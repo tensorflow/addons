@@ -108,7 +108,7 @@ class ESN(tf.keras.layers.RNN):
         unroll=False,
         **kwargs
     ):
-        cell = tfa.rnn.cell.ESNCell(
+        cell = tfa.rnn.ESNCell(
             units,
             connectivity=connectivity,
             leaky=leaky,
