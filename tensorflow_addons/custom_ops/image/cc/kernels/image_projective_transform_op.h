@@ -153,7 +153,7 @@ struct FillProjectiveTransform {
   typedef typename TTypes<float, 2>::ConstTensor TransformsType;
   const Interpolation interpolation_;
 
-  FillProjectiveTransform(Interpolation interpolation)
+  explicit FillProjectiveTransform(Interpolation interpolation)
       : interpolation_(interpolation) {}
 
   EIGEN_ALWAYS_INLINE

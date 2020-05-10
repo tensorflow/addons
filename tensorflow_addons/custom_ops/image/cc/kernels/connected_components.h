@@ -23,6 +23,9 @@ limitations under the License.
 
 #define EIGEN_USE_THREADS
 
+#include <algorithm>
+#include <string>
+
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/tensor_types.h"
 #include "tensorflow/core/platform/types.h"
