@@ -25,7 +25,7 @@ set.
 
 import tensorflow as tf
 from tensorflow_addons.optimizers.average_wrapper import AveragedOptimizerWrapper
-from tensorflow_addons.utils.types import Optimizer
+from tensorflow_addons.utils import types
 
 from typeguard import typechecked
 
@@ -74,7 +74,7 @@ class SWA(AveragedOptimizerWrapper):
     @typechecked
     def __init__(
         self,
-        optimizer: Optimizer,
+        optimizer: types.Optimizer,
         start_averaging: int = 0,
         average_period: int = 10,
         name: str = "SWA",

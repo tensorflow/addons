@@ -16,7 +16,7 @@
 import abc
 
 import tensorflow as tf
-from tensorflow_addons.utils.types import Optimizer
+from tensorflow_addons.utils import types
 
 from typeguard import typechecked
 
@@ -25,7 +25,7 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
     @typechecked
     def __init__(
         self,
-        optimizer: Optimizer,
+        optimizer: types.Optimizer,
         sequential_update: bool = True,
         name: str = "AverageOptimizer",
         **kwargs
