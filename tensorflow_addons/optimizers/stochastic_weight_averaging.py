@@ -78,6 +78,7 @@ class SWA(AveragedOptimizerWrapper):
         start_averaging: int = 0,
         average_period: int = 10,
         name: str = "SWA",
+        sequential_update: bool = True,
         **kwargs
     ):
         r"""Wrap optimizer with the Stochastic Weight Averaging mechanism.
@@ -95,6 +96,10 @@ class SWA(AveragedOptimizerWrapper):
                 needs to be >= 1.
             name: Optional name for the operations created when applying
                 gradients. Defaults to 'SWA'.
+            sequential_update: Bool. If False, will compute the moving average
+                at the same time as the model is updated, potentially doing
+                benign data races. If True, will update the moving average
+                after gradient updates.
             **kwargs: keyword arguments. Allowed to be {`clipnorm`,
                 `clipvalue`, `lr`, `decay`}. `clipnorm` is clip gradients by
                 norm; `clipvalue` is clip gradients by value, `decay` is
@@ -102,7 +107,7 @@ class SWA(AveragedOptimizerWrapper):
                 decay of learning rate. `lr` is included for backward
                 compatibility, recommended to use `learning_rate` instead.
         """
-        super().__init__(optimizer, name, **kwargs)
+        super().__init__(optimizer, sequential_update, name, **kwargs)
 
         if average_period < 1:
             raise ValueError("average_period must be >= 1")
