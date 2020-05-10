@@ -15,7 +15,7 @@
 """Implements Echo State recurrent Network (ESN) layer."""
 
 import tensorflow as tf
-import tensorflow_addons as tfa
+from tensorflow_addons.rnn import cell as rnn_cell
 from typeguard import typechecked
 
 from tensorflow_addons.utils.types import (
@@ -108,7 +108,7 @@ class ESN(tf.keras.layers.RNN):
         unroll=False,
         **kwargs
     ):
-        cell = tfa.rnn.ESNCell(
+        cell = rnn_cell.ESNCell(
             units,
             connectivity=connectivity,
             leaky=leaky,
