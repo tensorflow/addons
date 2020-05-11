@@ -15,6 +15,61 @@
 """Utilities for tf.keras."""
 
 import tensorflow as tf
+import six
+
+
+def is_tensor_or_variable(x):
+    return tf.is_tensor(x) or isinstance(x, tf.Variable)
+
+
+class LossFunctionWrapper(tf.keras.losses.Loss):
+    """Wraps a loss function in the `Loss` class."""
+
+    def __init__(
+        self, fn, reduction=tf.keras.losses.Reduction.AUTO, name=None, **kwargs
+    ):
+        """Initializes `LossFunctionWrapper` class.
+
+    Args:
+      fn: The loss function to wrap, with signature `fn(y_true, y_pred,
+        **kwargs)`.
+      reduction: (Optional) Type of `tf.keras.losses.Reduction` to apply to
+        loss. Default value is `AUTO`. `AUTO` indicates that the reduction
+        option will be determined by the usage context. For almost all cases
+        this defaults to `SUM_OVER_BATCH_SIZE`. When used with
+        `tf.distribute.Strategy`, outside of built-in training loops such as
+        `tf.keras` `compile` and `fit`, using `AUTO` or `SUM_OVER_BATCH_SIZE`
+        will raise an error. Please see this custom training [tutorial](
+          https://www.tensorflow.org/tutorials/distribute/custom_training)
+        for more details.
+      name: (Optional) name for the loss.
+      **kwargs: The keyword arguments that are passed on to `fn`.
+    """
+        super(LossFunctionWrapper, self).__init__(reduction=reduction, name=name)
+        self.fn = fn
+        self._fn_kwargs = kwargs
+
+    def call(self, y_true, y_pred):
+        """Invokes the `LossFunctionWrapper` instance.
+
+    Args:
+      y_true: Ground truth values.
+      y_pred: The predicted values.
+
+    Returns:
+      Loss values per sample.
+    """
+        # if tf.is_tensor(y_pred) and tf.is_tensor(y_true):
+        #   y_pred, y_true = tf_losses_util.squeeze_or_expand_dimensions(
+        #       y_pred, y_true)
+        return self.fn(y_true, y_pred, **self._fn_kwargs)
+
+    def get_config(self):
+        config = {}
+        for k, v in six.iteritems(self._fn_kwargs):
+            config[k] = tf.keras.backend.eval(v) if is_tensor_or_variable(v) else v
+        base_config = super(LossFunctionWrapper, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
 
 
 def normalize_data_format(value):
