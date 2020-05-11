@@ -186,7 +186,7 @@ If TensorFlow Addons is installed in editable mode, you can then just run your t
 running Pytest. For example:
 ```bash
 pip install -r tools/install_deps/pytest.txt
-python -m pytest tensorflow_addons/rnn/cell_test.py
+python -m pytest tensorflow_addons/rnn/tests/cell_test.py
 # or even
 python -m pytest tensorflow_addons/rnn/
 # or even 
