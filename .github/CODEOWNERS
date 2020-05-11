@@ -62,7 +62,7 @@
 /tensorflow_addons/image/tests/filters_test.py @mainak431 @ghosalsattam
 /tensorflow_addons/image/interpolate_spline.py
 /tensorflow_addons/image/tests/interpolate_spline_test.py
-/tensorflow_addons/image/tests/linear_transform.py @ghosalsattam
+/tensorflow_addons/image/linear_transform.py @ghosalsattam
 /tensorflow_addons/image/tests/linear_transform_test.py @ghosalsattam
 /tensorflow_addons/image/resampler_ops.py @autoih
 /tensorflow_addons/image/tests/resampler_ops_test.py @autoih
