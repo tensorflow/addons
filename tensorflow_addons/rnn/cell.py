@@ -627,7 +627,9 @@ class ESNCell(keras.layers.AbstractRNNCell):
 
     This implements the recurrent cell from the paper:
         H. Jaeger
-        "The "echo state" approach to analysing and training recurrent neural networks". GMD Report148, German National Research Center for Information Technology, 2001.
+        "The "echo state" approach to analysing and training recurrent neural networks".
+        GMD Report148, German National Research Center for Information Technology, 2001.
+        https://www.researchgate.net/publication/215385037
 
     Arguments:
         units: Positive integer, dimensionality in the reservoir.
