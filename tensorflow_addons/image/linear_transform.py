@@ -24,7 +24,7 @@ def linear_transform(
     a: FloatTensorLike = 1,
     b: FloatTensorLike = 1,
     name: Optional[str] = None,
-):
+) -> FloatTensorLike:
     """Linear transformation on an image.
 
     Args:
