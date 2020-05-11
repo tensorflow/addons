@@ -59,9 +59,6 @@ class LossFunctionWrapper(tf.keras.losses.Loss):
     Returns:
       Loss values per sample.
     """
-        # if tf.is_tensor(y_pred) and tf.is_tensor(y_true):
-        #   y_pred, y_true = tf_losses_util.squeeze_or_expand_dimensions(
-        #       y_pred, y_true)
         return self.fn(y_true, y_pred, **self._fn_kwargs)
 
     def get_config(self):
