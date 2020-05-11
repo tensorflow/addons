@@ -12,34 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"RGB to Grayscale op"
-
-from tensorflow_addons.utils.types import FloatTensorLike
-from tensorflow_addons.image import utils as img_utils
+"""Op for linear transformation."""
 import tensorflow as tf
+from tensorflow_addons.image import utils as img_utils
 
-from typing import Optional
 
-
-def rgb_to_grayscale(
-    image: FloatTensorLike, name: Optional[str] = None,
-) -> FloatTensorLike:
-    """Perform RGB to Grayscale conversion of image(s).
+def linear_transform(image, a=1, b=1, name=None):
+    """Linear transformation on an image.
 
     Args:
-      image: A 3-D `Tensor` of shape `[height, width, channels]`,
+      image: Either a 2-D `Tensor` of shape `[height, width]`,
+        a 3-D `Tensor` of shape `[height, width, channels]`,
         or a 4-D `Tensor` of shape `[batch_size, height, width, channels]`.
-        The number of channels must be equal to 3.
-      name: A name for this operation (optional).
+      a: It is an integer or float or double representing slope of the line.
+      b: It is an integer or float or double representing y-intercept.
+      name: A name for the operation.
     """
-
-    with tf.name_scope(name or "rgb_to_grayscale"):
-        image = tf.cast(image, tf.float32)
+    with tf.name_scope(name or "gaussian_filter2d"):
+        image = tf.convert_to_tensor(image, name="image")
         original_ndims = img_utils.get_ndims(image)
+        image = tf.cast(image, tf.float32)
+        a = tf.cast(a, tf.float32)
+        b = tf.cast(b, tf.float32)
         image = img_utils.to_4D_image(image)
-        channels = tf.shape(image)[3]
-        if channels != 3:
-            raise ValueError("The image must be in RGB format")
-        grayscale_output = tf.image.rgb_to_grayscale(image)
-        grayscale_output = img_utils.from_4D_image(grayscale_output, original_ndims)
-        return grayscale_output
+        output = a * image + b
+        output = img_utils.from_4D_image(output, original_ndims)
+        return output
