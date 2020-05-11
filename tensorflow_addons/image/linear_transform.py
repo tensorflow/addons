@@ -15,9 +15,16 @@
 """Op for linear transformation."""
 import tensorflow as tf
 from tensorflow_addons.image import utils as img_utils
+from tensorflow_addons.utils.types import FloatTensorLike
+from typing import Optional
 
 
-def linear_transform(image, a=1, b=1, name=None):
+def linear_transform(
+    image: FloatTensorLike,
+    a: FloatTensorLike = 1,
+    b: FloatTensorLike = 1,
+    name: Optional[str] = None,
+):
     """Linear transformation on an image.
 
     Args:
