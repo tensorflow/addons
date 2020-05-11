@@ -14,11 +14,9 @@
 # ==============================================================================
 
 import tensorflow as tf
-
-from tensorflow_addons.utils.types import FloatTensorLike
+from tensorflow_addons.utils import types
 
 from typeguard import typechecked
-from typing import Union
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
