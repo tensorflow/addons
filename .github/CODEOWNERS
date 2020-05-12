@@ -83,6 +83,8 @@
 /tensorflow_addons/layers/tests/netvlad_test.py @joel-shor
 /tensorflow_addons/layers/normalizations.py @smokrow
 /tensorflow_addons/layers/tests/normalizations_test.py @smokrow
+/tensorflow_addons/layers/octave_convolutional.py @amascia
+/tensorflow_addons/layers/tests/octave_convolutional_test.py @amascia
 /tensorflow_addons/layers/optical_flow.py @failure-to-thrive
 /tensorflow_addons/layers/tests/optical_flow_test.py @failure-to-thrive
 /tensorflow_addons/layers/poincare.py @rahulunair
