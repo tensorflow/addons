@@ -15,14 +15,14 @@
 """Implements GIoU loss."""
 
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
+from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
 from tensorflow_addons.utils.types import TensorLike
 from typing import Optional
 from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class GIoULoss(keras_utils.LossFunctionWrapper):
+class GIoULoss(LossFunctionWrapper):
     """Implements the GIoU loss function.
 
     GIoU loss was first introduced in the

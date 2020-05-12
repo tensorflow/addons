@@ -45,7 +45,7 @@ class LossFunctionWrapper(tf.keras.losses.Loss):
       name: (Optional) name for the loss.
       **kwargs: The keyword arguments that are passed on to `fn`.
     """
-        super(LossFunctionWrapper, self).__init__(reduction=reduction, name=name)
+        super().__init__(reduction=reduction, name=name)
         self.fn = fn
         self._fn_kwargs = kwargs
 
