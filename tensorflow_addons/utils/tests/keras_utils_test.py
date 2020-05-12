@@ -26,10 +26,8 @@ def test_normalize_data_format():
     assert keras_utils.normalize_data_format("Channels_Last") == "channels_last"
     assert keras_utils.normalize_data_format("CHANNELS_FIRST") == "channels_first"
 
-    try:
+    with pytest.raises(ValueError, match="The `data_format` argument must be one of"):
         keras_utils.normalize_data_format("invalid")
-    except ValueError:
-        pass
 
 
 def test_normalize_tuple():
