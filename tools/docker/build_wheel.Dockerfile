@@ -6,7 +6,7 @@ ENV TF_NEED_CUDA="1"
 RUN apt-get update && apt-get install patchelf
 
 ARG PY_VERSION
-RUN python$PY_VERSION -m pip install --upgrade pip setuptools auditwheel==2.0.0
+RUN python$PY_VERSION -m pip install --upgrade pip==19.0 auditwheel==2.0.0
 
 COPY tools/install_deps/ /install_deps
 ARG TF_VERSION
