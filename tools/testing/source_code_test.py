@@ -119,6 +119,37 @@ def test_no_private_tf_api():
             )
 
 
+def test_no_tf_cond():
+    # TODO: remove all elements of the list and remove the blacklist
+    # Unlike the exception list for functions/classes missing types,
+    # this blacklist should not grow. Do not add elements to this list.
+    blacklist = [
+        "tensorflow_addons/text/crf.py",
+        "tensorflow_addons/layers/wrappers.py",
+        "tensorflow_addons/image/connected_components.py",
+        "tensorflow_addons/optimizers/novograd.py",
+        "tensorflow_addons/metrics/cohens_kappa.py",
+        "tensorflow_addons/seq2seq/sampler.py",
+        "tensorflow_addons/seq2seq/beam_search_decoder.py",
+    ]
+    for file_path, line_idx, line in get_lines_of_source_code(blacklist):
+
+        if "tf.cond(" in line:
+            raise NameError(
+                "The usage of a tf.cond() function call was found in "
+                "file {} at line {}:\n\n"
+                "   {}\n"
+                "In TensorFlow 2.x, using a simple `if` in a function decorated "
+                "with `@tf.function` is equivalent to a tf.cond() thanks to Autograph. \n"
+                "TensorFlow Addons aims to be written with idiomatic TF 2.x code. \n"
+                "As such, using tf.cond() is not allowed in the codebase. \n"
+                "Use a `if` and decorate your function with @tf.function instead. \n"
+                "You can take a look at "
+                "https://www.tensorflow.org/guide/function#use_python_control_flow"
+                "".format(file_path, line_idx, line)
+            )
+
+
 def test_no_experimental_api():
     # TODO: remove all elements of the list and remove the blacklist
     # Unlike the exception list for functions/classes missing types,
