@@ -133,18 +133,18 @@ class FBetaScore(tf.keras.metrics.Metric):
         y_pred = tf.cast(y_pred, self.dtype)
 
         def _weighted_sum(val, sample_weight):
-          if sample_weight is not None:
-            val = tf.math.multiply(val, tf.expand_dims(sample_weight, 1))
-          return tf.reduce_sum(val, axis=self.axis)
+            if sample_weight is not None:
+                val = tf.math.multiply(val, tf.expand_dims(sample_weight, 1))
+            return tf.reduce_sum(val, axis=self.axis)
 
-        self.true_positives.assign_add(
-            _weighted_sum(y_pred * y_true, sample_weight))
+        self.true_positives.assign_add(_weighted_sum(y_pred * y_true, sample_weight))
         self.false_positives.assign_add(
-            _weighted_sum(y_pred * (1 - y_true), sample_weight))
+            _weighted_sum(y_pred * (1 - y_true), sample_weight)
+        )
         self.false_negatives.assign_add(
-            _weighted_sum((1 - y_pred) * y_true, sample_weight))
-        self.weights_intermediate.assign_add(
-            _weighted_sum(y_true, sample_weight))
+            _weighted_sum((1 - y_pred) * y_true, sample_weight)
+        )
+        self.weights_intermediate.assign_add(_weighted_sum(y_true, sample_weight))
 
     def result(self):
         precision = tf.math.divide_no_nan(
