@@ -33,6 +33,16 @@ def test_normalize_tuple():
         keras_utils.normalize_tuple(None, n=3, name="strides")
 
 
+def test_normalize_padding():
+    assert keras_utils.normalize_padding("SAME") == "same"
+    assert keras_utils.normalize_padding("VALID") == "valid"
+
+    try:
+        keras_utils.normalize_padding("invalid")
+    except ValueError:
+        pass
+
+
 def test_standard_cell():
     keras_utils.assert_like_rnncell("cell", tf.keras.layers.LSTMCell(10))
 
