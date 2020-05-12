@@ -504,6 +504,18 @@ def test_esn_keras_rnn():
     assert rnn_outputs.shape == (2, 10)
 
 
+def test_esn_keras_rnn_e2e():
+    inputs = np.random.random((2, 3, 4))
+    targets = np.abs(np.random.random((2, 5)))
+    targets /= targets.sum(axis=-1, keepdims=True)
+    cell = rnn_cell.ESNCell(5)
+    model = keras.models.Sequential()
+    model.add(keras.layers.Masking(input_shape=(3, 4)))
+    model.add(keras.layers.RNN(cell))
+    model.compile(loss="categorical_crossentropy", optimizer="rmsprop")
+    model.fit(inputs, targets, epochs=1, batch_size=2, verbose=1)
+
+
 def test_esn_config():
     cell = rnn_cell.ESNCell(
         units=3,
