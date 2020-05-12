@@ -160,8 +160,8 @@ conda activate my_dev_environement
 Just run from the root:
 
 ```
-pip install tensorflow==2.2.0rc3
-# you can use "pip install tensorflow-cpu==2.2.0rc3" too if you're not testing on gpu.
+pip install tensorflow==2.2.0
+# you can use "pip install tensorflow-cpu==2.2.0" too if you're not testing on gpu.
 pip install -e ./
 ```
 
@@ -186,7 +186,7 @@ If TensorFlow Addons is installed in editable mode, you can then just run your t
 running Pytest. For example:
 ```bash
 pip install -r tools/install_deps/pytest.txt
-python -m pytest tensorflow_addons/rnn/cell_test.py
+python -m pytest tensorflow_addons/rnn/tests/cell_test.py
 # or even
 python -m pytest tensorflow_addons/rnn/
 # or even 
@@ -249,7 +249,7 @@ If you need a custom C++/Cuda op for your test, compile your ops with
 
 ```bash
 python configure.py
-pip install tensorflow==2.2.0rc3 -e ./ -r tools/install_deps/pytest.txt
+pip install tensorflow==2.2.0 -e ./ -r tools/install_deps/pytest.txt
 bash tools/install_so_files.sh  # Linux/macos/WSL2
 sh tools/install_so_files.sh    # PowerShell
 ```
@@ -277,7 +277,7 @@ docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/ten
 
 Configure:
 ```
-python3 -m pip install tensorflow==2.2.0rc3
+python3 -m pip install tensorflow==2.2.0
 python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 
@@ -315,7 +315,7 @@ quickly, as Bazel has great support for caching and distributed testing.
 To test with Bazel:
 
 ```
-python3 -m pip install tensorflow==2.2.0rc3
+python3 -m pip install tensorflow==2.2.0
 python3 configure.py
 python3 -m pip install -r tools/install_deps/pytest.txt
 bazel test -c opt -k \
@@ -445,6 +445,7 @@ def test_something2(device):
         print("do something.")
     if "gpu" in device:
         print("do something else.")
+
 
 
 @pytest.mark.with_device(["cpu", "gpu", tf.distribute.MirroredStrategy])

@@ -41,7 +41,7 @@ jobs:
       matrix:
         os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
         py-version: ['3.5', '3.6', '3.7', '3.8']
-        tf-version: ['2.2.0rc3']
+        tf-version: ['2.2.0']
       fail-fast: false
     steps:
       - uses: actions/github-script@0.3.0
@@ -61,12 +61,11 @@ jobs:
         # Ubuntu bazel is run inside of the docker image
         if: matrix.os != 'ubuntu-18.04'
         # MacOS VMs share IP addr on GH actions. This bazel installation authenticates token to prevent api rate limiting.
-        uses: jwlawson/actions-setup-bazel@v1.0
+        uses: jwlawson/actions-setup-bazel@784af34 # Version 1.1
         with:
           bazel-version: ${{ env.BAZEL_VERSION}}
           github-api-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build wheels
-        if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION || matrix.py-version == env.MAX_PY_VERSION
         env:
           OS: ${{ runner.os }}
           PY_VERSION: ${{ matrix.py-version }}
@@ -75,7 +74,6 @@ jobs:
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}.sh
       - uses: actions/upload-artifact@v1
-        if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION || matrix.py-version == env.MAX_PY_VERSION
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
           path: wheelhouse
@@ -86,16 +84,15 @@ jobs:
     strategy:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
-        py-version: ['3.5', '3.6', '3.7']
+        py-version: ['3.5', '3.6', '3.7', '3.8']
+        tf-version: ['2.2.0']
       fail-fast: false
     steps:
       - uses: actions/download-artifact@v1
-        if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION  || matrix.py-version == env.MAX_PY_VERSION
         with:
-          name: ${{ matrix.os }}-${{ matrix.py-version }}-tf2.2.0rc3-wheel
+          name: ${{ matrix.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
           path: ./dist
-      - if: github.event_name != 'pull_request' || matrix.py-version == env.MIN_PY_VERSION  || matrix.py-version == env.MAX_PY_VERSION
-        run: |
+      - run: |
           set -e -x
           ls -la dist/
           sha256sum dist/*.whl
