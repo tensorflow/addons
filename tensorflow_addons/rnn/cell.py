@@ -638,12 +638,14 @@ class ESNCell(keras.layers.AbstractRNNCell):
             Default: 0.1.
         leaky: Float between 0 and 1.
             Leaking rate of the reservoir.
-            If you pass 1, it's the special case the model does not have leaky integration.
+            If you pass 1, it is the special case the model does not have leaky
+            integration.
             Default: 1.
         spectral_radius: Float between 0 and 1.
             Desired spectral radius of recurrent weight matrix.
             Default: 0.9.
-        use_norm2: Boolean, whether to use norm2 as an approximation of the spectral radius.
+        use_norm2: Boolean, whether to use the p-norm function (with p=2) as an upper
+            bound of the spectral radius so that the echo state property is satisfied.
             It  avoids to compute the eigenvalues which has an exponential complexity.
             Default: False.
         use_bias: Boolean, whether the layer uses a bias vector.
