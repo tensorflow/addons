@@ -64,8 +64,8 @@ class LossFunctionWrapper(tf.keras.losses.Loss):
         config = {}
         for k, v in iter(self._fn_kwargs.items()):
             config[k] = tf.keras.backend.eval(v) if is_tensor_or_variable(v) else v
-        base_config = super(LossFunctionWrapper, self).get_config()
-        return dict(list(base_config.items()) + list(config.items()))
+        base_config = super().get_config()
+        return {**base_config, **config}
 
 
 def normalize_data_format(value):
