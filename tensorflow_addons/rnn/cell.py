@@ -668,10 +668,10 @@ class ESNCell(keras.layers.AbstractRNNCell):
     @typechecked
     def __init__(
         self,
-        units: TensorLike,
-        connectivity: FloatTensorLike = 0.1,
-        leaky: FloatTensorLike = 1,
-        spectral_radius: FloatTensorLike = 0.9,
+        units: int,
+        connectivity: float = 0.1,
+        leaky: float = 1,
+        spectral_radius: float = 0.9,
         use_norm2: bool = False,
         use_bias: bool = True,
         activation: Activation = "tanh",
