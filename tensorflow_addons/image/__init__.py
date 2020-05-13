@@ -17,6 +17,7 @@
 from tensorflow_addons.image.distort_image_ops import adjust_hsv_in_yiq
 from tensorflow_addons.image.compose_ops import blend
 from tensorflow_addons.image.color_ops import equalize
+from tensorflow_addons.image.color_ops import sharpness
 from tensorflow_addons.image.connected_components import connected_components
 from tensorflow_addons.image.cutout_ops import cutout
 from tensorflow_addons.image.dense_image_warp import dense_image_warp
