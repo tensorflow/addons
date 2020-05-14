@@ -22,7 +22,7 @@ from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import beam_search_decoder, gather_tree
 
 
-def test_gather_tree(numpy_regression):
+def test_gather_tree(np_regression):
     # (max_time = 3, batch_size = 2, beam_width = 3)
 
     # create (batch_size, max_time, beam_width) matrix and transpose it
@@ -45,7 +45,7 @@ def test_gather_tree(numpy_regression):
         end_token=11,
     )
 
-    numpy_regression.check(res, basename="test_gather_tree")
+    np_regression.check(res, basename="test_gather_tree")
 
 
 def _test_gather_tree_from_array(depth_ndims=0, merged_batch_beam=False):

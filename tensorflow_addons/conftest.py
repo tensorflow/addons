@@ -8,7 +8,7 @@ from tensorflow_addons.utils.test_utils import (  # noqa: F401
     pytest_configure,
     device,
     pytest_generate_tests,
-    numpy_regression,
+    np_regression,
 )
 
 # fixtures present in this file will be available

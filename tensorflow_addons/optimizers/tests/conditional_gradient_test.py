@@ -51,7 +51,7 @@ def _dtypes_with_checking_system(use_gpu, system):
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_like_dist_belief_nuclear_cg01(numpy_regression):
+def test_like_dist_belief_nuclear_cg01(np_regression):
     db_grad = np.random.uniform(-1, 1, (10, 10)).astype(np.float32)
     num_samples = len(db_grad)
     var0 = tf.Variable([0.0] * num_samples)
@@ -61,7 +61,7 @@ def test_like_dist_belief_nuclear_cg01(numpy_regression):
     for i in range(num_samples):
         grads0 = tf.constant(db_grad[i])
         cg_opt.apply_gradients(zip([grads0], [var0]))
-        numpy_regression.check(
+        np_regression.check(
             var0.numpy(), "test_like_dist_belief_nuclear_cg01_" + str(i)
         )
 

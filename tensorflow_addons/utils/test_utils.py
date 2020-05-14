@@ -219,5 +219,5 @@ class NumpyRegression:
 
 
 @pytest.fixture
-def numpy_regression(num_regression):
+def np_regression(num_regression):
     return NumpyRegression(num_regression)
