@@ -202,16 +202,7 @@ class NumpyRegression:
     def __init__(self, num_regression_fixture: NumericRegressionFixture):
         self.num_regression_fixture = num_regression_fixture
 
-    def check(
-        self,
-        array_or_tensor,
-        basename=None,
-        fullpath=None,
-        tolerances=None,
-        default_tolerance=None,
-        data_index=None,
-        fill_different_shape_with_nan=True,
-    ):
+    def check(self, array_or_tensor, basename=None, rtol=1e-7, atol=0):
         array = np.array(array_or_tensor)
         dict_of_slices = {}
         if array.ndim > 1:
@@ -223,13 +214,7 @@ class NumpyRegression:
             dict_of_slices["array"] = array
 
         self.num_regression_fixture.check(
-            dict_of_slices,
-            basename,
-            fullpath,
-            tolerances,
-            default_tolerance,
-            data_index,
-            fill_different_shape_with_nan,
+            dict_of_slices, basename, default_tolerance=dict(atol=atol, rtol=rtol)
         )
 
 
