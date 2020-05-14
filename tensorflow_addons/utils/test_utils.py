@@ -206,7 +206,7 @@ class NumpyRegression:
         array = np.array(array_or_tensor)
         dict_of_slices = {}
         if array.ndim > 1:
-            # we need a list of arrays (slices) of one dimension
+            # we need a dict of arrays (slices) of one dimension
             all_slices = get_all_slices(array.shape[:-1])
             for slice_ in all_slices:
                 dict_of_slices[make_name(slice_)] = array[slice_]
