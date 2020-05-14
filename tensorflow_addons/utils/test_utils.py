@@ -16,7 +16,10 @@
 
 import os
 import random
+import itertools
+from typing import List, Tuple
 
+from pytest_regressions.num_regression import NumericRegressionFixture
 import numpy as np
 import pytest
 import tensorflow as tf
@@ -184,3 +187,52 @@ def assert_allclose_according_to_type(
         atol = max(atol, bfloat16_atol)
 
     np.testing.assert_allclose(a, b, rtol=rtol, atol=atol)
+
+
+def get_all_slices(dims: List[int]) -> List[Tuple[int]]:
+    todo = [range(x) for x in dims]
+    return list(itertools.product(*todo))
+
+
+def make_name(slice_):
+    return "slice_" + str(slice_).replace(" ", "")
+
+
+class NumpyRegression:
+    def __init__(self, num_regression_fixture: NumericRegressionFixture):
+        self.num_regression_fixture = num_regression_fixture
+
+    def check(
+        self,
+        array_or_tensor,
+        basename=None,
+        fullpath=None,
+        tolerances=None,
+        default_tolerance=None,
+        data_index=None,
+        fill_different_shape_with_nan=True,
+    ):
+        array = np.array(array_or_tensor)
+        dict_of_slices = {}
+        if array.ndim > 1:
+            # we need a list of arrays (slices) of one dimension
+            all_slices = get_all_slices(array.shape[:-1])
+            for slice_ in all_slices:
+                dict_of_slices[make_name(slice_)] = array[slice_]
+        else:
+            dict_of_slices["array"] = array
+
+        self.num_regression_fixture.check(
+            dict_of_slices,
+            basename,
+            fullpath,
+            tolerances,
+            default_tolerance,
+            data_index,
+            fill_different_shape_with_nan,
+        )
+
+
+@pytest.fixture
+def numpy_regression(num_regression):
+    return NumpyRegression(num_regression)
