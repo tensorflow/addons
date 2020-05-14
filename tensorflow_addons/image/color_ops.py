@@ -30,6 +30,7 @@ from functools import partial
 def equalize_image(image: TensorLike, data_format: str = "channels_last") -> tf.Tensor:
     """Implements Equalize function from PIL using TF ops."""
 
+    @tf.function
     def scale_channel(image, channel):
         """Scale the data in the channel to implement equalize."""
         image_dtype = image.dtype
