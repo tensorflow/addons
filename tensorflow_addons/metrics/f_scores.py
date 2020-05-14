@@ -120,8 +120,6 @@ class FBetaScore(tf.keras.metrics.Metric):
         self.false_negatives = _zero_wt_init("false_negatives")
         self.weights_intermediate = _zero_wt_init("weights_intermediate")
 
-    # TODO: Add sample_weight support, currently it is
-    # ignored during calculations.
     def update_state(self, y_true, y_pred, sample_weight=None):
         if self.threshold is None:
             threshold = tf.reduce_max(y_pred, axis=-1, keepdims=True)
@@ -131,17 +129,22 @@ class FBetaScore(tf.keras.metrics.Metric):
         else:
             y_pred = y_pred > self.threshold
 
-        y_true = tf.cast(y_true, tf.int32)
-        y_pred = tf.cast(y_pred, tf.int32)
+        y_true = tf.cast(y_true, self.dtype)
+        y_pred = tf.cast(y_pred, self.dtype)
 
-        def _count_non_zero(val):
-            non_zeros = tf.math.count_nonzero(val, axis=self.axis)
-            return tf.cast(non_zeros, self.dtype)
+        def _weighted_sum(val, sample_weight):
+            if sample_weight is not None:
+                val = tf.math.multiply(val, tf.expand_dims(sample_weight, 1))
+            return tf.reduce_sum(val, axis=self.axis)
 
-        self.true_positives.assign_add(_count_non_zero(y_pred * y_true))
-        self.false_positives.assign_add(_count_non_zero(y_pred * (y_true - 1)))
-        self.false_negatives.assign_add(_count_non_zero((y_pred - 1) * y_true))
-        self.weights_intermediate.assign_add(_count_non_zero(y_true))
+        self.true_positives.assign_add(_weighted_sum(y_pred * y_true, sample_weight))
+        self.false_positives.assign_add(
+            _weighted_sum(y_pred * (1 - y_true), sample_weight)
+        )
+        self.false_negatives.assign_add(
+            _weighted_sum((1 - y_pred) * y_true, sample_weight)
+        )
+        self.weights_intermediate.assign_add(_weighted_sum(y_true, sample_weight))
 
     def result(self):
         precision = tf.math.divide_no_nan(
