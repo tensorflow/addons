@@ -67,14 +67,8 @@ def test_channel_first():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_with_tf_function():
     test_image = tf.ones([1, 40, 40, 1], dtype=tf.uint8)
-    result_image = tf.function(
-        random_cutout,
-        input_signature=[
-            tf.TensorSpec(shape=[None, 40, 40, 1], dtype=tf.uint8),
-            tf.TensorSpec(shape=[], dtype=tf.int32),
-        ],
-    )(test_image, 2)
+    result_image = tf.function(random_cutout)(test_image, 2)
     cutout_area = tf.zeros([4, 4], dtype=tf.uint8)
     cutout_area = tf.pad(cutout_area, ((0, 36), (0, 36)), constant_values=1)
     expect_image = to_4D_image(cutout_area)
-    np.testing.assert_allclose(tf.shape(result_image), tf.shape(expect_image))
+    np.testing.assert_equal(result_image.shape, expect_image.shape)
