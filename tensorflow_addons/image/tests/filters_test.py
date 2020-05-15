@@ -18,6 +18,9 @@ import numpy as np
 import tensorflow as tf
 from tensorflow_addons.image import mean_filter2d
 from tensorflow_addons.image import median_filter2d
+from tensorflow_addons.image import gaussian_filter2d
+from tensorflow_addons.utils import test_utils
+from scipy.ndimage.filters import gaussian_filter
 
 _dtypes_to_test = {
     tf.dtypes.uint8,
@@ -358,4 +361,41 @@ def test_symmetric_padding_with_3x3_filter_median(image_shape):
         padding="SYMMETRIC",
         constant_values=0,
         expected_plane=expected_plane,
+    )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("shape", [[10, 10], [10, 10, 3], [2, 10, 10, 3]])
+@pytest.mark.parametrize("padding", ["SYMMETRIC", "CONSTANT", "REFLECT"])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_gaussian_filter2d(shape, padding, dtype):
+    modes = {
+        "SYMMETRIC": "reflect",
+        "CONSTANT": "constant",
+        "REFLECT": "mirror",
+    }
+
+    image = np.arange(np.prod(shape)).reshape(*shape).astype(dtype)
+
+    ndims = len(shape)
+    sigma = [1.0, 1.0]
+    if ndims == 3:
+        sigma = [1.0, 1.0, 0.0]
+    elif ndims == 4:
+        sigma = [0.0, 1.0, 1.0, 0.0]
+
+    test_utils.assert_allclose_according_to_type(
+        gaussian_filter2d(image, 9, 1, padding=padding).numpy(),
+        gaussian_filter(image, sigma, mode=modes[padding]),
+    )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_gaussian_filter2d_different_sigma():
+    image = np.arange(40 * 40).reshape(40, 40).astype(np.float32)
+    sigma = [1.0, 2.0]
+
+    test_utils.assert_allclose_according_to_type(
+        gaussian_filter2d(image, [9, 17], sigma).numpy(),
+        gaussian_filter(image, sigma, mode="mirror"),
     )

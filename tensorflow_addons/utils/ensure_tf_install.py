@@ -23,7 +23,7 @@ import warnings
 
 import tensorflow as tf
 
-MIN_TF_VERSION = "2.1.0"
+MIN_TF_VERSION = "2.2.0"
 MAX_TF_VERSION = "2.3.0"
 
 

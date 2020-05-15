@@ -7,6 +7,7 @@ py_library(
     srcs = glob(["*.py"]),
     deps = [
         "//tensorflow_addons/activations",
+        "//tensorflow_addons/testing",
         "//tensorflow_addons/utils",
     ],
 )

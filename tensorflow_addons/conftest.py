@@ -1,9 +1,14 @@
-from tensorflow_addons.utils.test_utils import maybe_run_functions_eagerly  # noqa: F401
-from tensorflow_addons.utils.test_utils import cpu_and_gpu  # noqa: F401
-from tensorflow_addons.utils.test_utils import data_format  # noqa: F401
-from tensorflow_addons.utils.test_utils import set_seeds  # noqa: F401
-from tensorflow_addons.utils.test_utils import pytest_addoption  # noqa: F401
-from tensorflow_addons.utils.test_utils import set_global_variables  # noqa: F401
+from tensorflow_addons.utils.test_utils import (  # noqa: F401
+    maybe_run_functions_eagerly,
+    pytest_make_parametrize_id,
+    data_format,
+    set_seeds,
+    pytest_addoption,
+    set_global_variables,
+    pytest_configure,
+    device,
+    pytest_generate_tests,
+)
 
 import numpy as np
 import pytest
