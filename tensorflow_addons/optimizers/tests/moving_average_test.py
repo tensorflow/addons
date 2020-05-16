@@ -122,7 +122,6 @@ def test_config():
 
     assert config["average_decay"] == 0.5
     assert config["num_updates"] is None
-    assert config["sequential_update"] is True  # deprecated
 
     new_opt = MovingAverage.from_config(config)
     old_sgd_config = opt._optimizer.get_config()
