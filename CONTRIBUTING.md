@@ -160,8 +160,8 @@ conda activate my_dev_environement
 Just run from the root:
 
 ```
-pip install tensorflow==2.2.0rc4
-# you can use "pip install tensorflow-cpu==2.2.0rc4" too if you're not testing on gpu.
+pip install tensorflow==2.2.0
+# you can use "pip install tensorflow-cpu==2.2.0" too if you're not testing on gpu.
 pip install -e ./
 ```
 
@@ -186,7 +186,7 @@ If TensorFlow Addons is installed in editable mode, you can then just run your t
 running Pytest. For example:
 ```bash
 pip install -r tools/install_deps/pytest.txt
-python -m pytest tensorflow_addons/rnn/cell_test.py
+python -m pytest tensorflow_addons/rnn/tests/cell_test.py
 # or even
 python -m pytest tensorflow_addons/rnn/
 # or even 
@@ -249,7 +249,7 @@ If you need a custom C++/Cuda op for your test, compile your ops with
 
 ```bash
 python configure.py
-pip install tensorflow==2.2.0rc4 -e ./ -r tools/install_deps/pytest.txt
+pip install tensorflow==2.2.0 -e ./ -r tools/install_deps/pytest.txt
 bash tools/install_so_files.sh  # Linux/macos/WSL2
 sh tools/install_so_files.sh    # PowerShell
 ```
@@ -277,7 +277,7 @@ docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/ten
 
 Configure:
 ```
-python3 -m pip install tensorflow==2.2.0rc4
+python3 -m pip install tensorflow==2.2.0
 python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 
@@ -315,7 +315,7 @@ quickly, as Bazel has great support for caching and distributed testing.
 To test with Bazel:
 
 ```
-python3 -m pip install tensorflow==2.2.0rc4
+python3 -m pip install tensorflow==2.2.0
 python3 configure.py
 python3 -m pip install -r tools/install_deps/pytest.txt
 bazel test -c opt -k \
@@ -434,6 +434,17 @@ def test_something():
     # the code here will run twice, once on gpu, once on cpu.
     ...
 
+
+@pytest.mark.with_device(["cpu", "gpu"])
+def test_something2(device):
+    # the code here will run twice, once on gpu, once on cpu.
+    # device will be "cpu:0" or "gpu:0" or "gpu:1" or "gpu:2" ...   
+    if "cpu" in device:
+        print("do something.")
+    if "gpu" in device:
+        print("do something else.")
+
+
 @pytest.mark.with_device(["gpu"])
 def test_something_else():
     # This test will be only run on gpu.
@@ -443,6 +454,13 @@ def test_something_else():
 @pytest.mark.with_device(["cpu"])
 def test_something_more():
     # Don't do that, this is the default behavior. 
+    ...
+
+
+@pytest.mark.with_device(["no_device"])
+def test_something_more2():
+    # When running the function, there will be no `with tf.device` wrapper.
+    # You are free to do whatever you wish with the devices in there.
     ...
 ```
 

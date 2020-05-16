@@ -1,7 +1,7 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 FROM python:3.5 as build_wheel
 
-ARG TF_VERSION=2.2.0rc4
+ARG TF_VERSION=2.2.0
 RUN pip install tensorflow-cpu==$TF_VERSION
 
 RUN apt-get update && apt-get install -y sudo rsync

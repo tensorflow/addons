@@ -40,6 +40,7 @@ Initializer = Union[None, dict, str, Callable]
 Regularizer = Union[None, dict, str, Callable]
 Constraint = Union[None, dict, str, Callable]
 Activation = Union[None, str, Callable]
+Optimizer = Union[tf.keras.optimizers.Optimizer, str]
 
 TensorLike = Union[
     List[Union[Number, list]],

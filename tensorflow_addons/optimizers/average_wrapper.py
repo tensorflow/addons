@@ -16,17 +16,17 @@
 import abc
 
 import tensorflow as tf
+from tensorflow_addons.utils import types
 
 import warnings
 from typeguard import typechecked
-from typing import Union
 
 
 class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCMeta):
     @typechecked
     def __init__(
         self,
-        optimizer: Union[tf.keras.optimizers.Optimizer, str],
+        optimizer: types.Optimizer,
         sequential_update: bool = True,
         name: str = "AverageOptimizer",
         **kwargs
