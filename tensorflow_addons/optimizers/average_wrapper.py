@@ -48,11 +48,11 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
         self._optimizer = optimizer
 
         if sequential_update is not None:
-          warnings.warn(
-              "The parameter `sequential_update` is redundant due to AutoGraph. "
-              "This behavior is deprecated and in Addons 0.12, this will raise an error. ",
-              DeprecationWarning,
-          )
+            warnings.warn(
+                "The parameter `sequential_update` is redundant due to AutoGraph. "
+                "This behavior is deprecated and in Addons 0.12, this will raise an error. ",
+                DeprecationWarning,
+            )
 
     def _create_slots(self, var_list):
         self._optimizer._create_slots(var_list=var_list)
