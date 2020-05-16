@@ -131,19 +131,13 @@ class SWA(AveragedOptimizerWrapper):
         # The average update should happen iff two conditions are met:
         # 1. A min number of iterations (start_averaging) have taken place.
         # 2. Iteration is one in which snapshot should be taken.
-        update_cond = tf.reduce_all(
-            [
-                self.iterations >= start_averaging,
-                self.iterations == start_averaging + num_snapshots * average_period,
-            ]
-        )
+        checkpoint = start_averaging + num_snapshots * average_period
+        if self.iterations >= start_averaging and self.iterations == checkpoint:
+            num_snapshots = tf.cast(num_snapshots, tf.float32)
+            average_value = (average_var * num_snapshots + var) / (num_snapshots + 1.0)
+            return average_var.assign(average_value)
 
-        num_snapshots = tf.cast(num_snapshots, tf.float32)
-        average_value = (average_var * num_snapshots + var) / (num_snapshots + 1.0)
-        return average_var.assign(
-            tf.where(update_cond, average_value, average_var),
-            use_locking=self._use_locking,
-        )
+        return average_var
 
     def get_config(self):
         config = {
