@@ -62,8 +62,8 @@ import tensorflow_addons as tfa
 ```
 
 ### Python Op Compatility
-TensorFlow Addons is actively working towards forward compatiblity with TensorFlow 2.x. 
-However, there are still a few private API uses within the respository so at the moment 
+TensorFlow Addons is actively working towards forward compatibility with TensorFlow 2.x. 
+However, there are still a few private API uses within the repository so at the moment 
 we can only guarantee compatibility with the TensorFlow versions which it was tested against. 
 Warnings will be emitted when importing `tensorflow_addons` if your TensorFlow version does not match 
 what it was tested against.
@@ -87,7 +87,7 @@ what it was built against.
 
 Additionally, custom ops registration does not have a stable ABI interface so it is 
 required that users have a compatible installation of TensorFlow even if the versions 
-match what we had build against. A simplification of this is that **TensorFlow Addons 
+match what we had built against. A simplification of this is that **TensorFlow Addons 
 custom ops will work with `pip`-installed TensorFlow** but will have issues when TensorFlow 
 is compiled differently. A typical example of this would be `conda`-installed TensorFlow.
 [RFC #133](https://github.com/tensorflow/community/pull/133) aims to fix this.
