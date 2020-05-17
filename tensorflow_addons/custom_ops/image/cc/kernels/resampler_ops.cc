@@ -406,9 +406,9 @@ TF_CALL_double(REGISTER);
                               .Device(DEVICE_GPU)         \
                               .TypeConstraint<TYPE>("T"), \
                           ResamplerGradOp<GPUDevice, TYPE>)
-// Disable half and double precision since atomicAdds are not supported
-// TF_CALL_half(REGISTER);
-// TF_CALL_double(REGISTER);
+
+TF_CALL_half(REGISTER);
+TF_CALL_double(REGISTER);
 TF_CALL_float(REGISTER);
 
 #undef REGISTER
