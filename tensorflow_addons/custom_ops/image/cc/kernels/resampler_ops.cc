@@ -195,6 +195,8 @@ TF_CALL_double(REGISTER);
   REGISTER_KERNEL_BUILDER(                                                   \
       Name("Addons>Resampler").Device(DEVICE_GPU).TypeConstraint<TYPE>("T"), \
       ResamplerOp<GPUDevice, TYPE>)
+
+TF_CALL_half(REGISTER);
 TF_CALL_float(REGISTER);
 TF_CALL_double(REGISTER);
 #undef REGISTER
@@ -410,7 +412,6 @@ TF_CALL_double(REGISTER);
 TF_CALL_half(REGISTER);
 TF_CALL_double(REGISTER);
 TF_CALL_float(REGISTER);
-
 #undef REGISTER
 #endif  // GOOGLE_CUDA
 
