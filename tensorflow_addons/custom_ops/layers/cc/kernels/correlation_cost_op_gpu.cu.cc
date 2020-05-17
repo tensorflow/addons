@@ -20,7 +20,6 @@ limitations under the License.
 #include "gpu/cub/device/device_reduce.cuh"
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/tensor_shape.h"
-#include "tensorflow/core/util/gpu_device_functions.h"
 #include "tensorflow/core/util/gpu_kernel_helper.h"
 #include "tensorflow/core/util/tensor_format.h"
 #include "tensorflow_addons/custom_ops/layers/cc/kernels/correlation_cost_op.h"
@@ -74,7 +73,7 @@ __global__ void pad_and_no_transpose(const float *__restrict__ input,
 
   for (int c = c0; c < C; c += THREADS_PER_BLOCK) {
     output[n * (C * pH * pW) + (h + P) * (pW * C) + (w + P) * C + c] =
-        ldg(n * (C * H * W) + h * (W * C) + w * C + c);
+        ldg(input + n * (C * H * W) + h * (W * C) + w * C + c);
   }
 }
 
