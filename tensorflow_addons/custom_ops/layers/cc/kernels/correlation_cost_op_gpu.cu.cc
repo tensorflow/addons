@@ -245,11 +245,11 @@ __global__ void Correlation_backward_input2(
     const int i2 = (tc % displacement_size - displacement_rad) * stride2;
     const int j2 = (tc / displacement_size - displacement_rad) * stride2;
 
-    const int Wmin = (w - kernel_rad - max_displacement - i2) / stride1;
-    const int Hmin = (h - kernel_rad - max_displacement - j2) / stride1;
+    int Wmin = (w - kernel_rad - max_displacement - i2) / stride1;
+    int Hmin = (h - kernel_rad - max_displacement - j2) / stride1;
 
-    const int Wmax = (w + kernel_rad - max_displacement - i2) / stride1;
-    const int Hmax = (h + kernel_rad - max_displacement - j2) / stride1;
+    int Wmax = (w + kernel_rad - max_displacement - i2) / stride1;
+    int Hmax = (h + kernel_rad - max_displacement - j2) / stride1;
 
     if (Wmax < 0 || Hmax < 0 || Wmin >= Wout || Hmin >= Hout) {
       // assumes gradInput2 is pre-allocated and zero filled
