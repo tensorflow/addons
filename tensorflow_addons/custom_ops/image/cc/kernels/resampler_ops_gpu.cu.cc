@@ -273,7 +273,9 @@ struct ResamplerGrad2DFunctor<GPUDevice, T> {
   }
 };
 
+template struct ResamplerGrad2DFunctor<GPUDevice, Eigen::half>;
 template struct ResamplerGrad2DFunctor<GPUDevice, float>;
+template struct ResamplerGrad2DFunctor<GPUDevice, double>;
 
 }  // namespace functor
 }  // namespace addons
