@@ -316,10 +316,10 @@ struct CorrelationCostFunctor<GPUDevice, Dtype> {
     Tensor padded_a_t;
     Tensor padded_b_t;
     TensorShape padded_shape({N, iH + 2 * pad, iW + 2 * pad, iC});
-    OP_REQUIRES_OK(context, context->allocate_temp(DataTypeToEnum<Dtype>::v(),
-                                                   padded_shape, &padded_a_t));
-    OP_REQUIRES_OK(context, context->allocate_temp(DataTypeToEnum<Dtype>::v(),
-                                                   padded_shape, &padded_b_t));
+    TF_RETURN_IF_ERROR(context->allocate_temp(DataTypeToEnum<Dtype>::v(),
+                                              padded_shape, &padded_a_t));
+    TF_RETURN_IF_ERROR(context->allocate_temp(DataTypeToEnum<Dtype>::v(),
+                                              padded_shape, &padded_b_t));
 
     dim3 blocks_grid(N, iH, iW);
     dim3 threads_block(THREADS_PER_BLOCK);
@@ -386,10 +386,10 @@ struct CorrelationCostGradFunctor<GPUDevice, Dtype> {
     Tensor padded_a_t;
     Tensor padded_b_t;
     TensorShape padded_shape({N, iH + 2 * pad, iW + 2 * pad, iC});
-    OP_REQUIRES_OK(context, context->allocate_temp(DataTypeToEnum<Dtype>::v(),
-                                                   padded_shape, &padded_a_t));
-    OP_REQUIRES_OK(context, context->allocate_temp(DataTypeToEnum<Dtype>::v(),
-                                                   padded_shape, &padded_b_t));
+    TF_RETURN_IF_ERROR(context->allocate_temp(DataTypeToEnum<Dtype>::v(),
+                                              padded_shape, &padded_a_t));
+    TF_RETURN_IF_ERROR(context->allocate_temp(DataTypeToEnum<Dtype>::v(),
+                                              padded_shape, &padded_b_t));
 
     dim3 blocks_grid(N, iH, iW);
     dim3 threads_block(THREADS_PER_BLOCK);
