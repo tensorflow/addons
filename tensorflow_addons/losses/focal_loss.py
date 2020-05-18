@@ -40,11 +40,11 @@ class SigmoidFocalCrossEntropy(LossFunctionWrapper):
     ```python
     fl = tfa.losses.SigmoidFocalCrossEntropy()
     loss = fl(
-      [[0.97], [0.91], [0.03]],
-      [[1.0], [1.0], [0.0]])
-    print('Loss: ', loss.numpy())  # Loss: [0.00010971,
-                                            0.0032975,
-                                            0.00030611]
+      y_true=[[1.0], [1.0], [0.0]],
+      y_pred=[[0.97], [0.91], [0.03]])
+    print('Loss: ', loss.numpy())  # Loss: [6.8532745e-06,
+                                            1.9097870e-04,
+                                            2.0559824e-05]
     ```
     Usage with tf.keras API:
 
