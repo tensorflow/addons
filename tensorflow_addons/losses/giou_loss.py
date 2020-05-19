@@ -15,7 +15,7 @@
 """Implements GIoU loss."""
 
 import tensorflow as tf
-from tensorflow.python.keras.losses import LossFunctionWrapper
+from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
 from tensorflow_addons.utils.types import TensorLike
 from typing import Optional
 from typeguard import typechecked
