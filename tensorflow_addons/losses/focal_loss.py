@@ -18,7 +18,7 @@ import tensorflow as tf
 
 import tensorflow.keras.backend as K
 
-from tensorflow.python.keras.losses import LossFunctionWrapper
+from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
 from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 from typeguard import typechecked
 

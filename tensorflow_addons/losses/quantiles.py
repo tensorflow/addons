@@ -16,7 +16,7 @@
 
 import tensorflow as tf
 from typeguard import typechecked
-from tensorflow.python.keras.losses import LossFunctionWrapper
+from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
 from tensorflow_addons.utils.types import TensorLike, FloatTensorLike
 
 

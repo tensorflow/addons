@@ -149,6 +149,7 @@ class CohenKappa(Metric):
         y_pred = tf.cast(y_pred > 0.5, dtype=tf.int64)
         return self._update_confusion_matrix(y_true, y_pred, sample_weight)
 
+    @tf.function
     def _update_multi_class_model(self, y_true, y_pred, sample_weight=None):
         if not self.sparse_labels:
             y_true = tf.cast(tf.argmax(y_true, axis=-1), dtype=tf.int64)
