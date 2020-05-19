@@ -42,23 +42,21 @@ def test_low_rank_matrix():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_invalid_proj_dim():
-    with pytest.raises(ValueError) as exception_info:
+    with pytest.raises(ValueError, match="should be smaller than last_dim / 2"):
         x0 = np.random.random((12, 5))
         x = np.random.random((12, 5))
         layer = PolynomialCrossing(projection_dim=6)
         layer([x0, x])
-    assert "should be smaller than last_dim / 2" in str(exception_info.value)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_invalid_inputs():
-    with pytest.raises(ValueError) as exception_info:
+    with pytest.raises(ValueError, match="must be a tuple or list of size 2"):
         x0 = np.random.random((12, 5))
         x = np.random.random((12, 5))
         x1 = np.random.random((12, 5))
         layer = PolynomialCrossing(projection_dim=6)
         layer([x0, x, x1])
-    assert "must be a tuple or list of size 2" in str(exception_info.value)
 
 
 def test_serialization():
