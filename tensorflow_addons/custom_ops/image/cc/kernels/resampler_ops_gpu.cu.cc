@@ -22,6 +22,7 @@
 #include <cmath>
 
 #include "tensorflow/core/framework/register_types.h"
+#include "tensorflow/core/util/gpu_device_functions.h"
 #include "tensorflow/core/util/gpu_kernel_helper.h"
 #include "tensorflow_addons/custom_ops/image/cc/kernels/resampler_ops.h"
 
@@ -44,7 +45,7 @@ __global__ void Resampler2DKernel(const T* __restrict__ data,
                                   const int data_channels,
                                   const int num_sampling_points) {
   const int output_data_size = batch_size * num_sampling_points * data_channels;
-  CUDA_1D_KERNEL_LOOP(index, output_data_size) {
+  GPU_1D_KERNEL_LOOP(index, output_data_size) {
     const int out_index = index;
 
     // Get (idxSample, channel, point) from the index.
@@ -126,8 +127,7 @@ struct Resampler2DFunctor<GPUDevice, T> {
   }
 };
 
-// TODO(fviola): gcudacc fails at compile time with Eigen::half.
-// template struct Resampler2DFunctor<GPUDevice, Eigen::half>;
+template struct Resampler2DFunctor<GPUDevice, Eigen::half>;
 template struct Resampler2DFunctor<GPUDevice, float>;
 template struct Resampler2DFunctor<GPUDevice, double>;
 
@@ -135,10 +135,10 @@ template struct Resampler2DFunctor<GPUDevice, double>;
 
 namespace {
 
-#define UPDATE_GRAD_DATA_POINT(x, y, v)                                \
-  atomicAdd(grad_data + (batch_id * data_batch_stride +                \
-                         data_channels * (y * data_width + x) + chan), \
-            v)
+#define UPDATE_GRAD_DATA_POINT(x, y, v)                                   \
+  GpuAtomicAdd(grad_data + (batch_id * data_batch_stride +                \
+                            data_channels * (y * data_width + x) + chan), \
+               v)
 
 template <typename T>
 __global__ void ResamplerGrad2DKernel(
@@ -149,7 +149,7 @@ __global__ void ResamplerGrad2DKernel(
     const int num_sampling_points) {
   const int resampler_output_size =
       batch_size * num_sampling_points * data_channels;
-  CUDA_1D_KERNEL_LOOP(index, resampler_output_size) {
+  GPU_1D_KERNEL_LOOP(index, resampler_output_size) {
     const int out_index = index;
 
     // Get (idxSample, channel, point) from the index.
@@ -206,12 +206,12 @@ __global__ void ResamplerGrad2DKernel(
           (cx <= data_width - 1 && fy >= 0) ? GET_DATA_POINT(cx, fy) : zero;
 
       // Update partial gradients wrt relevant warp field entries
-      atomicAdd(grad_warp + warp_id_x,
-                grad_output_value * ((one - dy) * (img_cxcy - img_fxcy) +
-                                     dy * (img_cxfy - img_fxfy)));
-      atomicAdd(grad_warp + warp_id_y,
-                grad_output_value * ((one - dx) * (img_cxcy - img_cxfy) +
-                                     dx * (img_fxcy - img_fxfy)));
+      GpuAtomicAdd(grad_warp + warp_id_x,
+                   grad_output_value * ((one - dy) * (img_cxcy - img_fxcy) +
+                                        dy * (img_cxfy - img_fxfy)));
+      GpuAtomicAdd(grad_warp + warp_id_y,
+                   grad_output_value * ((one - dx) * (img_cxcy - img_cxfy) +
+                                        dx * (img_fxcy - img_fxfy)));
 
       // Update partial gradients wrt sampled data
       if (fx >= 0 && fy >= 0) {
@@ -273,7 +273,9 @@ struct ResamplerGrad2DFunctor<GPUDevice, T> {
   }
 };
 
+template struct ResamplerGrad2DFunctor<GPUDevice, Eigen::half>;
 template struct ResamplerGrad2DFunctor<GPUDevice, float>;
+template struct ResamplerGrad2DFunctor<GPUDevice, double>;
 
 }  // namespace functor
 }  // namespace addons
