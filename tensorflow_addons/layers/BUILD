@@ -10,6 +10,7 @@ py_library(
     ],
     deps = [
         "//tensorflow_addons/activations",
+        "//tensorflow_addons/rnn",
         "//tensorflow_addons/testing",
         "//tensorflow_addons/utils",
     ],
