@@ -932,3 +932,15 @@ def test_attention_wrapper_with_gru_cell():
     initial_state = cell.get_initial_state(inputs=inputs)
     _, state = cell(inputs, initial_state)
     tf.nest.assert_same_structure(initial_state, state)
+
+
+def test_attention_wrapper_with_multiple_attention_mechanisms():
+    cell = tf.keras.layers.LSTMCell(5)
+    mechanisms = [wrapper.LuongAttention(units=3), wrapper.LuongAttention(units=3)]
+    # We simply test that the wrapper creation makes no error.
+    wrapper.AttentionWrapper(cell, mechanisms, attention_layer_size=[4, 5])
+    wrapper.AttentionWrapper(
+        cell,
+        mechanisms,
+        attention_layer=[tf.keras.layers.Dense(4), tf.keras.layers.Dense(5)],
+    )

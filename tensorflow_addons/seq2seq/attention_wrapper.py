@@ -31,7 +31,7 @@ from tensorflow_addons.utils.types import (
 )
 
 from typeguard import typechecked
-from typing import Optional, Callable
+from typing import Optional, Callable, Union, List
 
 # TODO: Find public API alternatives to these
 from tensorflow.python.keras.engine import base_layer_utils
@@ -1618,14 +1618,18 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
     def __init__(
         self,
         cell: tf.keras.layers.Layer,
-        attention_mechanism: tf.keras.layers.Layer,
-        attention_layer_size: Optional[FloatTensorLike] = None,
+        attention_mechanism: Union[tf.keras.layers.Layer, List[tf.keras.layers.Layer]],
+        attention_layer_size: Optional[
+            Union[FloatTensorLike, List[FloatTensorLike]]
+        ] = None,
         alignment_history: bool = False,
         cell_input_fn: Optional[Callable] = None,
         output_attention: bool = True,
         initial_cell_state: Optional[TensorLike] = None,
         name: Optional[str] = None,
-        attention_layer: Optional[tf.keras.layers.Layer] = None,
+        attention_layer: Optional[
+            Union[tf.keras.layers.Layer, List[tf.keras.layers.Layer]]
+        ] = None,
         attention_fn: Optional[Callable] = None,
         **kwargs
     ):
@@ -1701,7 +1705,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             and cell output as inputs to generate attention at each time step.
             If None (default), use the context as attention at each time step.
             If attention_mechanism is a list, attention_layer must be a list of
-            the same length. If attention_layers_size is set, this must be
+            the same length. If attention_layer_size is set, this must be
             None.
           attention_fn: An optional callable function that allows users to
             provide their own customized attention function, which takes input
