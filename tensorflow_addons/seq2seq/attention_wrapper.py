@@ -28,6 +28,7 @@ from tensorflow_addons.utils.types import (
     FloatTensorLike,
     TensorLike,
     Initializer,
+    Number,
 )
 
 from typeguard import typechecked
@@ -1619,9 +1620,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         self,
         cell: tf.keras.layers.Layer,
         attention_mechanism: Union[tf.keras.layers.Layer, List[tf.keras.layers.Layer]],
-        attention_layer_size: Optional[
-            Union[FloatTensorLike, List[FloatTensorLike]]
-        ] = None,
+        attention_layer_size: Optional[Union[Number, List[Number]]] = None,
         alignment_history: bool = False,
         cell_input_fn: Optional[Callable] = None,
         output_attention: bool = True,
