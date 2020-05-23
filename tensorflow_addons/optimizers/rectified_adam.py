@@ -13,8 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Rectified Adam (RAdam) optimizer."""
-import warnings
-
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
@@ -80,10 +78,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         weight_decay: FloatTensorLike = 0.0,
         amsgrad: bool = False,
         sma_threshold: FloatTensorLike = 5.0,
-        # float for total_steps is here to be able to load models created before
-        # https://github.com/tensorflow/addons/pull/1375 was merged. It should be
-        # removed for Addons 0.11.
-        total_steps: Union[int, float] = 0,
+        total_steps: int = 0,
         warmup_proportion: FloatTensorLike = 0.1,
         min_lr: FloatTensorLike = 0.0,
         name: str = "RectifiedAdam",
@@ -127,15 +122,6 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         self._set_hyper("decay", self._initial_decay)
         self._set_hyper("weight_decay", weight_decay)
         self._set_hyper("sma_threshold", sma_threshold)
-        if isinstance(total_steps, float):
-            warnings.warn(
-                "The parameter `total_steps` passed to the __init__ of RectifiedAdam "
-                "is a float. This behavior is deprecated and in Addons 0.11, this "
-                "will raise an error. Use an int instead. If you get this message "
-                "when loading a model, save it again and the `total_steps` parameter "
-                "will automatically be converted to a int.",
-                DeprecationWarning,
-            )
         self._set_hyper("total_steps", int(total_steps))
         self._set_hyper("warmup_proportion", warmup_proportion)
         self._set_hyper("min_lr", min_lr)
