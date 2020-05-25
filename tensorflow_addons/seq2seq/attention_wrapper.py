@@ -1619,7 +1619,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
     def __init__(
         self,
         cell: tf.keras.layers.Layer,
-        attention_mechanism: Union[tf.keras.layers.Layer, List[tf.keras.layers.Layer]],
+        attention_mechanism: Union[AttentionMechanism, List[AttentionMechanism]],
         attention_layer_size: Optional[Union[Number, List[Number]]] = None,
         alignment_history: bool = False,
         cell_input_fn: Optional[Callable] = None,
@@ -1728,34 +1728,14 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         if isinstance(attention_mechanism, (list, tuple)):
             self._is_multi = True
             attention_mechanisms = list(attention_mechanism)
-            for attention_mechanism in attention_mechanisms:
-                if not isinstance(attention_mechanism, AttentionMechanism):
-                    raise TypeError(
-                        "attention_mechanism must contain only instances of "
-                        "AttentionMechanism, saw type: %s"
-                        % type(attention_mechanism).__name__
-                    )
         else:
             self._is_multi = False
-            if not isinstance(attention_mechanism, AttentionMechanism):
-                raise TypeError(
-                    "attention_mechanism must be an AttentionMechanism or "
-                    "list of multiple AttentionMechanism instances, saw type: "
-                    "%s" % type(attention_mechanism).__name__
-                )
             attention_mechanisms = [attention_mechanism]
 
         if cell_input_fn is None:
 
             def cell_input_fn(inputs, attention):
                 return tf.concat([inputs, attention], -1)
-
-        else:
-            if not callable(cell_input_fn):
-                raise TypeError(
-                    "cell_input_fn must be callable, saw type: %s"
-                    % type(cell_input_fn).__name__
-                )
 
         if attention_layer_size is not None and attention_layer is not None:
             raise ValueError(
