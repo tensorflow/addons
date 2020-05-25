@@ -26,7 +26,7 @@ from tensorflow_addons.utils.resource_loader import LazySO
 from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 
 from typeguard import typechecked
-from typing import Callable, Optional, Union
+from typing import Callable, Optional
 
 _beam_search_so = LazySO("custom_ops/seq2seq/_beam_search_ops.so")
 
@@ -285,12 +285,6 @@ class BeamSearchDecoderMixin:
             or `output_layer` is not an instance of `tf.keras.layers.Layer`.
         """
         keras_utils.assert_like_rnncell("cell", cell)
-        if output_layer is not None and not isinstance(
-            output_layer, tf.keras.layers.Layer
-        ):
-            raise TypeError(
-                "output_layer must be a Layer, received: %s" % type(output_layer)
-            )
         self._cell = cell
         self._output_layer = output_layer
         self._reorder_tensor_arrays = reorder_tensor_arrays
@@ -658,7 +652,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         self,
         cell: tf.keras.layers.Layer,
         beam_width: int,
-        embedding_fn: Union[TensorLike, Callable, None] = None,
+        embedding_fn: Optional[Callable] = None,
         output_layer: Optional[tf.keras.layers.Layer] = None,
         length_penalty_weight: FloatTensorLike = 0.0,
         coverage_penalty_weight: FloatTensorLike = 0.0,
@@ -701,12 +695,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
             **kwargs,
         )
 
-        if embedding_fn is None or callable(embedding_fn):
-            self._embedding_fn = embedding_fn
-        else:
-            raise ValueError(
-                "embedding_fn is expected to be a callable, got %s" % type(embedding_fn)
-            )
+        self._embedding_fn = embedding_fn
 
     def initialize(self, embedding, start_tokens, end_token, initial_state):
         """Initialize the decoder.
