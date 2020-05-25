@@ -28,10 +28,11 @@ from tensorflow_addons.utils.types import (
     FloatTensorLike,
     TensorLike,
     Initializer,
+    Number,
 )
 
 from typeguard import typechecked
-from typing import Optional, Callable
+from typing import Optional, Callable, Union, List
 
 # TODO: Find public API alternatives to these
 from tensorflow.python.keras.engine import base_layer_utils
@@ -1618,19 +1619,16 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
     def __init__(
         self,
         cell: tf.keras.layers.Layer,
-<<<<<<< HEAD
-        attention_mechanism: tf.keras.layers.Layer,
-        attention_layer_size: Optional[FloatTensorLike] = None,
-=======
         attention_mechanism: Union[AttentionMechanism, List[AttentionMechanism]],
         attention_layer_size: Optional[Union[Number, List[Number]]] = None,
->>>>>>> 61218c1... Remove manual type checks and fix some annotations (#1876)
         alignment_history: bool = False,
         cell_input_fn: Optional[Callable] = None,
         output_attention: bool = True,
         initial_cell_state: Optional[TensorLike] = None,
         name: Optional[str] = None,
-        attention_layer: Optional[tf.keras.layers.Layer] = None,
+        attention_layer: Optional[
+            Union[tf.keras.layers.Layer, List[tf.keras.layers.Layer]]
+        ] = None,
         attention_fn: Optional[Callable] = None,
         **kwargs
     ):
@@ -1706,7 +1704,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             and cell output as inputs to generate attention at each time step.
             If None (default), use the context as attention at each time step.
             If attention_mechanism is a list, attention_layer must be a list of
-            the same length. If attention_layers_size is set, this must be
+            the same length. If attention_layer_size is set, this must be
             None.
           attention_fn: An optional callable function that allows users to
             provide their own customized attention function, which takes input
@@ -2031,6 +2029,9 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         cell_inputs = self._cell_input_fn(inputs, state.attention)
         cell_state = state.cell_state
         cell_output, next_cell_state = self._cell(cell_inputs, cell_state, **kwargs)
+        next_cell_state = tf.nest.pack_sequence_as(
+            cell_state, tf.nest.flatten(next_cell_state)
+        )
 
         cell_batch_size = (
             tf.compat.dimension_value(cell_output.shape[0]) or tf.shape(cell_output)[0]
