@@ -558,3 +558,64 @@ def test_esn_config():
     restored_cell = rnn_cell.ESNCell.from_config(config)
     restored_config = restored_cell.get_config()
     assert config == restored_config
+
+
+def test_zoneout():
+    units = 3
+    inputs = tf.constant([[[1.0, 2, 3, 4, 5]]])
+    initial_state = [tf.constant([[11.0, 12, 13]]), tf.constant([[21.0, 22, 23]])]
+
+    const_initializer = tf.constant_initializer(0.5)
+
+    # No zoneout. Testing against vanila LSTM.
+    lstm_layer = keras.layers.LSTM(
+        units,
+        kernel_initializer=const_initializer,
+        recurrent_initializer=const_initializer,
+        return_state=True,
+    )
+    lstm_output = lstm_layer(inputs, training=True)
+
+    zoneout_cell = rnn_cell.ZoneoutLSTMCell(
+        units,
+        kernel_initializer=const_initializer,
+        recurrent_initializer=const_initializer,
+    )
+    zoneout_layer = keras.layers.RNN(zoneout_cell, return_state=True)
+    zoneout_output = zoneout_layer(inputs, training=True)
+
+    np.testing.assert_allclose(lstm_output, zoneout_output)
+
+    # Total zoneout. Testing against initial state.
+    zoneout_cell = rnn_cell.ZoneoutLSTMCell(
+        units,
+        zoneout_h=1,
+        zoneout_c=1,
+        kernel_initializer=const_initializer,
+        recurrent_initializer=const_initializer,
+    )
+    zoneout_layer = keras.layers.RNN(zoneout_cell, return_state=True)
+    zoneout_output = zoneout_layer(inputs, initial_state=initial_state, training=True)
+
+    np.testing.assert_allclose(
+        [initial_state[0], initial_state[0], initial_state[1]], zoneout_output
+    )
+
+    # Inference. Expected to be the same as LSTM.
+    zoneout_output = zoneout_layer(inputs)
+
+    np.testing.assert_allclose(lstm_output, zoneout_output)
+
+
+def test_zoneout_config():
+    cell = rnn_cell.ZoneoutLSTMCell(3, zoneout_c=0.5)
+    config = cell.get_config()
+
+    our_config = {
+        "units": 3,  # just to ensure that we do get the base's class config
+        "zoneout_h": 0,
+        "zoneout_c": 0.5,
+        "seed": None,
+    }
+
+    assert our_config == {key: config[key] for key in our_config.keys() & config.keys()}

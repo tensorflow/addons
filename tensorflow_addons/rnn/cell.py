@@ -799,3 +799,50 @@ class ESNCell(keras.layers.AbstractRNNCell):
         }
         base_config = super().get_config()
         return {**base_config, **config}
+
+
+@tf.keras.utils.register_keras_serializable(package="Addons")
+class ZoneoutLSTMCell(keras.layers.LSTMCell):
+    """LSTM cell with recurrent zoneout.
+
+    https://arxiv.org/abs/1606.01305
+    """
+
+    @typechecked
+    def __init__(
+        self,
+        units: int,
+        zoneout_h: float = 0,
+        zoneout_c: float = 0,
+        seed: int = None,
+        **kwargs
+    ):
+        """
+        """
+        super().__init__(units, **kwargs)
+        self.zoneout_h = zoneout_h
+        self.zoneout_c = zoneout_c
+        self.seed = seed
+
+    def _zoneout(self, t, tm1, rate, training):
+        dt = tf.cast(
+            tf.random.uniform(t.shape, seed=self.seed) >= rate * training, t.dtype
+        )
+        return dt * t + (1 - dt) * tm1
+
+    def call(self, inputs, states, training=None):
+        if training is None:
+            training = keras.backend.learning_phase()
+        output, new_states = super().call(inputs, states, training)
+        h = self._zoneout(new_states[0], states[0], self.zoneout_h, training)
+        c = self._zoneout(new_states[1], states[1], self.zoneout_c, training)
+        return h, [h, c]
+
+    def get_config(self):
+        config = {
+            "zoneout_h": self.zoneout_h,
+            "zoneout_c": self.zoneout_c,
+            "seed": self.seed,
+        }
+        base_config = super().get_config()
+        return {**base_config, **config}
