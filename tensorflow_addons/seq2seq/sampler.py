@@ -20,7 +20,7 @@ import tensorflow as tf
 from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.utils.types import Initializer, TensorLike
 from typeguard import typechecked
-from typing import Callable, Optional, Union
+from typing import Callable, Optional
 from tensorflow_addons.utils import types
 
 _transpose_batch_time = decoder._transpose_batch_time
@@ -114,8 +114,8 @@ class CustomSampler(Sampler):
     def __init__(
         self,
         initialize_fn: Initializer,
-        sample_fn: Union[TensorLike, Callable],
-        next_inputs_fn: Union[TensorLike, Callable],
+        sample_fn: Callable,
+        next_inputs_fn: Callable,
         sample_ids_shape: Optional[TensorLike] = None,
         sample_ids_dtype: types.AcceptableDTypes = None,
     ):
@@ -316,7 +316,7 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
     def __init__(
         self,
         sampling_probability: TensorLike,
-        embedding_fn: Union[TensorLike, Callable] = None,
+        embedding_fn: Optional[Callable] = None,
         time_major: bool = False,
         seed: Optional[int] = None,
         scheduling_seed: Optional[TensorLike] = None,
@@ -328,7 +328,7 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
             of sampling categorically from the output ids instead of reading
             directly from the inputs.
           embedding_fn: A callable that takes a vector tensor of `ids`
-            (argmax ids), or the `params` argument for `embedding_lookup`.
+            (argmax ids).
           time_major: Python bool. Whether the tensors in `inputs` are time
             major. If `False` (default), they are assumed to be batch major.
           seed: The sampling seed.
@@ -337,12 +337,7 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
         Raises:
           ValueError: if `sampling_probability` is not a scalar or vector.
         """
-        if callable(embedding_fn) or embedding_fn is None:
-            self.embedding_fn = embedding_fn
-        else:
-            raise ValueError(
-                "embedding_fn is expected to be callable, got %s" % type(embedding_fn)
-            )
+        self.embedding_fn = embedding_fn
         if isinstance(sampling_probability, tf.Variable):
             self.sampling_probability = sampling_probability
         else:
@@ -559,21 +554,15 @@ class GreedyEmbeddingSampler(Sampler):
     """
 
     @typechecked
-    def __init__(self, embedding_fn: Union[TensorLike, Callable] = None):
+    def __init__(self, embedding_fn: Optional[Callable] = None):
         """Initializer.
 
         Args:
           embedding_fn: A optional callable that takes a vector tensor of `ids`
-            (argmax ids), or the `params` argument for `embedding_lookup`. The
-            returned tensor will be passed to the decoder input. Default to use
-            `tf.nn.embedding_lookup`.
+            (argmax ids). The returned tensor will be passed to the decoder
+            input. Default to use `tf.nn.embedding_lookup`.
         """
-        if embedding_fn is None or callable(embedding_fn):
-            self.embedding_fn = embedding_fn
-        else:
-            raise ValueError(
-                "embedding_fn is expected to be a callable, got %s" % type(embedding_fn)
-            )
+        self.embedding_fn = embedding_fn
         self._batch_size = None
 
     @property
@@ -661,7 +650,7 @@ class SampleEmbeddingSampler(GreedyEmbeddingSampler):
     @typechecked
     def __init__(
         self,
-        embedding_fn: Union[TensorLike, Callable] = None,
+        embedding_fn: Optional[Callable] = None,
         softmax_temperature: Optional[TensorLike] = None,
         seed: Optional[TensorLike] = None,
     ):
@@ -669,8 +658,7 @@ class SampleEmbeddingSampler(GreedyEmbeddingSampler):
 
         Args:
           embedding_fn: (Optional) A callable that takes a vector tensor of
-            `ids` (argmax ids), or the `params` argument for
-            `embedding_lookup`. The returned tensor will be passed to the
+            `ids` (argmax ids). The returned tensor will be passed to the
             decoder input.
           softmax_temperature: (Optional) `float32` scalar, value to divide the
             logits by before computing the softmax. Larger values (above 1.0)
@@ -709,9 +697,9 @@ class InferenceSampler(Sampler):
     @typechecked
     def __init__(
         self,
-        sample_fn: Union[TensorLike, Callable],
+        sample_fn: Callable,
         sample_shape: TensorLike,
-        sample_dtype: tf.int32,
+        sample_dtype: types.AcceptableDTypes,
         end_fn: Callable,
         next_inputs_fn: Optional[Callable] = None,
     ):

@@ -58,14 +58,6 @@ class BasicDecoder(decoder.BaseDecoder):
           type.
         """
         keras_utils.assert_like_rnncell("cell", cell)
-        if not isinstance(sampler, sampler_py.Sampler):
-            raise TypeError("sampler must be a Sampler, received: {}".format(sampler))
-        if output_layer is not None and not isinstance(
-            output_layer, tf.keras.layers.Layer
-        ):
-            raise TypeError(
-                "output_layer must be a Layer, received: {}".format(output_layer)
-            )
         self.cell = cell
         self.sampler = sampler
         self.output_layer = output_layer
