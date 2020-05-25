@@ -920,3 +920,15 @@ def test_attention_state_with_variable_length_input():
     layer = tf.keras.layers.RNN(cell)
 
     _ = layer(data, mask=mask)
+
+
+def test_attention_wrapper_with_gru_cell():
+    mechanism = wrapper.LuongAttention(units=3)
+    cell = tf.keras.layers.GRUCell(3)
+    cell = wrapper.AttentionWrapper(cell, mechanism)
+    memory = tf.ones([2, 5, 3])
+    inputs = tf.ones([2, 3])
+    mechanism.setup_memory(memory)
+    initial_state = cell.get_initial_state(inputs=inputs)
+    _, state = cell(inputs, initial_state)
+    tf.nest.assert_same_structure(initial_state, state)
