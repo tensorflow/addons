@@ -920,8 +920,6 @@ def test_attention_state_with_variable_length_input():
     layer = tf.keras.layers.RNN(cell)
 
     _ = layer(data, mask=mask)
-<<<<<<< HEAD
-=======
 
 
 def test_attention_wrapper_with_gru_cell():
@@ -946,4 +944,3 @@ def test_attention_wrapper_with_multiple_attention_mechanisms():
         mechanisms,
         attention_layer=[tf.keras.layers.Dense(4), tf.keras.layers.Dense(5)],
     )
->>>>>>> 64ade21... Fix AttentionWrapper type annotation for multiple attention mechanisms (#1872)
