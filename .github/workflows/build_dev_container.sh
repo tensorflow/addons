@@ -2,6 +2,11 @@
 
 set -x -e
 
+df -h
+docker info
+# to get more disk space
+rm -rf /usr/share/dotnet &
+
 DOCKER_BUILDKIT=1 docker build \
     --cache-from tfaddons/dev_container:latest \
     -f tools/docker/build_wheel.Dockerfile \
