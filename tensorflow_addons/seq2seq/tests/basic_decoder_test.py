@@ -68,12 +68,12 @@ def test_step_with_training_helper_output_layer(use_output_layer):
     assert len(first_state) == 2
     assert len(step_state) == 2
     assert type(step_outputs) is basic_decoder.BasicDecoderOutput
-    assert (batch_size, expected_output_depth) == step_outputs[0].get_shape()
-    assert (batch_size,) == step_outputs[1].get_shape()
-    assert (batch_size, cell_depth) == first_state[0].get_shape()
-    assert (batch_size, cell_depth) == first_state[1].get_shape()
-    assert (batch_size, cell_depth) == step_state[0].get_shape()
-    assert (batch_size, cell_depth) == step_state[1].get_shape()
+    assert (batch_size, expected_output_depth) == step_outputs[0].shape
+    assert (batch_size,) == step_outputs[1].shape
+    assert (batch_size, cell_depth) == first_state[0].shape
+    assert (batch_size, cell_depth) == first_state[1].shape
+    assert (batch_size, cell_depth) == step_state[0].shape
+    assert (batch_size, cell_depth) == step_state[1].shape
 
     if use_output_layer:
         # The output layer was accessed
@@ -157,12 +157,12 @@ def test_step_with_training_helper_masked_input(use_mask):
     assert len(first_state) == 2
     assert len(step_state) == 2
     assert type(step_outputs) is basic_decoder.BasicDecoderOutput
-    assert (batch_size, expected_output_depth) == step_outputs[0].get_shape()
-    assert (batch_size,) == step_outputs[1].get_shape()
-    assert (batch_size, cell_depth) == first_state[0].get_shape()
-    assert (batch_size, cell_depth) == first_state[1].get_shape()
-    assert (batch_size, cell_depth) == step_state[0].get_shape()
-    assert (batch_size, cell_depth) == step_state[1].get_shape()
+    assert (batch_size, expected_output_depth) == step_outputs[0].shape
+    assert (batch_size,) == step_outputs[1].shape
+    assert (batch_size, cell_depth) == first_state[0].shape
+    assert (batch_size, cell_depth) == first_state[1].shape
+    assert (batch_size, cell_depth) == step_state[0].shape
+    assert (batch_size, cell_depth) == step_state[1].shape
 
     assert len(output_layer.variables) == 1
 
@@ -223,12 +223,12 @@ def test_step_with_greedy_embedding_helper():
     assert len(first_state) == 2
     assert len(step_state) == 2
     assert isinstance(step_outputs, basic_decoder.BasicDecoderOutput)
-    assert (batch_size, cell_depth) == step_outputs[0].get_shape()
-    assert (batch_size,) == step_outputs[1].get_shape()
-    assert (batch_size, cell_depth) == first_state[0].get_shape()
-    assert (batch_size, cell_depth) == first_state[1].get_shape()
-    assert (batch_size, cell_depth) == step_state[0].get_shape()
-    assert (batch_size, cell_depth) == step_state[1].get_shape()
+    assert (batch_size, cell_depth) == step_outputs[0].shape
+    assert (batch_size,) == step_outputs[1].shape
+    assert (batch_size, cell_depth) == first_state[0].shape
+    assert (batch_size, cell_depth) == first_state[1].shape
+    assert (batch_size, cell_depth) == step_state[0].shape
+    assert (batch_size, cell_depth) == step_state[1].shape
 
     eval_result = {
         "batch_size": batch_size_t,
@@ -290,12 +290,12 @@ def test_step_with_sample_embedding_helper():
     assert len(first_state) == 2
     assert len(step_state) == 2
     assert isinstance(step_outputs, basic_decoder.BasicDecoderOutput)
-    assert (batch_size, cell_depth) == step_outputs[0].get_shape()
-    assert (batch_size,) == step_outputs[1].get_shape()
-    assert (batch_size, cell_depth) == first_state[0].get_shape()
-    assert (batch_size, cell_depth) == first_state[1].get_shape()
-    assert (batch_size, cell_depth) == step_state[0].get_shape()
-    assert (batch_size, cell_depth) == step_state[1].get_shape()
+    assert (batch_size, cell_depth) == step_outputs[0].shape
+    assert (batch_size,) == step_outputs[1].shape
+    assert (batch_size, cell_depth) == first_state[0].shape
+    assert (batch_size, cell_depth) == first_state[1].shape
+    assert (batch_size, cell_depth) == step_state[0].shape
+    assert (batch_size, cell_depth) == step_state[1].shape
 
     eval_result = {
         "batch_size": batch_size_t,
@@ -358,13 +358,13 @@ def test_step_with_scheduled_embedding_training_helper():
     assert len(first_state) == 2
     assert len(step_state) == 2
     assert isinstance(step_outputs, basic_decoder.BasicDecoderOutput)
-    assert (batch_size, vocabulary_size) == step_outputs[0].get_shape()
-    assert (batch_size,) == step_outputs[1].get_shape()
-    assert (batch_size, vocabulary_size) == first_state[0].get_shape()
-    assert (batch_size, vocabulary_size) == first_state[1].get_shape()
-    assert (batch_size, vocabulary_size) == step_state[0].get_shape()
-    assert (batch_size, vocabulary_size) == step_state[1].get_shape()
-    assert (batch_size, input_depth) == step_next_inputs.get_shape()
+    assert (batch_size, vocabulary_size) == step_outputs[0].shape
+    assert (batch_size,) == step_outputs[1].shape
+    assert (batch_size, vocabulary_size) == first_state[0].shape
+    assert (batch_size, vocabulary_size) == first_state[1].shape
+    assert (batch_size, vocabulary_size) == step_state[0].shape
+    assert (batch_size, vocabulary_size) == step_state[1].shape
+    assert (batch_size, input_depth) == step_next_inputs.shape
 
     eval_result = {
         "batch_size": batch_size_t.numpy(),
@@ -467,12 +467,12 @@ def test_step_with_scheduled_output_training_helper(
     assert len(first_state) == 2
     assert len(step_state) == 2
     assert isinstance(step_outputs, basic_decoder.BasicDecoderOutput)
-    assert (batch_size, cell_depth) == step_outputs[0].get_shape()
-    assert (batch_size,) == step_outputs[1].get_shape()
-    assert (batch_size, cell_depth) == first_state[0].get_shape()
-    assert (batch_size, cell_depth) == first_state[1].get_shape()
-    assert (batch_size, cell_depth) == step_state[0].get_shape()
-    assert (batch_size, cell_depth) == step_state[1].get_shape()
+    assert (batch_size, cell_depth) == step_outputs[0].shape
+    assert (batch_size,) == step_outputs[1].shape
+    assert (batch_size, cell_depth) == first_state[0].shape
+    assert (batch_size, cell_depth) == first_state[1].shape
+    assert (batch_size, cell_depth) == step_state[0].shape
+    assert (batch_size, cell_depth) == step_state[1].shape
 
     fetches = {
         "batch_size": batch_size_t.numpy(),
@@ -587,12 +587,12 @@ def test_step_with_inference_helper_categorical():
     assert len(first_state) == 2
     assert len(step_state) == 2
     assert isinstance(step_outputs, basic_decoder.BasicDecoderOutput)
-    assert (batch_size, cell_depth) == step_outputs[0].get_shape()
-    assert (batch_size,) == step_outputs[1].get_shape()
-    assert (batch_size, cell_depth) == first_state[0].get_shape()
-    assert (batch_size, cell_depth) == first_state[1].get_shape()
-    assert (batch_size, cell_depth) == step_state[0].get_shape()
-    assert (batch_size, cell_depth) == step_state[1].get_shape()
+    assert (batch_size, cell_depth) == step_outputs[0].shape
+    assert (batch_size,) == step_outputs[1].shape
+    assert (batch_size, cell_depth) == first_state[0].shape
+    assert (batch_size, cell_depth) == first_state[1].shape
+    assert (batch_size, cell_depth) == step_state[0].shape
+    assert (batch_size, cell_depth) == step_state[1].shape
 
     eval_result = {
         "batch_size": batch_size_t.numpy(),
@@ -662,12 +662,12 @@ def test_step_with_inference_helper_multilabel():
     assert len(first_state) == 2
     assert len(step_state) == 2
     assert isinstance(step_outputs, basic_decoder.BasicDecoderOutput)
-    assert (batch_size, cell_depth) == step_outputs[0].get_shape()
-    assert (batch_size, cell_depth) == step_outputs[1].get_shape()
-    assert (batch_size, cell_depth) == first_state[0].get_shape()
-    assert (batch_size, cell_depth) == first_state[1].get_shape()
-    assert (batch_size, cell_depth) == step_state[0].get_shape()
-    assert (batch_size, cell_depth) == step_state[1].get_shape()
+    assert (batch_size, cell_depth) == step_outputs[0].shape
+    assert (batch_size, cell_depth) == step_outputs[1].shape
+    assert (batch_size, cell_depth) == first_state[0].shape
+    assert (batch_size, cell_depth) == first_state[1].shape
+    assert (batch_size, cell_depth) == step_state[0].shape
+    assert (batch_size, cell_depth) == step_state[1].shape
 
     eval_result = {
         "batch_size": batch_size_t.numpy(),

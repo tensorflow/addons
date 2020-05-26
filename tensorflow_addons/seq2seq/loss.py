@@ -88,12 +88,12 @@ def sequence_loss(
       ValueError: logits does not have 3 dimensions or targets does not have 2
                   dimensions or weights does not have 2 dimensions.
     """
-    if len(logits.get_shape()) != 3:
+    if len(logits.shape) != 3:
         raise ValueError(
             "Logits must be a " "[batch_size x sequence_length x logits] tensor"
         )
 
-    targets_rank = len(targets.get_shape())
+    targets_rank = len(targets.shape)
     if targets_rank != 2 and targets_rank != 3:
         raise ValueError(
             "Targets must be either a [batch_size x sequence_length] tensor "
@@ -102,7 +102,7 @@ def sequence_loss(
             + "where the third axis is a one-hot representation of the labels"
         )
 
-    if len(weights.get_shape()) != 2:
+    if len(weights.shape) != 2:
         raise ValueError("Weights must be a [batch_size x sequence_length] tensor")
 
     if average_across_timesteps and sum_over_timesteps:

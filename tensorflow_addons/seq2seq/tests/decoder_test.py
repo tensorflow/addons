@@ -60,7 +60,7 @@ def test_dynamic_decode_rnn(time_major, maximum_iterations):
             return (shape[1], shape[0]) + shape[2:]
         return shape
 
-    assert (batch_size,) == tuple(final_sequence_length.get_shape().as_list())
+    assert (batch_size,) == tuple(final_sequence_length.shape.as_list())
     # Mostly a smoke test
     time_steps = max_out
     expected_length = sequence_length
