@@ -604,10 +604,10 @@ def test_dynamic_decode_rnn(time_major, has_attention, with_alignment_history):
     beam_search_decoder_output = final_outputs.beam_search_decoder_output
     expected_seq_length = 3 if tf.executing_eagerly() else None
     assert _t((batch_size, expected_seq_length, beam_width)) == tuple(
-        beam_search_decoder_output.scores.get_shape().as_list()
+        beam_search_decoder_output.scores.shape.as_list()
     )
     assert _t((batch_size, expected_seq_length, beam_width)) == tuple(
-        final_outputs.predicted_ids.get_shape().as_list()
+        final_outputs.predicted_ids.shape.as_list()
     )
 
     eval_results = {
