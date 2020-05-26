@@ -22,6 +22,7 @@ RUN mv /usr/bin/lsb_release2 /usr/bin/lsb_release
 
 ARG PY_VERSION
 RUN ln -sf $(which python$PY_VERSION) /usr/bin/python
+RUN ln -sf $(which python$PY_VERSION) /usr/bin/python3
 
 RUN python -m pip install --upgrade pip==19.0 auditwheel==2.0.0
 
@@ -33,16 +34,20 @@ RUN python -m pip install -r /install_deps/pytest.txt
 
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
+RUN rm requirements.txt
+
+# -------------------------------------------------------------------
+FROM base_install as addons_container
 
 COPY ./ /addons
 WORKDIR /addons
 
 # -------------------------------------------------------------------
-FROM base_install as tfa_gpu_tests
+FROM addons_container as tfa_gpu_tests
 CMD ["bash", "tools/testing/build_and_run_tests.sh"]
 
 # -------------------------------------------------------------------
-FROM base_install as make_wheel
+FROM addons_container as make_wheel
 ARG NIGHTLY_FLAG
 ARG NIGHTLY_TIME
 RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
