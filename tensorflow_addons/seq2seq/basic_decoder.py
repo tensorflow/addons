@@ -46,16 +46,13 @@ class BasicDecoder(decoder.BaseDecoder):
         """Initialize BasicDecoder.
 
         Args:
-          cell: An `RNNCell` instance.
+          cell: A layer that implements the `tf.keras.layers.AbstractRNNCell`
+            interface.
           sampler: A `Sampler` instance.
           output_layer: (Optional) An instance of `tf.layers.Layer`, i.e.,
             `tf.layers.Dense`. Optional layer to apply to the RNN output prior
              to storing the result or sampling.
           **kwargs: Other keyword arguments for layer creation.
-
-        Raises:
-          TypeError: if `cell`, `helper` or `output_layer` have an incorrect
-          type.
         """
         keras_utils.assert_like_rnncell("cell", cell)
         self.cell = cell

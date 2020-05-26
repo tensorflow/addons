@@ -263,7 +263,8 @@ class BeamSearchDecoderMixin:
         """Initialize the BeamSearchDecoderMixin.
 
         Args:
-          cell: An `RNNCell` instance.
+          cell: A layer that implements the `tf.keras.layers.AbstractRNNCell`
+            interface.
           beam_width:  Python integer, the number of beams.
           output_layer: (Optional) An instance of `tf.keras.layers.Layer`,
             i.e., `tf.keras.layers.Dense`.  Optional layer to apply to the RNN
@@ -279,10 +280,6 @@ class BeamSearchDecoderMixin:
             this flag to `False` if the cell state contains `TensorArray`s that
             are not amenable to reordering.
           **kwargs: Dict, other keyword arguments for parent class.
-
-        Raises:
-          TypeError: if `cell` is not an instance of `RNNCell`,
-            or `output_layer` is not an instance of `tf.keras.layers.Layer`.
         """
         keras_utils.assert_like_rnncell("cell", cell)
         self._cell = cell
@@ -662,7 +659,8 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         """Initialize the BeamSearchDecoder.
 
         Args:
-          cell: An `RNNCell` instance.
+          cell: A layer that implements the `tf.keras.layers.AbstractRNNCell`
+            interface.
           beam_width:  Python integer, the number of beams.
           embedding_fn: A callable that takes a vector tensor of `ids`
             (argmax ids).
@@ -680,10 +678,6 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
             this flag to `False` if the cell state contains `TensorArray`s that
             are not amenable to reordering.
           **kwargs: Dict, other keyword arguments for initialization.
-
-        Raises:
-          TypeError: if `cell` is not an instance of `RNNCell`,
-            or `output_layer` is not an instance of `tf.keras.layers.Layer`.
         """
         super().__init__(
             cell,
