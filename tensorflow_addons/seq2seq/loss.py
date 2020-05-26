@@ -14,8 +14,6 @@
 # ==============================================================================
 """Seq2seq loss operations for use in sequence models."""
 
-from distutils.version import LooseVersion
-
 import tensorflow as tf
 from tensorflow_addons.utils.types import TensorLike
 
@@ -190,16 +188,6 @@ class SequenceLoss(tf.keras.losses.Loss):
         self.sum_over_timesteps = sum_over_timesteps
         self.sum_over_batch = sum_over_batch
         self.softmax_loss_function = softmax_loss_function
-
-        # We want tf.keras to call the "__call__" method so that we have access
-        # to "sample_weight" and can implement the custom loss reduction.
-        # However, prior to TensorFlow 2.2 tf.keras will actually invokes "call"
-        # when the loss object has the "reduction" attribute. So we remove it in
-        # this case.
-        if LooseVersion(tf.__version__) < LooseVersion("2.2.0") and hasattr(
-            self, "reduction"
-        ):
-            delattr(self, "reduction")
 
     def __call__(self, y_true, y_pred, sample_weight=None):
         """Override the parent __call__ to have a customized reduce
