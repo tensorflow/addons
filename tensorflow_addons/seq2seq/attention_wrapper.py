@@ -308,12 +308,8 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
                 self.keys = self.memory_layer(self.values)
             else:
                 self.keys = self.values
-            self.batch_size = (
-                tf.compat.dimension_value(self.keys.shape[0]) or tf.shape(self.keys)[0]
-            )
-            self._alignments_size = (
-                tf.compat.dimension_value(self.keys.shape[1]) or tf.shape(self.keys)[1]
-            )
+            self.batch_size = self.keys.shape[0] or tf.shape(self.keys)[0]
+            self._alignments_size = self.keys.shape[1] or tf.shape(self.keys)[1]
             if memory_mask is not None or memory_sequence_length is not None:
                 unwrapped_probability_fn = self.default_probability_fn
 
@@ -488,8 +484,8 @@ def _luong_score(query, keys, scale):
     Raises:
       ValueError: If `key` and `query` depths do not match.
     """
-    depth = query.get_shape()[-1]
-    key_units = keys.get_shape()[-1]
+    depth = query.shape[-1]
+    key_units = keys.shape[-1]
     if depth != key_units:
         raise ValueError(
             "Incompatible or unknown inner dimensions between query and keys. "
@@ -928,9 +924,7 @@ def monotonic_attention(
     )
     if mode == "recursive":
         # Use .shape[0] when it's not None, or fall back on symbolic shape
-        batch_size = (
-            tf.compat.dimension_value(p_choose_i.shape[0]) or tf.shape(p_choose_i)[0]
-        )
+        batch_size = p_choose_i.shape[0] or tf.shape(p_choose_i)[0]
         # Compute [1, 1 - p_choose_i[0], 1 - p_choose_i[1], ..., 1 - p_choose_
         # i[-2]]
         shifted_1mp_choose_i = tf.concat(
@@ -1496,10 +1490,10 @@ def _prepare_memory(
     if check_inner_dims_defined:
 
         def _check_dims(m):
-            if not m.get_shape()[2:].is_fully_defined():
+            if not m.shape[2:].is_fully_defined():
                 raise ValueError(
                     "Expected memory %s to have fully defined inner dims, "
-                    "but saw shape: %s" % (m.name, m.get_shape())
+                    "but saw shape: %s" % (m.name, m.shape)
                 )
 
         tf.nest.map_structure(_check_dims, memory)
@@ -1517,7 +1511,7 @@ def _prepare_memory(
 
     def _maybe_mask(m, seq_len_mask):
         """Mask the memory based on the memory mask."""
-        rank = m.get_shape().ndims
+        rank = m.shape.ndims
         rank = rank if rank is not None else tf.rank(m)
         extra_ones = tf.ones(rank - 2, dtype=tf.int32)
         seq_len_mask = tf.reshape(
@@ -1567,10 +1561,7 @@ def hardmax(logits: TensorLike, name: Optional[str] = None) -> tf.Tensor:
     """
     with tf.name_scope(name or "Hardmax"):
         logits = tf.convert_to_tensor(logits, name="logits")
-        if tf.compat.dimension_value(logits.get_shape()[-1]) is not None:
-            depth = tf.compat.dimension_value(logits.get_shape()[-1])
-        else:
-            depth = tf.shape(logits)[-1]
+        depth = logits.shape[-1] or tf.shape(logits)[-1]
         return tf.one_hot(tf.argmax(logits, -1), depth, dtype=logits.dtype)
 
 
@@ -1794,8 +1785,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             else:
                 final_state_tensor = tf.nest.flatten(initial_cell_state)[-1]
                 state_batch_size = (
-                    tf.compat.dimension_value(final_state_tensor.shape[0])
-                    or tf.shape(final_state_tensor)[0]
+                    final_state_tensor.shape[0] or tf.shape(final_state_tensor)[0]
                 )
                 error_message = (
                     "When constructing AttentionWrapper %s: " % self.name
@@ -2033,9 +2023,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             cell_state, tf.nest.flatten(next_cell_state)
         )
 
-        cell_batch_size = (
-            tf.compat.dimension_value(cell_output.shape[0]) or tf.shape(cell_output)[0]
-        )
+        cell_batch_size = cell_output.shape[0] or tf.shape(cell_output)[0]
         error_message = (
             "When applying AttentionWrapper %s: " % self.name
             + "Non-matching batch sizes between the memory "

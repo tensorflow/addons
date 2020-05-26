@@ -86,9 +86,7 @@ def _tile_batch(t, multiplier):
     tiling = [1] * (t.shape.ndims + 1)
     tiling[1] = multiplier
     tiled_static_batch_size = (
-        t.shape.dims[0].value * multiplier
-        if t.shape.dims[0].value is not None
-        else None
+        t.shape[0] * multiplier if t.shape[0] is not None else None
     )
     tiled = tf.tile(tf.expand_dims(t, 1), tiling)
     tiled = tf.reshape(tiled, tf.concat(([shape_t[0] * multiplier], shape_t[1:]), 0))
@@ -141,9 +139,9 @@ def gather_tree_from_array(
       `t` and where beams are sorted in each `Tensor` according to
       `parent_ids`.
     """
-    max_time = parent_ids.shape.dims[0].value or tf.shape(parent_ids)[0]
-    batch_size = parent_ids.shape.dims[1].value or tf.shape(parent_ids)[1]
-    beam_width = parent_ids.shape.dims[2].value or tf.shape(parent_ids)[2]
+    max_time = parent_ids.shape[0] or tf.shape(parent_ids)[0]
+    batch_size = parent_ids.shape[1] or tf.shape(parent_ids)[1]
+    beam_width = parent_ids.shape[2] or tf.shape(parent_ids)[2]
 
     # Generate beam ids that will be reordered by gather_tree.
     beam_ids = tf.reshape(tf.range(beam_width), [1, 1, -1])
@@ -184,11 +182,11 @@ def _check_static_batch_beam_maybe(shape, batch_size, beam_width):
     reshaped to [batch_size, beam_size, -1]."""
     reshaped_shape = tf.TensorShape([batch_size, beam_width, None])
     assert len(shape.dims) > 0
-    if batch_size is None or shape.dims[0].value is None:
+    if batch_size is None or shape[0] is None:
         return True  # not statically known => no check
     if shape[0] == batch_size * beam_width:
         return True  # flattened, matching
-    has_second_dim = shape.ndims >= 2 and shape.dims[1].value is not None
+    has_second_dim = shape.ndims >= 2 and shape[1] is not None
     if has_second_dim and shape[0] == batch_size and shape[1] == beam_width:
         return True  # non-flattened, matching
     # Otherwise we could not find a match and warn:
@@ -723,12 +721,12 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         self._start_tokens = tf.convert_to_tensor(
             start_tokens, dtype=tf.int32, name="start_tokens"
         )
-        if self._start_tokens.get_shape().ndims != 1:
+        if self._start_tokens.shape.ndims != 1:
             raise ValueError("start_tokens must be a vector")
         self._end_token = tf.convert_to_tensor(
             end_token, dtype=tf.int32, name="end_token"
         )
-        if self._end_token.get_shape().ndims != 0:
+        if self._end_token.shape.ndims != 0:
             raise ValueError("end_token must be a scalar")
 
         self._batch_size = tf.size(start_tokens)
@@ -854,7 +852,7 @@ def _beam_search_step(
     total_probs = tf.expand_dims(beam_state.log_probs, 2) + step_log_probs
 
     # Calculate the continuation lengths by adding to all continuing beams.
-    vocab_size = logits.shape.dims[-1].value or tf.shape(logits)[-1]
+    vocab_size = logits.shape[-1] or tf.shape(logits)[-1]
     lengths_to_add = tf.one_hot(
         indices=tf.fill([batch_size, beam_width], end_token),
         depth=vocab_size,

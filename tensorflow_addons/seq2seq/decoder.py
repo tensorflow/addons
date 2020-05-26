@@ -320,7 +320,7 @@ def dynamic_decode(
             maximum_iterations = tf.convert_to_tensor(
                 maximum_iterations, dtype=tf.int32, name="maximum_iterations"
             )
-            if maximum_iterations.get_shape().ndims != 0:
+            if maximum_iterations.shape.ndims != 0:
                 raise ValueError("maximum_iterations must be a scalar")
 
         if isinstance(decoder, Decoder):
