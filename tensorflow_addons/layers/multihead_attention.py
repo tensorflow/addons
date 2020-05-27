@@ -21,7 +21,7 @@ import tensorflow as tf
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class MultiHeadAttention(tf.keras.layers.Layer):
     r"""
-    MultiHead Attentsion layer.
+    MultiHead Attention layer.
 
     Defines the MultiHead Attention operation as described in
     [Attention Is All You Need](https://arxiv.org/abs/1706.03762) which takes
