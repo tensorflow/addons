@@ -21,11 +21,11 @@ import tensorflow as tf
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class MultiHeadAttention(tf.keras.layers.Layer):
     r"""
-    MultiHead Attention layer.
+    MultiHead Attentsion layer.
 
     Defines the MultiHead Attention operation as described in
     [Attention Is All You Need](https://arxiv.org/abs/1706.03762) which takes
-    in a `query`, `key`, and `value` tensors, and returns the dot-product attention
+    in the tensors `query`, `key`, and `value`, and returns the dot-product attention
     between them:
 
         ```python
