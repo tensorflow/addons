@@ -2,7 +2,11 @@
 FROM addons_base:latest as build_dev_container
 
 COPY tools/install_deps /install_deps
-RUN pip install -r /install_deps/black.txt -r /install_deps/flake8.txt
+RUN pip install -r /install_deps/black.txt \
+    -r /install_deps/flake8.txt \
+    -r /install_deps/pytest.txt \
+    -r /install_deps/typedapi.txt
+
 RUN bash /install_deps/buildifier.sh
 RUN bash /install_deps/clang-format.sh
 
