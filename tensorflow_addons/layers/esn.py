@@ -131,9 +131,7 @@ class ESN(tf.keras.layers.RNN):
             **kwargs,
         )
 
-    def call(
-        self, inputs, mask=None, training=None, initial_state=None, constants=None
-    ):
+    def call(self, inputs, mask=None, training=None, initial_state=None):
         return super().call(
             inputs,
             mask=mask,
