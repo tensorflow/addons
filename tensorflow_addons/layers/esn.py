@@ -38,7 +38,6 @@ class ESN(tf.keras.layers.RNN):
         GMD Report148, German National Research Center for Information Technology, 2001.
         https://www.researchgate.net/publication/215385037
 
-
     Arguments:
         units: Positive integer, dimensionality of the reservoir.
         connectivity: Float between 0 and 1.
@@ -124,7 +123,7 @@ class ESN(tf.keras.layers.RNN):
             bias_initializer=bias_initializer,
             dtype=kwargs.get("dtype"),
         )
-        super(ESN, self).__init__(
+        super().__init__(
             cell,
             return_sequences=return_sequences,
             go_backwards=go_backwards,
@@ -135,7 +134,7 @@ class ESN(tf.keras.layers.RNN):
     def call(
         self, inputs, mask=None, training=None, initial_state=None, constants=None
     ):
-        return super(ESN, self).call(
+        return super().call(
             inputs,
             mask=mask,
             training=training,
@@ -200,7 +199,7 @@ class ESN(tf.keras.layers.RNN):
             ),
             "bias_initializer": tf.keras.initializers.serialize(self.bias_initializer),
         }
-        base_config = super(ESN, self).get_config()
+        base_config = super().get_config()
         del base_config["cell"]
         return {**base_config, **config}
 
