@@ -71,15 +71,18 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         bias_constraint: constraint, constraint for the bias weights.
 
     Call Arguments:
-        inputs:  List of the tensors `[query, key, value]` where  `query` has shape `(..., query_elements, query_depth)`, `key` has shape '(..., key_elements, key_depth)`, and `value` has shape `(..., key_elements, value_depth)`. `value` is optional, if not given `key` will be used.
+        inputs:  List of `[query, key, value]` where
+            * `query`: Tensor of shape `(..., query_elements, query_depth)`
+            * `key`: `Tensor of shape '(..., key_elements, key_depth)`
+            * `value`: Tensor of shape `(..., key_elements, value_depth)`, optional, if not given `key` will be used.
         mask: a binary Tensor of shape `[batch_size?, num_heads?, query_elements, key_elements]`
         which specifies which query elements can attendo to which key elements,
         `1` indicates attention and `0` indicates no attention.
 
     Output shape:
-        `(..., query_elements, output_size)` if `output_size` is given, else
-        `(..., query_elements, value_depth)` if `value` is given, else
-        `(..., query_elements, key_depth)`
+        * `(..., query_elements, output_size)` if `output_size` is given, else
+        * `(..., query_elements, value_depth)` if `value` is given, else
+        * `(..., query_elements, key_depth)`
     """
 
     def __init__(
