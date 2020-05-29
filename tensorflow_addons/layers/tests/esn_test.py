@@ -23,7 +23,7 @@ from tensorflow_addons.utils import test_utils
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
-def test_random(dtype):
+def layer_test_esn(dtype):
     inp = np.asanyarray(
         [[[1.0, 1.0, 1.0, 1.0]], [[2.0, 2.0, 2.0, 2.0]], [[3.0, 3.0, 3.0, 3.0]]]
     ).astype(dtype)
