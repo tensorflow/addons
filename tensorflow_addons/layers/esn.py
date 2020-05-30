@@ -34,9 +34,9 @@ class ESN(tf.keras.layers.RNN):
 
     This is based on the paper
         H. Jaeger
-        "The "echo state" approach to analysing and training recurrent neural networks".
+        ["The "echo state" approach to analysing and training recurrent neural networks"]
+        (https://www.researchgate.net/publication/215385037).
         GMD Report148, German National Research Center for Information Technology, 2001.
-        https://www.researchgate.net/publication/215385037
 
     Arguments:
         units: Positive integer, dimensionality of the reservoir.
