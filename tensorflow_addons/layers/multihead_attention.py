@@ -189,12 +189,12 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         key = inputs[1]
         value = inputs[2] if len(inputs) > 2 else key
 
+        # verify shapes
         if key.shape[-2] != value.shape[-2]:
             raise ValueError(
                 "the number of elements in 'key' must be equal to the same as the number of elements in 'value'"
             )
 
-        # verify shapes
         if mask is not None:
             if len(mask.shape) < 2:
                 raise ValueError("'mask' must have atleast 2 dimensions")
@@ -206,7 +206,6 @@ class MultiHeadAttention(tf.keras.layers.Layer):
                 raise ValueError(
                     "mask's last dimension must be equal to the number of elements in 'key'"
                 )
-            
 
         # Linear transformations
         query = tf.einsum("...NI , HIO -> ...NHO", query, self.query_kernel)
