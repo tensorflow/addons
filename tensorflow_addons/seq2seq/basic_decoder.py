@@ -121,6 +121,7 @@ class BasicDecoder(decoder.BaseDecoder):
           `(outputs, next_state, next_inputs, finished)`.
         """
         cell_outputs, cell_state = self.cell(inputs, state, training=training)
+        cell_state = tf.nest.pack_sequence_as(state, tf.nest.flatten(cell_state))
         if self.output_layer is not None:
             cell_outputs = self.output_layer(cell_outputs)
         sample_ids = self.sampler.sample(
