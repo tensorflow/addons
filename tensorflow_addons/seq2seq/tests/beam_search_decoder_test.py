@@ -524,7 +524,12 @@ def test_large_beam_step():
 @pytest.mark.parametrize("with_alignment_history", [True, False])
 @pytest.mark.parametrize("has_attention", [True, False])
 @pytest.mark.parametrize("time_major", [True, False])
-def test_dynamic_decode_rnn(time_major, has_attention, with_alignment_history):
+@pytest.mark.parametrize(
+    "cell_class", [tf.keras.layers.LSTMCell, tf.keras.layers.GRUCell]
+)
+def test_dynamic_decode_rnn(
+    cell_class, time_major, has_attention, with_alignment_history
+):
     encoder_sequence_length = np.array([3, 2, 3, 1, 1])
     decoder_sequence_length = np.array([2, 0, 1, 2, 3])
     batch_size = 5
@@ -542,7 +547,7 @@ def test_dynamic_decode_rnn(time_major, has_attention, with_alignment_history):
 
     batch_size_tensor = tf.constant(batch_size)
     embedding = np.random.randn(vocab_size, embedding_dim).astype(np.float32)
-    cell = tf.keras.layers.LSTMCell(cell_depth)
+    cell = cell_class(cell_depth)
     initial_state = cell.get_initial_state(batch_size=batch_size, dtype=tf.float32)
     coverage_penalty_weight = 0.0
     if has_attention:

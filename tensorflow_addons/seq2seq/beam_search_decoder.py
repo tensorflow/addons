@@ -569,6 +569,9 @@ class BeamSearchDecoderMixin:
             cell_outputs = tf.nest.map_structure(
                 lambda out: self._split_batch_beams(out, out.shape[1:]), cell_outputs
             )
+            next_cell_state = tf.nest.pack_sequence_as(
+                cell_state, tf.nest.flatten(next_cell_state)
+            )
             next_cell_state = tf.nest.map_structure(
                 self._maybe_split_batch_beams, next_cell_state, self._cell.state_size
             )
