@@ -25,7 +25,10 @@ from tensorflow_addons.seq2seq import sampler as sampler_py
 
 
 @pytest.mark.parametrize("use_output_layer", [True, False])
-def test_step_with_training_helper_output_layer(use_output_layer):
+@pytest.mark.parametrize(
+    "cell_class", [tf.keras.layers.LSTMCell, tf.keras.layers.GRUCell]
+)
+def test_step_with_training_helper_output_layer(cell_class, use_output_layer):
     sequence_length = [3, 4, 3, 1, 0]
     batch_size = 5
     max_time = 8
@@ -35,7 +38,7 @@ def test_step_with_training_helper_output_layer(use_output_layer):
 
     inputs = np.random.randn(batch_size, max_time, input_depth).astype(np.float32)
     input_t = tf.constant(inputs)
-    cell = tf.keras.layers.LSTMCell(cell_depth)
+    cell = cell_class(cell_depth)
     sampler = sampler_py.TrainingSampler(time_major=False)
     if use_output_layer:
         output_layer = tf.keras.layers.Dense(output_layer_depth, use_bias=False)
@@ -65,15 +68,21 @@ def test_step_with_training_helper_output_layer(use_output_layer):
     )
     batch_size_t = my_decoder.batch_size
 
-    assert len(first_state) == 2
-    assert len(step_state) == 2
+    if isinstance(cell, tf.keras.layers.LSTMCell):
+        assert len(first_state) == 2
+        assert len(step_state) == 2
+        assert (batch_size, cell_depth) == first_state[0].shape
+        assert (batch_size, cell_depth) == first_state[1].shape
+        assert (batch_size, cell_depth) == step_state[0].shape
+        assert (batch_size, cell_depth) == step_state[1].shape
+    elif isinstance(cell, tf.keras.layers.GRUCell):
+        assert tf.is_tensor(first_state)
+        assert tf.is_tensor(step_state)
+        assert (batch_size, cell_depth) == first_state.shape
+        assert (batch_size, cell_depth) == step_state.shape
     assert type(step_outputs) is basic_decoder.BasicDecoderOutput
     assert (batch_size, expected_output_depth) == step_outputs[0].shape
     assert (batch_size,) == step_outputs[1].shape
-    assert (batch_size, cell_depth) == first_state[0].shape
-    assert (batch_size, cell_depth) == first_state[1].shape
-    assert (batch_size, cell_depth) == step_state[0].shape
-    assert (batch_size, cell_depth) == step_state[1].shape
 
     if use_output_layer:
         # The output layer was accessed
