@@ -42,6 +42,9 @@ def get_path_to_datafile(path):
       The path to the specified data file
     """
     root_dir = get_project_root()
+    bazel_bin_dir = os.path.join(os.path.dirname(root_dir),"bazel-bin","tensorflow_addons")
+    if os.path.isdir(bazel_bin_dir):
+        root_dir = bazel_bin_dir
     return os.path.join(root_dir, path.replace("/", os.sep))
 
 
