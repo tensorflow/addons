@@ -23,9 +23,9 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     r"""
     MultiHead Attention layer.
 
-    Defines the MultiHead Attention operation as defined in
+    Defines the MultiHead Attention operation as described in
     [Attention Is All You Need](https://arxiv.org/abs/1706.03762) which takes
-    in a `query`, `key` and `value` tensors returns the dot-product attention
+    in the tensors `query`, `key`, and `value`, and returns the dot-product attention
     between them:
 
         ```python
@@ -49,7 +49,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         attention = mha([query, key]) # (batch_size, query_elements, key_depth)
         ```
 
-    Arguments
+    Arguments:
         head_size: int, dimensionality of the `query`, `key` and `value` tensors
         after the linear transformation.
         num_heads: int, number of attention heads.
@@ -70,19 +70,19 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         bias_regularizer: regularizer, regularizer for the bias weights.
         bias_constraint: constraint, constraint for the bias weights.
 
-    Call Arguments
-        inputs:  List of the following tensors:
+    Call Arguments:
+        inputs:  List of `[query, key, value]` where
             * `query`: Tensor of shape `(..., query_elements, query_depth)`
             * `key`: `Tensor of shape '(..., key_elements, key_depth)`
-            * `value`: Tensor of shape `(..., key_elements, value_depth)` (optional)
+            * `value`: Tensor of shape `(..., key_elements, value_depth)`, optional, if not given `key` will be used.
         mask: a binary Tensor of shape `[batch_size?, num_heads?, query_elements, key_elements]`
         which specifies which query elements can attendo to which key elements,
         `1` indicates attention and `0` indicates no attention.
 
-    Output shape
-        - `(..., query_elements, output_size)` if `output_size` is given, else
-        - `(..., query_elements, value_depth)` if `value` is given, else
-        - `(..., query_elements, key_depth)`
+    Output shape:
+        * `(..., query_elements, output_size)` if `output_size` is given, else
+        * `(..., query_elements, value_depth)` if `value` is given, else
+        * `(..., query_elements, key_depth)`
     """
 
     def __init__(
@@ -190,6 +190,11 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         value = inputs[2] if len(inputs) > 2 else key
 
         # verify shapes
+        if key.shape[-2] != value.shape[-2]:
+            raise ValueError(
+                "the number of elements in 'key' must be equal to the same as the number of elements in 'value'"
+            )
+
         if mask is not None:
             if len(mask.shape) < 2:
                 raise ValueError("'mask' must have atleast 2 dimensions")
@@ -200,10 +205,6 @@ class MultiHeadAttention(tf.keras.layers.Layer):
             if key.shape[-2] != mask.shape[-1]:
                 raise ValueError(
                     "mask's last dimension must be equal to the number of elements in 'key'"
-                )
-            if key.shape[-2] != value.shape[-2]:
-                raise ValueError(
-                    "the number of elements in 'key' must be equal to the same as the number of elements in 'value'"
                 )
 
         # Linear transformations

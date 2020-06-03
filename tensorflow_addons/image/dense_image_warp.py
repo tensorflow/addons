@@ -195,14 +195,20 @@ def dense_image_warp(
     Apply a non-linear warp to the image, where the warp is specified by a
     dense flow field of offset vectors that define the correspondences of
     pixel values in the output image back to locations in the source image.
-    Specifically, the pixel value at output[b, j, i, c] is
-    images[b, j - flow[b, j, i, 0], i - flow[b, j, i, 1], c].
+    Specifically, the pixel value at `output[b, j, i, c]` is
+    `images[b, j - flow[b, j, i, 0], i - flow[b, j, i, 1], c]`.
 
     The locations specified by this formula do not necessarily map to an int
     index. Therefore, the pixel value is obtained by bilinear
     interpolation of the 4 nearest pixels around
-    (b, j - flow[b, j, i, 0], i - flow[b, j, i, 1]). For locations outside
+    `(b, j - flow[b, j, i, 0], i - flow[b, j, i, 1])`. For locations outside
     of the image, we use the nearest pixel values at the image boundary.
+
+    PLEASE NOTE: The definition of the flow field above is different from that
+    of optical flow. This function expects the negative forward flow from
+    output image to source image. Given two images `I_1` and `I_2` and the
+    optical flow `F_12` from `I_1` to `I_2`, the image `I_1` can be
+    reconstructed by `I_1_rec = dense_image_warp(I_2, -F_12)`.
 
     Args:
       image: 4-D float `Tensor` with shape `[batch, height, width, channels]`.

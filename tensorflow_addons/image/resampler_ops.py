@@ -31,6 +31,7 @@ def resampler(
     """Resamples input data at user defined coordinates.
 
     The resampler currently only supports bilinear interpolation of 2D data.
+
     Args:
       data: Tensor of shape `[batch_size, data_height, data_width,
         data_num_channels]` containing 2D data that will be resampled.

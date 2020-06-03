@@ -43,12 +43,12 @@ class CohenKappa(Metric):
     preds = np.array([4, 4, 3, 4, 4, 2, 1, 1], dtype=np.int32)
     weights = np.array([1, 1, 2, 5, 10, 2, 3, 3], dtype=np.int32)
 
-    m = tfa.metrics.CohenKappa(num_classes=5)
+    m = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
     m.update_state(actuals, preds)
     print('Final result: ', m.result().numpy()) # Result: 0.61904764
 
     # To use this with weights, sample_weight argument can be used.
-    m = tfa.metrics.CohenKappa(num_classes=5)
+    m = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
     m.update_state(actuals, preds, sample_weight=weights)
     print('Final result: ', m.result().numpy()) # Result: 0.37209308
     ```
@@ -144,6 +144,7 @@ class CohenKappa(Metric):
         y_pred = tf.cast(y_pred > 0.5, dtype=tf.int64)
         return self._update_confusion_matrix(y_true, y_pred, sample_weight)
 
+    @tf.function
     def _update_multi_class_model(self, y_true, y_pred, sample_weight=None):
         if not self.sparse_labels:
             y_true = tf.cast(tf.argmax(y_true, axis=-1), dtype=tf.int64)
