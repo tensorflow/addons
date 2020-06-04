@@ -103,7 +103,7 @@ def register_custom_kernels() -> None:
 
 
 def _get_all_shared_objects():
-    custom_ops_dir = os.path.join(get_project_root(), "custom_ops")
+    custom_ops_dir = get_path_to_datafile("custom_ops",is_so=True)
     all_shared_objects = glob.glob(custom_ops_dir + "/**/*.so", recursive=True)
     all_shared_objects = [x for x in all_shared_objects if Path(x).is_file()]
     return all_shared_objects
