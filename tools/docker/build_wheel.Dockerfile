@@ -72,8 +72,6 @@ RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
 COPY --from=make_wheel /addons/wheelhouse/ /addons/wheelhouse/
 RUN pip install /addons/wheelhouse/*.whl
 
-RUN bazel clean
-
 RUN python -c "import tensorflow_addons as tfa; print(tfa.register_all())"
 
 # -------------------------------------------------------------------
