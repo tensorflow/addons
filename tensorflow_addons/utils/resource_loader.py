@@ -44,7 +44,7 @@ def get_path_to_datafile(path, is_so=False):
     root_dir = get_project_root()
     if is_so:
         bazel_bin_dir = os.path.join(os.path.dirname(root_dir), "bazel-bin")
-        if os.path.islink(bazel_bin_dir):
+        if os.path.isdir(bazel_bin_dir):
             root_dir = os.path.join(bazel_bin_dir, "tensorflow_addons")
     return os.path.join(root_dir, path.replace("/", os.sep))
 
