@@ -67,7 +67,7 @@ def test_serialization():
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_keras():
+def test_keras(tmpdir):
     test_inputs = np.arange(start=0.0, stop=16.0, step=1.0).astype(np.float32)
     test_inputs = np.reshape(test_inputs, (1, 4, 4, 1))
     test_output = [[[7.5], [2.5], [4.5], [10.5], [12.5]]]
@@ -75,9 +75,9 @@ def test_keras():
     inputs = tf.keras.layers.Input((None, None, 1))
     spp = SpatialPyramidPooling2D([1, 2])(inputs)
     model = tf.keras.Model(inputs=[inputs], outputs=[spp])
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        model_path = os.path.join(tmp_dir, "spp_model.h5")
-        model.save(model_path)
-        model = tf.keras.models.load_model(model_path)
+    
+    model_path = os.path.join(tmpdir, "spp_model.h5")
+    model.save(model_path)
+    model = tf.keras.models.load_model(model_path)
     model_output = model.predict(test_inputs).tolist()
     assert model_output == test_output
