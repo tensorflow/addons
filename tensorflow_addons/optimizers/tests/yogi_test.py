@@ -96,7 +96,7 @@ def _dtypes_to_test(use_gpu):
 
 
 def do_test_sparse(beta1=0.0, l1reg=0.0, l2reg=0.0):
-    for dtype in _dtypes_to_test(use_gpu=tf.test.is_gpu_available()):
+    for dtype in _dtypes_to_test(use_gpu=test_utils.is_gpu_available()):
         # Initialize variables for numpy implementation.
         m0, v0, m1, v1 = 0.0, 1.0, 0.0, 1.0
         var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
@@ -169,7 +169,7 @@ def test_sparse_momentum_regularization():
 
 
 def test_sparse_repeated_indices():
-    for dtype in _dtypes_to_test(use_gpu=tf.test.is_gpu_available()):
+    for dtype in _dtypes_to_test(use_gpu=test_utils.is_gpu_available()):
         repeated_index_update_var = tf.Variable([[1.0], [2.0]], dtype=dtype)
         aggregated_update_var = tf.Variable([[1.0], [2.0]], dtype=dtype)
         grad_repeated_index = tf.IndexedSlices(
@@ -199,7 +199,7 @@ def test_sparse_repeated_indices():
 
 
 def do_test_basic(beta1=0.0, l1reg=0.0, l2reg=0.0):
-    for dtype in _dtypes_to_test(use_gpu=tf.test.is_gpu_available()):
+    for dtype in _dtypes_to_test(use_gpu=test_utils.is_gpu_available()):
         # Initialize variables for numpy implementation.
         m0, v0, m1, v1 = 0.0, 1.0, 0.0, 1.0
         var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
@@ -265,7 +265,7 @@ def test_basic_momentum_regularization():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_tensor_learning_rate():
-    for dtype in _dtypes_to_test(use_gpu=tf.test.is_gpu_available()):
+    for dtype in _dtypes_to_test(use_gpu=test_utils.is_gpu_available()):
         # Initialize variables for numpy implementation.
         m0, v0, m1, v1 = 0.0, 1.0, 0.0, 1.0
         var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
@@ -301,7 +301,7 @@ def test_tensor_learning_rate():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_sharing():
-    for dtype in _dtypes_to_test(use_gpu=tf.test.is_gpu_available()):
+    for dtype in _dtypes_to_test(use_gpu=test_utils.is_gpu_available()):
         # Initialize variables for numpy implementation.
         m0, v0, m1, v1 = 0.0, 1.0, 0.0, 1.0
         var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
