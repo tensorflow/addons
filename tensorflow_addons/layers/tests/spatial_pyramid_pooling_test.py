@@ -22,9 +22,7 @@ from tensorflow_addons.layers.spatial_pyramid_pooling import SpatialPyramidPooli
 from tensorflow_addons.utils import test_utils
 
 
-@pytest.mark.usefixtures(
-    "pip install artifacts/tensorflow_addons-*.whlmaybe_run_functions_eagerly"
-)
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_spp_shape_2d():
     spp = SpatialPyramidPooling2D([1, 3, 5])
     output_shape = [256, 35, 64]
