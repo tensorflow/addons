@@ -452,7 +452,7 @@ def test_something2(device):
 def test_something3(device):
     # the code here will run three times, once on gpu, once on cpu and once with 
     # a mirror distributed strategy.
-    # device will be "cpu:0" or "gpu:0" or "gpu:1" or "gpu:2" or the strategy.
+    # device will be "cpu:0" or "gpu:0" or the strategy.
     # with the MirroredStrategy, it's equivalent to:
     # strategy = tf.distribute.MirroredStrategy(...)
     # with strategy.scope():
