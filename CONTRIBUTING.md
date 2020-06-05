@@ -428,6 +428,8 @@ the test twice, on CPU and on GPU, or only on GPU. Here is how to do it.
 
 ```python
 import pytest
+import tensorflow as tf
+from tensorflow_addons.utils import test_utils
 
 @pytest.mark.with_device(["cpu", "gpu"])
 def test_something():
@@ -445,6 +447,24 @@ def test_something2(device):
         print("do something else.")
 
 
+
+@pytest.mark.with_device(["cpu", "gpu", tf.distribute.MirroredStrategy])
+def test_something3(device):
+    # the code here will run three times, once on gpu, once on cpu and once with 
+    # a mirror distributed strategy.
+    # device will be "cpu:0" or "gpu:0" or the strategy.
+    # with the MirroredStrategy, it's equivalent to:
+    # strategy = tf.distribute.MirroredStrategy(...)
+    # with strategy.scope():
+    #     test_function(strategy)
+    if "cpu" in device:
+        print("do something.")
+    if "gpu" in device:
+        print("do something else.")
+    if isinstance(device, tf.distribute.Strategy):
+        device.run(...)
+
+
 @pytest.mark.with_device(["gpu"])
 def test_something_else():
     # This test will be only run on gpu.
@@ -458,9 +478,20 @@ def test_something_more():
 
 
 @pytest.mark.with_device(["no_device"])
+@pytest.mark.needs_gpu
 def test_something_more2():
     # When running the function, there will be no `with tf.device` wrapper.
     # You are free to do whatever you wish with the devices in there.
+    # Make sure to use only the cpu, or only gpus available to the current process with
+    # test_utils.gpu_for_testing() , otherwise, it might not play nice with 
+    # pytest's multiprocessing.
+    # If you use a gpu, mark the test with @pytest.mark.needs_gpu , otherwise the 
+    # test will fail if no gpu is available on the system.
+    # for example
+    ...
+    strategy = tf.distribute.MirroredStrategy(test_utils.gpus_for_testing())
+    with strategy.scope():
+        print("I'm doing whatever I want.") 
     ...
 ```
 
