@@ -65,7 +65,6 @@ def test_serialization():
     assert layer.get_config() == new_layer.get_config()
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_keras(tmpdir):
     test_inputs = np.arange(start=0.0, stop=16.0, step=1.0).astype(np.float32)
     test_inputs = np.reshape(test_inputs, (1, 4, 4, 1))
