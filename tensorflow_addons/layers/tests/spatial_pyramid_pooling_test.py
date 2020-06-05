@@ -16,7 +16,6 @@
 
 import pytest
 import numpy as np
-import tempfile
 import os
 
 import tensorflow as tf
@@ -75,7 +74,7 @@ def test_keras(tmpdir):
     inputs = tf.keras.layers.Input((None, None, 1))
     spp = SpatialPyramidPooling2D([1, 2])(inputs)
     model = tf.keras.Model(inputs=[inputs], outputs=[spp])
-    
+
     model_path = os.path.join(tmpdir, "spp_model.h5")
     model.save(model_path)
     model = tf.keras.models.load_model(model_path)
