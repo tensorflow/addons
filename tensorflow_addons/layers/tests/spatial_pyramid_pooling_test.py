@@ -16,14 +16,15 @@
 
 import pytest
 import numpy as np
-import os
 
 import tensorflow as tf
 from tensorflow_addons.layers.spatial_pyramid_pooling import SpatialPyramidPooling2D
 from tensorflow_addons.utils import test_utils
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.usefixtures(
+    "pip install artifacts/tensorflow_addons-*.whlmaybe_run_functions_eagerly"
+)
 def test_spp_shape_2d():
     spp = SpatialPyramidPooling2D([1, 3, 5])
     output_shape = [256, 35, 64]
@@ -74,7 +75,7 @@ def test_keras(tmpdir):
     spp = SpatialPyramidPooling2D([1, 2])(inputs)
     model = tf.keras.Model(inputs=[inputs], outputs=[spp])
 
-    model_path = os.path.join(tmpdir, "spp_model.h5")
+    model_path = str(tmpdir / "spp_model.h5")
     model.save(model_path)
     model = tf.keras.models.load_model(model_path)
     model_output = model.predict(test_inputs).tolist()
