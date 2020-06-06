@@ -29,7 +29,7 @@ print("Results: ", m(y_true, y_pred).numpy())
 **Note**: The tensor can be a single example or it can represent a batch.
 
 
-#### Case II: Classification/Regression moels, etc.
+#### Case II: Classification/Regression models, etc.
 Different metrics have different use cases depending on the problem set. If the metric being implemented is valid for more than one scenario, then we suggest splitting the `PR` into multiple small `PRs`. For example, `cross-entropy` implemented as `binary_crossentropy` and `categorical_crossentropy`. 
 
 We are providing a simple example for the same if the above scenario applies to the functionality you are contributing to.
