@@ -2033,14 +2033,10 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
           TypeError: If `state` is not an instance of `AttentionWrapperState`.
         """
         if not isinstance(state, AttentionWrapperState):
-            try:
-                state = AttentionWrapperState(*state)
-            except:
-                raise TypeError(
-                    "Expected state to be instance of AttentionWrapperState or "
-                    "values that can construct AttentionWrapperState. "
-                    "Received type %s instead." % type(state)
-                )
+            raise TypeError(
+                "Expected state to be instance of AttentionWrapperState. "
+                "Received type %s instead." % type(state)
+            )
 
         # Step 1: Calculate the true inputs to the cell based on the
         # previous attention value.
