@@ -29,6 +29,17 @@ from typing import Optional
 class BasicDecoderOutput(
     collections.namedtuple("BasicDecoderOutput", ("rnn_output", "sample_id"))
 ):
+    """Outputs of a `BasicDecoder` step.
+
+    Contains:
+
+      - `rnn_output`: The output for this step. If the `output_layer` argument
+         of `BasicDecoder` was set, it is the output of this layer, otherwise it
+         is the output of the RNN cell.
+      - `sample_id`: The token IDs sampled for this step, as returned by the
+        `sampler` instance passed to `BasicDecoder`.
+    """
+
     pass
 
 
@@ -49,9 +60,9 @@ class BasicDecoder(decoder.BaseDecoder):
           cell: A layer that implements the `tf.keras.layers.AbstractRNNCell`
             interface.
           sampler: A `Sampler` instance.
-          output_layer: (Optional) An instance of `tf.layers.Layer`, i.e.,
-            `tf.layers.Dense`. Optional layer to apply to the RNN output prior
-             to storing the result or sampling.
+          output_layer: (Optional) An instance of `tf.keras.layers.Layer`, i.e.,
+            `tf.keras.layers.Dense`. Optional layer to apply to the RNN output
+             prior to storing the result or sampling.
           **kwargs: Other keyword arguments for layer creation.
         """
         keras_utils.assert_like_rnncell("cell", cell)
