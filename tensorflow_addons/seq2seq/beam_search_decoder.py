@@ -663,8 +663,9 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
           cell: A layer that implements the `tf.keras.layers.AbstractRNNCell`
             interface.
           beam_width:  Python integer, the number of beams.
-          embedding_fn: A callable that takes a vector tensor of `ids`
-            (argmax ids).
+          embedding_fn: A callable that takes a `int32` `Tensor` of token IDs
+            and returns embedding tensors. If set, the `embedding` argument in
+            the decoder call should be set to `None`.
           output_layer: (Optional) An instance of `tf.keras.layers.Layer`,
             i.e., `tf.keras.layers.Dense`.  Optional layer to apply to the RNN
             output prior to storing the result or sampling.
@@ -696,24 +697,32 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         """Initialize the decoder.
 
         Args:
-          embedding: A tensor from the embedding layer output, which is the
-            `params` argument for `embedding_lookup`.
-          start_tokens: `int32` vector shaped `[batch_size]`, the start tokens.
-          end_token: `int32` scalar, the token that marks end of decoding.
-          initial_state: A (possibly nested tuple of...) tensors and
-          TensorArrays.
+          embedding: A `Tensor` (or `Variable`) to pass as the `params` argument
+            for `tf.nn.embedding_lookup`. This overrides `embedding_fn` set in
+            the constructor.
+          start_tokens: Start the decoding from these tokens.
+            A `int32` `Tensor` of shape `[batch_size]`.
+          end_token: The token that marks the end of decoding.
+            A `int32` scalar `Tensor`.
+          initial_state: The initial cell state as a (possibly nested) structure
+            of `Tensor` and `TensorArray`.
+
         Returns:
           `(finished, start_inputs, initial_state)`.
+
         Raises:
+          ValueError: If `embedding` is `None` and `embedding_fn` was not set
+            in the constructor.
           ValueError: If `start_tokens` is not a vector or `end_token` is not a
             scalar.
         """
-        if embedding is not None and self._embedding_fn is not None:
-            raise ValueError(
-                "embedding and embedding_fn cannot be provided at same time"
-            )
-        elif embedding is not None:
+        if embedding is not None:
             self._embedding_fn = lambda ids: tf.nn.embedding_lookup(embedding, ids)
+        elif self._embedding_fn is None:
+            raise ValueError(
+                "You should either pass an embedding variable when calling the "
+                "BeamSearchDecoder or set embedding_fn in the constructor."
+            )
 
         self._start_tokens = tf.convert_to_tensor(
             start_tokens, dtype=tf.int32, name="start_tokens"

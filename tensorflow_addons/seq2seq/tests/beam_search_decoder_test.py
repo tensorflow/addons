@@ -280,6 +280,20 @@ def test_eos_masking():
         np.testing.assert_allclose(masked[1][2][i], np.finfo("float32").min)
 
 
+def test_missing_embedding_fn():
+    batch_size = 6
+    beam_width = 4
+    cell = tf.keras.layers.LSTMCell(5)
+    decoder = beam_search_decoder.BeamSearchDecoder(cell, beam_width=beam_width)
+    initial_state = cell.get_initial_state(
+        batch_size=batch_size * beam_width, dtype=tf.float32
+    )
+    start_tokens = tf.ones([batch_size], dtype=tf.int32)
+    end_token = tf.constant(2, dtype=tf.int32)
+    with pytest.raises(ValueError):
+        decoder(None, start_tokens, end_token, initial_state)
+
+
 def test_beam_step():
     batch_size = 2
     beam_width = 3
