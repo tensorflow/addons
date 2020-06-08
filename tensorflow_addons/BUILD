@@ -9,10 +9,7 @@ config_setting(
 
 py_library(
     name = "tensorflow_addons",
-    data = [
-        "__init__.py",
-        "version.py",
-    ],
+    srcs = glob(["*.py"]),
     deps = [
         "//tensorflow_addons/activations",
         "//tensorflow_addons/callbacks",
@@ -23,6 +20,18 @@ py_library(
         "//tensorflow_addons/optimizers",
         "//tensorflow_addons/rnn",
         "//tensorflow_addons/seq2seq",
+        "//tensorflow_addons/testing",
         "//tensorflow_addons/text",
+        "//tensorflow_addons/utils",
+    ],
+)
+
+py_test(
+    name = "tensorflow_addons_test",
+    size = "small",
+    srcs = glob(["tests/*"]),
+    main = "tests/run_all_test.py",
+    deps = [
+        ":tensorflow_addons",
     ],
 )

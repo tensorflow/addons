@@ -28,10 +28,11 @@ from tensorflow_addons.utils.types import (
     FloatTensorLike,
     TensorLike,
     Initializer,
+    Number,
 )
 
 from typeguard import typechecked
-from typing import Optional, Callable
+from typing import Optional, Callable, Union, List
 
 # TODO: Find public API alternatives to these
 from tensorflow.python.keras.engine import base_layer_utils
@@ -307,12 +308,8 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
                 self.keys = self.memory_layer(self.values)
             else:
                 self.keys = self.values
-            self.batch_size = (
-                tf.compat.dimension_value(self.keys.shape[0]) or tf.shape(self.keys)[0]
-            )
-            self._alignments_size = (
-                tf.compat.dimension_value(self.keys.shape[1]) or tf.shape(self.keys)[1]
-            )
+            self.batch_size = self.keys.shape[0] or tf.shape(self.keys)[0]
+            self._alignments_size = self.keys.shape[1] or tf.shape(self.keys)[1]
             if memory_mask is not None or memory_sequence_length is not None:
                 unwrapped_probability_fn = self.default_probability_fn
 
@@ -411,11 +408,14 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
 
     @property
     def alignments_size(self):
-        return self._alignments_size
+        if isinstance(self._alignments_size, int):
+            return self._alignments_size
+        else:
+            return tf.TensorShape([None])
 
     @property
     def state_size(self):
-        return self._alignments_size
+        return self.alignments_size
 
     def initial_alignments(self, batch_size, dtype):
         """Creates the initial alignment values for the `AttentionWrapper`
@@ -484,8 +484,8 @@ def _luong_score(query, keys, scale):
     Raises:
       ValueError: If `key` and `query` depths do not match.
     """
-    depth = query.get_shape()[-1]
-    key_units = keys.get_shape()[-1]
+    depth = query.shape[-1]
+    key_units = keys.shape[-1]
     if depth != key_units:
         raise ValueError(
             "Incompatible or unknown inner dimensions between query and keys. "
@@ -924,9 +924,7 @@ def monotonic_attention(
     )
     if mode == "recursive":
         # Use .shape[0] when it's not None, or fall back on symbolic shape
-        batch_size = (
-            tf.compat.dimension_value(p_choose_i.shape[0]) or tf.shape(p_choose_i)[0]
-        )
+        batch_size = p_choose_i.shape[0] or tf.shape(p_choose_i)[0]
         # Compute [1, 1 - p_choose_i[0], 1 - p_choose_i[1], ..., 1 - p_choose_
         # i[-2]]
         shifted_1mp_choose_i = tf.concat(
@@ -1386,7 +1384,6 @@ class AttentionWrapperState(
         (
             "cell_state",
             "attention",
-            "time",
             "alignments",
             "alignment_history",
             "attention_state",
@@ -1400,7 +1397,6 @@ class AttentionWrapperState(
       - `cell_state`: The state of the wrapped `RNNCell` at the previous time
         step.
       - `attention`: The attention emitted at the previous time step.
-      - `time`: int32 scalar containing the current time step.
       - `alignments`: A single or tuple of `Tensor`(s) containing the
          alignments emitted at the previous time step for each attention
          mechanism.
@@ -1494,10 +1490,10 @@ def _prepare_memory(
     if check_inner_dims_defined:
 
         def _check_dims(m):
-            if not m.get_shape()[2:].is_fully_defined():
+            if not m.shape[2:].is_fully_defined():
                 raise ValueError(
                     "Expected memory %s to have fully defined inner dims, "
-                    "but saw shape: %s" % (m.name, m.get_shape())
+                    "but saw shape: %s" % (m.name, m.shape)
                 )
 
         tf.nest.map_structure(_check_dims, memory)
@@ -1515,7 +1511,7 @@ def _prepare_memory(
 
     def _maybe_mask(m, seq_len_mask):
         """Mask the memory based on the memory mask."""
-        rank = m.get_shape().ndims
+        rank = m.shape.ndims
         rank = rank if rank is not None else tf.rank(m)
         extra_ones = tf.ones(rank - 2, dtype=tf.int32)
         seq_len_mask = tf.reshape(
@@ -1565,10 +1561,7 @@ def hardmax(logits: TensorLike, name: Optional[str] = None) -> tf.Tensor:
     """
     with tf.name_scope(name or "Hardmax"):
         logits = tf.convert_to_tensor(logits, name="logits")
-        if tf.compat.dimension_value(logits.get_shape()[-1]) is not None:
-            depth = tf.compat.dimension_value(logits.get_shape()[-1])
-        else:
-            depth = tf.shape(logits)[-1]
+        depth = logits.shape[-1] or tf.shape(logits)[-1]
         return tf.one_hot(tf.argmax(logits, -1), depth, dtype=logits.dtype)
 
 
@@ -1617,14 +1610,16 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
     def __init__(
         self,
         cell: tf.keras.layers.Layer,
-        attention_mechanism: tf.keras.layers.Layer,
-        attention_layer_size: Optional[FloatTensorLike] = None,
+        attention_mechanism: Union[AttentionMechanism, List[AttentionMechanism]],
+        attention_layer_size: Optional[Union[Number, List[Number]]] = None,
         alignment_history: bool = False,
         cell_input_fn: Optional[Callable] = None,
         output_attention: bool = True,
         initial_cell_state: Optional[TensorLike] = None,
         name: Optional[str] = None,
-        attention_layer: Optional[tf.keras.layers.Layer] = None,
+        attention_layer: Optional[
+            Union[tf.keras.layers.Layer, List[tf.keras.layers.Layer]]
+        ] = None,
         attention_fn: Optional[Callable] = None,
         **kwargs
     ):
@@ -1700,7 +1695,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             and cell output as inputs to generate attention at each time step.
             If None (default), use the context as attention at each time step.
             If attention_mechanism is a list, attention_layer must be a list of
-            the same length. If attention_layers_size is set, this must be
+            the same length. If attention_layer_size is set, this must be
             None.
           attention_fn: An optional callable function that allows users to
             provide their own customized attention function, which takes input
@@ -1724,34 +1719,14 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         if isinstance(attention_mechanism, (list, tuple)):
             self._is_multi = True
             attention_mechanisms = list(attention_mechanism)
-            for attention_mechanism in attention_mechanisms:
-                if not isinstance(attention_mechanism, AttentionMechanism):
-                    raise TypeError(
-                        "attention_mechanism must contain only instances of "
-                        "AttentionMechanism, saw type: %s"
-                        % type(attention_mechanism).__name__
-                    )
         else:
             self._is_multi = False
-            if not isinstance(attention_mechanism, AttentionMechanism):
-                raise TypeError(
-                    "attention_mechanism must be an AttentionMechanism or "
-                    "list of multiple AttentionMechanism instances, saw type: "
-                    "%s" % type(attention_mechanism).__name__
-                )
             attention_mechanisms = [attention_mechanism]
 
         if cell_input_fn is None:
 
             def cell_input_fn(inputs, attention):
                 return tf.concat([inputs, attention], -1)
-
-        else:
-            if not callable(cell_input_fn):
-                raise TypeError(
-                    "cell_input_fn must be callable, saw type: %s"
-                    % type(cell_input_fn).__name__
-                )
 
         if attention_layer_size is not None and attention_layer is not None:
             raise ValueError(
@@ -1810,8 +1785,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             else:
                 final_state_tensor = tf.nest.flatten(initial_cell_state)[-1]
                 state_batch_size = (
-                    tf.compat.dimension_value(final_state_tensor.shape[0])
-                    or tf.shape(final_state_tensor)[0]
+                    final_state_tensor.shape[0] or tf.shape(final_state_tensor)[0]
                 )
                 error_message = (
                     "When constructing AttentionWrapper %s: " % self.name
@@ -1912,7 +1886,6 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         """
         return AttentionWrapperState(
             cell_state=self._cell.state_size,
-            time=tf.TensorShape([]),
             attention=self._get_attention_layer_size(),
             alignments=self._item_or_tuple(
                 a.alignments_size for a in self._attention_mechanisms
@@ -1980,7 +1953,6 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             ]
             return AttentionWrapperState(
                 cell_state=cell_state,
-                time=tf.zeros([], dtype=tf.int32),
                 attention=tf.zeros(
                     [batch_size, self._get_attention_layer_size()], dtype=dtype
                 ),
@@ -2033,20 +2005,25 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
           TypeError: If `state` is not an instance of `AttentionWrapperState`.
         """
         if not isinstance(state, AttentionWrapperState):
-            raise TypeError(
-                "Expected state to be instance of AttentionWrapperState. "
-                "Received type %s instead." % type(state)
-            )
+            try:
+                state = AttentionWrapperState(*state)
+            except TypeError:
+                raise TypeError(
+                    "Expected state to be instance of AttentionWrapperState or "
+                    "values that can construct AttentionWrapperState. "
+                    "Received type %s instead." % type(state)
+                )
 
         # Step 1: Calculate the true inputs to the cell based on the
         # previous attention value.
         cell_inputs = self._cell_input_fn(inputs, state.attention)
         cell_state = state.cell_state
         cell_output, next_cell_state = self._cell(cell_inputs, cell_state, **kwargs)
-
-        cell_batch_size = (
-            tf.compat.dimension_value(cell_output.shape[0]) or tf.shape(cell_output)[0]
+        next_cell_state = tf.nest.pack_sequence_as(
+            cell_state, tf.nest.flatten(next_cell_state)
         )
+
+        cell_batch_size = cell_output.shape[0] or tf.shape(cell_output)[0]
         error_message = (
             "When applying AttentionWrapper %s: " % self.name
             + "Non-matching batch sizes between the memory "
@@ -2079,7 +2056,9 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                 self._attention_layers[i] if self._attention_layers else None,
             )
             alignment_history = (
-                previous_alignment_history[i].write(state.time, alignments)
+                previous_alignment_history[i].write(
+                    previous_alignment_history[i].size(), alignments
+                )
                 if self._alignment_history
                 else ()
             )
@@ -2091,7 +2070,6 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
 
         attention = tf.concat(all_attentions, 1)
         next_state = AttentionWrapperState(
-            time=state.time + 1,
             cell_state=next_cell_state,
             attention=attention,
             attention_state=self._item_or_tuple(all_attention_states),

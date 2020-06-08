@@ -17,7 +17,7 @@
 import abc
 
 import tensorflow as tf
-from tensorflow_addons.utils.types import Number
+from tensorflow_addons.utils.types import TensorLike
 from typeguard import typechecked
 from typing import Any, Optional, Tuple, Union
 
@@ -144,7 +144,7 @@ class BaseDecoder(tf.keras.layers.Layer):
         self,
         output_time_major: bool = False,
         impute_finished: bool = False,
-        maximum_iterations: Optional[Number] = None,
+        maximum_iterations: Optional[TensorLike] = None,
         parallel_iterations: int = 32,
         swap_memory: bool = False,
         **kwargs
@@ -256,11 +256,12 @@ class BaseDecoder(tf.keras.layers.Layer):
     # TODO(scottzhu): Add build/get_config/from_config and other layer methods.
 
 
+@typechecked
 def dynamic_decode(
     decoder: Union[Decoder, BaseDecoder],
     output_time_major: bool = False,
     impute_finished: bool = False,
-    maximum_iterations: Optional[Number] = None,
+    maximum_iterations: Optional[TensorLike] = None,
     parallel_iterations: int = 32,
     swap_memory: bool = False,
     training: Optional[bool] = None,
@@ -299,14 +300,8 @@ def dynamic_decode(
       `(final_outputs, final_state, final_sequence_lengths)`.
 
     Raises:
-      TypeError: if `decoder` is not an instance of `Decoder`.
       ValueError: if `maximum_iterations` is provided but is not a scalar.
     """
-    if not isinstance(decoder, (Decoder, BaseDecoder)):
-        raise TypeError(
-            "Expected decoder to be type Decoder, but saw: %s" % type(decoder)
-        )
-
     with tf.compat.v1.variable_scope(scope, "decoder") as varscope:
         # Determine context types.
         ctxt = tf.compat.v1.get_default_graph()._get_control_flow_context()
@@ -325,7 +320,7 @@ def dynamic_decode(
             maximum_iterations = tf.convert_to_tensor(
                 maximum_iterations, dtype=tf.int32, name="maximum_iterations"
             )
-            if maximum_iterations.get_shape().ndims != 0:
+            if maximum_iterations.shape.ndims != 0:
                 raise ValueError("maximum_iterations must be a scalar")
 
         if isinstance(decoder, Decoder):

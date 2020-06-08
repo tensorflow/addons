@@ -14,13 +14,25 @@
 # ==============================================================================
 """Additional layers that conform to Keras API."""
 
+from tensorflow_addons.layers.adaptive_pooling import (
+    AdaptiveAveragePooling1D,
+    AdaptiveMaxPooling1D,
+    AdaptiveAveragePooling2D,
+    AdaptiveMaxPooling2D,
+    AdaptiveAveragePooling3D,
+    AdaptiveMaxPooling3D,
+)
 from tensorflow_addons.layers.gelu import GELU
 from tensorflow_addons.layers.maxout import Maxout
+from tensorflow_addons.layers.multihead_attention import MultiHeadAttention
+from tensorflow_addons.layers.normalizations import FilterResponseNormalization
 from tensorflow_addons.layers.normalizations import GroupNormalization
 from tensorflow_addons.layers.normalizations import InstanceNormalization
 from tensorflow_addons.layers.optical_flow import CorrelationCost
 from tensorflow_addons.layers.poincare import PoincareNormalize
 from tensorflow_addons.layers.polynomial import PolynomialCrossing
 from tensorflow_addons.layers.sparsemax import Sparsemax
+from tensorflow_addons.layers.spatial_pyramid_pooling import SpatialPyramidPooling2D
 from tensorflow_addons.layers.tlu import TLU
 from tensorflow_addons.layers.wrappers import WeightNormalization
+from tensorflow_addons.layers.esn import ESN

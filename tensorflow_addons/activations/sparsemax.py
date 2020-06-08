@@ -19,7 +19,6 @@ from tensorflow_addons.utils import types
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-@tf.function
 def sparsemax(logits: types.TensorLike, axis: int = -1) -> tf.Tensor:
     """Sparsemax activation function [1].
 
@@ -82,7 +81,6 @@ def _swap_axis(logits, dim_index, last_index, **kwargs):
     )
 
 
-@tf.function
 def _compute_2d_sparsemax(logits):
     """Performs the sparsemax operation when axis=-1."""
     shape_op = tf.shape(logits)

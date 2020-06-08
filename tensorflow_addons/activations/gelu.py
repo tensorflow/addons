@@ -14,9 +14,12 @@
 # ==============================================================================
 
 import tensorflow as tf
+import math
+import warnings
 
 from tensorflow_addons.utils import types
 from tensorflow_addons.utils.resource_loader import LazySO
+from tensorflow_addons import options
 
 _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
@@ -41,6 +44,24 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
+
+    if not options.TF_ADDONS_PY_OPS:
+        try:
+            return _gelu_custom_op(x, approximate)
+        except tf.errors.NotFoundError:
+            options.warn_fallback("gelu")
+
+    return _gelu_py(x, approximate)
+
+
+def _gelu_custom_op(x, approximate):
+    warnings.warn(
+        "The activations custom ops are deprecated and will be removed in TensorFlow Addons "
+        "v0.12.0. \nPlease use the pure python version of Gelu instead by using the "
+        "`TF_ADDONS_PY_OPS` flag. \nFor more info about this flag, see "
+        "https://github.com/tensorflow/addons#gpucpu-custom-ops ",
+        DeprecationWarning,
+    )
     return _activation_so.ops.addons_gelu(x, approximate)
 
 
@@ -49,3 +70,13 @@ def _gelu_grad(op, grad):
     return _activation_so.ops.addons_gelu_grad(
         grad, op.inputs[0], op.get_attr("approximate")
     )
+
+
+def _gelu_py(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
+    x = tf.convert_to_tensor(x)
+    if approximate:
+        pi = tf.cast(math.pi, x.dtype)
+        coeff = tf.cast(0.044715, x.dtype)
+        return 0.5 * x * (1.0 + tf.tanh(tf.sqrt(2.0 / pi) * (x + coeff * tf.pow(x, 3))))
+    else:
+        return 0.5 * x * (1.0 + tf.math.erf(x / tf.cast(tf.sqrt(2.0), x.dtype)))

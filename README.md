@@ -10,14 +10,12 @@
 [![Gitter chat](https://img.shields.io/badge/chat-on%20gitter-46bc99.svg)](https://gitter.im/tensorflow/sig-addons)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-### Nightly Tests
+### Continuous Build Status
 
-| Build Type      | Status |
+| Build      | Status |
 | ---             | ---    |
-| **MacOS CPU**   | [![Status](https://github.com/tensorflow/addons/workflows/macos-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Amacos-nightly) |
-| **Windows CPU**   | [![Status](https://github.com/tensorflow/addons/workflows/windows-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Awindows-nightly) |
-| **Ubuntu CPU**   | [![Status](https://github.com/tensorflow/addons/workflows/manylinux-nightly/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Amanylinux-nightly) |
-| **Ubuntu GPU**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
+| **Ubuntu/macOS/Windows**   | [![Status](https://github.com/tensorflow/addons/workflows/addons-release/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Aaddons-release) |
+| **Ubuntu GPU custom ops**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
 
 **TensorFlow Addons** is a repository of contributions that conform to
 well-established API patterns, but implement new functionality
@@ -28,49 +26,91 @@ developments that cannot be integrated into core TensorFlow
 (because their broad applicability is not yet clear, or it is mostly
  used by a smaller subset of the community).
 
-## Maintainers
-| Subpackage    | Maintainers  | Contact Info                        |
-|:----------------------- |:----------- |:----------------------------|
-| [tfa.activations](tensorflow_addons/activations/README.md) | SIG-Addons | @facaiy @seanpmorgan | 
-| [tfa.callbacks](tensorflow_addons/callbacks/README.md) | SIG-Addons | @squadrick @shun-lin |
-| [tfa.image](tensorflow_addons/image/README.md) | SIG-Addons | @windqaq @facaiy |
-| [tfa.layers](tensorflow_addons/layers/README.md) | SIG-Addons | @seanpmorgan @facaiy |
-| [tfa.losses](tensorflow_addons/losses/README.md) | SIG-Addons | @facaiy @windqaq   |
-| [tfa.metrics](tensorflow_addons/metrics/README.md) | SIG-Addons | @squadrick | 
-| [tfa.optimizers](tensorflow_addons/optimizers/README.md) | SIG-Addons | @facaiy @windqaq @squadrick |
-| [tfa.rnn](tensorflow_addons/rnn/README.md) | Google | @qlzh727 |
-| [tfa.seq2seq](tensorflow_addons/seq2seq/README.md) | Google/SIG-Addons | @qlzh727 @guillaumekln |
-| [tfa.text](tensorflow_addons/text/README.md) |  SIG-Addons |  @seanpmorgan @facaiy |
+## Addons Subpackages
+
+* [tfa.activations](https://www.tensorflow.org/addons/api_docs/python/tfa/activations) 
+* [tfa.callbacks](https://www.tensorflow.org/addons/api_docs/python/tfa/callbacks) 
+* [tfa.image](https://www.tensorflow.org/addons/api_docs/python/tfa/image) 
+* [tfa.layers](https://www.tensorflow.org/addons/api_docs/python/tfa/layers)
+* [tfa.losses](https://www.tensorflow.org/addons/api_docs/python/tfa/losses)
+* [tfa.metrics](https://www.tensorflow.org/addons/api_docs/python/tfa/metrics) 
+* [tfa.optimizers](https://www.tensorflow.org/addons/api_docs/python/tfa/optimizers) 
+* [tfa.rnn](https://www.tensorflow.org/addons/api_docs/python/tfa/rnn) 
+* [tfa.seq2seq](https://www.tensorflow.org/addons/api_docs/python/tfa/seq2seq) 
+* [tfa.text](https://www.tensorflow.org/addons/api_docs/python/tfa/text) 
+
+## Maintainership
+The maintainers of TensorFlow Addons can be found in the [CODEOWNERS](.github/CODEOWNERS) file of the repo. This file 
+is parsed and pull requests will automatically tag the owners using a bot. If you would
+like to maintain something, please feel free to submit a PR. We encourage multiple 
+owners for all submodules.
 
 ## Installation
 #### Stable Builds
-TFA is available on PyPi for Linux/MacOS/Windows. To install the latest version, 
+TensorFlow Addons is available on PyPI for Linux, macOS, and Windows. To install the latest version, 
 run the following:
 ```
 pip install tensorflow-addons
 ```
  
 
-To use addons:
+To use TensorFlow Addons:
 
 ```python
 import tensorflow as tf
 import tensorflow_addons as tfa
 ```
 
-#### Linux Build Matrix
-| Version    | Compatible With |Python versions  | Compiler  | cuDNN | CUDA | 
-|:----------------------- |:---|:---------- |:---------|:---------|:---------|
-| tfa-nightly | tensorflow>=2.1.0 | 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
-| tensorflow-addons-0.8.2 | tensorflow>=2.1.0 |3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
-| tensorflow-addons-0.7.1 | tensorflow>=2.1.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.6 | 10.1 |
-| tensorflow-addons-0.6.0 | tensorflow==2.0.0 | 2.7, 3.5-3.7 | GCC 7.3.1 | 7.4 | 10.0 |
+### Python Op Compatility
+TensorFlow Addons is actively working towards forward compatibility with TensorFlow 2.x. 
+However, there are still a few private API uses within the repository so at the moment 
+we can only guarantee compatibility with the TensorFlow versions which it was tested against. 
+Warnings will be emitted when importing `tensorflow_addons` if your TensorFlow version does not match 
+what it was tested against.
+
+#### Python Op Compatibility Matrix
+| TensorFlow Addons | TensorFlow | Python  |
+|:----------------------- |:---|:---------- |
+| tfa-nightly | 2.2 | 3.5, 3.6, 3.7, 3.8 | 
+| tensorflow-addons-0.10.0 | 2.2 |3.5, 3.6, 3.7, 3.8 |
+| tensorflow-addons-0.9.1 | 2.1, 2.2 |3.5, 3.6, 3.7 |
+| tensorflow-addons-0.8.3 | 2.1 |3.5, 3.6, 3.7 |
+| tensorflow-addons-0.7.1 | 2.1 | 2.7, 3.5, 3.6, 3.7 | 
+| tensorflow-addons-0.6.0 | 2.0 | 2.7, 3.5, 3.6, 3.7 |
+
+### C++ Custom Op Compatibility
+TensorFlow C++ APIs are not stable and thus we can only guarantee compatibility with the 
+version TensorFlow Addons was built against. It is possible custom ops will work with multiple 
+versions of TensorFlow, but there is also a chance for segmentation faults or other problematic crashes.
+Warnings will be emitted when loading a custom op if your TensorFlow version does not match 
+what it was built against.
+
+Additionally, custom ops registration does not have a stable ABI interface so it is 
+required that users have a compatible installation of TensorFlow even if the versions 
+match what we had built against. A simplification of this is that **TensorFlow Addons 
+custom ops will work with `pip`-installed TensorFlow** but will have issues when TensorFlow 
+is compiled differently. A typical example of this would be `conda`-installed TensorFlow.
+[RFC #133](https://github.com/tensorflow/community/pull/133) aims to fix this.
+
+
+#### C++ Custom Op Compatibility Matrix
+| TensorFlow Addons | TensorFlow | Compiler  | cuDNN | CUDA | 
+|:----------------------- |:---- |:---------|:---------|:---------|
+| tfa-nightly | 2.2 | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.10.0 | 2.2  | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.9.1 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.8.3 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.7.1 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.6.0 | 2.0  | GCC 7.3.1 | 7.4 | 10.0 |
 
 
 #### Nightly Builds
 There are also nightly builds of TensorFlow Addons under the pip package
-`tfa-nightly`, which is built against the latest stable version of TensorFlow. Nightly builds
-include newer features, but may be less stable than the versioned releases.
+`tfa-nightly`, which is built against **the latest stable version of TensorFlow**. Nightly builds
+include newer features, but may be less stable than the versioned releases. Contrary to 
+what the name implies, nightly builds are not released every night, but at every commit 
+of the master branch. `0.9.0.dev20200306094440` means that the commit time was 
+2020/03/06 at 09:44:40 Coordinated Universal Time.
 
 ```
 pip install tfa-nightly
@@ -80,9 +120,32 @@ pip install tfa-nightly
 You can also install from source. This requires the [Bazel](
 https://bazel.build/) build system (version >= 1.0.0).
 
+##### CPU Custom Ops
 ```
 git clone https://github.com/tensorflow/addons.git
 cd addons
+
+# This script links project with TensorFlow dependency
+python3 ./configure.py
+
+bazel build --enable_runfiles build_pip_pkg
+bazel-bin/build_pip_pkg artifacts
+
+pip install artifacts/tensorflow_addons-*.whl
+```
+
+##### GPU and CPU Custom Ops
+```
+git clone https://github.com/tensorflow/addons.git
+cd addons
+
+export TF_NEED_CUDA="1"
+
+# Set these if the below defaults are different on your system
+export TF_CUDA_VERSION="10.1"
+export TF_CUDNN_VERSION="7"
+export CUDA_TOOLKIT_PATH="/usr/local/cuda"
+export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 
 # This script links project with TensorFlow dependency
 python3 ./configure.py
@@ -101,16 +164,46 @@ for end-to-end examples of various addons.
 
 #### Standardized API within Subpackages
 User experience and project maintainability are core concepts in
-TF-Addons. In order to achieve these we require that our additions
+TensorFlow Addons. In order to achieve these we require that our additions
 conform to established API patterns seen in core TensorFlow.
 
-#### GPU/CPU Custom-Ops
-A major benefit of TensorFlow Addons is that there are precompiled ops. Should 
-a CUDA 10.1 installation not be found then the op will automatically fall back to 
-a CPU implementation.
+#### GPU and CPU Custom Ops
+TensorFlow Addons supports precompiled custom ops for CPU and GPU. However, 
+GPU custom ops currently only work on Linux distributions. For this reason Windows and macOS 
+will fallback to pure TensorFlow Python implementations whenever possible.
+
+The order of priority on macOS/Windows is:
+1) Pure TensorFlow + Python implementation (works on CPU and GPU)
+2) C++ implementation for CPU
+
+The order of priority on Linux is:
+1) CUDA implementation
+2) C++ implementation
+3) Pure TensorFlow + Python implementation (works on CPU and GPU)
+
+If you want to change the default priority, "C++ and CUDA" VS "pure TensorFlow Python", 
+you can set the variable `TF_ADDONS_PY_OPS` either from the command line or in 
+your code.
+
+For example, if you are on Linux and you have compatibility problems with the compiled ops,
+you can give priority to the Python implementations:
+
+From the command line:
+```bash
+export TF_ADDONS_PY_OPS=1
+```
+
+or in your code:
+
+```python
+import tensorflow_addons as tfa
+tfa.options.TF_ADDONS_PY_OPS = True
+```
+
+This variable defaults to `True` on Windows and macOS, and `False` on Linux.
 
 #### Proxy Maintainership
-Addons has been designed to compartmentalize subpackages and submodules so 
+TensorFlow Addons has been designed to compartmentalize subpackages and submodules so 
 that they can be maintained by users who have expertise and a vested interest 
 in that component. 
 
@@ -158,11 +251,46 @@ warning.
 
 
 ## Contributing
-TF-Addons is a community led open source project. As such, the project
-depends on public contributions, bug-fixes, and documentation. Please
-see [contribution guidelines](CONTRIBUTING.md) for a guide on how to
-contribute. This project adheres to [TensorFlow's code of conduct](CODE_OF_CONDUCT.md).
+TensorFlow Addons is a community-led open source project (only a few maintainers work for Google!). 
+As such, the project depends on public contributions, bug fixes, and documentation. 
+This project adheres to [TensorFlow's code of conduct](CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code.
+
+Do you want to contribute but are not sure of what? Here are a few suggestions:
+1. Add a new tutorial. Located in [`docs/tutorials/`](docs/tutorials),
+  these are a great way to familiarize yourself and others with TensorFlow Addons. See
+  [the guidelines](docs/tutorials/README.md) for more information on how to add
+  examples.
+2. Improve the docstrings. The docstrings are fetched and then displayed in the documentation.
+  Do a change and hundreds of developers will see it and benefit from it. Maintainers are often focused 
+  on making APIs, fixing bugs and other code related changes. The documentation will never 
+  be loved enough!
+3. Solve an [existing issue](https://github.com/tensorflow/addons/issues).
+  These range from low-level software bugs to higher-level design problems.
+  Check out the label [help wanted](https://github.com/tensorflow/addons/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22). If you're a new contributor, the label [good first issue](https://github.com/tensorflow/addons/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) can be a good place to start.
+4. Review a pull request. So you're not a software engineer but you know a lot
+  about a certain field a research? That's awesome and we need your help! Many people 
+  are submitting pull requests to add layers/optimizers/functions taken from recent
+  papers. Since TensorFlow Addons maintainers are not specialized in everything,
+  you can imagine how hard it is to review. It takes very long to read the paper,
+  understand it and check the math in the pull request. If you're specialized, look at 
+  the [list of pull requests](https://github.com/tensorflow/addons/pulls). 
+  If there is something from a paper you now, please comment on the pull request to
+  check the math is ok. If you see that everything is good, say it! It will help 
+  the maintainers to sleep better at night knowing that he/she wasn't the only
+  person to approve the pull request.
+5. You have an opinion and want to share it? The docs are not very helpful for 
+  a function or a class? You tried to open a pull request but you didn't manage to 
+  install or test anything and you think it's too complicated? You made a pull request
+  but you didn't find the process good enough and it made no sense to you? Please 
+  say it! We want feedback. Maintainers are too much the head into the code 
+  to understand what it's like for someone new to open source to come to this project. 
+  If you don't understand something, be aware there are no people who are 
+  bad at understanding, there are just bad tutorials and bad guides.
+
+Please see [contribution guidelines](CONTRIBUTING.md) to get started (and remember,
+if you don't understand something, open an issue, or even make a pull request to 
+improve the guide!).
 
 ## Community
 * [Public Mailing List](https://groups.google.com/a/tensorflow.org/forum/#!forum/addons)

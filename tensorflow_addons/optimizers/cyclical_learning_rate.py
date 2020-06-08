@@ -104,6 +104,7 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
         return {
             "initial_learning_rate": self.initial_learning_rate,
             "maximal_learning_rate": self.maximal_learning_rate,
+            "scale_fn": self.scale_fn,
             "step_size": self.step_size,
             "scale_mode": self.scale_mode,
         }
@@ -117,7 +118,6 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
         initial_learning_rate: Union[FloatTensorLike, Callable],
         maximal_learning_rate: Union[FloatTensorLike, Callable],
         step_size: FloatTensorLike,
-        scale_fn: Callable,
         scale_mode: str = "cycle",
         name: str = "TriangularCyclicalLearningRate",
     ):
@@ -154,7 +154,6 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
                 a Python number.  The maximum learning rate.
             step_size: A scalar `float32` or `float64` `Tensor` or a
                 Python number. Step size.
-            scale_fn: A function. Scheduling function applied in cycle
             scale_mode: ['cycle', 'iterations']. Mode to apply during cyclic
                 schedule
             name: (Optional) Name for the operation.
@@ -171,6 +170,14 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
             name=name,
         )
 
+    def get_config(self):
+        return {
+            "initial_learning_rate": self.initial_learning_rate,
+            "maximal_learning_rate": self.maximal_learning_rate,
+            "step_size": self.step_size,
+            "scale_mode": self.scale_mode,
+        }
+
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class Triangular2CyclicalLearningRate(CyclicalLearningRate):
@@ -180,7 +187,6 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
         initial_learning_rate: Union[FloatTensorLike, Callable],
         maximal_learning_rate: Union[FloatTensorLike, Callable],
         step_size: FloatTensorLike,
-        scale_fn: Callable,
         scale_mode: str = "cycle",
         name: str = "Triangular2CyclicalLearningRate",
     ):
@@ -217,7 +223,6 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
                 a Python number.  The maximum learning rate.
             step_size: A scalar `float32` or `float64` `Tensor` or a
                 Python number. Step size.
-            scale_fn: A function. Scheduling function applied in cycle
             scale_mode: ['cycle', 'iterations']. Mode to apply during cyclic
                 schedule
             name: (Optional) Name for the operation.
@@ -234,6 +239,14 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
             name=name,
         )
 
+    def get_config(self):
+        return {
+            "initial_learning_rate": self.initial_learning_rate,
+            "maximal_learning_rate": self.maximal_learning_rate,
+            "step_size": self.step_size,
+            "scale_mode": self.scale_mode,
+        }
+
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class ExponentialCyclicalLearningRate(CyclicalLearningRate):
@@ -243,7 +256,6 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
         initial_learning_rate: Union[FloatTensorLike, Callable],
         maximal_learning_rate: Union[FloatTensorLike, Callable],
         step_size: FloatTensorLike,
-        scale_fn: Callable,
         scale_mode: str = "iterations",
         gamma: FloatTensorLike = 1.0,
         name: str = "ExponentialCyclicalLearningRate",
@@ -282,7 +294,6 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
                 a Python number.  The maximum learning rate.
             step_size: A scalar `float32` or `float64` `Tensor` or a
                 Python number. Step size.
-            scale_fn: A function. Scheduling function applied in cycle
             scale_mode: ['cycle', 'iterations']. Mode to apply during cyclic
                 schedule
             gamma: A scalar `float32` or `float64` `Tensor` or a
@@ -292,6 +303,7 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
         Returns:
             Updated learning rate value.
         """
+        self.gamma = gamma
         super().__init__(
             initial_learning_rate=initial_learning_rate,
             maximal_learning_rate=maximal_learning_rate,
@@ -300,3 +312,12 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
             scale_mode=scale_mode,
             name=name,
         )
+
+    def get_config(self):
+        return {
+            "initial_learning_rate": self.initial_learning_rate,
+            "maximal_learning_rate": self.maximal_learning_rate,
+            "step_size": self.step_size,
+            "scale_mode": self.scale_mode,
+            "gamma": self.gamma,
+        }

@@ -7,9 +7,8 @@
 
 set -e
 
-if [ "$DOCKER_BUILDKIT" == "" ]; then
-  export DOCKER_BUILDKIT=1
-fi
-
+export DOCKER_BUILDKIT=1
 docker build -t tf_addons_formatting -f tools/docker/pre-commit.Dockerfile .
+
+export MSYS_NO_PATHCONV=1
 docker run --rm -t -v "$(pwd -P):/addons" tf_addons_formatting

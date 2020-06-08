@@ -195,6 +195,8 @@ TF_CALL_double(REGISTER);
   REGISTER_KERNEL_BUILDER(                                                   \
       Name("Addons>Resampler").Device(DEVICE_GPU).TypeConstraint<TYPE>("T"), \
       ResamplerOp<GPUDevice, TYPE>)
+
+TF_CALL_half(REGISTER);
 TF_CALL_float(REGISTER);
 TF_CALL_double(REGISTER);
 #undef REGISTER
@@ -217,8 +219,8 @@ struct ResamplerGrad2DFunctor<CPUDevice, T> {
     const int grad_warp_size = resampler_output_size / data_channels * 2;
     const int grad_data_size =
         data_height * data_width * data_channels * batch_size;
-    memset(grad_data, 0, sizeof(T) * grad_data_size);
-    memset(grad_warp, 0, sizeof(T) * grad_warp_size);
+    memset(static_cast<void*>(grad_data), 0, sizeof(T) * grad_data_size);
+    memset(static_cast<void*>(grad_warp), 0, sizeof(T) * grad_warp_size);
 
     const auto&& data_batch_stride = data_height * data_width * data_channels;
     const auto&& warp_batch_stride = num_sampling_points * 2;
@@ -406,11 +408,10 @@ TF_CALL_double(REGISTER);
                               .Device(DEVICE_GPU)         \
                               .TypeConstraint<TYPE>("T"), \
                           ResamplerGradOp<GPUDevice, TYPE>)
-// Disable half and double precision since atomicAdds are not supported
-// TF_CALL_half(REGISTER);
-// TF_CALL_double(REGISTER);
-TF_CALL_float(REGISTER);
 
+TF_CALL_half(REGISTER);
+TF_CALL_double(REGISTER);
+TF_CALL_float(REGISTER);
 #undef REGISTER
 #endif  // GOOGLE_CUDA
 

@@ -17,6 +17,7 @@
 import tensorflow as tf
 from tensorflow_addons.losses import metric_learning
 
+from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
 from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 from typeguard import typechecked
 from typing import Optional
@@ -37,14 +38,21 @@ def lifted_struct_loss(
       margin: Float, margin term in the loss definition.
 
     Returns:
-      lifted_loss: tf.float32 scalar.
+      lifted_loss: float scalar with dtype of embeddings.
     """
+    convert_to_float32 = (
+        embeddings.dtype == tf.dtypes.float16 or embeddings.dtype == tf.dtypes.bfloat16
+    )
+    precise_embeddings = (
+        tf.cast(embeddings, tf.dtypes.float32) if convert_to_float32 else embeddings
+    )
+
     # Reshape [batch_size] label tensor to a [batch_size, 1] label tensor.
     lshape = tf.shape(labels)
     labels = tf.reshape(labels, [lshape[0], 1])
 
     # Build pairwise squared distance matrix.
-    pairwise_distances = metric_learning.pairwise_distance(embeddings)
+    pairwise_distances = metric_learning.pairwise_distance(precise_embeddings)
 
     # Build pairwise binary adjacency matrix.
     adjacency = tf.math.equal(labels, tf.transpose(labels))
@@ -108,11 +116,15 @@ def lifted_struct_loss(
         ),
         num_positives,
     )
-    return lifted_loss
+
+    if convert_to_float32:
+        return tf.cast(lifted_loss, embeddings.dtype)
+    else:
+        return lifted_loss
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class LiftedStructLoss(tf.keras.losses.Loss):
+class LiftedStructLoss(LossFunctionWrapper):
     """Computes the lifted structured loss.
 
     The loss encourages the positive distances (between a pair of embeddings
@@ -130,15 +142,9 @@ class LiftedStructLoss(tf.keras.losses.Loss):
     def __init__(
         self, margin: FloatTensorLike = 1.0, name: Optional[str] = None, **kwargs
     ):
-        super().__init__(name=name, reduction=tf.keras.losses.Reduction.NONE)
-        self.margin = margin
-
-    def call(self, y_true, y_pred):
-        return lifted_struct_loss(y_true, y_pred, self.margin)
-
-    def get_config(self):
-        config = {
-            "margin": self.margin,
-        }
-        base_config = super().get_config()
-        return {**base_config, **config}
+        super().__init__(
+            lifted_struct_loss,
+            name=name,
+            reduction=tf.keras.losses.Reduction.NONE,
+            margin=margin,
+        )

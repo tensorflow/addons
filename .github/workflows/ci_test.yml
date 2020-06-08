@@ -14,51 +14,6 @@ env:
   BAZEL_VERSION: 1.1.0
 
 jobs:
-  linux-test:
-    name: Ubuntu CPU Python3
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: CI test Ubuntu CPU
-        run: |
-          set -x -e
-          bash tools/run_cpu_tests.sh
-  macos-test:
-    name: MacOS CPU Python3
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        python-version: ['3.5']
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: CI test macOS py${{ matrix.python-version }}
-        run: |
-          python --version
-          bash tools/ci_testing/install_bazel_macos.sh $BAZEL_VERSION
-          bash -x -e tools/ci_testing/addons_cpu.sh
-  windows-test:
-    name: Windows CPU Python3
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        python-version: ['3.5']
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: CI test windows py${{ matrix.python-version }}
-        env:
-          BAZEL_VC: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/"
-        shell: bash
-        run: |
-            python -m pip install wheel setuptools
-            curl -sSOL https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-windows-x86_64.exe
-            export BAZEL_PATH=/d/a/addons/addons/bazel-${BAZEL_VERSION}-windows-x86_64.exe
-            bash -x -e ./tools/ci_testing/addons_cpu.sh
   flake8-test:
     name: Flake8
     runs-on: ubuntu-latest
@@ -73,20 +28,13 @@ jobs:
       - uses: actions/checkout@v2
       - name: Ensure contributor used ("black ./") before commit
         run: bash tools/run_build.sh black-test
-  public-api-typed:
-    name: Check that the public API is typed
+  source_code_test:
+    name: Check that the source code is compliant
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Run type check
-        run: bash tools/run_build.sh public-api-typed
-  case-insensitive-filesystem:
-    name: Verify python filenames work on case insensitive FS
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Run type check
-        run: bash tools/run_build.sh case-insensitive-filesystem
+        run: bash tools/run_build.sh source_code_test
   valid_build_files:
     name: Valid build files
     runs-on: ubuntu-latest
@@ -122,3 +70,31 @@ jobs:
       - uses: actions/checkout@v2
       - name: Building the docs
         run: bash tools/run_build.sh docs_tests
+  test_python_code_only:
+    name: Fast build to run python-only tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.5
+      - uses: actions/checkout@v2
+      - run: pip install --default-timeout=1000 -r tools/install_deps/tensorflow-cpu.txt -r tools/install_deps/pytest.txt
+      - run: pip install -e ./
+      - run: pytest -v -n auto --skip-custom-ops ./tensorflow_addons
+  test_cpu_in_small_docker_image:
+    name: Run the cpu tests in a small python docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: bash tools/run_cpu_tests.sh
+  valid-codeowners:
+    name: Check that the CODEOWNERS is valid
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - run: pip install pygithub click
+      - name: Check that the CODEOWNERS is valid
+        run: python .github/workflows/notify_codeowners.py .github/CODEOWNERS

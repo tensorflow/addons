@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implements Multi-label confusion matrix scores."""
 
+import warnings
+
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
 import numpy as np
@@ -70,36 +72,48 @@ class MultiLabelConfusionMatrix(Metric):
     """
 
     @typechecked
-    def __init__(self,
-                 num_classes: FloatTensorLike,
-                 name: str = 'Multilabel_confusion_matrix',
-                 dtype: AcceptableDTypes = None,
-                 **kwargs
-                 ):
+    def __init__(
+        self,
+        num_classes: FloatTensorLike,
+        name: str = "Multilabel_confusion_matrix",
+        dtype: AcceptableDTypes = None,
+        **kwargs
+    ):
         super().__init__(name=name, dtype=dtype)
         self.num_classes = num_classes
         self.true_positives = self.add_weight(
-            'true_positives',
+            "true_positives",
             shape=[self.num_classes],
-            initializer='zeros',
-            dtype=self.dtype)
+            initializer="zeros",
+            dtype=self.dtype,
+        )
         self.false_positives = self.add_weight(
-            'false_positives',
+            "false_positives",
             shape=[self.num_classes],
-            initializer='zeros',
-            dtype=self.dtype)
+            initializer="zeros",
+            dtype=self.dtype,
+        )
         self.false_negatives = self.add_weight(
-            'false_negatives',
+            "false_negatives",
             shape=[self.num_classes],
-            initializer='zeros',
-            dtype=self.dtype)
+            initializer="zeros",
+            dtype=self.dtype,
+        )
         self.true_negatives = self.add_weight(
-            'true_negatives',
+            "true_negatives",
             shape=[self.num_classes],
-            initializer='zeros',
-            dtype=self.dtype)
+            initializer="zeros",
+            dtype=self.dtype,
+        )
 
-    def update_state(self, y_true, y_pred):
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        if sample_weight is not None:
+            warnings.warn(
+                "`sample_weight` is not None. Be aware that MultiLabelConfusionMatrix "
+                "does not take `sample_weight` into account when computing the metric "
+                "value."
+            )
+
         y_true = tf.cast(y_true, tf.int32)
         y_pred = tf.cast(y_pred, tf.int32)
         # true positive
@@ -113,7 +127,8 @@ class MultiLabelConfusionMatrix(Metric):
         y_true_negative = tf.math.not_equal(y_true, 1)
         y_pred_negative = tf.math.not_equal(y_pred, 1)
         true_negative = tf.math.count_nonzero(
-            tf.math.logical_and(y_true_negative, y_pred_negative), axis=0)
+            tf.math.logical_and(y_true_negative, y_pred_negative), axis=0
+        )
 
         # true positive state update
         self.true_positives.assign_add(tf.cast(true_positive, self.dtype))
@@ -125,13 +140,16 @@ class MultiLabelConfusionMatrix(Metric):
         self.true_negatives.assign_add(tf.cast(true_negative, self.dtype))
 
     def result(self):
-        flat_confusion_matrix = tf.convert_to_tensor([
-            self.true_negatives, self.false_positives, self.false_negatives,
-            self.true_positives
-        ])
+        flat_confusion_matrix = tf.convert_to_tensor(
+            [
+                self.true_negatives,
+                self.false_positives,
+                self.false_negatives,
+                self.true_positives,
+            ]
+        )
         # reshape into 2*2 matrix
-        confusion_matrix = tf.reshape(
-            tf.transpose(flat_confusion_matrix), [-1, 2, 2])
+        confusion_matrix = tf.reshape(tf.transpose(flat_confusion_matrix), [-1, 2, 2])
 
         return confusion_matrix
 

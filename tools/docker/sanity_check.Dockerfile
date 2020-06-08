@@ -1,6 +1,8 @@
+#syntax=docker/dockerfile:1.1.5-experimental
 FROM python:3.5-alpine as flake8-test
 
-RUN pip install flake8==3.7.9
+COPY tools/install_deps/flake8.txt ./
+RUN pip install -r flake8.txt
 COPY ./ /addons
 WORKDIR /addons
 RUN flake8
@@ -9,44 +11,43 @@ RUN touch /ok.txt
 # -------------------------------
 FROM python:3.6 as black-test
 
-RUN pip install black==19.10b0
+COPY tools/install_deps/black.txt ./
+RUN pip install -r black.txt
 COPY ./ /addons
 RUN black --check /addons
 RUN touch /ok.txt
 
 # -------------------------------
-FROM python:3.6 as public-api-typed
+FROM python:3.6 as source_code_test
 
-RUN pip install tensorflow-cpu==2.1.0
-RUN pip install typeguard==2.7.1
-RUN pip install typedapi==0.2.0
-
-COPY ./ /addons
-RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e /addons
-RUN python /addons/tools/ci_build/verify/check_typing_info.py
-RUN touch /ok.txt
-
-# -------------------------------
-FROM python:3.5-alpine as case-insensitive-filesystem
+COPY tools/install_deps /install_deps
+RUN --mount=type=cache,id=cache_pip,target=/root/.cache/pip \
+    cd /install_deps && pip install \
+    --default-timeout=1000 \
+    -r tensorflow-cpu.txt \
+    -r typedapi.txt \
+    -r pytest.txt
 
 COPY ./ /addons
-WORKDIR /addons
-RUN python /addons/tools/ci_build/verify/check_file_name.py
+RUN pip install -e /addons
+RUN pytest -v /addons/tools/testing/
 RUN touch /ok.txt
 
 # -------------------------------
 FROM python:3.5 as valid_build_files
 
-RUN pip install tensorflow-cpu==2.1.0
+COPY tools/install_deps/tensorflow-cpu.txt ./
+RUN pip install --default-timeout=1000 -r tensorflow-cpu.txt
 
 RUN apt-get update && apt-get install sudo
-COPY tools/ci_build/install/bazel.sh ./
-RUN bash bazel.sh
+COPY tools/install_deps/bazel_linux.sh ./
+RUN bash bazel_linux.sh
 
 COPY ./ /addons
 WORKDIR /addons
-RUN python ./configure.py --no-deps
-RUN bazel build --nobuild -- //tensorflow_addons/...
+RUN python ./configure.py
+RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
+    bazel build --nobuild -- //tensorflow_addons/...
 RUN touch /ok.txt
 
 # -------------------------------
@@ -69,7 +70,7 @@ RUN touch /ok.txt
 # Bazel code format
 FROM alpine:3.11 as check-bazel-format
 
-COPY ./tools/ci_build/install/buildifier.sh ./
+COPY ./tools/install_deps/buildifier.sh ./
 RUN sh buildifier.sh
 
 COPY ./ /addons
@@ -80,18 +81,44 @@ RUN touch /ok.txt
 # docs tests
 FROM python:3.6 as docs_tests
 
-RUN pip install tensorflow-cpu==2.1.0
-RUN pip install typeguard==2.7.1
+COPY tools/install_deps/tensorflow-cpu.txt ./
+RUN pip install --default-timeout=1000 -r tensorflow-cpu.txt
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
 
-COPY tools/docs/doc_requirements.txt ./
+COPY tools/install_deps/doc_requirements.txt ./
 RUN pip install -r doc_requirements.txt
 
 RUN apt-get update && apt-get install -y rsync
 
 COPY ./ /addons
 WORKDIR /addons
-RUN TF_ADDONS_NO_BUILD=1 pip install --no-deps -e .
-RUN python tools/docs/build_docs.py
+RUN pip install --no-deps -e .
+RUN python docs/build_docs.py
+RUN touch /ok.txt
+
+# -------------------------------
+# test the editable mode
+FROM python:3.6 as test_editable_mode
+
+COPY tools/install_deps/tensorflow-cpu.txt ./
+RUN pip install --default-timeout=1000 -r tensorflow-cpu.txt
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
+COPY tools/install_deps/pytest.txt ./
+RUN pip install -r pytest.txt
+
+RUN apt-get update && apt-get install -y sudo rsync
+COPY tools/install_deps/bazel_linux.sh ./
+RUN bash bazel_linux.sh
+
+COPY ./ /addons
+WORKDIR /addons
+RUN python configure.py
+RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
+    bash tools/install_so_files.sh
+RUN pip install --no-deps -e .
+RUN pytest -v -n auto ./tensorflow_addons/activations
 RUN touch /ok.txt
 
 # -------------------------------

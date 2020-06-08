@@ -1,11 +1,12 @@
 FROM python:3.6
 
-RUN pip install black==19.10b0 flake8==3.7.9
+COPY tools/install_deps /install_deps
+RUN pip install -r /install_deps/black.txt -r /install_deps/flake8.txt
 
-COPY tools/ci_build/install/buildifier.sh ./buildifier.sh
+COPY tools/install_deps/buildifier.sh ./buildifier.sh
 RUN bash buildifier.sh
 
-COPY tools/ci_build/install/clang-format.sh ./clang-format.sh
+COPY tools/install_deps/clang-format.sh ./clang-format.sh
 RUN bash clang-format.sh
 
 WORKDIR /addons

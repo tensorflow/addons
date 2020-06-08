@@ -16,6 +16,7 @@
 
 import tensorflow as tf
 
+from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
 from tensorflow_addons.utils.types import TensorLike, Number
 from typeguard import typechecked
 
@@ -60,7 +61,7 @@ def contrastive_loss(
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class ContrastiveLoss(tf.keras.losses.Loss):
+class ContrastiveLoss(LossFunctionWrapper):
     r"""Computes the contrastive loss between `y_true` and `y_pred`.
 
     This loss encourages the embedding to be close to each other for
@@ -98,15 +99,6 @@ class ContrastiveLoss(tf.keras.losses.Loss):
         reduction: str = tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
         name: str = "contrasitve_loss",
     ):
-        super().__init__(reduction=reduction, name=name)
-        self.margin = margin
-
-    def call(self, y_true, y_pred):
-        return contrastive_loss(y_true, y_pred, self.margin)
-
-    def get_config(self):
-        config = {
-            "margin": self.margin,
-        }
-        base_config = super().get_config()
-        return {**base_config, **config}
+        super().__init__(
+            contrastive_loss, reduction=reduction, name=name, margin=margin
+        )

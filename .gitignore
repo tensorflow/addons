@@ -23,6 +23,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+pip-wheel-metadata
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -37,3 +38,8 @@ wheels/
 /bazel-*
 /artifacts
 .bazelrc
+
+.coverage*
+htmlcov
+
+wheelhouse/

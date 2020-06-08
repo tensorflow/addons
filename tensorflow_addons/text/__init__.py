@@ -26,15 +26,8 @@ from tensorflow_addons.text.crf import crf_multitag_sequence_score
 from tensorflow_addons.text.crf import crf_sequence_score
 from tensorflow_addons.text.crf import crf_unary_score
 from tensorflow_addons.text.crf import viterbi_decode
+from tensorflow_addons.text.parse_time_op import parse_time
 
 # Skip Gram Sampling
 from tensorflow_addons.text.skip_gram_ops import skip_gram_sample
 from tensorflow_addons.text.skip_gram_ops import skip_gram_sample_with_text_vocab
-
-# Parse Time
-
-# Temporarily disable for windows
-# Remove after: https://github.com/tensorflow/addons/issues/782
-import os
-if os.name != 'nt':
-    from tensorflow_addons.text.parse_time_op import parse_time
