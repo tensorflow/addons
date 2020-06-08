@@ -47,6 +47,21 @@ class BeamSearchDecoderState(
         ),
     )
 ):
+    """State of a `BeamSearchDecoder`.
+
+    Contains:
+
+      - `cell_state`: The cell state returned at the previous time step.
+      - `log_probs`: The accumulated log probabilities of each beam.
+        A `float32` `Tensor` of shape `[batch_size, beam_width]`.
+      - `finished`: The finished status of each beam.
+        A `bool` `Tensor` of shape `[batch_size, beam_width]`.
+      - `lengths`: The accumulated length of each beam.
+        An `int64` `Tensor` of shape `[batch_size, beam_width]`.
+      - `accumulated_attention_prob`: Accumulation of the attention
+        probabilities (used to compute the coverage penalty)
+    """
+
     pass
 
 
@@ -55,6 +70,20 @@ class BeamSearchDecoderOutput(
         "BeamSearchDecoderOutput", ("scores", "predicted_ids", "parent_ids")
     )
 ):
+    """Outputs of a `BeamSearchDecoder` step.
+
+    Contains:
+
+      - `scores`: The scores for this step, which are the log probabilities
+        over the output vocabulary, possibly penalized by length and attention
+        coverage.
+        A `float32` `Tensor` of shape `[batch_size, beam_width, vocab_size]`.
+      - `predicted_ids`: The token IDs predicted for this step.
+        A `int32` `Tensor` of shape `[batch_size, beam_width]`.
+      - `parent_ids`: The indices of the parent beam of each beam.
+        A `int32` `Tensor` of shape `[batch_size, beam_width]`.
+    """
+
     pass
 
 
