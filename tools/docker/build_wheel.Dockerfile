@@ -36,6 +36,7 @@ RUN python -m pip install -r requirements.txt
 
 COPY ./ /addons
 WORKDIR /addons
+
 # -------------------------------------------------------------------
 FROM base_install as tfa_gpu_tests
 CMD ["bash", "tools/testing/build_and_run_tests.sh"]

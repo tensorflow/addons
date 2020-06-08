@@ -275,10 +275,16 @@ GPU Docker:
 docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16
 ```
 
+Configure:
+```
+python3 -m pip install tensorflow==2.2.0
+python3 ./configure.py  # Links project with TensorFlow dependency
+```
+
 Install in editable mode
 ```
-python -m pip install -r tools/install_deps/pytest.txt
-python -m pip install -e .
+python3 -m pip install -e .
+python3 -m pip install -r tools/install_deps/pytest.txt
 ```
 
 Compile the custom ops
