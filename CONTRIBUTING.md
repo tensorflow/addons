@@ -267,16 +267,17 @@ to install any additional tools.
 
 CPU Docker: 
 ```
-docker run --rm -it -v ${PWD}:/addons -w /addons tfaddons/dev_container:latest
+docker run --rm -it -v ${PWD}:/addons -w /addons tfaddons/dev_container:latest-cpu
 ```
 
 GPU Docker: 
 ```
-docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tfaddons/dev_container:latest
+docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16
 ```
 
 Install in editable mode
 ```
+python -m pip install -r tools/install_deps/pytest.txt
 python -m pip install -e .
 ```
 
@@ -306,10 +307,12 @@ for Python testing.
 Internally, Google can use Bazel to test many commits 
 quickly, as Bazel has great support for caching and distributed testing.
 
-To test with Bazel within our docker container:
+To test with Bazel:
 
 ```
-python configure.py
+python3 -m pip install tensorflow==2.2.0
+python3 configure.py
+python3 -m pip install -r tools/install_deps/pytest.txt
 bazel test -c opt -k \
 --test_timeout 300,450,1200,3600 \
 --test_output=all \

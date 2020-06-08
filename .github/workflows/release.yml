@@ -111,4 +111,4 @@ jobs:
           set -e -x
           docker login --username ${{ secrets.DOCKER_USER }} --password ${{ secrets.DOCKER_PW }}
           bash bash .github/workflows/github_build_dev_container.sh
-          docker push tfaddons/dev_container:latest
+          docker push tfaddons/dev_container:latest-cpu
