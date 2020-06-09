@@ -111,6 +111,20 @@ def pytest_addoption(parser):
     )
 
 
+def gpus_for_testing():
+    """For the moment it's very simple, but it might change in the future,
+    with multiple physical gpus for example. So it's better if this function
+    is called rather than hardcoding the gpu devices in the tests.
+    """
+    if not is_gpu_available():
+        raise SystemError(
+            "You are trying to get some gpus for testing but no gpu is available on "
+            "your system. \nDid you forget to use `@pytest.mark.needs_gpu` on your test"
+            " so that it's skipped automatically when no gpu is available?"
+        )
+    return ["gpu:0", "gpu:1"]
+
+
 @pytest.fixture(scope="session", autouse=True)
 def set_global_variables(request):
     if request.config.getoption("--skip-custom-ops"):
@@ -129,7 +143,11 @@ def device(request):
     requested_device = request.param
     if requested_device == "no_device":
         yield requested_device
-    else:
+    elif requested_device == tf.distribute.MirroredStrategy:
+        strategy = requested_device(gpus_for_testing())
+        with strategy.scope():
+            yield strategy
+    elif isinstance(requested_device, str):
         if requested_device in ["cpu", "gpu"]:
             # we use GPU:0 because the virtual device we created is the
             # only one in the first GPU (so first in the list of virtual devices).
@@ -141,13 +159,10 @@ def device(request):
 
 
 def get_marks(device_name):
-    marks = []
-    if device_name == "gpu":
-        marks.append(pytest.mark.needs_gpu)
-        if NUMBER_OF_GPUS == 0:
-            skip_message = "The gpu is not available."
-            marks.append(pytest.mark.skip(reason=skip_message))
-    return marks
+    if device_name == "gpu" or device_name == tf.distribute.MirroredStrategy:
+        return [pytest.mark.needs_gpu]
+    else:
+        return []
 
 
 def pytest_generate_tests(metafunc):
