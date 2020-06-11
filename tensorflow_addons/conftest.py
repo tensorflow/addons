@@ -6,8 +6,9 @@ from tensorflow_addons.utils.test_utils import (  # noqa: F401
     pytest_addoption,
     set_global_variables,
     pytest_configure,
-    _device_placement,
+    device,
     pytest_generate_tests,
+    pytest_collection_modifyitems,
 )
 
 # fixtures present in this file will be available

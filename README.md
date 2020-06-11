@@ -14,7 +14,7 @@
 
 | Build      | Status |
 | ---             | ---    |
-| **Ubuntu/MacOS/Windows**   | [![Status](https://github.com/tensorflow/addons/workflows/addons-release/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Aaddons-release) |
+| **Ubuntu/macOS/Windows**   | [![Status](https://github.com/tensorflow/addons/workflows/addons-release/badge.svg)](https://github.com/tensorflow/addons/actions?query=workflow%3Aaddons-release) |
 | **Ubuntu GPU custom ops**   | [![Status](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.svg)](https://storage.googleapis.com/tensorflow-kokoro-build-badges/addons/ubuntu-gpu-py3.html) |
 
 **TensorFlow Addons** is a repository of contributions that conform to
@@ -40,21 +40,21 @@ developments that cannot be integrated into core TensorFlow
 * [tfa.text](https://www.tensorflow.org/addons/api_docs/python/tfa/text) 
 
 ## Maintainership
-The maintainers of Addons can be found in the [CODEOWNERS](.github/CODEOWNERS) file of the repo. This file 
+The maintainers of TensorFlow Addons can be found in the [CODEOWNERS](.github/CODEOWNERS) file of the repo. This file 
 is parsed and pull requests will automatically tag the owners using a bot. If you would
 like to maintain something, please feel free to submit a PR. We encourage multiple 
 owners for all submodules.
 
 ## Installation
 #### Stable Builds
-TFA is available on PyPi for Linux/MacOS/Windows. To install the latest version, 
+TensorFlow Addons is available on PyPI for Linux, macOS, and Windows. To install the latest version, 
 run the following:
 ```
 pip install tensorflow-addons
 ```
  
 
-To use addons:
+To use TensorFlow Addons:
 
 ```python
 import tensorflow as tf
@@ -62,47 +62,42 @@ import tensorflow_addons as tfa
 ```
 
 ### Python Op Compatility
-TensorFlow Addons is actively working towards forward compatiblity with TF2.x. 
-However there are still a few private API uses within the respository so at the moment 
-we can only gurentee compatibility with the versions of TF which it was tested against. 
-Warnings will be emitted during TFA import if your TensorFlow version does not match 
+TensorFlow Addons is actively working towards forward compatibility with TensorFlow 2.x. 
+However, there are still a few private API uses within the repository so at the moment 
+we can only guarantee compatibility with the TensorFlow versions which it was tested against. 
+Warnings will be emitted when importing `tensorflow_addons` if your TensorFlow version does not match 
 what it was tested against.
 
-#### Python-Op Compatibility Matrix
-| TFA Version    | TensorFlow | Python  |
+#### Python Op Compatibility Matrix
+| TensorFlow Addons | TensorFlow | Python  |
 |:----------------------- |:---|:---------- |
 | tfa-nightly | 2.2 | 3.5, 3.6, 3.7, 3.8 | 
-| tensorflow-addons-0.9.1 | 2.1,2.2 |3.5, 3.6, 3.7, 3.8 |
+| tensorflow-addons-0.10.0 | 2.2 |3.5, 3.6, 3.7, 3.8 |
+| tensorflow-addons-0.9.1 | 2.1, 2.2 |3.5, 3.6, 3.7 |
 | tensorflow-addons-0.8.3 | 2.1 |3.5, 3.6, 3.7 |
 | tensorflow-addons-0.7.1 | 2.1 | 2.7, 3.5, 3.6, 3.7 | 
 | tensorflow-addons-0.6.0 | 2.0 | 2.7, 3.5, 3.6, 3.7 |
 
-While we wait for a TF2.2 stable release if you would like to use TFA with 
-python3.8 run: 
-```
-pip install tensorflow~=2.2
-pip install git+https://github.com/tensorflow/addons.git@r0.9
-```
-
 ### C++ Custom Op Compatibility
-TensorFlow C++ APIs are not stable and thus we can only guarentee compatibility with the 
-version TFA was built against. It is possible custom-ops will work with multiple 
-versions of TF, but there is also a chance for segfault or other problematic crash.
+TensorFlow C++ APIs are not stable and thus we can only guarantee compatibility with the 
+version TensorFlow Addons was built against. It is possible custom ops will work with multiple 
+versions of TensorFlow, but there is also a chance for segmentation faults or other problematic crashes.
 Warnings will be emitted when loading a custom op if your TensorFlow version does not match 
 what it was built against.
 
-Additionally, registering custom-ops does not have an ABI stable interface so it is 
+Additionally, custom ops registration does not have a stable ABI interface so it is 
 required that users have a compatible installation of TensorFlow even if the versions 
-match what we had build against. A simplification of this is that **TensorFlow Addons 
-custom-ops will work with pip installed TensorFlow** but will have issues with TF 
-compiled differently. A typical reason for this would be conda installed TensorFlow.
+match what we had built against. A simplification of this is that **TensorFlow Addons 
+custom ops will work with `pip`-installed TensorFlow** but will have issues when TensorFlow 
+is compiled differently. A typical example of this would be `conda`-installed TensorFlow.
 [RFC #133](https://github.com/tensorflow/community/pull/133) aims to fix this.
 
 
-#### Custom-Op Compatibility Matrix
-| TFA Version    | TensorFlow | Compiler  | cuDNN | CUDA | 
+#### C++ Custom Op Compatibility Matrix
+| TensorFlow Addons | TensorFlow | Compiler  | cuDNN | CUDA | 
 |:----------------------- |:---- |:---------|:---------|:---------|
 | tfa-nightly | 2.2 | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.10.0 | 2.2  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.9.1 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.8.3 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.7.1 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
@@ -125,7 +120,7 @@ pip install tfa-nightly
 You can also install from source. This requires the [Bazel](
 https://bazel.build/) build system (version >= 1.0.0).
 
-##### CPU only custom-ops
+##### CPU Custom Ops
 ```
 git clone https://github.com/tensorflow/addons.git
 cd addons
@@ -139,7 +134,7 @@ bazel-bin/build_pip_pkg artifacts
 pip install artifacts/tensorflow_addons-*.whl
 ```
 
-##### CPU+GPU Custom ops
+##### GPU and CPU Custom Ops
 ```
 git clone https://github.com/tensorflow/addons.git
 cd addons
@@ -169,47 +164,46 @@ for end-to-end examples of various addons.
 
 #### Standardized API within Subpackages
 User experience and project maintainability are core concepts in
-TF-Addons. In order to achieve these we require that our additions
+TensorFlow Addons. In order to achieve these we require that our additions
 conform to established API patterns seen in core TensorFlow.
 
-#### GPU/CPU Custom-Ops
-TensorFlow Addons supports precompiled custom ops for CPU/GPU. Currently however, 
-GPU custom ops only work for Linux distributions. For this reason Windows and MacOS 
+#### GPU and CPU Custom Ops
+TensorFlow Addons supports precompiled custom ops for CPU and GPU. However, 
+GPU custom ops currently only work on Linux distributions. For this reason Windows and macOS 
 will fallback to pure TensorFlow Python implementations whenever possible.
 
-The order of priority in MacOS/Windows:
-1) Pure TensorFlow + Python implementation (work on cpu+gpu)
+The order of priority on macOS/Windows is:
+1) Pure TensorFlow + Python implementation (works on CPU and GPU)
 2) C++ implementation for CPU
 
-The order of priority for Linux:
+The order of priority on Linux is:
 1) CUDA implementation
 2) C++ implementation
-3) Pure TensorFlow + Python implementation (work on cpu+gpu)
+3) Pure TensorFlow + Python implementation (works on CPU and GPU)
 
-If you want to change the default priority, "C++ and CUDA" VS "pure TF Python", 
-you can either set the variable `TF_ADDONS_PY_OPS` from the command line or in 
+If you want to change the default priority, "C++ and CUDA" VS "pure TensorFlow Python", 
+you can set the variable `TF_ADDONS_PY_OPS` either from the command line or in 
 your code.
 
-For example, if you're on linux and you have compatibility problems with the compiled ops,
-and you want to give priority to the Python implementation
-you can do:
+For example, if you are on Linux and you have compatibility problems with the compiled ops,
+you can give priority to the Python implementations:
 
 From the command line:
-```
+```bash
 export TF_ADDONS_PY_OPS=1
 ```
 
 or in your code:
 
-```
+```python
 import tensorflow_addons as tfa
-tfa.options.TF_ADDONS_PY_OPS=True
+tfa.options.TF_ADDONS_PY_OPS = True
 ```
 
-This variable will default to `True` on Windows and Mac, and `False` for Linux.
+This variable defaults to `True` on Windows and macOS, and `False` on Linux.
 
 #### Proxy Maintainership
-Addons has been designed to compartmentalize subpackages and submodules so 
+TensorFlow Addons has been designed to compartmentalize subpackages and submodules so 
 that they can be maintained by users who have expertise and a vested interest 
 in that component. 
 
@@ -257,14 +251,14 @@ warning.
 
 
 ## Contributing
-TF-Addons is a community led open source project (only a few maintainers work for Google!). 
-As such, the project depends on public contributions, bug-fixes, and documentation. 
+TensorFlow Addons is a community-led open source project (only a few maintainers work for Google!). 
+As such, the project depends on public contributions, bug fixes, and documentation. 
 This project adheres to [TensorFlow's code of conduct](CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code.
 
-Want to contribute but not sure of what? Here are a few suggestions:
+Do you want to contribute but are not sure of what? Here are a few suggestions:
 1. Add a new tutorial. Located in [`docs/tutorials/`](docs/tutorials),
-  these are a great way to familiarize yourself and others with TF-Addons. See
+  these are a great way to familiarize yourself and others with TensorFlow Addons. See
   [the guidelines](docs/tutorials/README.md) for more information on how to add
   examples.
 2. Improve the docstrings. The docstrings are fetched and then displayed in the documentation.

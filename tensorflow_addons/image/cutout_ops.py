@@ -128,6 +128,7 @@ def cutout(
       InvalidArgumentError: if mask_size can't be divisible by 2.
     """
     with tf.name_scope("cutout"):
+        origin_shape = images.shape
         offset = tf.convert_to_tensor(offset)
         mask_size, data_format, image_height, image_width = _norm_params(
             images, mask_size, data_format
@@ -175,4 +176,5 @@ def cutout(
             tf.ones_like(images, dtype=images.dtype) * constant_values,
             images,
         )
+        images.set_shape(origin_shape)
         return images

@@ -17,7 +17,7 @@
 import abc
 
 import tensorflow as tf
-from tensorflow_addons.utils.types import Number
+from tensorflow_addons.utils.types import TensorLike
 from typeguard import typechecked
 from typing import Any, Optional, Tuple, Union
 
@@ -144,7 +144,7 @@ class BaseDecoder(tf.keras.layers.Layer):
         self,
         output_time_major: bool = False,
         impute_finished: bool = False,
-        maximum_iterations: Optional[Number] = None,
+        maximum_iterations: Optional[TensorLike] = None,
         parallel_iterations: int = 32,
         swap_memory: bool = False,
         **kwargs
@@ -256,11 +256,12 @@ class BaseDecoder(tf.keras.layers.Layer):
     # TODO(scottzhu): Add build/get_config/from_config and other layer methods.
 
 
+@typechecked
 def dynamic_decode(
     decoder: Union[Decoder, BaseDecoder],
     output_time_major: bool = False,
     impute_finished: bool = False,
-    maximum_iterations: Optional[Number] = None,
+    maximum_iterations: Optional[TensorLike] = None,
     parallel_iterations: int = 32,
     swap_memory: bool = False,
     training: Optional[bool] = None,
@@ -290,7 +291,7 @@ def dynamic_decode(
       training: Python boolean. Indicates whether the layer should behave
           in training  mode or in inference mode. Only relevant
           when `dropout` or `recurrent_dropout` is used.
-      scope: Optional variable scope to use.
+      scope: Optional name scope to use.
       **kwargs: dict, other keyword arguments for dynamic_decode. It might
         contain arguments for `BaseDecoder` to initialize, which takes all
         tensor inputs during call().
@@ -299,34 +300,21 @@ def dynamic_decode(
       `(final_outputs, final_state, final_sequence_lengths)`.
 
     Raises:
-      TypeError: if `decoder` is not an instance of `Decoder`.
       ValueError: if `maximum_iterations` is provided but is not a scalar.
     """
-    if not isinstance(decoder, (Decoder, BaseDecoder)):
-        raise TypeError(
-            "Expected decoder to be type Decoder, but saw: %s" % type(decoder)
+    with tf.name_scope(scope or "decoder"):
+        is_xla = not tf.executing_eagerly() and control_flow_util.GraphOrParentsInXlaContext(
+            tf.compat.v1.get_default_graph()
         )
-
-    with tf.compat.v1.variable_scope(scope, "decoder") as varscope:
-        # Determine context types.
-        ctxt = tf.compat.v1.get_default_graph()._get_control_flow_context()
-        is_xla = control_flow_util.GetContainingXLAContext(ctxt) is not None
-        in_while_loop = control_flow_util.GetContainingWhileContext(ctxt) is not None
-        # Properly cache variable values inside the while_loop.
-        # Don't set a caching device when running in a loop, since it is
-        # possible that train steps could be wrapped in a tf.while_loop. In that
-        # scenario caching prevents forward computations in loop iterations from
-        # re-reading the updated weights.
-        if not tf.executing_eagerly() and not in_while_loop:
-            if varscope.caching_device is None:
-                varscope.set_caching_device(lambda op: op.device)
 
         if maximum_iterations is not None:
             maximum_iterations = tf.convert_to_tensor(
                 maximum_iterations, dtype=tf.int32, name="maximum_iterations"
             )
-            if maximum_iterations.get_shape().ndims != 0:
+            if maximum_iterations.shape.ndims != 0:
                 raise ValueError("maximum_iterations must be a scalar")
+        elif is_xla:
+            raise ValueError("maximum_iterations is required for XLA compilation.")
 
         if isinstance(decoder, Decoder):
             initial_finished, initial_inputs, initial_state = decoder.initialize()
@@ -346,8 +334,6 @@ def dynamic_decode(
             decoder.output_dtype,
         )
 
-        if is_xla and maximum_iterations is None:
-            raise ValueError("maximum_iterations is required for XLA compilation.")
         if maximum_iterations is not None:
             initial_finished = tf.logical_or(initial_finished, 0 >= maximum_iterations)
         initial_sequence_lengths = tf.zeros_like(initial_finished, dtype=tf.int32)

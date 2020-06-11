@@ -4,12 +4,12 @@
 # Subpackage Owners
 
 /tensorflow_addons/activations/ @facaiy @seanpmorgan
-/tensorflow_addons/callbacks/ @squadrick @shun-lin
+/tensorflow_addons/callbacks/ @shun-lin
 /tensorflow_addons/image/ @windqaq @facaiy
 /tensorflow_addons/layers/ @seanpmorgan @facaiy
 /tensorflow_addons/losses/ @facaiy @windqaq
-/tensorflow_addons/metrics/ @squadrick
-/tensorflow_addons/optimizers/ @facaiy @windqaq @squadrick
+/tensorflow_addons/metrics/
+/tensorflow_addons/optimizers/ @facaiy @windqaq
 /tensorflow_addons/rnn/ @qlzh727
 /tensorflow_addons/seq2seq/ @qlzh727 @guillaumekln
 /tensorflow_addons/text/ @seanpmorgan @facaiy
@@ -93,10 +93,14 @@
 /tensorflow_addons/layers/tests/polynomial_test.py @tanzhenyu
 /tensorflow_addons/layers/sparsemax.py @andreasmadsen
 /tensorflow_addons/layers/tests/sparsemax_test.py @andreasmadsen
+/tensorflow_addons/layers/spatial_pyramid_pooling.py @Susmit-A
+/tensorflow_addons/layers/tests/spatial_pyramid_pooling_test.py @Susmit-A
 /tensorflow_addons/layers/tlu.py @aakashkumarnain
 /tensorflow_addons/layers/tests/tlu_test.py @aakashkumarnain
 /tensorflow_addons/layers/wrappers.py @seanpmorgan
 /tensorflow_addons/layers/tests/wrappers_test.py @seanpmorgan
+/tensorflow_addons/layers/esn.py @pedrolarben
+/tensorflow_addons/layers/tests/esn_test.py @pedrolarben
 
 /tensorflow_addons/losses/contrastive.py @windqaq
 /tensorflow_addons/losses/tests/contrastive_test.py @windqaq
@@ -155,8 +159,8 @@
 /tensorflow_addons/optimizers/yogi.py @manzilz
 /tensorflow_addons/optimizers/tests/yogi_test.py @manzilz
 
-/tensorflow_addons/rnn/cell.py @qlzh727
-/tensorflow_addons/rnn/tests/cell_test.py @qlzh727
+/tensorflow_addons/rnn/cell.py @qlzh727 @pedrolarben
+/tensorflow_addons/rnn/tests/cell_test.py @qlzh727 @pedrolarben
 
 /tensorflow_addons/seq2seq/ @qlzh727 @guillaumekln
 

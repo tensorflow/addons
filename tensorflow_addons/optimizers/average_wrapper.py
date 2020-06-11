@@ -16,16 +16,19 @@
 import abc
 
 import tensorflow as tf
+from tensorflow_addons.utils import types
+
+import warnings
 from typeguard import typechecked
-from typing import Union
+from typing import Optional
 
 
 class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCMeta):
     @typechecked
     def __init__(
         self,
-        optimizer: Union[tf.keras.optimizers.Optimizer, str],
-        sequential_update: bool = True,
+        optimizer: types.Optimizer,
+        sequential_update: Optional[bool] = None,
         name: str = "AverageOptimizer",
         **kwargs
     ):
@@ -43,7 +46,13 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
             raise TypeError("sequential_update must be of bool type")
 
         self._optimizer = optimizer
-        self._sequential_update = sequential_update
+
+        if sequential_update is not None:
+            warnings.warn(
+                "The parameter `sequential_update` is redundant due to AutoGraph. "
+                "This behavior is deprecated and in Addons 0.12, this will raise an error. ",
+                DeprecationWarning,
+            )
 
     def _create_slots(self, var_list):
         self._optimizer._create_slots(var_list=var_list)
@@ -66,13 +75,7 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
 
     def _apply_average_op(self, train_op, var):
         average_var = self.get_slot(var, "average")
-        if self._sequential_update:
-            with tf.control_dependencies([train_op]):
-                avg_op = self.average_op(var, average_var)
-        else:
-            avg_op = self.average_op(var, average_var)
-
-        return avg_op
+        return self.average_op(var, average_var)
 
     def _resource_apply_dense(self, grad, var):
         train_op = self._optimizer._resource_apply_dense(grad, var)
@@ -127,7 +130,6 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
     def get_config(self):
         config = {
             "optimizer": tf.keras.optimizers.serialize(self._optimizer),
-            "sequential_update": self._sequential_update,
         }
         base_config = super().get_config()
         return {**base_config, **config}
