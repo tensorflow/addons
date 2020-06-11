@@ -319,7 +319,7 @@ class OctaveConv1D(OctaveConv):
     >>> # The inputs are 128-length vectors with 10 timesteps, and the batch size
     >>> # is None.
     >>> x = Input(shape=(10,128,))
-    >>> y = tf.keras.layers.octave_convolutional.OctaveConv1D(32, 3,
+    >>> y = tfa.keras.layers.octave_convolutional.OctaveConv1D(32, 3,
     ... padding='same', activation='relu',low_freq_ratio=0.25)(x)
     >>> print(len(y))
     2
