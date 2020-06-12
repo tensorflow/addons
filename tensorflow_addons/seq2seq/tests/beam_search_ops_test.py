@@ -20,6 +20,7 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
+from tensorflow_addons import options
 from tensorflow_addons.seq2seq import gather_tree
 
 
@@ -57,7 +58,7 @@ def test_bad_parent_values_on_cpu():
     )
     max_sequence_lengths = [3]
 
-    with pytest.raises(tf.errors.InvalidArgumentError):
+    with pytest.raises(tf.errors.InvalidArgumentError, match="parent id"):
         _ = gather_tree(
             step_ids=step_ids,
             parent_ids=parent_ids,
@@ -79,13 +80,23 @@ def test_bad_parent_values_on_gpu():
     expected_result = _transpose_batch_time(
         [[[2, -1, 2], [6, 5, 6], [7, 8, 9], [10, 10, 10]]]
     )
-    beams = gather_tree(
-        step_ids=step_ids,
-        parent_ids=parent_ids,
-        max_sequence_lengths=max_sequence_lengths,
-        end_token=end_token,
-    )
-    np.testing.assert_equal(expected_result, beams.numpy())
+    if options.TF_ADDONS_PY_OPS:
+        # The Python version has the same behavior on CPU and GPU.
+        with pytest.raises(tf.errors.InvalidArgumentError, match="parent id"):
+            _ = gather_tree(
+                step_ids=step_ids,
+                parent_ids=parent_ids,
+                max_sequence_lengths=max_sequence_lengths,
+                end_token=end_token,
+            )
+    else:
+        beams = gather_tree(
+            step_ids=step_ids,
+            parent_ids=parent_ids,
+            max_sequence_lengths=max_sequence_lengths,
+            end_token=end_token,
+        )
+        np.testing.assert_equal(expected_result, beams.numpy())
 
 
 def test_gather_tree_batch():
@@ -123,7 +134,7 @@ def test_gather_tree_batch():
             found = np.where(v == end_token)[0]
             found = found[0]  # First occurrence of end_token.
             # If an end_token is found, everything before it should be a
-            # valid id and everything after it should be -1.
+            # valid id and everything after it should be end_token.
             if found > 0:
                 np.testing.assert_equal(
                     v[: found - 1] >= 0, np.ones_like(v[: found - 1], dtype=bool),
