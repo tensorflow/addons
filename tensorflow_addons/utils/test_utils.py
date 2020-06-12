@@ -21,6 +21,7 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
+from tensorflow_addons import options
 from tensorflow_addons.utils import resource_loader
 
 # TODO: copy the layer_test implementation in Addons.
@@ -123,6 +124,7 @@ def gpus_for_testing():
 def set_global_variables(request):
     if request.config.getoption("--skip-custom-ops"):
         resource_loader.SKIP_CUSTOM_OPS = True
+        options.TF_ADDONS_PY_OPS = True
 
 
 def pytest_configure(config):
