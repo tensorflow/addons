@@ -7,6 +7,7 @@ py_library(
     srcs = glob(["*.py"]),
     data = [
         "//tensorflow_addons/custom_ops/seq2seq:_beam_search_ops.so",
+        "//tensorflow_addons:options.py",
     ],
     deps = [
         "//tensorflow_addons/testing",
