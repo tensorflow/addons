@@ -284,8 +284,9 @@ def dynamic_decode(
         each time step, but ensures that the final state and outputs have
         the correct values and that backprop ignores time steps that were
         marked as finished.
-      maximum_iterations: `int32` scalar, maximum allowed number of decoding
-         steps.  Default is `None` (decode until the decoder is fully done).
+      maximum_iterations: A strictly positive `int32` scalar, the maximum
+         allowed number of decoding steps. Default is `None` (decode until the
+         decoder is fully done).
       parallel_iterations: Argument passed to `tf.while_loop`.
       swap_memory: Argument passed to `tf.while_loop`.
       training: Python boolean. Indicates whether the layer should behave
