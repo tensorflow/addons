@@ -79,7 +79,7 @@ class CohenKappa(Metric):
           weightage: (optional) Weighting to be considered for calculating
             kappa statistics. A valid value is one of
             [None, 'linear', 'quadratic']. Defaults to `None`
-          sparse_lables: (bool) Valid only for multi-class scenario.
+          sparse_labels: (bool) Valid only for multi-class scenario.
             If True, ground truth labels are expected tp be integers
             and not one-hot encoded
           regression: (bool) If set, that means the problem is being treated
