@@ -132,6 +132,7 @@ def test_fit_simple_linear_model_mixed_precision():
     model = tf.keras.models.Sequential()
     model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
     model.compile(Lookahead("sgd"), loss="mse")
+    tf.keras.mixed_precision.experimental.global_policy()
 
     model.fit(x, y, epochs=3)
 
@@ -141,7 +142,7 @@ def test_fit_simple_linear_model_mixed_precision():
 
     max_abs_diff = np.max(np.abs(predicted - y))
     assert max_abs_diff < 2.3e-3
-    tf.keras.mixed_precision.experimental.set_policy()
+    assert max_abs_diff >= 1e-3
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
