@@ -1,5 +1,6 @@
 from tensorflow_addons.utils.test_utils import (  # noqa: F401
     maybe_run_functions_eagerly,
+    run_custom_and_py_ops,
     pytest_make_parametrize_id,
     data_format,
     set_seeds,
