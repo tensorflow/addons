@@ -135,7 +135,7 @@ class SWA(AveragedOptimizerWrapper):
         if self.iterations >= start_averaging and self.iterations == checkpoint:
             num_snapshots = tf.cast(num_snapshots, tf.float32)
             average_value = (average_var * num_snapshots + var) / (num_snapshots + 1.0)
-            return average_var.assign(average_value)
+            return average_var.assign(average_value, use_locking=self._use_locking)
 
         return average_var
 
