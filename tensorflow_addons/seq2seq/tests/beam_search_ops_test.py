@@ -28,6 +28,7 @@ def _transpose_batch_time(x):
     return np.transpose(x, [1, 0, 2]).astype(np.int32)
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_one():
     # (max_time = 4, batch_size = 1, beams = 3)
     end_token = 10
@@ -48,6 +49,7 @@ def test_gather_tree_one():
     np.testing.assert_equal(expected_result, beams.numpy())
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_bad_parent_values_on_cpu():
     # (batch_size = 1, max_time = 4, beams = 3)
     # bad parent in beam 1 time 1
@@ -68,6 +70,7 @@ def test_bad_parent_values_on_cpu():
 
 
 @pytest.mark.with_device(["gpu"])
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_bad_parent_values_on_gpu():
     # (max_time = 4, batch_size = 1, beams = 3)
     # bad parent in beam 1 time 1; appears as a negative index at time 0
@@ -99,6 +102,7 @@ def test_bad_parent_values_on_gpu():
         np.testing.assert_equal(expected_result, beams.numpy())
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_batch():
     batch_size = 10
     beam_width = 15
