@@ -141,6 +141,7 @@ def test_fit_simple_linear_model_mixed_precision():
 
     max_abs_diff = np.max(np.abs(predicted - y))
     assert max_abs_diff < 2.3e-3
+    tf.keras.mixed_precision.experimental.set_policy()
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
