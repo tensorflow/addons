@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
-from tensorflow_addons.optimizers import Lookahead, RectifiedAdam
+from tensorflow_addons.optimizers import Lookahead
 
 
 def run_dense_sample(iterations, optimizer, seed=0x2019):
