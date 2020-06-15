@@ -313,6 +313,11 @@ def dynamic_decode(
             )
             if maximum_iterations.shape.ndims != 0:
                 raise ValueError("maximum_iterations must be a scalar")
+            tf.debugging.assert_greater(
+                maximum_iterations,
+                0,
+                message="maximum_iterations should be greater than 0",
+            )
         elif is_xla:
             raise ValueError("maximum_iterations is required for XLA compilation.")
 
