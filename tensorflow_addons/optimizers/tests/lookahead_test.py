@@ -19,6 +19,7 @@ import pytest
 import tensorflow as tf
 
 from tensorflow_addons.optimizers import Lookahead
+from tensorflow.python.keras.mixed_precision.experimental import policy
 
 
 def run_dense_sample(iterations, optimizer, seed=0x2019):
@@ -128,11 +129,10 @@ def test_fit_simple_linear_model_mixed_precision():
     w = np.random.standard_normal((3, 1))
     y = np.dot(x, w) + np.random.standard_normal((10000, 1)) * 1e-4
 
-    tf.keras.mixed_precision.experimental.set_policy("mixed_float16")
-    model = tf.keras.models.Sequential()
-    model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
-    model.compile(Lookahead("sgd"), loss="mse")
-    tf.keras.mixed_precision.experimental.global_policy()
+    with policy.policy_scope(policy.Policy("mixed_float16")):
+        model = tf.keras.models.Sequential()
+        model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
+        model.compile(Lookahead("sgd"), loss="mse")
 
     model.fit(x, y, epochs=3)
 
