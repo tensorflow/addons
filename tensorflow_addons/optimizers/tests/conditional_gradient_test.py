@@ -67,48 +67,40 @@ def test_like_dist_belief_nuclear_cg01():
         )
 
 
-def test_minimize_sparse_resource_variable_frobenius():
-    # This test invokes the ResourceSparseApplyConditionalGradient
-    # operation. And it will call the 'ResourceScatterUpdate' OpKernel
-    # for 'GPU' devices. However, tf.half is not registered in this case,
-    # based on issue #347.
-    # Thus, we will call the "_dtypes_to_test" function.
-    #
-    # TODO:
-    #       Wait for the solving of issue #347. After that, we will test
-    #       for the dtype to be tf.half, with 'GPU' devices.
-    for dtype in _dtypes_to_test(use_gpu=tf.test.is_gpu_available()):
-        var0 = tf.Variable([[1.0, 2.0]], dtype=dtype)
+@pytest.mark.with_device(["cpu", "gpu"])
+@pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
+def test_minimize_sparse_resource_variable_frobenius(dtype, device):
+    if "gpu" in device and dtype == tf.float16:
+        pytest.xfail("See https://github.com/tensorflow/addons/issues/347")
+    var0 = tf.Variable([[1.0, 2.0]], dtype=dtype)
 
-        def loss():
-            x = tf.constant([[4.0], [5.0]], dtype=dtype)
-            pred = tf.matmul(tf.nn.embedding_lookup([var0], [0]), x)
-            return pred * pred
+    def loss():
+        x = tf.constant([[4.0], [5.0]], dtype=dtype)
+        pred = tf.matmul(tf.nn.embedding_lookup([var0], [0]), x)
+        return pred * pred
 
-        # the gradient based on the current loss function
-        grads0_0 = 32 * 1.0 + 40 * 2.0
-        grads0_1 = 40 * 1.0 + 50 * 2.0
-        grads0 = tf.constant([[grads0_0, grads0_1]], dtype=dtype)
-        norm0 = tf.math.reduce_sum(grads0 ** 2) ** 0.5
+    # the gradient based on the current loss function
+    grads0_0 = 32 * 1.0 + 40 * 2.0
+    grads0_1 = 40 * 1.0 + 50 * 2.0
+    grads0 = tf.constant([[grads0_0, grads0_1]], dtype=dtype)
+    norm0 = tf.math.reduce_sum(grads0 ** 2) ** 0.5
 
-        learning_rate = 0.1
-        lambda_ = 0.1
-        ord = "fro"
-        opt = cg_lib.ConditionalGradient(
-            learning_rate=learning_rate, lambda_=lambda_, ord=ord
-        )
-        _ = opt.minimize(loss, var_list=[var0])
-        test_utils.assert_allclose_according_to_type(
+    learning_rate = 0.1
+    lambda_ = 0.1
+    ord = "fro"
+    opt = cg_lib.ConditionalGradient(
+        learning_rate=learning_rate, lambda_=lambda_, ord=ord
+    )
+    _ = opt.minimize(loss, var_list=[var0])
+    test_utils.assert_allclose_according_to_type(
+        [
             [
-                [
-                    1.0 * learning_rate
-                    - (1 - learning_rate) * lambda_ * grads0_0 / norm0,
-                    2.0 * learning_rate
-                    - (1 - learning_rate) * lambda_ * grads0_1 / norm0,
-                ]
-            ],
-            var0.numpy(),
-        )
+                1.0 * learning_rate - (1 - learning_rate) * lambda_ * grads0_0 / norm0,
+                2.0 * learning_rate - (1 - learning_rate) * lambda_ * grads0_1 / norm0,
+            ]
+        ],
+        var0.numpy(),
+    )
 
 
 @pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
@@ -198,7 +190,7 @@ def test_basic_nuclear(use_resource):
     #       to address issue #36764
     for i, dtype in enumerate(
         _dtypes_with_checking_system(
-            use_gpu=tf.test.is_gpu_available(), system=platform.system()
+            use_gpu=test_utils.is_gpu_available(), system=platform.system()
         )
     ):
 
@@ -284,7 +276,7 @@ def test_minimize_sparse_resource_variable_nuclear():
     # TODO:
     #       to address issue #347 and #36764.
     for dtype in _dtypes_with_checking_system(
-        use_gpu=tf.test.is_gpu_available(), system=platform.system()
+        use_gpu=test_utils.is_gpu_available(), system=platform.system()
     ):
         var0 = tf.Variable([[1.0, 2.0]], dtype=dtype)
 
@@ -324,7 +316,7 @@ def test_minimize_sparse_resource_variable_nuclear():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_tensor_learning_rate_and_conditional_gradient_nuclear():
     for dtype in _dtypes_with_checking_system(
-        use_gpu=tf.test.is_gpu_available(), system=platform.system()
+        use_gpu=test_utils.is_gpu_available(), system=platform.system()
     ):
         # TODO:
         # Based on issue #36764 in the following link,
@@ -853,7 +845,7 @@ def test_like_dist_belief_frobenius_cg01():
 def test_sparse_frobenius():
     # TODO:
     #       To address the issue #347.
-    for dtype in _dtypes_to_test(use_gpu=tf.test.is_gpu_available()):
+    for dtype in _dtypes_to_test(use_gpu=test_utils.is_gpu_available()):
         var0 = tf.Variable(tf.zeros([4, 2], dtype=dtype))
         var1 = tf.Variable(tf.constant(1.0, dtype, [4, 2]))
         grads0 = tf.IndexedSlices(
@@ -1009,7 +1001,7 @@ def test_sharing_nuclear():
     # TODO:
     #       To address the issue #36764.
     for dtype in _dtypes_with_checking_system(
-        use_gpu=tf.test.is_gpu_available(), system=platform.system()
+        use_gpu=test_utils.is_gpu_available(), system=platform.system()
     ):
         var0 = tf.Variable([1.0, 2.0], dtype=dtype)
         var1 = tf.Variable([3.0, 4.0], dtype=dtype)
@@ -1348,7 +1340,7 @@ def test_sparse_nuclear():
     # TODO:
     #       To address the issue #347 and issue #36764.
     for dtype in _dtypes_with_checking_system(
-        use_gpu=tf.test.is_gpu_available(), system=platform.system()
+        use_gpu=test_utils.is_gpu_available(), system=platform.system()
     ):
         var0 = tf.Variable(tf.zeros([4, 2], dtype=dtype))
         var1 = tf.Variable(tf.constant(1.0, dtype, [4, 2]))

@@ -17,6 +17,7 @@ import pytest
 
 import numpy as np
 import tensorflow as tf
+from tensorflow_addons.activations.hardshrink import hardshrink
 from tensorflow_addons.activations.hardshrink import _hardshrink_custom_op
 from tensorflow_addons.activations.hardshrink import _hardshrink_py
 from tensorflow_addons.utils import test_utils
@@ -31,16 +32,15 @@ def test_invalid():
 
 
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_hardshrink(dtype):
     x = tf.constant([-2.0, -0.5, 0.0, 0.5, 2.0], dtype=dtype)
     expected_result = tf.constant([-2.0, 0.0, 0.0, 0.0, 2.0], dtype=dtype)
-    test_utils.assert_allclose_according_to_type(
-        _hardshrink_custom_op(x), expected_result
-    )
+    test_utils.assert_allclose_according_to_type(hardshrink(x), expected_result)
 
     expected_result = tf.constant([-2.0, 0.0, 0.0, 0.0, 2.0], dtype=dtype)
     test_utils.assert_allclose_according_to_type(
-        _hardshrink_custom_op(x, lower=-1.0, upper=1.0), expected_result
+        hardshrink(x, lower=-1.0, upper=1.0), expected_result
     )
 
 
@@ -71,6 +71,7 @@ def verify_funcs_are_equivalent(dtype):
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_theoretical_gradients(dtype):
     # Only test theoretical gradients for float32 and float64
     # because of the instability of float16 while computing jacobian
@@ -79,5 +80,5 @@ def test_theoretical_gradients(dtype):
     # Avoid these two points to make gradients smooth.
     x = tf.constant([-2.0, -1.5, 0.0, 1.5, 2.0], dtype=dtype)
 
-    theoretical, numerical = tf.test.compute_gradient(_hardshrink_custom_op, [x])
+    theoretical, numerical = tf.test.compute_gradient(hardshrink, [x])
     test_utils.assert_allclose_according_to_type(theoretical, numerical, atol=1e-4)

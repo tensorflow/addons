@@ -338,9 +338,7 @@ def _test_with_attention(
         attention_depth = sum(
             attention_layer.compute_output_shape(
                 [batch_size, cell_depth + encoder_output_depth]
-            )
-            .dims[-1]
-            .value
+            )[-1]
             for attention_layer in attention_layers
         )
     else:
@@ -414,26 +412,18 @@ def _test_with_attention(
 
     expected_time = max(decoder_sequence_length)
     assert (batch_size, expected_time, attention_depth) == tuple(
-        final_outputs.rnn_output.get_shape().as_list()
+        final_outputs.rnn_output.shape.as_list()
     )
-    assert (batch_size, expected_time) == tuple(
-        final_outputs.sample_id.get_shape().as_list()
-    )
+    assert (batch_size, expected_time) == tuple(final_outputs.sample_id.shape.as_list())
 
-    assert (batch_size, attention_depth) == tuple(
-        final_state.attention.get_shape().as_list()
-    )
-    assert (batch_size, cell_depth) == tuple(
-        final_state.cell_state[0].get_shape().as_list()
-    )
-    assert (batch_size, cell_depth) == tuple(
-        final_state.cell_state[1].get_shape().as_list()
-    )
+    assert (batch_size, attention_depth) == tuple(final_state.attention.shape.as_list())
+    assert (batch_size, cell_depth) == tuple(final_state.cell_state[0].shape.as_list())
+    assert (batch_size, cell_depth) == tuple(final_state.cell_state[1].shape.as_list())
 
     if alignment_history:
         state_alignment_history = final_state.alignment_history.stack()
         assert (expected_time, batch_size, encoder_max_time) == tuple(
-            state_alignment_history.get_shape().as_list()
+            state_alignment_history.shape.as_list()
         )
         tf.nest.assert_same_structure(
             cell.state_size,
@@ -920,3 +910,27 @@ def test_attention_state_with_variable_length_input():
     layer = tf.keras.layers.RNN(cell)
 
     _ = layer(data, mask=mask)
+
+
+def test_attention_wrapper_with_gru_cell():
+    mechanism = wrapper.LuongAttention(units=3)
+    cell = tf.keras.layers.GRUCell(3)
+    cell = wrapper.AttentionWrapper(cell, mechanism)
+    memory = tf.ones([2, 5, 3])
+    inputs = tf.ones([2, 3])
+    mechanism.setup_memory(memory)
+    initial_state = cell.get_initial_state(inputs=inputs)
+    _, state = cell(inputs, initial_state)
+    tf.nest.assert_same_structure(initial_state, state)
+
+
+def test_attention_wrapper_with_multiple_attention_mechanisms():
+    cell = tf.keras.layers.LSTMCell(5)
+    mechanisms = [wrapper.LuongAttention(units=3), wrapper.LuongAttention(units=3)]
+    # We simply test that the wrapper creation makes no error.
+    wrapper.AttentionWrapper(cell, mechanisms, attention_layer_size=[4, 5])
+    wrapper.AttentionWrapper(
+        cell,
+        mechanisms,
+        attention_layer=[tf.keras.layers.Dense(4), tf.keras.layers.Dense(5)],
+    )

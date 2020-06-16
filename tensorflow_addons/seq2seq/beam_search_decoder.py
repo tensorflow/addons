@@ -26,7 +26,7 @@ from tensorflow_addons.utils.resource_loader import LazySO
 from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 
 from typeguard import typechecked
-from typing import Callable, Optional, Union
+from typing import Callable, Optional
 
 _beam_search_so = LazySO("custom_ops/seq2seq/_beam_search_ops.so")
 
@@ -47,6 +47,21 @@ class BeamSearchDecoderState(
         ),
     )
 ):
+    """State of a `BeamSearchDecoder`.
+
+    Contains:
+
+      - `cell_state`: The cell state returned at the previous time step.
+      - `log_probs`: The accumulated log probabilities of each beam.
+        A `float32` `Tensor` of shape `[batch_size, beam_width]`.
+      - `finished`: The finished status of each beam.
+        A `bool` `Tensor` of shape `[batch_size, beam_width]`.
+      - `lengths`: The accumulated length of each beam.
+        An `int64` `Tensor` of shape `[batch_size, beam_width]`.
+      - `accumulated_attention_prob`: Accumulation of the attention
+        probabilities (used to compute the coverage penalty)
+    """
+
     pass
 
 
@@ -55,6 +70,20 @@ class BeamSearchDecoderOutput(
         "BeamSearchDecoderOutput", ("scores", "predicted_ids", "parent_ids")
     )
 ):
+    """Outputs of a `BeamSearchDecoder` step.
+
+    Contains:
+
+      - `scores`: The scores for this step, which are the log probabilities
+        over the output vocabulary, possibly penalized by length and attention
+        coverage.
+        A `float32` `Tensor` of shape `[batch_size, beam_width, vocab_size]`.
+      - `predicted_ids`: The token IDs predicted for this step.
+        A `int32` `Tensor` of shape `[batch_size, beam_width]`.
+      - `parent_ids`: The indices of the parent beam of each beam.
+        A `int32` `Tensor` of shape `[batch_size, beam_width]`.
+    """
+
     pass
 
 
@@ -86,9 +115,7 @@ def _tile_batch(t, multiplier):
     tiling = [1] * (t.shape.ndims + 1)
     tiling[1] = multiplier
     tiled_static_batch_size = (
-        t.shape.dims[0].value * multiplier
-        if t.shape.dims[0].value is not None
-        else None
+        t.shape[0] * multiplier if t.shape[0] is not None else None
     )
     tiled = tf.tile(tf.expand_dims(t, 1), tiling)
     tiled = tf.reshape(tiled, tf.concat(([shape_t[0] * multiplier], shape_t[1:]), 0))
@@ -141,9 +168,9 @@ def gather_tree_from_array(
       `t` and where beams are sorted in each `Tensor` according to
       `parent_ids`.
     """
-    max_time = parent_ids.shape.dims[0].value or tf.shape(parent_ids)[0]
-    batch_size = parent_ids.shape.dims[1].value or tf.shape(parent_ids)[1]
-    beam_width = parent_ids.shape.dims[2].value or tf.shape(parent_ids)[2]
+    max_time = parent_ids.shape[0] or tf.shape(parent_ids)[0]
+    batch_size = parent_ids.shape[1] or tf.shape(parent_ids)[1]
+    beam_width = parent_ids.shape[2] or tf.shape(parent_ids)[2]
 
     # Generate beam ids that will be reordered by gather_tree.
     beam_ids = tf.reshape(tf.range(beam_width), [1, 1, -1])
@@ -184,11 +211,11 @@ def _check_static_batch_beam_maybe(shape, batch_size, beam_width):
     reshaped to [batch_size, beam_size, -1]."""
     reshaped_shape = tf.TensorShape([batch_size, beam_width, None])
     assert len(shape.dims) > 0
-    if batch_size is None or shape.dims[0].value is None:
+    if batch_size is None or shape[0] is None:
         return True  # not statically known => no check
     if shape[0] == batch_size * beam_width:
         return True  # flattened, matching
-    has_second_dim = shape.ndims >= 2 and shape.dims[1].value is not None
+    has_second_dim = shape.ndims >= 2 and shape[1] is not None
     if has_second_dim and shape[0] == batch_size and shape[1] == beam_width:
         return True  # non-flattened, matching
     # Otherwise we could not find a match and warn:
@@ -263,7 +290,8 @@ class BeamSearchDecoderMixin:
         """Initialize the BeamSearchDecoderMixin.
 
         Args:
-          cell: An `RNNCell` instance.
+          cell: A layer that implements the `tf.keras.layers.AbstractRNNCell`
+            interface.
           beam_width:  Python integer, the number of beams.
           output_layer: (Optional) An instance of `tf.keras.layers.Layer`,
             i.e., `tf.keras.layers.Dense`.  Optional layer to apply to the RNN
@@ -279,18 +307,8 @@ class BeamSearchDecoderMixin:
             this flag to `False` if the cell state contains `TensorArray`s that
             are not amenable to reordering.
           **kwargs: Dict, other keyword arguments for parent class.
-
-        Raises:
-          TypeError: if `cell` is not an instance of `RNNCell`,
-            or `output_layer` is not an instance of `tf.keras.layers.Layer`.
         """
         keras_utils.assert_like_rnncell("cell", cell)
-        if output_layer is not None and not isinstance(
-            output_layer, tf.keras.layers.Layer
-        ):
-            raise TypeError(
-                "output_layer must be a Layer, received: %s" % type(output_layer)
-            )
         self._cell = cell
         self._output_layer = output_layer
         self._reorder_tensor_arrays = reorder_tensor_arrays
@@ -580,6 +598,9 @@ class BeamSearchDecoderMixin:
             cell_outputs = tf.nest.map_structure(
                 lambda out: self._split_batch_beams(out, out.shape[1:]), cell_outputs
             )
+            next_cell_state = tf.nest.pack_sequence_as(
+                cell_state, tf.nest.flatten(next_cell_state)
+            )
             next_cell_state = tf.nest.map_structure(
                 self._maybe_split_batch_beams, next_cell_state, self._cell.state_size
             )
@@ -658,7 +679,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         self,
         cell: tf.keras.layers.Layer,
         beam_width: int,
-        embedding_fn: Union[TensorLike, Callable, None] = None,
+        embedding_fn: Optional[Callable] = None,
         output_layer: Optional[tf.keras.layers.Layer] = None,
         length_penalty_weight: FloatTensorLike = 0.0,
         coverage_penalty_weight: FloatTensorLike = 0.0,
@@ -668,10 +689,12 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         """Initialize the BeamSearchDecoder.
 
         Args:
-          cell: An `RNNCell` instance.
+          cell: A layer that implements the `tf.keras.layers.AbstractRNNCell`
+            interface.
           beam_width:  Python integer, the number of beams.
-          embedding_fn: A callable that takes a vector tensor of `ids`
-            (argmax ids).
+          embedding_fn: A callable that takes a `int32` `Tensor` of token IDs
+            and returns embedding tensors. If set, the `embedding` argument in
+            the decoder call should be set to `None`.
           output_layer: (Optional) An instance of `tf.keras.layers.Layer`,
             i.e., `tf.keras.layers.Dense`.  Optional layer to apply to the RNN
             output prior to storing the result or sampling.
@@ -686,10 +709,6 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
             this flag to `False` if the cell state contains `TensorArray`s that
             are not amenable to reordering.
           **kwargs: Dict, other keyword arguments for initialization.
-
-        Raises:
-          TypeError: if `cell` is not an instance of `RNNCell`,
-            or `output_layer` is not an instance of `tf.keras.layers.Layer`.
         """
         super().__init__(
             cell,
@@ -701,45 +720,48 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
             **kwargs,
         )
 
-        if embedding_fn is None or callable(embedding_fn):
-            self._embedding_fn = embedding_fn
-        else:
-            raise ValueError(
-                "embedding_fn is expected to be a callable, got %s" % type(embedding_fn)
-            )
+        self._embedding_fn = embedding_fn
 
     def initialize(self, embedding, start_tokens, end_token, initial_state):
         """Initialize the decoder.
 
         Args:
-          embedding: A tensor from the embedding layer output, which is the
-            `params` argument for `embedding_lookup`.
-          start_tokens: `int32` vector shaped `[batch_size]`, the start tokens.
-          end_token: `int32` scalar, the token that marks end of decoding.
-          initial_state: A (possibly nested tuple of...) tensors and
-          TensorArrays.
+          embedding: A `Tensor` (or `Variable`) to pass as the `params` argument
+            for `tf.nn.embedding_lookup`. This overrides `embedding_fn` set in
+            the constructor.
+          start_tokens: Start the decoding from these tokens.
+            A `int32` `Tensor` of shape `[batch_size]`.
+          end_token: The token that marks the end of decoding.
+            A `int32` scalar `Tensor`.
+          initial_state: The initial cell state as a (possibly nested) structure
+            of `Tensor` and `TensorArray`.
+
         Returns:
           `(finished, start_inputs, initial_state)`.
+
         Raises:
+          ValueError: If `embedding` is `None` and `embedding_fn` was not set
+            in the constructor.
           ValueError: If `start_tokens` is not a vector or `end_token` is not a
             scalar.
         """
-        if embedding is not None and self._embedding_fn is not None:
-            raise ValueError(
-                "embedding and embedding_fn cannot be provided at same time"
-            )
-        elif embedding is not None:
+        if embedding is not None:
             self._embedding_fn = lambda ids: tf.nn.embedding_lookup(embedding, ids)
+        elif self._embedding_fn is None:
+            raise ValueError(
+                "You should either pass an embedding variable when calling the "
+                "BeamSearchDecoder or set embedding_fn in the constructor."
+            )
 
         self._start_tokens = tf.convert_to_tensor(
             start_tokens, dtype=tf.int32, name="start_tokens"
         )
-        if self._start_tokens.get_shape().ndims != 1:
+        if self._start_tokens.shape.ndims != 1:
             raise ValueError("start_tokens must be a vector")
         self._end_token = tf.convert_to_tensor(
             end_token, dtype=tf.int32, name="end_token"
         )
-        if self._end_token.get_shape().ndims != 0:
+        if self._end_token.shape.ndims != 0:
             raise ValueError("end_token must be a scalar")
 
         self._batch_size = tf.size(start_tokens)
@@ -865,7 +887,7 @@ def _beam_search_step(
     total_probs = tf.expand_dims(beam_state.log_probs, 2) + step_log_probs
 
     # Calculate the continuation lengths by adding to all continuing beams.
-    vocab_size = logits.shape.dims[-1].value or tf.shape(logits)[-1]
+    vocab_size = logits.shape[-1] or tf.shape(logits)[-1]
     lengths_to_add = tf.one_hot(
         indices=tf.fill([batch_size, beam_width], end_token),
         depth=vocab_size,
