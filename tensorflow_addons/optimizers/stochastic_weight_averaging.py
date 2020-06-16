@@ -25,9 +25,9 @@ set.
 
 import tensorflow as tf
 from tensorflow_addons.optimizers.average_wrapper import AveragedOptimizerWrapper
+from tensorflow_addons.utils import types
 
 from typeguard import typechecked
-from typing import Union
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -74,7 +74,7 @@ class SWA(AveragedOptimizerWrapper):
     @typechecked
     def __init__(
         self,
-        optimizer: Union[tf.keras.optimizers.Optimizer, str],
+        optimizer: types.Optimizer,
         start_averaging: int = 0,
         average_period: int = 10,
         name: str = "SWA",

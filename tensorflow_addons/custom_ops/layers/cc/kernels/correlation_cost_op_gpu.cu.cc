@@ -20,6 +20,7 @@ limitations under the License.
 #include "gpu/cub/device/device_reduce.cuh"
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/tensor_shape.h"
+#include "tensorflow/core/util/gpu_kernel_helper.h"
 #include "tensorflow/core/util/tensor_format.h"
 #include "tensorflow_addons/custom_ops/layers/cc/kernels/correlation_cost_op.h"
 
@@ -41,8 +42,9 @@ https://github.com/NVIDIA/flownet2-pytorch
 */
 
 template <unsigned int THREADS_PER_BLOCK>
-__global__ void pad_and_transpose(const float *input, float *output, int C,
-                                  int H, int W, int P) {
+__global__ void pad_and_transpose(const float *__restrict__ input,
+                                  float *__restrict__ output, int C, int H,
+                                  int W, int P) {
   // NCHW -> pad(NHWC)
   const int n = blockIdx.x;
   const int h = blockIdx.y;
@@ -51,16 +53,16 @@ __global__ void pad_and_transpose(const float *input, float *output, int C,
   const int pW = (W + 2 * P);
   const int pH = (H + 2 * P);
 
-  float value;
   for (int c = c0; c < C; c += THREADS_PER_BLOCK) {
-    value = input[n * (C * H * W) + c * (H * W) + h * W + w];
-    output[n * (C * pH * pW) + (h + P) * (pW * C) + (w + P) * C + c] = value;
+    output[n * (C * pH * pW) + (h + P) * (pW * C) + (w + P) * C + c] =
+        ldg(input + n * (C * H * W) + c * (H * W) + h * W + w);
   }
 }
 
 template <unsigned int THREADS_PER_BLOCK>
-__global__ void pad_and_no_transpose(const float *input, float *output, int C,
-                                     int H, int W, int P) {
+__global__ void pad_and_no_transpose(const float *__restrict__ input,
+                                     float *__restrict__ output, int C, int H,
+                                     int W, int P) {
   // NHWC -> pad(NHWC)
   const int n = blockIdx.x;
   const int h = blockIdx.y;
@@ -69,19 +71,20 @@ __global__ void pad_and_no_transpose(const float *input, float *output, int C,
   const int pW = (W + 2 * P);
   const int pH = (H + 2 * P);
 
-  float value;
   for (int c = c0; c < C; c += THREADS_PER_BLOCK) {
-    value = input[n * (C * H * W) + h * (W * C) + w * C + c];
-    output[n * (C * pH * pW) + (h + P) * (pW * C) + (w + P) * C + c] = value;
+    output[n * (C * pH * pW) + (h + P) * (pW * C) + (w + P) * C + c] =
+        ldg(input + n * (C * H * W) + h * (W * C) + w * C + c);
   }
 }
 
 template <unsigned int THREADS_PER_BLOCK>
-__global__ void Correlation_forward(float *output, int Cout, int Hout, int Wout,
-                                    float *pInput1, int Cin, int Hin, int Win,
-                                    float *pInput2, int pad, int kernel_size,
-                                    int max_displacement, int stride1,
-                                    int stride2) {
+__global__ void Correlation_forward(float *__restrict__ output, int Cout,
+                                    int Hout, int Wout,
+                                    const float *__restrict__ pInput1, int Cin,
+                                    int Hin, int Win,
+                                    const float *__restrict__ pInput2, int pad,
+                                    int kernel_size, int max_displacement,
+                                    int stride1, int stride2) {
   const int pWin = Win + 2 * pad;
   const int pHin = Hin + 2 * pad;
 
@@ -113,7 +116,7 @@ __global__ void Correlation_forward(float *output, int Cout, int Hout, int Wout,
                               (h1 + j) * (pWin * Cin) + (w1 + i) * Cin + ch;
             const int indx2 = n * (pHin * pWin * Cin) +
                               (h2 + j) * (pWin * Cin) + (w2 + i) * Cin + ch;
-            thread_accumulation += pInput1[indx1] * pInput2[indx2];
+            thread_accumulation += ldg(pInput1 + indx1) * ldg(pInput2 + indx2);
           }
         }
       }
@@ -135,10 +138,10 @@ __global__ void Correlation_forward(float *output, int Cout, int Hout, int Wout,
 
 template <unsigned int THREADS_PER_BLOCK>
 __global__ void Correlation_backward_input1(
-    int item, float *gradInput1, int Cin, int Hin, int Win,
-    const float *gradOutput, int Cout, int Hout, int Wout, const float *rInput2,
-    int pad_size, int kernel_size, int max_displacement, int stride1,
-    int stride2, bool is_NCHW) {
+    int item, float *__restrict__ gradInput1, int Cin, int Hin, int Win,
+    const float *__restrict__ gradOutput, int Cout, int Hout, int Wout,
+    const float *__restrict__ rInput2, int pad_size, int kernel_size,
+    int max_displacement, int stride1, int stride2, bool is_NCHW) {
   const int n = item;
   const int h = blockIdx.x * stride1 + pad_size;
   const int w = blockIdx.y * stride1 + pad_size;
@@ -183,16 +186,16 @@ __global__ void Correlation_backward_input1(
     int i2 = (tc % displacement_size - displacement_rad) * stride2;
     int j2 = (tc / displacement_size - displacement_rad) * stride2;
 
-    int indx2 =
+    const int indx2 =
         n * (pHin * pWin * Cin) + (h + j2) * (pWin * Cin) + (w + i2) * Cin + c;
 
-    float val2 = rInput2[indx2];
+    const float val2 = ldg(rInput2 + indx2);
 
     for (int j = Hmin; j <= Hmax; ++j) {
       for (int i = Wmin; i <= Wmax; ++i) {
         const int tindx =
             n * (Cout * Hout * Wout) + tc * (Hout * Wout) + j * Wout + i;
-        thread_accumulation += gradOutput[tindx] * val2;
+        thread_accumulation += ldg(gradOutput + tindx) * val2;
       }
     }
   }
@@ -216,10 +219,10 @@ __global__ void Correlation_backward_input1(
 
 template <unsigned int THREADS_PER_BLOCK>
 __global__ void Correlation_backward_input2(
-    int item, float *gradInput2, int Cin, int Hin, int Win,
-    const float *gradOutput, int Cout, int Hout, int Wout, const float *rInput1,
-    int pad_size, int kernel_size, int max_displacement, int stride1,
-    int stride2, bool is_NCHW) {
+    int item, float *__restrict__ gradInput2, int Cin, int Hin, int Win,
+    const float *__restrict__ gradOutput, int Cout, int Hout, int Wout,
+    const float *rInput1, int pad_size, int kernel_size, int max_displacement,
+    int stride1, int stride2, bool is_NCHW) {
   const int n = item;
   const int h = blockIdx.x * stride1 + pad_size;
   const int w = blockIdx.y * stride1 + pad_size;
@@ -266,13 +269,13 @@ __global__ void Correlation_backward_input2(
 
     const int indx1 =
         n * (pHin * pWin * Cin) + (h - j2) * (pWin * Cin) + (w - i2) * Cin + c;
-    const float val1 = rInput1[indx1];
+    const float val1 = ldg(rInput1 + indx1);
 
     for (int j = Hmin; j <= Hmax; ++j) {
       for (int i = Wmin; i <= Wmax; ++i) {
         const int tindx =
             n * (Cout * Hout * Wout) + tc * (Hout * Wout) + j * Wout + i;
-        thread_accumulation += gradOutput[tindx] * val1;
+        thread_accumulation += ldg(gradOutput + tindx) * val1;
       }
     }
   }
@@ -313,17 +316,10 @@ struct CorrelationCostFunctor<GPUDevice, Dtype> {
     Tensor padded_a_t;
     Tensor padded_b_t;
     TensorShape padded_shape({N, iH + 2 * pad, iW + 2 * pad, iC});
-    Status s;
-    s = context->allocate_temp(DataTypeToEnum<Dtype>::value, padded_shape,
-                               &padded_a_t);
-    if (!TF_PREDICT_TRUE(s.ok())) {
-      return s;
-    }
-    s = context->allocate_temp(DataTypeToEnum<Dtype>::value, padded_shape,
-                               &padded_b_t);
-    if (!TF_PREDICT_TRUE(s.ok())) {
-      return s;
-    }
+    TF_RETURN_IF_ERROR(context->allocate_temp(DataTypeToEnum<Dtype>::value,
+                                              padded_shape, &padded_a_t));
+    TF_RETURN_IF_ERROR(context->allocate_temp(DataTypeToEnum<Dtype>::value,
+                                              padded_shape, &padded_b_t));
 
     dim3 blocks_grid(N, iH, iW);
     dim3 threads_block(THREADS_PER_BLOCK);
@@ -393,17 +389,10 @@ struct CorrelationCostGradFunctor<GPUDevice, Dtype> {
     Tensor padded_a_t;
     Tensor padded_b_t;
     TensorShape padded_shape({N, iH + 2 * pad, iW + 2 * pad, iC});
-    Status s;
-    s = context->allocate_temp(DataTypeToEnum<Dtype>::value, padded_shape,
-                               &padded_a_t);
-    if (!TF_PREDICT_TRUE(s.ok())) {
-      return s;
-    }
-    s = context->allocate_temp(DataTypeToEnum<Dtype>::value, padded_shape,
-                               &padded_b_t);
-    if (!TF_PREDICT_TRUE(s.ok())) {
-      return s;
-    }
+    TF_RETURN_IF_ERROR(context->allocate_temp(DataTypeToEnum<Dtype>::value,
+                                              padded_shape, &padded_a_t));
+    TF_RETURN_IF_ERROR(context->allocate_temp(DataTypeToEnum<Dtype>::value,
+                                              padded_shape, &padded_b_t));
 
     dim3 blocks_grid(N, iH, iW);
     dim3 threads_block(THREADS_PER_BLOCK);

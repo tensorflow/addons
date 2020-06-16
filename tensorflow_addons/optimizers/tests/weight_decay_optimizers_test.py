@@ -53,7 +53,7 @@ def do_test(
             the optimizer_params in the update_fn.
     """
     # TODO: Fix #347 issue
-    if do_sparse and tf.test.is_gpu_available():
+    if do_sparse and test_utils.is_gpu_available():
         pytest.skip("Wait #347 to be fixed")
 
     # Initialize variables for numpy implementation.
@@ -112,7 +112,7 @@ def do_test_sparse_repeated_indices(dtype, optimizer, **optimizer_kwargs):
             the optimizer_params in the update_fn.
     """
     # TODO: Fix #347 issue
-    if tf.test.is_gpu_available():
+    if test_utils.is_gpu_available():
         pytest.skip("Wait #347 to be fixed")
 
     repeated_index_update_var = tf.Variable([[1.0], [2.0]], dtype=dtype)

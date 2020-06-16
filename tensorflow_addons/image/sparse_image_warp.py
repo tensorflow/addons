@@ -121,22 +121,22 @@ def sparse_image_warp(
     Apply a non-linear warp to the image, where the warp is specified by
     the source and destination locations of a (potentially small) number of
     control points. First, we use a polyharmonic spline
-    (`tf.contrib.image.interpolate_spline`) to interpolate the displacements
+    (`tfa.image.interpolate_spline`) to interpolate the displacements
     between the corresponding control points to a dense flow field.
     Then, we warp the image using this dense flow field
-    (`tf.contrib.image.dense_image_warp`).
+    (`tfa.image.dense_image_warp`).
 
-    Let t index our control points. For regularization_weight=0, we have:
+    Let t index our control points. For `regularization_weight = 0`, we have:
     warped_image[b, dest_control_point_locations[b, t, 0],
                     dest_control_point_locations[b, t, 1], :] =
     image[b, source_control_point_locations[b, t, 0],
              source_control_point_locations[b, t, 1], :].
 
-    For regularization_weight > 0, this condition is met approximately, since
+    For `regularization_weight > 0`, this condition is met approximately, since
     regularized interpolation trades off smoothness of the interpolant vs.
     reconstruction of the interpolant at the control points.
-    See `tf.contrib.image.interpolate_spline` for further documentation of the
-    interpolation_order and regularization_weight arguments.
+    See `tfa.image.interpolate_spline` for further documentation of the
+    `interpolation_order` and `regularization_weight` arguments.
 
 
     Args:

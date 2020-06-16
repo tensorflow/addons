@@ -30,7 +30,7 @@ jobs:
           python-version: ${{ env.MIN_PY_VERSION }}
       - name: Build wheels
         run: |
-          pip install -r tools/install_deps/pytest.txt -r tools/install_deps/tensorflow-cpu.txt -r requirements.txt
+          pip install --default-timeout=1000 -r tools/install_deps/pytest.txt -r tools/install_deps/tensorflow-cpu.txt -r requirements.txt
           bash tools/install_deps/bazel_linux.sh
           python configure.py
           bazel test -c opt -k --test_timeout 300,450,1200,3600 --test_output=errors //tensorflow_addons/...
@@ -41,7 +41,7 @@ jobs:
       matrix:
         os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
         py-version: ['3.5', '3.6', '3.7', '3.8']
-        tf-version: ['2.2.0rc4']
+        tf-version: ['2.2.0']
       fail-fast: false
     steps:
       - uses: actions/github-script@0.3.0
@@ -85,7 +85,7 @@ jobs:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
         py-version: ['3.5', '3.6', '3.7', '3.8']
-        tf-version: ['2.2.0rc4']
+        tf-version: ['2.2.0']
       fail-fast: false
     steps:
       - uses: actions/download-artifact@v1

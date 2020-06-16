@@ -30,6 +30,7 @@ from functools import partial
 def equalize_image(image: TensorLike, data_format: str = "channels_last") -> tf.Tensor:
     """Implements Equalize function from PIL using TF ops."""
 
+    @tf.function
     def scale_channel(image, channel):
         """Scale the data in the channel to implement equalize."""
         image_dtype = image.dtype
@@ -106,8 +107,6 @@ def sharpness_image(image: TensorLike, factor: Number) -> tf.Tensor:
     """Implements Sharpness function from PIL using TF ops."""
     orig_image = image
     image_dtype = image.dtype
-    # Make image 4D for conv operation.
-    image = tf.expand_dims(image, 0)
     # SMOOTH PIL Kernel.
     image = tf.cast(image, tf.float32)
     kernel = (
@@ -123,13 +122,13 @@ def sharpness_image(image: TensorLike, factor: Number) -> tf.Tensor:
         image, kernel, strides, padding="VALID", dilations=[1, 1]
     )
     degenerate = tf.clip_by_value(degenerate, 0.0, 255.0)
-    degenerate = tf.squeeze(tf.cast(degenerate, image_dtype), [0])
+    degenerate = tf.cast(degenerate, image_dtype)
 
     # For the borders of the resulting image, fill in the values of the
     # original image.
     mask = tf.ones_like(degenerate)
-    padded_mask = tf.pad(mask, [[1, 1], [1, 1], [0, 0]])
-    padded_degenerate = tf.pad(degenerate, [[1, 1], [1, 1], [0, 0]])
+    padded_mask = tf.pad(mask, [[0, 0], [1, 1], [1, 1], [0, 0]])
+    padded_degenerate = tf.pad(degenerate, [[0, 0], [1, 1], [1, 1], [0, 0]])
     result = tf.where(tf.equal(padded_mask, 1), padded_degenerate, orig_image)
     # Blend the final result.
     blended = blend(result, orig_image, factor)
@@ -137,7 +136,7 @@ def sharpness_image(image: TensorLike, factor: Number) -> tf.Tensor:
 
 
 def sharpness(image: TensorLike, factor: Number) -> tf.Tensor:
-    """Change sharpness of image(s)
+    """Change sharpness of image(s).
 
     Args:
       images: A tensor of shape
@@ -147,8 +146,8 @@ def sharpness(image: TensorLike, factor: Number) -> tf.Tensor:
     Returns:
       Image(s) with the same type and shape as `images`, sharper.
     """
+    image = tf.convert_to_tensor(image)
     image_dims = tf.rank(image)
     image = to_4D_image(image)
-    fn = partial(sharpness_image, factor=factor)
-    image = tf.map_fn(fn, image)
+    image = sharpness_image(image, factor=factor)
     return from_4D_image(image, image_dims)
