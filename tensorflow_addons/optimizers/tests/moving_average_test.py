@@ -131,8 +131,7 @@ def test_config():
         assert old_sgd_config[k1] == new_sgd_config[k2]
 
 
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_fit_simple_linear_model():
+def fit_model(name):
     seed = 0x2019
     np.random.seed(seed)
     tf.random.set_seed(seed)
@@ -141,10 +140,10 @@ def test_fit_simple_linear_model():
     w = np.random.standard_normal((3, 1))
     y = np.dot(x, w) + np.random.standard_normal((num_examples, 1)) * 1e-4
 
-    model = tf.keras.models.Sequential()
+    model = tf.keras.models.Sequential(name=name)
     model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
 
-    opt = MovingAverage("sgd")
+    opt = MovingAverage("sgd", name=name)
     model.compile(opt, loss="mse")
 
     model.fit(x, y, epochs=5)
@@ -159,10 +158,15 @@ def test_fit_simple_linear_model():
     assert max_abs_diff < 5e-3
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_fit_simple_linear_model():
+    fit_model("simple_model")
+
+
 @pytest.mark.with_device([tf.distribute.MirroredStrategy])
 def test_fit_distributed_model(device):
     with device.scope():
-        test_fit_simple_linear_model()
+        fit_model("dist_model")
 
 
 def test_serialization():

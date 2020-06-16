@@ -46,12 +46,12 @@ def assign_moving_average(
         A tensor which if evaluated will compute and return the new moving average.
     """
 
-    with tf.name_scope(name) as scope:
+    with tf.name_scope(name):
         decay = tf.convert_to_tensor(1.0 - decay, name="decay")
         decay = tf.cast(decay, variable.dtype)
 
         def update_fn(v, value):
-            return v.assign_sub((v - value) * decay, name=scope)
+            return v.assign_sub((v - value) * decay)
 
         def update(strategy, v, value):
             return strategy.extended.update(v, update_fn, args=(value,))
