@@ -87,6 +87,7 @@ def test_no_private_tf_api():
     # TODO: remove all elements of the list and remove the allowlist
     # This allowlist should not grow. Do not add elements to this list.
     allowlist = [
+        # TODO(@bhack): Remove lookahead from the list after https://git.io/Jf5aJ
         "tensorflow_addons/optimizers/tests/lookahead_test.py",
         "tensorflow_addons/optimizers/novograd.py",
         "tensorflow_addons/optimizers/moving_average.py",
