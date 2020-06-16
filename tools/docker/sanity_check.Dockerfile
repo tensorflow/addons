@@ -67,6 +67,19 @@ RUN python run-clang-format.py \
 RUN touch /ok.txt
 
 # -------------------------------
+# cpplint
+FROM python:3.6 as cpplint
+
+RUN pip install cpplint
+
+COPY ./ /addons
+RUN cpplint \
+    --filter=-build/header_guard \
+    --recursive \
+    /addons/tensorflow_addons/custom_ops
+RUN touch /ok.txt
+
+# -------------------------------
 # Bazel code format
 FROM alpine:3.11 as check-bazel-format
 
