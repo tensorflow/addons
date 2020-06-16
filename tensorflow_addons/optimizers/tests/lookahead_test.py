@@ -120,6 +120,32 @@ def test_fit_simple_linear_model():
     assert max_abs_diff < 1e-3
 
 
+def test_fit_simple_linear_model_mixed_precision():
+    np.random.seed(0x2019)
+    tf.random.set_seed(0x2019)
+
+    x = np.random.standard_normal((10000, 3))
+    w = np.random.standard_normal((3, 1))
+    y = np.dot(x, w) + np.random.standard_normal((10000, 1)) * 1e-4
+
+    try:
+        tf.keras.mixed_precision.experimental.set_policy("mixed_float16")
+        model = tf.keras.models.Sequential()
+        model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
+        model.compile(Lookahead("sgd"), loss="mse")
+    finally:
+        tf.keras.mixed_precision.experimental.set_policy("float32")
+    model.fit(x, y, epochs=3)
+
+    x = np.random.standard_normal((100, 3))
+    y = np.dot(x, w)
+    predicted = model.predict(x)
+
+    max_abs_diff = np.max(np.abs(predicted - y))
+    assert max_abs_diff < 2.3e-3
+    assert max_abs_diff >= 1e-3
+
+
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_model_dynamic_lr():
     grad = tf.Variable([[0.1]])
