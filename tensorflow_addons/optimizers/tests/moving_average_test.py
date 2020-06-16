@@ -159,6 +159,15 @@ def test_fit_simple_linear_model():
     assert max_abs_diff < 5e-3
 
 
+@pytest.mark.with_device(["cpu", "gpu", tf.distribute.MirroredStrategy])
+def test_fit_distributed_model(device):
+  if isinstance(device, str):
+    test_fit_simple_linear_model()
+  else:
+    with device.scope():
+      test_fit_simple_linear_model()
+
+
 def test_serialization():
     sgd_opt = tf.keras.optimizers.SGD(lr=2.0, nesterov=True, momentum=0.3, decay=0.1)
     optimizer = MovingAverage(sgd_opt, average_decay=0.5, num_updates=None)
