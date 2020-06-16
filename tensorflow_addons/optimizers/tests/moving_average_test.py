@@ -161,11 +161,11 @@ def test_fit_simple_linear_model():
 
 @pytest.mark.with_device(["cpu", "gpu", tf.distribute.MirroredStrategy])
 def test_fit_distributed_model(device):
-  if isinstance(device, str):
-    test_fit_simple_linear_model()
-  else:
-    with device.scope():
-      test_fit_simple_linear_model()
+    if isinstance(device, str):
+        test_fit_simple_linear_model()
+    else:
+        with device.scope():
+            test_fit_simple_linear_model()
 
 
 def test_serialization():

@@ -15,6 +15,7 @@
 
 import tensorflow as tf
 from tensorflow_addons.optimizers import AveragedOptimizerWrapper
+from tensorflow_addons.utils import types
 from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 
 from typing import Optional
@@ -95,7 +96,7 @@ class MovingAverage(AveragedOptimizerWrapper):
         self,
         optimizer: types.Optimizer,
         sequential_update: bool = True,
-        average_decay: types.FloatTensorLike = 0.99,
+        average_decay: FloatTensorLike = 0.99,
         num_updates: Optional[str] = None,
         name: str = "MovingAverage",
         **kwargs
