@@ -337,7 +337,9 @@ def test_crf_decode_zero_seq_length():
     inputs = tf.constant(np.ones([2, 10, 5], dtype=np.float32))
     transition_params = tf.constant(np.ones([5, 5], dtype=np.float32))
     sequence_lengths = tf.constant(np.zeros([2], dtype=np.int32))
-    tags, scores, best_scores = text.crf_decode(inputs, transition_params, sequence_lengths)
+    tags, scores, best_scores = text.crf_decode(
+        inputs, transition_params, sequence_lengths
+    )
     assert len(tags.shape) == 2
     assert len(scores.shape) == 2
     assert len(best_scores.shape) == 1
