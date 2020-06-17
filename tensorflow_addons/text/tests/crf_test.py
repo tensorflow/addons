@@ -316,7 +316,7 @@ def test_crf_decode():
         expected_max_sequence = all_sequences[expected_max_sequence_index]
         expected_max_score = all_sequence_scores[expected_max_sequence_index]
 
-        actual_max_sequence, actual_max_score = text.crf_decode(
+        actual_max_sequence, _, actual_max_score = text.crf_decode(
             tf.expand_dims(inputs, 0),
             tf.constant(transition_params),
             tf.expand_dims(sequence_lengths, 0),
@@ -337,9 +337,10 @@ def test_crf_decode_zero_seq_length():
     inputs = tf.constant(np.ones([2, 10, 5], dtype=np.float32))
     transition_params = tf.constant(np.ones([5, 5], dtype=np.float32))
     sequence_lengths = tf.constant(np.zeros([2], dtype=np.int32))
-    tags, scores = text.crf_decode(inputs, transition_params, sequence_lengths)
+    tags, scores, best_scores = text.crf_decode(inputs, transition_params, sequence_lengths)
     assert len(tags.shape) == 2
-    assert len(scores.shape) == 1
+    assert len(scores.shape) == 2
+    assert len(best_scores.shape) == 1
 
 
 def test_different_dtype():
