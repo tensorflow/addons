@@ -18,7 +18,7 @@ import tensorflow as tf
 
 from tensorflow_addons.utils.types import TensorLike
 from typeguard import typechecked
-from typing import Optional
+from typing import Optional, Tuple
 
 # TODO: Wrap functions in @tf.function once
 # https://github.com/tensorflow/tensorflow/issues/29075 is resolved
@@ -572,4 +572,3 @@ def crf_decode(
         return tf.cond(
             tf.equal(tf.shape(potentials)[1], 1), _single_seq_fn, _multi_seq_fn
         )
-
