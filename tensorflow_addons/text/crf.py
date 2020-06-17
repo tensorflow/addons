@@ -420,9 +420,17 @@ class CrfDecodeForwardRnnCell(tf.keras.layers.AbstractRNNCell):
         state = tf.expand_dims(state[0], 2)
         transition_scores = state + self._transition_params
         new_state = inputs + tf.reduce_max(transition_scores, [1])
+
         backpointers = tf.argmax(transition_scores, 1)
         backpointers = tf.cast(backpointers, dtype=tf.float32)
+
+        # apply softmax to transition_scores to get scores in range from 0 to 1
         scores = tf.reduce_max(tf.nn.softmax(transition_scores, axis=1), [1])
+
+        # In the RNN implementation only the first value that is returned from a cell
+        # is kept throughout the RNN, so that you will have the values from each time
+        # step in the final output. As we need the backpointers as well as the scores
+        # for each time step, we concatenate them.
         return tf.concat([backpointers, scores], axis=1), new_state
 
 
@@ -455,12 +463,12 @@ def crf_decode_forward(
 
 
 def crf_decode_backward(
-    inputs: TensorLike, scores: TensorLike, state: TensorLike
+    backpointers: TensorLike, scores: TensorLike, state: TensorLike
 ) -> Tuple[tf.Tensor, tf.Tensor]:
     """Computes backward decoding in a linear-chain CRF.
 
     Args:
-      inputs: A [batch_size, num_tags] matrix of backpointer of next step
+      backpointers: A [batch_size, num_tags] matrix of backpointer of next step
             (in time order).
       scores: A [batch_size, num_tags] matrix of scores of next step (in time order).
       state: A [batch_size, 1] matrix of tag index of next step.
@@ -469,16 +477,17 @@ def crf_decode_backward(
       new_tags: A [batch_size, num_tags] tensor containing the new tag indices.
       new_scores: A [batch_size, num_tags] tensor containing the new score values.
     """
-    inputs = tf.transpose(inputs, [1, 0, 2])
+    backpointers = tf.transpose(backpointers, [1, 0, 2])
     scores = tf.transpose(scores, [1, 0, 2])
 
-    def _scan_fn(state, inputs):
-        state = tf.cast(tf.squeeze(state, axis=[1]), dtype=tf.int32)
-        idxs = tf.stack([tf.range(tf.shape(inputs)[0]), state], axis=1)
-        new_tags = tf.expand_dims(tf.gather_nd(inputs, idxs), axis=-1)
-        return new_tags
+    def _scan_fn(_state: TensorLike, _inputs: TensorLike) -> tf.Tensor:
+        _state = tf.cast(tf.squeeze(_state, axis=[1]), dtype=tf.int32)
+        idxs = tf.stack([tf.range(tf.shape(_inputs)[0]), _state], axis=1)
+        return tf.expand_dims(tf.gather_nd(_inputs, idxs), axis=-1)
 
-    output_tags = tf.scan(_scan_fn, inputs, state)
+    output_tags = tf.scan(_scan_fn, backpointers, state)
+    # the dtype of the input parameters of tf.scan need to match
+    # convert state to float32 to match the type of scores
     state = tf.cast(state, dtype=tf.float32)
     output_scores = tf.scan(_scan_fn, scores, state)
 
@@ -510,11 +519,9 @@ def crf_decode(
     # argmax tag and the max activation.
     def _single_seq_fn():
         decode_tags = tf.cast(tf.argmax(potentials, axis=2), dtype=tf.int32)
-        scores = tf.reshape(
-            tf.reduce_max(tf.nn.softmax(potentials, axis=2), axis=2), shape=[-1]
-        )
+        decode_scores = tf.reduce_max(tf.nn.softmax(potentials, axis=2), axis=2)
         best_score = tf.reshape(tf.reduce_max(potentials, axis=2), shape=[-1])
-        return decode_tags, scores, best_score
+        return decode_tags, decode_scores, best_score
 
     def _multi_seq_fn():
         # Computes forward decoding. Get last score and backpointers.
@@ -530,6 +537,9 @@ def crf_decode(
             inputs, initial_state, transition_params, sequence_length_less_one
         )
 
+        # output is a matrix of size [batch-size, max-seq-length, num-tags * 2]
+        # split the matrix on axis 2 to get the backpointers and scores, which are
+        # both of size [batch-size, max-seq-length, num-tags]
         backpointers, scores = tf.split(output, 2, axis=2)
 
         backpointers = tf.cast(backpointers, dtype=tf.int32)
