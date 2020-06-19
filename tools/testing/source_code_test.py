@@ -65,29 +65,28 @@ def test_case_insensitive_filesystems():
             )
 
 
-def get_lines_of_source_code(blacklist=None):
-    blacklist = blacklist or []
+def get_lines_of_source_code(allowlist=None):
+    allowlist = allowlist or []
     source_dir = os.path.join(BASE_DIR, "tensorflow_addons")
     for path in glob.glob(source_dir + "/**/*.py", recursive=True):
-        if in_blacklist(path, blacklist):
+        if in_allowlist(path, allowlist):
             continue
         with open(path) as f:
             for line_idx, line in enumerate(f):
                 yield path, line_idx, line
 
 
-def in_blacklist(file_path, blacklist):
-    for blacklisted_file in blacklist:
-        if file_path.endswith(blacklisted_file):
+def in_allowlist(file_path, allowlist):
+    for allowed_file in allowlist:
+        if file_path.endswith(allowed_file):
             return True
     return False
 
 
 def test_no_private_tf_api():
-    # TODO: remove all elements of the list and remove the blacklist
-    # Unlike the exception list for functions/classes missing types,
-    # this blacklist should not grow. Do not add elements to this list.
-    blacklist = [
+    # TODO: remove all elements of the list and remove the allowlist
+    # This allowlist should not grow. Do not add elements to this list.
+    allowlist = [
         "tensorflow_addons/optimizers/novograd.py",
         "tensorflow_addons/metrics/r_square.py",
         "tensorflow_addons/utils/test_utils.py",
@@ -95,7 +94,7 @@ def test_no_private_tf_api():
         "tensorflow_addons/seq2seq/attention_wrapper.py",
     ]
 
-    for file_path, line_idx, line in get_lines_of_source_code(blacklist):
+    for file_path, line_idx, line in get_lines_of_source_code(allowlist):
 
         if "import tensorflow.python" in line or "from tensorflow.python" in line:
             raise ImportError(
@@ -113,10 +112,9 @@ def test_no_private_tf_api():
 
 
 def test_no_tf_cond():
-    # TODO: remove all elements of the list and remove the blacklist
-    # Unlike the exception list for functions/classes missing types,
-    # this blacklist should not grow. Do not add elements to this list.
-    blacklist = [
+    # TODO: remove all elements of the list and remove the allowlist
+    # This allowlist should not grow. Do not add elements to this list.
+    allowlist = [
         "tensorflow_addons/text/crf.py",
         "tensorflow_addons/layers/wrappers.py",
         "tensorflow_addons/image/connected_components.py",
@@ -125,7 +123,7 @@ def test_no_tf_cond():
         "tensorflow_addons/seq2seq/sampler.py",
         "tensorflow_addons/seq2seq/beam_search_decoder.py",
     ]
-    for file_path, line_idx, line in get_lines_of_source_code(blacklist):
+    for file_path, line_idx, line in get_lines_of_source_code(allowlist):
 
         if "tf.cond(" in line:
             raise NameError(
@@ -144,13 +142,12 @@ def test_no_tf_cond():
 
 
 def test_no_experimental_api():
-    # TODO: remove all elements of the list and remove the blacklist
-    # Unlike the exception list for functions/classes missing types,
-    # this blacklist should not grow. Do not add elements to this list.
-    blacklist = [
+    # TODO: remove all elements of the list and remove the allowlist
+    # This allowlist should not grow. Do not add elements to this list.
+    allowlist = [
         "tensorflow_addons/optimizers/weight_decay_optimizers.py",
     ]
-    for file_path, line_idx, line in get_lines_of_source_code(blacklist):
+    for file_path, line_idx, line in get_lines_of_source_code(allowlist):
 
         if file_path.endswith("_test.py") or file_path.endswith("conftest.py"):
             continue
@@ -172,14 +169,12 @@ def test_no_experimental_api():
 
 
 def test_no_tf_control_dependencies():
-    # TODO: remove all elements of the list and remove the blacklist
-    # Unlike the exception list for functions/classes missing types,
-    # this blacklist should not grow. Do not add elements to this list.
-    blacklist = [
+    # TODO: remove all elements of the list and remove the allowlist
+    # This allowlist should not grow. Do not add elements to this list.
+    allowlist = [
         "tensorflow_addons/layers/wrappers.py",
         "tensorflow_addons/image/utils.py",
         "tensorflow_addons/image/dense_image_warp.py",
-        "tensorflow_addons/optimizers/stochastic_weight_averaging.py",
         "tensorflow_addons/optimizers/average_wrapper.py",
         "tensorflow_addons/optimizers/yogi.py",
         "tensorflow_addons/optimizers/lookahead.py",
@@ -190,7 +185,7 @@ def test_no_tf_control_dependencies():
         "tensorflow_addons/seq2seq/beam_search_decoder.py",
         "tensorflow_addons/seq2seq/attention_wrapper.py",
     ]
-    for file_path, line_idx, line in get_lines_of_source_code(blacklist):
+    for file_path, line_idx, line in get_lines_of_source_code(allowlist):
 
         if "tf.control_dependencies(" in line:
 
@@ -211,10 +206,9 @@ def test_no_tf_control_dependencies():
 
 
 def test_no_deprecated_v1():
-    # TODO: remove all elements of the list and remove the blacklist
-    # Unlike the exception list for functions/classes missing types,
-    # this blacklist should not grow. Do not add elements to this list.
-    blacklist = [
+    # TODO: remove all elements of the list and remove the allowlist
+    # This allowlist should not grow. Do not add elements to this list.
+    allowlist = [
         "tensorflow_addons/text/skip_gram_ops.py",
         "tensorflow_addons/metrics/tests/f_scores_test.py",
         "tensorflow_addons/seq2seq/tests/basic_decoder_test.py",
@@ -222,7 +216,7 @@ def test_no_deprecated_v1():
         "tensorflow_addons/seq2seq/decoder.py",
         "tensorflow_addons/seq2seq/tests/attention_wrapper_test.py",
     ]
-    for file_path, line_idx, line in get_lines_of_source_code(blacklist):
+    for file_path, line_idx, line in get_lines_of_source_code(allowlist):
 
         if "tf.compat.v1" in line:
             raise NameError(
