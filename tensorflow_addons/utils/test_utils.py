@@ -21,6 +21,7 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
+from tensorflow_addons import options
 from tensorflow_addons.utils import resource_loader
 
 # TODO: copy the layer_test implementation in Addons.
@@ -83,6 +84,20 @@ def maybe_run_functions_eagerly(request):
         tf.config.experimental_run_functions_eagerly(False)
 
     request.addfinalizer(finalizer)
+
+
+@pytest.fixture(scope="function", params=["custom_ops", "py_ops"])
+def run_custom_and_py_ops(request):
+    previous_py_ops_value = options.TF_ADDONS_PY_OPS
+    if request.param == "custom_ops":
+        options.TF_ADDONS_PY_OPS = False
+    elif request.param == "py_ops":
+        options.TF_ADDONS_PY_OPS = True
+
+    def _restore_py_ops_value():
+        options.TF_ADDONS_PY_OPS = previous_py_ops_value
+
+    request.addfinalizer(_restore_py_ops_value)
 
 
 @pytest.fixture(scope="function", params=["channels_first", "channels_last"])
