@@ -121,11 +121,9 @@ def test_fit_simple_linear_model():
     assert max_abs_diff < 1e-3
 
 
-def test_fit_simple_linear_model_mixed_precision():
-    # Remove this block after https://github.com/tensorflow/tensorflow/issues/39775
+def test_fit_simple_linear_model_mixed_precision(): 
     if test_utils.is_gpu_available():
-        return True
-    # -------------------------------
+        pytest.xfail("See https://github.com/tensorflow/tensorflow/issues/39775")
     np.random.seed(0x2019)
     tf.random.set_seed(0x2019)
 
