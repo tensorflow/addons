@@ -22,6 +22,7 @@ from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import beam_search_decoder, gather_tree
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree():
     # (max_time = 3, batch_size = 2, beam_width = 3)
 
@@ -103,22 +104,27 @@ def _test_gather_tree_from_array(depth_ndims=0, merged_batch_beam=False):
     np.testing.assert_equal(expected_array.numpy(), sorted_array.numpy())
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_from_array_scalar():
     _test_gather_tree_from_array()
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_from_array_1d():
     _test_gather_tree_from_array(depth_ndims=1)
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_from_array_1d_with_merged_batch_beam():
     _test_gather_tree_from_array(depth_ndims=1, merged_batch_beam=True)
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_from_array_2d():
     _test_gather_tree_from_array(depth_ndims=2)
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_from_array_complex_trajectory():
     # Max. time = 7, batch = 1, beam = 5.
     array = np.expand_dims(
@@ -538,6 +544,7 @@ def test_large_beam_step():
     "cell_class", [tf.keras.layers.LSTMCell, tf.keras.layers.GRUCell]
 )
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_beam_search_decoder(
     cell_class, time_major, has_attention, with_alignment_history
 ):
