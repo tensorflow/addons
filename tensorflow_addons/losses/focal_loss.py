@@ -50,7 +50,7 @@ class SigmoidFocalCrossEntropy(LossFunctionWrapper):
 
     ```python
     model = tf.keras.Model(inputs, outputs)
-    model.compile('sgd', loss=tf.keras.losses.SigmoidFocalCrossEntropy())
+    model.compile('sgd', loss=tfa.losses.SigmoidFocalCrossEntropy())
     ```
 
     Args
