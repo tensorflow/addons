@@ -566,7 +566,8 @@ def test_peephole_lstm_cell():
         cell = cell_fn(5, **kwargs)
         cell.build(inputs.shape)
         initial_state = cell.get_initial_state(
-            inputs=inputs, batch_size=4, dtype=tf.float32)
+            inputs=inputs, batch_size=4, dtype=tf.float32
+        )
         inputs, _ = cell(inputs, initial_state)
         output = inputs
         return output
@@ -576,19 +577,22 @@ def test_peephole_lstm_cell():
     # rnn_cell.LSTMCell.
     first_implementation_output = _run_cell(
         rnn_cell.PeepholeLSTMCell,
-        kernel_initializer='ones',
-        recurrent_activation='sigmoid',
-        implementation=1)
+        kernel_initializer="ones",
+        recurrent_activation="sigmoid",
+        implementation=1,
+    )
     second_implementation_output = _run_cell(
         rnn_cell.PeepholeLSTMCell,
-        kernel_initializer='ones',
-        recurrent_activation='sigmoid',
-        implementation=2)
+        kernel_initializer="ones",
+        recurrent_activation="sigmoid",
+        implementation=2,
+    )
     tf_lstm_cell_output = _run_cell(
         tf.compat.v1.nn.rnn_cell.LSTMCell,
         use_peepholes=True,
-        initializer=tf.compat.v1.initializers.ones)
-    np.testing.assert_allclose(first_implementation_output,
-                               second_implementation_output)
-    np.testing.assert_allclose(first_implementation_output,
-                               tf_lstm_cell_output)
+        initializer=tf.compat.v1.initializers.ones,
+    )
+    np.testing.assert_allclose(
+        first_implementation_output, second_implementation_output
+    )
+    np.testing.assert_allclose(first_implementation_output, tf_lstm_cell_output)
