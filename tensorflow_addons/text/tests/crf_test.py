@@ -365,3 +365,48 @@ def test_tf_function():
     transition_params = tf.random.uniform([num_tags, num_tags])
     sequence_length = tf.ones([batch_size], dtype=tf.int32)
     crf_decode(potentials, transition_params, sequence_length)
+
+
+def test_crf_decode_save_load(tmpdir):
+    tf.keras.backend.clear_session()
+    input_tensor = tf.keras.Input(shape=(10, 3), dtype=tf.float32, name="input_tensor")
+    seq_len = tf.keras.Input(shape=(), dtype=tf.int32, name="seq_len")
+    transition = tf.constant([[1, 1, 0], [0, 1, 1], [1, 0, 1]], dtype=tf.float32)
+
+    output = tf.multiply(input_tensor, tf.constant(1.0))
+    decoded, _ = text.crf_decode(input_tensor, transition, seq_len)
+
+    model = tf.keras.Model(
+        inputs=[input_tensor, seq_len], outputs=[output, decoded], name="example_model"
+    )
+    model.compile(optimizer="Adam")
+
+    x_data = {
+        "input_tensor": np.random.random_sample((5, 10, 3)).astype(dtype=np.float32),
+        "seq_len": np.array([10] * 5, dtype=np.int32),
+    }
+    y_data = {"tf_op_layer_Mul": np.random.randint(0, 3, (5, 10))}
+
+    model.fit(x_data, y_data)
+    model.predict(
+        {
+            "input_tensor": tf.expand_dims(x_data["input_tensor"][0], 0),
+            "seq_len": np.array([10]),
+        }
+    )
+
+    temp_dir = str(tmpdir.mkdir("model"))
+    tf.saved_model.save(model, temp_dir)
+
+    tf.keras.backend.clear_session()
+    model = tf.keras.models.load_model(
+        temp_dir,
+        custom_objects={"CrfDecodeForwardRnnCell": text.crf.CrfDecodeForwardRnnCell},
+    )
+    model.fit(x_data, y_data)
+    model.predict(
+        {
+            "input_tensor": tf.expand_dims(x_data["input_tensor"][0], 0),
+            "seq_len": np.array([10]),
+        }
+    )
