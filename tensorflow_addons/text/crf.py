@@ -422,6 +422,20 @@ class CrfDecodeForwardRnnCell(tf.keras.layers.AbstractRNNCell):
         backpointers = tf.cast(backpointers, dtype=tf.int32)
         return backpointers, new_state
 
+    def get_config(self) -> dict:
+        config = {
+            "transition_params": tf.squeeze(self._transition_params, 0).numpy().tolist()
+        }
+        base_config = super(CrfDecodeForwardRnnCell, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
+
+    @classmethod
+    def from_config(cls, config: dict) -> "CrfDecodeForwardRnnCell":
+        config["transition_params"] = np.array(
+            config["transition_params"], dtype=np.float32
+        )
+        return cls(**config)
+
 
 def crf_decode_forward(
     inputs: TensorLike,
