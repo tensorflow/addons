@@ -568,13 +568,10 @@ def test_peephole_lstm_cell():
         initial_state = cell.get_initial_state(
             inputs=inputs, batch_size=4, dtype=tf.float32
         )
-        inputs, _ = cell(inputs, initial_state)
-        output = inputs
+        output, _ = cell(inputs, initial_state)
         return output
 
-    tf.compat.v1.random.set_random_seed(12345)
-    # `recurrent_activation` kwarg is set to sigmoid as that is hardcoded into
-    # rnn_cell.LSTMCell.
+    tf.random.set_seed(12345)
     first_implementation_output = _run_cell(
         rnn_cell.PeepholeLSTMCell,
         kernel_initializer="ones",
@@ -587,12 +584,14 @@ def test_peephole_lstm_cell():
         recurrent_activation="sigmoid",
         implementation=2,
     )
-    tf_lstm_cell_output = _run_cell(
-        tf.compat.v1.nn.rnn_cell.LSTMCell,
-        use_peepholes=True,
-        initializer=tf.compat.v1.initializers.ones,
+    expected_output = np.asarray(
+        [[0.417551, 0.417551, 0.417551, 0.417551, 0.417551],
+         [0.417551, 0.417551, 0.417551, 0.417551, 0.417551],
+         [0.417551, 0.417551, 0.417551, 0.417551, 0.417551],
+         [0., 0., 0., 0., 0.]],
+        dtype=np.float32
     )
     np.testing.assert_allclose(
         first_implementation_output, second_implementation_output
     )
-    np.testing.assert_allclose(first_implementation_output, tf_lstm_cell_output)
+    np.testing.assert_allclose(first_implementation_output, expected_output, rtol=1e-6, atol=1e-6)
