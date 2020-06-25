@@ -585,13 +585,17 @@ def test_peephole_lstm_cell():
         implementation=2,
     )
     expected_output = np.asarray(
-        [[0.417551, 0.417551, 0.417551, 0.417551, 0.417551],
-         [0.417551, 0.417551, 0.417551, 0.417551, 0.417551],
-         [0.417551, 0.417551, 0.417551, 0.417551, 0.417551],
-         [0., 0., 0., 0., 0.]],
-        dtype=np.float32
+        [
+            [0.417551, 0.417551, 0.417551, 0.417551, 0.417551],
+            [0.417551, 0.417551, 0.417551, 0.417551, 0.417551],
+            [0.417551, 0.417551, 0.417551, 0.417551, 0.417551],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
+        ],
+        dtype=np.float32,
     )
     np.testing.assert_allclose(
         first_implementation_output, second_implementation_output
     )
-    np.testing.assert_allclose(first_implementation_output, expected_output, rtol=1e-6, atol=1e-6)
+    np.testing.assert_allclose(
+        first_implementation_output, expected_output, rtol=1e-6, atol=1e-6
+    )
