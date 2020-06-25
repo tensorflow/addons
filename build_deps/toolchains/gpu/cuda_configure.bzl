@@ -906,19 +906,20 @@ def _create_local_cuda_repository(repository_ctx):
         if [int(x) for x in cuda_config.cudnn_version.split(".")] < [8, 0]:
             cudnn_headers = ["cudnn.h"]
         else:
-            cudnn_headers = ["cudnn_adv_infer.h",
-                             "cudnn_adv_train.h",
-                             "cudnn_cnn_infer.h",
-                             "cudnn_cnn_train.h",
-                             "cudnn_ops_infer.h",
-                             "cudnn_ops_train.h",
-                             "cudnn.h",
-                             "cudnn_version.h",
-                            ]
+            cudnn_headers = [
+                "cudnn_adv_infer.h",
+                "cudnn_adv_train.h",
+                "cudnn_cnn_infer.h",
+                "cudnn_cnn_train.h",
+                "cudnn_ops_infer.h",
+                "cudnn_ops_train.h",
+                "cudnn.h",
+                "cudnn_version.h",
+            ]
         cudnn_srcs = []
         cudnn_outs = []
         for header in cudnn_headers:
-            cudnn_srcs.append(cudnn_header_dir + '/' + header)
+            cudnn_srcs.append(cudnn_header_dir + "/" + header)
             cudnn_outs.append("cudnn/include/" + header)
 
         copy_rules.append(make_copy_files_rule(
@@ -1069,8 +1070,6 @@ def find_cuda_config(repository_ctx, cuda_libraries):
         auto_configure_fail("Failed to run find_cuda_config.py: %s" % exec_result.stderr)
 
     # Parse the dict from stdout.
-    #print(dict([tuple(x.split(": ")) for x in exec_result.stdout.splitlines()]))
-    #sys.exit(0)
     return dict([tuple(x.split(": ")) for x in exec_result.stdout.splitlines()])
 
 def _cuda_autoconf_impl(repository_ctx):
