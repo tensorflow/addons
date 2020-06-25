@@ -570,28 +570,28 @@ def _find_libs(repository_ctx, cuda_config):
             repository_ctx,
             cpu_value,
             cuda_config.config["cublas_library_dir"],
-            cuda_config.cuda_major_version,
+            cuda_config.cublas_version,
         ),
         "cusolver": _find_cuda_lib(
             "cusolver",
             repository_ctx,
             cpu_value,
-            cuda_config.config["cuda_library_dir"],
-            cuda_config.cuda_major_version,
+            cuda_config.config["cusolver_library_dir"],
+            cuda_config.cusolver_version,
         ),
         "curand": _find_cuda_lib(
             "curand",
             repository_ctx,
             cpu_value,
-            cuda_config.config["cuda_library_dir"],
-            cuda_config.cuda_major_version,
+            cuda_config.config["curand_library_dir"],
+            cuda_config.curand_version,
         ),
         "cufft": _find_cuda_lib(
             "cufft",
             repository_ctx,
             cpu_value,
-            cuda_config.config["cuda_library_dir"],
-            cuda_config.cuda_major_version,
+            cuda_config.config["cufft_library_dir"],
+            cuda_config.cufft_version,
         ),
         "cudnn": _find_cuda_lib(
             "cudnn",
@@ -638,19 +638,33 @@ def _get_cuda_config(repository_ctx):
     cuda_version = ("64_%s%s" if is_windows else "%s.%s") % (cuda_major, cuda_minor)
     cudnn_version = ("64_%s" if is_windows else "%s") % config["cudnn_version"]
 
-    # cuda_lib_version is for libraries like cuBLAS, cuFFT, cuSOLVER, etc.
-    # It changed from 'x.y' to just 'x' in CUDA 10.1.
-    if (int(cuda_major), int(cuda_minor)) >= (10, 1):
+    if int(cuda_major) >= 11:
+        cublas_version = ("64_%s" if is_windows else "%s") % config["cublas_version"].split(".")[0]
+        cusolver_version = ("64_%s" if is_windows else "%s") % config["cusolver_version"].split(".")[0]
+        curand_version = ("64_%s" if is_windows else "%s") % config["curand_version"].split(".")[0]
+        cufft_version = ("64_%s" if is_windows else "%s") % config["cufft_version"].split(".")[0]
+    elif (int(cuda_major), int(cuda_minor)) >= (10, 1):
+        # cuda_lib_version is for libraries like cuBLAS, cuFFT, cuSOLVER, etc.
+        # It changed from 'x.y' to just 'x' in CUDA 10.1.
         cuda_lib_version = ("64_%s" if is_windows else "%s") % cuda_major
+        cublas_version = cuda_lib_version
+        cusolver_version = cuda_lib_version
+        curand_version = cuda_lib_version
+        cufft_version = cuda_lib_version
     else:
-        cuda_lib_version = cuda_version
+        cublas_version = cuda_version
+        cusolver_version = cuda_version
+        curand_version = cuda_version
+        cufft_version = cuda_version
 
     return struct(
         cuda_toolkit_path = toolkit_path,
         cuda_version = cuda_version,
-        cuda_major_version = cuda_major,
+        cublas_version = cublas_version,
+        cusolver_version = cusolver_version,
+        curand_version = curand_version,
+        cufft_version = cufft_version,
         cudnn_version = cudnn_version,
-        cuda_lib_version = cuda_lib_version,
         compute_capabilities = compute_capabilities(repository_ctx),
         cpu_value = cpu_value,
         config = config,
@@ -889,11 +903,29 @@ def _create_local_cuda_repository(repository_ctx):
     # Copy cudnn.h if cuDNN was not installed to CUDA_TOOLKIT_PATH.
     included_files = _read_dir(repository_ctx, cuda_include_path)
     if not any([file.endswith("cudnn.h") for file in included_files]):
+        if [int(x) for x in cuda_config.cudnn_version.split(".")] < [8, 0]:
+            cudnn_headers = ["cudnn.h"]
+        else:
+            cudnn_headers = ["cudnn_adv_infer.h",
+                             "cudnn_adv_train.h",
+                             "cudnn_cnn_infer.h",
+                             "cudnn_cnn_train.h",
+                             "cudnn_ops_infer.h",
+                             "cudnn_ops_train.h",
+                             "cudnn.h",
+                             "cudnn_version.h",
+                            ]
+        cudnn_srcs = []
+        cudnn_outs = []
+        for header in cudnn_headers:
+            cudnn_srcs.append(cudnn_header_dir + '/' + header)
+            cudnn_outs.append("cudnn/include/" + header)
+
         copy_rules.append(make_copy_files_rule(
             repository_ctx,
             name = "cudnn-include",
-            srcs = [cudnn_header_dir + "/cudnn.h"],
-            outs = ["cuda/include/cudnn.h"],
+            srcs = cudnn_srcs,
+            outs = cudnn_outs,
         ))
     else:
         copy_rules.append("filegroup(name = 'cudnn-include')\n")
@@ -1037,6 +1069,8 @@ def find_cuda_config(repository_ctx, cuda_libraries):
         auto_configure_fail("Failed to run find_cuda_config.py: %s" % exec_result.stderr)
 
     # Parse the dict from stdout.
+    #print(dict([tuple(x.split(": ")) for x in exec_result.stdout.splitlines()]))
+    #sys.exit(0)
     return dict([tuple(x.split(": ")) for x in exec_result.stdout.splitlines()])
 
 def _cuda_autoconf_impl(repository_ctx):
