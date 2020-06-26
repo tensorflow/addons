@@ -37,7 +37,9 @@ def test_api_typed():
         tfa.text,
     ]
     # Files within this list will be exempt from verification.
-    exception_list = []
+    exception_list = [
+        tfa.rnn.PeepholeLSTMCell,
+    ]
     help_message = (
         "You can also take a look at the section about it in the CONTRIBUTING.md:\n"
         "https://github.com/tensorflow/addons/blob/master/CONTRIBUTING.md#about-type-hints"
