@@ -834,7 +834,7 @@ class PeepholeLSTMCell(tf.keras.layers.LSTMCell):
     """
 
     def build(self, input_shape):
-        super(PeepholeLSTMCell, self).build(input_shape)
+        super().build(input_shape)
         # The following are the weight matrices for the peephole connections. These
         # are multiplied with the previous internal state during the computation of
         # carry and output.
