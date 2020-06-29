@@ -213,9 +213,6 @@ def test_no_deprecated_v1():
     # This allowlist should not grow. Do not add elements to this list.
     allowlist = [
         "tensorflow_addons/text/skip_gram_ops.py",
-        "tensorflow_addons/metrics/tests/f_scores_test.py",
-        "tensorflow_addons/seq2seq/tests/basic_decoder_test.py",
-        "tensorflow_addons/seq2seq/tests/beam_search_decoder_test.py",
         "tensorflow_addons/seq2seq/decoder.py",
         "tensorflow_addons/seq2seq/tests/attention_wrapper_test.py",
     ]
