@@ -97,7 +97,7 @@ class ContrastiveLoss(LossFunctionWrapper):
         self,
         margin: Number = 1.0,
         reduction: str = tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
-        name: str = "contrasitve_loss",
+        name: str = "contrastive_loss",
     ):
         super().__init__(
             contrastive_loss, reduction=reduction, name=name, margin=margin
