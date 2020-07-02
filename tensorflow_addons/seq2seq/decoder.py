@@ -337,7 +337,7 @@ def dynamic_decode(
             )
 
         if enable_tflite_convertible:
-            # Assume the batch_size = 1 for inference. 
+            # Assume the batch_size = 1 for inference.
             # So we can change 2-D TensorArray into 1-D by reshaping it.
             zero_outputs = tf.nest.map_structure(
                 lambda shape, dtype: tf.reshape(tf.zeros(
@@ -483,7 +483,7 @@ def dynamic_decode(
                 )
             else:
                 next_state = decoder_state
-                
+
             if enable_tflite_convertible:
                 # Reshape to 1-D.
                 emit = tf.nest.map_structure(lambda x: tf.reshape(x, [-1]), emit)
