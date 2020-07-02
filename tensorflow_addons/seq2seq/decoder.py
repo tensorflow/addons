@@ -340,15 +340,18 @@ def dynamic_decode(
             # Assume the batch_size = 1 for inference.
             # So we can change 2-D TensorArray into 1-D by reshaping it.
             zero_outputs = tf.nest.map_structure(
-                lambda shape, dtype: tf.reshape(tf.zeros(
-                    _prepend_batch(decoder.batch_size, shape), dtype=dtype), [-1]),
+                lambda shape, dtype: tf.reshape(
+                    tf.zeros(_prepend_batch(decoder.batch_size, shape), dtype=dtype),
+                    [-1],
+                ),
                 decoder.output_size,
                 decoder.output_dtype,
             )
         else:
             zero_outputs = tf.nest.map_structure(
                 lambda shape, dtype: tf.zeros(
-                    _prepend_batch(decoder.batch_size, shape), dtype=dtype),
+                    _prepend_batch(decoder.batch_size, shape), dtype=dtype
+                ),
                 decoder.output_size,
                 decoder.output_dtype,
             )
@@ -534,6 +537,7 @@ def dynamic_decode(
                 # Reshape the output to the original shape.
                 def _restore_batch(x):
                     return tf.expand_dims(x, [1])
+
                 final_outputs = tf.nest.map_structure(_restore_batch, final_outputs)
 
             final_outputs = tf.nest.map_structure(_transpose_batch_time, final_outputs)
