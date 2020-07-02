@@ -171,11 +171,8 @@ class CohenKappa(Metric):
         y_true = tf.squeeze(y_true)
         y_pred = tf.squeeze(y_pred)
 
-        if tf.rank(y_true) == 0:
-            y_true = tf.expand_dims(y_true, 0)
-
-        if tf.rank(y_pred) == 0:
-            y_pred = tf.expand_dims(y_pred, 0)
+        y_true = tf.cond(tf.rank(y_true) == 0, lambda: tf.expand_dims(y_true, 0), lambda: y_true)
+        y_pred = tf.cond(tf.rank(y_pred) == 0, lambda: tf.expand_dims(y_pred, 0), lambda: y_pred)
         
         new_conf_mtx = tf.math.confusion_matrix(
             labels=y_true,
