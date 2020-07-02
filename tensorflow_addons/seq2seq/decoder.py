@@ -337,21 +337,21 @@ def dynamic_decode(
             )
 
         if enable_tflite_convertible:
-          # Assume the batch_size = 1 for inference. 
-          # So we can change 2-D TensorArray into 1-D by reshaping it.
-          zero_outputs = tf.nest.map_structure(
-            lambda shape, dtype: tf.reshape(tf.zeros(
-                _prepend_batch(decoder.batch_size, shape), dtype=dtype), [-1]),
-            decoder.output_size,
-            decoder.output_dtype,
-          )
+            # Assume the batch_size = 1 for inference. 
+            # So we can change 2-D TensorArray into 1-D by reshaping it.
+            zero_outputs = tf.nest.map_structure(
+                lambda shape, dtype: tf.reshape(tf.zeros(
+                    _prepend_batch(decoder.batch_size, shape), dtype=dtype), [-1]),
+                decoder.output_size,
+                decoder.output_dtype,
+            )
         else:
-          zero_outputs = tf.nest.map_structure(
-              lambda shape, dtype: tf.zeros(
-                  _prepend_batch(decoder.batch_size, shape), dtype=dtype),
-              decoder.output_size,
-              decoder.output_dtype,
-          )
+            zero_outputs = tf.nest.map_structure(
+                lambda shape, dtype: tf.zeros(
+                    _prepend_batch(decoder.batch_size, shape), dtype=dtype),
+                decoder.output_size,
+                decoder.output_dtype,
+            )
 
         if maximum_iterations is not None:
             initial_finished = tf.logical_or(initial_finished, 0 >= maximum_iterations)
@@ -366,13 +366,13 @@ def dynamic_decode(
                     tf.convert_to_tensor(batch_size, name="batch_size")
                 )
                 if enable_tflite_convertible:
-                  # Since we can't use 2-D TensoArray and assume `batch_size` = 1,
-                  # We use `from_shape` dimension only.
-                  return from_shape
+                    # Since we can't use 2-D TensoArray and assume `batch_size` = 1,
+                    # we use `from_shape` dimension only.
+                    return from_shape
                 return tf.TensorShape([batch_size]).concatenate(from_shape)
 
         dynamic_size = maximum_iterations is None or not is_xla
-        # The static shape `TensoArray` is allowed in TFLite.
+        # The dynamic shape `TensoArray` is not allowed in TFLite yet.
         dynamic_size = dynamic_size and (not enable_tflite_convertible)
 
         def _create_ta(s, d):
