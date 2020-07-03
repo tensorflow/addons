@@ -237,3 +237,13 @@ def test_cohen_kappa_serialization():
 
     ck = CohenKappa(num_classes=5, sparse_labels=True, weightage="quadratic")
     check_metric_serialization(ck, actuals, preds, weights)
+
+def test_cohen_kappa_single_batch():
+    # Test for issue #1962
+    obj = CohenKappa(5, regression=True, sparse_labels=True)
+
+    try:
+        # Test single batch update
+        obj.update_state(tf.ones(1), tf.ones(1))
+    except:
+        pytest.fail("Unexpected exception")
