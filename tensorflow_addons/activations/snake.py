@@ -18,7 +18,6 @@ import tensorflow as tf
 from tensorflow_addons.utils import types
 
 
-@tf.function
 @tf.keras.utils.register_keras_serializable(package="Addons")
 def snake(inputs: types.TensorLike, freq: types.Number = 1) -> tf.Tensor:
     """Snake activation to learn periodic functions.
