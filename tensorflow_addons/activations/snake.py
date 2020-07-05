@@ -19,13 +19,19 @@ from tensorflow_addons.utils import types
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def snake(inputs: types.TensorLike, freq: types.Number = 1) -> tf.Tensor:
+def snake(logits: types.TensorLike, frequency: types.Number = 1) -> tf.Tensor:
     """Snake activation to learn periodic functions.
 
     https://arxiv.org/abs/2006.08195
+
+    Args:
+        logits: Input tensor.
+        frequency: A scalar, frequency of the periodic part.
+    Returns:
+        Tensor of the same type and shape as `logits`.
     """
 
-    inputs = tf.convert_to_tensor(inputs)
-    freq = tf.cast(freq, inputs.dtype)
+    logits = tf.convert_to_tensor(logits)
+    frequency = tf.cast(frequency, logits.dtype)
 
-    return inputs + (1 - tf.cos(2 * freq * inputs)) / (2 * freq)
+    return logits + (1 - tf.cos(2 * frequency * logits)) / (2 * frequency)

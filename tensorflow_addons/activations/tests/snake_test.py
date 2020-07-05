@@ -16,9 +16,7 @@
 import pytest
 
 import numpy as np
-
 from tensorflow_addons.activations import snake
-
 from tensorflow_addons.utils import test_utils
 
 

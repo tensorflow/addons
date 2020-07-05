@@ -17,6 +17,8 @@
 import tensorflow as tf
 from typeguard import typechecked
 
+from tensorflow_addons.activations.snake import snake
+
 from tensorflow_addons.utils import types
 
 
@@ -28,20 +30,20 @@ class Snake(tf.keras.layers.Layer):
     """
 
     @typechecked
-    def __init__(self, freq_initializer: types.Initializer = "ones", **kwargs):
+    def __init__(self, frequency_initializer: types.Initializer = "ones", **kwargs):
         """
-        freq_initializer: Initializer for the 'frequency' param.
+        frequency_initializer: Initializer for the 'frequency' param.
         """
         super().__init__(**kwargs)
-        self.freq_initializer = tf.keras.initializers.get(freq_initializer)
-        self.freq = self.add_weight(initializer=freq_initializer, trainable=True)
+        self.frequency_initializer = tf.keras.initializers.get(frequency_initializer)
+        self.frequency = self.add_weight(initializer=frequency_initializer, trainable=True)
 
     def call(self, inputs):
-        return inputs + (1 - tf.cos(2 * self.freq * inputs)) / (2 * self.freq)
+        return snake(inputs, self.frequency)
 
     def get_config(self):
         config = {
-            "freq_initializer": tf.keras.initializers.serialize(self.freq_initializer),
+            "frequency_initializer": tf.keras.initializers.serialize(self.frequency_initializer),
         }
         base_config = super().get_config()
         return {**base_config, **config}
