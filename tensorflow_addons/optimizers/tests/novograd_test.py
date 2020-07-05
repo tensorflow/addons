@@ -146,3 +146,31 @@ def test_serialization():
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)
     assert new_optimizer.get_config() == optimizer.get_config()
+
+
+def test_sparse():
+    np.random.seed(0x2020)
+    tf.random.set_seed(0x2020)
+
+    optimizer = NovoGrad()
+
+    val_0 = np.random.random((2,))
+    val_1 = np.random.random((2,))
+
+    var_0 = tf.Variable(val_0, dtype=tf.dtypes.float32)
+    var_1 = tf.Variable(val_1, dtype=tf.dtypes.float32)
+
+    grad_0 = tf.IndexedSlices(
+        tf.constant([np.random.standard_normal()]), tf.constant([0]), tf.constant([2]),
+    )
+    grad_1 = tf.IndexedSlices(
+        tf.constant([np.random.standard_normal()]), tf.constant([1]), tf.constant([2]),
+    )
+
+    grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
+
+    for _ in range(10):
+        optimizer.apply_gradients(grads_and_vars)
+
+    np.testing.assert_allclose(var_0.numpy(), [0.854698, 0.5792915])
+    np.testing.assert_allclose(var_1.numpy(), [0.4628156, 0.22476907])

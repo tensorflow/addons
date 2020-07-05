@@ -234,7 +234,7 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
             var.handle,
             m.handle,
             coefficients["lr_t"],
-            tf.gather(grad, indices),
+            grad,
             indices,
             coefficients["beta_1_t"],
             use_locking=self._use_locking,
