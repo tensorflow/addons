@@ -24,7 +24,7 @@ from tensorflow_addons.seq2seq import sampler as sampler_py
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize(
-    "maximum_iterations", [None, 0, 1, tf.constant(1, dtype=tf.int32)]
+    "maximum_iterations", [None, 1, tf.constant(1, dtype=tf.int32)]
 )
 @pytest.mark.parametrize("time_major", [True, False])
 def test_dynamic_decode_rnn(time_major, maximum_iterations):
@@ -36,11 +36,6 @@ def test_dynamic_decode_rnn(time_major, maximum_iterations):
     cell_depth = 10
     max_out = max(sequence_length)
 
-    if time_major:
-        inputs = np.random.randn(max_time, batch_size, input_depth).astype(np.float32)
-    else:
-        inputs = np.random.randn(batch_size, max_time, input_depth).astype(np.float32)
-    input_t = tf.constant(inputs)
     cell = tf.keras.layers.LSTMCell(cell_depth)
     sampler = sampler_py.TrainingSampler(time_major=time_major)
     my_decoder = basic_decoder.BasicDecoder(
@@ -50,10 +45,25 @@ def test_dynamic_decode_rnn(time_major, maximum_iterations):
         maximum_iterations=maximum_iterations,
     )
 
-    initial_state = cell.get_initial_state(batch_size=batch_size, dtype=tf.float32)
-    (final_outputs, unused_final_state, final_sequence_length,) = my_decoder(
-        input_t, initial_state=initial_state, sequence_length=sequence_length
+    @tf.function(
+        input_signature=(
+            tf.TensorSpec([None, None, input_depth], dtype=tf.float32),
+            tf.TensorSpec([None], dtype=tf.int32),
+        )
     )
+    def _decode(inputs, sequence_length):
+        batch_size_t = tf.shape(sequence_length)[0]
+        initial_state = cell.get_initial_state(
+            batch_size=batch_size_t, dtype=inputs.dtype
+        )
+        return my_decoder(
+            inputs, initial_state=initial_state, sequence_length=sequence_length
+        )
+
+    inputs = tf.random.normal([batch_size, max_time, input_depth])
+    if time_major:
+        inputs = tf.transpose(inputs, perm=[1, 0, 2])
+    final_outputs, _, final_sequence_length = _decode(inputs, sequence_length)
 
     def _t(shape):
         if time_major:
@@ -67,11 +77,8 @@ def test_dynamic_decode_rnn(time_major, maximum_iterations):
     if maximum_iterations is not None:
         time_steps = min(max_out, maximum_iterations)
         expected_length = [min(x, maximum_iterations) for x in expected_length]
-    if maximum_iterations != 0:
-        assert (
-            _t((batch_size, time_steps, cell_depth)) == final_outputs.rnn_output.shape
-        )
-        assert _t((batch_size, time_steps)) == final_outputs.sample_id.shape
+    assert _t((batch_size, time_steps, cell_depth)) == final_outputs.rnn_output.shape
+    assert _t((batch_size, time_steps)) == final_outputs.sample_id.shape
     np.testing.assert_array_equal(expected_length, final_sequence_length)
 
 
@@ -112,21 +119,11 @@ def test_dynamic_decode_rnn_with_training_helper_matches_dynamic_rnn(
     if use_sequence_length:
         final_rnn_outputs *= tf.cast(tf.expand_dims(mask, -1), final_rnn_outputs.dtype)
 
-    eval_result = {
-        "final_decoder_outputs": final_decoder_outputs,
-        "final_decoder_state": final_decoder_state,
-        "final_rnn_outputs": final_rnn_outputs,
-        "final_rnn_state": final_rnn_state,
-    }
-
     # Decoder only runs out to max_out; ensure values are identical
     # to dynamic_rnn, which also zeros out outputs and passes along
     # state.
     np.testing.assert_allclose(
-        eval_result["final_decoder_outputs"].rnn_output,
-        eval_result["final_rnn_outputs"][:, 0:max_out, :],
+        final_decoder_outputs.rnn_output, final_rnn_outputs[:, 0:max_out, :],
     )
     if use_sequence_length:
-        np.testing.assert_allclose(
-            eval_result["final_decoder_state"], eval_result["final_rnn_state"]
-        )
+        np.testing.assert_allclose(final_decoder_state, final_rnn_state)

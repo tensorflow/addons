@@ -22,6 +22,7 @@ from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import beam_search_decoder, gather_tree
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree():
     # (max_time = 3, batch_size = 2, beam_width = 3)
 
@@ -103,22 +104,27 @@ def _test_gather_tree_from_array(depth_ndims=0, merged_batch_beam=False):
     np.testing.assert_equal(expected_array.numpy(), sorted_array.numpy())
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_from_array_scalar():
     _test_gather_tree_from_array()
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_from_array_1d():
     _test_gather_tree_from_array(depth_ndims=1)
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_from_array_1d_with_merged_batch_beam():
     _test_gather_tree_from_array(depth_ndims=1, merged_batch_beam=True)
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_from_array_2d():
     _test_gather_tree_from_array(depth_ndims=2)
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_from_array_complex_trajectory():
     # Max. time = 7, batch = 1, beam = 5.
     array = np.expand_dims(
@@ -176,20 +182,16 @@ def test_gather_tree_from_array_complex_trajectory():
 def basic_test_array_shape_dynamic_checks(
     static_shape, dynamic_shape, batch_size, beam_width, is_valid=True
 ):
-    t = tf.compat.v1.placeholder_with_default(
-        np.random.randn(*static_shape).astype(np.float32), shape=dynamic_shape
-    )
-
-    batch_size = tf.constant(batch_size)
-
-    def _test_body():
+    @tf.function(input_signature=(tf.TensorSpec(dynamic_shape, dtype=tf.float32),))
+    def _test_body(t):
         beam_search_decoder._check_batch_beam(t, batch_size, beam_width)
 
+    t = tf.random.uniform(static_shape, dtype=tf.float32)
     if is_valid:
-        _test_body()
+        _test_body(t)
     else:
         with pytest.raises(tf.errors.InvalidArgumentError):
-            _test_body()
+            _test_body(t)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -278,6 +280,20 @@ def test_eos_masking():
         np.testing.assert_allclose(masked[0][1][i], np.finfo("float32").min)
         np.testing.assert_allclose(masked[1][1][i], np.finfo("float32").min)
         np.testing.assert_allclose(masked[1][2][i], np.finfo("float32").min)
+
+
+def test_missing_embedding_fn():
+    batch_size = 6
+    beam_width = 4
+    cell = tf.keras.layers.LSTMCell(5)
+    decoder = beam_search_decoder.BeamSearchDecoder(cell, beam_width=beam_width)
+    initial_state = cell.get_initial_state(
+        batch_size=batch_size * beam_width, dtype=tf.float32
+    )
+    start_tokens = tf.ones([batch_size], dtype=tf.int32)
+    end_token = tf.constant(2, dtype=tf.int32)
+    with pytest.raises(ValueError):
+        decoder(None, start_tokens, end_token, initial_state)
 
 
 def test_beam_step():
@@ -527,11 +543,12 @@ def test_large_beam_step():
 @pytest.mark.parametrize(
     "cell_class", [tf.keras.layers.LSTMCell, tf.keras.layers.GRUCell]
 )
-def test_dynamic_decode_rnn(
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.usefixtures("run_custom_and_py_ops")
+def test_beam_search_decoder(
     cell_class, time_major, has_attention, with_alignment_history
 ):
     encoder_sequence_length = np.array([3, 2, 3, 1, 1])
-    decoder_sequence_length = np.array([2, 0, 1, 2, 3])
     batch_size = 5
     decoder_max_time = 4
     input_depth = 7
@@ -541,34 +558,15 @@ def test_dynamic_decode_rnn(
     end_token = vocab_size - 1
     start_token = 0
     embedding_dim = 50
-    max_out = max(decoder_sequence_length)
+    maximum_iterations = 3
     output_layer = tf.keras.layers.Dense(vocab_size, use_bias=True, activation=None)
     beam_width = 3
-
-    batch_size_tensor = tf.constant(batch_size)
-    embedding = np.random.randn(vocab_size, embedding_dim).astype(np.float32)
+    embedding = tf.random.normal([vocab_size, embedding_dim])
     cell = cell_class(cell_depth)
-    initial_state = cell.get_initial_state(batch_size=batch_size, dtype=tf.float32)
-    coverage_penalty_weight = 0.0
+
     if has_attention:
-        coverage_penalty_weight = 0.2
-        inputs = tf.compat.v1.placeholder_with_default(
-            np.random.randn(batch_size, decoder_max_time, input_depth).astype(
-                np.float32
-            ),
-            shape=(None, None, input_depth),
-        )
-        tiled_inputs = beam_search_decoder.tile_batch(inputs, multiplier=beam_width)
-        tiled_sequence_length = beam_search_decoder.tile_batch(
-            encoder_sequence_length, multiplier=beam_width
-        )
         attention_mechanism = attention_wrapper.BahdanauAttention(
             units=attention_depth,
-            memory=tiled_inputs,
-            memory_sequence_length=tiled_sequence_length,
-        )
-        initial_state = beam_search_decoder.tile_batch(
-            initial_state, multiplier=beam_width
         )
         cell = attention_wrapper.AttentionWrapper(
             cell=cell,
@@ -576,11 +574,10 @@ def test_dynamic_decode_rnn(
             attention_layer_size=attention_depth,
             alignment_history=with_alignment_history,
         )
-    cell_state = cell.get_initial_state(
-        batch_size=batch_size_tensor * beam_width, dtype=tf.float32
-    )
-    if has_attention:
-        cell_state = cell_state.clone(cell_state=initial_state)
+        coverage_penalty_weight = 0.2
+    else:
+        coverage_penalty_weight = 0.0
+
     bsd = beam_search_decoder.BeamSearchDecoder(
         cell=cell,
         beam_width=beam_width,
@@ -588,14 +585,42 @@ def test_dynamic_decode_rnn(
         length_penalty_weight=0.0,
         coverage_penalty_weight=coverage_penalty_weight,
         output_time_major=time_major,
-        maximum_iterations=max_out,
+        maximum_iterations=maximum_iterations,
     )
 
-    final_outputs, final_state, final_sequence_lengths = bsd(
-        embedding,
-        start_tokens=tf.fill([batch_size_tensor], start_token),
-        end_token=end_token,
-        initial_state=cell_state,
+    @tf.function(
+        input_signature=(
+            tf.TensorSpec([None, None, input_depth], dtype=tf.float32),
+            tf.TensorSpec([None], dtype=tf.int32),
+        )
+    )
+    def _beam_decode_from(memory, memory_sequence_length):
+        batch_size_tensor = tf.shape(memory)[0]
+
+        if has_attention:
+            tiled_memory = beam_search_decoder.tile_batch(memory, multiplier=beam_width)
+            tiled_memory_sequence_length = beam_search_decoder.tile_batch(
+                memory_sequence_length, multiplier=beam_width
+            )
+            attention_mechanism.setup_memory(
+                tiled_memory, memory_sequence_length=tiled_memory_sequence_length
+            )
+
+        cell_state = cell.get_initial_state(
+            batch_size=batch_size_tensor * beam_width, dtype=tf.float32
+        )
+
+        return bsd(
+            embedding,
+            start_tokens=tf.fill([batch_size_tensor], start_token),
+            end_token=end_token,
+            initial_state=cell_state,
+        )
+
+    memory = tf.random.normal([batch_size, decoder_max_time, input_depth])
+    memory_sequence_length = tf.constant(encoder_sequence_length, dtype=tf.int32)
+    final_outputs, final_state, final_sequence_lengths = _beam_decode_from(
+        memory, memory_sequence_length
     )
 
     def _t(shape):
@@ -607,27 +632,10 @@ def test_dynamic_decode_rnn(
     assert isinstance(final_state, beam_search_decoder.BeamSearchDecoderState)
 
     beam_search_decoder_output = final_outputs.beam_search_decoder_output
-    expected_seq_length = 3 if tf.executing_eagerly() else None
-    assert _t((batch_size, expected_seq_length, beam_width)) == tuple(
+    max_sequence_length = np.max(final_sequence_lengths.numpy())
+    assert _t((batch_size, max_sequence_length, beam_width)) == tuple(
         beam_search_decoder_output.scores.shape.as_list()
     )
-    assert _t((batch_size, expected_seq_length, beam_width)) == tuple(
+    assert _t((batch_size, max_sequence_length, beam_width)) == tuple(
         final_outputs.predicted_ids.shape.as_list()
-    )
-
-    eval_results = {
-        "final_outputs": final_outputs,
-        "final_sequence_lengths": final_sequence_lengths.numpy(),
-    }
-
-    max_sequence_length = np.max(eval_results["final_sequence_lengths"])
-
-    # A smoke test
-    assert (
-        _t((batch_size, max_sequence_length, beam_width))
-        == eval_results["final_outputs"].beam_search_decoder_output.scores.shape
-    )
-    assert (
-        _t((batch_size, max_sequence_length, beam_width))
-        == eval_results["final_outputs"].beam_search_decoder_output.predicted_ids.shape
     )

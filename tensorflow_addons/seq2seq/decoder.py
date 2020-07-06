@@ -284,14 +284,15 @@ def dynamic_decode(
         each time step, but ensures that the final state and outputs have
         the correct values and that backprop ignores time steps that were
         marked as finished.
-      maximum_iterations: `int32` scalar, maximum allowed number of decoding
-         steps.  Default is `None` (decode until the decoder is fully done).
+      maximum_iterations: A strictly positive `int32` scalar, the maximum
+         allowed number of decoding steps. Default is `None` (decode until the
+         decoder is fully done).
       parallel_iterations: Argument passed to `tf.while_loop`.
       swap_memory: Argument passed to `tf.while_loop`.
       training: Python boolean. Indicates whether the layer should behave
           in training  mode or in inference mode. Only relevant
           when `dropout` or `recurrent_dropout` is used.
-      scope: Optional variable scope to use.
+      scope: Optional name scope to use.
       **kwargs: dict, other keyword arguments for dynamic_decode. It might
         contain arguments for `BaseDecoder` to initialize, which takes all
         tensor inputs during call().
@@ -302,19 +303,10 @@ def dynamic_decode(
     Raises:
       ValueError: if `maximum_iterations` is provided but is not a scalar.
     """
-    with tf.compat.v1.variable_scope(scope, "decoder") as varscope:
-        # Determine context types.
-        ctxt = tf.compat.v1.get_default_graph()._get_control_flow_context()
-        is_xla = control_flow_util.GetContainingXLAContext(ctxt) is not None
-        in_while_loop = control_flow_util.GetContainingWhileContext(ctxt) is not None
-        # Properly cache variable values inside the while_loop.
-        # Don't set a caching device when running in a loop, since it is
-        # possible that train steps could be wrapped in a tf.while_loop. In that
-        # scenario caching prevents forward computations in loop iterations from
-        # re-reading the updated weights.
-        if not tf.executing_eagerly() and not in_while_loop:
-            if varscope.caching_device is None:
-                varscope.set_caching_device(lambda op: op.device)
+    with tf.name_scope(scope or "decoder"):
+        is_xla = not tf.executing_eagerly() and control_flow_util.GraphOrParentsInXlaContext(
+            tf.compat.v1.get_default_graph()
+        )
 
         if maximum_iterations is not None:
             maximum_iterations = tf.convert_to_tensor(
@@ -322,6 +314,13 @@ def dynamic_decode(
             )
             if maximum_iterations.shape.ndims != 0:
                 raise ValueError("maximum_iterations must be a scalar")
+            tf.debugging.assert_greater(
+                maximum_iterations,
+                0,
+                message="maximum_iterations should be greater than 0",
+            )
+        elif is_xla:
+            raise ValueError("maximum_iterations is required for XLA compilation.")
 
         if isinstance(decoder, Decoder):
             initial_finished, initial_inputs, initial_state = decoder.initialize()
@@ -341,8 +340,6 @@ def dynamic_decode(
             decoder.output_dtype,
         )
 
-        if is_xla and maximum_iterations is None:
-            raise ValueError("maximum_iterations is required for XLA compilation.")
         if maximum_iterations is not None:
             initial_finished = tf.logical_or(initial_finished, 0 >= maximum_iterations)
         initial_sequence_lengths = tf.zeros_like(initial_finished, dtype=tf.int32)

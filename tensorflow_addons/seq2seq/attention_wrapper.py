@@ -260,7 +260,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
         else:
             if not self._memory_initialized:
                 raise ValueError(
-                    "Cannot query the attention before the setup of " "memory"
+                    "Cannot query the attention before the setup of memory"
                 )
             if len(inputs) not in (2, 3):
                 raise ValueError(
@@ -1481,7 +1481,7 @@ def _prepare_memory(
     )
     if memory_sequence_length is not None and memory_mask is not None:
         raise ValueError(
-            "memory_sequence_length and memory_mask can't be provided " "at same time."
+            "memory_sequence_length and memory_mask can't be provided at same time."
         )
     if memory_sequence_length is not None:
         memory_sequence_length = tf.convert_to_tensor(
@@ -1530,10 +1530,10 @@ def _maybe_mask_score(
         return score
     if memory_sequence_length is not None and memory_mask is not None:
         raise ValueError(
-            "memory_sequence_length and memory_mask can't be provided " "at same time."
+            "memory_sequence_length and memory_mask can't be provided at same time."
         )
     if memory_sequence_length is not None:
-        message = "All values in memory_sequence_length must greater than " "zero."
+        message = "All values in memory_sequence_length must greater than zero."
         with tf.control_dependencies(
             [
                 tf.debugging.assert_positive(  # pylint: disable=bad-continuation
@@ -1730,7 +1730,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
 
         if attention_layer_size is not None and attention_layer is not None:
             raise ValueError(
-                "Only one of attention_layer_size and attention_layer " "should be set"
+                "Only one of attention_layer_size and attention_layer should be set"
             )
 
         if attention_layer_size is not None:

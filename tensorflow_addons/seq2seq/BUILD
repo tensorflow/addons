@@ -6,6 +6,7 @@ py_library(
     name = "seq2seq",
     srcs = glob(["*.py"]),
     data = [
+        "//tensorflow_addons:options.py",
         "//tensorflow_addons/custom_ops/seq2seq:_beam_search_ops.so",
     ],
     deps = [

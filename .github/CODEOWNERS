@@ -39,6 +39,8 @@
 /tensorflow_addons/activations/tests/sparsemax_test.py @andreasmadsen
 /tensorflow_addons/activations/tanhshrink.py @fsx950223
 /tensorflow_addons/activations/tests/tanhshrink_test.py @fsx950223
+/tensorflow_addons/activations/snake.py @failure-to-thrive
+/tensorflow_addons/activations/tests/snake_test.py @failure-to-thrive
 
 /tensorflow_addons/callbacks/average_model_checkpoint.py @squadrick
 /tensorflow_addons/callbacks/time_stopping.py @shun-lin
@@ -99,6 +101,8 @@
 /tensorflow_addons/layers/tests/wrappers_test.py @seanpmorgan
 /tensorflow_addons/layers/esn.py @pedrolarben
 /tensorflow_addons/layers/tests/esn_test.py @pedrolarben
+/tensorflow_addons/layers/snake.py @failure-to-thrive
+/tensorflow_addons/layers/tests/snake_test.py @failure-to-thrive
 
 /tensorflow_addons/losses/contrastive.py @windqaq
 /tensorflow_addons/losses/tests/contrastive_test.py @windqaq
