@@ -123,7 +123,7 @@ def test_fit_simple_linear_model():
 
 
 def test_fit_simple_linear_model_mixed_precision():
-    if test_utils.is_gpu_available() and LooseVersion(tf.__version__) <= "2.2":
+    if test_utils.is_gpu_available() and LooseVersion(tf.__version__) <= "2.2.0":
         pytest.xfail("See https://github.com/tensorflow/tensorflow/issues/39775")
     np.random.seed(0x2019)
     tf.random.set_seed(0x2019)
