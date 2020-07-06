@@ -154,7 +154,11 @@ def triplet_hard_loss_np(labels, embedding, margin, dist_func, soft=False):
 @pytest.mark.parametrize("dtype", [tf.float32, tf.float16, tf.bfloat16])
 @pytest.mark.parametrize(
     "dist_func, dist_metric",
-    [(angular_distance_np, "angular"), (squared_l_2_dists, "squared-L2"), (l_2_dists, "L2")],
+    [
+        (angular_distance_np, "angular"),
+        (squared_l_2_dists, "squared-L2"),
+        (l_2_dists, "L2"),
+    ],
 )
 def test_semihard_tripled_loss_angular(dtype, dist_func, dist_metric):
     num_data = 10
@@ -193,7 +197,11 @@ def test_serialization_semihard():
 @pytest.mark.parametrize("soft", [False, True])
 @pytest.mark.parametrize(
     "dist_func, dist_metric",
-    [(angular_distance_np, "angular"), (squared_l_2_dists, "squared-L2"), (l_2_dists, "L2")],
+    [
+        (angular_distance_np, "angular"),
+        (squared_l_2_dists, "squared-L2"),
+        (l_2_dists, "L2"),
+    ],
 )
 def test_hard_tripled_loss_angular(dtype, soft, dist_func, dist_metric):
     num_data = 20
