@@ -222,7 +222,9 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
         else:
             grad = grad / (tf.sqrt(v_t) + self.epsilon)
         grad = tf.cond(
-            tf.greater(weight_decay, 0), lambda: grad + weight_decay * var, lambda: grad
+            tf.greater(weight_decay, 0),
+            lambda: grad + weight_decay * tf.gather(var, indices),
+            lambda: grad,
         )
         grad = tf.cond(
             tf.logical_and(grad_averaging, tf.not_equal(self.iterations, 0)),
