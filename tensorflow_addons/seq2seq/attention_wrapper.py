@@ -76,13 +76,14 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
     stateful. The support for that will be added in a future version.
     """
 
+    @typechecked
     def __init__(
         self,
-        memory,
-        probability_fn,
-        query_layer=None,
-        memory_layer=None,
-        memory_sequence_length=None,
+        memory: Union[TensorLike, None],
+        probability_fn: callable,
+        query_layer: Optional[tf.keras.layers.Layer] = None,
+        memory_layer: Optional[tf.keras.layers.Layer] = None,
+        memory_sequence_length: Optional[TensorLike] = None,
         **kwargs
     ):
         """Construct base AttentionMechanism class.
@@ -93,42 +94,25 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
           probability_fn: A `callable`. Converts the score and previous
             alignments to probabilities. Its signature should be:
             `probabilities = probability_fn(score, state)`.
-          query_layer:  (optional): Instance of `tf.keras.Layer`.  The layer's
+          query_layer: Optional `tf.keras.layers.Layer` instance. The layer's
             depth must match the depth of `memory_layer`.  If `query_layer` is
             not provided, the shape of `query` must match that of
             `memory_layer`.
-          memory_layer: (optional): Instance of `tf.keras.Layer`. The layer's
+          memory_layer: Optional `tf.keras.layers.Layer` instance. The layer's
             depth must match the depth of `query_layer`.
             If `memory_layer` is not provided, the shape of `memory` must match
             that of `query_layer`.
-          memory_sequence_length (optional): Sequence lengths for the batch
+          memory_sequence_length: (optional) Sequence lengths for the batch
             entries in memory. If provided, the memory tensor rows are masked
             with zeros for values past the respective sequence lengths.
           **kwargs: Dictionary that contains other common arguments for layer
             creation.
         """
-        if query_layer is not None and not isinstance(
-            query_layer, tf.keras.layers.Layer
-        ):
-            raise TypeError(
-                "query_layer is not a Layer: %s" % type(query_layer).__name__
-            )
-        if memory_layer is not None and not isinstance(
-            memory_layer, tf.keras.layers.Layer
-        ):
-            raise TypeError(
-                "memory_layer is not a Layer: %s" % type(memory_layer).__name__
-            )
         self.query_layer = query_layer
         self.memory_layer = memory_layer
         if self.memory_layer is not None and "dtype" not in kwargs:
             kwargs["dtype"] = self.memory_layer.dtype
         super().__init__(**kwargs)
-        if not callable(probability_fn):
-            raise TypeError(
-                "probability_fn must be callable, saw type: %s"
-                % type(probability_fn).__name__
-            )
         self.default_probability_fn = probability_fn
         self.probability_fn = probability_fn
 
