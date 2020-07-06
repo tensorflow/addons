@@ -10,9 +10,9 @@ must:
  * Inherit from `tf.keras.metrics.Metric`.
  * Register as a keras global object so it can be serialized properly: `@tf.keras.utils.register_keras_serializable(package='Addons')`
 
-#### Sample Template
+#### Metric Requirements
 
-Any PR submitted for adding a new metric to the TF-addons ecosystem must ensure that it covers all the major points listed here.
+Any PR which adds a new metric must ensure that the following three cases are well tested and supported:
 
 #### Case I: Evaluate results for a given set of `y_true` and `y_pred` tensors
 If you are given a set of `predictions` and the corresponding `ground-truth`, then the end-user should be able to create an instance of the metric and call the instance with the given set to evaluate the quality of predictions. For example, if a PR implements `my_metric`, and you have two tensors `y_pred` and `y_true`, then the end-user should be able to call the metric on this set in the following way:
