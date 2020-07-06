@@ -68,27 +68,23 @@ def run_sparse_sample(iterations, expected, optimizer):
     var_0 = tf.Variable([1.0, 2.0])
     var_1 = tf.Variable([3.0, 4.0])
 
-    grad_0 = tf.IndexedSlices(
-        tf.constant([0.1, 0.2]), tf.constant([0, 1]), tf.constant([2])
-    )
-    grad_1 = tf.IndexedSlices(
-        tf.constant([0.3, 0.4]), tf.constant([0, 1]), tf.constant([2])
-    )
+    grad_0 = tf.IndexedSlices(tf.constant([0.1]), tf.constant([0]), tf.constant([2]))
+    grad_1 = tf.IndexedSlices(tf.constant([0.4]), tf.constant([1]), tf.constant([2]))
 
     grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
     for _ in range(iterations):
         optimizer.apply_gradients(grads_and_vars)
 
-    np.testing.assert_allclose(var_0.read_value(), expected[0], atol=2e-4)
-    np.testing.assert_allclose(var_1.read_value(), expected[1], atol=2e-4)
+    np.testing.assert_allclose(var_0.read_value(), expected[0])
+    np.testing.assert_allclose(var_1.read_value(), expected[1])
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_sparse_sample():
     run_sparse_sample(
-        iterations=1,
-        expected=[[0.9552786425, 1.9105572849], [2.9400000012, 3.9200000016]],
+        iterations=2,
+        expected=[[0.71, 2.0], [3.0, 3.71]],
         optimizer=NovoGrad(lr=0.1, epsilon=1e-8),
     )
 
@@ -96,8 +92,8 @@ def test_sparse_sample():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_sparse_sample_with_weight_decay():
     run_sparse_sample(
-        iterations=1,
-        expected=[[0.945278642, 1.8905572849], [2.9100000012, 3.8800000016]],
+        iterations=2,
+        expected=[[0.6821, 2.0], [3.0, 3.5954]],
         optimizer=NovoGrad(lr=0.1, weight_decay=0.1, epsilon=1e-8),
     )
 
@@ -106,7 +102,7 @@ def test_sparse_sample_with_weight_decay():
 def test_sparse_sample_with_grad_averaging():
     run_sparse_sample(
         iterations=2,
-        expected=[[0.9105572849, 1.8211145698], [2.8800000024, 3.8400000032]],
+        expected=[[0.8, 2.0], [3.0, 3.8]],
         optimizer=NovoGrad(lr=0.1, grad_averaging=True, epsilon=1e-8),
     )
 
@@ -146,31 +142,3 @@ def test_serialization():
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)
     assert new_optimizer.get_config() == optimizer.get_config()
-
-
-def test_sparse():
-    np.random.seed(0x2020)
-    tf.random.set_seed(0x2020)
-
-    optimizer = NovoGrad()
-
-    val_0 = np.random.random((2,))
-    val_1 = np.random.random((2,))
-
-    var_0 = tf.Variable(val_0, dtype=tf.dtypes.float32)
-    var_1 = tf.Variable(val_1, dtype=tf.dtypes.float32)
-
-    grad_0 = tf.IndexedSlices(
-        tf.constant([np.random.standard_normal()]), tf.constant([0]), tf.constant([2]),
-    )
-    grad_1 = tf.IndexedSlices(
-        tf.constant([np.random.standard_normal()]), tf.constant([1]), tf.constant([2]),
-    )
-
-    grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
-
-    for _ in range(10):
-        optimizer.apply_gradients(grads_and_vars)
-
-    np.testing.assert_allclose(var_0.numpy(), [0.854698, 0.5792915])
-    np.testing.assert_allclose(var_1.numpy(), [0.4628156, 0.22476907])
