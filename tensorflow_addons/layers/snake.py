@@ -24,16 +24,16 @@ from tensorflow_addons.utils import types
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class Snake(tf.keras.layers.Layer):
-    """Snake layer to learn periodic functions with the 'frequency' param trainable.
+    """Snake layer to learn periodic functions with the trainable `frequency` scalar.
 
     https://arxiv.org/abs/2006.08195
+
+    Arguments:
+        frequency_initializer: Initializer for the `frequency` scalar.
     """
 
     @typechecked
     def __init__(self, frequency_initializer: types.Initializer = "ones", **kwargs):
-        """
-        frequency_initializer: Initializer for the 'frequency' param.
-        """
         super().__init__(**kwargs)
         self.frequency_initializer = tf.keras.initializers.get(frequency_initializer)
         self.frequency = self.add_weight(
