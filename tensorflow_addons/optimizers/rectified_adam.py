@@ -75,7 +75,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         beta_1: FloatTensorLike = 0.9,
         beta_2: FloatTensorLike = 0.999,
         epsilon: FloatTensorLike = 1e-7,
-        weight_decay: FloatTensorLike = 0.0,
+        weight_decay: Union[FloatTensorLike, Callable] = 0.0,
         amsgrad: bool = False,
         sma_threshold: FloatTensorLike = 5.0,
         total_steps: int = 0,
@@ -87,15 +87,17 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         r"""Construct a new RAdam optimizer.
 
         Args:
-            learning_rate: A `Tensor` or a floating point value. or a schedule
-                that is a `tf.keras.optimizers.schedules.LearningRateSchedule`
+            learning_rate: A `Tensor` or a floating point value, or a schedule
+                that is a `tf.keras.optimizers.schedules.LearningRateSchedule`.
                 The learning rate.
             beta_1: A float value or a constant float tensor.
                 The exponential decay rate for the 1st moment estimates.
             beta_2: A float value or a constant float tensor.
                 The exponential decay rate for the 2nd moment estimates.
             epsilon: A small constant for numerical stability.
-            weight_decay: A floating point value. Weight decay for each param.
+            weight_decay: A `Tensor` or a floating point value, or a schedule
+                that is a `tf.keras.optimizers.schedules.LearningRateSchedule`.
+                Weight decay for each param.
             amsgrad: boolean. Whether to apply AMSGrad variant of this
                 algorithm from the paper "On the Convergence of Adam and
                 beyond".
@@ -127,7 +129,6 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         self._set_hyper("min_lr", min_lr)
         self.epsilon = epsilon or tf.keras.backend.epsilon()
         self.amsgrad = amsgrad
-        self._initial_weight_decay = weight_decay
         self._initial_total_steps = total_steps
 
     def _create_slots(self, var_list):
@@ -146,9 +147,18 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
             weights = weights[: len(params)]
         super().set_weights(weights)
 
+
+    def _decayed_wd(self, var_dtype):
+      wd_t = self._get_hyper("weight_decay", var_dtype)
+      if isinstance(wd_t, tf.keras.optimizers.schedules.LearningRateSchedule):
+        wd_t = tf.cast(wd_t(self.iterations), var_dtype)
+      return wd_t
+
+
     def _resource_apply_dense(self, grad, var):
         var_dtype = var.dtype.base_dtype
         lr_t = self._decayed_lr(var_dtype)
+        wd_t = self._decayed_wd(var_dtype)
         m = self.get_slot(var, "m")
         v = self.get_slot(var, "v")
         beta_1_t = self._get_hyper("beta_1", var_dtype)
@@ -204,8 +214,8 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
             sma_t >= sma_threshold, r_t * m_corr_t / (v_corr_t + epsilon_t), m_corr_t
         )
 
-        if self._initial_weight_decay > 0.0:
-            var_t += self._get_hyper("weight_decay", var_dtype) * var
+        if wd_t > 0.0:
+            var_t += wd_t * var
 
         var_update = var.assign_sub(lr_t * var_t, use_locking=self._use_locking)
 
@@ -217,6 +227,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
     def _resource_apply_sparse(self, grad, var, indices):
         var_dtype = var.dtype.base_dtype
         lr_t = self._decayed_lr(var_dtype)
+        wd_t = self._decayed_wd(var_dtype)
         beta_1_t = self._get_hyper("beta_1", var_dtype)
         beta_2_t = self._get_hyper("beta_2", var_dtype)
         epsilon_t = tf.convert_to_tensor(self.epsilon, var_dtype)
@@ -274,8 +285,8 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
             sma_t >= sma_threshold, r_t * m_corr_t / (v_corr_t + epsilon_t), m_corr_t
         )
 
-        if self._initial_weight_decay > 0.0:
-            var_t += self._get_hyper("weight_decay", var_dtype) * var
+        if wd_t > 0.0:
+            var_t += wd_t * var
 
         with tf.control_dependencies([var_t]):
             var_update = self._resource_scatter_add(
