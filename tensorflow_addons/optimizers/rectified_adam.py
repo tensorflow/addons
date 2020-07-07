@@ -16,7 +16,7 @@
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
-from typing import Union, Callable
+from typing import Union, Callable, Dict
 from typeguard import typechecked
 
 
@@ -71,11 +71,11 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
     @typechecked
     def __init__(
         self,
-        learning_rate: Union[FloatTensorLike, Callable] = 0.001,
+        learning_rate: Union[FloatTensorLike, Callable, Dict] = 0.001,
         beta_1: FloatTensorLike = 0.9,
         beta_2: FloatTensorLike = 0.999,
         epsilon: FloatTensorLike = 1e-7,
-        weight_decay: Union[FloatTensorLike, Callable] = 0.0,
+        weight_decay: Union[FloatTensorLike, Callable, Dict] = 0.0,
         amsgrad: bool = False,
         sma_threshold: FloatTensorLike = 5.0,
         total_steps: int = 0,
@@ -118,6 +118,13 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
                 compatibility, recommended to use `learning_rate` instead.
         """
         super().__init__(name, **kwargs)
+
+        if isinstance(learning_rate, Dict):
+            learning_rate = tf.keras.optimizers.schedules.deserialize(learning_rate)
+
+        if isinstance(weight_decay, Dict):
+            weight_decay = tf.keras.optimizers.schedules.deserialize(weight_decay)
+
         self._set_hyper("learning_rate", kwargs.get("lr", learning_rate))
         self._set_hyper("beta_1", beta_1)
         self._set_hyper("beta_2", beta_2)
