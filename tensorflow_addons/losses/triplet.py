@@ -83,8 +83,8 @@ def triplet_semihard_loss(
         be l2 normalized.
       margin: Float, margin term in the loss definition.
       distance_metric: str or function, determines distance metric:
-                       "L1" for l1-norm distance
                        "L2" for l2-norm distance
+                       "squared-L2" for squared l2-norm distance
                        "angular" for cosine similarity
                         A custom function returning a 2d adjacency
                           matrix of a chosen distance metric can
@@ -118,12 +118,12 @@ def triplet_semihard_loss(
 
     # Build pairwise squared distance matrix
 
-    if distance_metric == "L1":
+    if distance_metric == "L2":
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=False
         )
 
-    elif distance_metric == "L2":
+    elif distance_metric == "squared-L2":
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=True
         )
@@ -217,8 +217,8 @@ def triplet_hard_loss(
       margin: Float, margin term in the loss definition.
       soft: Boolean, if set, use the soft margin version.
       distance_metric: str or function, determines distance metric:
-                       "L1" for l1-norm distance
                        "L2" for l2-norm distance
+                       "squared-L2" for squared l2-norm distance
                        "angular" for cosine similarity
                         A custom function returning a 2d adjacency
                           matrix of a chosen distance metric can
@@ -249,12 +249,12 @@ def triplet_hard_loss(
     labels = tf.reshape(labels, [lshape[0], 1])
 
     # Build pairwise squared distance matrix.
-    if distance_metric == "L1":
+    if distance_metric == "L2":
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=False
         )
 
-    elif distance_metric == "L2":
+    elif distance_metric == "squared-L2":
         pdist_matrix = metric_learning.pairwise_distance(
             precise_embeddings, squared=True
         )
