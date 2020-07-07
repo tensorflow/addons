@@ -369,13 +369,13 @@ def dynamic_decode(
                     tf.convert_to_tensor(batch_size, name="batch_size")
                 )
                 if enable_tflite_convertible:
-                    # Since we can't use 2-D TensoArray and assume `batch_size` = 1,
+                    # Since we can't use 2-D TensorArray and assume `batch_size` = 1,
                     # we use `from_shape` dimension only.
                     return from_shape
                 return tf.TensorShape([batch_size]).concatenate(from_shape)
 
         dynamic_size = maximum_iterations is None or not is_xla
-        # The dynamic shape `TensoArray` is not allowed in TFLite yet.
+        # The dynamic shape `TensorArray` is not allowed in TFLite yet.
         dynamic_size = dynamic_size and (not enable_tflite_convertible)
 
         def _create_ta(s, d):
