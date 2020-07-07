@@ -147,13 +147,11 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
             weights = weights[: len(params)]
         super().set_weights(weights)
 
-
     def _decayed_wd(self, var_dtype):
-      wd_t = self._get_hyper("weight_decay", var_dtype)
-      if isinstance(wd_t, tf.keras.optimizers.schedules.LearningRateSchedule):
-        wd_t = tf.cast(wd_t(self.iterations), var_dtype)
-      return wd_t
-
+        wd_t = self._get_hyper("weight_decay", var_dtype)
+        if isinstance(wd_t, tf.keras.optimizers.schedules.LearningRateSchedule):
+            wd_t = tf.cast(wd_t(self.iterations), var_dtype)
+        return wd_t
 
     def _resource_apply_dense(self, grad, var):
         var_dtype = var.dtype.base_dtype

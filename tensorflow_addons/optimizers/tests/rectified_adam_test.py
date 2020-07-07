@@ -195,19 +195,17 @@ def test_scheduler_serialization():
     lr_scheduler = tf.keras.optimizers.schedules.ExponentialDecay(1e-3, 50, 0.5)
     wd_scheduler = tf.keras.optimizers.schedules.InverseTimeDecay(2e-3, 25, 0.25)
 
-    optimizer = RectifiedAdam(
-        learning_rate=lr_scheduler, weight_decay=wd_scheduler
-    )
+    optimizer = RectifiedAdam(learning_rate=lr_scheduler, weight_decay=wd_scheduler)
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)
     assert new_optimizer.get_config() == optimizer.get_config()
 
-    assert new_optimizer.get_config()['learning_rate'] == {
-      'class_name': 'ExponentialDecay',
-      'config': lr_scheduler.get_config(),
+    assert new_optimizer.get_config()["learning_rate"] == {
+        "class_name": "ExponentialDecay",
+        "config": lr_scheduler.get_config(),
     }
 
-    assert new_optimizer.get_config()['weight_decay'] == {
-      'class_name': 'InverseTimeDecay',
-      'config': wd_scheduler.get_config(),
+    assert new_optimizer.get_config()["weight_decay"] == {
+        "class_name": "InverseTimeDecay",
+        "config": wd_scheduler.get_config(),
     }
