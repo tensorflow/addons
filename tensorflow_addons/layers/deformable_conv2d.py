@@ -19,6 +19,7 @@ from typeguard import typechecked
 from tensorflow_addons.utils import types
 from tensorflow_addons.utils.resource_loader import LazySO
 from tensorflow.python.keras.utils import conv_utils
+from typing import Union
 
 _deformable_conv2d_ops_so = LazySO("custom_ops/layers/_deformable_conv2d_ops.so")
 
@@ -139,23 +140,24 @@ class DeformableConv2D(tf.keras.layers.Layer):
     def __init__(
         self,
         filters: int,
-        kernel_size: tuple = (3, 3),
+        kernel_size: Union[tuple, list] = (3, 3),
         num_groups: int = 1,
         deformable_groups: int = 1,
-        strides: tuple = (1, 1),
+        strides: Union[tuple, list] = (1, 1),
         im2col: int = 1,
         use_bias: bool = False,
         padding: str = "valid",
         data_format: str = "channels_last",
-        dilations: tuple = (1, 1),
+        dilations: Union[tuple, list] = (1, 1),
         kernel_initializer: types.Initializer = None,
         bias_initializer: types.Initializer = None,
         kernel_regularizer: types.Regularizer = None,
         bias_regularizer: types.Regularizer = None,
         kernel_constraint: types.Constraint = None,
         bias_constraint: types.Constraint = None,
+        **kwargs
     ):
-        super(DeformableConv2D, self).__init__()
+        super(DeformableConv2D, self).__init__(**kwargs)
         self.filters = filters
         self.kernel_size = kernel_size
         self.num_groups = num_groups
