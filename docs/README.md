@@ -2,7 +2,7 @@
 
 This directory contains the source for [tensorflow.org/addons](https://tensorflow.org/addons).
 
-It comprises of two main components:
+It comprises two main components:
 
 ## 1. Narrative Docs
 
