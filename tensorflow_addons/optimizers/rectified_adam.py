@@ -97,7 +97,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
             epsilon: A small constant for numerical stability.
             weight_decay: A `Tensor` or a floating point value, or a schedule
                 that is a `tf.keras.optimizers.schedules.LearningRateSchedule`.
-                Weight decay for each param.
+                Weight decay for each parameter.
             amsgrad: boolean. Whether to apply AMSGrad variant of this
                 algorithm from the paper "On the Convergence of Adam and
                 beyond".
@@ -136,6 +136,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         self._set_hyper("min_lr", min_lr)
         self.epsilon = epsilon or tf.keras.backend.epsilon()
         self.amsgrad = amsgrad
+        self._has_weight_decay = weight_decay != 0.0
         self._initial_total_steps = total_steps
 
     def _create_slots(self, var_list):
@@ -219,7 +220,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
             sma_t >= sma_threshold, r_t * m_corr_t / (v_corr_t + epsilon_t), m_corr_t
         )
 
-        if wd_t > 0.0:
+        if self._has_weight_decay:
             var_t += wd_t * var
 
         var_update = var.assign_sub(lr_t * var_t, use_locking=self._use_locking)
@@ -290,7 +291,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
             sma_t >= sma_threshold, r_t * m_corr_t / (v_corr_t + epsilon_t), m_corr_t
         )
 
-        if wd_t > 0.0:
+        if self._has_weight_decay:
             var_t += wd_t * var
 
         with tf.control_dependencies([var_t]):
