@@ -15,7 +15,7 @@ on:
       - r*
 
 env:
-  BAZEL_VERSION: '1.1.0'
+  BAZEL_VERSION: '3.3.0'
   MIN_PY_VERSION: '3.5'
   MAX_PY_VERSION: '3.8'
 
