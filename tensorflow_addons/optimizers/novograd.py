@@ -20,9 +20,6 @@ from tensorflow_addons.utils.types import FloatTensorLike
 from typing import Union, Callable
 from typeguard import typechecked
 
-# TODO: Find public API alternatives to these
-from tensorflow.python.training import training_ops
-
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class NovoGrad(tf.keras.optimizers.Optimizer):
@@ -186,12 +183,12 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
             lambda: grad,
         )
         m = self.get_slot(var, "m")
-        return training_ops.resource_apply_keras_momentum(
-            var.handle,
-            m.handle,
-            coefficients["lr_t"],
-            grad,
-            coefficients["beta_1_t"],
+        return tf.raw_ops.ResourceApplyKerasMomentum(
+            var=var.handle,
+            accum=m.handle,
+            lr=coefficients["lr_t"],
+            grad=grad,
+            momentum=coefficients["beta_1_t"],
             use_locking=self._use_locking,
             use_nesterov=False,
         )
@@ -232,13 +229,13 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
             lambda: grad,
         )
         m = self.get_slot(var, "m")
-        return training_ops.resource_sparse_apply_keras_momentum(
-            var.handle,
-            m.handle,
-            coefficients["lr_t"],
-            grad,
-            indices,
-            coefficients["beta_1_t"],
+        return tf.raw_ops.ResourceSparseApplyKerasMomentum(
+            var=var.handle,
+            accum=m.handle,
+            lr=coefficients["lr_t"],
+            grad=grad,
+            indices=indices,
+            momentum=coefficients["beta_1_t"],
             use_locking=self._use_locking,
             use_nesterov=False,
         )
