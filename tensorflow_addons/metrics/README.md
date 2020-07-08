@@ -12,7 +12,13 @@ must:
 
 #### Metric Requirements
 
-Any PR which adds a new metric must ensure that the following three cases are well tested and supported:
+Any PR which adds a new metric must ensure that:
+
+1. It inherits from the `tf.keras.metrics.Metric` class.
+2. Overrides the `update_state()`, `result()`, and `reset_states()` methods.
+3. Implements a `get_config()` method.
+
+The implementation must also ensure that the following cases are well tested and supported:
 
 #### Case I: Evaluate results for a given set of `y_true` and `y_pred` tensors
 If you are given a set of `predictions` and the corresponding `ground-truth`, then the end-user should be able to create an instance of the metric and call the instance with the given set to evaluate the quality of predictions. For example, if a PR implements `my_metric`, and you have two tensors `y_pred` and `y_true`, then the end-user should be able to call the metric on this set in the following way:
@@ -23,7 +29,8 @@ y_pred = [...]   # tensor representing the predicted values
 y_true = [...]   # tensor representing the corresponding ground-truth
 
 m = my_metric(..)
-print("Results: ", m(y_true, y_pred).numpy())
+m.update_state(y_true, y_pred)
+print("Results: ", m.result().numpy())
 ```
 
 **Note**: The tensor can be a single example or it can represent a batch.
@@ -44,14 +51,16 @@ y_pred = [[0.7], [0.5], [0.3]]
 y_true = [[0.], [1], [0]]
 
 m = my_metric(..)
-print("Results: ", m(y_true, y_pred).numpy())
+m.update_state(y_true, y_pred)
+print("Results: ", m.result().numpy())
 
 # with OHE
 y_pred = [[0.7, 0.3], [0.6, 0.4], [0.2, 0.8]]   
 y_true = [[1, 0], [0, 1], [1, 0]]
 
 m = my_metric(..)
-print("Results: ", m(y_true, y_pred).numpy())
+m.update_state(y_true, y_pred)
+print("Results: ", m.result().numpy())
 ```
 
 2. **Multiclass-classification**: should work with `One-hot encoded` or `sparse` labels
@@ -63,14 +72,16 @@ y_pred = [[0.7, 0.2, 0.1], [0.5, 0.2, 0.3], [0.2, 0.3, 0.5]]
 y_true = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
 
 m = my_metric(..)
-print("Results: ", m(y_true, y_pred).numpy())
+m.update_state(y_true, y_pred)
+print("Results: ", m.result().numpy())
 
 # with sparse labels
 y_pred = [[0.7, 0.2, 0.1], [0.5, 0.2, 0.3], [0.2, 0.3, 0.5]]   
 y_true = [[0], [1], [2]]
 
 m = my_metric(..)
-print("Results: ", m(y_true, y_pred).numpy())
+m.update_state(y_true, y_pred)
+print("Results: ", m.result().numpy())
 ```
 3. **Regression**: (need to discuss any special case if applicable apart from general scenario)
 
@@ -85,7 +96,7 @@ The metric should work with the `Model` and `Sequential` API in Keras. For examp
 model = Model(..)
 
 m = my_metric(...)
-model.compile(..., mettic=[m])
+model.compile(..., metric=[m])
 model.fit(...)
 ```
 For more examples on `metric` in Keras, please check out this [guide](https://keras.io/api/metrics/)
