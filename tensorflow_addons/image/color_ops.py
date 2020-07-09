@@ -24,10 +24,9 @@ from tensorflow_addons.image.utils import to_4D_image, from_4D_image
 from tensorflow_addons.image.compose_ops import blend
 
 from typing import Optional
-from functools import partial
 
 
-def equalize_image(image: TensorLike, data_format: str = "channels_last") -> tf.Tensor:
+def equalize_image(image: TensorLike) -> tf.Tensor:
     """Implements Equalize function from PIL using TF ops."""
 
     @tf.function
@@ -35,14 +34,7 @@ def equalize_image(image: TensorLike, data_format: str = "channels_last") -> tf.
         """Scale the data in the channel to implement equalize."""
         image_dtype = image.dtype
 
-        if data_format == "channels_last":
-            image = tf.cast(image[:, :, channel], tf.int32)
-        elif data_format == "channels_first":
-            image = tf.cast(image[channel], tf.int32)
-        else:
-            raise ValueError(
-                "data_format can either be channels_last or channels_first"
-            )
+        image = tf.cast(image[:, :, channel], tf.int32)
         # Compute the histogram of the image channel.
         histo = tf.histogram_fixed_width(image, [0, 255], nbins=256)
 
@@ -71,26 +63,20 @@ def equalize_image(image: TensorLike, data_format: str = "channels_last") -> tf.
 
         return tf.cast(result, image_dtype)
 
-    idx = 2 if data_format == "channels_last" else 0
-    image = tf.stack([scale_channel(image, c) for c in range(image.shape[idx])], idx)
+    image = tf.stack([scale_channel(image, c) for c in range(image.shape[2])], 2)
 
     return image
 
 
-def equalize(
-    image: TensorLike, data_format: str = "channels_last", name: Optional[str] = None
-) -> tf.Tensor:
+def equalize(image: TensorLike, name: Optional[str] = None) -> tf.Tensor:
     """Equalize image(s)
 
     Args:
       images: A tensor of shape
           (num_images, num_rows, num_columns, num_channels) (NHWC), or
-          (num_images, num_channels, num_rows, num_columns) (NCHW), or
           (num_rows, num_columns, num_channels) (HWC), or
-          (num_channels, num_rows, num_columns) (CHW), or
           (num_rows, num_columns) (HW). The rank must be statically known (the
           shape is not `TensorShape(None)`).
-      data_format: Either 'channels_first' or 'channels_last'
       name: The name of the op.
     Returns:
       Image(s) with the same type and shape as `images`, equalized.
@@ -98,8 +84,7 @@ def equalize(
     with tf.name_scope(name or "equalize"):
         image_dims = tf.rank(image)
         image = to_4D_image(image)
-        fn = partial(equalize_image, data_format=data_format)
-        image = tf.map_fn(fn, image)
+        image = tf.map_fn(equalize_image, image)
         return from_4D_image(image, image_dims)
 
 
