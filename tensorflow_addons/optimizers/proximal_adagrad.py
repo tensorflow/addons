@@ -14,12 +14,12 @@
 # ==============================================================================
 """Proximal Adagrad optimizer."""
 
+from typing import Union, Callable
+
 import tensorflow as tf
+from typeguard import typechecked
 
 from tensorflow_addons.utils.types import FloatTensorLike
-
-from typing import Union, Callable
-from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -36,8 +36,8 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
         self,
         learning_rate: Union[FloatTensorLike, Callable] = 0.001,
         initial_accumulator_value: float = 0.1,
-        l1_regularization_strength: float = 0.0,
-        l2_regularization_strength: float = 0.0,
+        l1: float = 0.0,
+        l2: float = 0.0,
         name: str = "ProximalAdagrad",
         **kwargs
     ):
@@ -49,10 +49,10 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
                 The learning rate.
             initial_accumulator_value: A floating point value.
                 Starting value for the accumulators, must be positive.
-            l1_regularization_strength: A floating point value.
+            l1: A floating point value.
                 The l1 regularization term, must be greater than or
                 equal to zero.
-            l2_regularization_strength: A floating point value.
+            l2: A floating point value.
                 The l2 regularization term, must be greater than or
                 equal to zero.
             name: Optional name for the operations created when applying
@@ -64,20 +64,19 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
                 decay of learning rate. `lr` is included for backward
                 compatibility, recommended to use `learning_rate` instead.
         Raises:
-            ValueError: If the `initial_accumulator_value`,
-                `l1_regularization_strength` or `l2_regularization_strength`
+            ValueError: If the `initial_accumulator_value`, `l1` or `l2`
                 is invalid.
         """
         if initial_accumulator_value < 0.0:
             raise ValueError("`initial_accumulator_value` must be non-negative.")
-        if l1_regularization_strength < 0.0:
-            raise ValueError("`l1_regularization_strength` must be non-negative.")
-        if l2_regularization_strength < 0.0:
-            raise ValueError("`l2_regularization_strength` must be non-negative.")
+        if l1 < 0.0:
+            raise ValueError("`l1` must be non-negative.")
+        if l2 < 0.0:
+            raise ValueError("`l2` must be non-negative.")
         super().__init__(name, **kwargs)
         self._set_hyper("learning_rate", kwargs.get("lr", learning_rate))
-        self.l1_regularization_strength = l1_regularization_strength
-        self.l2_regularization_strength = l2_regularization_strength
+        self.l1 = l1
+        self.l2 = l2
         self._initial_accumulator_value = initial_accumulator_value
 
     def _create_slots(self, var_list):
@@ -106,8 +105,8 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
         super()._prepare_local(var_device, var_dtype, apply_state)
         apply_state[(var_device, var_dtype)].update(
             {
-                "l1": tf.convert_to_tensor(self.l1_regularization_strength, var_dtype),
-                "l2": tf.convert_to_tensor(self.l2_regularization_strength, var_dtype),
+                "l1": tf.convert_to_tensor(self.l1, var_dtype),
+                "l2": tf.convert_to_tensor(self.l2, var_dtype),
             }
         )
 
@@ -135,8 +134,8 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
             {
                 "learning_rate": self._serialize_hyperparameter("learning_rate"),
                 "initial_accumulator_value": self._initial_accumulator_value,
-                "l1_regularization_strength": self.l1_regularization_strength,
-                "l2_regularization_strength": self.l2_regularization_strength,
+                "l1": self.l1,
+                "l2": self.l2,
             }
         )
         return config
