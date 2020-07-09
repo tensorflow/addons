@@ -14,7 +14,7 @@
 # ==============================================================================
 """Proximal Adagrad optimizer."""
 
-from typing import Union, Callable
+from typing import Callable, Union
 
 import tensorflow as tf
 from typeguard import typechecked
