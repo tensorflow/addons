@@ -11,7 +11,7 @@ on:
       - r*
 
 env:
-  BAZEL_VERSION: 1.1.0
+  BAZEL_VERSION: 3.1.0
 
 jobs:
   flake8-test:
