@@ -401,7 +401,9 @@ def _test_with_attention(
     policy = tf.keras.mixed_precision.experimental.global_policy()
     sampler = sampler_py.TrainingSampler()
     my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
-    initial_state = cell.get_initial_state(batch_size=batch_size, dtype=policy.compute_dtype)
+    initial_state = cell.get_initial_state(
+        batch_size=batch_size, dtype=policy.compute_dtype
+    )
     final_outputs, final_state, _ = my_decoder(
         decoder_inputs,
         initial_state=initial_state,
