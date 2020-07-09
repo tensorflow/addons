@@ -15,7 +15,7 @@ on:
       - r*
 
 env:
-  BAZEL_VERSION: '1.1.0'
+  BAZEL_VERSION: '3.1.0'
   MIN_PY_VERSION: '3.5'
   MAX_PY_VERSION: '3.8'
 
@@ -41,7 +41,7 @@ jobs:
       matrix:
         os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
         py-version: ['3.5', '3.6', '3.7', '3.8']
-        tf-version: ['2.2.0', '2.3.0rc0']
+        tf-version: ['2.2.0', '2.3.0rc1']
       fail-fast: false
     steps:
       - uses: actions/github-script@0.3.0
