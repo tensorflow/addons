@@ -56,9 +56,7 @@ def test_with_l1_regularization():
     run_sample(
         iterations=10,
         expected=[[-6.663634, -9.190331], [2.9593036, 1.0292315]],
-        optimizer=ProximalAdagrad(
-            lr=3.0, initial_accumulator_value=0.1, l1=0.001
-        ),
+        optimizer=ProximalAdagrad(lr=3.0, initial_accumulator_value=0.1, l1=0.001),
     )
 
 
@@ -67,10 +65,7 @@ def test_with_l1_l2_regularization():
         iterations=10,
         expected=[[-0.0495, -0.0995], [-0.0045, -0.0095]],
         optimizer=ProximalAdagrad(
-            lr=3.0,
-            initial_accumulator_value=0.1,
-            l1=0.001,
-            l2=2.0,
+            lr=3.0, initial_accumulator_value=0.1, l1=0.001, l2=2.0,
         ),
     )
 
@@ -89,9 +84,7 @@ def test_sparse_with_l1_regularization():
     run_sample(
         iterations=10,
         expected=[[-6.663634, 2.0], [4.0, 1.0292315]],
-        optimizer=ProximalAdagrad(
-            lr=3.0, initial_accumulator_value=0.1, l1=0.001
-        ),
+        optimizer=ProximalAdagrad(lr=3.0, initial_accumulator_value=0.1, l1=0.001),
         sparse=True,
         rtol=5e-7,
     )
@@ -102,22 +95,14 @@ def test_sparse_with_l1_l2_regularization():
         iterations=10,
         expected=[[-0.0495, 2.0], [4.0, -0.0095]],
         optimizer=ProximalAdagrad(
-            lr=3.0,
-            initial_accumulator_value=0.1,
-            l1=0.001,
-            l2=2.0,
+            lr=3.0, initial_accumulator_value=0.1, l1=0.001, l2=2.0,
         ),
         sparse=True,
     )
 
 
 def test_serialization():
-    optimizer = ProximalAdagrad(
-        lr=1e-4,
-        initial_accumulator_value=0.1,
-        l1=0.1,
-        l2=0.1,
-    )
+    optimizer = ProximalAdagrad(lr=1e-4, initial_accumulator_value=0.1, l1=0.1, l2=0.1,)
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)
     assert new_optimizer.get_config() == optimizer.get_config()
