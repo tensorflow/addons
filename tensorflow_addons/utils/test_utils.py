@@ -100,6 +100,13 @@ def run_custom_and_py_ops(request):
     request.addfinalizer(_restore_py_ops_value)
 
 
+@pytest.fixture(scope="function", params=["float32", "mixed_float16"])
+def run_with_mixed_precision_policy(request):
+    tf.keras.mixed_precision.experimental.set_policy(request.param)
+    yield
+    tf.keras.mixed_precision.experimental.set_policy("float32")
+
+
 @pytest.fixture(scope="function", params=["channels_first", "channels_last"])
 def data_format(request):
     return request.param
