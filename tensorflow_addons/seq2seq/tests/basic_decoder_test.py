@@ -105,7 +105,7 @@ def test_step_with_training_helper_masked_input(use_mask):
     max_time = 8
     sequence_length = [max_time] * batch_size if use_mask is None else [3, 4, 3, 1, 0]
     sequence_length = np.array(sequence_length, dtype=np.int32)
-    mask = [[True] * l + [False] * (max_time - l) for l in sequence_length]
+    mask = [[True] * sl + [False] * (max_time - sl) for sl in sequence_length]
     input_depth = 7
     cell_depth = 10
     output_layer_depth = 3

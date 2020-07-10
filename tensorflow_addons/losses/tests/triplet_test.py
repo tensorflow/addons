@@ -102,8 +102,8 @@ def triplet_semihard_loss_np(labels, embedding, margin, dist_func):
                 neg_distances.sort()
                 chosen_neg_distance = neg_distances[0]
 
-                for l in range(len(neg_distances)):
-                    chosen_neg_distance = neg_distances[l]
+                for m in range(len(neg_distances)):
+                    chosen_neg_distance = neg_distances[m]
                     if chosen_neg_distance > pos_distance:
                         break
 

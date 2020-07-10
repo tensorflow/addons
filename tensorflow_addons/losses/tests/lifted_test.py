@@ -70,9 +70,9 @@ def lifted_struct_loss_np(labels, embedding, margin):
                 for k in range(num_data):
                     if not adjacency[i][k]:
                         negs.append(margin - pdist_matrix[i][k])
-                for l in range(num_data):
-                    if not adjacency[j][l]:
-                        negs.append(margin - pdist_matrix[j][l])
+                for m in range(num_data):
+                    if not adjacency[j][m]:
+                        negs.append(margin - pdist_matrix[j][m])
 
                 negs = np.array(negs)
                 max_elem = np.max(negs)
