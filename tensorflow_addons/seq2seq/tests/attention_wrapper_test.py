@@ -24,6 +24,7 @@ from distutils.version import LooseVersion
 from tensorflow_addons.seq2seq import attention_wrapper as wrapper
 from tensorflow_addons.seq2seq import basic_decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
+from tensorflow_addons.utils import test_utils
 
 
 class DummyData:
