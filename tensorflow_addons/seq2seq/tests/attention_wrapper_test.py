@@ -20,11 +20,9 @@ import pytest
 import numpy as np
 import tensorflow as tf
 
-from distutils.version import LooseVersion
 from tensorflow_addons.seq2seq import attention_wrapper as wrapper
 from tensorflow_addons.seq2seq import basic_decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
-from tensorflow_addons.utils import test_utils
 
 
 class DummyData:
@@ -542,8 +540,6 @@ def set_random_state_for_tf_and_np():
 
 @pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_bahdanau_not_normalized():
-    if test_utils.is_gpu_available() and LooseVersion(tf.__version__) <= "2.2.0":
-        pytest.xfail("See https://github.com/tensorflow/tensorflow/issues/39775")
     set_random_state_for_tf_and_np()
     policy = tf.keras.mixed_precision.experimental.global_policy()
     create_attention_mechanism = wrapper.BahdanauAttention
@@ -620,8 +616,6 @@ def test_bahdanau_normalized():
 
 @pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_luong_not_normalized():
-    if test_utils.is_gpu_available() and LooseVersion(tf.__version__) <= "2.2.0":
-        pytest.xfail("See https://github.com/tensorflow/tensorflow/issues/39775")
     set_random_state_for_tf_and_np()
     policy = tf.keras.mixed_precision.experimental.global_policy()
     create_attention_mechanism = wrapper.LuongAttention
