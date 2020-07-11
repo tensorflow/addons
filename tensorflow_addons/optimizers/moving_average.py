@@ -67,9 +67,6 @@ class MovingAverage(AveragedOptimizerWrapper):
             num_updates: Optional count of the number of updates applied to
                 variables.
             start_step: int. What step to start the moving average.
-            dynamic_decay: bool. Whether to change the decay based on the number
-                of optimizer updates. Decay will start at 0.1 and gradually
-                increase up to `average_decay` after each optimizer update.
             name: Optional name for the operations created when applying
                 gradients. Defaults to "MovingAverage".
             **kwargs: keyword arguments. Allowed to be {`clipnorm`,
@@ -81,31 +78,22 @@ class MovingAverage(AveragedOptimizerWrapper):
         """
         super().__init__(optimizer, sequential_update, name, **kwargs)
         self._num_updates = num_updates
-        if self._num_updates is not None:
-            num_updates = tf.cast(self._num_updates, tf.float32, name="num_updates")
-            average_decay = tf.minimum(
-                average_decay, (1.0 + num_updates) / (10.0 + num_updates)
-            )
 
         self._set_hyper("average_decay", average_decay)
         self._start_step = start_step
-        self._dynamic_decay = dynamic_decay
 
     @tf.function
-    def _get_decay(self, step: tf.Tensor):
+    def _get_decay(self):
         average_decay = self._get_hyper("average_decay", tf.dtypes.float32)
-
-        step = tf.cast(step, tf.float32)
+        step = tf.cast(self._num_updates, tf.float32)
         if step < self._start_step:
             return tf.constant(0.0, tf.float32)
-        elif self._dynamic_decay:
+        else:
             step_count = step - self._start_step
             return tf.minimum(average_decay, (1.0 + step_count) / (10.0 + step_count))
-        else:
-            return average_decay
 
     def average_op(self, var, average_var):
-        decay = self._get_decay(self._optimizer.iterations)
+        decay = self._get_decay()
         return assign_moving_average(average_var, var, decay, False)
 
     def get_config(self):
@@ -113,7 +101,6 @@ class MovingAverage(AveragedOptimizerWrapper):
             "average_decay": self._serialize_hyperparameter("average_decay"),
             "num_updates": self._num_updates,
             "start_step": self._start_step,
-            "dynamic_decay": self._dynamic_decay,
         }
         base_config = super().get_config()
         return {**base_config, **config}
