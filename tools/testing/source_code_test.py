@@ -146,9 +146,7 @@ def test_no_tf_cond():
 def test_no_experimental_api():
     # TODO: remove all elements of the list and remove the allowlist
     # This allowlist should not grow. Do not add elements to this list.
-    allowlist = [
-        "tensorflow_addons/optimizers/weight_decay_optimizers.py",
-    ]
+    allowlist = []
     for file_path, line_idx, line in get_lines_of_source_code(allowlist):
 
         if file_path.endswith("_test.py") or file_path.endswith("conftest.py"):
