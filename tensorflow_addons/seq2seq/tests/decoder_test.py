@@ -127,3 +127,31 @@ def test_dynamic_decode_rnn_with_training_helper_matches_dynamic_rnn(
     )
     if use_sequence_length:
         np.testing.assert_allclose(final_decoder_state, final_rnn_state)
+
+
+@pytest.mark.usefixtures("run_with_mixed_precision_policy")
+def test_dynamic_decode_rnn_with_scheduled_embedding_training_sampler():
+    policy = tf.keras.mixed_precision.experimental.global_policy()
+    sequence_length = [3, 4, 3, 1]
+    batch_size = 4
+    input_depth = 7
+    cell_depth = 10
+    vocab_size = 12
+    max_time = max(sequence_length)
+
+    embedding = tf.keras.layers.Embedding(vocab_size, input_depth)
+    cell = tf.keras.layers.LSTMCell(cell_depth)
+    sampler = sampler_py.ScheduledEmbeddingTrainingSampler(
+        sampling_probability=tf.constant(1.0), embedding_fn=embedding
+    )
+    my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
+
+    inputs = tf.random.uniform([batch_size, max_time, input_depth])
+    initial_state = cell.get_initial_state(
+        batch_size=batch_size, dtype=policy.compute_dtype
+    )
+    final_outputs, _, _ = my_decoder(
+        inputs, initial_state=initial_state, sequence_length=sequence_length
+    )
+
+    assert final_outputs.rnn_output.dtype == policy.compute_dtype
