@@ -48,6 +48,13 @@ def test_equalize_with_PIL():
     np.testing.assert_equal(color_ops.equalize(tf.constant(image)).numpy(), equalized)
 
 
+@pytest.mark.parametrize("shape", [(1, 5, 5), (3, 5, 5), (10, 3, 7, 7)])
+def test_equalize_channel_first(shape):
+    image = tf.ones(shape=shape, dtype=tf.uint8)
+    equalized = color_ops.equalize(image, "channels_first")
+    np.testing.assert_equal(equalized.numpy(), image.numpy())
+
+
 @pytest.mark.parametrize("dtype", _DTYPES)
 @pytest.mark.parametrize("shape", [(5, 5, 3), (10, 5, 5, 3)])
 def test_sharpness_dtype_shape(dtype, shape):
