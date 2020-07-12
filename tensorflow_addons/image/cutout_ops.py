@@ -14,6 +14,8 @@
 # ==============================================================================
 """Cutout op"""
 
+import warnings
+
 import tensorflow as tf
 
 from tensorflow_addons.utils.types import TensorLike, Number
@@ -39,6 +41,7 @@ def random_cutout(
     mask_size: TensorLike,
     constant_values: Number = 0,
     seed: Number = None,
+    data_format=None,
 ) -> tf.Tensor:
     """Apply cutout (https://arxiv.org/abs/1708.04552) to images.
 
@@ -61,6 +64,13 @@ def random_cutout(
     Raises:
       InvalidArgumentError: if mask_size can't be divisible by 2.
     """
+    if data_format is not None:
+        warnings.warn(
+            "Addons supports only channel-last image operations."
+            "The argument `data_format` will be removed in Addons `0.12`",
+            DeprecationWarning,
+        )
+
     batch_size = tf.shape(images)[0]
     mask_size, image_height, image_width = _norm_params(images, mask_size)
 
@@ -80,6 +90,7 @@ def cutout(
     mask_size: TensorLike,
     offset: TensorLike = (0, 0),
     constant_values: Number = 0,
+    data_format=None,
 ) -> tf.Tensor:
     """Apply cutout (https://arxiv.org/abs/1708.04552) to images.
 
@@ -101,6 +112,13 @@ def cutout(
     Raises:
       InvalidArgumentError: if mask_size can't be divisible by 2.
     """
+    if data_format is not None:
+        warnings.warn(
+            "Addons supports only channel-last image operations."
+            "The argument `data_format` will be removed in Addons `0.12`",
+            DeprecationWarning,
+        )
+
     with tf.name_scope("cutout"):
         origin_shape = images.shape
         offset = tf.convert_to_tensor(offset)
