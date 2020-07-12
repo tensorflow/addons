@@ -71,7 +71,7 @@ def equalize_image(image: TensorLike) -> tf.Tensor:
 
 
 def equalize(
-    image: TensorLike, name: Optional[str] = None, data_format=None
+    image: TensorLike, name: Optional[str] = None, data_format: str = None
 ) -> tf.Tensor:
     """Equalize image(s)
 

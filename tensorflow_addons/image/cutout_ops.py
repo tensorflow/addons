@@ -41,7 +41,7 @@ def random_cutout(
     mask_size: TensorLike,
     constant_values: Number = 0,
     seed: Number = None,
-    data_format=None,
+    data_format: str = None,
 ) -> tf.Tensor:
     """Apply cutout (https://arxiv.org/abs/1708.04552) to images.
 
@@ -90,7 +90,7 @@ def cutout(
     mask_size: TensorLike,
     offset: TensorLike = (0, 0),
     constant_values: Number = 0,
-    data_format=None,
+    data_format: str = None,
 ) -> tf.Tensor:
     """Apply cutout (https://arxiv.org/abs/1708.04552) to images.
 
