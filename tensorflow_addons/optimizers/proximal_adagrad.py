@@ -75,8 +75,8 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
             raise ValueError("`l2` must be non-negative.")
         super().__init__(name, **kwargs)
         self._set_hyper("learning_rate", kwargs.get("lr", learning_rate))
-        self.l1 = l1
-        self.l2 = l2
+        self._set_hyper("l1", l1)
+        self._set_hyper("l2", l2)
         self._initial_accumulator_value = initial_accumulator_value
 
     def _create_slots(self, var_list):
@@ -105,8 +105,8 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
         super()._prepare_local(var_device, var_dtype, apply_state)
         apply_state[(var_device, var_dtype)].update(
             {
-                "l1": tf.convert_to_tensor(self.l1, var_dtype),
-                "l2": tf.convert_to_tensor(self.l2, var_dtype),
+                "l1": tf.identity(self._get_hyper("l1", var_dtype)),
+                "l2": tf.identity(self._get_hyper("l2", var_dtype)),
             }
         )
 
@@ -134,8 +134,8 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
             {
                 "learning_rate": self._serialize_hyperparameter("learning_rate"),
                 "initial_accumulator_value": self._initial_accumulator_value,
-                "l1": self.l1,
-                "l2": self.l2,
+                "l1": self._serialize_hyperparameter("l1"),
+                "l2": self._serialize_hyperparameter("l2"),
             }
         )
         return config
