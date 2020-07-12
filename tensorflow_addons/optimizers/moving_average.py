@@ -14,7 +14,7 @@
 # ==============================================================================
 
 import tensorflow as tf
-from tensorflow.python.training.moving_averages import assign_moving_average
+
 from tensorflow_addons.optimizers import AveragedOptimizerWrapper
 from tensorflow_addons.utils import types
 
@@ -106,7 +106,7 @@ class MovingAverage(AveragedOptimizerWrapper):
 
     def average_op(self, var, average_var):
         decay = self._get_decay(self._optimizer.iterations)
-        return assign_moving_average(average_var, var, decay, False)
+        return tf.keras.backend.moving_average_update(average_var, var, decay)
 
     def get_config(self):
         config = {
