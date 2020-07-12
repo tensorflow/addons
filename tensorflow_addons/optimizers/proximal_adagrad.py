@@ -36,8 +36,8 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
         self,
         learning_rate: Union[FloatTensorLike, Callable] = 0.001,
         initial_accumulator_value: float = 0.1,
-        l1: float = 0.0,
-        l2: float = 0.0,
+        l1_regularization_strength: float = 0.0,
+        l2_regularization_strength: float = 0.0,
         name: str = "ProximalAdagrad",
         **kwargs
     ):
@@ -49,10 +49,10 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
                 The learning rate.
             initial_accumulator_value: A floating point value.
                 Starting value for the accumulators, must be positive.
-            l1: A floating point value.
+            l1_regularization_strength: A floating point value.
                 The l1 regularization term, must be greater than or
                 equal to zero.
-            l2: A floating point value.
+            l2_regularization_strength: A floating point value.
                 The l2 regularization term, must be greater than or
                 equal to zero.
             name: Optional name for the operations created when applying
@@ -69,14 +69,14 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
         """
         if initial_accumulator_value < 0.0:
             raise ValueError("`initial_accumulator_value` must be non-negative.")
-        if l1 < 0.0:
-            raise ValueError("`l1` must be non-negative.")
-        if l2 < 0.0:
-            raise ValueError("`l2` must be non-negative.")
+        if l1_regularization_strength < 0.0:
+            raise ValueError("`l1_regularization_strength` must be non-negative.")
+        if l2_regularization_strength < 0.0:
+            raise ValueError("`l2_regularization_strength` must be non-negative.")
         super().__init__(name, **kwargs)
         self._set_hyper("learning_rate", kwargs.get("lr", learning_rate))
-        self._set_hyper("l1", l1)
-        self._set_hyper("l2", l2)
+        self._set_hyper("l1_regularization_strength", l1_regularization_strength)
+        self._set_hyper("l2_regularization_strength", l2_regularization_strength)
         self._initial_accumulator_value = initial_accumulator_value
 
     def _create_slots(self, var_list):
@@ -95,8 +95,8 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
             var=var.handle,
             accum=acc.handle,
             lr=coefficients["lr_t"],
-            l1=coefficients["l1"],
-            l2=coefficients["l2"],
+            l1=coefficients["l1_regularization_strength"],
+            l2=coefficients["l2_regularization_strength"],
             grad=grad,
             use_locking=self._use_locking,
         )
@@ -105,8 +105,12 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
         super()._prepare_local(var_device, var_dtype, apply_state)
         apply_state[(var_device, var_dtype)].update(
             {
-                "l1": tf.identity(self._get_hyper("l1", var_dtype)),
-                "l2": tf.identity(self._get_hyper("l2", var_dtype)),
+                "l1_regularization_strength": tf.identity(
+                    self._get_hyper("l1_regularization_strength", var_dtype)
+                ),
+                "l2_regularization_strength": tf.identity(
+                    self._get_hyper("l2_regularization_strength", var_dtype)
+                ),
             }
         )
 
@@ -121,8 +125,8 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
             var=var.handle,
             accum=acc.handle,
             lr=coefficients["lr_t"],
-            l1=coefficients["l1"],
-            l2=coefficients["l2"],
+            l1=coefficients["l1_regularization_strength"],
+            l2=coefficients["l2_regularization_strength"],
             grad=grad,
             indices=indices,
             use_locking=self._use_locking,
@@ -134,8 +138,12 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
             {
                 "learning_rate": self._serialize_hyperparameter("learning_rate"),
                 "initial_accumulator_value": self._initial_accumulator_value,
-                "l1": self._serialize_hyperparameter("l1"),
-                "l2": self._serialize_hyperparameter("l2"),
+                "l1_regularization_strength": self._serialize_hyperparameter(
+                    "l1_regularization_strength"
+                ),
+                "l2_regularization_strength": self._serialize_hyperparameter(
+                    "l2_regularization_strength"
+                ),
             }
         )
         return config
