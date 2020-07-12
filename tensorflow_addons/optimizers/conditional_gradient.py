@@ -213,10 +213,5 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
             s = top_singular_vector
 
         var_update_value = tf.math.multiply(var_slice, lr) - (1 - lr) * lambda_ * s
-        var_update_kwargs = {
-            "resource": var.handle,
-            "indices": indices,
-            "updates": var_update_value,
-        }
-        var_update_op = tf.raw_ops.ResourceScatterUpdate(**var_update_kwargs)
-        return tf.group(var_update_op)
+        var_update_op = self._resource_scatter_update(var, indices, var_update_value)
+        return var_update_op

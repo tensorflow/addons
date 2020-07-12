@@ -89,7 +89,6 @@ def test_no_private_tf_api():
     # TODO: remove all elements of the list and remove the allowlist
     # This allowlist should not grow. Do not add elements to this list.
     allowlist = [
-        "tensorflow_addons/optimizers/moving_average.py",
         "tensorflow_addons/metrics/r_square.py",
         "tensorflow_addons/utils/test_utils.py",
         "tensorflow_addons/seq2seq/decoder.py",
