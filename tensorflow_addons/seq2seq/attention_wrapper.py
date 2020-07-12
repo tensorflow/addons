@@ -110,8 +110,6 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
         """
         self.query_layer = query_layer
         self.memory_layer = memory_layer
-        if self.memory_layer is not None and "dtype" not in kwargs:
-            kwargs["dtype"] = self.memory_layer.dtype
         super().__init__(**kwargs)
         self.default_probability_fn = probability_fn
         self.probability_fn = probability_fn
@@ -556,8 +554,6 @@ class LuongAttention(_BaseAttentionMechanism):
         def wrapped_probability_fn(score, _):
             return probability_fn(score)
 
-        if dtype is None:
-            dtype = tf.float32
         memory_layer = kwargs.pop("memory_layer", None)
         if not memory_layer:
             memory_layer = tf.keras.layers.Dense(
@@ -735,8 +731,6 @@ class BahdanauAttention(_BaseAttentionMechanism):
         def wrapped_probability_fn(score, _):
             return probability_fn(score)
 
-        if dtype is None:
-            dtype = tf.float32
         query_layer = kwargs.pop("query_layer", None)
         if not query_layer:
             query_layer = tf.keras.layers.Dense(
@@ -1093,8 +1087,6 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
             creation.
         """
         # Set up the monotonic probability fn with supplied parameters
-        if dtype is None:
-            dtype = tf.float32
         wrapped_probability_fn = functools.partial(
             _monotonic_probability_fn,
             sigmoid_noise=sigmoid_noise,
@@ -1274,8 +1266,6 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
             creation.
         """
         # Set up the monotonic probability fn with supplied parameters
-        if dtype is None:
-            dtype = tf.float32
         wrapped_probability_fn = functools.partial(
             _monotonic_probability_fn,
             sigmoid_noise=sigmoid_noise,
@@ -1729,12 +1719,13 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
                     "one integer per attention_mechanism, saw: %d vs %d"
                     % (len(attention_layer_sizes), len(attention_mechanisms))
                 )
+            dtype = kwargs.get("dtype", None)
             self._attention_layers = list(
                 tf.keras.layers.Dense(
                     attention_layer_size,
                     name="attention_layer",
                     use_bias=False,
-                    dtype=attention_mechanisms[i].dtype,
+                    dtype=dtype,
                 )
                 for i, attention_layer_size in enumerate(attention_layer_sizes)
             )
