@@ -94,7 +94,17 @@ def sigmoid_focal_crossentropy(
     gamma: FloatTensorLike = 2.0,
     from_logits: bool = False,
 ) -> tf.Tensor:
-    """
+    """Implements the focal loss function.
+
+    Focal loss was first introduced in the RetinaNet paper
+    (https://arxiv.org/pdf/1708.02002.pdf). Focal loss is extremely useful for
+    classification when you have highly imbalanced classes. It down-weights
+    well-classified examples and focuses on hard examples. The loss value is
+    much high for a sample which is misclassified by the classifier as compared
+    to the loss value corresponding to a well-classified example. One of the
+    best use-cases of focal loss is its usage in object detection where the
+    imbalance between the background class and other classes is extremely high.
+
     Args
         y_true: true targets tensor.
         y_pred: predictions tensor.
