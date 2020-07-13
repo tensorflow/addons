@@ -14,6 +14,8 @@
 # ==============================================================================
 """Cutout op"""
 
+import warnings
+
 import tensorflow as tf
 from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils.types import TensorLike, Number
@@ -78,6 +80,13 @@ def random_cutout(
     Raises:
       InvalidArgumentError: if mask_size can't be divisible by 2.
     """
+    if data_format == "channels_first":
+        warnings.warn(
+            "Addons will supports only channel-last image operations in the future."
+            "The argument `data_format` will be removed in Addons `0.12`",
+            DeprecationWarning,
+        )
+
     batch_size = tf.shape(images)[0]
     mask_size, data_format, image_height, image_width = _norm_params(
         images, mask_size, data_format
@@ -127,6 +136,13 @@ def cutout(
     Raises:
       InvalidArgumentError: if mask_size can't be divisible by 2.
     """
+    if data_format == "channels_first":
+        warnings.warn(
+            "Addons will support only channel-last image operations in the future."
+            "The argument `data_format` will be removed in Addons `0.12`",
+            DeprecationWarning,
+        )
+
     with tf.name_scope("cutout"):
         origin_shape = images.shape
         offset = tf.convert_to_tensor(offset)

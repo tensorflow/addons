@@ -17,6 +17,8 @@
     sharpness: Sharpen image
 """
 
+import warnings
+
 import tensorflow as tf
 
 from tensorflow_addons.utils.types import TensorLike, Number
@@ -95,6 +97,13 @@ def equalize(
     Returns:
       Image(s) with the same type and shape as `images`, equalized.
     """
+    if data_format is not None:
+        warnings.warn(
+            "Addons will support only channel-last image operations in the future."
+            "The argument `data_format` will be removed in Addons `0.12`",
+            DeprecationWarning,
+        )
+
     with tf.name_scope(name or "equalize"):
         image_dims = tf.rank(image)
         image = to_4D_image(image)
