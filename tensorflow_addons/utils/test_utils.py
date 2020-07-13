@@ -88,6 +88,12 @@ def maybe_run_functions_eagerly(request):
     request.addfinalizer(finalizer)
 
 
+@pytest.fixture(scope="function")
+def only_run_functions_eagerly(request):
+    tf.config.experimental_run_functions_eagerly(True)
+    request.addfinalizer(finalizer)
+
+
 @pytest.fixture(scope="function", params=["custom_ops", "py_ops"])
 def run_custom_and_py_ops(request):
     previous_py_ops_value = options.TF_ADDONS_PY_OPS
