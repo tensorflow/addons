@@ -249,4 +249,5 @@ def dense_image_warp(
         # image grid.
         interpolated = interpolate_bilinear(image, query_points_flattened)
         interpolated = tf.reshape(interpolated, [batch_size, height, width, channels])
+        interpolated.set_shape(image.shape)
         return interpolated
