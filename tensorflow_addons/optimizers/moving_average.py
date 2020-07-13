@@ -156,16 +156,13 @@ class MovingAverage(AveragedOptimizerWrapper):
     @tf.function
     def _swap_weights(self):
         def fn_0(a, b):
-            a.assign_add(b)
-            return a
+            return a.assign_add(b, use_locking=self._use_locking)
 
         def fn_1(b, a):
-            b.assign(a - b)
-            return b
+            return b.assign(a - b, use_locking=self._use_locking)
 
         def fn_2(a, b):
-            a.assign_sub(b)
-            return a
+            return a.assign_sub(b, use_locking=self._use_locking)
 
         def swap(strategy, a, b):
             """Swap `a` and `b` and mirror to all devices."""
