@@ -186,6 +186,18 @@ def interpolate_bilinear(
         return interp
 
 
+def _get_shape(x):
+    static_shape = x.shape
+    dynamic_shape = tf.shape(x)
+    shape = []
+    for static_dim, dynamic_dim in zip(static_shape, dynamic_shape):
+        if static_dim is None:
+            shape.append(dynamic_dim)
+        else:
+            shape.append(static_dim)
+    return shape
+
+
 @tf.function
 def dense_image_warp(
     image: types.TensorLike, flow: types.TensorLike, name: Optional[str] = None
@@ -249,5 +261,5 @@ def dense_image_warp(
         # image grid.
         interpolated = interpolate_bilinear(image, query_points_flattened)
         interpolated = tf.reshape(interpolated, [batch_size, height, width, channels])
-        interpolated.set_shape(image.shape)
+        interpolated.set_shape(_get_shape(image))
         return interpolated
