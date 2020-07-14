@@ -113,6 +113,10 @@ class SWA(AveragedOptimizerWrapper):
             raise ValueError("average_period must be >= 1")
         if start_averaging < 0:
             raise ValueError("start_averaging must be >= 0")
+        if hasattr(optimizer, 'weight_decay'):
+            raise TypeError(
+                "Stochastic Weight Averaging is not compatible with weight decay optimizers"
+            )
 
         self._set_hyper("average_period", average_period)
         self._set_hyper("start_averaging", start_averaging)
