@@ -75,6 +75,10 @@ class Lookahead(tf.keras.optimizers.Optimizer):
             raise TypeError(
                 "optimizer is not an object of tf.keras.optimizers.Optimizer"
             )
+        if hasattr(optimizer, 'weight_decay'):
+            raise TypeError(
+                "Lookahead is not compatible with weight decay optimizers"
+            )
 
         self._optimizer = optimizer
         self._set_hyper("sync_period", sync_period)
