@@ -125,18 +125,13 @@ def test_serialization():
     assert new_optimizer.get_config() == optimizer.get_config()
     
 def test_weight_decay_incompatibility():
-    opt = SGD(learning_rate=1e-1)
     try:
-        SWA(opt)
+        SWA(tf.keras.optimizers.SGD())
     except TypeError:
         assert False
 
-    opt = SGDW(learning_rate=1e-1,
-               weight_decay=1e-4)
     try:
-        SWA(opt)
+        SWA(tensorflow_addons.optimizers.SGDW())
         assert False
     except TypeError:
         assert True
-    except:
-        assert False
