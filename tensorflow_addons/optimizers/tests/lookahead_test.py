@@ -193,8 +193,5 @@ def test_weight_decay_incompatibility():
     except TypeError:
         assert False
 
-    try:
-        Lookahead(tensorflow_addons.optimizers.SGDW())
-        assert False
-    except TypeError:
-        assert True
+    with pytest.raises(TypeError, match="Lookahead is not compatible with weight decay optimizers"):
+        Lookahead(SGDW(weight_decay=0.001))
