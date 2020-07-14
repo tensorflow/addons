@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
-from tensorflow_addons.optimizers import Lookahead
+from tensorflow_addons.optimizers import Lookahead, SGDW
 from tensorflow_addons.utils import test_utils
 from distutils.version import LooseVersion
 
@@ -186,12 +186,14 @@ def test_serialization():
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)
     assert new_optimizer.get_config() == optimizer.get_config()
-    
+
+
 def test_weight_decay_incompatibility():
     try:
         Lookahead(tf.keras.optimizers.SGD())
     except TypeError:
         assert False
 
-    with pytest.raises(TypeError, match="Lookahead is not compatible with weight decay optimizers"):
+    with pytest.raises(TypeError,
+                       match="Lookahead is not compatible with weight decay optimizers"):
         Lookahead(SGDW(weight_decay=0.001))
