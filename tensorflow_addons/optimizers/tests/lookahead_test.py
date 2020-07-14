@@ -21,7 +21,6 @@ import tensorflow as tf
 from tensorflow_addons.optimizers import Lookahead
 from tensorflow_addons.utils import test_utils
 from distutils.version import LooseVersion
-from tensorflow_addons.optimizers import SGDW
 
 
 def run_dense_sample(iterations, optimizer, seed=0x2019):
@@ -190,12 +189,12 @@ def test_serialization():
     
 def test_weight_decay_incompatibility():
     try:
-        Lookahead("sgd")
+        Lookahead(tf.keras.optimizers.SGD())
     except TypeError:
         assert False
 
     try:
-        Lookahead(SGDW())
+        Lookahead(tensorflow_addons.optimizers.SGDW())
         assert False
     except TypeError:
         assert True
