@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
-from tensorflow_addons.optimizers import stochastic_weight_averaging
+from tensorflow_addons.optimizers import stochastic_weight_averaging, SGDW
 from tensorflow_addons.optimizers.utils import fit_bn
 
 SWA = stochastic_weight_averaging.SWA
@@ -130,8 +130,5 @@ def test_weight_decay_incompatibility():
     except TypeError:
         assert False
 
-    try:
-        SWA(tensorflow_addons.optimizers.SGDW())
-        assert False
-    except TypeError:
-        assert True
+    with pytest.raises(TypeError, match="Stochastic Weight Averaging is not compatible with weight decay optimizers"):
+        SWA(SGDW(weight_decay=0.001))
