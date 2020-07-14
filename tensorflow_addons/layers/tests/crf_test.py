@@ -130,15 +130,15 @@ class ModelWithCRFLoss(tf.keras.Model):
     def call(self, inputs):
         return self.base_model(inputs)
 
-    def compute_loss(self, x, y, sample_weights, training=False):
+    def compute_loss(self, x, y, sample_weight, training=False):
         y_pred = self(x, training=training)
         _, potentials, sequence_length, chain_kernel = y_pred
 
         # we now add the CRF loss:
         crf_loss = -crf_log_likelihood(potentials, y, sequence_length, chain_kernel)[0]
 
-        if sample_weights is not None:
-            crf_loss = crf_loss * sample_weights
+        if sample_weight is not None:
+            crf_loss = crf_loss * sample_weight
 
         return tf.reduce_mean(crf_loss), sum(self.losses)
 

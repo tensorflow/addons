@@ -139,7 +139,7 @@ class CRF(tf.keras.layers.Layer):
 
     def mask_to_sequence_length(self, mask):
         """compute sequence length from mask."""
-        sequence_length = tf.cast(tf.reduce_sum(tf.cast(mask, tf.int8), 1), tf.int64)
+        sequence_length = tf.reduce_sum(tf.cast(mask, tf.int64), 1)
         return sequence_length
 
     @staticmethod
