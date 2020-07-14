@@ -32,7 +32,9 @@ class PolynomialCrossing(tf.keras.layers.Layer):
     is the output of the previous `PolynomialCrossing` layer in the stack, i.e.,
     the i-th `PolynomialCrossing` layer.
 
-    The output is y = x0 * (W .* x) + bias + xi, where .* designates dot product.
+    The output is x_{i+1} = x0 .* (W * x_i + diag_scale * x_i) + bias + xi, where .* designates elementwise
+    multiplication, W could be a full rank matrix, or a low rank matrix U*V to reduce the computational cost,
+    and diag_scale increases the diagonal of W to improve training stability (especially for the low rank case).
 
     References
         See [R. Wang](https://arxiv.org/pdf/1708.05123.pdf)
@@ -50,8 +52,14 @@ class PolynomialCrossing(tf.keras.layers.Layer):
         ```
 
     Arguments:
-        projection_dim: project dimension. Default is `None` such that a full
-          (`input_dim` by `input_dim`) matrix is used.
+        projection_dim: project dimension to reduce the computational cost.
+          Default is `None` such that a full (`input_dim` by `input_dim`)
+          matrix W is used. If enabled, a low-rank matrix W = U*V will be used,
+          where U is of size `input_dim` by `projection_dim` and V is of size
+          `projection_dim` by `input_dim`. `projection_dim` need to be smaller
+          than `input_dim`/2 to improve the model efficiency.
+        diag_scale: a non-negative float used to increase the diagonal of the
+           kernel W by `diag_scale`.
         use_bias: whether to calculate the bias/intercept for this layer. If set to
           False, no bias/intercept will be used in calculations, e.g., the data is
           already centered.
@@ -71,6 +79,7 @@ class PolynomialCrossing(tf.keras.layers.Layer):
     def __init__(
         self,
         projection_dim: int = None,
+        diag_scale: float = 0.0,
         use_bias: bool = True,
         kernel_initializer: types.Initializer = "truncated_normal",
         bias_initializer: types.Initializer = "zeros",
@@ -81,6 +90,7 @@ class PolynomialCrossing(tf.keras.layers.Layer):
         super(PolynomialCrossing, self).__init__(**kwargs)
 
         self.projection_dim = projection_dim
+        self.diag_scale = diag_scale
         self.use_bias = use_bias
         self.kernel_initializer = tf.keras.initializers.get(kernel_initializer)
         self.bias_initializer = tf.keras.initializers.get(bias_initializer)
@@ -97,24 +107,39 @@ class PolynomialCrossing(tf.keras.layers.Layer):
             )
         last_dim = input_shape[-1][-1]
         if self.projection_dim is None:
-            kernel_shape = [last_dim, last_dim]
+            self.kernel = self.add_weight(
+                "kernel",
+                shape=[last_dim, last_dim],
+                initializer=self.kernel_initializer,
+                regularizer=self.kernel_regularizer,
+                dtype=self.dtype,
+                trainable=True,
+            )
         else:
-            if self.projection_dim != last_dim:
+            if self.projection_dim < 0 or self.projection_dim > last_dim / 2:
                 raise ValueError(
-                    "The case where `projection_dim` != last "
-                    "dimension of the inputs is not supported yet, got "
-                    "`projection_dim` {}, and last dimension of input "
-                    "{}".format(self.projection_dim, last_dim)
+                    "`projection_dim` should be smaller than last_dim / 2 to improve"
+                    "the model efficiency, and should be positive. Got "
+                    "`projection_dim` {}, and last dimension of input {}".format(
+                        self.projection_dim, last_dim
+                    )
                 )
-            kernel_shape = [last_dim, self.projection_dim]
-        self.kernel = self.add_weight(
-            "kernel",
-            shape=kernel_shape,
-            initializer=self.kernel_initializer,
-            regularizer=self.kernel_regularizer,
-            dtype=self.dtype,
-            trainable=True,
-        )
+            self.kernel_u = self.add_weight(
+                "kernel_u",
+                shape=[last_dim, self.projection_dim],
+                initializer=self.kernel_initializer,
+                regularizer=self.kernel_regularizer,
+                dtype=self.dtype,
+                trainable=True,
+            )
+            self.kernel_v = self.add_weight(
+                "kernel_v",
+                shape=[self.projection_dim, last_dim],
+                initializer=self.kernel_initializer,
+                regularizer=self.kernel_regularizer,
+                dtype=self.dtype,
+                trainable=True,
+            )
         if self.use_bias:
             self.bias = self.add_weight(
                 "bias",
@@ -133,7 +158,14 @@ class PolynomialCrossing(tf.keras.layers.Layer):
                 "got {}".format(inputs)
             )
         x0, x = inputs
-        outputs = x0 * tf.matmul(x, self.kernel) + x
+        if self.projection_dim is None:
+            prod_output = tf.matmul(x, self.kernel)
+        else:
+            prod_output = tf.matmul(x, self.kernel_u)
+            prod_output = tf.matmul(prod_output, self.kernel_v)
+        if self.diag_scale:
+            prod_output = tf.add(prod_output, self.diag_scale * x)
+        outputs = x0 * prod_output + x
         if self.use_bias:
             outputs = tf.add(outputs, self.bias)
         return outputs
@@ -141,6 +173,7 @@ class PolynomialCrossing(tf.keras.layers.Layer):
     def get_config(self):
         config = {
             "projection_dim": self.projection_dim,
+            "diag_scale": self.diag_scale,
             "use_bias": self.use_bias,
             "kernel_initializer": tf.keras.initializers.serialize(
                 self.kernel_initializer

@@ -21,10 +21,6 @@ from typeguard import typechecked
 from typing import Union, Callable, Type
 
 
-def _ref(var):
-    return var.ref() if hasattr(var, "ref") else var.experimental_ref()
-
-
 class DecoupledWeightDecayExtension:
     """This class allows to extend optimizers with decoupled weight decay.
 
@@ -39,10 +35,11 @@ class DecoupledWeightDecayExtension:
 
     This class alone is not an optimizer but rather extends existing
     optimizers with decoupled weight decay. We explicitly define the two
-    examples used in the above paper (SGDW and AdamW), but in general this
-    can extend any OptimizerX by using
-    `extend_with_decoupled_weight_decay(
-        OptimizerX, weight_decay=weight_decay)`.
+    examples used in the above paper (SGDW and AdamW), but in general this can
+    extend any OptimizerX class by using
+        `ExtendedCls = extend_with_decoupled_weight_decay(OptimizerX)`.
+    Weight decay can then be set when instantiating the optimizer:
+        `optimizerX = ExtendedCls(weight_decay=0.001, learning_rate=0.001)`.
     In order for it to work, it must be the first class the Optimizer with
     weight decay inherits from, e.g.
 
@@ -122,7 +119,7 @@ class DecoupledWeightDecayExtension:
             ValueError: If some of the variables are not `Variable` objects.
         """
         self._decay_var_list = (
-            set([_ref(v) for v in decay_var_list]) if decay_var_list else False
+            set([v.ref() for v in decay_var_list]) if decay_var_list else False
         )
         return super().minimize(loss, var_list=var_list, grad_loss=grad_loss, name=name)
 
@@ -140,7 +137,7 @@ class DecoupledWeightDecayExtension:
                 to all variables in var_list.
             **kwargs: Additional arguments to pass to the base optimizer's
                 apply_gradient method, e.g., TF2.2 added an argument
-                `all_reduce_sum_gradients`.
+                `experimental_aggregate_gradients`.
         Returns:
             An `Operation` that applies the specified gradients.
         Raises:
@@ -148,19 +145,19 @@ class DecoupledWeightDecayExtension:
             ValueError: If none of the variables have gradients.
         """
         self._decay_var_list = (
-            set([_ref(v) for v in decay_var_list]) if decay_var_list else False
+            set([v.ref() for v in decay_var_list]) if decay_var_list else False
         )
         return super().apply_gradients(grads_and_vars, name=name, **kwargs)
 
     def _decay_weights_op(self, var):
-        if not self._decay_var_list or _ref(var) in self._decay_var_list:
+        if not self._decay_var_list or var.ref() in self._decay_var_list:
             return var.assign_sub(
                 self._get_hyper("weight_decay", var.dtype) * var, self._use_locking
             )
         return tf.no_op()
 
     def _decay_weights_sparse_op(self, var, indices):
-        if not self._decay_var_list or _ref(var) in self._decay_var_list:
+        if not self._decay_var_list or var.ref() in self._decay_var_list:
             update = -self._get_hyper("weight_decay", var.dtype) * tf.gather(
                 var, indices
             )

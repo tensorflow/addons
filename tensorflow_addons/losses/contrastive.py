@@ -16,7 +16,7 @@
 
 import tensorflow as tf
 
-from tensorflow.python.keras.losses import LossFunctionWrapper
+from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
 from tensorflow_addons.utils.types import TensorLike, Number
 from typeguard import typechecked
 
@@ -97,7 +97,7 @@ class ContrastiveLoss(LossFunctionWrapper):
         self,
         margin: Number = 1.0,
         reduction: str = tf.keras.losses.Reduction.SUM_OVER_BATCH_SIZE,
-        name: str = "contrasitve_loss",
+        name: str = "contrastive_loss",
     ):
         super().__init__(
             contrastive_loss, reduction=reduction, name=name, margin=margin

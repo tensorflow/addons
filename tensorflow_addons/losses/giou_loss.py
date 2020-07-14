@@ -15,7 +15,7 @@
 """Implements GIoU loss."""
 
 import tensorflow as tf
-from tensorflow.python.keras.losses import LossFunctionWrapper
+from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
 from tensorflow_addons.utils.types import TensorLike
 from typing import Optional
 from typeguard import typechecked
@@ -63,7 +63,14 @@ class GIoULoss(LossFunctionWrapper):
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 def giou_loss(y_true: TensorLike, y_pred: TensorLike, mode: str = "giou") -> tf.Tensor:
-    """
+    """Implements the GIoU loss function.
+
+    GIoU loss was first introduced in the
+    [Generalized Intersection over Union:
+    A Metric and A Loss for Bounding Box Regression]
+    (https://giou.stanford.edu/GIoU.pdf).
+    GIoU is an enhancement for models which use IoU in object detection.
+
     Args:
         y_true: true targets tensor. The coordinates of the each bounding
             box in boxes are encoded as [y_min, x_min, y_max, x_max].

@@ -11,7 +11,7 @@ on:
       - r*
 
 env:
-  BAZEL_VERSION: 1.1.0
+  BAZEL_VERSION: 3.1.0
 
 jobs:
   flake8-test:
@@ -70,12 +70,6 @@ jobs:
       - uses: actions/checkout@v2
       - name: Building the docs
         run: bash tools/run_build.sh docs_tests
-  test_editable_mode:
-    name: Check that we can fully work in editable mode
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: bash tools/run_build.sh test_editable_mode
   test_python_code_only:
     name: Fast build to run python-only tests
     runs-on: ubuntu-latest
@@ -84,7 +78,7 @@ jobs:
         with:
           python-version: 3.5
       - uses: actions/checkout@v2
-      - run: pip install -r tools/install_deps/tensorflow-cpu.txt -r tools/install_deps/pytest.txt
+      - run: pip install --default-timeout=1000 -r tools/install_deps/tensorflow-cpu.txt -r tools/install_deps/pytest.txt
       - run: pip install -e ./
       - run: pytest -v -n auto --skip-custom-ops ./tensorflow_addons
   test_cpu_in_small_docker_image:
@@ -93,19 +87,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: bash tools/run_cpu_tests.sh
-  test_tf220rc3_cpu_in_small_docker_image:
-    name: Run the tf 2.2.0rc3 cpu tests in a small python docker image
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - env:
-          DOCKER_BUILDKIT: 1
-        run: |
-          docker build \
-              --build-arg TF_VERSION=2.2.0rc3 \
-              -f tools/docker/cpu_tests.Dockerfile \
-              --target=build_wheel \
-              ./
   valid-codeowners:
     name: Check that the CODEOWNERS is valid
     runs-on: ubuntu-latest

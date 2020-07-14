@@ -19,6 +19,8 @@ import pytest
 import tensorflow as tf
 
 from tensorflow_addons.optimizers import Lookahead
+from tensorflow_addons.utils import test_utils
+from distutils.version import LooseVersion
 
 
 def run_dense_sample(iterations, optimizer, seed=0x2019):
@@ -120,6 +122,34 @@ def test_fit_simple_linear_model():
     assert max_abs_diff < 1e-3
 
 
+def test_fit_simple_linear_model_mixed_precision():
+    if test_utils.is_gpu_available() and LooseVersion(tf.__version__) <= "2.2.0":
+        pytest.xfail("See https://github.com/tensorflow/tensorflow/issues/39775")
+    np.random.seed(0x2019)
+    tf.random.set_seed(0x2019)
+
+    x = np.random.standard_normal((10000, 3))
+    w = np.random.standard_normal((3, 1))
+    y = np.dot(x, w) + np.random.standard_normal((10000, 1)) * 1e-4
+
+    try:
+        tf.keras.mixed_precision.experimental.set_policy("mixed_float16")
+        model = tf.keras.models.Sequential()
+        model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
+        model.compile(Lookahead("sgd"), loss="mse")
+    finally:
+        tf.keras.mixed_precision.experimental.set_policy("float32")
+    model.fit(x, y, epochs=3)
+
+    x = np.random.standard_normal((100, 3))
+    y = np.dot(x, w)
+    predicted = model.predict(x)
+
+    max_abs_diff = np.max(np.abs(predicted - y))
+    assert max_abs_diff < 2.3e-3
+    assert max_abs_diff >= 1e-3
+
+
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_model_dynamic_lr():
     grad = tf.Variable([[0.1]])
@@ -149,3 +179,10 @@ def test_get_config():
     config = opt.get_config()
     assert config["sync_period"] == 10
     assert config["slow_step_size"] == 0.4
+
+
+def test_serialization():
+    optimizer = Lookahead("adam", sync_period=10, slow_step_size=0.4)
+    config = tf.keras.optimizers.serialize(optimizer)
+    new_optimizer = tf.keras.optimizers.deserialize(config)
+    assert new_optimizer.get_config() == optimizer.get_config()

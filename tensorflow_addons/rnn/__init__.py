@@ -17,3 +17,5 @@
 from tensorflow_addons.rnn.cell import LayerNormLSTMCell
 from tensorflow_addons.rnn.cell import NASCell
 from tensorflow_addons.rnn.cell import LayerNormSimpleRNNCell
+from tensorflow_addons.rnn.cell import ESNCell
+from tensorflow_addons.rnn.cell import PeepholeLSTMCell

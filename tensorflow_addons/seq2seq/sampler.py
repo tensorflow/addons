@@ -20,7 +20,7 @@ import tensorflow as tf
 from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.utils.types import Initializer, TensorLike
 from typeguard import typechecked
-from typing import Callable, Optional, Union
+from typing import Callable, Optional
 from tensorflow_addons.utils import types
 
 _transpose_batch_time = decoder._transpose_batch_time
@@ -31,23 +31,30 @@ class Sampler(metaclass=abc.ABCMeta):
 
     Sampler instances are used by `BasicDecoder`. The normal usage of a sampler
     is like below:
+
+    ```python
     sampler = Sampler(init_args)
     (initial_finished, initial_inputs) = sampler.initialize(input_tensors)
-    for time_step in range(time):
-      cell_output, cell_state = cell.call(cell_input, previous_state)
-      sample_ids = sampler.sample(time_step, cell_output, cell_state)
-      (finished, next_inputs, next_state) = sampler.next_inputs(
-          time_step,cell_output, cell_state)
+    cell_input = initial_inputs
+    cell_state = cell.get_initial_state(...)
+    for time_step in tf.range(max_output_length):
+        cell_output, cell_state = cell(cell_input, cell_state)
+        sample_ids = sampler.sample(time_step, cell_output, cell_state)
+        (finished, cell_input, cell_state) = sampler.next_inputs(
+            time_step, cell_output, cell_state, sample_ids)
+        if tf.reduce_all(finished):
+            break
+    ```
 
-    Note that all the tensor input should not be feed to Sampler as __init__()
-    parameters, instead, they should be feed by decoders via initialize().
+    Note that the input_tensors should not be fed to the Sampler as __init__()
+    parameters. Instead, they should be fed by decoders via initialize().
     """
 
     @abc.abstractmethod
     def initialize(self, inputs, **kwargs):
         """initialize the sampler with the input tensors.
 
-        This method suppose to be only invoke once before the calling other
+        This method must be invoked exactly once before calling other
         methods of the Sampler.
 
         Args:
@@ -107,8 +114,8 @@ class CustomSampler(Sampler):
     def __init__(
         self,
         initialize_fn: Initializer,
-        sample_fn: Union[TensorLike, Callable],
-        next_inputs_fn: Union[TensorLike, Callable],
+        sample_fn: Callable,
+        next_inputs_fn: Callable,
         sample_ids_shape: Optional[TensorLike] = None,
         sample_ids_dtype: types.AcceptableDTypes = None,
     ):
@@ -224,20 +231,20 @@ class TrainingSampler(Sampler):
         self.input_tas = tf.nest.map_structure(_unstack_ta, inputs)
         if sequence_length is not None and mask is not None:
             raise ValueError(
-                "sequence_length and mask can't be provided " "at the same time."
+                "sequence_length and mask can't be provided at the same time."
             )
         if sequence_length is not None:
             self.sequence_length = tf.convert_to_tensor(
                 sequence_length, name="sequence_length"
             )
-            if self.sequence_length.get_shape().ndims != 1:
+            if self.sequence_length.shape.ndims != 1:
                 raise ValueError(
                     "Expected sequence_length to be vector, but received "
-                    "shape: %s" % self.sequence_length.get_shape()
+                    "shape: %s" % self.sequence_length.shape
                 )
         elif mask is not None:
             mask = tf.convert_to_tensor(mask)
-            if mask.get_shape().ndims != 2:
+            if mask.shape.ndims != 2:
                 raise ValueError(
                     "Expected mask to a 2D tensor, but received shape: %s" % mask
                 )
@@ -309,7 +316,7 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
     def __init__(
         self,
         sampling_probability: TensorLike,
-        embedding_fn: Union[TensorLike, Callable] = None,
+        embedding_fn: Optional[Callable] = None,
         time_major: bool = False,
         seed: Optional[int] = None,
         scheduling_seed: Optional[TensorLike] = None,
@@ -321,7 +328,7 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
             of sampling categorically from the output ids instead of reading
             directly from the inputs.
           embedding_fn: A callable that takes a vector tensor of `ids`
-            (argmax ids), or the `params` argument for `embedding_lookup`.
+            (argmax ids).
           time_major: Python bool. Whether the tensors in `inputs` are time
             major. If `False` (default), they are assumed to be batch major.
           seed: The sampling seed.
@@ -330,19 +337,17 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
         Raises:
           ValueError: if `sampling_probability` is not a scalar or vector.
         """
-        if callable(embedding_fn) or embedding_fn is None:
-            self.embedding_fn = embedding_fn
+        self.embedding_fn = embedding_fn
+        if isinstance(sampling_probability, tf.Variable):
+            self.sampling_probability = sampling_probability
         else:
-            raise ValueError(
-                "embedding_fn is expected to be callable, got %s" % type(embedding_fn)
+            self.sampling_probability = tf.convert_to_tensor(
+                sampling_probability, name="sampling_probability"
             )
-        self.sampling_probability = tf.convert_to_tensor(
-            sampling_probability, name="sampling_probability"
-        )
-        if self.sampling_probability.get_shape().ndims not in (0, 1):
+        if self.sampling_probability.shape.ndims not in (0, 1):
             raise ValueError(
                 "sampling_probability must be either a scalar or a vector. "
-                "saw shape: %s" % (self.sampling_probability.get_shape())
+                "saw shape: %s" % (self.sampling_probability.shape)
             )
         self.seed = seed
         self.scheduling_seed = scheduling_seed
@@ -385,6 +390,9 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
             sample_ids_sampling = tf.gather_nd(sample_ids, where_sampling)
             inputs_not_sampling = tf.gather_nd(base_next_inputs, where_not_sampling)
             sampled_next_inputs = self.embedding_fn(sample_ids_sampling)
+            sampled_next_inputs = tf.cast(
+                sampled_next_inputs, inputs_not_sampling.dtype
+            )
             base_shape = tf.shape(base_next_inputs)
             return tf.scatter_nd(
                 indices=where_sampling, updates=sampled_next_inputs, shape=base_shape
@@ -430,13 +438,16 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
         Raises:
           ValueError: if `sampling_probability` is not a scalar or vector.
         """
-        self.sampling_probability = tf.convert_to_tensor(
-            sampling_probability, name="sampling_probability"
-        )
-        if self.sampling_probability.get_shape().ndims not in (0, 1):
+        if isinstance(sampling_probability, tf.Variable):
+            self.sampling_probability = sampling_probability
+        else:
+            self.sampling_probability = tf.convert_to_tensor(
+                sampling_probability, name="sampling_probability"
+            )
+        if self.sampling_probability.shape.ndims not in (0, 1):
             raise ValueError(
                 "sampling_probability must be either a scalar or a vector. "
-                "saw shape: %s" % (self._sampling_probability.get_shape())
+                "saw shape: %s" % (self.sampling_probability.shape)
             )
 
         self.seed = seed
@@ -546,21 +557,15 @@ class GreedyEmbeddingSampler(Sampler):
     """
 
     @typechecked
-    def __init__(self, embedding_fn: Union[TensorLike, Callable] = None):
+    def __init__(self, embedding_fn: Optional[Callable] = None):
         """Initializer.
 
         Args:
           embedding_fn: A optional callable that takes a vector tensor of `ids`
-            (argmax ids), or the `params` argument for `embedding_lookup`. The
-            returned tensor will be passed to the decoder input. Default to use
-            `tf.nn.embedding_lookup`.
+            (argmax ids). The returned tensor will be passed to the decoder
+            input. Default to use `tf.nn.embedding_lookup`.
         """
-        if embedding_fn is None or callable(embedding_fn):
-            self.embedding_fn = embedding_fn
-        else:
-            raise ValueError(
-                "embedding_fn is expected to be a callable, got %s" % type(embedding_fn)
-            )
+        self.embedding_fn = embedding_fn
         self._batch_size = None
 
     @property
@@ -603,10 +608,10 @@ class GreedyEmbeddingSampler(Sampler):
         self.end_token = tf.convert_to_tensor(
             end_token, dtype=tf.int32, name="end_token"
         )
-        if self.start_tokens.get_shape().ndims != 1:
+        if self.start_tokens.shape.ndims != 1:
             raise ValueError("start_tokens must be a vector")
         self._batch_size = tf.size(start_tokens)
-        if self.end_token.get_shape().ndims != 0:
+        if self.end_token.shape.ndims != 0:
             raise ValueError("end_token must be a scalar")
         self.start_inputs = self.embedding_fn(self.start_tokens)
 
@@ -648,7 +653,7 @@ class SampleEmbeddingSampler(GreedyEmbeddingSampler):
     @typechecked
     def __init__(
         self,
-        embedding_fn: Union[TensorLike, Callable] = None,
+        embedding_fn: Optional[Callable] = None,
         softmax_temperature: Optional[TensorLike] = None,
         seed: Optional[TensorLike] = None,
     ):
@@ -656,8 +661,7 @@ class SampleEmbeddingSampler(GreedyEmbeddingSampler):
 
         Args:
           embedding_fn: (Optional) A callable that takes a vector tensor of
-            `ids` (argmax ids), or the `params` argument for
-            `embedding_lookup`. The returned tensor will be passed to the
+            `ids` (argmax ids). The returned tensor will be passed to the
             decoder input.
           softmax_temperature: (Optional) `float32` scalar, value to divide the
             logits by before computing the softmax. Larger values (above 1.0)
@@ -696,9 +700,9 @@ class InferenceSampler(Sampler):
     @typechecked
     def __init__(
         self,
-        sample_fn: Union[TensorLike, Callable],
+        sample_fn: Callable,
         sample_shape: TensorLike,
-        sample_dtype: tf.int32,
+        sample_dtype: types.AcceptableDTypes,
         end_fn: Callable,
         next_inputs_fn: Optional[Callable] = None,
     ):
@@ -820,7 +824,7 @@ def categorical_sample(logits, dtype=tf.int32, sample_shape=(), seed=None):
 
 def _unstack_ta(inp):
     return tf.TensorArray(
-        dtype=inp.dtype, size=tf.shape(inp)[0], element_shape=inp.get_shape()[1:]
+        dtype=inp.dtype, size=tf.shape(inp)[0], element_shape=inp.shape[1:]
     ).unstack(inp)
 
 

@@ -160,8 +160,8 @@ conda activate my_dev_environement
 Just run from the root:
 
 ```
-pip install tensorflow==2.2.0rc3
-# you can use "pip install tensorflow-cpu==2.2.0rc3" too if you're not testing on gpu.
+pip install tensorflow==2.2.0
+# you can use "pip install tensorflow-cpu==2.2.0" too if you're not testing on gpu.
 pip install -e ./
 ```
 
@@ -186,7 +186,7 @@ If TensorFlow Addons is installed in editable mode, you can then just run your t
 running Pytest. For example:
 ```bash
 pip install -r tools/install_deps/pytest.txt
-python -m pytest tensorflow_addons/rnn/cell_test.py
+python -m pytest tensorflow_addons/rnn/tests/cell_test.py
 # or even
 python -m pytest tensorflow_addons/rnn/
 # or even 
@@ -249,7 +249,7 @@ If you need a custom C++/Cuda op for your test, compile your ops with
 
 ```bash
 python configure.py
-pip install tensorflow==2.2.0rc3 -e ./ -r tools/install_deps/pytest.txt
+pip install tensorflow==2.2.0 -e ./ -r tools/install_deps/pytest.txt
 bash tools/install_so_files.sh  # Linux/macos/WSL2
 sh tools/install_so_files.sh    # PowerShell
 ```
@@ -277,7 +277,7 @@ docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/ten
 
 Configure:
 ```
-python3 -m pip install tensorflow==2.2.0rc3
+python3 -m pip install tensorflow==2.2.0
 python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 
@@ -297,6 +297,10 @@ Run selected tests:
 python3 -m pytest path/to/file/or/directory/to/test
 ```
 
+Run the gpu only tests with `pytest -m needs_gpu ./tensorflow_addons`.
+Run the cpu only tests with `pytest -m 'not needs_gpu' ./tensorflow_addons`.
+
+
 #### Testing with Bazel
 
 Testing with Bazel is still supported but not recommended unless you have prior experience 
@@ -311,7 +315,7 @@ quickly, as Bazel has great support for caching and distributed testing.
 To test with Bazel:
 
 ```
-python3 -m pip install tensorflow==2.2.0rc3
+python3 -m pip install tensorflow==2.2.0
 python3 configure.py
 python3 -m pip install -r tools/install_deps/pytest.txt
 bazel test -c opt -k \
@@ -411,22 +415,95 @@ on Tensors, `if` or `for` for example. Or with `TensorArray`. In short, when the
  conversion to graph is not trivial. No need to use it on all
 your tests. Having fast tests is important.
 
-#### cpu_and_gpu
+#### Selecting the devices to run the test
 
-Will run your test function twice, once with `with tf.device("/device:CPU:0")` and 
-once with `with tf.device("/device:GPU:0")`. If a GPU is not present on the system, 
-the second test is skipped. To use it:
+By default, each test is wrapped behind the scenes with a 
+```python
+with tf.device("CPU:0"):
+    ...
+```
+
+This is automatic. But it's also possible to ask the test runner to run 
+the test twice, on CPU and on GPU, or only on GPU. Here is how to do it.
 
 ```python
-@pytest.mark.usefixtures("cpu_and_gpu")
+import pytest
+import tensorflow as tf
+from tensorflow_addons.utils import test_utils
+
+@pytest.mark.with_device(["cpu", "gpu"])
 def test_something():
-    assert ...== ...
+    # the code here will run twice, once on gpu, once on cpu.
+    ...
+
+
+@pytest.mark.with_device(["cpu", "gpu"])
+def test_something2(device):
+    # the code here will run twice, once on gpu, once on cpu.
+    # device will be "cpu:0" or "gpu:0" or "gpu:1" or "gpu:2" ...   
+    if "cpu" in device:
+        print("do something.")
+    if "gpu" in device:
+        print("do something else.")
+
+
+
+@pytest.mark.with_device(["cpu", "gpu", tf.distribute.MirroredStrategy])
+def test_something3(device):
+    # the code here will run three times, once on gpu, once on cpu and once with 
+    # a mirror distributed strategy.
+    # device will be "cpu:0" or "gpu:0" or the strategy.
+    # with the MirroredStrategy, it's equivalent to:
+    # strategy = tf.distribute.MirroredStrategy(...)
+    # with strategy.scope():
+    #     test_function(strategy)
+    if "cpu" in device:
+        print("do something.")
+    if "gpu" in device:
+        print("do something else.")
+    if isinstance(device, tf.distribute.Strategy):
+        device.run(...)
+
+
+@pytest.mark.with_device(["gpu"])
+def test_something_else():
+    # This test will be only run on gpu.
+    # The test runner will call with tf.device("GPU:0") behind the scenes.  
+    ...
+
+@pytest.mark.with_device(["cpu"])
+def test_something_more():
+    # Don't do that, this is the default behavior. 
+    ...
+
+
+@pytest.mark.with_device(["no_device"])
+@pytest.mark.needs_gpu
+def test_something_more2():
+    # When running the function, there will be no `with tf.device` wrapper.
+    # You are free to do whatever you wish with the devices in there.
+    # Make sure to use only the cpu, or only gpus available to the current process with
+    # test_utils.gpu_for_testing() , otherwise, it might not play nice with 
+    # pytest's multiprocessing.
+    # If you use a gpu, mark the test with @pytest.mark.needs_gpu , otherwise the 
+    # test will fail if no gpu is available on the system.
+    # for example
+    ...
+    strategy = tf.distribute.MirroredStrategy(test_utils.gpus_for_testing())
+    with strategy.scope():
+        print("I'm doing whatever I want.") 
+    ...
 ```
+
+Note that if a gpu is not detected on the system, the test will be 
+skipped and not marked as failed. Only the first gpu of the system is used,
+even when running pytest in multiprocessing mode. (`-n` argument). 
+Beware of the out of cuda memory errors if the number of pytest workers is too high.
 
 ##### When to use it?
 
-When you test custom CUDA code. We can expect existing TensorFlow ops to behave the same 
-on CPU and GPU.
+When you test custom CUDA code or float16 ops.
+We can expect other existing TensorFlow ops to behave the same on CPU and GPU.
 
 #### data_format
 

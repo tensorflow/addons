@@ -16,10 +16,10 @@
 
 import tensorflow as tf
 from tensorflow_addons.losses import metric_learning
-from tensorflow.python.keras.losses import LossFunctionWrapper
+from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
 from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 from typeguard import typechecked
-from typing import Optional
+from typing import Optional, Union, Callable
 
 
 def _masked_maximum(data, mask, dim=1):
@@ -69,7 +69,10 @@ def _masked_minimum(data, mask, dim=1):
 @tf.keras.utils.register_keras_serializable(package="Addons")
 @tf.function
 def triplet_semihard_loss(
-    y_true: TensorLike, y_pred: TensorLike, margin: FloatTensorLike = 1.0
+    y_true: TensorLike,
+    y_pred: TensorLike,
+    margin: FloatTensorLike = 1.0,
+    distance_metric: Union[str, Callable] = "L2",
 ) -> tf.Tensor:
     """Computes the triplet loss with semi-hard negative mining.
 
@@ -79,10 +82,27 @@ def triplet_semihard_loss(
       y_pred: 2-D float `Tensor` of embedding vectors. Embeddings should
         be l2 normalized.
       margin: Float, margin term in the loss definition.
+      distance_metric: str or function, determines distance metric:
+                       "L2" for l2-norm distance
+                       "squared-L2" for squared l2-norm distance
+                       "angular" for cosine similarity
+                        A custom function returning a 2d adjacency
+                          matrix of a chosen distance metric can
+                          also be passed here. e.g.
+
+                          def custom_distance(batch):
+                              batch = 1 - batch @ batch.T
+                              return batch
+
+                          triplet_semihard_loss(batch, labels,
+                                        distance_metric=custom_distance
+                                    )
+
 
     Returns:
       triplet_loss: float scalar with dtype of y_pred.
     """
+
     labels, embeddings = y_true, y_pred
 
     convert_to_float32 = (
@@ -96,8 +116,24 @@ def triplet_semihard_loss(
     lshape = tf.shape(labels)
     labels = tf.reshape(labels, [lshape[0], 1])
 
-    # Build pairwise squared distance matrix.
-    pdist_matrix = metric_learning.pairwise_distance(precise_embeddings, squared=True)
+    # Build pairwise squared distance matrix
+
+    if distance_metric == "L2":
+        pdist_matrix = metric_learning.pairwise_distance(
+            precise_embeddings, squared=False
+        )
+
+    elif distance_metric == "squared-L2":
+        pdist_matrix = metric_learning.pairwise_distance(
+            precise_embeddings, squared=True
+        )
+
+    elif distance_metric == "angular":
+        pdist_matrix = metric_learning.angular_distance(precise_embeddings)
+
+    else:
+        pdist_matrix = distance_metric(precise_embeddings)
+
     # Build pairwise binary adjacency matrix.
     adjacency = tf.math.equal(labels, tf.transpose(labels))
     # Invert so we can select negatives only.
@@ -169,6 +205,7 @@ def triplet_hard_loss(
     y_pred: TensorLike,
     margin: FloatTensorLike = 1.0,
     soft: bool = False,
+    distance_metric: Union[str, Callable] = "L2",
 ) -> tf.Tensor:
     """Computes the triplet loss with hard negative and hard positive mining.
 
@@ -179,6 +216,21 @@ def triplet_hard_loss(
         be l2 normalized.
       margin: Float, margin term in the loss definition.
       soft: Boolean, if set, use the soft margin version.
+      distance_metric: str or function, determines distance metric:
+                       "L2" for l2-norm distance
+                       "squared-L2" for squared l2-norm distance
+                       "angular" for cosine similarity
+                        A custom function returning a 2d adjacency
+                          matrix of a chosen distance metric can
+                          also be passed here. e.g.
+
+                          def custom_distance(batch):
+                              batch = 1 - batch @ batch.T
+                              return batch
+
+                          triplet_semihard_loss(batch, labels,
+                                        distance_metric=custom_distance
+                                    )
 
     Returns:
       triplet_loss: float scalar with dtype of y_pred.
@@ -197,7 +249,22 @@ def triplet_hard_loss(
     labels = tf.reshape(labels, [lshape[0], 1])
 
     # Build pairwise squared distance matrix.
-    pdist_matrix = metric_learning.pairwise_distance(precise_embeddings, squared=True)
+    if distance_metric == "L2":
+        pdist_matrix = metric_learning.pairwise_distance(
+            precise_embeddings, squared=False
+        )
+
+    elif distance_metric == "squared-L2":
+        pdist_matrix = metric_learning.pairwise_distance(
+            precise_embeddings, squared=True
+        )
+
+    elif distance_metric == "angular":
+        pdist_matrix = metric_learning.angular_distance(precise_embeddings)
+
+    else:
+        pdist_matrix = distance_metric(precise_embeddings)
+
     # Build pairwise binary adjacency matrix.
     adjacency = tf.math.equal(labels, tf.transpose(labels))
     # Invert so we can select negatives only.
@@ -254,13 +321,18 @@ class TripletSemiHardLoss(LossFunctionWrapper):
 
     @typechecked
     def __init__(
-        self, margin: FloatTensorLike = 1.0, name: Optional[str] = None, **kwargs
+        self,
+        margin: FloatTensorLike = 1.0,
+        distance_metric: Union[str, Callable] = "L2",
+        name: Optional[str] = None,
+        **kwargs
     ):
         super().__init__(
             triplet_semihard_loss,
             name=name,
             reduction=tf.keras.losses.Reduction.NONE,
             margin=margin,
+            distance_metric=distance_metric,
         )
 
 
@@ -290,6 +362,7 @@ class TripletHardLoss(LossFunctionWrapper):
         self,
         margin: FloatTensorLike = 1.0,
         soft: bool = False,
+        distance_metric: Union[str, Callable] = "L2",
         name: Optional[str] = None,
         **kwargs
     ):
@@ -299,4 +372,5 @@ class TripletHardLoss(LossFunctionWrapper):
             reduction=tf.keras.losses.Reduction.NONE,
             margin=margin,
             soft=soft,
+            distance_metric=distance_metric,
         )

@@ -33,8 +33,7 @@ def random_hsv_in_yiq(
     seed: Optional[int] = None,
     name: Optional[str] = None,
 ) -> tf.Tensor:
-    """Adjust hue, saturation, value of an RGB image randomly in YIQ color
-    space.
+    """Adjust hue, saturation, value of an RGB image randomly in YIQ color space.
 
     Equivalent to `adjust_yiq_hsv()` but uses a `delta_h` randomly
     picked in the interval `[-max_delta_hue, max_delta_hue]`, a

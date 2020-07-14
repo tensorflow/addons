@@ -338,9 +338,7 @@ def _test_with_attention(
         attention_depth = sum(
             attention_layer.compute_output_shape(
                 [batch_size, cell_depth + encoder_output_depth]
-            )
-            .dims[-1]
-            .value
+            )[-1]
             for attention_layer in attention_layers
         )
     else:
@@ -400,9 +398,12 @@ def _test_with_attention(
                 seed=1337
             )
 
+    policy = tf.keras.mixed_precision.experimental.global_policy()
     sampler = sampler_py.TrainingSampler()
     my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler)
-    initial_state = cell.get_initial_state(dtype=tf.float32, batch_size=batch_size)
+    initial_state = cell.get_initial_state(
+        batch_size=batch_size, dtype=policy.compute_dtype
+    )
     final_outputs, final_state, _ = my_decoder(
         decoder_inputs,
         initial_state=initial_state,
@@ -414,30 +415,22 @@ def _test_with_attention(
 
     expected_time = max(decoder_sequence_length)
     assert (batch_size, expected_time, attention_depth) == tuple(
-        final_outputs.rnn_output.get_shape().as_list()
+        final_outputs.rnn_output.shape.as_list()
     )
-    assert (batch_size, expected_time) == tuple(
-        final_outputs.sample_id.get_shape().as_list()
-    )
+    assert (batch_size, expected_time) == tuple(final_outputs.sample_id.shape.as_list())
 
-    assert (batch_size, attention_depth) == tuple(
-        final_state.attention.get_shape().as_list()
-    )
-    assert (batch_size, cell_depth) == tuple(
-        final_state.cell_state[0].get_shape().as_list()
-    )
-    assert (batch_size, cell_depth) == tuple(
-        final_state.cell_state[1].get_shape().as_list()
-    )
+    assert (batch_size, attention_depth) == tuple(final_state.attention.shape.as_list())
+    assert (batch_size, cell_depth) == tuple(final_state.cell_state[0].shape.as_list())
+    assert (batch_size, cell_depth) == tuple(final_state.cell_state[1].shape.as_list())
 
     if alignment_history:
         state_alignment_history = final_state.alignment_history.stack()
         assert (expected_time, batch_size, encoder_max_time) == tuple(
-            state_alignment_history.get_shape().as_list()
+            state_alignment_history.shape.as_list()
         )
         tf.nest.assert_same_structure(
             cell.state_size,
-            cell.get_initial_state(batch_size=batch_size, dtype=tf.float32),
+            cell.get_initial_state(batch_size=batch_size, dtype=policy.compute_dtype),
         )
         # Remove the history from final_state for purposes of the
         # remainder of the tests.
@@ -545,32 +538,34 @@ def set_random_state_for_tf_and_np():
     DummyData2()
 
 
+@pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_bahdanau_not_normalized():
     set_random_state_for_tf_and_np()
+    policy = tf.keras.mixed_precision.experimental.global_policy()
     create_attention_mechanism = wrapper.BahdanauAttention
     create_attention_kwargs = {"kernel_initializer": "ones"}
     expected_final_output = basic_decoder.BasicDecoderOutput(
         rnn_output=ResultSummary(
-            shape=(5, 3, 6), dtype=np.dtype(np.float32), mean=-0.003204414
+            shape=(5, 3, 6), dtype=policy.compute_dtype, mean=-0.003204414
         ),
         sample_id=ResultSummary(shape=(5, 3), dtype=np.dtype(np.int32), mean=3.2),
     )
     expected_final_state = wrapper.AttentionWrapperState(
         cell_state=[
-            ResultSummary(shape=(5, 9), dtype=np.dtype(np.float32), mean=0.40868404),
-            ResultSummary(shape=(5, 9), dtype=np.dtype(np.float32), mean=0.89017969),
+            ResultSummary(shape=(5, 9), dtype=policy.compute_dtype, mean=0.40868404),
+            ResultSummary(shape=(5, 9), dtype=policy.compute_dtype, mean=0.89017969),
         ],
         attention=ResultSummary(
-            shape=(5, 6), dtype=np.dtype(np.float32), mean=0.041453815
+            shape=(5, 6), dtype=policy.compute_dtype, mean=0.041453815
         ),
-        alignments=ResultSummary(shape=(5, 8), dtype=np.dtype(np.float32), mean=0.125),
+        alignments=ResultSummary(shape=(5, 8), dtype=policy.compute_dtype, mean=0.125),
         attention_state=ResultSummary(
-            shape=(5, 8), dtype=np.dtype(np.float32), mean=0.125
+            shape=(5, 8), dtype=policy.compute_dtype, mean=0.125
         ),
         alignment_history=(),
     )
     expected_final_alignment_history = ResultSummary(
-        shape=(3, 5, 8), dtype=np.dtype(np.float32), mean=0.125
+        shape=(3, 5, 8), dtype=policy.compute_dtype, mean=0.125
     )
 
     _test_with_attention(
@@ -619,27 +614,29 @@ def test_bahdanau_normalized():
     )
 
 
+@pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_luong_not_normalized():
     set_random_state_for_tf_and_np()
+    policy = tf.keras.mixed_precision.experimental.global_policy()
     create_attention_mechanism = wrapper.LuongAttention
 
     expected_final_output = basic_decoder.BasicDecoderOutput(
         rnn_output=ResultSummary(
-            shape=(5, 3, 6), dtype=np.dtype("float32"), mean=-0.06124732
+            shape=(5, 3, 6), dtype=policy.compute_dtype, mean=-0.06124732
         ),
         sample_id=ResultSummary(shape=(5, 3), dtype=np.dtype("int32"), mean=2.73333333),
     )
     expected_final_state = wrapper.AttentionWrapperState(
         cell_state=[
-            ResultSummary(shape=(5, 9), dtype=np.dtype("float32"), mean=0.52021580),
-            ResultSummary(shape=(5, 9), dtype=np.dtype("float32"), mean=1.0964939),
+            ResultSummary(shape=(5, 9), dtype=policy.compute_dtype, mean=0.52021580),
+            ResultSummary(shape=(5, 9), dtype=policy.compute_dtype, mean=1.0964939),
         ],
         attention=ResultSummary(
-            shape=(5, 6), dtype=np.dtype("float32"), mean=-0.0318060
+            shape=(5, 6), dtype=policy.compute_dtype, mean=-0.0318060
         ),
-        alignments=ResultSummary(shape=(5, 8), dtype=np.dtype("float32"), mean=0.125),
+        alignments=ResultSummary(shape=(5, 8), dtype=policy.compute_dtype, mean=0.125),
         attention_state=ResultSummary(
-            shape=(5, 8), dtype=np.dtype("float32"), mean=0.125
+            shape=(5, 8), dtype=policy.compute_dtype, mean=0.125
         ),
         alignment_history=(),
     )
@@ -920,3 +917,27 @@ def test_attention_state_with_variable_length_input():
     layer = tf.keras.layers.RNN(cell)
 
     _ = layer(data, mask=mask)
+
+
+def test_attention_wrapper_with_gru_cell():
+    mechanism = wrapper.LuongAttention(units=3)
+    cell = tf.keras.layers.GRUCell(3)
+    cell = wrapper.AttentionWrapper(cell, mechanism)
+    memory = tf.ones([2, 5, 3])
+    inputs = tf.ones([2, 3])
+    mechanism.setup_memory(memory)
+    initial_state = cell.get_initial_state(inputs=inputs)
+    _, state = cell(inputs, initial_state)
+    tf.nest.assert_same_structure(initial_state, state)
+
+
+def test_attention_wrapper_with_multiple_attention_mechanisms():
+    cell = tf.keras.layers.LSTMCell(5)
+    mechanisms = [wrapper.LuongAttention(units=3), wrapper.LuongAttention(units=3)]
+    # We simply test that the wrapper creation makes no error.
+    wrapper.AttentionWrapper(cell, mechanisms, attention_layer_size=[4, 5])
+    wrapper.AttentionWrapper(
+        cell,
+        mechanisms,
+        attention_layer=[tf.keras.layers.Dense(4), tf.keras.layers.Dense(5)],
+    )
