@@ -190,9 +190,9 @@ def _get_shape(x):
     static_shape = x.shape
     dynamic_shape = tf.shape(x)
     shape = []
-    for static_dim, dynamic_dim in zip(static_shape, dynamic_shape):
+    for idx, static_dim in enumerate(static_shape):
         if static_dim is None:
-            shape.append(dynamic_dim)
+            shape.append(dynamic_shape[idx])
         else:
             shape.append(static_dim)
     return shape
