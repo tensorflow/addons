@@ -144,7 +144,7 @@ class CRF(tf.keras.layers.Layer):
 
     @staticmethod
     def _compute_mask_right_boundary(mask):
-        """input mask: 0011100, output left_boundary: 0000100."""
+        """input mask: 0011100, output right_boundary: 0000100."""
         # shift mask to left by 1: 0011100 => 0111000
         offset = 1
         left_shifted_mask = tf.concat(
@@ -162,7 +162,9 @@ class CRF(tf.keras.layers.Layer):
         # Luiz Felix (github: lzfelix),
 
         # 0011100 > 0111000 => 0000100
-        right_boundary = tf.greater(mask, left_shifted_mask)
+        right_boundary = tf.math.greater(
+            tf.cast(mask, tf.int32), tf.cast(left_shifted_mask, tf.int32)
+        )
 
         return right_boundary
 
@@ -176,10 +178,9 @@ class CRF(tf.keras.layers.Layer):
         )
 
         # 0011100 > 0001110 => 0010000
-        left_boundary = tf.greater(
+        left_boundary = tf.math.greater(
             tf.cast(mask, tf.int32), tf.cast(right_shifted_mask, tf.int32)
         )
-        # left_boundary = tf.greater(mask, right_shifted_mask)
 
         return left_boundary
 
