@@ -120,7 +120,7 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
         """
         assign_op = tf.group(
             [
-                var.assign(self.get_slot(var, "average"))
+                var.assign(self.get_slot(var, "average"), use_locking=self._use_locking)
                 for var in var_list
                 if var.trainable
             ]
