@@ -166,7 +166,7 @@ class LAMB(tf.keras.optimizers.Optimizer):
             )
 
         var_update = var - ratio * coefficients["lr_t"] * update
-        return var.assign(var_update, use_locking=self._use_locking).op
+        return var.assign(var_update, use_locking=self._use_locking)
 
     def _resource_apply_sparse(self, grad, var, indices, apply_state=None):
         var_device, var_dtype = var.device, var.dtype.base_dtype
