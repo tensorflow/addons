@@ -94,8 +94,10 @@ def test_serialization():
 
 def test_save_model(tmpdir):
     model = tf.keras.models.Sequential(
-        tf.keras.layers.Input((256, 256, 3)),
-        tf.keras.layers.Dense(6, activation="softmax"),
+        [
+            tf.keras.layers.Input((256, 256, 3)),
+            tf.keras.layers.Dense(6, activation="softmax"),
+        ]
     )
     model.compile(optimizer="adam", loss=WeightedKappaLoss(num_classes=6))
     model.save(str(tmpdir / "test.h5"))
