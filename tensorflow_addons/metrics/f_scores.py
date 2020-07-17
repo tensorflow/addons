@@ -15,7 +15,7 @@
 """Implements F scores."""
 
 import tensorflow as tf
-from tensorflow.python.keras import backend as K
+from tensorflow.keras import backend as K
 from typeguard import typechecked
 
 from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
