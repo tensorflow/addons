@@ -112,7 +112,8 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
             self.weight_mat = (col_mat - row_mat) ** 2
 
     def call(self, y_true, y_pred):
-        y_true = tf.cast(y_true, dtype=tf.keras.backend.floatx())
+        y_true = tf.cast(y_true, dtype=self.col_label_vec.dtype)
+        y_pred = tf.cast(y_pred, dtype=self.weight_mat)
         batch_size = tf.shape(y_true)[0]
         cat_labels = tf.matmul(y_true, self.col_label_vec)
         cat_label_mat = tf.tile(cat_labels, [1, self.num_classes])
