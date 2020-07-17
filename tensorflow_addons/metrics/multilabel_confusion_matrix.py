@@ -163,7 +163,8 @@ class MultiLabelConfusionMatrix(Metric):
         return {**base_config, **config}
 
     def reset_states(self):
-        self.true_positives.assign(np.zeros(self.num_classes), np.int32)
-        self.false_positives.assign(np.zeros(self.num_classes), np.int32)
-        self.false_negatives.assign(np.zeros(self.num_classes), np.int32)
-        self.true_negatives.assign(np.zeros(self.num_classes), np.int32)
+        zeros = np.zeros(self.num_classes, dtype=np.int32)
+        self.true_positives.assign(zeros)
+        self.false_positives.assign(zeros)
+        self.false_negatives.assign(zeros)
+        self.true_negatives.assign(zeros)
