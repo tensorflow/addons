@@ -15,6 +15,7 @@
 """Matthews Correlation Coefficient Implementation."""
 
 import tensorflow as tf
+from tensorflow.python.keras import backend as K
 
 from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
 from typeguard import typechecked
@@ -31,7 +32,7 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
     true and false positives and negatives and is generally
     regarded as a balanced measure which can be used even
     if the classes are of very different sizes. The correlation
-    coefficient value of MCC is between -1 and +1. A
+    coefficient value of MCC is betwfrom tensorflow.python.keras import backend as Keen -1 and +1. A
     coefficient of +1 represents a perfect prediction,
     0 an average random prediction and -1 an inverse
     prediction. The statistic is also known as
@@ -154,7 +155,4 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
     def reset_states(self):
         """Resets all of the metric state variables."""
         reset_value = tf.zeros(self.num_classes, dtype=self.dtype)
-        self.true_positives.assign(reset_value)
-        self.false_positives.assign(reset_value)
-        self.false_negatives.assign(reset_value)
-        self.true_negatives.assign(reset_value)
+        K.batch_set_value([(v, reset_value) for v in self.variables])

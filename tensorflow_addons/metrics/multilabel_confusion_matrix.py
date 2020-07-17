@@ -17,6 +17,7 @@
 import warnings
 
 import tensorflow as tf
+from tensorflow.python.keras import backend as K
 from tensorflow.keras.metrics import Metric
 import numpy as np
 
@@ -164,7 +165,4 @@ class MultiLabelConfusionMatrix(Metric):
 
     def reset_states(self):
         reset_value = np.zeros(self.num_classes, dtype=np.int32)
-        self.true_positives.assign(reset_value)
-        self.false_positives.assign(reset_value)
-        self.false_negatives.assign(reset_value)
-        self.true_negatives.assign(reset_value)
+        K.batch_set_value([(v, reset_value) for v in self.variables])
