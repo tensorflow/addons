@@ -67,7 +67,7 @@ class MeanMetricWrapper(tf.keras.metrics.Mean):
         return super().update_state(matches, sample_weight=sample_weight)
 
     def get_config(self):
-        config = {k:v for k, v in self._fn_kwargs.items()}
+        config = {k: v for k, v in self._fn_kwargs.items()}
         base_config = super().get_config()
         return {**base_config, **config}
 
