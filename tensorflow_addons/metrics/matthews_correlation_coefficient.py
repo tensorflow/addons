@@ -153,7 +153,8 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
 
     def reset_states(self):
         """Resets all of the metric state variables."""
-        self.true_positives.assign(tf.zeros((self.num_classes), self.dtype))
-        self.false_positives.assign(tf.zeros((self.num_classes), self.dtype))
-        self.false_negatives.assign(tf.zeros((self.num_classes), self.dtype))
-        self.true_negatives.assign(tf.zeros((self.num_classes), self.dtype))
+        zeros = tf.zeros(self.num_classes, dtype=self.dtype)
+        self.true_positives.assign(zeros)
+        self.false_positives.assign(zeros)
+        self.false_negatives.assign(zeros)
+        self.true_negatives.assign(zeros)
