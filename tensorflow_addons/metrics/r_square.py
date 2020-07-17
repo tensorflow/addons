@@ -139,8 +139,8 @@ class RSquare(Metric):
 
     def reset_states(self) -> None:
         # The state of the metric will be reset at the start of each epoch.
-        zeros = 0
-        self.squared_sum.assign(zeros)
-        self.sum.assign(zeros)
-        self.res.assign(zeros)
-        self.count.assign(zeros)
+        reset_value = 0
+        self.squared_sum.assign(reset_value)
+        self.sum.assign(reset_value)
+        self.res.assign(reset_value)
+        self.count.assign(reset_value)
