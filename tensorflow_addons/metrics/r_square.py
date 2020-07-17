@@ -140,5 +140,4 @@ class RSquare(Metric):
 
     def reset_states(self) -> None:
         # The state of the metric will be reset at the start of each epoch.
-        reset_value = 0
         K.batch_set_value([(v, 0) for v in self.variables])
