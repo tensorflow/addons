@@ -101,7 +101,7 @@ If you're running Powershell on Windows, use `sh` instead of `bash` when typing 
 We provide a pre-commit hook to format your code automatically before each
 commit, so that you don't have to read our style guide. Install it on Linux/MacOS with
 
-```
+```bash
 cd .git/hooks && ln -s -f ../../tools/pre-commit.sh pre-commit
 ```
 
@@ -109,7 +109,7 @@ and you're good to go.
 
 On Windows, in powershell, do:
 
-```
+```bash
 cd .git/hooks
 cmd /c mklink pre-commit ..\..\tools\pre-commit.sh
 ```
@@ -140,7 +140,7 @@ And you don't need to compile anything.
 If you want to work in 
 a [virtualenv](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/):
 
-```
+```bash
 pip install virtualenv
 venv my_dev_environement
 source my_dev_environement/bin/activate  # Linux/macos/WSL2
@@ -149,7 +149,7 @@ source my_dev_environement/bin/activate  # Linux/macos/WSL2
 
 If you want to work in 
 a [conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html):
-```
+```bash
 conda create --name my_dev_environement
 conda activate my_dev_environement
 ```
@@ -159,7 +159,7 @@ conda activate my_dev_environement
 
 Just run from the root:
 
-```
+```bash
 pip install tensorflow==2.2.0
 # you can use "pip install tensorflow-cpu==2.2.0" too if you're not testing on gpu.
 pip install -e ./
@@ -176,7 +176,7 @@ going to import the code in this git repository.
 To undo this operation, for example, you want to later on 
 install TensorFlow Addons from PyPI, the release version, do:
 
-```
+```bash
 pip uninstall tensorflow-addons
 ```
 
@@ -266,29 +266,29 @@ Running tests interactively in Docker gives you good flexibility and doesn't req
 to install any additional tools.
 
 CPU Docker: 
-```
+```bash
 docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-ubuntu16
 ```
 
 GPU Docker: 
-```
+```bash
 docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16
 ```
 
 Configure:
-```
+```bash
 python3 -m pip install tensorflow==2.2.0
 python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 
 Install in editable mode
-```
+```bash
 python3 -m pip install -e .
 python3 -m pip install -r tools/install_deps/pytest.txt
 ```
 
 Compile the custom ops
-```
+```bash
 bash tools/install_so_files.sh
 ```
 
@@ -314,7 +314,7 @@ quickly, as Bazel has great support for caching and distributed testing.
 
 To test with Bazel:
 
-```
+```bash
 python3 -m pip install tensorflow==2.2.0
 python3 configure.py
 python3 -m pip install -r tools/install_deps/pytest.txt
@@ -526,7 +526,7 @@ function behaves correctly with both data format.
 Is the same as [tf.test.TestCase.assertAllCloseAccordingToType](https://www.tensorflow.org/api_docs/python/tf/test/TestCase#assertAllCloseAccordingToType)
 but doesn't require any subclassing to be done. Can be used as a plain function. To use it:
 
-```
+```python
 from tensorflow_addons.utils import test_utils
 
 def test_something():
