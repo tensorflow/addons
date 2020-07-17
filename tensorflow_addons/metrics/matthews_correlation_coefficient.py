@@ -32,7 +32,7 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
     true and false positives and negatives and is generally
     regarded as a balanced measure which can be used even
     if the classes are of very different sizes. The correlation
-    coefficient value of MCC is betwfrom tensorflow.python.keras import backend as Keen -1 and +1. A
+    coefficient value of MCC is between -1 and +1. A
     coefficient of +1 represents a perfect prediction,
     0 an average random prediction and -1 an inverse
     prediction. The statistic is also known as
