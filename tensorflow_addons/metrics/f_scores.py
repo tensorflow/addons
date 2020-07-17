@@ -184,10 +184,11 @@ class FBetaScore(tf.keras.metrics.Metric):
         return {**base_config, **config}
 
     def reset_states(self):
-        self.true_positives.assign(tf.zeros(self.init_shape, self.dtype))
-        self.false_positives.assign(tf.zeros(self.init_shape, self.dtype))
-        self.false_negatives.assign(tf.zeros(self.init_shape, self.dtype))
-        self.weights_intermediate.assign(tf.zeros(self.init_shape, self.dtype))
+        zeros = tf.zeros(self.init_shape, dtype=self.dtype)
+        self.true_positives.assign(zeros)
+        self.false_positives.assign(zeros)
+        self.false_negatives.assign(zeros)
+        self.weights_intermediate.assign(zeros)
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
