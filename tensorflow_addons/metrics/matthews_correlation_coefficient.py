@@ -73,30 +73,16 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
         """
         super().__init__(name=name, dtype=dtype)
         self.num_classes = num_classes
-        self.true_positives = self.add_weight(
-            "true_positives",
-            shape=[self.num_classes],
-            initializer="zeros",
-            dtype=self.dtype,
-        )
-        self.false_positives = self.add_weight(
-            "false_positives",
-            shape=[self.num_classes],
-            initializer="zeros",
-            dtype=self.dtype,
-        )
-        self.false_negatives = self.add_weight(
-            "false_negatives",
-            shape=[self.num_classes],
-            initializer="zeros",
-            dtype=self.dtype,
-        )
-        self.true_negatives = self.add_weight(
-            "true_negatives",
-            shape=[self.num_classes],
-            initializer="zeros",
-            dtype=self.dtype,
-        )
+
+        def _zero_wt_init(name):
+            return self.add_weight(
+                name, shape=[self.num_classes], initializer="zeros", dtype=self.dtype
+            )
+
+        self.true_positives = _zero_wt_init("true_positives")
+        self.false_positives = _zero_wt_init("false_positives")
+        self.false_negatives = _zero_wt_init("false_negatives")
+        self.true_negatives = _zero_wt_init("true_negatives")
 
     # TODO: sample_weights
     def update_state(self, y_true, y_pred, sample_weight=None):
