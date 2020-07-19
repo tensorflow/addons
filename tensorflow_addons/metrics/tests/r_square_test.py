@@ -88,7 +88,7 @@ def test_r2_sklearn_comparison():
     implementation of the same metric, given random input.
     """
     for multioutput in VALID_MULTIOUTPUT:
-        for i in range(10):
+        for _ in range(10):
             actuals = np.random.rand(64, 3)
             preds = np.random.rand(64, 3)
             sample_weight = np.random.rand(64, 1)
