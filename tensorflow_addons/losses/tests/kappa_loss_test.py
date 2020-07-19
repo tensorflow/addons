@@ -61,7 +61,7 @@ def gen_labels_and_preds(num_samples, num_classes, seed):
 def test_linear_weighted_kappa_loss(np_seed):
     y_true, y_pred = gen_labels_and_preds(50, 4, np_seed)
     kappa_loss = WeightedKappaLoss(num_classes=4, weightage="linear")
-    y_pred = y_pred.astype(kappa_loss.dtype.as_numpy_dtype)
+    y_pred = y_pred.astype(np.float32)
     loss = kappa_loss(y_true, y_pred)
     loss_np = weighted_kappa_loss_np(y_true, y_pred, weightage="linear")
     np.testing.assert_allclose(loss, loss_np, rtol=1e-5, atol=1e-5)
@@ -71,7 +71,7 @@ def test_linear_weighted_kappa_loss(np_seed):
 def test_quadratic_weighted_kappa_loss(np_seed):
     y_true, y_pred = gen_labels_and_preds(100, 3, np_seed)
     kappa_loss = WeightedKappaLoss(num_classes=3)
-    y_pred = y_pred.astype(kappa_loss.dtype.as_numpy_dtype)
+    y_pred = y_pred.astype(np.float32)
     loss = kappa_loss(y_true, y_pred)
     loss_np = weighted_kappa_loss_np(y_true, y_pred)
     np.testing.assert_allclose(loss, loss_np, rtol=1e-5, atol=1e-5)
@@ -101,11 +101,3 @@ def test_save_model(tmpdir):
     )
     model.compile(optimizer="adam", loss=WeightedKappaLoss(num_classes=6))
     model.save(str(tmpdir / "test.h5"))
-
-
-def test_dtype_config():
-    wkl = WeightedKappaLoss(num_classes=4, dtype=tf.float32)
-    config = wkl.get_config()
-    assert config["dtype"] == tf.float32.as_datatype_enum
-    new_wkl = WeightedKappaLoss.from_config(config)
-    assert new_wkl.dtype == tf.float32
