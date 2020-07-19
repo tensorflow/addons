@@ -14,10 +14,13 @@
 # ==============================================================================
 """Implements Weighted kappa loss."""
 
-import tensorflow as tf
-from tensorflow_addons.utils.types import Number
-from typeguard import typechecked
+import warnings
 from typing import Optional
+
+import tensorflow as tf
+from typeguard import typechecked
+
+from tensorflow_addons.utils.types import Number
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -85,14 +88,20 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
 
         super().__init__(name=name, reduction=reduction)
 
+        warnings.warn(
+            "The data type for `WeightedKappaLoss` defaults to "
+            "`tf.keras.backend.floatx()`."
+            "The argument `dtype` will be removed in Addons `0.12`.",
+            DeprecationWarning,
+        )
+
         if weightage not in ("linear", "quadratic"):
             raise ValueError("Unknown kappa weighting type.")
 
         self.weightage = weightage
         self.num_classes = num_classes
-        self.epsilon = epsilon
-        self.dtype = dtype
-        label_vec = tf.range(num_classes, dtype=dtype)
+        self.epsilon = epsilon or tf.keras.backend.epsilon()
+        label_vec = tf.range(num_classes, dtype=tf.keras.backend.floatx())
         self.row_label_vec = tf.reshape(label_vec, [1, num_classes])
         self.col_label_vec = tf.reshape(label_vec, [num_classes, 1])
         col_mat = tf.tile(self.col_label_vec, [1, num_classes])
@@ -103,7 +112,8 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
             self.weight_mat = (col_mat - row_mat) ** 2
 
     def call(self, y_true, y_pred):
-        y_true = tf.cast(y_true, dtype=self.dtype)
+        y_true = tf.cast(y_true, dtype=self.col_label_vec.dtype)
+        y_pred = tf.cast(y_pred, dtype=self.weight_mat.dtype)
         batch_size = tf.shape(y_true)[0]
         cat_labels = tf.matmul(y_true, self.col_label_vec)
         cat_label_mat = tf.tile(cat_labels, [1, self.num_classes])
@@ -117,7 +127,7 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
         pred_dist = tf.reduce_sum(y_pred, axis=0, keepdims=True)
         w_pred_dist = tf.matmul(self.weight_mat, pred_dist, transpose_b=True)
         denominator = tf.reduce_sum(tf.matmul(label_dist, w_pred_dist))
-        denominator /= tf.cast(batch_size, dtype=self.dtype)
+        denominator /= tf.cast(batch_size, dtype=denominator.dtype)
         loss = tf.math.divide_no_nan(numerator, denominator)
         return tf.math.log(loss + self.epsilon)
 
@@ -126,7 +136,6 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
             "num_classes": self.num_classes,
             "weightage": self.weightage,
             "epsilon": self.epsilon,
-            "dtype": self.dtype,
         }
         base_config = super().get_config()
         return {**base_config, **config}
