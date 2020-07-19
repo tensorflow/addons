@@ -8,7 +8,7 @@
 /tensorflow_addons/image/ @windqaq @facaiy
 /tensorflow_addons/layers/ @seanpmorgan @facaiy
 /tensorflow_addons/losses/ @facaiy @windqaq
-/tensorflow_addons/metrics/
+/tensorflow_addons/metrics/ @marload
 /tensorflow_addons/optimizers/ @facaiy @windqaq
 /tensorflow_addons/rnn/ @qlzh727
 /tensorflow_addons/seq2seq/ @qlzh727 @guillaumekln
@@ -126,16 +126,16 @@
 
 /tensorflow_addons/metrics/cohens_kappa.py @aakashkumarnain
 /tensorflow_addons/metrics/tests/cohens_kappa_test.py @aakashkumarnain
-/tensorflow_addons/metrics/f_scores.py @ssaishruthi
-/tensorflow_addons/metrics/tests/f_scores_test.py @ssaishruthi
+/tensorflow_addons/metrics/f_scores.py @ssaishruthi @marload
+/tensorflow_addons/metrics/tests/f_scores_test.py @ssaishruthi @marload
 /tensorflow_addons/metrics/hamming.py @ssaishruthi
 /tensorflow_addons/metrics/tests/hamming_test.py @ssaishruthi
-/tensorflow_addons/metrics/matthews_correlation_coefficient.py @autoih
-/tensorflow_addons/metrics/tests/matthews_correlation_coefficient_test.py @autoih
+/tensorflow_addons/metrics/matthews_correlation_coefficient.py @autoih @marload
+/tensorflow_addons/metrics/tests/matthews_correlation_coefficient_test.py @autoih @marload
 /tensorflow_addons/metrics/multilabel_confusion_matrix.py @ssaishruthi
 /tensorflow_addons/metrics/tests/multilabel_confusion_matrix_test.py @ssaishruthi
-/tensorflow_addons/metrics/r_square.py @ssaishruthi
-/tensorflow_addons/metrics/tests/r_square_test.py @ssaishruthi
+/tensorflow_addons/metrics/r_square.py @ssaishruthi @marload
+/tensorflow_addons/metrics/tests/r_square_test.py @ssaishruthi @marload
 
 /tensorflow_addons/optimizers/average_wrapper.py @squadrick
 /tensorflow_addons/optimizers/conditional_gradient.py @pkan2 @lokhande-vishnu
