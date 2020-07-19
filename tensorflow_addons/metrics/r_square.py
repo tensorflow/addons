@@ -16,6 +16,7 @@
 from typing import Tuple
 
 import tensorflow as tf
+from tensorflow.keras import backend as K
 from tensorflow.keras.metrics import Metric
 from tensorflow.python.ops import weights_broadcast_ops
 
@@ -139,7 +140,4 @@ class RSquare(Metric):
 
     def reset_states(self) -> None:
         # The state of the metric will be reset at the start of each epoch.
-        self.squared_sum.assign(0)
-        self.sum.assign(0)
-        self.res.assign(0)
-        self.count.assign(0)
+        K.batch_set_value([(v, 0) for v in self.variables])
