@@ -86,3 +86,9 @@ def _get_model(metric, num_output):
     data = np.random.random((10, 3))
     labels = np.random.random((10, num_output))
     model.fit(data, labels, epochs=1, batch_size=5, verbose=0)
+
+
+def zero_wt_init(self, name):
+    return self.add_weight(
+        name, shape=self.init_shape, initializer="zeros", dtype=self.dtype
+    )

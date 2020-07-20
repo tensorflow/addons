@@ -18,6 +18,7 @@ import tensorflow as tf
 
 from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
 from typeguard import typechecked
+from utils import zero_wt_init
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -74,15 +75,10 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
         super().__init__(name=name, dtype=dtype)
         self.num_classes = num_classes
 
-        def _zero_wt_init(name):
-            return self.add_weight(
-                name, shape=[self.num_classes], initializer="zeros", dtype=self.dtype
-            )
-
-        self.true_positives = _zero_wt_init("true_positives")
-        self.false_positives = _zero_wt_init("false_positives")
-        self.false_negatives = _zero_wt_init("false_negatives")
-        self.true_negatives = _zero_wt_init("true_negatives")
+        self.true_positives = zero_wt_init(self, "true_positives")
+        self.false_positives = zero_wt_init(self, "false_positives")
+        self.false_negatives = zero_wt_init(self, "false_negatives")
+        self.true_negatives = zero_wt_init(self, "true_negatives")
 
     # TODO: sample_weights
     def update_state(self, y_true, y_pred, sample_weight=None):

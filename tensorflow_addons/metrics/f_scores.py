@@ -19,6 +19,7 @@ from typeguard import typechecked
 
 from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
 from typing import Optional
+from utils import zero_wt_init
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -110,15 +111,10 @@ class FBetaScore(tf.keras.metrics.Metric):
             self.axis = 0
             self.init_shape = [self.num_classes]
 
-        def _zero_wt_init(name):
-            return self.add_weight(
-                name, shape=self.init_shape, initializer="zeros", dtype=self.dtype
-            )
-
-        self.true_positives = _zero_wt_init("true_positives")
-        self.false_positives = _zero_wt_init("false_positives")
-        self.false_negatives = _zero_wt_init("false_negatives")
-        self.weights_intermediate = _zero_wt_init("weights_intermediate")
+        self.true_positives = zero_wt_init(self, "true_positives")
+        self.false_positives = zero_wt_init(self, "false_positives")
+        self.false_negatives = zero_wt_init(self, "false_negatives")
+        self.weights_intermediate = zero_wt_init(self, "weights_intermediate")
 
     def update_state(self, y_true, y_pred, sample_weight=None):
         if self.threshold is None:
