@@ -108,7 +108,7 @@ def _get_win_cuda_defines(repository_ctx):
     vc_path = find_vc_path(repository_ctx)
     if not vc_path:
         auto_configure_fail(
-            "Visual C++ build tools not found on your machine." +
+            "Visual C++ build tools not found on your machine. " +
             "Please check your installation following https://docs.bazel.build/versions/master/windows.html#using",
         )
         return {}
