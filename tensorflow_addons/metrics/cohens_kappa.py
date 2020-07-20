@@ -146,10 +146,8 @@ class CohenKappa(Metric):
 
     @tf.function
     def _update_multi_class_model(self, y_true, y_pred, sample_weight=None):
-        if not self.sparse_labels:
-            y_true = tf.cast(tf.argmax(y_true, axis=-1), dtype=tf.int64)
-        else:
-            y_true = tf.cast(y_true, dtype=tf.int64)
+        v = tf.argmax(y_true, axis=1) if not self.sparse_labels else y_true
+        y_true = tf.cast(v, dtype=tf.int64)
 
         y_pred = self._cast_ypred(y_pred)
 
