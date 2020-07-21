@@ -1,7 +1,7 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 ARG TF_VERSION
 ARG PY_VERSION
-FROM tfaddons/tensorflow:2.1.0-custom-op-gpu-ubuntu16-minimal as base_install
+FROM tensorflow/tensorflow:2.2.0-custom-op-gpu-ubuntu16 as base_install
 ENV TF_NEED_CUDA="1"
 
 # is needed because when we sqashed the image, we lost all environment variables.
@@ -21,20 +21,20 @@ RUN cat /usr/bin/lsb_release >> /usr/bin/lsb_release2
 RUN mv /usr/bin/lsb_release2 /usr/bin/lsb_release
 
 ARG PY_VERSION
-RUN ln -sf $(which python$PY_VERSION) /usr/bin/python
+RUN ln -sf $(which python$PY_VERSION) /usr/bin/python3
 
-RUN python -m pip install setuptools
+RUN python3 -m pip install setuptools
 
-RUN python -m pip install --upgrade pip==19.0 auditwheel==2.0.0
+RUN python3 -m pip install --upgrade pip==19.0 auditwheel==2.0.0
 
 ARG TF_VERSION
-RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
+RUN python3 -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
 
 COPY tools/install_deps/ /install_deps
-RUN python -m pip install -r /install_deps/pytest.txt
+RUN python3 -m pip install -r /install_deps/pytest.txt
 
 COPY requirements.txt .
-RUN python -m pip install -r requirements.txt
+RUN python3 -m pip install -r requirements.txt
 
 COPY ./ /addons
 WORKDIR /addons

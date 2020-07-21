@@ -20,6 +20,11 @@ set -x -e
 
 export CC_OPT_FLAGS='-mavx'
 
+if command -v python3 &> /dev/null
+then
+ alias python=python3
+ shopt -s expand_aliases
+fi
 python -m pip install -r tools/install_deps/pytest.txt -e ./
 python ./configure.py
 bash tools/install_so_files.sh
