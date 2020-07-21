@@ -57,7 +57,6 @@ def main():
 
     # or using an access token
     g = Github("your_access_token")
-
     users_stats = {}
 
     # Use cached pickle or retrive from Github API
@@ -66,7 +65,7 @@ def main():
     # TODO if we maintain this we could use secure tmp files
     pickle_file = "/tmp/tfa_issues_events.pickle"
     if not from_file:
-        users_stats = events_github_api(g,owners)
+        users_stats = events_github_api(g, owners)
         with open(pickle_file, "wb") as fp:
             pickle.dump(users_stats, fp)
     else:
