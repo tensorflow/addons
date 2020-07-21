@@ -21,20 +21,21 @@ RUN cat /usr/bin/lsb_release >> /usr/bin/lsb_release2
 RUN mv /usr/bin/lsb_release2 /usr/bin/lsb_release
 
 ARG PY_VERSION
-RUN ln -sf $(which python$PY_VERSION) /usr/bin/python3
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 10
+RUN ln -sf $(which python$PY_VERSION) /usr/bin/python
 
-RUN python3 -m pip install setuptools
+RUN python -m pip install setuptools
 
-RUN python3 -m pip install --upgrade pip==19.0 auditwheel==2.0.0
+RUN python -m pip install --upgrade pip==19.0 auditwheel==2.0.0
 
 ARG TF_VERSION
-RUN python3 -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
+RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
 
 COPY tools/install_deps/ /install_deps
-RUN python3 -m pip install -r /install_deps/pytest.txt
+RUN python -m pip install -r /install_deps/pytest.txt
 
 COPY requirements.txt .
-RUN python3 -m pip install -r requirements.txt
+RUN python -m pip install -r requirements.txt
 
 COPY ./ /addons
 WORKDIR /addons
