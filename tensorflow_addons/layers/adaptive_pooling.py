@@ -53,11 +53,12 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
         super().__init__(**kwargs)
 
     def call(self, inputs, *args):
+        bins = self.output_size[0]
         if self.data_format == "channels_last":
             s_ax, v_ax = 1, 2
         else:
             s_ax, v_ax = 2, 3
-        splits = tf.split(inputs, self.output_size[0], axis=s_ax)
+        splits = tf.split(inputs, bins, axis=s_ax)
         splits = tf.stack(splits, axis=s_ax)
         return self.reduce_function(splits, axis=v_ax)
 
