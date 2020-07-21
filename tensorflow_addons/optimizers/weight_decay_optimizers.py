@@ -75,8 +75,9 @@ class DecoupledWeightDecayExtension:
         """Extension class that adds weight decay to an optimizer.
 
         Args:
-            weight_decay: A `Tensor` or a floating point value, the factor by
-                which a variable is decayed in the update step.
+            weight_decay: A `Tensor`, a floating point value, or a schedule
+                that is a `tf.keras.optimizers.schedules.LearningRateSchedule 
+                to decay the variable by, in the update step.
             **kwargs: Optional list or tuple or set of `Variable` objects to
                 decay.
         """
@@ -152,17 +153,25 @@ class DecoupledWeightDecayExtension:
     def _decay_weights_op(self, var):
         if not self._decay_var_list or var.ref() in self._decay_var_list:
             return var.assign_sub(
-                self._get_hyper("weight_decay", var.dtype) * var, self._use_locking
+                self._decayed_wd(var.dtype) * var, self._use_locking
             )
         return tf.no_op()
 
     def _decay_weights_sparse_op(self, var, indices):
         if not self._decay_var_list or var.ref() in self._decay_var_list:
-            update = -self._get_hyper("weight_decay", var.dtype) * tf.gather(
+            update = -self._decayed_wd(var.dtype) * tf.gather(
                 var, indices
             )
             return self._resource_scatter_add(var, indices, update)
         return tf.no_op()
+
+    def _decayed_wd(self, var_dtype):
+        wd_t = self._get_hyper("weight_decay", var_dtype)
+        
+        if isinstance(wd_t, tf.keras.optimizers.schedules.LearningRateSchedule):
+            wd_t = tf.cast(wd_t(self.iterations), var_dtype)
+        
+        return wd_t
 
     # Here, we overwrite the apply functions that the base optimizer calls.
     # super().apply_x resolves to the apply_x function of the BaseOptimizer.
