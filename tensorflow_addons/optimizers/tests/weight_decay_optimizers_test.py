@@ -251,6 +251,21 @@ def test_keras_fit():
     model.fit(x, y, epochs=1)
 
 
+def test_keras_fit_with_schedule():
+    """Check if calling model.fit works with wd schedule."""
+    model = tf.keras.models.Sequential([tf.keras.layers.Dense(2)])
+    loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+    wd_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
+        WEIGHT_DECAY, decay_steps=10, decay_rate=0.9
+    )
+    optimizer = weight_decay_optimizers.AdamW(
+        learning_rate=1e-4, weight_decay=wd_schedule
+    )
+    model.compile(optimizer=optimizer, loss=loss, metrics=["accuracy"])
+    x, y = np.random.uniform(size=(2, 4, 1))
+    model.fit(x, y, epochs=1)
+
+
 @pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
 def test_sparse_sgdw(dtype):
     do_test(
@@ -352,6 +367,18 @@ def test_optimizer_sparse(dtype, optimizer):
 
 def test_serialization():
     optimizer = weight_decay_optimizers.AdamW(learning_rate=1e-4, weight_decay=1e-4)
+    config = tf.keras.optimizers.serialize(optimizer)
+    new_optimizer = tf.keras.optimizers.deserialize(config)
+    assert new_optimizer.get_config() == optimizer.get_config()
+
+
+def test_serialization_with_wd_schedule():
+    wd_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
+        WEIGHT_DECAY, decay_steps=10, decay_rate=0.9
+    )
+    optimizer = weight_decay_optimizers.AdamW(
+        learning_rate=1e-4, weight_decay=wd_schedule
+    )
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)
     assert new_optimizer.get_config() == optimizer.get_config()
