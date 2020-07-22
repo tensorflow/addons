@@ -272,7 +272,7 @@ docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-cus
 
 GPU Docker: 
 ```bash
-docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16
+docker run --gpus all --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16
 ```
 
 Configure:
