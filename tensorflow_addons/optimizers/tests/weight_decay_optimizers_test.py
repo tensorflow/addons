@@ -23,19 +23,6 @@ from tensorflow_addons.optimizers import weight_decay_optimizers
 
 WEIGHT_DECAY = 0.01
 
-class TestSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
-    def __init__(self, weight_decay = WEIGHT_DECAY):
-        super(TestSchedule, self).__init__()
-
-        self.weight_decay = weight_decay 
-        
-    def __call__(self, step):
-        return WEIGHT_DECAY
-
-    def get_config(self):
-        return {
-            "weight_decay": self.weight_decay
-        }
 
 def do_test(
     dtype,
@@ -263,11 +250,17 @@ def test_keras_fit():
     x, y = np.random.uniform(size=(2, 4, 1))
     model.fit(x, y, epochs=1)
 
+
 def test_keras_fit_with_schedule():
     """Check if calling model.fit works with wd schedule."""
     model = tf.keras.models.Sequential([tf.keras.layers.Dense(2)])
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-    optimizer = weight_decay_optimizers.AdamW(learning_rate=1e-4, weight_decay=TestSchedule())
+    wd_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
+        WEIGHT_DECAY, decay_steps=10, decay_rate=0.9
+    )
+    optimizer = weight_decay_optimizers.AdamW(
+        learning_rate=1e-4, weight_decay=wd_schedule
+    )
     model.compile(optimizer=optimizer, loss=loss, metrics=["accuracy"])
     x, y = np.random.uniform(size=(2, 4, 1))
     model.fit(x, y, epochs=1)
@@ -378,8 +371,14 @@ def test_serialization():
     new_optimizer = tf.keras.optimizers.deserialize(config)
     assert new_optimizer.get_config() == optimizer.get_config()
 
+
 def test_serialization_with_wd_schedule():
-    optimizer = weight_decay_optimizers.AdamW(learning_rate=1e-4, weight_decay=TestSchedule())
+    wd_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
+        WEIGHT_DECAY, decay_steps=10, decay_rate=0.9
+    )
+    optimizer = weight_decay_optimizers.AdamW(
+        learning_rate=1e-4, weight_decay=wd_schedule
+    )
     config = tf.keras.optimizers.serialize(optimizer)
-    new_optimizer = tf.keras.optimizers.deserialize(config, custom_objects = {'TestSchedule': TestSchedule})
+    new_optimizer = tf.keras.optimizers.deserialize(config)
     assert new_optimizer.get_config() == optimizer.get_config()

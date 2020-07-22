@@ -76,7 +76,7 @@ class DecoupledWeightDecayExtension:
 
         Args:
             weight_decay: A `Tensor`, a floating point value, or a schedule
-                that is a `tf.keras.optimizers.schedules.LearningRateSchedule 
+                that is a `tf.keras.optimizers.schedules.LearningRateSchedule`
                 to decay the variable by, in the update step.
             **kwargs: Optional list or tuple or set of `Variable` objects to
                 decay.
@@ -98,12 +98,16 @@ class DecoupledWeightDecayExtension:
         # LR handling copied from optimizer_v2.OptimizerV2
         if "learning_rate" in config:
             if isinstance(config["learning_rate"], dict):
-                config["learning_rate"] = tf.keras.optimizers.schedules.deserialize(config["learning_rate"], custom_objects=custom_objects)
-        
+                config["learning_rate"] = tf.keras.optimizers.schedules.deserialize(
+                    config["learning_rate"], custom_objects=custom_objects
+                )
+
         if "weight_decay" in config:
-              if isinstance(config["weight_decay"], dict):
-                config["weight_decay"] = tf.keras.optimizers.schedules.deserialize(config["weight_decay"], custom_objects=custom_objects)
-        
+            if isinstance(config["weight_decay"], dict):
+                config["weight_decay"] = tf.keras.optimizers.schedules.deserialize(
+                    config["weight_decay"], custom_objects=custom_objects
+                )
+
         return cls(**config)
 
     def minimize(self, loss, var_list, grad_loss=None, name=None, decay_var_list=None):
@@ -165,25 +169,19 @@ class DecoupledWeightDecayExtension:
 
     def _decay_weights_op(self, var):
         if not self._decay_var_list or var.ref() in self._decay_var_list:
-            return var.assign_sub(
-                self._decayed_wd(var.dtype) * var, self._use_locking
-            )
+            return var.assign_sub(self._decayed_wd(var.dtype) * var, self._use_locking)
         return tf.no_op()
 
     def _decay_weights_sparse_op(self, var, indices):
         if not self._decay_var_list or var.ref() in self._decay_var_list:
-            update = -self._decayed_wd(var.dtype) * tf.gather(
-                var, indices
-            )
+            update = -self._decayed_wd(var.dtype) * tf.gather(var, indices)
             return self._resource_scatter_add(var, indices, update)
         return tf.no_op()
 
     def _decayed_wd(self, var_dtype):
         wd_t = self._get_hyper("weight_decay", var_dtype)
-        
         if isinstance(wd_t, tf.keras.optimizers.schedules.LearningRateSchedule):
             wd_t = tf.cast(wd_t(self.iterations), var_dtype)
-        
         return wd_t
 
     # Here, we overwrite the apply functions that the base optimizer calls.
