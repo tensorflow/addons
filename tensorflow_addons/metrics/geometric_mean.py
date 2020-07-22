@@ -29,46 +29,44 @@ from tensorflow_addons.utils.types import AcceptableDTypes
 class GeometricMean(Metric):
     @typechecked
     def __init__(
-        self,
-        name: str = 'geometric_mean',
-        dtype: AcceptableDTypes = None,
-        **kwargs
+        self, name: str = "geometric_mean", dtype: AcceptableDTypes = None, **kwargs
     ):
         super().__init__(name=name, dtype=dtype, **kwargs)
         self.accure = self.add_weight(
-            'accure', shape=None, initializer='zeros', dtype=dtype
+            "accure", shape=None, initializer="zeros", dtype=dtype
         )
         self.count = self.add_weight(
-            'count', shape=None, initializer='zeros', dtype=dtype
+            "count", shape=None, initializer="zeros", dtype=dtype
         )
-
 
     def update_state(self, y_true, y_pred=None, sample_weight=None) -> None:
         if y_pred is not None:
             warnings.warn("`y_pred` is not None.")
         if sample_weight is not None:
-            warnings.warn("`sample_weight` is not None. Be aware that GeometricMean does not take `sample_weight` into account when computing the metric value.")
+            warnings.warn(
+                "`sample_weight` is not None. Be aware that GeometricMean"
+                "does not take `sample_weight` into account when computing"
+                " the metric value."
+            )
         values = y_true
         if not isinstance(values, tf.Tensor):
             values = tf.convert_to_tensor(values, dtype=self.dtype)
         elif values.dtype != self.dtype:
             values = tf.cast(values, dtype=self.dtype)
 
-        self.count.assign_add(np.size(values)) 
+        self.count.assign_add(np.size(values))
         if not tf.math.is_inf(self.accure):
             log_v = tf.math.log(values)
             if log_v.shape != []:
                 log_v = tf.reduce_sum(log_v)
             self.accure.assign_add(log_v)
-        
-
 
     def result(self) -> tf.Tensor:
         if tf.math.is_inf(self.accure):
             return tf.constant(0, dtype=self.dtype)
         ret = tf.math.exp(self.accure / self.count)
         print(self.accure, self.count)
-        if not ret.dtype is self.dtype:
+        if ret.dtype is not self.dtype:
             return tf.cast(ret, dtype=self.dtype)
         return ret
 
