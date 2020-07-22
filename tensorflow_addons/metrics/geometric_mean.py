@@ -27,6 +27,23 @@ from tensorflow_addons.utils.types import AcceptableDTypes
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class GeometricMean(Metric):
+    """Compute Geometric Mean
+
+    The geometric mean is a kind of mean. Unlike the arithmetic mean
+    that uses the sum of values, it uses the product of the values to
+    represent typical values in a set of numbers.
+
+    Note: `tfa.metrics.GeometryMean` can be used the same as `tf.keras.metrics.Mean`
+
+    Usage:
+    ```python
+    >>> m = tfa.metrics.GeometricMean()
+    >>> m.update_state([1, 3, 5, 7, 9])
+    >>> m.result().numpy()
+    3.9362833
+    ```
+    """
+
     @typechecked
     def __init__(
         self, name: str = "geometric_mean", dtype: AcceptableDTypes = None, **kwargs
@@ -41,7 +58,7 @@ class GeometricMean(Metric):
 
     def update_state(self, y_true, y_pred=None, sample_weight=None) -> None:
         if y_pred is not None:
-            warnings.warn("`y_pred` is not None.")
+            warnings.warn("`y_pred` is not None. `y_pred` is not used in GeometricMean")
         if sample_weight is not None:
             warnings.warn(
                 "`sample_weight` is not None. Be aware that GeometricMean"
