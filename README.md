@@ -49,7 +49,7 @@ owners for all submodules.
 #### Stable Builds
 TensorFlow Addons is available on PyPI for Linux, macOS, and Windows. To install the latest version, 
 run the following:
-```
+```bash
 pip install tensorflow-addons
 ```
  
@@ -112,7 +112,7 @@ what the name implies, nightly builds are not released every night, but at every
 of the master branch. `0.9.0.dev20200306094440` means that the commit time was 
 2020/03/06 at 09:44:40 Coordinated Universal Time.
 
-```
+```bash
 pip install tfa-nightly
 ```
 
@@ -121,7 +121,7 @@ You can also install from source. This requires the [Bazel](
 https://bazel.build/) build system (version >= 1.0.0).
 
 ##### CPU Custom Ops
-```
+```bash
 git clone https://github.com/tensorflow/addons.git
 cd addons
 
@@ -135,7 +135,7 @@ pip install artifacts/tensorflow_addons-*.whl
 ```
 
 ##### GPU and CPU Custom Ops
-```
+```bash
 git clone https://github.com/tensorflow/addons.git
 cd addons
 
