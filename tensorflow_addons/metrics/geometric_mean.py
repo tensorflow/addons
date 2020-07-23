@@ -14,10 +14,7 @@
 # ==============================================================================
 """Implements GeometricMean."""
 
-import warnings
-
 import tensorflow as tf
-import numpy as np
 from tensorflow.keras import backend as K
 from tensorflow.keras.metrics import Metric
 

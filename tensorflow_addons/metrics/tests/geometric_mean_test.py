@@ -99,13 +99,14 @@ def test_reset_states():
     assert obj.total.numpy() == 0.0
     assert obj.count.numpy() == 0.0
 
+
 @pytest.mark.parametrize(
     "values, sample_weight, expected",
     [
         ([1, 2, 3, 4, 5], 1, 2.6051712),
         ([2.1, 4.6, 7.1], [1, 2, 3], 5.014777),
-        ([9.6, 1.8, 8.2], [0.2, 0.5, 0.3], 3.9649222)
-    ]
+        ([9.6, 1.8, 8.2], [0.2, 0.5, 0.3], 3.9649222),
+    ],
 )
 def test_sample_weight_gmean(values, sample_weight, expected):
     obj = GeometricMean()
