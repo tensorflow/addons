@@ -25,3 +25,4 @@ from tensorflow_addons.metrics.multilabel_confusion_matrix import (
     MultiLabelConfusionMatrix,
 )
 from tensorflow_addons.metrics.r_square import RSquare
+from tensorflow_addons.metrics.geometric_mean import GeometricMean

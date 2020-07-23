@@ -84,3 +84,11 @@ def _get_model(metric, num_output):
     data = np.random.random((10, 3))
     labels = np.random.random((10, num_output))
     model.fit(data, labels, epochs=1, batch_size=5, verbose=0)
+
+
+def sample_weight_shape_match(v, sample_weight):
+    if sample_weight is None:
+        return tf.ones_like(v)
+    if np.size(sample_weight) == 1:
+        return tf.fill(v.shape, sample_weight)
+    return tf.convert_to_tensor(sample_weight)
