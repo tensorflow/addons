@@ -1,4 +1,4 @@
-# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -60,9 +60,9 @@ def test_config_gmean():
 
 def test_init_states_gmean():
     obj = GeometricMean()
-    assert obj.accure.numpy() == 0.0
+    assert obj.total.numpy() == 0.0
     assert obj.count.numpy() == 0.0
-    assert obj.accure.dtype == tf.float32
+    assert obj.total.dtype == tf.float32
     assert obj.count.dtype == tf.float32
 
 
@@ -96,5 +96,18 @@ def test_reset_states():
     obj = GeometricMean()
     obj.update_state([1, 2, 3, 4, 5])
     obj.reset_states()
-    assert obj.accure.numpy() == 0.0
+    assert obj.total.numpy() == 0.0
     assert obj.count.numpy() == 0.0
+
+@pytest.mark.parametrize(
+    "values, sample_weight, expected",
+    [
+        ([1, 2, 3, 4, 5], 1, 2.6051712),
+        ([2.1, 4.6, 7.1], [1, 2, 3], 5.014777),
+        ([9.6, 1.8, 8.2], [0.2, 0.5, 0.3], 3.9649222)
+    ]
+)
+def test_sample_weight_gmean(values, sample_weight, expected):
+    obj = GeometricMean()
+    obj.update_state(values, sample_weight=sample_weight)
+    assert_result(expected, obj.result().numpy())
