@@ -91,4 +91,4 @@ def sample_weight_shape_match(v, sample_weight):
         return tf.ones_like(v)
     if np.size(sample_weight) == 1:
         return tf.fill(v.shape, sample_weight)
-    return sample_weight
+    return tf.convert_to_tensor(sample_weight)
