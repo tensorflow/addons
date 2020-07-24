@@ -126,5 +126,4 @@ def test_keras_fit():
         (tf.random.normal(shape=(100, 1)), tf.random.normal(shape=(100, 1)))
     )
     data = data.batch(10)
-    model.fit(x=data)
     model.fit(x=data, validation_data=data)
