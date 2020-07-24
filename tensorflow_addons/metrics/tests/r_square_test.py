@@ -117,3 +117,14 @@ def test_r2_sklearn_comparison():
 def test_unrecognized_multioutput():
     with pytest.raises(ValueError):
         initialize_vars(multioutput="meadian")
+
+
+def test_keras_fit():
+    model = tf.keras.Sequential([tf.keras.layers.Dense(1)])
+    model.compile(loss="mse", metrics=[RSquare(y_shape=(1,))])
+    data = tf.data.Dataset.from_tensor_slices(
+        (tf.random.normal(shape=(100, 1)), tf.random.normal(shape=(100, 1)))
+    )
+    data = data.batch(10)
+    model.fit(x=data)
+    model.fit(x=data, validation_data=data)

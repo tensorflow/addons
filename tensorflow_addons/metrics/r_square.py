@@ -106,7 +106,12 @@ class RSquare(Metric):
         y_true = tf.cast(y_true, dtype=self._dtype)
         y_pred = tf.cast(y_pred, dtype=self._dtype)
         if sample_weight is None:
-            sample_weight = tf.ones_like(y_true)
+            sample_weight = 1
+        sample_weight = tf.cast(sample_weight, dtype=self._dtype)
+        sample_weight = weights_broadcast_ops.broadcast_weights(
+            weights=sample_weight, values=y_true
+        )
+
         weighted_y_true = y_true * sample_weight
         self.sum.assign_add(tf.reduce_sum(weighted_y_true, axis=0))
         self.squared_sum.assign_add(tf.reduce_sum(y_true * weighted_y_true, axis=0))
