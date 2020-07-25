@@ -136,6 +136,8 @@
 /tensorflow_addons/metrics/tests/multilabel_confusion_matrix_test.py @ssaishruthi
 /tensorflow_addons/metrics/r_square.py @ssaishruthi @marload
 /tensorflow_addons/metrics/tests/r_square_test.py @ssaishruthi @marload
+/tensorflow_addons/metrics/geometric_mean.py @marload
+/tensorflow_addons/metrics/tests/geometric_mean_test.py @marload
 
 /tensorflow_addons/optimizers/average_wrapper.py @squadrick
 /tensorflow_addons/optimizers/conditional_gradient.py @pkan2 @lokhande-vishnu
