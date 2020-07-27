@@ -45,7 +45,8 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
     """
     warnings.warn(
         "gelu activation has been migrated to core TensorFlow, "
-        "and will be deprecated in Addons 0.12."
+        "and will be deprecated in Addons 0.12.",
+        DeprecationWarning,
     )
 
     x = tf.convert_to_tensor(x)

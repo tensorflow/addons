@@ -42,7 +42,8 @@ class GELU(tf.keras.layers.Layer):
     def __init__(self, approximate: bool = True, **kwargs):
         warnings.warn(
             "gelu activation has been migrated to core TensorFlow, "
-            "and will be deprecated in Addons 0.12."
+            "and will be deprecated in Addons 0.12.",
+            DeprecationWarning,
         )
 
         super().__init__(**kwargs)
