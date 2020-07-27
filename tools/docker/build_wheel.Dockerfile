@@ -28,7 +28,7 @@ RUN python -m pip install setuptools
 RUN python -m pip install --upgrade pip==19.0 auditwheel==2.0.0
 
 ARG TF_VERSION
-RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
+RUN python -m pip install --default-timeout=1000 --no-cache-dir tensorflow==$TF_VERSION
 
 COPY tools/install_deps/ /install_deps
 RUN python -m pip install -r /install_deps/pytest.txt
@@ -69,7 +69,7 @@ RUN ls -al wheelhouse/
 FROM python:$PY_VERSION as test_wheel_in_fresh_environment
 
 ARG TF_VERSION
-RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
+RUN python -m pip install --default-timeout=1000 --no-cache-dir tensorflow==$TF_VERSION
 
 COPY --from=make_wheel /addons/wheelhouse/ /addons/wheelhouse/
 RUN pip install /addons/wheelhouse/*.whl
