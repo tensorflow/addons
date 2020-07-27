@@ -2,7 +2,7 @@
 FROM python:3.5 as build_wheel
 
 ARG TF_VERSION=2.2.0
-RUN pip install --default-timeout=1000 --no-cache-dir tensorflow-cpu==$TF_VERSION
+RUN pip install --default-timeout=1000 tensorflow-cpu==$TF_VERSION
 
 RUN apt-get update && apt-get install -y sudo rsync
 COPY tools/install_deps/bazel_linux.sh ./
@@ -29,7 +29,7 @@ RUN bazel-bin/build_pip_pkg artifacts
 FROM python:3.5
 
 COPY tools/install_deps/tensorflow-cpu.txt ./
-RUN pip install --default-timeout=1000 --no-cache-dir -r tensorflow-cpu.txt
+RUN pip install --default-timeout=1000 -r tensorflow-cpu.txt
 
 COPY --from=0 /addons/artifacts /artifacts
 
