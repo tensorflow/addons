@@ -339,6 +339,11 @@ def dynamic_decode(
         if enable_tflite_convertible:
             # Assume the batch_size = 1 for inference.
             # So we can change 2-D TensorArray into 1-D by reshaping it.
+            tf.debugging.assert_equal(
+                decoder.batch_size,
+                1,
+                message="TFLite conversion requires a batch size of 1",
+            )
             zero_outputs = tf.nest.map_structure(
                 lambda shape, dtype: tf.reshape(
                     tf.zeros(_prepend_batch(decoder.batch_size, shape), dtype=dtype),
@@ -368,10 +373,6 @@ def dynamic_decode(
                 batch_size = tf.get_static_value(
                     tf.convert_to_tensor(batch_size, name="batch_size")
                 )
-                if enable_tflite_convertible:
-                    # Since we can't use 2-D TensorArray and assume `batch_size` = 1,
-                    # we use `from_shape` dimension only.
-                    return from_shape
                 return tf.TensorShape([batch_size]).concatenate(from_shape)
 
         dynamic_size = maximum_iterations is None or not is_xla
@@ -379,11 +380,18 @@ def dynamic_decode(
         dynamic_size = dynamic_size and (not enable_tflite_convertible)
 
         def _create_ta(s, d):
+            if enable_tflite_convertible:
+                # TFLite requires 1D element_shape.
+                if isinstance(s, tf.TensorShape) and s.ndims == 0:
+                    s = (1,)
+                element_shape = s
+            else:
+                element_shape = _shape(decoder.batch_size, s)
             return tf.TensorArray(
                 dtype=d,
                 size=0 if dynamic_size else maximum_iterations,
                 dynamic_size=dynamic_size,
-                element_shape=_shape(decoder.batch_size, s),
+                element_shape=element_shape,
             )
 
         initial_outputs_ta = tf.nest.map_structure(

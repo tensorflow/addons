@@ -19,6 +19,7 @@ import pytest
 import tensorflow as tf
 
 from tensorflow_addons.seq2seq import basic_decoder
+from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
 
 
@@ -80,6 +81,47 @@ def test_dynamic_decode_rnn(time_major, maximum_iterations):
     assert _t((batch_size, time_steps, cell_depth)) == final_outputs.rnn_output.shape
     assert _t((batch_size, time_steps)) == final_outputs.sample_id.shape
     np.testing.assert_array_equal(expected_length, final_sequence_length)
+
+
+def test_dynamic_decode_tflite_conversion():
+    units = 10
+    vocab_size = 20
+    cell = tf.keras.layers.LSTMCell(units)
+    sampler = sampler_py.GreedyEmbeddingSampler()
+    embeddings = tf.random.uniform([vocab_size, units])
+    my_decoder = basic_decoder.BasicDecoder(cell=cell, sampler=sampler,)
+
+    @tf.function
+    def _decode(start_tokens, end_token):
+        batch_size = tf.size(start_tokens)
+        initial_state = cell.get_initial_state(batch_size=batch_size, dtype=tf.float32)
+        return decoder.dynamic_decode(
+            my_decoder,
+            maximum_iterations=5,
+            enable_tflite_convertible=True,
+            decoder_init_input=embeddings,
+            decoder_init_kwargs=dict(
+                initial_state=initial_state,
+                start_tokens=start_tokens,
+                end_token=end_token,
+            ),
+        )
+
+    concrete_function = _decode.get_concrete_function(
+        tf.TensorSpec([1], dtype=tf.int32), tf.TensorSpec([], dtype=tf.int32)
+    )
+    converter = tf.lite.TFLiteConverter.from_concrete_functions([concrete_function])
+    converter.target_spec.supported_ops = [
+        tf.lite.OpsSet.TFLITE_BUILTINS,
+        tf.lite.OpsSet.SELECT_TF_OPS,
+    ]
+    _ = converter.convert()
+
+    with pytest.raises(tf.errors.InvalidArgumentError, match="batch size"):
+        # Batch size > 1 should throw an error.
+        _decode.get_concrete_function(
+            tf.TensorSpec([2], dtype=tf.int32), tf.TensorSpec([], dtype=tf.int32)
+        )
 
 
 @pytest.mark.parametrize("use_sequence_length", [True, False])
