@@ -245,4 +245,4 @@ def test_swap_weights(device):
         opt.swap_weights()
 
     np.testing.assert_allclose(var.read_value(), [0.8, 1.8])
-    np.testing.assert_allclose(ema_var.read_value(), [0.85, 1.85])
+    np.testing.assert_allclose(ema_var.read_value(), [0.9, 1.9])
