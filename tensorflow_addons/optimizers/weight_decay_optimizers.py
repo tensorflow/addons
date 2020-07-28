@@ -15,7 +15,6 @@
 """Base class to make optimizers weight decay ready."""
 
 import tensorflow as tf
-from tensorflow.python.ops import array_ops
 from tensorflow_addons.utils.types import FloatTensorLike
 
 from typeguard import typechecked
@@ -195,7 +194,7 @@ class DecoupledWeightDecayExtension:
         )
 
         if "weight_decay" in self._hyper:
-            wd_t = array_ops.identity(self._decayed_wd(var_dtype))
+            wd_t = tf.identity(self._decayed_wd(var_dtype))
             apply_state[(var_device, var_dtype)]["wd_t"] = wd_t
 
     def _decayed_wd(self, var_dtype):
