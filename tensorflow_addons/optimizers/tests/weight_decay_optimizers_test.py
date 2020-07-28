@@ -266,6 +266,19 @@ def test_keras_fit_with_schedule():
     model.fit(x, y, epochs=1)
 
 
+@pytest.mark.with_device(["cpu", "gpu"])
+def test_weight_decay_with_piecewise_constant_decay_schedule():
+    model = tf.keras.models.Sequential([tf.keras.layers.Dense(2)])
+    loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+    wd_schedule = tf.optimizers.schedules.PiecewiseConstantDecay([2], [1e-4, 1e-5])
+    optimizer = weight_decay_optimizers.SGDW(
+        learning_rate=1e-2, weight_decay=wd_schedule
+    )
+    model.compile(optimizer=optimizer, loss=loss, metrics=["accuracy"])
+    x, y = np.random.uniform(size=(2, 4, 1))
+    model.fit(x, y, batch_size=1, epochs=1)
+
+
 @pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
 def test_sparse_sgdw(dtype):
     do_test(
