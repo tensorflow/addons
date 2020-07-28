@@ -21,6 +21,7 @@ import tensorflow as tf
 from tensorflow_addons.seq2seq import basic_decoder
 from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.seq2seq import sampler as sampler_py
+from tensorflow_addons.utils import test_utils
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -84,6 +85,8 @@ def test_dynamic_decode_rnn(time_major, maximum_iterations):
 
 
 def test_dynamic_decode_tflite_conversion():
+    if test_utils.is_gpu_available():
+        pytest.skip("cpu-only test")
     units = 10
     vocab_size = 20
     cell = tf.keras.layers.LSTMCell(units)
