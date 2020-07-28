@@ -16,10 +16,12 @@
 
 import itertools
 
+import pytest
 import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons import text
+from tensorflow_addons.utils import test_utils
 
 
 def calculate_sequence_score(inputs, transition_params, tag_indices, sequence_lengths):
@@ -33,16 +35,17 @@ def calculate_sequence_score(inputs, transition_params, tag_indices, sequence_le
     return expected_unary_score + expected_binary_score
 
 
-def test_crf_sequence_score():
-    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32)
+@pytest.mark.parametrize("dtype", [np.float16, np.float32])
+def test_crf_sequence_score(dtype):
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=dtype)
     # Test both the length-1 and regular cases.
     sequence_lengths_list = [
         np.array(3, dtype=np.int32),
         np.array(1, dtype=np.int32),
     ]
     inputs_list = [
-        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32),
-        np.array([[4, 5, -3]], dtype=np.float32),
+        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=dtype),
+        np.array([[4, 5, -3]], dtype=dtype),
     ]
     tag_indices_list = [
         np.array([1, 2, 1, 0], dtype=np.int32),
@@ -62,19 +65,22 @@ def test_crf_sequence_score():
         expected_sequence_score = calculate_sequence_score(
             inputs, transition_params, tag_indices, sequence_lengths
         )
-        np.testing.assert_allclose(sequence_score, expected_sequence_score)
+        test_utils.assert_allclose_according_to_type(
+            sequence_score, expected_sequence_score
+        )
 
 
-def test_crf_multi_tag_sequence_score():
-    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32)
+@pytest.mark.parametrize("dtype", [np.float16, np.float32])
+def test_crf_multi_tag_sequence_score(dtype):
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=dtype)
     # Test both the length-1 and regular cases.
     sequence_lengths_list = [
         np.array(3, dtype=np.int32),
         np.array(1, dtype=np.int32),
     ]
     inputs_list = [
-        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32),
-        np.array([[4, 5, -3]], dtype=np.float32),
+        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=dtype),
+        np.array([[4, 5, -3]], dtype=dtype),
     ]
     tag_bitmap_list = [
         np.array(
@@ -111,11 +117,14 @@ def test_crf_multi_tag_sequence_score():
         expected_log_sum_exp_sequence_scores = np.logaddexp.reduce(
             expected_sequence_scores
         )
-        np.testing.assert_allclose(sequence_score, expected_log_sum_exp_sequence_scores)
+        test_utils.assert_allclose_according_to_type(
+            sequence_score, expected_log_sum_exp_sequence_scores
+        )
 
 
-def test_crf_unary_score():
-    inputs = np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32)
+@pytest.mark.parametrize("dtype", [np.float16, np.float32])
+def test_crf_unary_score(dtype):
+    inputs = np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=dtype)
     for dtype in (np.int32, np.int64):
         tag_indices = np.array([1, 2, 1, 0], dtype=dtype)
         sequence_lengths = np.array(3, dtype=np.int32)
@@ -128,12 +137,13 @@ def test_crf_unary_score():
         expected_unary_score = sum(
             inputs[i][tag_indices[i]] for i in range(sequence_lengths)
         )
-        np.testing.assert_allclose(unary_score, expected_unary_score)
+        test_utils.assert_allclose_according_to_type(unary_score, expected_unary_score)
 
 
-def test_crf_binary_score():
+@pytest.mark.parametrize("dtype", [np.float16, np.float32])
+def test_crf_binary_score(dtype):
     tag_indices = np.array([1, 2, 1, 0], dtype=np.int32)
-    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32)
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=dtype)
     sequence_lengths = np.array(3, dtype=np.int32)
     binary_score = text.crf_binary_score(
         tag_indices=tf.expand_dims(tag_indices, 0),
@@ -145,19 +155,20 @@ def test_crf_binary_score():
         transition_params[tag_indices[i], tag_indices[i + 1]]
         for i in range(sequence_lengths - 1)
     )
-    np.testing.assert_allclose(binary_score, expected_binary_score)
+    test_utils.assert_allclose_according_to_type(binary_score, expected_binary_score)
 
 
-def test_crf_log_norm():
-    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32)
+@pytest.mark.parametrize("dtype", [np.float16, np.float32])
+def test_crf_log_norm(dtype):
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=dtype)
     # Test both the length-1 and regular cases.
     sequence_lengths_list = [
         np.array(3, dtype=np.int32),
         np.array(1, dtype=np.int64),
     ]
     inputs_list = [
-        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32),
-        np.array([[3, -1, 3]], dtype=np.float32),
+        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=dtype),
+        np.array([[3, -1, 3]], dtype=dtype),
     ]
     tag_indices_list = [
         np.array([1, 2, 1, 0], dtype=np.int32),
@@ -192,23 +203,25 @@ def test_crf_log_norm():
         )
         log_norm = tf.squeeze(log_norm, [0])
 
-        np.testing.assert_allclose(log_norm, brute_force_log_norm)
+        test_utils.assert_allclose_according_to_type(log_norm, brute_force_log_norm)
 
 
-def test_crf_log_norm_zero_seq_length():
+@pytest.mark.parametrize("dtype", [np.float16, np.float32])
+def test_crf_log_norm_zero_seq_length(dtype):
     """Test `crf_log_norm` when `sequence_lengths` contains one or more
     zeros."""
-    inputs = tf.constant(np.ones([2, 10, 5], dtype=np.float32))
-    transition_params = tf.constant(np.ones([5, 5], dtype=np.float32))
+    inputs = tf.constant(np.ones([2, 10, 5], dtype=dtype))
+    transition_params = tf.constant(np.ones([5, 5], dtype=dtype))
     sequence_lengths = tf.constant(np.zeros([2], dtype=np.int32))
-    expected_log_norm = np.zeros([2], dtype=np.float32)
+    expected_log_norm = np.zeros([2], dtype=dtype)
     log_norm = text.crf_log_norm(inputs, sequence_lengths, transition_params)
-    np.testing.assert_allclose(log_norm, expected_log_norm)
+    test_utils.assert_allclose_according_to_type(log_norm, expected_log_norm)
 
 
-def test_crf_log_likelihood():
-    inputs = np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32)
-    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32)
+@pytest.mark.parametrize("dtype", [np.float16, np.float32])
+def test_crf_log_likelihood(dtype):
+    inputs = np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=dtype)
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=dtype)
     sequence_lengths = np.array(3, dtype=np.int32)
 
     num_words = inputs.shape[0]
@@ -227,7 +240,9 @@ def test_crf_log_likelihood():
         )
         all_sequence_log_likelihoods.append(sequence_log_likelihood)
     total_log_likelihood = tf.reduce_logsumexp(all_sequence_log_likelihoods)
-    np.testing.assert_allclose(total_log_likelihood, 0.0, 1e-6, 1e-6)
+    test_utils.assert_allclose_according_to_type(
+        total_log_likelihood, 0.0, rtol=1e-6, atol=1e-6, half_rtol=2e-3, half_atol=2e-3
+    )
 
     # check if `transition_params = None` raises an error
     text.crf_log_likelihood(
@@ -237,9 +252,10 @@ def test_crf_log_likelihood():
     )
 
 
-def test_viterbi_decode():
-    inputs = np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32)
-    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32)
+@pytest.mark.parametrize("dtype", [np.float16, np.float32])
+def test_viterbi_decode(dtype):
+    inputs = np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=dtype)
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=dtype)
     sequence_lengths = np.array(3, dtype=np.int32)
     num_words = inputs.shape[0]
     num_tags = inputs.shape[1]
@@ -269,20 +285,21 @@ def test_viterbi_decode():
         inputs[:sequence_lengths], transition_params
     )
 
-    np.testing.assert_allclose(actual_max_score, expected_max_score)
+    test_utils.assert_allclose_according_to_type(actual_max_score, expected_max_score)
     assert actual_max_sequence == expected_max_sequence[:sequence_lengths]
 
 
-def test_crf_decode():
-    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=np.float32)
+@pytest.mark.parametrize("dtype", [np.float16, np.float32])
+def test_crf_decode(dtype):
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=dtype)
     # Test both the length-1 and regular cases.
     sequence_lengths_list = [
         np.array(3, dtype=np.int32),
         np.array(1, dtype=np.int64),
     ]
     inputs_list = [
-        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=np.float32),
-        np.array([[-1, 2, 1]], dtype=np.float32),
+        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=dtype),
+        np.array([[-1, 2, 1]], dtype=dtype),
     ]
     tag_indices_list = [
         np.array([1, 2, 1, 0], dtype=np.int32),
@@ -324,7 +341,9 @@ def test_crf_decode():
         actual_max_sequence = tf.squeeze(actual_max_sequence, [0])
         actual_max_score = tf.squeeze(actual_max_score, [0])
 
-        np.testing.assert_allclose(actual_max_score, expected_max_score, 1e-6, 1e-6)
+        test_utils.assert_allclose_according_to_type(
+            actual_max_score, expected_max_score, 1e-6, 1e-6
+        )
         assert (
             list(actual_max_sequence[:sequence_lengths])
             == expected_max_sequence[:sequence_lengths]

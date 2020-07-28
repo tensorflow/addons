@@ -25,6 +25,7 @@ import tensorflow as tf
 
 from tensorflow_addons.layers.crf import CRF
 from tensorflow_addons.text.crf import crf_log_likelihood
+from tensorflow_addons.utils import test_utils
 
 
 def get_test_data():
@@ -79,6 +80,7 @@ def get_test_data_extended():
     return logits, tags, transitions, boundary_values, crf_layer
 
 
+@pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_keras_model_inference():
     logits, _, _, _, crf_layer = get_test_data_extended()
 
@@ -90,8 +92,8 @@ def test_keras_model_inference():
     model(logits).numpy()
 
 
+@pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_unmasked_viterbi_decode():
-
     x_np, y_np = get_test_data()
 
     transitions = np.ones([5, 5])
@@ -162,6 +164,7 @@ class ModelWithCRFLoss(tf.keras.Model):
         return {"crf_loss_val": crf_loss, "internal_losses_val": internal_losses}
 
 
+@pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_traing():
     x_np, y_np = get_test_data()
     get_some_model(x_np, y_np)
@@ -182,6 +185,7 @@ def get_some_model(x_np, y_np, sanity_check=True):
     return model
 
 
+@pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_mask_right_padding():
     x_np, y_np = get_test_data()
     mask = np.array([[1, 1, 1], [1, 1, 0]])
@@ -206,6 +210,7 @@ def test_mask_right_padding():
     model.predict(x_np)
 
 
+@pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_mask_left_padding():
     x_np, y_np = get_test_data()
     mask = np.array([[0, 1, 1], [1, 1, 1]])
@@ -252,6 +257,7 @@ def assert_all_equal(array_list1, array_list2):
         np.testing.assert_equal(np.array(arr1), np.array(arr2))
 
 
+@pytest.mark.usefixtures("run_with_mixed_precision_policy")
 @pytest.mark.parametrize("inference_only", [True, False])
 def test_serialization(inference_only):
 
@@ -269,6 +275,7 @@ def test_serialization(inference_only):
         assert original_loss == clone_loss
 
 
+@pytest.mark.usefixtures("run_with_mixed_precision_policy")
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_numerical_accuracy():
     logits, tags, transitions, boundary_values, crf_layer = get_test_data_extended()
@@ -288,8 +295,8 @@ def test_numerical_accuracy():
     )
     unbatched_log_likelihood = -2 * log_likelihood
 
-    np.testing.assert_allclose(
-        expected_log_likelihood, unbatched_log_likelihood, rtol=2e-7
+    test_utils.assert_allclose_according_to_type(
+        expected_log_likelihood, unbatched_log_likelihood, rtol=5e-5
     )
 
 

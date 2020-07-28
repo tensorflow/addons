@@ -189,8 +189,8 @@ class CRF(tf.keras.layers.Layer):
             # expand tensor from shape (x, ) to (1, 1, x)
             return tf.reshape(x, (1, 1, -1))
 
-        start = expand_scalar_to_3d(start)
-        end = expand_scalar_to_3d(end)
+        start = tf.cast(expand_scalar_to_3d(start), potentials.dtype)
+        end = tf.cast(expand_scalar_to_3d(end), potentials.dtype)
         if mask is None:
             potentials = tf.concat(
                 [potentials[:, :1, :] + start, potentials[:, 1:, :]], axis=1

@@ -108,7 +108,9 @@ def crf_multitag_sequence_score(
     tag_bitmap = tf.cast(tag_bitmap, dtype=tf.bool)
     sequence_lengths = tf.cast(sequence_lengths, dtype=tf.int32)
     filtered_inputs = tf.where(
-        tag_bitmap, inputs, tf.fill(tf.shape(inputs), float("-inf"))
+        tag_bitmap,
+        inputs,
+        tf.fill(tf.shape(inputs), tf.cast(float("-inf"), inputs.dtype)),
     )
 
     # If max_seq_len is 1, we skip the score calculation and simply gather the
@@ -198,6 +200,8 @@ def crf_log_likelihood(
       transition_params: A [num_tags, num_tags] transition matrix. This is
           either provided by the caller or created in this function.
     """
+    inputs = tf.convert_to_tensor(inputs)
+
     num_tags = inputs.shape[2]
 
     # cast type to handle different types
@@ -209,7 +213,7 @@ def crf_log_likelihood(
         transition_params = tf.Variable(
             initializer([num_tags, num_tags]), "transitions"
         )
-
+    transition_params = tf.cast(transition_params, inputs.dtype)
     sequence_scores = crf_sequence_score(
         inputs, tag_indices, sequence_lengths, transition_params
     )
@@ -253,7 +257,7 @@ def crf_unary_score(
     )
 
     masks = tf.sequence_mask(
-        sequence_lengths, maxlen=tf.shape(tag_indices)[1], dtype=tf.float32
+        sequence_lengths, maxlen=tf.shape(tag_indices)[1], dtype=unary_scores.dtype
     )
 
     unary_scores = tf.reduce_sum(unary_scores * masks, 1)
@@ -291,7 +295,7 @@ def crf_binary_score(
     binary_scores = tf.gather(flattened_transition_params, flattened_transition_indices)
 
     masks = tf.sequence_mask(
-        sequence_lengths, maxlen=tf.shape(tag_indices)[1], dtype=tf.float32
+        sequence_lengths, maxlen=tf.shape(tag_indices)[1], dtype=binary_scores.dtype
     )
     truncated_masks = tf.slice(masks, [0, 1], [-1, -1])
     binary_scores = tf.reduce_sum(binary_scores * truncated_masks, 1)
@@ -416,8 +420,8 @@ class CrfDecodeForwardRnnCell(tf.keras.layers.AbstractRNNCell):
           new_state: A [batch_size, num_tags] matrix of new score values.
         """
         state = tf.expand_dims(state[0], 2)
-        transition_scores = state + self._transition_params
-        new_state = inputs + tf.reduce_max(transition_scores, [1])
+        transition_scores = state + tf.cast(self._transition_params, state.dtype)
+        new_state = tf.cast(inputs, state.dtype) + tf.reduce_max(transition_scores, [1])
         backpointers = tf.argmax(transition_scores, 1)
         backpointers = tf.cast(backpointers, dtype=tf.int32)
         return backpointers, new_state
