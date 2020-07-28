@@ -257,7 +257,6 @@ def assert_all_equal(array_list1, array_list2):
         np.testing.assert_equal(np.array(arr1), np.array(arr2))
 
 
-@pytest.mark.usefixtures("run_with_mixed_precision_policy")
 @pytest.mark.parametrize("inference_only", [True, False])
 def test_serialization(inference_only):
 
