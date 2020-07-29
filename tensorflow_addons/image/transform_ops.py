@@ -239,28 +239,24 @@ def angles_to_projective_transforms(
             angles = angle_or_angles
         else:
             raise ValueError("angles should have rank 0 or 1.")
+        cos_angles = tf.math.cos(angles)
+        sin_angles = tf.math.sin(angles)
         x_offset = (
             (image_width - 1)
-            - (
-                tf.math.cos(angles) * (image_width - 1)
-                - tf.math.sin(angles) * (image_height - 1)
-            )
+            - (cos_angles * (image_width - 1) - sin_angles * (image_height - 1))
         ) / 2.0
         y_offset = (
             (image_height - 1)
-            - (
-                tf.math.sin(angles) * (image_width - 1)
-                + tf.math.cos(angles) * (image_height - 1)
-            )
+            - (sin_angles * (image_width - 1) + cos_angles * (image_height - 1))
         ) / 2.0
         num_angles = tf.shape(angles)[0]
         return tf.concat(
             values=[
-                tf.math.cos(angles)[:, None],
-                -tf.math.sin(angles)[:, None],
+                cos_angles[:, None],
+                -sin_angles[:, None],
                 x_offset[:, None],
-                tf.math.sin(angles)[:, None],
-                tf.math.cos(angles)[:, None],
+                sin_angles[:, None],
+                cos_angles[:, None],
                 y_offset[:, None],
                 tf.zeros((num_angles, 2), tf.dtypes.float32),
             ],
