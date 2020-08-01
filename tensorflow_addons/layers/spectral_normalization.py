@@ -59,8 +59,8 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
     def build(self, input_shape):
         """Build `Layer`"""
         super().build(input_shape)
-        input_shape = tf.TensorShape(input_shape).as_list()
-        self.input_spec = tf.keras.layers.InputSpec(shape=input_shape)
+        input_shape = tf.TensorShape(input_shape)
+        self.input_spec = tf.keras.layers.InputSpec(shape=[None] + input_shape[1:])
 
         if hasattr(self.layer, "kernel"):
             self.w = self.layer.kernel
