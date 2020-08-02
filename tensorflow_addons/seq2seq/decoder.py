@@ -266,6 +266,7 @@ def dynamic_decode(
     swap_memory: bool = False,
     training: Optional[bool] = None,
     scope: Optional[str] = None,
+    enable_tflite_convertible: bool = False,
     **kwargs
 ) -> Tuple[Any, Any, Any]:
     """Perform dynamic decoding with `decoder`.
@@ -293,6 +294,9 @@ def dynamic_decode(
           in training  mode or in inference mode. Only relevant
           when `dropout` or `recurrent_dropout` is used.
       scope: Optional name scope to use.
+      enable_tflite_convertible: Python boolean. If `True`, then the variables
+        of `TensorArray` become of 1-D static shape. Also zero pads in the
+        output tensor will be discarded. Default: `False`.
       **kwargs: dict, other keyword arguments for dynamic_decode. It might
         contain arguments for `BaseDecoder` to initialize, which takes all
         tensor inputs during call().
@@ -332,13 +336,30 @@ def dynamic_decode(
                 decoder_init_input, **decoder_init_kwargs
             )
 
-        zero_outputs = tf.nest.map_structure(
-            lambda shape, dtype: tf.zeros(
-                _prepend_batch(decoder.batch_size, shape), dtype=dtype
-            ),
-            decoder.output_size,
-            decoder.output_dtype,
-        )
+        if enable_tflite_convertible:
+            # Assume the batch_size = 1 for inference.
+            # So we can change 2-D TensorArray into 1-D by reshaping it.
+            tf.debugging.assert_equal(
+                decoder.batch_size,
+                1,
+                message="TFLite conversion requires a batch size of 1",
+            )
+            zero_outputs = tf.nest.map_structure(
+                lambda shape, dtype: tf.reshape(
+                    tf.zeros(_prepend_batch(decoder.batch_size, shape), dtype=dtype),
+                    [-1],
+                ),
+                decoder.output_size,
+                decoder.output_dtype,
+            )
+        else:
+            zero_outputs = tf.nest.map_structure(
+                lambda shape, dtype: tf.zeros(
+                    _prepend_batch(decoder.batch_size, shape), dtype=dtype
+                ),
+                decoder.output_size,
+                decoder.output_dtype,
+            )
 
         if maximum_iterations is not None:
             initial_finished = tf.logical_or(initial_finished, 0 >= maximum_iterations)
@@ -355,13 +376,22 @@ def dynamic_decode(
                 return tf.TensorShape([batch_size]).concatenate(from_shape)
 
         dynamic_size = maximum_iterations is None or not is_xla
+        # The dynamic shape `TensorArray` is not allowed in TFLite yet.
+        dynamic_size = dynamic_size and (not enable_tflite_convertible)
 
         def _create_ta(s, d):
+            if enable_tflite_convertible:
+                # TFLite requires 1D element_shape.
+                if isinstance(s, tf.TensorShape) and s.ndims == 0:
+                    s = (1,)
+                element_shape = s
+            else:
+                element_shape = _shape(decoder.batch_size, s)
             return tf.TensorArray(
                 dtype=d,
                 size=0 if dynamic_size else maximum_iterations,
                 dynamic_size=dynamic_size,
-                element_shape=_shape(decoder.batch_size, s),
+                element_shape=element_shape,
             )
 
         initial_outputs_ta = tf.nest.map_structure(
@@ -465,6 +495,10 @@ def dynamic_decode(
             else:
                 next_state = decoder_state
 
+            if enable_tflite_convertible:
+                # Reshape to 1-D.
+                emit = tf.nest.map_structure(lambda x: tf.reshape(x, [-1]), emit)
+
             outputs_ta = tf.nest.map_structure(
                 lambda ta, out: ta.write(time, out), outputs_ta, emit
             )
@@ -507,6 +541,13 @@ def dynamic_decode(
             pass
 
         if not output_time_major:
+            if enable_tflite_convertible:
+                # Reshape the output to the original shape.
+                def _restore_batch(x):
+                    return tf.expand_dims(x, [1])
+
+                final_outputs = tf.nest.map_structure(_restore_batch, final_outputs)
+
             final_outputs = tf.nest.map_structure(_transpose_batch_time, final_outputs)
 
     return final_outputs, final_state, final_sequence_lengths
