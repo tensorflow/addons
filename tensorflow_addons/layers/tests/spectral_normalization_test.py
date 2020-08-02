@@ -13,8 +13,6 @@
 # limitations under the License.
 # =============================================================================
 
-from pathlib import Path
-
 import numpy as np
 import pytest
 import tensorflow as tf
@@ -52,9 +50,8 @@ def test_save_load_model(tmpdir):
     # initialize model
     model.predict(np.random.uniform(size=(2, 1)))
 
-    model_path = str(Path(tmpdir) / "saved_model")
-    model.save(model_path)
-    new_model = tf.keras.models.load_model(model_path)
+    model.save(tmpdir)
+    new_model = tf.keras.models.load_model(tmpdir)
 
     assert model.layers[0].get_config() == new_model.layers[0].get_config()
 
@@ -146,8 +143,8 @@ def test_apply_layer():
         input_shape=(2, 2, 1),
     )
 
-    result = sn_wrapper.__call__(images, training=False)
-    result_train = sn_wrapper.__call__(images, training=True)
+    result = sn_wrapper(images, training=False)
+    result_train = sn_wrapper(images, training=True)
     expected_output = np.array([[[[4.0]]]], dtype=np.float32)
 
     np.testing.assert_allclose(result, expected_output)
