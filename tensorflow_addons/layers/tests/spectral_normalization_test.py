@@ -13,7 +13,6 @@
 # limitations under the License.
 # =============================================================================
 
-import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -42,7 +41,7 @@ def test_from_to_config():
     assert sn.power_iterations == new_sn.power_iterations
 
 
-def test_save_load_model():
+def test_save_load_model(tmpdir):
     base_layer = tf.keras.layers.Dense(1)
     input_shape = [1]
 
@@ -53,10 +52,9 @@ def test_save_load_model():
     # initialize model
     model.predict(np.random.uniform(size=(2, 1)))
 
-    with tempfile.TemporaryDirectory() as model_dir:
-        model_path = str(Path(model_dir) / "saved_model")
-        model.save(model_path)
-        new_model = tf.keras.models.load_model(model_path)
+    model_path = str(Path(tmpdir) / "saved_model")
+    model.save(model_path)
+    new_model = tf.keras.models.load_model(model_path)
 
     assert model.layers[0].get_config() == new_model.layers[0].get_config()
 
