@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-'''
+"""
 Tests for COntinuos COin Betting (COCOB) Backprop optimizer
-'''
+"""
 
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.optimizers import COCOB
+
 
 def run_dense_sample(iterations, expected, optimizer):
     var_0 = tf.Variable([1.0, 2.0], dtype=tf.dtypes.float32)
@@ -31,7 +32,7 @@ def run_dense_sample(iterations, expected, optimizer):
 
     for _ in range(iterations):
         optimizer.apply_gradients(grads_and_vars)
-    
+
     np.testing.assert_allclose(var_0.read_value(), expected[0], atol=2e-4)
     np.testing.assert_allclose(var_1.read_value(), expected[1], atol=2e-4)
 
@@ -39,20 +40,31 @@ def run_dense_sample(iterations, expected, optimizer):
 def test_dense_sample_with_default_alpha():
     run_dense_sample(
         iterations=100,
-        expected=[[-4.183396e+16, -4.183396e+16], [-4.1833639e+16, -4.1833858e+16]],
-        optimizer=COCOB()
-        )
+        expected=[
+            [-4.183396e16, -4.183396e16],
+            [-4.1833639e16, -4.1833858e16]
+            ],
+        optimizer=COCOB(),
+    )
+
 
 def test_dense_sample_with_custom_int_alpha():
     run_dense_sample(
         iterations=100,
-        expected=[[-8.60311e+26, -8.60311e+26], [-8.603111e+26, -8.603099e+26]],
-        optimizer=COCOB(20)
-        )
+        expected=[
+            [-8.60311e26, -8.60311e26],
+            [-8.603111e26, -8.603099e26]
+            ],
+        optimizer=COCOB(20),
+    )
+
 
 def test_dense_sample_with_custom_float_alpha():
     run_dense_sample(
         iterations=78,
-        expected=[[-6.7280056e+15, -6.7280056e+15], [-6.7279933e+15, -6.7280217e+15]],
-        optimizer=COCOB(55.7)
-        )
+        expected=[
+            [-6.7280056e15, -6.7280056e15],
+            [-6.7279933e15, -6.7280217e15]
+            ],
+        optimizer=COCOB(55.7),
+    )

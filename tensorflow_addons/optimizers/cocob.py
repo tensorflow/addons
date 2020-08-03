@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-'''
+"""
 COntinuos COin Betting (COCOB) Backprop optimizer
-'''
+"""
 
 from tensorflow.python.ops import state_ops
 from tensorflow.python.ops import control_flow_ops
@@ -30,13 +30,15 @@ class COCOB(tf.keras.optimizers.Optimizer):
         - [Training Deep Networks without Learning Rates Through Coin Betting
 ](http://papers.nips.cc/paper/6811-training-deep-networks-without-learning-rates-through-coin-betting)
     """
-    def __init__(self, alpha=100, use_locking=False, name='COCOB', **kwargs):
+
+    def __init__(self, alpha=100, use_locking=False, name="COCOB", **kwargs):
         """
         Constructs a new COCOB-Backprop optimizer
 
         Arguments:
             `aplha`: Default value is set to 100 as per paper.
-                     This has the effect of restricting the value of the parameters in the first iterations of the algorithm.
+                     This has the effect of restricting the value of the
+                     parameters in the first iterations of the algorithm.
                      (Refer to Paper for indepth understanding)
 
         Rasies:
@@ -49,7 +51,7 @@ class COCOB(tf.keras.optimizers.Optimizer):
             raise ValueError("`alpha` must be greater than Zero")
 
         super().__init__(name, **kwargs)
-        self._set_hyper('alpha', alpha)
+        self._set_hyper("alpha", alpha)
         self._alpha = alpha
 
     def _create_slots(self, var_list):
@@ -70,28 +72,39 @@ class COCOB(tf.keras.optimizers.Optimizer):
         L_update = tf.maximum(L, tf.abs(grad))
         gradients_sum_update = gradients_sum + grad
         grad_norm_sum_update = grad_norm_sum + tf.abs(grad)
-        reward_update = tf.maximum(reward-grad*tilde_w, 0)
-        new_w = -gradients_sum_update / \
-            (L_update*(tf.maximum(grad_norm_sum_update+L_update,
-                                  self._alpha*L_update)))*(reward_update+L_update)
-        var_update = handle-tilde_w+new_w
+        reward_update = tf.maximum(reward - grad * tilde_w, 0)
+        new_w = -gradients_sum_update / (L_update*(
+                    tf.maximum(
+                            grad_norm_sum_update+L_update,
+                            self._alpha*L_update
+                        )
+                    ))*(reward_update+L_update)
+        var_update = handle - tilde_w + new_w
         tilde_w_update = new_w
 
         gradients_sum_update_op = state_ops.assign(
-            gradients_sum, gradients_sum_update)
+                                        gradients_sum,
+                                        gradients_sum_update
+                                    )
         grad_norm_sum_update_op = state_ops.assign(
-            grad_norm_sum, grad_norm_sum_update)
+                                        grad_norm_sum,
+                                        grad_norm_sum_update
+                                    )
         var_update_op = state_ops.assign(handle, var_update)
         tilde_w_update_op = state_ops.assign(tilde_w, tilde_w_update)
         L_update_op = state_ops.assign(L, L_update)
         reward_update_op = state_ops.assign(reward, reward_update)
 
-        return control_flow_ops.group(*[gradients_sum_update_op,
-                                        var_update_op,
-                                        grad_norm_sum_update_op,
-                                        tilde_w_update_op,
-                                        reward_update_op,
-                                        L_update_op])
+        return control_flow_ops.group(
+            *[
+                gradients_sum_update_op,
+                var_update_op,
+                grad_norm_sum_update_op,
+                tilde_w_update_op,
+                reward_update_op,
+                L_update_op,
+            ]
+        )
 
     def _resource_apply_sparse(self, grad, handle, indices, apply_state=None):
         raise NotImplementedError()
@@ -99,7 +112,7 @@ class COCOB(tf.keras.optimizers.Optimizer):
     def get_config(self):
 
         config = {
-            'alpha': self._serialize_hyperparameter('alpha'),
+            "alpha": self._serialize_hyperparameter("alpha"),
         }
         base_config = super().get_config()
         return {**base_config, **config}
