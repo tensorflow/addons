@@ -73,7 +73,7 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
           num_classes: Number of unique classes in your dataset.
           weightage: (Optional) Weighting to be considered for calculating
             kappa statistics. A valid value is one of
-            ['linear', 'quadratic']. Defaults to `quadratic`.
+            ['linear', 'quadratic']. Defaults to 'quadratic'.
           name: (Optional) String name of the metric instance.
           epsilon: (Optional) increment to avoid log zero,
             so the loss will be $ \log(1 - k + \epsilon) $, where $ k $ lies
