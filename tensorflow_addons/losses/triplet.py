@@ -74,7 +74,19 @@ def triplet_semihard_loss(
     margin: FloatTensorLike = 1.0,
     distance_metric: Union[str, Callable] = "L2",
 ) -> tf.Tensor:
-    """Computes the triplet loss with semi-hard negative mining.
+    r"""Computes the triplet loss with semi-hard negative mining.
+
+    Usage:
+
+    >>> y_true = tf.convert_to_tensor([0, 0])
+    >>> y_pred = tf.convert_to_tensor([[0.0, 1.0], [1.0, 0.0]])
+    >>> tfa.losses.triplet_semihard_loss(y_true, y_pred, distance_metric="L2")
+    <tf.Tensor: shape=(), dtype=float32, numpy=2.4142137>
+
+    >>> # Calling with callable `distance_metric`
+    >>> distance_metric = lambda x: tf.linalg.matmul(x, x, transpose_b=True)
+    >>> tfa.losses.triplet_semihard_loss(y_true, y_pred, distance_metric=distance_metric)
+    <tf.Tensor: shape=(), dtype=float32, numpy=1.0>
 
     Args:
       y_true: 1-D integer `Tensor` with shape `[batch_size]` of
@@ -198,7 +210,19 @@ def triplet_hard_loss(
     soft: bool = False,
     distance_metric: Union[str, Callable] = "L2",
 ) -> tf.Tensor:
-    """Computes the triplet loss with hard negative and hard positive mining.
+    r"""Computes the triplet loss with hard negative and hard positive mining.
+
+    Usage:
+
+    >>> y_true = tf.convert_to_tensor([0, 0])
+    >>> y_pred = tf.convert_to_tensor([[0.0, 1.0], [1.0, 0.0]])
+    >>> tfa.losses.triplet_hard_loss(y_true, y_pred, distance_metric="L2")
+    <tf.Tensor: shape=(), dtype=float32, numpy=1.0>
+
+    >>> # Calling with callable `distance_metric`
+    >>> distance_metric = lambda x: tf.linalg.matmul(x, x, transpose_b=True)
+    >>> tfa.losses.triplet_hard_loss(y_true, y_pred, distance_metric=distance_metric)
+    <tf.Tensor: shape=(), dtype=float32, numpy=0.0>
 
     Args:
       y_true: 1-D integer `Tensor` with shape `[batch_size]` of
