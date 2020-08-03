@@ -16,6 +16,7 @@
 COntinuos COin Betting (COCOB) Backprop optimizer
 """
 
+from typeguard import typechecked
 from tensorflow.python.ops import state_ops
 from tensorflow.python.ops import control_flow_ops
 import tensorflow as tf
