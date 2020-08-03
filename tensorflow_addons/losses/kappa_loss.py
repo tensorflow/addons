@@ -25,7 +25,7 @@ from tensorflow_addons.utils.types import Number
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class WeightedKappaLoss(tf.keras.losses.Loss):
-    """Implements the Weighted Kappa loss function.
+    r"""Implements the Weighted Kappa loss function.
 
     Weighted Kappa loss was introduced in the
     [Weighted kappa loss function for multi-class classification
@@ -67,7 +67,7 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
         dtype: Optional[tf.DType] = tf.float32,
         reduction: str = tf.keras.losses.Reduction.NONE,
     ):
-        """Creates a `WeightedKappa` instance.
+        r"""Creates a `WeightedKappa` instance.
 
         Args:
           num_classes: Number of unique classes in your dataset.
