@@ -35,13 +35,12 @@ class COCOB(tf.keras.optimizers.Optimizer):
         Constructs a new COCOB-Backprop optimizer
 
         Arguments:
-            `aplha`: Default value is set to 100 as per paper. 
+            `aplha`: Default value is set to 100 as per paper.
                      This has the effect of restricting the value of the parameters in the first iterations of the algorithm.
                      (Refer to Paper for indepth understanding)
-        
+
         Rasies:
             `ValueError`: If the value of `alpha` is less than 1.
-            
             `NotImplementedError`: If the data is in sparse format.
 
         """
@@ -93,7 +92,6 @@ class COCOB(tf.keras.optimizers.Optimizer):
                                         tilde_w_update_op,
                                         reward_update_op,
                                         L_update_op])
-
 
     def _resource_apply_sparse(self, grad, handle, indices, apply_state=None):
         raise NotImplementedError()
