@@ -17,9 +17,8 @@ Tests for COntinuos COin Betting (COCOB) Backprop optimizer
 '''
 
 import numpy as np
-import pytest
 import tensorflow as tf
-from cocob_f import COCOB
+from tensorflow_addons.optimizers import COCOB
 
 def run_dense_sample(iterations, expected, optimizer):
     var_0 = tf.Variable([1.0, 2.0], dtype=tf.dtypes.float32)
