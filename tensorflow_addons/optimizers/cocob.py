@@ -33,7 +33,13 @@ class COCOB(tf.keras.optimizers.Optimizer):
     """
 
     @typechecked
-    def __init__(self, alpha=100, use_locking=False, name="COCOB", **kwargs):
+    def __init__(
+        self,
+        alpha: float = 100,
+        use_locking: bool = False,
+        name: str = "COCOB",
+        **kwargs
+    ):
         """
         Constructs a new COCOB-Backprop optimizer
 
