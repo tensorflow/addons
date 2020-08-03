@@ -40,7 +40,7 @@ class GIoULoss(LossFunctionWrapper):
     loss = gl(boxes1, boxes2)
     print('Loss: ', loss.numpy())  # Loss: [1.07500000298023224, 1.9333333373069763]
     ```
-    Usage with tf.keras API:
+    Usage with `tf.keras` API:
 
     ```python
     model = tf.keras.Model(inputs, outputs)

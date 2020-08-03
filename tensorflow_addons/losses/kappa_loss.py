@@ -32,8 +32,8 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
     of ordinal data in deep learning]
     (https://www.sciencedirect.com/science/article/abs/pii/S0167865517301666).
     Weighted Kappa is widely used in Ordinal Classification Problems.
-    The loss value lies in [-inf, log 2], where log 2
-     means the random prediction.
+    The loss value lies in $ [-\infty, \log 2] $, where $ \log 2 $
+    means the random prediction.
 
     Usage:
 
@@ -77,8 +77,8 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
             mostly used.
           name: (Optional) String name of the metric instance.
           epsilon: (Optional) increment to avoid log zero,
-            so the loss will be log(1 - k + epsilon), where k belongs to
-            [-1, 1], usually you can use the default value which is 1e-6.
+            so the loss will be $ \log(1 - k + \epsilon) $, where $ k $ lies
+            $ [-1, 1] $, usually you can use the default value which is 1e-6.
           dtype: (Optional) Data type of the metric result.
             Defaults to `tf.float32`.
         Raises:

@@ -94,7 +94,7 @@ class PinballLoss(LossFunctionWrapper):
     print('Loss: ', loss.numpy())  # Loss: 0.475
     ```
 
-    Usage with the `compile` API:
+    Usage with the `tf.keras` API:
 
     ```python
     model = tf.keras.Model(inputs, outputs)

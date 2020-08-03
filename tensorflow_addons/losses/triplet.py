@@ -26,8 +26,8 @@ def _masked_maximum(data, mask, dim=1):
     """Computes the axis wise maximum over chosen elements.
 
     Args:
-      data: 2-D float `Tensor` of size [n, m].
-      mask: 2-D Boolean `Tensor` of size [n, m].
+      data: 2-D float `Tensor` of size `[n, m]`.
+      mask: 2-D Boolean `Tensor` of size `[n, m]`.
       dim: The dimension over which to compute the maximum.
 
     Returns:
@@ -48,8 +48,8 @@ def _masked_minimum(data, mask, dim=1):
     """Computes the axis wise minimum over chosen elements.
 
     Args:
-      data: 2-D float `Tensor` of size [n, m].
-      mask: 2-D Boolean `Tensor` of size [n, m].
+      data: 2-D float `Tensor` of size `[n, m]`.
+      mask: 2-D Boolean `Tensor` of size `[n, m]`.
       dim: The dimension over which to compute the minimum.
 
     Returns:
@@ -77,30 +77,21 @@ def triplet_semihard_loss(
     """Computes the triplet loss with semi-hard negative mining.
 
     Args:
-      y_true: 1-D integer `Tensor` with shape [batch_size] of
+      y_true: 1-D integer `Tensor` with shape `[batch_size]` of
         multiclass integer labels.
       y_pred: 2-D float `Tensor` of embedding vectors. Embeddings should
         be l2 normalized.
       margin: Float, margin term in the loss definition.
-      distance_metric: str or function, determines distance metric:
-                       "L2" for l2-norm distance
-                       "squared-L2" for squared l2-norm distance
-                       "angular" for cosine similarity
-                        A custom function returning a 2d adjacency
-                          matrix of a chosen distance metric can
-                          also be passed here. e.g.
+      distance_metric: `str` or a callable that determines distance metric.
+        Valid strings are "L2" for l2-norm distance,
+        "squared-L2" for squared l2-norm distance,
+        and "angular" for cosine similarity.
 
-                          def custom_distance(batch):
-                              batch = 1 - batch @ batch.T
-                              return batch
-
-                          triplet_semihard_loss(batch, labels,
-                                        distance_metric=custom_distance
-                                    )
-
+        A callable should take a batch of embeddings as input and
+        return the pairwise distance matrix.
 
     Returns:
-      triplet_loss: float scalar with dtype of y_pred.
+      triplet_loss: float scalar with dtype of `y_pred`.
     """
 
     labels, embeddings = y_true, y_pred
@@ -210,30 +201,22 @@ def triplet_hard_loss(
     """Computes the triplet loss with hard negative and hard positive mining.
 
     Args:
-      y_true: 1-D integer `Tensor` with shape [batch_size] of
+      y_true: 1-D integer `Tensor` with shape `[batch_size]` of
         multiclass integer labels.
       y_pred: 2-D float `Tensor` of embedding vectors. Embeddings should
         be l2 normalized.
       margin: Float, margin term in the loss definition.
       soft: Boolean, if set, use the soft margin version.
-      distance_metric: str or function, determines distance metric:
-                       "L2" for l2-norm distance
-                       "squared-L2" for squared l2-norm distance
-                       "angular" for cosine similarity
-                        A custom function returning a 2d adjacency
-                          matrix of a chosen distance metric can
-                          also be passed here. e.g.
+      distance_metric: `str` or a callable that determines distance metric.
+        Valid strings are "L2" for l2-norm distance,
+        "squared-L2" for squared l2-norm distance,
+        and "angular" for cosine similarity.
 
-                          def custom_distance(batch):
-                              batch = 1 - batch @ batch.T
-                              return batch
-
-                          triplet_semihard_loss(batch, labels,
-                                        distance_metric=custom_distance
-                                    )
+        A callable should take a batch of embeddings as input and
+        return the pairwise distance matrix.
 
     Returns:
-      triplet_loss: float scalar with dtype of y_pred.
+      triplet_loss: float scalar with dtype of `y_pred`.
     """
     labels, embeddings = y_true, y_pred
 
@@ -311,7 +294,7 @@ class TripletSemiHardLoss(LossFunctionWrapper):
     See: https://arxiv.org/abs/1503.03832.
 
     We expect labels `y_true` to be provided as 1-D integer `Tensor` with shape
-    [batch_size] of multi-class integer labels. And embeddings `y_pred` must be
+    `[batch_size]` of multi-class integer labels. And embeddings `y_pred` must be
     2-D float `Tensor` of l2 normalized embedding vectors.
 
     Args:
@@ -348,7 +331,7 @@ class TripletHardLoss(LossFunctionWrapper):
     See: https://arxiv.org/pdf/1703.07737.
 
     We expect labels `y_true` to be provided as 1-D integer `Tensor` with shape
-    [batch_size] of multi-class integer labels. And embeddings `y_pred` must be
+    `[batch_size]` of multi-class integer labels. And embeddings `y_pred` must be
     2-D float `Tensor` of l2 normalized embedding vectors.
 
     Args:

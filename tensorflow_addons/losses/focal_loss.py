@@ -46,16 +46,16 @@ class SigmoidFocalCrossEntropy(LossFunctionWrapper):
                                             1.9097870e-04,
                                             2.0559824e-05]
     ```
-    Usage with tf.keras API:
+    Usage with `tf.keras` API:
 
     ```python
     model = tf.keras.Model(inputs, outputs)
     model.compile('sgd', loss=tfa.losses.SigmoidFocalCrossEntropy())
     ```
 
-    Args
-      alpha: balancing factor, default value is 0.25
-      gamma: modulating factor, default value is 2.0
+    Args:
+      alpha: balancing factor, default value is 0.25.
+      gamma: modulating factor, default value is 2.0.
 
     Returns:
       Weighted loss float `Tensor`. If `reduction` is `NONE`, this has the same
@@ -63,7 +63,7 @@ class SigmoidFocalCrossEntropy(LossFunctionWrapper):
 
     Raises:
         ValueError: If the shape of `sample_weight` is invalid or value of
-          `gamma` is less than zero
+          `gamma` is less than zero.
     """
 
     @typechecked
@@ -105,7 +105,7 @@ def sigmoid_focal_crossentropy(
     best use-cases of focal loss is its usage in object detection where the
     imbalance between the background class and other classes is extremely high.
 
-    Args
+    Args:
         y_true: true targets tensor.
         y_pred: predictions tensor.
         alpha: balancing factor.

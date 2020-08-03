@@ -33,7 +33,7 @@ def contrastive_loss(
     by the margin constant for the samples of different labels.
 
     The euclidean distances `y_pred` between two embedding matrices
-    `a` and `b` with shape [batch_size, hidden_size] can be computed
+    `a` and `b` with shape `[batch_size, hidden_size]` can be computed
     as follows:
 
     ```python
@@ -44,14 +44,14 @@ def contrastive_loss(
     See: http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf
 
     Args:
-      y_true: 1-D integer `Tensor` with shape [batch_size] of
+      y_true: 1-D integer `Tensor` with shape `[batch_size]` of
         binary labels indicating positive vs negative pair.
-      y_pred: 1-D float `Tensor` with shape [batch_size] of
+      y_pred: 1-D float `Tensor` with shape `[batch_size]` of
         distances between two embedding matrices.
       margin: margin term in the loss definition.
 
     Returns:
-      contrastive_loss: 1-D float `Tensor` with shape [batch_size].
+      contrastive_loss: 1-D float `Tensor` with shape `[batch_size]`.
     """
     y_pred = tf.convert_to_tensor(y_pred)
     y_true = tf.dtypes.cast(y_true, y_pred.dtype)
@@ -71,12 +71,12 @@ class ContrastiveLoss(LossFunctionWrapper):
     See: http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf
 
     We expect labels `y_true` to be provided as 1-D integer `Tensor`
-    with shape [batch_size] of binary integer labels. And `y_pred` must be
-    1-D float `Tensor` with shape [batch_size] of distances between two
+    with shape `[batch_size]` of binary integer labels. And `y_pred` must be
+    1-D float `Tensor` with shape `[batch_size]` of distances between two
     embedding matrices.
 
     The euclidean distances `y_pred` between two embedding matrices
-    `a` and `b` with shape [batch_size, hidden_size] can be computed
+    `a` and `b` with shape `[batch_size, hidden_size]` can be computed
     as follows:
 
     ```python
