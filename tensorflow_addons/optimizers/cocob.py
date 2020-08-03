@@ -66,33 +66,29 @@ class COCOB(tf.keras.optimizers.Optimizer):
         gradients_sum = self.get_slot(handle, "gradients_sum")
         grad_norm_sum = self.get_slot(handle, "grad_norm_sum")
         tilde_w = self.get_slot(handle, "tilde_w")
-        L = self.get_slot(handle, "L")
+        l = self.get_slot(handle, "L")
         reward = self.get_slot(handle, "reward")
 
-        L_update = tf.maximum(L, tf.abs(grad))
+        l_update = tf.maximum(l, tf.abs(grad))
         gradients_sum_update = gradients_sum + grad
         grad_norm_sum_update = grad_norm_sum + tf.abs(grad)
         reward_update = tf.maximum(reward - grad * tilde_w, 0)
-        new_w = -gradients_sum_update / (L_update*(
-                    tf.maximum(
-                            grad_norm_sum_update+L_update,
-                            self._alpha*L_update
-                        )
-                    ))*(reward_update+L_update)
+        new_w = (
+            -gradients_sum_update
+            / (
+                l_update
+                * (tf.maximum(grad_norm_sum_update + l_update, self._alpha * l_update))
+            )
+            * (reward_update + l_update)
+        )
         var_update = handle - tilde_w + new_w
         tilde_w_update = new_w
 
-        gradients_sum_update_op = state_ops.assign(
-                                        gradients_sum,
-                                        gradients_sum_update
-                                    )
-        grad_norm_sum_update_op = state_ops.assign(
-                                        grad_norm_sum,
-                                        grad_norm_sum_update
-                                    )
+        gradients_sum_update_op = state_ops.assign(gradients_sum, gradients_sum_update)
+        grad_norm_sum_update_op = state_ops.assign(grad_norm_sum, grad_norm_sum_update)
         var_update_op = state_ops.assign(handle, var_update)
         tilde_w_update_op = state_ops.assign(tilde_w, tilde_w_update)
-        L_update_op = state_ops.assign(L, L_update)
+        l_update_op = state_ops.assign(l, l_update)
         reward_update_op = state_ops.assign(reward, reward_update)
 
         return control_flow_ops.group(
@@ -102,7 +98,7 @@ class COCOB(tf.keras.optimizers.Optimizer):
                 grad_norm_sum_update_op,
                 tilde_w_update_op,
                 reward_update_op,
-                L_update_op,
+                l_update_op,
             ]
         )
 

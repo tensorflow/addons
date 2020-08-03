@@ -40,10 +40,7 @@ def run_dense_sample(iterations, expected, optimizer):
 def test_dense_sample_with_default_alpha():
     run_dense_sample(
         iterations=100,
-        expected=[
-            [-4.183396e16, -4.183396e16],
-            [-4.1833639e16, -4.1833858e16]
-            ],
+        expected=[[-4.183396e16, -4.183396e16], [-4.1833639e16, -4.1833858e16]],
         optimizer=COCOB(),
     )
 
@@ -51,10 +48,7 @@ def test_dense_sample_with_default_alpha():
 def test_dense_sample_with_custom_int_alpha():
     run_dense_sample(
         iterations=100,
-        expected=[
-            [-8.60311e26, -8.60311e26],
-            [-8.603111e26, -8.603099e26]
-            ],
+        expected=[[-8.60311e26, -8.60311e26], [-8.603111e26, -8.603099e26]],
         optimizer=COCOB(20),
     )
 
@@ -62,9 +56,6 @@ def test_dense_sample_with_custom_int_alpha():
 def test_dense_sample_with_custom_float_alpha():
     run_dense_sample(
         iterations=78,
-        expected=[
-            [-6.7280056e15, -6.7280056e15],
-            [-6.7279933e15, -6.7280217e15]
-            ],
+        expected=[[-6.7280056e15, -6.7280056e15], [-6.7279933e15, -6.7280217e15]],
         optimizer=COCOB(55.7),
     )
