@@ -79,7 +79,11 @@ class COCOB(tf.keras.optimizers.Optimizer):
             -gradients_sum_update
             / (
                 lr_update
-                * (tf.maximum(grad_norm_sum_update + lr_update, self._alpha * lr_update))
+                * (
+                    tf.maximum(
+                        grad_norm_sum_update + lr_update, self._alpha * lr_update
+                    )
+                )
             )
             * (reward_update + lr_update)
         )
