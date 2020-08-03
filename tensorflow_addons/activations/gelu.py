@@ -43,6 +43,12 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
     Returns:
         A `Tensor`. Has the same type as `x`.
     """
+    warnings.warn(
+        "gelu activation has been migrated to core TensorFlow, "
+        "and will be deprecated in Addons 0.12.",
+        DeprecationWarning,
+    )
+
     x = tf.convert_to_tensor(x)
 
     if not options.TF_ADDONS_PY_OPS:
