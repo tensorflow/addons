@@ -50,8 +50,8 @@ def test_save_load_model(tmpdir):
     # initialize model
     model.predict(np.random.uniform(size=(2, 1)))
 
-    model.save(tmpdir/"test.h5")
-    new_model = tf.keras.models.load_model(tmpdir/"test.h5")
+    model.save(tmpdir / "test.h5")
+    new_model = tf.keras.models.load_model(tmpdir / "test.h5")
 
     assert model.layers[0].get_config() == new_model.layers[0].get_config()
 
