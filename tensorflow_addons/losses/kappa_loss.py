@@ -67,7 +67,7 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
         dtype: Optional[tf.DType] = tf.float32,
         reduction: str = tf.keras.losses.Reduction.NONE,
     ):
-        r"""Creates a `WeightedKappa` instance.
+        r"""Creates a `WeightedKappaLoss` instance.
 
         Args:
           num_classes: Number of unique classes in your dataset.
