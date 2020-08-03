@@ -26,8 +26,8 @@ def _masked_maximum(data, mask, dim=1):
     """Computes the axis wise maximum over chosen elements.
 
     Args:
-      data: 2-D float `Tensor` of size `[n, m]`.
-      mask: 2-D Boolean `Tensor` of size `[n, m]`.
+      data: 2-D float `Tensor` of shape `[n, m]`.
+      mask: 2-D Boolean `Tensor` of shape `[n, m]`.
       dim: The dimension over which to compute the maximum.
 
     Returns:
@@ -48,8 +48,8 @@ def _masked_minimum(data, mask, dim=1):
     """Computes the axis wise minimum over chosen elements.
 
     Args:
-      data: 2-D float `Tensor` of size `[n, m]`.
-      mask: 2-D Boolean `Tensor` of size `[n, m]`.
+      data: 2-D float `Tensor` of shape `[n, m]`.
+      mask: 2-D Boolean `Tensor` of shape `[n, m]`.
       dim: The dimension over which to compute the minimum.
 
     Returns:
@@ -82,12 +82,12 @@ def triplet_semihard_loss(
       y_pred: 2-D float `Tensor` of embedding vectors. Embeddings should
         be l2 normalized.
       margin: Float, margin term in the loss definition.
-      distance_metric: `str` or a callable that determines distance metric.
+      distance_metric: `str` or a `Callable` that determines distance metric.
         Valid strings are "L2" for l2-norm distance,
         "squared-L2" for squared l2-norm distance,
         and "angular" for cosine similarity.
 
-        A callable should take a batch of embeddings as input and
+        A `Callable` should take a batch of embeddings as input and
         return the pairwise distance matrix.
 
     Returns:
@@ -207,12 +207,12 @@ def triplet_hard_loss(
         be l2 normalized.
       margin: Float, margin term in the loss definition.
       soft: Boolean, if set, use the soft margin version.
-      distance_metric: `str` or a callable that determines distance metric.
+      distance_metric: `str` or a `Callable` that determines distance metric.
         Valid strings are "L2" for l2-norm distance,
         "squared-L2" for squared l2-norm distance,
         and "angular" for cosine similarity.
 
-        A callable should take a batch of embeddings as input and
+        A `Callable` should take a batch of embeddings as input and
         return the pairwise distance matrix.
 
     Returns:
