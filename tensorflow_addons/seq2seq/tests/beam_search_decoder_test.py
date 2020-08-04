@@ -636,6 +636,12 @@ def test_beam_search_decoder(
     assert _t((batch_size, max_sequence_length, beam_width)) == tuple(
         beam_search_decoder_output.scores.shape.as_list()
     )
+    assert _t((batch_size, max_sequence_length, beam_width, vocab_size)) == tuple(
+        beam_search_decoder_output.all_scores.shape.as_list()
+    )
     assert _t((batch_size, max_sequence_length, beam_width)) == tuple(
         final_outputs.predicted_ids.shape.as_list()
     )
+
+    # Check that the vocab size corresponds to the dimensions of the output.
+    assert (beam_width, vocab_size) == tuple(bsd.output_size.all_scores.as_list())

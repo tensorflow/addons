@@ -64,16 +64,20 @@ class BeamSearchDecoderState(
 
 class BeamSearchDecoderOutput(
     collections.namedtuple(
-        "BeamSearchDecoderOutput", ("scores", "predicted_ids", "parent_ids")
+        "BeamSearchDecoderOutput",
+        ("scores", "all_scores", "predicted_ids", "parent_ids"),
     )
 ):
     """Outputs of a `BeamSearchDecoder` step.
 
     Contains:
 
-      - `scores`: The scores for this step, which are the log probabilities
-        over the output vocabulary, possibly penalized by length and attention
-        coverage.
+      - `scores`: The scores for the predicted IDs, which are the log
+        probabilities, possibly penalized by length and attention coverage.
+        A `float32` `Tensor` of shape `[batch_size, beam_width]`.
+      - `all_scores`: The scores for all IDs this step, which are the log
+        probabilities over the output vocabulary, possibly penalized by length
+        and attention coverage.
         A `float32` `Tensor` of shape `[batch_size, beam_width, vocab_size]`.
       - `predicted_ids`: The token IDs predicted for this step.
         A `int32` `Tensor` of shape `[batch_size, beam_width]`.
@@ -462,6 +466,7 @@ class BeamSearchDecoderMixin:
         # Return the cell output and the id
         return BeamSearchDecoderOutput(
             scores=tf.TensorShape([self._beam_width]),
+            all_scores=tf.TensorShape([self._beam_width, self._rnn_output_size()[-1]]),
             predicted_ids=tf.TensorShape([self._beam_width]),
             parent_ids=tf.TensorShape([self._beam_width]),
         )
@@ -911,8 +916,10 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         # containing the input_state's first component's dtype.
         # Return that structure and int32 (the id)
         dtype = tf.nest.flatten(self._initial_cell_state)[0].dtype
+        score_dtype = tf.nest.map_structure(lambda _: dtype, self._rnn_output_size())
         return BeamSearchDecoderOutput(
-            scores=tf.nest.map_structure(lambda _: dtype, self._rnn_output_size()),
+            scores=score_dtype,
+            all_scores=score_dtype,
             predicted_ids=tf.int32,
             parent_ids=tf.int32,
         )
@@ -1114,7 +1121,10 @@ def _beam_search_step(
     )
 
     output = BeamSearchDecoderOutput(
-        scores=next_beam_scores, predicted_ids=next_word_ids, parent_ids=next_beam_ids
+        scores=next_beam_scores,
+        all_scores=scores,
+        predicted_ids=next_word_ids,
+        parent_ids=next_beam_ids,
     )
 
     return output, next_state
