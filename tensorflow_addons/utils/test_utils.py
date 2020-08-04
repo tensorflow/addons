@@ -168,7 +168,7 @@ def pytest_configure(config):
 def device(request):
     try:
         requested_device = request.param
-    except:
+    except Exception:
         # workaround for DocTestItem
         # https://github.com/pytest-dev/pytest/issues/5070
         requested_device = "no_device"
