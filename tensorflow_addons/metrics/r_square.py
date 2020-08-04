@@ -16,6 +16,7 @@
 from typing import Tuple
 
 import tensorflow as tf
+
 from tensorflow.keras import backend as K
 from tensorflow.keras.metrics import Metric
 from tensorflow.python.ops import weights_broadcast_ops
@@ -61,13 +62,13 @@ class RSquare(Metric):
      of the same metric.
 
      Usage:
-     ```python
-     actuals = tf.constant([1, 4, 3], dtype=tf.float32)
-     preds = tf.constant([2, 4, 4], dtype=tf.float32)
-     result = tf.keras.metrics.RSquare()
-     result.update_state(actuals, preds)
-     print('R^2 score is: ', r1.result().numpy()) # 0.57142866
-    ```
+
+    >>> actuals = tf.constant([1, 4, 3], dtype=tf.float32)
+    >>> preds = tf.constant([2, 4, 4], dtype=tf.float32)
+    >>> ans = tfa.metrics.RSquare()
+    >>> ans.update_state(actuals, preds)
+    >>> ans.result()
+    <tf.Tensor: shape=(), dtype=float32, numpy=0.57142854>
     """
 
     @typechecked
