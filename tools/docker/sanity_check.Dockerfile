@@ -97,6 +97,32 @@ RUN pip install --no-deps -e .
 RUN python docs/build_docs.py
 RUN touch /ok.txt
 
+
+# -------------------------------
+# test docstring
+FROM python:3.6 as doctest
+
+COPY tools/install_deps/tensorflow-cpu.txt ./
+RUN pip install --default-timeout=1000 -r tensorflow-cpu.txt
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
+COPY tools/install_deps/pytest.txt ./
+RUN pip install -r pytest.txt
+
+RUN apt-get update && apt-get install -y sudo rsync
+COPY tools/install_deps/bazel_linux.sh ./
+RUN bash bazel_linux.sh
+
+COPY ./ /addons
+WORKDIR /addons
+RUN python configure.py
+RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
+    bash tools/install_so_files.sh
+RUN pip install --no-deps -e .
+RUN pytest -v -n auto ./tensorflow_addons/activations \
+    --doctest-modules tensorflow_addons/ --ignore-glob=*_test.py
+RUN touch /ok.txt
+
 # -------------------------------
 # test the editable mode
 FROM python:3.6 as test_editable_mode
@@ -138,3 +164,4 @@ COPY --from=4 /ok.txt /ok4.txt
 COPY --from=5 /ok.txt /ok5.txt
 COPY --from=6 /ok.txt /ok6.txt
 COPY --from=7 /ok.txt /ok7.txt
+COPY --from=7 /ok.txt /ok8.txt

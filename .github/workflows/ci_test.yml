@@ -70,6 +70,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Building the docs
         run: bash tools/run_build.sh docs_tests
+      - name: Testing docstrings with doctes
+        run: bash tools/run_build.sh doctest
   test_python_code_only:
     name: Fast build to run python-only tests
     runs-on: ubuntu-latest
