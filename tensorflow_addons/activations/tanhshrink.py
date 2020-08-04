@@ -25,7 +25,14 @@ _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 def tanhshrink(x: types.TensorLike) -> tf.Tensor:
-    """Applies the element-wise function: x - tanh(x)
+    r"""tahnshrink function.
+
+    Computes tanh shrink function: $x - \tanh(x)$.
+
+    Usage:
+
+    >>> x = tf.constant([-1.0, 0.0, 1.0], dtype=tf.float32)
+    >>> tfa.activations.tanhshrink(x)
 
     Args:
         features: A `Tensor`. Must be one of the following types:

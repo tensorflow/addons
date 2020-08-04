@@ -27,14 +27,37 @@ def rrelu(
     seed: Optional[int] = None,
     rng: Optional[tf.random.Generator] = None,
 ) -> tf.Tensor:
-    """rrelu function.
+    r"""rrelu function.
 
     Computes rrelu function:
+    When `training` is `True`,
+    $$
+    x =
+    \begin{cases}
+        x \text{uniform}(\text{upper}, \text{lower}) & \text{if } x > 0 \\
+        0                                            & \text{otherwise}
+    \end{cases}.
+    $$
+    When `training` is `False`,
+    $$
+    x =
+    \begin{cases}
+        x \cdot \frac{(\text{upper} + \text{lower})}{2} & \text{if } x > 0 \\
+        0                                               & \text{otherwise}
+    \end{cases}.
+    $$
     `x if x > 0 else random(lower, upper) * x` or
     `x if x > 0 else x * (lower + upper) / 2`
     depending on whether training is enabled.
 
     See [Empirical Evaluation of Rectified Activations in Convolutional Network](https://arxiv.org/abs/1505.00853).
+
+    Usage:
+
+    >>> x = tf.constant([-1.0, 0.0, 1.0], dtype=tf.float32)
+    >>> tfa.activations.rrelu(x, seed=2020, training=True)
+
+    >>> tfa.activations.rrelu(x, training=False)
 
     Args:
         x: A `Tensor`. Must be one of the following types:

@@ -28,10 +28,22 @@ _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 def hardshrink(
     x: types.TensorLike, lower: Number = -0.5, upper: Number = 0.5
 ) -> tf.Tensor:
-    """Hard shrink function.
+    r"""Hard shrink function.
 
     Computes hard shrink function:
-    `x if x < lower or x > upper else 0`.
+
+    $$
+    \text{hardshrink}(x) =
+    \begin{cases}
+        x & \text{if } x < \text{lower or } x > \text{upper} \\
+        0 & \text{otherwise}
+    \end{cases}.
+    $$
+
+    Usage:
+
+    >>> x = tf.constant([-1.0, 0.0, 1.0], dtype=tf.float32)
+    >>> tfa.activations.hardshrink(x)
 
     Args:
         x: A `Tensor`. Must be one of the following types:

@@ -22,10 +22,15 @@ from tensorflow_addons.utils import types
 def snake(logits: types.TensorLike, frequency: types.Number = 1) -> tf.Tensor:
     """Snake activation to learn periodic functions.
 
-    https://arxiv.org/abs/2006.08195
+    See [](https://arxiv.org/abs/2006.08195).
+
+    Usage:
+
+    >>> x = tf.constant([-1.0, 0.0, 1.0], dtype=tf.float32)
+    >>> tfa.activations.snake(x)
 
     Args:
-        logits: Input tensor.
+        logits: A `Tensor`.
         frequency: A scalar, frequency of the periodic part.
     Returns:
         Tensor of the same type and shape as `logits`.
