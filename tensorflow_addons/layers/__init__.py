@@ -33,6 +33,7 @@ from tensorflow_addons.layers.poincare import PoincareNormalize
 from tensorflow_addons.layers.polynomial import PolynomialCrossing
 from tensorflow_addons.layers.snake import Snake
 from tensorflow_addons.layers.sparsemax import Sparsemax
+from tensorflow_addons.layers.spectral_normalization import SpectralNormalization
 from tensorflow_addons.layers.spatial_pyramid_pooling import SpatialPyramidPooling2D
 from tensorflow_addons.layers.tlu import TLU
 from tensorflow_addons.layers.wrappers import WeightNormalization
