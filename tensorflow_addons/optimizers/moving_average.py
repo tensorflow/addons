@@ -34,11 +34,9 @@ class MovingAverage(AveragedOptimizerWrapper):
 
     Example of usage:
 
-    ```python
-    opt = tf.keras.optimizers.SGD(learning_rate)
-    opt = tfa.optimizers.MovingAverage(opt)
+    >>> opt = tf.keras.optimizers.SGD(learning_rate=0.01)
+    >>> opt = tfa.optimizers.MovingAverage(opt)
 
-    ```
     """
 
     @typechecked
