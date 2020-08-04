@@ -20,7 +20,7 @@ from tensorflow_addons.utils import types
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 def snake(logits: types.TensorLike, frequency: types.Number = 1) -> tf.Tensor:
-    """Snake activation to learn periodic functions.
+    r"""Snake activation to learn periodic functions.
 
     See [](https://arxiv.org/abs/2006.08195).
 
