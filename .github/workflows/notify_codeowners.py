@@ -11,7 +11,7 @@ import json
 
 # Github already take care
 # of notifying users with write access
-BLACKLIST = [
+WRITE_ACCESS_LIST = [
     "tensorflow/sig-addons-maintainers",
     "facaiy",
     "seanpmorgan",
@@ -46,7 +46,7 @@ def check_user(user: str, line_idx: int):
         )
     user = user[1:]
     user = user.lower()  # in github, user names are case insensitive
-    if user in BLACKLIST:
+    if user in WRITE_ACCESS_LIST:
         return None
     try:
         CLIENT.get_user(user)

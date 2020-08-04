@@ -1,5 +1,8 @@
 from tensorflow_addons.utils.test_utils import (  # noqa: F401
     maybe_run_functions_eagerly,
+    only_run_functions_eagerly,
+    run_custom_and_py_ops,
+    run_with_mixed_precision_policy,
     pytest_make_parametrize_id,
     data_format,
     set_seeds,
@@ -8,6 +11,7 @@ from tensorflow_addons.utils.test_utils import (  # noqa: F401
     pytest_configure,
     device,
     pytest_generate_tests,
+    pytest_collection_modifyitems,
 )
 
 import numpy as np

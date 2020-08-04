@@ -94,11 +94,11 @@ class Lookahead(tf.keras.optimizers.Optimizer):
             var_list=var_list
         )  # pylint: disable=protected-access
 
-    def apply_gradients(self, grads_and_vars, name=None):
+    def apply_gradients(self, grads_and_vars, name=None, **kwargs):
         self._optimizer._iterations = (
             self.iterations
         )  # pylint: disable=protected-access
-        return super().apply_gradients(grads_and_vars, name)
+        return super().apply_gradients(grads_and_vars, name, **kwargs)
 
     def _init_op(self, var):
         slow_var = self.get_slot(var, "slow")

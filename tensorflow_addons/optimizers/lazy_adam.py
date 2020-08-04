@@ -109,35 +109,17 @@ class LazyAdam(tf.keras.optimizers.Adam):
         # \\(m := beta1 * m + (1 - beta1) * g_t\\)
         m = self.get_slot(var, "m")
         m_t_slice = beta_1_t * tf.gather(m, indices) + (1 - beta_1_t) * grad
-
-        m_update_kwargs = {
-            "resource": m.handle,
-            "indices": indices,
-            "updates": m_t_slice,
-        }
-        m_update_op = tf.raw_ops.ResourceScatterUpdate(**m_update_kwargs)
+        m_update_op = self._resource_scatter_update(m, indices, m_t_slice)
 
         # \\(v := beta2 * v + (1 - beta2) * (g_t * g_t)\\)
         v = self.get_slot(var, "v")
         v_t_slice = beta_2_t * tf.gather(v, indices) + (1 - beta_2_t) * tf.math.square(
             grad
         )
+        v_update_op = self._resource_scatter_update(v, indices, v_t_slice)
 
-        v_update_kwargs = {
-            "resource": v.handle,
-            "indices": indices,
-            "updates": v_t_slice,
-        }
-        v_update_op = tf.raw_ops.ResourceScatterUpdate(**v_update_kwargs)
-
-        # \\(variable -= learning_rate * m_t / (epsilon_t + sqrt(v_t))\\)
-        var_slice = lr * m_t_slice / (tf.math.sqrt(v_t_slice) + epsilon_t)
-
-        var_update_kwargs = {
-            "resource": var.handle,
-            "indices": indices,
-            "updates": var_slice,
-        }
-        var_update_op = tf.raw_ops.ResourceScatterSub(**var_update_kwargs)
+        # \\(variable += -learning_rate * m_t / (epsilon_t + sqrt(v_t))\\)
+        var_slice = -lr * m_t_slice / (tf.math.sqrt(v_t_slice) + epsilon_t)
+        var_update_op = self._resource_scatter_add(var, indices, var_slice)
 
         return tf.group(*[var_update_op, m_update_op, v_update_op])

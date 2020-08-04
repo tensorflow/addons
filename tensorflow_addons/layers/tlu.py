@@ -89,10 +89,8 @@ class TLU(tf.keras.layers.Layer):
         self.built = True
 
     def call(self, inputs):
-        if self.affine:
-            return tf.maximum(inputs, self.alpha * inputs + self.tau)
-        else:
-            return tf.maximum(inputs, self.tau)
+        v = self.alpha * inputs if self.affine else 0
+        return tf.maximum(inputs, self.tau + v)
 
     def get_config(self):
         config = {

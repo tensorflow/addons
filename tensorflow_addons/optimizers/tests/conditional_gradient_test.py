@@ -190,7 +190,7 @@ def test_basic_nuclear(use_resource):
     #       to address issue #36764
     for i, dtype in enumerate(
         _dtypes_with_checking_system(
-            use_gpu=tf.test.is_gpu_available(), system=platform.system()
+            use_gpu=test_utils.is_gpu_available(), system=platform.system()
         )
     ):
 
@@ -276,7 +276,7 @@ def test_minimize_sparse_resource_variable_nuclear():
     # TODO:
     #       to address issue #347 and #36764.
     for dtype in _dtypes_with_checking_system(
-        use_gpu=tf.test.is_gpu_available(), system=platform.system()
+        use_gpu=test_utils.is_gpu_available(), system=platform.system()
     ):
         var0 = tf.Variable([[1.0, 2.0]], dtype=dtype)
 
@@ -316,7 +316,7 @@ def test_minimize_sparse_resource_variable_nuclear():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_tensor_learning_rate_and_conditional_gradient_nuclear():
     for dtype in _dtypes_with_checking_system(
-        use_gpu=tf.test.is_gpu_available(), system=platform.system()
+        use_gpu=test_utils.is_gpu_available(), system=platform.system()
     ):
         # TODO:
         # Based on issue #36764 in the following link,
@@ -845,7 +845,7 @@ def test_like_dist_belief_frobenius_cg01():
 def test_sparse_frobenius():
     # TODO:
     #       To address the issue #347.
-    for dtype in _dtypes_to_test(use_gpu=tf.test.is_gpu_available()):
+    for dtype in _dtypes_to_test(use_gpu=test_utils.is_gpu_available()):
         var0 = tf.Variable(tf.zeros([4, 2], dtype=dtype))
         var1 = tf.Variable(tf.constant(1.0, dtype, [4, 2]))
         grads0 = tf.IndexedSlices(
@@ -1001,7 +1001,7 @@ def test_sharing_nuclear():
     # TODO:
     #       To address the issue #36764.
     for dtype in _dtypes_with_checking_system(
-        use_gpu=tf.test.is_gpu_available(), system=platform.system()
+        use_gpu=test_utils.is_gpu_available(), system=platform.system()
     ):
         var0 = tf.Variable([1.0, 2.0], dtype=dtype)
         var1 = tf.Variable([3.0, 4.0], dtype=dtype)
@@ -1340,7 +1340,7 @@ def test_sparse_nuclear():
     # TODO:
     #       To address the issue #347 and issue #36764.
     for dtype in _dtypes_with_checking_system(
-        use_gpu=tf.test.is_gpu_available(), system=platform.system()
+        use_gpu=test_utils.is_gpu_available(), system=platform.system()
     ):
         var0 = tf.Variable(tf.zeros([4, 2], dtype=dtype))
         var1 = tf.Variable(tf.constant(1.0, dtype, [4, 2]))

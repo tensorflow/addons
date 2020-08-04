@@ -84,7 +84,7 @@ class CohenKappa(Metric):
           weightage: (optional) Weighting to be considered for calculating
             kappa statistics. A valid value is one of
             [None, 'linear', 'quadratic']. Defaults to `None`
-          sparse_lables: (bool) Valid only for multi-class scenario.
+          sparse_labels: (bool) Valid only for multi-class scenario.
             If True, ground truth labels are expected tp be integers
             and not one-hot encoded
           regression: (bool) If set, that means the problem is being treated
@@ -151,10 +151,8 @@ class CohenKappa(Metric):
 
     @tf.function
     def _update_multi_class_model(self, y_true, y_pred, sample_weight=None):
-        if not self.sparse_labels:
-            y_true = tf.cast(tf.argmax(y_true, axis=-1), dtype=tf.int64)
-        else:
-            y_true = tf.cast(y_true, dtype=tf.int64)
+        v = tf.argmax(y_true, axis=1) if not self.sparse_labels else y_true
+        y_true = tf.cast(v, dtype=tf.int64)
 
         y_pred = self._cast_ypred(y_pred)
 
@@ -172,9 +170,19 @@ class CohenKappa(Metric):
             y_pred = tf.cast(y_pred, dtype=tf.int64)
         return y_pred
 
+    @tf.function
+    def _safe_squeeze(self, y):
+        y = tf.squeeze(y)
+
+        # Check for scalar result
+        if tf.rank(y) == 0:
+            y = tf.expand_dims(y, 0)
+
+        return y
+
     def _update_confusion_matrix(self, y_true, y_pred, sample_weight):
-        y_true = tf.squeeze(y_true)
-        y_pred = tf.squeeze(y_pred)
+        y_true = self._safe_squeeze(y_true)
+        y_pred = self._safe_squeeze(y_pred)
 
         new_conf_mtx = tf.math.confusion_matrix(
             labels=y_true,

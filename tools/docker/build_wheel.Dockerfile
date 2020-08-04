@@ -1,7 +1,7 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 ARG TF_VERSION
 ARG PY_VERSION
-FROM seanpmorgan/tensorflow:2.1.0-custom-op-gpu-ubuntu16-minimal as base_install
+FROM tfaddons/tensorflow:2.1.0-custom-op-gpu-ubuntu16-minimal as base_install
 ENV TF_NEED_CUDA="1"
 
 # is needed because when we sqashed the image, we lost all environment variables.
@@ -22,6 +22,8 @@ RUN mv /usr/bin/lsb_release2 /usr/bin/lsb_release
 
 ARG PY_VERSION
 RUN ln -sf $(which python$PY_VERSION) /usr/bin/python
+
+RUN python -m pip install setuptools
 
 RUN python -m pip install --upgrade pip==19.0 auditwheel==2.0.0
 

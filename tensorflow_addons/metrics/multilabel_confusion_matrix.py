@@ -16,10 +16,11 @@
 
 import warnings
 
+import numpy as np
 import tensorflow as tf
 
+from tensorflow.keras import backend as K
 from tensorflow.keras.metrics import Metric
-import numpy as np
 
 from typeguard import typechecked
 from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
@@ -170,7 +171,5 @@ class MultiLabelConfusionMatrix(Metric):
         return {**base_config, **config}
 
     def reset_states(self):
-        self.true_positives.assign(np.zeros(self.num_classes), np.int32)
-        self.false_positives.assign(np.zeros(self.num_classes), np.int32)
-        self.false_negatives.assign(np.zeros(self.num_classes), np.int32)
-        self.true_negatives.assign(np.zeros(self.num_classes), np.int32)
+        reset_value = np.zeros(self.num_classes, dtype=np.int32)
+        K.batch_set_value([(v, reset_value) for v in self.variables])

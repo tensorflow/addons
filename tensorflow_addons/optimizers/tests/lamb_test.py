@@ -67,7 +67,7 @@ def get_beta_accumulators(opt, dtype):
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_sparse():
-    for dtype in _dtypes_to_test(use_gpu=tf.test.is_gpu_available()):
+    for dtype in _dtypes_to_test(use_gpu=test_utils.is_gpu_available()):
         # Initialize tf for numpy implementation.
         m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
         var0_np = np.array([1.0, 1.0, 2.0], dtype=dtype.as_numpy_dtype)
@@ -113,7 +113,7 @@ def test_sparse():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_basic_with_learning_rate_decay():
-    for i, dtype in enumerate(_dtypes_to_test(use_gpu=tf.test.is_gpu_available())):
+    for i, dtype in enumerate(_dtypes_to_test(use_gpu=test_utils.is_gpu_available())):
         # Initialize variables for numpy implementation.
         m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
         var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
@@ -162,7 +162,7 @@ def test_basic_with_learning_rate_decay():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_basic_with_learning_rate_inverse_time_decay():
-    for i, dtype in enumerate(_dtypes_to_test(use_gpu=tf.test.is_gpu_available())):
+    for i, dtype in enumerate(_dtypes_to_test(use_gpu=test_utils.is_gpu_available())):
         # Initialize variables for numpy implementation.
         m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
         var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
@@ -204,7 +204,7 @@ def test_basic_with_learning_rate_inverse_time_decay():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_tensor_learning_rate():
-    for dtype in _dtypes_to_test(use_gpu=tf.test.is_gpu_available()):
+    for dtype in _dtypes_to_test(use_gpu=test_utils.is_gpu_available()):
         # Initialize variables for numpy implementation.
         m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
         var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
@@ -239,7 +239,7 @@ def test_tensor_learning_rate():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_sharing():
-    for dtype in _dtypes_to_test(use_gpu=tf.test.is_gpu_available()):
+    for dtype in _dtypes_to_test(use_gpu=test_utils.is_gpu_available()):
         # Initialize variables for numpy implementation.
         m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
         var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
@@ -293,7 +293,7 @@ def test_minimize_mean_square_loss_with_weight_decay():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_resource():
-    for i, dtype in enumerate(_dtypes_to_test(use_gpu=tf.test.is_gpu_available())):
+    for i, dtype in enumerate(_dtypes_to_test(use_gpu=test_utils.is_gpu_available())):
         # Initialize variables for numpy implementation.
         m0, v0, m1, v1 = 0.0, 0.0, 0.0, 0.0
         var0_np = np.array([1.0, 2.0], dtype=dtype.as_numpy_dtype)
