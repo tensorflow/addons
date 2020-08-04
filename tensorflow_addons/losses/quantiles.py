@@ -84,15 +84,11 @@ class PinballLoss(LossFunctionWrapper):
     See: https://en.wikipedia.org/wiki/Quantile_regression
 
     Usage:
-    ```python
-    pinball = tfa.losses.PinballLoss(tau=.1)
-    loss = pinball([0., 0., 1., 1.], [1., 1., 1., 0.])
 
-    # loss = max(0.1 * (y_true - y_pred), (0.1 - 1) * (y_true - y_pred))
-    #      = (0.9 + 0.9 + 0 + 0.1) / 4
-
-    print('Loss: ', loss.numpy())  # Loss: 0.475
-    ```
+    >>> pinball = tfa.losses.PinballLoss(tau=.1)
+    >>> loss = pinball([0., 0., 1., 1.], [1., 1., 1., 0.])
+    >>> loss
+    <tf.Tensor: shape=(), dtype=float32, numpy=0.475>
 
     Usage with the `tf.keras` API:
 

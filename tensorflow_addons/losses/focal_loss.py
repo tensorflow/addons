@@ -15,6 +15,7 @@
 """Implements Focal loss."""
 
 import tensorflow as tf
+
 import tensorflow.keras.backend as K
 
 from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
@@ -37,15 +38,11 @@ class SigmoidFocalCrossEntropy(LossFunctionWrapper):
 
     Usage:
 
-    ```python
-    fl = tfa.losses.SigmoidFocalCrossEntropy()
-    loss = fl(
-      y_true = [[1.0], [1.0], [0.0]],
-      y_pred = [[0.97], [0.91], [0.03]])
-    print('Loss: ', loss.numpy())  # Loss: [6.8532745e-06,
-                                            1.9097870e-04,
-                                            2.0559824e-05]
-    ```
+    >>> fl = tfa.losses.SigmoidFocalCrossEntropy()
+    >>> loss = fl([[0.97], [0.91], [0.03]], [[1.0], [1.0], [0.0]])
+    >>> loss
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([0.00010971, 0.00329749, 0.00030611], dtype=float32)>
+
     Usage with `tf.keras` API:
 
     ```python
