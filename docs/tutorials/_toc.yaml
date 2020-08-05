@@ -22,3 +22,5 @@ toc:
   path: /addons/tutorials/average_optimizers_callback
 - title: Time Stopping Callback
   path: /addons/tutorials/time_stopping
+- title: Hamming Loss
+  path: /addons/tutorials/metrics_hammingloss
