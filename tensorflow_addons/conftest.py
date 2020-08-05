@@ -14,20 +14,6 @@ from tensorflow_addons.utils.test_utils import (  # noqa: F401
     pytest_collection_modifyitems,
 )
 
-import numpy as np
-import pytest
-
-import tensorflow as tf
-import tensorflow_addons as tfa
-
-
 # fixtures present in this file will be available
 # when running tests and can be referenced with strings
 # https://docs.pytest.org/en/latest/fixture.html#conftest-py-sharing-fixture-functions
-
-
-@pytest.fixture(autouse=True)
-def add_np(doctest_namespace):
-    doctest_namespace["np"] = np
-    doctest_namespace["tf"] = tf
-    doctest_namespace["tfa"] = tfa
