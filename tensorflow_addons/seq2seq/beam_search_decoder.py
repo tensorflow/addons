@@ -64,21 +64,21 @@ class BeamSearchDecoderState(
 
 class BeamSearchDecoderOutput(
     collections.namedtuple(
-        "BeamSearchDecoderOutput",
-        ("scores", "all_scores", "predicted_ids", "parent_ids"),
+        "BeamSearchDecoderOutput", ("scores", "predicted_ids", "parent_ids"),
     )
 ):
     """Outputs of a `BeamSearchDecoder` step.
 
     Contains:
 
-      - `scores`: The scores for the predicted IDs, which are the log
-        probabilities, possibly penalized by length and attention coverage.
-        A `float32` `Tensor` of shape `[batch_size, beam_width]`.
-      - `all_scores`: The scores for all IDs this step, which are the log
+      - `scores`: The scores this step, which are the log
         probabilities over the output vocabulary, possibly penalized by length
-        and attention coverage.
-        A `float32` `Tensor` of shape `[batch_size, beam_width, vocab_size]`.
+        and attention coverage. When `BeamSearchDecoder` is created with
+        `output_all_scores=False` (default), this will be a `float32` `Tensor`
+        of shape `[batch_size, beam_width]` containing the top scores
+        corresponding to the predicted IDs. When `output_all_scores=True`,
+        this contains the scores for all token IDs and has shape
+        `[batch_size, beam_width, vocab_size]`.
       - `predicted_ids`: The token IDs predicted for this step.
         A `int32` `Tensor` of shape `[batch_size, beam_width]`.
       - `parent_ids`: The indices of the parent beam of each beam.
@@ -387,6 +387,7 @@ class BeamSearchDecoderMixin:
         length_penalty_weight: FloatTensorLike = 0.0,
         coverage_penalty_weight: FloatTensorLike = 0.0,
         reorder_tensor_arrays: bool = True,
+        output_all_scores: bool = False,
         **kwargs
     ):
         """Initialize the BeamSearchDecoderMixin.
@@ -408,12 +409,18 @@ class BeamSearchDecoderMixin:
             returned. Otherwise, the `TensorArray` will be returned as is. Set
             this flag to `False` if the cell state contains `TensorArray`s that
             are not amenable to reordering.
+          output_all_scores: If `True`, `BeamSearchDecoderOutput.scores` will
+            contain scores for all token IDs and be of shape
+            `[batch_size, beam_width, vocab_size]`. When `False` (default),
+            only the top score corresponding to the predicted token will be
+            output with shape `[batch_size, beam_width]`.
           **kwargs: Dict, other keyword arguments for parent class.
         """
         keras_utils.assert_like_rnncell("cell", cell)
         self._cell = cell
         self._output_layer = output_layer
         self._reorder_tensor_arrays = reorder_tensor_arrays
+        self._output_all_scores = output_all_scores
 
         self._start_tokens = None
         self._end_token = None
@@ -464,9 +471,13 @@ class BeamSearchDecoderMixin:
     @property
     def output_size(self):
         # Return the cell output and the id
+        score_size = (
+            tf.TensorShape([self._beam_width, self._rnn_output_size()[-1]])
+            if self._output_all_scores
+            else tf.TensorShape([self._beam_width])
+        )
         return BeamSearchDecoderOutput(
-            scores=tf.TensorShape([self._beam_width]),
-            all_scores=tf.TensorShape([self._beam_width, self._rnn_output_size()[-1]]),
+            scores=score_size,
             predicted_ids=tf.TensorShape([self._beam_width]),
             parent_ids=tf.TensorShape([self._beam_width]),
         )
@@ -721,6 +732,7 @@ class BeamSearchDecoderMixin:
                 end_token=end_token,
                 length_penalty_weight=length_penalty_weight,
                 coverage_penalty_weight=coverage_penalty_weight,
+                output_all_scores=self._output_all_scores,
             )
 
             finished = beam_search_state.finished
@@ -916,10 +928,8 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         # containing the input_state's first component's dtype.
         # Return that structure and int32 (the id)
         dtype = tf.nest.flatten(self._initial_cell_state)[0].dtype
-        score_dtype = tf.nest.map_structure(lambda _: dtype, self._rnn_output_size())
         return BeamSearchDecoderOutput(
-            scores=score_dtype,
-            all_scores=score_dtype,
+            scores=tf.nest.map_structure(lambda _: dtype, self._rnn_output_size()),
             predicted_ids=tf.int32,
             parent_ids=tf.int32,
         )
@@ -954,6 +964,7 @@ def _beam_search_step(
     end_token,
     length_penalty_weight,
     coverage_penalty_weight,
+    output_all_scores,
 ):
     """Performs a single step of Beam Search Decoding.
 
@@ -974,6 +985,8 @@ def _beam_search_step(
         0.0.
       coverage_penalty_weight: Float weight to penalize the coverage of source
         sentence. Disabled with 0.0.
+      output_all_scores: Bool output scores for every token if True, else only
+        output the top scores.
 
     Returns:
       A new beam state.
@@ -1121,8 +1134,7 @@ def _beam_search_step(
     )
 
     output = BeamSearchDecoderOutput(
-        scores=next_beam_scores,
-        all_scores=scores,
+        scores=scores if output_all_scores else next_beam_scores,
         predicted_ids=next_word_ids,
         parent_ids=next_beam_ids,
     )

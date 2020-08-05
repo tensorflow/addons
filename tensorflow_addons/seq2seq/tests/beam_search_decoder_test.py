@@ -537,6 +537,7 @@ def test_large_beam_step():
     )
 
 
+@pytest.mark.parametrize("output_all_scores", [True, False])
 @pytest.mark.parametrize("with_alignment_history", [True, False])
 @pytest.mark.parametrize("has_attention", [True, False])
 @pytest.mark.parametrize("time_major", [True, False])
@@ -546,7 +547,7 @@ def test_large_beam_step():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_beam_search_decoder(
-    cell_class, time_major, has_attention, with_alignment_history
+    cell_class, time_major, has_attention, with_alignment_history, output_all_scores
 ):
     encoder_sequence_length = np.array([3, 2, 3, 1, 1])
     batch_size = 5
@@ -586,6 +587,7 @@ def test_beam_search_decoder(
         coverage_penalty_weight=coverage_penalty_weight,
         output_time_major=time_major,
         maximum_iterations=maximum_iterations,
+        output_all_scores=output_all_scores,
     )
 
     @tf.function(
@@ -634,14 +636,20 @@ def test_beam_search_decoder(
     beam_search_decoder_output = final_outputs.beam_search_decoder_output
     max_sequence_length = np.max(final_sequence_lengths.numpy())
     assert _t((batch_size, max_sequence_length, beam_width)) == tuple(
-        beam_search_decoder_output.scores.shape.as_list()
-    )
-    assert _t((batch_size, max_sequence_length, beam_width, vocab_size)) == tuple(
-        beam_search_decoder_output.all_scores.shape.as_list()
-    )
-    assert _t((batch_size, max_sequence_length, beam_width)) == tuple(
         final_outputs.predicted_ids.shape.as_list()
     )
 
-    # Check that the vocab size corresponds to the dimensions of the output.
-    assert (beam_width, vocab_size) == tuple(bsd.output_size.all_scores.as_list())
+    if output_all_scores:
+        assert _t((batch_size, max_sequence_length, beam_width, vocab_size)) == tuple(
+            beam_search_decoder_output.scores.shape.as_list()
+        )
+
+        # Check that the vocab size corresponds to the dimensions of the output.
+        assert (beam_width, vocab_size) == tuple(bsd.output_size.scores.as_list())
+    else:
+        assert _t((batch_size, max_sequence_length, beam_width)) == tuple(
+            beam_search_decoder_output.scores.shape.as_list()
+        )
+
+        # Check only the beam width corresponds to the dimensions of the output.
+        assert (beam_width,) == tuple(bsd.output_size.scores.as_list())
