@@ -22,7 +22,7 @@ from typeguard import typechecked
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class WeightNormalization(tf.keras.layers.Wrapper):
     """Performs weight normalization.
-    
+
     This wrapper reparameterizes a layer by decoupling the weight's
     magnitude and direction.
     This speeds up convergence by improving the

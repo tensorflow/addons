@@ -20,7 +20,7 @@ from typeguard import typechecked
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class SpectralNormalization(tf.keras.layers.Wrapper):
     """Performs spectral normalization on weights.
-    
+
     This wrapper controls the Lipschitz constant of the layer by
     constraining its spectral norm, which can stabilize the training of GANs.
 

@@ -22,8 +22,8 @@ from tensorflow_addons.utils import types
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class TLU(tf.keras.layers.Layer):
-    """Thresholded Linear Unit.
-    
+    r"""Thresholded Linear Unit.
+
     An activation function which is similar to ReLU
     but with a learned threshold that benefits models using FRN(Filter Response
     Normalization). Original paper: https://arxiv.org/pdf/1911.09737.
@@ -38,7 +38,7 @@ class TLU(tf.keras.layers.Layer):
 
     Arguments:
         affine: `bool`. Whether to make it TLU-Affine or not
-        which has the form $\max(x, \alpha*x + \tau)$`
+            which has the form $\max(x, \alpha*x + \tau)$`
     """
 
     @typechecked

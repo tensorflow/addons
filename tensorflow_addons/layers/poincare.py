@@ -23,7 +23,7 @@ from typing import Union, List
 class PoincareNormalize(tf.keras.layers.Layer):
     """Project into the Poincare ball with `norm <= 1.0 - epsilon`.
 
-    See [Poincaré Embeddings for Learning Hierarchical Representations](https://arxiv.org/pdf/1705.08039.pdf), 
+    See [Poincaré Embeddings for Learning Hierarchical Representations](https://arxiv.org/pdf/1705.08039.pdf),
     and [wiki](https://en.wikipedia.org/wiki/Poincare_ball_model).
 
     For a 1-D tensor with `axis = 0`, computes
