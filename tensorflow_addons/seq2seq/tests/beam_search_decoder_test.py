@@ -303,6 +303,7 @@ def test_beam_step():
     end_token = 0
     length_penalty_weight = 0.6
     coverage_penalty_weight = 0.0
+    output_all_scores = False
 
     dummy_cell_state = tf.zeros([batch_size, beam_width])
     beam_state = beam_search_decoder.BeamSearchDecoderState(
@@ -335,6 +336,7 @@ def test_beam_step():
         end_token=end_token,
         length_penalty_weight=length_penalty_weight,
         coverage_penalty_weight=coverage_penalty_weight,
+        output_all_scores=output_all_scores,
     )
 
     outputs_, next_state_, state_, log_probs_ = [
@@ -379,6 +381,7 @@ def test_step_with_eos():
     end_token = 0
     length_penalty_weight = 0.6
     coverage_penalty_weight = 0.0
+    output_all_scores = False
 
     dummy_cell_state = tf.zeros([batch_size, beam_width])
     beam_state = beam_search_decoder.BeamSearchDecoderState(
@@ -413,6 +416,7 @@ def test_step_with_eos():
         end_token=end_token,
         length_penalty_weight=length_penalty_weight,
         coverage_penalty_weight=coverage_penalty_weight,
+        output_all_scores=output_all_scores,
     )
 
     outputs_, next_state_, state_, log_probs_ = [
@@ -455,6 +459,7 @@ def test_large_beam_step():
     end_token = 0
     length_penalty_weight = 0.6
     coverage_penalty_weight = 0.0
+    output_all_scores = False
 
     def get_probs():
         """this simulates the initialize method in BeamSearchDecoder."""
@@ -516,6 +521,7 @@ def test_large_beam_step():
         end_token=end_token,
         length_penalty_weight=length_penalty_weight,
         coverage_penalty_weight=coverage_penalty_weight,
+        output_all_scores=output_all_scores,
     )
 
     outputs_, next_state_ = [outputs, next_beam_state]
