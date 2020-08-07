@@ -34,12 +34,12 @@ class GeometricMean(Metric):
     Note: `tfa.metrics.GeometricMean` can be used the same as `tf.keras.metrics.Mean`
 
     Usage:
-    ```python
+
     >>> m = tfa.metrics.GeometricMean()
     >>> m.update_state([1, 3, 5, 7, 9])
     >>> m.result().numpy()
     3.9362833
-    ```
+
     """
 
     @typechecked
