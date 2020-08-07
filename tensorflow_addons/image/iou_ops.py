@@ -94,11 +94,11 @@ def _common_iou(
             enclose_ymax = tf.maximum(b1_ymax, b2_ymax)
             enclose_xmax = tf.maximum(b1_xmax, b2_xmax)
 
-            b1_center = tf.stack([(b1_ymin + b1_ymax) / 2, (b1_xmin + b1_xmax) / 2])
-            b2_center = tf.stack([(b2_ymin + b2_ymax) / 2, (b2_xmin + b2_xmax) / 2])
-            euclidean = tf.linalg.norm(b2_center - b1_center)
+            b1_center = tf.stack([(b1_ymin + b1_ymax) / 2, (b1_xmin + b1_xmax) / 2],axis=-1)
+            b2_center = tf.stack([(b2_ymin + b2_ymax) / 2, (b2_xmin + b2_xmax) / 2],axis=-1)
+            euclidean = tf.linalg.norm(b2_center - b1_center,axis=-1)
             diag_length = tf.linalg.norm(
-                [enclose_ymax - enclose_ymin, enclose_xmax - enclose_xmin]
+                tf.stack([enclose_ymax - enclose_ymin, enclose_xmax - enclose_xmin],axis=-1),axis=-1
             )
             diou = iou - (euclidean ** 2) / (diag_length ** 2)
             if mode == "ciou":
