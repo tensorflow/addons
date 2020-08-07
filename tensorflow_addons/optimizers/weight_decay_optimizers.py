@@ -110,13 +110,9 @@ class DecoupledWeightDecayExtension:
 
         return cls(**config)
 
-    def minimize(self,
-                 loss,
-                 var_list,
-                 grad_loss=None,
-                 name=None,
-                 decay_var_list=None,
-                 tape=None):
+    def minimize(
+        self, loss, var_list, grad_loss=None, name=None, decay_var_list=None, tape=None
+    ):
         """Minimize `loss` by updating `var_list`.
 
         This method simply computes gradient using `tf.GradientTape` and calls
@@ -149,7 +145,8 @@ class DecoupledWeightDecayExtension:
             set([v.ref() for v in decay_var_list]) if decay_var_list else False
         )
         return super().minimize(
-            loss, var_list=var_list, grad_loss=grad_loss, name=name, tape=tape)
+            loss, var_list=var_list, grad_loss=grad_loss, name=name, tape=tape
+        )
 
     def apply_gradients(self, grads_and_vars, name=None, decay_var_list=None, **kwargs):
         """Apply gradients to variables.
