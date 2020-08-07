@@ -30,9 +30,9 @@ class Decoder(metaclass=abc.ABCMeta):
 
     Concepts used by this interface:
     - `inputs`: (structure of) tensors and TensorArrays that is passed as input
-      to the RNNCell composing the decoder, at each time step.
+      to the RNN cell composing the decoder, at each time step.
     - `state`: (structure of) tensors and TensorArrays that is passed to the
-      RNNCell instance as the state.
+      RNN cell instance as the state.
     - `finished`: boolean tensor telling whether each sequence in the batch is
       finished.
     - `training`: boolean whether it should behave in training mode or in
@@ -78,9 +78,9 @@ class Decoder(metaclass=abc.ABCMeta):
 
         Args:
           time: Scalar `int32` tensor. Current step number.
-          inputs: RNNCell input (possibly nested tuple of) tensor[s] for this
+          inputs: RNN cell input (possibly nested tuple of) tensor[s] for this
             time step.
-          state: RNNCell state (possibly nested tuple of) tensor[s] from
+          state: RNN cell state (possibly nested tuple of) tensor[s] from
             previous time step.
           training: Python boolean. Indicates whether the layer should behave
             in training  mode or in inference mode. Only relevant
@@ -126,11 +126,11 @@ class BaseDecoder(tf.keras.layers.Layer):
 
     Concepts used by this interface:
     - `inputs`: (structure of) tensors and TensorArrays that is passed as input
-      to the RNNCell composing the decoder, at each time step.
+      to the RNN cell composing the decoder, at each time step.
     - `state`: (structure of) tensors and TensorArrays that is passed to the
-      RNNCell instance as the state.
+      RNN cell instance as the state.
     - `memory`: (sturecute of) tensors that is usually the full output of the
-      encoder, which will be used for the attention wrapper for the RNNCell.
+      encoder, which will be used for the attention wrapper for the RNN cell.
     - `finished`: boolean tensor telling whether each sequence in the batch is
       finished.
     - `training`: boolean whether it should behave in training mode or in
@@ -197,7 +197,7 @@ class BaseDecoder(tf.keras.layers.Layer):
             decoder. In the normal case, it's a tensor with shape
             [batch, timestep, embedding].
           initial_state: (structure of) tensors that contains the initial state
-            for the RNNCell.
+            for the RNN cell.
           **kwargs: Other arguments that are passed in from layer.call()
             method. It could contains item like input sequence_length, or
             masking for input.
@@ -213,9 +213,9 @@ class BaseDecoder(tf.keras.layers.Layer):
 
         Args:
           time: Scalar `int32` tensor. Current step number.
-          inputs: RNNCell input (possibly nested tuple of) tensor[s] for this
+          inputs: RNN cell input (possibly nested tuple of) tensor[s] for this
             time step.
-          state: RNNCell state (possibly nested tuple of) tensor[s] from
+          state: RNN cell state (possibly nested tuple of) tensor[s] from
             previous time step.
           training: Python boolean. Indicates whether the layer should
             behave in training mode or in inference mode.
