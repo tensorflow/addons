@@ -166,7 +166,12 @@ def pytest_configure(config):
 
 @pytest.fixture(autouse=True, scope="function")
 def device(request):
-    requested_device = request.param
+    try:
+        requested_device = request.param
+    except Exception:
+        # workaround for DocTestItem
+        # https://github.com/pytest-dev/pytest/issues/5070
+        requested_device = "no_device"
     if requested_device == "no_device":
         yield requested_device
     elif requested_device == tf.distribute.MirroredStrategy:
