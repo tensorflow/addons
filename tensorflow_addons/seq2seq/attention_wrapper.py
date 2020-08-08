@@ -1368,7 +1368,7 @@ class AttentionWrapperState(
 
     Contains:
 
-      - `cell_state`: The state of the wrapped `RNNCell` at the previous time
+      - `cell_state`: The state of the wrapped RNN cell at the previous time
         step.
       - `attention`: The attention emitted at the previous time step.
       - `alignments`: A single or tuple of `Tensor`(s) containing the
@@ -1578,7 +1578,7 @@ def _compute_attention(
 
 
 class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
-    """Wraps another `RNNCell` with attention."""
+    """Wraps another RNN cell with attention."""
 
     @typechecked
     def __init__(
@@ -1631,7 +1631,8 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         ```
 
         Args:
-          cell: An instance of `RNNCell`.
+          cell: A layer that implements the `tf.keras.layers.AbstractRNNCell`
+            interface.
           attention_mechanism: A list of `AttentionMechanism` instances or a
             single instance.
           attention_layer_size: A list of Python integers or a single Python
@@ -1664,8 +1665,8 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             `get_initial_state` which does not match the batch size of
             `initial_cell_state`, proper behavior is not guaranteed.
           name: Name to use when creating ops.
-          attention_layer: A list of `tf.tf.keras.layers.Layer` instances or a
-            single `tf.tf.keras.layers.Layer` instance taking the context
+          attention_layer: A list of `tf.keras.layers.Layer` instances or a
+            single `tf.keras.layers.Layer` instance taking the context
             and cell output as inputs to generate attention at each time step.
             If None (default), use the context as attention at each time step.
             If attention_mechanism is a list, attention_layer must be a list of

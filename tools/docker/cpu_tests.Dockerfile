@@ -1,7 +1,7 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 FROM python:3.5 as build_wheel
 
-ARG TF_VERSION=2.2.0
+ARG TF_VERSION=2.3.0
 RUN pip install --default-timeout=1000 tensorflow-cpu==$TF_VERSION
 
 RUN apt-get update && apt-get install -y sudo rsync
@@ -20,7 +20,8 @@ RUN python configure.py
 RUN pip install -e ./
 RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
     bash tools/install_so_files.sh
-RUN pytest -v -n auto --durations=25 --cov=tensorflow_addons ./tensorflow_addons/
+RUN pytest -v -n auto --durations=25 --doctest-modules ./tensorflow_addons \
+    --cov=tensorflow_addons ./tensorflow_addons/
 
 RUN bazel build --enable_runfiles build_pip_pkg
 RUN bazel-bin/build_pip_pkg artifacts

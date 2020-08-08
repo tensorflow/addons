@@ -110,7 +110,9 @@ class DecoupledWeightDecayExtension:
 
         return cls(**config)
 
-    def minimize(self, loss, var_list, grad_loss=None, name=None, decay_var_list=None):
+    def minimize(
+        self, loss, var_list, grad_loss=None, name=None, decay_var_list=None, tape=None
+    ):
         """Minimize `loss` by updating `var_list`.
 
         This method simply computes gradient using `tf.GradientTape` and calls
@@ -119,8 +121,9 @@ class DecoupledWeightDecayExtension:
         instead of using this function.
 
         Args:
-            loss: A callable taking no arguments which returns the value to
-                minimize.
+            loss: `Tensor` or callable. If a callable, `loss` should take no
+                arguments and return the value to minimize. If a `Tensor`, the
+                `tape` argument must be passed.
             var_list: list or tuple of `Variable` objects to update to
                 minimize `loss`, or a callable returning the list or tuple of
                 `Variable` objects. Use callable when the variable list would
@@ -131,6 +134,8 @@ class DecoupledWeightDecayExtension:
             decay_var_list: Optional list of variables to be decayed. Defaults
                 to all variables in var_list.
             name: Optional name for the returned operation.
+            tape: (Optional) `tf.GradientTape`. If `loss` is provided as a
+                `Tensor`, the tape that computed the `loss` must be provided.
         Returns:
             An Operation that updates the variables in `var_list`.
         Raises:
@@ -139,7 +144,9 @@ class DecoupledWeightDecayExtension:
         self._decay_var_list = (
             set([v.ref() for v in decay_var_list]) if decay_var_list else False
         )
-        return super().minimize(loss, var_list=var_list, grad_loss=grad_loss, name=name)
+        return super().minimize(
+            loss, var_list=var_list, grad_loss=grad_loss, name=name, tape=tape
+        )
 
     def apply_gradients(self, grads_and_vars, name=None, decay_var_list=None, **kwargs):
         """Apply gradients to variables.
@@ -167,34 +174,59 @@ class DecoupledWeightDecayExtension:
         )
         return super().apply_gradients(grads_and_vars, name=name, **kwargs)
 
-    def _decay_weights_op(self, var):
+    def _decay_weights_op(self, var, apply_state=None):
         if not self._decay_var_list or var.ref() in self._decay_var_list:
-            return var.assign_sub(self._decayed_wd(var.dtype) * var, self._use_locking)
+            var_device, var_dtype = var.device, var.dtype.base_dtype
+            coefficients = (apply_state or {}).get(
+                (var_device, var_dtype)
+            ) or self._fallback_apply_state(var_device, var_dtype)
+
+            return var.assign_sub(coefficients["wd_t"] * var, self._use_locking)
         return tf.no_op()
 
-    def _decay_weights_sparse_op(self, var, indices):
+    def _decay_weights_sparse_op(self, var, indices, apply_state=None):
         if not self._decay_var_list or var.ref() in self._decay_var_list:
-            update = -self._decayed_wd(var.dtype) * tf.gather(var, indices)
+            var_device, var_dtype = var.device, var.dtype.base_dtype
+            coefficients = (apply_state or {}).get(
+                (var_device, var_dtype)
+            ) or self._fallback_apply_state(var_device, var_dtype)
+
+            update = -coefficients["wd_t"] * tf.gather(var, indices)
             return self._resource_scatter_add(var, indices, update)
         return tf.no_op()
 
+    def _prepare_local(self, var_device, var_dtype, apply_state):
+        super(DecoupledWeightDecayExtension, self)._prepare_local(
+            var_device, var_dtype, apply_state
+        )
+
+        if "weight_decay" in self._hyper:
+            wd_t = tf.identity(self._decayed_wd(var_dtype))
+            apply_state[(var_device, var_dtype)]["wd_t"] = wd_t
+
     def _decayed_wd(self, var_dtype):
         wd_t = self._get_hyper("weight_decay", var_dtype)
+
         if isinstance(wd_t, tf.keras.optimizers.schedules.LearningRateSchedule):
             wd_t = tf.cast(wd_t(self.iterations), var_dtype)
+
         return wd_t
 
     # Here, we overwrite the apply functions that the base optimizer calls.
     # super().apply_x resolves to the apply_x function of the BaseOptimizer.
 
-    def _resource_apply_dense(self, grad, var):
-        with tf.control_dependencies([self._decay_weights_op(var)]):
-            return super()._resource_apply_dense(grad, var)
+    def _resource_apply_dense(self, grad, var, apply_state=None):
+        with tf.control_dependencies(
+            [self._decay_weights_op(var, apply_state=apply_state)]
+        ):
+            return super()._resource_apply_dense(grad, var, apply_state=apply_state)
 
-    def _resource_apply_sparse(self, grad, var, indices):
-        decay_op = self._decay_weights_sparse_op(var, indices)
+    def _resource_apply_sparse(self, grad, var, indices, apply_state=None):
+        decay_op = self._decay_weights_sparse_op(var, indices, apply_state=apply_state)
         with tf.control_dependencies([decay_op]):
-            return super()._resource_apply_sparse(grad, var, indices)
+            return super()._resource_apply_sparse(
+                grad, var, indices, apply_state=apply_state
+            )
 
 
 @typechecked
