@@ -208,6 +208,7 @@ def crf_log_likelihood(
     tag_indices = tf.cast(tag_indices, dtype=tf.int32)
     sequence_lengths = tf.cast(sequence_lengths, dtype=tf.int32)
 
+    # TODO(windqaq): re-evaluate if `transition_params` can be `None`.
     if transition_params is None:
         initializer = tf.keras.initializers.GlorotUniform()
         transition_params = tf.Variable(
