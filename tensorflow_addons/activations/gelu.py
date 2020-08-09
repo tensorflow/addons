@@ -26,15 +26,38 @@ _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
-    """Gaussian Error Linear Unit.
+    r"""Gaussian Error Linear Unit.
 
     Computes gaussian error linear:
-    `0.5 * x * (1 + tanh(sqrt(2 / pi) * (x + 0.044715 * x^3)))` or
-    `x * P(X <= x) = 0.5 * x * (1 + erf(x / sqrt(2)))`, where P(X) ~ N(0, 1),
-    depending on whether approximation is enabled.
+
+    $$
+    \mathrm{gelu}(x) = x \Phi(x),
+    $$
+
+    where
+
+    $$
+    \Phi(x) = \frac{1}{2} \left[ 1 + \mathrm{erf}(\frac{x}{\sqrt{2}}) \right]$
+    $$
+
+    when `approximate` is `False`; or
+
+    $$
+    \Phi(x) = \frac{x}{2} \left[ 1 + \tanh(\sqrt(\frac{2}{\pi}) \cdot (x + 0.044715 \cdot x^3)) \right]
+    $$
+
+    when `approximate` is `True`.
 
     See [Gaussian Error Linear Units (GELUs)](https://arxiv.org/abs/1606.08415)
     and [BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding](https://arxiv.org/abs/1810.04805).
+
+    Usage:
+
+    >>> x = tf.constant([-1.0, 0.0, 1.0])
+    >>> tfa.activations.gelu(x, approximate=False)
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.15865529,  0.        ,  0.8413447 ], dtype=float32)>
+    >>> tfa.activations.gelu(x, approximate=True)
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.158808,  0.      ,  0.841192], dtype=float32)>
 
     Args:
         x: A `Tensor`. Must be one of the following types:

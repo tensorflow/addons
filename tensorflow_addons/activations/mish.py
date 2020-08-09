@@ -25,11 +25,19 @@ _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 def mish(x: types.TensorLike) -> tf.Tensor:
-    """Mish: A Self Regularized Non-Monotonic Neural Activation Function.
+    r"""Mish: A Self Regularized Non-Monotonic Neural Activation Function.
 
-    Computes mish activation: x * tanh(softplus(x))
+    Computes mish activation:
+
+    $$
+    \mathrm{mish}(x) = x \cdot \tanh(\mathrm{softplus}(x)).
+    $$
 
     See [Mish: A Self Regularized Non-Monotonic Neural Activation Function](https://arxiv.org/abs/1908.08681).
+
+    >>> x = tf.constant([1.0, 0.0, 1.0])
+    >>> tfa.activations.mish(x)
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([0.86509836, 0.        , 0.86509836], dtype=float32)>
 
     Args:
         x: A `Tensor`. Must be one of the following types:

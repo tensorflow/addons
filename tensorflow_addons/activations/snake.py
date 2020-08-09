@@ -19,19 +19,30 @@ from tensorflow_addons.utils import types
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def snake(logits: types.TensorLike, frequency: types.Number = 1) -> tf.Tensor:
-    """Snake activation to learn periodic functions.
+def snake(x: types.TensorLike, frequency: types.Number = 1) -> tf.Tensor:
+    r"""Snake activation to learn periodic functions.
 
-    https://arxiv.org/abs/2006.08195
+    Computes snake activation:
+
+    $$
+    \mathrm{snake}(x) = \frac{x + (1 - \cos(2 \cdot \mathrm{frequency} \cdot x))}{2 \cdot \mathrm{frequency}}.
+    $$
+
+    See [Neural Networks Fail to Learn Periodic Functions and How to Fix It](https://arxiv.org/abs/2006.08195).
+
+    Usage:
+
+    >>> x = tf.constant([-1.0, 0.0, 1.0])
+    >>> tfa.activations.snake(x)
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.29192656,  0.        ,  1.7080734 ], dtype=float32)>
 
     Args:
-        logits: Input tensor.
+        x: A `Tensor`.
         frequency: A scalar, frequency of the periodic part.
     Returns:
-        Tensor of the same type and shape as `logits`.
+        A `Tensor`. Has the same type as `x`.
     """
+    x = tf.convert_to_tensor(x)
+    frequency = tf.cast(frequency, x.dtype)
 
-    logits = tf.convert_to_tensor(logits)
-    frequency = tf.cast(frequency, logits.dtype)
-
-    return logits + (1 - tf.cos(2 * frequency * logits)) / (2 * frequency)
+    return x + (1 - tf.cos(2 * frequency * x)) / (2 * frequency)
