@@ -43,7 +43,7 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
     when `approximate` is `False`; or
 
     $$
-    \Phi(x) = \frac{x}{2} \left[ 1 + \tanh(\sqrt(\frac{2}{\pi}) \cdot (x + 0.044715 \cdot x^3)) \right]
+    \Phi(x) = \frac{x}{2} \left[ 1 + \tanh(\sqrt{\frac{2}{\pi}} \cdot (x + 0.044715 \cdot x^3)) \right]
     $$
 
     when `approximate` is `True`.
