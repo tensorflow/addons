@@ -40,13 +40,13 @@ def rrelu(
     $$
 
     where
-    
+
     $$
     a \sim \mathcal{U}(\mathrm{lower}, \mathrm{upper})
     $$
 
     when `training` is `True`; or
-    
+
     $$
     a = \frac{\mathrm{lower} + \mathrm{upper}}{2}
     $$
