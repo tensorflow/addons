@@ -71,7 +71,7 @@ def rrelu(
         training: `bool`, indicating whether the `call`
         is meant for training or inference.
         seed: `int`, this sets the operation-level seed.
-        rng: A `Generator`.
+        rng: A `tf.random.Generator`.
     Returns:
         result: A `Tensor`. Has the same type as `x`.
     """
