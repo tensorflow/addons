@@ -35,6 +35,8 @@ def mish(x: types.TensorLike) -> tf.Tensor:
 
     See [Mish: A Self Regularized Non-Monotonic Neural Activation Function](https://arxiv.org/abs/1908.08681).
 
+    Usage:
+
     >>> x = tf.constant([1.0, 0.0, 1.0])
     >>> tfa.activations.mish(x)
     <tf.Tensor: shape=(3,), dtype=float32, numpy=array([0.86509836, 0.        , 0.86509836], dtype=float32)>

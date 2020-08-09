@@ -41,6 +41,8 @@ def softshrink(
     \end{cases}.
     $$
 
+    Usage:
+
     >>> x = tf.constant([-1.0, 0.0, 1.0])
     >>> tfa.activations.softshrink(x)
     <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.5,  0. ,  0.5], dtype=float32)>

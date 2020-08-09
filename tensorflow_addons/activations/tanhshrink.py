@@ -33,6 +33,8 @@ def tanhshrink(x: types.TensorLike) -> tf.Tensor:
     \mathrm{tanhshrink}(x) = x - \tanh(x).
     $$
 
+    Usage:
+
     >>> x = tf.constant([-1.0, 0.0, 1.0])
     >>> tfa.activations.tanhshrink(x)
     <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.23840582,  0.        ,  0.23840582], dtype=float32)>

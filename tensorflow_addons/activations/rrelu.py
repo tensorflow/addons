@@ -39,12 +39,23 @@ def rrelu(
     \end{cases},
     $$
 
-    where $a \sim \mathcal{U}(\mathrm{lower}, \mathrm{upper})$
-    when `training` is `True`;
-    or $a = (\mathrm{lower} + \mathrm{upper}) / 2$
+    where
+    
+    $$
+    a \sim \mathcal{U}(\mathrm{lower}, \mathrm{upper})
+    $$
+
+    when `training` is `True`; or
+    
+    $$
+    a = \frac{\mathrm{lower} + \mathrm{upper}}{2}
+    $$
+
     when `training` is `False`.
 
     See [Empirical Evaluation of Rectified Activations in Convolutional Network](https://arxiv.org/abs/1505.00853).
+
+    Usage:
 
     >>> x = tf.constant([-1.0, 0.0, 1.0])
     >>> tfa.activations.rrelu(x, training=False, seed=2020)
