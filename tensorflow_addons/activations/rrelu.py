@@ -95,6 +95,6 @@ def rrelu(
             tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype, seed=seed
         )
 
-    a = tf.keras.backend.in_train_phase(random_a, (lower + upper) / 2, training,)
+    a = tf.keras.backend.in_train_phase(random_a, (lower + upper) / 2, training)
 
     return tf.where(x >= 0, x, a * x)
