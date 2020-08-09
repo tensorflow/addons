@@ -58,10 +58,13 @@ def rrelu(
     Usage:
 
     >>> x = tf.constant([-1.0, 0.0, 1.0])
-    >>> tfa.activations.rrelu(x, training=False, seed=2020)
+    >>> tfa.activations.rrelu(x, training=False)
     <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.22916667,  0.        ,  1.        ], dtype=float32)>
     >>> tfa.activations.rrelu(x, training=True, seed=2020)
     <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.22631127,  0.        ,  1.        ], dtype=float32)>
+    >>> generator = tf.random.Generator.from_seed(2021)
+    >>> tfa.activations.rrelu(x, training=True, rng=generator)
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.16031083,  0.        ,  1.        ], dtype=float32)>
 
     Args:
         x: A `Tensor`. Must be one of the following types:
@@ -79,22 +82,19 @@ def rrelu(
     lower = tf.cast(lower, x.dtype)
     upper = tf.cast(upper, x.dtype)
 
-    if training is None:
-        training = tf.keras.backend.learning_phase()
-        training = bool(tf.keras.backend.get_value(training))
-
-    if training:
+    def random_a():
         if rng is not None and seed is not None:
             raise ValueError(
                 "Either seed or rng should be specified. Not both at the same time."
             )
-        elif rng is not None:
-            alpha = rng.uniform(tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype)
-        else:
-            alpha = tf.random.uniform(
-                tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype, seed=seed
-            )
-    else:
-        alpha = (lower + upper) / 2
 
-    return tf.where(x >= 0, x, alpha * x)
+        if rng is not None:
+            return rng.uniform(tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype)
+
+        return tf.random.uniform(
+            tf.shape(x), minval=lower, maxval=upper, dtype=x.dtype, seed=seed
+        )
+
+    a = tf.keras.backend.in_train_phase(random_a, (lower + upper) / 2, training,)
+
+    return tf.where(x >= 0, x, a * x)
