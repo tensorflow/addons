@@ -26,7 +26,7 @@ from typing import Union, Iterable
 class SpatialPyramidPooling2D(tf.keras.layers.Layer):
     """Performs Spatial Pyramid Pooling.
 
-    Original Paper: https://arxiv.org/pdf/1406.4729.pdf
+    See [Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition](https://arxiv.org/pdf/1406.4729.pdf).
 
     Spatial Pyramid Pooling generates a fixed-length representation
     regardless of input size/scale. It is typically used before a layer
