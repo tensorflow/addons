@@ -21,37 +21,38 @@ from typeguard import typechecked
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class WeightNormalization(tf.keras.layers.Wrapper):
-    """This wrapper reparameterizes a layer by decoupling the weight's
-    magnitude and direction.
+    """Performs weight normalization.
 
+    This wrapper reparameterizes a layer by decoupling the weight's
+    magnitude and direction.
     This speeds up convergence by improving the
     conditioning of the optimization problem.
-    Weight Normalization: A Simple Reparameterization to Accelerate
-    Training of Deep Neural Networks: https://arxiv.org/abs/1602.07868
-    Tim Salimans, Diederik P. Kingma (2016)
-    WeightNormalization wrapper works for keras and tf layers.
+
+    See [Weight Normalization: A Simple Reparameterization to Accelerate Training of Deep Neural Networks](https://arxiv.org/abs/1602.07868).
+
     ```python
-      net = WeightNormalization(
-          tf.keras.layers.Conv2D(2, 2, activation='relu'),
-          input_shape=(32, 32, 3),
-          data_init=True)(x)
-      net = WeightNormalization(
-          tf.keras.layers.Conv2D(16, 5, activation='relu'),
-          data_init=True)(net)
-      net = WeightNormalization(
-          tf.keras.layers.Dense(120, activation='relu'),
-          data_init=True)(net)
-      net = WeightNormalization(
-          tf.keras.layers.Dense(n_classes),
-          data_init=True)(net)
+    net = WeightNormalization(
+        tf.keras.layers.Conv2D(2, 2, activation='relu'),
+        input_shape=(32, 32, 3),
+        data_init=True)(x)
+    net = WeightNormalization(
+        tf.keras.layers.Conv2D(16, 5, activation='relu'),
+        data_init=True)(net)
+    net = WeightNormalization(
+        tf.keras.layers.Dense(120, activation='relu'),
+        data_init=True)(net)
+    net = WeightNormalization(
+        tf.keras.layers.Dense(n_classes),
+        data_init=True)(net)
     ```
+
     Arguments:
-      layer: a layer instance.
-      data_init: If `True` use data dependent variable initialization
+      layer: A `tf.keras.layers.Layer` instance.
+      data_init: If `True` use data dependent variable initialization.
     Raises:
       ValueError: If not initialized with a `Layer` instance.
-      ValueError: If `Layer` does not contain a `kernel` of weights
-      NotImplementedError: If `data_init` is True and running graph execution
+      ValueError: If `Layer` does not contain a `kernel` of weights.
+      NotImplementedError: If `data_init` is True and running graph execution.
     """
 
     @typechecked

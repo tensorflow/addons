@@ -20,11 +20,11 @@ from typeguard import typechecked
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class Sparsemax(tf.keras.layers.Layer):
-    """Sparsemax activation function [1].
+    """Sparsemax activation function.
 
     The output shape is the same as the input shape.
 
-    [1]: https://arxiv.org/abs/1602.02068
+    See [From Softmax to Sparsemax: A Sparse Model of Attention and Multi-Label Classification](https://arxiv.org/abs/1602.02068).
 
     Arguments:
         axis: Integer, axis along which the sparsemax normalization is applied.
