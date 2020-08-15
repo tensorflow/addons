@@ -26,7 +26,7 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
     """Optimizer that implements NovoGrad.
 
     The NovoGrad Optimizer was first proposed in [Stochastic Gradient
-    Methods with Layerwise Adaptvie Moments for training of Deep
+    Methods with Layerwise Adaptive Moments for training of Deep
     Networks](https://arxiv.org/pdf/1905.11286.pdf) NovoGrad is a
     first-order SGD-based algorithm, which computes second moments per
     layer instead of per weight as in Adam. Compared to Adam, NovoGrad
