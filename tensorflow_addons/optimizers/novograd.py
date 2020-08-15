@@ -23,14 +23,15 @@ from typeguard import typechecked
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class NovoGrad(tf.keras.optimizers.Optimizer):
-    """The NovoGrad Optimizer was first proposed in [Stochastic Gradient
-    Methods with Layerwise Adaptvie Moments for training of Deep
-    Networks](https://arxiv.org/pdf/1905.11286.pdf)
+    """Optimizer that implements NovoGrad.
 
-    NovoGrad is a first-order SGD-based algorithm, which computes second
-    moments per layer instead of per weight as in Adam. Compared to Adam,
-    NovoGrad takes less memory, and has been found to be more numerically
-    stable. More specifically we compute (for more information on the
+    The NovoGrad Optimizer was first proposed in [Stochastic Gradient
+    Methods with Layerwise Adaptvie Moments for training of Deep
+    Networks](https://arxiv.org/pdf/1905.11286.pdf) NovoGrad is a
+    first-order SGD-based algorithm, which computes second moments per
+    layer instead of per weight as in Adam. Compared to Adam, NovoGrad
+    takes less memory, and has been found to be more numerically stable.
+    More specifically we compute (for more information on the
     computation please refer to this
     [link](https://nvidia.github.io/OpenSeq2Seq/html/optimizers.html):
 
