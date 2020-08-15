@@ -33,7 +33,7 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
     takes less memory, and has been found to be more numerically stable.
     More specifically we compute (for more information on the
     computation please refer to this
-    [link](https://nvidia.github.io/OpenSeq2Seq/html/optimizers.html):
+    [link](https://nvidia.github.io/OpenSeq2Seq/html/optimizers.html)):
 
     Second order moment = exponential moving average of Layer-wise square
     of grads:
