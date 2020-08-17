@@ -20,10 +20,9 @@ from tensorflow.keras import layers, activations, initializers, regularizers, co
 from tensorflow.python.ops import math_ops, nn_ops, sparse_ops, gen_math_ops, standard_ops
 from tensorflow.python.keras.engine.input_spec import InputSpec
 from tensorflow.python.framework import dtypes, tensor_shape, sparse_tensor
-from tensorflow.python.keras.engine.base_layer import Layer
 
 @tf.utils.register_keras_serializable(package="Addons")
-class NoisyDense(Layer):
+class NoisyDense(tf.keras.layers.Layer):
   """Like normal dense layer but random noisy is added to the weights matrix. But
   as the network improves the random noise is decayed until it is insignificant. 
   
