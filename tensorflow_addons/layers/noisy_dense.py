@@ -26,6 +26,7 @@ from tensorflow.python.keras.engine.base_layer import Layer
 class NoisyDense(Layer):
   """Like normal dense layer but random noisy is added to the weights matrix. But
   as the network improves the random noise is decayed until it is insignificant. 
+  
   A `NoisyDense` layer implements the operation:
   `output = activation(dot(input, µ_kernel + (σ_kernel * ε_kernel)) + bias)`
   where `activation` is the element-wise activation function
@@ -33,8 +34,7 @@ class NoisyDense(Layer):
   created by the layer, σ_kernel is a weights matrix that controls the importance of 
   the ε_kernel which is just random noise, and `bias` is a bias vector created by the layer
   (only applicable if `use_bias` is `True`).
-  Besides, layer attributes cannot be modified after the layer has been called
-  once (except the `trainable` attribute).
+
   Example:
   >>> # Create a `Sequential` model and add a Dense layer as the first layer.
   >>> model = tf.keras.models.Sequential()
@@ -47,6 +47,7 @@ class NoisyDense(Layer):
   >>> model.add(NoisyDense(32))
   >>> model.output_shape
   (None, 32)
+  
   Arguments:
     units: Positive integer, dimensionality of the output space.
     activation: Activation function to use.
@@ -61,10 +62,12 @@ class NoisyDense(Layer):
     kernel_constraint: Constraint function applied to
       the `kernel` weights matrix.
     bias_constraint: Constraint function applied to the bias vector.
+    
   Input shape:
     N-D tensor with shape: `(batch_size, ..., input_dim)`.
     The most common situation would be
     a 2D input with shape `(batch_size, input_dim)`.
+    
   Output shape:
     N-D tensor with shape: `(batch_size, ..., units)`.
     For instance, for a 2D input with shape `(batch_size, input_dim)`,
