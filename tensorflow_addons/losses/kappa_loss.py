@@ -25,15 +25,15 @@ from tensorflow_addons.utils.types import Number
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class WeightedKappaLoss(tf.keras.losses.Loss):
-    """Implements the Weighted Kappa loss function.
+    r"""Implements the Weighted Kappa loss function.
 
     Weighted Kappa loss was introduced in the
     [Weighted kappa loss function for multi-class classification
     of ordinal data in deep learning]
     (https://www.sciencedirect.com/science/article/abs/pii/S0167865517301666).
     Weighted Kappa is widely used in Ordinal Classification Problems.
-    The loss value lies in [-inf, log 2], where log 2
-     means the random prediction.
+    The loss value lies in $ [-\infty, \log 2] $, where $ \log 2 $
+    means the random prediction.
 
     Usage:
 
@@ -67,18 +67,17 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
         dtype: Optional[tf.DType] = tf.float32,
         reduction: str = tf.keras.losses.Reduction.NONE,
     ):
-        """Creates a `WeightedKappa` instance.
+        r"""Creates a `WeightedKappaLoss` instance.
 
         Args:
           num_classes: Number of unique classes in your dataset.
           weightage: (Optional) Weighting to be considered for calculating
             kappa statistics. A valid value is one of
-            ['linear', 'quadratic']. Defaults to `quadratic` since it's
-            mostly used.
+            ['linear', 'quadratic']. Defaults to 'quadratic'.
           name: (Optional) String name of the metric instance.
           epsilon: (Optional) increment to avoid log zero,
-            so the loss will be log(1 - k + epsilon), where k belongs to
-            [-1, 1], usually you can use the default value which is 1e-6.
+            so the loss will be $ \log(1 - k + \epsilon) $, where $ k $ lies
+            in $ [-1, 1] $. Defaults to 1e-6.
           dtype: (Optional) Data type of the metric result.
             Defaults to `tf.float32`.
         Raises:

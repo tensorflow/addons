@@ -25,11 +25,11 @@ def pairwise_distance(feature: TensorLike, squared: bool = False):
     output[i, j] = || feature[i, :] - feature[j, :] ||_2
 
     Args:
-      feature: 2-D Tensor of size [number of data, feature dimension].
+      feature: 2-D Tensor of size `[number of data, feature dimension]`.
       squared: Boolean, whether or not to square the pairwise distances.
 
     Returns:
-      pairwise_distances: 2-D Tensor of size [number of data, number of data].
+      pairwise_distances: 2-D Tensor of size `[number of data, number of data]`.
     """
     pairwise_distances_squared = tf.math.add(
         tf.math.reduce_sum(tf.math.square(feature), axis=[1], keepdims=True),
@@ -74,10 +74,10 @@ def angular_distance(feature: TensorLike):
     output[i, j] = 1 - cosine_similarity(feature[i, :], feature[j, :])
 
     Args:
-      feature: 2-D Tensor of size [number of data, feature dimension].
+      feature: 2-D Tensor of size `[number of data, feature dimension]`.
 
     Returns:
-      angular_distances: 2-D Tensor of size [number of data, number of data].
+      angular_distances: 2-D Tensor of size `[number of data, number of data]`.
     """
     # normalize input
     feature = tf.math.l2_normalize(feature, axis=1)
