@@ -39,12 +39,12 @@ class NoisyDense(Layer):
   >>> # Create a `Sequential` model and add a Dense layer as the first layer.
   >>> model = tf.keras.models.Sequential()
   >>> model.add(tf.keras.Input(shape=(16,)))
-  >>> model.add(tf.keras.layers.NoisyDense(32, activation='relu'))
+  >>> model.add(NoisyDense(32, activation='relu'))
   >>> # Now the model will take as input arrays of shape (None, 16)
   >>> # and output arrays of shape (None, 32).
   >>> # Note that after the first layer, you don't need to specify
   >>> # the size of the input anymore:
-  >>> model.add(tf.keras.layers.NoisyDense(32))
+  >>> model.add(NoisyDense(32))
   >>> model.output_shape
   (None, 32)
   Arguments:
