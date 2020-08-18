@@ -24,8 +24,8 @@ from typeguard import typechecked
 class PiecewiseConstantDecayWithLinearWarmup(
     tf.keras.optimizers.schedules.PiecewiseConstantDecay
 ):
-    """A LearningRateSchedule that uses linear warmup schedule along with
-    step decay"""
+    """A LearningRateSchedule that applies linear warmup along with
+    step decay schedule"""
 
     @typechecked
     def __init__(
@@ -37,8 +37,8 @@ class PiecewiseConstantDecayWithLinearWarmup(
         name: str = "PiecewiseConstantDecayWithLinearWarmup",
     ):
 
-        """Applies linear warmup schedule `warmup_steps` steps, and then
-        follows `PiecewiseConstantDecay` schedule there after.
+        """Applies linear warmup schedule for `warmup_steps` steps, and
+        then follows `PiecewiseConstantDecay` schedule there after.
 
         ```python
         lr_schedule = \
@@ -63,7 +63,8 @@ class PiecewiseConstantDecayWithLinearWarmup(
             warmup_learning_rate: A scalar `float32` or `float64` `Tensor` or
                 a Python number.  The initial warmup learning rate.
             warmup_steps: A scalar `float32` or `float64` `Tensor` or
-                a Python number.  The maximum learning rate.
+                a Python number.  The numer of warmup steps, during which the
+                learning rates is increased linearly.
             boundaries: A list of `Tensor`s or `int`s or `float`s with strictly
                 increasing entries, and with all elements having the same type as the
                 optimizer step.
@@ -79,7 +80,7 @@ class PiecewiseConstantDecayWithLinearWarmup(
             Updated learning rate value.
 
         Raises:
-            ValueError: if the number of elements in the lists do not match.
+            ValueError: If the number of elements in the lists do not match.
         """
 
         super(PiecewiseConstantDecayWithLinearWarmup, self).__init__(
@@ -90,7 +91,7 @@ class PiecewiseConstantDecayWithLinearWarmup(
         self._step_size = self.values[0] - self.warmup_learning_rate
 
     def __call__(self, step):
-        with tf.name_scope(self.name or "PiecewiseConstantDecayWithLinearWarmup"):
+        with tf.name_scope(self.name):
             learning_rate = tf.cond(
                 pred=tf.less(step, self.warmup_steps),
                 true_fn=lambda: (
