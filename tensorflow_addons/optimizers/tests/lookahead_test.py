@@ -14,9 +14,12 @@
 # ==============================================================================
 """Tests for Lookahead optimizer."""
 
+import os
+
 import numpy as np
 import pytest
 import tensorflow as tf
+import tempfile
 
 from tensorflow_addons.optimizers import Lookahead
 from tensorflow_addons.utils import test_utils
@@ -186,3 +189,58 @@ def test_serialization():
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)
     assert new_optimizer.get_config() == optimizer.get_config()
+
+
+def assert_same_optimizer_states(optimizer, new_optimizer):
+    # Remove the iteration variable
+    weights = []
+    for weight in optimizer.weights:
+        if "iter" not in weight.name:
+            weights.append(weight)
+    new_weights = []
+    for weight in new_optimizer.weights:
+        if "iter" not in weight.name:
+            new_weights.append(weight)
+
+    assert len(weights) == len(new_weights)
+
+    weights = sorted(weights, key=lambda w: w.name)
+    new_weights = sorted(new_weights, key=lambda w: w.name)
+
+    for weight, new_weight in zip(weights, new_weights):
+        assert np.all(weight == new_weight)
+
+    # Assert recursively
+    if hasattr(optimizer, "_optimizer"):
+        assert_same_optimizer_states(optimizer._optimizer, new_optimizer._optimizer)
+
+
+def test_save_load():
+    # NOTE currely passes with "sgd" instead of "adam"
+    x = np.random.standard_normal((10000, 3))
+    w = np.random.standard_normal((3, 1))
+    y = np.dot(x, w) + np.random.standard_normal((10000, 1)) * 1e-4
+
+    model = tf.keras.models.Sequential()
+    model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
+    model.compile(Lookahead("adam"), loss="mse")
+
+    model.fit(x, y, epochs=1)
+
+    with tempfile.TemporaryDirectory() as ckpt_dir:
+        ckpt_path = os.path.join(ckpt_dir, "model.ckpt")
+        model.save_weights(ckpt_path)
+
+        # Rebuild and reload
+        new_model = tf.keras.models.Sequential()
+        new_model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
+        new_model.compile(Lookahead("adam"), loss="mse")
+        new_model.load_weights(ckpt_path)
+
+        # Trigger optimizer initialization
+        try:
+            new_model.fit(x, y, epochs=1, steps_per_epoch=0)
+        except UnboundLocalError:
+            pass
+
+        assert_same_optimizer_states(model.optimizer, new_model.optimizer)
