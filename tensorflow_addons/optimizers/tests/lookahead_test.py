@@ -248,10 +248,7 @@ def test_save_load(optimizer, weights_only):
         else:
             new_model.save(ckpt_path)
             new_model = tf.keras.models.load_model(
-                ckpt_path,
-                custom_objects={
-                    "Lookahead": Lookahead,
-                }
+                ckpt_path, custom_objects={"Lookahead": Lookahead,}
             )
 
         new_model.fit(x, y, epochs=1, shuffle=False)
