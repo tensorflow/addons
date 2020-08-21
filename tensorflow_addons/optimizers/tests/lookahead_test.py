@@ -213,8 +213,17 @@ def assert_same_optimizer_states(optimizer, new_optimizer):
 
     assert len(weights) == len(new_weights)
 
-    weights = sorted(weights, key=lambda w: w.name)
-    new_weights = sorted(new_weights, key=lambda w: w.name)
+    optimizer_name = optimizer._name
+    len_name_scope = len(optimizer_name) + 1
+
+    def _get_key(weight):
+        name = weight.name
+        if name.startswith(optimizer_name):
+            name = name[len_name_scope:]
+        return name
+
+    weights = sorted(weights, key=_get_key)
+    new_weights = sorted(new_weights, key=_get_key)
 
     for weight, new_weight in zip(weights, new_weights):
         assert np.allclose(weight.numpy(), new_weight.numpy(), atol=1e-4)
