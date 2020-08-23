@@ -34,7 +34,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
     >>> net = SpectralNormalization(
         tf.keras.layers.Dense(120, activation="relu"))(net)
     >>> net = SpectralNormalization(
-        tf.keras.layers.Dense(n_classes))(net)    
+        tf.keras.layers.Dense(n_classes))(net)
 
     Arguments:
       layer: A `tf.keras.layers.Layer` instance that
