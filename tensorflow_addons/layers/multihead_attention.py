@@ -39,7 +39,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     >>> query = tf.random.uniform((3, 5, 5)) # (batch_size, query_elements, query_depth)
     >>> key = tf.random.uniform((3, 6, 10)) # (batch_size, key_elements, key_depth)
     >>> attention = mha([query, key]) # (batch_size, query_elements, key_depth)
-    
+
     Arguments:
         head_size: int, dimensionality of the `query`, `key` and `value` tensors
             after the linear transformation.
