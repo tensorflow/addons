@@ -32,7 +32,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     >>> value = tf.random.uniform((3, 5, 6)) # (batch_size, key_elements, value_depth)
 
     >>> attention = mha([query, key, value]) # (batch_size, query_elements, value_depth)
-    
+
     If `value` is not given then internally `value = key` will be used:
 
     >>> mha = MultiHeadAttention(head_size=128, num_heads=12)
