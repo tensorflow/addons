@@ -29,8 +29,6 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     conditioning of the optimization problem.
 
     See [Weight Normalization: A Simple Reparameterization to Accelerate Training of Deep Neural Networks](https://arxiv.org/abs/1602.07868).
-
-   
     >>> net = WeightNormalization(
         tf.keras.layers.Conv2D(2, 2, activation='relu'),
         input_shape=(32, 32, 3),
@@ -43,9 +41,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
         data_init=True)(net)
     >>> net = WeightNormalization(
         tf.keras.layers.Dense(n_classes),
-        data_init=True)(net)
-    
-
+        data_init=True)(net)    
     Arguments:
       layer: A `tf.keras.layers.Layer` instance.
       data_init: If `True` use data dependent variable initialization.
