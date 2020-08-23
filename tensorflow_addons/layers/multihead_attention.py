@@ -26,7 +26,6 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     [Attention Is All You Need](https://arxiv.org/abs/1706.03762) which takes
     in the tensors `query`, `key`, and `value`, and returns the dot-product attention
     between them:
-    
     >>> mha = MultiHeadAttention(head_size=128, num_heads=12)
     >>> query = tf.random.uniform((3, 5, 4)) # (batch_size, query_elements, query_depth)
     >>> key = tf.random.uniform((3, 6, 5)) # (batch_size, key_elements, key_depth)
@@ -35,19 +34,18 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     >>> attention = mha([query, key, value]) # (batch_size, query_elements, value_depth)
     
     If `value` is not given then internally `value = key` will be used:
-    
+
     >>> mha = MultiHeadAttention(head_size=128, num_heads=12)
     >>> query = tf.random.uniform((3, 5, 5)) # (batch_size, query_elements, query_depth)
     >>> key = tf.random.uniform((3, 6, 10)) # (batch_size, key_elements, key_depth)
     >>> attention = mha([query, key]) # (batch_size, query_elements, key_depth)
     
-
     Arguments:
         head_size: int, dimensionality of the `query`, `key` and `value` tensors
             after the linear transformation.
         num_heads: int, number of attention heads.
         output_size: int, dimensionality of the output space, if `None` then the
-            input dimension of `value` or `key` will be used,
+        input dimension of `value` or `key` will be used,
             default `None`.
         dropout: float, `rate` parameter for the dropout layer that is
             applied to attention after softmax,
