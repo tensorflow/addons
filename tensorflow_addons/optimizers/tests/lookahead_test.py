@@ -201,15 +201,8 @@ def _init_model(optimizer, init_w):
 
 
 def assert_same_optimizer_states(optimizer, new_optimizer):
-    # Remove the iteration variable
-    weights = []
-    for weight in optimizer.weights:
-        if "iter" not in weight.name:
-            weights.append(weight)
-    new_weights = []
-    for weight in new_optimizer.weights:
-        if "iter" not in weight.name:
-            new_weights.append(weight)
+    weights = optimizer.weights
+    new_weights = new_optimizer.weights
 
     assert len(weights) == len(new_weights)
 
@@ -257,7 +250,7 @@ def test_save_load(optimizer, weights_only):
         else:
             new_model.save(ckpt_path)
             new_model = tf.keras.models.load_model(
-                ckpt_path, custom_objects={"Lookahead": Lookahead,}
+                ckpt_path, custom_objects={"Lookahead": Lookahead}
             )
 
         new_model.fit(x, y, epochs=1, shuffle=False)
