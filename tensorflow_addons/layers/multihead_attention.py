@@ -26,7 +26,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     [Attention Is All You Need](https://arxiv.org/abs/1706.03762) which takes
     in the tensors `query`, `key`, and `value`, and returns the dot-product attention
     between them:
-    >>> mha = MultiHeadAttention(head_size=128, num_heads=12)
+    >>> mha = MultiHeadAttention(head_size=128, num_heads=12) 
     >>> query = tf.random.uniform((3, 5, 4)) # (batch_size, query_elements, query_depth)
     >>> key = tf.random.uniform((3, 6, 5)) # (batch_size, key_elements, key_depth)
     >>> value = tf.random.uniform((3, 5, 6)) # (batch_size, key_elements, value_depth)
