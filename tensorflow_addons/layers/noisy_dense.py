@@ -22,17 +22,8 @@ from tensorflow.keras import (
     regularizers,
     constraints,
 )
-from tensorflow.python.ops import (
-    math_ops,
-    nn_ops,
-    sparse_ops,
-    gen_math_ops,
-    standard_ops,
-)
-from tensorflow.python.keras import backend as K
-from tensorflow.python.keras.engine.input_spec import InputSpec
-from tensorflow.python.framework import dtypes, tensor_shape, sparse_tensor
-from tensorflow.python.eager import context
+from tensorflow.keras import backend as K
+from tensorflow.keras.layers import InputSpec
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -116,15 +107,15 @@ class NoisyDense(tf.keras.layers.Layer):
 
     def build(self, input_shape):
         # Make sure dtype is correct
-        dtype = dtypes.as_dtype(self.dtype or K.floatx())
+        dtype = tf.dtypes.as_dtype(self.dtype or K.floatx())
         if not (dtype.is_floating or dtype.is_complex):
             raise TypeError(
                 "Unable to build `Dense` layer with non-floating point "
                 "dtype %s" % (dtype,)
             )
 
-        input_shape = tensor_shape.TensorShape(input_shape)
-        self.last_dim = tensor_shape.dimension_value(input_shape[-1])
+        input_shape = tf.TensorShape(input_shape)
+        self.last_dim = tf.compat.dimension_value(input_shape[-1])
         sqrt_dim = self.last_dim ** (1 / 2)
         if self.last_dim is None:
             raise ValueError(
@@ -190,7 +181,7 @@ class NoisyDense(tf.keras.layers.Layer):
     def call(self, inputs):
         dtype = self._compute_dtype_object
         if inputs.dtype.base_dtype != dtype.base_dtype:
-            inputs = math_ops.cast(inputs, dtype=dtype)
+            inputs = tf.cast(inputs, dtype=dtype)
 
         # Fixed parameters added as the noise
         ε_i = tf.random.normal([self.last_dim, self.units], dtype=dtype)
@@ -204,24 +195,28 @@ class NoisyDense(tf.keras.layers.Layer):
         # Performs: y = (µw + σw · εw)x + µb + σb · εb
         # to calculate the output
         kernel = self.µ_kernel + (self.σ_kernel * ε_kernel)
+
+        if inputs.dtype.base_dtype != dtype.base_dtype:
+            inputs = tf.cast(inputs, dtype=dtype)
+
         rank = inputs.shape.rank
         if rank == 2 or rank is None:
-            if isinstance(inputs, sparse_tensor.SparseTensor):
-                outputs = sparse_ops.sparse_tensor_dense_matmul(inputs, kernel)
+            if isinstance(inputs, tf.sparse.SparseTensor):
+                outputs = tf.sparse.sparse_dense_matmul(inputs, kernel)
             else:
-                outputs = gen_math_ops.mat_mul(inputs, kernel)
+                outputs = tf.linalg.matmul(inputs, kernel)
         # Broadcast kernel to inputs.
         else:
-            outputs = standard_ops.tensordot(inputs, kernel, [[rank - 1], [0]])
+            outputs = tf.tensordot(inputs, kernel, [[rank - 1], [0]])
             # Reshape the output back to the original ndim of the input.
-            if not context.executing_eagerly():
+            if not tf.executing_eagerly():
                 shape = inputs.shape.as_list()
                 output_shape = shape[:-1] + [kernel.shape[-1]]
                 outputs.set_shape(output_shape)
 
         if self.use_bias:
             noisy_bias = self.µ_bias + (self.σ_bias * ε_bias)
-            outputs = nn_ops.bias_add(outputs, noisy_bias)
+            outputs = tf.nn.bias_add(outputs, noisy_bias)
 
         if self.activation is not None:
             outputs = self.activation(outputs)
@@ -229,9 +224,9 @@ class NoisyDense(tf.keras.layers.Layer):
         return outputs
 
     def compute_output_shape(self, input_shape):
-        input_shape = tensor_shape.TensorShape(input_shape)
+        input_shape = tf.TensorShape(input_shape)
         input_shape = input_shape.with_rank_at_least(2)
-        if tensor_shape.dimension_value(input_shape[-1]) is None:
+        if tf.compat.dimension_value(input_shape[-1]) is None:
             raise ValueError(
                 "The innermost dimension of input_shape must be defined, but saw: %s"
                 % input_shape
