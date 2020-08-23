@@ -15,15 +15,14 @@
 """Tests NoisyDense layer."""
 
 
-import numpy as np
 import pytest
-from tensorflow.python import keras
+import numpy as np
+
+import tensorflow as tf
+from tensorflow import keras
 from tensorflow_addons.utils import test_utils
 from tensorflow_addons.layers.noisy_dense import NoisyDense
-from tensorflow.python.framework import ops
-from tensorflow.python.framework import tensor_spec
-from tensorflow.python.keras.mixed_precision.experimental import policy
-from tensorflow.python.framework import dtypes
+from tensorflow.keras.mixed_precision.experimental import Policy
 
 
 def test_noisy_dense():
@@ -39,7 +38,7 @@ def test_noisy_dense():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", ["float16", "float32", "float64"])
 def test_noisy_dense_dtype(dtype):
-    inputs = ops.convert_to_tensor_v2(
+    inputs = tf.convert_to_tensor(
         np.random.randint(low=0, high=7, size=(2, 2)), dtype=dtype
     )
     layer = NoisyDense(5, dtype=dtype)
@@ -49,13 +48,13 @@ def test_noisy_dense_dtype(dtype):
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_noisy_dense_with_policy():
-    inputs = ops.convert_to_tensor_v2(np.random.randint(low=0, high=7, size=(2, 2)))
-    layer = NoisyDense(5, dtype=policy.Policy("mixed_float16"))
+    inputs = tf.convert_to_tensor(np.random.randint(low=0, high=7, size=(2, 2)))
+    layer = NoisyDense(5, dtype=Policy("mixed_float16"))
     outputs = layer(inputs)
     output_signature = layer.compute_output_signature(
-        tensor_spec.TensorSpec(dtype="float16", shape=(2, 2))
+        tf.TensorSpec(dtype="float16", shape=(2, 2))
     )
-    np.testing.assert_array_equal(output_signature.dtype, dtypes.float16)
+    np.testing.assert_array_equal(output_signature.dtype, tf.dtypes.float16)
     np.testing.assert_array_equal(output_signature.shape, (2, 5))
     np.testing.assert_array_equal(outputs.dtype, "float16")
     np.testing.assert_array_equal(layer.µ_kernel.dtype, "float32")
