@@ -14,6 +14,7 @@
 # =============================================================================
 
 import typing
+import warnings
 
 import tensorflow as tf
 
@@ -100,6 +101,12 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         bias_constraint: typing.Union[str, typing.Callable] = None,
         **kwargs
     ):
+        warnings.warn(
+            "`MultiHeadAttention` will be deprecated in Addons 0.13. "
+            "Please use `tf.keras.layers.MultiHeadAttention` instead.",
+            DeprecationWarning,
+        )
+
         super().__init__(**kwargs)
 
         if output_size is not None and output_size < 1:
