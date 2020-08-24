@@ -68,6 +68,15 @@ we can only guarantee compatibility with the TensorFlow versions which it was te
 Warnings will be emitted when importing `tensorflow_addons` if your TensorFlow version does not match 
 what it was tested against.
 
+To ensure you install a compatible version of `tensorflow_addons` for your existing version of
+TensorFlow, you can install with the `tensorflow` extra requirement:
+
+```
+pip install tensorflow-addons[tensorflow]
+```
+
+Similar extras exist for `tensorflow-gpu` and `tensorflow-cpu`.
+
 #### Python Op Compatibility Matrix
 | TensorFlow Addons | TensorFlow | Python  |
 |:----------------------- |:---|:---------- |
