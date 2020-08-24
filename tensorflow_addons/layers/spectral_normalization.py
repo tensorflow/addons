@@ -25,7 +25,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
     constraining its spectral norm, which can stabilize the training of GANs.
 
     See [Spectral Normalization for Generative Adversarial Networks](https://arxiv.org/abs/1802.05957).
-    
+
     >>> x = [ 177  164  169  165  133  134  168  174  160  165; 154  146  100   54   48   19    8   6
 4  148  132; 162  152   94  200  177   73   27    1  145  153; 186   56  177  202  176  132   51
    13   43  152; 186   17  151  162  119  106   70   11   25  100; 146   12  154  141  140  146
