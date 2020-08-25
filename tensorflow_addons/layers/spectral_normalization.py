@@ -34,9 +34,9 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
     ... 72,   42,   61,   34,   12,   83]],dtype = tf.int32)
     >>> net = SpectralNormalization(
     ... tf.keras.layers.Conv2D(2, 2, activation="relu"),
-    ... input_shape=(32, 32, 3))(x)
+    ... input_shape=(10, 10))(x)
     >>> net = SpectralNormalization(
-    ... tf.keras.layers.Conv2D(16, 5, activation="relu"))(net)
+    ... tf.keras.layers.Conv2D(8, 5, activation="relu"))(net)
     >>> net = SpectralNormalization(
     ... tf.keras.layers.Dense(120, activation="relu"))(net)
     >>> net = SpectralNormalization(
