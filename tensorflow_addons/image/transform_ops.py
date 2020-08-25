@@ -274,10 +274,10 @@ def rotate(
 
     Args:
       images: A tensor of shape
-        (num_images, num_rows, num_columns, num_channels)
-        (NHWC), (num_rows, num_columns, num_channels) (HWC), or
-        (num_rows, num_columns) (HW).
-      angles: A scalar angle to rotate all images by, or (if images has rank 4)
+        `(num_images, num_rows, num_columns, num_channels)`
+        (NHWC), `(num_rows, num_columns, num_channels)` (HWC), or
+        `(num_rows, num_columns)` (HW).
+      angles: A scalar angle to rotate all images by, or (if `images` has rank 4)
         a vector of length num_images, with an angle for each image in the
         batch.
       interpolation: Interpolation mode. Supported values: "NEAREST",
@@ -289,7 +289,7 @@ def rotate(
       angle(s). Empty space due to the rotation will be filled with zeros.
 
     Raises:
-      TypeError: If `image` is an invalid type.
+      TypeError: If `images` is an invalid type.
     """
     with tf.name_scope(name or "rotate"):
         image_or_images = tf.convert_to_tensor(images)
@@ -309,7 +309,8 @@ def rotate(
 
 
 def shear_x(image: TensorLike, level: float, replace: int) -> TensorLike:
-    """Perform shear operation on an image (x-axis)
+    """Perform shear operation on an image (x-axis).
+
     Args:
         image: A 3D image Tensor.
         level: A float denoting shear element along y-axis
@@ -327,9 +328,10 @@ def shear_x(image: TensorLike, level: float, replace: int) -> TensorLike:
 
 
 def shear_y(image: TensorLike, level: float, replace: int) -> TensorLike:
-    """Perform shear operation on an image (y-axis)
+    """Perform shear operation on an image (y-axis).
+
     Args:
-        image: A 3D image Tensor.
+        image: A 3D image `Tensor`.
         level: A float denoting shear element along x-axis
         replace: A one or three value 1D tensor to fill empty pixels.
     Returns:
