@@ -86,11 +86,11 @@ def equalize(
 
     Args:
       images: A tensor of shape
-          (num_images, num_rows, num_columns, num_channels) (NHWC), or
-          (num_images, num_channels, num_rows, num_columns) (NCHW), or
-          (num_rows, num_columns, num_channels) (HWC), or
-          (num_channels, num_rows, num_columns) (CHW), or
-          (num_rows, num_columns) (HW). The rank must be statically known (the
+          `(num_images, num_rows, num_columns, num_channels)` (NHWC), or
+          `(num_images, num_channels, num_rows, num_columns)` (NCHW), or
+          `(num_rows, num_columns, num_channels)` (HWC), or
+          `(num_channels, num_rows, num_columns)` (CHW), or
+          `(num_rows, num_columns)` (HW). The rank must be statically known (the
           shape is not `TensorShape(None)`).
       data_format: Either 'channels_first' or 'channels_last'
       name: The name of the op.
@@ -149,8 +149,8 @@ def sharpness(image: TensorLike, factor: Number) -> tf.Tensor:
 
     Args:
       images: A tensor of shape
-          (num_images, num_rows, num_columns, num_channels) (NHWC), or
-          (num_rows, num_columns, num_channels) (HWC)
+          `(num_images, num_rows, num_columns, num_channels)` (NHWC), or
+          `(num_rows, num_columns, num_channels)` (HWC)
       factor: A floating point value or Tensor above 0.0.
     Returns:
       Image(s) with the same type and shape as `images`, sharper.

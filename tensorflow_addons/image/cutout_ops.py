@@ -54,18 +54,18 @@ def random_cutout(
 ) -> tf.Tensor:
     """Apply cutout (https://arxiv.org/abs/1708.04552) to images.
 
-    This operation applies a (mask_height x mask_width) mask of zeros to
-    a random location within `img`. The pixel values filled in will be of the
-    value `replace`. The located where the mask will be applied is randomly
-    chosen uniformly over the whole images.
+    This operation applies a `(mask_height x mask_width)` mask of zeros to
+    a random location within `images`. The pixel values filled in will be of
+    the value `replace`. The located where the mask will be applied is
+    randomly chosen uniformly over the whole images.
 
     Args:
       images: A tensor of shape
-        (batch_size, height, width, channels)
-        (NHWC), (batch_size, channels, height, width)(NCHW).
+        `(batch_size, height, width, channels)`
+        (NHWC), `(batch_size, channels, height, width)` (NCHW).
       mask_size: Specifies how big the zero mask that will be generated is that
         is applied to the images. The mask will be of size
-        (mask_height x mask_width). Note: mask_size should be divisible by 2.
+        `(mask_height x mask_width)`. Note: mask_size should be divisible by 2.
       constant_values: What pixel value to fill in the images in the area that has
         the cutout mask applied to it.
       seed: A Python integer. Used in combination with `tf.random.set_seed` to
@@ -76,9 +76,9 @@ def random_cutout(
         `(batch_size, ..., channels)` while `channels_first` corresponds to
         inputs with shape `(batch_size, channels, ...)`.
     Returns:
-      An image Tensor.
+      An image `Tensor`.
     Raises:
-      InvalidArgumentError: if mask_size can't be divisible by 2.
+      InvalidArgumentError: if `mask_size` can't be divisible by 2.
     """
     if data_format == "channels_first":
         warnings.warn(
@@ -112,18 +112,19 @@ def cutout(
 ) -> tf.Tensor:
     """Apply cutout (https://arxiv.org/abs/1708.04552) to images.
 
-    This operation applies a (mask_height x mask_width) mask of zeros to
-    a location within `img` specified by the offset. The pixel values filled in will be of the
-    value `replace`. The located where the mask will be applied is randomly
+    This operation applies a `(mask_height x mask_width)` mask of zeros to
+    a location within `images` specified by the offset.
+    The pixel values filled in will be of the value `replace`.
+    The located where the mask will be applied is randomly
     chosen uniformly over the whole images.
 
     Args:
-      images: A tensor of shape (batch_size, height, width, channels)
-        (NHWC), (batch_size, channels, height, width)(NCHW).
+      images: A tensor of shape `(batch_size, height, width, channels)`
+        (NHWC), `(batch_size, channels, height, width)` (NCHW).
       mask_size: Specifies how big the zero mask that will be generated is that
         is applied to the images. The mask will be of size
-        (mask_height x mask_width). Note: mask_size should be divisible by 2.
-      offset: A tuple of (height, width) or (batch_size, 2)
+        `(mask_height x mask_width)`. Note: mask_size should be divisible by 2.
+      offset: A tuple of `(height, width)` or `(batch_size, 2)`
       constant_values: What pixel value to fill in the images in the area that has
         the cutout mask applied to it.
       data_format: A string, one of `channels_last` (default) or `channels_first`.
@@ -134,7 +135,7 @@ def cutout(
     Returns:
       An image Tensor.
     Raises:
-      InvalidArgumentError: if mask_size can't be divisible by 2.
+      InvalidArgumentError: if `mask_size` can't be divisible by 2.
     """
     if data_format == "channels_first":
         warnings.warn(
