@@ -39,8 +39,7 @@ class PolynomialCrossing(tf.keras.layers.Layer):
     See [Deep & Cross Network for Ad Click Predictions](https://arxiv.org/pdf/1708.05123.pdf).
 
     Example:
-
-    python
+   
     # after embedding layer in a functional model:
     >>> input = tf.keras.Input(shape=(None,), name='index', dtype=tf.int64)
     >>> x0 = tf.keras.layers.Embedding(input_dim=32, output_dim=6)
