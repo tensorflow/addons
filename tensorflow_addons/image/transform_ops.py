@@ -308,11 +308,11 @@ def rotate(
         return img_utils.from_4D_image(output, original_ndims)
 
 
-def shear_x(image: TensorLike, level: float, replace: int) -> TensorLike:
+def shear_x(image: TensorLike, level: float, replace: TensorLike) -> TensorLike:
     """Perform shear operation on an image (x-axis).
 
     Args:
-        image: A 3D image Tensor.
+        image: A 3D image `Tensor`.
         level: A float denoting shear element along y-axis
         replace: A one or three value 1D tensor to fill empty pixels.
     Returns:
@@ -327,7 +327,7 @@ def shear_x(image: TensorLike, level: float, replace: int) -> TensorLike:
     return unwrap(image, replace)
 
 
-def shear_y(image: TensorLike, level: float, replace: int) -> TensorLike:
+def shear_y(image: TensorLike, level: float, replace: TensorLike) -> TensorLike:
     """Perform shear operation on an image (y-axis).
 
     Args:

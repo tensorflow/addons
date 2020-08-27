@@ -107,13 +107,13 @@ def translate(
 
 
 def translate_xy(
-    image: TensorLike, translate_to: TensorLike, replace: int
+    image: TensorLike, translate_to: TensorLike, replace: TensorLike
 ) -> TensorLike:
     """Translates image in X or Y dimension.
 
     Args:
         image: A 3D image `Tensor`.
-        translate_to: A 1D `Tensor` to translate [x, y]
+        translate_to: A 1D `Tensor` to translate `[x, y]`.
         replace: A one or three value 1D `Tensor` to fill empty pixels.
     Returns:
         Translated image along X or Y axis, with space outside image
