@@ -43,12 +43,12 @@ def random_hsv_in_yiq(
 
     Args:
       image: RGB image or images. Size of the last dimension must be 3.
-      max_delta_hue: float. Maximum value for the random delta_hue. Passing 0
+      max_delta_hue: `float`. Maximum value for the random delta_hue. Passing 0
         disables adjusting hue.
-      lower_saturation: float. Lower bound for the random scale_saturation.
-      upper_saturation: float. Upper bound for the random scale_saturation.
-      lower_value: float. Lower bound for the random scale_value.
-      upper_value: float. Upper bound for the random scale_value.
+      lower_saturation: `float`. Lower bound for the random scale_saturation.
+      upper_saturation: `float`. Upper bound for the random scale_saturation.
+      lower_value: `float`. Lower bound for the random scale_value.
+      upper_value: `float`. Upper bound for the random scale_value.
       seed: An operation-specific seed. It will be used in conjunction
         with the graph-level seed to determine the real seeds that will be
         used in this operation. Please see the documentation of
@@ -56,7 +56,7 @@ def random_hsv_in_yiq(
       name: A name for this operation (optional).
 
     Returns:
-      3-D float tensor of shape `[height, width, channels]`.
+      3-D float `Tensor` of shape `[height, width, channels]`.
 
     Raises:
       ValueError: if `max_delta`, `lower_saturation`, `upper_saturation`,
@@ -122,9 +122,9 @@ def adjust_hsv_in_yiq(
 
     Args:
       image: RGB image or images. Size of the last dimension must be 3.
-      delta_hue: float, the hue rotation amount, in radians.
-      scale_saturation: float, factor to multiply the saturation by.
-      scale_value: float, factor to multiply the value by.
+      delta_hue: `float`, the hue rotation amount, in radians.
+      scale_saturation: `float`, factor to multiply the saturation by.
+      scale_value: `float`, factor to multiply the value by.
       name: A name for this operation (optional).
 
     Returns:
