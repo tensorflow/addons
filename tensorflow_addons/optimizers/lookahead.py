@@ -80,6 +80,7 @@ class Lookahead(tf.keras.optimizers.Optimizer):
         self._set_hyper("sync_period", sync_period)
         self._set_hyper("slow_step_size", slow_step_size)
         self._initialized = False
+        self._track_trackable(self._optimizer, 'base_optimizer')
 
     def _create_slots(self, var_list):
         self._optimizer._create_slots(
