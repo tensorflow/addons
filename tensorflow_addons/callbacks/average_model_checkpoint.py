@@ -19,12 +19,16 @@ from tensorflow_addons.optimizers.average_wrapper import AveragedOptimizerWrappe
 
 
 class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
-    r"""The callback that should be used with optimizers that extend
-    AverageWrapper, i.e., MovingAverage and StochasticAverage optimizers.
+    r"""The callback that saves average model weights.
+
+    The callback that should be used with optimizers that extend
+    `tfa.optimizers.AveragedOptimizerWrapper`, i.e.,
+    `tfa.optimizers.MovingAverage` and
+    `tfa.optimizers.StochasticAverage` optimizers.
     It saves and, optionally, assigns the averaged weights.
 
     Args:
-        update_weights: If True, assign the moving average weights
+        update_weights: If `True`, assign the moving average weights
             to the model, and save them. If False, keep the old
             non-averaged weights, but the saved model uses the
             average weights.
