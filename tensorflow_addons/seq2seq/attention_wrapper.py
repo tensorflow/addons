@@ -1664,8 +1664,8 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             `get_initial_state` which does not match the batch size of
             `initial_cell_state`, proper behavior is not guaranteed.
           name: Name to use when creating ops.
-          attention_layer: A list of `tf.tf.keras.layers.Layer` instances or a
-            single `tf.tf.keras.layers.Layer` instance taking the context
+          attention_layer: A list of `tf.keras.layers.Layer` instances or a
+            single `tf.keras.layers.Layer` instance taking the context
             and cell output as inputs to generate attention at each time step.
             If None (default), use the context as attention at each time step.
             If attention_mechanism is a list, attention_layer must be a list of
