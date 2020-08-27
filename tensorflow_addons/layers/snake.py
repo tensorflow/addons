@@ -26,7 +26,7 @@ from tensorflow_addons.utils import types
 class Snake(tf.keras.layers.Layer):
     """Snake layer to learn periodic functions with the trainable `frequency` scalar.
 
-    https://arxiv.org/abs/2006.08195
+    See [Neural Networks Fail to Learn Periodic Functions and How to Fix It](https://arxiv.org/abs/2006.08195).
 
     Arguments:
         frequency_initializer: Initializer for the `frequency` scalar.

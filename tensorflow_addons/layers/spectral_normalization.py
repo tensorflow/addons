@@ -19,30 +19,33 @@ from typeguard import typechecked
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class SpectralNormalization(tf.keras.layers.Wrapper):
-    """This wrapper controls the Lipschitz constant of the layer by
-       constraining its spectral norm.
-    This stabilizes the training of GANs.
-    Spectral Normalization for Generative Adversarial Networks:
-    https://arxiv.org/abs/1802.05957
-    Takeru Miyato, Toshiki Kataoka, Masanori Koyama, Yuichi Yoshida (2018)
-    SpectralNormalization wrapper works for keras and tf layers.
+    """Performs spectral normalization on weights.
+
+    This wrapper controls the Lipschitz constant of the layer by
+    constraining its spectral norm, which can stabilize the training of GANs.
+
+    See [Spectral Normalization for Generative Adversarial Networks](https://arxiv.org/abs/1802.05957).
+
     ```python
-      net = SpectralNormalization(
-          tf.keras.layers.Conv2D(2, 2, activation="relu"),
-          input_shape=(32, 32, 3))(x)
-      net = SpectralNormalization(
-          tf.keras.layers.Conv2D(16, 5, activation="relu"))(net)
-      net = SpectralNormalization(
-          tf.keras.layers.Dense(120, activation="relu"))(net)
-      net = SpectralNormalization(
-          tf.keras.layers.Dense(n_classes))(net)
+    net = SpectralNormalization(
+        tf.keras.layers.Conv2D(2, 2, activation="relu"),
+        input_shape=(32, 32, 3))(x)
+    net = SpectralNormalization(
+        tf.keras.layers.Conv2D(16, 5, activation="relu"))(net)
+    net = SpectralNormalization(
+        tf.keras.layers.Dense(120, activation="relu"))(net)
+    net = SpectralNormalization(
+        tf.keras.layers.Dense(n_classes))(net)
     ```
+
     Arguments:
-      layer: a layer instance.
+      layer: A `tf.keras.layers.Layer` instance that
+        has either `kernel` or `embeddings` attribute.
+      power_iterations: `int`, the number of iterations during normalization.
     Raises:
       AssertionError: If not initialized with a `Layer` instance.
-      ValueError: If initialized with negative `power_iterations`
-      AttributeError: If `Layer` does not contain a `kernel` or `embeddings` of weights
+      ValueError: If initialized with negative `power_iterations`.
+      AttributeError: If `layer` does not has `kernel` or `embeddings` attribute.
     """
 
     @typechecked
@@ -99,8 +102,9 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
     @tf.function
     def normalize_weights(self):
         """Generate spectral normalized weights.
-        This method will update the value of self.w with the
-        spectral normalized value, so that the layer is ready for call().
+
+        This method will update the value of `self.w` with the
+        spectral normalized value, so that the layer is ready for `call()`.
         """
 
         w = tf.reshape(self.w, [-1, self.w_shape[-1]])
