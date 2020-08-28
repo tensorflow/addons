@@ -104,19 +104,18 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
             assign_op: The op corresponding to the assignment operation of
             variables to their average.
 
-        Example:
-        ```python
-        model = tf.Sequential([...])
-        opt = tfa.optimizers.SWA(
-                tf.keras.optimizers.SGD(lr=2.0), 100, 10)
-        model.compile(opt, ...)
-        model.fit(x, y, ...)
+        Example usage:
+        
+        >>> model = tf.Sequential([...])
+        >>> opt = tfa.optimizers.SWA(
+        ... tf.keras.optimizers.SGD(lr=2.0), 100, 10)
+        >>> model.compile(opt, ...)
+        >>> model.fit(x, y, ...)
 
         # Update the weights to their mean before saving
-        opt.assign_average_vars(model.variables)
-
-        model.save('model.h5')
-        ```
+        >>> opt.assign_average_vars(model.variables)
+        >>> model.save('model.h5')
+        
         """
         assign_op = tf.group(
             [
