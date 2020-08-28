@@ -29,10 +29,8 @@ def xor_strings(a, b):
 
 
 def get_github_client():
-    bot_token = "1353d990cdb8b8ceb1b73d301dce83cc0da3db29"
-    bot_token_key = "a1b2c3d47311f8e29e204f85a81b4df4a44e252c"
+    return github.Github(os.environ["GITHUB_BOT_TOKEN"])
 
-    return github.Github(xor_strings(bot_token, bot_token_key))
 
 
 CLIENT = get_github_client()
