@@ -55,7 +55,7 @@ def _check_data_init(data_init, input_data, expected_output):
         wrappers.WeightNormalization,
         kwargs={
             "layer": layer,
-            "data_init": data_init,
+            "data_init": data_init
         },
         input_data=input_data,
         expected_output=expected_output,
