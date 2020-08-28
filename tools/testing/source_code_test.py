@@ -45,10 +45,7 @@ def test_api_typed():
         "https://github.com/tensorflow/addons/blob/master/CONTRIBUTING.md#about-type-hints"
     )
     ensure_api_is_typed(
-        modules_list,
-        exception_list,
-        init_only=True,
-        additional_message=help_message,
+        modules_list, exception_list, init_only=True, additional_message=help_message
     )
 
 

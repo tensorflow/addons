@@ -108,11 +108,7 @@ def test_skip_gram_sample_skips_0():
         input_tensor, min_skips=0, max_skips=0, emit_self_as_target=True
     )
     expected_tokens, expected_labels = _split_tokens_labels(
-        [
-            (b"the", b"the"),
-            (b"quick", b"quick"),
-            (b"brown", b"brown"),
-        ]
+        [(b"the", b"the"), (b"quick", b"quick"), (b"brown", b"brown")]
     )
     np.testing.assert_equal(np.asanyarray(expected_tokens), tokens.numpy())
     np.testing.assert_equal(np.asanyarray(expected_labels), labels.numpy())
