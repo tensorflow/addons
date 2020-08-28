@@ -128,7 +128,7 @@ def test_normalization():
     for training in [False, True]:
         _ = model(
             tf.constant(np.ones((1, 2, 2, 1), dtype=np.float32)),
-            training=training,
+            training=training
         )
         if training:
             w = weights_normalized
