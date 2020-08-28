@@ -289,11 +289,7 @@ def _find_cuda_config(base_paths, required_version):
 
     nvvm_path = _find_file(
         base_paths,
-        [
-            "nvvm/libdevice",
-            "share/cuda",
-            "lib/nvidia-cuda-toolkit/libdevice",
-        ],
+        ["nvvm/libdevice", "share/cuda", "lib/nvidia-cuda-toolkit/libdevice"],
         "libdevice*.10.bc",
     )
 
