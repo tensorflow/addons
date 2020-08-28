@@ -305,7 +305,10 @@ def gaussian_filter2d(
         )
 
         image = _pad(
-            image, filter_shape, mode=padding, constant_values=constant_values,
+            image,
+            filter_shape,
+            mode=padding,
+            constant_values=constant_values,
         )
 
         output = tf.nn.depthwise_conv2d(

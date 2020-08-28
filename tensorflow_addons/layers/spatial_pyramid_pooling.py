@@ -87,7 +87,10 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
                 new_input_width = dynamic_input_shape[2] - width_overflow
 
                 new_inp = inputs[
-                    :, :new_input_height, :new_input_width, :,
+                    :,
+                    :new_input_height,
+                    :new_input_width,
+                    :,
                 ]
                 output = self.pool_layers[index](new_inp)
                 output = tf.reshape(
@@ -104,7 +107,10 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
                 new_input_width = dynamic_input_shape[3] - width_overflow
 
                 new_inp = inputs[
-                    :, :, :new_input_height, :new_input_width,
+                    :,
+                    :,
+                    :new_input_height,
+                    :new_input_width,
                 ]
                 output = self.pool_layers[index](new_inp)
                 output = tf.reshape(

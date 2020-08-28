@@ -95,7 +95,10 @@ def test_model_fit(base_layer_fn, input_shape, output_shape):
     "base_layer_fn, input_shape",
     [
         (lambda: tf.keras.layers.Dense(2), [3, 2]),
-        (lambda: tf.keras.layers.Conv2D(3, (2, 2), padding="same"), [4, 4, 3],),
+        (
+            lambda: tf.keras.layers.Conv2D(3, (2, 2), padding="same"),
+            [4, 4, 3],
+        ),
         (lambda: tf.keras.layers.Embedding(2, 10), [2]),
     ],
 )
@@ -113,7 +116,9 @@ def test_normalization():
     inputs = tf.keras.layers.Input(shape=[2, 2, 1])
 
     base_layer = tf.keras.layers.Conv2D(
-        1, (2, 2), kernel_initializer=tf.constant_initializer(value=2),
+        1,
+        (2, 2),
+        kernel_initializer=tf.constant_initializer(value=2),
     )
     sn_layer = spectral_normalization.SpectralNormalization(base_layer)
     model = tf.keras.models.Sequential(layers=[inputs, sn_layer])
@@ -125,7 +130,8 @@ def test_normalization():
 
     for training in [False, True]:
         _ = model(
-            tf.constant(np.ones((1, 2, 2, 1), dtype=np.float32)), training=training,
+            tf.constant(np.ones((1, 2, 2, 1), dtype=np.float32)),
+            training=training,
         )
         if training:
             w = weights_normalized

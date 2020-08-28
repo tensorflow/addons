@@ -30,8 +30,7 @@ VALID_MULTIOUTPUT = {"raw_values", "uniform_average", "variance_weighted"}
 def _reduce_average(
     input_tensor: tf.Tensor, axis=None, keepdims=False, weights=None
 ) -> tf.Tensor:
-    """Computes the (weighted) mean of elements across dimensions of a tensor.
-  """
+    """Computes the (weighted) mean of elements across dimensions of a tensor."""
     if weights is None:
         return tf.reduce_mean(input_tensor, axis=axis, keepdims=keepdims)
 
@@ -116,7 +115,10 @@ class RSquare(Metric):
         self.sum.assign_add(tf.reduce_sum(weighted_y_true, axis=0))
         self.squared_sum.assign_add(tf.reduce_sum(y_true * weighted_y_true, axis=0))
         self.res.assign_add(
-            tf.reduce_sum((y_true - y_pred) ** 2 * sample_weight, axis=0,)
+            tf.reduce_sum(
+                (y_true - y_pred) ** 2 * sample_weight,
+                axis=0,
+            )
         )
         self.count.assign_add(tf.reduce_sum(sample_weight, axis=0))
 

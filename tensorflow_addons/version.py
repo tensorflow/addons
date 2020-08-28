@@ -27,6 +27,12 @@ _PATCH_VERSION = "0"
 _VERSION_SUFFIX = "dev"
 
 # Example, '0.1.0-dev'
-__version__ = ".".join([_MAJOR_VERSION, _MINOR_VERSION, _PATCH_VERSION,])
+__version__ = ".".join(
+    [
+        _MAJOR_VERSION,
+        _MINOR_VERSION,
+        _PATCH_VERSION,
+    ]
+)
 if _VERSION_SUFFIX:
     __version__ = "{}-{}".format(__version__, _VERSION_SUFFIX)

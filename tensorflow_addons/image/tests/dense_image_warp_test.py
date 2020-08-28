@@ -30,7 +30,8 @@ def test_interpolate_small_grid_ij():
         shape=[1, 4, 3, 1],
     )
     query_points = tf.constant(
-        [[0.0, 0.0], [1.0, 0.0], [2.0, 0.5], [1.5, 1.5], [3.0, 2.0]], shape=[1, 5, 2],
+        [[0.0, 0.0], [1.0, 0.0], [2.0, 0.5], [1.5, 1.5], [3.0, 2.0]],
+        shape=[1, 5, 2],
     )
     expected_results = np.reshape(np.array([0.0, 3.0, 6.5, 6.0, 11.0]), [1, 5, 1])
 
@@ -45,7 +46,8 @@ def test_interpolate_small_grid_xy():
         shape=[1, 4, 3, 1],
     )
     query_points = tf.constant(
-        [[0.0, 0.0], [0.0, 1.0], [0.5, 2.0], [1.5, 1.5], [2.0, 3.0]], shape=[1, 5, 2],
+        [[0.0, 0.0], [0.0, 1.0], [0.5, 2.0], [1.5, 1.5], [2.0, 3.0]],
+        shape=[1, 5, 2],
     )
     expected_results = np.reshape(np.array([0.0, 3.0, 6.5, 6.0, 11.0]), [1, 5, 1])
 
@@ -91,7 +93,8 @@ def _check_zero_flow_correctness(shape, image_type, flow_type):
     rand_flows *= 0
 
     interp = dense_image_warp(
-        image=tf.convert_to_tensor(rand_image), flow=tf.convert_to_tensor(rand_flows),
+        image=tf.convert_to_tensor(rand_image),
+        flow=tf.convert_to_tensor(rand_flows),
     )
 
     np.testing.assert_allclose(rand_image, interp, rtol=1e-6, atol=1e-6)
