@@ -31,11 +31,10 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
     constraint.
     See https://arxiv.org/pdf/1803.06453.pdf
 
-    ```
-    variable -= (1-learning_rate) * (variable + lambda_ * gradient
-        / (frobenius_norm(gradient) + epsilon))
-    ```
-
+    
+    >>> variable -= (1-learning_rate) * (variable + lambda_ * gradient
+    ... / (frobenius_norm(gradient) + epsilon))
+    
     Note that `lambda_` here refers to the constraint "lambda" in
     the paper. `epsilon` is constant with tiny value as compared to
     the value of frobenius norm of gradient. The purpose of `epsilon`
@@ -46,10 +45,9 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
 
     For nucler norm constraint, the formula is as following:
 
-    ```
-    variable -= (1-learning_rate) * (variable
-        + lambda_ * top_singular_vector(gradient))
-    ```
+    >>> variable -= (1-learning_rate) * (variable
+    ... + lambda_ * top_singular_vector(gradient))
+    
     """
 
     @typechecked
