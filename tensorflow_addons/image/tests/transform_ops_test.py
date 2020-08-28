@@ -36,8 +36,7 @@ _DTYPES = {
 @pytest.mark.parametrize("dtype", _DTYPES)
 def test_compose(dtype):
     image = tf.constant(
-        [[1, 1, 1, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]],
-        dtype=dtype,
+        [[1, 1, 1, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]], dtype=dtype
     )
     # Rotate counter-clockwise by pi / 2.
     rotation = transform_ops.angles_to_projective_transforms(np.pi / 2, 4, 4)

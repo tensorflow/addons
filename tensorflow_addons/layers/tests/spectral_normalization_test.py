@@ -95,10 +95,7 @@ def test_model_fit(base_layer_fn, input_shape, output_shape):
     "base_layer_fn, input_shape",
     [
         (lambda: tf.keras.layers.Dense(2), [3, 2]),
-        (
-            lambda: tf.keras.layers.Conv2D(3, (2, 2), padding="same"),
-            [4, 4, 3],
-        ),
+        (lambda: tf.keras.layers.Conv2D(3, (2, 2), padding="same"), [4, 4, 3]),
         (lambda: tf.keras.layers.Embedding(2, 10), [2]),
     ],
 )

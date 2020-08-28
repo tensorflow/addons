@@ -39,9 +39,7 @@ def _expand_to_minibatch(np_array: TensorLike, batch_size: TensorLike) -> Tensor
 
 
 def _get_boundary_locations(
-    image_height: TensorLike,
-    image_width: TensorLike,
-    num_points_per_edge: TensorLike,
+    image_height: TensorLike, image_width: TensorLike, num_points_per_edge: TensorLike
 ) -> TensorLike:
     """Compute evenly-spaced indices along edge of image."""
     y_range = np.linspace(0, image_height - 1, num_points_per_edge + 2)

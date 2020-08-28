@@ -118,8 +118,7 @@ def test_multiple_images():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_zeros():
     np.testing.assert_equal(
-        connected_components(tf.zeros((100, 20, 50), tf.bool)),
-        np.zeros((100, 20, 50)),
+        connected_components(tf.zeros((100, 20, 50), tf.bool)), np.zeros((100, 20, 50))
     )
 
 
