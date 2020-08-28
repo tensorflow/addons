@@ -63,12 +63,11 @@ class SWA(AveragedOptimizerWrapper):
     ([Averaging Weights Leads to Wider Optima and Better
     Generalization](https://arxiv.org/abs/1803.05407))
 
-    Example of usage:
+    Example usage:
 
-    ```python
-    opt = tf.keras.optimizers.SGD(learning_rate)
-    opt = tfa.optimizers.SWA(opt, start_averaging=m, average_period=k)
-    ```
+    >>> opt = tf.keras.optimizers.SGD(learning_rate)
+    >>> opt = tfa.optimizers.SWA(opt, start_averaging=m, average_period=k)
+    
     """
 
     @typechecked
