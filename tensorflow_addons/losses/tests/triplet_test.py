@@ -227,7 +227,7 @@ def test_keras_model_compile_hard():
     model = tf.keras.models.Sequential(
         [
             tf.keras.layers.Input(shape=(784,)),
-            tf.keras.layers.Dense(10),
+            tf.keras.layers.Dense(10)
         ]
     )
     model.compile(loss="Addons>triplet_hard_loss", optimizer="adam")
