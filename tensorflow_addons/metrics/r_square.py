@@ -115,10 +115,7 @@ class RSquare(Metric):
         self.sum.assign_add(tf.reduce_sum(weighted_y_true, axis=0))
         self.squared_sum.assign_add(tf.reduce_sum(y_true * weighted_y_true, axis=0))
         self.res.assign_add(
-            tf.reduce_sum(
-                (y_true - y_pred) ** 2 * sample_weight,
-                axis=0
-            )
+            tf.reduce_sum((y_true - y_pred) ** 2 * sample_weight, axis=0)
         )
         self.count.assign_add(tf.reduce_sum(sample_weight, axis=0))
 

@@ -180,8 +180,5 @@ class MovingAverage(AveragedOptimizerWrapper):
         ctx = tf.distribute.get_replica_context()
         return ctx.merge_call(
             swap,
-            args=(
-                self._average_weights,
-                self._model_weights
-            ),
+            args=(self._average_weights, self._model_weights),
         )
