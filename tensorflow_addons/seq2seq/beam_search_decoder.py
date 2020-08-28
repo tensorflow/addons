@@ -46,16 +46,15 @@ class BeamSearchDecoderState(
 ):
     """State of a `BeamSearchDecoder`.
 
-    Contains:
-
-      - `cell_state`: The cell state returned at the previous time step.
-      - `log_probs`: The accumulated log probabilities of each beam.
+    Attributes:
+      cell_state: The cell state returned at the previous time step.
+      log_probs: The accumulated log probabilities of each beam.
         A `float32` `Tensor` of shape `[batch_size, beam_width]`.
-      - `finished`: The finished status of each beam.
+      finished: The finished status of each beam.
         A `bool` `Tensor` of shape `[batch_size, beam_width]`.
-      - `lengths`: The accumulated length of each beam.
+      lengths: The accumulated length of each beam.
         An `int64` `Tensor` of shape `[batch_size, beam_width]`.
-      - `accumulated_attention_prob`: Accumulation of the attention
+      accumulated_attention_prob: Accumulation of the attention
         probabilities (used to compute the coverage penalty)
     """
 
@@ -64,14 +63,14 @@ class BeamSearchDecoderState(
 
 class BeamSearchDecoderOutput(
     collections.namedtuple(
-        "BeamSearchDecoderOutput", ("scores", "predicted_ids", "parent_ids"),
+        "BeamSearchDecoderOutput",
+        ("scores", "predicted_ids", "parent_ids"),
     )
 ):
     """Outputs of a `BeamSearchDecoder` step.
 
-    Contains:
-
-      - `scores`: The scores this step, which are the log
+    Attributes:
+      scores: The scores this step, which are the log
         probabilities over the output vocabulary, possibly penalized by length
         and attention coverage. When `BeamSearchDecoder` is created with
         `output_all_scores=False` (default), this will be a `float32` `Tensor`
@@ -79,9 +78,9 @@ class BeamSearchDecoderOutput(
         corresponding to the predicted IDs. When `output_all_scores=True`,
         this contains the scores for all token IDs and has shape
         `[batch_size, beam_width, vocab_size]`.
-      - `predicted_ids`: The token IDs predicted for this step.
+      predicted_ids: The token IDs predicted for this step.
         A `int32` `Tensor` of shape `[batch_size, beam_width]`.
-      - `parent_ids`: The indices of the parent beam of each beam.
+      parent_ids: The indices of the parent beam of each beam.
         A `int32` `Tensor` of shape `[batch_size, beam_width]`.
     """
 
@@ -93,10 +92,9 @@ class FinalBeamSearchDecoderOutput(
         "FinalBeamDecoderOutput", ["predicted_ids", "beam_search_decoder_output"]
     )
 ):
-    """Final outputs returned by the beam search after all decoding is
-    finished.
+    """Final outputs returned by the beam search after all decoding is finished.
 
-    Args:
+    Attributes:
       predicted_ids: The final prediction. A tensor of shape
         `[batch_size, T, beam_width]` (or `[T, batch_size, beam_width]` if
         `output_time_major` is True). Beams are ordered from best to worst.
