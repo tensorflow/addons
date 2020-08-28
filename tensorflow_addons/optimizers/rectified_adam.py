@@ -29,11 +29,9 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
     Liyuan Liu et al. in [On The Variance Of The Adaptive Learning Rate
     And Beyond](https://arxiv.org/pdf/1908.03265v1.pdf).
 
-    Example of usage:
+    Example usage :
 
-    ```python
-    opt = tfa.optimizers.RectifiedAdam(lr=1e-3)
-    ```
+    >>> opt = tfa.optimizers.RectifiedAdam(lr=1e-3)
 
     Note: `amsgrad` is not described in the original paper. Use it with
           caution.
@@ -42,14 +40,15 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
     kept if warmup has already been employed and tuned in the baseline method.
     You can enable warmup by setting `total_steps` and `warmup_proportion`:
 
-    ```python
-    opt = tfa.optimizers.RectifiedAdam(
-        lr=1e-3,
-        total_steps=10000,
-        warmup_proportion=0.1,
-        min_lr=1e-5,
-    )
-    ```
+    Example usage : 
+
+    >>> opt = tfa.optimizers.RectifiedAdam(
+    ... lr=1e-3,
+    ... total_steps=10000,
+    ... warmup_proportion=0.1,
+    ... min_lr=1e-5,
+    ... )
+    
 
     In the above example, the learning rate will increase linearly
     from 0 to `lr` in 1000 steps, then decrease linearly from `lr` to `min_lr`
@@ -62,10 +61,9 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
     be called "Ranger". The mechanism can be enabled by using the lookahead
     wrapper. For example:
 
-    ```python
-    radam = tfa.optimizers.RectifiedAdam()
-    ranger = tfa.optimizers.Lookahead(radam, sync_period=6, slow_step_size=0.5)
-    ```
+    >>> radam = tfa.optimizers.RectifiedAdam()
+    >>> ranger = tfa.optimizers.Lookahead(radam, sync_period=6, slow_step_size=0.5)
+    
     """
 
     @typechecked
