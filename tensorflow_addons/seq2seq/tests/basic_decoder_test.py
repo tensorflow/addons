@@ -63,12 +63,9 @@ def test_step_with_training_helper_output_layer(cell_class, use_output_layer):
 
     assert basic_decoder.BasicDecoderOutput(tf.float32, tf.int32) == output_dtype
 
-    (
-        step_outputs,
-        step_state,
-        step_next_inputs,
-        step_finished,
-    ) = my_decoder.step(tf.constant(0), first_inputs, first_state)
+    (step_outputs, step_state, step_next_inputs, step_finished) = my_decoder.step(
+        tf.constant(0), first_inputs, first_state
+    )
 
     if isinstance(cell, tf.keras.layers.LSTMCell):
         assert len(first_state) == 2
@@ -166,8 +163,7 @@ def test_step_with_training_helper_masked_input(use_mask):
     np.testing.assert_equal((np.maximum(sequence_length - 1, 0) == 0), step_finished)
     assert output_dtype.sample_id == step_outputs.sample_id.dtype
     np.testing.assert_equal(
-        np.argmax(step_outputs.rnn_output, -1),
-        step_outputs.sample_id,
+        np.argmax(step_outputs.rnn_output, -1), step_outputs.sample_id
     )
 
 
@@ -198,12 +194,9 @@ def test_step_with_greedy_embedding_helper():
     )
     assert basic_decoder.BasicDecoderOutput(tf.float32, tf.int32) == output_dtype
 
-    (
-        step_outputs,
-        step_state,
-        step_next_inputs,
-        step_finished,
-    ) = my_decoder.step(tf.constant(0), first_inputs, first_state)
+    (step_outputs, step_state, step_next_inputs, step_finished) = my_decoder.step(
+        tf.constant(0), first_inputs, first_state
+    )
 
     assert len(first_state) == 2
     assert len(step_state) == 2
@@ -219,8 +212,7 @@ def test_step_with_greedy_embedding_helper():
     expected_step_finished = expected_sample_ids == end_token
     expected_step_next_inputs = embeddings[expected_sample_ids]
     np.testing.assert_equal(
-        np.asanyarray([False, False, False, False, False]),
-        first_finished,
+        np.asanyarray([False, False, False, False, False]), first_finished
     )
     np.testing.assert_equal(expected_step_finished, step_finished)
     assert output_dtype.sample_id == step_outputs.sample_id.dtype
@@ -256,12 +248,9 @@ def test_step_with_sample_embedding_helper():
     )
     assert basic_decoder.BasicDecoderOutput(tf.float32, tf.int32) == output_dtype
 
-    (
-        step_outputs,
-        step_state,
-        step_next_inputs,
-        step_finished,
-    ) = my_decoder.step(tf.constant(0), first_inputs, first_state)
+    (step_outputs, step_state, step_next_inputs, step_finished) = my_decoder.step(
+        tf.constant(0), first_inputs, first_state
+    )
 
     assert len(first_state) == 2
     assert len(step_state) == 2
@@ -313,12 +302,9 @@ def test_step_with_scheduled_embedding_training_helper():
 
     assert basic_decoder.BasicDecoderOutput(tf.float32, tf.int32) == output_dtype
 
-    (
-        step_outputs,
-        step_state,
-        step_next_inputs,
-        step_finished,
-    ) = my_decoder.step(tf.constant(0), first_inputs, first_state)
+    (step_outputs, step_state, step_next_inputs, step_finished) = my_decoder.step(
+        tf.constant(0), first_inputs, first_state
+    )
 
     assert len(first_state) == 2
     assert len(step_state) == 2
@@ -332,12 +318,10 @@ def test_step_with_scheduled_embedding_training_helper():
     assert (batch_size, input_depth) == step_next_inputs.shape
 
     np.testing.assert_equal(
-        np.asanyarray([False, False, False, False, True]),
-        first_finished,
+        np.asanyarray([False, False, False, False, True]), first_finished
     )
     np.testing.assert_equal(
-        np.asanyarray([False, False, False, True, True]),
-        step_finished,
+        np.asanyarray([False, False, False, True, True]), step_finished
     )
     sample_ids = step_outputs.sample_id.numpy()
     assert output_dtype.sample_id == sample_ids.dtype
@@ -410,12 +394,9 @@ def test_step_with_scheduled_output_training_helper(
     )
     assert basic_decoder.BasicDecoderOutput(tf.float32, tf.int32) == output_dtype
 
-    (
-        step_outputs,
-        step_state,
-        step_next_inputs,
-        step_finished,
-    ) = my_decoder.step(tf.constant(0), first_inputs, first_state)
+    (step_outputs, step_state, step_next_inputs, step_finished) = my_decoder.step(
+        tf.constant(0), first_inputs, first_state
+    )
 
     if use_next_inputs_fn:
         output_after_next_inputs_fn = next_inputs_fn(step_outputs.rnn_output)
@@ -431,12 +412,10 @@ def test_step_with_scheduled_output_training_helper(
     assert (batch_size, cell_depth) == step_state[1].shape
 
     np.testing.assert_equal(
-        np.asanyarray([False, False, False, False, True]),
-        first_finished,
+        np.asanyarray([False, False, False, False, True]), first_finished
     )
     np.testing.assert_equal(
-        np.asanyarray([False, False, False, True, True]),
-        step_finished,
+        np.asanyarray([False, False, False, True, True]), step_finished
     )
 
     sample_ids = step_outputs.sample_id
@@ -461,8 +440,7 @@ def test_step_with_scheduled_output_training_helper(
     )
 
     np.testing.assert_equal(
-        step_next_inputs.numpy()[batch_where_sampling],
-        expected_next_sampling_inputs,
+        step_next_inputs.numpy()[batch_where_sampling], expected_next_sampling_inputs
     )
 
     np.testing.assert_equal(
@@ -520,12 +498,9 @@ def test_step_with_inference_helper_categorical():
     )
     assert basic_decoder.BasicDecoderOutput(tf.float32, tf.int32) == output_dtype
 
-    (
-        step_outputs,
-        step_state,
-        step_next_inputs,
-        step_finished,
-    ) = my_decoder.step(tf.constant(0), first_inputs, first_state)
+    (step_outputs, step_state, step_next_inputs, step_finished) = my_decoder.step(
+        tf.constant(0), first_inputs, first_state
+    )
 
     assert len(first_state) == 2
     assert len(step_state) == 2
@@ -586,12 +561,9 @@ def test_step_with_inference_helper_multilabel():
     assert basic_decoder.BasicDecoderOutput(cell_depth, cell_depth) == output_size
     assert basic_decoder.BasicDecoderOutput(tf.float32, tf.bool) == output_dtype
 
-    (
-        step_outputs,
-        step_state,
-        step_next_inputs,
-        step_finished,
-    ) = my_decoder.step(tf.constant(0), first_inputs, first_state)
+    (step_outputs, step_state, step_next_inputs, step_finished) = my_decoder.step(
+        tf.constant(0), first_inputs, first_state
+    )
 
     assert len(first_state) == 2
     assert len(step_state) == 2

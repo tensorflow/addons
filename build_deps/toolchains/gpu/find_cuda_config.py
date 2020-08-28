@@ -278,10 +278,7 @@ def _find_cuda_config(base_paths, required_version):
     nvcc_name = "nvcc.exe" if _is_windows() else "nvcc"
     nvcc_path, nvcc_version = _find_versioned_file(
         base_paths,
-        [
-            "",
-            "bin",
-        ],
+        ["", "bin"],
         nvcc_name,
         cuda_version,
         get_nvcc_version,

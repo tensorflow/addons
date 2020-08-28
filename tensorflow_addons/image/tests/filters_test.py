@@ -62,9 +62,7 @@ def setup_values(
     assert 3 <= len(image_shape) <= 4
     height, width = image_shape[-3], image_shape[-2]
     plane = tf.constant(
-        [x for x in range(1, height * width + 1)],
-        shape=(height, width),
-        dtype=dtype,
+        [x for x in range(1, height * width + 1)], shape=(height, width), dtype=dtype
     )
     image = tile_image(plane, image_shape=image_shape)
 

@@ -30,8 +30,7 @@ def test_interpolate_small_grid_ij():
         shape=[1, 4, 3, 1],
     )
     query_points = tf.constant(
-        [[0.0, 0.0], [1.0, 0.0], [2.0, 0.5], [1.5, 1.5], [3.0, 2.0]],
-        shape=[1, 5, 2],
+        [[0.0, 0.0], [1.0, 0.0], [2.0, 0.5], [1.5, 1.5], [3.0, 2.0]], shape=[1, 5, 2]
     )
     expected_results = np.reshape(np.array([0.0, 3.0, 6.5, 6.0, 11.0]), [1, 5, 1])
 
@@ -46,8 +45,7 @@ def test_interpolate_small_grid_xy():
         shape=[1, 4, 3, 1],
     )
     query_points = tf.constant(
-        [[0.0, 0.0], [0.0, 1.0], [0.5, 2.0], [1.5, 1.5], [2.0, 3.0]],
-        shape=[1, 5, 2],
+        [[0.0, 0.0], [0.0, 1.0], [0.5, 2.0], [1.5, 1.5], [2.0, 3.0]], shape=[1, 5, 2]
     )
     expected_results = np.reshape(np.array([0.0, 3.0, 6.5, 6.0, 11.0]), [1, 5, 1])
 

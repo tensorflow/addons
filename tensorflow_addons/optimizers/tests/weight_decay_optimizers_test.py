@@ -83,8 +83,7 @@ def do_test(
     for _ in range(3):
         if do_decay_var_list:
             opt.apply_gradients(
-                zip([grads0, grads1], [var0, var1]),
-                decay_var_list=[var0, var1],
+                zip([grads0, grads1], [var0, var1]), decay_var_list=[var0, var1]
             )
         else:
             opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
@@ -375,11 +374,7 @@ def test_optimizer_basic(dtype, optimizer):
 @pytest.mark.parametrize("dtype", [tf.half, tf.float32, tf.float64])
 def test_optimizer_sparse(dtype, optimizer):
     do_test_sparse_repeated_indices(
-        dtype,
-        optimizer,
-        learning_rate=0.001,
-        momentum=0.9,
-        weight_decay=WEIGHT_DECAY,
+        dtype, optimizer, learning_rate=0.001, momentum=0.9, weight_decay=WEIGHT_DECAY
     )
 
 

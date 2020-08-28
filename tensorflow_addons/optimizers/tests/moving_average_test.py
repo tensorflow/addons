@@ -118,11 +118,7 @@ def test_optimizer_string():
 def test_config():
     sgd_opt = tf.keras.optimizers.SGD(lr=2.0, nesterov=True, momentum=0.3, decay=0.1)
     opt = MovingAverage(
-        sgd_opt,
-        average_decay=0.5,
-        num_updates=None,
-        start_step=5,
-        dynamic_decay=True,
+        sgd_opt, average_decay=0.5, num_updates=None, start_step=5, dynamic_decay=True
     )
     config = opt.get_config()
 
@@ -170,11 +166,7 @@ def test_fit_simple_linear_model():
 def test_serialization():
     sgd_opt = tf.keras.optimizers.SGD(lr=2.0, nesterov=True, momentum=0.3, decay=0.1)
     optimizer = MovingAverage(
-        sgd_opt,
-        average_decay=0.5,
-        num_updates=None,
-        start_step=5,
-        dynamic_decay=True,
+        sgd_opt, average_decay=0.5, num_updates=None, start_step=5, dynamic_decay=True
     )
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)
@@ -188,9 +180,7 @@ def test_start_step():
     grads_and_vars = [(grads0, var0)]
 
     opt = MovingAverage(
-        tf.keras.optimizers.SGD(lr=1.0),
-        average_decay=0.5,
-        start_step=1,
+        tf.keras.optimizers.SGD(lr=1.0), average_decay=0.5, start_step=1
     )
 
     opt.apply_gradients(grads_and_vars)
@@ -213,9 +203,7 @@ def test_dynamic_decay():
     grads_and_vars = [(grads0, var0)]
 
     opt = MovingAverage(
-        tf.keras.optimizers.SGD(lr=2.0),
-        average_decay=0.5,
-        dynamic_decay=True,
+        tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5, dynamic_decay=True
     )
 
     opt.apply_gradients(grads_and_vars)
@@ -234,10 +222,7 @@ def test_swap_weights(device):
         var = tf.Variable([1.0, 2.0])
         grads = tf.constant([0.1, 0.1])
 
-        opt = MovingAverage(
-            tf.keras.optimizers.SGD(lr=2.0),
-            average_decay=0.5,
-        )
+        opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
 
     @tf.function
     def apply_gradients():

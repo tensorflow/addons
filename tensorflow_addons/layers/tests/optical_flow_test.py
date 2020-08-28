@@ -107,26 +107,14 @@ def test_forward_simple(data_format):
     # We can test fixed ids, as output is independent from data_format
     expected_ids = np.concatenate(
         [
-            np.zeros(
-                464,
-            ),
-            np.ones(
-                464,
-            ),
+            np.zeros(464),
+            np.ones(464),
         ]
     )
     np.testing.assert_allclose(tf.where(actual == 0)[:, 0].numpy(), expected_ids)
 
     counts = [54, 52, 54, 50, 44, 50, 54, 52, 54]
-    expected_ids = np.concatenate(
-        [
-            k
-            * np.ones(
-                v,
-            )
-            for k, v in enumerate(counts)
-        ]
-    )
+    expected_ids = np.concatenate([k * np.ones(v) for k, v in enumerate(counts)])
     expected_ids = np.concatenate([expected_ids, expected_ids])
     np.testing.assert_allclose(tf.where(actual == 0)[:, 1], expected_ids)
     assert actual.shape == (2, 9, 7, 8)

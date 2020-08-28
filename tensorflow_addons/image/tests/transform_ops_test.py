@@ -56,8 +56,7 @@ def test_compose(dtype):
 @pytest.mark.parametrize("dtype", _DTYPES)
 def test_extreme_projective_transform(dtype):
     image = tf.constant(
-        [[1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1]],
-        dtype=dtype,
+        [[1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1]], dtype=dtype
     )
     transformation = tf.constant([1, 0, 0, 0, 1, 0, -1, 0], tf.dtypes.float32)
     image_transformed = transform_ops.transform(image, transformation)

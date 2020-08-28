@@ -134,8 +134,7 @@ def test_ones():
 def test_ones_small():
 
     np.testing.assert_equal(
-        connected_components(tf.ones((3, 5), tf.bool)).numpy(),
-        np.ones((3, 5)),
+        connected_components(tf.ones((3, 5), tf.bool)).numpy(), np.ones((3, 5))
     )
 
 
