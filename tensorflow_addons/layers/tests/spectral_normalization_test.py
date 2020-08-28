@@ -115,7 +115,7 @@ def test_normalization():
     base_layer = tf.keras.layers.Conv2D(
         1,
         (2, 2),
-        kernel_initializer=tf.constant_initializer(value=2),
+        kernel_initializer=tf.constant_initializer(value=2)
     )
     sn_layer = spectral_normalization.SpectralNormalization(base_layer)
     model = tf.keras.models.Sequential(layers=[inputs, sn_layer])
