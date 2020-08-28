@@ -1355,8 +1355,7 @@ def test_sparse_nuclear():
             tf.constant([4, 2]),
         )
         top_singular_vector0 = tf.constant(
-            [[0.0, 0.0], [0.7071067, 0.7071067], [0.0, 0.0], [0.0, 0.0]],
-            dtype=dtype,
+            [[0.0, 0.0], [0.7071067, 0.7071067], [0.0, 0.0], [0.0, 0.0]], dtype=dtype
         )
         top_singular_vector1 = tf.constant(
             [

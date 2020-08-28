@@ -121,10 +121,7 @@ def test_dense_sample_with_warmup():
         iterations=100,
         expected=[[0.994062, 1.993912], [2.994167, 3.994152]],
         optimizer=RectifiedAdam(
-            lr=1e-3,
-            total_steps=100,
-            warmup_proportion=0.1,
-            min_lr=1e-5,
+            lr=1e-3, total_steps=100, warmup_proportion=0.1, min_lr=1e-5
         ),
     )
 
@@ -135,10 +132,7 @@ def test_sparse_sample_with_warmup():
         iterations=200,
         expected=[[0.982629, 2.0], [3.0, 3.982674]],
         optimizer=RectifiedAdam(
-            lr=1e-3,
-            total_steps=200,
-            warmup_proportion=0.1,
-            min_lr=1e-5,
+            lr=1e-3, total_steps=200, warmup_proportion=0.1, min_lr=1e-5
         ),
     )
 

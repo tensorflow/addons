@@ -31,10 +31,7 @@ def test_run():
 
     grads_and_vars = list(zip([grads0, grads1], [var0, var1]))
 
-    opt = MovingAverage(
-        tf.keras.optimizers.SGD(lr=2.0),
-        average_decay=0.5,
-    )
+    opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
 
     opt.apply_gradients(grads_and_vars)
     opt.apply_gradients(grads_and_vars)

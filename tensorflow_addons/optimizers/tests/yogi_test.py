@@ -140,14 +140,8 @@ def do_test_sparse(beta1=0.0, l1reg=0.0, l2reg=0.0):
             )
 
             # Validate updated params.
-            test_utils.assert_allclose_according_to_type(
-                var0_np,
-                var0.numpy(),
-            )
-            test_utils.assert_allclose_according_to_type(
-                var1_np,
-                var1.numpy(),
-            )
+            test_utils.assert_allclose_according_to_type(var0_np, var0.numpy())
+            test_utils.assert_allclose_according_to_type(var1_np, var1.numpy())
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")

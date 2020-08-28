@@ -68,15 +68,11 @@ def do_test(
     if do_sparse:
         grads0_np_indices = np.array([0, 1], dtype=np.int32)
         grads0 = tf.IndexedSlices(
-            tf.constant(grads0_np),
-            tf.constant(grads0_np_indices),
-            tf.constant([2]),
+            tf.constant(grads0_np), tf.constant(grads0_np_indices), tf.constant([2])
         )
         grads1_np_indices = np.array([0, 1], dtype=np.int32)
         grads1 = tf.IndexedSlices(
-            tf.constant(grads1_np),
-            tf.constant(grads1_np_indices),
-            tf.constant([2]),
+            tf.constant(grads1_np), tf.constant(grads1_np_indices), tf.constant([2])
         )
     else:
         grads0 = tf.constant(grads0_np)
