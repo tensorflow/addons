@@ -38,7 +38,7 @@ def test_no_bias():
     test_utils.layer_test(
         wrappers.WeightNormalization,
         kwargs={
-            "layer": tf.keras.layers.Dense(5, use_bias=False),
+            "layer": tf.keras.layers.Dense(5, use_bias=False)
         },
         input_shape=(2, 4),
     )
