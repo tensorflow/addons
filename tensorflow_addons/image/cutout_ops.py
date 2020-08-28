@@ -105,7 +105,7 @@ def random_cutout(
         mask_size,
         offset,
         constant_values,
-        data_format,
+        data_format
     )
 
 
