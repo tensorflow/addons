@@ -28,7 +28,7 @@ def test_basic():
     test_utils.layer_test(
         wrappers.WeightNormalization,
         kwargs={
-            "layer": tf.keras.layers.Conv2D(5, (2, 2)),
+            "layer": tf.keras.layers.Conv2D(5, (2, 2))
         },
         input_shape=(2, 4, 4, 3),
     )
