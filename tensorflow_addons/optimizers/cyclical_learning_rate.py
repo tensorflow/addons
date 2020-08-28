@@ -40,22 +40,22 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
         See Cyclical Learning Rates for Training Neural Networks. https://arxiv.org/abs/1506.01186
 
 
-        ```python
-        lr_schedule = tf.keras.optimizers.schedules.CyclicalLearningRate(
-            initial_learning_rate=1e-4,
-            maximal_learning_rate=1e-2,
-            step_size=2000,
-            scale_fn=lambda x: 1.,
-            scale_mode="cycle",
-            name="MyCyclicScheduler")
+        Example usage :
+        >>> lr_schedule = tf.keras.optimizers.schedules.CyclicalLearningRate(
+        ... initial_learning_rate=1e-4,
+        ... maximal_learning_rate=1e-2,
+        ... step_size=2000,
+        ... scale_fn=lambda x: 1.,
+        ... scale_mode="cycle",
+        ... name="MyCyclicScheduler")
 
-        model.compile(optimizer=tf.keras.optimizers.SGD(
-                                                    learning_rate=lr_schedule),
-                      loss='sparse_categorical_crossentropy',
-                      metrics=['accuracy'])
+        >>> model.compile(optimizer=tf.keras.optimizers.SGD(
+        ... learning_rate=lr_schedule),
+        ... loss='sparse_categorical_crossentropy',
+        ... metrics=['accuracy'])
 
-        model.fit(data, labels, epochs=5)
-        ```
+        >>> model.fit(data, labels, epochs=5)
+        
 
         You can pass this schedule directly into a
         `tf.keras.optimizers.Optimizer` as the learning rate.
@@ -126,23 +126,24 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
         See Cyclical Learning Rates for Training Neural Networks. https://arxiv.org/abs/1506.01186
 
 
-        ```python
-        from tf.keras.optimizers import schedules
+        Example usage :
 
-        lr_schedule = schedules.TriangularCyclicalLearningRate(
-            initial_learning_rate=1e-4,
-            maximal_learning_rate=1e-2,
-            step_size=2000,
-            scale_mode="cycle",
-            name="MyCyclicScheduler")
+        >>> from tf.keras.optimizers import schedules
 
-        model.compile(optimizer=tf.keras.optimizers.SGD(
-                                                    learning_rate=lr_schedule),
-                      loss='sparse_categorical_crossentropy',
-                      metrics=['accuracy'])
+        >>> lr_schedule = schedules.TriangularCyclicalLearningRate(
+        ... initial_learning_rate=1e-4,
+        ... maximal_learning_rate=1e-2,
+        ... step_size=2000,
+        ... scale_mode="cycle",
+        ... name="MyCyclicScheduler")
 
-        model.fit(data, labels, epochs=5)
-        ```
+        >>> model.compile(optimizer=tf.keras.optimizers.SGD(
+        ... learning_rate=lr_schedule),
+        ... loss='sparse_categorical_crossentropy',
+        ... metrics=['accuracy'])
+
+        >>> model.fit(data, labels, epochs=5)
+        
 
         You can pass this schedule directly into a
         `tf.keras.optimizers.Optimizer` as the learning rate.
@@ -194,24 +195,24 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
 
         See Cyclical Learning Rates for Training Neural Networks. https://arxiv.org/abs/1506.01186
 
+        Example usage : 
+        
+        >>> from tf.keras.optimizers import schedules
 
-        ```python
-        from tf.keras.optimizers import schedules
+        >>> lr_schedule = schedules.Triangular2CyclicalLearningRate(
+        ... initial_learning_rate=1e-4,
+        ... maximal_learning_rate=1e-2,
+        ... step_size=2000,
+        ... scale_mode="cycle",
+        ... name="MyCyclicScheduler")
 
-        lr_schedule = schedules.Triangular2CyclicalLearningRate(
-            initial_learning_rate=1e-4,
-            maximal_learning_rate=1e-2,
-            step_size=2000,
-            scale_mode="cycle",
-            name="MyCyclicScheduler")
+        >>> model.compile(optimizer=tf.keras.optimizers.SGD(
+        ... learning_rate=lr_schedule),
+        ... loss='sparse_categorical_crossentropy',
+        ... metrics=['accuracy'])
 
-        model.compile(optimizer=tf.keras.optimizers.SGD(
-                                                    learning_rate=lr_schedule),
-                      loss='sparse_categorical_crossentropy',
-                      metrics=['accuracy'])
-
-        model.fit(data, labels, epochs=5)
-        ```
+        >>> model.fit(data, labels, epochs=5)
+        
 
         You can pass this schedule directly into a
         `tf.keras.optimizers.Optimizer` as the learning rate.
@@ -264,25 +265,25 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
 
         See Cyclical Learning Rates for Training Neural Networks. https://arxiv.org/abs/1506.01186
 
+        Example usage : 
+        
+        >>> from tf.keras.optimizers import schedules
 
-        ```python
-        from tf.keras.optimizers import schedules
+        >>> lr_schedule = ExponentialCyclicalLearningRate(
+        ... initial_learning_rate=1e-4,
+        ... maximal_learning_rate=1e-2,
+        ... step_size=2000,
+        ... scale_mode="cycle",
+        ... gamma=0.96,
+        ... name="MyCyclicScheduler")
 
-        lr_schedule = ExponentialCyclicalLearningRate(
-            initial_learning_rate=1e-4,
-            maximal_learning_rate=1e-2,
-            step_size=2000,
-            scale_mode="cycle",
-            gamma=0.96,
-            name="MyCyclicScheduler")
+        >>> model.compile(optimizer=tf.keras.optimizers.SGD(
+        ... learning_rate=lr_schedule),
+        ... loss='sparse_categorical_crossentropy',
+        ... metrics=['accuracy'])
 
-        model.compile(optimizer=tf.keras.optimizers.SGD(
-                                                    learning_rate=lr_schedule),
-                      loss='sparse_categorical_crossentropy',
-                      metrics=['accuracy'])
-
-        model.fit(data, labels, epochs=5)
-        ```
+        >>> model.fit(data, labels, epochs=5)
+        
 
         You can pass this schedule directly into a
         `tf.keras.optimizers.Optimizer` as the learning rate.
