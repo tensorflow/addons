@@ -91,17 +91,14 @@ def test_step_with_training_helper_output_layer(cell_class, use_output_layer):
         assert len(output_layer.variables) == 1
 
     np.testing.assert_equal(
-        np.asanyarray([False, False, False, False, True]),
-        first_finished,
+        np.asanyarray([False, False, False, False, True]), first_finished
     )
     np.testing.assert_equal(
-        np.asanyarray([False, False, False, True, True]),
-        step_finished,
+        np.asanyarray([False, False, False, True, True]), step_finished
     )
     assert output_dtype.sample_id == step_outputs.sample_id.dtype
     np.testing.assert_equal(
-        np.argmax(step_outputs.rnn_output, -1),
-        step_outputs.sample_id,
+        np.argmax(step_outputs.rnn_output, -1), step_outputs.sample_id
     )
 
 
@@ -137,9 +134,7 @@ def test_step_with_training_helper_masked_input(use_mask):
         )
     else:
         (first_finished, first_inputs, first_state) = my_decoder.initialize(
-            input_t,
-            initial_state=initial_state,
-            sequence_length=sequence_length,
+            input_t, initial_state=initial_state, sequence_length=sequence_length
         )
 
     output_size = my_decoder.output_size
@@ -151,12 +146,9 @@ def test_step_with_training_helper_masked_input(use_mask):
 
     assert basic_decoder.BasicDecoderOutput(tf.float32, tf.int32) == output_dtype
 
-    (
-        step_outputs,
-        step_state,
-        step_next_inputs,
-        step_finished,
-    ) = my_decoder.step(tf.constant(0), first_inputs, first_state)
+    (step_outputs, step_state, step_next_inputs, step_finished) = my_decoder.step(
+        tf.constant(0), first_inputs, first_state
+    )
 
     assert len(first_state) == 2
     assert len(step_state) == 2
