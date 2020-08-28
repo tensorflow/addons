@@ -82,7 +82,7 @@ def test_config():
         num_classes=4,
         weightage="linear",
         name="kappa_loss",
-        epsilon=0.001,
+        epsilon=0.001
     )
     assert kappa_loss.num_classes == 4
     assert kappa_loss.weightage == "linear"
