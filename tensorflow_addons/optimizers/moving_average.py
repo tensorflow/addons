@@ -182,6 +182,6 @@ class MovingAverage(AveragedOptimizerWrapper):
             swap,
             args=(
                 self._average_weights,
-                self._model_weights,
+                self._model_weights
             ),
         )
