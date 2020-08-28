@@ -32,13 +32,11 @@ class MovingAverage(AveragedOptimizerWrapper):
     the variables at save time so that any code outside of the training loop
     will use by default the average values instead of the original ones.
 
-    Example of usage:
+    Example usage:
 
-    ```python
-    opt = tf.keras.optimizers.SGD(learning_rate)
-    opt = tfa.optimizers.MovingAverage(opt)
+    >>> opt = tf.keras.optimizers.SGD(learning_rate)
+    >>> opt = tfa.optimizers.MovingAverage(opt)
 
-    ```
     """
 
     @typechecked
