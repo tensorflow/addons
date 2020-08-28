@@ -100,13 +100,7 @@ def random_cutout(
     )
 
     offset = tf.transpose([cutout_center_height, cutout_center_width], [1, 0])
-    return cutout(
-        images,
-        mask_size,
-        offset,
-        constant_values,
-        data_format
-    )
+    return cutout(images, mask_size, offset, constant_values, data_format)
 
 
 def cutout(
