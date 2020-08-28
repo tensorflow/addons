@@ -1366,18 +1366,17 @@ class AttentionWrapperState(
 ):
     """`namedtuple` storing the state of a `AttentionWrapper`.
 
-    Contains:
-
-      - `cell_state`: The state of the wrapped RNN cell at the previous time
+    Attributes:
+      cell_state: The state of the wrapped RNN cell at the previous time
         step.
-      - `attention`: The attention emitted at the previous time step.
-      - `alignments`: A single or tuple of `Tensor`(s) containing the
+      attention: The attention emitted at the previous time step.
+      alignments: A single or tuple of `Tensor`(s) containing the
          alignments emitted at the previous time step for each attention
          mechanism.
-      - `alignment_history`: (if enabled) a single or tuple of `TensorArray`(s)
+      alignment_history: (if enabled) a single or tuple of `TensorArray`(s)
          containing alignment matrices from all time steps for each attention
          mechanism. Call `stack()` on each to convert to a `Tensor`.
-      - `attention_state`: A single or tuple of nested objects
+      attention_state: A single or tuple of nested objects
          containing attention mechanism state for each attention mechanism.
          The objects may contain Tensors or TensorArrays.
     """

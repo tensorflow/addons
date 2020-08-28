@@ -31,12 +31,11 @@ class BasicDecoderOutput(
 ):
     """Outputs of a `BasicDecoder` step.
 
-    Contains:
-
-      - `rnn_output`: The output for this step. If the `output_layer` argument
+    Attributes:
+      rnn_output: The output for this step. If the `output_layer` argument
          of `BasicDecoder` was set, it is the output of this layer, otherwise it
          is the output of the RNN cell.
-      - `sample_id`: The token IDs sampled for this step, as returned by the
+      sample_id: The token IDs sampled for this step, as returned by the
         `sampler` instance passed to `BasicDecoder`.
     """
 
