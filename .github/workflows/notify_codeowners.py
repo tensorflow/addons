@@ -32,7 +32,6 @@ def get_github_client():
     return github.Github(os.environ["GITHUB_BOT_TOKEN"])
 
 
-
 CLIENT = get_github_client()
 
 
