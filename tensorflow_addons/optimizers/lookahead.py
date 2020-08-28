@@ -32,12 +32,11 @@ class Lookahead(tf.keras.optimizers.Optimizer):
     synchronized. This method improves the learning stability and lowers the
     variance of its inner optimizer.
 
-    Example of usage:
+    Example usage:
 
-    ```python
-    opt = tf.keras.optimizers.SGD(learning_rate)
-    opt = tfa.optimizers.Lookahead(opt)
-    ```
+    >>> opt = tf.keras.optimizers.SGD(learning_rate)
+    >>> opt = tfa.optimizers.Lookahead(opt)
+    
     """
 
     @typechecked
