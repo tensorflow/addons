@@ -1,4 +1,4 @@
-# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ==============================================================================
+
+# Orginal implementation from keras_contrib/layer/normalization
+# =============================================================================
 
 import tensorflow as tf
 from tensorflow.keras import (
@@ -26,8 +28,8 @@ from tensorflow.keras.layers import InputSpec
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class NoisyDense(tf.keras.layers.Layer):
-    """Like normal dense layer (https://github.com/tensorflow/tensorflow/blob/v2.3.0/tensorflow/python/keras/layers/core.py#L1067-L1233)
-  but random noisy is added to the weights matrix. But as the network improves the random noise is decayed until it is insignificant.
+    """Like normal dense layer but random noisy is added to the weights matrix. But
+  as the network improves the random noise is decayed until it is insignificant.
 
   A `NoisyDense` layer implements the operation:
   `output = activation(dot(input, µ_kernel + (σ_kernel * ε_kernel)) + bias)`
@@ -237,6 +239,7 @@ class NoisyDense(tf.keras.layers.Layer):
             {
                 "units": self.units,
                 "activation": activations.serialize(self.activation),
+                "use_bias": self.use_bias,
                 "kernel_regularizer": regularizers.serialize(self.kernel_regularizer),
                 "bias_regularizer": regularizers.serialize(self.bias_regularizer),
                 "activity_regularizer": regularizers.serialize(
