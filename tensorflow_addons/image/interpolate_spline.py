@@ -296,7 +296,7 @@ def interpolate_spline(
       train_values to perform polyharmonic interpolation. The query values are
       the values of the interpolant evaluated at the locations specified in
       query_points.
-  """
+    """
     with tf.name_scope(name or "interpolate_spline"):
         train_points = tf.convert_to_tensor(train_points)
         train_values = tf.convert_to_tensor(train_values)

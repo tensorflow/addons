@@ -125,10 +125,10 @@ class Lookahead(tf.keras.optimizers.Optimizer):
         )
         with tf.control_dependencies([step_back]):
             slow_update = slow_var.assign(
-                tf.where(sync_cond, step_back, slow_var,), use_locking=self._use_locking
+                tf.where(sync_cond, step_back, slow_var), use_locking=self._use_locking
             )
             var_update = var.assign(
-                tf.where(sync_cond, step_back, var,), use_locking=self._use_locking
+                tf.where(sync_cond, step_back, var), use_locking=self._use_locking
             )
         return tf.group(slow_update, var_update)
 
@@ -184,6 +184,6 @@ class Lookahead(tf.keras.optimizers.Optimizer):
     @classmethod
     def from_config(cls, config, custom_objects=None):
         optimizer = tf.keras.optimizers.deserialize(
-            config.pop("optimizer"), custom_objects=custom_objects,
+            config.pop("optimizer"), custom_objects=custom_objects
         )
         return cls(optimizer, **config)

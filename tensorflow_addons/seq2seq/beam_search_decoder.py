@@ -63,7 +63,7 @@ class BeamSearchDecoderState(
 
 class BeamSearchDecoderOutput(
     collections.namedtuple(
-        "BeamSearchDecoderOutput", ("scores", "predicted_ids", "parent_ids"),
+        "BeamSearchDecoderOutput", ("scores", "predicted_ids", "parent_ids")
     )
 ):
     """Outputs of a `BeamSearchDecoder` step.

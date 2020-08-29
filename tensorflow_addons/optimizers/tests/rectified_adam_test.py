@@ -121,7 +121,7 @@ def test_dense_sample_with_warmup():
         iterations=100,
         expected=[[0.994062, 1.993912], [2.994167, 3.994152]],
         optimizer=RectifiedAdam(
-            lr=1e-3, total_steps=100, warmup_proportion=0.1, min_lr=1e-5,
+            lr=1e-3, total_steps=100, warmup_proportion=0.1, min_lr=1e-5
         ),
     )
 
@@ -132,7 +132,7 @@ def test_sparse_sample_with_warmup():
         iterations=200,
         expected=[[0.982629, 2.0], [3.0, 3.982674]],
         optimizer=RectifiedAdam(
-            lr=1e-3, total_steps=200, warmup_proportion=0.1, min_lr=1e-5,
+            lr=1e-3, total_steps=200, warmup_proportion=0.1, min_lr=1e-5
         ),
     )
 
@@ -145,7 +145,7 @@ def test_dense_sample_with_lookahead():
         iterations=100,
         expected=[[0.993126, 1.992901], [2.993283, 3.993261]],
         optimizer=Lookahead(
-            RectifiedAdam(lr=1e-3, beta_1=0.95,), sync_period=6, slow_step_size=0.45,
+            RectifiedAdam(lr=1e-3, beta_1=0.95), sync_period=6, slow_step_size=0.45
         ),
     )
 
@@ -158,7 +158,7 @@ def test_sparse_sample_with_lookahead():
         iterations=150,
         expected=[[0.988156, 2.0], [3.0, 3.988291]],
         optimizer=Lookahead(
-            RectifiedAdam(lr=1e-3, beta_1=0.95,), sync_period=6, slow_step_size=0.45,
+            RectifiedAdam(lr=1e-3, beta_1=0.95), sync_period=6, slow_step_size=0.45
         ),
     )
 
@@ -172,7 +172,7 @@ def test_get_config():
 
 def test_serialization():
     optimizer = RectifiedAdam(
-        lr=1e-3, total_steps=10000, warmup_proportion=0.1, min_lr=1e-5,
+        lr=1e-3, total_steps=10000, warmup_proportion=0.1, min_lr=1e-5
     )
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)

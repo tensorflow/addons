@@ -24,7 +24,7 @@ from tensorflow_addons.rnn import ESNCell
 def test_base_esn():
     units = 3
     expected_output = np.array(
-        [[2.77, 2.77, 2.77], [4.77, 4.77, 4.77], [6.77, 6.77, 6.77],], dtype=np.float32,
+        [[2.77, 2.77, 2.77], [4.77, 4.77, 4.77], [6.77, 6.77, 6.77]], dtype=np.float32
     )
 
     const_initializer = tf.constant_initializer(0.5)

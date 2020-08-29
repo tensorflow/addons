@@ -140,11 +140,11 @@ class MovingAverage(AveragedOptimizerWrapper):
     def swap_weights(self):
         """Swap the average and moving weights.
 
-      This is a convenience method to allow one to evaluate the averaged weights
-      at test time. Loads the weights stored in `self._average_weights` into the model,
-      keeping a copy of the original model weights. Swapping twice will return
-      the original weights.
-      """
+        This is a convenience method to allow one to evaluate the averaged weights
+        at test time. Loads the weights stored in `self._average_weights` into the model,
+        keeping a copy of the original model weights. Swapping twice will return
+        the original weights.
+        """
         if tf.distribute.in_cross_replica_context():
             strategy = tf.distribute.get_strategy()
             return strategy.run(self._swap_weights, args=())
@@ -178,4 +178,4 @@ class MovingAverage(AveragedOptimizerWrapper):
                 )  # a = a - b
 
         ctx = tf.distribute.get_replica_context()
-        return ctx.merge_call(swap, args=(self._average_weights, self._model_weights,))
+        return ctx.merge_call(swap, args=(self._average_weights, self._model_weights))
