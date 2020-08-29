@@ -43,7 +43,7 @@ def blend(image1: TensorLike, image2: TensorLike, factor: Number) -> tf.Tensor:
     Returns:
       A blended image Tensor of `tf.float32`.
 
-  """
+    """
     with tf.name_scope("blend"):
 
         if factor == 0.0:

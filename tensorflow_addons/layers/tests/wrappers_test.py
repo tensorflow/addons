@@ -27,7 +27,7 @@ from tensorflow_addons.utils import test_utils
 def test_basic():
     test_utils.layer_test(
         wrappers.WeightNormalization,
-        kwargs={"layer": tf.keras.layers.Conv2D(5, (2, 2)),},
+        kwargs={"layer": tf.keras.layers.Conv2D(5, (2, 2))},
         input_shape=(2, 4, 4, 3),
     )
 
@@ -35,7 +35,7 @@ def test_basic():
 def test_no_bias():
     test_utils.layer_test(
         wrappers.WeightNormalization,
-        kwargs={"layer": tf.keras.layers.Dense(5, use_bias=False),},
+        kwargs={"layer": tf.keras.layers.Dense(5, use_bias=False)},
         input_shape=(2, 4),
     )
 
@@ -49,7 +49,7 @@ def _check_data_init(data_init, input_data, expected_output):
     )
     test_utils.layer_test(
         wrappers.WeightNormalization,
-        kwargs={"layer": layer, "data_init": data_init,},
+        kwargs={"layer": layer, "data_init": data_init},
         input_data=input_data,
         expected_output=expected_output,
     )

@@ -121,7 +121,7 @@ def assert_move_single_pixel(order, num_boundary_points, type_to_use):
     # Shift it one pixel to the right.
     control_point_displacements = [[0.0, 1.0]]
     control_point_displacements = tf.constant(
-        np.float32(np.expand_dims(control_point_displacements, 0)), dtype=type_to_use,
+        np.float32(np.expand_dims(control_point_displacements, 0)), dtype=type_to_use
     )
 
     (warped_image, flow) = sparse_image_warp(

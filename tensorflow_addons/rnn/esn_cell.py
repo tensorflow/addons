@@ -118,7 +118,8 @@ class ESNCell(keras.layers.AbstractRNNCell):
             )
 
             connectivity_mask = tf.cast(
-                tf.math.less_equal(tf.random.uniform(shape), self.connectivity,), dtype
+                tf.math.less_equal(tf.random.uniform(shape), self.connectivity),
+                dtype,
             )
             recurrent_weights = tf.math.multiply(recurrent_weights, connectivity_mask)
 

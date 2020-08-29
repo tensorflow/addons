@@ -277,12 +277,16 @@ def _find_cuda_config(base_paths, required_version):
 
     nvcc_name = "nvcc.exe" if _is_windows() else "nvcc"
     nvcc_path, nvcc_version = _find_versioned_file(
-        base_paths, ["", "bin",], nvcc_name, cuda_version, get_nvcc_version
+        base_paths,
+        ["", "bin"],
+        nvcc_name,
+        cuda_version,
+        get_nvcc_version,
     )
 
     nvvm_path = _find_file(
         base_paths,
-        ["nvvm/libdevice", "share/cuda", "lib/nvidia-cuda-toolkit/libdevice",],
+        ["nvvm/libdevice", "share/cuda", "lib/nvidia-cuda-toolkit/libdevice"],
         "libdevice*.10.bc",
     )
 

@@ -79,7 +79,7 @@ def test_quadratic_weighted_kappa_loss(np_seed):
 
 def test_config():
     kappa_loss = WeightedKappaLoss(
-        num_classes=4, weightage="linear", name="kappa_loss", epsilon=0.001,
+        num_classes=4, weightage="linear", name="kappa_loss", epsilon=0.001
     )
     assert kappa_loss.num_classes == 4
     assert kappa_loss.weightage == "linear"
