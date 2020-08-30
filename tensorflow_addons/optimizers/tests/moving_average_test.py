@@ -260,6 +260,7 @@ def test_swap_weights(device):
     np.testing.assert_allclose(var.read_value(), [0.8, 1.8])
     np.testing.assert_allclose(ema_var.read_value(), [0.9, 1.9])
 
+
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_model_mixed_precision():
     tf.keras.mixed_precision.experimental.set_policy("mixed_float16")
