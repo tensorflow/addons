@@ -65,9 +65,9 @@ class SWA(AveragedOptimizerWrapper):
 
     Example usage:
 
-    >>> opt = tf.keras.optimizers.SGD(learning_rate)
-    >>> opt = tfa.optimizers.SWA(opt, start_averaging=m, average_period=k)
-    
+    >>> optimizer = tf.keras.optimizers.SGD(learning_rate)
+    >>> optimizer = tfa.optimizers.SWA(opt, start_averaging=m, average_period=k)
+
     """
 
     @typechecked
@@ -124,7 +124,8 @@ class SWA(AveragedOptimizerWrapper):
         # avoid negative values of num_snapshots).
         num_snapshots = tf.math.maximum(
             tf.cast(0, tf.int64),
-            tf.math.floordiv(self.iterations - start_averaging, average_period),
+            tf.math.floordiv(self.iterations
+                             - start_averaging, average_period),
         )
 
         # The average update should happen iff two conditions are met:
@@ -133,7 +134,8 @@ class SWA(AveragedOptimizerWrapper):
         checkpoint = start_averaging + num_snapshots * average_period
         if self.iterations >= start_averaging and self.iterations == checkpoint:
             num_snapshots = tf.cast(num_snapshots, tf.float32)
-            average_value = (average_var * num_snapshots + var) / (num_snapshots + 1.0)
+            average_value = (average_var * num_snapshots
+                             + var) / (num_snapshots + 1.0)
             return average_var.assign(average_value, use_locking=self._use_locking)
 
         return average_var
