@@ -113,9 +113,8 @@ class LazyAdam(tf.keras.optimizers.Adam):
 
         # \\(v := beta2 * v + (1 - beta2) * (g_t * g_t)\\)
         v = self.get_slot(var, "v")
-        v_t_slice = beta_2_t * tf.gather(v, indices) + (1 - beta_2_t) * tf.math.square(
-            grad
-        )
+        v_t_slice = beta_2_t * tf.gather(v, indices) + (1 - beta_2_t)
+        * tf.math.square(grad)
         v_update_op = self._resource_scatter_update(v, indices, v_t_slice)
 
         # \\(variable += -learning_rate * m_t / (epsilon_t + sqrt(v_t))\\)
