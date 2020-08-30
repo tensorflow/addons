@@ -31,10 +31,10 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
     constraint.
     See https://arxiv.org/pdf/1803.06453.pdf
 
-    
+
     >>> variable -= (1-learning_rate) * (variable + lambda_ * gradient
     ... / (frobenius_norm(gradient) + epsilon))
-    
+
     Note that `lambda_` here refers to the constraint "lambda" in
     the paper. `epsilon` is constant with tiny value as compared to
     the value of frobenius norm of gradient. The purpose of `epsilon`
@@ -47,7 +47,7 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
 
     >>> variable -= (1-learning_rate) * (variable
     ... + lambda_ * top_singular_vector(gradient))
-    
+
     """
 
     @typechecked
@@ -165,7 +165,8 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
         epsilon = coefficients["epsilon"]
         if self.ord == "fro":
             norm = tf.convert_to_tensor(
-                self._frobenius_norm(grad), name="norm", dtype=var.dtype.base_dtype
+                self._frobenius_norm(grad), name="norm",
+                dtype=var.dtype.base_dtype
             )
             s = grad / (norm + epsilon)
         else:
@@ -190,7 +191,8 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
         var_slice = tf.gather(var, indices)
         if self.ord == "fro":
             norm = tf.convert_to_tensor(
-                self._frobenius_norm(grad), name="norm", dtype=var.dtype.base_dtype
+                self._frobenius_norm(grad), name="norm",
+                dtype=var.dtype.base_dtype
             )
             s = grad / (norm + epsilon)
         else:
@@ -201,6 +203,8 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
             )
             s = top_singular_vector
 
-        var_update_value = tf.math.multiply(var_slice, lr) - (1 - lr) * lambda_ * s
-        var_update_op = self._resource_scatter_update(var, indices, var_update_value)
+        var_update_value = tf.math.multiply(
+            var_slice, lr) - (1 - lr) * lambda_ * s
+        var_update_op = self._resource_scatter_update(
+            var, indices, var_update_value)
         return var_update_op
