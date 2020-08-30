@@ -38,7 +38,8 @@ def fit_bn(model, *args, **kwargs):
             assign_ops.extend(
                 [
                     layer.moving_mean.assign(tf.zeros_like(layer.moving_mean)),
-                    layer.moving_variance.assign(tf.ones_like(layer.moving_variance)),
+                    layer.moving_variance.assign(
+                        tf.ones_like(layer.moving_variance)),
                 ]
             )
 
