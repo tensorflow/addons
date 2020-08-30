@@ -23,7 +23,8 @@ from typeguard import typechecked
 from typing import Optional
 
 
-class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCMeta):
+class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer,
+                               metaclass=abc.ABCMeta):
     @typechecked
     def __init__(
         self,
@@ -49,8 +50,10 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
 
         if sequential_update is not None:
             warnings.warn(
-                "The parameter `sequential_update` is redundant due to AutoGraph. "
-                "This behavior is deprecated and in Addons 0.12, this will raise an error. ",
+                "The parameter `sequential_update` is \
+                redundant due to AutoGraph. "
+                "This behavior is deprecated and in Addons 0.12, \
+                this will raise an error. ",
                 DeprecationWarning,
             )
 
@@ -105,7 +108,7 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
             variables to their average.
 
         Example usage:
-        
+
         >>> model = tf.Sequential([...])
         >>> opt = tfa.optimizers.SWA(
         ... tf.keras.optimizers.SGD(lr=2.0), 100, 10)
@@ -115,11 +118,12 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
         # Update the weights to their mean before saving
         >>> opt.assign_average_vars(model.variables)
         >>> model.save('model.h5')
-        
+
         """
         assign_op = tf.group(
             [
-                var.assign(self.get_slot(var, "average"), use_locking=self._use_locking)
+                var.assign(self.get_slot(var, "average"),
+                           use_locking=self._use_locking)
                 for var in var_list
                 if var.trainable
             ]
@@ -136,7 +140,8 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
     @classmethod
     def from_config(cls, config, custom_objects=None):
         optimizer = tf.keras.optimizers.deserialize(
-            config.pop("optimizer"), custom_objects=custom_objects,
+            config.pop("optimizer"),
+            custom_objects=custom_objects,
         )
         return cls(optimizer, **config)
 
