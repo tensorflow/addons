@@ -57,7 +57,7 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
 
     Example usage:
 
-    >>> opt = tfa.optimizers.NovoGrad(
+    >>> optimizer = tfa.optimizers.NovoGrad(
     ... lr=1e-3,
     ... beta_1=0.9,
     ... beta_2=0.999,

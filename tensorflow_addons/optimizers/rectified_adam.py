@@ -31,7 +31,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
 
     Example usage :
 
-    >>> opt = tfa.optimizers.RectifiedAdam(lr=1e-3)
+    >>> optimizer = tfa.optimizers.RectifiedAdam(lr=1e-3)
 
     Note: `amsgrad` is not described in the original paper. Use it with
           caution.
@@ -42,7 +42,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
 
     Example usage :
 
-    >>> opt = tfa.optimizers.RectifiedAdam(
+    >>> optimizer = tfa.optimizers.RectifiedAdam(
     ... lr=1e-3,
     ... total_steps=10000,
     ... warmup_proportion=0.1,

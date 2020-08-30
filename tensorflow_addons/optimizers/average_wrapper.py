@@ -110,7 +110,7 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer,
         Example usage:
 
         >>> model = tf.Sequential([...])
-        >>> opt = tfa.optimizers.SWA(
+        >>> optimizer = tfa.optimizers.SWA(
         ... tf.keras.optimizers.SGD(lr=2.0), 100, 10)
         >>> model.compile(opt, ...)
         >>> model.fit(x, y, ...)
