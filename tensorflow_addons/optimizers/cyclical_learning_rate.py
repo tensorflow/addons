@@ -37,7 +37,8 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
     ):
         """Applies cyclical schedule to the learning rate.
 
-        See Cyclical Learning Rates for Training Neural Networks. https://arxiv.org/abs/1506.01186
+        See Cyclical Learning Rates for Training Neural Networks.
+        https://arxiv.org/abs/1506.01186
 
 
         Example usage :
@@ -55,7 +56,7 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
         ... metrics=['accuracy'])
 
         >>> model.fit(data, labels, epochs=5)
-        
+
 
         You can pass this schedule directly into a
         `tf.keras.optimizers.Optimizer` as the learning rate.
@@ -98,7 +99,8 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
 
             return initial_learning_rate + (
                 maximal_learning_rate - initial_learning_rate
-            ) * tf.maximum(tf.cast(0, dtype), (1 - x)) * self.scale_fn(mode_step)
+            ) * tf.maximum(tf.cast(0, dtype), (1 - x))
+            * self.scale_fn(mode_step)
 
     def get_config(self):
         return {
@@ -123,7 +125,8 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
     ):
         """Applies triangular cyclical schedule to the learning rate.
 
-        See Cyclical Learning Rates for Training Neural Networks. https://arxiv.org/abs/1506.01186
+        See Cyclical Learning Rates for Training Neural Networks.
+        https://arxiv.org/abs/1506.01186
 
 
         Example usage :
@@ -143,7 +146,7 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
         ... metrics=['accuracy'])
 
         >>> model.fit(data, labels, epochs=5)
-        
+
 
         You can pass this schedule directly into a
         `tf.keras.optimizers.Optimizer` as the learning rate.
@@ -193,10 +196,11 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
     ):
         """Applies triangular2 cyclical schedule to the learning rate.
 
-        See Cyclical Learning Rates for Training Neural Networks. https://arxiv.org/abs/1506.01186
+        See Cyclical Learning Rates for Training Neural Networks.
+        https://arxiv.org/abs/1506.01186
 
-        Example usage : 
-        
+        Example usage :
+
         >>> from tf.keras.optimizers import schedules
 
         >>> lr_schedule = schedules.Triangular2CyclicalLearningRate(
@@ -212,7 +216,7 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
         ... metrics=['accuracy'])
 
         >>> model.fit(data, labels, epochs=5)
-        
+
 
         You can pass this schedule directly into a
         `tf.keras.optimizers.Optimizer` as the learning rate.
@@ -263,10 +267,11 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
     ):
         """Applies exponential cyclical schedule to the learning rate.
 
-        See Cyclical Learning Rates for Training Neural Networks. https://arxiv.org/abs/1506.01186
+        See Cyclical Learning Rates for Training Neural Networks.
+        https://arxiv.org/abs/1506.01186
 
-        Example usage : 
-        
+        Example usage :
+
         >>> from tf.keras.optimizers import schedules
 
         >>> lr_schedule = ExponentialCyclicalLearningRate(
@@ -283,7 +288,7 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
         ... metrics=['accuracy'])
 
         >>> model.fit(data, labels, epochs=5)
-        
+
 
         You can pass this schedule directly into a
         `tf.keras.optimizers.Optimizer` as the learning rate.
