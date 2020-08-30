@@ -82,15 +82,11 @@ class DecoupledWeightDecayExtension:
 
     def get_config(self):
         config = super().get_config()
-<<<<<<< master
         config.update(
             {
                 "weight_decay": self._serialize_hyperparameter("weight_decay"),
             }
         )
-=======
-        config.update({"weight_decay": self._serialize_hyperparameter("weight_decay")})
->>>>>>> master
         return config
 
     @classmethod
