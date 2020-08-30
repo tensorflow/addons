@@ -40,7 +40,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
     kept if warmup has already been employed and tuned in the baseline method.
     You can enable warmup by setting `total_steps` and `warmup_proportion`:
 
-    Example usage : 
+    Example usage :
 
     >>> opt = tfa.optimizers.RectifiedAdam(
     ... lr=1e-3,
@@ -48,7 +48,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
     ... warmup_proportion=0.1,
     ... min_lr=1e-5,
     ... )
-    
+
 
     In the above example, the learning rate will increase linearly
     from 0 to `lr` in 1000 steps, then decrease linearly from `lr` to `min_lr`
@@ -62,8 +62,9 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
     wrapper. For example:
 
     >>> radam = tfa.optimizers.RectifiedAdam()
-    >>> ranger = tfa.optimizers.Lookahead(radam, sync_period=6, slow_step_size=0.5)
-    
+    >>> ranger = tfa.optimizers.Lookahead
+    ... (radam, sync_period=6, slow_step_size=0.5)
+
     """
 
     @typechecked
@@ -118,10 +119,12 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         super().__init__(name, **kwargs)
 
         if isinstance(learning_rate, Dict):
-            learning_rate = tf.keras.optimizers.schedules.deserialize(learning_rate)
+            learning_rate = tf.keras.optimizers.schedules.deserialize(
+                learning_rate)
 
         if isinstance(weight_decay, Dict):
-            weight_decay = tf.keras.optimizers.schedules.deserialize(weight_decay)
+            weight_decay = tf.keras.optimizers.schedules.deserialize(
+                weight_decay)
 
         self._set_hyper("learning_rate", kwargs.get("lr", learning_rate))
         self._set_hyper("beta_1", beta_1)
@@ -174,21 +177,25 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
 
         if self._initial_total_steps > 0:
             total_steps = self._get_hyper("total_steps", var_dtype)
-            warmup_steps = total_steps * self._get_hyper("warmup_proportion", var_dtype)
+            warmup_steps = total_steps * \
+                self._get_hyper("warmup_proportion", var_dtype)
             min_lr = self._get_hyper("min_lr", var_dtype)
             decay_steps = tf.maximum(total_steps - warmup_steps, 1)
             decay_rate = (min_lr - lr_t) / decay_steps
             lr_t = tf.where(
                 local_step <= warmup_steps,
                 lr_t * (local_step / warmup_steps),
-                lr_t + decay_rate * tf.minimum(local_step - warmup_steps, decay_steps),
+                lr_t + decay_rate
+                * tf.minimum(local_step - warmup_steps, decay_steps),
             )
 
         sma_inf = 2.0 / (1.0 - beta_2_t) - 1.0
-        sma_t = sma_inf - 2.0 * local_step * beta_2_power / (1.0 - beta_2_power)
+        sma_t = sma_inf - 2.0 * local_step * \
+            beta_2_power / (1.0 - beta_2_power)
 
         m_t = m.assign(
-            beta_1_t * m + (1.0 - beta_1_t) * grad, use_locking=self._use_locking
+            beta_1_t * m + (1.0 - beta_1_t) * grad,
+            use_locking=self._use_locking
         )
         m_corr_t = m_t / (1.0 - beta_1_power)
 
@@ -198,7 +205,8 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         )
         if self.amsgrad:
             vhat = self.get_slot(var, "vhat")
-            vhat_t = vhat.assign(tf.maximum(vhat, v_t), use_locking=self._use_locking)
+            vhat_t = vhat.assign(tf.maximum(vhat, v_t),
+                                 use_locking=self._use_locking)
             v_corr_t = tf.sqrt(vhat_t / (1.0 - beta_2_power))
         else:
             vhat_t = None
@@ -215,13 +223,15 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
 
         sma_threshold = self._get_hyper("sma_threshold", var_dtype)
         var_t = tf.where(
-            sma_t >= sma_threshold, r_t * m_corr_t / (v_corr_t + epsilon_t), m_corr_t
+            sma_t >= sma_threshold, r_t * m_corr_t
+            / (v_corr_t + epsilon_t), m_corr_t
         )
 
         if self._has_weight_decay:
             var_t += wd_t * var
 
-        var_update = var.assign_sub(lr_t * var_t, use_locking=self._use_locking)
+        var_update = var.assign_sub(
+            lr_t * var_t, use_locking=self._use_locking)
 
         updates = [var_update, m_t, v_t]
         if self.amsgrad:
@@ -241,18 +251,21 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
 
         if self._initial_total_steps > 0:
             total_steps = self._get_hyper("total_steps", var_dtype)
-            warmup_steps = total_steps * self._get_hyper("warmup_proportion", var_dtype)
+            warmup_steps = total_steps * \
+                self._get_hyper("warmup_proportion", var_dtype)
             min_lr = self._get_hyper("min_lr", var_dtype)
             decay_steps = tf.maximum(total_steps - warmup_steps, 1)
             decay_rate = (min_lr - lr_t) / decay_steps
             lr_t = tf.where(
                 local_step <= warmup_steps,
                 lr_t * (local_step / warmup_steps),
-                lr_t + decay_rate * tf.minimum(local_step - warmup_steps, decay_steps),
+                lr_t + decay_rate
+                * tf.minimum(local_step - warmup_steps, decay_steps),
             )
 
         sma_inf = 2.0 / (1.0 - beta_2_t) - 1.0
-        sma_t = sma_inf - 2.0 * local_step * beta_2_power / (1.0 - beta_2_power)
+        sma_t = sma_inf - 2.0 * local_step * \
+            beta_2_power / (1.0 - beta_2_power)
 
         m = self.get_slot(var, "m")
         m_scaled_g_values = grad * (1 - beta_1_t)
@@ -269,7 +282,8 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
 
         if self.amsgrad:
             vhat = self.get_slot(var, "vhat")
-            vhat_t = vhat.assign(tf.maximum(vhat, v_t), use_locking=self._use_locking)
+            vhat_t = vhat.assign(tf.maximum(vhat, v_t),
+                                 use_locking=self._use_locking)
             v_corr_t = tf.sqrt(vhat_t / (1.0 - beta_2_power))
         else:
             vhat_t = None
@@ -286,7 +300,8 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
 
         sma_threshold = self._get_hyper("sma_threshold", var_dtype)
         var_t = tf.where(
-            sma_t >= sma_threshold, r_t * m_corr_t / (v_corr_t + epsilon_t), m_corr_t
+            sma_t >= sma_threshold, r_t * m_corr_t / (v_corr_t + epsilon_t),
+            m_corr_t
         )
 
         if self._has_weight_decay:

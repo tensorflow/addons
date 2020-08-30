@@ -68,20 +68,26 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
                 is invalid.
         """
         if initial_accumulator_value < 0.0:
-            raise ValueError("`initial_accumulator_value` must be non-negative.")
+            raise ValueError(
+                "`initial_accumulator_value` must be non-negative.")
         if l1_regularization_strength < 0.0:
-            raise ValueError("`l1_regularization_strength` must be non-negative.")
+            raise ValueError(
+                "`l1_regularization_strength` must be non-negative.")
         if l2_regularization_strength < 0.0:
-            raise ValueError("`l2_regularization_strength` must be non-negative.")
+            raise ValueError(
+                "`l2_regularization_strength` must be non-negative.")
         super().__init__(name, **kwargs)
         self._set_hyper("learning_rate", kwargs.get("lr", learning_rate))
-        self._set_hyper("l1_regularization_strength", l1_regularization_strength)
-        self._set_hyper("l2_regularization_strength", l2_regularization_strength)
+        self._set_hyper("l1_regularization_strength",
+                        l1_regularization_strength)
+        self._set_hyper("l2_regularization_strength",
+                        l2_regularization_strength)
         self._initial_accumulator_value = initial_accumulator_value
 
     def _create_slots(self, var_list):
         for var in var_list:
-            init = tf.keras.initializers.constant(self._initial_accumulator_value)
+            init = tf.keras.initializers.constant
+            (self._initial_accumulator_value)
             self.add_slot(var, "accumulator", init)
 
     def _resource_apply_dense(self, grad, var, apply_state=None):
