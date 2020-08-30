@@ -87,7 +87,7 @@ class MovingAverage(AveragedOptimizerWrapper):
                     self._num_updates,
                     (
                         'type of argument "num_updates" must be '
-                        + f"int; got {self._num_updates.dtype} instead"
+                        "int; got {} instead".format(self._num_updates.dtype)
                     ),
                 )
             num_updates = tf.cast(self._num_updates, tf.float32, name="num_updates")
