@@ -47,7 +47,8 @@ def do_test(
             update_fn.
         do_sparse: If True, test sparse update. Defaults to False, i.e.,
             dense update.
-        do_decay_var_list: If True, test by passing a list of vars to ensure hashing is handled correctly
+        do_decay_var_list: If True, test by passing a list of vars to
+        ensure hashing is handled correctly
         **optimizer_kwargs:The parameters to pass to the construcor of the
             optimizer. Either a constant or a callable. This also passed to
             the optimizer_params in the update_fn.
@@ -68,11 +69,15 @@ def do_test(
     if do_sparse:
         grads0_np_indices = np.array([0, 1], dtype=np.int32)
         grads0 = tf.IndexedSlices(
-            tf.constant(grads0_np), tf.constant(grads0_np_indices), tf.constant([2]),
+            tf.constant(grads0_np),
+            tf.constant(grads0_np_indices),
+            tf.constant([2]),
         )
         grads1_np_indices = np.array([0, 1], dtype=np.int32)
         grads1 = tf.IndexedSlices(
-            tf.constant(grads1_np), tf.constant(grads1_np_indices), tf.constant([2]),
+            tf.constant(grads1_np),
+            tf.constant(grads1_np_indices),
+            tf.constant([2]),
         )
     else:
         grads0 = tf.constant(grads0_np)
@@ -83,7 +88,8 @@ def do_test(
     for _ in range(3):
         if do_decay_var_list:
             opt.apply_gradients(
-                zip([grads0, grads1], [var0, var1]), decay_var_list=[var0, var1],
+                zip([grads0, grads1], [var0, var1]),
+                decay_var_list=[var0, var1],
             )
         else:
             opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
@@ -128,15 +134,19 @@ def do_test_sparse_repeated_indices(dtype, optimizer, **optimizer_kwargs):
         tf.constant([2, 1]),
     )
     opt_repeated = optimizer(**optimizer_kwargs)
-    _ = opt_repeated.apply_gradients([(grad_repeated_index, repeated_index_update_var)])
+    _ = opt_repeated.apply_gradients(
+        [(grad_repeated_index, repeated_index_update_var)])
     opt_aggregated = optimizer(**optimizer_kwargs)
-    _ = opt_aggregated.apply_gradients([(grad_aggregated, aggregated_update_var)])
+    _ = opt_aggregated.apply_gradients(
+        [(grad_aggregated, aggregated_update_var)])
     np.testing.assert_allclose(
         aggregated_update_var.numpy(), repeated_index_update_var.numpy()
     )
     for _ in range(3):
-        opt_repeated.apply_gradients([(grad_repeated_index, repeated_index_update_var)])
-        opt_aggregated.apply_gradients([(grad_aggregated, aggregated_update_var)])
+        opt_repeated.apply_gradients(
+            [(grad_repeated_index, repeated_index_update_var)])
+        opt_aggregated.apply_gradients(
+            [(grad_aggregated, aggregated_update_var)])
         np.testing.assert_allclose(
             aggregated_update_var.numpy(), repeated_index_update_var.numpy()
         )
@@ -245,7 +255,8 @@ def test_keras_fit():
     """Check if calling model.fit works."""
     model = tf.keras.models.Sequential([tf.keras.layers.Dense(2)])
     loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-    optimizer = weight_decay_optimizers.AdamW(learning_rate=1e-4, weight_decay=1e-4)
+    optimizer = weight_decay_optimizers.AdamW(
+        learning_rate=1e-4, weight_decay=1e-4)
     model.compile(optimizer=optimizer, loss=loss, metrics=["accuracy"])
     x, y = np.random.uniform(size=(2, 4, 1))
     model.fit(x, y, epochs=1)
@@ -374,7 +385,11 @@ def test_optimizer_basic(dtype, optimizer):
 @pytest.mark.parametrize("dtype", [tf.half, tf.float32, tf.float64])
 def test_optimizer_sparse(dtype, optimizer):
     do_test_sparse_repeated_indices(
-        dtype, optimizer, learning_rate=0.001, momentum=0.9, weight_decay=WEIGHT_DECAY,
+        dtype,
+        optimizer,
+        learning_rate=0.001,
+        momentum=0.9,
+        weight_decay=WEIGHT_DECAY,
     )
 
 
