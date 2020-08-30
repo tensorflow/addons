@@ -36,7 +36,7 @@ class Lookahead(tf.keras.optimizers.Optimizer):
 
     >>> opt = tf.keras.optimizers.SGD(learning_rate)
     >>> opt = tfa.optimizers.Lookahead(opt)
-    
+
     """
 
     @typechecked
@@ -105,10 +105,8 @@ class Lookahead(tf.keras.optimizers.Optimizer):
         slow_var = self.get_slot(var, "slow")
         return slow_var.assign(
             tf.where(
-                tf.equal(self.iterations, tf.constant(0, dtype=self.iterations.dtype)),
-                var,
-                slow_var,
-            ),
+                tf.equal(self.iterations, tf.constant
+                         (0, dtype=self.iterations.dtype)), var, slow_var,),
             use_locking=self._use_locking,
         )
 
@@ -124,10 +122,20 @@ class Lookahead(tf.keras.optimizers.Optimizer):
         )
         with tf.control_dependencies([step_back]):
             slow_update = slow_var.assign(
-                tf.where(sync_cond, step_back, slow_var,), use_locking=self._use_locking
+                tf.where(
+                    sync_cond,
+                    step_back,
+                    slow_var,
+                ),
+                use_locking=self._use_locking,
             )
             var_update = var.assign(
-                tf.where(sync_cond, step_back, var,), use_locking=self._use_locking
+                tf.where(
+                    sync_cond,
+                    step_back,
+                    var,
+                ),
+                use_locking=self._use_locking,
             )
         return tf.group(slow_update, var_update)
 
@@ -148,7 +156,8 @@ class Lookahead(tf.keras.optimizers.Optimizer):
     def _resource_apply_sparse(self, grad, var, indices):
         init_op = self._init_op(var)
         with tf.control_dependencies([init_op]):
-            train_op = self._optimizer._resource_apply_sparse(  # pylint: disable=protected-access
+            train_op = self._optimizer._resource_apply_sparse(
+                # pylint: disable=protected-access
                 grad, var, indices
             )
             with tf.control_dependencies([train_op]):
@@ -183,6 +192,7 @@ class Lookahead(tf.keras.optimizers.Optimizer):
     @classmethod
     def from_config(cls, config, custom_objects=None):
         optimizer = tf.keras.optimizers.deserialize(
-            config.pop("optimizer"), custom_objects=custom_objects,
+            config.pop("optimizer"),
+            custom_objects=custom_objects,
         )
         return cls(optimizer, **config)
