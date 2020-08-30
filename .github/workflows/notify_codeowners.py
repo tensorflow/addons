@@ -29,7 +29,7 @@ def xor_strings(a, b):
 
 
 def get_github_client():
-    return github.Github(os.environ["GITHUB_BOT_TOKEN"])
+    return github.Github(os.environ["BOT_TOKEN"])
 
 
 CLIENT = get_github_client()

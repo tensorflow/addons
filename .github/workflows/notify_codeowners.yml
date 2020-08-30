@@ -18,7 +18,7 @@ jobs:
       - name: Drop a message for codeowners
         env:
           PR: ${{ steps.findPr.outputs.pr }}
-          GITHUB_BOT_TOKEN: ${{ secrets.GITHUB_BOT_TOKEN }}
+          GITHUB_BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           python .github/workflows/notify_codeowners.py \
               --pull-request-id=auto \
