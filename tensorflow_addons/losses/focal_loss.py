@@ -16,10 +16,9 @@
 
 import tensorflow as tf
 import tensorflow.keras.backend as K
-
+from typeguard import typechecked
 from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
 from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
-from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -37,22 +36,17 @@ class SigmoidFocalCrossEntropy(LossFunctionWrapper):
 
     Usage:
 
-    ```python
-    fl = tfa.losses.SigmoidFocalCrossEntropy()
-    loss = fl(
-      y_true = [[1.0], [1.0], [0.0]],
-      y_pred = [[0.97], [0.91], [0.03]])
-    print('Loss: ', loss.numpy())  # Loss: [6.8532745e-06,
-                                            1.9097870e-04,
-                                            2.0559824e-05]
-    ```
+    >>> fl = tfa.losses.SigmoidFocalCrossEntropy()
+    >>> loss = fl(
+    ...    y_true = [[1.0], [1.0], [0.0]],
+    ...    y_pred = [[0.97], [0.91], [0.03]])
+    >>> print('Loss: ', loss.numpy())
+    <Loss:  [6.8532745e-06 1.9097870e-04 2.0559824e-05]>
 
     Usage with `tf.keras` API:
 
-    ```python
-    model = tf.keras.Model(inputs, outputs)
-    model.compile('sgd', loss=tfa.losses.SigmoidFocalCrossEntropy())
-    ```
+    >>> model = tf.keras.Model()
+    >>> model.compile('sgd', loss=tfa.losses.SigmoidFocalCrossEntropy())
 
     Args:
       alpha: balancing factor, default value is 0.25.
