@@ -112,7 +112,7 @@ def test_lifted_struct(dtype):
 
 def test_keras_model_compile():
     model = tf.keras.models.Sequential(
-        [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10),]
+        [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10)]
     )
     model.compile(loss="Addons>lifted_struct_loss", optimizer="adam")
 

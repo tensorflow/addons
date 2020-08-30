@@ -42,7 +42,7 @@ def test_nchw():
 def test_unknown():
     inputs = np.random.random((5, 4, 2, 18)).astype("float32")
     test_utils.layer_test(
-        Maxout, kwargs={"num_units": 3}, input_shape=(5, 4, 2, None), input_data=inputs,
+        Maxout, kwargs={"num_units": 3}, input_shape=(5, 4, 2, None), input_data=inputs
     )
 
     test_utils.layer_test(

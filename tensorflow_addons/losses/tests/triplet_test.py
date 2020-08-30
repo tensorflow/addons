@@ -182,7 +182,7 @@ def test_semihard_tripled_loss_angular(dtype, dist_func, dist_metric):
 
 def test_keras_model_compile_semihard():
     model = tf.keras.models.Sequential(
-        [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10),]
+        [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10)]
     )
     model.compile(loss="Addons>triplet_semihard_loss", optimizer="adam")
 
@@ -225,7 +225,7 @@ def test_hard_tripled_loss_angular(dtype, soft, dist_func, dist_metric):
 
 def test_keras_model_compile_hard():
     model = tf.keras.models.Sequential(
-        [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10),]
+        [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10)]
     )
     model.compile(loss="Addons>triplet_hard_loss", optimizer="adam")
 

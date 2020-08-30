@@ -36,7 +36,7 @@ _DTYPES = {
 @pytest.mark.parametrize("dtype", _DTYPES)
 def test_compose(dtype):
     image = tf.constant(
-        [[1, 1, 1, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]], dtype=dtype,
+        [[1, 1, 1, 0], [1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0]], dtype=dtype
     )
     # Rotate counter-clockwise by pi / 2.
     rotation = transform_ops.angles_to_projective_transforms(np.pi / 2, 4, 4)
@@ -56,7 +56,7 @@ def test_compose(dtype):
 @pytest.mark.parametrize("dtype", _DTYPES)
 def test_extreme_projective_transform(dtype):
     image = tf.constant(
-        [[1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1]], dtype=dtype,
+        [[1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1]], dtype=dtype
     )
     transformation = tf.constant([1, 0, 0, 0, 1, 0, -1, 0], tf.dtypes.float32)
     image_transformed = transform_ops.transform(image, transformation)

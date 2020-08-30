@@ -126,7 +126,7 @@ def unwrap(image, replace):
 
     Returns:
         image: A 3D image `Tensor` with 3 channels.
-  """
+    """
     image_shape = tf.shape(image)
     # Flatten the spatial dimensions.
     flattened_image = tf.reshape(image, [-1, image_shape[2]])

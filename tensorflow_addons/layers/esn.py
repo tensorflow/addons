@@ -90,7 +90,7 @@ class ESN(tf.keras.layers.RNN):
             `recurrent_dropout` is used.
         initial_state: List of initial state tensors to be passed to the first
             call of the cell.
-     """
+    """
 
     @typechecked
     def __init__(

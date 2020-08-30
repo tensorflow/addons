@@ -141,7 +141,7 @@ def test_gather_tree_batch():
             # valid id and everything after it should be end_token.
             if found > 0:
                 np.testing.assert_equal(
-                    v[: found - 1] >= 0, np.ones_like(v[: found - 1], dtype=bool),
+                    v[: found - 1] >= 0, np.ones_like(v[: found - 1], dtype=bool)
                 )
             np.testing.assert_allclose(
                 v[found + 1 :], end_token * np.ones_like(v[found + 1 :])

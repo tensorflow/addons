@@ -77,7 +77,7 @@ class CRF(tf.keras.layers.Layer):
 
         if self.use_kernel:
             self._dense_layer = tf.keras.layers.Dense(
-                units=self.units, dtype=self.dtype,
+                units=self.units, dtype=self.dtype
             )
         else:
             self._dense_layer = lambda x: tf.cast(x, dtype=self.dtype)

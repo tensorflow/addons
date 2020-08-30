@@ -72,6 +72,19 @@ def test_opt_failure():
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_num_updates_valid():
+    for num_updates in [1, tf.Variable(1)]:
+        MovingAverage("sgd", num_updates=num_updates)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_num_updates_invalid():
+    for num_updates in [1.0, tf.Variable(1.0), "a"]:
+        with pytest.raises(TypeError):
+            MovingAverage("sgd", num_updates=num_updates)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_model_weights_update():
     grad = tf.Variable([[0.1]])
     model = tf.keras.Sequential(
