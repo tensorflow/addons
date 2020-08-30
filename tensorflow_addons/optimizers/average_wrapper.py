@@ -65,9 +65,9 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
     def _prepare(self, var_list):
         return self._optimizer._prepare(var_list=var_list)
 
-    def apply_gradients(self, grads_and_vars, name=None):
+    def apply_gradients(self, grads_and_vars, name=None, **kwargs):
         self._optimizer._iterations = self.iterations
-        return super().apply_gradients(grads_and_vars, name)
+        return super().apply_gradients(grads_and_vars, name, **kwargs)
 
     @abc.abstractmethod
     def average_op(self, var, average_var):
