@@ -26,31 +26,32 @@ from tensorflow.keras.layers import InputSpec
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class NoisyDense(tf.keras.layers.Layer):
-    """Like normal dense layer (https://github.com/tensorflow/tensorflow/blob/v2.3.0/tensorflow/python/keras/layers/core.py#L1067-L1233)
-  but random noisy is added to the weights matrix. But as the network improves the random noise is decayed until it is insignificant.
+    """
+    Like normal dense layer (https://github.com/tensorflow/tensorflow/blob/v2.3.0/tensorflow/python/keras/layers/core.py#L1067-L1233)
+    but random noisy is added to the weights matrix. But as the network improves the random noise is decayed until it is insignificant.
 
-  A `NoisyDense` layer implements the operation:
-  `output = activation(dot(input, µ_kernel + (σ_kernel * ε_kernel)) + bias)`
-  where `activation` is the element-wise activation function
-  passed as the `activation` argument, `µ_kernel` is your average weights matrix
-  created by the layer, σ_kernel is a weights matrix that controls the importance of
-  the ε_kernel which is just random noise, and `bias` is a bias vector created by the layer
-  (only applicable if `use_bias` is `True`).
+    A `NoisyDense` layer implements the operation:
+    `output = activation(dot(input, µ_kernel + (σ_kernel * ε_kernel)) + bias)`
+    where `activation` is the element-wise activation function
+    passed as the `activation` argument, `µ_kernel` is your average weights matrix
+    created by the layer, σ_kernel is a weights matrix that controls the importance of
+    the ε_kernel which is just random noise, and `bias` is a bias vector created by the layer
+    (only applicable if `use_bias` is `True`).
 
-  Example:
-  >>> # Create a `Sequential` model and add a Dense layer as the first layer.
-  >>> model = tf.keras.models.Sequential()
-  >>> model.add(tf.keras.Input(shape=(16,)))
-  >>> model.add(NoisyDense(32, activation='relu'))
-  >>> # Now the model will take as input arrays of shape (None, 16)
-  >>> # and output arrays of shape (None, 32).
-  >>> # Note that after the first layer, you don't need to specify
-  >>> # the size of the input anymore:
-  >>> model.add(NoisyDense(32))
-  >>> model.output_shape
-  (None, 32)
+    Example:
+    >>> # Create a `Sequential` model and add a Dense layer as the first layer.
+    >>> model = tf.keras.models.Sequential()
+    >>> model.add(tf.keras.Input(shape=(16,)))
+    >>> model.add(NoisyDense(32, activation='relu'))
+    >>> # Now the model will take as input arrays of shape (None, 16)
+    >>> # and output arrays of shape (None, 32).
+    >>> # Note that after the first layer, you don't need to specify
+    >>> # the size of the input anymore:
+    >>> model.add(NoisyDense(32))
+    >>> model.output_shape
+    (None, 32)
 
-  Arguments:
+    Arguments:
     units: Positive integer, dimensionality of the output space.
     activation: Activation function to use.
       If you don't specify anything, no activation is applied
@@ -65,16 +66,16 @@ class NoisyDense(tf.keras.layers.Layer):
       the `kernel` weights matrix.
     bias_constraint: Constraint function applied to the bias vector.
 
-  Input shape:
+    Input shape:
     N-D tensor with shape: `(batch_size, ..., input_dim)`.
     The most common situation would be
     a 2D input with shape `(batch_size, input_dim)`.
 
-  Output shape:
+    Output shape:
     N-D tensor with shape: `(batch_size, ..., units)`.
     For instance, for a 2D input with shape `(batch_size, input_dim)`,
     the output would have shape `(batch_size, units)`.
-  """
+    """
 
     def __init__(
         self,
