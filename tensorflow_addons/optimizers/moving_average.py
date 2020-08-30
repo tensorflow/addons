@@ -81,8 +81,6 @@ class MovingAverage(AveragedOptimizerWrapper):
         super().__init__(optimizer, sequential_update, name, **kwargs)
         self._num_updates = num_updates
         if self._num_updates is not None:
-            num_updates = tf.cast(self._num_updates,
-                                  tf.float32, name="num_updates")
             if isinstance(self._num_updates, tf.Variable):
                 tf.debugging.assert_integer(
                     self._num_updates,
@@ -91,6 +89,8 @@ class MovingAverage(AveragedOptimizerWrapper):
                         "int; got {} instead".format(self._num_updates.dtype)
                     ),
                 )
+            num_updates = tf.cast(self._num_updates,
+                                  tf.float32, name="num_updates")
             average_decay = tf.minimum(
                 average_decay, (1.0 + num_updates) / (10.0 + num_updates)
             )
