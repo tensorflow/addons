@@ -14,11 +14,11 @@
 # ==============================================================================
 """Implements GIoU loss."""
 
+from typing import Optional
 import tensorflow as tf
+from typeguard import typechecked
 from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
 from tensorflow_addons.utils.types import TensorLike
-from typing import Optional
-from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -33,20 +33,18 @@ class GIoULoss(LossFunctionWrapper):
 
     Usage:
 
-    ```python
-    gl = tfa.losses.GIoULoss()
-    boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]])
-    boxes2 = tf.constant([[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]])
-    loss = gl(boxes1, boxes2)
-    print('Loss: ', loss.numpy())  # Loss: [1.07500000298023224, 1.9333333373069763]
+    >>> gl = tfa.losses.GIoULoss()
+    >>> boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]])
+    >>> boxes2 = tf.constant([[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]])
+    >>> loss = gl(boxes1, boxes2)
+    >>> print('Loss: ', loss.numpy())
+    <Loss: [1.07500000298023224, 1.9333333373069763]>
     ```
 
     Usage with `tf.keras` API:
 
-    ```python
-    model = tf.keras.Model(inputs, outputs)
-    model.compile('sgd', loss=tfa.losses.GIoULoss())
-    ```
+    >>> model = tf.keras.Model()
+    >>> model.compile('sgd', loss=tfa.losses.GIoULoss())
 
     Args:
       mode: one of ['giou', 'iou'], decided to calculate GIoU or IoU loss.
@@ -63,7 +61,8 @@ class GIoULoss(LossFunctionWrapper):
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def giou_loss(y_true: TensorLike, y_pred: TensorLike, mode: str = "giou") -> tf.Tensor:
+def giou_loss(y_true: TensorLike, y_pred: TensorLike,
+    mode: str = "giou") -> tf.Tensor:
     """Implements the GIoU loss function.
 
     GIoU loss was first introduced in the
@@ -93,7 +92,8 @@ def giou_loss(y_true: TensorLike, y_pred: TensorLike, mode: str = "giou") -> tf.
     return 1 - giou
 
 
-def _calculate_giou(b1: TensorLike, b2: TensorLike, mode: str = "giou") -> tf.Tensor:
+def _calculate_giou(b1: TensorLike, b2: TensorLike,
+    mode: str = "giou") -> tf.Tensor:
     """
     Args:
         b1: bounding box. The coordinates of the each bounding box in boxes are
