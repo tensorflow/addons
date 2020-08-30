@@ -1,190 +1,245 @@
-# TensorFlow Addons Codeowners
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
 
-#####################################################################################
-# Subpackage Owners
+import tensorflow as tf
+from tensorflow.keras import (
+    activations,
+    initializers,
+    regularizers,
+    constraints,
+)
+from tensorflow.keras import backend as K
+from tensorflow.keras.layers import InputSpec
 
-/tensorflow_addons/activations/ @facaiy @seanpmorgan
-/tensorflow_addons/callbacks/ @shun-lin
-/tensorflow_addons/image/ @windqaq @facaiy
-/tensorflow_addons/layers/ @seanpmorgan @facaiy
-/tensorflow_addons/losses/ @facaiy @windqaq
-/tensorflow_addons/metrics/ @marload
-/tensorflow_addons/optimizers/ @facaiy @windqaq
-/tensorflow_addons/rnn/ @qlzh727
-/tensorflow_addons/seq2seq/ @qlzh727 @guillaumekln
-/tensorflow_addons/text/ @seanpmorgan @facaiy
 
-/tensorflow_addons/custom_ops/image/ @windqaq @facaiy
-/tensorflow_addons/custom_ops/seq2seq/ @qlzh727
-/tensorflow_addons/custom_ops/text/ @seanpmorgan @facaiy
+@tf.keras.utils.register_keras_serializable(package="Addons")
+class NoisyDense(tf.keras.layers.Layer):
+    """Like normal dense layer (https://github.com/tensorflow/tensorflow/blob/v2.3.0/tensorflow/python/keras/layers/core.py#L1067-L1233)
+  but random noisy is added to the weights matrix. But as the network improves the random noise is decayed until it is insignificant.
+  A `NoisyDense` layer implements the operation:
+  `output = activation(dot(input, µ_kernel + (σ_kernel * ε_kernel)) + bias)`
+  where `activation` is the element-wise activation function
+  passed as the `activation` argument, `µ_kernel` is your average weights matrix
+  created by the layer, σ_kernel is a weights matrix that controls the importance of
+  the ε_kernel which is just random noise, and `bias` is a bias vector created by the layer
+  (only applicable if `use_bias` is `True`).
+  Example:
+  >>> # Create a `Sequential` model and add a Dense layer as the first layer.
+  >>> model = tf.keras.models.Sequential()
+  >>> model.add(tf.keras.Input(shape=(16,)))
+  >>> model.add(NoisyDense(32, activation='relu'))
+  >>> # Now the model will take as input arrays of shape (None, 16)
+  >>> # and output arrays of shape (None, 32).
+  >>> # Note that after the first layer, you don't need to specify
+  >>> # the size of the input anymore:
+  >>> model.add(NoisyDense(32))
+  >>> model.output_shape
+  (None, 32)
+  Arguments:
+    units: Positive integer, dimensionality of the output space.
+    activation: Activation function to use.
+      If you don't specify anything, no activation is applied
+      (ie. "linear" activation: `a(x) = x`).
+    use_bias: Boolean, whether the layer uses a bias vector.
+    kernel_regularizer: Regularizer function applied to
+      the `kernel` weights matrix.
+    bias_regularizer: Regularizer function applied to the bias vector.
+    activity_regularizer: Regularizer function applied to
+      the output of the layer (its "activation").
+    kernel_constraint: Constraint function applied to
+      the `kernel` weights matrix.
+    bias_constraint: Constraint function applied to the bias vector.
+  Input shape:
+    N-D tensor with shape: `(batch_size, ..., input_dim)`.
+    The most common situation would be
+    a 2D input with shape `(batch_size, input_dim)`.
+  Output shape:
+    N-D tensor with shape: `(batch_size, ..., units)`.
+    For instance, for a 2D input with shape `(batch_size, input_dim)`,
+    the output would have shape `(batch_size, units)`.
+  """
 
-#####################################################################################
-# Submodule Owners
-# These will not always trigger a GitHub review because submodule owners do not
-# always have write access. However, a bot will notify them of the needed review.
+    def __init__(
+        self,
+        units,
+        activation=None,
+        use_bias=True,
+        kernel_regularizer=None,
+        bias_regularizer=None,
+        activity_regularizer=None,
+        kernel_constraint=None,
+        bias_constraint=None,
+        **kwargs
+    ):
+        super(NoisyDense, self).__init__(
+            activity_regularizer=activity_regularizer, **kwargs
+        )
 
-/tensorflow_addons/activations/gelu.py @aakashkumarnain @windqaq
-/tensorflow_addons/activations/tests/gelu_test.py @aakashkumarnain @windqaq
-/tensorflow_addons/activations/hardshrink.py @windqaq
-/tensorflow_addons/activations/tests/hardshrink_test.py @windqaq
-/tensorflow_addons/activations/lisht.py @windqaq
-/tensorflow_addons/activations/tests/lisht_test.py @windqaq
-/tensorflow_addons/activations/mish.py @windqaq @digantamisra98
-/tensorflow_addons/activations/tests/mish_test.py @windqaq @digantamisra98
-/tensorflow_addons/activations/rrelu.py @fsx950223
-/tensorflow_addons/activations/tests/rrelu_test.py @fsx950223
-/tensorflow_addons/activations/softshrink.py @windqaq
-/tensorflow_addons/activations/tests/softshrink_test.py @windqaq
-/tensorflow_addons/activations/sparsemax.py @andreasmadsen
-/tensorflow_addons/activations/tests/sparsemax_test.py @andreasmadsen
-/tensorflow_addons/activations/tanhshrink.py @fsx950223
-/tensorflow_addons/activations/tests/tanhshrink_test.py @fsx950223
-/tensorflow_addons/activations/snake.py @failure-to-thrive
-/tensorflow_addons/activations/tests/snake_test.py @failure-to-thrive
+        self.units = int(units) if not isinstance(units, int) else units
+        self.activation = activations.get(activation)
+        self.use_bias = use_bias
+        self.kernel_regularizer = regularizers.get(kernel_regularizer)
+        self.bias_regularizer = regularizers.get(bias_regularizer)
+        self.kernel_constraint = constraints.get(kernel_constraint)
+        self.bias_constraint = constraints.get(bias_constraint)
 
-/tensorflow_addons/callbacks/average_model_checkpoint.py @squadrick
-/tensorflow_addons/callbacks/time_stopping.py @shun-lin
-/tensorflow_addons/callbacks/tests/time_stopping_test.py @shun-lin
-/tensorflow_addons/callbacks/tqdm_progress_bar.py @shun-lin
-/tensorflow_addons/callbacks/tests/tqdm_progress_bar_test.py @shun-lin
+        self.input_spec = InputSpec(min_ndim=2)
+        self.supports_masking = True
 
-/tensorflow_addons/image/color_ops.py @abhichou4
-/tensorflow_addons/image/tests/color_ops_test.py @abhichou4
-/tensorflow_addons/image/connected_components.py @sayoojbk
-/tensorflow_addons/image/tests/connected_components_test.py @sayoojbk
-/tensorflow_addons/image/cutout_ops.py @fsx950223
-/tensorflow_addons/image/tests/cutout_ops_test.py @fsx950223
-/tensorflow_addons/image/dense_image_warp.py @windQAQ
-/tensorflow_addons/image/tests/dense_image_warp_test.py @windQAQ
-/tensorflow_addons/image/distance_transform.py @mels630
-/tensorflow_addons/image/tests/distance_transform_test.py @mels630
-/tensorflow_addons/image/distort_image_ops.py @windqaq
-/tensorflow_addons/image/tests/distort_image_ops_test.py @windqaq
-/tensorflow_addons/image/filters.py @mainak431 @ghosalsattam
-/tensorflow_addons/image/tests/filters_test.py @mainak431 @ghosalsattam
-/tensorflow_addons/image/interpolate_spline.py
-/tensorflow_addons/image/tests/interpolate_spline_test.py
-/tensorflow_addons/image/resampler_ops.py @autoih
-/tensorflow_addons/image/tests/resampler_ops_test.py @autoih
-/tensorflow_addons/image/sparse_image_warp.py
-/tensorflow_addons/image/tests/sparse_image_warp_test.py
-/tensorflow_addons/image/transform_ops.py @mels630
-/tensorflow_addons/image/tests/transform_ops_test.py @mels630
-/tensorflow_addons/image/translate_ops.py @sayoojbk
-/tensorflow_addons/image/tests/translate_ops_test.py @sayoojbk
+    def build(self, input_shape):
+        # Make sure dtype is correct
+        dtype = tf.dtypes.as_dtype(self.dtype or K.floatx())
+        if not (dtype.is_floating or dtype.is_complex):
+            raise TypeError(
+                "Unable to build `Dense` layer with non-floating point "
+                "dtype %s" % (dtype,)
+            )
 
-/tensorflow_addons/layers/adaptive_pooling.py @Susmit-A
-/tensorflow_addons/layers/tests/adaptive_pooling_test.py @Susmit-A
-/tensorflow_addons/layers/gelu.py @aakashkumarnain
-/tensorflow_addons/layers/tests/gelu_test.py @aakashkumarnain
-/tensorflow_addons/layers/maxout.py @failure-to-thrive
-/tensorflow_addons/layers/tests/maxout_test.py @failure-to-thrive
-/tensorflow_addons/layers/multihead_attention.py @cgarciae
-/tensorflow_addons/layers/tests/multihead_attention_test.py @cgarciae
-/tensorflow_addons/layers/netvlad.py @joel-shor
-/tensorflow_addons/layers/tests/netvlad_test.py @joel-shor
-/tensorflow_addons/layers/normalizations.py @smokrow
-/tensorflow_addons/layers/tests/normalizations_test.py @smokrow
-/tensorflow_addons/layers/optical_flow.py @failure-to-thrive
-/tensorflow_addons/layers/tests/optical_flow_test.py @failure-to-thrive
-/tensorflow_addons/layers/poincare.py @rahulunair
-/tensorflow_addons/layers/tests/poincare_test.py @rahulunair
-/tensorflow_addons/layers/polynomial.py @tanzhenyu
-/tensorflow_addons/layers/tests/polynomial_test.py @tanzhenyu
-/tensorflow_addons/layers/sparsemax.py @andreasmadsen
-/tensorflow_addons/layers/tests/sparsemax_test.py @andreasmadsen
-/tensorflow_addons/layers/spectral_normalization.py @charlielito
-/tensorflow_addons/layers/tests/spectral_normalization_test.py @charlielito
-/tensorflow_addons/layers/spatial_pyramid_pooling.py @Susmit-A
-/tensorflow_addons/layers/tests/spatial_pyramid_pooling_test.py @Susmit-A
-/tensorflow_addons/layers/tlu.py @aakashkumarnain
-/tensorflow_addons/layers/tests/tlu_test.py @aakashkumarnain
-/tensorflow_addons/layers/wrappers.py @seanpmorgan
-/tensorflow_addons/layers/tests/wrappers_test.py @seanpmorgan
-/tensorflow_addons/layers/esn.py @pedrolarben
-/tensorflow_addons/layers/tests/esn_test.py @pedrolarben
-/tensorflow_addons/layers/snake.py @failure-to-thrive
-/tensorflow_addons/layers/tests/snake_test.py @failure-to-thrive
-/tensorflow_addons/layers/noisy_dense.py @leonshams
-/tensorflow_addons/layers/tests/noisy_dense_test.py @leonshams
+        input_shape = tf.TensorShape(input_shape)
+        self.last_dim = tf.compat.dimension_value(input_shape[-1])
+        sqrt_dim = self.last_dim ** (1 / 2)
+        if self.last_dim is None:
+            raise ValueError(
+                "The last dimension of the inputs to `Dense` "
+                "should be defined. Found `None`."
+            )
+        self.input_spec = InputSpec(min_ndim=2, axes={-1: self.last_dim})
 
-/tensorflow_addons/losses/contrastive.py @windqaq
-/tensorflow_addons/losses/tests/contrastive_test.py @windqaq
-/tensorflow_addons/losses/focal_loss.py @aakashkumarnain @ssaishruthi
-/tensorflow_addons/losses/tests/focal_loss_test.py @aakashkumarnain @ssaishruthi
-/tensorflow_addons/losses/giou_loss.py @fsx950223
-/tensorflow_addons/losses/tests/giou_loss_test.py @fsx950223
-/tensorflow_addons/losses/lifted.py @rahulunair
-/tensorflow_addons/losses/tests/lifted_test.py @rahulunair
-/tensorflow_addons/losses/metric_learning.py
-/tensorflow_addons/losses/npairs.py @windqaq
-/tensorflow_addons/losses/tests/npairs_test.py @windqaq
-/tensorflow_addons/losses/quantiles.py @romainbrault
-/tensorflow_addons/losses/tests/quantiles_test.py @romainbrault
-/tensorflow_addons/losses/sparsemax_loss.py @andreasmadsen
-/tensorflow_addons/losses/tests/sparsemax_loss_test.py @andreasmadsen
-/tensorflow_addons/losses/triplet.py @lc0
-/tensorflow_addons/losses/tests/triplet_test.py @lc0
-/tensorflow_addons/losses/kappa_loss.py @wenmin-wu
-/tensorflow_addons/losses/tests/kappa_loss_test.py @wenmin-wu
+        self.σ_init = initializers.Constant(value=0.5 / sqrt_dim)
+        self.µ_init = initializers.RandomUniform(
+            minval=-1 / sqrt_dim, maxval=1 / sqrt_dim
+        )
 
-/tensorflow_addons/metrics/cohens_kappa.py @aakashkumarnain
-/tensorflow_addons/metrics/tests/cohens_kappa_test.py @aakashkumarnain
-/tensorflow_addons/metrics/f_scores.py @ssaishruthi @marload
-/tensorflow_addons/metrics/tests/f_scores_test.py @ssaishruthi @marload
-/tensorflow_addons/metrics/hamming.py @ssaishruthi
-/tensorflow_addons/metrics/tests/hamming_test.py @ssaishruthi
-/tensorflow_addons/metrics/matthews_correlation_coefficient.py @autoih @marload
-/tensorflow_addons/metrics/tests/matthews_correlation_coefficient_test.py @autoih @marload
-/tensorflow_addons/metrics/multilabel_confusion_matrix.py @ssaishruthi
-/tensorflow_addons/metrics/tests/multilabel_confusion_matrix_test.py @ssaishruthi
-/tensorflow_addons/metrics/r_square.py @ssaishruthi @marload
-/tensorflow_addons/metrics/tests/r_square_test.py @ssaishruthi @marload
-/tensorflow_addons/metrics/geometric_mean.py @marload
-/tensorflow_addons/metrics/tests/geometric_mean_test.py @marload
+        # Learnable parameters
+        # Agent will learn to decay σ as it improves creating a sort of learned epsilon decay
+        self.σ_kernel = self.add_weight(
+            "σ_kernel",
+            shape=[self.last_dim, self.units],
+            initializer=self.σ_init,
+            regularizer=self.kernel_regularizer,
+            constraint=self.kernel_constraint,
+            dtype=self.dtype,
+            trainable=True,
+        )
 
-/tensorflow_addons/optimizers/average_wrapper.py @squadrick
-/tensorflow_addons/optimizers/conditional_gradient.py @pkan2 @lokhande-vishnu
-/tensorflow_addons/optimizers/tests/conditional_gradient_test.py @pkan2 @lokhande-vishnu
-/tensorflow_addons/optimizers/cyclical_learning_rate.py @raphaelmeudec
-/tensorflow_addons/optimizers/tests/cyclical_learning_rate_test.py @raphaelmeudec
-/tensorflow_addons/optimizers/lamb.py @junjiek
-/tensorflow_addons/optimizers/tests/lamb_test.py @junjiek
-/tensorflow_addons/optimizers/lazy_adam.py @ssaishruthi
-/tensorflow_addons/optimizers/tests/lazy_adam_test.py @ssaishruthi
-/tensorflow_addons/optimizers/lookahead.py @cyberzhg
-/tensorflow_addons/optimizers/tests/lookahead_test.py @cyberzhg
-/tensorflow_addons/optimizers/moving_average.py @squadrick
-/tensorflow_addons/optimizers/tests/moving_average_test.py @squadrick
-/tensorflow_addons/optimizers/novograd.py @shreyashpatodia
-/tensorflow_addons/optimizers/tests/novograd_test.py @shreyashpatodia
-/tensorflow_addons/optimizers/proximal_adagrad.py @WindQAQ
-/tensorflow_addons/optimizers/tests/proximal_adagrad_test.py @WindQAQ
-/tensorflow_addons/optimizers/rectified_adam.py @cyberzhg
-/tensorflow_addons/optimizers/tests/rectified_adam_test.py @cyberzhg
-/tensorflow_addons/optimizers/stochastic_weight_averaging.py @shreyashpatodia
-/tensorflow_addons/optimizers/tests/stochastic_weight_averaging_test.py @shreyashpatodia
-/tensorflow_addons/optimizers/weight_decay_optimizers.py @philjd
-/tensorflow_addons/optimizers/tests/weight_decay_optimizers_test.py @philjd
-/tensorflow_addons/optimizers/yogi.py @manzilz
-/tensorflow_addons/optimizers/tests/yogi_test.py @manzilz
+        self.µ_kernel = self.add_weight(
+            "µ_kernel",
+            shape=[self.last_dim, self.units],
+            initializer=self.µ_init,
+            regularizer=self.kernel_regularizer,
+            constraint=self.kernel_constraint,
+            dtype=self.dtype,
+            trainable=True,
+        )
 
-/tensorflow_addons/rnn/esn_cell.py @pedrolarben
-/tensorflow_addons/rnn/tests/esn_cell_test.py @pedrolarben
-/tensorflow_addons/rnn/layer_norm_lstm_cell.py @qlzh727
-/tensorflow_addons/rnn/tests/layer_norm_lstm_cell_test.py @qlzh727
-/tensorflow_addons/rnn/layer_norm_simple_rnn_cell.py @qlzh727
-/tensorflow_addons/rnn/tests/layer_norm_simple_rnn_cell_test.py @qlzh727
-/tensorflow_addons/rnn/nas_cell.py @qlzh727
-/tensorflow_addons/rnn/tests/nas_cell_test.py @qlzh727
-/tensorflow_addons/rnn/peephole_lstm_cell.py @qlzh727
-/tensorflow_addons/rnn/tests/peephole_lstm_cell_test.py @qlzh727
+        if self.use_bias:
+            self.σ_bias = self.add_weight(
+                "σ_bias",
+                shape=[self.units,],
+                initializer=self.σ_init,
+                regularizer=self.bias_regularizer,
+                constraint=self.bias_constraint,
+                dtype=self.dtype,
+                trainable=True,
+            )
 
-/tensorflow_addons/seq2seq/ @qlzh727 @guillaumekln
+            self.µ_bias = self.add_weight(
+                "µ_bias",
+                shape=[self.units,],
+                initializer=self.µ_init,
+                regularizer=self.bias_regularizer,
+                constraint=self.bias_constraint,
+                dtype=self.dtype,
+                trainable=True,
+            )
 
-/tensorflow_addons/text/crf.py @squadrick
-/tensorflow_addons/text/tests/crf_test.py @squadrick
-/tensorflow_addons/text/parse_time_op.py @helinwang
-/tensorflow_addons/text/tests/parse_time_op_test.py @helinwang
-/tensorflow_addons/text/skip_gram_ops.py @rahulunair
-/tensorflow_addons/text/tests/skip_gram_ops_test.py @rahulunair
+        self.built = True
+
+    @staticmethod
+    def _scale_noise(x):
+        return tf.sign(x) * tf.sqrt(tf.abs(x))
+
+    def call(self, inputs):
+        dtype = self._compute_dtype_object
+        if inputs.dtype.base_dtype != dtype.base_dtype:
+            inputs = tf.cast(inputs, dtype=dtype)
+
+        # Fixed parameters added as the noise
+        ε_i = tf.random.normal([self.last_dim, self.units], dtype=dtype)
+        ε_j = tf.random.normal([self.units,], dtype=dtype)
+
+        # Creates the factorised Gaussian noise
+        f = NoisyDense._scale_noise
+        ε_kernel = f(ε_i) * f(ε_j)
+        ε_bias = f(ε_j)
+
+        # Performs: y = (µw + σw · εw)x + µb + σb · εb
+        # to calculate the output
+        kernel = self.µ_kernel + (self.σ_kernel * ε_kernel)
+
+        if inputs.dtype.base_dtype != dtype.base_dtype:
+            inputs = tf.cast(inputs, dtype=dtype)
+
+        rank = inputs.shape.rank
+        if rank == 2 or rank is None:
+            if isinstance(inputs, tf.sparse.SparseTensor):
+                outputs = tf.sparse.sparse_dense_matmul(inputs, kernel)
+            else:
+                outputs = tf.linalg.matmul(inputs, kernel)
+        # Broadcast kernel to inputs.
+        else:
+            outputs = tf.tensordot(inputs, kernel, [[rank - 1], [0]])
+            # Reshape the output back to the original ndim of the input.
+            if not tf.executing_eagerly():
+                shape = inputs.shape.as_list()
+                output_shape = shape[:-1] + [kernel.shape[-1]]
+                outputs.set_shape(output_shape)
+
+        if self.use_bias:
+            noisy_bias = self.µ_bias + (self.σ_bias * ε_bias)
+            outputs = tf.nn.bias_add(outputs, noisy_bias)
+
+        if self.activation is not None:
+            outputs = self.activation(outputs)
+
+        return outputs
+
+    def compute_output_shape(self, input_shape):
+        input_shape = tf.TensorShape(input_shape)
+        input_shape = input_shape.with_rank_at_least(2)
+        if tf.compat.dimension_value(input_shape[-1]) is None:
+            raise ValueError(
+                "The innermost dimension of input_shape must be defined, but saw: %s"
+                % input_shape
+            )
+        return input_shape[:-1].concatenate(self.units)
+
+    def get_config(self):
+        config = super(NoisyDense, self).get_config()
+        config.update(
+            {
+                "units": self.units,
+                "activation": activations.serialize(self.activation),
+                "use_bias": self.use_bias,
+                "kernel_regularizer": regularizers.serialize(self.kernel_regularizer),
+                "bias_regularizer": regularizers.serialize(self.bias_regularizer),
+                "activity_regularizer": regularizers.serialize(
+                    self.activity_regularizer
+                ),
+                "kernel_constraint": constraints.serialize(self.kernel_constraint),
+                "bias_constraint": constraints.serialize(self.bias_constraint),
+            }
+        )
+        return config
