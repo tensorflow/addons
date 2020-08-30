@@ -65,9 +65,10 @@ class MovingAverage(AveragedOptimizerWrapper):
             num_updates: Optional count of the number of updates applied to
                 variables.
             start_step: int. What step to start the moving average.
-            dynamic_decay: bool. Whether to change the decay based on the number
-                of optimizer updates. Decay will start at 0.1 and gradually
-                increase up to `average_decay` after each optimizer update.
+            dynamic_decay: bool. Whether to change the decay based on
+                the number of optimizer updates. Decay will start at
+                0.1 and gradually increase up to `average_decay`
+                after each optimizer update.
             name: Optional name for the operations created when applying
                 gradients. Defaults to "MovingAverage".
             **kwargs: keyword arguments. Allowed to be {`clipnorm`,
@@ -80,7 +81,8 @@ class MovingAverage(AveragedOptimizerWrapper):
         super().__init__(optimizer, sequential_update, name, **kwargs)
         self._num_updates = num_updates
         if self._num_updates is not None:
-            num_updates = tf.cast(self._num_updates, tf.float32, name="num_updates")
+            num_updates = tf.cast(self._num_updates,
+                                  tf.float32, name="num_updates")
             average_decay = tf.minimum(
                 average_decay, (1.0 + num_updates) / (10.0 + num_updates)
             )
@@ -98,7 +100,8 @@ class MovingAverage(AveragedOptimizerWrapper):
             return tf.constant(0.0, tf.float32)
         elif self._dynamic_decay:
             step_count = step - self._start_step
-            return tf.minimum(average_decay, (1.0 + step_count) / (10.0 + step_count))
+            return tf.minimum(average_decay,
+                              (1.0 + step_count) / (10.0 + step_count))
         else:
             return average_decay
 
@@ -127,7 +130,8 @@ class MovingAverage(AveragedOptimizerWrapper):
         """Creates shadow variables for the given model weights."""
         for var in model_weights:
             self.add_slot(var, "average", initializer="zeros")
-        self._average_weights = [self.get_slot(var, "average") for var in model_weights]
+        self._average_weights = [self.get_slot(var, "average")
+                                 for var in model_weights]
         self._model_weights = model_weights
 
     @property
@@ -138,11 +142,11 @@ class MovingAverage(AveragedOptimizerWrapper):
     def swap_weights(self):
         """Swap the average and moving weights.
 
-      This is a convenience method to allow one to evaluate the averaged weights
-      at test time. Loads the weights stored in `self._average_weights` into the model,
-      keeping a copy of the original model weights. Swapping twice will return
-      the original weights.
-      """
+        This is a convenience method to allow one to evaluate the averaged
+        weights at test time. Loads the weights stored in
+        `self._average_weights` into the model, keeping a copy of the original
+        model weights. Swapping twice will return the original weights.
+        """
         if tf.distribute.in_cross_replica_context():
             strategy = tf.distribute.get_strategy()
             return strategy.run(self._swap_weights, args=())
@@ -176,4 +180,10 @@ class MovingAverage(AveragedOptimizerWrapper):
                 )  # a = a - b
 
         ctx = tf.distribute.get_replica_context()
-        return ctx.merge_call(swap, args=(self._average_weights, self._model_weights,))
+        return ctx.merge_call(
+            swap,
+            args=(
+                self._average_weights,
+                self._model_weights,
+            ),
+        )
