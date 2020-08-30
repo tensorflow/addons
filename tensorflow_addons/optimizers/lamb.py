@@ -80,8 +80,8 @@ class LAMB(tf.keras.optimizers.Optimizer):
         # the correct way of using L2 regularization/weight decay with Adam,
         # since that will interact with the m and v parameters in strange ways.
         #
-        # Instead we want to decay the weights in a manner that doesn't interact
-        # with the m/v parameters.
+        # Instead we want to decay the weights in a manner that doesn't
+        # interact with the m/v parameters.
         self._set_hyper("weight_decay_rate", weight_decay_rate)
         self._set_hyper("learning_rate", kwargs.get("lr", learning_rate))
 
@@ -112,7 +112,8 @@ class LAMB(tf.keras.optimizers.Optimizer):
         local_step = tf.cast(self.iterations + 1, var_dtype)
         beta_1_t = tf.identity(self._get_hyper("beta_1", var_dtype))
         beta_2_t = tf.identity(self._get_hyper("beta_2", var_dtype))
-        weight_decay_rate = tf.identity(self._get_hyper("weight_decay_rate", var_dtype))
+        weight_decay_rate = tf.identity
+        (self._get_hyper("weight_decay_rate", var_dtype))
         beta_1_power = tf.pow(beta_1_t, local_step)
         beta_2_power = tf.pow(beta_2_t, local_step)
         apply_state[(var_device, var_dtype)].update(
@@ -177,14 +178,16 @@ class LAMB(tf.keras.optimizers.Optimizer):
         # m_t = beta1 * m + (1 - beta1) * g_t
         m = self.get_slot(var, "m")
         m_scaled_g_values = grad * coefficients["one_minus_beta_1_t"]
-        m_t = m.assign(m * coefficients["beta_1_t"], use_locking=self._use_locking)
+        m_t = m.assign(m * coefficients["beta_1_t"],
+                       use_locking=self._use_locking)
         with tf.control_dependencies([m_t]):
             m_t = self._resource_scatter_add(m, indices, m_scaled_g_values)
 
         # v_t = beta2 * v + (1 - beta2) * (g_t * g_t)
         v = self.get_slot(var, "v")
         v_scaled_g_values = (grad * grad) * coefficients["one_minus_beta_2_t"]
-        v_t = v.assign(v * coefficients["beta_2_t"], use_locking=self._use_locking)
+        v_t = v.assign(v * coefficients["beta_2_t"],
+                       use_locking=self._use_locking)
         with tf.control_dependencies([v_t]):
             v_t = self._resource_scatter_add(v, indices, v_scaled_g_values)
 
@@ -209,7 +212,8 @@ class LAMB(tf.keras.optimizers.Optimizer):
             )
 
         var_update = var.assign_sub(
-            ratio * coefficients["lr_t"] * update, use_locking=self._use_locking
+            ratio * coefficients["lr_t"] * update,
+            use_locking=self._use_locking
         )
         return tf.group(*[var_update, m_t, v_t])
 
