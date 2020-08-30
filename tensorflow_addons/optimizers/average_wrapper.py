@@ -46,6 +46,7 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
             raise TypeError("sequential_update must be of bool type")
 
         self._optimizer = optimizer
+        self._track_trackable(self._optimizer, "awg_optimizer")
 
         if sequential_update is not None:
             warnings.warn(
