@@ -153,7 +153,9 @@ class NoisyDense(tf.keras.layers.Layer):
         if self.use_bias:
             self.σ_bias = self.add_weight(
                 "σ_bias",
-                shape=[self.units,],
+                shape=[
+                    self.units,
+                ],
                 initializer=self.σ_init,
                 regularizer=self.bias_regularizer,
                 constraint=self.bias_constraint,
@@ -163,7 +165,9 @@ class NoisyDense(tf.keras.layers.Layer):
 
             self.µ_bias = self.add_weight(
                 "µ_bias",
-                shape=[self.units,],
+                shape=[
+                    self.units,
+                ],
                 initializer=self.µ_init,
                 regularizer=self.bias_regularizer,
                 constraint=self.bias_constraint,
@@ -184,7 +188,12 @@ class NoisyDense(tf.keras.layers.Layer):
 
         # Fixed parameters added as the noise
         ε_i = tf.random.normal([self.last_dim, self.units], dtype=dtype)
-        ε_j = tf.random.normal([self.units,], dtype=dtype)
+        ε_j = tf.random.normal(
+            [
+                self.units,
+            ],
+            dtype=dtype,
+        )
 
         # Creates the factorised Gaussian noise
         f = NoisyDense._scale_noise
