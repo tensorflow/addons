@@ -66,7 +66,8 @@ class SWA(AveragedOptimizerWrapper):
     Example usage:
 
     >>> optimizer = tf.keras.optimizers.SGD(learning_rate)
-    >>> optimizer = tfa.optimizers.SWA(opt, start_averaging=m, average_period=k)
+    >>> optimizer = tfa.optimizers.SWA(opt, start_averaging=m,
+    ... average_period=k)
 
     """
 
@@ -132,18 +133,21 @@ class SWA(AveragedOptimizerWrapper):
         # 1. A min number of iterations (start_averaging) have taken place.
         # 2. Iteration is one in which snapshot should be taken.
         checkpoint = start_averaging + num_snapshots * average_period
-        if self.iterations >= start_averaging and self.iterations == checkpoint:
+        if self.iterations >= start_averaging and \
+                self.iterations == checkpoint:
             num_snapshots = tf.cast(num_snapshots, tf.float32)
             average_value = (average_var * num_snapshots
                              + var) / (num_snapshots + 1.0)
-            return average_var.assign(average_value, use_locking=self._use_locking)
+            return average_var.assign(average_value,
+                                      use_locking=self._use_locking)
 
         return average_var
 
     def get_config(self):
         config = {
             "average_period": self._serialize_hyperparameter("average_period"),
-            "start_averaging": self._serialize_hyperparameter("start_averaging"),
+            "start_averaging":
+            self._serialize_hyperparameter("start_averaging"),
         }
         base_config = super().get_config()
         return {**base_config, **config}
