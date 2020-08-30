@@ -37,24 +37,23 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
 
     Usage:
 
-    ```python
-    kappa_loss = WeightedKappaLoss(num_classes=4)
-    y_true = tf.constant([[0, 0, 1, 0], [0, 1, 0, 0],
-                          [1, 0, 0, 0], [0, 0, 0, 1]])
-    y_pred = tf.constant([[0.1, 0.2, 0.6, 0.1], [0.1, 0.5, 0.3, 0.1],
-                          [0.8, 0.05, 0.05, 0.1], [0.01, 0.09, 0.1, 0.8]])
-    loss = kappa_loss(y_true, y_pred)
-    print('Loss: ', loss.numpy())  # Loss: -1.1611923
-    ```
+    >>> kappa_loss = tfa.losses.WeightedKappaLoss(num_classes=4)
+    >>> y_true = tf.constant([[0, 0, 1, 0], [0, 1, 0, 0],
+    ...                  [1, 0, 0, 0], [0, 0, 0, 1]])
+    >>> y_pred = tf.constant([[0.1, 0.2, 0.6, 0.1], [0.1, 0.5, 0.3, 0.1],
+    ...                  [0.8, 0.05, 0.05, 0.1], [0.01, 0.09, 0.1, 0.8]])
+    >>> loss = kappa_loss(y_true, y_pred)
+    >>> print('Loss: ', loss.numpy())
+    <Loss:  -1.1611925>
 
     Usage with `tf.keras` API:
-    ```python
-    # outputs should be softmax results
-    # if you want to weight the samples, just multiply the outputs
-    # by the sample weight.
-    model = tf.keras.Model(inputs, outputs)
-    model.compile('sgd', loss=tfa.losses.WeightedKappa(num_classes=4))
-    ```
+
+    >>> model = tf.keras.Model()
+    >>> model.compile('sgd', loss=tfa.losses.WeightedKappa(num_classes=4))
+    < outputs should be softmax results
+    if you want to weight the samples, just multiply the outputs
+    by the sample weight.>
+
     """
 
     @typechecked
@@ -111,8 +110,8 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
             self.weight_mat = (col_mat - row_mat) ** 2
 
     def call(self, y_true, y_pred):
-        y_true = tf.cast(y_true, dtype=self.col_label_vec.dtype)
-        y_pred = tf.cast(y_pred, dtype=self.weight_mat.dtype)
+        y_true = tf.cast(y_true, self.col_label_vec.dtype)
+        y_pred = tf.cast(y_pred, self.weight_mat.dtype)
         batch_size = tf.shape(y_true)[0]
         cat_labels = tf.matmul(y_true, self.col_label_vec)
         cat_label_mat = tf.tile(cat_labels, [1, self.num_classes])
@@ -126,7 +125,7 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
         pred_dist = tf.reduce_sum(y_pred, axis=0, keepdims=True)
         w_pred_dist = tf.matmul(self.weight_mat, pred_dist, transpose_b=True)
         denominator = tf.reduce_sum(tf.matmul(label_dist, w_pred_dist))
-        denominator /= tf.cast(batch_size, dtype=denominator.dtype)
+        denominator /= tf.cast(batch_size, denominator.dtype)
         loss = tf.math.divide_no_nan(numerator, denominator)
         return tf.math.log(loss + self.epsilon)
 
