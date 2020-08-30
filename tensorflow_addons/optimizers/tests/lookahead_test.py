@@ -33,8 +33,10 @@ def run_dense_sample(iterations, optimizer, seed=0x2019):
     var_0 = tf.Variable(val_0, dtype=tf.dtypes.float32)
     var_1 = tf.Variable(val_1, dtype=tf.dtypes.float32)
 
-    grad_0 = tf.constant(np.random.standard_normal((2,)), dtype=tf.dtypes.float32)
-    grad_1 = tf.constant(np.random.standard_normal((2,)), dtype=tf.dtypes.float32)
+    grad_0 = tf.constant(np.random.standard_normal((2,)),
+                         dtype=tf.dtypes.float32)
+    grad_1 = tf.constant(np.random.standard_normal((2,)),
+                         dtype=tf.dtypes.float32)
 
     grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
@@ -55,10 +57,14 @@ def run_sparse_sample(iterations, optimizer, seed=0x2019):
     var_1 = tf.Variable(val_1, dtype=tf.dtypes.float32)
 
     grad_0 = tf.IndexedSlices(
-        tf.constant([np.random.standard_normal()]), tf.constant([0]), tf.constant([2]),
+        tf.constant([np.random.standard_normal()]),
+        tf.constant([0]),
+        tf.constant([2]),
     )
     grad_1 = tf.IndexedSlices(
-        tf.constant([np.random.standard_normal()]), tf.constant([1]), tf.constant([2]),
+        tf.constant([np.random.standard_normal()]),
+        tf.constant([1]),
+        tf.constant([2]),
     )
 
     grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
@@ -123,8 +129,10 @@ def test_fit_simple_linear_model():
 
 
 def test_fit_simple_linear_model_mixed_precision():
-    if test_utils.is_gpu_available() and LooseVersion(tf.__version__) <= "2.2.0":
-        pytest.xfail("See https://github.com/tensorflow/tensorflow/issues/39775")
+    if test_utils.is_gpu_available() \
+            and LooseVersion(tf.__version__) <= "2.2.0":
+        pytest.xfail(
+            "See https://github.com/tensorflow/tensorflow/issues/39775")
     np.random.seed(0x2019)
     tf.random.set_seed(0x2019)
 
