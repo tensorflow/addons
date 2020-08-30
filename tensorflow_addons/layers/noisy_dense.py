@@ -231,8 +231,8 @@ class NoisyDense(tf.keras.layers.Layer):
         config.update(
             {
                 "units": self.units,
-                "use_bias": self.use_bias,
                 "activation": activations.serialize(self.activation),
+                "use_bias": self.use_bias,
                 "kernel_regularizer": regularizers.serialize(self.kernel_regularizer),
                 "bias_regularizer": regularizers.serialize(self.bias_regularizer),
                 "activity_regularizer": regularizers.serialize(
