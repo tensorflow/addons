@@ -12,6 +12,11 @@ ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64
 ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 ENV PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
+# Required for setuptools v50.0.0
+# https://setuptools.readthedocs.io/en/latest/history.html#v50-0-0
+# https://github.com/pypa/setuptools/issues/2352
+ENV SETUPTOOLS_USE_DISTUTILS=stdlib
+
 RUN apt-get update && apt-get install patchelf
 
 # Fix presented in
