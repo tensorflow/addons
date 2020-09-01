@@ -61,8 +61,7 @@ class GIoULoss(LossFunctionWrapper):
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def giou_loss(y_true: TensorLike, y_pred: TensorLike,
-    mode: str = "giou") -> tf.Tensor:
+def giou_loss(y_true: TensorLike, y_pred: TensorLike, mode: str = "giou") -> tf.Tensor:
     """Implements the GIoU loss function.
 
     GIoU loss was first introduced in the
@@ -92,8 +91,7 @@ def giou_loss(y_true: TensorLike, y_pred: TensorLike,
     return 1 - giou
 
 
-def _calculate_giou(b1: TensorLike, b2: TensorLike,
-    mode: str = "giou") -> tf.Tensor:
+def _calculate_giou(b1: TensorLike, b2: TensorLike, mode: str = "giou") -> tf.Tensor:
     """
     Args:
         b1: bounding box. The coordinates of the each bounding box in boxes are
