@@ -42,11 +42,12 @@ def contrastive_loss(
     ...                 [3, 6],
     ...                 [1, 8]], dtype=tf.float16)
     >>> y_pred = tf.linalg.norm(a - b, axis=1)
+    >>> y_pred
     <tf.Tensor: shape=(3,), dtype=float16, numpy=
     array([8.06 , 2.   , 4.473], dtype=float16)>
-    <y_pred = \sqrt (\sum_i (a[:, i] - b[:, i])^2)>
-    <Note: constants a & b have been used purely for
-    example purposes and have no significant value>
+
+    <... Note: constants a & b have been used purely for
+    example purposes and have no significant value ...>
 
     See: http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf
 
@@ -93,11 +94,12 @@ class ContrastiveLoss(LossFunctionWrapper):
     ...                 [3, 6],
     ...                 [1, 8]], dtype=tf.float16)
     >>> y_pred = tf.linalg.norm(a - b, axis=1)
+    >>> y_pred
     <tf.Tensor: shape=(3,), dtype=float16, numpy=
     array([8.06 , 2.   , 4.473], dtype=float16)>
-    <y_pred = \sqrt (\sum_i (a[:, i] - b[:, i])^2)>
-    <Note: constants a & b have been used purely for
-    example purposes and have no significant value>
+
+    <... Note: constants a & b have been used purely for
+    example purposes and have no significant value ...>
 
     Args:
       margin: `Float`, margin term in the loss definition.
