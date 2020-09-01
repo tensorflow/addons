@@ -34,8 +34,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     >>> n_classes = 10
     >>> net = WeightNormalization(
     ... tf.keras.layers.Conv2D(2, 2, activation='relu'),
-    ... input_shape=input_shape[2:],
-    ... data_init=True)(x)
+    ... input_shape=input_shape[2:])(x)
     >>> net = WeightNormalization(
     ... tf.keras.layers.Conv2D(3, 3, activation='relu'))(net)
     >>> net = WeightNormalization(
