@@ -27,6 +27,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
     See [Spectral Normalization for Generative Adversarial Networks](https://arxiv.org/abs/1802.05957).
 
     >>> x = tf.random.normal(shape=(1,10,10,1))
+    >>> n_classes = 10
     >>> net = SpectralNormalization(
     ... tf.keras.layers.Conv2D(2, 2, activation="relu"),
     ... input_shape=(10, 10))(x)
@@ -35,7 +36,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
     >>> net = SpectralNormalization(
     ... tf.keras.layers.Dense(120, activation="relu"))(net)
     >>> net = SpectralNormalization(
-    ... tf.keras.layers.Dense(n_classes))(net)
+    ... tf.keras.layers.Dense(n_classes, activation='softmax'))(net)
 
     Arguments:
       layer: A `tf.keras.layers.Layer` instance that
