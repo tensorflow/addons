@@ -36,11 +36,11 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     ... tf.keras.layers.Conv2D(2, 2, activation='relu'),
     ... input_shape=input_shape[2:],data_init= False)(x)
     >>> net = WeightNormalization(
-    ... tf.keras.layers.Conv2D(3, 3, activation='relu',data_init= False))(net)
+    ... tf.keras.layers.Conv2D(3, 3, activation='relu'),data_init= False)(net)
     >>> net = WeightNormalization(
-    ... tf.keras.layers.Dense(4, activation='relu',data_init= False))(net)
+    ... tf.keras.layers.Dense(4, activation='relu'),data_init= False)(net)
     >>> net = WeightNormalization(
-    ... tf.keras.layers.Dense(n_classes,data_init= False))(net)
+    ... tf.keras.layers.Dense(n_classes, activation='softmax'),data_init= False)(net)
     Arguments:
       layer: A `tf.keras.layers.Layer` instance.
       data_init: If `True` use data dependent variable initialization.
