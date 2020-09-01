@@ -33,8 +33,6 @@ def npairs_loss(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
     The similarity matrix `y_pred` between two embedding matrices `a` and `b`
     with shape `[batch_size, hidden_size]` can be computed as follows:
 
-    <Note: constants a & b have been used purely for
-    example purposes and have no significant value>
     >>> a = tf.constant([[1, 2],
     ...                 [3, 4],
     ...                 [5, 6]], dtype=tf.float16)
@@ -42,12 +40,14 @@ def npairs_loss(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
     ...                 [3, 6],
     ...                 [1, 8]], dtype=tf.float16)
     >>> y_pred = tf.matmul(a, b, transpose_a=False, transpose_b=True)
+    >>> y_pred
     <tf.Tensor: shape=(3, 3), dtype=float16, numpy=
     array([[23., 15., 17.],
        [51., 33., 35.],
        [79., 51., 53.]], dtype=float16)>
-    <Note: constants a & b have been used purely for
-    example purposes and have no significant value>
+
+    <... Note: constants a & b have been used purely for
+    example purposes and have no significant value ...>
 
     See: http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf
 
@@ -107,12 +107,14 @@ def npairs_multilabel_loss(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
     ...                 [3, 6],
     ...                 [1, 8]], dtype=tf.float16)
     >>> y_pred = tf.matmul(a, b, transpose_a=False, transpose_b=True)
+    >>> y_pred
     <tf.Tensor: shape=(3, 3), dtype=float16, numpy=
     array([[23., 15., 17.],
        [51., 33., 35.],
        [79., 51., 53.]], dtype=float16)>
-    <Note: constants a & b have been used purely for
-    example purposes and have no significant value>
+
+    <... Note: constants a & b have been used purely for
+    example purposes and have no significant value ...>
 
     See: http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf
 
@@ -166,12 +168,14 @@ class NpairsLoss(tf.keras.losses.Loss):
     ...                 [3, 6],
     ...                 [1, 8]], dtype=tf.float16)
     >>> y_pred = tf.matmul(a, b, transpose_a=False, transpose_b=True)
+    >>> y_pred
     <tf.Tensor: shape=(3, 3), dtype=float16, numpy=
     array([[23., 15., 17.],
        [51., 33., 35.],
        [79., 51., 53.]], dtype=float16)>
-    <Note: constants a & b have been used purely for
-    example purposes and have no significant value>
+
+    <... Note: constants a & b have been used purely for
+    example purposes and have no significant value ...>
 
     See: http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf
 
@@ -220,12 +224,14 @@ class NpairsMultilabelLoss(tf.keras.losses.Loss):
     ...                 [3, 6],
     ...                 [1, 8]], dtype=tf.float16)
     >>> y_pred = tf.matmul(a, b, transpose_a=False, transpose_b=True)
+    >>> y_pred
     <tf.Tensor: shape=(3, 3), dtype=float16, numpy=
     array([[23., 15., 17.],
        [51., 33., 35.],
        [79., 51., 53.]], dtype=float16)>
-    <Note: constants a & b have been used purely for
-    example purposes and have no significant value>
+
+    <... Note: constants a & b have been used purely for
+    example purposes and have no significant value ...>
 
     See: http://www.nec-labs.com/uploads/images/Department-Images/MediaAnalytics/papers/nips16_npairmetriclearning.pdf
 
