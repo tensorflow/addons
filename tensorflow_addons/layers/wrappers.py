@@ -40,7 +40,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     >>> net = WeightNormalization(
     ... tf.keras.layers.Dense(4, activation='relu'),data_init= False)(net)
     >>> net = WeightNormalization(
-    ... tf.keras.layers.Dense(n_classes, activation='softmax'),data_init= False)(net)
+    ... tf.keras.layers.Dense(n_classes, activation='softmax'))(net)
     Arguments:
       layer: A `tf.keras.layers.Layer` instance.
       data_init: If `True` use data dependent variable initialization.
