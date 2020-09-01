@@ -89,9 +89,13 @@ setup(
     ext_modules=get_ext_modules(),
     install_requires=Path("requirements.txt").read_text().splitlines(),
     extras_require={
-        "tensorflow": [f"tensorflow>={min_tf_version},<{max_tf_version}"],
-        "tensorflow-gpu": [f"tensorflow-gpu>={min_tf_version},<{max_tf_version}"],
-        "tensorflow-cpu": [f"tensorflow-cpu>={min_tf_version},<{max_tf_version}"],
+        "tensorflow": ["tensorflow>={},<{}".format(min_tf_version, max_tf_version)],
+        "tensorflow-gpu": [
+            "tensorflow-gpu>={},<{}".format(min_tf_version, max_tf_version)
+        ],
+        "tensorflow-cpu": [
+            "tensorflow-cpu>={},<{}".format(min_tf_version, max_tf_version)
+        ],
     },
     include_package_data=True,
     zip_safe=False,
