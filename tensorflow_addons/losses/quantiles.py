@@ -38,8 +38,8 @@ def pinball_loss(
 
     >>> loss = tfa.losses.pinball_loss([0., 0., 1., 1.],
     ... [1., 1., 1., 0.], tau=.1)
-    >>> print('Loss: ', loss.numpy())
-    <Loss:  0.475>
+    >>> loss
+    <tf.Tensor: shape=(), dtype=float32, numpy=0.475>
 
     Args:
       y_true: Ground truth values. shape = `[batch_size, d0, .. dN]`
@@ -83,16 +83,14 @@ class PinballLoss(LossFunctionWrapper):
     Usage:
 
     >>> pinball = tfa.losses.PinballLoss(tau=.1)
-    <tensorflow_addons.losses.quantiles.PinballLoss object at 0x102f49df0>
     >>> loss = pinball([0., 0., 1., 1.], [1., 1., 1., 0.])
-    >>> print('Loss: ', loss.numpy())
-    <Loss:  0.475>
+    >>> loss
+    <tf.Tensor: shape=(), dtype=float32, numpy=0.475>
 
     Usage with the `tf.keras` API:
 
     >>> model = tf.keras.Model()
     >>> model.compile('sgd', loss=tfa.losses.PinballLoss(tau=.1))
-    <tensorflow.python.keras.engine.training.Model object at 0x103040310>
 
     Args:
       tau: (Optional) Float in [0, 1] or a tensor taking values in [0, 1] and
