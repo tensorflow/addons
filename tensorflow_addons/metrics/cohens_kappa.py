@@ -38,7 +38,7 @@ class CohenKappa(Metric):
 
     Usage:
 
-    >>> python
+
     >>> actuals = np.array([4, 4, 3, 4, 2, 4, 1, 1], dtype=np.int32)
     >>> preds = np.array([4, 4, 3, 4, 4, 2, 1, 1], dtype=np.int32)
     >>> weights = np.array([1, 1, 2, 5, 10, 2, 3, 3], dtype=np.int32)
@@ -56,7 +56,6 @@ class CohenKappa(Metric):
 
     Usage with tf.keras API:
 
-    >>> python
     >>> model = tf.keras.models.Model(inputs, outputs)
     >>> model.add_metric(tfa.metrics.CohenKappa(num_classes=5)(outputs))
     >>> model.compile('sgd', loss='mse')
