@@ -43,8 +43,8 @@ def contrastive_loss(
     ...                 [1, 8]], dtype=tf.float16)
     >>> y_pred = tf.linalg.norm(a - b, axis=1)
     >>> y_pred
-    <tf.Tensor: shape=(3,), dtype=float16, numpy=
-    array([8.06 , 2.   , 4.473], dtype=float16)>
+    <tf.Tensor: shape=(3,), dtype=float16, numpy=array([8.06 , 2.   , 4.473],
+    dtype=float16)>
 
     <... Note: constants a & b have been used purely for
     example purposes and have no significant value ...>
@@ -88,15 +88,13 @@ class ContrastiveLoss(LossFunctionWrapper):
     as follows:
 
     >>> a = tf.constant([[1, 2],
-    ...                 [3, 4],
-    ...                 [5, 6]], dtype=tf.float16)
+    ...                 [3, 4],[5, 6]], dtype=tf.float16)
     >>> b = tf.constant([[5, 9],
-    ...                 [3, 6],
-    ...                 [1, 8]], dtype=tf.float16)
+    ...                 [3, 6],[1, 8]], dtype=tf.float16)
     >>> y_pred = tf.linalg.norm(a - b, axis=1)
     >>> y_pred
-    <tf.Tensor: shape=(3,), dtype=float16, numpy=
-    array([8.06 , 2.   , 4.473], dtype=float16)>
+    <tf.Tensor: shape=(3,), dtype=float16, numpy=array([8.06 , 2.   , 4.473],
+    dtype=float16)>
 
     <... Note: constants a & b have been used purely for
     example purposes and have no significant value ...>
