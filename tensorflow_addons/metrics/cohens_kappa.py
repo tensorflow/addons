@@ -38,7 +38,6 @@ class CohenKappa(Metric):
 
     Usage:
 
-
     >>> actuals = np.array([4, 4, 3, 4, 2, 4, 1, 1], dtype=np.int32)
     >>> preds = np.array([4, 4, 3, 4, 4, 2, 1, 1], dtype=np.int32)
     >>> weights = np.array([1, 1, 2, 5, 10, 2, 3, 3], dtype=np.int32)
