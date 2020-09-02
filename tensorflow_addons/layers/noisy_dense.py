@@ -174,7 +174,9 @@ class NoisyDense(tf.keras.layers.Layer):
                 dtype=self.dtype,
                 trainable=True,
             )
-
+        else:
+            self.σ_bias = None
+            self.µ_bias = None
         self.built = True
 
     @staticmethod
