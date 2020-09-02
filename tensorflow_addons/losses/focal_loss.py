@@ -40,7 +40,7 @@ class SigmoidFocalCrossEntropy(LossFunctionWrapper):
     >>> loss = fl(
     ...    y_true = [[1.0], [1.0], [0.0]],
     ...    y_pred = [[0.97], [0.91], [0.03]])
-    >>>loss
+    >>> loss
     <tf.Tensor: shape=(3,), dtype=float32, numpy=
     array([6.8532745e-06, 1.9097870e-04, 2.0559824e-05], dtype=float32)>
 
