@@ -61,13 +61,13 @@ class RSquare(Metric):
      of the same metric.
 
      Usage:
-     ```python
-     actuals = tf.constant([1, 4, 3], dtype=tf.float32)
-     preds = tf.constant([2, 4, 4], dtype=tf.float32)
-     result = tf.keras.metrics.RSquare()
-     result.update_state(actuals, preds)
-     print('R^2 score is: ', r1.result().numpy()) # 0.57142866
-    ```
+
+     >>> actuals = tf.constant([1, 4, 3], dtype=tf.float32)
+     >>> preds = tf.constant([2, 4, 4], dtype=tf.float32)
+     >>> result = tf.keras.metrics.RSquare()
+     >>> result.update_state(actuals, preds)
+     >>> print('R^2 score is: ', r1.result().numpy()) # 0.57142866
+ 
     """
 
     @typechecked
