@@ -23,8 +23,7 @@ import warnings
 
 import tensorflow as tf
 
-MIN_TF_VERSION = "2.2.0"
-MAX_TF_VERSION = "2.4.0"
+from tensorflow_addons.version import MIN_TF_VERSION, MAX_TF_VERSION
 
 
 def _check_tf_version():

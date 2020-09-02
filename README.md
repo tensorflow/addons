@@ -52,6 +52,15 @@ run the following:
 ```
 pip install tensorflow-addons
 ```
+
+To ensure you have a version of TensorFlow that is compatible with TensorFlow Addons, 
+you can specify the `tensorflow` extra requirement during install:
+
+```
+pip install tensorflow-addons[tensorflow]
+```
+
+Similar extras exist for the `tensorflow-gpu` and `tensorflow-cpu` packages.
  
 
 To use TensorFlow Addons:
