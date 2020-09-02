@@ -81,6 +81,7 @@ class MultiLabelConfusionMatrix(Metric):
     <BLANKLINE>
      [[2. 2.]
       [0. 0.]]]
+
     """
 
     @typechecked
