@@ -53,14 +53,14 @@ class CohenKappa(Metric):
     >>> m.update_state(actuals, preds, sample_weight=weights)
     >>> print('Final result: ', m.result().numpy()) 
     >>> # Result: 0.37209308
-    
+
     Usage with tf.keras API:
 
     >>> python
     >>> model = tf.keras.models.Model(inputs, outputs)
     >>> model.add_metric(tfa.metrics.CohenKappa(num_classes=5)(outputs))
     >>> model.compile('sgd', loss='mse')
-   
+
     """
 
     @typechecked
