@@ -45,6 +45,7 @@ def hamming_distance(actuals: TensorLike, predictions: TensorLike) -> tf.Tensor:
     >>> metric = hamming_distance(actuals, predictions)
     >>> print('Hamming distance: ', metric.numpy())
     Hamming distance:  0.3
+
     """
     result = tf.not_equal(actuals, predictions)
     not_eq = tf.reduce_sum(tf.cast(result, tf.float32))
