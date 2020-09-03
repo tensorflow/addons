@@ -89,25 +89,19 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
 
     Examples:
 
-    ```python
-    import numpy as np
-    import tensorflow.keras as keras
-    import tensorflow_addons as tfa
+    >>> inputs = np.random.random([32, 10, 8]).astype(np.float32)
+    >>> rnn = tf.keras.layers.RNN(tfa.rnn.LayerNormSimpleRNNCell(4))
+    >>> output = rnn(inputs)  # The output has shape `[32, 4]`.
+    >>> rnn = tf.keras.layers.RNN(
+    ... tfa.rnn.LayerNormSimpleRNNCell(4),
+    ... return_sequences=True,
+    ... return_state=True)
+    >>> whole_sequence_output, final_state = rnn(inputs)
+    >>> whole_sequence_output
+    <tf.Tensor: shape=(32, 10, 4), dtype=float32, numpy=...>
+    >>> final_state
+    <tf.Tensor: shape=(32, 4), dtype=float32, numpy=...>
 
-    inputs = np.random.random([32, 10, 8]).astype(np.float32)
-    rnn = keras.layers.RNN(tfa.rnn.LayerNormSimpleRNNCell(4))
-
-    output = rnn(inputs)  # The output has shape `[32, 4]`.
-
-    rnn = keras.layers.RNN(
-        tfa.rnn.LayerNormSimpleRNNCell(4),
-        return_sequences=True,
-        return_state=True)
-
-    # whole_sequence_output has shape `[32, 10, 4]`.
-    # final_state has shape `[32, 4]`.
-    whole_sequence_output, final_state = rnn(inputs)
-    ```
     """
 
     @typechecked

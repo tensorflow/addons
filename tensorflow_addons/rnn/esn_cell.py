@@ -32,6 +32,7 @@ class ESNCell(keras.layers.AbstractRNNCell):
         "The "echo state" approach to analysing and training recurrent neural networks".
         GMD Report148, German National Research Center for Information Technology, 2001.
         https://www.researchgate.net/publication/215385037
+    
     Arguments:
         units: Positive integer, dimensionality in the reservoir.
         connectivity: Float between 0 and 1.
