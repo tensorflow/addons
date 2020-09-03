@@ -18,8 +18,10 @@ import pytest
 import numpy as np
 import tensorflow as tf
 
-from tensorflow_addons.image import transform_ops
 from skimage import transform
+
+from tensorflow_addons.image import transform_ops
+from tensorflow_addons.utils import test_utils
 
 _DTYPES = {
     tf.dtypes.uint8,
@@ -322,11 +324,13 @@ def test_unknown_shape():
         np.testing.assert_equal(image.numpy(), fn(image).numpy())
 
 
-# TODO: Parameterize on dtypes
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_shear_x():
-    image = np.random.randint(low=0, high=255, size=(4, 4, 3), dtype=np.uint8)
-    color = tf.constant([255, 0, 255], tf.uint8)
+@pytest.mark.parametrize("dtype", _DTYPES - {tf.dtypes.float16})
+def test_shear_x(dtype):
+    image = np.random.randint(low=0, high=255, size=(4, 4, 3)).astype(
+        dtype.as_numpy_dtype
+    )
+    color = tf.constant([255, 0, 255], tf.int32)
     level = tf.random.uniform(shape=(), minval=0, maxval=1)
 
     tf_image = tf.constant(image)
@@ -344,11 +348,13 @@ def test_shear_x():
     np.testing.assert_equal(sheared_img.numpy(), expected_img)
 
 
-# TODO: Parameterize on dtypes
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_shear_y():
-    image = np.random.randint(low=0, high=255, size=(4, 4, 3), dtype=np.uint8)
-    color = tf.constant([255, 0, 255], tf.dtypes.uint8)
+@pytest.mark.parametrize("dtype", _DTYPES - {tf.dtypes.float16})
+def test_shear_y(dtype):
+    image = np.random.randint(low=0, high=255, size=(4, 4, 3)).astype(
+        dtype.as_numpy_dtype
+    )
+    color = tf.constant([255, 0, 255], tf.int32)
     level = tf.random.uniform(shape=(), minval=0, maxval=1)
 
     tf_image = tf.constant(image)
@@ -363,4 +369,4 @@ def test_shear_y():
     mask = np.where(expected_img == -1)
     expected_img[mask[0], mask[1], :] = color
 
-    np.testing.assert_equal(sheared_img.numpy(), expected_img)
+    test_utils.assert_allclose_according_to_type(sheared_img.numpy(), expected_img)
