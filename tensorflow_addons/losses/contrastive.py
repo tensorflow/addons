@@ -15,10 +15,10 @@
 """Implements contrastive loss."""
 
 import tensorflow as tf
+from typeguard import typechecked
 
 from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
 from tensorflow_addons.utils.types import TensorLike, Number
-from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -36,10 +36,19 @@ def contrastive_loss(
     `a` and `b` with shape `[batch_size, hidden_size]` can be computed
     as follows:
 
-    ```python
-    # y_pred = \sqrt (\sum_i (a[:, i] - b[:, i])^2)
-    y_pred = tf.linalg.norm(a - b, axis=1)
-    ```
+    >>> a = tf.constant([[1, 2],
+    ...                 [3, 4],
+    ...                 [5, 6]], dtype=tf.float16)
+    >>> b = tf.constant([[5, 9],
+    ...                 [3, 6],
+    ...                 [1, 8]], dtype=tf.float16)
+    >>> y_pred = tf.linalg.norm(a - b, axis=1)
+    >>> y_pred
+    <tf.Tensor: shape=(3,), dtype=float16, numpy=array([8.06 , 2.   , 4.473],
+    dtype=float16)>
+
+    <... Note: constants a & b have been used purely for
+    example purposes and have no significant value ...>
 
     See: http://yann.lecun.com/exdb/publis/pdf/hadsell-chopra-lecun-06.pdf
 
@@ -79,10 +88,17 @@ class ContrastiveLoss(LossFunctionWrapper):
     `a` and `b` with shape `[batch_size, hidden_size]` can be computed
     as follows:
 
-    ```python
-    # y_pred = \sqrt (\sum_i (a[:, i] - b[:, i])^2)
-    y_pred = tf.linalg.norm(a - b, axis=1)
-    ```
+    >>> a = tf.constant([[1, 2],
+    ...                 [3, 4],[5, 6]], dtype=tf.float16)
+    >>> b = tf.constant([[5, 9],
+    ...                 [3, 6],[1, 8]], dtype=tf.float16)
+    >>> y_pred = tf.linalg.norm(a - b, axis=1)
+    >>> y_pred
+    <tf.Tensor: shape=(3,), dtype=float16, numpy=array([8.06 , 2.   , 4.473],
+    dtype=float16)>
+
+    <... Note: constants a & b have been used purely for
+    example purposes and have no significant value ...>
 
     Args:
       margin: `Float`, margin term in the loss definition.
