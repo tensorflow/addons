@@ -15,8 +15,8 @@
 """Implements npairs loss."""
 
 import tensorflow as tf
-
 from typeguard import typechecked
+
 from tensorflow_addons.utils.types import TensorLike
 
 
