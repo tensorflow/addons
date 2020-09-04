@@ -63,7 +63,7 @@ class RSquare(Metric):
 
      >>> actuals = tf.constant([1, 4, 3], dtype=tf.float32)
      >>> preds = tf.constant([2, 4, 4], dtype=tf.float32)
-     >>> result = tf.keras.metrics.RSquare()
+     >>> result = tf.keras.metrics.r_square.RSquare()
      >>> result.update_state(actuals, preds)
      >>> print('R^2 score is: ', r1.result().numpy())
      >>> # R^2 score is: 0.57142866
