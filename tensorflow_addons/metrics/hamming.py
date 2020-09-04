@@ -43,7 +43,7 @@ def hamming_distance(actuals: TensorLike, predictions: TensorLike) -> tf.Tensor:
     >>> predictions = tf.constant([1, 0, 0, 0, 1, 0, 0, 1, 0, 1],
     ... dtype=tf.int32)
     >>> result = hamming_distance(actuals, predictions)
-    >>> print('Hamming distance: ', result.numpy())
+    >>> #print('Hamming distance: ', result.numpy())
 
     """
     result = tf.not_equal(actuals, predictions)
