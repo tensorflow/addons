@@ -183,12 +183,11 @@ class NoisyDense(tf.keras.layers.Layer):
     def _scale_noise(x):
         return tf.sign(x) * tf.sqrt(tf.abs(x))
 
-    def call(self, inputs):
+    # Create the factorised Gaussian noise
+    def reset_noise(self):
         dtype = self._compute_dtype_object
-        if inputs.dtype.base_dtype != dtype.base_dtype:
-            inputs = tf.cast(inputs, dtype=dtype)
 
-        # Fixed parameters added as the noise
+        # Generate random noise
         ε_i = tf.random.normal([self.last_dim, self.units], dtype=dtype)
         ε_j = tf.random.normal(
             [
@@ -197,14 +196,22 @@ class NoisyDense(tf.keras.layers.Layer):
             dtype=dtype,
         )
 
-        # Creates the factorised Gaussian noise
-        f = NoisyDense._scale_noise
-        ε_kernel = f(ε_i) * f(ε_j)
-        ε_bias = f(ε_j)
+        # Scale the random noise
+        self.ε_kernel = NoisyDense._scale_noise(ε_i) * NoisyDense._scale_noise(ε_j)
+        self.ε_bias = NoisyDense._scale_noise(ε_j)
+
+    def call(self, inputs, reset_noise=True):
+        dtype = self._compute_dtype_object
+        if inputs.dtype.base_dtype != dtype.base_dtype:
+            inputs = tf.cast(inputs, dtype=dtype)
+
+        # Generate fixed parameters added as the noise
+        if reset_noise:
+            self.reset_noise()
 
         # Performs: y = (µw + σw · εw)x + µb + σb · εb
         # to calculate the output
-        kernel = self.µ_kernel + (self.σ_kernel * ε_kernel)
+        kernel = self.µ_kernel + (self.σ_kernel * self.ε_kernel)
 
         if inputs.dtype.base_dtype != dtype.base_dtype:
             inputs = tf.cast(inputs, dtype=dtype)
@@ -225,7 +232,7 @@ class NoisyDense(tf.keras.layers.Layer):
                 outputs.set_shape(output_shape)
 
         if self.use_bias:
-            noisy_bias = self.µ_bias + (self.σ_bias * ε_bias)
+            noisy_bias = self.µ_bias + (self.σ_bias * self.ε_bias)
             outputs = tf.nn.bias_add(outputs, noisy_bias)
 
         if self.activation is not None:
