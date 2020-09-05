@@ -60,7 +60,7 @@ class CohenKappa(Metric):
     >>> x = tf.keras.layers.Dense(10)(inputs)
     >>> outputs = tf.keras.layers.Dense(1)(x)
     >>> model = tf.keras.models.Model(inputs=inputs, outputs=outputs)
-    >>> model.compile('sgd', loss='mse', metrics=[tfm.CohenKappa(num_classes=3, sparse_labels=True)])
+    >>> model.compile('sgd', loss='mse', metrics=[tfa.metrics.CohenKappa(num_classes=3, sparse_labels=True)])
 
     """
 
