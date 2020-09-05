@@ -200,6 +200,11 @@ class NoisyDense(tf.keras.layers.Layer):
         self.ε_kernel = NoisyDense._scale_noise(ε_i) * NoisyDense._scale_noise(ε_j)
         self.ε_bias = NoisyDense._scale_noise(ε_j)
 
+    def remove_noise(self):
+        dtype = self._compute_dtype_object
+        self.ε_kernel = tf.zeros([self.last_dim, self.units], dtype=dtype)
+        self.ε_bias = tf.zeros([self.last_dim, self.units], dtype=dtype)
+
     def call(self, inputs, reset_noise=True):
         dtype = self._compute_dtype_object
         if inputs.dtype.base_dtype != dtype.base_dtype:
