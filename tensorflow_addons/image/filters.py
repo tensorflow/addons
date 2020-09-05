@@ -290,10 +290,10 @@ def gaussian_filter2d(
 
         sigma = tf.cast(sigma, image.dtype)
         gaussian_kernel_x = _get_gaussian_kernel(sigma[1], filter_shape[1])
-        gaussian_kernel_x = tf.reshape(gaussian_kernel_x, [1, filter_shape[1]])
+        gaussian_kernel_x = gaussian_kernel_x[tf.newaxis, :]
 
         gaussian_kernel_y = _get_gaussian_kernel(sigma[0], filter_shape[0])
-        gaussian_kernel_y = tf.reshape(gaussian_kernel_y, [filter_shape[0], 1])
+        gaussian_kernel_y = gaussian_kernel_y[:, tf.newaxis]
 
         gaussian_kernel_2d = _get_gaussian_kernel_2d(
             gaussian_kernel_y, gaussian_kernel_x
