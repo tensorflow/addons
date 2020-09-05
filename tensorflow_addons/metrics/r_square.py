@@ -60,15 +60,15 @@ class RSquare(Metric):
      ](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.r2_score.html)
      of the same metric.
 
-     Usage:
-
-     >>> actuals = tf.constant([1, 4, 3], dtype=tf.float32)
-     >>> preds = tf.constant([2, 4, 4], dtype=tf.float32)
-     >>> result = tfa.metrics.r_square.RSquare()
-     >>> result.update_state(actuals, preds)
-     >>> # Uncomment the lines below to see the result
-     >>> # print('R^2 score is: ', result(actuals, preds).numpy())
-     >>> # R^2 score is: 0.57142866
+    Usage:
+ 
+    >>> actuals = tf.constant([1, 4, 3], dtype=tf.float32)
+    >>> preds = tf.constant([2, 4, 4], dtype=tf.float32)
+    >>> result = tfa.metrics.r_square.RSquare()
+    >>> result.update_state(actuals, preds)
+    >>> # Uncomment the lines below to see the result
+    >>> # print('R^2 score is: ', result(actuals, preds).numpy())
+    >>> # R^2 score is: 0.57142866
 
     """
 
