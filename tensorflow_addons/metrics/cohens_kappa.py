@@ -50,7 +50,7 @@ class CohenKappa(Metric):
 
     >>> # To use this with weights, sample_weight argument can be used.
     >>> metric = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
-    >>> metric.update_state(actuals, preds, sample_weight=weights)
+    >>> # metric.update_state(actuals, preds, sample_weight=weights)
     >>> # print('Final result: ', metric.result().numpy())
     >>> # Final result: 0.37209308
 
