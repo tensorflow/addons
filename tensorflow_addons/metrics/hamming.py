@@ -42,8 +42,8 @@ def hamming_distance(actuals: TensorLike, predictions: TensorLike) -> tf.Tensor:
     ... dtype=tf.int32)
     >>> predictions = tf.constant([1, 0, 0, 0, 1, 0, 0, 1, 0, 1],
     ... dtype=tf.int32)
-    >>> result = hamming_distance(actuals, predictions)
-    >>> #print('Hamming distance: ', result.numpy())
+    >>> metric = hamming_distance(y_true = actuals, y_pred = predictions)
+    >>> #print('Hamming distance: ', metric.numpy())
 
     """
     result = tf.not_equal(actuals, predictions)
@@ -83,31 +83,26 @@ def hamming_loss_fn(
 
     Usage:
 
-    ```python
-    # multi-class hamming loss
-    hl = HammingLoss(mode='multiclass', threshold=0.6)
-    actuals = tf.constant([[1, 0, 0, 0],[0, 0, 1, 0],
-                       [0, 0, 0, 1],[0, 1, 0, 0]],
-                      dtype=tf.float32)
-    predictions = tf.constant([[0.8, 0.1, 0.1, 0],
-                               [0.2, 0, 0.8, 0],
-                               [0.05, 0.05, 0.1, 0.8],
-                               [1, 0, 0, 0]],
-                          dtype=tf.float32)
-    hl.update_state(actuals, predictions)
-    print('Hamming loss: ', hl.result().numpy()) # 0.25
+    >>> # multi-class hamming loss
+    >>> hl = HammingLoss(mode='multiclass', threshold=0.6)
+    >>> actuals = tf.constant([[1, 0, 0, 0],[0, 0, 1, 0],
+    ... [0, 0, 0, 1],[0, 1, 0, 0]], dtype=tf.float32)
+    >>> predictions = tf.constant([[0.8, 0.1, 0.1, 0],
+    ... [0.2, 0, 0.8, 0],[0.05, 0.05, 0.1, 0.8],[1, 0, 0, 0]],
+    ... dtype=tf.float32)
+    >>> hl.update_state(y_true = actuals, y_pred = predictions)
+    >>> #uncomment the line below to see the result
+    >>> #print('Hamming loss: ', hl.result().numpy()) # 0.25
 
-    # multi-label hamming loss
-    hl = HammingLoss(mode='multilabel', threshold=0.8)
-    actuals = tf.constant([[1, 0, 1, 0],[0, 1, 0, 1],
-                       [0, 0, 0,1]], dtype=tf.int32)
-    predictions = tf.constant([[0.82, 0.5, 0.90, 0],
-                               [0, 1, 0.4, 0.98],
-                               [0.89, 0.79, 0, 0.3]],
-                               dtype=tf.float32)
-    hl.update_state(actuals, predictions)
-    print('Hamming loss: ', hl.result().numpy()) # 0.16666667
-    ```
+    >>> # multi-label hamming loss
+    >>> hl = HammingLoss(mode='multilabel', threshold=0.8)
+    >>> actuals = tf.constant([[1, 0, 1, 0],[0, 1, 0, 1],
+    ... [0, 0, 0,1]], dtype=tf.int32)
+    >>> predictions = tf.constant([[0.82, 0.5, 0.90, 0],
+    ... [0, 1, 0.4, 0.98],[0.89, 0.79, 0, 0.3]],dtype=tf.float32)
+    >>> hl.update_state(y_true = actuals, y_pred = predictions)
+    >>> #print('Hamming loss: ', hl.result().numpy()) # 0.16666667
+
     """
     if mode not in ["multiclass", "multilabel"]:
         raise TypeError("mode must be either multiclass or multilabel]")
