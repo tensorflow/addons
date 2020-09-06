@@ -44,7 +44,7 @@ class CohenKappa(Metric):
     >>> weights = np.array([1, 1, 2, 5, 10, 2, 3, 3], dtype=np.int32)
 
     >>> metric = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
-    >>> metric.update_state(y_true = actuals, y_pred = preds)
+    >>> # metric.update_state(y_true = actuals, y_pred = preds)
     >>> # print('Final result: ', metric.result().numpy())
     >>> # Final result: 0.61904764
 
