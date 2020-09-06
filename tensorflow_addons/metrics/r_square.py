@@ -64,8 +64,8 @@ class RSquare(Metric):
 
     >>> actuals = tf.constant([1, 4, 3], dtype=tf.float32)
     >>> preds = tf.constant([2, 4, 4], dtype=tf.float32)
-    >>> result = tfa.metrics.r_square.RSquare()
-    >>> result.update_state(actuals, preds)
+    >>> metric = tfa.metrics.r_square.RSquare()
+    >>> metric.update_state(y_true = actuals, y_pred = preds)
     >>> # Uncomment the lines below to see the result
     >>> # print('R^2 score is: ', result(actuals, preds).numpy())
     >>> # R^2 score is: 0.57142866
