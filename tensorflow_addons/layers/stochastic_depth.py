@@ -1,5 +1,6 @@
 import tensorflow as tf
 
+
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class StochasticDepth(tf.keras.layers.Layer):
     r"""Stochastic Depth layer.
@@ -9,8 +10,8 @@ class StochasticDepth(tf.keras.layers.Layer):
     in residual architectures.
 
     Usage:
-    Residual architectures with fixed depth, use residual branches that are merged back into the main network 
-    by adding the residual branch back to the input: 
+    Residual architectures with fixed depth, use residual branches that are merged back into the main network
+    by adding the residual branch back to the input:
 
     ```python
     residual = tf.keras.layers.Conv2D(...)(input)
@@ -31,7 +32,7 @@ class StochasticDepth(tf.keras.layers.Layer):
     ```python
     x[0] + b_l * x[1]
     ```
-    
+
     , where b_l is a random Bernoulli variable with probability p(b_l == 1) == p_l
 
     At test time, StochasticDepth rescales the activations of the residual branch based on the survival probability:
@@ -39,7 +40,7 @@ class StochasticDepth(tf.keras.layers.Layer):
     ```python
     x[0] + p_l * x[1]
     ```
-    
+
     Arguments:
         p_l: float, the probability of the residual branch being kept.
 
@@ -57,21 +58,23 @@ class StochasticDepth(tf.keras.layers.Layer):
 
         self.p_l = p_l
 
-    def call(self, x, training = None):
+    def call(self, x, training=None):
         assert isinstance(x, list)
-        
+
         shortcut, residual = x
 
         # Random bernoulli variable with probability p_l, indiciathing wheter the branch should be kept or not or not
-        b_l = tf.keras.backend.random_binomial([], p = self.p_l)
+        b_l = tf.keras.backend.random_binomial([], p=self.p_l)
 
         def _call_train():
             return shortcut + b_l * residual
-        
+
         def _call_test():
             return shortcut + self.p_l * residual
-        
-        return tf.keras.backend.in_train_phase(_call_train, _call_test, training = training)
+
+        return tf.keras.backend.in_train_phase(
+            _call_train, _call_test, training=training
+        )
 
     def compute_output_shape(self, input_shape):
         assert isinstance(input_shape, list)
@@ -80,7 +83,7 @@ class StochasticDepth(tf.keras.layers.Layer):
 
     def get_config(self):
         base_config = super().get_config()
-        
+
         config = {"p_l": self.p_l}
-        
+
         return {**base_config, **config}
