@@ -101,7 +101,7 @@ def test_transform_reflect_fill_mode(dtype):
     )
     # Translate right by 1 (the transformation matrix is always inverted,
     # hence the -1).
-    translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0], dtype=tf.dtypes.float32)
+    translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0], dtype=tf.float32)
     image_transformed = transform_ops.transform(image, translation, fill_mode="reflect")
     np.testing.assert_equal(image_transformed.numpy(), expected)
 
@@ -119,7 +119,7 @@ def test_transform_wrap_fill_mode(dtype):
     )
     # Translate right by 1 (the transformation matrix is always inverted,
     # hence the -1).
-    translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0], dtype=tf.dtypes.float32)
+    translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0], dtype=tf.float32)
     image_transformed = transform_ops.transform(image, translation, fill_mode="wrap")
     np.testing.assert_equal(image_transformed.numpy(), expected)
 
