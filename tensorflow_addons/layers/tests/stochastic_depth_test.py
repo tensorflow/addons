@@ -43,4 +43,4 @@ def test_serialization():
     stoch_depth = StochasticDepth(p_l=0.5)
     serialized_stoch_depth = tf.keras.layers.serialize(stoch_depth)
     new_layer = tf.keras.layers.deserialize(serialized_stoch_depth)
-    assert serialized_stoch_depth.get_config() == new_layer.get_config()
+    assert stoch_depth.get_config() == new_layer.get_config()

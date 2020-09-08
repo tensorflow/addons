@@ -1,5 +1,5 @@
 import tensorflow as tf
-
+from typeguard import typechecked
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class StochasticDepth(tf.keras.layers.Layer):
