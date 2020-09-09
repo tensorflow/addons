@@ -4,7 +4,7 @@ from typeguard import typechecked
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class StochasticDepth(tf.keras.layers.Layer):
-    r"""Stochastic Depth layer.
+    """Stochastic Depth layer.
 
     Implements Stochastic Depth as described in
     [Deep Networks with Stochastic Depth](https://arxiv.org/abs/1603.09382), to randomly drop residual branches
@@ -14,15 +14,15 @@ class StochasticDepth(tf.keras.layers.Layer):
     Residual architectures with fixed depth, use residual branches that are merged back into the main network
     by adding the residual branch back to the input:
 
-    >>> input = np.ones((3, 3, 1))
+    >>> input = np.ones((1, 3, 3, 1), dtype = np.float32)
     >>> residual = tf.keras.layers.Conv2D(1, 1)(input)
-    >>> tfa.layers.StochasticDepth()([input, residual])
+    >>> output = tfa.layers.StochasticDepth()([input, residual])
 
     StochasticDepth acts as a drop-in replacement for the addition:
 
-    >>> input = np.ones((3, 3, 1))
+    >>> input = np.ones((1, 3, 3, 1), dtype = np.float32)
     >>> residual = tf.keras.layers.Conv2D(1, 1)(input)
-    >>> tfa.layers.StochasticDepth()([input, residual])
+    >>> output = tfa.layers.StochasticDepth()([input, residual])
 
     At train time, StochasticDepth returns:
 
@@ -56,10 +56,8 @@ class StochasticDepth(tf.keras.layers.Layer):
         self.survival_probability = survival_probability
 
     def call(self, x, training=None):
-        assert isinstance(x, list):
-            raise ValueError("Input must be a list")
-        assert len(x) == 2:
-            raise ValueError("Input must have exactly two entries")
+        assert isinstance(x, list), "Input must be a list"
+        assert len(x) == 2, "Input must have exactly two entries"
 
         shortcut, residual = x
 
@@ -77,10 +75,8 @@ class StochasticDepth(tf.keras.layers.Layer):
         )
 
     def compute_output_shape(self, input_shape):
-        assert isinstance(x, list):
-            raise ValueError("Input must be a list")
-        assert len(x) == 2:
-            raise ValueError("Input must have exactly two entries")
+        assert isinstance(input_shape, list), "Input must be a list"
+        assert len(input_shape) == 2, "Input must have exactly two entries"
 
         return input_shape[0]
 
