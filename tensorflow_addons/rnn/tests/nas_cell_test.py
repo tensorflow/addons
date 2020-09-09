@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for RNN cells."""
+"""Tests for NAS Cell."""
 
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
 
-from tensorflow_addons.rnn import cell as rnn_cell
-from tensorflow_addons.rnn import LayerNormSimpleRNNCell
+from tensorflow_addons.rnn import NASCell
 
 
 def test_base():
@@ -79,7 +78,7 @@ def test_base():
         ]
     )
     const_initializer = tf.constant_initializer(0.5)
-    cell = rnn_cell.NASCell(
+    cell = NASCell(
         units=units,
         kernel_initializer=const_initializer,
         recurrent_initializer=const_initializer,
@@ -171,7 +170,7 @@ def test_projection():
         ]
     )
     const_initializer = tf.constant_initializer(0.5)
-    cell = rnn_cell.NASCell(
+    cell = NASCell(
         units=units,
         projection=projection,
         kernel_initializer=const_initializer,
@@ -213,7 +212,7 @@ def test_projection():
 
 def test_keras_rnn():
     """Tests that NASCell works with keras RNN layer."""
-    cell = rnn_cell.NASCell(10)
+    cell = NASCell(10)
     seq_input = tf.convert_to_tensor(
         np.random.rand(2, 3, 5), name="seq_input", dtype=tf.float32
     )
@@ -223,7 +222,7 @@ def test_keras_rnn():
 
 
 def test_config_nas():
-    cell = rnn_cell.NASCell(10, projection=5, use_bias=True, name="nas_cell_3")
+    cell = NASCell(10, projection=5, use_bias=True, name="nas_cell_3")
 
     expected_config = {
         "dtype": "float32",
@@ -240,173 +239,6 @@ def test_config_nas():
     config = cell.get_config()
     assert config == expected_config
 
-    restored_cell = rnn_cell.NASCell.from_config(config)
+    restored_cell = NASCell.from_config(config)
     restored_config = restored_cell.get_config()
     assert config == restored_config
-
-
-def test_cell_output():
-    x = tf.ones([1, 2], dtype=tf.float32)
-    c0 = tf.constant(0.1 * np.asarray([[0, 1]]), dtype=tf.float32)
-    h0 = tf.constant(0.1 * np.asarray([[2, 3]]), dtype=tf.float32)
-    state0 = [h0, c0]
-    c1 = tf.constant(0.1 * np.asarray([[4, 5]]), dtype=tf.float32)
-    h1 = tf.constant(0.1 * np.asarray([[6, 7]]), dtype=tf.float32)
-    state1 = [h1, c1]
-    state = (state0, state1)
-    const_initializer = tf.constant_initializer(0.5)
-
-    def single_cell():
-        return rnn_cell.LayerNormLSTMCell(
-            units=2,
-            kernel_initializer=const_initializer,
-            recurrent_initializer=const_initializer,
-            bias_initializer=const_initializer,
-            norm_epsilon=1e-12,
-        )
-
-    cell = keras.layers.StackedRNNCells([single_cell() for _ in range(2)])
-    output_v, output_states_v = cell(x, state)
-
-    expected_output = np.array([[-0.47406167, 0.47406143]])
-    expected_state0_c = np.array([[-1.0, 1.0]])
-    expected_state0_h = np.array([[-0.47406167, 0.47406143]])
-    expected_state1_c = np.array([[-1.0, 1.0]])
-    expected_state1_h = np.array([[-0.47406167, 0.47406143]])
-
-    actual_state0_h = output_states_v[0][0]
-    actual_state0_c = output_states_v[0][1]
-    actual_state1_h = output_states_v[1][0]
-    actual_state1_c = output_states_v[1][1]
-
-    np.testing.assert_allclose(output_v, expected_output, 1e-5)
-    np.testing.assert_allclose(expected_state0_c, actual_state0_c, 1e-5)
-    np.testing.assert_allclose(expected_state0_h, actual_state0_h, 1e-5)
-    np.testing.assert_allclose(expected_state1_c, actual_state1_c, 1e-5)
-    np.testing.assert_allclose(expected_state1_h, actual_state1_h, 1e-5)
-
-    # Test BasicLSTMCell with input_size != num_units.
-    x = tf.ones([1, 3], dtype=tf.float32)
-    c = tf.constant(0.1 * np.asarray([[0, 1]]), dtype=tf.float32)
-    h = tf.constant(0.1 * np.asarray([[2, 3]]), dtype=tf.float32)
-    state = [h, c]
-    cell = rnn_cell.LayerNormLSTMCell(
-        units=2,
-        kernel_initializer=const_initializer,
-        recurrent_initializer=const_initializer,
-        bias_initializer=const_initializer,
-        norm_epsilon=1e-12,
-    )
-    output_v, output_states_v = cell(x, state)
-    expected_h = np.array([[-0.47406167, 0.47406143]])
-    expected_c = np.array([[-1.0, 1.0]])
-    np.testing.assert_allclose(output_v, expected_h, 1e-5)
-    np.testing.assert_allclose(output_states_v[0], expected_h, 1e-5)
-    np.testing.assert_allclose(output_states_v[1], expected_c, 1e-5)
-
-
-def test_config_layer_norm():
-    cell = rnn_cell.LayerNormLSTMCell(10, name="layer_norm_lstm_cell_3")
-
-    expected_config = {
-        "dtype": "float32",
-        "name": "layer_norm_lstm_cell_3",
-        "trainable": True,
-        "units": 10,
-        "activation": "tanh",
-        "recurrent_activation": "sigmoid",
-        "use_bias": True,
-        "kernel_initializer": {
-            "class_name": "GlorotUniform",
-            "config": {"seed": None},
-        },
-        "recurrent_initializer": {
-            "class_name": "Orthogonal",
-            "config": {"seed": None, "gain": 1.0},
-        },
-        "bias_initializer": {"class_name": "Zeros", "config": {}},
-        "unit_forget_bias": True,
-        "kernel_regularizer": None,
-        "recurrent_regularizer": None,
-        "bias_regularizer": None,
-        "kernel_constraint": None,
-        "recurrent_constraint": None,
-        "bias_constraint": None,
-        "dropout": 0.0,
-        "recurrent_dropout": 0.0,
-        "implementation": 2,
-        "norm_gamma_initializer": {"class_name": "Ones", "config": {}},
-        "norm_beta_initializer": {"class_name": "Zeros", "config": {}},
-        "norm_epsilon": 1e-3,
-    }
-    config = cell.get_config()
-    assert config == expected_config
-
-    restored_cell = rnn_cell.LayerNormLSTMCell.from_config(config)
-    restored_config = restored_cell.get_config()
-    assert config == restored_config
-
-
-def test_constraints_layernorm_rnn():
-    embedding_dim = 4
-    k_constraint = keras.constraints.max_norm(0.01)
-    r_constraint = keras.constraints.max_norm(0.01)
-    b_constraint = keras.constraints.max_norm(0.01)
-    g_constraint = keras.constraints.max_norm(0.01)
-    layer = keras.layers.RNN(
-        LayerNormSimpleRNNCell(
-            units=5,
-            kernel_constraint=k_constraint,
-            recurrent_constraint=r_constraint,
-            bias_constraint=b_constraint,
-            gamma_constraint=g_constraint,
-        ),
-        input_shape=(None, embedding_dim),
-        return_sequences=False,
-    )
-    layer.build((None, None, embedding_dim))
-    assert layer.cell.kernel.constraint == k_constraint
-    assert layer.cell.recurrent_kernel.constraint == r_constraint
-    assert layer.cell.bias.constraint == b_constraint
-    assert layer.cell.layernorm.gamma.constraint == g_constraint
-
-
-def test_with_masking_layer_layernorm_rnn():
-    inputs = np.random.random((2, 3, 4))
-    targets = np.abs(np.random.random((2, 3, 5)))
-    targets /= targets.sum(axis=-1, keepdims=True)
-    model = keras.models.Sequential()
-    model.add(keras.layers.Masking(input_shape=(3, 4)))
-    model.add(
-        keras.layers.RNN(
-            LayerNormSimpleRNNCell(units=5), return_sequences=True, unroll=False
-        )
-    )
-    model.compile(loss="categorical_crossentropy", optimizer="rmsprop")
-    model.fit(inputs, targets, epochs=1, batch_size=2, verbose=1)
-
-
-def test_regularizers_layernorm_rnn():
-    embedding_dim = 4
-    layer = keras.layers.RNN(
-        LayerNormSimpleRNNCell(
-            units=5,
-            kernel_regularizer=keras.regularizers.l1(0.01),
-            recurrent_regularizer=keras.regularizers.l1(0.01),
-            bias_regularizer="l2",
-            gamma_regularizer="l2",
-        ),
-        input_shape=(None, embedding_dim),
-        return_sequences=False,
-    )
-    layer.build((None, None, 2))
-    assert len(layer.losses) == 4
-
-
-def test_configs_layernorm():
-    config = {"layernorm_epsilon": 1e-6}
-    cell1 = LayerNormSimpleRNNCell(units=8, **config)
-    config1 = cell1.get_config()
-    cell2 = LayerNormSimpleRNNCell(**config1)
-    config2 = cell2.get_config()
-    assert config1 == config2

@@ -14,10 +14,9 @@
 # ==============================================================================
 
 import tensorflow as tf
-from tensorflow_addons.utils.types import FloatTensorLike
+from tensorflow_addons.utils import types
 
 from typeguard import typechecked
-from typing import Union
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -44,9 +43,9 @@ class Lookahead(tf.keras.optimizers.Optimizer):
     @typechecked
     def __init__(
         self,
-        optimizer: Union[tf.keras.optimizers.Optimizer, str],
+        optimizer: types.Optimizer,
         sync_period: int = 6,
-        slow_step_size: FloatTensorLike = 0.5,
+        slow_step_size: types.FloatTensorLike = 0.5,
         name: str = "Lookahead",
         **kwargs
     ):
@@ -81,6 +80,7 @@ class Lookahead(tf.keras.optimizers.Optimizer):
         self._set_hyper("sync_period", sync_period)
         self._set_hyper("slow_step_size", slow_step_size)
         self._initialized = False
+        self._track_trackable(self._optimizer, "lh_base_optimizer")
 
     def _create_slots(self, var_list):
         self._optimizer._create_slots(
@@ -97,11 +97,11 @@ class Lookahead(tf.keras.optimizers.Optimizer):
             var_list=var_list
         )  # pylint: disable=protected-access
 
-    def apply_gradients(self, grads_and_vars, name=None):
+    def apply_gradients(self, grads_and_vars, name=None, **kwargs):
         self._optimizer._iterations = (
             self.iterations
         )  # pylint: disable=protected-access
-        return super().apply_gradients(grads_and_vars, name)
+        return super().apply_gradients(grads_and_vars, name, **kwargs)
 
     def _init_op(self, var):
         slow_var = self.get_slot(var, "slow")
@@ -126,10 +126,10 @@ class Lookahead(tf.keras.optimizers.Optimizer):
         )
         with tf.control_dependencies([step_back]):
             slow_update = slow_var.assign(
-                tf.where(sync_cond, step_back, slow_var,), use_locking=self._use_locking
+                tf.where(sync_cond, step_back, slow_var), use_locking=self._use_locking
             )
             var_update = var.assign(
-                tf.where(sync_cond, step_back, var,), use_locking=self._use_locking
+                tf.where(sync_cond, step_back, var), use_locking=self._use_locking
             )
         return tf.group(slow_update, var_update)
 
@@ -185,6 +185,6 @@ class Lookahead(tf.keras.optimizers.Optimizer):
     @classmethod
     def from_config(cls, config, custom_objects=None):
         optimizer = tf.keras.optimizers.deserialize(
-            config.pop("optimizer"), custom_objects=custom_objects,
+            config.pop("optimizer"), custom_objects=custom_objects
         )
         return cls(optimizer, **config)

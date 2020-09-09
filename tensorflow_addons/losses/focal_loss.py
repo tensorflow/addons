@@ -16,10 +16,10 @@
 
 import tensorflow as tf
 import tensorflow.keras.backend as K
-
-from tensorflow.python.keras.losses import LossFunctionWrapper
-from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 from typeguard import typechecked
+
+from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
+from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -37,25 +37,21 @@ class SigmoidFocalCrossEntropy(LossFunctionWrapper):
 
     Usage:
 
-    ```python
-    fl = tfa.losses.SigmoidFocalCrossEntropy()
-    loss = fl(
-      [[0.97], [0.91], [0.03]],
-      [[1.0], [1.0], [0.0]])
-    print('Loss: ', loss.numpy())  # Loss: [0.00010971,
-                                            0.0032975,
-                                            0.00030611]
-    ```
-    Usage with tf.keras API:
+    >>> fl = tfa.losses.SigmoidFocalCrossEntropy()
+    >>> loss = fl(
+    ...     y_true = [[1.0], [1.0], [0.0]],y_pred = [[0.97], [0.91], [0.03]])
+    >>> loss
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([6.8532745e-06, 1.9097870e-04, 2.0559824e-05],
+    dtype=float32)>
 
-    ```python
-    model = tf.keras.Model(inputs, outputs)
-    model.compile('sgd', loss=tf.keras.losses.SigmoidFocalCrossEntropy())
-    ```
+    Usage with `tf.keras` API:
 
-    Args
-      alpha: balancing factor, default value is 0.25
-      gamma: modulating factor, default value is 2.0
+    >>> model = tf.keras.Model()
+    >>> model.compile('sgd', loss=tfa.losses.SigmoidFocalCrossEntropy())
+
+    Args:
+      alpha: balancing factor, default value is 0.25.
+      gamma: modulating factor, default value is 2.0.
 
     Returns:
       Weighted loss float `Tensor`. If `reduction` is `NONE`, this has the same
@@ -63,7 +59,7 @@ class SigmoidFocalCrossEntropy(LossFunctionWrapper):
 
     Raises:
         ValueError: If the shape of `sample_weight` is invalid or value of
-          `gamma` is less than zero
+          `gamma` is less than zero.
     """
 
     @typechecked
@@ -94,8 +90,18 @@ def sigmoid_focal_crossentropy(
     gamma: FloatTensorLike = 2.0,
     from_logits: bool = False,
 ) -> tf.Tensor:
-    """
-    Args
+    """Implements the focal loss function.
+
+    Focal loss was first introduced in the RetinaNet paper
+    (https://arxiv.org/pdf/1708.02002.pdf). Focal loss is extremely useful for
+    classification when you have highly imbalanced classes. It down-weights
+    well-classified examples and focuses on hard examples. The loss value is
+    much high for a sample which is misclassified by the classifier as compared
+    to the loss value corresponding to a well-classified example. One of the
+    best use-cases of focal loss is its usage in object detection where the
+    imbalance between the background class and other classes is extremely high.
+
+    Args:
         y_true: true targets tensor.
         y_pred: predictions tensor.
         alpha: balancing factor.

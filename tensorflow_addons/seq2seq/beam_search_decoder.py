@@ -19,20 +19,17 @@ import numpy as np
 
 import tensorflow as tf
 
+from tensorflow_addons import options
 from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils.resource_loader import LazySO
-from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
+from tensorflow_addons.utils.types import FloatTensorLike, TensorLike, Number
 
 from typeguard import typechecked
-from typing import Callable, Optional, Union
+from typing import Callable, Optional
 
 _beam_search_so = LazySO("custom_ops/seq2seq/_beam_search_ops.so")
-
-
-def gather_tree(*args, **kwargs) -> tf.Tensor:
-    return _beam_search_so.ops.addons_gather_tree(*args, **kwargs)
 
 
 class BeamSearchDecoderState(
@@ -47,6 +44,20 @@ class BeamSearchDecoderState(
         ),
     )
 ):
+    """State of a `BeamSearchDecoder`.
+
+    Attributes:
+      cell_state: The cell state returned at the previous time step.
+      log_probs: The accumulated log probabilities of each beam.
+        A `float32` `Tensor` of shape `[batch_size, beam_width]`.
+      finished: The finished status of each beam.
+        A `bool` `Tensor` of shape `[batch_size, beam_width]`.
+      lengths: The accumulated length of each beam.
+        An `int64` `Tensor` of shape `[batch_size, beam_width]`.
+      accumulated_attention_prob: Accumulation of the attention
+        probabilities (used to compute the coverage penalty)
+    """
+
     pass
 
 
@@ -55,6 +66,23 @@ class BeamSearchDecoderOutput(
         "BeamSearchDecoderOutput", ("scores", "predicted_ids", "parent_ids")
     )
 ):
+    """Outputs of a `BeamSearchDecoder` step.
+
+    Attributes:
+      scores: The scores this step, which are the log
+        probabilities over the output vocabulary, possibly penalized by length
+        and attention coverage. When `BeamSearchDecoder` is created with
+        `output_all_scores=False` (default), this will be a `float32` `Tensor`
+        of shape `[batch_size, beam_width]` containing the top scores
+        corresponding to the predicted IDs. When `output_all_scores=True`,
+        this contains the scores for all token IDs and has shape
+        `[batch_size, beam_width, vocab_size]`.
+      predicted_ids: The token IDs predicted for this step.
+        A `int32` `Tensor` of shape `[batch_size, beam_width]`.
+      parent_ids: The indices of the parent beam of each beam.
+        A `int32` `Tensor` of shape `[batch_size, beam_width]`.
+    """
+
     pass
 
 
@@ -63,10 +91,9 @@ class FinalBeamSearchDecoderOutput(
         "FinalBeamDecoderOutput", ["predicted_ids", "beam_search_decoder_output"]
     )
 ):
-    """Final outputs returned by the beam search after all decoding is
-    finished.
+    """Final outputs returned by the beam search after all decoding is finished.
 
-    Args:
+    Attributes:
       predicted_ids: The final prediction. A tensor of shape
         `[batch_size, T, beam_width]` (or `[T, batch_size, beam_width]` if
         `output_time_major` is True). Beams are ordered from best to worst.
@@ -86,9 +113,7 @@ def _tile_batch(t, multiplier):
     tiling = [1] * (t.shape.ndims + 1)
     tiling[1] = multiplier
     tiled_static_batch_size = (
-        t.shape.dims[0].value * multiplier
-        if t.shape.dims[0].value is not None
-        else None
+        t.shape[0] * multiplier if t.shape[0] is not None else None
     )
     tiled = tf.tile(tf.expand_dims(t, 1), tiling)
     tiled = tf.reshape(tiled, tf.concat(([shape_t[0] * multiplier], shape_t[1:]), 0))
@@ -124,6 +149,107 @@ def tile_batch(t: TensorLike, multiplier: int, name: Optional[str] = None) -> tf
         return tf.nest.map_structure(lambda t_: _tile_batch(t_, multiplier), t)
 
 
+@tf.function(
+    input_signature=(
+        tf.TensorSpec([None, None, None], dtype=tf.int32),
+        tf.TensorSpec([None, None, None], dtype=tf.int32),
+        tf.TensorSpec([None], dtype=tf.int32),
+        tf.TensorSpec([], dtype=tf.int32),
+    )
+)
+def _gather_tree(step_ids, parent_ids, max_sequence_lengths, end_token):
+    input_shape = tf.shape(parent_ids)
+    max_time = input_shape[0]
+    beam_width = input_shape[2]
+    max_sequence_lengths = tf.math.minimum(max_sequence_lengths, max_time)
+    mask = tf.expand_dims(
+        tf.transpose(tf.sequence_mask(max_sequence_lengths, maxlen=max_time)), -1
+    )
+
+    # Mask out of range ids.
+    end_tokens = tf.fill(input_shape, end_token)
+    step_ids = tf.where(mask, x=step_ids, y=end_tokens)
+    parent_ids = tf.where(mask, x=parent_ids, y=tf.zeros_like(parent_ids))
+    assert_op = tf.debugging.Assert(
+        tf.math.reduce_all(
+            tf.math.logical_and(parent_ids >= 0, parent_ids < beam_width)
+        ),
+        ["All parent ids must be positive and less than beam_width"],
+    )
+
+    # Reverse all sequences as we need to gather from the end.
+    with tf.control_dependencies([assert_op]):
+        rev_step_ids = tf.reverse_sequence(
+            step_ids, max_sequence_lengths, seq_axis=0, batch_axis=1
+        )
+        rev_parent_ids = tf.reverse_sequence(
+            parent_ids, max_sequence_lengths, seq_axis=0, batch_axis=1
+        )
+
+    # Initialize output ids and parent based on last step.
+    output_ids = tf.TensorArray(step_ids.dtype, size=max_time, dynamic_size=False)
+    output_ids = output_ids.write(0, rev_step_ids[0])
+    parent = rev_parent_ids[0]
+
+    # For each step, gather ids based on beam origin.
+    for t in tf.range(1, max_time):
+        ids = tf.gather(rev_step_ids[t], parent, batch_dims=1)
+        parent = tf.gather(rev_parent_ids[t], parent, batch_dims=1)
+        output_ids = output_ids.write(t, ids)
+
+    # Reverse sequences to their original order.
+    output_ids = output_ids.stack()
+    output_ids = tf.reverse_sequence(
+        output_ids, max_sequence_lengths, seq_axis=0, batch_axis=1
+    )
+
+    # Ensure that there are only end_token after the first end_token.
+    in_bound_steps = tf.math.cumsum(tf.cast(output_ids == end_token, tf.int32)) == 0
+    output_ids = tf.where(in_bound_steps, x=output_ids, y=end_tokens)
+    return output_ids
+
+
+def gather_tree(
+    step_ids: TensorLike,
+    parent_ids: TensorLike,
+    max_sequence_lengths: TensorLike,
+    end_token: Number,
+) -> tf.Tensor:
+    """Calculates the full beams from the per-step ids and parent beam ids.
+
+    For a given beam, past the time step containing the first decoded
+    `end_token` all values are filled in with `end_token`.
+
+    Args:
+      step_ids: The predicted token IDs.
+        A `int32` `Tensor` of shape `[max_time, batch_size, beam_width]`.
+      parent_ids: The parent beam indices.
+        A `int32` `Tensor` of shape `[max_time, batch_size, beam_width]`.
+      max_sequence_lengths: The maximum sequence length of each batch.
+        A `int32` `Tensor` of shape `[batch_size]`.
+      end_token: The end token ID.
+
+    Returns:
+      The reordered token IDs based on `parent_ids`.
+
+    Raises:
+      InvalidArgumentError: if `parent_ids` contains an invalid index.
+    """
+    if not options.TF_ADDONS_PY_OPS:
+        try:
+            return _beam_search_so.ops.addons_gather_tree(
+                step_ids, parent_ids, max_sequence_lengths, end_token
+            )
+        except tf.errors.NotFoundError:
+            options.warn_fallback("gather_tree")
+
+    step_ids = tf.convert_to_tensor(step_ids, dtype=tf.int32)
+    parent_ids = tf.convert_to_tensor(parent_ids, dtype=tf.int32)
+    max_sequence_lengths = tf.convert_to_tensor(max_sequence_lengths, dtype=tf.int32)
+    end_token = tf.convert_to_tensor(end_token, dtype=tf.int32)
+    return _gather_tree(step_ids, parent_ids, max_sequence_lengths, end_token)
+
+
 def gather_tree_from_array(
     t: TensorLike, parent_ids: TensorLike, sequence_length: TensorLike
 ) -> tf.Tensor:
@@ -141,9 +267,9 @@ def gather_tree_from_array(
       `t` and where beams are sorted in each `Tensor` according to
       `parent_ids`.
     """
-    max_time = parent_ids.shape.dims[0].value or tf.shape(parent_ids)[0]
-    batch_size = parent_ids.shape.dims[1].value or tf.shape(parent_ids)[1]
-    beam_width = parent_ids.shape.dims[2].value or tf.shape(parent_ids)[2]
+    max_time = parent_ids.shape[0] or tf.shape(parent_ids)[0]
+    batch_size = parent_ids.shape[1] or tf.shape(parent_ids)[1]
+    beam_width = parent_ids.shape[2] or tf.shape(parent_ids)[2]
 
     # Generate beam ids that will be reordered by gather_tree.
     beam_ids = tf.reshape(tf.range(beam_width), [1, 1, -1])
@@ -184,11 +310,11 @@ def _check_static_batch_beam_maybe(shape, batch_size, beam_width):
     reshaped to [batch_size, beam_size, -1]."""
     reshaped_shape = tf.TensorShape([batch_size, beam_width, None])
     assert len(shape.dims) > 0
-    if batch_size is None or shape.dims[0].value is None:
+    if batch_size is None or shape[0] is None:
         return True  # not statically known => no check
     if shape[0] == batch_size * beam_width:
         return True  # flattened, matching
-    has_second_dim = shape.ndims >= 2 and shape.dims[1].value is not None
+    has_second_dim = shape.ndims >= 2 and shape[1] is not None
     if has_second_dim and shape[0] == batch_size and shape[1] == beam_width:
         return True  # non-flattened, matching
     # Otherwise we could not find a match and warn:
@@ -258,12 +384,14 @@ class BeamSearchDecoderMixin:
         length_penalty_weight: FloatTensorLike = 0.0,
         coverage_penalty_weight: FloatTensorLike = 0.0,
         reorder_tensor_arrays: bool = True,
+        output_all_scores: bool = False,
         **kwargs
     ):
         """Initialize the BeamSearchDecoderMixin.
 
         Args:
-          cell: An `RNNCell` instance.
+          cell: A layer that implements the `tf.keras.layers.AbstractRNNCell`
+            interface.
           beam_width:  Python integer, the number of beams.
           output_layer: (Optional) An instance of `tf.keras.layers.Layer`,
             i.e., `tf.keras.layers.Dense`.  Optional layer to apply to the RNN
@@ -278,22 +406,18 @@ class BeamSearchDecoderMixin:
             returned. Otherwise, the `TensorArray` will be returned as is. Set
             this flag to `False` if the cell state contains `TensorArray`s that
             are not amenable to reordering.
+          output_all_scores: If `True`, `BeamSearchDecoderOutput.scores` will
+            contain scores for all token IDs and be of shape
+            `[batch_size, beam_width, vocab_size]`. When `False` (default),
+            only the top score corresponding to the predicted token will be
+            output with shape `[batch_size, beam_width]`.
           **kwargs: Dict, other keyword arguments for parent class.
-
-        Raises:
-          TypeError: if `cell` is not an instance of `RNNCell`,
-            or `output_layer` is not an instance of `tf.keras.layers.Layer`.
         """
         keras_utils.assert_like_rnncell("cell", cell)
-        if output_layer is not None and not isinstance(
-            output_layer, tf.keras.layers.Layer
-        ):
-            raise TypeError(
-                "output_layer must be a Layer, received: %s" % type(output_layer)
-            )
         self._cell = cell
         self._output_layer = output_layer
         self._reorder_tensor_arrays = reorder_tensor_arrays
+        self._output_all_scores = output_all_scores
 
         self._start_tokens = None
         self._end_token = None
@@ -344,8 +468,13 @@ class BeamSearchDecoderMixin:
     @property
     def output_size(self):
         # Return the cell output and the id
+        score_size = (
+            tf.TensorShape([self._beam_width, self._rnn_output_size()[-1]])
+            if self._output_all_scores
+            else tf.TensorShape([self._beam_width])
+        )
         return BeamSearchDecoderOutput(
-            scores=tf.TensorShape([self._beam_width]),
+            scores=score_size,
             predicted_ids=tf.TensorShape([self._beam_width]),
             parent_ids=tf.TensorShape([self._beam_width]),
         )
@@ -580,6 +709,9 @@ class BeamSearchDecoderMixin:
             cell_outputs = tf.nest.map_structure(
                 lambda out: self._split_batch_beams(out, out.shape[1:]), cell_outputs
             )
+            next_cell_state = tf.nest.pack_sequence_as(
+                cell_state, tf.nest.flatten(next_cell_state)
+            )
             next_cell_state = tf.nest.map_structure(
                 self._maybe_split_batch_beams, next_cell_state, self._cell.state_size
             )
@@ -597,6 +729,7 @@ class BeamSearchDecoderMixin:
                 end_token=end_token,
                 length_penalty_weight=length_penalty_weight,
                 coverage_penalty_weight=coverage_penalty_weight,
+                output_all_scores=self._output_all_scores,
             )
 
             finished = beam_search_state.finished
@@ -658,7 +791,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         self,
         cell: tf.keras.layers.Layer,
         beam_width: int,
-        embedding_fn: Union[TensorLike, Callable, None] = None,
+        embedding_fn: Optional[Callable] = None,
         output_layer: Optional[tf.keras.layers.Layer] = None,
         length_penalty_weight: FloatTensorLike = 0.0,
         coverage_penalty_weight: FloatTensorLike = 0.0,
@@ -668,10 +801,12 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         """Initialize the BeamSearchDecoder.
 
         Args:
-          cell: An `RNNCell` instance.
+          cell: A layer that implements the `tf.keras.layers.AbstractRNNCell`
+            interface.
           beam_width:  Python integer, the number of beams.
-          embedding_fn: A callable that takes a vector tensor of `ids`
-            (argmax ids).
+          embedding_fn: A callable that takes a `int32` `Tensor` of token IDs
+            and returns embedding tensors. If set, the `embedding` argument in
+            the decoder call should be set to `None`.
           output_layer: (Optional) An instance of `tf.keras.layers.Layer`,
             i.e., `tf.keras.layers.Dense`.  Optional layer to apply to the RNN
             output prior to storing the result or sampling.
@@ -686,10 +821,6 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
             this flag to `False` if the cell state contains `TensorArray`s that
             are not amenable to reordering.
           **kwargs: Dict, other keyword arguments for initialization.
-
-        Raises:
-          TypeError: if `cell` is not an instance of `RNNCell`,
-            or `output_layer` is not an instance of `tf.keras.layers.Layer`.
         """
         super().__init__(
             cell,
@@ -701,45 +832,48 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
             **kwargs,
         )
 
-        if embedding_fn is None or callable(embedding_fn):
-            self._embedding_fn = embedding_fn
-        else:
-            raise ValueError(
-                "embedding_fn is expected to be a callable, got %s" % type(embedding_fn)
-            )
+        self._embedding_fn = embedding_fn
 
     def initialize(self, embedding, start_tokens, end_token, initial_state):
         """Initialize the decoder.
 
         Args:
-          embedding: A tensor from the embedding layer output, which is the
-            `params` argument for `embedding_lookup`.
-          start_tokens: `int32` vector shaped `[batch_size]`, the start tokens.
-          end_token: `int32` scalar, the token that marks end of decoding.
-          initial_state: A (possibly nested tuple of...) tensors and
-          TensorArrays.
+          embedding: A `Tensor` (or `Variable`) to pass as the `params` argument
+            for `tf.nn.embedding_lookup`. This overrides `embedding_fn` set in
+            the constructor.
+          start_tokens: Start the decoding from these tokens.
+            A `int32` `Tensor` of shape `[batch_size]`.
+          end_token: The token that marks the end of decoding.
+            A `int32` scalar `Tensor`.
+          initial_state: The initial cell state as a (possibly nested) structure
+            of `Tensor` and `TensorArray`.
+
         Returns:
           `(finished, start_inputs, initial_state)`.
+
         Raises:
+          ValueError: If `embedding` is `None` and `embedding_fn` was not set
+            in the constructor.
           ValueError: If `start_tokens` is not a vector or `end_token` is not a
             scalar.
         """
-        if embedding is not None and self._embedding_fn is not None:
-            raise ValueError(
-                "embedding and embedding_fn cannot be provided at same time"
-            )
-        elif embedding is not None:
+        if embedding is not None:
             self._embedding_fn = lambda ids: tf.nn.embedding_lookup(embedding, ids)
+        elif self._embedding_fn is None:
+            raise ValueError(
+                "You should either pass an embedding variable when calling the "
+                "BeamSearchDecoder or set embedding_fn in the constructor."
+            )
 
         self._start_tokens = tf.convert_to_tensor(
             start_tokens, dtype=tf.int32, name="start_tokens"
         )
-        if self._start_tokens.get_shape().ndims != 1:
+        if self._start_tokens.shape.ndims != 1:
             raise ValueError("start_tokens must be a vector")
         self._end_token = tf.convert_to_tensor(
             end_token, dtype=tf.int32, name="end_token"
         )
-        if self._end_token.get_shape().ndims != 0:
+        if self._end_token.shape.ndims != 0:
             raise ValueError("end_token must be a scalar")
 
         self._batch_size = tf.size(start_tokens)
@@ -827,6 +961,7 @@ def _beam_search_step(
     end_token,
     length_penalty_weight,
     coverage_penalty_weight,
+    output_all_scores,
 ):
     """Performs a single step of Beam Search Decoding.
 
@@ -847,6 +982,8 @@ def _beam_search_step(
         0.0.
       coverage_penalty_weight: Float weight to penalize the coverage of source
         sentence. Disabled with 0.0.
+      output_all_scores: Bool output scores for every token if True, else only
+        output the top scores.
 
     Returns:
       A new beam state.
@@ -865,7 +1002,7 @@ def _beam_search_step(
     total_probs = tf.expand_dims(beam_state.log_probs, 2) + step_log_probs
 
     # Calculate the continuation lengths by adding to all continuing beams.
-    vocab_size = logits.shape.dims[-1].value or tf.shape(logits)[-1]
+    vocab_size = logits.shape[-1] or tf.shape(logits)[-1]
     lengths_to_add = tf.one_hot(
         indices=tf.fill([batch_size, beam_width], end_token),
         depth=vocab_size,
@@ -994,7 +1131,9 @@ def _beam_search_step(
     )
 
     output = BeamSearchDecoderOutput(
-        scores=next_beam_scores, predicted_ids=next_word_ids, parent_ids=next_beam_ids
+        scores=scores if output_all_scores else next_beam_scores,
+        predicted_ids=next_word_ids,
+        parent_ids=next_beam_ids,
     )
 
     return output, next_state

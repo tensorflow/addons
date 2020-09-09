@@ -14,12 +14,15 @@
 # ==============================================================================
 """Tests for translate ops."""
 
-import pytest
-import tensorflow as tf
 import numpy as np
+import pytest
+import scipy
+import tensorflow as tf
+
+from PIL import Image
 
 from tensorflow_addons.image import translate_ops
-from PIL import Image
+from tensorflow_addons.utils import test_utils
 
 _DTYPES = {
     tf.dtypes.uint8,
@@ -52,7 +55,6 @@ def test_translations_to_projective_transforms():
     np.testing.assert_equal(transform.numpy(), [[1, 0, 1, 0, 1, 1, 0, 0]])
 
 
-# TODO: Parameterize on dtypes
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_translate_xy():
     image = np.random.randint(low=0, high=255, size=(4, 4, 3), dtype=np.uint8)
@@ -74,3 +76,23 @@ def test_translate_xy():
     )
 
     np.testing.assert_equal(translated.numpy(), expected)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", _DTYPES - {tf.dtypes.float16})
+def test_translate_xy_scalar_replace(dtype):
+    image = np.random.randint(low=0, high=128, size=(4, 4, 3)).astype(
+        dtype.as_numpy_dtype
+    )
+    translate_to = np.random.randint(low=0, high=4, size=(2,))
+    result = translate_ops.translate_xy(
+        image=image, translate_to=translate_to, replace=1
+    )
+    expected = scipy.ndimage.shift(
+        input=image,
+        shift=(translate_to[1], translate_to[0], 0),
+        order=0,
+        mode="constant",
+        cval=1,
+    )
+    test_utils.assert_allclose_according_to_type(result.numpy(), expected)

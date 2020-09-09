@@ -15,6 +15,7 @@
 
 import tensorflow as tf
 import math
+import warnings
 
 from tensorflow_addons.utils import types
 from tensorflow_addons.utils.resource_loader import LazySO
@@ -25,15 +26,39 @@ _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
-    """Gaussian Error Linear Unit.
+    r"""Gaussian Error Linear Unit.
 
     Computes gaussian error linear:
-    `0.5 * x * (1 + tanh(sqrt(2 / pi) * (x + 0.044715 * x^3)))` or
-    `x * P(X <= x) = 0.5 * x * (1 + erf(x / sqrt(2)))`, where P(X) ~ N(0, 1),
-    depending on whether approximation is enabled.
+
+    $$
+    \mathrm{gelu}(x) = x \Phi(x),
+    $$
+
+    where
+
+    $$
+    \Phi(x) = \frac{1}{2} \left[ 1 + \mathrm{erf}(\frac{x}{\sqrt{2}}) \right]$
+    $$
+
+    when `approximate` is `False`; or
+
+    $$
+    \Phi(x) = \frac{x}{2} \left[ 1 + \tanh(\sqrt{\frac{2}{\pi}} \cdot (x + 0.044715 \cdot x^3)) \right]
+    $$
+
+    when `approximate` is `True`.
 
     See [Gaussian Error Linear Units (GELUs)](https://arxiv.org/abs/1606.08415)
     and [BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding](https://arxiv.org/abs/1810.04805).
+
+    Usage:
+
+    >>> tfa.options.TF_ADDONS_PY_OPS = True
+    >>> x = tf.constant([-1.0, 0.0, 1.0])
+    >>> tfa.activations.gelu(x, approximate=False)
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.15865529,  0.        ,  0.8413447 ], dtype=float32)>
+    >>> tfa.activations.gelu(x, approximate=True)
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.158808,  0.      ,  0.841192], dtype=float32)>
 
     Args:
         x: A `Tensor`. Must be one of the following types:
@@ -42,6 +67,12 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
     Returns:
         A `Tensor`. Has the same type as `x`.
     """
+    warnings.warn(
+        "gelu activation has been migrated to core TensorFlow, "
+        "and will be deprecated in Addons 0.12.",
+        DeprecationWarning,
+    )
+
     x = tf.convert_to_tensor(x)
 
     if not options.TF_ADDONS_PY_OPS:
@@ -54,6 +85,13 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
 
 
 def _gelu_custom_op(x, approximate):
+    warnings.warn(
+        "The activations custom ops are deprecated and will be removed in TensorFlow Addons "
+        "v0.12.0. \nPlease use the pure python version of Gelu instead by using the "
+        "`TF_ADDONS_PY_OPS` flag. \nFor more info about this flag, see "
+        "https://github.com/tensorflow/addons#gpucpu-custom-ops ",
+        DeprecationWarning,
+    )
     return _activation_so.ops.addons_gelu(x, approximate)
 
 

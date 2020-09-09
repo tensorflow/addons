@@ -24,7 +24,7 @@ from tensorflow_addons.utils.types import TensorLike, FloatTensorLike
 def _get_grid_locations(
     image_height: TensorLike, image_width: TensorLike
 ) -> TensorLike:
-    """Wrapper for np.meshgrid."""
+    """Wrapper for `np.meshgrid`."""
 
     y_range = np.linspace(0, image_height - 1, image_height)
     x_range = np.linspace(0, image_width - 1, image_width)
@@ -39,7 +39,7 @@ def _expand_to_minibatch(np_array: TensorLike, batch_size: TensorLike) -> Tensor
 
 
 def _get_boundary_locations(
-    image_height: TensorLike, image_width: TensorLike, num_points_per_edge: TensorLike,
+    image_height: TensorLike, image_width: TensorLike, num_points_per_edge: TensorLike
 ) -> TensorLike:
     """Compute evenly-spaced indices along edge of image."""
     y_range = np.linspace(0, image_height - 1, num_points_per_edge + 2)
@@ -65,18 +65,18 @@ def _add_zero_flow_controls_at_boundary(
     boundary of the image that have zero flow.
 
     Args:
-      control_point_locations: input control points
-      control_point_flows: their flows
-      image_height: image height
-      image_width: image width
+      control_point_locations: input control points.
+      control_point_flows: their flows.
+      image_height: image height.
+      image_width: image width.
       boundary_points_per_edge: number of points to add in the middle of each
-                            edge (not including the corners).
-                            The total number of points added is
-                            4 + 4*(boundary_points_per_edge).
+        edge (not including the corners).
+        The total number of points added is
+        `4 + 4*(boundary_points_per_edge)`.
 
     Returns:
-      merged_control_point_locations: augmented set of control point locations
-      merged_control_point_flows: augmented set of control point flows
+      merged_control_point_locations: augmented set of control point locations.
+      merged_control_point_flows: augmented set of control point flows.
     """
 
     batch_size = tf.compat.dimension_value(control_point_locations.shape[0])
@@ -121,22 +121,22 @@ def sparse_image_warp(
     Apply a non-linear warp to the image, where the warp is specified by
     the source and destination locations of a (potentially small) number of
     control points. First, we use a polyharmonic spline
-    (`tf.contrib.image.interpolate_spline`) to interpolate the displacements
+    (`tfa.image.interpolate_spline`) to interpolate the displacements
     between the corresponding control points to a dense flow field.
     Then, we warp the image using this dense flow field
-    (`tf.contrib.image.dense_image_warp`).
+    (`tfa.image.dense_image_warp`).
 
-    Let t index our control points. For regularization_weight=0, we have:
+    Let t index our control points. For `regularization_weight = 0`, we have:
     warped_image[b, dest_control_point_locations[b, t, 0],
                     dest_control_point_locations[b, t, 1], :] =
     image[b, source_control_point_locations[b, t, 0],
              source_control_point_locations[b, t, 1], :].
 
-    For regularization_weight > 0, this condition is met approximately, since
+    For `regularization_weight > 0`, this condition is met approximately, since
     regularized interpolation trades off smoothness of the interpolant vs.
     reconstruction of the interpolant at the control points.
-    See `tf.contrib.image.interpolate_spline` for further documentation of the
-    interpolation_order and regularization_weight arguments.
+    See `tfa.image.interpolate_spline` for further documentation of the
+    `interpolation_order` and `regularization_weight` arguments.
 
 
     Args:
@@ -148,12 +148,12 @@ def sparse_image_warp(
       interpolation_order: polynomial order used by the spline interpolation
       regularization_weight: weight on smoothness regularizer in interpolation
       num_boundary_points: How many zero-flow boundary points to include at
-        each image edge.Usage:
-          num_boundary_points=0: don't add zero-flow points
-          num_boundary_points=1: 4 corners of the image
-          num_boundary_points=2: 4 corners and one in the middle of each edge
+        each image edge. Usage:
+          `num_boundary_points=0`: don't add zero-flow points
+          `num_boundary_points=1`: 4 corners of the image
+          `num_boundary_points=2`: 4 corners and one in the middle of each edge
             (8 points total)
-          num_boundary_points=n: 4 corners and n-1 along each edge
+          `num_boundary_points=n`: 4 corners and n-1 along each edge
       name: A name for the operation (optional).
 
       Note that image and offsets can be of type tf.half, tf.float32, or

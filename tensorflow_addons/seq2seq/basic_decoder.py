@@ -29,6 +29,16 @@ from typing import Optional
 class BasicDecoderOutput(
     collections.namedtuple("BasicDecoderOutput", ("rnn_output", "sample_id"))
 ):
+    """Outputs of a `BasicDecoder` step.
+
+    Attributes:
+      rnn_output: The output for this step. If the `output_layer` argument
+         of `BasicDecoder` was set, it is the output of this layer, otherwise it
+         is the output of the RNN cell.
+      sample_id: The token IDs sampled for this step, as returned by the
+        `sampler` instance passed to `BasicDecoder`.
+    """
+
     pass
 
 
@@ -46,26 +56,15 @@ class BasicDecoder(decoder.BaseDecoder):
         """Initialize BasicDecoder.
 
         Args:
-          cell: An `RNNCell` instance.
+          cell: A layer that implements the `tf.keras.layers.AbstractRNNCell`
+            interface.
           sampler: A `Sampler` instance.
-          output_layer: (Optional) An instance of `tf.layers.Layer`, i.e.,
-            `tf.layers.Dense`. Optional layer to apply to the RNN output prior
-             to storing the result or sampling.
+          output_layer: (Optional) An instance of `tf.keras.layers.Layer`, i.e.,
+            `tf.keras.layers.Dense`. Optional layer to apply to the RNN output
+             prior to storing the result or sampling.
           **kwargs: Other keyword arguments for layer creation.
-
-        Raises:
-          TypeError: if `cell`, `helper` or `output_layer` have an incorrect
-          type.
         """
         keras_utils.assert_like_rnncell("cell", cell)
-        if not isinstance(sampler, sampler_py.Sampler):
-            raise TypeError("sampler must be a Sampler, received: {}".format(sampler))
-        if output_layer is not None and not isinstance(
-            output_layer, tf.keras.layers.Layer
-        ):
-            raise TypeError(
-                "output_layer must be a Layer, received: {}".format(output_layer)
-            )
         self.cell = cell
         self.sampler = sampler
         self.output_layer = output_layer
@@ -132,6 +131,7 @@ class BasicDecoder(decoder.BaseDecoder):
           `(outputs, next_state, next_inputs, finished)`.
         """
         cell_outputs, cell_state = self.cell(inputs, state, training=training)
+        cell_state = tf.nest.pack_sequence_as(state, tf.nest.flatten(cell_state))
         if self.output_layer is not None:
             cell_outputs = self.output_layer(cell_outputs)
         sample_ids = self.sampler.sample(

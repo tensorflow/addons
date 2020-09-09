@@ -10,9 +10,6 @@ on:
       - master
       - r*
 
-env:
-  BAZEL_VERSION: 1.1.0
-
 jobs:
   flake8-test:
     name: Flake8
@@ -78,7 +75,7 @@ jobs:
         with:
           python-version: 3.5
       - uses: actions/checkout@v2
-      - run: pip install -r tools/install_deps/tensorflow-cpu.txt -r tools/install_deps/pytest.txt
+      - run: pip install --default-timeout=1000 -r tools/install_deps/tensorflow-cpu.txt -r tools/install_deps/pytest.txt
       - run: pip install -e ./
       - run: pytest -v -n auto --skip-custom-ops ./tensorflow_addons
   test_cpu_in_small_docker_image:

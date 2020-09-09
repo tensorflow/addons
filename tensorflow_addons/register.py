@@ -83,7 +83,7 @@ def register_custom_kernels() -> None:
     if not all_shared_objects:
         raise FileNotFoundError(
             "No shared objects files were found in the custom ops "
-            "directory in Tensorflow Addons, check your installation again,"
+            "directory in Tensorflow Addons, check your installation again, "
             "or, if you don't need custom ops, call `tfa.register_all(custom_kernels=False)`"
             " instead."
         )
@@ -94,7 +94,7 @@ def register_custom_kernels() -> None:
         raise RuntimeError(
             "One of the shared objects ({}) could not be loaded. This may be "
             "due to a number of reasons (incompatible TensorFlow version, buiding from "
-            "source with different flags, broken install of TensorFlow Addons...). If you"
+            "source with different flags, broken install of TensorFlow Addons...). If you "
             "wanted to register the shared objects because you needed them when loading your "
             "model, you should fix your install of TensorFlow Addons. If you don't "
             "use custom ops in your model, you can skip registering custom ops with "

@@ -25,9 +25,9 @@ set.
 
 import tensorflow as tf
 from tensorflow_addons.optimizers.average_wrapper import AveragedOptimizerWrapper
+from tensorflow_addons.utils import types
 
 from typeguard import typechecked
-from typing import Union
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -74,7 +74,7 @@ class SWA(AveragedOptimizerWrapper):
     @typechecked
     def __init__(
         self,
-        optimizer: Union[tf.keras.optimizers.Optimizer, str],
+        optimizer: types.Optimizer,
         start_averaging: int = 0,
         average_period: int = 10,
         name: str = "SWA",
@@ -117,31 +117,27 @@ class SWA(AveragedOptimizerWrapper):
         self._set_hyper("average_period", average_period)
         self._set_hyper("start_averaging", start_averaging)
 
+    @tf.function
     def average_op(self, var, average_var):
         average_period = self._get_hyper("average_period", tf.dtypes.int64)
         start_averaging = self._get_hyper("start_averaging", tf.dtypes.int64)
-        # check if the correct number of iterations has taken place to start
-        # averaging.
-        thresold_cond = tf.greater_equal(self.iterations, start_averaging)
         # number of times snapshots of weights have been taken (using max to
         # avoid negative values of num_snapshots).
         num_snapshots = tf.math.maximum(
             tf.cast(0, tf.int64),
             tf.math.floordiv(self.iterations - start_averaging, average_period),
         )
-        # checks if the iteration is one in which a snapshot should be taken.
-        sync_cond = tf.equal(
-            start_averaging + num_snapshots * average_period, self.iterations
-        )
-        num_snapshots = tf.cast(num_snapshots, tf.float32)
-        average_value = (average_var * num_snapshots + var) / (num_snapshots + 1.0)
-        average_cond = tf.reduce_all([thresold_cond, sync_cond])
-        with tf.control_dependencies([average_value]):
-            average_update = average_var.assign(
-                tf.where(average_cond, average_value, average_var,),
-                use_locking=self._use_locking,
-            )
-        return average_update
+
+        # The average update should happen iff two conditions are met:
+        # 1. A min number of iterations (start_averaging) have taken place.
+        # 2. Iteration is one in which snapshot should be taken.
+        checkpoint = start_averaging + num_snapshots * average_period
+        if self.iterations >= start_averaging and self.iterations == checkpoint:
+            num_snapshots = tf.cast(num_snapshots, tf.float32)
+            average_value = (average_var * num_snapshots + var) / (num_snapshots + 1.0)
+            return average_var.assign(average_value, use_locking=self._use_locking)
+
+        return average_var
 
     def get_config(self):
         config = {

@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
+import warnings
 import tensorflow as tf
 from tensorflow_addons.utils.types import Number
 
@@ -27,10 +28,24 @@ _activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 def softshrink(
     x: types.TensorLike, lower: Number = -0.5, upper: Number = 0.5
 ) -> tf.Tensor:
-    """Soft shrink function.
+    r"""Soft shrink function.
 
     Computes soft shrink function:
-    `x - lower if x < lower, x - upper if x > upper else 0`.
+
+    $$
+    \mathrm{softshrink}(x) =
+    \begin{cases}
+        x - \mathrm{lower} & \text{if } x < \mathrm{lower} \\
+        x - \mathrm{upper} & \text{if } x > \mathrm{upper} \\
+        0                  & \text{otherwise}
+    \end{cases}.
+    $$
+
+    Usage:
+
+    >>> x = tf.constant([-1.0, 0.0, 1.0])
+    >>> tfa.activations.softshrink(x)
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.5,  0. ,  0.5], dtype=float32)>
 
     Args:
         x: A `Tensor`. Must be one of the following types:
@@ -52,6 +67,15 @@ def softshrink(
 
 
 def _softshrink_custom_op(x, lower, upper):
+    warnings.warn(
+        "The activations custom ops are deprecated and will be "
+        "removed in TensorFlow Addons "
+        "v0.12.0. \nPlease use the pure python version of softshrink instead "
+        "by using the "
+        "`TF_ADDONS_PY_OPS` flag. \nFor more info about this flag, see "
+        "https://github.com/tensorflow/addons#gpucpu-custom-ops ",
+        DeprecationWarning,
+    )
     return _activation_so.ops.addons_softshrink(x, lower, upper)
 
 

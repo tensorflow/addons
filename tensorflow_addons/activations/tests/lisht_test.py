@@ -23,6 +23,7 @@ from tensorflow_addons.utils import test_utils
 
 
 @pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_theoretical_gradients(dtype):
     # Only test theoretical gradients for float32 and float64
     # because of the instability of float16 while computing jacobian
@@ -35,6 +36,7 @@ def test_theoretical_gradients(dtype):
 
 
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_lisht(dtype):
     x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
     expected_result = tf.constant(

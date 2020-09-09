@@ -16,6 +16,7 @@
 from typing import Tuple
 
 import tensorflow as tf
+from tensorflow.keras import backend as K
 from tensorflow.keras.metrics import Metric
 from tensorflow.python.ops import weights_broadcast_ops
 
@@ -29,8 +30,7 @@ VALID_MULTIOUTPUT = {"raw_values", "uniform_average", "variance_weighted"}
 def _reduce_average(
     input_tensor: tf.Tensor, axis=None, keepdims=False, weights=None
 ) -> tf.Tensor:
-    """Computes the (weighted) mean of elements across dimensions of a tensor.
-  """
+    """Computes the (weighted) mean of elements across dimensions of a tensor."""
     if weights is None:
         return tf.reduce_mean(input_tensor, axis=axis, keepdims=keepdims)
 
@@ -115,7 +115,7 @@ class RSquare(Metric):
         self.sum.assign_add(tf.reduce_sum(weighted_y_true, axis=0))
         self.squared_sum.assign_add(tf.reduce_sum(y_true * weighted_y_true, axis=0))
         self.res.assign_add(
-            tf.reduce_sum((y_true - y_pred) ** 2 * sample_weight, axis=0,)
+            tf.reduce_sum((y_true - y_pred) ** 2 * sample_weight, axis=0)
         )
         self.count.assign_add(tf.reduce_sum(sample_weight, axis=0))
 
@@ -126,20 +126,16 @@ class RSquare(Metric):
 
         if self.multioutput == "raw_values":
             return raw_scores
-        elif self.multioutput == "uniform_average":
+        if self.multioutput == "uniform_average":
             return tf.reduce_mean(raw_scores)
-        elif self.multioutput == "variance_weighted":
+        if self.multioutput == "variance_weighted":
             return _reduce_average(raw_scores, weights=total)
-        else:
-            raise RuntimeError(
-                "The multioutput attribute must be one of {}, but was: {}".format(
-                    VALID_MULTIOUTPUT, self.multioutput
-                )
+        raise RuntimeError(
+            "The multioutput attribute must be one of {}, but was: {}".format(
+                VALID_MULTIOUTPUT, self.multioutput
             )
+        )
 
     def reset_states(self) -> None:
         # The state of the metric will be reset at the start of each epoch.
-        self.squared_sum.assign(0)
-        self.sum.assign(0)
-        self.res.assign(0)
-        self.count.assign(0)
+        K.batch_set_value([(v, tf.zeros_like(v)) for v in self.variables])

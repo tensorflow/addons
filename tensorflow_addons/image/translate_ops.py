@@ -28,13 +28,13 @@ def translations_to_projective_transforms(
     """Returns projective transform(s) for the given translation(s).
 
     Args:
-        translations: A 2-element list representing [dx, dy] or a matrix of
-            2-element lists representing [dx, dy] to translate for each image
+        translations: A 2-element list representing `[dx, dy]` or a matrix of
+            2-element lists representing `[dx, dy]` to translate for each image
             (for a batch of images). The rank must be statically known
             (the shape is not `TensorShape(None)`).
         name: The name of the op.
     Returns:
-        A tensor of shape (num_images, 8) projective transforms which can be
+        A tensor of shape `(num_images, 8)` projective transforms which can be
         given to `tfa.image.transform`.
     """
     with tf.name_scope(name or "translations_to_projective_transforms"):
@@ -81,12 +81,12 @@ def translate(
 
     Args:
       images: A tensor of shape
-          (num_images, num_rows, num_columns, num_channels) (NHWC),
-          (num_rows, num_columns, num_channels) (HWC), or
-          (num_rows, num_columns) (HW). The rank must be statically known (the
+          `(num_images, num_rows, num_columns, num_channels)` (NHWC),
+          `(num_rows, num_columns, num_channels)` (HWC), or
+          `(num_rows, num_columns)` (HW). The rank must be statically known (the
           shape is not `TensorShape(None)`).
-      translations: A vector representing [dx, dy] or (if images has rank 4)
-          a matrix of length num_images, with a [dx, dy] vector for each image
+      translations: A vector representing `[dx, dy]` or (if `images` has rank 4)
+          a matrix of length num_images, with a `[dx, dy]` vector for each image
           in the batch.
       interpolation: Interpolation mode. Supported values: "NEAREST",
           "BILINEAR".
@@ -107,20 +107,22 @@ def translate(
 
 
 def translate_xy(
-    image: TensorLike, translate_to: TensorLike, replace: int
+    image: TensorLike, translate_to: TensorLike, replace: TensorLike
 ) -> TensorLike:
     """Translates image in X or Y dimension.
+
     Args:
-        image: A 3D image Tensor.
-        translate_to: A 1D tensor to translate [x, y]
-        replace: A one or three value 1D tensor to fill empty pixels.
+        image: A 3D image `Tensor`.
+        translate_to: A 1D `Tensor` to translate `[x, y]`.
+        replace: A one or three value 1D `Tensor` to fill empty pixels.
     Returns:
         Translated image along X or Y axis, with space outside image
-        filled with replace.
+            filled with replace.
     Raises:
-        ValueError: if axis is neither 0 nor 1."""
+        ValueError: if axis is neither 0 nor 1.
+    """
+    image = tf.convert_to_tensor(image)
     image = wrap(image)
     trans = tf.convert_to_tensor(translate_to)
-    image = translate(image, [trans.numpy()[0], 0])
-    image = translate(image, [0, trans.numpy()[1]])
+    image = translate(image, [trans[0], trans[1]])
     return unwrap(image, replace)

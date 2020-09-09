@@ -61,7 +61,7 @@ def gen_labels_and_preds(num_samples, num_classes, seed):
 def test_linear_weighted_kappa_loss(np_seed):
     y_true, y_pred = gen_labels_and_preds(50, 4, np_seed)
     kappa_loss = WeightedKappaLoss(num_classes=4, weightage="linear")
-    y_pred = y_pred.astype(kappa_loss.dtype.as_numpy_dtype)
+    y_pred = y_pred.astype(np.float32)
     loss = kappa_loss(y_true, y_pred)
     loss_np = weighted_kappa_loss_np(y_true, y_pred, weightage="linear")
     np.testing.assert_allclose(loss, loss_np, rtol=1e-5, atol=1e-5)
@@ -71,7 +71,7 @@ def test_linear_weighted_kappa_loss(np_seed):
 def test_quadratic_weighted_kappa_loss(np_seed):
     y_true, y_pred = gen_labels_and_preds(100, 3, np_seed)
     kappa_loss = WeightedKappaLoss(num_classes=3)
-    y_pred = y_pred.astype(kappa_loss.dtype.as_numpy_dtype)
+    y_pred = y_pred.astype(np.float32)
     loss = kappa_loss(y_true, y_pred)
     loss_np = weighted_kappa_loss_np(y_true, y_pred)
     np.testing.assert_allclose(loss, loss_np, rtol=1e-5, atol=1e-5)
@@ -79,7 +79,7 @@ def test_quadratic_weighted_kappa_loss(np_seed):
 
 def test_config():
     kappa_loss = WeightedKappaLoss(
-        num_classes=4, weightage="linear", name="kappa_loss", epsilon=0.001,
+        num_classes=4, weightage="linear", name="kappa_loss", epsilon=0.001
     )
     assert kappa_loss.num_classes == 4
     assert kappa_loss.weightage == "linear"
@@ -90,3 +90,14 @@ def test_config():
 def test_serialization():
     loss = WeightedKappaLoss(num_classes=3)
     tf.keras.losses.deserialize(tf.keras.losses.serialize(loss))
+
+
+def test_save_model(tmpdir):
+    model = tf.keras.models.Sequential(
+        [
+            tf.keras.layers.Input((256, 256, 3)),
+            tf.keras.layers.Dense(6, activation="softmax"),
+        ]
+    )
+    model.compile(optimizer="adam", loss=WeightedKappaLoss(num_classes=6))
+    model.save(str(tmpdir / "test.h5"))

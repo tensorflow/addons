@@ -15,6 +15,7 @@
 """Matthews Correlation Coefficient Implementation."""
 
 import tensorflow as tf
+from tensorflow.keras import backend as K
 
 from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
 from typeguard import typechecked
@@ -153,7 +154,5 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
 
     def reset_states(self):
         """Resets all of the metric state variables."""
-        self.true_positives.assign(tf.zeros((self.num_classes), self.dtype))
-        self.false_positives.assign(tf.zeros((self.num_classes), self.dtype))
-        self.false_negatives.assign(tf.zeros((self.num_classes), self.dtype))
-        self.true_negatives.assign(tf.zeros((self.num_classes), self.dtype))
+        reset_value = tf.zeros(self.num_classes, dtype=self.dtype)
+        K.batch_set_value([(v, reset_value) for v in self.variables])
