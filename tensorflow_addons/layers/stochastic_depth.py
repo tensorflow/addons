@@ -16,7 +16,7 @@ class StochasticDepth(tf.keras.layers.Layer):
 
     >>> input = np.ones((1, 3, 3, 1), dtype = np.float32)
     >>> residual = tf.keras.layers.Conv2D(1, 1)(input)
-    >>> output = tfa.layers.StochasticDepth()([input, residual])
+    >>> output = tfa.layers.Add()([input, residual])
 
     StochasticDepth acts as a drop-in replacement for the addition:
 
