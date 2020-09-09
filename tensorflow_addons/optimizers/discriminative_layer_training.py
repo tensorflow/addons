@@ -17,7 +17,7 @@
 import tensorflow as tf
 from typeguard import typechecked
 from typing import Union
-from tensorflow.python.keras.optimizer_v2 import optimizer_v2
+from tensorflow.keras.optimizers import Optimizer
 
 # python -m flake8 tensorflow_addons/optimizers/discriminative_layer_training.py
 # python -m black tensorflow_addons/optimizers/discriminative_layer_training.py
@@ -30,12 +30,12 @@ class FakeVar:
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class MultiOpt(optimizer_v2.OptimizerV2):
+class MultiOpt(Optimizer):
     @typechecked
     def __init__(
         self,
-        optimizer_layer_pairs: Union[list, None],
-        optimizer_specs: Union[list, None],
+        optimizer_layer_pairs: Union[list, None] = None,
+        optimizer_specs: Union[list, None] = None,
         name: str = "MultiOpt",
         **kwargs
     ):
@@ -79,13 +79,13 @@ class MultiOpt(optimizer_v2.OptimizerV2):
 
         super(MultiOpt, self).__init__(name, **kwargs)
 
-        if any(optimizer_layer_pairs) and not any(optimizer_specs):
+        if optimizer_specs is None and optimizer_layer_pairs is not None:
             self.optimizer_specs = [
                 self.create_optimizer_spec(opt, layer)
                 for opt, layer in optimizer_layer_pairs
             ]
 
-        elif any(optimizer_specs):
+        elif optimizer_specs is not None and optimizer_layer_pairs is None:
             self.optimizer_specs = optimizer_specs
 
         else:
@@ -99,9 +99,7 @@ class MultiOpt(optimizer_v2.OptimizerV2):
 
         self.lr = self.initialized_optimizer_specs[0]["optimizer"].lr
 
-    def apply_gradients(
-        self, grads_and_vars, name=None, experimental_aggregate_gradients=True
-    ):
+    def apply_gradients(self, grads_and_vars, name=None):
         """
         Wrapped Gradient Apply method. Returns a list of tf ops to be executed.
         """
