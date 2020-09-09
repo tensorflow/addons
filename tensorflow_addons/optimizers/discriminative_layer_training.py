@@ -41,7 +41,6 @@ class MultiOpt(optimizer_v2.OptimizerV2):
     ):
 
         """
-
         Creates a wrapper around a set of instantiated optimizer layer pairs.
 
         Each optimizer will optimize only the weights associated with its paired layer. This can be used

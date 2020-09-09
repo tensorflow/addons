@@ -21,8 +21,8 @@ from tensorflow_addons.optimizers.discriminative_layer_training import MultiOpt
 import tensorflow as tf
 from tensorflow_addons.utils import test_utils
 
-# python -m flake8 tensorflow_addons/optimizers/discriminative_layer_training.py
-# python -m black tensorflow_addons/optimizers/discriminative_layer_training.py
+# python -m flake8 tensorflow_addons/optimizers/tests/discriminative_layer_training_test.py
+# python -m black tensorflow_addons/optimizers/tests/discriminative_layer_training_test.py
 
 
 def _dtypes_to_test(use_gpu):
@@ -38,6 +38,7 @@ def _dtypes_to_test(use_gpu):
         return [tf.float32, tf.float64]
     else:
         return [tf.half, tf.float32, tf.float64]
+
 
 def _dtypes_with_checking_system(use_gpu, system):
     # Based on issue #36764 in the following link,
@@ -59,16 +60,17 @@ def test_fit_layer_optimizer(dtype, device):
     if "gpu" in device and dtype == tf.float16:
         pytest.xfail("See https://github.com/tensorflow/addons/issues/347")
 
-    model = tf.keras.Sequential([tf.keras.Input(shape = [1]),
-                               tf.keras.layers.Dense(1),
-                                tf.keras.layers.Dense(1)
-                ])
+    model = tf.keras.Sequential(
+        [tf.keras.Input(shape=[1]), tf.keras.layers.Dense(1), tf.keras.layers.Dense(1)]
+    )
 
     x = np.array(np.ones([100]))
     y = np.array(np.ones([100]))
 
-    weights_before_train = (model.layers[0].weights[0].numpy(),
-                            model.layers[1].weights[0].numpy())
+    weights_before_train = (
+        model.layers[0].weights[0].numpy(),
+        model.layers[1].weights[0].numpy(),
+    )
 
     opt1 = tf.keras.optimizers.Adam(learning_rate=1e-3)
     opt2 = tf.keras.optimizers.SGD(learning_rate=0)
@@ -78,17 +80,22 @@ def test_fit_layer_optimizer(dtype, device):
     loss = tf.keras.losses.MSE
     optimizer = MultiOpt(opt_layer_pairs)
 
-    model.compile(optimizer=optimizer,
-            loss = loss)
+    model.compile(optimizer=optimizer, loss=loss)
 
     model.fit(x, y, batch_size=8, epochs=10)
 
-    weights_after_train = (model.layers[0].weights[0].numpy(),
-                            model.layers[1].weights[0].numpy())
+    weights_after_train = (
+        model.layers[0].weights[0].numpy(),
+        model.layers[1].weights[0].numpy(),
+    )
 
     with np.testing.assert_raises(AssertionError):
         # expect weights to be different for layer 1
-        test_utils.assert_allclose_according_to_type(weights_before_train[0], weights_after_train[0])
+        test_utils.assert_allclose_according_to_type(
+            weights_before_train[0], weights_after_train[0]
+        )
 
     # expect weights to be same for layer 2
-    test_utils.assert_allclose_according_to_type(weights_before_train[1], weights_after_train[1])
+    test_utils.assert_allclose_according_to_type(
+        weights_before_train[1], weights_after_train[1]
+    )
