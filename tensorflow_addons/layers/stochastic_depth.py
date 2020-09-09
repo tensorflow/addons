@@ -17,12 +17,16 @@ class StochasticDepth(tf.keras.layers.Layer):
     >>> input = np.ones((1, 3, 3, 1), dtype = np.float32)
     >>> residual = tf.keras.layers.Conv2D(1, 1)(input)
     >>> output = tf.keras.layers.Add()([input, residual])
+    >>> output.shape
+    TensorShape([1, 3, 3, 1])
 
     StochasticDepth acts as a drop-in replacement for the addition:
 
     >>> input = np.ones((1, 3, 3, 1), dtype = np.float32)
     >>> residual = tf.keras.layers.Conv2D(1, 1)(input)
     >>> output = tfa.layers.StochasticDepth()([input, residual])
+    >>> output.shape
+    TensorShape([1, 3, 3, 1])
 
     At train time, StochasticDepth returns:
 
@@ -30,7 +34,7 @@ class StochasticDepth(tf.keras.layers.Layer):
     x[0] + b_l * x[1]
     $$
 
-    , where $b_l$ is a random Bernoulli variable with probability $p(b_l == 1) == p_l$
+    , where $b_l$ is a random Bernoulli variable with probability $P(b_l = 1) = p_l$
 
     At test time, StochasticDepth rescales the activations of the residual branch based on the survival probability ($p_l$):
 
@@ -42,8 +46,7 @@ class StochasticDepth(tf.keras.layers.Layer):
         survival_probability: float, the probability of the residual branch being kept.
 
     Call Arguments:
-        inputs:  List of `[shortcut, residual]` where
-            * `shortcut`, and `residual` are tensors of equal shape.
+        inputs:  List of `[shortcut, residual]` where `shortcut`, and `residual` are tensors of equal shape.
 
     Output shape:
         Equal to the shape of inputs `shortcut`, and `residual`
@@ -56,8 +59,8 @@ class StochasticDepth(tf.keras.layers.Layer):
         self.survival_probability = survival_probability
 
     def call(self, x, training=None):
-        assert isinstance(x, list), "Input must be a list"
-        assert len(x) == 2, "Input must have exactly two entries"
+        if not isinstance(x, list) or len(x) != 2:
+            raise ValueError("input must be a list of length 2.")
 
         shortcut, residual = x
 
@@ -75,8 +78,8 @@ class StochasticDepth(tf.keras.layers.Layer):
         )
 
     def compute_output_shape(self, input_shape):
-        assert isinstance(input_shape, list), "Input must be a list"
-        assert len(input_shape) == 2, "Input must have exactly two entries"
+        if not isinstance(input_shape, list) or len(input_shape) != 2:
+            raise ValueError("input_shape must be a list of length 2.")
 
         return input_shape[0]
 

@@ -1,7 +1,7 @@
 import pytest
-
 import numpy as np
 import tensorflow as tf
+
 from tensorflow_addons.layers.stochastic_depth import StochasticDepth
 from tensorflow_addons.utils import test_utils
 
