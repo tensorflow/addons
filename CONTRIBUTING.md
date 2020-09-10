@@ -25,6 +25,13 @@ All submissions, including submissions by project members, require
 review.
 
 ## Requirements for New Contributions to the Repository
+
+**All new components/features to Addons need to first be submitted as a feature 
+request issue. This will allow the team to check with our counterparts in the TF
+ecosystem and ensure it is not roadmapped internally for Keras or TF core. These 
+feature requests will be labeled with `grace` while we determine if it should be 
+included in Addons.**
+
 The tensorflow/addons repository contains additional functionality
 fitting the following criteria:
 
