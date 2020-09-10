@@ -139,9 +139,9 @@ def _test_specific_layer(inputs, axis, groups, center, scale):
 
     group_reduction_axes = list(range(1, len(reshaped_dims)))
     if not is_instance_norm:
-      axis = -2 if axis == -1 else axis - 1
+        axis = -2 if axis == -1 else axis - 1
     else:
-      axis = -1 if axis == -1 else axis - 1
+        axis = -1 if axis == -1 else axis - 1
     group_reduction_axes.pop(axis)
 
     # Calculate mean and variance
