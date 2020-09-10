@@ -325,6 +325,24 @@ bazel test -c opt -k \
 //tensorflow_addons/...
 ```
 
+#### Testing docstrings
+
+We use [DocTest](https://docs.python.org/3/library/doctest.html) to test code snippets
+in Python docstrings. The snippet must be executable Python code.
+To enable testing, prepend the line with `>>>` (three left-angle brackets).
+Available namespace include `np` for numpy, `tf` for TensorFlow, and `tfa` for TensorFlow Addons.
+See [docs_ref](https://www.tensorflow.org/community/contribute/docs_ref) for more details.
+
+To test docstrings locally, run either
+```bash
+bash tools/run_cpu_tests.sh
+```
+on all files, or
+```bash
+pytest -v -n auto --durations=25 --doctest-modules /path/to/pyfile
+```
+on specific files.
+
 ## About type hints
 
 Ideally, we would like all the functions and classes constructors exposed in 
