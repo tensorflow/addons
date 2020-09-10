@@ -211,8 +211,7 @@ def _get_gaussian_kernel(sigma, filter_shape):
     sigma = tf.convert_to_tensor(sigma)
     x = tf.range(-filter_shape // 2 + 1, filter_shape // 2 + 1)
     x = tf.cast(x ** 2, sigma.dtype)
-    x = tf.exp(-x / (2.0 * (sigma ** 2)))
-    x = x / tf.math.reduce_sum(x)
+    x = tf.nn.softmax(-x / (2.0 * (sigma ** 2)))
     return x
 
 
@@ -291,18 +290,16 @@ def gaussian_filter2d(
 
         sigma = tf.cast(sigma, image.dtype)
         gaussian_kernel_x = _get_gaussian_kernel(sigma[1], filter_shape[1])
-        gaussian_kernel_x = tf.reshape(gaussian_kernel_x, [1, filter_shape[1]])
+        gaussian_kernel_x = gaussian_kernel_x[tf.newaxis, :]
 
         gaussian_kernel_y = _get_gaussian_kernel(sigma[0], filter_shape[0])
-        gaussian_kernel_y = tf.reshape(gaussian_kernel_y, [filter_shape[0], 1])
+        gaussian_kernel_y = gaussian_kernel_y[:, tf.newaxis]
 
         gaussian_kernel_2d = _get_gaussian_kernel_2d(
             gaussian_kernel_y, gaussian_kernel_x
         )
-        gaussian_kernel_2d = tf.repeat(gaussian_kernel_2d, channels)
-        gaussian_kernel_2d = tf.reshape(
-            gaussian_kernel_2d, [filter_shape[0], filter_shape[1], channels, 1]
-        )
+        gaussian_kernel_2d = gaussian_kernel_2d[:, :, tf.newaxis, tf.newaxis]
+        gaussian_kernel_2d = tf.tile(gaussian_kernel_2d, [1, 1, channels, 1])
 
         image = _pad(image, filter_shape, mode=padding, constant_values=constant_values)
 
