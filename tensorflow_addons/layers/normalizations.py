@@ -125,7 +125,8 @@ class GroupNormalization(tf.keras.layers.Layer):
 
         normalized_inputs = self._apply_normalization(reshaped_inputs, input_shape)
 
-        if not self.is_instance_norm:
+        is_instance_norm = (input_shape[self.axis] // self.groups) == 1
+        if not is_instance_norm:
             outputs = tf.reshape(normalized_inputs, tensor_input_shape)
         else:
             outputs = normalized_inputs
@@ -159,7 +160,8 @@ class GroupNormalization(tf.keras.layers.Layer):
     def _reshape_into_groups(self, inputs, input_shape, tensor_input_shape):
 
         group_shape = [tensor_input_shape[i] for i in range(len(input_shape))]
-        if not self.is_instance_norm:
+        is_instance_norm = (input_shape[self.axis] // self.groups) == 1
+        if not is_instance_norm:
             group_shape[self.axis] = input_shape[self.axis] // self.groups
             group_shape.insert(self.axis, self.groups)
             group_shape = tf.stack(group_shape)
@@ -172,7 +174,8 @@ class GroupNormalization(tf.keras.layers.Layer):
 
         group_shape = tf.keras.backend.int_shape(reshaped_inputs)
         group_reduction_axes = list(range(1, len(group_shape)))
-        if not self.is_instance_norm:
+        is_instance_norm = (input_shape[self.axis] // self.groups) == 1
+        if not is_instance_norm:
             axis = -2 if self.axis == -1 else self.axis - 1
         else:
             axis = -1 if self.axis == -1 else self.axis - 1
@@ -216,13 +219,8 @@ class GroupNormalization(tf.keras.layers.Layer):
     def _set_number_of_groups_for_instance_norm(self, input_shape):
         dim = input_shape[self.axis]
 
-        # is_instance_norm is used to avoid unneccessary reshape ops, which
-        # might prevent the TF layout optimization from eliding redundant
-        # transpose nodes.
-        self.is_instance_norm = False
         if self.groups == -1:
             self.groups = dim
-            self.is_instance_norm = True
 
     def _check_size_of_dimensions(self, input_shape):
 
@@ -288,7 +286,8 @@ class GroupNormalization(tf.keras.layers.Layer):
 
     def _create_broadcast_shape(self, input_shape):
         broadcast_shape = [1] * len(input_shape)
-        if not self.is_instance_norm:
+        is_instance_norm = (input_shape[self.axis] // self.groups) == 1
+        if not is_instance_norm:
             broadcast_shape[self.axis] = input_shape[self.axis] // self.groups
             broadcast_shape.insert(self.axis, self.groups)
         else:
