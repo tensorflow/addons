@@ -48,6 +48,15 @@ def test_weights():
     assert len(layer.trainable_weights) == 2
     assert len(layer.weights) == 2
 
+def test_instance_norm_flag_after_build():
+    # Check if instance norm flag get initialized correctly
+    layer = InstanceNormalization()
+    layer.build((None, 3, 4))
+    assert layer.is_instance_norm
+
+    layer = GroupNormalization()
+    layer.build((None, 3, 4))
+    assert not layer.is_instance_norm
 
 def test_apply_normalization():
     input_shape = (1, 4)
