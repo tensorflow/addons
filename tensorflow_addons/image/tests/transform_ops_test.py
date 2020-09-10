@@ -68,6 +68,62 @@ def test_extreme_projective_transform(dtype):
     )
 
 
+@pytest.mark.with_device(["cpu", "gpu"])
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", _DTYPES)
+def test_transform_constant_fill_mode(dtype):
+    image = tf.constant(
+        [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]], dtype=dtype
+    )
+    expected = np.asarray(
+        [[0, 0, 1, 2], [0, 4, 5, 6], [0, 8, 9, 10], [0, 12, 13, 14]],
+        dtype=dtype.as_numpy_dtype,
+    )
+    # Translate right by 1 (the transformation matrix is always inverted,
+    # hence the -1).
+    translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0], dtype=tf.float32)
+    image_transformed = transform_ops.transform(
+        image, translation, fill_mode="constant"
+    )
+    np.testing.assert_equal(image_transformed.numpy(), expected)
+
+
+@pytest.mark.with_device(["cpu", "gpu"])
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", _DTYPES)
+def test_transform_reflect_fill_mode(dtype):
+    image = tf.constant(
+        [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]], dtype=dtype
+    )
+    expected = np.asarray(
+        [[0, 0, 1, 2], [4, 4, 5, 6], [8, 8, 9, 10], [12, 12, 13, 14]],
+        dtype=dtype.as_numpy_dtype,
+    )
+    # Translate right by 1 (the transformation matrix is always inverted,
+    # hence the -1).
+    translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0], dtype=tf.float32)
+    image_transformed = transform_ops.transform(image, translation, fill_mode="reflect")
+    np.testing.assert_equal(image_transformed.numpy(), expected)
+
+
+@pytest.mark.with_device(["cpu", "gpu"])
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", _DTYPES)
+def test_transform_wrap_fill_mode(dtype):
+    image = tf.constant(
+        [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]], dtype=dtype
+    )
+    expected = np.asarray(
+        [[3, 0, 1, 2], [7, 4, 5, 6], [11, 8, 9, 10], [15, 12, 13, 14]],
+        dtype=dtype.as_numpy_dtype,
+    )
+    # Translate right by 1 (the transformation matrix is always inverted,
+    # hence the -1).
+    translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0], dtype=tf.float32)
+    image_transformed = transform_ops.transform(image, translation, fill_mode="wrap")
+    np.testing.assert_equal(image_transformed.numpy(), expected)
+
+
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_transform_static_output_shape():
     image = tf.constant([[1.0, 2.0], [3.0, 4.0]])
