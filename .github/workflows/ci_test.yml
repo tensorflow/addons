@@ -122,5 +122,5 @@ jobs:
         # Run on all notebooks to prevent upstream change.
         echo "Lint check with nblint:"
         python3 -m tensorflow_docs.tools.nblint \
-            --arg=repo:tensorflow/docs \
+            --arg=repo:tensorflow/addons \
             $(find docs/tutorials/ -type f -name *.ipynb ! -path "docs/tutorials/_template.ipynb")
