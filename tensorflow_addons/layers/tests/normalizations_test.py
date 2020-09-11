@@ -80,7 +80,7 @@ def test_reshape():
     run_reshape_test(1, 2, input_shape, expected_shape)
 
     input_shape = (10, 10, 10)
-    expected_shape = [10, 10, 1, 10]
+    expected_shape = [10, 10, 10]
     run_reshape_test(1, -1, input_shape, expected_shape)
 
     input_shape = (10, 10, 10)
@@ -122,17 +122,26 @@ def _test_specific_layer(inputs, axis, groups, center, scale):
     outputs = model.predict(inputs, steps=1)
     assert not np.isnan(outputs).any()
 
+    is_instance_norm = False
     # Create shapes
     if groups == -1:
         groups = input_shape[axis]
+    if (input_shape[axis] // groups) == 1:
+        is_instance_norm = True
     np_inputs = inputs
     reshaped_dims = list(np_inputs.shape)
-    reshaped_dims[axis] = reshaped_dims[axis] // groups
-    reshaped_dims.insert(axis, groups)
-    reshaped_inputs = np.reshape(np_inputs, tuple(reshaped_dims))
+    if not is_instance_norm:
+        reshaped_dims[axis] = reshaped_dims[axis] // groups
+        reshaped_dims.insert(axis, groups)
+        reshaped_inputs = np.reshape(np_inputs, tuple(reshaped_dims))
+    else:
+        reshaped_inputs = np_inputs
 
     group_reduction_axes = list(range(1, len(reshaped_dims)))
-    axis = -2 if axis == -1 else axis - 1
+    if not is_instance_norm:
+        axis = -2 if axis == -1 else axis - 1
+    else:
+        axis = -1 if axis == -1 else axis - 1
     group_reduction_axes.pop(axis)
 
     # Calculate mean and variance
