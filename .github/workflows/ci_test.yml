@@ -10,9 +10,6 @@ on:
       - master
       - r*
 
-env:
-  BAZEL_VERSION: 1.1.0
-
 jobs:
   flake8-test:
     name: Flake8

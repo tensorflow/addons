@@ -20,18 +20,30 @@ from tensorflow_addons.utils import types
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 def sparsemax(logits: types.TensorLike, axis: int = -1) -> tf.Tensor:
-    """Sparsemax activation function [1].
+    r"""Sparsemax activation function.
 
-    For each batch `i` and class `j` we have
-      $$sparsemax[i, j] = max(logits[i, j] - tau(logits[i, :]), 0)$$
+    For each batch $i$, and class $j$,
+    compute sparsemax activation function:
 
-    [1]: https://arxiv.org/abs/1602.02068
+    $$
+    \mathrm{sparsemax}(x)[i, j] = \max(\mathrm{logits}[i, j] - \tau(\mathrm{logits}[i, :]), 0).
+    $$
+
+    See [From Softmax to Sparsemax: A Sparse Model of Attention and Multi-Label Classification](https://arxiv.org/abs/1602.02068).
+
+    Usage:
+
+    >>> x = tf.constant([[-1.0, 0.0, 1.0], [-5.0, 1.0, 2.0]])
+    >>> tfa.activations.sparsemax(x)
+    <tf.Tensor: shape=(2, 3), dtype=float32, numpy=
+    array([[0., 0., 1.],
+           [0., 0., 1.]], dtype=float32)>
 
     Args:
-        logits: Input tensor.
-        axis: Integer, axis along which the sparsemax operation is applied.
+        logits: A `Tensor`.
+        axis: `int`, axis along which the sparsemax operation is applied.
     Returns:
-        Tensor, output of sparsemax transformation. Has the same type and
+        A `Tensor`, output of sparsemax transformation. Has the same type and
         shape as `logits`.
     Raises:
         ValueError: In case `dim(logits) == 1`.

@@ -40,8 +40,8 @@ COPY tools/install_deps/tensorflow-cpu.txt ./
 RUN pip install --default-timeout=1000 -r tensorflow-cpu.txt
 
 RUN apt-get update && apt-get install sudo
-COPY tools/install_deps/bazel_linux.sh ./
-RUN bash bazel_linux.sh
+COPY tools/install_deps/install_bazelisk.sh .bazelversion ./
+RUN bash install_bazelisk.sh
 
 COPY ./ /addons
 WORKDIR /addons
@@ -109,8 +109,8 @@ COPY tools/install_deps/pytest.txt ./
 RUN pip install -r pytest.txt
 
 RUN apt-get update && apt-get install -y sudo rsync
-COPY tools/install_deps/bazel_linux.sh ./
-RUN bash bazel_linux.sh
+COPY tools/install_deps/install_bazelisk.sh .bazelversion ./
+RUN bash install_bazelisk.sh
 
 COPY ./ /addons
 WORKDIR /addons

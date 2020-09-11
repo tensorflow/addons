@@ -37,13 +37,15 @@ def test_api_typed():
         tfa.text,
     ]
     # Files within this list will be exempt from verification.
-    exception_list = []
+    exception_list = [
+        tfa.rnn.PeepholeLSTMCell,
+    ]
     help_message = (
         "You can also take a look at the section about it in the CONTRIBUTING.md:\n"
         "https://github.com/tensorflow/addons/blob/master/CONTRIBUTING.md#about-type-hints"
     )
     ensure_api_is_typed(
-        modules_list, exception_list, init_only=True, additional_message=help_message,
+        modules_list, exception_list, init_only=True, additional_message=help_message
     )
 
 
@@ -87,8 +89,6 @@ def test_no_private_tf_api():
     # TODO: remove all elements of the list and remove the allowlist
     # This allowlist should not grow. Do not add elements to this list.
     allowlist = [
-        "tensorflow_addons/optimizers/novograd.py",
-        "tensorflow_addons/optimizers/moving_average.py",
         "tensorflow_addons/metrics/r_square.py",
         "tensorflow_addons/utils/test_utils.py",
         "tensorflow_addons/seq2seq/decoder.py",
@@ -211,9 +211,6 @@ def test_no_deprecated_v1():
     # This allowlist should not grow. Do not add elements to this list.
     allowlist = [
         "tensorflow_addons/text/skip_gram_ops.py",
-        "tensorflow_addons/metrics/tests/f_scores_test.py",
-        "tensorflow_addons/seq2seq/tests/basic_decoder_test.py",
-        "tensorflow_addons/seq2seq/tests/beam_search_decoder_test.py",
         "tensorflow_addons/seq2seq/decoder.py",
         "tensorflow_addons/seq2seq/tests/attention_wrapper_test.py",
     ]

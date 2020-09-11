@@ -90,7 +90,7 @@ def sequence_loss(
     """
     if len(logits.shape) != 3:
         raise ValueError(
-            "Logits must be a " "[batch_size x sequence_length x logits] tensor"
+            "Logits must be a [batch_size x sequence_length x logits] tensor"
         )
 
     targets_rank = len(targets.shape)

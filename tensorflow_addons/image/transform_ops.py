@@ -36,6 +36,7 @@ def transform(
     images: TensorLike,
     transforms: TensorLike,
     interpolation: str = "NEAREST",
+    fill_mode: str = "CONSTANT",
     output_shape: Optional[list] = None,
     name: Optional[str] = None,
 ) -> tf.Tensor:
@@ -55,6 +56,15 @@ def transform(
         gradients are not backpropagated into transformation parameters.
       interpolation: Interpolation mode.
         Supported values: "NEAREST", "BILINEAR".
+      fill_mode: Points outside the boundaries of the input are filled according
+        to the given mode (one of `{'constant', 'reflect', 'wrap'}`).
+        - *reflect*: `(d c b a | a b c d | d c b a)`
+          The input is extended by reflecting about the edge of the last pixel.
+        - *constant*: `(k k k k | a b c d | k k k k)`
+          The input is extended by filling all values beyond the edge with the
+          same constant value k = 0.
+        - *wrap*: `(a b c d | a b c d | a b c d)`
+          The input is extended by wrapping around to the opposite edge.
       output_shape: Output dimesion after the transform, [height, width].
         If None, output is the same size as input image.
 
@@ -105,11 +115,13 @@ def transform(
                 % len(transforms.get_shape())
             )
 
+        # TODO(WindQAQ): Support "nearest" `fill_mode` and `fill_value` in TF2.4.
         output = tf.raw_ops.ImageProjectiveTransformV2(
             images=images,
             transforms=transforms,
             output_shape=output_shape,
             interpolation=interpolation.upper(),
+            fill_mode=fill_mode.upper(),
         )
         return img_utils.from_4D_image(output, original_ndims)
 
@@ -239,28 +251,24 @@ def angles_to_projective_transforms(
             angles = angle_or_angles
         else:
             raise ValueError("angles should have rank 0 or 1.")
+        cos_angles = tf.math.cos(angles)
+        sin_angles = tf.math.sin(angles)
         x_offset = (
             (image_width - 1)
-            - (
-                tf.math.cos(angles) * (image_width - 1)
-                - tf.math.sin(angles) * (image_height - 1)
-            )
+            - (cos_angles * (image_width - 1) - sin_angles * (image_height - 1))
         ) / 2.0
         y_offset = (
             (image_height - 1)
-            - (
-                tf.math.sin(angles) * (image_width - 1)
-                + tf.math.cos(angles) * (image_height - 1)
-            )
+            - (sin_angles * (image_width - 1) + cos_angles * (image_height - 1))
         ) / 2.0
         num_angles = tf.shape(angles)[0]
         return tf.concat(
             values=[
-                tf.math.cos(angles)[:, None],
-                -tf.math.sin(angles)[:, None],
+                cos_angles[:, None],
+                -sin_angles[:, None],
                 x_offset[:, None],
-                tf.math.sin(angles)[:, None],
-                tf.math.cos(angles)[:, None],
+                sin_angles[:, None],
+                cos_angles[:, None],
                 y_offset[:, None],
                 tf.zeros((num_angles, 2), tf.dtypes.float32),
             ],
@@ -272,20 +280,30 @@ def rotate(
     images: TensorLike,
     angles: TensorLike,
     interpolation: str = "NEAREST",
+    fill_mode: str = "CONSTANT",
     name: Optional[str] = None,
 ) -> tf.Tensor:
     """Rotate image(s) counterclockwise by the passed angle(s) in radians.
 
     Args:
       images: A tensor of shape
-        (num_images, num_rows, num_columns, num_channels)
-        (NHWC), (num_rows, num_columns, num_channels) (HWC), or
-        (num_rows, num_columns) (HW).
-      angles: A scalar angle to rotate all images by, or (if images has rank 4)
+        `(num_images, num_rows, num_columns, num_channels)`
+        (NHWC), `(num_rows, num_columns, num_channels)` (HWC), or
+        `(num_rows, num_columns)` (HW).
+      angles: A scalar angle to rotate all images by, or (if `images` has rank 4)
         a vector of length num_images, with an angle for each image in the
         batch.
       interpolation: Interpolation mode. Supported values: "NEAREST",
         "BILINEAR".
+      fill_mode: Points outside the boundaries of the input are filled according
+        to the given mode (one of `{'constant', 'reflect', 'wrap'}`).
+        - *reflect*: `(d c b a | a b c d | d c b a)`
+          The input is extended by reflecting about the edge of the last pixel.
+        - *constant*: `(k k k k | a b c d | k k k k)`
+          The input is extended by filling all values beyond the edge with the
+          same constant value k = 0.
+        - *wrap*: `(a b c d | a b c d | a b c d)`
+          The input is extended by wrapping around to the opposite edge.
       name: The name of the op.
 
     Returns:
@@ -293,7 +311,7 @@ def rotate(
       angle(s). Empty space due to the rotation will be filled with zeros.
 
     Raises:
-      TypeError: If `image` is an invalid type.
+      TypeError: If `images` is an invalid type.
     """
     with tf.name_scope(name or "rotate"):
         image_or_images = tf.convert_to_tensor(images)
@@ -308,14 +326,16 @@ def rotate(
             images,
             angles_to_projective_transforms(angles, image_height, image_width),
             interpolation=interpolation,
+            fill_mode=fill_mode,
         )
         return img_utils.from_4D_image(output, original_ndims)
 
 
-def shear_x(image: TensorLike, level: float, replace: int) -> TensorLike:
-    """Perform shear operation on an image (x-axis)
+def shear_x(image: TensorLike, level: float, replace: TensorLike) -> TensorLike:
+    """Perform shear operation on an image (x-axis).
+
     Args:
-        image: A 3D image Tensor.
+        image: A 3D image `Tensor`.
         level: A float denoting shear element along y-axis
         replace: A one or three value 1D tensor to fill empty pixels.
     Returns:
@@ -330,10 +350,11 @@ def shear_x(image: TensorLike, level: float, replace: int) -> TensorLike:
     return unwrap(image, replace)
 
 
-def shear_y(image: TensorLike, level: float, replace: int) -> TensorLike:
-    """Perform shear operation on an image (y-axis)
+def shear_y(image: TensorLike, level: float, replace: TensorLike) -> TensorLike:
+    """Perform shear operation on an image (y-axis).
+
     Args:
-        image: A 3D image Tensor.
+        image: A 3D image `Tensor`.
         level: A float denoting shear element along x-axis
         replace: A one or three value 1D tensor to fill empty pixels.
     Returns:

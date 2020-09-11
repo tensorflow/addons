@@ -21,6 +21,8 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
+from distutils.version import LooseVersion
+
 from tensorflow_addons import options
 from tensorflow_addons.utils import resource_loader
 
@@ -86,6 +88,12 @@ def maybe_run_functions_eagerly(request):
     request.addfinalizer(finalizer)
 
 
+@pytest.fixture(scope="function")
+def only_run_functions_eagerly(request):
+    tf.config.experimental_run_functions_eagerly(True)
+    request.addfinalizer(finalizer)
+
+
 @pytest.fixture(scope="function", params=["custom_ops", "py_ops"])
 def run_custom_and_py_ops(request):
     previous_py_ops_value = options.TF_ADDONS_PY_OPS
@@ -98,6 +106,15 @@ def run_custom_and_py_ops(request):
         options.TF_ADDONS_PY_OPS = previous_py_ops_value
 
     request.addfinalizer(_restore_py_ops_value)
+
+
+@pytest.fixture(scope="function", params=["float32", "mixed_float16"])
+def run_with_mixed_precision_policy(request):
+    if is_gpu_available() and LooseVersion(tf.__version__) <= "2.2.0":
+        pytest.xfail("See https://github.com/tensorflow/tensorflow/issues/39775")
+    tf.keras.mixed_precision.experimental.set_policy(request.param)
+    yield
+    tf.keras.mixed_precision.experimental.set_policy("float32")
 
 
 @pytest.fixture(scope="function", params=["channels_first", "channels_last"])
@@ -149,7 +166,12 @@ def pytest_configure(config):
 
 @pytest.fixture(autouse=True, scope="function")
 def device(request):
-    requested_device = request.param
+    try:
+        requested_device = request.param
+    except Exception:
+        # workaround for DocTestItem
+        # https://github.com/pytest-dev/pytest/issues/5070
+        requested_device = "no_device"
     if requested_device == "no_device":
         yield requested_device
     elif requested_device == tf.distribute.MirroredStrategy:

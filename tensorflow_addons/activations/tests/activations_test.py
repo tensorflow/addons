@@ -27,6 +27,7 @@ ALL_ACTIVATIONS = [
     "softshrink",
     "sparsemax",
     "tanhshrink",
+    "snake",
 ]
 
 

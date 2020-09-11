@@ -76,6 +76,8 @@ class BinaryDistribution(Distribution):
 
 
 project_name, version = get_project_name_version()
+min_tf_version = version["MIN_TF_VERSION"]
+max_tf_version = version["MAX_TF_VERSION"]
 setup(
     name=project_name,
     version=version["__version__"],
@@ -86,6 +88,15 @@ setup(
     packages=find_packages(),
     ext_modules=get_ext_modules(),
     install_requires=Path("requirements.txt").read_text().splitlines(),
+    extras_require={
+        "tensorflow": ["tensorflow>={},<{}".format(min_tf_version, max_tf_version)],
+        "tensorflow-gpu": [
+            "tensorflow-gpu>={},<{}".format(min_tf_version, max_tf_version)
+        ],
+        "tensorflow-cpu": [
+            "tensorflow-cpu>={},<{}".format(min_tf_version, max_tf_version)
+        ],
+    },
     include_package_data=True,
     zip_safe=False,
     distclass=BinaryDistribution,

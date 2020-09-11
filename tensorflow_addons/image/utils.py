@@ -25,10 +25,10 @@ def to_4D_image(image):
     """Convert 2/3/4D image to 4D image.
 
     Args:
-      image: 2/3/4D tensor.
+      image: 2/3/4D `Tensor`.
 
     Returns:
-      4D tensor with the same type.
+      4D `Tensor` with the same type.
     """
     with tf.control_dependencies(
         [
@@ -71,11 +71,11 @@ def from_4D_image(image, ndims):
     """Convert back to an image with `ndims` rank.
 
     Args:
-      image: 4D tensor.
+      image: 4D `Tensor`.
       ndims: The original rank of the image.
 
     Returns:
-      `ndims`-D tensor with the same type.
+      `ndims`-D `Tensor` with the same type.
     """
     with tf.control_dependencies(
         [tf.debugging.assert_rank(image, 4, message="`image` must be 4D tensor")]
@@ -102,7 +102,7 @@ def _dynamic_from_4D_image(image, original_rank):
 
 
 def wrap(image):
-    """Returns 'image' with an extra channel set to all 1s."""
+    """Returns `image` with an extra channel set to all 1s."""
     shape = tf.shape(image)
     extended_channel = tf.ones([shape[0], shape[1], 1], image.dtype)
     extended = tf.concat([image, extended_channel], 2)
@@ -112,21 +112,21 @@ def wrap(image):
 def unwrap(image, replace):
     """Unwraps an image produced by wrap.
 
-  Where there is a 0 in the last channel for every spatial position,
-  the rest of the three channels in that spatial dimension are grayed
-  (set to 128).  Operations like translate and shear on a wrapped
-  Tensor will leave 0s in empty locations.  Some transformations look
-  at the intensity of values to do preprocessing, and we want these
-  empty pixels to assume the 'average' value, rather than pure black.
+    Where there is a 0 in the last channel for every spatial position,
+    the rest of the three channels in that spatial dimension are grayed
+    (set to 128).  Operations like translate and shear on a wrapped
+    Tensor will leave 0s in empty locations.  Some transformations look
+    at the intensity of values to do preprocessing, and we want these
+    empty pixels to assume the 'average' value, rather than pure black.
 
 
-  Args:
-    image: A 3D Image Tensor with 4 channels.
-    replace: A one or three value 1D tensor to fill empty pixels.
+    Args:
+        image: A 3D image `Tensor` with 4 channels.
+        replace: A one or three value 1D `Tensor` to fill empty pixels.
 
-  Returns:
-    image: A 3D image Tensor with 3 channels.
-  """
+    Returns:
+        image: A 3D image `Tensor` with 3 channels.
+    """
     image_shape = tf.shape(image)
     # Flatten the spatial dimensions.
     flattened_image = tf.reshape(image, [-1, image_shape[2]])
@@ -134,11 +134,11 @@ def unwrap(image, replace):
     # Find all pixels where the last channel is zero.
     alpha_channel = flattened_image[:, 3]
 
-    replace = tf.constant(replace, tf.uint8)
+    replace = tf.cast(replace, image.dtype)
     if tf.rank(replace) == 0:
         replace = tf.expand_dims(replace, 0)
         replace = tf.concat([replace, replace, replace], 0)
-    replace = tf.concat([replace, tf.ones([1], dtype=image.dtype)], 0)
+    replace = tf.concat([replace, tf.ones([1], dtype=replace.dtype)], 0)
 
     # Where they are zero, fill them in with 'replace'.
     cond = tf.equal(alpha_channel, 1)

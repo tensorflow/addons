@@ -15,6 +15,7 @@
 """Implements F scores."""
 
 import tensorflow as tf
+from tensorflow.keras import backend as K
 from typeguard import typechecked
 
 from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
@@ -184,10 +185,8 @@ class FBetaScore(tf.keras.metrics.Metric):
         return {**base_config, **config}
 
     def reset_states(self):
-        self.true_positives.assign(tf.zeros(self.init_shape, self.dtype))
-        self.false_positives.assign(tf.zeros(self.init_shape, self.dtype))
-        self.false_negatives.assign(tf.zeros(self.init_shape, self.dtype))
-        self.weights_intermediate.assign(tf.zeros(self.init_shape, self.dtype))
+        reset_value = tf.zeros(self.init_shape, dtype=self.dtype)
+        K.batch_set_value([(v, reset_value) for v in self.variables])
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")

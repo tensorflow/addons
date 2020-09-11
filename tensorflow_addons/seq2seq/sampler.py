@@ -231,7 +231,7 @@ class TrainingSampler(Sampler):
         self.input_tas = tf.nest.map_structure(_unstack_ta, inputs)
         if sequence_length is not None and mask is not None:
             raise ValueError(
-                "sequence_length and mask can't be provided " "at the same time."
+                "sequence_length and mask can't be provided at the same time."
             )
         if sequence_length is not None:
             self.sequence_length = tf.convert_to_tensor(
@@ -390,6 +390,9 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
             sample_ids_sampling = tf.gather_nd(sample_ids, where_sampling)
             inputs_not_sampling = tf.gather_nd(base_next_inputs, where_not_sampling)
             sampled_next_inputs = self.embedding_fn(sample_ids_sampling)
+            sampled_next_inputs = tf.cast(
+                sampled_next_inputs, inputs_not_sampling.dtype
+            )
             base_shape = tf.shape(base_next_inputs)
             return tf.scatter_nd(
                 indices=where_sampling, updates=sampled_next_inputs, shape=base_shape
