@@ -108,7 +108,7 @@ jobs:
         # Run on all notebooks to prevent upstream change.
         echo "Check formatting with nbfmt:"
         python3 -m tensorflow_docs.tools.nbfmt --test \
-            $(find docs/tutorials/ -type f -name *.ipynb ! -path "docs/tutorials/_template.ipynb")
+            $(find docs/tutorials/ -type f -name *.ipynb)
   nblint:
     name: Notebook lint
     runs-on: ubuntu-latest
