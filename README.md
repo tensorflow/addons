@@ -52,6 +52,15 @@ run the following:
 ```
 pip install tensorflow-addons
 ```
+
+To ensure you have a version of TensorFlow that is compatible with TensorFlow Addons, 
+you can specify the `tensorflow` extra requirement during install:
+
+```
+pip install tensorflow-addons[tensorflow]
+```
+
+Similar extras exist for the `tensorflow-gpu` and `tensorflow-cpu` packages.
  
 
 To use TensorFlow Addons:
@@ -72,7 +81,7 @@ what it was tested against.
 | TensorFlow Addons | TensorFlow | Python  |
 |:----------------------- |:---|:---------- |
 | tfa-nightly | 2.2, 2.3 | 3.5, 3.6, 3.7, 3.8 | 
-| tensorflow-addons-0.11.1 | 2.2, 2.3 |3.5, 3.6, 3.7, 3.8 |
+| tensorflow-addons-0.11.2 | 2.2, 2.3 |3.5, 3.6, 3.7, 3.8 |
 | tensorflow-addons-0.10.0 | 2.2 |3.5, 3.6, 3.7, 3.8 |
 | tensorflow-addons-0.9.1 | 2.1, 2.2 |3.5, 3.6, 3.7 |
 | tensorflow-addons-0.8.3 | 2.1 |3.5, 3.6, 3.7 |
@@ -98,7 +107,7 @@ is compiled differently. A typical example of this would be `conda`-installed Te
 | TensorFlow Addons | TensorFlow | Compiler  | cuDNN | CUDA | 
 |:----------------------- |:---- |:---------|:---------|:---------|
 | tfa-nightly | 2.3 | GCC 7.3.1 | 7.6 | 10.1 |
-| tensorflow-addons-0.11.1 | 2.3  | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.11.2 | 2.3  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.10.0 | 2.2  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.9.1 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.8.3 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |

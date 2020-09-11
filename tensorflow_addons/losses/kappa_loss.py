@@ -37,24 +37,24 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
 
     Usage:
 
-    ```python
-    kappa_loss = WeightedKappaLoss(num_classes=4)
-    y_true = tf.constant([[0, 0, 1, 0], [0, 1, 0, 0],
-                          [1, 0, 0, 0], [0, 0, 0, 1]])
-    y_pred = tf.constant([[0.1, 0.2, 0.6, 0.1], [0.1, 0.5, 0.3, 0.1],
-                          [0.8, 0.05, 0.05, 0.1], [0.01, 0.09, 0.1, 0.8]])
-    loss = kappa_loss(y_true, y_pred)
-    print('Loss: ', loss.numpy())  # Loss: -1.1611923
-    ```
+    >>> kappa_loss = tfa.losses.WeightedKappaLoss(num_classes=4)
+    >>> y_true = tf.constant([[0, 0, 1, 0], [0, 1, 0, 0],
+    ...                  [1, 0, 0, 0], [0, 0, 0, 1]])
+    >>> y_pred = tf.constant([[0.1, 0.2, 0.6, 0.1], [0.1, 0.5, 0.3, 0.1],
+    ...                  [0.8, 0.05, 0.05, 0.1], [0.01, 0.09, 0.1, 0.8]])
+    >>> loss = kappa_loss(y_true, y_pred)
+    >>> loss
+    <tf.Tensor: shape=(), dtype=float32, numpy=-1.1611925>
 
     Usage with `tf.keras` API:
-    ```python
-    # outputs should be softmax results
-    # if you want to weight the samples, just multiply the outputs
-    # by the sample weight.
-    model = tf.keras.Model(inputs, outputs)
-    model.compile('sgd', loss=tfa.losses.WeightedKappa(num_classes=4))
-    ```
+
+    >>> model = tf.keras.Model()
+    >>> model.compile('sgd', loss=tfa.losses.WeightedKappaLoss(num_classes=4))
+
+    <... outputs should be softmax results
+    if you want to weight the samples, just multiply the outputs
+    by the sample weight ...>
+
     """
 
     @typechecked
