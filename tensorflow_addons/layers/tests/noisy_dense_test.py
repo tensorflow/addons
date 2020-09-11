@@ -57,8 +57,8 @@ def test_noisy_dense_with_policy():
     np.testing.assert_array_equal(output_signature.dtype, tf.dtypes.float16)
     np.testing.assert_array_equal(output_signature.shape, (2, 5))
     np.testing.assert_array_equal(outputs.dtype, "float16")
-    np.testing.assert_array_equal(layer.µ_kernel.dtype, "float32")
-    np.testing.assert_array_equal(layer.σ_kernel.dtype, "float32")
+    np.testing.assert_array_equal(layer.mu_kernel.dtype, "float32")
+    np.testing.assert_array_equal(layer.sigma_kernel.dtype, "float32")
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -85,10 +85,10 @@ def test_noisy_dense_constraints():
         name="noisy_dense_constriants",
     )
     layer(keras.backend.variable(np.ones((2, 4))))
-    np.testing.assert_array_equal(layer.µ_kernel.constraint, k_constraint)
-    np.testing.assert_array_equal(layer.σ_kernel.constraint, k_constraint)
-    np.testing.assert_array_equal(layer.µ_bias.constraint, b_constraint)
-    np.testing.assert_array_equal(layer.σ_bias.constraint, b_constraint)
+    np.testing.assert_array_equal(layer.mu_kernel.constraint, k_constraint)
+    np.testing.assert_array_equal(layer.sigma_kernel.constraint, k_constraint)
+    np.testing.assert_array_equal(layer.mu_bias.constraint, b_constraint)
+    np.testing.assert_array_equal(layer.sigma_bias.constraint, b_constraint)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -96,16 +96,22 @@ def test_noisy_dense_automatic_reset_noise():
     inputs = tf.convert_to_tensor(np.random.randint(low=0, high=7, size=(2, 2)))
     layer = NoisyDense(5, name="noise_dense_auto_reset_noise")
     layer(inputs)
-    initial_ε_kernel = layer.ε_kernel
-    initial_ε_bias = layer.ε_bias
+    initial_eps_kernel = layer.eps_kernel
+    initial_eps_bias = layer.eps_bias
     layer(inputs)
-    new_ε_kernel = layer.ε_kernel
-    new_ε_bias = layer.ε_bias
+    new_eps_kernel = layer.eps_kernel
+    new_eps_bias = layer.eps_bias
     np.testing.assert_raises(
-        AssertionError, np.testing.assert_array_equal, initial_ε_kernel, new_ε_kernel
+        AssertionError,
+        np.testing.assert_array_equal,
+        initial_eps_kernel,
+        new_eps_kernel,
     )
     np.testing.assert_raises(
-        AssertionError, np.testing.assert_array_equal, initial_ε_bias, new_ε_bias
+        AssertionError,
+        np.testing.assert_array_equal,
+        initial_eps_bias,
+        new_eps_bias,
     )
 
 
@@ -114,16 +120,22 @@ def test_noisy_dense_manual_reset_noise():
     inputs = tf.convert_to_tensor(np.random.randint(low=0, high=7, size=(2, 2)))
     layer = NoisyDense(5, name="noise_dense_manual_reset_noise")
     layer(inputs)
-    initial_ε_kernel = layer.ε_kernel
-    initial_ε_bias = layer.ε_bias
+    initial_eps_kernel = layer.eps_kernel
+    initial_eps_bias = layer.eps_bias
     layer.reset_noise()
-    new_ε_kernel = layer.ε_kernel
-    new_ε_bias = layer.ε_bias
+    new_eps_kernel = layer.eps_kernel
+    new_eps_bias = layer.eps_bias
     np.testing.assert_raises(
-        AssertionError, np.testing.assert_array_equal, initial_ε_kernel, new_ε_kernel
+        AssertionError,
+        np.testing.assert_array_equal,
+        initial_eps_kernel,
+        new_eps_kernel,
     )
     np.testing.assert_raises(
-        AssertionError, np.testing.assert_array_equal, initial_ε_bias, new_ε_bias
+        AssertionError,
+        np.testing.assert_array_equal,
+        initial_eps_bias,
+        new_eps_bias,
     )
 
 
@@ -132,17 +144,23 @@ def test_noisy_dense_remove_noise():
     inputs = tf.convert_to_tensor(np.random.randint(low=0, high=7, size=(2, 2)))
     layer = NoisyDense(5, name="noise_dense_manual_reset_noise")
     layer(inputs)
-    initial_ε_kernel = layer.ε_kernel
-    initial_ε_bias = layer.ε_bias
+    initial_eps_kernel = layer.eps_kernel
+    initial_eps_bias = layer.eps_bias
     layer.remove_noise()
-    new_ε_kernel = layer.ε_kernel
-    new_ε_bias = layer.ε_bias
-    zeros = tf.zeros(initial_ε_kernel.shape, dtype=initial_ε_kernel.dtype)
+    new_eps_kernel = layer.eps_kernel
+    new_eps_bias = layer.eps_bias
+    zeros = tf.zeros(initial_eps_kernel.shape, dtype=initial_eps_kernel.dtype)
     np.testing.assert_raises(
-        AssertionError, np.testing.assert_array_equal, initial_ε_kernel, new_ε_kernel
+        AssertionError,
+        np.testing.assert_array_equal,
+        initial_eps_kernel,
+        new_eps_kernel,
     )
     np.testing.assert_raises(
-        AssertionError, np.testing.assert_array_equal, initial_ε_bias, new_ε_bias
+        AssertionError,
+        np.testing.assert_array_equal,
+        initial_eps_bias,
+        new_eps_bias,
     )
-    np.testing.assert_array_equal(zeros, new_ε_kernel)
-    np.testing.assert_array_equal(zeros, new_ε_bias)
+    np.testing.assert_array_equal(zeros, new_eps_kernel)
+    np.testing.assert_array_equal(zeros, new_eps_bias)

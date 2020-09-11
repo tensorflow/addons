@@ -33,17 +33,21 @@ def _scale_noise(x):
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class NoisyDense(tf.keras.layers.Layer):
-    r"""Like normal dense layer (https://github.com/tensorflow/tensorflow/blob/v2.3.0/tensorflow/python/keras/layers/core.py#L1067-L1233)
-    but random noise is added to the weights matrix. As the network improves the random noise is decayed until it is insignificant.
+    r"""Like normal dense layer but random noise is added to the weights
+    matrix. As the network improves the random noise is decayed until
+    it is insignificant.
 
     A `NoisyDense` layer implements the operation:
     $$
-    \mathrm{NoisyDense}(x) = \mathrm{activation}(\mathrm{dot}(x, \mu + (\sigma \cdot \epsilon)) + \mathrm{bias})
+    \mathrm{NoisyDense}(x) =
+    \mathrm{activation}(\mathrm{dot}(x, \mu + (\sigma \cdot \eps))
+    + \mathrm{bias})
     $$
     with bias only being added if `use_bias` is `True`.
 
     Example:
-    >>> # Create a `Sequential` model and add a NoisyDense layer as the first layer.
+    >>> # Create a `Sequential` model and add a NoisyDense
+    >>> # layer as the first layer.
     >>> model = tf.keras.models.Sequential()
     >>> model.add(tf.keras.Input(shape=(16,)))
     >>> model.add(NoisyDense(32, activation='relu'))
@@ -138,7 +142,6 @@ class NoisyDense(tf.keras.layers.Layer):
         )
 
         # Learnable parameters
-        # Agent will learn to decay sigma as it improves creating a sort of learned epsilon decay
         self.sigma_kernel = self.add_weight(
             "sigma_kernel",
             shape=[self.last_dim, self.units],
@@ -193,8 +196,8 @@ class NoisyDense(tf.keras.layers.Layer):
         dtype = self._compute_dtype_object
 
         # Generate random noise
-        ε_i = tf.random.normal([self.last_dim, self.units], dtype=dtype)
-        ε_j = tf.random.normal(
+        eps_i = tf.random.normal([self.last_dim, self.units], dtype=dtype)
+        eps_j = tf.random.normal(
             [
                 self.units,
             ],
@@ -202,13 +205,13 @@ class NoisyDense(tf.keras.layers.Layer):
         )
 
         # Scale the random noise
-        self.ε_kernel = _scale_noise(ε_i) * _scale_noise(ε_j)
-        self.ε_bias = _scale_noise(ε_j)
+        self.eps_kernel = _scale_noise(eps_i) * _scale_noise(eps_j)
+        self.eps_bias = _scale_noise(eps_j)
 
     def remove_noise(self):
         dtype = self._compute_dtype_object
-        self.ε_kernel = tf.zeros([self.last_dim, self.units], dtype=dtype)
-        self.ε_bias = tf.zeros([self.last_dim, self.units], dtype=dtype)
+        self.eps_kernel = tf.zeros([self.last_dim, self.units], dtype=dtype)
+        self.eps_bias = tf.zeros([self.last_dim, self.units], dtype=dtype)
 
     def call(self, inputs, reset_noise=True):
         dtype = self._compute_dtype_object
@@ -219,9 +222,15 @@ class NoisyDense(tf.keras.layers.Layer):
         if reset_noise:
             self.reset_noise()
 
-        # Performs: y = (muw + sigmaw · εw)x + mub + sigmab · εb
-        # to calculate the output
-        kernel = self.mu_kernel + (self.sigma_kernel * self.ε_kernel)
+        r"""
+        Perform:
+        $$
+        y \stackrel{\text{def}}{=}
+        (\mu^w + \sigma^w \odot \eps^w)x + \mu^b + \sigma^b \odot \eps^b
+        $$
+        to calculate the output
+        """
+        kernel = self.mu_kernel + (self.sigma_kernel * self.eps_kernel)
 
         if inputs.dtype.base_dtype != dtype.base_dtype:
             inputs = tf.cast(inputs, dtype=dtype)
@@ -242,7 +251,7 @@ class NoisyDense(tf.keras.layers.Layer):
                 outputs.set_shape(output_shape)
 
         if self.use_bias:
-            noisy_bias = self.mu_bias + (self.sigma_bias * self.ε_bias)
+            noisy_bias = self.mu_bias + (self.sigma_bias * self.eps_bias)
             outputs = tf.nn.bias_add(outputs, noisy_bias)
 
         if self.activation is not None:
@@ -255,8 +264,8 @@ class NoisyDense(tf.keras.layers.Layer):
         input_shape = input_shape.with_rank_at_least(2)
         if tf.compat.dimension_value(input_shape[-1]) is None:
             raise ValueError(
-                "The innermost dimension of input_shape must be defined, but saw: %s"
-                % input_shape
+                "The innermost dimension of input_shape must be defined"
+                ", but saw: %s" % input_shape
             )
         return input_shape[:-1].concatenate(self.units)
 
