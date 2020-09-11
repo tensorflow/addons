@@ -213,13 +213,15 @@ class NoisyDense(tf.keras.layers.Layer):
         self.eps_kernel = tf.zeros([self.last_dim, self.units], dtype=dtype)
         self.eps_bias = tf.zeros([self.last_dim, self.units], dtype=dtype)
 
-    def call(self, inputs, reset_noise=True):
+    def call(self, inputs, reset_noise=True, remove_noise=False):
         dtype = self._compute_dtype_object
         if inputs.dtype.base_dtype != dtype.base_dtype:
             inputs = tf.cast(inputs, dtype=dtype)
 
         # Generate fixed parameters added as the noise
-        if reset_noise:
+        if remove_noise:
+            self.remove_noise()
+        elif reset_noise:
             self.reset_noise()
 
         r"""
