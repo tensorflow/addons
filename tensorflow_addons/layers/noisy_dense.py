@@ -22,24 +22,28 @@ from tensorflow.keras import (
 )
 from tensorflow.keras import backend as K
 from tensorflow.keras.layers import InputSpec
+from typeguard import typechecked
+
+from tensorflow_addons.utils import types
+
+
+def _scale_noise(x):
+    return tf.sign(x) * tf.sqrt(tf.abs(x))
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class NoisyDense(tf.keras.layers.Layer):
-    """
-    Like normal dense layer (https://github.com/tensorflow/tensorflow/blob/v2.3.0/tensorflow/python/keras/layers/core.py#L1067-L1233)
-    but random noisy is added to the weights matrix. But as the network improves the random noise is decayed until it is insignificant.
+    r"""Like normal dense layer (https://github.com/tensorflow/tensorflow/blob/v2.3.0/tensorflow/python/keras/layers/core.py#L1067-L1233)
+    but random noise is added to the weights matrix. As the network improves the random noise is decayed until it is insignificant.
 
     A `NoisyDense` layer implements the operation:
-    `output = activation(dot(input, µ_kernel + (σ_kernel * ε_kernel)) + bias)`
-    where `activation` is the element-wise activation function
-    passed as the `activation` argument, `µ_kernel` is your average weights matrix
-    created by the layer, σ_kernel is a weights matrix that controls the importance of
-    the ε_kernel which is just random noise, and `bias` is a bias vector created by the layer
-    (only applicable if `use_bias` is `True`).
+    $$
+    \mathrm{NoisyDense}(x) = \mathrm{activation}(\mathrm{dot}(x, \mu + (\sigma \cdot \epsilon)) + \mathrm{bias})
+    $$
+    with bias only being added if `use_bias` is `True`.
 
     Example:
-    >>> # Create a `Sequential` model and add a Dense layer as the first layer.
+    >>> # Create a `Sequential` model and add a NoisyDense layer as the first layer.
     >>> model = tf.keras.models.Sequential()
     >>> model.add(tf.keras.Input(shape=(16,)))
     >>> model.add(NoisyDense(32, activation='relu'))
@@ -53,6 +57,8 @@ class NoisyDense(tf.keras.layers.Layer):
 
     Arguments:
     units: Positive integer, dimensionality of the output space.
+    sigma: A float between 0-1 used as a standard deviation figure and is
+      applied to the gaussian noise layer (`sigma_kernel` and `sigma_bias`).
     activation: Activation function to use.
       If you don't specify anything, no activation is applied
       (ie. "linear" activation: `a(x) = x`).
@@ -77,23 +83,26 @@ class NoisyDense(tf.keras.layers.Layer):
     the output would have shape `(batch_size, units)`.
     """
 
+    @typechecked
     def __init__(
         self,
-        units,
-        activation=None,
-        use_bias=True,
-        kernel_regularizer=None,
-        bias_regularizer=None,
-        activity_regularizer=None,
-        kernel_constraint=None,
-        bias_constraint=None,
+        units: int,
+        sigma: float = 0.5,
+        activation: types.Activation = None,
+        use_bias: bool = True,
+        kernel_regularizer: types.Regularizer = None,
+        bias_regularizer: types.Regularizer = None,
+        activity_regularizer: types.Regularizer = None,
+        kernel_constraint: types.Constraint = None,
+        bias_constraint: types.Constraint = None,
         **kwargs
     ):
         super(NoisyDense, self).__init__(
             activity_regularizer=activity_regularizer, **kwargs
         )
 
-        self.units = int(units) if not isinstance(units, int) else units
+        self.units = units
+        self.sigma = sigma
         self.activation = activations.get(activation)
         self.use_bias = use_bias
         self.kernel_regularizer = regularizers.get(kernel_regularizer)
@@ -123,27 +132,27 @@ class NoisyDense(tf.keras.layers.Layer):
             )
         self.input_spec = InputSpec(min_ndim=2, axes={-1: self.last_dim})
 
-        self.σ_init = initializers.Constant(value=0.5 / sqrt_dim)
-        self.µ_init = initializers.RandomUniform(
+        self.sigma_init = initializers.Constant(value=self.sigma / sqrt_dim)
+        self.mu_init = initializers.RandomUniform(
             minval=-1 / sqrt_dim, maxval=1 / sqrt_dim
         )
 
         # Learnable parameters
-        # Agent will learn to decay σ as it improves creating a sort of learned epsilon decay
-        self.σ_kernel = self.add_weight(
-            "σ_kernel",
+        # Agent will learn to decay sigma as it improves creating a sort of learned epsilon decay
+        self.sigma_kernel = self.add_weight(
+            "sigma_kernel",
             shape=[self.last_dim, self.units],
-            initializer=self.σ_init,
+            initializer=self.sigma_init,
             regularizer=self.kernel_regularizer,
             constraint=self.kernel_constraint,
             dtype=self.dtype,
             trainable=True,
         )
 
-        self.µ_kernel = self.add_weight(
-            "µ_kernel",
+        self.mu_kernel = self.add_weight(
+            "mu_kernel",
             shape=[self.last_dim, self.units],
-            initializer=self.µ_init,
+            initializer=self.mu_init,
             regularizer=self.kernel_regularizer,
             constraint=self.kernel_constraint,
             dtype=self.dtype,
@@ -151,37 +160,33 @@ class NoisyDense(tf.keras.layers.Layer):
         )
 
         if self.use_bias:
-            self.σ_bias = self.add_weight(
-                "σ_bias",
+            self.sigma_bias = self.add_weight(
+                "sigma_bias",
                 shape=[
                     self.units,
                 ],
-                initializer=self.σ_init,
+                initializer=self.sigma_init,
                 regularizer=self.bias_regularizer,
                 constraint=self.bias_constraint,
                 dtype=self.dtype,
                 trainable=True,
             )
 
-            self.µ_bias = self.add_weight(
-                "µ_bias",
+            self.mu_bias = self.add_weight(
+                "mu_bias",
                 shape=[
                     self.units,
                 ],
-                initializer=self.µ_init,
+                initializer=self.mu_init,
                 regularizer=self.bias_regularizer,
                 constraint=self.bias_constraint,
                 dtype=self.dtype,
                 trainable=True,
             )
         else:
-            self.σ_bias = None
-            self.µ_bias = None
+            self.sigma_bias = None
+            self.mu_bias = None
         self.built = True
-
-    @staticmethod
-    def _scale_noise(x):
-        return tf.sign(x) * tf.sqrt(tf.abs(x))
 
     # Create the factorised Gaussian noise
     def reset_noise(self):
@@ -197,8 +202,8 @@ class NoisyDense(tf.keras.layers.Layer):
         )
 
         # Scale the random noise
-        self.ε_kernel = NoisyDense._scale_noise(ε_i) * NoisyDense._scale_noise(ε_j)
-        self.ε_bias = NoisyDense._scale_noise(ε_j)
+        self.ε_kernel = _scale_noise(ε_i) * _scale_noise(ε_j)
+        self.ε_bias = _scale_noise(ε_j)
 
     def remove_noise(self):
         dtype = self._compute_dtype_object
@@ -214,9 +219,9 @@ class NoisyDense(tf.keras.layers.Layer):
         if reset_noise:
             self.reset_noise()
 
-        # Performs: y = (µw + σw · εw)x + µb + σb · εb
+        # Performs: y = (muw + sigmaw · εw)x + mub + sigmab · εb
         # to calculate the output
-        kernel = self.µ_kernel + (self.σ_kernel * self.ε_kernel)
+        kernel = self.mu_kernel + (self.sigma_kernel * self.ε_kernel)
 
         if inputs.dtype.base_dtype != dtype.base_dtype:
             inputs = tf.cast(inputs, dtype=dtype)
@@ -237,7 +242,7 @@ class NoisyDense(tf.keras.layers.Layer):
                 outputs.set_shape(output_shape)
 
         if self.use_bias:
-            noisy_bias = self.µ_bias + (self.σ_bias * self.ε_bias)
+            noisy_bias = self.mu_bias + (self.sigma_bias * self.ε_bias)
             outputs = tf.nn.bias_add(outputs, noisy_bias)
 
         if self.activation is not None:
