@@ -232,6 +232,7 @@ class NoisyDense(tf.keras.layers.Dense):
         return super().call(inputs)
 
     def get_config(self):
+        # TODO(WindQAQ): Get rid of this hacky way.
         config = super(tf.keras.layers.Dense, self).get_config()
         config.update(
             {
