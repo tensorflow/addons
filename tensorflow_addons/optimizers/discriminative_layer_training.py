@@ -19,24 +19,15 @@ from typeguard import typechecked
 from typing import Union
 from tensorflow.keras.optimizers import Optimizer
 
-# python -m flake8 tensorflow_addons/optimizers/discriminative_layer_training.py
-# python -m black tensorflow_addons/optimizers/discriminative_layer_training.py
-
-
-class FakeVar:
-    def __init__(self, name):
-        # probably can be refactored out
-        self.name = name
-
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class MultiOpt(Optimizer):
+class MultiOptimzer(Optimizer):
     @typechecked
     def __init__(
         self,
         optimizer_layer_pairs: Union[list, None] = None,
         optimizer_specs: Union[list, None] = None,
-        name: str = "MultiOpt",
+        name: str = "MultiOptimzer",
         **kwargs
     ):
 
@@ -45,13 +36,15 @@ class MultiOpt(Optimizer):
 
         Each optimizer will optimize only the weights associated with its paired layer. This can be used
         to implement discriminative layer training by assigning different learning rates to each optimizer
-        layer pair. (Optimizer, list(Layers)) pairs are also supported.
+        layer pair. (Optimizer, list(Layers)) pairs are also supported. Please note that the layers must be
+        instantiated before instantiating the optimizer.
 
         Currently, MultiOpt does not support callbacks that modify optimizers. However, you can instantiate
         optimizer layer pairs with tf.keras.optimizers.schedules.LearningRateSchedule instead of a static learning
         rate.
 
-        This code should function on CPU, GPU, and TPU.
+        This code should function on CPU, GPU, and TPU. Apply the with strategy.scope() context as you
+        would with any other optimizer.
 
         Example:
 
@@ -77,7 +70,7 @@ class MultiOpt(Optimizer):
 
         """
 
-        super(MultiOpt, self).__init__(name, **kwargs)
+        super(MultiOptimzer, self).__init__(name, **kwargs)
 
         if optimizer_specs is None and optimizer_layer_pairs is not None:
             self.optimizer_specs = [
@@ -86,22 +79,20 @@ class MultiOpt(Optimizer):
             ]
 
         elif optimizer_specs is not None and optimizer_layer_pairs is None:
-            self.optimizer_specs = optimizer_specs
+            self.optimizer_specs = [
+                self.maybe_initialize_optimizer_spec(spec) for spec in optimizer_specs
+            ]
 
         else:
             raise RuntimeError(
                 "You must specify either an list of optimizer_layer_pairs or a list of optimizer_specs"
             )
 
-        self.initialized_optimizer_specs = [
-            self.initialize_from_optimizer_spec(spec) for spec in self.optimizer_specs
-        ]
-
-        self.lr = self.initialized_optimizer_specs[0]["optimizer"].lr
-
     def apply_gradients(self, grads_and_vars, name=None):
         """
         Wrapped Gradient Apply method. Returns a list of tf ops to be executed.
+
+        Name of variable is used rather than var.ref() to enable serialization and deserialization.
         """
 
         for spec in self.optimizer_specs:
@@ -109,38 +100,40 @@ class MultiOpt(Optimizer):
 
         for grad, var in tuple(grads_and_vars):
             for spec in self.optimizer_specs:
-                for weight in spec["weights"]:
-                    if var.name == weight.name:
+                for name in spec["weights"]:
+                    if var.name == name:
                         spec["gv"].append((grad, var))
 
-        return [
-            spec["optimizer"].apply_gradients(spec["gv"])
-            for spec in self.optimizer_specs
-        ]
+        return tf.group(
+            [
+                spec["optimizer"].apply_gradients(spec["gv"])
+                for spec in self.optimizer_specs
+            ]
+        )
 
     def get_config(self):
-        config = super(MultiOpt, self).get_config()
+        config = super(MultiOptimzer, self).get_config()
         config.update({"optimizer_specs": self.optimizer_specs})
         return config
 
     @classmethod
-    def initialize_from_optimizer_spec(cls, optimizer_spec):
-        optimizer_spec["optimizer"] = optimizer_spec["optimizer_class"].from_config(
-            optimizer_spec["optimizer_config"]
-        )
-        return optimizer_spec
-
-    @classmethod
     def create_optimizer_spec(cls, optimizer_instance, layer):
+
         if type(layer) == list:
-            weights = [
-                FakeVar(var.name) for sublayer in layer for var in sublayer.weights
-            ]
+            weights = [var.name for sublayer in layer for var in sublayer.weights]
         else:
-            weights = [FakeVar(var.name) for var in layer.weights]
+            weights = [var.name for var in layer.weights]
 
         return {
-            "optimizer_class": optimizer_instance.__class__,
-            "optimizer_config": optimizer_instance.get_config(),
+            "optimizer": optimizer_instance,
             "weights": weights,
         }
+
+    @classmethod
+    def maybe_initialize_optimizer_spec(cls, optimizer_spec):
+        if type(optimizer_spec["optimizer"]) == dict:
+            optimizer_spec["optimizer"] = tf.keras.optimizers.deserialize(
+                optimizer_spec["optimizer"]
+            )
+
+        return optimizer_spec

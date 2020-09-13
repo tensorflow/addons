@@ -1,4 +1,4 @@
-# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,12 +17,9 @@
 import pytest
 import numpy as np
 
-from tensorflow_addons.optimizers.discriminative_layer_training import MultiOpt
+from tensorflow_addons.optimizers.discriminative_layer_training import MultiOptimzer
 import tensorflow as tf
 from tensorflow_addons.utils import test_utils
-
-# python -m flake8 tensorflow_addons/optimizers/tests/discriminative_layer_training_test.py
-# python -m black tensorflow_addons/optimizers/tests/discriminative_layer_training_test.py
 
 
 def _dtypes_to_test(use_gpu):
@@ -34,27 +31,18 @@ def _dtypes_to_test(use_gpu):
     # The function "_DtypesToTest" is from
     #       "https://github.com/tensorflow/tensorflow/blob/5d4a6cee737a1dc6c20172a1dc1
     #        5df10def2df72/tensorflow/python/kernel_tests/conv_ops_3d_test.py#L53-L62"
+    # TODO(WindQAQ): xxx
+
     if use_gpu:
         return [tf.float32, tf.float64]
     else:
         return [tf.half, tf.float32, tf.float64]
 
 
-def _dtypes_with_checking_system(use_gpu, system):
-    # Based on issue #36764 in the following link,
-    #        "https://github.com/tensorflow/tensorflow/issues/36764"
-    # tf.half is not registered for tf.linalg.svd function on Windows
-    # CPU version.
-    # So we have to remove tf.half when testing with Windows CPU version.
-    if system == "Windows":
-        return [tf.float32, tf.float64]
-    else:
-        return _dtypes_to_test(use_gpu)
-
-
 @pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
-def test_fit_layer_optimizer(dtype, device):
+@pytest.mark.parametrize("serialize", [True, False])
+def test_fit_layer_optimizer(dtype, device, serialize):
     # Test ensures that each optimizer is only optimizing its own layer with its learning rate
 
     if "gpu" in device and dtype == tf.float16:
@@ -78,9 +66,14 @@ def test_fit_layer_optimizer(dtype, device):
     opt_layer_pairs = [(opt1, model.layers[0]), (opt2, model.layers[1])]
 
     loss = tf.keras.losses.MSE
-    optimizer = MultiOpt(opt_layer_pairs)
+    optimizer = MultiOptimzer(opt_layer_pairs)
 
     model.compile(optimizer=optimizer, loss=loss)
+
+    if serialize:
+        model.save("test", save_format="tf")
+        tf.keras.backend.clear_session()
+        model = tf.keras.models.load_model("test")
 
     model.fit(x, y, batch_size=8, epochs=10)
 
