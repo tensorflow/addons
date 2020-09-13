@@ -32,7 +32,9 @@ class MultiOptimzer(Optimizer):
     ):
 
         """
-        Creates a wrapper around a set of instantiated optimizer layer pairs.
+        Creates a wrapper around a set of instantiated optimizer layer pairs. Allows for implementation of
+        Discriminative Layer Training as per https://arxiv.org/abs/1607.05440. Generally useful for transfer learning
+        of deep networks.
 
         Each optimizer will optimize only the weights associated with its paired layer. This can be used
         to implement discriminative layer training by assigning different learning rates to each optimizer
@@ -59,7 +61,7 @@ class MultiOptimzer(Optimizer):
                             (opt2, model.layers[1:])]
 
         loss = tf.keras.losses.MSE
-        optimizer = MultiOpt(opt_layer_pairs)
+        optimizer = tfa.optimizers.MultiOpt(opt_layer_pairs)
 
         model.compile(optimizer=optimizer, loss = loss)
 
@@ -137,3 +139,8 @@ class MultiOptimzer(Optimizer):
             )
 
         return optimizer_spec
+
+    def __repr__(self):
+        return "Multi Optimizer with %i optimizer layer pairs" % len(
+            self.optimizer_specs
+        )
