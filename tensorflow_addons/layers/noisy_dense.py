@@ -45,7 +45,7 @@ class NoisyDense(tf.keras.layers.Dense):
     \mathrm{activation}(\mathrm{dot}(x, \mu + (\sigma \cdot \epsilon))
     + \mathrm{bias})
     $$
-    Where $\mu$ is the standard weights layer, $\epsilon$ is the factorised
+    where $\mu$ is the standard weights layer, $\epsilon$ is the factorised
     Gaussian noise, and $\sigma$ is a second weights layer which controls
     $\epsilon$.
     Note: bias only added if `use_bias` is `True`.
