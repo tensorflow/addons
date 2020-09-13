@@ -33,16 +33,22 @@ def _scale_noise(x):
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class NoisyDense(tf.keras.layers.Dense):
-    r"""Noisy dense layer that inject random noise to
-    the weights of normal dense layer.
+    r"""Noisy dense layer that injects random noise to the weights of dense layer.
+
+    Noisy dense layers are fully connected layers whose weights and biases are
+    augmented by factorised Gaussian noise. The factorised Gaussian noise is
+    controlled through gradient descent by a second weights layer.
 
     A `NoisyDense` layer implements the operation:
     $$
     \mathrm{NoisyDense}(x) =
-    \mathrm{activation}(\mathrm{dot}(x, \mu + (\sigma \cdot \eps))
+    \mathrm{activation}(\mathrm{dot}(x, \mu + (\sigma \cdot \epsilon))
     + \mathrm{bias})
     $$
-    with bias only being added if `use_bias` is `True`.
+    Where $\mu$ is the standard weights layer, $\epsilon$ is the factorised
+    Gaussian noise, and $\sigma$ is a second weights layer which controls
+    $\epsilon$.
+    Note: bias only added if `use_bias` is `True`.
 
     Example:
     >>> # Create a `Sequential` model and add a NoisyDense
@@ -84,6 +90,9 @@ class NoisyDense(tf.keras.layers.Dense):
       N-D tensor with shape: `(batch_size, ..., units)`.
       For instance, for a 2D input with shape `(batch_size, input_dim)`,
       the output would have shape `(batch_size, units)`.
+
+    References:
+      - [Noisy Networks for Explanation](https://arxiv.org/pdf/1706.10295.pdf)
     """
 
     @typechecked
@@ -199,8 +208,9 @@ class NoisyDense(tf.keras.layers.Dense):
         if self.use_bias:
             return self.mu_bias + (self.sigma_bias * self.eps_bias)
 
-    # Create the factorised Gaussian noise
     def _reset_noise(self):
+        """Create the factorised Gaussian noise."""
+
         dtype = self._compute_dtype_object
 
         # Generate random noise
@@ -217,6 +227,8 @@ class NoisyDense(tf.keras.layers.Dense):
         self.eps_bias = _scale_noise(eps_j)
 
     def _remove_noise(self):
+        """Remove the factorised Gaussian noise."""
+
         dtype = self._compute_dtype_object
         self.eps_kernel = tf.zeros([self.last_dim, self.units], dtype=dtype)
         self.eps_bias = tf.zeros([self.units], dtype=dtype)

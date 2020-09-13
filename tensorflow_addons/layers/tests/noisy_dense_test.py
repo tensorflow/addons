@@ -20,19 +20,17 @@ import numpy as np
 
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow_addons.utils import test_utils
-from tensorflow_addons.layers.noisy_dense import NoisyDense
 from tensorflow.keras.mixed_precision.experimental import Policy
 
+from tensorflow_addons.utils import test_utils
+from tensorflow_addons.layers.noisy_dense import NoisyDense
 
-def test_noisy_dense():
-    test_utils.layer_test(NoisyDense, kwargs={"units": 3}, input_shape=(3, 2))
 
-    test_utils.layer_test(NoisyDense, kwargs={"units": 3}, input_shape=(3, 4, 2))
-
-    test_utils.layer_test(NoisyDense, kwargs={"units": 3}, input_shape=(None, None, 2))
-
-    test_utils.layer_test(NoisyDense, kwargs={"units": 3}, input_shape=(3, 4, 5, 2))
+@pytest.mark.parametrize(
+    "input_shape", [(3, 2), (3, 4, 2), (None, None, 2), (3, 4, 5, 2)]
+)
+def test_noisy_dense(input_shape):
+    test_utils.layer_test(NoisyDense, kwargs={"units": 3}, input_shape=input_shape)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
