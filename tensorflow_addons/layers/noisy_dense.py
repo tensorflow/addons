@@ -51,6 +51,7 @@ class NoisyDense(tf.keras.layers.Dense):
     Note: bias only added if `use_bias` is `True`.
 
     Example:
+
     >>> # Create a `Sequential` model and add a NoisyDense
     >>> # layer as the first layer.
     >>> model = tf.keras.models.Sequential()
@@ -143,16 +144,14 @@ class NoisyDense(tf.keras.layers.Dense):
             )
         self.input_spec = InputSpec(min_ndim=2, axes={-1: self.last_dim})
 
-        self.sigma_init = initializers.Constant(value=self.sigma / sqrt_dim)
-        self.mu_init = initializers.RandomUniform(
-            minval=-1 / sqrt_dim, maxval=1 / sqrt_dim
-        )
+        sigma_init = initializers.Constant(value=self.sigma / sqrt_dim)
+        mu_init = initializers.RandomUniform(minval=-1 / sqrt_dim, maxval=1 / sqrt_dim)
 
         # Learnable parameters
         self.sigma_kernel = self.add_weight(
             "sigma_kernel",
             shape=[self.last_dim, self.units],
-            initializer=self.sigma_init,
+            initializer=sigma_init,
             regularizer=self.kernel_regularizer,
             constraint=self.kernel_constraint,
             dtype=self.dtype,
@@ -162,7 +161,7 @@ class NoisyDense(tf.keras.layers.Dense):
         self.mu_kernel = self.add_weight(
             "mu_kernel",
             shape=[self.last_dim, self.units],
-            initializer=self.mu_init,
+            initializer=mu_init,
             regularizer=self.kernel_regularizer,
             constraint=self.kernel_constraint,
             dtype=self.dtype,
@@ -175,7 +174,7 @@ class NoisyDense(tf.keras.layers.Dense):
                 shape=[
                     self.units,
                 ],
-                initializer=self.sigma_init,
+                initializer=sigma_init,
                 regularizer=self.bias_regularizer,
                 constraint=self.bias_constraint,
                 dtype=self.dtype,
@@ -187,7 +186,7 @@ class NoisyDense(tf.keras.layers.Dense):
                 shape=[
                     self.units,
                 ],
-                initializer=self.mu_init,
+                initializer=mu_init,
                 regularizer=self.bias_regularizer,
                 constraint=self.bias_constraint,
                 dtype=self.dtype,
