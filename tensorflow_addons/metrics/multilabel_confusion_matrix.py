@@ -56,12 +56,12 @@ class MultiLabelConfusionMatrix(Metric):
     >>> result = metric(y_true, y_pred)
     >>> print('Confusion matrix:', result.numpy())
     Confusion matrix: [[[2. 0.]
-       [0. 2.]]
+      [0. 2.]]
     <BLANKLINE>
-      [[2. 0.]
-       [0. 2.]]
-     <BLANKLINE>
-      [[0. 2.]
+     [[2. 0.]
+      [0. 2.]]
+    <BLANKLINE>
+     [[0. 2.]
       [2. 0.]]]
 
     >>> # if multiclass input is provided
@@ -74,12 +74,12 @@ class MultiLabelConfusionMatrix(Metric):
     >>> result = metric(y_true, y_pred)
     >>> print('Confusion matrix:', result.numpy())
     Confusion matrix: [[[2. 0.]
-       [0. 2.]]
+      [0. 2.]]
     <BLANKLINE>
-      [[2. 0.]
-       [2. 0.]]
-     <BLANKLINE>
-      [[2. 2.]
+     [[2. 0.]
+      [2. 0.]]
+    <BLANKLINE>
+     [[2. 2.]
       [0. 0.]]]
     """
 
