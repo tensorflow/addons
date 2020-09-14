@@ -58,6 +58,12 @@ class CohenKappa(Metric):
     >>> # To use this with weights, sample_weight argument can be used.
     >>> metric = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
     >>> metric.update_state(y_true = actuals, y_pred = preds, sample_weight=weights)
+    <tf.Tensor: shape=(5, 5), dtype=float32, numpy=
+     array([[ 0.,  0.,  0.,  0.,  0.],
+            [ 0.,  6.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0., 10.],
+            [ 0.,  0.,  0.,  2.,  0.],
+            [ 0.,  0.,  2.,  0.,  7.]], dtype=float32)>
     >>> result = metric(y_true = actuals, y_pred = preds)
     >>> print('Final result: ', result.numpy())
     Final result: 0.37209308
