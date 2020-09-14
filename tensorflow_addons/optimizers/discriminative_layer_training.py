@@ -43,15 +43,21 @@ class MultiOptimzer(tf.keras.optimizers.Optimizer):
 
     Usage:
 
-    >>> model = get_model()
-    >>> opt1 = tf.keras.optimizers.Adam(learning_rate=1e-4)
-    >>> opt2 = tf.keras.optimizers.Adam(learning_rate=1e-2)
-    >>> opt_layer_pairs = [(opt1, model.layers[0]), (opt2, model.layers[1:])]
-    >>>  loss = tf.keras.losses.MSE
-    >>>  optimizer = tfa.optimizers.MultiOpt(opt_layer_pairs)
-    >>>  model.compile(optimizer=optimizer, loss = loss)
-    >>>  model.fit(x,y)
+    ```python
+    model = get_model()
 
+    opt1 = tf.keras.optimizers.Adam(learning_rate=1e-4)
+    opt2 = tf.keras.optimizers.Adam(learning_rate=1e-2)
+
+    opt_layer_pairs = [(opt1, model.layers[0]), (opt2, model.layers[1:])]
+
+    loss = tf.keras.losses.MSE
+    optimizer = tfa.optimizers.MultiOpt(opt_layer_pairs)
+
+    model.compile(optimizer=optimizer, loss = loss)
+
+    model.fit(x,y)
+    '''
 
     Reference:
 
