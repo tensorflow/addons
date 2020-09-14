@@ -48,6 +48,7 @@ class NoisyDense(tf.keras.layers.Dense):
     where $\mu$ is the standard weights layer, $\epsilon$ is the factorised
     Gaussian noise, and $\sigma$ is a second weights layer which controls
     $\epsilon$.
+
     Note: bias only added if `use_bias` is `True`.
 
     Example:
