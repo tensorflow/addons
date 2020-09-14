@@ -52,8 +52,9 @@ class MultiLabelConfusionMatrix(Metric):
     >>> y_pred = tf.constant([[1, 0, 0],[0, 1, 1]],
     ... dtype=tf.int32)
     >>> metric = tfa.metrics.MultiLabelConfusionMatrix(num_classes=3)
-    >>> result = metric.update_state(y_true, y_pred)
-    >>> # print('Confusion matrix:', result.result().numpy())
+    >>> metric.update_state(y_true, y_pred)
+    >>> result = metric(y_true, y_pred)
+    >>> # print('Confusion matrix:', result.numpy())
 
     >>> # Confusion matrix: [[[1 0] [0 1]] [[1 0] [0 1]] [[0 1] [1 0]]]
 
@@ -63,8 +64,9 @@ class MultiLabelConfusionMatrix(Metric):
     >>> y_pred = tf.constant([[1, 0, 0],[0, 0, 1]],
     ... dtype=tf.int32)
     >>> metric = tfa.metrics.MultiLabelConfusionMatrix(num_classes=3)
-    >>> result = metric.update_state(y_true, y_pred)
-    >>> # print('Confusion matrix:', result.result().numpy())
+    >>> metric.update_state(y_true, y_pred)
+    >>> result = metric(y_true, y_pred)
+    >>> # print('Confusion matrix:', result.numpy())
 
     >>> # Confusion matrix: [[[1 0] [0 1]] [[1 0] [1 0]] [[1 1] [0 0]]]
 
