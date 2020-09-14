@@ -38,7 +38,7 @@ class GeometricMean(Metric):
     >>> metric = tfa.metrics.GeometricMean()
     >>> metric.update_state([1, 3, 5, 7, 9])
     >>> metric.result().numpy()
-    >>> # 3.9362833
+    3.9362833
 
     """
 
