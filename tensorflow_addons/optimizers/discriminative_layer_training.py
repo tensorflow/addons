@@ -21,7 +21,7 @@ from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class MultiOptimzer(tf.keras.optimizers.Optimizer):
+class MultiOptimizer(tf.keras.optimizers.Optimizer):
     """Multi Optimizer Wrapper for Discriminative Layer Training.
 
     Creates a wrapper around a set of instantiated optimizer layer pairs. Generally useful for transfer learning
@@ -84,7 +84,7 @@ class MultiOptimzer(tf.keras.optimizers.Optimizer):
         **kwargs
     ):
 
-        super(MultiOptimzer, self).__init__(name, **kwargs)
+        super(MultiOptimizer, self).__init__(name, **kwargs)
 
         if optimizer_specs is None and optimizers_and_layers is not None:
             self.optimizer_specs = [
@@ -126,7 +126,7 @@ class MultiOptimzer(tf.keras.optimizers.Optimizer):
         )
 
     def get_config(self):
-        config = super(MultiOptimzer, self).get_config()
+        config = super(MultiOptimizer, self).get_config()
         config.update({"optimizer_specs": self.optimizer_specs})
         return config
 
