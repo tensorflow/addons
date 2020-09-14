@@ -46,6 +46,19 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
 
     "Recurrent Dropout without Memory Loss"
     Stanislau Semeniuta, Aliaksei Severyn, Erhardt Barth.
+
+    Example:
+
+    >>> inputs = np.random.random([30,23,9]).astype(np.float32)
+    >>> lnLSTMCell = tfa.rnn.LayerNormLSTMCell(4)
+    >>> rnn = tf.keras.layers.RNN(lnLSTMCell, return_sequences=True, return_state=True)
+    >>> outputs, memory_state, carry_state = rnn(inputs)
+    >>> outputs.shape
+    TensorShape([30, 23, 4])
+    >>> memory_state.shape
+    TensorShape([30, 4])
+    >>> carry_state.shape
+    TensorShape([30, 4])
     """
 
     @typechecked

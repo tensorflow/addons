@@ -37,6 +37,17 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
         "Layer Normalization." ArXiv:1607.06450 [Cs, Stat],
         July 21, 2016. http://arxiv.org/abs/1607.06450
 
+    Example:
+
+    >>> inputs = np.random.random([30,23,9]).astype(np.float32)
+    >>> lnsRNNCell = tfa.rnn.LayerNormSimpleRNNCell(4)
+    >>> rnn = tf.keras.layers.RNN(lnsRNNCell, return_sequences=True, return_state=True)
+    >>> outputs, memory_state = rnn(inputs)
+    >>> outputs.shape
+    TensorShape([30, 23, 4])
+    >>> memory_state.shape
+    TensorShape([30, 4])
+
     Arguments:
       units: Positive integer, dimensionality of the output space.
       activation: Activation function to use.

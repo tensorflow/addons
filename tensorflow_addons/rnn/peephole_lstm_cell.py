@@ -39,17 +39,16 @@ class PeepholeLSTMCell(tf.keras.layers.LSTMCell):
 
     Example:
 
-    >>> # Create 2 PeepholeLSTMCells
-    >>> peephole_lstm_cells = [tfa.rnn.PeepholeLSTMCell(size) for size in [128, 256]]
-    >>> # Create a layer composed sequentially of the peephole LSTM cells.
-    >>> layer = tf.keras.layers.RNN(peephole_lstm_cells)
-    >>> input = tf.keras.Input((100, 100))
-    >>> output = tf.keras.layers.Layer(input)
-    >>> output
-    <tensorflow.python.keras.engine.base_layer.Layer object at ...>
-
-    <... Note: Values used for timesteps and input_dim have been used purely
-    for example purposes and have no significance ...>
+    >>> inputs = np.random.random([30,23,9]).astype(np.float32)
+    >>> LSTMCell = tfa.rnn.PeepholeLSTMCell(4)
+    >>> rnn = tf.keras.layers.RNN(LSTMCell, return_sequences=True, return_state=True)
+    >>> outputs, memory_state, carry_state = rnn(inputs)
+    >>> outputs.shape
+    TensorShape([30, 23, 4])
+    >>> memory_state.shape
+    TensorShape([30, 4])
+    >>> carry_state.shape
+    TensorShape([30, 4])
     """
 
     def build(self, input_shape):
