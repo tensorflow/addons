@@ -18,7 +18,7 @@ import pytest
 import numpy as np
 import tensorflow as tf
 
-from tensorflow_addons.optimizers.discriminative_layer_training import MultiOptimzer
+from tensorflow_addons.optimizers.discriminative_layer_training import MultiOptimizer
 from tensorflow_addons.utils import test_utils
 
 
@@ -66,7 +66,7 @@ def test_fit_layer_optimizer(dtype, device, serialize):
     opt_layer_pairs = [(opt1, model.layers[0]), (opt2, model.layers[1])]
 
     loss = tf.keras.losses.MSE
-    optimizer = MultiOptimzer(opt_layer_pairs)
+    optimizer = MultiOptimizer(opt_layer_pairs)
 
     model.compile(optimizer=optimizer, loss=loss)
 
@@ -106,7 +106,7 @@ def test_serialization():
 
     opt_layer_pairs = [(opt1, model.layers[0]), (opt2, model.layers[1])]
 
-    optimizer = MultiOptimzer(opt_layer_pairs)
+    optimizer = MultiOptimizer(opt_layer_pairs)
     config = tf.keras.optimizers.serialize(optimizer)
 
     new_optimizer = tf.keras.optimizers.deserialize(config)
