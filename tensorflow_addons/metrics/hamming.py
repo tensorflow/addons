@@ -94,7 +94,7 @@ def hamming_loss_fn(
     >>> hl.update_state(actuals,  predictions)
     tf.Variable 'UnreadVariable' shape=() dtype=float32, numpy=4.0
     >>> # uncomment the line below to see the result
-    >>> print('Hamming loss: ', hl.result().numpy()) 
+    >>> print('Hamming loss: ', hl.result().numpy())
     Hamming loss: 0.25
     >>> # multi-label hamming loss
     >>> hl = HammingLoss(mode='multilabel', threshold=0.8)
@@ -104,7 +104,7 @@ def hamming_loss_fn(
     ... [0, 1, 0.4, 0.98],[0.89, 0.79, 0, 0.3]],dtype=tf.float32)
 
     >>> hl.update_state(actuals, predictions)
-    >>> print('Hamming loss: ', hl.result().numpy()) 
+    >>> print('Hamming loss: ', hl.result().numpy())
     Hamming loss: 0.16666667
     """
     if mode not in ["multiclass", "multilabel"]:
