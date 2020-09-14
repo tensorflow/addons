@@ -49,9 +49,10 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
     ... dtype=tf.float32)
     >>> # Matthews correlation coefficient
     >>> metric = tfa.metrics.MatthewsCorrelationCoefficient(num_classes=1)
-    >>> result = metric.update_state(y_true = actuals, y_pred = preds)
+    >>> metric.update_state(y_true = actuals, y_pred = preds)
+    >>> result = metric(y_true = actuals, y_pred = preds)
     >>> # uncomment the lines below to check the result
-    >>> # print('Matthews correlation coefficient is:', result.result().numpy())
+    >>> # print('Matthews correlation coefficient is:', result.numpy())
     >>> # Matthews correlation coefficient is : -0.33333334
 
     """
