@@ -42,7 +42,7 @@ def hamming_distance(actuals: TensorLike, predictions: TensorLike) -> tf.Tensor:
     ... dtype=tf.int32)
     >>> predictions = tf.constant([1, 0, 0, 0, 1, 0, 0, 1, 0, 1],
     ... dtype=tf.int32)
-    >>> metric = hamming_distance(actuals, predictions)
+    >>> metric = hamming_distance(y_true = actuals, y_pred = predictions)
     >>> #print('Hamming distance: ', metric.numpy())
 
     """
