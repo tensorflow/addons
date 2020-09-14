@@ -78,7 +78,6 @@ class MultiOptimzer(tf.keras.optimizers.Optimizer):
         **kwargs
     ):
 
-
         super(MultiOptimzer, self).__init__(name, **kwargs)
 
         if optimizer_specs is None and optimizers_and_layers is not None:
@@ -128,11 +127,13 @@ class MultiOptimzer(tf.keras.optimizers.Optimizer):
     @classmethod
     def create_optimizer_spec(cls, optimizer_instance, layer):
 
-        assert isinstance(optimizer_instance, tf.keras.optimizers.Optimizer), \
-            "Object passed is not an instance of tf.keras.optimizers.Optimizer"
+        assert isinstance(
+            optimizer_instance, tf.keras.optimizers.Optimizer
+        ), "Object passed is not an instance of tf.keras.optimizers.Optimizer"
 
-        assert isinstance(layer, tf.keras.layers.Layer) or isinstance(layer, tf.keras.Model), \
-            "Object passed is not an instance of tf.keras.layers.Layer nor tf.keras.Model"
+        assert isinstance(layer, tf.keras.layers.Layer) or isinstance(
+            layer, tf.keras.Model
+        ), "Object passed is not an instance of tf.keras.layers.Layer nor tf.keras.Model"
 
         if type(layer) == list:
             weights = [var.name for sublayer in layer for var in sublayer.weights]

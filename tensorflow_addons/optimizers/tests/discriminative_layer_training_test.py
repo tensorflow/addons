@@ -21,6 +21,7 @@ import tensorflow as tf
 from tensorflow_addons.optimizers.discriminative_layer_training import MultiOptimzer
 from tensorflow_addons.utils import test_utils
 
+
 def _dtypes_to_test(use_gpu):
     # Based on issue #347 in the following link,
     #        "https://github.com/tensorflow/addons/issues/347"
