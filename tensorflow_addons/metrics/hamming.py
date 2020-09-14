@@ -44,7 +44,7 @@ def hamming_distance(actuals: TensorLike, predictions: TensorLike) -> tf.Tensor:
     ... dtype=tf.int32)
     >>> metric = hamming_distance(actuals, predictions)
     >>> print('Hamming distance: ', metric.numpy())
-
+    Hamming distance:  0.3
     """
     result = tf.not_equal(actuals, predictions)
     not_eq = tf.reduce_sum(tf.cast(result, tf.float32))
@@ -94,8 +94,8 @@ def hamming_loss_fn(
     >>> hl.update_state(actuals,  predictions)
     tf.Variable 'UnreadVariable' shape=() dtype=float32, numpy=4.0
     >>> # uncomment the line below to see the result
-    >>> print('Hamming loss: ', hl.result().numpy()) # 0.25
-
+    >>> print('Hamming loss: ', hl.result().numpy()) 
+    Hamming loss: 0.25
     >>> # multi-label hamming loss
     >>> hl = HammingLoss(mode='multilabel', threshold=0.8)
     >>> actuals = tf.constant([[1, 0, 1, 0],[0, 1, 0, 1],
@@ -104,8 +104,8 @@ def hamming_loss_fn(
     ... [0, 1, 0.4, 0.98],[0.89, 0.79, 0, 0.3]],dtype=tf.float32)
 
     >>> hl.update_state(actuals, predictions)
-    >>> print('Hamming loss: ', hl.result().numpy()) # 0.16666667
-
+    >>> print('Hamming loss: ', hl.result().numpy()) 
+    Hamming loss: 0.16666667
     """
     if mode not in ["multiclass", "multilabel"]:
         raise TypeError("mode must be either multiclass or multilabel]")
