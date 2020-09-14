@@ -43,7 +43,7 @@ def hamming_distance(actuals: TensorLike, predictions: TensorLike) -> tf.Tensor:
     >>> predictions = tf.constant([1, 0, 0, 0, 1, 0, 0, 1, 0, 1],
     ... dtype=tf.int32)
     >>> metric = hamming_distance(actuals, predictions)
-    >>> #print('Hamming distance: ', metric.numpy())
+    >>> print('Hamming distance: ', metric.numpy())
 
     """
     result = tf.not_equal(actuals, predictions)
@@ -92,6 +92,7 @@ def hamming_loss_fn(
     ... dtype=tf.float32)
 
     >>> hl.update_state(actuals,  predictions)
+    tf.Variable 'UnreadVariable' shape=() dtype=float32, numpy=4.0
     >>> # uncomment the line below to see the result
     >>> print('Hamming loss: ', hl.result().numpy()) # 0.25
 
@@ -103,7 +104,7 @@ def hamming_loss_fn(
     ... [0, 1, 0.4, 0.98],[0.89, 0.79, 0, 0.3]],dtype=tf.float32)
 
     >>> hl.update_state(actuals, predictions)
-    >>> # print('Hamming loss: ', hl.result().numpy()) # 0.16666667
+    >>> print('Hamming loss: ', hl.result().numpy()) # 0.16666667
 
     """
     if mode not in ["multiclass", "multilabel"]:
