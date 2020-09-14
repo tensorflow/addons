@@ -55,7 +55,14 @@ class MultiLabelConfusionMatrix(Metric):
     >>> metric.update_state(y_true, y_pred)
     >>> result = metric(y_true, y_pred)
     >>> print('Confusion matrix:', result.numpy())
-    Confusion matrix: [[[1 0] [0 1]] [[1 0] [0 1]] [[0 1] [1 0]]]
+    Confusion matrix: [[[2. 0.]
+                        [0. 2.]]
+
+                       [[2. 0.]
+                        [0. 2.]]
+
+                       [[0. 2.]
+                        [2. 0.]]]
 
     >>> # if multiclass input is provided
     >>> y_true = tf.constant([[1, 0, 0], [0, 1, 0]],
@@ -66,7 +73,14 @@ class MultiLabelConfusionMatrix(Metric):
     >>> metric.update_state(y_true, y_pred)
     >>> result = metric(y_true, y_pred)
     >>> print('Confusion matrix:', result.numpy())
-    Confusion matrix: [[[1 0] [0 1]] [[1 0] [1 0]] [[1 1] [0 0]]]
+    Confusion matrix: [[[2. 0.]
+                        [0. 2.]]
+
+                       [[2. 0.]
+                        [2. 0.]]
+
+                       [[2. 2.]
+                        [0. 0.]]]
 
     """
 
