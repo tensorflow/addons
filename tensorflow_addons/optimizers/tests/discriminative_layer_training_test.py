@@ -12,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for Discriminative Layer Training Optimizer for TensorFlow"""
+"""Tests for Discriminative Layer Training Optimizer for TensorFlow."""
 
 import pytest
 import numpy as np
+import tensorflow as tf
 
 from tensorflow_addons.optimizers.discriminative_layer_training import MultiOptimzer
-import tensorflow as tf
 from tensorflow_addons.utils import test_utils
-
 
 def _dtypes_to_test(use_gpu):
     # Based on issue #347 in the following link,
@@ -31,7 +30,7 @@ def _dtypes_to_test(use_gpu):
     # The function "_DtypesToTest" is from
     #       "https://github.com/tensorflow/tensorflow/blob/5d4a6cee737a1dc6c20172a1dc1
     #        5df10def2df72/tensorflow/python/kernel_tests/conv_ops_3d_test.py#L53-L62"
-    # TODO(WindQAQ): xxx
+    # TODO(WindQAQ): Clean up this in TF2.4
 
     if use_gpu:
         return [tf.float32, tf.float64]
@@ -70,6 +69,7 @@ def test_fit_layer_optimizer(dtype, device, serialize):
 
     model.compile(optimizer=optimizer, loss=loss)
 
+    # serialize whole model including optimizer, clear the session, then reload the whole model.
     if serialize:
         model.save("test", save_format="tf")
         tf.keras.backend.clear_session()
@@ -92,3 +92,21 @@ def test_fit_layer_optimizer(dtype, device, serialize):
     test_utils.assert_allclose_according_to_type(
         weights_before_train[1], weights_after_train[1]
     )
+
+
+def test_serialization():
+
+    model = tf.keras.Sequential(
+        [tf.keras.Input(shape=[1]), tf.keras.layers.Dense(1), tf.keras.layers.Dense(1)]
+    )
+
+    opt1 = tf.keras.optimizers.Adam(learning_rate=1e-3)
+    opt2 = tf.keras.optimizers.SGD(learning_rate=0)
+
+    opt_layer_pairs = [(opt1, model.layers[0]), (opt2, model.layers[1])]
+
+    optimizer = MultiOptimzer(opt_layer_pairs)
+    config = tf.keras.optimizers.serialize(optimizer)
+
+    new_optimizer = tf.keras.optimizers.deserialize(config)
+    assert new_optimizer.get_config() == optimizer.get_config()
