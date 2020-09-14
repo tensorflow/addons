@@ -47,7 +47,7 @@ class CohenKappa(Metric):
     >>> metric.update_state(y_true = actuals, y_pred = preds)
     tf.Tensor: shape=(5, 5), dtype=float32, numpy = array([[0., 0., 0., 0., 0.],[0., 2., 0., 0., 0.],[0., 0., 0., 0., 1.],[0., 0., 0., 1., 0.], [0., 0., 1., 0., 3.]], dtype=float32)
     >>> result = metric(y_true = actuals, y_pred = preds)
-    >>>print('Final result: ', result.numpy())
+    >>> print('Final result: ', result.numpy())
     Final result: 0.61904764
 
     >>> # To use this with weights, sample_weight argument can be used.
