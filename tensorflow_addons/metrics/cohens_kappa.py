@@ -45,16 +45,17 @@ class CohenKappa(Metric):
 
     >>> metric = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
     >>> metric.update_state(y_true = actuals, y_pred = preds)
+    tf.Tensor: shape=(5, 5), dtype=float32, numpy = array([[0., 0., 0., 0., 0.],[0., 2., 0., 0., 0.],[0., 0., 0., 0., 1.],[0., 0., 0., 1., 0.], [0., 0., 1., 0., 3.]], dtype=float32)
     >>> result = metric(y_true = actuals, y_pred = preds)
-    >>> # print('Final result: ', result.numpy())
-    >>> # Final result: 0.61904764
+    >>>print('Final result: ', result.numpy())
+    Final result: 0.61904764
 
     >>> # To use this with weights, sample_weight argument can be used.
     >>> metric = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
     >>> metric.update_state(y_true = actuals, y_pred = preds, sample_weight=weights)
     >>> result = metric(y_true = actuals, y_pred = preds)
-    >>> # print('Final result: ', result.numpy())
-    >>> # Final result: 0.37209308
+    >>> print('Final result: ', result.numpy())
+    Final result: 0.37209308
 
     Usage with tf.keras API:
 
