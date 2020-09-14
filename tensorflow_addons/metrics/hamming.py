@@ -92,7 +92,7 @@ def hamming_loss_fn(
     ... dtype=tf.float32)
 
     >>> hl.update_state(actuals,  predictions)
-    tf.Variable 'UnreadVariable' shape=() dtype=float32, numpy=4.0
+    <tf.Variable 'UnreadVariable' shape=() dtype=float32, numpy=4.0>
     >>> # uncomment the line below to see the result
     >>> print('Hamming loss: ', hl.result().numpy())
     Hamming loss: 0.25
