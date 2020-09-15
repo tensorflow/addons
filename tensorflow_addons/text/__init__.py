@@ -16,6 +16,7 @@
 
 # Conditional Random Field
 from tensorflow_addons.text.crf import crf_binary_score
+from tensorflow_addons.text.crf import crf_constrained_decode
 from tensorflow_addons.text.crf import crf_decode
 from tensorflow_addons.text.crf import crf_decode_backward
 from tensorflow_addons.text.crf import crf_decode_forward
