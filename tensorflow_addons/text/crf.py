@@ -39,8 +39,11 @@ def crf_filtered_inputs(inputs: TensorLike, tag_bitmap: TensorLike):
       filtered_inputs: A [batch_size] vector of unnormalized sequence scores.
     """
     # set scores of filtered out inputs to be -inf.
-    filtered_inputs = tf.where(tag_bitmap, inputs,
-                               tf.fill(tf.shape(inputs), tf.cast(float("-inf"), inputs.dtype)))
+    filtered_inputs = tf.where(
+        tag_bitmap,
+        inputs,
+        tf.fill(tf.shape(inputs), tf.cast(float("-inf"), inputs.dtype)),
+    )
     return filtered_inputs
 
 
@@ -577,7 +580,12 @@ def crf_decode(
         )
 
 
-def crf_constrained_decode(potentials: TensorLike, tag_bitmap: TensorLike, transition_params: TensorLike, sequence_length: TensorLike):
+def crf_constrained_decode(
+    potentials: TensorLike,
+    tag_bitmap: TensorLike,
+    transition_params: TensorLike,
+    sequence_length: TensorLike,
+):
     """Decode the highest scoring sequence of tags under constraints.
 
     This is a function for tensor.

@@ -67,38 +67,48 @@ def brute_force_decode(sequence_lengths, inputs, transition_params):
     return expected_max_sequence, expected_max_score
 
 
-
 @pytest.mark.parametrize("dtype", [np.float16, np.float32])
 def test_crf_filtered_inputs(dtype):
     # Test both the length-1 and regular cases.
-    sequence_lengths_list = [
-        np.array(3, dtype=np.int32),
-        np.array(1, dtype=np.int32)
-    ]
+    sequence_lengths_list = [np.array(3, dtype=np.int32), np.array(1, dtype=np.int32)]
     inputs_list = [
-        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]],
-                    dtype=dtype),
+        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=dtype),
         np.array([[4, 5, -3]], dtype=dtype),
     ]
     tag_bitmap_list = [
-        np.array([[True, False, False], [False, True, True], [False, True, True], [False, True, True]],
-                    dtype=np.bool),
+        np.array(
+            [
+                [True, False, False],
+                [False, True, True],
+                [False, True, True],
+                [False, True, True],
+            ],
+            dtype=np.bool,
+        ),
         np.array([[False, True, True]], dtype=np.bool),
     ]
     neg_inf = float("-inf")
     expected_filtered_inputs_list = [
-        np.array([[4, neg_inf, neg_inf], [neg_inf, -1, 3], [neg_inf, 2, 1], [neg_inf, 0, 0]],
-                    dtype=dtype),
+        np.array(
+            [[4, neg_inf, neg_inf], [neg_inf, -1, 3], [neg_inf, 2, 1], [neg_inf, 0, 0]],
+            dtype=dtype,
+        ),
         np.array([[neg_inf, 5, -3]], dtype=dtype),
     ]
     for sequence_lengths, inputs, tag_bitmap, expected_filtered_inputs in zip(
-            sequence_lengths_list, inputs_list, tag_bitmap_list, expected_filtered_inputs_list):
+        sequence_lengths_list,
+        inputs_list,
+        tag_bitmap_list,
+        expected_filtered_inputs_list,
+    ):
         filtered_inputs = text.crf_filtered_inputs(
-            inputs=tf.expand_dims(inputs, 0),
-            tag_bitmap=tf.expand_dims(tag_bitmap, 0))
+            inputs=tf.expand_dims(inputs, 0), tag_bitmap=tf.expand_dims(tag_bitmap, 0)
+        )
         filtered_inputs = tf.squeeze(filtered_inputs, [0])
 
-        test_utils.assert_allclose_according_to_type(filtered_inputs, expected_filtered_inputs)
+        test_utils.assert_allclose_according_to_type(
+            filtered_inputs, expected_filtered_inputs
+        )
 
 
 @pytest.mark.parametrize("dtype", [np.float16, np.float32])
@@ -186,6 +196,7 @@ def test_crf_multi_tag_sequence_score(dtype):
         test_utils.assert_allclose_according_to_type(
             sequence_score, expected_log_sum_exp_sequence_scores
         )
+
 
 @pytest.mark.parametrize("dtype", [np.float16, np.float32])
 def test_crf_unary_score(dtype):
@@ -375,7 +386,8 @@ def test_crf_decode(dtype):
         sequence_lengths_list, inputs_list, tag_indices_list
     ):
         expected_max_sequence, expected_max_score = brute_force_decode(
-            sequence_lengths, inputs, transition_params)
+            sequence_lengths, inputs, transition_params
+        )
 
         actual_max_sequence, actual_max_score = text.crf_decode(
             tf.expand_dims(inputs, 0),
@@ -393,35 +405,40 @@ def test_crf_decode(dtype):
             == expected_max_sequence[:sequence_lengths]
         )
 
+
 @pytest.mark.parametrize("dtype", [np.float16, np.float32])
 def test_crf_constrained_decode(dtype):
-    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]],
-                                    dtype=dtype)
+    transition_params = np.array([[-3, 5, -2], [3, 4, 1], [1, 2, 1]], dtype=dtype)
     # Test both the length-1 and regular cases.
-    sequence_lengths_list = [
-        np.array(3, dtype=np.int32),
-        np.array(1, dtype=np.int32)
-    ]
+    sequence_lengths_list = [np.array(3, dtype=np.int32), np.array(1, dtype=np.int32)]
     inputs_list = [
-        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]],
-                    dtype=dtype),
+        np.array([[4, 5, -3], [3, -1, 3], [-1, 2, 1], [0, 0, 0]], dtype=dtype),
         np.array([[4, 5, -3]], dtype=dtype),
     ]
     tag_bitmap_list = [
-        np.array([[True, False, False], [False, True, True], [False, True, True], [False, True, True]],
-                    dtype=np.bool),
+        np.array(
+            [
+                [True, False, False],
+                [False, True, True],
+                [False, True, True],
+                [False, True, True],
+            ],
+            dtype=np.bool,
+        ),
         np.array([[False, True, True]], dtype=np.bool),
     ]
     for sequence_lengths, inputs, tag_bitmap in zip(
-            sequence_lengths_list, inputs_list, tag_bitmap_list):
+        sequence_lengths_list, inputs_list, tag_bitmap_list
+    ):
         filtered_inputs = text.crf_filtered_inputs(
-            inputs=tf.expand_dims(inputs, 0),
-            tag_bitmap=tf.expand_dims(tag_bitmap, 0))
-        
+            inputs=tf.expand_dims(inputs, 0), tag_bitmap=tf.expand_dims(tag_bitmap, 0)
+        )
+
         expected_max_sequence, expected_max_score = text.crf_decode(
             filtered_inputs,
             tf.constant(transition_params),
-            tf.expand_dims(sequence_lengths, 0))
+            tf.expand_dims(sequence_lengths, 0),
+        )
 
         expected_max_sequence = tf.squeeze(expected_max_sequence, [0])
         expected_max_score = tf.squeeze(expected_max_score, [0])
@@ -430,7 +447,8 @@ def test_crf_constrained_decode(dtype):
             tf.expand_dims(inputs, 0),
             tf.expand_dims(tag_bitmap, 0),
             tf.constant(transition_params),
-            tf.expand_dims(sequence_lengths, 0))
+            tf.expand_dims(sequence_lengths, 0),
+        )
 
         actual_max_sequence = tf.squeeze(actual_max_sequence, [0])
         actual_max_score = tf.squeeze(actual_max_score, [0])
@@ -438,9 +456,8 @@ def test_crf_constrained_decode(dtype):
         test_utils.assert_allclose_according_to_type(
             actual_max_score, expected_max_score, 1e-6, 1e-6
         )
-        assert (
-            list(actual_max_sequence[:sequence_lengths])
-            == list(expected_max_sequence[:sequence_lengths])
+        assert list(actual_max_sequence[:sequence_lengths]) == list(
+            expected_max_sequence[:sequence_lengths]
         )
 
 
