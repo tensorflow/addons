@@ -29,7 +29,6 @@ def crf_filtered_inputs(inputs: TensorLike, tag_bitmap: TensorLike):
     tag_bitmap limits the allowed tags at each input time step.
     This is useful when an observed output at a given time step needs to be
     constrained to a selected set of tags.
-
     Args:
       inputs: A [batch_size, max_seq_len, num_tags] tensor of unary potentials
           to use as input to the CRF layer.
@@ -128,10 +127,10 @@ def crf_multitag_sequence_score(
     """
     tag_bitmap = tf.cast(tag_bitmap, dtype=tf.bool)
     sequence_lengths = tf.cast(sequence_lengths, dtype=tf.int32)
+    filtered_inputs = crf_filtered_inputs(inputs, tag_bitmap)
 
     # If max_seq_len is 1, we skip the score calculation and simply gather the
     # unary potentials of all active tags.
-    filtered_inputs = crf_filtered_inputs(inputs, tag_bitmap)
     def _single_seq_fn():
         return tf.reduce_logsumexp(filtered_inputs, axis=[1, 2], keepdims=False)
 
@@ -592,7 +591,6 @@ def crf_constrained_decode(potentials: TensorLike, tag_bitmap: TensorLike, trans
       transition_params: A [num_tags, num_tags] matrix of
                 binary potentials.
       sequence_length: A [batch_size] vector of true sequence lengths.
-
     Returns:
       decode_tags: A [batch_size, max_seq_len] matrix, with dtype `tf.int32`.
                   Contains the highest scoring tag indices.

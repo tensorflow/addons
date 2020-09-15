@@ -19,6 +19,7 @@ from tensorflow_addons.text.crf import crf_binary_score
 from tensorflow_addons.text.crf import crf_decode
 from tensorflow_addons.text.crf import crf_decode_backward
 from tensorflow_addons.text.crf import crf_decode_forward
+from tensorflow_addons.text.crf import crf_filtered_inputs
 from tensorflow_addons.text.crf import crf_forward
 from tensorflow_addons.text.crf import crf_log_likelihood
 from tensorflow_addons.text.crf import crf_log_norm
