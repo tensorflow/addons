@@ -259,3 +259,15 @@ def test_swap_weights(device):
 
     np.testing.assert_allclose(var.read_value(), [0.8, 1.8])
     np.testing.assert_allclose(ema_var.read_value(), [0.9, 1.9])
+
+
+@pytest.mark.usefixtures("run_with_mixed_precision_policy")
+def test_model_mixed_precision():
+    tf.keras.mixed_precision.experimental.set_policy("mixed_float16")
+    x = np.random.standard_normal((10000, 3))
+    w = np.random.standard_normal((3, 1))
+    y = np.dot(x, w) + np.random.standard_normal((10000, 1)) * 1e-4
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
+    model.compile(MovingAverage("sgd"), loss="mse")
+    model.fit(x, y, epochs=3)

@@ -14,11 +14,13 @@
 # ==============================================================================
 """Implements GIoU loss."""
 
+from typing import Optional
+
 import tensorflow as tf
+from typeguard import typechecked
+
 from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
 from tensorflow_addons.utils.types import TensorLike
-from typing import Optional
-from typeguard import typechecked
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -33,20 +35,17 @@ class GIoULoss(LossFunctionWrapper):
 
     Usage:
 
-    ```python
-    gl = tfa.losses.GIoULoss()
-    boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]])
-    boxes2 = tf.constant([[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]])
-    loss = gl(boxes1, boxes2)
-    print('Loss: ', loss.numpy())  # Loss: [1.07500000298023224, 1.9333333373069763]
-    ```
+    >>> gl = tfa.losses.GIoULoss()
+    >>> boxes1 = tf.constant([[4.0, 3.0, 7.0, 5.0], [5.0, 6.0, 10.0, 7.0]])
+    >>> boxes2 = tf.constant([[3.0, 4.0, 6.0, 8.0], [14.0, 14.0, 15.0, 15.0]])
+    >>> loss = gl(boxes1, boxes2)
+    >>> loss
+    <tf.Tensor: shape=(), dtype=float32, numpy=1.5041667>
 
     Usage with `tf.keras` API:
 
-    ```python
-    model = tf.keras.Model(inputs, outputs)
-    model.compile('sgd', loss=tfa.losses.GIoULoss())
-    ```
+    >>> model = tf.keras.Model()
+    >>> model.compile('sgd', loss=tfa.losses.GIoULoss())
 
     Args:
       mode: one of ['giou', 'iou'], decided to calculate GIoU or IoU loss.
