@@ -31,10 +31,10 @@ class StochasticDepth(tf.keras.layers.Layer):
     At train time, StochasticDepth returns:
 
     $$
-    x[0] + b_l * x[1]
+    x[0] + b_l * x[1],
     $$
 
-    , where $b_l$ is a random Bernoulli variable with probability $P(b_l = 1) = p_l$
+    where $b_l$ is a random Bernoulli variable with probability $P(b_l = 1) = p_l$
 
     At test time, StochasticDepth rescales the activations of the residual branch based on the survival probability ($p_l$):
 
@@ -65,7 +65,7 @@ class StochasticDepth(tf.keras.layers.Layer):
         shortcut, residual = x
 
         # Random bernoulli variable indicating whether the branch should be kept or not or not
-        b_l = tf.keras.backend.random_binomial([], p=self.survival_probability)
+        b_l = tf.keras.backend.random_bernoulli([], p=self.survival_probability)
 
         def _call_train():
             return shortcut + b_l * residual
@@ -78,9 +78,6 @@ class StochasticDepth(tf.keras.layers.Layer):
         )
 
     def compute_output_shape(self, input_shape):
-        if not isinstance(input_shape, list) or len(input_shape) != 2:
-            raise ValueError("input_shape must be a list of length 2.")
-
         return input_shape[0]
 
     def get_config(self):
