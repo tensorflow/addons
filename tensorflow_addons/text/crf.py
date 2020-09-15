@@ -585,7 +585,7 @@ def crf_constrained_decode(
     tag_bitmap: TensorLike,
     transition_params: TensorLike,
     sequence_length: TensorLike,
-):
+) -> tf.Tensor:
     """Decode the highest scoring sequence of tags under constraints.
 
     This is a function for tensor.
