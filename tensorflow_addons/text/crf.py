@@ -24,7 +24,7 @@ from typing import Optional
 # https://github.com/tensorflow/tensorflow/issues/29075 is resolved
 
 
-def crf_filtered_inputs(inputs: TensorLike, tag_bitmap: TensorLike):
+def crf_filtered_inputs(inputs: TensorLike, tag_bitmap: TensorLike) -> tf.Tensor:
     """Constrains the inputs to filter out certain tags at each time step.
     tag_bitmap limits the allowed tags at each input time step.
     This is useful when an observed output at a given time step needs to be
