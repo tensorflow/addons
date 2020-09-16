@@ -27,8 +27,37 @@ from tensorflow_addons.utils import types
 class CRF(tf.keras.layers.Layer):
     """Linear chain conditional random field (CRF).
 
+    Inherits from: `tf.keras.layers.Layer`
+
     References:
         - [Conditional Random Field](https://en.wikipedia.org/wiki/Conditional_random_field)
+
+    Example:
+
+    >>> output = CRF(12)
+    >>> output.get_config()
+    {'name': 'crf', 'trainable': True, 'dtype': 'float32', 'units': 12,
+    'chain_initializer': {'class_name': 'Orthogonal', 'config': {'gain': 1.0, 'seed': None}},
+    'use_boundary': True, 'boundary_initializer': {'class_name': 'Zeros', 'config': {}},
+    'use_kernel': True}
+
+    Arguments:
+        units: Positive integer, dimensionality of the reservoir.
+        chain_initializer: Orthogonal matrix
+            Default: `orthogonal`
+        use_boundary: `Boolean`, whether the layer uses a boundary vector.
+            Default: `True`
+        boundary_initializer: Tensors initialized to 0
+            Default: `zeros`
+        use_kernel: `Boolean`, whether the layer uses a kernel weights.
+            Default: `True`
+    Call Arguments:
+        inputs: Positive integer, dimensionality of the output space.
+        mask: Tensor(shape=(batch_size, sequence_length), dtype=bool) or None
+            Default: `None`
+    Raises:
+        ValueError: If input mask doesn't have dim 2 or None
+        NotImplementedError: If left padding is provided
     """
 
     @typechecked
