@@ -10,9 +10,5 @@ package(
 )
 
 py_binary(
-    name = "build_docs",
-    srcs = ["build_docs.py"],
-    deps = [
-        "//tensorflow_addons",
-    ],
+ 
 )
