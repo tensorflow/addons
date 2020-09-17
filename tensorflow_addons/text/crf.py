@@ -26,18 +26,21 @@ from typing import Optional
 
 def crf_filtered_inputs(inputs: TensorLike, tag_bitmap: TensorLike) -> tf.Tensor:
     """Constrains the inputs to filter out certain tags at each time step.
-    tag_bitmap limits the allowed tags at each input time step.
-    This is useful when an observed output at a given time step needs to be
-    constrained to a selected set of tags.
-    Args:
-      inputs: A [batch_size, max_seq_len, num_tags] tensor of unary potentials
-          to use as input to the CRF layer.
-      tag_bitmap: A [batch_size, max_seq_len, num_tags] boolean tensor
-          representing all active tags at each index for which to calculate the
-          unnormalized score.
-    Returns:
-      filtered_inputs: A [batch_size] vector of unnormalized sequence scores.
-    """
+
+     tag_bitmap limits the allowed tags at each input time step.
+     This is useful when an observed output at a given time step needs to be
+     constrained to a selected set of tags.
+
+     Args:
+       inputs: A [batch_size, max_seq_len, num_tags] tensor of unary potentials
+           to use as input to the CRF layer.
+       tag_bitmap: A [batch_size, max_seq_len, num_tags] boolean tensor
+           representing all active tags at each index for which to calculate the
+           unnormalized score.
+     Returns:
+       filtered_inputs: A [batch_size] vector of unnormalized sequence scores.
+     """
+
     # set scores of filtered out inputs to be -inf.
     filtered_inputs = tf.where(
         tag_bitmap,
