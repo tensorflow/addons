@@ -9,3 +9,6 @@ package(
     default_visibility = ["//tensorflow_addons:__subpackages__"],
 )
 
+py_binary(
+ 
+)
