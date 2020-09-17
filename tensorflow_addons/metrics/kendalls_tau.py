@@ -119,7 +119,7 @@ def kendalls_tau(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
         y_truefirsti = tf.gather(y_true, permfirsti)
         y_predfirsti = tf.gather(y_pred, permfirsti)
         if (y_truefirsti[0] != y_truefirsti[1] or
-            y_predfirsti[0] != y_predfirsti[1]):
+                y_predfirsti[0] != y_predfirsti[1]):
             t += ((i - first) * (i - first - 1)) // 2
             first = i
     t += ((n - first) * (n - first - 1)) // 2
