@@ -17,6 +17,7 @@
 from tensorflow_addons.metrics.cohens_kappa import CohenKappa
 from tensorflow_addons.metrics.f_scores import F1Score, FBetaScore
 from tensorflow_addons.metrics.hamming import HammingLoss, hamming_distance
+from tensorflow_addons.metrics.kendalls_tau import KendallsTau, kendalls_tau
 from tensorflow_addons.metrics.utils import MeanMetricWrapper
 from tensorflow_addons.metrics.matthews_correlation_coefficient import (
     MatthewsCorrelationCoefficient,
