@@ -20,8 +20,7 @@ from tensorflow_addons.metrics.utils import MeanMetricWrapper
 from tensorflow_addons.utils.types import TensorLike
 
 
-def _iterative_mergesort(y: TensorLike,
-                         aperm: TensorLike) -> (tf.int32, tf.Tensor):
+def _iterative_mergesort(y: TensorLike, aperm: TensorLike) -> (tf.int32, tf.Tensor):
     """Non-recusive mergesort that counts exchanges.
 
     Args:
@@ -63,8 +62,7 @@ def _iterative_mergesort(y: TensorLike,
                 tmp = tmp.write(m, aperm.read(j))
                 j += 1
                 m += 1
-            aperm = aperm.scatter(
-                tf.range(left, rend), tmp.gather(tf.range(0, m)))
+            aperm = aperm.scatter(tf.range(left, rend), tmp.gather(tf.range(0, m)))
         k *= 2
     return exchanges, aperm.stack()
 
@@ -118,8 +116,7 @@ def kendalls_tau(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
         permfirsti = lexi.gather([first, i])
         y_truefirsti = tf.gather(y_true, permfirsti)
         y_predfirsti = tf.gather(y_pred, permfirsti)
-        if (y_truefirsti[0] != y_truefirsti[1] or
-                y_predfirsti[0] != y_predfirsti[1]):
+        if y_truefirsti[0] != y_truefirsti[1] or y_predfirsti[0] != y_predfirsti[1]:
             t += ((i - first) * (i - first - 1)) // 2
             first = i
     t += ((n - first) * (n - first - 1)) // 2
@@ -151,10 +148,16 @@ def kendalls_tau(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
         return np.nan  # Special case for all ties in both ranks
 
     # Prevent overflow; equal to np.sqrt((tot - u) * (tot - v))
-    denom = tf.math.exp(0.5 * (tf.math.log(tf.cast(tot - u, tf.float32)) +
-                               tf.math.log(tf.cast(tot - v, tf.float32))))
-    tau = (tf.cast(tot - (v + u - t), tf.float32) -
-           2.0 * tf.cast(exchanges, tf.float32)) / denom
+    denom = tf.math.exp(
+        0.5
+        * (
+            tf.math.log(tf.cast(tot - u, tf.float32))
+            + tf.math.log(tf.cast(tot - v, tf.float32))
+        )
+    )
+    tau = (
+        tf.cast(tot - (v + u - t), tf.float32) - 2.0 * tf.cast(exchanges, tf.float32)
+    ) / denom
 
     return tau
 
@@ -184,7 +187,5 @@ class KendallsTau(MeanMetricWrapper):
         name: (Optional) string name of the metric instance.
     """
 
-    def __init__(self,
-                 name: str = "kendalls_tau",
-                 **kwargs):
+    def __init__(self, name: str = "kendalls_tau", **kwargs):
         super().__init__(kendalls_tau, name=name, dtype=tf.float32)
