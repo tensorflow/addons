@@ -14,17 +14,13 @@
 # ==============================================================================
 """Tests Hamming metrics."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import random
 
 import numpy as np
 from scipy import stats
 
-import tensorflow.compat.v2 as tf
-from tensorflow.compat.v2.keras import layers
+import tensorflow as tf
+from tensorflow.keras import layers
 
 from tensorflow_addons.metrics import KendallsTau, kendalls_tau
 
