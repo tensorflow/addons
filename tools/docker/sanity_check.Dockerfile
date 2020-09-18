@@ -94,7 +94,7 @@ RUN apt-get update && apt-get install -y rsync
 COPY ./ /addons
 WORKDIR /addons
 RUN pip install --no-deps -e .
-RUN python docs/build_docs.py
+RUN python tools/docs/build_docs.py
 RUN touch /ok.txt
 
 # -------------------------------
