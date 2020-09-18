@@ -86,12 +86,12 @@ def kendalls_tau(y_true: TensorLike, y_pred: TensorLike) -> tf.Tensor:
     y_pred = tf.reshape(y_pred, [-1])
     y_pred.shape.assert_is_compatible_with(y_true.shape)
     if tf.equal(tf.size(y_true), 0) or tf.equal(tf.size(y_pred), 0):
-        warnings.warn('y_true and y_pred tensors are not the same size.')
+        warnings.warn("y_true and y_pred tensors are not the same size.")
         return np.nan
     perm = tf.argsort(y_true)
     n = tf.shape(perm)[0]
     if tf.less(n, 2):
-        warnings.warn('Scalar tensors have no defined ordering.')
+        warnings.warn("Scalar tensors have no defined ordering.")
         return np.nan
 
     left = 0
