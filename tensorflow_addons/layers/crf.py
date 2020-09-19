@@ -35,11 +35,11 @@ class CRF(tf.keras.layers.Layer):
     Example:
 
     >>> output = CRF(12)
-    >>> output.get_config()
-    {'name': 'crf', 'trainable': True, 'dtype': 'float32', 'units': 12,
-    'chain_initializer': {'class_name': 'Orthogonal', 'config': {'gain': 1.0, 'seed': None}},
-    'use_boundary': True, 'boundary_initializer': {'class_name': 'Zeros', 'config': {}},
-    'use_kernel': True}
+    >>> output.get_config() == {'name': 'crf', 'trainable': True, 'dtype': 'float32',
+    ... 'units': 12, 'chain_initializer': {'class_name': 'Orthogonal',
+    ... 'config': {'gain': 1.0, 'seed': None}}, 'use_boundary': True,
+    ... 'boundary_initializer': {'class_name': 'Zeros', 'config': {}}, 'use_kernel': True}
+    True
 
     Arguments:
         units: Positive integer, dimensionality of the reservoir.
