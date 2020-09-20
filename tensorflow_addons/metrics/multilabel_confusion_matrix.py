@@ -45,7 +45,7 @@ class MultiLabelConfusionMatrix(Metric):
     - false positives for class i in M(0,1)
     - false negatives for class i in M(1,0)
     - true positives for class i in M(1,1)
-    
+
     >>> # multilabel confusion matrix
     >>> y_true = tf.constant([[1, 0, 1], [0, 1, 0]],
     ... dtype=tf.int32)
