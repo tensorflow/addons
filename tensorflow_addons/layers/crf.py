@@ -27,7 +27,7 @@ from tensorflow_addons.utils import types
 class CRF(tf.keras.layers.Layer):
     """Linear chain conditional random field (CRF).
 
-    Inherits from: `tf.keras.layers.Layer`
+    Inherits from: `tf.keras.layers.Layer`.
 
     References:
         - [Conditional Random Field](https://en.wikipedia.org/wiki/Conditional_random_field)
@@ -43,21 +43,17 @@ class CRF(tf.keras.layers.Layer):
 
     Arguments:
         units: Positive integer, dimensionality of the reservoir.
-        chain_initializer: Orthogonal matrix
-            Default: `orthogonal`
-        use_boundary: `Boolean`, whether the layer uses a boundary vector.
-            Default: `True`
-        boundary_initializer: Tensors initialized to 0
-            Default: `zeros`
-        use_kernel: `Boolean`, whether the layer uses a kernel weights.
-            Default: `True`
+        chain_initializer: Orthogonal matrix. Default to `orthogonal`.
+        use_boundary: `Boolean`, whether the layer uses a boundary vector. Default to `True`.
+        boundary_initializer: Tensors initialized to 0. Default to `zeros`.
+        use_kernel: `Boolean`, whether the layer uses a kernel weights. Default to `True`.
     Call Arguments:
         inputs: Positive integer, dimensionality of the output space.
-        mask: Tensor(shape=(batch_size, sequence_length), dtype=bool) or None
-            Default: `None`
+        mask: A boolean `Tensor` of shape `[batch_size, sequence_length]`
+            or `None`. Default to `None`.
     Raises:
-        ValueError: If input mask doesn't have dim 2 or None
-        NotImplementedError: If left padding is provided
+        ValueError: If input mask doesn't have dim 2 or None.
+        NotImplementedError: If left padding is provided.
     """
 
     @typechecked
