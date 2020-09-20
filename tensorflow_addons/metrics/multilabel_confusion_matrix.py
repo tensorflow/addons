@@ -45,7 +45,7 @@ class MultiLabelConfusionMatrix(Metric):
     - false positives for class i in M(0,1)
     - false negatives for class i in M(1,0)
     - true positives for class i in M(1,1)
-
+    
     >>> # multilabel confusion matrix
     >>> y_true = tf.constant([[1, 0, 1], [0, 1, 0]],
     ... dtype=tf.int32)
@@ -54,15 +54,15 @@ class MultiLabelConfusionMatrix(Metric):
     >>> metric = tfa.metrics.MultiLabelConfusionMatrix(num_classes=3)
     >>> metric.update_state(y_true, y_pred)
     >>> result = metric(y_true, y_pred)
-    >>> print('Confusion matrix:', result.numpy())
-    Confusion matrix: [[[2. 0.]
-      [0. 2.]]
+    >>> result.numpy()  #doctest: -DONT_ACCEPT_BLANKLINE
+    array([[[2., 0.],
+            [0., 2.]],
     <BLANKLINE>
-     [[2. 0.]
-      [0. 2.]]
+           [[2., 0.],
+            [0., 2.]],
     <BLANKLINE>
-     [[0. 2.]
-      [2. 0.]]]
+           [[0., 2.],
+            [2., 0.]]], dtype=float32)
 
     >>> # if multiclass input is provided
     >>> y_true = tf.constant([[1, 0, 0], [0, 1, 0]],
@@ -72,7 +72,7 @@ class MultiLabelConfusionMatrix(Metric):
     >>> metric = tfa.metrics.MultiLabelConfusionMatrix(num_classes=3)
     >>> metric.update_state(y_true, y_pred)
     >>> result = metric(y_true, y_pred)
-    >>> print('Confusion matrix:', result.numpy())
+    >>> print('Confusion matrix:', result.numpy()) #doctest: -DONT_ACCEPT_BLANKLINE
     Confusion matrix: [[[2. 0.]
       [0. 2.]]
     <BLANKLINE>
