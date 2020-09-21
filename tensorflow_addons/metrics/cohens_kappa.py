@@ -38,28 +38,40 @@ class CohenKappa(Metric):
 
     Usage:
 
-    ```python
-    actuals = np.array([4, 4, 3, 4, 2, 4, 1, 1], dtype=np.int32)
-    preds = np.array([4, 4, 3, 4, 4, 2, 1, 1], dtype=np.int32)
-    weights = np.array([1, 1, 2, 5, 10, 2, 3, 3], dtype=np.int32)
-
-    m = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
-    m.update_state(actuals, preds)
-    print('Final result: ', m.result().numpy()) # Result: 0.61904764
-
-    # To use this with weights, sample_weight argument can be used.
-    m = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
-    m.update_state(actuals, preds, sample_weight=weights)
-    print('Final result: ', m.result().numpy()) # Result: 0.37209308
-    ```
-
+    >>> actuals = np.array([4, 4, 3, 4, 2, 4, 1, 1], dtype=np.int32)
+    >>> preds = np.array([4, 4, 3, 4, 4, 2, 1, 1], dtype=np.int32)
+    >>> weights = np.array([1, 1, 2, 5, 10, 2, 3, 3], dtype=np.int32)
+    >>> metric = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
+    >>> metric.update_state(y_true = actuals, y_pred = preds)
+    <tf.Tensor: shape=(5, 5), dtype=float32, numpy=
+     array([[0., 0., 0., 0., 0.],
+            [0., 2., 0., 0., 0.],
+            [0., 0., 0., 0., 1.],
+            [0., 0., 0., 1., 0.],
+            [0., 0., 1., 0., 3.]], dtype=float32)>
+    >>> result = metric(y_true = actuals, y_pred = preds)
+    >>> print('Final result: ', result.numpy())
+    Final result: 0.61904764
+    >>> # To use this with weights, sample_weight argument can be used.
+    >>> metric = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
+    >>> metric.update_state(y_true = actuals, y_pred = preds, sample_weight=weights)
+    <tf.Tensor: shape=(5, 5), dtype=float32, numpy=
+     array([[ 0.,  0.,  0.,  0.,  0.],
+            [ 0.,  6.,  0.,  0.,  0.],
+           [ 0.,  0.,  0.,  0., 10.],
+            [ 0.,  0.,  0.,  2.,  0.],
+            [ 0.,  0.,  2.,  0.,  7.]], dtype=float32)>
+    >>> result = metric(y_true = actuals, y_pred = preds)
+    >>> print('Final result: ', result.numpy())
+    Final result:  0.42080373
+    
     Usage with tf.keras API:
+    >>> inputs = tf.keras.Input(shape=(10,))
+    >>> x = tf.keras.layers.Dense(10)(inputs)
+    >>> outputs = tf.keras.layers.Dense(1)(x)
+    >>> model = tf.keras.models.Model(inputs=inputs, outputs=outputs)
+    >>> model.compile('sgd', loss='mse', metrics=[tfa.metrics.CohenKappa(num_classes=3, sparse_labels=True)])
 
-    ```python
-    model = tf.keras.models.Model(inputs, outputs)
-    model.add_metric(tfa.metrics.CohenKappa(num_classes=5)(outputs))
-    model.compile('sgd', loss='mse')
-    ```
     """
 
     @typechecked
