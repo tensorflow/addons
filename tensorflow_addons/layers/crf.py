@@ -27,33 +27,48 @@ from tensorflow_addons.utils import types
 class CRF(tf.keras.layers.Layer):
     """Linear chain conditional random field (CRF).
 
-    Inherits from: `tf.keras.layers.Layer`.
+        Inherits from: `tf.keras.layers.Layer`.
 
-    References:
-        - [Conditional Random Field](https://en.wikipedia.org/wiki/Conditional_random_field)
+        References:
+            - [Conditional Random Field](https://en.wikipedia.org/wiki/Conditional_random_field)
 
-    Example:
+        Example:
 
-    >>> output = CRF(12)
-    >>> output.get_config() == {'name': 'crf', 'trainable': True, 'dtype': 'float32',
-    ... 'units': 12, 'chain_initializer': {'class_name': 'Orthogonal',
-    ... 'config': {'gain': 1.0, 'seed': None}}, 'use_boundary': True,
-    ... 'boundary_initializer': {'class_name': 'Zeros', 'config': {}}, 'use_kernel': True}
-    True
+        >>> layer = CRF(4)
+        >>> input = np.ones((1,2,4), dtype = np.float32)
+        >>> print(layer(input)) #doctest: +NORMALIZE_WHITESPACE
+        [<tf.Tensor: shape=(1, 2), dtype=int32,
+        numpy=array([[0, 1]], dtype=int32)>, <tf.Tensor: shape=(1, 2, 4), dtype=float32,
+        numpy=
+    array([[[ 0.53816247,  1.0018866 , -0.26553154, -0.3784399 ],
+            [ 0.53816247,  1.0018866 , -0.26553154, -0.3784399 ]]],
+          dtype=float32)>, <tf.Tensor: shape=(1,), dtype=int64,
+          numpy=array([2])>, <tf.Variable 'chain_kernel:0' shape=(4, 4) dtype=float32,
+          numpy=
+    array([[ 0.56424296,  0.38056865, -0.65028906,  0.33752233],
+           [-0.38344383, -0.31026042, -0.06400117,  0.86753273],
+           [ 0.42807576,  0.3343507 ,  0.7563346 ,  0.36458007],
+           [ 0.59274924, -0.80443484,  0.03139897, -0.02338673]],
+          dtype=float32)>]
+        >>> layer.get_config() == {'name': 'crf', 'trainable': True, 'dtype': 'float32',
+        ... 'units': 4, 'chain_initializer': {'class_name': 'Orthogonal',
+        ... 'config': {'gain': 1.0, 'seed': None}}, 'use_boundary': True,
+        ... 'boundary_initializer': {'class_name': 'Zeros', 'config': {}}, 'use_kernel': True}
+        True
 
-    Arguments:
-        units: Positive integer, dimensionality of the reservoir.
-        chain_initializer: Orthogonal matrix. Default to `orthogonal`.
-        use_boundary: `Boolean`, whether the layer uses a boundary vector. Default to `True`.
-        boundary_initializer: Tensors initialized to 0. Default to `zeros`.
-        use_kernel: `Boolean`, whether the layer uses a kernel weights. Default to `True`.
-    Call Arguments:
-        inputs: Positive integer, dimensionality of the output space.
-        mask: A boolean `Tensor` of shape `[batch_size, sequence_length]`
-            or `None`. Default to `None`.
-    Raises:
-        ValueError: If input mask doesn't have dim 2 or None.
-        NotImplementedError: If left padding is provided.
+        Arguments:
+            units: Positive integer, dimensionality of the reservoir.
+            chain_initializer: Orthogonal matrix. Default to `orthogonal`.
+            use_boundary: `Boolean`, whether the layer uses a boundary vector. Default to `True`.
+            boundary_initializer: Tensors initialized to 0. Default to `zeros`.
+            use_kernel: `Boolean`, whether the layer uses a kernel weights. Default to `True`.
+        Call Arguments:
+            inputs: Positive integer, dimensionality of the output space.
+            mask: A boolean `Tensor` of shape `[batch_size, sequence_length]`
+                or `None`. Default to `None`.
+        Raises:
+            ValueError: If input mask doesn't have dim 2 or None.
+            NotImplementedError: If left padding is provided.
     """
 
     @typechecked
