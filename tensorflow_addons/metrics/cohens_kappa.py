@@ -64,7 +64,7 @@ class CohenKappa(Metric):
     >>> result = metric(y_true = actuals, y_pred = preds)
     >>> print('Final result: ', result.numpy())
     Final result:  0.42080373
-    
+
     Usage with tf.keras API:
     >>> inputs = tf.keras.Input(shape=(10,))
     >>> x = tf.keras.layers.Dense(10)(inputs)
