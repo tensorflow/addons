@@ -28,33 +28,29 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     in the tensors `query`, `key`, and `value`, and returns the dot-product attention
     between them:
 
-    ```python
-    mha = MultiHeadAttention(head_size=128, num_heads=12)
+    >>> mha = MultiHeadAttention(head_size=128, num_heads=12)
+    >>> query = tf.random.uniform((3, 5, 4)) # (batch_size, query_elements, query_depth)
+    >>> key = tf.random.uniform((3, 6, 5)) # (batch_size, key_elements, key_depth)
+    >>> value = tf.random.uniform((3, 6, 6)) # (batch_size, key_elements, value_depth)
+    >>> attention = mha([query, key, value]) # (batch_size, query_elements, value_depth)
 
-    query = tf.random.uniform((32, 20, 200)) # (batch_size, query_elements, query_depth)
-    key = tf.random.uniform((32, 15, 300)) # (batch_size, key_elements, key_depth)
-    value = tf.random.uniform((32, 15, 400)) # (batch_size, key_elements, value_depth)
-
-    attention = mha([query, key, value]) # (batch_size, query_elements, value_depth)
-    ```
+    >>> attention.shape
 
     If `value` is not given then internally `value = key` will be used:
 
-    ```python
-    mha = MultiHeadAttention(head_size=128, num_heads=12)
+    >>> mha = MultiHeadAttention(head_size=128, num_heads=12)
+    >>> query = tf.random.uniform((3, 5, 5)) # (batch_size, query_elements, query_depth)
+    >>> key = tf.random.uniform((3, 6, 10)) # (batch_size, key_elements, key_depth)
+    >>> attention = mha([query, key]) # (batch_size, query_elements, key_depth)
 
-    query = tf.random.uniform((32, 20, 200)) # (batch_size, query_elements, query_depth)
-    key = tf.random.uniform((32, 15, 300)) # (batch_size, key_elements, key_depth)
-
-    attention = mha([query, key]) # (batch_size, query_elements, key_depth)
-    ```
+    >>> attention.shape
 
     Arguments:
         head_size: int, dimensionality of the `query`, `key` and `value` tensors
             after the linear transformation.
         num_heads: int, number of attention heads.
-        output_size: int, dimensionality of the output space, if `None` then the
-            input dimension of `value` or `key` will be used,
+            output_size: int, dimensionality of the output space, if `None` then the
+        input dimension of `value` or `key` will be used,
             default `None`.
         dropout: float, `rate` parameter for the dropout layer that is
             applied to attention after softmax,
