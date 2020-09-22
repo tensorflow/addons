@@ -45,31 +45,43 @@ class MultiLabelConfusionMatrix(Metric):
     - false positives for class i in M(0,1)
     - false negatives for class i in M(1,0)
     - true positives for class i in M(1,1)
+    Usage:
 
-    ```python
-    # multilabel confusion matrix
-    y_true = tf.constant([[1, 0, 1], [0, 1, 0]],
-             dtype=tf.int32)
-    y_pred = tf.constant([[1, 0, 0],[0, 1, 1]],
-             dtype=tf.int32)
-    output = MultiLabelConfusionMatrix(num_classes=3)
-    output.update_state(y_true, y_pred)
-    print('Confusion matrix:', output.result().numpy())
+    >>> # multilabel confusion matrix
+    >>> y_true = tf.constant([[1, 0, 1], [0, 1, 0]],
+    ... dtype=tf.int32)
+    >>> y_pred = tf.constant([[1, 0, 0],[0, 1, 1]],
+    ... dtype=tf.int32)
+    >>> metric = tfa.metrics.MultiLabelConfusionMatrix(num_classes=3)
+    >>> metric.update_state(y_true, y_pred)
+    >>> result = metric.result()
+    >>> result.numpy()  #doctest: -DONT_ACCEPT_BLANKLINE
+    array([[[1., 0.],
+            [0., 1.]],
+    <BLANKLINE>
+           [[1., 0.],
+            [0., 1.]],
+    <BLANKLINE>
+           [[0., 1.],
+            [1., 0.]]], dtype=float32)
+    >>> # if multiclass input is provided
+    >>> y_true = tf.constant([[1, 0, 0], [0, 1, 0]],
+    ... dtype=tf.int32)
+    >>> y_pred = tf.constant([[1, 0, 0],[0, 0, 1]],
+    ... dtype=tf.int32)
+    >>> metric = tfa.metrics.MultiLabelConfusionMatrix(num_classes=3)
+    >>> metric.update_state(y_true, y_pred)
+    >>> result = metric.result()
+    >>> result.numpy() #doctest: -DONT_ACCEPT_BLANKLINE
+    array([[[1., 0.],
+               [0., 1.]],
+    <BLANKLINE>
+            [[1., 0.],
+             [1., 0.]],
+    <BLANKLINE>
+            [[1., 1.],
+             [0., 0.]]], dtype=float32)
 
-    # Confusion matrix: [[[1 0] [0 1]] [[1 0] [0 1]]
-                      [[0 1] [1 0]]]
-
-    # if multiclass input is provided
-    y_true = tf.constant([[1, 0, 0], [0, 1, 0]],
-             dtype=tf.int32)
-    y_pred = tf.constant([[1, 0, 0],[0, 0, 1]],
-             dtype=tf.int32)
-    output = MultiLabelConfusionMatrix(num_classes=3)
-    output.update_state(y_true, y_pred)
-    print('Confusion matrix:', output.result().numpy())
-
-    # Confusion matrix: [[[1 0] [0 1]] [[1 0] [1 0]] [[1 1] [0 0]]]
-    ```
     """
 
     @typechecked
