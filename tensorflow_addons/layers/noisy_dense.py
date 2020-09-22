@@ -53,8 +53,7 @@ class NoisyDense(tf.keras.layers.Dense):
 
     Example:
 
-    >>> # Create a `Sequential` model and add a NoisyDense
-    >>> # layer as the first layer.
+    >>> # Create a `Sequential` model and add a NoisyDense layer as the first layer.
     >>> model = tf.keras.models.Sequential()
     >>> model.add(tf.keras.Input(shape=(16,)))
     >>> model.add(NoisyDense(32, activation='relu'))
