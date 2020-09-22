@@ -26,12 +26,12 @@ from tensorflow_addons.utils import types
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class CRF(tf.keras.layers.Layer):
     """Linear chain conditional random field (CRF).
-    
+
     Inherits from: `tf.keras.layers.Layer`.
 
     References:
         - [Conditional Random Field](https://en.wikipedia.org/wiki/Conditional_random_field)
-    
+
     Example:
 
     >>> layer = tfa.layers.CRF(4)
@@ -44,7 +44,7 @@ class CRF(tf.keras.layers.Layer):
     >>> sequence_length
     <tf.Tensor: shape=(2,), dtype=int64, numpy=array([4, 4])>
     >>> chain_kernel.shape
-    TensorShape([4, 4])    
+    TensorShape([4, 4])
 
     Arguments:
         units: Positive integer, dimensionality of the reservoir.
