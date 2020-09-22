@@ -61,13 +61,13 @@ class RSquare(Metric):
 
      Usage:
 
-    >>> actuals = tf.constant([1, 4, 3], dtype=tf.float32)
-    >>> preds = tf.constant([2, 4, 4], dtype=tf.float32)
+    >>> y_true = tf.constant([1, 4, 3], dtype=tf.float32)
+    >>> y_pred = tf.constant([2, 4, 4], dtype=tf.float32)
     >>> metric = tfa.metrics.r_square.RSquare()
-    >>> metric.update_state(y_true = actuals, y_pred = preds)
-    >>> result = metric(y_true = actuals,  y_pred = preds)
-    >>> print('R^2 score is: ', result.numpy())
-    R^2 score is:  0.57142854
+    >>> metric.update_state(y_true, y_pred)
+    >>> result = metric.result()
+    >>> result.numpy()
+    0.57142854
 
     """
 

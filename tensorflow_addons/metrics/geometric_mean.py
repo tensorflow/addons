@@ -35,9 +35,9 @@ class GeometricMean(Metric):
 
     Usage:
 
-    >>> m = tfa.metrics.GeometricMean()
-    >>> m.update_state([1, 3, 5, 7, 9])
-    >>> m.result().numpy()
+    >>> metric = tfa.metrics.GeometricMean()
+    >>> metric.update_state([1, 3, 5, 7, 9])
+    >>> metric.result().numpy()
     3.9362833
 
     """

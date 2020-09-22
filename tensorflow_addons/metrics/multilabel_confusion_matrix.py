@@ -54,16 +54,16 @@ class MultiLabelConfusionMatrix(Metric):
     ... dtype=tf.int32)
     >>> metric = tfa.metrics.MultiLabelConfusionMatrix(num_classes=3)
     >>> metric.update_state(y_true, y_pred)
-    >>> result = metric(y_true, y_pred)
+    >>> result = metric.result()
     >>> result.numpy()  #doctest: -DONT_ACCEPT_BLANKLINE
-    array([[[2., 0.],
-            [0., 2.]],
+    array([[[1., 0.],
+            [0., 1.]],
     <BLANKLINE>
-           [[2., 0.],
-            [0., 2.]],
+           [[1., 0.],
+            [0., 1.]],
     <BLANKLINE>
-           [[0., 2.],
-            [2., 0.]]], dtype=float32)
+           [[0., 1.],
+            [1., 0.]]], dtype=float32)
     >>> # if multiclass input is provided
     >>> y_true = tf.constant([[1, 0, 0], [0, 1, 0]],
     ... dtype=tf.int32)
@@ -71,16 +71,16 @@ class MultiLabelConfusionMatrix(Metric):
     ... dtype=tf.int32)
     >>> metric = tfa.metrics.MultiLabelConfusionMatrix(num_classes=3)
     >>> metric.update_state(y_true, y_pred)
-    >>> result = metric(y_true, y_pred)
-    >>> print('Confusion matrix:', result.numpy()) #doctest: -DONT_ACCEPT_BLANKLINE
-    Confusion matrix: [[[2. 0.]
-      [0. 2.]]
+    >>> result = metric.result()
+    >>> result.numpy() #doctest: -DONT_ACCEPT_BLANKLINE
+    array([[[1., 0.],
+               [0., 1.]],
     <BLANKLINE>
-     [[2. 0.]
-      [2. 0.]]
+            [[1., 0.],
+             [1., 0.]],
     <BLANKLINE>
-     [[2. 2.]
-      [0. 0.]]]
+            [[1., 1.],
+             [0., 0.]]], dtype=float32)
 
     """
 
