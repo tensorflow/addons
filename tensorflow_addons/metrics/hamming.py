@@ -38,11 +38,9 @@ def hamming_distance(actuals: TensorLike, predictions: TensorLike) -> tf.Tensor:
 
     Usage:
 
-    >>> actuals = tf.constant([1, 1, 0, 0, 1, 0, 1, 0, 0, 1],
-    ... dtype=tf.int32)
-    >>> predictions = tf.constant([1, 0, 0, 0, 1, 0, 0, 1, 0, 1],
-    ... dtype=tf.int32)
-    >>> hamming_distance(actuals, predictions).numpy()
+    >>> y_true = np.array([1, 1, 0, 0, 1, 0, 1, 0, 0, 1], dtype=np.int32)
+    >>> y_pred = np.array([1, 0, 0, 0, 1, 0, 0, 1, 0, 1], dtype=np.int32)
+    >>> hamming_distance(y_true, y_pred).numpy()
     0.3
 
     """
