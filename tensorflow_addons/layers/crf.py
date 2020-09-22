@@ -26,27 +26,39 @@ from tensorflow_addons.utils import types
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class CRF(tf.keras.layers.Layer):
     """Linear chain conditional random field (CRF).
+    
+    Inherits from: `tf.keras.layers.Layer`.
 
     References:
         - [Conditional Random Field](https://en.wikipedia.org/wiki/Conditional_random_field)
+    
+    Example:
 
-        >>> layer = CRF(4)
-        >>> input = np.ones((1,2,4), dtype = np.float32)
-        >>> print(layer(input)) #doctest: +NORMALIZE_WHITESPACE
-        [<tf.Tensor: shape=(1, 2), dtype=int32, numpy=array([[3, 3]], dtype=int32)>, <tf.Tensor: shape=(1, 2, 4), dtype=float32, numpy=
-        array([[[-0.56788874, -0.00667244, -0.21927893,  2.1609817 ],
-                [-0.56788874, -0.00667244, -0.21927893,  2.1609817 ]]],
-               dtype=float32)>, <tf.Tensor: shape=(1,), dtype=int64, numpy=array([2])>, <tf.Variable 'chain_kernel:0' shape=(4, 4) dtype=float32, numpy=
-        array([[ 0.6892762 ,  0.41745067,  0.14934294,  0.5730008 ],
-               [-0.5641832 ,  0.39079076, -0.50321835,  0.52512014],
-               [ 0.2748476 ,  0.5531992 , -0.5063899 , -0.6016632 ],
-               [ 0.36201447, -0.6057955 , -0.6841324 ,  0.1841745 ]],
-              dtype=float32)>]
-        >>> layer.get_config() == {'name': 'crf', 'trainable': True, 'dtype': 'float32',
-        ... 'units': 4, 'chain_initializer': {'class_name': 'Orthogonal',
-        ... 'config': {'gain': 1.0, 'seed': None}}, 'use_boundary': True,
-        ... 'boundary_initializer': {'class_name': 'Zeros', 'config': {}}, 'use_kernel': True}
-        True
+    >>> layer = tfa.layers.CRF(4)
+    >>> inputs = np.random.rand(2, 4, 8).astype(np.float32)
+    >>> decoded_sequence, potentials, sequence_length, chain_kernel = layer(inputs)
+    >>> decoded_sequence.shape
+    TensorShape([2, 4])
+    >>> potentials.shape
+    TensorShape([2, 4, 4])
+    >>> sequence_length
+    <tf.Tensor: shape=(2,), dtype=int64, numpy=array([4, 4])>
+    >>> chain_kernel.shape
+    TensorShape([4, 4])    
+
+    Arguments:
+        units: Positive integer, dimensionality of the reservoir.
+        chain_initializer: Orthogonal matrix. Default to `orthogonal`.
+        use_boundary: `Boolean`, whether the layer uses a boundary vector. Default to `True`.
+        boundary_initializer: Tensors initialized to 0. Default to `zeros`.
+        use_kernel: `Boolean`, whether the layer uses a kernel weights. Default to `True`.
+    Call Arguments:
+        inputs: Positive integer, dimensionality of the output space.
+        mask: A boolean `Tensor` of shape `[batch_size, sequence_length]`
+            or `None`. Default to `None`.
+    Raises:
+        ValueError: If input mask doesn't have dim 2 or None.
+        NotImplementedError: If left padding is provided.
     """
 
     @typechecked
