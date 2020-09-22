@@ -32,6 +32,18 @@ class ESNCell(keras.layers.AbstractRNNCell):
         "The "echo state" approach to analysing and training recurrent neural networks".
         GMD Report148, German National Research Center for Information Technology, 2001.
         https://www.researchgate.net/publication/215385037
+
+    Example:
+
+    >>> inputs = np.random.random([30,23,9]).astype(np.float32)
+    >>> ESNCell = tfa.rnn.ESNCell(4)
+    >>> rnn = tf.keras.layers.RNN(ESNCell, return_sequences=True, return_state=True)
+    >>> outputs, memory_state = rnn(inputs)
+    >>> outputs.shape
+    TensorShape([30, 23, 4])
+    >>> memory_state.shape
+    TensorShape([30, 4])
+
     Arguments:
         units: Positive integer, dimensionality in the reservoir.
         connectivity: Float between 0 and 1.

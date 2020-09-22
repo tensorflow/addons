@@ -105,6 +105,10 @@
 /tensorflow_addons/layers/tests/esn_test.py @pedrolarben
 /tensorflow_addons/layers/snake.py @failure-to-thrive
 /tensorflow_addons/layers/tests/snake_test.py @failure-to-thrive
+/tensorflow_addons/layers/stochastic_depth.py @mhstadler @windqaq
+/tensorflow_addons/layers/tests/stochastic_depth_test.py @mhstadler @windqaq
+/tensorflow_addons/layers/noisy_dense.py @leonshams
+/tensorflow_addons/layers/tests/noisy_dense_test.py @leonshams
 
 /tensorflow_addons/losses/contrastive.py @windqaq
 /tensorflow_addons/losses/tests/contrastive_test.py @windqaq
@@ -146,6 +150,8 @@
 /tensorflow_addons/optimizers/tests/conditional_gradient_test.py @pkan2 @lokhande-vishnu
 /tensorflow_addons/optimizers/cyclical_learning_rate.py @raphaelmeudec
 /tensorflow_addons/optimizers/tests/cyclical_learning_rate_test.py @raphaelmeudec
+/tensorflow_addons/optimizers/discriminative_layer_training.py @hyang0129
+/tensorflow_addons/optimizers/tests/discriminative_layer_training_test.py @hyang0129
 /tensorflow_addons/optimizers/lamb.py @junjiek
 /tensorflow_addons/optimizers/tests/lamb_test.py @junjiek
 /tensorflow_addons/optimizers/lazy_adam.py @ssaishruthi
