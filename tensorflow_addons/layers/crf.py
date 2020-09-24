@@ -42,7 +42,7 @@ class CRF(tf.keras.layers.Layer):
     >>> potentials.shape
     TensorShape([2, 4, 4])
     >>> sequence_length
-    <tf.Tensor: shape=(2,), dtype=int64, numpy=array([4, 4])>
+    <tf.Tensor: shape=(2,), dtype=int64, numpy=array([4, 4], dtype=int64)>
     >>> chain_kernel.shape
     TensorShape([4, 4])
 
