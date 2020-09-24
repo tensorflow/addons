@@ -36,7 +36,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     >>> attention = mha([query, key, value]) # (batch_size, query_elements, value_depth)
     >>> attention.shape
     TensorShape([3, 5, 6])
-  
+
     If `value` is not given then internally `value = key` will be used:
 
     >>> mha = MultiHeadAttention(head_size=128, num_heads=12)
@@ -44,7 +44,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     >>> key = tf.random.uniform((3, 6, 10)) # (batch_size, key_elements, key_depth)
     >>> attention = mha([query, key]) # (batch_size, query_elements, key_depth)
     >>> attention.shape
-     TensorShape([3, 5, 10])    
+    TensorShape([3, 5, 10])
 
     Arguments:
         head_size: int, dimensionality of the `query`, `key` and `value` tensors
