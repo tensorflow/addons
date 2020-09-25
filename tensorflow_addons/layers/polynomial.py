@@ -40,7 +40,6 @@ class PolynomialCrossing(tf.keras.layers.Layer):
 
     Example:
 
-    # after embedding layer in a functional model:
     >>> input = np.random.randint(10,size=(10,5))
     >>> x0 = tf.keras.layers.Embedding(input_dim=10, output_dim=3)(input)
     >>> x1 = PolynomialCrossing(projection_dim=None)((x0, x0))

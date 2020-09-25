@@ -43,6 +43,22 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     >>> net = WeightNormalization(
     ... tf.keras.layers.Dense(n_classes, activation='softmax'))(net)
 
+    Wrap `tf.keras.layers.Conv2D`:
+
+    >>> x = tf.random.normal(shape=(1, 10, 10, 1))
+    >>> conv2d = WeightNormalization(tf.keras.layers.Conv2D(2, 2), data_init=False)
+    >>> y = conv2d(x)
+    >>> y.shape
+    TensorShape([1, 9, 9, 2])
+
+    Wrap `tf.keras.layers.Dense`:
+
+    >>> x = tf.random.normal(shape=(1, 10, 10, 1))
+    >>> dense = WeightNormalization(tf.keras.layers.Dense(10), data_init=False)
+    >>> y = dense(x)
+    >>> y.shape
+    TensorShape([1, 10, 10, 10])
+
     Arguments:
       layer: A `tf.keras.layers.Layer` instance.
       data_init: If `True` use data dependent variable initialization.
