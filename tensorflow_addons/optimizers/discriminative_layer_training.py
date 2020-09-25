@@ -24,22 +24,25 @@ from typeguard import typechecked
 class MultiOptimizer(tf.keras.optimizers.Optimizer):
     """Multi Optimizer Wrapper for Discriminative Layer Training.
 
-    Creates a wrapper around a set of instantiated optimizer layer pairs. Generally useful for transfer learning
-    of deep networks.
+    Creates a wrapper around a set of instantiated optimizer layer pairs.
+    Generally useful for transfer learning of deep networks.
 
-    Each optimizer will optimize only the weights associated with its paired layer. This can be used
-    to implement discriminative layer training by assigning different learning rates to each optimizer
+    Each optimizer will optimize only the weights associated with its paired layer.
+    This can be used to implement discriminative layer training by assigning
+    different learning rates to each optimizer
     layer pair. `(tf.keras.optimizers.Optimizer, List[tf.keras.layers.Layer])` pairs are also supported.
     Please note that the layers must be instantiated before instantiating the optimizer.
 
     Args:
-        optimizers_and_layers: a list of tuples of an optimizer and a layer or model. Each tuple should contain
-            exactly 1 instantiated optimizer and 1 object that subclasses `tf.keras.Model` or `tf.keras.layers.Layer`. Nested
-            layers and models will be automatically discovered. Alternatively, in place of a single layer, you can pass
-            a list of layers.
-        optimizer_specs: specialized list for serialization. Should be left as None for almost all cases. If you are
-            loading a serialized version of this optimizer, please use `tf.keras.models.load_model` after saving a
-            model compiled with this optimizer.
+        optimizers_and_layers: a list of tuples of an optimizer and a layer or model.
+            Each tuple should contain exactly 1 instantiated optimizer and 1 object that
+            subclasses `tf.keras.Model`, `tf.keras.Sequential` or `tf.keras.layers.Layer`.
+            Nested layers and models will be automatically discovered.
+            Alternatively, in place of a single layer, you can pass a list of layers.
+        optimizer_specs: specialized list for serialization.
+            Should be left as None for almost all cases.
+            If you are loading a serialized version of this optimizer,
+            please use `tf.keras.models.load_model` after saving a model compiled with this optimizer.
 
     Usage:
 
@@ -62,7 +65,7 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
 
     Note:
 
-    Currently, MultiOpt does not support callbacks that modify optimizers.
+    Currently, `tfa.optimizers.MultiOptimizer` does not support callbacks that modify optimizers.
     However, you can instantiate optimizer layer pairs with
     `tf.keras.optimizers.schedules.LearningRateSchedule`
     instead of a static learning rate.
@@ -76,7 +79,7 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
         self,
         optimizers_and_layers: Union[Iterable, None] = None,
         optimizer_specs: Union[Iterable, None] = None,
-        name: str = "MultiOptimzer",
+        name: str = "MultiOptimizer",
         **kwargs
     ):
 
