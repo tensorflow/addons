@@ -106,8 +106,7 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
     def apply_gradients(self, grads_and_vars, **kwargs):
         """Wrapped apply_gradient method.
 
-        Returns a list of tf ops to be executed.
-        Name of variable is used rather than var.ref() to enable serialization and deserialization.
+        Returns an operation to be executed.
         """
 
         for spec in self.optimizer_specs:
@@ -142,6 +141,10 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
             List[tf.keras.layers.Layer],
         ],
     ):
+        """Creates a serializable optimizer spec.
+
+        The name of each variable is used rather than `var.ref()` to enable serialization and deserialization.
+        """
         if isinstance(layer, list):
             weights = [var.name for sublayer in layer for var in sublayer.weights]
         else:
