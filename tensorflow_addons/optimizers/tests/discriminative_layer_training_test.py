@@ -22,30 +22,9 @@ from tensorflow_addons.optimizers.discriminative_layer_training import MultiOpti
 from tensorflow_addons.utils import test_utils
 
 
-def _dtypes_to_test(use_gpu):
-    # TODO(WindQAQ): Clean up this in TF2.4
-    # Based on issue #347 in the following link,
-    #        "https://github.com/tensorflow/addons/issues/347"
-    # tf.half is not registered for 'ResourceScatterUpdate' OpKernel
-    # for 'GPU' devices.
-    # So we have to remove tf.half when testing with gpu.
-    # The function "_DtypesToTest" is from
-    #       "https://github.com/tensorflow/tensorflow/blob/5d4a6cee737a1dc6c20172a1dc1
-    #        5df10def2df72/tensorflow/python/kernel_tests/conv_ops_3d_test.py#L53-L62"
-    if use_gpu:
-        return [tf.float32, tf.float64]
-    else:
-        return [tf.half, tf.float32, tf.float64]
-
-
 @pytest.mark.with_device(["cpu", "gpu"])
-@pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
 @pytest.mark.parametrize("serialize", [True, False])
-def test_fit_layer_optimizer(dtype, device, serialize, tmpdir):
-    # Test ensures that each optimizer is only optimizing its own layer with its learning rate
-    if "gpu" in device and dtype == tf.float16:
-        pytest.xfail("See https://github.com/tensorflow/addons/issues/347")
-
+def test_fit_layer_optimizer(device, serialize, tmpdir):
     model = tf.keras.Sequential(
         [tf.keras.Input(shape=[1]), tf.keras.layers.Dense(1), tf.keras.layers.Dense(1)]
     )
