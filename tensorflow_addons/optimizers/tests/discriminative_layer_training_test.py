@@ -51,7 +51,7 @@ def test_fit_layer_optimizer(device, serialize, tmpdir):
     if serialize:
         model.save(str(tmpdir), save_format="tf")
         tf.keras.backend.clear_session()
-        model = tf.keras.models.load_model(tmpdir)
+        model = tf.keras.models.load_model(str(tmpdir))
 
     model.fit(x, y, batch_size=8, epochs=10)
 
