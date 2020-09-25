@@ -29,8 +29,8 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
 
     Each optimizer will optimize only the weights associated with its paired layer.
     This can be used to implement discriminative layer training by assigning
-    different learning rates to each optimizer
-    layer pair. `(tf.keras.optimizers.Optimizer, List[tf.keras.layers.Layer])` pairs are also supported.
+    different learning rates to each optimizer layer pair.
+    `(tf.keras.optimizers.Optimizer, List[tf.keras.layers.Layer])` pairs are also supported.
     Please note that the layers must be instantiated before instantiating the optimizer.
 
     Args:
@@ -61,9 +61,8 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
     >>> model.compile(optimizer=optimizer, loss="mse")
 
     Reference:
-
-    - [Universal Language Model Fine-tuning for Text Classification](https://arxiv.org/abs/1801.06146)
-    - [Collaborative Layer-wise Discriminative Learning in Deep Neural Networks](https://arxiv.org/abs/1607.05440)
+        - [Universal Language Model Fine-tuning for Text Classification](https://arxiv.org/abs/1801.06146)
+        - [Collaborative Layer-wise Discriminative Learning in Deep Neural Networks](https://arxiv.org/abs/1607.05440)
 
     Note:
 
