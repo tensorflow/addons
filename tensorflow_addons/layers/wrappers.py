@@ -30,19 +30,6 @@ class WeightNormalization(tf.keras.layers.Wrapper):
 
     See [Weight Normalization: A Simple Reparameterization to Accelerate Training of Deep Neural Networks](https://arxiv.org/abs/1602.07868).
 
-    >>> input_shape = (1,4, 5, 1)
-    >>> x = tf.random.normal(input_shape)
-    >>> n_classes = 10
-    >>> net = WeightNormalization(
-    ... tf.keras.layers.Conv2D(2, 2, activation='relu'),
-    ... input_shape=input_shape[2:],data_init= False)(x)
-    >>> net = WeightNormalization(
-    ... tf.keras.layers.Conv2D(3, 3, activation='relu'),data_init= False)(net)
-    >>> net = WeightNormalization(
-    ... tf.keras.layers.Dense(4, activation='relu'),data_init= False)(net)
-    >>> net = WeightNormalization(
-    ... tf.keras.layers.Dense(n_classes, activation='softmax'))(net)
-
     Wrap `tf.keras.layers.Conv2D`:
 
     >>> x = tf.random.normal(shape=(1, 10, 10, 1))
