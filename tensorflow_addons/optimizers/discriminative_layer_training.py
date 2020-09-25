@@ -14,7 +14,7 @@
 # ==============================================================================
 """Discriminative Layer Training Optimizer for TensorFlow."""
 
-from typing import Iterable, List, Union
+from typing import List, Union
 
 import tensorflow as tf
 from typeguard import typechecked
@@ -79,8 +79,8 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
     @typechecked
     def __init__(
         self,
-        optimizers_and_layers: Union[Iterable, None] = None,
-        optimizer_specs: Union[Iterable, None] = None,
+        optimizers_and_layers: Union[list, None] = None,
+        optimizer_specs: Union[list, None] = None,
         name: str = "MultiOptimizer",
         **kwargs
     ):
