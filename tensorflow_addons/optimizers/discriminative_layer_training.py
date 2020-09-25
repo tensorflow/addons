@@ -95,10 +95,10 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
 
         else:
             raise RuntimeError(
-                "You must specify either an list of optimizers and layers or a list of optimizer_specs"
+                "Must specify either an list of optimizers and layers or a list of optimizer_specs"
             )
 
-    def apply_gradients(self, grads_and_vars, name=None, **kwargs):
+    def apply_gradients(self, grads_and_vars, **kwargs):
         """Wrapped apply_gradient method.
 
         Returns a list of tf ops to be executed.
