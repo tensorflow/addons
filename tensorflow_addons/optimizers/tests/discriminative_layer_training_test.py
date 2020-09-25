@@ -49,7 +49,7 @@ def test_fit_layer_optimizer(device, serialize, tmpdir):
 
     # serialize whole model including optimizer, clear the session, then reload the whole model.
     if serialize:
-        model.save(tmpdir, save_format="tf")
+        model.save(str(tmpdir), save_format="tf")
         tf.keras.backend.clear_session()
         model = tf.keras.models.load_model(tmpdir)
 
