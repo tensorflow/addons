@@ -23,6 +23,7 @@ from tensorflow_addons.utils import test_utils
 
 
 def _dtypes_to_test(use_gpu):
+    # TODO(WindQAQ): Clean up this in TF2.4
     # Based on issue #347 in the following link,
     #        "https://github.com/tensorflow/addons/issues/347"
     # tf.half is not registered for 'ResourceScatterUpdate' OpKernel
@@ -31,8 +32,6 @@ def _dtypes_to_test(use_gpu):
     # The function "_DtypesToTest" is from
     #       "https://github.com/tensorflow/tensorflow/blob/5d4a6cee737a1dc6c20172a1dc1
     #        5df10def2df72/tensorflow/python/kernel_tests/conv_ops_3d_test.py#L53-L62"
-    # TODO(WindQAQ): Clean up this in TF2.4
-
     if use_gpu:
         return [tf.float32, tf.float64]
     else:
@@ -42,9 +41,8 @@ def _dtypes_to_test(use_gpu):
 @pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
 @pytest.mark.parametrize("serialize", [True, False])
-def test_fit_layer_optimizer(dtype, device, serialize):
+def test_fit_layer_optimizer(dtype, device, serialize, tmpdir):
     # Test ensures that each optimizer is only optimizing its own layer with its learning rate
-
     if "gpu" in device and dtype == tf.float16:
         pytest.xfail("See https://github.com/tensorflow/addons/issues/347")
 
@@ -72,9 +70,9 @@ def test_fit_layer_optimizer(dtype, device, serialize):
 
     # serialize whole model including optimizer, clear the session, then reload the whole model.
     if serialize:
-        model.save("test", save_format="tf")
+        model.save(tmpdir, save_format="tf")
         tf.keras.backend.clear_session()
-        model = tf.keras.models.load_model("test")
+        model = tf.keras.models.load_model(tmpdir)
 
     model.fit(x, y, batch_size=8, epochs=10)
 
@@ -95,8 +93,53 @@ def test_fit_layer_optimizer(dtype, device, serialize):
     )
 
 
-def test_serialization():
+def test_list_of_layers():
+    model = tf.keras.Sequential(
+        [
+            tf.keras.Input(shape=(4,)),
+            tf.keras.layers.Dense(16),
+            tf.keras.layers.Dense(16),
+            tf.keras.layers.Dense(32),
+            tf.keras.layers.Dense(32),
+        ]
+    )
 
+    optimizers_and_layers = [
+        (tf.keras.optimizers.SGD(learning_rate=0.0), model.layers[0]),
+        (tf.keras.optimizers.Adam(), model.layers[1]),
+        (tf.keras.optimizers.Adam(), model.layers[2:]),
+    ]
+
+    weights_before_train = [
+        [weight.numpy() for weight in layer.weights] for layer in model.layers
+    ]
+
+    multi_optimizer = MultiOptimizer(optimizers_and_layers)
+    model.compile(multi_optimizer, loss="mse")
+
+    x = np.random.rand(128, 4)
+    y = np.random.rand(128, 32)
+    model.fit(x, y, batch_size=32, epochs=10)
+
+    loss = model.evaluate(x, y)
+    assert loss < 0.15
+
+    weights_after_train = [
+        [weight.numpy() for weight in layer.weights] for layer in model.layers
+    ]
+
+    for w_before, w_after in zip(weights_before_train[0], weights_after_train[0]):
+        test_utils.assert_allclose_according_to_type(w_before, w_after)
+
+    for layer_before, layer_after in zip(
+        weights_before_train[1:], weights_after_train[1:]
+    ):
+        for w_before, w_after in zip(layer_before, layer_after):
+            with np.testing.assert_raises(AssertionError):
+                test_utils.assert_allclose_according_to_type(w_before, w_after)
+
+
+def test_serialization():
     model = tf.keras.Sequential(
         [tf.keras.Input(shape=[1]), tf.keras.layers.Dense(1), tf.keras.layers.Dense(1)]
     )

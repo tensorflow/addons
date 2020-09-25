@@ -14,7 +14,7 @@
 # ==============================================================================
 """Discriminative Layer Training Optimizer for TensorFlow."""
 
-from typing import Union
+from typing import List, Union
 
 import tensorflow as tf
 from typeguard import typechecked
@@ -29,50 +29,46 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
 
     Each optimizer will optimize only the weights associated with its paired layer. This can be used
     to implement discriminative layer training by assigning different learning rates to each optimizer
-    layer pair. (Optimizer, list(Layers)) pairs are also supported. Please note that the layers must be
-    instantiated before instantiating the optimizer.
+    layer pair. `(tf.keras.optimizers.Optimizer, List[tf.keras.layers.Layer])` pairs are also supported.
+    Please note that the layers must be instantiated before instantiating the optimizer.
 
     Args:
         optimizers_and_layers: a list of tuples of an optimizer and a layer or model. Each tuple should contain
-            exactly 1 instantiated optimizer and 1 object that subclasses tf.keras.Model or tf.keras.Layer. Nested
+            exactly 1 instantiated optimizer and 1 object that subclasses `tf.keras.Model` or `tf.keras.layers.Layer`. Nested
             layers and models will be automatically discovered. Alternatively, in place of a single layer, you can pass
             a list of layers.
         optimizer_specs: specialized list for serialization. Should be left as None for almost all cases. If you are
-            loading a serialized version of this optimizer, please use tf.keras.models.load_model after saving a
+            loading a serialized version of this optimizer, please use `tf.keras.models.load_model` after saving a
             model compiled with this optimizer.
 
     Usage:
 
-    ```python
-    model = get_model()
-
-    opt1 = tf.keras.optimizers.Adam(learning_rate=1e-4)
-    opt2 = tf.keras.optimizers.Adam(learning_rate=1e-2)
-
-    opt_layer_pairs = [(opt1, model.layers[0]), (opt2, model.layers[1:])]
-
-    loss = tf.keras.losses.MSE
-    optimizer = tfa.optimizers.MultiOpt(opt_layer_pairs)
-
-    model.compile(optimizer=optimizer, loss = loss)
-
-    model.fit(x,y)
-    '''
+    >>> model = tf.keras.Sequential([
+    ...     tf.keras.Input(shape=(4,)),
+    ...     tf.keras.layers.Dense(8),
+    ...     tf.keras.layers.Dense(16),
+    ...     tf.keras.layers.Dense(32),
+    ... ])
+    >>> optimizer1 = tf.keras.optimizers.Adam(learning_rate=1e-4)
+    >>> optimizer2 = tf.keras.optimizers.Adam(learning_rate=1e-2)
+    >>> optimizers_and_layers = [(optimizer1, model.layers[0]), (optimizer2, model.layers[1:])]
+    >>> optimizer = tfa.optimizers.MultiOptimizer(optimizers_and_layers)
+    >>> model.compile(optimizer=optimizer, loss="mse")
 
     Reference:
 
-    [Universal Language Model Fine-tuning for Text Classification](https://arxiv.org/abs/1801.06146)
-    [Collaborative Layer-wise Discriminative Learning in Deep Neural Networks](https://arxiv.org/abs/1607.05440)
+    - [Universal Language Model Fine-tuning for Text Classification](https://arxiv.org/abs/1801.06146)
+    - [Collaborative Layer-wise Discriminative Learning in Deep Neural Networks](https://arxiv.org/abs/1607.05440)
 
-    Notes:
+    Note:
 
-    Currently, MultiOpt does not support callbacks that modify optimizers. However, you can instantiate
-    optimizer layer pairs with tf.keras.optimizers.schedules.LearningRateSchedule instead of a static learning
-    rate.
+    Currently, MultiOpt does not support callbacks that modify optimizers.
+    However, you can instantiate optimizer layer pairs with
+    `tf.keras.optimizers.schedules.LearningRateSchedule`
+    instead of a static learning rate.
 
-    This code should function on CPU, GPU, and TPU. Apply the with strategy.scope() context as you
+    This code should function on CPU, GPU, and TPU. Apply the with `tf.distribute.Strategy().scope()` context as you
     would with any other optimizer.
-
     """
 
     @typechecked
@@ -131,29 +127,29 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
         return config
 
     @classmethod
-    def create_optimizer_spec(cls, optimizer_instance, layer):
-
-        assert isinstance(
-            optimizer_instance, tf.keras.optimizers.Optimizer
-        ), "Object passed is not an instance of tf.keras.optimizers.Optimizer"
-
-        assert isinstance(layer, tf.keras.layers.Layer) or isinstance(
-            layer, tf.keras.Model
-        ), "Object passed is not an instance of tf.keras.layers.Layer nor tf.keras.Model"
-
-        if type(layer) == list:
+    def create_optimizer_spec(
+        cls,
+        optimizer: tf.keras.optimizers.Optimizer,
+        layer: Union[
+            tf.keras.Model,
+            tf.keras.Sequential,
+            tf.keras.layers.Layer,
+            List[tf.keras.layers.Layer],
+        ],
+    ):
+        if isinstance(layer, list):
             weights = [var.name for sublayer in layer for var in sublayer.weights]
         else:
             weights = [var.name for var in layer.weights]
 
         return {
-            "optimizer": optimizer_instance,
+            "optimizer": optimizer,
             "weights": weights,
         }
 
     @classmethod
     def maybe_initialize_optimizer_spec(cls, optimizer_spec):
-        if type(optimizer_spec["optimizer"]) == dict:
+        if isinstance(optimizer_spec["optimizer"], dict):
             optimizer_spec["optimizer"] = tf.keras.optimizers.deserialize(
                 optimizer_spec["optimizer"]
             )
