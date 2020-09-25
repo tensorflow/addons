@@ -52,9 +52,11 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
     ...     tf.keras.layers.Dense(16),
     ...     tf.keras.layers.Dense(32),
     ... ])
-    >>> optimizer1 = tf.keras.optimizers.Adam(learning_rate=1e-4)
-    >>> optimizer2 = tf.keras.optimizers.Adam(learning_rate=1e-2)
-    >>> optimizers_and_layers = [(optimizer1, model.layers[0]), (optimizer2, model.layers[1:])]
+    >>> optimizers = [
+    ...     tf.keras.optimizers.Adam(learning_rate=1e-4),
+    ...     tf.keras.optimizers.Adam(learning_rate=1e-2)
+    ... ]
+    >>> optimizers_and_layers = [(optimizers[0], model.layers[0]), (optimizers[1], model.layers[1:])]
     >>> optimizer = tfa.optimizers.MultiOptimizer(optimizers_and_layers)
     >>> model.compile(optimizer=optimizer, loss="mse")
 
