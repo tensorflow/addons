@@ -91,8 +91,9 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
             dtype = initial_learning_rate.dtype
             maximal_learning_rate = tf.cast(self.maximal_learning_rate, dtype)
             step_size = tf.cast(self.step_size, dtype)
-            cycle = tf.floor(1 + step / (2 * step_size))
-            x = tf.abs(step / step_size - 2 * cycle + 1)
+            step_as_dtype = tf.cast(step, dtype)
+            cycle = tf.floor(1 + step_as_dtype / (2 * step_size))
+            x = tf.abs(step_as_dtype / step_size - 2 * cycle + 1)
 
             mode_step = cycle if self.scale_mode == "cycle" else step
 
