@@ -119,12 +119,12 @@ def test_list_of_layers():
 
 
 def test_model():
-    input = tf.keras.Input(shape=(4,))
-    output = tf.keras.layers.Dense(16)(input)
+    inputs = tf.keras.Input(shape=(4,))
+    output = tf.keras.layers.Dense(16)(inputs)
     output = tf.keras.layers.Dense(16)(output)
     output = tf.keras.layers.Dense(32)(output)
     output = tf.keras.layers.Dense(32)(output)
-    model = tf.keras.Model(input, output)
+    model = tf.keras.Model(inputs, output)
 
     # Adam optimizer on the whole model and an additional SGD on the last layer.
     optimizers_and_layers = [
@@ -141,6 +141,95 @@ def test_model():
 
     loss = model.evaluate(x, y)
     assert loss < 0.15
+
+
+def test_pretrained_model():
+    resnet = tf.keras.applications.ResNet50(include_top=False, weights=None)
+    dense = tf.keras.layers.Dense(32)
+    model = tf.keras.Sequential([resnet, dense])
+
+    resnet_weights_before_train = [
+        weight.numpy() for weight in resnet.trainable_weights
+    ]
+    dense_weights_before_train = [weight.numpy() for weight in dense.weights]
+
+    optimizers_and_layers = [(tf.keras.optimizers.SGD(), dense)]
+
+    multi_optimizer = MultiOptimizer(optimizers_and_layers)
+    model.compile(multi_optimizer, loss="mse")
+
+    x = np.random.rand(128, 32, 32, 3)
+    y = np.random.rand(128, 32)
+    model.fit(x, y, batch_size=32)
+
+    resnet_weights_after_train = [weight.numpy() for weight in resnet.trainable_weights]
+    dense_weights_after_train = [weight.numpy() for weight in dense.weights]
+
+    for w_after, w_before in zip(
+        resnet_weights_before_train, resnet_weights_after_train
+    ):
+        test_utils.assert_allclose_according_to_type(w_before, w_after)
+
+    for w_after, w_before in zip(dense_weights_before_train, dense_weights_after_train):
+        with np.testing.assert_raises(AssertionError):
+            test_utils.assert_allclose_according_to_type(w_before, w_after)
+
+
+def test_nested_model():
+    def get_model():
+        inputs = tf.keras.Input(shape=(4,))
+        outputs = tf.keras.layers.Dense(1)(inputs)
+        return tf.keras.Model(inputs, outputs)
+
+    model1 = get_model()
+    model2 = get_model()
+    model3 = get_model()
+
+    inputs = tf.keras.Input(shape=(4,))
+    y1 = model1(inputs)
+    y2 = model2(inputs)
+    y3 = model3(inputs)
+    outputs = tf.keras.layers.Average()([y1, y2, y3])
+    model = tf.keras.Model(inputs, outputs)
+
+    optimizers_and_layers = [
+        (tf.keras.optimizers.SGD(), model1),
+        (tf.keras.optimizers.SGD(learning_rate=0.0), model2),
+        (tf.keras.optimizers.SGD(), model3),
+    ]
+
+    model1_weights_before_train = [weight.numpy() for weight in model1.weights]
+    model2_weights_before_train = [weight.numpy() for weight in model2.weights]
+    model3_weights_before_train = [weight.numpy() for weight in model3.weights]
+
+    multi_optimizer = MultiOptimizer(optimizers_and_layers)
+
+    model.compile(multi_optimizer, loss="mse")
+
+    x = np.random.rand(128, 4)
+    y = np.random.rand(128, 4)
+    model.fit(x, y)
+
+    model1_weights_after_train = [weight.numpy() for weight in model1.weights]
+    model2_weights_after_train = [weight.numpy() for weight in model2.weights]
+    model3_weights_after_train = [weight.numpy() for weight in model3.weights]
+
+    for w_after, w_before in zip(
+        model1_weights_before_train, model1_weights_after_train
+    ):
+        with np.testing.assert_raises(AssertionError):
+            test_utils.assert_allclose_according_to_type(w_before, w_after)
+
+    for w_after, w_before in zip(
+        model2_weights_before_train, model2_weights_after_train
+    ):
+        test_utils.assert_allclose_according_to_type(w_before, w_after)
+
+    for w_after, w_before in zip(
+        model3_weights_before_train, model3_weights_after_train
+    ):
+        with np.testing.assert_raises(AssertionError):
+            test_utils.assert_allclose_according_to_type(w_before, w_after)
 
 
 def test_serialization():
