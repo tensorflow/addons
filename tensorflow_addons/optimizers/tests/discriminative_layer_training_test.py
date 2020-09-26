@@ -118,6 +118,31 @@ def test_list_of_layers():
                 test_utils.assert_allclose_according_to_type(w_before, w_after)
 
 
+def test_model():
+    input = tf.keras.Input(shape=(4,))
+    output = tf.keras.layers.Dense(16)(input)
+    output = tf.keras.layers.Dense(16)(output)
+    output = tf.keras.layers.Dense(32)(output)
+    output = tf.keras.layers.Dense(32)(output)
+    model = tf.keras.Model(input, output)
+
+    # Adam optimizer on the whole model and an additional SGD on the last layer.
+    optimizers_and_layers = [
+        (tf.keras.optimizers.Adam(), model),
+        (tf.keras.optimizers.SGD(), model.layers[-1]),
+    ]
+
+    multi_optimizer = MultiOptimizer(optimizers_and_layers)
+    model.compile(multi_optimizer, loss="mse")
+
+    x = np.random.rand(128, 4)
+    y = np.random.rand(128, 32)
+    model.fit(x, y, batch_size=32, epochs=10)
+
+    loss = model.evaluate(x, y)
+    assert loss < 0.15
+
+
 def test_serialization():
     model = tf.keras.Sequential(
         [tf.keras.Input(shape=[1]), tf.keras.layers.Dense(1), tf.keras.layers.Dense(1)]
