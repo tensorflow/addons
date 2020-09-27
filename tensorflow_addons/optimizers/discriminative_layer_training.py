@@ -88,8 +88,8 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
 
         if optimizer_specs is None and optimizers_and_layers is not None:
             self.optimizer_specs = [
-                self.create_optimizer_spec(opt, layer)
-                for opt, layer in optimizers_and_layers
+                self.create_optimizer_spec(optimizer, layers_or_model)
+                for optimizer, layers_or_model in optimizers_and_layers
             ]
 
         elif optimizer_specs is not None and optimizers_and_layers is None:
@@ -133,7 +133,7 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
     def create_optimizer_spec(
         cls,
         optimizer: tf.keras.optimizers.Optimizer,
-        layer: Union[
+        layers_or_model: Union[
             tf.keras.Model,
             tf.keras.Sequential,
             tf.keras.layers.Layer,
@@ -144,10 +144,12 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
 
         The name of each variable is used rather than `var.ref()` to enable serialization and deserialization.
         """
-        if isinstance(layer, list):
-            weights = [var.name for sublayer in layer for var in sublayer.weights]
+        if isinstance(layers_or_model, list):
+            weights = [
+                var.name for sublayer in layers_or_model for var in sublayer.weights
+            ]
         else:
-            weights = [var.name for var in layer.weights]
+            weights = [var.name for var in layers_or_model.weights]
 
         return {
             "optimizer": optimizer,
