@@ -22,6 +22,17 @@ from tensorflow_addons.optimizers.discriminative_layer_training import MultiOpti
 from tensorflow_addons.utils import test_utils
 
 
+def assert_list_allclose(a, b):
+    for x, y in zip(a, b):
+        test_utils.assert_allclose_according_to_type(x, y)
+
+
+def assert_list_not_allclose(a, b):
+    for x, y in zip(a, b):
+        with np.testing.assert_raises(AssertionError):
+            test_utils.assert_allclose_according_to_type(x, y)
+
+
 @pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("serialize", [True, False])
 def test_fit_layer_optimizer(device, serialize, tmpdir):
@@ -107,15 +118,12 @@ def test_list_of_layers():
         [weight.numpy() for weight in layer.weights] for layer in model.layers
     ]
 
-    for w_before, w_after in zip(weights_before_train[0], weights_after_train[0]):
-        test_utils.assert_allclose_according_to_type(w_before, w_after)
+    assert_list_allclose(weights_before_train[0], weights_after_train[0])
 
     for layer_before, layer_after in zip(
         weights_before_train[1:], weights_after_train[1:]
     ):
-        for w_before, w_after in zip(layer_before, layer_after):
-            with np.testing.assert_raises(AssertionError):
-                test_utils.assert_allclose_according_to_type(w_before, w_after)
+        assert_list_not_allclose(layer_before, layer_after)
 
 
 def test_model():
@@ -143,6 +151,62 @@ def test_model():
     assert loss < 0.15
 
 
+def test_subclass_model():
+    class Block(tf.keras.Model):
+        def __init__(self, units):
+            super().__init__()
+            self.dense1 = tf.keras.layers.Dense(units)
+            self.dense2 = tf.keras.layers.Dense(units)
+
+        def call(self, x):
+            return self.dense2(self.dense1(x))
+
+    class Custom(tf.keras.Model):
+        def __init__(self):
+            super().__init__()
+            self.block1 = Block(16)
+            self.block2 = Block(32)
+
+        def call(self, x):
+            return self.block2(self.block1(x))
+
+    model = Custom()
+    model.build(input_shape=(None, 4))
+
+    optimizers_and_layers = [
+        (tf.keras.optimizers.SGD(learning_rate=0.0), model.block1),
+        (tf.keras.optimizers.Adam(), model.block2),
+    ]
+
+    block1_weights_before_train = [weight.numpy() for weight in model.block1.weights]
+    block2_weights_before_train = [weight.numpy() for weight in model.block2.weights]
+
+    multi_optimizer = MultiOptimizer(optimizers_and_layers)
+
+    x = np.random.rand(128, 4).astype(np.float32)
+    y = np.random.rand(128, 32).astype(np.float32)
+    mse = tf.keras.losses.MeanSquaredError()
+
+    for _ in range(10):
+        for i in range(0, 128, 32):
+            x_batch = x[i : i + 32]
+            y_batch = y[i : i + 32]
+            with tf.GradientTape() as tape:
+                loss = mse(y_batch, model(x_batch))
+
+            grads = tape.gradient(loss, model.trainable_variables)
+            multi_optimizer.apply_gradients(zip(grads, model.trainable_variables))
+
+    loss = mse(y, model(x)).numpy()
+    assert loss < 0.15
+
+    block1_weights_after_train = [weight.numpy() for weight in model.block1.weights]
+    block2_weights_after_train = [weight.numpy() for weight in model.block2.weights]
+
+    assert_list_allclose(block1_weights_before_train, block1_weights_after_train)
+    assert_list_not_allclose(block2_weights_before_train, block2_weights_after_train)
+
+
 def test_pretrained_model():
     resnet = tf.keras.applications.ResNet50(include_top=False, weights=None)
     dense = tf.keras.layers.Dense(32)
@@ -165,14 +229,8 @@ def test_pretrained_model():
     resnet_weights_after_train = [weight.numpy() for weight in resnet.trainable_weights]
     dense_weights_after_train = [weight.numpy() for weight in dense.weights]
 
-    for w_after, w_before in zip(
-        resnet_weights_before_train, resnet_weights_after_train
-    ):
-        test_utils.assert_allclose_according_to_type(w_before, w_after)
-
-    for w_after, w_before in zip(dense_weights_before_train, dense_weights_after_train):
-        with np.testing.assert_raises(AssertionError):
-            test_utils.assert_allclose_according_to_type(w_before, w_after)
+    assert_list_allclose(resnet_weights_before_train, resnet_weights_after_train)
+    assert_list_not_allclose(dense_weights_before_train, dense_weights_after_train)
 
 
 def test_nested_model():
@@ -214,22 +272,9 @@ def test_nested_model():
     model2_weights_after_train = [weight.numpy() for weight in model2.weights]
     model3_weights_after_train = [weight.numpy() for weight in model3.weights]
 
-    for w_after, w_before in zip(
-        model1_weights_before_train, model1_weights_after_train
-    ):
-        with np.testing.assert_raises(AssertionError):
-            test_utils.assert_allclose_according_to_type(w_before, w_after)
-
-    for w_after, w_before in zip(
-        model2_weights_before_train, model2_weights_after_train
-    ):
-        test_utils.assert_allclose_according_to_type(w_before, w_after)
-
-    for w_after, w_before in zip(
-        model3_weights_before_train, model3_weights_after_train
-    ):
-        with np.testing.assert_raises(AssertionError):
-            test_utils.assert_allclose_according_to_type(w_before, w_after)
+    assert_list_not_allclose(model1_weights_before_train, model1_weights_after_train)
+    assert_list_allclose(model2_weights_before_train, model2_weights_after_train)
+    assert_list_not_allclose(model3_weights_before_train, model3_weights_after_train)
 
 
 def test_serialization():
