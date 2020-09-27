@@ -28,7 +28,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
 
     Wrap `tf.keras.layers.Conv2D`:
 
-    >>> x = tf.random.normal(shape=(1, 10, 10, 1))
+    >>> x = np.random.rand(1, 10, 10, 1)
     >>> conv2d = SpectralNormalization(tf.keras.layers.Conv2D(2, 2))
     >>> y = conv2d(x)
     >>> y.shape
