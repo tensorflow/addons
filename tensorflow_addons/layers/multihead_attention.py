@@ -28,26 +28,22 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     in the tensors `query`, `key`, and `value`, and returns the dot-product attention
     between them:
 
-    ```python
-    mha = MultiHeadAttention(head_size=128, num_heads=12)
-
-    query = tf.random.uniform((32, 20, 200)) # (batch_size, query_elements, query_depth)
-    key = tf.random.uniform((32, 15, 300)) # (batch_size, key_elements, key_depth)
-    value = tf.random.uniform((32, 15, 400)) # (batch_size, key_elements, value_depth)
-
-    attention = mha([query, key, value]) # (batch_size, query_elements, value_depth)
-    ```
+    >>> mha = MultiHeadAttention(head_size=128, num_heads=12)
+    >>> query = np.random.rand(3, 5, 4) # (batch_size, query_elements, query_depth)
+    >>> key = np.random.rand(3, 6, 5) # (batch_size, key_elements, key_depth)
+    >>> value = np.random.rand(3, 6, 6) # (batch_size, key_elements, value_depth)
+    >>> attention = mha([query, key, value]) # (batch_size, query_elements, value_depth)
+    >>> attention.shape
+    TensorShape([3, 5, 6])
 
     If `value` is not given then internally `value = key` will be used:
 
-    ```python
-    mha = MultiHeadAttention(head_size=128, num_heads=12)
-
-    query = tf.random.uniform((32, 20, 200)) # (batch_size, query_elements, query_depth)
-    key = tf.random.uniform((32, 15, 300)) # (batch_size, key_elements, key_depth)
-
-    attention = mha([query, key]) # (batch_size, query_elements, key_depth)
-    ```
+    >>> mha = MultiHeadAttention(head_size=128, num_heads=12)
+    >>> query = np.random.rand(3, 5, 5) # (batch_size, query_elements, query_depth)
+    >>> key = np.random.rand(3, 6, 10) # (batch_size, key_elements, key_depth)
+    >>> attention = mha([query, key]) # (batch_size, query_elements, key_depth)
+    >>> attention.shape
+    TensorShape([3, 5, 10])
 
     Arguments:
         head_size: int, dimensionality of the `query`, `key` and `value` tensors
