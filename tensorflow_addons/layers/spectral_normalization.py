@@ -36,7 +36,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
 
     Wrap `tf.keras.layers.Dense`:
 
-    >>> x = tf.random.normal(shape=(1, 10, 10, 1))
+    >>> x = np.random.rand(1, 10, 10, 1)
     >>> dense = SpectralNormalization(tf.keras.layers.Dense(10))
     >>> y = dense(x)
     >>> y.shape
