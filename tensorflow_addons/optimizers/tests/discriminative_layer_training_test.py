@@ -42,10 +42,8 @@ def test_fit_layer_optimizer(device, serialize, tmpdir):
     x = np.array(np.ones([100]))
     y = np.array(np.ones([100]))
 
-    weights_before_train = (
-        model.layers[0].weights[0].numpy(),
-        model.layers[1].weights[0].numpy(),
-    )
+    dense1_weights_before_train = [weight.numpy() for weight in model.layers[0].weights]
+    dense2_weights_before_train = [weight.numpy() for weight in model.layers[1].weights]
 
     opt1 = tf.keras.optimizers.Adam(learning_rate=1e-3)
     opt2 = tf.keras.optimizers.SGD(learning_rate=0)
@@ -65,21 +63,11 @@ def test_fit_layer_optimizer(device, serialize, tmpdir):
 
     model.fit(x, y, batch_size=8, epochs=10)
 
-    weights_after_train = (
-        model.layers[0].weights[0].numpy(),
-        model.layers[1].weights[0].numpy(),
-    )
+    dense1_weights_after_train = [weight.numpy() for weight in model.layers[0].weights]
+    dense2_weights_after_train = [weight.numpy() for weight in model.layers[1].weights]
 
-    with np.testing.assert_raises(AssertionError):
-        # expect weights to be different for layer 1
-        test_utils.assert_allclose_according_to_type(
-            weights_before_train[0], weights_after_train[0]
-        )
-
-    # expect weights to be same for layer 2
-    test_utils.assert_allclose_according_to_type(
-        weights_before_train[1], weights_after_train[1]
-    )
+    assert_list_not_allclose(dense1_weights_before_train, dense1_weights_after_train)
+    assert_list_allclose(dense2_weights_before_train, dense2_weights_after_train)
 
 
 def test_list_of_layers():
