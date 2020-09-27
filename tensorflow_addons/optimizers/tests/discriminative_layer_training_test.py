@@ -106,12 +106,9 @@ def test_list_of_layers():
     multi_optimizer = MultiOptimizer(optimizers_and_layers)
     model.compile(multi_optimizer, loss="mse")
 
-    x = np.random.rand(128, 4)
-    y = np.random.rand(128, 32)
+    x = np.ones((128, 4)).astype(np.float32)
+    y = np.ones((128, 32)).astype(np.float32)
     model.fit(x, y, batch_size=32, epochs=10)
-
-    loss = model.evaluate(x, y)
-    assert loss < 0.15
 
     weights_after_train = [
         [weight.numpy() for weight in layer.weights] for layer in model.layers
@@ -142,12 +139,9 @@ def test_model():
     multi_optimizer = MultiOptimizer(optimizers_and_layers)
     model.compile(multi_optimizer, loss="mse")
 
-    x = np.random.rand(128, 4)
-    y = np.random.rand(128, 32)
+    x = np.ones((128, 4)).astype(np.float32)
+    y = np.ones((128, 32)).astype(np.float32)
     model.fit(x, y, batch_size=32, epochs=10)
-
-    loss = model.evaluate(x, y)
-    assert loss < 0.15
 
 
 def test_subclass_model():
@@ -182,8 +176,8 @@ def test_subclass_model():
 
     multi_optimizer = MultiOptimizer(optimizers_and_layers)
 
-    x = np.random.rand(128, 4).astype(np.float32)
-    y = np.random.rand(128, 32).astype(np.float32)
+    x = np.ones((128, 4)).astype(np.float32)
+    y = np.ones((128, 32)).astype(np.float32)
     mse = tf.keras.losses.MeanSquaredError()
 
     for _ in range(10):
@@ -195,9 +189,6 @@ def test_subclass_model():
 
             grads = tape.gradient(loss, model.trainable_variables)
             multi_optimizer.apply_gradients(zip(grads, model.trainable_variables))
-
-    loss = mse(y, model(x)).numpy()
-    assert loss < 0.15
 
     block1_weights_after_train = [weight.numpy() for weight in model.block1.weights]
     block2_weights_after_train = [weight.numpy() for weight in model.block2.weights]
@@ -221,8 +212,8 @@ def test_pretrained_model():
     multi_optimizer = MultiOptimizer(optimizers_and_layers)
     model.compile(multi_optimizer, loss="mse")
 
-    x = np.random.rand(128, 32, 32, 3)
-    y = np.random.rand(128, 32)
+    x = np.ones((128, 32, 32, 3)).astype(np.float32)
+    y = np.ones((128, 32)).astype(np.float32)
     model.fit(x, y, batch_size=32)
 
     resnet_weights_after_train = [weight.numpy() for weight in resnet.trainable_weights]
@@ -263,8 +254,8 @@ def test_nested_model():
 
     model.compile(multi_optimizer, loss="mse")
 
-    x = np.random.rand(128, 4)
-    y = np.random.rand(128, 4)
+    x = np.ones((128, 4)).astype(np.float32)
+    y = np.ones((128, 32)).astype(np.float32)
     model.fit(x, y)
 
     model1_weights_after_train = [weight.numpy() for weight in model1.weights]
