@@ -24,13 +24,12 @@ from tensorflow_addons.utils import test_utils
 
 def assert_list_allclose(a, b):
     for x, y in zip(a, b):
-        test_utils.assert_allclose_according_to_type(x, y)
+        np.testing.assert_allclose(x, y)
 
 
 def assert_list_not_allclose(a, b):
     for x, y in zip(a, b):
-        with np.testing.assert_raises(AssertionError):
-            test_utils.assert_allclose_according_to_type(x, y)
+        test_utils.assert_not_allclose(x, y)
 
 
 @pytest.mark.with_device(["cpu", "gpu"])
