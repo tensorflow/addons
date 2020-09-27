@@ -145,7 +145,7 @@ def test_model():
 
 
 def test_subclass_model():
-    class Block(tf.keras.layers.Layer):
+    class Block(tf.keras.Model):
         def __init__(self, units):
             super().__init__()
             self.dense1 = tf.keras.layers.Dense(units)
