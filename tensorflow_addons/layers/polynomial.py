@@ -45,7 +45,7 @@ class PolynomialCrossing(tf.keras.layers.Layer):
     >>> x1 = PolynomialCrossing(projection_dim=None)((x0, x0))
     >>> x2 = PolynomialCrossing(projection_dim=None)((x0, x1))
     >>> logits = tf.keras.layers.Dense(units=10)(x2)
-    >>> model = tf.keras.Model( logits)
+    >>> model = tf.keras.Model(logits)
 
     Arguments:
         projection_dim: project dimension to reduce the computational cost.
