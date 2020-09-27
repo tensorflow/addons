@@ -64,12 +64,10 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
         - [Universal Language Model Fine-tuning for Text Classification](https://arxiv.org/abs/1801.06146)
         - [Collaborative Layer-wise Discriminative Learning in Deep Neural Networks](https://arxiv.org/abs/1607.05440)
 
-    Note:
-
-    Currently, `tfa.optimizers.MultiOptimizer` does not support callbacks that modify optimizers.
-    However, you can instantiate optimizer layer pairs with
-    `tf.keras.optimizers.schedules.LearningRateSchedule`
-    instead of a static learning rate.
+    Note: Currently, `tfa.optimizers.MultiOptimizer` does not support callbacks that modify optimizers.
+        However, you can instantiate optimizer layer pairs with
+        `tf.keras.optimizers.schedules.LearningRateSchedule`
+        instead of a static learning rate.
 
     This code should function on CPU, GPU, and TPU. Apply with `tf.distribute.Strategy().scope()` context as you
     would with any other optimizer.
