@@ -40,7 +40,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
 
     >>> mha = MultiHeadAttention(head_size=128, num_heads=12)
     >>> query = np.random.rand(3, 5, 5) # (batch_size, query_elements, query_depth)
-    >>> key = tf.random.uniform((3, 6, 10)) # (batch_size, key_elements, key_depth)
+    >>> key = np.random.rand(3, 6, 10) # (batch_size, key_elements, key_depth)
     >>> attention = mha([query, key]) # (batch_size, query_elements, key_depth)
     >>> attention.shape
     TensorShape([3, 5, 10])
