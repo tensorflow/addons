@@ -32,24 +32,20 @@ class PolynomialCrossing(tf.keras.layers.Layer):
     is the output of the previous `PolynomialCrossing` layer in the stack, i.e.,
     the i-th `PolynomialCrossing` layer.
 
-    The output is x_{i+1} = x0 .* (W * x_i + diag_scale * x_i) + bias + xi, where .* designates elementwise
-    multiplication, W could be a full rank matrix, or a low rank matrix U*V to reduce the computational cost,
+    The output is `x[i+1] = x0 .* (W * x[i] + diag_scale * x[i]) + bias + x[i]`, where .* designates elementwise
+    multiplication, W could be a full rank matrix, or a low rank matrix `U*V` to reduce the computational cost,
     and diag_scale increases the diagonal of W to improve training stability (especially for the low rank case).
 
-    References
-        See [R. Wang](https://arxiv.org/pdf/1708.05123.pdf)
+    See [Deep & Cross Network for Ad Click Predictions](https://arxiv.org/pdf/1708.05123.pdf).
 
     Example:
 
-        ```python
-        # after embedding layer in a functional model:
-        input = tf.keras.Input(shape=(None,), name='index', dtype=tf.int64)
-        x0 = tf.keras.layers.Embedding(input_dim=32, output_dim=6))
-        x1 = PolynomialCrossing(projection_dim=None)((x0, x0))
-        x2 = PolynomialCrossing(projection_dim=None)((x0, x1))
-        logits = tf.keras.layers.Dense(units=10)(x2)
-        model = tf.keras.Model(input, logits)
-        ```
+    >>> input = np.random.randint(10, size=(10, 5))
+    >>> x0 = tf.keras.layers.Embedding(input_dim=10, output_dim=3)(input)
+    >>> x1 = PolynomialCrossing(projection_dim=None)((x0, x0))
+    >>> x2 = PolynomialCrossing(projection_dim=None)((x0, x1))
+    >>> logits = tf.keras.layers.Dense(units=10)(x2)
+    >>> model = tf.keras.Model(logits)
 
     Arguments:
         projection_dim: project dimension to reduce the computational cost.
@@ -69,10 +65,10 @@ class PolynomialCrossing(tf.keras.layers.Layer):
         bias_regularizer: Regularizer instance to use on bias vector.
 
     Input shape:
-        A tuple of 2 (batch_size, `input_dim`) dimensional inputs.
+        A tuple of 2 `(batch_size, input_dim)` dimensional inputs.
 
     Output shape:
-        A single (batch_size, `input_dim`) dimensional output.
+        A single `(batch_size, input_dim)` dimensional output.
     """
 
     @typechecked

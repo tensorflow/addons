@@ -16,6 +16,7 @@
 from typing import Tuple
 
 import tensorflow as tf
+from tensorflow.keras import backend as K
 from tensorflow.keras.metrics import Metric
 from tensorflow.python.ops import weights_broadcast_ops
 
@@ -29,8 +30,7 @@ VALID_MULTIOUTPUT = {"raw_values", "uniform_average", "variance_weighted"}
 def _reduce_average(
     input_tensor: tf.Tensor, axis=None, keepdims=False, weights=None
 ) -> tf.Tensor:
-    """Computes the (weighted) mean of elements across dimensions of a tensor.
-  """
+    """Computes the (weighted) mean of elements across dimensions of a tensor."""
     if weights is None:
         return tf.reduce_mean(input_tensor, axis=axis, keepdims=keepdims)
 
@@ -44,29 +44,36 @@ def _reduce_average(
 class RSquare(Metric):
     """Compute R^2 score.
 
-     This is also called the [coefficient of determination
-     ](https://en.wikipedia.org/wiki/Coefficient_of_determination).
-     It tells how close are data to the fitted regression line.
+    This is also called the [coefficient of determination
+    ](https://en.wikipedia.org/wiki/Coefficient_of_determination).
+    It tells how close are data to the fitted regression line.
 
-     - Highest score can be 1.0 and it indicates that the predictors
-       perfectly accounts for variation in the target.
-     - Score 0.0 indicates that the predictors do not
-       account for variation in the target.
-     - It can also be negative if the model is worse.
+    - Highest score can be 1.0 and it indicates that the predictors
+        perfectly accounts for variation in the target.
+    - Score 0.0 indicates that the predictors do not
+        account for variation in the target.
+    - It can also be negative if the model is worse.
 
-     The sample weighting for this metric implementation mimics the
-     behaviour of the [scikit-learn implementation
-     ](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.r2_score.html)
-     of the same metric.
+    The sample weighting for this metric implementation mimics the
+    behaviour of the [scikit-learn implementation
+    ](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.r2_score.html)
+    of the same metric.
 
-     Usage:
-     ```python
-     actuals = tf.constant([1, 4, 3], dtype=tf.float32)
-     preds = tf.constant([2, 4, 4], dtype=tf.float32)
-     result = tf.keras.metrics.RSquare()
-     result.update_state(actuals, preds)
-     print('R^2 score is: ', r1.result().numpy()) # 0.57142866
-    ```
+    Args:
+        multioutput: `string`, the reduce method for scores.
+            Should be one of `["raw_values", "uniform_average", "variance_weighted"]`.
+        name: (Optional) string name of the metric instance.
+        dtype: (Optional) data type of the metric result.
+
+    Usage:
+
+    >>> y_true = np.array([1, 4, 3], dtype=np.float32)
+    >>> y_pred = np.array([2, 4, 4], dtype=np.float32)
+    >>> metric = tfa.metrics.r_square.RSquare()
+    >>> metric.update_state(y_true, y_pred)
+    >>> result = metric.result()
+    >>> result.numpy()
+    0.57142854
     """
 
     @typechecked
@@ -115,7 +122,7 @@ class RSquare(Metric):
         self.sum.assign_add(tf.reduce_sum(weighted_y_true, axis=0))
         self.squared_sum.assign_add(tf.reduce_sum(y_true * weighted_y_true, axis=0))
         self.res.assign_add(
-            tf.reduce_sum((y_true - y_pred) ** 2 * sample_weight, axis=0,)
+            tf.reduce_sum((y_true - y_pred) ** 2 * sample_weight, axis=0)
         )
         self.count.assign_add(tf.reduce_sum(sample_weight, axis=0))
 
@@ -126,20 +133,16 @@ class RSquare(Metric):
 
         if self.multioutput == "raw_values":
             return raw_scores
-        elif self.multioutput == "uniform_average":
+        if self.multioutput == "uniform_average":
             return tf.reduce_mean(raw_scores)
-        elif self.multioutput == "variance_weighted":
+        if self.multioutput == "variance_weighted":
             return _reduce_average(raw_scores, weights=total)
-        else:
-            raise RuntimeError(
-                "The multioutput attribute must be one of {}, but was: {}".format(
-                    VALID_MULTIOUTPUT, self.multioutput
-                )
+        raise RuntimeError(
+            "The multioutput attribute must be one of {}, but was: {}".format(
+                VALID_MULTIOUTPUT, self.multioutput
             )
+        )
 
     def reset_states(self) -> None:
         # The state of the metric will be reset at the start of each epoch.
-        self.squared_sum.assign(0)
-        self.sum.assign(0)
-        self.res.assign(0)
-        self.count.assign(0)
+        K.batch_set_value([(v, tf.zeros_like(v)) for v in self.variables])

@@ -34,10 +34,7 @@ def _correlation_cost(
 ):
     """Correlation Cost Volume computation.
 
-    "FlowNet: Learning Optical Flow with Convolutional Networks"
-    Philipp Fischer, Alexey Dosovitskiy, Eddy Ilg, Philip Hausser,
-    Caner Hazirbas, Vladimir Golkov, Patrick van der Smagt,
-    Daniel Cremers, Thomas Brox. https://arxiv.org/abs/1504.06852
+    See [FlowNet: Learning Optical Flow with Convolutional Networks](https://arxiv.org/abs/1504.06852).
 
     Computes a cost volume using correlation for two inputs. For feature
     maps A, B with spatial dimensions w, h, c it computes
@@ -142,9 +139,8 @@ def _correlation_cost_grad(op, grad_output):
 class CorrelationCost(tf.keras.layers.Layer):
     """Correlation Cost Layer.
 
-    This layer implements the correlation operation from FlowNet Learning
-    Optical Flow with Convolutional Networks (Fischer et al.):
-    https://arxiv.org/abs/1504.06
+    This layer implements the correlation operation from [FlowNet Learning
+    Optical Flow with Convolutional Networks](https://arxiv.org/abs/1504.06)(Fischer et al.).
 
     Args:
         kernel_size: An integer specifying the height and width of the

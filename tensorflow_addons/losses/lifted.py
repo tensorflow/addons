@@ -31,7 +31,7 @@ def lifted_struct_loss(
     """Computes the lifted structured loss.
 
     Args:
-      labels: 1-D tf.int32 `Tensor` with shape [batch_size] of
+      labels: 1-D tf.int32 `Tensor` with shape `[batch_size]` of
         multiclass integer labels.
       embeddings: 2-D float `Tensor` of embedding vectors. Embeddings should
         not be l2 normalized.

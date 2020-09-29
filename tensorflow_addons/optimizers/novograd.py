@@ -20,22 +20,19 @@ from tensorflow_addons.utils.types import FloatTensorLike
 from typing import Union, Callable
 from typeguard import typechecked
 
-# TODO: Find public API alternatives to these
-from tensorflow.python.training import training_ops
-
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class NovoGrad(tf.keras.optimizers.Optimizer):
-    """The NovoGrad Optimizer was first proposed in [Stochastic Gradient
-    Methods with Layerwise Adaptvie Moments for training of Deep
-    Networks](https://arxiv.org/pdf/1905.11286.pdf)
+    """Optimizer that implements NovoGrad.
 
-    NovoGrad is a first-order SGD-based algorithm, which computes second
-    moments per layer instead of per weight as in Adam. Compared to Adam,
-    NovoGrad takes less memory, and has been found to be more numerically
-    stable. More specifically we compute (for more information on the
-    computation please refer to this
-    [link](https://nvidia.github.io/OpenSeq2Seq/html/optimizers.html):
+    The NovoGrad Optimizer was first proposed in [Stochastic Gradient
+    Methods with Layerwise Adaptive Moments for training of Deep
+    Networks](https://arxiv.org/pdf/1905.11286.pdf) NovoGrad is a
+    first-order SGD-based algorithm, which computes second moments per
+    layer instead of per weight as in Adam. Compared to Adam, NovoGrad
+    takes less memory, and has been found to be more numerically stable.
+    (For more information on the computation please refer to this
+    [link](https://nvidia.github.io/OpenSeq2Seq/html/optimizers.html))
 
     Second order moment = exponential moving average of Layer-wise square
     of grads:
@@ -186,12 +183,12 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
             lambda: grad,
         )
         m = self.get_slot(var, "m")
-        return training_ops.resource_apply_keras_momentum(
-            var.handle,
-            m.handle,
-            coefficients["lr_t"],
-            grad,
-            coefficients["beta_1_t"],
+        return tf.raw_ops.ResourceApplyKerasMomentum(
+            var=var.handle,
+            accum=m.handle,
+            lr=coefficients["lr_t"],
+            grad=grad,
+            momentum=coefficients["beta_1_t"],
             use_locking=self._use_locking,
             use_nesterov=False,
         )
@@ -222,7 +219,9 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
         else:
             grad = grad / (tf.sqrt(v_t) + self.epsilon)
         grad = tf.cond(
-            tf.greater(weight_decay, 0), lambda: grad + weight_decay * var, lambda: grad
+            tf.greater(weight_decay, 0),
+            lambda: grad + weight_decay * tf.gather(var, indices),
+            lambda: grad,
         )
         grad = tf.cond(
             tf.logical_and(grad_averaging, tf.not_equal(self.iterations, 0)),
@@ -230,13 +229,13 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
             lambda: grad,
         )
         m = self.get_slot(var, "m")
-        return training_ops.resource_sparse_apply_keras_momentum(
-            var.handle,
-            m.handle,
-            coefficients["lr_t"],
-            tf.gather(grad, indices),
-            indices,
-            coefficients["beta_1_t"],
+        return tf.raw_ops.ResourceSparseApplyKerasMomentum(
+            var=var.handle,
+            accum=m.handle,
+            lr=coefficients["lr_t"],
+            grad=grad,
+            indices=indices,
+            momentum=coefficients["beta_1_t"],
             use_locking=self._use_locking,
             use_nesterov=False,
         )

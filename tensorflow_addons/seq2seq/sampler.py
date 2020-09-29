@@ -231,20 +231,20 @@ class TrainingSampler(Sampler):
         self.input_tas = tf.nest.map_structure(_unstack_ta, inputs)
         if sequence_length is not None and mask is not None:
             raise ValueError(
-                "sequence_length and mask can't be provided " "at the same time."
+                "sequence_length and mask can't be provided at the same time."
             )
         if sequence_length is not None:
             self.sequence_length = tf.convert_to_tensor(
                 sequence_length, name="sequence_length"
             )
-            if self.sequence_length.get_shape().ndims != 1:
+            if self.sequence_length.shape.ndims != 1:
                 raise ValueError(
                     "Expected sequence_length to be vector, but received "
-                    "shape: %s" % self.sequence_length.get_shape()
+                    "shape: %s" % self.sequence_length.shape
                 )
         elif mask is not None:
             mask = tf.convert_to_tensor(mask)
-            if mask.get_shape().ndims != 2:
+            if mask.shape.ndims != 2:
                 raise ValueError(
                     "Expected mask to a 2D tensor, but received shape: %s" % mask
                 )
@@ -344,10 +344,10 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
             self.sampling_probability = tf.convert_to_tensor(
                 sampling_probability, name="sampling_probability"
             )
-        if self.sampling_probability.get_shape().ndims not in (0, 1):
+        if self.sampling_probability.shape.ndims not in (0, 1):
             raise ValueError(
                 "sampling_probability must be either a scalar or a vector. "
-                "saw shape: %s" % (self.sampling_probability.get_shape())
+                "saw shape: %s" % (self.sampling_probability.shape)
             )
         self.seed = seed
         self.scheduling_seed = scheduling_seed
@@ -390,6 +390,9 @@ class ScheduledEmbeddingTrainingSampler(TrainingSampler):
             sample_ids_sampling = tf.gather_nd(sample_ids, where_sampling)
             inputs_not_sampling = tf.gather_nd(base_next_inputs, where_not_sampling)
             sampled_next_inputs = self.embedding_fn(sample_ids_sampling)
+            sampled_next_inputs = tf.cast(
+                sampled_next_inputs, inputs_not_sampling.dtype
+            )
             base_shape = tf.shape(base_next_inputs)
             return tf.scatter_nd(
                 indices=where_sampling, updates=sampled_next_inputs, shape=base_shape
@@ -441,10 +444,10 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
             self.sampling_probability = tf.convert_to_tensor(
                 sampling_probability, name="sampling_probability"
             )
-        if self.sampling_probability.get_shape().ndims not in (0, 1):
+        if self.sampling_probability.shape.ndims not in (0, 1):
             raise ValueError(
                 "sampling_probability must be either a scalar or a vector. "
-                "saw shape: %s" % (self.sampling_probability.get_shape())
+                "saw shape: %s" % (self.sampling_probability.shape)
             )
 
         self.seed = seed
@@ -605,10 +608,10 @@ class GreedyEmbeddingSampler(Sampler):
         self.end_token = tf.convert_to_tensor(
             end_token, dtype=tf.int32, name="end_token"
         )
-        if self.start_tokens.get_shape().ndims != 1:
+        if self.start_tokens.shape.ndims != 1:
             raise ValueError("start_tokens must be a vector")
         self._batch_size = tf.size(start_tokens)
-        if self.end_token.get_shape().ndims != 0:
+        if self.end_token.shape.ndims != 0:
             raise ValueError("end_token must be a scalar")
         self.start_inputs = self.embedding_fn(self.start_tokens)
 
@@ -821,7 +824,7 @@ def categorical_sample(logits, dtype=tf.int32, sample_shape=(), seed=None):
 
 def _unstack_ta(inp):
     return tf.TensorArray(
-        dtype=inp.dtype, size=tf.shape(inp)[0], element_shape=inp.get_shape()[1:]
+        dtype=inp.dtype, size=tf.shape(inp)[0], element_shape=inp.shape[1:]
     ).unstack(inp)
 
 
