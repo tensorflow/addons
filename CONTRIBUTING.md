@@ -274,7 +274,7 @@ to install any additional tools.
 
 CPU Docker: 
 ```bash
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-ubuntu16
+docker run --rm -it -v ${PWD}:/addons -w /addons tfaddons/dev_container:latest-cpu
 ```
 
 GPU Docker: 
@@ -296,6 +296,7 @@ python3 -m pip install -r tools/install_deps/pytest.txt
 
 Compile the custom ops
 ```bash
+export TF_NEED_CUDA=1 # If GPU is to be used
 bash tools/install_so_files.sh
 ```
 
