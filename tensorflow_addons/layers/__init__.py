@@ -39,7 +39,10 @@ from tensorflow_addons.layers.tlu import TLU
 from tensorflow_addons.layers.wrappers import WeightNormalization
 from tensorflow_addons.layers.esn import ESN
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> dbcd5aa... Added stochastic depth layer (#2154)
 from tensorflow_addons.layers.stochastic_depth import StochasticDepth
 from tensorflow_addons.layers.noisy_dense import NoisyDense
 from tensorflow_addons.layers.crf import CRF
