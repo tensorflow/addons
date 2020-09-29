@@ -82,6 +82,7 @@ jobs:
         py-version: ['3.5', '3.6', '3.7', '3.8']
         tf-version: ['2.3.0']
       fail-fast: false
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
     steps:
       - uses: actions/download-artifact@v1
         with:
@@ -92,7 +93,17 @@ jobs:
           ls -la dist/
           sha256sum dist/*.whl
       - uses: pypa/gh-action-pypi-publish@v1.1.0
-        if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
         with:
           user: __token__
           password: ${{ secrets.pypi_token }}
+  upload-dev-container:
+    name: Upload dev container to DockerHub
+    needs: [release-wheel, test-with-bazel]
+    runs-on: ubuntu-18.04
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/master')
+    steps:
+      - run: |
+          set -e -x
+          docker login --username ${{ secrets.DOCKER_USER }} --password ${{ secrets.DOCKER_PW }}
+          bash bash .github/workflows/github_build_dev_container.sh
+          docker push tfaddons/dev_container:latest-cpu
