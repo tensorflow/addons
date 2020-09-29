@@ -105,13 +105,10 @@
 /tensorflow_addons/layers/tests/esn_test.py @pedrolarben
 /tensorflow_addons/layers/snake.py @failure-to-thrive
 /tensorflow_addons/layers/tests/snake_test.py @failure-to-thrive
-<<<<<<< HEAD
-=======
 /tensorflow_addons/layers/stochastic_depth.py @mhstadler @windqaq
 /tensorflow_addons/layers/tests/stochastic_depth_test.py @mhstadler @windqaq
 /tensorflow_addons/layers/noisy_dense.py @leonshams
 /tensorflow_addons/layers/tests/noisy_dense_test.py @leonshams
->>>>>>> dbcd5aa... Added stochastic depth layer (#2154)
 
 /tensorflow_addons/losses/contrastive.py @windqaq
 /tensorflow_addons/losses/tests/contrastive_test.py @windqaq
