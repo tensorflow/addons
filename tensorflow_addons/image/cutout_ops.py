@@ -189,7 +189,7 @@ def cutout(
             mask_4d = tf.expand_dims(masks.stack(), 1)
             mask = tf.tile(mask_4d, [1, tf.shape(images)[1], 1, 1])
         images = tf.where(
-            mask == 0,
+            tf.equal(mask, 0),
             tf.ones_like(images, dtype=images.dtype) * constant_values,
             images,
         )
