@@ -7,6 +7,7 @@ py_library(
     srcs = glob(["*.py"]),
     data = [
         "//tensorflow_addons/custom_ops/layers:_correlation_cost_ops.so",
+        "//tensorflow_addons/custom_ops/layers:_deformable_conv2d_ops.so",
     ],
     deps = [
         "//tensorflow_addons/activations",
