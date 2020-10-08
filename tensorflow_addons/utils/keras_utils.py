@@ -68,6 +68,20 @@ class LossFunctionWrapper(tf.keras.losses.Loss):
         return {**base_config, **config}
 
 
+def normalize_padding(value):
+    """A copy of tensorflow.python.keras.util."""
+    if isinstance(value, (list, tuple)):
+        return value
+    padding = value.lower()
+    if padding not in {"valid", "same", "causal"}:
+        raise ValueError(
+            "The `padding` argument must be a list/tuple or one of "
+            '"valid", "same" (or "causal", only for `Conv1D). '
+            "Received: " + str(padding)
+        )
+    return padding
+
+
 def normalize_data_format(value):
     if value is None:
         value = tf.keras.backend.image_data_format()
@@ -141,6 +155,34 @@ def normalize_tuple(value, n, name):
                     + str(type(single_value))
                 )
         return value_tuple
+
+
+def conv_output_length(input_length, filter_size, padding, stride, dilation=1):
+    """Determines output length of a convolution given input length.
+
+    A copy of tensorflow.python.keras.util.
+
+    Arguments:
+        input_length: integer.
+        filter_size: integer.
+        padding: one of "same", "valid", "full", "causal"
+        stride: integer.
+        dilation: dilation rate, integer.
+
+    Returns:
+        The output length (integer).
+    """
+    if input_length is None:
+        return None
+    assert padding in {"same", "valid", "full", "causal"}
+    dilated_filter_size = filter_size + (filter_size - 1) * (dilation - 1)
+    if padding in ["same", "causal"]:
+        output_length = input_length
+    elif padding == "valid":
+        output_length = input_length - dilated_filter_size + 1
+    elif padding == "full":
+        output_length = input_length + dilated_filter_size - 1
+    return (output_length + stride - 1) // stride
 
 
 def _hasattr(obj, attr_name):
