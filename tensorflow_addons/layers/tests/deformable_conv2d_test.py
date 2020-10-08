@@ -17,7 +17,7 @@
 import pytest
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.keras.utils import conv_utils
+import tensorflow_addons.utils.keras_utils as conv_utils
 from tensorflow_addons.layers.deformable_conv2d import DeformableConv2D
 
 
