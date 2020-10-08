@@ -22,6 +22,7 @@
 #include "tensorflow_addons/custom_ops/layers/cc/kernels/deformable_conv2d_op.h"
 
 #include "tensorflow/core/framework/common_shape_fns.h"
+#include "tensorflow/core/framework/kernel_shape_util.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/util/work_sharder.h"
 
