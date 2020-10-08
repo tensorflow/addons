@@ -29,7 +29,6 @@ class MovingAverage(AveragedOptimizerWrapper):
     Empirically it has been found that using the moving average of the trained
     parameters of a deep network is better than using its trained parameters
     directly. This optimizer allows you to compute this moving average and swap
-    raise app.UsageError('Too many command-line arguments.')
     the variables at save time so that any code outside of the training loop
     will use by default the average values instead of the original ones.
 
