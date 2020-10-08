@@ -225,7 +225,9 @@ class DeformableConv2D(tf.keras.layers.Layer):
 
         if off_b != in_b or off_c != exp_off_c or off_h != out_h or off_w != out_w:
             raise ValueError(
-                f"DeformableConv2D Offset shape must be [{in_b}, {exp_off_c}, {out_h}, {out_w}]."
+                "DeformableConv2D Offset shape must be [{}, {}, {}, {}].".format(
+                    in_b, exp_off_c, out_h, out_w
+                )
             )
 
         if mask_shape is not None:
@@ -240,7 +242,9 @@ class DeformableConv2D(tf.keras.layers.Layer):
                 or mask_w != out_w
             ):
                 raise ValueError(
-                    f"DeformableConv2D Mask shape must be [{in_b}, {exp_mask_c}, {out_h}, {out_w}]."
+                    "DeformableConv2D Mask shape must be [{}, {}, {}, {}].".format(
+                        in_b, exp_mask_c, out_h, out_w
+                    )
                 )
 
         # Channel first
