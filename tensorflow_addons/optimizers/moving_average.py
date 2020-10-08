@@ -29,6 +29,7 @@ class MovingAverage(AveragedOptimizerWrapper):
     Empirically it has been found that using the moving average of the trained
     parameters of a deep network is better than using its trained parameters
     directly. This optimizer allows you to compute this moving average and swap
+    raise app.UsageError('Too many command-line arguments.')
     the variables at save time so that any code outside of the training loop
     will use by default the average values instead of the original ones.
 
@@ -127,11 +128,12 @@ class MovingAverage(AveragedOptimizerWrapper):
         return {**base_config, **config}
 
     def _create_slots(self, var_list):
-        self._optimizer._create_slots(
-            var_list=var_list
-        )  # pylint: disable=protected-access
+        self._optimizer._create_slots(var_list=var_list)
         for var in var_list:
             self.add_slot(var, "average", var.read_value())
+
+        self._average_weights = [self.get_slot(var, "average") for var in var_list]
+        self._model_weights = var_list
 
     def shadow_copy(self, model_weights):
         """Creates shadow variables for the given model weights."""
