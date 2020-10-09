@@ -38,17 +38,93 @@ from typing import Optional, Callable, Union, List
 from tensorflow.python.keras.engine import base_layer_utils
 
 
-class AttentionMechanism:
+class AttentionMechanism(tf.keras.layers.Layer):
+    """Base class for attention mechanisms.
+
+    Subclasses should implement the logic of registering the attention `keys`
+    and `values` and computing the attention scores in `call`.
+    """
+
+    def __init__(self, **kwargs):
+        """Initializes the attention mechanism base class.
+
+        Args:
+          kwargs: Other layer arguments.
+        """
+        super().__init__(**kwargs)
+        self.keys = None
+        self.values = None
+
     @property
     def alignments_size(self):
-        raise NotImplementedError
+        """Size of the attention keys and values time dimension."""
+        if self.values is not None and self.values.shape[1] is not None:
+            return self.values.shape[1]
+        return tf.TensorShape([None])
 
     @property
     def state_size(self):
+        """Size of the attention mechanism state (same as `alignments_size` by
+        default).
+        """
+        return self.alignments_size
+
+    def initial_alignments(self, batch_size, dtype=tf.float32):
+        """Creates the initial alignment values for the `AttentionWrapper`
+        class.
+
+        This is important for AttentionMechanisms that use the previous
+        alignment to calculate the alignment at the next time step
+        (e.g. monotonic attention).
+
+        The default behavior is to return a tensor of all zeros.
+
+        Args:
+          batch_size: `int32` scalar, the batch_size.
+          dtype: The `dtype`.
+
+        Returns:
+          A `dtype` tensor shaped `[batch_size, alignments_size]`
+          (`alignments_size` is the values' `max_time`).
+        """
+        return tf.zeros([batch_size, self.alignments_size], dtype=dtype)
+
+    def initial_state(self, batch_size, dtype=tf.float32):
+        """Creates the initial state values for the `AttentionWrapper` class.
+
+        This is important for AttentionMechanisms that use the previous
+        alignment to calculate the alignment at the next time step
+        (e.g. monotonic attention).
+
+        The default behavior is to return the same output as
+        initial_alignments.
+
+        Args:
+          batch_size: `int32` scalar, the batch_size.
+          dtype: The `dtype`.
+
+        Returns:
+          A structure of all-zero tensors with shapes as described by
+          `state_size`.
+        """
+        return self.initial_alignments(batch_size, dtype)
+
+    def call(self, queries, state, **kwargs):
+        """Queries the attention scores.
+
+        Args:
+          queries: The attention queries, as a tensor of shape
+            `[batch_size, query_depth]`.
+          state: The attention state as returned by `initial_state`.
+          **kwargs: Additional call arguments.
+
+        Returns:
+          A tuple with the attention scores and the next attention state.
+        """
         raise NotImplementedError
 
 
-class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
+class _BaseAttentionMechanism(AttentionMechanism):
     """A base AttentionMechanism class providing common functionality.
 
     Common functionality includes:
@@ -114,10 +190,6 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
         self.default_probability_fn = probability_fn
         self.probability_fn = probability_fn
 
-        self.keys = None
-        self.values = None
-        self.batch_size = None
-        self._memory_initialized = False
         self._check_inner_dims_defined = True
         self.supports_masking = True
 
@@ -132,14 +204,8 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
 
             self.values = super().__call__(inputs, setup_memory=True)
 
-    @property
-    def memory_initialized(self):
-        """Returns `True` if this attention mechanism has been initialized with
-        a memory."""
-        return self._memory_initialized
-
     def build(self, input_shape):
-        if not self._memory_initialized:
+        if self.values is None:
             # This is for setting up the memory, which contains memory and
             # optional memory_sequence_length. Build the memory_layer with
             # memory shape.
@@ -176,9 +242,10 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
         """
         # Allow manual memory reset
         if kwargs.get("setup_memory", False):
-            self._memory_initialized = False
+            self.values = None
+            self.keys = None
 
-        if self._memory_initialized:
+        if self.values is not None:
             if len(inputs) not in (2, 3):
                 raise ValueError(
                     "Expect the inputs to have 2 or 3 tensors, got %d" % len(inputs)
@@ -240,7 +307,7 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
             # connectivity data for it.
             return self.values
         else:
-            if not self._memory_initialized:
+            if self.values is None:
                 raise ValueError(
                     "Cannot query the attention before the setup of memory"
                 )
@@ -290,8 +357,6 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
                 self.keys = self.memory_layer(self.values)
             else:
                 self.keys = self.values
-            self.batch_size = self.keys.shape[0] or tf.shape(self.keys)[0]
-            self._alignments_size = self.keys.shape[1] or tf.shape(self.keys)[1]
             if memory_mask is not None or memory_sequence_length is not None:
                 unwrapped_probability_fn = self.default_probability_fn
 
@@ -307,7 +372,6 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
                     )
 
                 self.probability_fn = _mask_probability_fn
-        self._memory_initialized = True
 
     def _calculate_attention(self, query, state):
         raise NotImplementedError(
@@ -387,57 +451,6 @@ class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
             )
             config["memory_layer"] = memory_layer
         return config
-
-    @property
-    def alignments_size(self):
-        if isinstance(self._alignments_size, int):
-            return self._alignments_size
-        else:
-            return tf.TensorShape([None])
-
-    @property
-    def state_size(self):
-        return self.alignments_size
-
-    def initial_alignments(self, batch_size, dtype):
-        """Creates the initial alignment values for the `AttentionWrapper`
-        class.
-
-        This is important for AttentionMechanisms that use the previous
-        alignment to calculate the alignment at the next time step
-        (e.g. monotonic attention).
-
-        The default behavior is to return a tensor of all zeros.
-
-        Args:
-          batch_size: `int32` scalar, the batch_size.
-          dtype: The `dtype`.
-
-        Returns:
-          A `dtype` tensor shaped `[batch_size, alignments_size]`
-          (`alignments_size` is the values' `max_time`).
-        """
-        return tf.zeros([batch_size, self._alignments_size], dtype=dtype)
-
-    def initial_state(self, batch_size, dtype):
-        """Creates the initial state values for the `AttentionWrapper` class.
-
-        This is important for AttentionMechanisms that use the previous
-        alignment to calculate the alignment at the next time step
-        (e.g. monotonic attention).
-
-        The default behavior is to return the same output as
-        initial_alignments.
-
-        Args:
-          batch_size: `int32` scalar, the batch_size.
-          dtype: The `dtype`.
-
-        Returns:
-          A structure of all-zero tensors with shapes as described by
-          `state_size`.
-        """
-        return self.initial_alignments(batch_size, dtype)
 
 
 def _luong_score(query, keys, scale):
@@ -1020,7 +1033,7 @@ class _BaseMonotonicAttentionMechanism(_BaseAttentionMechanism):
           A `dtype` tensor shaped `[batch_size, alignments_size]`
           (`alignments_size` is the values' `max_time`).
         """
-        max_time = self._alignments_size
+        max_time = self.alignments_size
         return tf.one_hot(
             tf.zeros((batch_size,), dtype=tf.int32), max_time, dtype=dtype
         )
@@ -1782,7 +1795,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
 
     def _attention_mechanisms_checks(self):
         for attention_mechanism in self._attention_mechanisms:
-            if not attention_mechanism.memory_initialized:
+            if attention_mechanism.values is None:
                 raise ValueError(
                     "The AttentionMechanism instances passed to "
                     "this AttentionWrapper should be initialized "
@@ -1795,7 +1808,10 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         self._attention_mechanisms_checks()
         return [
             tf.debugging.assert_equal(
-                batch_size, attention_mechanism.batch_size, message=error_message
+                batch_size,
+                attention_mechanism.values.shape[0]
+                or tf.shape(attention_mechanism.values)[0],
+                message=error_message,
             )
             for attention_mechanism in self._attention_mechanisms
         ]
