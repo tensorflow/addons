@@ -87,7 +87,9 @@ class AttentionMechanism(tf.keras.layers.Layer):
           A `dtype` tensor shaped `[batch_size, alignments_size]`
           (`alignments_size` is the values' `max_time`).
         """
-        return tf.zeros([batch_size, self.alignments_size], dtype=dtype)
+        return tf.zeros(
+            [batch_size, self.values.shape[1] or tf.shape(self.values)[1]], dtype=dtype
+        )
 
     def initial_state(self, batch_size, dtype=tf.float32):
         """Creates the initial state values for the `AttentionWrapper` class.
