@@ -1615,7 +1615,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
 
         >>> batch_size = 1
         >>> beam_width = 5
-        >>> sequence_length = [5]
+        >>> sequence_length = tf.convert_to_tensor([5])
         >>> encoder_outputs = tf.random.uniform(shape=(batch_size, 5, 10))
         >>> encoder_final_state = [tf.zeros((batch_size, 10)), tf.zeros((batch_size, 10))]
         >>> tiled_encoder_outputs = tfa.seq2seq.tile_batch(encoder_outputs, multiplier=beam_width)
