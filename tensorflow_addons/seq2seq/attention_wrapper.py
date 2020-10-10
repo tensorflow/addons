@@ -1391,12 +1391,11 @@ class AttentionWrapperState(
         Example:
 
         >>> batch_size = 1
-        >>> memory = tf.random.normal(shape=[1, 3, 100])
+        >>> memory = tf.random.normal(shape=[batch_size, 3, 100])
         >>> encoder_state = [tf.zeros((1, 100)), tf.zeros((1, 100))]
-        >>> decoder_rnn_cell = tf.keras.layers.LSTMCell(100)
         >>> attention_mechanism = tfa.seq2seq.LuongAttention(100, memory=memory, memory_sequence_length=[3] * batch_size)
-        >>> decoder_rnn_cell = tfa.seq2seq.AttentionWrapper(decoder_rnn_cell, attention_mechanism, attention_layer_size=10)
-        >>> decoder_initial_state = decoder_rnn_cell.get_initial_state(batch_size=batch_size, dtype=tf.float32)
+        >>> attention_cell = tfa.seq2seq.AttentionWrapper(tf.keras.layers.LSTMCell(100), attention_mechanism, attention_layer_size=10)
+        >>> decoder_initial_state = attention_cell.get_initial_state(batch_size=batch_size, dtype=tf.float32)
         >>> decoder_initial_state = decoder_initial_state.clone(cell_state=encoder_state)
 
         Args:
