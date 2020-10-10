@@ -1390,11 +1390,13 @@ class AttentionWrapperState(
 
         Example:
 
-        ```python
-        initial_state = attention_wrapper.get_initial_state(
-            batch_size=..., dtype=...)
-        initial_state = initial_state.clone(cell_state=encoder_state)
-        ```
+        >>> batch_size = 1
+        >>> memory = tf.random.normal(shape=[batch_size, 3, 100])
+        >>> encoder_state = [tf.zeros((batch_size, 100)), tf.zeros((batch_size, 100))]
+        >>> attention_mechanism = tfa.seq2seq.LuongAttention(100, memory=memory, memory_sequence_length=[3] * batch_size)
+        >>> attention_cell = tfa.seq2seq.AttentionWrapper(tf.keras.layers.LSTMCell(100), attention_mechanism, attention_layer_size=10)
+        >>> decoder_initial_state = attention_cell.get_initial_state(batch_size=batch_size, dtype=tf.float32)
+        >>> decoder_initial_state = decoder_initial_state.clone(cell_state=encoder_state)
 
         Args:
           **kwargs: Any properties of the state object to replace in the
@@ -1611,23 +1613,18 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
 
         An example:
 
-        ```
-        tiled_encoder_outputs = tfa.seq2seq.tile_batch(
-            encoder_outputs, multiplier=beam_width)
-        tiled_encoder_final_state = tfa.seq2seq.tile_batch(
-            encoder_final_state, multiplier=beam_width)
-        tiled_sequence_length = tfa.seq2seq.tile_batch(
-            sequence_length, multiplier=beam_width)
-        attention_mechanism = MyFavoriteAttentionMechanism(
-            num_units=attention_depth,
-            memory=tiled_inputs,
-            memory_sequence_length=tiled_sequence_length)
-        attention_cell = AttentionWrapper(cell, attention_mechanism, ...)
-        decoder_initial_state = attention_cell.get_initial_state(
-            batch_size=true_batch_size * beam_width, dtype=dtype)
-        decoder_initial_state = decoder_initial_state.clone(
-            cell_state=tiled_encoder_final_state)
-        ```
+        >>> batch_size = 1
+        >>> beam_width = 5
+        >>> sequence_length = tf.convert_to_tensor([5])
+        >>> encoder_outputs = tf.random.uniform(shape=(batch_size, 5, 10))
+        >>> encoder_final_state = [tf.zeros((batch_size, 10)), tf.zeros((batch_size, 10))]
+        >>> tiled_encoder_outputs = tfa.seq2seq.tile_batch(encoder_outputs, multiplier=beam_width)
+        >>> tiled_encoder_final_state = tfa.seq2seq.tile_batch(encoder_final_state, multiplier=beam_width)
+        >>> tiled_sequence_length = tfa.seq2seq.tile_batch(sequence_length, multiplier=beam_width)
+        >>> attention_mechanism = tfa.seq2seq.BahdanauAttention(10, memory=tiled_encoder_outputs, memory_sequence_length=tiled_sequence_length)
+        >>> attention_cell = tfa.seq2seq.AttentionWrapper(tf.keras.layers.LSTMCell(10), attention_mechanism)
+        >>> decoder_initial_state = attention_cell.get_initial_state(batch_size=batch_size * beam_width, dtype=tf.float32)
+        >>> decoder_initial_state = decoder_initial_state.clone(cell_state=tiled_encoder_final_state)
 
         Args:
           cell: A layer that implements the `tf.keras.layers.AbstractRNNCell`
