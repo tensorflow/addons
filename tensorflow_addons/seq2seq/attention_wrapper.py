@@ -1641,7 +1641,9 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         #make decoder
 
         >>>memory = tiled_encoder_output
+        
         #attention wrapper
+        
         >>>attn_cells = tfa.seq2seq.AttentionWrapper(
         ...lstm,
         ...attention_mechanism=tfa.seq2seq.BahdanauAttention(units=hidden_size, memory=memory, memory_sequence_length=batch_size*beam_width),
@@ -1659,12 +1661,9 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         ... output_layer=tf.keras.layers.Dense(hidden_size, name='output_proj')
         ...   ) #second structure decoder
 
-        #training
-
         >>>start_tokens = tf.zeros((batch_size,), dtype=tf.int32)
         >>>decoder.initialize(embedding=embedding, start_tokens= start_tokens ,end_token= 1, initial_state=decoder_initial_state)#first structure decoder_initial_state
-        >>>#final_outputs, final_state, final_sequence_lengths = tfa.seq2seq.dynamic_decode(
-        >>>#decoder=decoder, impute_finished=False, maximum_iterations= 100)
+        >>>#final_outputs, final_state, final_sequence_lengths = tfa.seq2seq.dynamic_decode(decoder=decoder, impute_finished=False, maximum_iterations= 100)
 
         Args:
           cell: A layer that implements the `tf.keras.layers.AbstractRNNCell`
