@@ -1614,7 +1614,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
 
         An example:
 
-        >>>vocab_size = 10        
+        >>>vocab_size = 10
         >>>max_time = 16
         >>>batch_size = 2
         >>>emb_dim = 20
@@ -1652,7 +1652,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         >>>decoder_initial_state = decoder_initial_state.clone(cell_state=tiled_encoder_final_state)
 
         #make predictions
-        
+
         >>>decoder = tfa.seq2seq.BeamSearchDecoder(
         ... cell=attn_cells,
         ... beam_width=batch_size*beam_width,
