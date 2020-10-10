@@ -1641,9 +1641,9 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         #make decoder
 
         >>>memory = tiled_encoder_output
-        
+
         #attention wrapper
-        
+
         >>>attn_cells = tfa.seq2seq.AttentionWrapper(
         ...lstm,
         ...attention_mechanism=tfa.seq2seq.BahdanauAttention(units=hidden_size, memory=memory, memory_sequence_length=batch_size*beam_width),
