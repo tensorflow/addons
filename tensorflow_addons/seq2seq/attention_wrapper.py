@@ -1614,56 +1614,56 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
 
         An example:
 
-        >>>vocab_size = 10
-        >>>max_time = 16
-        >>>batch_size = 2
-        >>>emb_dim = 20
-        >>>cell_dim = 5
-        >>>attention_dim = cell_dim
-        >>>beam_width = 3
-        >>>hidden_size = 7
+        >>> vocab_size = 10
+        >>> max_time = 16
+        >>> batch_size = 2
+        >>> emb_dim = 20
+        >>> cell_dim = 5
+        >>> attention_dim = cell_dim
+        >>> beam_width = 3
+        >>> hidden_size = 7
 
-        >>>inputs = tf.random.uniform([batch_size, max_time, emb_dim], maxval=1., dtype=tf.float32)
-        >>>embedding = tf.random.uniform([vocab_size, emb_dim], maxval=1., dtype=tf.float32)
+        >>> inputs = tf.random.uniform([batch_size, max_time, emb_dim], maxval=1., dtype=tf.float32)
+        >>> embedding = tf.random.uniform([vocab_size, emb_dim], maxval=1., dtype=tf.float32)
 
         # make encoder
 
-        >>>lstm = tf.keras.layers.LSTMCell(hidden_size)
-        >>>lstmW = tf.keras.layers.RNN(lstm, return_sequences=True, return_state=True)
-        >>>whole_encoder_seq_output, final_encoder_state, final_carry_state = lstmW(inputs)
-        >>>#print("final_state_ibia", final_encoder_state)
-        >>>#when beamsearch is used
-        >>>tiled_encoder_output = tfa.seq2seq.tile_batch(whole_encoder_seq_output, multiplier=beam_width)
-        >>>tiled_encoder_final_state = tfa.seq2seq.tile_batch(final_encoder_state, multiplier=beam_width)
-        >>>encoder_initial_state = lstmW.get_initial_state(inputs)
-        >>>tiled_encoder_initial_state = tfa.seq2seq.tile_batch(encoder_initial_state, multiplier=beam_width)
+        >>> lstm = tf.keras.layers.LSTMCell(hidden_size)
+        >>> lstmW = tf.keras.layers.RNN(lstm, return_sequences=True, return_state=True)
+        >>> whole_encoder_seq_output, final_encoder_state, final_carry_state = lstmW(inputs)
+        >>> #print("final_state_ibia", final_encoder_state)
+        >>> #when beamsearch is used
+        >>> tiled_encoder_output = tfa.seq2seq.tile_batch(whole_encoder_seq_output, multiplier=beam_width)
+        >>> tiled_encoder_final_state = tfa.seq2seq.tile_batch(final_encoder_state, multiplier=beam_width)
+        >>> encoder_initial_state = lstmW.get_initial_state(inputs)
+        >>> tiled_encoder_initial_state = tfa.seq2seq.tile_batch(encoder_initial_state, multiplier=beam_width)
 
         #make decoder
 
-        >>>memory = tiled_encoder_output
+        >>> memory = tiled_encoder_output
 
         #attention wrapper
 
-        >>>attn_cells = tfa.seq2seq.AttentionWrapper(
-        ...lstm,
-        ...attention_mechanism=tfa.seq2seq.BahdanauAttention(units=hidden_size, memory=memory, memory_sequence_length=batch_size*beam_width),
-        ...attention_layer_size=hidden_size,
-        ...initial_cell_state=tiled_encoder_final_state
+        >>> attn_cells = tfa.seq2seq.AttentionWrapper(
+        ... lstm,
+        ... attention_mechanism=tfa.seq2seq.BahdanauAttention(units=hidden_size, memory=memory, memory_sequence_length=batch_size*beam_width),
+        ... attention_layer_size=hidden_size,
+        ... initial_cell_state=tiled_encoder_final_state
         ... )
-        >>>decoder_initial_state= attn_cells.get_initial_state(batch_size=batch_size*beam_width, dtype= tf.float32)
-        >>>decoder_initial_state = decoder_initial_state.clone(cell_state=tiled_encoder_final_state)
+        >>> decoder_initial_state= attn_cells.get_initial_state(batch_size=batch_size*beam_width, dtype= tf.float32)
+        >>> decoder_initial_state = decoder_initial_state.clone(cell_state=tiled_encoder_final_state)
 
         #make predictions
 
-        >>>decoder = tfa.seq2seq.BeamSearchDecoder(
+        >>> decoder = tfa.seq2seq.BeamSearchDecoder(
         ... cell=attn_cells,
         ... beam_width=batch_size*beam_width,
         ... output_layer=tf.keras.layers.Dense(hidden_size, name='output_proj')
         ...   ) #second structure decoder
 
-        >>>start_tokens = tf.zeros((batch_size,), dtype=tf.int32)
-        >>>decoder.initialize(embedding=embedding, start_tokens= start_tokens ,end_token= 1, initial_state=decoder_initial_state)#first structure decoder_initial_state
-        >>>#final_outputs, final_state, final_sequence_lengths = tfa.seq2seq.dynamic_decode(decoder=decoder, impute_finished=False, maximum_iterations= 100)
+        >>> start_tokens = tf.zeros((batch_size,), dtype=tf.int32)
+        >>> decoder.initialize(embedding=embedding, start_tokens= start_tokens ,end_token= 1, initial_state=decoder_initial_state)#first structure decoder_initial_state
+        >>> #final_outputs, final_state, final_sequence_lengths = tfa.seq2seq.dynamic_decode(decoder=decoder, impute_finished=False, maximum_iterations= 100)
 
         Args:
           cell: A layer that implements the `tf.keras.layers.AbstractRNNCell`
