@@ -1624,7 +1624,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
         >>> tiled_sequence_length = tfa.seq2seq.tile_batch(sequence_length, multiplier=beam_width)
         >>> attention_mechanism = tfa.seq2seq.BahdanauAttention(10, memory=tiled_encoder_outputs, memory_sequence_length=tiled_sequence_length)
         >>> attention_cell = tfa.seq2seq.AttentionWrapper(tf.keras.layers.LSTMCell(10), attention_mechanism)
-        >>> decoder_initial_state = attention_cell.get_initial_state(batch_size=true_batch_size * beam_width, dtype=tf.float32)
+        >>> decoder_initial_state = attention_cell.get_initial_state(batch_size=batch_size * beam_width, dtype=tf.float32)
         >>> decoder_initial_state = decoder_initial_state.clone(cell_state=tiled_encoder_final_state)
 
         Args:
