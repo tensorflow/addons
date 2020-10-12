@@ -15,8 +15,12 @@
 # limitations under the License.
 # ==============================================================================
 
-# usage: bash tools/update_release_version.sh <list_of_release_numbers>
-# e.g. bash tools/update_release_version.sh 2.3.0 2.3.1
+# Usage
+if [ $# -lt 1 ]; then
+	echo "Usage: bash tools/update_release_version.sh <list_of_release_numbers>"
+	echo "e.g. bash tools/update_release_version.sh 2.3.0 2.3.1"
+	exit 1
+fi
 
 last_version=${BASH_ARGV[0]}
 tf_version=''
