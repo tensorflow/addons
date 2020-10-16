@@ -144,7 +144,7 @@ class NoisyDense(Dense):
 
     # use factorising Gaussian variables
     if self.use_factorised:
-      sigma_init = self.sigma0 / tf.sqrt(self.kernel_mu.shape[0])
+      sigma_init = self.sigma0 / tf.sqrt(float(self.kernel_mu.shape[0]))
     # use independent Gaussian variables  
     else:
       sigma_init = 0.017
