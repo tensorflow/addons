@@ -144,7 +144,7 @@ class NoisyDense(Dense):
 
     # use factorising Gaussian variables
     if self.use_factorised:
-      sigma_init = self.sigma0 / tf.sqrt(self.kernel.shape[0])
+      sigma_init = self.sigma0 / tf.sqrt(self.kernel_mu.shape[0])
     # use independent Gaussian variables  
     else:
       sigma_init = 0.017
@@ -152,7 +152,7 @@ class NoisyDense(Dense):
     # create sigma weights
     self.kernel_sigma = self.add_weight(
         'kernel_sigma',
-        shape=self.kernel.shape,
+        shape=self.kernel_mu.shape,
         initializer=initializers.Constant(value=sigma_init),
         regularizer=self.kernel_sigma_regularizer,
         constraint=self.kernel_sigma_constraint,
@@ -173,7 +173,7 @@ class NoisyDense(Dense):
     # create noise variables
     self.kernel_epsilon = self.add_weight(
           name='kernel_epsilon',
-          shape=self.kernel.shape,
+          shape=self.kernel_mu.shape,
           dtype=self.dtype,
           initializer='zeros',
           trainable=False)
