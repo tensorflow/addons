@@ -139,7 +139,7 @@ class NoisyDense(Dense):
           dtype=self.dtype,
           trainable=True)
     else:
-      self.bias = None
+      self.bias_mu = None
     self.built = True
 
     # use factorising Gaussian variables
