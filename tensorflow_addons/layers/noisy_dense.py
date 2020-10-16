@@ -15,7 +15,8 @@
 
 import tensorflow as tf
 
-from tensorflow.keras.layers import Dense, regularizers, constraints, initializers, InputSpec 
+from tensorflow.keras import regularizers, constraints, initializers
+from tensorflow.keras.layers import Dense, InputSpec 
 from tensorflow.keras import backend as K
 
 
