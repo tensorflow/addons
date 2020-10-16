@@ -161,7 +161,7 @@ class NoisyDense(Dense):
     if self.use_bias:
       self.bias_sigma = self.add_weight(
           'bias_sigma',
-          shape=self.bias.shape,
+          shape=self.bias_mu.shape,
           initializer=initializers.Constant(value=sigma_init),
           regularizer=self.bias_sigma_regularizer,
           constraint=self.bias_sigma_constraint,
@@ -180,7 +180,7 @@ class NoisyDense(Dense):
     if self.use_bias:
       self.bias_epsilon = self.add_weight(
             name='bias_epsilon',
-            shape=self.bias.shape,
+            shape=self.bias_mu.shape,
             dtype=self.dtype,
             initializer='zeros',
             trainable=False)
