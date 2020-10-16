@@ -26,37 +26,29 @@ from tensorflow_addons.utils import test_utils
 from tensorflow_addons.layers.noisy_dense import NoisyDense
 
 
-@pytest.mark.parametrize(
-    "input_shape", [(3, 2), (3, 4, 2), (None, None, 2), (3, 4, 5, 2)]
-)
-def test_noisy_dense(input_shape):
-    test_utils.layer_test(NoisyDense, kwargs={"units": 3}, input_shape=input_shape)
+def test_noisy_dense():
+    test_utils.layer_test(
+        keras.layers.NoisyDense, kwargs={'units': 3, 'sigma0': 0.4, 'use_factorised': True}, input_shape=(3, 2))
+
+    test_utils.layer_test(
+        keras.layers.NoisyDense, kwargs={'units': 3, 'sigma0': 0.4, 'use_factorised': False}, input_shape=(3, 4, 2))
+
+    test_utils.layer_test(
+        keras.layers.NoisyDense, kwargs={'units': 3, 'sigma0': 0.4, 'use_factorised': True}, input_shape=(None, None, 2))
+
+    test_utils.layer_test(
+        keras.layers.NoisyDense, kwargs={'units': 3, 'sigma0': 0.4, 'use_factorised': False}, input_shape=(3, 4, 5, 2))
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", ["float16", "float32", "float64"])
 def test_noisy_dense_dtype(dtype):
     inputs = tf.convert_to_tensor(
-        np.random.randint(low=0, high=7, size=(2, 2)), dtype=dtype
-    )
-    layer = NoisyDense(5, dtype=dtype, name="noisy_dense_" + dtype)
-    outputs = layer(inputs)
+        np.random.randint(low=0, high=7, size=(2, 2)))
+    layer = keras.layers.NoisyDense(5, sigma0=0.4, dtype=dtype)
+    outputs = layer(inputs)    
+    layer.remove_noise()
     np.testing.assert_array_equal(outputs.dtype, dtype)
-
-
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_noisy_dense_with_policy():
-    inputs = tf.convert_to_tensor(np.random.randint(low=0, high=7, size=(2, 2)))
-    layer = NoisyDense(5, dtype=Policy("mixed_float16"), name="noisy_dense_policy")
-    outputs = layer(inputs)
-    output_signature = layer.compute_output_signature(
-        tf.TensorSpec(dtype="float16", shape=(2, 2))
-    )
-    np.testing.assert_array_equal(output_signature.dtype, tf.dtypes.float16)
-    np.testing.assert_array_equal(output_signature.shape, (2, 5))
-    np.testing.assert_array_equal(outputs.dtype, "float16")
-    np.testing.assert_array_equal(layer.mu_kernel.dtype, "float32")
-    np.testing.assert_array_equal(layer.sigma_kernel.dtype, "float32")
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -64,78 +56,28 @@ def test_noisy_dense_regularization():
     layer = NoisyDense(
         3,
         kernel_regularizer=keras.regularizers.l1(0.01),
-        bias_regularizer="l1",
-        activity_regularizer="l2",
-        name="noisy_dense_reg",
-    )
+        bias_regularizer='l1',
+        activity_regularizer='l2',
+        kernel_sigma_regularizer='l1',
+        bias_sigma_regularizer='l2',
+        name='dense_reg')
     layer(keras.backend.variable(np.ones((2, 4))))
     np.testing.assert_array_equal(5, len(layer.losses))
-
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_noisy_dense_constraints():
     k_constraint = keras.constraints.max_norm(0.01)
     b_constraint = keras.constraints.max_norm(0.01)
     layer = NoisyDense(
-        3,
-        kernel_constraint=k_constraint,
-        bias_constraint=b_constraint,
-        name="noisy_dense_constriants",
-    )
+        3, 
+        sigma0=0.8, 
+        use_factorised=False, 
+        kernel_constraint=k_constraint, 
+        kernel_sigma_constraint=k_constraint, 
+        bias_constraint=b_constraint, 
+        bias_sigma_constraint=b_constraint)
     layer(keras.backend.variable(np.ones((2, 4))))
-    np.testing.assert_array_equal(layer.mu_kernel.constraint, k_constraint)
-    np.testing.assert_array_equal(layer.sigma_kernel.constraint, k_constraint)
-    np.testing.assert_array_equal(layer.mu_bias.constraint, b_constraint)
-    np.testing.assert_array_equal(layer.sigma_bias.constraint, b_constraint)
-
-
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_noisy_dense_automatic_reset_noise():
-    inputs = tf.convert_to_tensor(np.random.randint(low=0, high=7, size=(2, 2)))
-    layer = NoisyDense(5, name="noise_dense_auto_reset_noise")
-    layer(inputs)
-    initial_eps_kernel = layer.eps_kernel
-    initial_eps_bias = layer.eps_bias
-    layer(inputs)
-    new_eps_kernel = layer.eps_kernel
-    new_eps_bias = layer.eps_bias
-    np.testing.assert_raises(
-        AssertionError,
-        np.testing.assert_array_equal,
-        initial_eps_kernel,
-        new_eps_kernel,
-    )
-    np.testing.assert_raises(
-        AssertionError,
-        np.testing.assert_array_equal,
-        initial_eps_bias,
-        new_eps_bias,
-    )
-
-
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_noisy_dense_remove_noise():
-    inputs = tf.convert_to_tensor(np.random.randint(low=0, high=7, size=(2, 2)))
-    layer = NoisyDense(5, name="noise_dense_manual_reset_noise")
-    layer(inputs)
-    initial_eps_kernel = layer.eps_kernel
-    initial_eps_bias = layer.eps_bias
-    layer(inputs, reset_noise=False, remove_noise=True)
-    new_eps_kernel = layer.eps_kernel
-    new_eps_bias = layer.eps_bias
-    kernel_zeros = tf.zeros(initial_eps_kernel.shape, dtype=initial_eps_kernel.dtype)
-    bias_zeros = tf.zeros(initial_eps_bias.shape, dtype=initial_eps_kernel.dtype)
-    np.testing.assert_raises(
-        AssertionError,
-        np.testing.assert_array_equal,
-        initial_eps_kernel,
-        new_eps_kernel,
-    )
-    np.testing.assert_raises(
-        AssertionError,
-        np.testing.assert_array_equal,
-        initial_eps_bias,
-        new_eps_bias,
-    )
-    np.testing.assert_array_equal(kernel_zeros, new_eps_kernel)
-    np.testing.assert_array_equal(bias_zeros, new_eps_bias)
+    np.testing.assert_array_equal(layer.kernel_mu.constraint, k_constraint)
+    np.testing.assert_array_equal(layer.bias_mu.constraint, b_constraint)
+    np.testing.assert_array_equal(layer.kernel_sigma.constraint, k_constraint)
+    np.testing.assert_array_equal(layer.bias_sigma.constraint, b_constraint)

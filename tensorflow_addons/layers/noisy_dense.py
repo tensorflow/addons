@@ -14,251 +14,235 @@
 # ==============================================================================
 
 import tensorflow as tf
-from tensorflow.keras import (
-    activations,
-    initializers,
-    regularizers,
-    constraints,
-)
+
+from tensorflow.keras.layers import Dense, regularizers, constraints, initializers, InputSpec 
 from tensorflow.keras import backend as K
-from tensorflow.keras.layers import InputSpec
-from typeguard import typechecked
-
-from tensorflow_addons.utils import types
-
-
-def _scale_noise(x):
-    return tf.sign(x) * tf.sqrt(tf.abs(x))
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class NoisyDense(tf.keras.layers.Dense):
-    r"""Noisy dense layer that injects random noise to the weights of dense layer.
+class NoisyDense(Dense):
+  """Densely-connected NN layer with additive zero-centered Gaussian noise (NoisyNet).
+  `NoisyDense` implements the operation:
+  `output = activation(dot(input, kernel + kernel_sigma * kernel_epsilon) + bias + bias_sigma * bias_epsilon)`
+  where `activation` is the element-wise activation function
+  passed as the `activation` argument, `kernel` is a base weights matrix
+  created by the layer, `kernel_sigma` is a noise weights matrix
+  created by the layer, `bias` is a base bias vector created by the layer, 
+  `bias_sigma` is a noise bias vector created by the layer,
+  'kernel_epsilon' and 'bias_epsilon' are noise random variables.
+  (biases are only applicable if `use_bias` is `True`)
+  
+  There are implemented both variants: 
+    1. Independent Gaussian noise                                    
+    2. Factorised Gaussian noise.
+  We can choose between that by 'use_factorised' parameter.
+  Arguments:
+    units: Positive integer, dimensionality of the output space.
+    sigma0: Float, initial sigma parameter (uses only if use_factorised=True)
+    use_factorised: Boolean, whether the layer uses independent or factorised Gaussian noise
+    activation: Activation function to use.
+      If you don't specify anything, no activation is applied
+      (ie. "linear" activation: `a(x) = x`).
+    use_bias: Boolean, whether the layer uses a bias vector.
+    kernel_regularizer: Regularizer function applied to
+      the `kernel` weights matrix.
+    kernel_sigma_regularizer: Regularizer function applied to
+      the `kernel_sigma` weights matrix.
+    bias_regularizer: Regularizer function applied to the bias vector.
+    bias_sigma_regularizer: Regularizer function applied to the bias_sigma vector.
+    activity_regularizer: Regularizer function applied to
+      the output of the layer (its "activation").
+    kernel_constraint: Constraint function applied to
+      the `kernel` weights matrix.
+    kernel_sigma_constraint: Constraint function applied to
+      the `kernel_sigma` weights matrix.
+    bias_constraint: Constraint function applied to the bias vector.
+    bias_sigma_constraint: Constraint function applied to the bias_sigma vector.
+  Input shape:
+    N-D tensor with shape: `(batch_size, ..., input_dim)`.
+    The most common situation would be
+    a 2D input with shape `(batch_size, input_dim)`.
+  Output shape:
+    N-D tensor with shape: `(batch_size, ..., units)`.
+    For instance, for a 2D input with shape `(batch_size, input_dim)`,
+    the output would have shape `(batch_size, units)`.
+  Reference:
+    - [Noisy Networks for Exploration](https://arxiv.org/abs/1706.10295)
+  """
 
-    Noisy dense layers are fully connected layers whose weights and biases are
-    augmented by factorised Gaussian noise. The factorised Gaussian noise is
-    controlled through gradient descent by a second weights layer.
+  def __init__(self,
+               units,
+               sigma0=0.5,
+               use_factorised=True,
+               activation=None, 
+               use_bias=True, 
+               kernel_initializer='glorot_uniform', 
+               bias_initializer='zeros',
+               kernel_regularizer=None, 
+               kernel_sigma_regularizer=None,
+               bias_regularizer=None, 
+               bias_sigma_regularizer=None,
+               activity_regularizer=None, 
+               kernel_constraint=None, 
+               kernel_sigma_constraint=None,
+               bias_constraint=None, 
+               bias_sigma_constraint=None,
+               **kwargs):
+    super(NoisyDense, self).__init__(units=units, 
+                                     activation=activation, 
+                                     use_bias=use_bias, 
+                                     kernel_initializer=kernel_initializer, 
+                                     bias_initializer=bias_initializer, 
+                                     kernel_regularizer=kernel_regularizer, 
+                                     bias_regularizer=bias_regularizer, 
+                                     activity_regularizer=activity_regularizer, 
+                                     kernel_constraint=kernel_constraint, 
+                                     bias_constraint=bias_constraint, 
+                                     **kwargs)
 
-    A `NoisyDense` layer implements the operation:
-    $$
-    \mathrm{NoisyDense}(x) =
-    \mathrm{activation}(\mathrm{dot}(x, \mu + (\sigma \cdot \epsilon))
-    + \mathrm{bias})
-    $$
-    where $\mu$ is the standard weights layer, $\epsilon$ is the factorised
-    Gaussian noise, and $\sigma$ is a second weights layer which controls
-    $\epsilon$.
+    self.sigma0 = sigma0
+    self.use_factorised = use_factorised
+    
+    self.kernel_sigma_regularizer = regularizers.get(kernel_sigma_regularizer)
+    self.bias_sigma_regularizer = regularizers.get(bias_sigma_regularizer)
+    self.kernel_sigma_constraint = constraints.get(kernel_sigma_constraint)
+    self.bias_sigma_constraint = constraints.get(bias_sigma_constraint)
 
-    Note: bias only added if `use_bias` is `True`.
+  def build(self, input_shape):
+    dtype = tf.dtypes.as_dtype(self.dtype or K.floatx())
+    if not (dtype.is_floating or dtype.is_complex):
+      raise TypeError('Unable to build `Dense` layer with non-floating point '
+                      'dtype %s' % (dtype,))
 
-    Example:
+    input_shape = tf.TensorShape(input_shape)
+    last_dim = tf.compat.dimension_value(input_shape[-1])
+    if last_dim is None:
+      raise ValueError('The last dimension of the inputs to `Dense` '
+                       'should be defined. Found `None`.')
+    self.input_spec = InputSpec(min_ndim=2, axes={-1: last_dim})
+    self.kernel_mu = self.add_weight(
+        'kernel_mu',
+        shape=[last_dim, self.units],
+        initializer=self.kernel_initializer,
+        regularizer=self.kernel_regularizer,
+        constraint=self.kernel_constraint,
+        dtype=self.dtype,
+        trainable=True)
+    if self.use_bias:
+      self.bias_mu = self.add_weight(
+          'bias_mu',
+          shape=[self.units,],
+          initializer=self.bias_initializer,
+          regularizer=self.bias_regularizer,
+          constraint=self.bias_constraint,
+          dtype=self.dtype,
+          trainable=True)
+    else:
+      self.bias = None
+    self.built = True
 
-    >>> # Create a `Sequential` model and add a NoisyDense
-    >>> # layer as the first layer.
-    >>> model = tf.keras.models.Sequential()
-    >>> model.add(tf.keras.Input(shape=(16,)))
-    >>> model.add(NoisyDense(32, activation='relu'))
-    >>> # Now the model will take as input arrays of shape (None, 16)
-    >>> # and output arrays of shape (None, 32).
-    >>> # Note that after the first layer, you don't need to specify
-    >>> # the size of the input anymore:
-    >>> model.add(NoisyDense(32))
-    >>> model.output_shape
-    (None, 32)
-
-    Arguments:
-      units: Positive integer, dimensionality of the output space.
-      sigma: A float between 0-1 used as a standard deviation figure and is
-        applied to the gaussian noise layer (`sigma_kernel` and `sigma_bias`).
-      activation: Activation function to use.
-        If you don't specify anything, no activation is applied
-        (ie. "linear" activation: `a(x) = x`).
-      use_bias: Boolean, whether the layer uses a bias vector.
-      kernel_regularizer: Regularizer function applied to
-        the `kernel` weights matrix.
-      bias_regularizer: Regularizer function applied to the bias vector.
-      activity_regularizer: Regularizer function applied to
-        the output of the layer (its "activation").
-      kernel_constraint: Constraint function applied to
-        the `kernel` weights matrix.
-      bias_constraint: Constraint function applied to the bias vector.
-
-    Input shape:
-      N-D tensor with shape: `(batch_size, ..., input_dim)`.
-      The most common situation would be
-      a 2D input with shape `(batch_size, input_dim)`.
-
-    Output shape:
-      N-D tensor with shape: `(batch_size, ..., units)`.
-      For instance, for a 2D input with shape `(batch_size, input_dim)`,
-      the output would have shape `(batch_size, units)`.
-
-    References:
-      - [Noisy Networks for Explanation](https://arxiv.org/pdf/1706.10295.pdf)
-    """
-
-    @typechecked
-    def __init__(
-        self,
-        units: int,
-        sigma: float = 0.5,
-        activation: types.Activation = None,
-        use_bias: bool = True,
-        kernel_regularizer: types.Regularizer = None,
-        bias_regularizer: types.Regularizer = None,
-        activity_regularizer: types.Regularizer = None,
-        kernel_constraint: types.Constraint = None,
-        bias_constraint: types.Constraint = None,
-        **kwargs
-    ):
-        super().__init__(
-            units=units,
-            activation=activation,
-            use_bias=use_bias,
-            kernel_regularizer=kernel_regularizer,
-            bias_regularizer=bias_regularizer,
-            activity_regularizer=activity_regularizer,
-            kernel_constraint=kernel_constraint,
-            bias_constraint=bias_constraint,
-            **kwargs,
-        )
-        delattr(self, "kernel_initializer")
-        delattr(self, "bias_initializer")
-        self.sigma = sigma
-
-    def build(self, input_shape):
-        # Make sure dtype is correct
-        dtype = tf.dtypes.as_dtype(self.dtype or K.floatx())
-        if not (dtype.is_floating or dtype.is_complex):
-            raise TypeError(
-                "Unable to build `Dense` layer with non-floating point "
-                "dtype %s" % (dtype,)
-            )
-
-        input_shape = tf.TensorShape(input_shape)
-        self.last_dim = tf.compat.dimension_value(input_shape[-1])
-        sqrt_dim = self.last_dim ** (1 / 2)
-        if self.last_dim is None:
-            raise ValueError(
-                "The last dimension of the inputs to `Dense` "
-                "should be defined. Found `None`."
-            )
-        self.input_spec = InputSpec(min_ndim=2, axes={-1: self.last_dim})
-
-        sigma_init = initializers.Constant(value=self.sigma / sqrt_dim)
-        mu_init = initializers.RandomUniform(minval=-1 / sqrt_dim, maxval=1 / sqrt_dim)
-
-        # Learnable parameters
-        self.sigma_kernel = self.add_weight(
-            "sigma_kernel",
-            shape=[self.last_dim, self.units],
-            initializer=sigma_init,
-            regularizer=self.kernel_regularizer,
-            constraint=self.kernel_constraint,
+    # use factorising Gaussian variables
+    if self.use_factorised:
+      sigma_init = self.sigma0 / tf.sqrt(self.kernel.shape[0])
+    # use independent Gaussian variables  
+    else:
+      sigma_init = 0.017
+    
+    # create sigma weights
+    self.kernel_sigma = self.add_weight(
+        'kernel_sigma',
+        shape=self.kernel.shape,
+        initializer=initializers.Constant(value=sigma_init),
+        regularizer=self.kernel_sigma_regularizer,
+        constraint=self.kernel_sigma_constraint,
+        dtype=self.dtype,
+        trainable=True)
+    if self.use_bias:
+      self.bias_sigma = self.add_weight(
+          'bias_sigma',
+          shape=self.bias.shape,
+          initializer=initializers.Constant(value=sigma_init),
+          regularizer=self.bias_sigma_regularizer,
+          constraint=self.bias_sigma_constraint,
+          dtype=self.dtype,
+          trainable=True)
+    else:
+      self.bias_sigma = None
+    
+    # create noise variables
+    self.kernel_epsilon = self.add_weight(
+          name='kernel_epsilon',
+          shape=self.kernel.shape,
+          dtype=self.dtype,
+          initializer='zeros',
+          trainable=False)
+    if self.use_bias:
+      self.bias_epsilon = self.add_weight(
+            name='bias_epsilon',
+            shape=self.bias.shape,
             dtype=self.dtype,
-            trainable=True,
-        )
+            initializer='zeros',
+            trainable=False)
+    else:
+      self.bias_epsilon = None
 
-        self.mu_kernel = self.add_weight(
-            "mu_kernel",
-            shape=[self.last_dim, self.units],
-            initializer=mu_init,
-            regularizer=self.kernel_regularizer,
-            constraint=self.kernel_constraint,
-            dtype=self.dtype,
-            trainable=True,
-        )
+    # init epsilon parameters
+    self.reset_noise()
+    self.built = True
 
-        if self.use_bias:
-            self.sigma_bias = self.add_weight(
-                "sigma_bias",
-                shape=[
-                    self.units,
-                ],
-                initializer=sigma_init,
-                regularizer=self.bias_regularizer,
-                constraint=self.bias_constraint,
-                dtype=self.dtype,
-                trainable=True,
-            )
+  def call(self, inputs):
+    self.kernel = tf.add(self.kernel_mu, tf.mul(self.kernel_sigma, self.kernel_epsilon))
+    self.bias = self.bias_mu
+    if self.bias is not None:
+      self.bias = tf.add(self.bias_mu, tf.mul(self.bias_sigma, self.bias_epsilon))
+    
+    return super().call(inputs)
 
-            self.mu_bias = self.add_weight(
-                "mu_bias",
-                shape=[
-                    self.units,
-                ],
-                initializer=mu_init,
-                regularizer=self.bias_regularizer,
-                constraint=self.bias_constraint,
-                dtype=self.dtype,
-                trainable=True,
-            )
-        else:
-            self.sigma_bias = None
-            self.mu_bias = None
-        self._reset_noise()
-        self.built = True
+  def get_config(self):
+    config = super(NoisyDense, self).get_config()
+    config.update({
+        'sigma0':
+            self.sigma0,
+        'use_factorised':
+            self.use_factorised,
+        'kernel_sigma_regularizer':
+            regularizers.serialize(self.kernel_sigma_regularizer),
+        'bias_sigma_regularizer':
+            regularizers.serialize(self.bias_sigma_regularizer),
+        'kernel_sigma_constraint':
+            constraints.serialize(self.kernel_sigma_constraint),
+        'bias_sigma_constraint':
+            constraints.serialize(self.bias_sigma_constraint)
+    })
+    return config
+  
+  def _scale_noise(self, size):
+    x = K.random_normal(shape=size,
+                        mean=0.0,
+                        stddev=1.0,
+                        dtype=self.dtype)
+    return tf.mul(tf.sign(x), tf.sqrt(tf.abs(x)))
+    
+  def reset_noise(self):
+    if self.use_factorised:
+      in_eps = self._scale_noise((self.kernel_epsilon.shape[0], 1))
+      out_eps = self._scale_noise((1, self.units))
+      w_eps = tf.matmul(in_eps, out_eps)
+      b_eps = out_eps[0]
+    else:
+      # generate independent variables
+      w_eps = K.random_normal(shape=self.kernel_epsilon.shape,
+                              mean=0.0,
+                              stddev=1.0,
+                              dtype=self.dtype)
+      b_eps = K.random_normal(shape=self.bias_epsilon.shape,
+                              mean=0.0,
+                              stddev=1.0,
+                              dtype=self.dtype)
 
-    @property
-    def kernel(self):
-        return self.mu_kernel + (self.sigma_kernel * self.eps_kernel)
-
-    @property
-    def bias(self):
-        if self.use_bias:
-            return self.mu_bias + (self.sigma_bias * self.eps_bias)
-
-    def _reset_noise(self):
-        """Create the factorised Gaussian noise."""
-
-        dtype = self._compute_dtype_object
-
-        # Generate random noise
-        eps_i = tf.random.normal([self.last_dim, self.units], dtype=dtype)
-        eps_j = tf.random.normal(
-            [
-                self.units,
-            ],
-            dtype=dtype,
-        )
-
-        # Scale the random noise
-        self.eps_kernel = _scale_noise(eps_i) * _scale_noise(eps_j)
-        self.eps_bias = _scale_noise(eps_j)
-
-    def _remove_noise(self):
-        """Remove the factorised Gaussian noise."""
-
-        dtype = self._compute_dtype_object
-        self.eps_kernel = tf.zeros([self.last_dim, self.units], dtype=dtype)
-        self.eps_bias = tf.zeros([self.units], dtype=dtype)
-
-    def call(self, inputs, reset_noise=True, remove_noise=False):
-        # Generate fixed parameters added as the noise
-        if remove_noise:
-            self._remove_noise()
-        elif reset_noise:
-            self._reset_noise()
-
-        # TODO(WindQAQ): Replace this with `dense()` once public.
-        return super().call(inputs)
-
-    def get_config(self):
-        # TODO(WindQAQ): Get rid of this hacky way.
-        config = super(tf.keras.layers.Dense, self).get_config()
-        config.update(
-            {
-                "units": self.units,
-                "sigma": self.sigma,
-                "activation": activations.serialize(self.activation),
-                "use_bias": self.use_bias,
-                "kernel_regularizer": regularizers.serialize(self.kernel_regularizer),
-                "bias_regularizer": regularizers.serialize(self.bias_regularizer),
-                "activity_regularizer": regularizers.serialize(
-                    self.activity_regularizer
-                ),
-                "kernel_constraint": constraints.serialize(self.kernel_constraint),
-                "bias_constraint": constraints.serialize(self.bias_constraint),
-            }
-        )
-        return config
+    self.kernel_epsilon.assign(w_eps)
+    self.bias_epsilon.assign(b_eps)
+    
+  def remove_noise(self):
+    self.kernel_epsilon.assign(tf.zeros(self.kernel_epsilon.shape, self.dtype))
+    self.bias_epsilon.assign(tf.zeros(self.bias_epsilon.shape, self.dtype))
