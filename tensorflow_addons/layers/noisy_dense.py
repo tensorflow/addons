@@ -89,7 +89,7 @@ class NoisyDense(Dense):
                bias_constraint=None, 
                bias_sigma_constraint=None,
                **kwargs):
-    super(NoisyDense, self).__init__(units=units, 
+    super().__init__(units=units, 
                                      activation=activation, 
                                      use_bias=use_bias, 
                                      kernel_initializer=kernel_initializer, 
@@ -192,15 +192,15 @@ class NoisyDense(Dense):
     self.built = True
 
   def call(self, inputs):
-    self.kernel = tf.add(self.kernel_mu, tf.mul(self.kernel_sigma, self.kernel_epsilon))
+    self.kernel = tf.add(self.kernel_mu, (self.kernel_sigma * self.kernel_epsilon))
     self.bias = self.bias_mu
     if self.bias is not None:
-      self.bias = tf.add(self.bias_mu, tf.mul(self.bias_sigma, self.bias_epsilon))
+      self.bias = tf.add(self.bias_mu, (self.bias_sigma * self.bias_epsilon))
     
     return super().call(inputs)
 
   def get_config(self):
-    config = super(NoisyDense, self).get_config()
+    config = super().get_config()
     config.update({
         'sigma0':
             self.sigma0,
@@ -222,7 +222,7 @@ class NoisyDense(Dense):
                         mean=0.0,
                         stddev=1.0,
                         dtype=self.dtype)
-    return tf.mul(tf.sign(x), tf.sqrt(tf.abs(x)))
+    return tf.sign(x) * tf.sqrt(tf.abs(x))
     
   def reset_noise(self):
     if self.use_factorised:
