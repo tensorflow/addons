@@ -6,21 +6,26 @@ from tensorflow_addons import optimizers
 import inspect
 import sys
 
-classes_to_test = ['RectifiedAdam', 'LazyAdam']
+classes_to_test = ["RectifiedAdam", "LazyAdam"]
+
 
 def discover_classes(module, parent):
 
-    classes = [m[1] for m in inspect.getmembers(module, inspect.isclass)
-               if issubclass(m[1], parent) and m[0] in classes_to_test ]
+    classes = [
+        m[1]
+        for m in inspect.getmembers(module, inspect.isclass)
+        if issubclass(m[1], parent) and m[0] in classes_to_test
+    ]
 
     return classes
 
-@pytest.mark.parametrize("optimizer", discover_classes(optimizers, tf.keras.optimizers.Optimizer))
+
+@pytest.mark.parametrize(
+    "optimizer", discover_classes(optimizers, tf.keras.optimizers.Optimizer)
+)
 def test_optimizer_minimize(optimizer):
 
-    model = tf.keras.Sequential(
-        [tf.keras.Input(shape=[1]), tf.keras.layers.Dense(1)]
-    )
+    model = tf.keras.Sequential([tf.keras.Input(shape=[1]), tf.keras.layers.Dense(1)])
 
     x = np.array(np.ones([1]))
     y = np.array(np.zeros([1]))
@@ -32,9 +37,13 @@ def test_optimizer_minimize(optimizer):
 
     history = model.fit(x, y, batch_size=1, epochs=10)
 
-    loss_values = history.history['loss']
+    loss_values = history.history["loss"]
 
     np.testing.assert_array_less(loss_values[-1], loss_values[0])
 
-if __name__ == '__main__':
-    sys.exit(pytest.main(['standard_test.py']))
+
+if __name__ == "__main__":
+    sys.exit(pytest.main(["standard_test.py"]))
+
+    # python -m flake8 tensorflow_addons/optimizers/tests/standard_test.py
+    # python -m black tensorflow_addons/optimizers/tests/standard_test.py
