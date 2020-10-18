@@ -28,16 +28,16 @@ from tensorflow_addons.layers.noisy_dense import NoisyDense
 
 def test_noisy_dense():
     test_utils.layer_test(
-        keras.layers.NoisyDense, kwargs={'units': 3, 'sigma0': 0.4, 'use_factorised': True}, input_shape=(3, 2))
+        NoisyDense, kwargs={'units': 3, 'sigma0': 0.4, 'use_factorised': True}, input_shape=(3, 2))
 
     test_utils.layer_test(
-        keras.layers.NoisyDense, kwargs={'units': 3, 'sigma0': 0.4, 'use_factorised': False}, input_shape=(3, 4, 2))
+        NoisyDense, kwargs={'units': 3, 'sigma0': 0.4, 'use_factorised': False}, input_shape=(3, 4, 2))
 
     test_utils.layer_test(
-        keras.layers.NoisyDense, kwargs={'units': 3, 'sigma0': 0.4, 'use_factorised': True}, input_shape=(None, None, 2))
+        NoisyDense, kwargs={'units': 3, 'sigma0': 0.4, 'use_factorised': True}, input_shape=(None, None, 2))
 
     test_utils.layer_test(
-        keras.layers.NoisyDense, kwargs={'units': 3, 'sigma0': 0.4, 'use_factorised': False}, input_shape=(3, 4, 5, 2))
+        NoisyDense, kwargs={'units': 3, 'sigma0': 0.4, 'use_factorised': False}, input_shape=(3, 4, 5, 2))
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -45,7 +45,7 @@ def test_noisy_dense():
 def test_noisy_dense_dtype(dtype):
     inputs = tf.convert_to_tensor(
         np.random.randint(low=0, high=7, size=(2, 2)))
-    layer = keras.layers.NoisyDense(5, sigma0=0.4, dtype=dtype)
+    layer = NoisyDense(5, sigma0=0.4, dtype=dtype)
     outputs = layer(inputs)    
     layer.remove_noise()
     np.testing.assert_array_equal(outputs.dtype, dtype)

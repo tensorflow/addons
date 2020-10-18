@@ -15,7 +15,8 @@
 
 import tensorflow as tf
 
-from tensorflow.keras.layers import Dense, regularizers, constraints, initializers, InputSpec 
+from tensorflow.keras import regularizers, constraints, initializers
+from tensorflow.keras.layers import Dense, InputSpec 
 from tensorflow.keras import backend as K
 
 
@@ -88,7 +89,7 @@ class NoisyDense(Dense):
                bias_constraint=None, 
                bias_sigma_constraint=None,
                **kwargs):
-    super(NoisyDense, self).__init__(units=units, 
+    super().__init__(units=units, 
                                      activation=activation, 
                                      use_bias=use_bias, 
                                      kernel_initializer=kernel_initializer, 
@@ -138,12 +139,12 @@ class NoisyDense(Dense):
           dtype=self.dtype,
           trainable=True)
     else:
-      self.bias = None
+      self.bias_mu = None
     self.built = True
 
     # use factorising Gaussian variables
     if self.use_factorised:
-      sigma_init = self.sigma0 / tf.sqrt(self.kernel.shape[0])
+      sigma_init = self.sigma0 / tf.sqrt(float(self.kernel_mu.shape[0]))
     # use independent Gaussian variables  
     else:
       sigma_init = 0.017
@@ -151,7 +152,7 @@ class NoisyDense(Dense):
     # create sigma weights
     self.kernel_sigma = self.add_weight(
         'kernel_sigma',
-        shape=self.kernel.shape,
+        shape=self.kernel_mu.shape,
         initializer=initializers.Constant(value=sigma_init),
         regularizer=self.kernel_sigma_regularizer,
         constraint=self.kernel_sigma_constraint,
@@ -160,7 +161,7 @@ class NoisyDense(Dense):
     if self.use_bias:
       self.bias_sigma = self.add_weight(
           'bias_sigma',
-          shape=self.bias.shape,
+          shape=self.bias_mu.shape,
           initializer=initializers.Constant(value=sigma_init),
           regularizer=self.bias_sigma_regularizer,
           constraint=self.bias_sigma_constraint,
@@ -172,14 +173,14 @@ class NoisyDense(Dense):
     # create noise variables
     self.kernel_epsilon = self.add_weight(
           name='kernel_epsilon',
-          shape=self.kernel.shape,
+          shape=self.kernel_mu.shape,
           dtype=self.dtype,
           initializer='zeros',
           trainable=False)
     if self.use_bias:
       self.bias_epsilon = self.add_weight(
             name='bias_epsilon',
-            shape=self.bias.shape,
+            shape=self.bias_mu.shape,
             dtype=self.dtype,
             initializer='zeros',
             trainable=False)
@@ -191,15 +192,15 @@ class NoisyDense(Dense):
     self.built = True
 
   def call(self, inputs):
-    self.kernel = tf.add(self.kernel_mu, tf.mul(self.kernel_sigma, self.kernel_epsilon))
+    self.kernel = tf.add(self.kernel_mu, (self.kernel_sigma * self.kernel_epsilon))
     self.bias = self.bias_mu
     if self.bias is not None:
-      self.bias = tf.add(self.bias_mu, tf.mul(self.bias_sigma, self.bias_epsilon))
+      self.bias = tf.add(self.bias_mu, (self.bias_sigma * self.bias_epsilon))
     
     return super().call(inputs)
 
   def get_config(self):
-    config = super(NoisyDense, self).get_config()
+    config = super().get_config()
     config.update({
         'sigma0':
             self.sigma0,
@@ -221,7 +222,7 @@ class NoisyDense(Dense):
                         mean=0.0,
                         stddev=1.0,
                         dtype=self.dtype)
-    return tf.mul(tf.sign(x), tf.sqrt(tf.abs(x)))
+    return tf.sign(x) * tf.sqrt(tf.abs(x))
     
   def reset_noise(self):
     if self.use_factorised:
