@@ -34,7 +34,7 @@ jobs:
           python configure.py
           bazel test -c opt -k --test_timeout 300,450,1200,3600 --test_output=errors //tensorflow_addons/...
   release-wheel:
-    name: Build release wheels
+    name: Test and build release wheels
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
