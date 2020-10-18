@@ -73,7 +73,7 @@ jobs:
     steps:
       - uses: actions/setup-python@v1
         with:
-          python-version: 3.5
+          python-version: 3.6
       - uses: actions/checkout@v2
       - run: pip install --default-timeout=1000 -r tools/install_deps/tensorflow-cpu.txt -r tools/install_deps/pytest.txt
       - run: pip install -e ./
@@ -91,7 +91,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.6
       - run: pip install pygithub click
       - name: Check that the CODEOWNERS is valid
         run: python .github/workflows/notify_codeowners.py .github/CODEOWNERS
