@@ -38,17 +38,7 @@ from typing import Optional, Callable, Union, List
 from tensorflow.python.keras.engine import base_layer_utils
 
 
-class AttentionMechanism:
-    @property
-    def alignments_size(self):
-        raise NotImplementedError
-
-    @property
-    def state_size(self):
-        raise NotImplementedError
-
-
-class _BaseAttentionMechanism(AttentionMechanism, tf.keras.layers.Layer):
+class AttentionMechanism(tf.keras.layers.Layer):
     """A base AttentionMechanism class providing common functionality.
 
     Common functionality includes:
@@ -497,7 +487,7 @@ def _luong_score(query, keys, scale):
     return score
 
 
-class LuongAttention(_BaseAttentionMechanism):
+class LuongAttention(AttentionMechanism):
     """Implements Luong-style (multiplicative) attention scoring.
 
     This attention has two forms.  The first is standard Luong attention,
@@ -613,7 +603,7 @@ class LuongAttention(_BaseAttentionMechanism):
 
     @classmethod
     def from_config(cls, config, custom_objects=None):
-        config = _BaseAttentionMechanism.deserialize_inner_layer_from_config(
+        config = AttentionMechanism.deserialize_inner_layer_from_config(
             config, custom_objects=custom_objects
         )
         return cls(**config)
@@ -667,7 +657,7 @@ def _bahdanau_score(
         return tf.reduce_sum(attention_v * tf.tanh(keys + processed_query), [2])
 
 
-class BahdanauAttention(_BaseAttentionMechanism):
+class BahdanauAttention(AttentionMechanism):
     """Implements Bahdanau-style (additive) attention.
 
     This attention has two forms.  The first is Bahdanau attention,
@@ -822,7 +812,7 @@ class BahdanauAttention(_BaseAttentionMechanism):
 
     @classmethod
     def from_config(cls, config, custom_objects=None):
-        config = _BaseAttentionMechanism.deserialize_inner_layer_from_config(
+        config = AttentionMechanism.deserialize_inner_layer_from_config(
             config, custom_objects=custom_objects
         )
         return cls(**config)
@@ -998,7 +988,7 @@ def _monotonic_probability_fn(
     return monotonic_attention(p_choose_i, previous_alignments, mode)
 
 
-class _BaseMonotonicAttentionMechanism(_BaseAttentionMechanism):
+class _BaseMonotonicAttentionMechanism(AttentionMechanism):
     """Base attention mechanism for monotonic attention.
 
     Simply overrides the initial_alignments function to provide a dirac
@@ -1204,7 +1194,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
 
     @classmethod
     def from_config(cls, config, custom_objects=None):
-        config = _BaseAttentionMechanism.deserialize_inner_layer_from_config(
+        config = AttentionMechanism.deserialize_inner_layer_from_config(
             config, custom_objects=custom_objects
         )
         return cls(**config)
@@ -1346,7 +1336,7 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
 
     @classmethod
     def from_config(cls, config, custom_objects=None):
-        config = _BaseAttentionMechanism.deserialize_inner_layer_from_config(
+        config = AttentionMechanism.deserialize_inner_layer_from_config(
             config, custom_objects=custom_objects
         )
         return cls(**config)
@@ -1545,16 +1535,9 @@ def _compute_attention(
 ):
     """Computes the attention and alignments for a given
     attention_mechanism."""
-    if isinstance(attention_mechanism, _BaseAttentionMechanism):
-        alignments, next_attention_state = attention_mechanism(
-            [cell_output, attention_state]
-        )
-    else:
-        # For other class, assume they are following _BaseAttentionMechanism,
-        # which takes query and state as separate parameter.
-        alignments, next_attention_state = attention_mechanism(
-            cell_output, state=attention_state
-        )
+    alignments, next_attention_state = attention_mechanism(
+        [cell_output, attention_state]
+    )
 
     # Reshape from [batch_size, memory_time] to [batch_size, 1, memory_time]
     expanded_alignments = tf.expand_dims(alignments, 1)
