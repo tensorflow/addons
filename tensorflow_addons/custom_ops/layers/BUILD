@@ -31,5 +31,7 @@ custom_op_library(
         "@cub_archive//:cub",
     ],
     cuda_srcs = [
+        "cc/kernels/deformable_conv2d_op.h",
+        "cc/kernels/deformable_conv2d_op_gpu.cu.cc",
     ],
 )

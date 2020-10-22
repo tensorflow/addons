@@ -207,7 +207,7 @@ def _expected(
     return output
 
 
-@pytest.mark.with_device(["cpu"])
+@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_forward_simple(data_format):
     if data_format == "channels_last":
@@ -283,7 +283,7 @@ def test_forward_simple(data_format):
     np.testing.assert_allclose(actual.numpy(), expected)
 
 
-@pytest.mark.with_device(["cpu"])
+@pytest.mark.with_device(["cpu", "gpu"])
 def test_gradients(data_format):
     if data_format == "channels_last":
         return
@@ -349,7 +349,7 @@ def test_gradients(data_format):
     np.testing.assert_allclose(theoretical[2], numerical[2], atol=1e-3)
 
 
-@pytest.mark.with_device(["cpu"])
+@pytest.mark.with_device(["cpu", "gpu"])
 def test_keras(data_format):
     if data_format == "channels_last":
         return
