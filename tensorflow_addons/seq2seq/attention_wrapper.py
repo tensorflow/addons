@@ -1354,7 +1354,7 @@ class AttentionWrapperState(
         ),
     )
 ):
-    """State of a `AttentionWrapper`.
+    """State of a `tfa.seq2seq.AttentionWrapper`.
 
     Attributes:
       cell_state: The state of the wrapped RNN cell at the previous time
