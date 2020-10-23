@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A library of sampler for use with SamplingDecoders."""
+"""Objects sampling from the decoder output distribution and producing the next input."""
 
 import abc
 
@@ -172,9 +172,7 @@ class CustomSampler(Sampler):
 
 
 class TrainingSampler(Sampler):
-    """A Sampler for use during training.
-
-    Only reads inputs.
+    """A training sampler that simply reads its inputs.
 
     Returned sample_ids are the argmax of the RNN output logits.
     """
@@ -550,7 +548,7 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
 
 
 class GreedyEmbeddingSampler(Sampler):
-    """A sampler for use during inference.
+    """A inference sampler that takes the maximum from the output distribution.
 
     Uses the argmax of the output (treated as logits) and passes the
     result through an embedding layer to get the next input.
@@ -644,7 +642,7 @@ class GreedyEmbeddingSampler(Sampler):
 
 
 class SampleEmbeddingSampler(GreedyEmbeddingSampler):
-    """A sampler for use during inference.
+    """An inference sampler that randomly samples from the output distribution.
 
     Uses sampling (from a distribution) instead of argmax and passes the
     result through an embedding layer to get the next input.
@@ -695,7 +693,7 @@ class SampleEmbeddingSampler(GreedyEmbeddingSampler):
 
 
 class InferenceSampler(Sampler):
-    """A helper to use during inference with a custom sampling function."""
+    """An inference sampler that uses a custom sampling function."""
 
     @typechecked
     def __init__(

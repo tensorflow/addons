@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Seq2seq layer operations for use in neural networks."""
+"""Base classes and functions for dynamic decoding."""
 
 import abc
 
@@ -269,7 +269,7 @@ def dynamic_decode(
     enable_tflite_convertible: bool = False,
     **kwargs
 ) -> Tuple[Any, Any, Any]:
-    """Perform dynamic decoding with `decoder`.
+    """Runs dynamic decoding with a decoder.
 
     Calls initialize() once and step() repeatedly on the Decoder object.
 

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A powerful dynamic attention wrapper object."""
+"""A dynamic attention wrapper for RNN cells."""
 
 import collections
 import functools
@@ -39,7 +39,7 @@ from tensorflow.python.keras.engine import base_layer_utils
 
 
 class AttentionMechanism(tf.keras.layers.Layer):
-    """A base AttentionMechanism class providing common functionality.
+    """Base class for attention mechanisms.
 
     Common functionality includes:
       1. Storing the query and memory layers.
@@ -845,7 +845,7 @@ def safe_cumprod(x: TensorLike, *args, **kwargs) -> tf.Tensor:
 def monotonic_attention(
     p_choose_i: FloatTensorLike, previous_attention: FloatTensorLike, mode: str
 ) -> tf.Tensor:
-    """Compute monotonic attention distribution from choosing probabilities.
+    """Computes monotonic attention distribution from choosing probabilities.
 
     Monotonic attention implies that the input sequence is processed in an
     explicitly left-to-right manner when generating the output sequence.  In
@@ -1354,7 +1354,7 @@ class AttentionWrapperState(
         ),
     )
 ):
-    """`namedtuple` storing the state of a `AttentionWrapper`.
+    """State of a `AttentionWrapper`.
 
     Attributes:
       cell_state: The state of the wrapped RNN cell at the previous time
