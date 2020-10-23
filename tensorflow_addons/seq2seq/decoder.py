@@ -308,9 +308,11 @@ def dynamic_decode(
       ValueError: if `maximum_iterations` is provided but is not a scalar.
     """
     with tf.name_scope(scope or "decoder"):
+        is_xla = (
             not tf.executing_eagerly()
-        is_xla = not tf.executing_eagerly() and control_flow_util.GraphOrParentsInXlaContext(
-            tf.compat.v1.get_default_graph()
+            and control_flow_util.GraphOrParentsInXlaContext(
+                tf.compat.v1.get_default_graph()
+            )
         )
 
         if maximum_iterations is not None:
