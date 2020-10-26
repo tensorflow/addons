@@ -587,8 +587,8 @@ class GreedyEmbeddingSampler(Sampler):
 
         Args:
           embedding: tensor that contains embedding states matrix. It will be
-            used to generate generate outputs with start_tokens and end_tokens.
-            The embedding will be ignored if the embedding_fn has been provided
+            used to generate generate outputs with `start_tokens` and `end_token`.
+            The embedding will be ignored if the `embedding_fn` has been provided
             at __init__().
           start_tokens: `int32` vector shaped `[batch_size]`, the start tokens.
           end_token: `int32` scalar, the token that marks end of decoding.

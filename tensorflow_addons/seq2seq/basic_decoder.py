@@ -29,14 +29,14 @@ from typing import Optional
 class BasicDecoderOutput(
     collections.namedtuple("BasicDecoderOutput", ("rnn_output", "sample_id"))
 ):
-    """Outputs of a `BasicDecoder` step.
+    """Outputs of a `tfa.seq2seq.BasicDecoder` step.
 
     Attributes:
       rnn_output: The output for this step. If the `output_layer` argument
-         of `BasicDecoder` was set, it is the output of this layer, otherwise it
+         of `tfa.seq2seq.BasicDecoder` was set, it is the output of this layer, otherwise it
          is the output of the RNN cell.
       sample_id: The token IDs sampled for this step, as returned by the
-        `sampler` instance passed to `BasicDecoder`.
+        `sampler` instance passed to `tfa.seq2seq.BasicDecoder`.
     """
 
     pass
