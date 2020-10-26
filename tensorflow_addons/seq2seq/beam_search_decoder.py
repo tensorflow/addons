@@ -122,8 +122,7 @@ def _tile_batch(t, multiplier):
 
 
 def tile_batch(t: TensorLike, multiplier: int, name: Optional[str] = None) -> tf.Tensor:
-    """Tile the batch dimension of a (possibly nested structure of) tensor(s)
-    t.
+    """Tiles the batch dimension of a (possibly nested structure of) tensor(s).
 
     For each tensor t in a (possibly nested structure) of tensors,
     this function takes a tensor t shaped `[batch_size, s0, s1, ...]` composed
@@ -253,7 +252,7 @@ def gather_tree(
 def gather_tree_from_array(
     t: TensorLike, parent_ids: TensorLike, sequence_length: TensorLike
 ) -> tf.Tensor:
-    """Calculates the full beams for `TensorArray`s.
+    """Calculates the full beams for a `TensorArray`.
 
     Args:
       t: A stacked `TensorArray` of size `max_time` that contains `Tensor`s of
@@ -748,7 +747,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
     # the first parent class since we will use super().__init__(), and Mixin
     # which is a object will properly invoke the __init__ method of other parent
     # class.
-    """BeamSearch sampling decoder.
+    """Beam search decoder.
 
     **NOTE** If you are using the `BeamSearchDecoder` with a cell wrapped in
     `tfa.seq2seq.AttentionWrapper`, then you must ensure that:

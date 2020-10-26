@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A class of Decoders that may sample to generate the next input."""
+"""A basic decoder that may sample to generate the next input."""
 
 import collections
 
