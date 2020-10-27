@@ -1562,7 +1562,31 @@ def _compute_attention(
 
 
 class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
-    """Wraps another RNN cell with attention."""
+    """Wraps another RNN cell with attention.
+
+    Example:
+
+    >>> batch_size = 4
+    >>> max_time = 7
+    >>> hidden_size = 32
+    >>>
+    >>> memory = tf.random.uniform([batch_size, max_time, hidden_size])
+    >>> memory_sequence_length = tf.fill([batch_size], max_time)
+    >>>
+    >>> attention_mechanism = tfa.seq2seq.LuongAttention(hidden_size)
+    >>> attention_mechanism.setup_memory(memory, memory_sequence_length)
+
+    >>> cell = tf.keras.layers.LSTMCell(hidden_size)
+    >>> cell = tfa.seq2seq.AttentionWrapper(
+    ...     cell, attention_mechanism, attention_layer_size=hidden_size)
+    >>>
+    >>> inputs = tf.random.uniform([batch_size, hidden_size])
+    >>> state = cell.get_initial_state(inputs)
+    >>>
+    >>> outputs, state = cell(inputs, state)
+    >>> outputs.shape
+    TensorShape([4, 32])
+    """
 
     @typechecked
     def __init__(
