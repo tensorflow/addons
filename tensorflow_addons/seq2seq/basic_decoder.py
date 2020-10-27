@@ -54,16 +54,19 @@ class BasicDecoder(decoder.BaseDecoder):
     >>> batch_size = 4
     >>> max_time = 7
     >>> hidden_size = 32
-    >>> vocab_size = 64
+    >>> embedding_size = 48
+    >>> input_vocab_size = 128
+    >>> output_vocab_size = 64
     >>>
-    >>> embedding_layer = tf.keras.layers.Embedding(vocab_size, hidden_size)
+    >>> embedding_layer = tf.keras.layers.Embedding(input_vocab_size, embedding_size)
     >>> decoder_cell = tf.keras.layers.LSTMCell(hidden_size)
     >>> sampler = tfa.seq2seq.TrainingSampler()
-    >>> output_layer = tf.keras.layers.Dense(vocab_size)
+    >>> output_layer = tf.keras.layers.Dense(output_vocab_size)
     >>>
     >>> decoder = tfa.seq2seq.BasicDecoder(decoder_cell, sampler, output_layer)
     >>>
-    >>> input_ids = tf.random.uniform([batch_size, max_time], maxval=vocab_size, dtype=tf.int64)
+    >>> input_ids = tf.random.uniform(
+    ...     [batch_size, max_time], maxval=input_vocab_size, dtype=tf.int64)
     >>> input_lengths = tf.fill([batch_size], max_time)
     >>> input_tensors = embedding_layer(input_ids)
     >>> initial_state = decoder_cell.get_initial_state(input_tensors)
