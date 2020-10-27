@@ -43,7 +43,57 @@ class BasicDecoderOutput(
 
 
 class BasicDecoder(decoder.BaseDecoder):
-    """Basic sampling decoder."""
+    """Basic sampling decoder for training and inference.
+
+    The `tfa.seq2seq.Sampler` instance passed as argument is responsible to sample from
+    the output distribution and produce the input for the next decoding step. The decoding
+    loop is implemented by the decoder in its `__call__` method.
+
+    Example using `tfa.seq2seq.TrainingSampler` for training:
+
+    >>> batch_size = 4
+    >>> max_time = 7
+    >>> hidden_size = 32
+    >>> embedding_size = 48
+    >>> input_vocab_size = 128
+    >>> output_vocab_size = 64
+    >>>
+    >>> embedding_layer = tf.keras.layers.Embedding(input_vocab_size, embedding_size)
+    >>> decoder_cell = tf.keras.layers.LSTMCell(hidden_size)
+    >>> sampler = tfa.seq2seq.TrainingSampler()
+    >>> output_layer = tf.keras.layers.Dense(output_vocab_size)
+    >>>
+    >>> decoder = tfa.seq2seq.BasicDecoder(decoder_cell, sampler, output_layer)
+    >>>
+    >>> input_ids = tf.random.uniform(
+    ...     [batch_size, max_time], maxval=input_vocab_size, dtype=tf.int64)
+    >>> input_lengths = tf.fill([batch_size], max_time)
+    >>> input_tensors = embedding_layer(input_ids)
+    >>> initial_state = decoder_cell.get_initial_state(input_tensors)
+    >>>
+    >>> output, state, lengths = decoder(
+    ...     input_tensors, sequence_length=input_lengths, initial_state=initial_state)
+    >>>
+    >>> logits = output.rnn_output
+    >>> logits.shape
+    TensorShape([4, 7, 64])
+
+    Example using `tfa.seq2seq.GreedyEmbeddingSampler` for inference:
+
+    >>> sampler = tfa.seq2seq.GreedyEmbeddingSampler(embedding_layer)
+    >>> decoder = tfa.seq2seq.BasicDecoder(
+    ...     decoder_cell, sampler, output_layer, maximum_iterations=10)
+    >>>
+    >>> initial_state = decoder_cell.get_initial_state(batch_size=batch_size, dtype=tf.float32)
+    >>> start_tokens = tf.fill([batch_size], 1)
+    >>> end_token = 2
+    >>>
+    >>> output, state, lengths = decoder(
+    ...     None, start_tokens=start_tokens, end_token=end_token, initial_state=initial_state)
+    >>>
+    >>> output.sample_id.shape
+    TensorShape([4, 10])
+    """
 
     @typechecked
     def __init__(
@@ -58,11 +108,11 @@ class BasicDecoder(decoder.BaseDecoder):
         Args:
           cell: A layer that implements the `tf.keras.layers.AbstractRNNCell`
             interface.
-          sampler: A `Sampler` instance.
+          sampler: A `tfa.seq2seq.Sampler` instance.
           output_layer: (Optional) An instance of `tf.keras.layers.Layer`, i.e.,
             `tf.keras.layers.Dense`. Optional layer to apply to the RNN output
              prior to storing the result or sampling.
-          **kwargs: Other keyword arguments for layer creation.
+          **kwargs: Other keyword arguments of `tfa.seq2seq.BaseDecoder`.
         """
         keras_utils.assert_like_rnncell("cell", cell)
         self.cell = cell
