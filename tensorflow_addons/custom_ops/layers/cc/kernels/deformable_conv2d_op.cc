@@ -30,6 +30,7 @@ namespace addons {
 using CPUDevice = Eigen::ThreadPoolDevice;
 using GPUDevice = Eigen::GpuDevice;
 
+#if GOOGLE_CUDA
 #define EXTERN_TEMPLATE(T)                           \
   extern template Status Transpose<GPUDevice, T, 5>( \
       OpKernelContext * ctx, const Tensor &in,       \
@@ -37,15 +38,18 @@ using GPUDevice = Eigen::GpuDevice;
 TF_CALL_float(EXTERN_TEMPLATE);
 TF_CALL_double(EXTERN_TEMPLATE);
 #undef EXTERN_TEMPLATE
+#endif  // GOOGLE_CUDA
 
 namespace functor {
 
+#if GOOGLE_CUDA
 #define EXTERN_TEMPLATE(T)                                             \
   extern template struct DeformableConv2DForwardFunctor<GPUDevice, T>; \
   extern template struct DeformableConv2DGradFunctor<GPUDevice, T>;
 TF_CALL_float(EXTERN_TEMPLATE);
 TF_CALL_double(EXTERN_TEMPLATE);
 #undef EXTERN_TEMPLATE
+#endif  // GOOGLE_CUDA
 
 #define IM2COL(T)                                                              \
   template <>                                                                  \
