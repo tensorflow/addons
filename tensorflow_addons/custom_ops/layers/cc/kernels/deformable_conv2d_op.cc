@@ -575,6 +575,8 @@ TF_CALL_double(REGISTER_DEFORMABLECONV2D_OP_CPU);
 #undef REGISTER_DEFORMABLECONV2D_OP_CPU
 
 // Register the GPU kernels.
+#if GOOGLE_CUDA
+
 #define REGISTER_DEFORMABLECONV2D_OP_GPU(T)                        \
   REGISTER_KERNEL_BUILDER(Name("Addons>DeformableConv2D")          \
                               .Device(DEVICE_GPU)                  \
@@ -588,6 +590,8 @@ TF_CALL_double(REGISTER_DEFORMABLECONV2D_OP_CPU);
 TF_CALL_float(REGISTER_DEFORMABLECONV2D_OP_GPU);
 TF_CALL_double(REGISTER_DEFORMABLECONV2D_OP_GPU);
 #undef REGISTER_DEFORMABLECONV2D_OP_GPU
+
+#endif  // GOOGLE_CUDA
 
 }  // namespace addons
 }  // namespace tensorflow
