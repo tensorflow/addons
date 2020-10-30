@@ -500,7 +500,7 @@ struct DeformableConv2DGradFunctor
 
     Tensor column_buffer_tensor_reshaped(column_buffer_tensor.dtype());
     CHECK(column_buffer_tensor_reshaped.CopyFrom(
-        column_buffer_tensor, TensorShape({p.weight_groups, elems, cols})));
+        column_buffer_tensor, TensorShape({p.weight_groups, cols, elems})));
 
     Tensor matmul_lhs_tmp_tensor;
     OP_REQUIRES_OK(context, context->allocate_temp(

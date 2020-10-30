@@ -18,7 +18,10 @@ import pytest
 import numpy as np
 import tensorflow as tf
 import tensorflow_addons.utils.keras_utils as conv_utils
-from tensorflow_addons.layers.deformable_conv2d import DeformableConv2D
+from tensorflow_addons.layers.deformable_conv2d import (
+    DeformableConv2D,
+    _deformable_conv2d,
+)
 
 
 def _get_padding_length(
@@ -129,9 +132,12 @@ def _expected(
     input_channels_per_weight_groups = filter_tensor.shape[1]
     output_channels_per_weight_groups = output_channels // weight_groups
 
-    offset_tensor = offset_tensor.reshape((batches, -1, 2, output_rows, output_cols))
-
     output = np.zeros((batches, output_channels, output_rows, output_cols))
+
+    if output.size == 0:
+        return output
+
+    offset_tensor = offset_tensor.reshape((batches, -1, 2, output_rows, output_cols))
 
     for batch in range(batches):
         for output_channel in range(output_channels):
@@ -167,9 +173,13 @@ def _expected(
                                     batch, offset_idx, 1, output_row, output_col
                                 ]
 
-                                mask = mask_tensor[
-                                    batch, offset_idx, output_row, output_col
-                                ]
+                                mask = (
+                                    mask_tensor[
+                                        batch, offset_idx, output_row, output_col
+                                    ]
+                                    if mask_tensor.size > 0
+                                    else 1
+                                )
 
                                 y = (
                                     stride_rows * output_row
@@ -203,24 +213,26 @@ def _expected(
                                     )
                                 )
 
-    output += bias.reshape((1, output_channels, 1, 1))
+    if bias.size > 0:
+        output += bias.reshape((1, output_channels, 1, 1))
+
     return output
 
 
 @pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_forward_simple(data_format):
+@pytest.mark.parametrize("padding", ["same", "valid"])
+@pytest.mark.parametrize("batches", [0, 1, 2])
+def test_forward(data_format, padding, batches):
     if data_format == "channels_last":
         return
 
-    batches = 1
     input_channels = 6
     filters = 2
     weight_groups = 2
     offset_groups = 3
 
     strides = (2, 1)
-    padding = "same"
     dilation_rate = (2, 1)
     kernel_size = (3, 2)
 
@@ -280,22 +292,98 @@ def test_forward_simple(data_format):
         dilation_rate,
     )
 
-    np.testing.assert_allclose(actual.numpy(), expected)
+    np.testing.assert_allclose(actual.numpy(), expected, rtol=1e-5)
 
 
 @pytest.mark.with_device(["cpu", "gpu"])
-def test_gradients(data_format):
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("padding", ["same", "valid"])
+@pytest.mark.parametrize("batches", [0, 1, 2])
+def test_forward_no_mask(data_format, padding, batches):
     if data_format == "channels_last":
         return
 
-    batches = 1
     input_channels = 6
     filters = 2
     weight_groups = 2
     offset_groups = 3
 
     strides = (2, 1)
-    padding = "same"
+    dilation_rate = (2, 1)
+    kernel_size = (3, 2)
+
+    input_rows, input_cols = 5, 4
+    filter_rows, filter_cols = kernel_size
+    stride_rows, stride_cols = strides
+    dilation_rows, dilation_cols = dilation_rate
+
+    output_rows = conv_utils.conv_output_length(
+        input_rows,
+        filter_rows,
+        padding=padding,
+        stride=stride_rows,
+        dilation=dilation_rows,
+    )
+    output_cols = conv_utils.conv_output_length(
+        input_cols,
+        filter_cols,
+        padding=padding,
+        stride=stride_cols,
+        dilation=dilation_cols,
+    )
+
+    offsets = offset_groups * filter_rows * filter_cols
+
+    input_tensor = tf.random.uniform([batches, input_channels, input_rows, input_cols])
+    offset_tensor = tf.random.uniform([batches, 2 * offsets, output_rows, output_cols])
+
+    conv = DeformableConv2D(
+        filters=filters,
+        kernel_size=kernel_size,
+        strides=strides,
+        padding=padding,
+        dilation_rate=dilation_rate,
+        weight_groups=weight_groups,
+        offset_groups=offset_groups,
+        use_mask=False,
+        use_bias=True,
+    )
+
+    actual = conv([input_tensor, offset_tensor])
+
+    filter_tensor = conv.filter_weights
+    mask_tensor = conv.null_mask
+    bias = conv.filter_bias
+
+    expected = _expected(
+        input_tensor,
+        filter_tensor,
+        offset_tensor,
+        mask_tensor,
+        bias,
+        strides,
+        weight_groups,
+        offset_groups,
+        padding,
+        dilation_rate,
+    )
+
+    np.testing.assert_allclose(actual.numpy(), expected, rtol=1e-5)
+
+
+@pytest.mark.with_device(["cpu", "gpu"])
+@pytest.mark.parametrize("padding", ["same", "valid"])
+@pytest.mark.parametrize("batches", [0, 1, 2])
+def test_gradients(data_format, padding, batches):
+    if data_format == "channels_last":
+        return
+
+    input_channels = 6
+    filters = 2
+    weight_groups = 2
+    offset_groups = 3
+
+    strides = (2, 1)
     dilation_rate = (2, 1)
     kernel_size = (3, 2)
 
@@ -337,16 +425,117 @@ def test_gradients(data_format):
         use_bias=True,
     )
 
-    def conv_fn(input_tensor, offset_tensor, mask_tensor):
-        return conv([input_tensor, offset_tensor, mask_tensor])
+    conv.build([tf.shape(input_tensor), tf.shape(offset_tensor), tf.shape(mask_tensor)])
+
+    def conv_fn(input_tensor, filter_weights, filter_bias, offset_tensor, mask_tensor):
+        return _deformable_conv2d(
+            input_tensor=tf.convert_to_tensor(input_tensor),
+            filter_tensor=tf.convert_to_tensor(filter_weights),
+            bias_tensor=tf.convert_to_tensor(filter_bias),
+            offset_tensor=tf.convert_to_tensor(offset_tensor),
+            mask_tensor=tf.convert_to_tensor(mask_tensor),
+            strides=conv.strides,
+            weight_groups=conv.weight_groups,
+            offset_groups=conv.offset_groups,
+            padding="SAME" if conv.padding == "same" else "VALID",
+            dilations=conv.dilation_rate,
+        )
 
     theoretical, numerical = tf.test.compute_gradient(
-        conv_fn, [input_tensor, offset_tensor, mask_tensor]
+        conv_fn,
+        [
+            input_tensor,
+            conv.filter_weights,
+            conv.filter_bias,
+            offset_tensor,
+            mask_tensor,
+        ],
     )
 
     np.testing.assert_allclose(theoretical[0], numerical[0], atol=1e-3)
     np.testing.assert_allclose(theoretical[1], numerical[1], atol=1e-3)
     np.testing.assert_allclose(theoretical[2], numerical[2], atol=1e-3)
+    np.testing.assert_allclose(theoretical[3], numerical[3], atol=1e-3)
+    np.testing.assert_allclose(theoretical[4], numerical[4], atol=1e-3)
+
+
+@pytest.mark.with_device(["cpu", "gpu"])
+@pytest.mark.parametrize("padding", ["same", "valid"])
+@pytest.mark.parametrize("batches", [0, 1, 2])
+def test_gradients_no_mask(data_format, padding, batches):
+    if data_format == "channels_last":
+        return
+
+    input_channels = 6
+    filters = 2
+    weight_groups = 2
+    offset_groups = 3
+
+    strides = (2, 1)
+    dilation_rate = (2, 1)
+    kernel_size = (3, 2)
+
+    input_rows, input_cols = 5, 4
+    filter_rows, filter_cols = kernel_size
+    stride_rows, stride_cols = strides
+    dilation_rows, dilation_cols = dilation_rate
+
+    output_rows = conv_utils.conv_output_length(
+        input_rows,
+        filter_rows,
+        padding=padding,
+        stride=stride_rows,
+        dilation=dilation_rows,
+    )
+    output_cols = conv_utils.conv_output_length(
+        input_cols,
+        filter_cols,
+        padding=padding,
+        stride=stride_cols,
+        dilation=dilation_cols,
+    )
+
+    offsets = offset_groups * filter_rows * filter_cols
+
+    input_tensor = tf.random.uniform([batches, input_channels, input_rows, input_cols])
+    offset_tensor = tf.random.uniform([batches, 2 * offsets, output_rows, output_cols])
+
+    conv = DeformableConv2D(
+        filters=filters,
+        kernel_size=kernel_size,
+        strides=strides,
+        padding=padding,
+        dilation_rate=dilation_rate,
+        weight_groups=weight_groups,
+        offset_groups=offset_groups,
+        use_mask=False,
+        use_bias=True,
+    )
+
+    conv.build([tf.shape(input_tensor), tf.shape(offset_tensor)])
+
+    def conv_fn(input_tensor, filter_weights, filter_bias, offset_tensor):
+        return _deformable_conv2d(
+            input_tensor=tf.convert_to_tensor(input_tensor),
+            filter_tensor=tf.convert_to_tensor(filter_weights),
+            bias_tensor=tf.convert_to_tensor(filter_bias),
+            offset_tensor=tf.convert_to_tensor(offset_tensor),
+            mask_tensor=tf.convert_to_tensor(conv.null_mask),
+            strides=conv.strides,
+            weight_groups=conv.weight_groups,
+            offset_groups=conv.offset_groups,
+            padding="SAME" if conv.padding == "same" else "VALID",
+            dilations=conv.dilation_rate,
+        )
+
+    theoretical, numerical = tf.test.compute_gradient(
+        conv_fn, [input_tensor, conv.filter_weights, conv.filter_bias, offset_tensor]
+    )
+
+    np.testing.assert_allclose(theoretical[0], numerical[0], atol=1e-3)
+    np.testing.assert_allclose(theoretical[1], numerical[1], atol=1e-3)
+    np.testing.assert_allclose(theoretical[2], numerical[2], atol=1e-3)
+    np.testing.assert_allclose(theoretical[3], numerical[3], atol=1e-3)
 
 
 @pytest.mark.with_device(["cpu", "gpu"])

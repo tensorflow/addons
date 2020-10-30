@@ -187,6 +187,7 @@ class DeformableConv2D(tf.keras.layers.Layer):
 
         self.filter_weights = None
         self.filter_bias = None
+        self.null_mask = None
 
     def _validate_shapes(self, shapes):
         if type(shapes) is not list:
@@ -276,6 +277,9 @@ class DeformableConv2D(tf.keras.layers.Layer):
         else:
             self.filter_bias = tf.zeros((0,))
 
+        if not self.use_mask:
+            self.null_mask = tf.zeros((0, 0, 0, 0))
+
         self.built = True
 
     def compute_output_shape(self, shapes):
@@ -304,7 +308,7 @@ class DeformableConv2D(tf.keras.layers.Layer):
     def call(self, inputs, **kwargs):
         input_tensor = inputs[0]
         offset_tensor = inputs[1]
-        mask_tensor = inputs[2] if self.use_mask else tf.zeros((0, 0, 0, 0))
+        mask_tensor = inputs[2] if self.use_mask else self.null_mask
 
         return _deformable_conv2d(
             input_tensor=tf.convert_to_tensor(input_tensor),
