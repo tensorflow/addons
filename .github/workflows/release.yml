@@ -67,44 +67,45 @@ jobs:
           TF_VERSION: ${{ matrix.tf-version }}
           NIGHTLY_TIME: ${{ steps.author-date.outputs.result }}
         shell: bash
-        run: bash .github/workflows/make_wheel_${OS}.sh
-      - uses: actions/upload-artifact@v1
-        with:
-          name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
-          path: wheelhouse
-  upload-wheels:
-    name: Publish wheels to PyPi
-    needs: [release-wheel, test-with-bazel]
-    runs-on: ubuntu-18.04
-    strategy:
-      matrix:
-        os: ['macOS', 'Windows', 'Linux']
-        py-version: ['3.6', '3.7', '3.8']
-        tf-version: ['2.3.0']
-      fail-fast: false
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
-    steps:
-      - uses: actions/download-artifact@v1
-        with:
-          name: ${{ matrix.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
-          path: ./dist
-      - run: |
-          set -e -x
-          ls -la dist/
-          sha256sum dist/*.whl
-      - uses: pypa/gh-action-pypi-publish@v1.1.0
-        with:
-          user: __token__
-          password: ${{ secrets.pypi_token }}
-  upload-dev-container:
-    name: Upload dev container to DockerHub
-    needs: [release-wheel, test-with-bazel]
-    runs-on: ubuntu-18.04
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/master')
-    steps:
-      - uses: actions/checkout@v2
-      - run: |
-          set -e -x
-          echo ${{ secrets.DOCKER_PW }} | docker login --username ${{ secrets.DOCKER_USER }} --password-stdin
-          bash .github/workflows/github_build_dev_container.sh
-          docker push tfaddons/dev_container:latest-cpu
+        run: echo *****$NIGHTLY_FLAG
+#        run: bash .github/workflows/make_wheel_${OS}.sh
+#      - uses: actions/upload-artifact@v1
+#        with:
+#          name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
+#          path: wheelhouse
+#  upload-wheels:
+#    name: Publish wheels to PyPi
+#    needs: [release-wheel, test-with-bazel]
+#    runs-on: ubuntu-18.04
+#    strategy:
+#      matrix:
+#        os: ['macOS', 'Windows', 'Linux']
+#        py-version: ['3.6', '3.7', '3.8']
+#        tf-version: ['2.3.0']
+#      fail-fast: false
+#    if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
+#    steps:
+#      - uses: actions/download-artifact@v1
+#        with:
+#          name: ${{ matrix.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
+#          path: ./dist
+#      - run: |
+#          set -e -x
+#          ls -la dist/
+#          sha256sum dist/*.whl
+#      - uses: pypa/gh-action-pypi-publish@v1.1.0
+#        with:
+#          user: __token__
+#          password: ${{ secrets.pypi_token }}
+#  upload-dev-container:
+#    name: Upload dev container to DockerHub
+#    needs: [release-wheel, test-with-bazel]
+#    runs-on: ubuntu-18.04
+#    if: (github.event_name == 'push' && github.ref == 'refs/heads/master')
+#    steps:
+#      - uses: actions/checkout@v2
+#      - run: |
+#          set -e -x
+#          echo ${{ secrets.DOCKER_PW }} | docker login --username ${{ secrets.DOCKER_USER }} --password-stdin
+#          bash .github/workflows/github_build_dev_container.sh
+#          docker push tfaddons/dev_container:latest-cpu
