@@ -50,7 +50,7 @@ jobs:
           script: |
             const commit_details = await github.git.getCommit({owner: context.repo.owner, repo: context.repo.repo, commit_sha: context.sha});
             return commit_details.data.author.date
-      - if: github.event_name == 'push'
+      - if: matrix.os != 'DEBUG!'
         run: echo "NIGHTLY_FLAG=--nightly" >> $GITHUB_ENV
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
