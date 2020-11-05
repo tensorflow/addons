@@ -14,6 +14,8 @@
 # ==============================================================================
 """Matthews Correlation Coefficient Implementation."""
 
+import numpy as np
+
 import tensorflow as tf
 from tensorflow.keras import backend as K
 
@@ -148,5 +150,5 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
 
     def reset_states(self):
         """Resets all of the metric state variables."""
-        reset_value = tf.zeros(self.num_classes, dtype=self.dtype)
+        reset_value = np.zeros(self.num_classes, dtype=self.dtype)
         K.batch_set_value([(v, reset_value) for v in self.variables])
