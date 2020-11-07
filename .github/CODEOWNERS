@@ -153,7 +153,7 @@
 /tensorflow_addons/optimizers/tests/weight_decay_optimizers_test.py @philjd
 /tensorflow_addons/optimizers/yogi.py @manzilz
 /tensorflow_addons/optimizers/tests/yogi_test.py @manzilz
-/tensorflow_addons/optimizers/adabelief.py @cryu854
+/tensorflow_addons/optimizers/adabelief.py @juntang-zhuang @cryu854
 /tensorflow_addons/optimizers/tests/adabelief_test.py @cryu854
 
 /tensorflow_addons/rnn/esn_cell.py @pedrolarben
