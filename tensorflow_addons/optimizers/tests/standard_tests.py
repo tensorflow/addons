@@ -18,7 +18,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons import optimizers
-from tensorflow_addons.utils.tests.standardized_testing import discover_classes
+from tensorflow_addons.utils.test_utils import discover_classes
 
 class_exceptions = [
     "MultiOptimizer",  # is wrapper
