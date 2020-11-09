@@ -16,6 +16,7 @@
 
 import os
 import random
+import inspect
 
 import numpy as np
 import pytest
@@ -271,6 +272,7 @@ def assert_allclose_according_to_type(
         atol = max(atol, bfloat16_atol)
 
     np.testing.assert_allclose(a, b, rtol=rtol, atol=atol)
+
 
 def discover_classes(module, parent, class_exceptions):
     """
