@@ -236,16 +236,16 @@ class AdaBelief(tf.keras.optimizers.Optimizer):
         m = self.get_slot(var, "m")
         m_scaled_g_values = grad * (1 - beta_1_t)
         m_t = m.assign(m * beta_1_t, use_locking=self._use_locking)
-        with tf.control_dependencies([m_t]):
-            m_t = self._resource_scatter_add(m, indices, m_scaled_g_values)
+
+        m_t = self._resource_scatter_add(m, indices, m_scaled_g_values)
         m_corr_t = m_t / (1.0 - beta_1_power)
 
         v = self.get_slot(var, "v")
         m_t_indices = tf.gather(m_t, indices)
         v_scaled_g_values = tf.square(grad - m_t_indices) * (1 - beta_2_t)
         v_t = v.assign(v * beta_2_t + epsilon_t, use_locking=self._use_locking)
-        with tf.control_dependencies([v_t]):
-            v_t = self._resource_scatter_add(v, indices, v_scaled_g_values)
+
+        v_t = self._resource_scatter_add(v, indices, v_scaled_g_values)
 
         if self.amsgrad:
             vhat = self.get_slot(var, "vhat")
@@ -277,10 +277,9 @@ class AdaBelief(tf.keras.optimizers.Optimizer):
         if self._has_weight_decay:
             var_t += wd_t * var
 
-        with tf.control_dependencies([var_t]):
-            var_update = self._resource_scatter_add(
-                var, indices, tf.gather(-lr_t * var_t, indices)
-            )
+        var_update = self._resource_scatter_add(
+            var, indices, tf.gather(-lr_t * var_t, indices)
+        )
 
         updates = [var_update, m_t, v_t]
         if self.amsgrad:
