@@ -33,25 +33,44 @@ def _dtypes_to_test(use_gpu):
 
 
 def adabelief_update_numpy(
-    param, g_t, t, m, v, lr=0.001, weight_decay=0.0, rectify=True, beta1=0.9, beta2=0.999, epsilon=1e-14
+    param,
+    g_t,
+    t,
+    m,
+    v,
+    lr=0.001,
+    weight_decay=0.0,
+    rectify=True,
+    beta1=0.9,
+    beta2=0.999,
+    epsilon=1e-14,
 ):
     m_t = beta1 * m + (1 - beta1) * g_t
-    v_t = beta2 * v + (1 - beta2) * (m_t-g_t) * (m_t-g_t) + epsilon 
+    v_t = beta2 * v + (1 - beta2) * (m_t - g_t) * (m_t - g_t) + epsilon
 
-    m_t_hat = m_t / (1 - beta1 ** (t + 1)) 
+    m_t_hat = m_t / (1 - beta1 ** (t + 1))
     v_t_hat = np.sqrt(v_t / (1 - beta2 ** (t + 1)))
     if rectify:
         sma_inf = 2.0 / (1.0 - beta2) - 1.0
-        sma_t = sma_inf - 2.0 * (t + 1) * (beta2 ** (t + 1)) / (1.0 - (beta2 ** (t + 1)))
+        sma_t = sma_inf - 2.0 * (t + 1) * (beta2 ** (t + 1)) / (
+            1.0 - (beta2 ** (t + 1))
+        )
 
-        r_t =  (sma_t - 4.0) / (sma_inf - 4.0) * (sma_t - 2.0) / (sma_inf - 2.0) * sma_inf / sma_t
+        r_t = (
+            (sma_t - 4.0)
+            / (sma_inf - 4.0)
+            * (sma_t - 2.0)
+            / (sma_inf - 2.0)
+            * sma_inf
+            / sma_t
+        )
         sma_threshold = 5.0
         update = np.where(
             sma_t >= sma_threshold, r_t * m_t_hat / (v_t_hat + epsilon), m_t_hat
         )
     else:
         update = m_t_hat / (v_t_hat + epsilon)
-    
+
     update += weight_decay * param
 
     param_t = param - lr * update
@@ -109,8 +128,12 @@ def test_sparse():
             var0_np, m0, v0 = adabelief_update_numpy(var0_np, grads0_np, t, m0, v0)
             var1_np, m1, v1 = adabelief_update_numpy(var1_np, grads1_np, t, m1, v1)
             # Validate updated params
-            test_utils.assert_allclose_according_to_type(var0_np, var0.numpy(), atol=2e-4)
-            test_utils.assert_allclose_according_to_type(var1_np, var1.numpy(), atol=2e-4)
+            test_utils.assert_allclose_according_to_type(
+                var0_np, var0.numpy(), atol=2e-4
+            )
+            test_utils.assert_allclose_according_to_type(
+                var1_np, var1.numpy(), atol=2e-4
+            )
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -158,8 +181,12 @@ def test_basic_with_learning_rate_decay():
             )
 
             # Validate updated params
-            test_utils.assert_allclose_according_to_type(var0_np, var0.numpy(), atol=2e-4)
-            test_utils.assert_allclose_according_to_type(var1_np, var1.numpy(), atol=2e-4)
+            test_utils.assert_allclose_according_to_type(
+                var0_np, var0.numpy(), atol=2e-4
+            )
+            test_utils.assert_allclose_according_to_type(
+                var1_np, var1.numpy(), atol=2e-4
+            )
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -196,12 +223,20 @@ def test_basic_with_learning_rate_inverse_time_decay():
 
             lr_np = learning_rate / (1 + decay * t)
 
-            var0_np, m0, v0 = adabelief_update_numpy(var0_np, grads0_np, t, m0, v0, lr=lr_np)
-            var1_np, m1, v1 = adabelief_update_numpy(var1_np, grads1_np, t, m1, v1, lr=lr_np)
+            var0_np, m0, v0 = adabelief_update_numpy(
+                var0_np, grads0_np, t, m0, v0, lr=lr_np
+            )
+            var1_np, m1, v1 = adabelief_update_numpy(
+                var1_np, grads1_np, t, m1, v1, lr=lr_np
+            )
 
             # Validate updated params
-            test_utils.assert_allclose_according_to_type(var0_np, var0.numpy(), atol=2e-4)
-            test_utils.assert_allclose_according_to_type(var1_np, var1.numpy(), atol=2e-4)
+            test_utils.assert_allclose_according_to_type(
+                var0_np, var0.numpy(), atol=2e-4
+            )
+            test_utils.assert_allclose_according_to_type(
+                var1_np, var1.numpy(), atol=2e-4
+            )
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -235,8 +270,12 @@ def test_tensor_learning_rate():
             var1_np, m1, v1 = adabelief_update_numpy(var1_np, grads1_np, t, m1, v1)
 
             # Validate updated params
-            test_utils.assert_allclose_according_to_type(var0_np, var0.numpy(), atol=2e-4)
-            test_utils.assert_allclose_according_to_type(var1_np, var1.numpy(), atol=2e-4)
+            test_utils.assert_allclose_according_to_type(
+                var0_np, var0.numpy(), atol=2e-4
+            )
+            test_utils.assert_allclose_according_to_type(
+                var1_np, var1.numpy(), atol=2e-4
+            )
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -420,7 +459,7 @@ def test_dense_sample_with_warmup():
         expected=[[0.9811546, 1.9810544], [2.981224, 3.981214]],
         optimizer=AdaBelief(
             lr=1e-3, total_steps=100, warmup_proportion=0.1, min_lr=1e-5
-        )
+        ),
     )
 
 
@@ -431,7 +470,7 @@ def test_sparse_sample_with_warmup():
         expected=[[0.9211433, 2.0], [3.0, 3.9211729]],
         optimizer=AdaBelief(
             lr=1e-3, total_steps=200, warmup_proportion=0.1, min_lr=1e-5
-        )
+        ),
     )
 
 

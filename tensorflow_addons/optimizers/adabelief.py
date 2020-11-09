@@ -190,10 +190,12 @@ class AdaBelief(tf.keras.optimizers.Optimizer):
         if self.rectify:
             sma_threshold = self._get_hyper("sma_threshold", var_dtype)
             var_t = tf.where(
-                sma_t >= sma_threshold, r_t * m_corr_t / (v_corr_t + epsilon_t), m_corr_t
+                sma_t >= sma_threshold,
+                r_t * m_corr_t / (v_corr_t + epsilon_t),
+                m_corr_t,
             )
         else:
-            var_t =  m_corr_t / (v_corr_t + epsilon_t)
+            var_t = m_corr_t / (v_corr_t + epsilon_t)
 
         if self._has_weight_decay:
             var_t += wd_t * var
@@ -237,7 +239,7 @@ class AdaBelief(tf.keras.optimizers.Optimizer):
         with tf.control_dependencies([m_t]):
             m_t = self._resource_scatter_add(m, indices, m_scaled_g_values)
         m_corr_t = m_t / (1.0 - beta_1_power)
-        
+
         v = self.get_slot(var, "v")
         m_t_indices = tf.gather(m_t, indices)
         v_scaled_g_values = tf.square(grad - m_t_indices) * (1 - beta_2_t)
@@ -265,10 +267,12 @@ class AdaBelief(tf.keras.optimizers.Optimizer):
         if self.rectify:
             sma_threshold = self._get_hyper("sma_threshold", var_dtype)
             var_t = tf.where(
-            sma_t >= sma_threshold, r_t * m_corr_t / (v_corr_t + epsilon_t), m_corr_t
+                sma_t >= sma_threshold,
+                r_t * m_corr_t / (v_corr_t + epsilon_t),
+                m_corr_t,
             )
         else:
-            var_t =  m_corr_t / (v_corr_t + epsilon_t)
+            var_t = m_corr_t / (v_corr_t + epsilon_t)
 
         if self._has_weight_decay:
             var_t += wd_t * var
