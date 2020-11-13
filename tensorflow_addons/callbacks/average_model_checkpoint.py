@@ -62,7 +62,12 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
         )
 
     def set_model(self, model):
-        if not isinstance(model.optimizer, AveragedOptimizerWrapper):
+        optimizer = model.optimizer
+        # TODO(fsx950223): change to tf.keras.mixed_precision.LossScaleOptimizer and inner_optimizer after tf2.5 is released
+        if isinstance(optimizer, tf.keras.mixed_precision.experimental.LossScaleOptimizer):
+            optimizer = optimizer._optimizer
+
+        if not isinstance(optimizer, AveragedOptimizerWrapper):
             raise TypeError(
                 "AverageModelCheckpoint is only used when training"
                 "with MovingAverage or StochasticAverage"
@@ -70,16 +75,22 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
         return super().set_model(model)
 
     def _save_model(self, epoch, logs):
-        assert isinstance(self.model.optimizer, AveragedOptimizerWrapper)
+        optimizer = self.model.optimizer
+
+        # TODO(fsx950223): change to inner_optimizer after tf2.5 is released
+        if isinstance(optimizer, tf.keras.mixed_precision.experimental.LossScaleOptimizer):
+            optimizer = optimizer._optimizer
+
+        assert isinstance(optimizer, AveragedOptimizerWrapper)
 
         if self.update_weights:
-            self.model.optimizer.assign_average_vars(self.model.variables)
+            optimizer.assign_average_vars(self.model.variables)
             return super()._save_model(epoch, logs)
         else:
             # Note: `model.get_weights()` gives us the weights (non-ref)
             # whereas `model.variables` returns references to the variables.
             non_avg_weights = self.model.get_weights()
-            self.model.optimizer.assign_average_vars(self.model.variables)
+            optimizer.assign_average_vars(self.model.variables)
             # result is currently None, since `super._save_model` doesn't
             # return anything, but this may change in the future.
             result = super()._save_model(epoch, logs)
