@@ -64,7 +64,9 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
     def set_model(self, model):
         optimizer = model.optimizer
         # TODO(fsx950223): change to tf.keras.mixed_precision.LossScaleOptimizer and inner_optimizer after tf2.5 is released
-        if isinstance(optimizer, tf.keras.mixed_precision.experimental.LossScaleOptimizer):
+        if isinstance(
+            optimizer, tf.keras.mixed_precision.experimental.LossScaleOptimizer
+        ):
             optimizer = optimizer._optimizer
 
         if not isinstance(optimizer, AveragedOptimizerWrapper):
@@ -78,7 +80,9 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
         optimizer = self.model.optimizer
 
         # TODO(fsx950223): change to inner_optimizer after tf2.5 is released
-        if isinstance(optimizer, tf.keras.mixed_precision.experimental.LossScaleOptimizer):
+        if isinstance(
+            optimizer, tf.keras.mixed_precision.experimental.LossScaleOptimizer
+        ):
             optimizer = optimizer._optimizer
 
         assert isinstance(optimizer, AveragedOptimizerWrapper)
