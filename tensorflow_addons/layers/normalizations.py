@@ -26,9 +26,6 @@ from tensorflow_addons.utils import types
 class GroupNormalization(tf.keras.layers.Layer):
     """Group normalization layer.
 
-    Source: "Group Normalization" (Yuxin Wu & Kaiming He, 2018)
-    https://arxiv.org/abs/1803.08494
-
     Group Normalization divides the channels into groups and computes
     within each group the mean and variance for normalization.
     Empirically, its accuracy is more stable than batch norm in a wide
