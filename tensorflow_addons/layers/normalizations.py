@@ -25,7 +25,7 @@ from tensorflow_addons.utils import types
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class GroupNormalization(tf.keras.layers.Layer):
     """Group normalization layer.
-    
+
     Source: "Group Normalization" (Yuxin Wu & Kaiming He, 2018)
     https://arxiv.org/abs/1803.08494
 
