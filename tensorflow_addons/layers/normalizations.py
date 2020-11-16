@@ -25,6 +25,9 @@ from tensorflow_addons.utils import types
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class GroupNormalization(tf.keras.layers.Layer):
     """Group normalization layer.
+    
+    Source: "Group Normalization" (Yuxin Wu & Kaiming He, 2018)
+    https://arxiv.org/abs/1803.08494
 
     Group Normalization divides the channels into groups and computes
     within each group the mean and variance for normalization.
@@ -46,6 +49,7 @@ class GroupNormalization(tf.keras.layers.Layer):
         groups: Integer, the number of groups for Group Normalization.
             Can be in the range [1, N] where N is the input dimension.
             The input dimension must be divisible by the number of groups.
+            Defaults to 32.
         axis: Integer, the axis that should be normalized.
         epsilon: Small float added to variance to avoid dividing by zero.
         center: If True, add offset of `beta` to normalized tensor.
