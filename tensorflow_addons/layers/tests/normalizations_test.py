@@ -251,7 +251,9 @@ def test_regularizations():
     layer.build((None, 4, 4))
     assert len(layer.losses) == 2
     max_norm = tf.keras.constraints.max_norm
-    layer = GroupNormalization(gamma_constraint=max_norm, beta_constraint=max_norm)
+    layer = GroupNormalization(
+        groups=2, gamma_constraint=max_norm, beta_constraint=max_norm
+    )
     layer.build((None, 3, 4))
     assert layer.gamma.constraint == max_norm
     assert layer.beta.constraint == max_norm
