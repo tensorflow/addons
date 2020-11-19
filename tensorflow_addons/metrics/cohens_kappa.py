@@ -42,7 +42,7 @@ class CohenKappa(Metric):
             kappa statistics. A valid value is one of
             [None, 'linear', 'quadratic']. Defaults to `None`
         sparse_labels: (bool) Valid only for multi-class scenario.
-            If True, ground truth labels are expected tp be integers
+            If True, ground truth labels are expected to be integers
             and not one-hot encoded.
         regression: (bool) If set, that means the problem is being treated
             as a regression problem where you are regressing the predictions.
