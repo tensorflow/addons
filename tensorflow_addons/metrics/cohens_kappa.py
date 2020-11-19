@@ -77,7 +77,7 @@ class CohenKappa(Metric):
     <tf.Tensor: shape=(5, 5), dtype=float32, numpy=
      array([[ 0.,  0.,  0.,  0.,  0.],
             [ 0.,  6.,  0.,  0.,  0.],
-           [ 0.,  0.,  0.,  0., 10.],
+            [ 0.,  0.,  0.,  0., 10.],
             [ 0.,  0.,  0.,  2.,  0.],
             [ 0.,  0.,  2.,  0.,  7.]], dtype=float32)>
     >>> result = metric.result()
