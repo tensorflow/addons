@@ -642,9 +642,9 @@ def _get_cuda_config(repository_ctx):
     if int(cuda_major) >= 11:
         # The libcudart soname in CUDA 11.x is versioned as 11.0 for backward compatability.
         if int(cuda_major) == 11:
-          cudart_version = "64_110" if is_windows else "11.0"
+            cudart_version = "64_110" if is_windows else "11.0"
         else:
-          cudart_version = ("64_%s" if is_windows else "%s") % cuda_major
+            cudart_version = ("64_%s" if is_windows else "%s") % cuda_major
         cublas_version = ("64_%s" if is_windows else "%s") % config["cublas_version"].split(".")[0]
         cusolver_version = ("64_%s" if is_windows else "%s") % config["cusolver_version"].split(".")[0]
         curand_version = ("64_%s" if is_windows else "%s") % config["curand_version"].split(".")[0]

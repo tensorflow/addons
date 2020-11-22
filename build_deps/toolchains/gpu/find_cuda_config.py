@@ -121,7 +121,7 @@ def _at_least_version(actual_version, required_version):
 def _get_header_version(path, name):
     """Returns preprocessor defines in C header file."""
     for line in io.open(path, "r", encoding="utf-8").readlines():
-        match = re.match("#define %s +(\d+)" % name, line)
+        match = re.match(r"#define %s +(\d+)" % name, line)
         if match:
             return match.group(1)
     return ""
@@ -153,7 +153,7 @@ def _get_ld_config_paths():
 def _get_default_cuda_paths(cuda_version):
     if not cuda_version:
         cuda_version = "*"
-    elif not "." in cuda_version:
+    elif "." not in cuda_version:
         cuda_version = cuda_version + ".*"
 
     if _is_windows():
@@ -272,7 +272,7 @@ def _find_cuda_config(base_paths, required_version):
     cuda_library_path = _find_library(base_paths, "cudart", cuda_version)
 
     def get_nvcc_version(path):
-        pattern = "Cuda compilation tools, release \d+\.\d+, V(\d+\.\d+\.\d+)"
+        pattern = r"Cuda compilation tools, release \d+\.\d+, V(\d+\.\d+\.\d+)"
         for line in subprocess.check_output([path, "--version"]).splitlines():
             match = re.match(pattern, line.decode("ascii"))
             if match:
@@ -585,7 +585,7 @@ def _get_legacy_path(env_name, default=[]):
     paths. Detect those and return '/usr', otherwise forward to _list_from_env().
     """
     if env_name in os.environ:
-        match = re.match("^(/[^/ ]*)+/lib/\w+-linux-gnu/?$", os.environ[env_name])
+        match = re.match(r"^(/[^/ ]*)+/lib/\w+-linux-gnu/?$", os.environ[env_name])
         if match:
             return [match.group(1)]
     return _list_from_env(env_name, default)
