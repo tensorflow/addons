@@ -29,5 +29,6 @@ from tensorflow_addons import rnn
 from tensorflow_addons import seq2seq
 from tensorflow_addons import text
 from tensorflow_addons.register import register_all
+from tensorflow_addons.utils import types
 
 from tensorflow_addons.version import __version__
