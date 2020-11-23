@@ -13,15 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 
-import warnings
 import tensorflow as tf
 from tensorflow_addons.utils.types import Number
 
 from tensorflow_addons.utils import types
-from tensorflow_addons.utils.resource_loader import LazySO
-from tensorflow_addons import options
-
-_activation_so = LazySO("custom_ops/activations/_activation_ops.so")
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -57,33 +52,7 @@ def hardshrink(
     """
     x = tf.convert_to_tensor(x)
 
-    if not options.TF_ADDONS_PY_OPS:
-        try:
-            return _hardshrink_custom_op(x, lower, upper)
-        except tf.errors.NotFoundError:
-            options.warn_fallback("hardshrink")
-
     return _hardshrink_py(x, lower, upper)
-
-
-def _hardshrink_custom_op(x, lower=-0.5, upper=0.5):
-    """Alias with lazy loading of the .so file"""
-    warnings.warn(
-        "The activations custom ops are deprecated and will be removed in "
-        "TensorFlow Addons v0.12.0. \nPlease use the pure python version of "
-        "hardshrink instead by using the "
-        "`TF_ADDONS_PY_OPS` flag. \nFor more info about this flag, see "
-        "https://github.com/tensorflow/addons#gpucpu-custom-ops ",
-        DeprecationWarning,
-    )
-    return _activation_so.ops.addons_hardshrink(x, lower, upper)
-
-
-@tf.RegisterGradient("Addons>Hardshrink")
-def _hardshrink_grad(op, grad):
-    return _activation_so.ops.addons_hardshrink_grad(
-        grad, op.inputs[0], op.get_attr("lower"), op.get_attr("upper")
-    )
 
 
 def _hardshrink_py(

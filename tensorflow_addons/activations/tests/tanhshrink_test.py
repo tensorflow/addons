@@ -18,25 +18,11 @@ import pytest
 import numpy as np
 import tensorflow as tf
 from tensorflow_addons.activations import tanhshrink
-from tensorflow_addons.activations.tanhshrink import _tanhshrink_py
 from tensorflow_addons.utils import test_utils
 
 
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
-def test_same_as_py_func(dtype):
-    np.random.seed(1234)
-    for _ in range(20):
-        verify_funcs_are_equivalent(dtype)
-
-
-def verify_funcs_are_equivalent(dtype):
-    x_np = np.random.uniform(-10, 10, size=(4, 4)).astype(dtype)
-    x = tf.convert_to_tensor(x_np)
-    with tf.GradientTape(persistent=True) as t:
-        t.watch(x)
-        y_native = tanhshrink(x)
-        y_py = _tanhshrink_py(x)
-    test_utils.assert_allclose_according_to_type(y_native, y_py)
-    grad_native = t.gradient(y_native, x)
-    grad_py = t.gradient(y_py, x)
-    test_utils.assert_allclose_according_to_type(grad_native, grad_py)
+def test_tanh(dtype):
+    x = tf.constant([-1.0, 0.0, 1.0], dtype=dtype)
+    expected_result = tf.constant([-0.23840582, 0.0, 0.238405825], dtype=dtype)
+    test_utils.assert_allclose_according_to_type(tanhshrink(x), expected_result)
