@@ -127,8 +127,8 @@ def configure_cuda():
         "CUDNN_INSTALL_PATH",
         os.getenv("CUDNN_INSTALL_PATH", "/usr/lib/x86_64-linux-gnu"),
     )
-    write_action_env("TF_CUDA_VERSION", os.getenv("TF_CUDA_VERSION", "10.1"))
-    write_action_env("TF_CUDNN_VERSION", os.getenv("TF_CUDNN_VERSION", "7"))
+    write_action_env("TF_CUDA_VERSION", os.getenv("TF_CUDA_VERSION", "11"))
+    write_action_env("TF_CUDNN_VERSION", os.getenv("TF_CUDNN_VERSION", "8"))
 
     write("test --config=cuda")
     write("build --config=cuda")
