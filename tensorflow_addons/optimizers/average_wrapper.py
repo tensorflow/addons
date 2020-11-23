@@ -18,19 +18,13 @@ import abc
 import tensorflow as tf
 from tensorflow_addons.utils import types
 
-import warnings
 from typeguard import typechecked
-from typing import Optional
 
 
 class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCMeta):
     @typechecked
     def __init__(
-        self,
-        optimizer: types.Optimizer,
-        sequential_update: Optional[bool] = None,
-        name: str = "AverageOptimizer",
-        **kwargs
+        self, optimizer: types.Optimizer, name: str = "AverageOptimizer", **kwargs
     ):
         super().__init__(name, **kwargs)
 
@@ -42,18 +36,8 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
                 "optimizer is not an object of tf.keras.optimizers.Optimizer"
             )
 
-        if not isinstance(sequential_update, bool):
-            raise TypeError("sequential_update must be of bool type")
-
         self._optimizer = optimizer
         self._track_trackable(self._optimizer, "awg_optimizer")
-
-        if sequential_update is not None:
-            warnings.warn(
-                "The parameter `sequential_update` is redundant due to AutoGraph. "
-                "This behavior is deprecated and in Addons 0.12, this will raise an error. ",
-                DeprecationWarning,
-            )
 
     def _create_slots(self, var_list):
         self._optimizer._create_slots(var_list=var_list)

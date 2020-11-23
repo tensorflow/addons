@@ -16,9 +16,7 @@ EPOCHS = 5
 def get_data_and_model(optimizer="moving_avg"):
     x = tf.random.normal([TRAIN_SAMPLES, INPUT_DIM])
     y = tf.random.normal([TRAIN_SAMPLES, NUM_CLASSES])
-    moving_avg = MovingAverage(
-        tf.keras.optimizers.SGD(lr=2.0), sequential_update=True, average_decay=0.5
-    )
+    moving_avg = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
     if optimizer == "moving_avg":
         optimizer = moving_avg
     inputs = keras.layers.Input(INPUT_DIM)
