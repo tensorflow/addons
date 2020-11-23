@@ -19,6 +19,9 @@ from typing import Union, Callable, List
 import numpy as np
 import tensorflow as tf
 
+# TODO: Remove once https://github.com/tensorflow/tensorflow/issues/44613 is resolved
+from tensorflow.python.keras.engine import keras_tensor
+
 
 Number = Union[
     float,
@@ -50,6 +53,7 @@ TensorLike = Union[
     tf.Tensor,
     tf.SparseTensor,
     tf.Variable,
+    keras_tensor.KerasTensor,
 ]
 FloatTensorLike = Union[tf.Tensor, float, np.float16, np.float32, np.float64]
 AcceptableDTypes = Union[tf.DType, np.dtype, type, int, str, None]
