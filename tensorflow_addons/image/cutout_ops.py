@@ -14,8 +14,6 @@
 # ==============================================================================
 """Cutout op"""
 
-import warnings
-
 import tensorflow as tf
 from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils.types import TensorLike, Number
@@ -30,7 +28,7 @@ def _get_image_wh(images, data_format):
     return image_height, image_width
 
 
-def _norm_params(images, mask_size, data_format):
+def _norm_params(images, mask_size):
     mask_size = tf.convert_to_tensor(mask_size)
     if tf.executing_eagerly():
         tf.assert_equal(
@@ -40,7 +38,9 @@ def _norm_params(images, mask_size, data_format):
         )
     if tf.rank(mask_size) == 0:
         mask_size = tf.stack([mask_size, mask_size])
-    data_format = keras_utils.normalize_data_format(data_format)
+    data_format = keras_utils.normalize_data_format(
+        "channels_last"
+    )  # As of Addons 0.12 only channels last is supported.
     image_height, image_width = _get_image_wh(images, data_format)
     return mask_size, data_format, image_height, image_width
 
@@ -50,7 +50,6 @@ def random_cutout(
     mask_size: TensorLike,
     constant_values: Number = 0,
     seed: Number = None,
-    data_format: str = "channels_last",
 ) -> tf.Tensor:
     """Apply cutout (https://arxiv.org/abs/1708.04552) to images.
 
@@ -70,27 +69,13 @@ def random_cutout(
         the cutout mask applied to it.
       seed: A Python integer. Used in combination with `tf.random.set_seed` to
         create a reproducible sequence of tensors across multiple calls.
-      data_format: A string, one of `channels_last` (default) or `channels_first`.
-        The ordering of the dimensions in the inputs.
-        `channels_last` corresponds to inputs with shape
-        `(batch_size, ..., channels)` while `channels_first` corresponds to
-        inputs with shape `(batch_size, channels, ...)`.
     Returns:
       An image `Tensor`.
     Raises:
       InvalidArgumentError: if `mask_size` can't be divisible by 2.
     """
-    if data_format == "channels_first":
-        warnings.warn(
-            "Addons will supports only channel-last image operations in the future."
-            "The argument `data_format` will be removed in Addons `0.12`",
-            DeprecationWarning,
-        )
-
     batch_size = tf.shape(images)[0]
-    mask_size, data_format, image_height, image_width = _norm_params(
-        images, mask_size, data_format
-    )
+    mask_size, data_format, image_height, image_width = _norm_params(images, mask_size)
 
     cutout_center_height = tf.random.uniform(
         shape=[batch_size], minval=0, maxval=image_height, dtype=tf.int32, seed=seed
@@ -100,7 +85,7 @@ def random_cutout(
     )
 
     offset = tf.transpose([cutout_center_height, cutout_center_width], [1, 0])
-    return cutout(images, mask_size, offset, constant_values, data_format)
+    return cutout(images, mask_size, offset, constant_values)
 
 
 def cutout(
@@ -108,7 +93,6 @@ def cutout(
     mask_size: TensorLike,
     offset: TensorLike = (0, 0),
     constant_values: Number = 0,
-    data_format: str = "channels_last",
 ) -> tf.Tensor:
     """Apply cutout (https://arxiv.org/abs/1708.04552) to images.
 
@@ -127,28 +111,16 @@ def cutout(
       offset: A tuple of `(height, width)` or `(batch_size, 2)`
       constant_values: What pixel value to fill in the images in the area that has
         the cutout mask applied to it.
-      data_format: A string, one of `channels_last` (default) or `channels_first`.
-        The ordering of the dimensions in the inputs.
-        `channels_last` corresponds to inputs with shape
-        `(batch_size, ..., channels)` while `channels_first` corresponds to
-        inputs with shape `(batch_size, channels, ...)`.
     Returns:
       An image Tensor.
     Raises:
       InvalidArgumentError: if `mask_size` can't be divisible by 2.
     """
-    if data_format == "channels_first":
-        warnings.warn(
-            "Addons will support only channel-last image operations in the future."
-            "The argument `data_format` will be removed in Addons `0.12`",
-            DeprecationWarning,
-        )
-
     with tf.name_scope("cutout"):
         origin_shape = images.shape
         offset = tf.convert_to_tensor(offset)
         mask_size, data_format, image_height, image_width = _norm_params(
-            images, mask_size, data_format
+            images, mask_size
         )
         mask_size = mask_size // 2
 
@@ -182,12 +154,9 @@ def cutout(
             )
             masks = masks.write(i, mask)
 
-        if data_format == "channels_last":
-            mask_4d = tf.expand_dims(masks.stack(), -1)
-            mask = tf.tile(mask_4d, [1, 1, 1, tf.shape(images)[-1]])
-        else:
-            mask_4d = tf.expand_dims(masks.stack(), 1)
-            mask = tf.tile(mask_4d, [1, tf.shape(images)[1], 1, 1])
+        mask_4d = tf.expand_dims(masks.stack(), -1)
+        mask = tf.tile(mask_4d, [1, 1, 1, tf.shape(images)[-1]])
+
         images = tf.where(
             tf.equal(mask, 0),
             tf.ones_like(images, dtype=images.dtype) * constant_values,
