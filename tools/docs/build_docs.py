@@ -74,8 +74,11 @@ def main(argv):
         py_modules=[(PROJECT_SHORT_NAME, tfa)],
         code_url_prefix=code_url_prefix,
         private_map={"tfa": ["__version__", "utils", "version"]},
-        # This callback usually cleans up a lot of aliases caused by internal imports.
-        callbacks=[public_api.local_definitions_filter],
+        # These callbacks usually clean up a lot of aliases caused by internal imports.
+        callbacks=[
+            public_api.local_definitions_filter,
+            public_api.explicit_package_contents_filter,
+        ],
         search_hints=FLAGS.search_hints,
         site_path=FLAGS.site_path,
     )
