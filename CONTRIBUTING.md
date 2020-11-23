@@ -279,7 +279,7 @@ docker run --rm -it -v ${PWD}:/addons -w /addons tfaddons/dev_container:latest-c
 
 GPU Docker: 
 ```bash
-docker run --gpus all --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16
+docker run --gpus all --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda11.0-cudnn8-ubuntu18.04-manylinux2010-multipython
 ```
 
 Configure:
