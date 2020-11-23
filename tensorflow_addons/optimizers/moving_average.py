@@ -127,11 +127,12 @@ class MovingAverage(AveragedOptimizerWrapper):
         return {**base_config, **config}
 
     def _create_slots(self, var_list):
-        self._optimizer._create_slots(
-            var_list=var_list
-        )  # pylint: disable=protected-access
+        self._optimizer._create_slots(var_list=var_list)
         for var in var_list:
             self.add_slot(var, "average", var.read_value())
+
+        self._average_weights = [self.get_slot(var, "average") for var in var_list]
+        self._model_weights = var_list
 
     def shadow_copy(self, model_weights):
         """Creates shadow variables for the given model weights."""

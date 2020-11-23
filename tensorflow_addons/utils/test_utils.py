@@ -217,6 +217,25 @@ def pytest_collection_modifyitems(items):
                 item.add_marker(pytest.mark.skip("The gpu is not available."))
 
 
+def assert_not_allclose(a, b, **kwargs):
+    """Assert that two numpy arrays, do not have near values.
+
+    Args:
+      a: the first value to compare.
+      b: the second value to compare.
+      **kwargs: additional keyword arguments to be passed to the underlying
+        `np.testing.assert_allclose` call.
+
+    Raises:
+      AssertionError: If `a` and `b` are unexpectedly close at all elements.
+    """
+    try:
+        np.testing.assert_allclose(a, b, **kwargs)
+    except AssertionError:
+        return
+    raise AssertionError("The two values are close at all elements")
+
+
 def assert_allclose_according_to_type(
     a,
     b,

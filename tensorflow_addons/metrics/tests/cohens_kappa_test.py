@@ -189,7 +189,7 @@ def test_keras_multiclass_reg_model():
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_keras_binary_clasasification_model():
+def test_keras_binary_classification_model():
     kp = CohenKappa(num_classes=2)
     inputs = tf.keras.layers.Input(shape=(10,))
     outputs = tf.keras.layers.Dense(1, activation="sigmoid")(inputs)

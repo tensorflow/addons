@@ -40,15 +40,12 @@ class PolynomialCrossing(tf.keras.layers.Layer):
 
     Example:
 
-    ```python
-    # after embedding layer in a functional model:
-    input = tf.keras.Input(shape=(None,), name='index', dtype=tf.int64)
-    x0 = tf.keras.layers.Embedding(input_dim=32, output_dim=6))
-    x1 = PolynomialCrossing(projection_dim=None)((x0, x0))
-    x2 = PolynomialCrossing(projection_dim=None)((x0, x1))
-    logits = tf.keras.layers.Dense(units=10)(x2)
-    model = tf.keras.Model(input, logits)
-    ```
+    >>> input = np.random.randint(10, size=(10, 5))
+    >>> x0 = tf.keras.layers.Embedding(input_dim=10, output_dim=3)(input)
+    >>> x1 = PolynomialCrossing(projection_dim=None)((x0, x0))
+    >>> x2 = PolynomialCrossing(projection_dim=None)((x0, x1))
+    >>> logits = tf.keras.layers.Dense(units=10)(x2)
+    >>> model = tf.keras.Model(logits)
 
     Arguments:
         projection_dim: project dimension to reduce the computational cost.

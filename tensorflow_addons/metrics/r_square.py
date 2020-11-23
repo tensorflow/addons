@@ -44,31 +44,36 @@ def _reduce_average(
 class RSquare(Metric):
     """Compute R^2 score.
 
-     This is also called the [coefficient of determination
-     ](https://en.wikipedia.org/wiki/Coefficient_of_determination).
-     It tells how close are data to the fitted regression line.
+    This is also called the [coefficient of determination
+    ](https://en.wikipedia.org/wiki/Coefficient_of_determination).
+    It tells how close are data to the fitted regression line.
 
-     - Highest score can be 1.0 and it indicates that the predictors
-       perfectly accounts for variation in the target.
-     - Score 0.0 indicates that the predictors do not
-       account for variation in the target.
-     - It can also be negative if the model is worse.
+    - Highest score can be 1.0 and it indicates that the predictors
+        perfectly accounts for variation in the target.
+    - Score 0.0 indicates that the predictors do not
+        account for variation in the target.
+    - It can also be negative if the model is worse.
 
-     The sample weighting for this metric implementation mimics the
-     behaviour of the [scikit-learn implementation
-     ](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.r2_score.html)
-     of the same metric.
+    The sample weighting for this metric implementation mimics the
+    behaviour of the [scikit-learn implementation
+    ](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.r2_score.html)
+    of the same metric.
 
-     Usage:
+    Args:
+        multioutput: `string`, the reduce method for scores.
+            Should be one of `["raw_values", "uniform_average", "variance_weighted"]`.
+        name: (Optional) string name of the metric instance.
+        dtype: (Optional) data type of the metric result.
 
-    >>> y_true = tf.constant([1, 4, 3], dtype=tf.float32)
-    >>> y_pred = tf.constant([2, 4, 4], dtype=tf.float32)
+    Usage:
+
+    >>> y_true = np.array([1, 4, 3], dtype=np.float32)
+    >>> y_pred = np.array([2, 4, 4], dtype=np.float32)
     >>> metric = tfa.metrics.r_square.RSquare()
     >>> metric.update_state(y_true, y_pred)
     >>> result = metric.result()
     >>> result.numpy()
     0.57142854
-
     """
 
     @typechecked

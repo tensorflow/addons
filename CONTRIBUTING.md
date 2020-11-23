@@ -25,6 +25,13 @@ All submissions, including submissions by project members, require
 review.
 
 ## Requirements for New Contributions to the Repository
+
+**All new components/features to Addons need to first be submitted as a feature 
+request issue. This will allow the team to check with our counterparts in the TF
+ecosystem and ensure it is not roadmapped internally for Keras or TF core. These 
+feature requests will be labeled with `ecosystem-review` while we determine if it 
+should be included in Addons.**
+
 The tensorflow/addons repository contains additional functionality
 fitting the following criteria:
 
@@ -267,7 +274,7 @@ to install any additional tools.
 
 CPU Docker: 
 ```bash
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-ubuntu16
+docker run --rm -it -v ${PWD}:/addons -w /addons tfaddons/dev_container:latest-cpu
 ```
 
 GPU Docker: 
@@ -289,6 +296,7 @@ python3 -m pip install -r tools/install_deps/pytest.txt
 
 Compile the custom ops
 ```bash
+export TF_NEED_CUDA=1 # If GPU is to be used
 bash tools/install_so_files.sh
 ```
 

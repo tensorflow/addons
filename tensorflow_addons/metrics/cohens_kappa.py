@@ -28,13 +28,32 @@ from typing import Optional
 class CohenKappa(Metric):
     """Computes Kappa score between two raters.
 
-    The score lies in the range [-1, 1]. A score of -1 represents
+    The score lies in the range `[-1, 1]`. A score of -1 represents
     complete disagreement between two raters whereas a score of 1
     represents complete agreement between the two raters.
     A score of 0 means agreement by chance.
 
     Note: As of now, this implementation considers all labels
     while calculating the Cohen's Kappa score.
+
+    Args:
+        num_classes: Number of unique classes in your dataset.
+        weightage: (optional) Weighting to be considered for calculating
+            kappa statistics. A valid value is one of
+            [None, 'linear', 'quadratic']. Defaults to `None`
+        sparse_labels: (bool) Valid only for multi-class scenario.
+            If True, ground truth labels are expected to be integers
+            and not one-hot encoded.
+        regression: (bool) If set, that means the problem is being treated
+            as a regression problem where you are regressing the predictions.
+            **Note:** If you are regressing for the values, the the output layer
+            should contain a single unit.
+        name: (optional) String name of the metric instance
+        dtype: (optional) Data type of the metric result. Defaults to `None`.
+
+    Raises:
+        ValueError: If the value passed for `weightage` is invalid
+        i.e. not any one of [None, 'linear', 'quadratic'].
 
     Usage:
 
@@ -58,21 +77,20 @@ class CohenKappa(Metric):
     <tf.Tensor: shape=(5, 5), dtype=float32, numpy=
      array([[ 0.,  0.,  0.,  0.,  0.],
             [ 0.,  6.,  0.,  0.,  0.],
-           [ 0.,  0.,  0.,  0., 10.],
+            [ 0.,  0.,  0.,  0., 10.],
             [ 0.,  0.,  0.,  2.,  0.],
             [ 0.,  0.,  2.,  0.,  7.]], dtype=float32)>
     >>> result = metric.result()
     >>> result.numpy()
      0.37209308
 
-    Usage with tf.keras API:
+    Usage with `tf.keras` API:
 
     >>> inputs = tf.keras.Input(shape=(10,))
     >>> x = tf.keras.layers.Dense(10)(inputs)
     >>> outputs = tf.keras.layers.Dense(1)(x)
     >>> model = tf.keras.models.Model(inputs=inputs, outputs=outputs)
     >>> model.compile('sgd', loss='mse', metrics=[tfa.metrics.CohenKappa(num_classes=3, sparse_labels=True)])
-
     """
 
     @typechecked
@@ -85,27 +103,7 @@ class CohenKappa(Metric):
         regression: bool = False,
         dtype: AcceptableDTypes = None,
     ):
-        """Creates a `CohenKappa` instance.
-
-        Args:
-          num_classes: Number of unique classes in your dataset.
-          weightage: (optional) Weighting to be considered for calculating
-            kappa statistics. A valid value is one of
-            [None, 'linear', 'quadratic']. Defaults to `None`
-          sparse_labels: (bool) Valid only for multi-class scenario.
-            If True, ground truth labels are expected tp be integers
-            and not one-hot encoded
-          regression: (bool) If set, that means the problem is being treated
-            as a regression problem where you are regressing the predictions.
-            **Note:** If you are regressing for the values, the the output layer
-            should contain a single unit.
-          name: (optional) String name of the metric instance
-          dtype: (optional) Data type of the metric result. Defaults to `None`
-
-        Raises:
-          ValueError: If the value passed for `weightage` is invalid
-            i.e. not any one of [None, 'linear', 'quadratic']
-        """
+        """Creates a `CohenKappa` instance."""
         super().__init__(name=name, dtype=dtype)
 
         if weightage not in (None, "linear", "quadratic"):

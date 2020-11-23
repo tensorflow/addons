@@ -230,6 +230,38 @@ def test_dynamic_decay():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.with_device([tf.distribute.MirroredStrategy])
+def test_swap_weight_no_shadow_copy(device):
+    with device.scope():
+        var = tf.Variable([1.0, 2.0])
+        grads = tf.constant([0.1, 0.1])
+
+        opt = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
+
+    @tf.function
+    def apply_gradients():
+        opt.apply_gradients([(grads, var)])
+
+    device.run(apply_gradients)
+
+    np.testing.assert_allclose(var.read_value(), [0.8, 1.8])
+    ema_var = opt.get_slot(var, "average")
+    np.testing.assert_allclose(ema_var.read_value(), [0.9, 1.9])
+
+    with device.scope():
+        opt.swap_weights()
+
+    np.testing.assert_allclose(ema_var.read_value(), [0.8, 1.8])
+    np.testing.assert_allclose(var.read_value(), [0.9, 1.9])
+
+    with device.scope():
+        opt.swap_weights()
+
+    np.testing.assert_allclose(var.read_value(), [0.8, 1.8])
+    np.testing.assert_allclose(ema_var.read_value(), [0.9, 1.9])
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.with_device([tf.distribute.MirroredStrategy])
 def test_swap_weights(device):
     with device.scope():
         var = tf.Variable([1.0, 2.0])

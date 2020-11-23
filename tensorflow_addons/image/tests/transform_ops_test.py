@@ -160,7 +160,7 @@ def _test_grad(input_shape, output_shape=None):
 
     theoretical, numerical = tf.test.compute_gradient(transform_fn, [test_image])
 
-    np.testing.assert_almost_equal(theoretical[0], numerical[0])
+    np.testing.assert_almost_equal(theoretical[0], numerical[0], decimal=6)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")

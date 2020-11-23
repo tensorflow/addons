@@ -37,21 +37,25 @@ class MultiLabelConfusionMatrix(Metric):
     Consider classification problem with two classes
     (i.e num_classes=2).
 
-    Resultant matrix `M` will be in the shape of (num_classes, 2, 2).
+    Resultant matrix `M` will be in the shape of `(num_classes, 2, 2)`.
 
-    Every class `i` has a dedicated 2*2 matrix that contains:
+    Every class `i` has a dedicated matrix of shape `(2, 2)` that contains:
 
-    - true negatives for class i in M(0,0)
-    - false positives for class i in M(0,1)
-    - false negatives for class i in M(1,0)
-    - true positives for class i in M(1,1)
+    - true negatives for class `i` in `M(0,0)`
+    - false positives for class `i` in `M(0,1)`
+    - false negatives for class `i` in `M(1,0)`
+    - true positives for class `i` in `M(1,1)`
+
+    Args:
+        num_classes: `int`, the number of labels the prediction task can have.
+        name: (Optional) string name of the metric instance.
+        dtype: (Optional) data type of the metric result.
+
     Usage:
 
     >>> # multilabel confusion matrix
-    >>> y_true = tf.constant([[1, 0, 1], [0, 1, 0]],
-    ... dtype=tf.int32)
-    >>> y_pred = tf.constant([[1, 0, 0],[0, 1, 1]],
-    ... dtype=tf.int32)
+    >>> y_true = np.array([[1, 0, 1], [0, 1, 0]], dtype=np.int32)
+    >>> y_pred = np.array([[1, 0, 0], [0, 1, 1]], dtype=np.int32)
     >>> metric = tfa.metrics.MultiLabelConfusionMatrix(num_classes=3)
     >>> metric.update_state(y_true, y_pred)
     >>> result = metric.result()
@@ -65,22 +69,20 @@ class MultiLabelConfusionMatrix(Metric):
            [[0., 1.],
             [1., 0.]]], dtype=float32)
     >>> # if multiclass input is provided
-    >>> y_true = tf.constant([[1, 0, 0], [0, 1, 0]],
-    ... dtype=tf.int32)
-    >>> y_pred = tf.constant([[1, 0, 0],[0, 0, 1]],
-    ... dtype=tf.int32)
+    >>> y_true = np.array([[1, 0, 0], [0, 1, 0]], dtype=np.int32)
+    >>> y_pred = np.array([[1, 0, 0], [0, 0, 1]], dtype=np.int32)
     >>> metric = tfa.metrics.MultiLabelConfusionMatrix(num_classes=3)
     >>> metric.update_state(y_true, y_pred)
     >>> result = metric.result()
     >>> result.numpy() #doctest: -DONT_ACCEPT_BLANKLINE
     array([[[1., 0.],
-               [0., 1.]],
+            [0., 1.]],
     <BLANKLINE>
-            [[1., 0.],
-             [1., 0.]],
+           [[1., 0.],
+            [1., 0.]],
     <BLANKLINE>
-            [[1., 1.],
-             [0., 0.]]], dtype=float32)
+           [[1., 1.],
+            [0., 0.]]], dtype=float32)
 
     """
 
