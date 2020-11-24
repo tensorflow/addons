@@ -32,10 +32,12 @@ def _dtypes_to_test(use_gpu):
     # The function "_DtypesToTest" is from
     #       "https://github.com/tensorflow/tensorflow/blob/5d4a6cee737a1dc6c20172a1dc1
     #        5df10def2df72/tensorflow/python/kernel_tests/conv_ops_3d_test.py#L53-L62"
+    #
+    #  Since TF2.4 there is no CPU SVD kernel  with DT_HALF
     if use_gpu:
         return [tf.float32, tf.float64]
     else:
-        return [tf.half, tf.float32, tf.float64]
+        return [tf.float32, tf.float64]
 
 
 def _dtypes_with_checking_system(use_gpu, system):
