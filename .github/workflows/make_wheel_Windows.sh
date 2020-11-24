@@ -8,6 +8,7 @@ bash ./tools/testing/build_and_run_tests.sh
 
 bazel.exe build \
   -c opt \
+  --copt="/permissive" \
   --enable_runfiles \
   --noshow_progress \
   --noshow_loading_progress \
