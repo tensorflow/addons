@@ -497,6 +497,9 @@ def test_tf_function():
     crf_decode(potentials, transition_params, sequence_length)
 
 
+@pytest.mark.skip(
+    "Resolve issue # -- tf.reverse_sequence doesn't support symbolic tensor on TF2.4"
+)
 def test_crf_decode_save_load(tmpdir):
     tf.keras.backend.clear_session()
     input_tensor = tf.keras.Input(shape=(10, 3), dtype=tf.float32, name="input_tensor")
