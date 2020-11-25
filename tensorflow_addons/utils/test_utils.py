@@ -16,6 +16,7 @@
 
 import os
 import random
+import inspect
 
 import numpy as np
 import pytest
@@ -271,3 +272,23 @@ def assert_allclose_according_to_type(
         atol = max(atol, bfloat16_atol)
 
     np.testing.assert_allclose(a, b, rtol=rtol, atol=atol)
+
+
+def discover_classes(module, parent, class_exceptions):
+    """
+    Args:
+        module: a module in which to search for classes that inherit from the parent class
+        parent: the parent class that identifies classes in the module that should be tested
+        class_exceptions: a list of specific classes that should be excluded when discovering classes in a module
+
+    Returns:
+        a list of classes for testing using pytest for parameterized tests
+    """
+
+    classes = [
+        class_info[1]
+        for class_info in inspect.getmembers(module, inspect.isclass)
+        if issubclass(class_info[1], parent) and not class_info[0] in class_exceptions
+    ]
+
+    return classes
