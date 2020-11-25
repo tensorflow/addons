@@ -18,7 +18,7 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons import optimizers
-import inspect
+from tensorflow_addons.utils.test_utils import discover_classes
 
 class_exceptions = [
     "MultiOptimizer",  # is wrapper
@@ -32,18 +32,9 @@ class_exceptions = [
 ]
 
 
-def discover_classes(module, parent):
-
-    classes = [
-        class_info[1]
-        for class_info in inspect.getmembers(module, inspect.isclass)
-        if issubclass(class_info[1], parent) and not class_info[0] in class_exceptions
-    ]
-
-    return classes
-
-
-classes_to_test = discover_classes(optimizers, tf.keras.optimizers.Optimizer)
+classes_to_test = discover_classes(
+    optimizers, tf.keras.optimizers.Optimizer, class_exceptions
+)
 
 
 @pytest.mark.parametrize("optimizer", classes_to_test)
