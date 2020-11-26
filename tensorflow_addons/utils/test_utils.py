@@ -67,7 +67,7 @@ if is_gpu_available():
 
 
 def finalizer():
-    tf.config.experimental_run_functions_eagerly(False)
+    tf.config.run_functions_eagerly(False)
 
 
 def pytest_make_parametrize_id(config, val, argname):
@@ -82,16 +82,16 @@ def pytest_make_parametrize_id(config, val, argname):
 @pytest.fixture(scope="function", params=["eager_mode", "tf_function"])
 def maybe_run_functions_eagerly(request):
     if request.param == "eager_mode":
-        tf.config.experimental_run_functions_eagerly(True)
+        tf.config.run_functions_eagerly(True)
     elif request.param == "tf_function":
-        tf.config.experimental_run_functions_eagerly(False)
+        tf.config.run_functions_eagerly(False)
 
     request.addfinalizer(finalizer)
 
 
 @pytest.fixture(scope="function")
 def only_run_functions_eagerly(request):
-    tf.config.experimental_run_functions_eagerly(True)
+    tf.config.run_functions_eagerly(True)
     request.addfinalizer(finalizer)
 
 
