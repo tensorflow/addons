@@ -19,7 +19,6 @@ from tensorflow_addons import activations
 
 
 ALL_ACTIVATIONS = [
-    "gelu",
     "hardshrink",
     "lisht",
     "mish",
