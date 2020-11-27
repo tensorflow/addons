@@ -4,8 +4,6 @@
 # These will not always trigger a GitHub review because submodule owners do not
 # always have write access. However, a bot will notify them of the needed review.
 
-/tensorflow_addons/activations/gelu.py @aakashkumarnain @windqaq
-/tensorflow_addons/activations/tests/gelu_test.py @aakashkumarnain @windqaq
 /tensorflow_addons/activations/hardshrink.py @windqaq
 /tensorflow_addons/activations/tests/hardshrink_test.py @windqaq
 /tensorflow_addons/activations/lisht.py @windqaq
