@@ -22,7 +22,6 @@ from tensorflow_addons.layers.adaptive_pooling import (
     AdaptiveAveragePooling3D,
     AdaptiveMaxPooling3D,
 )
-from tensorflow_addons.layers.gelu import GELU
 from tensorflow_addons.layers.maxout import Maxout
 from tensorflow_addons.layers.multihead_attention import MultiHeadAttention
 from tensorflow_addons.layers.normalizations import FilterResponseNormalization
