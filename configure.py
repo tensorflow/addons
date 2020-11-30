@@ -107,6 +107,11 @@ def create_build_configuration():
     write("build --strategy=Genrule=standalone")
     write("build -c opt")
 
+    if is_windows():
+        write("build --config=windows")
+        write("build:windows --copt=/experimental:preprocessor")
+        write("build:windows --host_copt=/experimental:preprocessor")
+
     if os.getenv("TF_NEED_CUDA", "0") == "1":
         print("> Building GPU & CPU ops")
         configure_cuda()

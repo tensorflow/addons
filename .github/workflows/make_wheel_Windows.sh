@@ -8,7 +8,6 @@ bash ./tools/testing/build_and_run_tests.sh
 
 bazel.exe build \
   -c opt \
-  --copt="/Zc:preprocessor" \
   --enable_runfiles \
   --noshow_progress \
   --noshow_loading_progress \
