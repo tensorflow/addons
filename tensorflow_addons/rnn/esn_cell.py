@@ -91,7 +91,7 @@ class ESNCell(keras.layers.AbstractRNNCell):
         kernel_initializer: Initializer = "glorot_uniform",
         recurrent_initializer: Initializer = "glorot_uniform",
         bias_initializer: Initializer = "zeros",
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.units = units

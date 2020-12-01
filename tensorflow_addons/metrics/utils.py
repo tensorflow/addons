@@ -31,7 +31,7 @@ class MeanMetricWrapper(tf.keras.metrics.Mean):
         fn: Callable,
         name: Optional[str] = None,
         dtype: AcceptableDTypes = None,
-        **kwargs
+        **kwargs,
     ):
         """Creates a `MeanMetricWrapper` instance.
         Args:

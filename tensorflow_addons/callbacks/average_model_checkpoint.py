@@ -47,7 +47,7 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
         save_weights_only: bool = False,
         mode: str = "auto",
         save_freq: str = "epoch",
-        **kwargs
+        **kwargs,
     ):
         self.update_weights = update_weights
         super().__init__(

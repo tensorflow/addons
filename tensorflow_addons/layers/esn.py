@@ -108,7 +108,7 @@ class ESN(tf.keras.layers.RNN):
         return_sequences=False,
         go_backwards=False,
         unroll=False,
-        **kwargs
+        **kwargs,
     ):
         cell = ESNCell(
             units,

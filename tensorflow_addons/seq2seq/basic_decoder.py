@@ -101,7 +101,7 @@ class BasicDecoder(decoder.BaseDecoder):
         cell: tf.keras.layers.Layer,
         sampler: sampler_py.Sampler,
         output_layer: Optional[tf.keras.layers.Layer] = None,
-        **kwargs
+        **kwargs,
     ):
         """Initialize BasicDecoder.
 

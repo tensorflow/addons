@@ -384,7 +384,7 @@ class BeamSearchDecoderMixin:
         coverage_penalty_weight: FloatTensorLike = 0.0,
         reorder_tensor_arrays: bool = True,
         output_all_scores: bool = False,
-        **kwargs
+        **kwargs,
     ):
         """Initialize the BeamSearchDecoderMixin.
 
@@ -795,7 +795,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         length_penalty_weight: FloatTensorLike = 0.0,
         coverage_penalty_weight: FloatTensorLike = 0.0,
         reorder_tensor_arrays: bool = True,
-        **kwargs
+        **kwargs,
     ):
         """Initialize the BeamSearchDecoder.
 

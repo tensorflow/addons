@@ -109,7 +109,7 @@ class NoisyDense(tf.keras.layers.Dense):
         activity_regularizer: types.Regularizer = None,
         kernel_constraint: types.Constraint = None,
         bias_constraint: types.Constraint = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             units=units,

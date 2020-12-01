@@ -66,7 +66,7 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
         bins: Union[Iterable[int], Iterable[Iterable[int]]],
         data_format=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         self.bins = [conv_utils.normalize_tuple(bin, 2, "bin") for bin in bins]
         self.data_format = conv_utils.normalize_data_format(data_format)
