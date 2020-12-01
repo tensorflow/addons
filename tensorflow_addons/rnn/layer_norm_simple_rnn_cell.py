@@ -136,7 +136,7 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
         gamma_constraint: Constraint = None,
         dropout: FloatTensorLike = 0.0,
         recurrent_dropout: FloatTensorLike = 0.0,
-        **kwargs
+        **kwargs,
     ):
         super(LayerNormSimpleRNNCell, self).__init__(
             units,

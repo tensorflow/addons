@@ -96,7 +96,7 @@ class FBetaScore(tf.keras.metrics.Metric):
         threshold: Optional[FloatTensorLike] = None,
         name: str = "fbeta_score",
         dtype: AcceptableDTypes = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(name=name, dtype=dtype)
 

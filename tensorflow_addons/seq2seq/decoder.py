@@ -147,7 +147,7 @@ class BaseDecoder(tf.keras.layers.Layer):
         maximum_iterations: Optional[TensorLike] = None,
         parallel_iterations: int = 32,
         swap_memory: bool = False,
-        **kwargs
+        **kwargs,
     ):
         self.output_time_major = output_time_major
         self.impute_finished = impute_finished
@@ -267,7 +267,7 @@ def dynamic_decode(
     training: Optional[bool] = None,
     scope: Optional[str] = None,
     enable_tflite_convertible: bool = False,
-    **kwargs
+    **kwargs,
 ) -> Tuple[Any, Any, Any]:
     """Runs dynamic decoding with a decoder.
 

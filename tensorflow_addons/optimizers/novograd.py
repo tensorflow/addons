@@ -78,7 +78,7 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
         grad_averaging: bool = False,
         amsgrad: bool = False,
         name: str = "NovoGrad",
-        **kwargs
+        **kwargs,
     ):
         r"""Construct a new NovoGrad optimizer.
 

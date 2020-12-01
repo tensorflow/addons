@@ -74,7 +74,7 @@ class AttentionMechanism(tf.keras.layers.Layer):
         query_layer: Optional[tf.keras.layers.Layer] = None,
         memory_layer: Optional[tf.keras.layers.Layer] = None,
         memory_sequence_length: Optional[TensorLike] = None,
-        **kwargs
+        **kwargs,
     ):
         """Construct base AttentionMechanism class.
 
@@ -514,7 +514,7 @@ class LuongAttention(AttentionMechanism):
         probability_fn: str = "softmax",
         dtype: AcceptableDTypes = None,
         name: str = "LuongAttention",
-        **kwargs
+        **kwargs,
     ):
         """Construct the AttentionMechanism mechanism.
 
@@ -690,7 +690,7 @@ class BahdanauAttention(AttentionMechanism):
         kernel_initializer: Initializer = "glorot_uniform",
         dtype: AcceptableDTypes = None,
         name: str = "BahdanauAttention",
-        **kwargs
+        **kwargs,
     ):
         """Construct the Attention mechanism.
 
@@ -1047,7 +1047,7 @@ class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
         kernel_initializer: Initializer = "glorot_uniform",
         dtype: AcceptableDTypes = None,
         name: str = "BahdanauMonotonicAttention",
-        **kwargs
+        **kwargs,
     ):
         """Construct the attention mechanism.
 
@@ -1228,7 +1228,7 @@ class LuongMonotonicAttention(_BaseMonotonicAttentionMechanism):
         mode: str = "parallel",
         dtype: AcceptableDTypes = None,
         name: str = "LuongMonotonicAttention",
-        **kwargs
+        **kwargs,
     ):
         """Construct the attention mechanism.
 
@@ -1603,7 +1603,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             Union[tf.keras.layers.Layer, List[tf.keras.layers.Layer]]
         ] = None,
         attention_fn: Optional[Callable] = None,
-        **kwargs
+        **kwargs,
     ):
         """Construct the `AttentionWrapper`.
 
