@@ -39,7 +39,7 @@ class ProximalAdagrad(tf.keras.optimizers.Optimizer):
         l1_regularization_strength: float = 0.0,
         l2_regularization_strength: float = 0.0,
         name: str = "ProximalAdagrad",
-        **kwargs
+        **kwargs,
     ):
         """Construct a new Proximal Adagrad optimizer.
 

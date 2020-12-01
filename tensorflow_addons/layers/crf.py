@@ -69,7 +69,7 @@ class CRF(tf.keras.layers.Layer):
         use_boundary: bool = True,
         boundary_initializer: types.Initializer = "zeros",
         use_kernel: bool = True,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
 

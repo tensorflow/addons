@@ -45,7 +45,7 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
         reduce_function: Callable,
         output_size: Union[int, Iterable[int]],
         data_format=None,
-        **kwargs
+        **kwargs,
     ):
         self.data_format = conv_utils.normalize_data_format(data_format)
         self.reduce_function = reduce_function
@@ -178,7 +178,7 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
         reduce_function: Callable,
         output_size: Union[int, Iterable[int]],
         data_format=None,
-        **kwargs
+        **kwargs,
     ):
         self.data_format = conv_utils.normalize_data_format(data_format)
         self.reduce_function = reduce_function
@@ -326,7 +326,7 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
         reduce_function: Callable,
         output_size: Union[int, Iterable[int]],
         data_format=None,
-        **kwargs
+        **kwargs,
     ):
         self.data_format = conv_utils.normalize_data_format(data_format)
         self.reduce_function = reduce_function

@@ -86,7 +86,7 @@ class GroupNormalization(tf.keras.layers.Layer):
         gamma_regularizer: types.Regularizer = None,
         beta_constraint: types.Constraint = None,
         gamma_constraint: types.Constraint = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.supports_masking = True
@@ -395,7 +395,7 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         learned_epsilon: bool = False,
         learned_epsilon_constraint: types.Constraint = None,
         name: str = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(name=name, **kwargs)
         self.epsilon = tf.math.abs(tf.cast(epsilon, dtype=self.dtype))

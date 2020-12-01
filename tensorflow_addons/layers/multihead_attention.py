@@ -95,7 +95,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         bias_initializer: typing.Union[str, typing.Callable] = "zeros",
         bias_regularizer: typing.Union[str, typing.Callable] = None,
         bias_constraint: typing.Union[str, typing.Callable] = None,
-        **kwargs
+        **kwargs,
     ):
         warnings.warn(
             "`MultiHeadAttention` will be deprecated in Addons 0.13. "

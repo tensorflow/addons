@@ -55,7 +55,7 @@ class LazyAdam(tf.keras.optimizers.Adam):
         epsilon: FloatTensorLike = 1e-7,
         amsgrad: bool = False,
         name: str = "LazyAdam",
-        **kwargs
+        **kwargs,
     ):
         """Constructs a new LazyAdam optimizer.
 

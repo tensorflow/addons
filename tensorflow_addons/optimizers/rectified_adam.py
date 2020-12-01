@@ -82,7 +82,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         warmup_proportion: FloatTensorLike = 0.1,
         min_lr: FloatTensorLike = 0.0,
         name: str = "RectifiedAdam",
-        **kwargs
+        **kwargs,
     ):
         r"""Construct a new RAdam optimizer.
 

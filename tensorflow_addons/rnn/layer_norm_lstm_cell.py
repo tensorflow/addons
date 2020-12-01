@@ -83,7 +83,7 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
         norm_gamma_initializer: Initializer = "ones",
         norm_beta_initializer: Initializer = "zeros",
         norm_epsilon: FloatTensorLike = 1e-3,
-        **kwargs
+        **kwargs,
     ):
         """Initializes the LSTM cell.
 
