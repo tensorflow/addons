@@ -311,9 +311,9 @@ def test_no_average_slot():
     max_len = 4
     embedding_dims = 2
 
-    # TrackableWeightHandler is in some preprocessing layer,
-    # and it's returned when using model.variables but they do not
-    # have average slot when training.
+    # Some preprocessing layers have TrackableWeightHandler.
+    # They are returned when using model.variables
+    # but it's unable to assign average slot to them.
     vectorize_layer = tf.keras.layers.experimental.preprocessing.TextVectorization(
         max_tokens=max_features, output_mode="int", output_sequence_length=max_len
     )
