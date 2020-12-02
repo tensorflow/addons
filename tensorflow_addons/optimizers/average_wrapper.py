@@ -105,16 +105,15 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
         ```
         """
         assign_ops = []
-        try:
-            for var in var_list:
+        for var in var_list:
+            try:
                 assign_ops.append(
                     var.assign(
                         self.get_slot(var, "average"), use_locking=self._use_locking
                     )
                 )
-        except Exception as e:
-            warnings.warn("Unable to assign average slot to {} : {}".format(var, e))
-
+            except Exception as e:
+                warnings.warn("Unable to assign average slot to {} : {}".format(var, e))
         return tf.group(assign_ops)
 
     def get_config(self):
