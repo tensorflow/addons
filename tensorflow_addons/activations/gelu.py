@@ -71,7 +71,7 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
 
     x = tf.convert_to_tensor(x)
 
-    _, minor_tf_version, _ = [int(x) for x in tf.version.VERSION.split('.')]
+    _, minor_tf_version, _ = [int(x) for x in tf.version.VERSION.split(".")]
     gelu_op = tf.nn.gelu if minor_tf_version >= 4 else _gelu_py
 
     return gelu_op(x, approximate)
