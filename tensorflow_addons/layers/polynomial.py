@@ -47,7 +47,7 @@ class PolynomialCrossing(tf.keras.layers.Layer):
     >>> logits = tf.keras.layers.Dense(units=10)(x2)
     >>> model = tf.keras.Model(logits)
 
-    Arguments:
+    Args:
         projection_dim: project dimension to reduce the computational cost.
           Default is `None` such that a full (`input_dim` by `input_dim`)
           matrix W is used. If enabled, a low-rank matrix W = U*V will be used,
