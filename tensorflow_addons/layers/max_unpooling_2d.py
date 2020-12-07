@@ -15,6 +15,8 @@
 """MaxUnpooling2D operation."""
 
 import tensorflow as tf
+
+from tensorflow_addons.utils.keras_utils import normalize_tuple
 from typeguard import typechecked
 
 
@@ -90,7 +92,7 @@ class MaxUnpooling2D(tf.keras.layers.Layer):
     - (input_shape - pool_size) is not divisible by strides if padding is "VALID".
     - The max pooling operation results in duplicate values in updates and mask.
 
-    attributes:
+    Args:
       updates: The pooling result from max pooling.
       mask: the argmax result corresponds to above max values.
       pool_size: The filter that max pooling was performed with. Default: (2, 2).
@@ -109,11 +111,8 @@ class MaxUnpooling2D(tf.keras.layers.Layer):
         if padding != "SAME" and padding != "VALID":
             raise ValueError('Padding must be a string from: "SAME", "VALID"')
 
-        if len(pool_size) != 2 or len(strides) != 2:
-            raise ValueError("pool_size and strides must have size of 2")
-
-        self.pool_size = pool_size
-        self.strides = strides
+        self.pool_size = normalize_tuple(pool_size, 2, "pool_size")
+        self.strides = normalize_tuple(strides, 2, "strides")
         self.padding = padding
 
     def call(self, updates, mask):
