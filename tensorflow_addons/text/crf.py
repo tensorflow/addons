@@ -442,8 +442,8 @@ class CrfDecodeForwardRnnCell(tf.keras.layers.AbstractRNNCell):
           backpointers: A [batch_size, num_tags] matrix of backpointers.
           new_state: A [batch_size, num_tags] matrix of new score values.
         """
-        state = tf.cast(tf.expand_dims(state[0], 2), inputs.dtype)
-        transition_scores = state + tf.cast(self._transition_params, inputs.dtype)
+        state = tf.expand_dims(state[0], 2)
+        transition_scores = state + tf.cast(self._transition_params, self._compute_dtype)
         new_state = inputs + tf.reduce_max(transition_scores, [1])
         backpointers = tf.argmax(transition_scores, 1)
         backpointers = tf.cast(backpointers, dtype=tf.int32)
