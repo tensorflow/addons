@@ -1,1 +1,1 @@
-tensorflow-cpu~=2.4.0rc3
+tensorflow-cpu~=2.4.0rc4
