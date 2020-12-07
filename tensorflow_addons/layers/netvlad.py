@@ -29,7 +29,7 @@ class NetVLAD(tf.keras.layers.Layer):
     See [NetVLAD: CNN architecture for weakly supervised place recognition](https://arxiv.org/abs/1511.07247), and.
     [Towards Learning a Universal Non-Semantic Representation of Speech](https://arxiv.org/abs/2002.12764)
 
-    Arguments:
+    Args:
         num_clusters: The number of clusters to use.
     Input shape:
         3D tensor with shape: `(batch_size, time, feature_dim)`.

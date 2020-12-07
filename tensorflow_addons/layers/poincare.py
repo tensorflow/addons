@@ -35,7 +35,7 @@ class PoincareNormalize(tf.keras.layers.Layer):
     For `x` with more dimensions, independently normalizes each 1-D slice along
     dimension `axis`.
 
-    Arguments:
+    Args:
       axis: Axis along which to normalize.  A scalar or a vector of integers.
       epsilon: A small deviation from the edge of the unit sphere for
         numerical stability.

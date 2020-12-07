@@ -38,7 +38,7 @@ class ESN(tf.keras.layers.RNN):
         (https://www.researchgate.net/publication/215385037).
         GMD Report148, German National Research Center for Information Technology, 2001.
 
-    Arguments:
+    Args:
         units: Positive integer, dimensionality of the reservoir.
         connectivity: Float between 0 and 1.
             Connection probability between two reservoir units.

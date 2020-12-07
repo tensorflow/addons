@@ -45,7 +45,7 @@ class GroupNormalization(tf.keras.layers.Layer):
     to number of channels), then this operation becomes
     identical to Instance Normalization.
 
-    Arguments:
+    Args:
         groups: Integer, the number of groups for Group Normalization.
             Can be in the range [1, N] where N is the input dimension.
             The input dimension must be divisible by the number of groups.
