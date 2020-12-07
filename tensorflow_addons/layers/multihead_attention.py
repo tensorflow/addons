@@ -45,7 +45,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     >>> attention.shape
     TensorShape([3, 5, 10])
 
-    Arguments:
+    Args:
         head_size: int, dimensionality of the `query`, `key` and `value` tensors
             after the linear transformation.
         num_heads: int, number of attention heads.
@@ -66,7 +66,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         bias_regularizer: regularizer, regularizer for the bias weights.
         bias_constraint: constraint, constraint for the bias weights.
 
-    Call Arguments:
+    Call Args:
         inputs:  List of `[query, key, value]` where
             * `query`: Tensor of shape `(..., query_elements, query_depth)`
             * `key`: `Tensor of shape '(..., key_elements, key_depth)`

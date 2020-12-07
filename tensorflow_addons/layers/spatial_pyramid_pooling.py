@@ -32,7 +32,7 @@ class SpatialPyramidPooling2D(tf.keras.layers.Layer):
     regardless of input size/scale. It is typically used before a layer
     that requires a constant input shape, for example before a Dense Layer.
 
-    Arguments:
+    Args:
       bins: Either a collection of integers or a collection of collections of 2 integers.
         Each element in the inner collection must contain 2 integers, (pooled_rows, pooled_cols)
         For example, providing [1, 3, 5] or [[1, 1], [3, 3], [5, 5]] preforms pooling
