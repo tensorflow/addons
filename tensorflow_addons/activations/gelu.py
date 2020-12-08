@@ -47,7 +47,7 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
 
     See [Gaussian Error Linear Units (GELUs)](https://arxiv.org/abs/1606.08415)
     and [BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding](https://arxiv.org/abs/1810.04805).
-    
+
     Note that `approximate` will default to `False` for TensorFlow version 2.4 onwards.
     Consider using `tf.nn.gelu` instead.
 
