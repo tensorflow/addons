@@ -61,34 +61,25 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
             **kwargs,
         )
 
-    def set_model(self, model):
-        optimizer = model.optimizer
-        # TODO(fsx950223): Remove this after tf2.3 is not support
-        if isinstance(
-            optimizer, tf.keras.mixed_precision.experimental.LossScaleOptimizer
-        ):
+    def _get_optimizer(self):
+        optimizer = self.model.optimizer
+        # TODO(fsx950223): change _optimizer to inner_optimizer after tf2.3 is not support
+        if type(optimizer).__name__ == "LossScaleOptimizer":
             optimizer = optimizer._optimizer
-        elif isinstance(optimizer, tf.keras.mixed_precision.LossScaleOptimizer):
-            optimizer = optimizer.inner_optimizer
 
+        return optimizer
+
+    def set_model(self, model):
+        super().set_model(model)
+        optimizer = self._get_optimizer()
         if not isinstance(optimizer, AveragedOptimizerWrapper):
             raise TypeError(
                 "AverageModelCheckpoint is only used when training"
                 "with MovingAverage or StochasticAverage"
             )
-        return super().set_model(model)
 
     def _save_model(self, epoch, logs):
-        optimizer = self.model.optimizer
-
-        # TODO(fsx950223): Remove this after tf2.3 is not support
-        if isinstance(
-            optimizer, tf.keras.mixed_precision.experimental.LossScaleOptimizer
-        ):
-            optimizer = optimizer._optimizer
-        elif isinstance(optimizer, tf.keras.mixed_precision.LossScaleOptimizer):
-            optimizer = optimizer.inner_optimizer
-
+        optimizer = self._get_optimizer()
         assert isinstance(optimizer, AveragedOptimizerWrapper)
 
         if self.update_weights:
