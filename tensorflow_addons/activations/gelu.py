@@ -47,6 +47,9 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
 
     See [Gaussian Error Linear Units (GELUs)](https://arxiv.org/abs/1606.08415)
     and [BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding](https://arxiv.org/abs/1810.04805).
+    
+    Note that `approximate` will default to `False` for TensorFlow version 2.4 onwards.
+    Consider using `tf.nn.gelu` instead.
 
     Usage:
 
@@ -72,7 +75,11 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
 
     x = tf.convert_to_tensor(x)
 
-    gelu_op = tf.nn.gelu if LooseVersion(tf.__version__) >= "2.4" else _gelu_py
+    if LooseVersion(tf.__version__) >= "2.4":
+        gelu_op = tf.nn.gelu
+        warnings.warn("Default value of `approximate` is changed from `True` to `False`")
+    else:
+        gelu_op = _gelu_py
 
     return gelu_op(x, approximate)
 
