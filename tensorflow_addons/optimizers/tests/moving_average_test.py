@@ -295,7 +295,6 @@ def test_swap_weights(device):
 
 @pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_model_mixed_precision():
-    tf.keras.mixed_precision.experimental.set_policy("mixed_float16")
     x = np.random.standard_normal((10000, 3))
     w = np.random.standard_normal((3, 1))
     y = np.dot(x, w) + np.random.standard_normal((10000, 1)) * 1e-4
