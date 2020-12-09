@@ -27,7 +27,7 @@ from typing import Optional
 from functools import partial
 
 
-def scale_channel(image: TensorLike, channel: int) -> tf.Tensor:
+def _scale_channel(image: TensorLike, channel: int) -> tf.Tensor:
     """Scale the data in the channel to implement equalize."""
     image_dtype = image.dtype
     image = tf.cast(image[:, :, channel], tf.int32)
@@ -46,18 +46,14 @@ def scale_channel(image: TensorLike, channel: int) -> tf.Tensor:
     else:
         lut_values = (tf.cumsum(histo, exclusive=True) + (step // 2)) // step
         lut_values = tf.clip_by_value(lut_values, 0, 255)
-        lookup_initializer = tf.lookup.KeyValueTensorInitializer(
-            keys=tf.range(256), values=lut_values
-        )
-        lookup_table = tf.lookup.StaticHashTable(lookup_initializer, 255)
-        result = lookup_table.lookup(image)
+        result = tf.gather(lut_values, image)
 
     return tf.cast(result, image_dtype)
 
 
-def equalize_image(image: TensorLike) -> tf.Tensor:
+def _equalize_image(image: TensorLike) -> tf.Tensor:
     """Implements Equalize function from PIL using TF ops."""
-    image = tf.stack([scale_channel(image, c) for c in range(image.shape[-1])], -1)
+    image = tf.stack([_scale_channel(image, c) for c in range(image.shape[-1])], -1)
     return image
 
 
@@ -68,9 +64,7 @@ def equalize(image: TensorLike, name: Optional[str] = None) -> tf.Tensor:
     Args:
       images: A tensor of shape
           `(num_images, num_rows, num_columns, num_channels)` (NHWC), or
-          `(num_images, num_channels, num_rows, num_columns)` (NCHW), or
           `(num_rows, num_columns, num_channels)` (HWC), or
-          `(num_channels, num_rows, num_columns)` (CHW), or
           `(num_rows, num_columns)` (HW). The rank must be statically known (the
           shape is not `TensorShape(None)`).
       name: The name of the op.
@@ -80,7 +74,7 @@ def equalize(image: TensorLike, name: Optional[str] = None) -> tf.Tensor:
     with tf.name_scope(name or "equalize"):
         image_dims = tf.rank(image)
         image = to_4D_image(image)
-        fn = partial(equalize_image)
+        fn = partial(_equalize_image)
         image = tf.map_fn(fn, image)
         return from_4D_image(image, image_dims)
 
