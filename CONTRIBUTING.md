@@ -25,6 +25,13 @@ All submissions, including submissions by project members, require
 review.
 
 ## Requirements for New Contributions to the Repository
+
+**All new components/features to Addons need to first be submitted as a feature 
+request issue. This will allow the team to check with our counterparts in the TF
+ecosystem and ensure it is not roadmapped internally for Keras or TF core. These 
+feature requests will be labeled with `ecosystem-review` while we determine if it 
+should be included in Addons.**
+
 The tensorflow/addons repository contains additional functionality
 fitting the following criteria:
 
@@ -101,7 +108,7 @@ If you're running Powershell on Windows, use `sh` instead of `bash` when typing 
 We provide a pre-commit hook to format your code automatically before each
 commit, so that you don't have to read our style guide. Install it on Linux/MacOS with
 
-```
+```bash
 cd .git/hooks && ln -s -f ../../tools/pre-commit.sh pre-commit
 ```
 
@@ -109,7 +116,7 @@ and you're good to go.
 
 On Windows, in powershell, do:
 
-```
+```bash
 cd .git/hooks
 cmd /c mklink pre-commit ..\..\tools\pre-commit.sh
 ```
@@ -140,7 +147,7 @@ And you don't need to compile anything.
 If you want to work in 
 a [virtualenv](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/):
 
-```
+```bash
 pip install virtualenv
 venv my_dev_environement
 source my_dev_environement/bin/activate  # Linux/macos/WSL2
@@ -149,7 +156,7 @@ source my_dev_environement/bin/activate  # Linux/macos/WSL2
 
 If you want to work in 
 a [conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html):
-```
+```bash
 conda create --name my_dev_environement
 conda activate my_dev_environement
 ```
@@ -159,9 +166,9 @@ conda activate my_dev_environement
 
 Just run from the root:
 
-```
-pip install tensorflow==2.2.0
-# you can use "pip install tensorflow-cpu==2.2.0" too if you're not testing on gpu.
+```bash
+pip install tensorflow==2.3.0
+# you can use "pip install tensorflow-cpu==2.3.0" too if you're not testing on gpu.
 pip install -e ./
 ```
 
@@ -176,7 +183,7 @@ going to import the code in this git repository.
 To undo this operation, for example, you want to later on 
 install TensorFlow Addons from PyPI, the release version, do:
 
-```
+```bash
 pip uninstall tensorflow-addons
 ```
 
@@ -249,7 +256,7 @@ If you need a custom C++/Cuda op for your test, compile your ops with
 
 ```bash
 python configure.py
-pip install tensorflow==2.2.0 -e ./ -r tools/install_deps/pytest.txt
+pip install tensorflow==2.3.0 -e ./ -r tools/install_deps/pytest.txt
 bash tools/install_so_files.sh  # Linux/macos/WSL2
 sh tools/install_so_files.sh    # PowerShell
 ```
@@ -266,29 +273,30 @@ Running tests interactively in Docker gives you good flexibility and doesn't req
 to install any additional tools.
 
 CPU Docker: 
-```
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-ubuntu16
+```bash
+docker run --rm -it -v ${PWD}:/addons -w /addons tfaddons/dev_container:latest-cpu
 ```
 
 GPU Docker: 
-```
-docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16
+```bash
+docker run --gpus all --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16
 ```
 
 Configure:
-```
-python3 -m pip install tensorflow==2.2.0
+```bash
+python3 -m pip install tensorflow==2.3.0
 python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 
 Install in editable mode
-```
+```bash
 python3 -m pip install -e .
 python3 -m pip install -r tools/install_deps/pytest.txt
 ```
 
 Compile the custom ops
-```
+```bash
+export TF_NEED_CUDA=1 # If GPU is to be used
 bash tools/install_so_files.sh
 ```
 
@@ -314,8 +322,8 @@ quickly, as Bazel has great support for caching and distributed testing.
 
 To test with Bazel:
 
-```
-python3 -m pip install tensorflow==2.2.0
+```bash
+python3 -m pip install tensorflow==2.3.0
 python3 configure.py
 python3 -m pip install -r tools/install_deps/pytest.txt
 bazel test -c opt -k \
@@ -324,6 +332,24 @@ bazel test -c opt -k \
 --run_under=$(readlink -f tools/testing/parallel_gpu_execute.sh) \
 //tensorflow_addons/...
 ```
+
+#### Testing docstrings
+
+We use [DocTest](https://docs.python.org/3/library/doctest.html) to test code snippets
+in Python docstrings. The snippet must be executable Python code.
+To enable testing, prepend the line with `>>>` (three left-angle brackets).
+Available namespace include `np` for numpy, `tf` for TensorFlow, and `tfa` for TensorFlow Addons.
+See [docs_ref](https://www.tensorflow.org/community/contribute/docs_ref) for more details.
+
+To test docstrings locally, run either
+```bash
+bash tools/run_cpu_tests.sh
+```
+on all files, or
+```bash
+pytest -v -n auto --durations=25 --doctest-modules /path/to/pyfile
+```
+on specific files.
 
 ## About type hints
 
@@ -400,7 +426,7 @@ your tests as well as helper functions. Those can be found in
 #### maybe_run_functions_eagerly
 
 Will run your test function twice, once normally and once with 
-`tf.config.experimental_run_functions_eagerly(True)`. To use it:
+`tf.config.run_functions_eagerly(True)`. To use it:
 
 ```python
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -526,7 +552,7 @@ function behaves correctly with both data format.
 Is the same as [tf.test.TestCase.assertAllCloseAccordingToType](https://www.tensorflow.org/api_docs/python/tf/test/TestCase#assertAllCloseAccordingToType)
 but doesn't require any subclassing to be done. Can be used as a plain function. To use it:
 
-```
+```python
 from tensorflow_addons.utils import test_utils
 
 def test_something():

@@ -125,7 +125,7 @@ def test_adjust_hsv_in_yiq_unknown_shape():
         image_np = np.random.rand(*shape) * 255.0
         image_tf = tf.constant(image_np)
         np.testing.assert_allclose(
-            _adjust_hue_in_yiq_np(image_np, 0), fn(image_tf), rtol=2e-4, atol=1e-4,
+            _adjust_hue_in_yiq_np(image_np, 0), fn(image_tf), rtol=2e-4, atol=1e-4
         )
 
 

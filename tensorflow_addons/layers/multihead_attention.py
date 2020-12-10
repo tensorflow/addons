@@ -14,55 +14,51 @@
 # =============================================================================
 
 import typing
+import warnings
 
 import tensorflow as tf
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class MultiHeadAttention(tf.keras.layers.Layer):
-    r"""
-    MultiHead Attention layer.
+    r"""MultiHead Attention layer.
 
     Defines the MultiHead Attention operation as described in
     [Attention Is All You Need](https://arxiv.org/abs/1706.03762) which takes
     in the tensors `query`, `key`, and `value`, and returns the dot-product attention
     between them:
 
-        ```python
-        mha = MultiHeadAttention(head_size=128, num_heads=128)
-
-        query = tf.random.uniform((32, 20, 200)) # (batch_size, query_elements, query_depth)
-        key = tf.random.uniform((32, 15, 300)) # (batch_size, key_elements, key_depth)
-        value = tf.random.uniform((32, 15, 400)) # (batch_size, key_elements, value_depth)
-
-        attention = mha([query, key, value]) # (batch_size, query_elements, value_depth)
-        ```
+    >>> mha = MultiHeadAttention(head_size=128, num_heads=12)
+    >>> query = np.random.rand(3, 5, 4) # (batch_size, query_elements, query_depth)
+    >>> key = np.random.rand(3, 6, 5) # (batch_size, key_elements, key_depth)
+    >>> value = np.random.rand(3, 6, 6) # (batch_size, key_elements, value_depth)
+    >>> attention = mha([query, key, value]) # (batch_size, query_elements, value_depth)
+    >>> attention.shape
+    TensorShape([3, 5, 6])
 
     If `value` is not given then internally `value = key` will be used:
 
-         ```python
-        mha = MultiHeadAttention(head_size=128, num_heads=128)
+    >>> mha = MultiHeadAttention(head_size=128, num_heads=12)
+    >>> query = np.random.rand(3, 5, 5) # (batch_size, query_elements, query_depth)
+    >>> key = np.random.rand(3, 6, 10) # (batch_size, key_elements, key_depth)
+    >>> attention = mha([query, key]) # (batch_size, query_elements, key_depth)
+    >>> attention.shape
+    TensorShape([3, 5, 10])
 
-        query = tf.random.uniform((32, 20, 200)) # (batch_size, query_elements, query_depth)
-        key = tf.random.uniform((32, 15, 300)) # (batch_size, key_elements, key_depth)
-
-        attention = mha([query, key]) # (batch_size, query_elements, key_depth)
-        ```
-
-    Arguments:
+    Args:
         head_size: int, dimensionality of the `query`, `key` and `value` tensors
-        after the linear transformation.
+            after the linear transformation.
         num_heads: int, number of attention heads.
         output_size: int, dimensionality of the output space, if `None` then the
-        input dimension of
-        `value` or `key` will be used, default `None`.
+            input dimension of `value` or `key` will be used,
+            default `None`.
         dropout: float, `rate` parameter for the dropout layer that is
-        applied to attention after softmax,
+            applied to attention after softmax,
         default `0`.
         use_projection_bias: bool, whether to use a bias term after the linear
-        output projection.
+            output projection.
         return_attn_coef: bool, if `True`, return the attention coefficients as
-        an additional output argument.
+            an additional output argument.
         kernel_initializer: initializer, initializer for the kernel weights.
         kernel_regularizer: regularizer, regularizer for the kernel weights.
         kernel_constraint: constraint, constraint for the kernel weights.
@@ -70,7 +66,7 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         bias_regularizer: regularizer, regularizer for the bias weights.
         bias_constraint: constraint, constraint for the bias weights.
 
-    Call Arguments:
+    Call Args:
         inputs:  List of `[query, key, value]` where
             * `query`: Tensor of shape `(..., query_elements, query_depth)`
             * `key`: `Tensor of shape '(..., key_elements, key_depth)`
@@ -99,8 +95,14 @@ class MultiHeadAttention(tf.keras.layers.Layer):
         bias_initializer: typing.Union[str, typing.Callable] = "zeros",
         bias_regularizer: typing.Union[str, typing.Callable] = None,
         bias_constraint: typing.Union[str, typing.Callable] = None,
-        **kwargs
+        **kwargs,
     ):
+        warnings.warn(
+            "`MultiHeadAttention` will be deprecated in Addons 0.13. "
+            "Please use `tf.keras.layers.MultiHeadAttention` instead.",
+            DeprecationWarning,
+        )
+
         super().__init__(**kwargs)
 
         if output_size is not None and output_size < 1:

@@ -14,7 +14,6 @@
 # ==============================================================================
 """Matthews Correlation Coefficient Test."""
 
-
 import tensorflow as tf
 
 import numpy as np
@@ -78,3 +77,18 @@ def test_keras_model():
     labels = np.random.random((10, 1))
     labels = np.where(labels > 0.5, 1.0, 0.0)
     model.fit(data, labels, epochs=1, batch_size=32, verbose=0)
+
+
+def test_reset_states_graph():
+    gt_label = tf.constant([[1.0], [1.0], [1.0], [0.0]], dtype=tf.float32)
+    preds = tf.constant([[1.0], [0.0], [1.0], [1.0]], dtype=tf.float32)
+    mcc = MatthewsCorrelationCoefficient(1)
+    mcc.update_state(gt_label, preds)
+
+    @tf.function
+    def reset_states():
+        mcc.reset_states()
+
+    reset_states()
+    # Check results
+    check_results(mcc, [0])

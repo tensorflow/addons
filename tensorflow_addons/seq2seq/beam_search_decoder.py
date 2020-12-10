@@ -19,20 +19,17 @@ import numpy as np
 
 import tensorflow as tf
 
+from tensorflow_addons import options
 from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import decoder
 from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils.resource_loader import LazySO
-from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
+from tensorflow_addons.utils.types import FloatTensorLike, TensorLike, Number
 
 from typeguard import typechecked
 from typing import Callable, Optional
 
 _beam_search_so = LazySO("custom_ops/seq2seq/_beam_search_ops.so")
-
-
-def gather_tree(*args, **kwargs) -> tf.Tensor:
-    return _beam_search_so.ops.addons_gather_tree(*args, **kwargs)
 
 
 class BeamSearchDecoderState(
@@ -47,18 +44,17 @@ class BeamSearchDecoderState(
         ),
     )
 ):
-    """State of a `BeamSearchDecoder`.
+    """State of a `tfa.seq2seq.BeamSearchDecoder`.
 
-    Contains:
-
-      - `cell_state`: The cell state returned at the previous time step.
-      - `log_probs`: The accumulated log probabilities of each beam.
+    Attributes:
+      cell_state: The cell state returned at the previous time step.
+      log_probs: The accumulated log probabilities of each beam.
         A `float32` `Tensor` of shape `[batch_size, beam_width]`.
-      - `finished`: The finished status of each beam.
+      finished: The finished status of each beam.
         A `bool` `Tensor` of shape `[batch_size, beam_width]`.
-      - `lengths`: The accumulated length of each beam.
+      lengths: The accumulated length of each beam.
         An `int64` `Tensor` of shape `[batch_size, beam_width]`.
-      - `accumulated_attention_prob`: Accumulation of the attention
+      accumulated_attention_prob: Accumulation of the attention
         probabilities (used to compute the coverage penalty)
     """
 
@@ -70,17 +66,20 @@ class BeamSearchDecoderOutput(
         "BeamSearchDecoderOutput", ("scores", "predicted_ids", "parent_ids")
     )
 ):
-    """Outputs of a `BeamSearchDecoder` step.
+    """Outputs of a `tfa.seq2seq.BeamSearchDecoder` step.
 
-    Contains:
-
-      - `scores`: The scores for this step, which are the log probabilities
-        over the output vocabulary, possibly penalized by length and attention
-        coverage.
-        A `float32` `Tensor` of shape `[batch_size, beam_width, vocab_size]`.
-      - `predicted_ids`: The token IDs predicted for this step.
+    Attributes:
+      scores: The scores this step, which are the log
+        probabilities over the output vocabulary, possibly penalized by length
+        and attention coverage. When `tfa.seq2seq.BeamSearchDecoder` is created with
+        `output_all_scores=False` (default), this will be a `float32` `Tensor`
+        of shape `[batch_size, beam_width]` containing the top scores
+        corresponding to the predicted IDs. When `output_all_scores=True`,
+        this contains the scores for all token IDs and has shape
+        `[batch_size, beam_width, vocab_size]`.
+      predicted_ids: The token IDs predicted for this step.
         A `int32` `Tensor` of shape `[batch_size, beam_width]`.
-      - `parent_ids`: The indices of the parent beam of each beam.
+      parent_ids: The indices of the parent beam of each beam.
         A `int32` `Tensor` of shape `[batch_size, beam_width]`.
     """
 
@@ -92,14 +91,13 @@ class FinalBeamSearchDecoderOutput(
         "FinalBeamDecoderOutput", ["predicted_ids", "beam_search_decoder_output"]
     )
 ):
-    """Final outputs returned by the beam search after all decoding is
-    finished.
+    """Final outputs returned by the beam search after all decoding is finished.
 
-    Args:
+    Attributes:
       predicted_ids: The final prediction. A tensor of shape
         `[batch_size, T, beam_width]` (or `[T, batch_size, beam_width]` if
         `output_time_major` is True). Beams are ordered from best to worst.
-      beam_search_decoder_output: An instance of `BeamSearchDecoderOutput` that
+      beam_search_decoder_output: An instance of `tfa.seq2seq.BeamSearchDecoderOutput` that
         describes the state of the beam search.
     """
 
@@ -124,8 +122,7 @@ def _tile_batch(t, multiplier):
 
 
 def tile_batch(t: TensorLike, multiplier: int, name: Optional[str] = None) -> tf.Tensor:
-    """Tile the batch dimension of a (possibly nested structure of) tensor(s)
-    t.
+    """Tiles the batch dimension of a (possibly nested structure of) tensor(s).
 
     For each tensor t in a (possibly nested structure) of tensors,
     this function takes a tensor t shaped `[batch_size, s0, s1, ...]` composed
@@ -151,10 +148,111 @@ def tile_batch(t: TensorLike, multiplier: int, name: Optional[str] = None) -> tf
         return tf.nest.map_structure(lambda t_: _tile_batch(t_, multiplier), t)
 
 
+@tf.function(
+    input_signature=(
+        tf.TensorSpec([None, None, None], dtype=tf.int32),
+        tf.TensorSpec([None, None, None], dtype=tf.int32),
+        tf.TensorSpec([None], dtype=tf.int32),
+        tf.TensorSpec([], dtype=tf.int32),
+    )
+)
+def _gather_tree(step_ids, parent_ids, max_sequence_lengths, end_token):
+    input_shape = tf.shape(parent_ids)
+    max_time = input_shape[0]
+    beam_width = input_shape[2]
+    max_sequence_lengths = tf.math.minimum(max_sequence_lengths, max_time)
+    mask = tf.expand_dims(
+        tf.transpose(tf.sequence_mask(max_sequence_lengths, maxlen=max_time)), -1
+    )
+
+    # Mask out of range ids.
+    end_tokens = tf.fill(input_shape, end_token)
+    step_ids = tf.where(mask, x=step_ids, y=end_tokens)
+    parent_ids = tf.where(mask, x=parent_ids, y=tf.zeros_like(parent_ids))
+    assert_op = tf.debugging.Assert(
+        tf.math.reduce_all(
+            tf.math.logical_and(parent_ids >= 0, parent_ids < beam_width)
+        ),
+        ["All parent ids must be positive and less than beam_width"],
+    )
+
+    # Reverse all sequences as we need to gather from the end.
+    with tf.control_dependencies([assert_op]):
+        rev_step_ids = tf.reverse_sequence(
+            step_ids, max_sequence_lengths, seq_axis=0, batch_axis=1
+        )
+        rev_parent_ids = tf.reverse_sequence(
+            parent_ids, max_sequence_lengths, seq_axis=0, batch_axis=1
+        )
+
+    # Initialize output ids and parent based on last step.
+    output_ids = tf.TensorArray(step_ids.dtype, size=max_time, dynamic_size=False)
+    output_ids = output_ids.write(0, rev_step_ids[0])
+    parent = rev_parent_ids[0]
+
+    # For each step, gather ids based on beam origin.
+    for t in tf.range(1, max_time):
+        ids = tf.gather(rev_step_ids[t], parent, batch_dims=1)
+        parent = tf.gather(rev_parent_ids[t], parent, batch_dims=1)
+        output_ids = output_ids.write(t, ids)
+
+    # Reverse sequences to their original order.
+    output_ids = output_ids.stack()
+    output_ids = tf.reverse_sequence(
+        output_ids, max_sequence_lengths, seq_axis=0, batch_axis=1
+    )
+
+    # Ensure that there are only end_token after the first end_token.
+    in_bound_steps = tf.math.cumsum(tf.cast(output_ids == end_token, tf.int32)) == 0
+    output_ids = tf.where(in_bound_steps, x=output_ids, y=end_tokens)
+    return output_ids
+
+
+def gather_tree(
+    step_ids: TensorLike,
+    parent_ids: TensorLike,
+    max_sequence_lengths: TensorLike,
+    end_token: Number,
+) -> tf.Tensor:
+    """Calculates the full beams from the per-step ids and parent beam ids.
+
+    For a given beam, past the time step containing the first decoded
+    `end_token` all values are filled in with `end_token`.
+
+    Args:
+      step_ids: The predicted token IDs.
+        A `int32` `Tensor` of shape `[max_time, batch_size, beam_width]`.
+      parent_ids: The parent beam indices.
+        A `int32` `Tensor` of shape `[max_time, batch_size, beam_width]`.
+      max_sequence_lengths: The maximum sequence length of each batch.
+        A `int32` `Tensor` of shape `[batch_size]`.
+      end_token: The end token ID.
+
+    Returns:
+      The reordered token IDs based on `parent_ids`.
+
+    Raises:
+      InvalidArgumentError: if `parent_ids` contains an invalid index.
+    """
+    if not options.TF_ADDONS_PY_OPS:
+        try:
+            return _beam_search_so.ops.addons_gather_tree(
+                step_ids, parent_ids, max_sequence_lengths, end_token
+            )
+        except tf.errors.NotFoundError:
+            options.warn_fallback("gather_tree")
+
+    step_ids = tf.convert_to_tensor(step_ids, dtype=tf.int32)
+    parent_ids = tf.convert_to_tensor(parent_ids, dtype=tf.int32)
+    max_sequence_lengths = tf.convert_to_tensor(max_sequence_lengths, dtype=tf.int32)
+    end_token = tf.convert_to_tensor(end_token, dtype=tf.int32)
+    return _gather_tree(step_ids, parent_ids, max_sequence_lengths, end_token)
+
+
 def gather_tree_from_array(
     t: TensorLike, parent_ids: TensorLike, sequence_length: TensorLike
 ) -> tf.Tensor:
-    """Calculates the full beams for `TensorArray`s.
+    """Calculates the full beams for a `TensorArray`.
 
     Args:
       t: A stacked `TensorArray` of size `max_time` that contains `Tensor`s of
@@ -285,7 +383,8 @@ class BeamSearchDecoderMixin:
         length_penalty_weight: FloatTensorLike = 0.0,
         coverage_penalty_weight: FloatTensorLike = 0.0,
         reorder_tensor_arrays: bool = True,
-        **kwargs
+        output_all_scores: bool = False,
+        **kwargs,
     ):
         """Initialize the BeamSearchDecoderMixin.
 
@@ -306,12 +405,18 @@ class BeamSearchDecoderMixin:
             returned. Otherwise, the `TensorArray` will be returned as is. Set
             this flag to `False` if the cell state contains `TensorArray`s that
             are not amenable to reordering.
+          output_all_scores: If `True`, `BeamSearchDecoderOutput.scores` will
+            contain scores for all token IDs and be of shape
+            `[batch_size, beam_width, vocab_size]`. When `False` (default),
+            only the top score corresponding to the predicted token will be
+            output with shape `[batch_size, beam_width]`.
           **kwargs: Dict, other keyword arguments for parent class.
         """
         keras_utils.assert_like_rnncell("cell", cell)
         self._cell = cell
         self._output_layer = output_layer
         self._reorder_tensor_arrays = reorder_tensor_arrays
+        self._output_all_scores = output_all_scores
 
         self._start_tokens = None
         self._end_token = None
@@ -362,8 +467,13 @@ class BeamSearchDecoderMixin:
     @property
     def output_size(self):
         # Return the cell output and the id
+        score_size = (
+            tf.TensorShape([self._beam_width, self._rnn_output_size()[-1]])
+            if self._output_all_scores
+            else tf.TensorShape([self._beam_width])
+        )
         return BeamSearchDecoderOutput(
-            scores=tf.TensorShape([self._beam_width]),
+            scores=score_size,
             predicted_ids=tf.TensorShape([self._beam_width]),
             parent_ids=tf.TensorShape([self._beam_width]),
         )
@@ -618,6 +728,7 @@ class BeamSearchDecoderMixin:
                 end_token=end_token,
                 length_penalty_weight=length_penalty_weight,
                 coverage_penalty_weight=coverage_penalty_weight,
+                output_all_scores=self._output_all_scores,
             )
 
             finished = beam_search_state.finished
@@ -636,10 +747,10 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
     # the first parent class since we will use super().__init__(), and Mixin
     # which is a object will properly invoke the __init__ method of other parent
     # class.
-    """BeamSearch sampling decoder.
+    """Beam search decoder.
 
     **NOTE** If you are using the `BeamSearchDecoder` with a cell wrapped in
-    `AttentionWrapper`, then you must ensure that:
+    `tfa.seq2seq.AttentionWrapper`, then you must ensure that:
 
     - The encoder output has been tiled to `beam_width` via
       `tfa.seq2seq.tile_batch` (NOT `tf.tile`).
@@ -669,7 +780,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         cell_state=tiled_encoder_final_state)
     ```
 
-    Meanwhile, with `AttentionWrapper`, coverage penalty is suggested to use
+    Meanwhile, with `tfa.seq2seq.AttentionWrapper`, coverage penalty is suggested to use
     when computing scores (https://arxiv.org/pdf/1609.08144.pdf). It encourages
     the decoding to cover all inputs.
     """
@@ -684,7 +795,7 @@ class BeamSearchDecoder(BeamSearchDecoderMixin, decoder.BaseDecoder):
         length_penalty_weight: FloatTensorLike = 0.0,
         coverage_penalty_weight: FloatTensorLike = 0.0,
         reorder_tensor_arrays: bool = True,
-        **kwargs
+        **kwargs,
     ):
         """Initialize the BeamSearchDecoder.
 
@@ -849,6 +960,7 @@ def _beam_search_step(
     end_token,
     length_penalty_weight,
     coverage_penalty_weight,
+    output_all_scores,
 ):
     """Performs a single step of Beam Search Decoding.
 
@@ -869,6 +981,8 @@ def _beam_search_step(
         0.0.
       coverage_penalty_weight: Float weight to penalize the coverage of source
         sentence. Disabled with 0.0.
+      output_all_scores: Bool output scores for every token if True, else only
+        output the top scores.
 
     Returns:
       A new beam state.
@@ -1016,7 +1130,9 @@ def _beam_search_step(
     )
 
     output = BeamSearchDecoderOutput(
-        scores=next_beam_scores, predicted_ids=next_word_ids, parent_ids=next_beam_ids
+        scores=scores if output_all_scores else next_beam_scores,
+        predicted_ids=next_word_ids,
+        parent_ids=next_beam_ids,
     )
 
     return output, next_state

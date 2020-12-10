@@ -52,6 +52,15 @@ run the following:
 ```
 pip install tensorflow-addons
 ```
+
+To ensure you have a version of TensorFlow that is compatible with TensorFlow Addons, 
+you can specify the `tensorflow` extra requirement during install:
+
+```
+pip install tensorflow-addons[tensorflow]
+```
+
+Similar extras exist for the `tensorflow-gpu` and `tensorflow-cpu` packages.
  
 
 To use TensorFlow Addons:
@@ -71,7 +80,8 @@ what it was tested against.
 #### Python Op Compatibility Matrix
 | TensorFlow Addons | TensorFlow | Python  |
 |:----------------------- |:---|:---------- |
-| tfa-nightly | 2.2 | 3.5, 3.6, 3.7, 3.8 | 
+| tfa-nightly | 2.3 | 3.6, 3.7, 3.8 | 
+| tensorflow-addons-0.11.2 | 2.2, 2.3 |3.5, 3.6, 3.7, 3.8 |
 | tensorflow-addons-0.10.0 | 2.2 |3.5, 3.6, 3.7, 3.8 |
 | tensorflow-addons-0.9.1 | 2.1, 2.2 |3.5, 3.6, 3.7 |
 | tensorflow-addons-0.8.3 | 2.1 |3.5, 3.6, 3.7 |
@@ -96,7 +106,8 @@ is compiled differently. A typical example of this would be `conda`-installed Te
 #### C++ Custom Op Compatibility Matrix
 | TensorFlow Addons | TensorFlow | Compiler  | cuDNN | CUDA | 
 |:----------------------- |:---- |:---------|:---------|:---------|
-| tfa-nightly | 2.2 | GCC 7.3.1 | 7.6 | 10.1 |
+| tfa-nightly | 2.3 | GCC 7.3.1 | 7.6 | 10.1 |
+| tensorflow-addons-0.11.2 | 2.3  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.10.0 | 2.2  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.9.1 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.8.3 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |
@@ -203,11 +214,12 @@ tfa.options.TF_ADDONS_PY_OPS = True
 This variable defaults to `True` on Windows and macOS, and `False` on Linux.
 
 #### Proxy Maintainership
-TensorFlow Addons has been designed to compartmentalize subpackages and submodules so 
-that they can be maintained by users who have expertise and a vested interest 
-in that component. 
+TensorFlow Addons has been designed to compartmentalize submodules so 
+that they can be maintained by community users who have expertise, and a vested 
+interest in that component. We heavily encourage users to submit sign up to maintain a 
+submodule by submitting your username to the [CODEOWNERS](.github/CODEOWNERS) file.
 
-Subpackage maintainership will only be granted after substantial contribution 
+Full write access will only be granted after substantial contribution 
 has been made in order to limit the number of users with write permission. 
 Contributions can come in the form of issue closings, bug fixes, documentation, 
 new code, or optimizing existing code. Submodule maintainership can be granted 
@@ -218,7 +230,7 @@ For more information see [the RFC](https://github.com/tensorflow/community/blob/
 on this topic.
 
 #### Periodic Evaluation of Subpackages
-Given the nature of this repository, subpackages and submodules may become less 
+Given the nature of this repository, submodules may become less 
 and less useful to the community as time goes on. In order to keep the 
 repository sustainable, we'll be performing bi-annual reviews of our code to 
 ensure everything still belongs within the repo. Contributing factors to this 

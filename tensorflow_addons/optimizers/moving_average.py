@@ -14,11 +14,11 @@
 # ==============================================================================
 
 import tensorflow as tf
-from tensorflow.python.training.moving_averages import assign_moving_average
+
 from tensorflow_addons.optimizers import AveragedOptimizerWrapper
 from tensorflow_addons.utils import types
 
-from typing import Optional
+from typing import Union
 from typeguard import typechecked
 
 
@@ -45,23 +45,18 @@ class MovingAverage(AveragedOptimizerWrapper):
     def __init__(
         self,
         optimizer: types.Optimizer,
-        sequential_update: bool = True,
         average_decay: types.FloatTensorLike = 0.99,
-        num_updates: Optional[str] = None,
+        num_updates: Union[None, int, tf.Variable] = None,
         start_step: int = 0,
         dynamic_decay: bool = False,
         name: str = "MovingAverage",
-        **kwargs
+        **kwargs,
     ):
         r"""Construct a new MovingAverage optimizer.
 
         Args:
             optimizer: str or `tf.keras.optimizers.Optimizer` that will be
                 used to compute and apply gradients.
-            sequential_update: Bool. If False, will compute the moving average
-                at the same time as the model is updated, potentially doing
-                benign data races. If True, will update the moving average
-                after gradient updates.
             average_decay: float. Decay to use to maintain the moving averages
                 of trained variables.
             num_updates: Optional count of the number of updates applied to
@@ -79,9 +74,17 @@ class MovingAverage(AveragedOptimizerWrapper):
                 decay of learning rate. `lr` is included for backward
                 compatibility, recommended to use `learning_rate` instead.
         """
-        super().__init__(optimizer, sequential_update, name, **kwargs)
+        super().__init__(optimizer, name, **kwargs)
         self._num_updates = num_updates
         if self._num_updates is not None:
+            if isinstance(self._num_updates, tf.Variable):
+                tf.debugging.assert_integer(
+                    self._num_updates,
+                    (
+                        'type of argument "num_updates" must be '
+                        "int; got {} instead".format(self._num_updates.dtype)
+                    ),
+                )
             num_updates = tf.cast(self._num_updates, tf.float32, name="num_updates")
             average_decay = tf.minimum(
                 average_decay, (1.0 + num_updates) / (10.0 + num_updates)
@@ -106,7 +109,7 @@ class MovingAverage(AveragedOptimizerWrapper):
 
     def average_op(self, var, average_var):
         decay = self._get_decay(self._optimizer.iterations)
-        return assign_moving_average(average_var, var, decay, False)
+        return tf.keras.backend.moving_average_update(average_var, var, decay)
 
     def get_config(self):
         config = {
@@ -119,11 +122,12 @@ class MovingAverage(AveragedOptimizerWrapper):
         return {**base_config, **config}
 
     def _create_slots(self, var_list):
-        self._optimizer._create_slots(
-            var_list=var_list
-        )  # pylint: disable=protected-access
+        self._optimizer._create_slots(var_list=var_list)
         for var in var_list:
             self.add_slot(var, "average", var.read_value())
+
+        self._average_weights = [self.get_slot(var, "average") for var in var_list]
+        self._model_weights = var_list
 
     def shadow_copy(self, model_weights):
         """Creates shadow variables for the given model weights."""
@@ -140,11 +144,11 @@ class MovingAverage(AveragedOptimizerWrapper):
     def swap_weights(self):
         """Swap the average and moving weights.
 
-      This is a convenience method to allow one to evaluate the averaged weights
-      at test time. Loads the weights stored in `self._average_weights` into the model,
-      keeping a copy of the original model weights. Swapping twice will return
-      the original weights.
-      """
+        This is a convenience method to allow one to evaluate the averaged weights
+        at test time. Loads the weights stored in `self._average_weights` into the model,
+        keeping a copy of the original model weights. Swapping twice will return
+        the original weights.
+        """
         if tf.distribute.in_cross_replica_context():
             strategy = tf.distribute.get_strategy()
             return strategy.run(self._swap_weights, args=())
@@ -156,16 +160,13 @@ class MovingAverage(AveragedOptimizerWrapper):
     @tf.function
     def _swap_weights(self):
         def fn_0(a, b):
-            a.assign_add(b)
-            return a
+            return a.assign_add(b, use_locking=self._use_locking)
 
         def fn_1(b, a):
-            b.assign(a - b)
-            return b
+            return b.assign(a - b, use_locking=self._use_locking)
 
         def fn_2(a, b):
-            a.assign_sub(b)
-            return a
+            return a.assign_sub(b, use_locking=self._use_locking)
 
         def swap(strategy, a, b):
             """Swap `a` and `b` and mirror to all devices."""
@@ -181,4 +182,4 @@ class MovingAverage(AveragedOptimizerWrapper):
                 )  # a = a - b
 
         ctx = tf.distribute.get_replica_context()
-        return ctx.merge_call(swap, args=(self._average_weights, self._model_weights,))
+        return ctx.merge_call(swap, args=(self._average_weights, self._model_weights))

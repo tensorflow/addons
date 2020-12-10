@@ -14,6 +14,8 @@
 # ==============================================================================
 """Implements GELU activation."""
 
+import warnings
+
 import tensorflow as tf
 from tensorflow_addons.activations import gelu
 from typeguard import typechecked
@@ -38,6 +40,12 @@ class GELU(tf.keras.layers.Layer):
 
     @typechecked
     def __init__(self, approximate: bool = True, **kwargs):
+        warnings.warn(
+            "gelu activation has been migrated to core TensorFlow, "
+            "and will be deprecated in Addons 0.12.",
+            DeprecationWarning,
+        )
+
         super().__init__(**kwargs)
         self.approximate = approximate
         self.supports_masking = True

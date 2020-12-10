@@ -16,9 +16,7 @@ EPOCHS = 5
 def get_data_and_model(optimizer="moving_avg"):
     x = tf.random.normal([TRAIN_SAMPLES, INPUT_DIM])
     y = tf.random.normal([TRAIN_SAMPLES, NUM_CLASSES])
-    moving_avg = MovingAverage(
-        tf.keras.optimizers.SGD(lr=2.0), sequential_update=True, average_decay=0.5
-    )
+    moving_avg = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
     if optimizer == "moving_avg":
         optimizer = moving_avg
     inputs = keras.layers.Input(INPUT_DIM)
@@ -197,3 +195,25 @@ def test_invalid_save_freq(tmp_path):
         AverageModelCheckpoint(
             update_weights=True, filepath=test_model_filepath, save_freq=save_freq
         )
+
+
+def test_loss_scale_optimizer(tmp_path):
+    test_model_filepath = str(tmp_path / "test_model.{epoch:02d}.h5")
+    moving_avg = MovingAverage(tf.keras.optimizers.SGD(lr=2.0), average_decay=0.5)
+    optimizer = tf.keras.mixed_precision.experimental.LossScaleOptimizer(
+        moving_avg, "dynamic"
+    )
+    x, y, model = get_data_and_model(optimizer)
+    save_freq = "epoch"
+    avg_model_ckpt = AverageModelCheckpoint(
+        update_weights=False, filepath=test_model_filepath, save_freq=save_freq
+    )
+    model.fit(
+        x,
+        y,
+        epochs=EPOCHS,
+        batch_size=BATCH_SIZE,
+        validation_data=(x, y),
+        callbacks=[avg_model_ckpt],
+    )
+    assert not os.path.exists(test_model_filepath)

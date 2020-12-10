@@ -88,7 +88,7 @@ def test_r2_sklearn_comparison():
     implementation of the same metric, given random input.
     """
     for multioutput in VALID_MULTIOUTPUT:
-        for i in range(10):
+        for _ in range(10):
             actuals = np.random.rand(64, 3)
             preds = np.random.rand(64, 3)
             sample_weight = np.random.rand(64, 1)
@@ -117,3 +117,13 @@ def test_r2_sklearn_comparison():
 def test_unrecognized_multioutput():
     with pytest.raises(ValueError):
         initialize_vars(multioutput="meadian")
+
+
+def test_keras_fit():
+    model = tf.keras.Sequential([tf.keras.layers.Dense(1)])
+    model.compile(loss="mse", metrics=[RSquare(y_shape=(1,))])
+    data = tf.data.Dataset.from_tensor_slices(
+        (tf.random.normal(shape=(100, 1)), tf.random.normal(shape=(100, 1)))
+    )
+    data = data.batch(10)
+    model.fit(x=data, validation_data=data)

@@ -22,6 +22,7 @@ from tensorflow_addons.seq2seq import attention_wrapper
 from tensorflow_addons.seq2seq import beam_search_decoder, gather_tree
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree():
     # (max_time = 3, batch_size = 2, beam_width = 3)
 
@@ -103,22 +104,27 @@ def _test_gather_tree_from_array(depth_ndims=0, merged_batch_beam=False):
     np.testing.assert_equal(expected_array.numpy(), sorted_array.numpy())
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_from_array_scalar():
     _test_gather_tree_from_array()
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_from_array_1d():
     _test_gather_tree_from_array(depth_ndims=1)
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_from_array_1d_with_merged_batch_beam():
     _test_gather_tree_from_array(depth_ndims=1, merged_batch_beam=True)
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_from_array_2d():
     _test_gather_tree_from_array(depth_ndims=2)
 
 
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_gather_tree_from_array_complex_trajectory():
     # Max. time = 7, batch = 1, beam = 5.
     array = np.expand_dims(
@@ -253,7 +259,7 @@ def test_eos_masking():
                 [-0.3, -0.3, -0.3, 3, 0],
                 [5, 6, 0, 0, 0],
             ],
-            [[-0.2, -0.2, -0.2, -0.2, 0], [-0.3, -0.3, -0.1, 3, 0], [5, 6, 3, 0, 0],],
+            [[-0.2, -0.2, -0.2, -0.2, 0], [-0.3, -0.3, -0.1, 3, 0], [5, 6, 3, 0, 0]],
         ]
     )
 
@@ -297,6 +303,7 @@ def test_beam_step():
     end_token = 0
     length_penalty_weight = 0.6
     coverage_penalty_weight = 0.0
+    output_all_scores = False
 
     dummy_cell_state = tf.zeros([batch_size, beam_width])
     beam_state = beam_search_decoder.BeamSearchDecoderState(
@@ -329,6 +336,7 @@ def test_beam_step():
         end_token=end_token,
         length_penalty_weight=length_penalty_weight,
         coverage_penalty_weight=coverage_penalty_weight,
+        output_all_scores=output_all_scores,
     )
 
     outputs_, next_state_, state_, log_probs_ = [
@@ -373,6 +381,7 @@ def test_step_with_eos():
     end_token = 0
     length_penalty_weight = 0.6
     coverage_penalty_weight = 0.0
+    output_all_scores = False
 
     dummy_cell_state = tf.zeros([batch_size, beam_width])
     beam_state = beam_search_decoder.BeamSearchDecoderState(
@@ -407,6 +416,7 @@ def test_step_with_eos():
         end_token=end_token,
         length_penalty_weight=length_penalty_weight,
         coverage_penalty_weight=coverage_penalty_weight,
+        output_all_scores=output_all_scores,
     )
 
     outputs_, next_state_, state_, log_probs_ = [
@@ -449,6 +459,7 @@ def test_large_beam_step():
     end_token = 0
     length_penalty_weight = 0.6
     coverage_penalty_weight = 0.0
+    output_all_scores = False
 
     def get_probs():
         """this simulates the initialize method in BeamSearchDecoder."""
@@ -510,6 +521,7 @@ def test_large_beam_step():
         end_token=end_token,
         length_penalty_weight=length_penalty_weight,
         coverage_penalty_weight=coverage_penalty_weight,
+        output_all_scores=output_all_scores,
     )
 
     outputs_, next_state_ = [outputs, next_beam_state]
@@ -531,6 +543,7 @@ def test_large_beam_step():
     )
 
 
+@pytest.mark.parametrize("output_all_scores", [True, False])
 @pytest.mark.parametrize("with_alignment_history", [True, False])
 @pytest.mark.parametrize("has_attention", [True, False])
 @pytest.mark.parametrize("time_major", [True, False])
@@ -538,8 +551,9 @@ def test_large_beam_step():
     "cell_class", [tf.keras.layers.LSTMCell, tf.keras.layers.GRUCell]
 )
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.usefixtures("run_custom_and_py_ops")
 def test_beam_search_decoder(
-    cell_class, time_major, has_attention, with_alignment_history
+    cell_class, time_major, has_attention, with_alignment_history, output_all_scores
 ):
     encoder_sequence_length = np.array([3, 2, 3, 1, 1])
     batch_size = 5
@@ -579,6 +593,7 @@ def test_beam_search_decoder(
         coverage_penalty_weight=coverage_penalty_weight,
         output_time_major=time_major,
         maximum_iterations=maximum_iterations,
+        output_all_scores=output_all_scores,
     )
 
     @tf.function(
@@ -627,8 +642,20 @@ def test_beam_search_decoder(
     beam_search_decoder_output = final_outputs.beam_search_decoder_output
     max_sequence_length = np.max(final_sequence_lengths.numpy())
     assert _t((batch_size, max_sequence_length, beam_width)) == tuple(
-        beam_search_decoder_output.scores.shape.as_list()
-    )
-    assert _t((batch_size, max_sequence_length, beam_width)) == tuple(
         final_outputs.predicted_ids.shape.as_list()
     )
+
+    if output_all_scores:
+        assert _t((batch_size, max_sequence_length, beam_width, vocab_size)) == tuple(
+            beam_search_decoder_output.scores.shape.as_list()
+        )
+
+        # Check that the vocab size corresponds to the dimensions of the output.
+        assert (beam_width, vocab_size) == tuple(bsd.output_size.scores.as_list())
+    else:
+        assert _t((batch_size, max_sequence_length, beam_width)) == tuple(
+            beam_search_decoder_output.scores.shape.as_list()
+        )
+
+        # Check only the beam width corresponds to the dimensions of the output.
+        assert (beam_width,) == tuple(bsd.output_size.scores.as_list())

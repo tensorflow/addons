@@ -14,7 +14,10 @@
 # ==============================================================================
 """Matthews Correlation Coefficient Implementation."""
 
+import numpy as np
+
 import tensorflow as tf
+from tensorflow.keras import backend as K
 
 from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
 from typeguard import typechecked
@@ -40,19 +43,20 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
     MCC = (TP * TN) - (FP * FN) /
           ((TP + FP) * (TP + FN) * (TN + FP ) * (TN + FN))^(1/2)
 
+    Args:
+        num_classes : Number of unique classes in the dataset.
+        name: (Optional) String name of the metric instance.
+        dtype: (Optional) Data type of the metric result.
+
     Usage:
-    ```python
-    actuals = tf.constant([[1.0], [1.0], [1.0], [0.0]],
-             dtype=tf.float32)
-    preds = tf.constant([[1.0], [0.0], [1.0], [1.0]],
-             dtype=tf.float32)
-    # Matthews correlation coefficient
-    mcc = MatthewsCorrelationCoefficient(num_classes=1)
-    mcc.update_state(actuals, preds)
-    print('Matthews correlation coefficient is:',
-    mcc.result().numpy())
-    # Matthews correlation coefficient is : -0.33333334
-    ```
+
+    >>> y_true = np.array([[1.0], [1.0], [1.0], [0.0]], dtype=np.float32)
+    >>> y_pred = np.array([[1.0], [0.0], [1.0], [1.0]], dtype=np.float32)
+    >>> metric = tfa.metrics.MatthewsCorrelationCoefficient(num_classes=1)
+    >>> metric.update_state(y_true, y_pred)
+    >>> result = metric.result()
+    >>> result.numpy()
+    array([-0.33333334], dtype=float32)
     """
 
     @typechecked
@@ -61,16 +65,9 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
         num_classes: FloatTensorLike,
         name: str = "MatthewsCorrelationCoefficient",
         dtype: AcceptableDTypes = None,
-        **kwargs
+        **kwargs,
     ):
-        """Creates a Matthews Correlation Coefficient instance.
-
-        Args:
-            num_classes : Number of unique classes in the dataset.
-            name: (Optional) String name of the metric instance.
-            dtype: (Optional) Data type of the metric result.
-            Defaults to `tf.float32`.
-        """
+        """Creates a Matthews Correlation Coefficient instance."""
         super().__init__(name=name, dtype=dtype)
         self.num_classes = num_classes
         self.true_positives = self.add_weight(
@@ -153,7 +150,5 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
 
     def reset_states(self):
         """Resets all of the metric state variables."""
-        self.true_positives.assign(tf.zeros((self.num_classes), self.dtype))
-        self.false_positives.assign(tf.zeros((self.num_classes), self.dtype))
-        self.false_negatives.assign(tf.zeros((self.num_classes), self.dtype))
-        self.true_negatives.assign(tf.zeros((self.num_classes), self.dtype))
+        reset_value = np.zeros(self.num_classes, dtype=self.dtype)
+        K.batch_set_value([(v, reset_value) for v in self.variables])
