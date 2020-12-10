@@ -147,6 +147,7 @@ def test_no_experimental_api():
     # This allowlist should not grow. Do not add elements to this list.
     allowlist = [
         "tensorflow_addons/optimizers/weight_decay_optimizers.py",
+        "tensorflow_addons/layers/max_unpooling_2d.py",
     ]
     for file_path, line_idx, line in get_lines_of_source_code(allowlist):
 
