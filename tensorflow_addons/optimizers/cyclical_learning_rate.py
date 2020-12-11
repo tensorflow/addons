@@ -66,7 +66,7 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
             maximal_learning_rate: A scalar `float32` or `float64` `Tensor` or
                 a Python number.  The maximum learning rate.
             step_size: A scalar `float32` or `float64` `Tensor` or a
-                Python number. Step size.
+                Python number. Step size denotes the number of training iterations it takes to get to maximal_learning_rate.
             scale_fn: A function. Scheduling function applied in cycle
             scale_mode: ['cycle', 'iterations']. Mode to apply during cyclic
                 schedule
