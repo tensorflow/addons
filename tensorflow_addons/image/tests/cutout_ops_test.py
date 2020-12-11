@@ -59,3 +59,13 @@ def test_with_tf_function():
     cutout_area = tf.pad(cutout_area, ((0, 36), (0, 36)), constant_values=1)
     expect_image = to_4D_image(cutout_area)
     np.testing.assert_equal(result_image.shape, expect_image.shape)
+
+
+def test_mask_applied():
+    test_image = tf.ones([10, 40, 40, 1], dtype=np.uint8)
+    result_image = random_cutout(test_image, 20, seed=1234)
+    total_expected_masked_count = 20 * 20 * test_image.shape[0]
+
+    np.testing.assert_equal(
+        np.sum(result_image) + total_expected_masked_count, np.sum(test_image)
+    )
