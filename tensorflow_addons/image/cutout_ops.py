@@ -81,10 +81,18 @@ def random_cutout(
     half_mask_width = mask_size[1] // 2
 
     cutout_center_height = tf.random.uniform(
-        shape=[batch_size], minval=half_mask_height, maxval=image_height-half_mask_height, dtype=tf.int32, seed=seed
+        shape=[batch_size],
+        minval=half_mask_height,
+        maxval=image_height - half_mask_height,
+        dtype=tf.int32,
+        seed=seed,
     )
     cutout_center_width = tf.random.uniform(
-        shape=[batch_size], minval=half_mask_width, maxval=image_width-half_mask_width, dtype=tf.int32, seed=seed
+        shape=[batch_size],
+        minval=half_mask_width,
+        maxval=image_width - half_mask_width,
+        dtype=tf.int32,
+        seed=seed,
     )
 
     offset = tf.transpose([cutout_center_height, cutout_center_width], [1, 0])
