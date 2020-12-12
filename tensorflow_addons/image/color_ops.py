@@ -96,7 +96,6 @@ def _sharpness_image(image: TensorLike, factor: Number) -> tf.Tensor:
     kernel = tf.tile(kernel, [1, 1, image_channels, 1])
 
     # Apply kernel channel-wise.
-    # TODO: Use tf.nn.conv2d as soon as grouped convolutions have CPU support.
     degenerate = tf.nn.depthwise_conv2d(
         image, kernel, strides=[1, 1, 1, 1], padding="VALID", dilations=[1, 1]
     )
