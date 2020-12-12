@@ -79,39 +79,44 @@ def equalize(image: TensorLike, name: Optional[str] = None) -> tf.Tensor:
         return from_4D_image(image, image_dims)
 
 
-def sharpness_image(image: TensorLike, factor: Number) -> tf.Tensor:
+def _sharpness_image(image: TensorLike, factor: Number) -> tf.Tensor:
     """Implements Sharpness function from PIL using TF ops."""
     orig_image = image
     image_dtype = image.dtype
-    # SMOOTH PIL Kernel.
+    image_channels = image.shape[-1]
     image = tf.cast(image, tf.float32)
+
+    # SMOOTH PIL Kernel.
     kernel = (
         tf.constant(
             [[1, 1, 1], [1, 5, 1], [1, 1, 1]], dtype=tf.float32, shape=[3, 3, 1, 1]
         )
         / 13.0
     )
-    # Tile across channel dimension.
-    kernel = tf.tile(kernel, [1, 1, 3, 1])
-    strides = [1, 1, 1, 1]
+    kernel = tf.tile(kernel, [1, 1, image_channels, 1])
+
+    # Apply kernel channel-wise.
+    # TODO: Use tf.nn.conv2d as soon as grouped convolutions have CPU support.
     degenerate = tf.nn.depthwise_conv2d(
-        image, kernel, strides, padding="VALID", dilations=[1, 1]
+        image, kernel, strides=[1, 1, 1, 1], padding="VALID", dilations=[1, 1]
     )
-    degenerate = tf.clip_by_value(degenerate, 0.0, 255.0)
     degenerate = tf.cast(degenerate, image_dtype)
 
-    # For the borders of the resulting image, fill in the values of the
-    # original image.
+    # For the borders of the resulting image, fill in the values of the original image.
     mask = tf.ones_like(degenerate)
     padded_mask = tf.pad(mask, [[0, 0], [1, 1], [1, 1], [0, 0]])
     padded_degenerate = tf.pad(degenerate, [[0, 0], [1, 1], [1, 1], [0, 0]])
     result = tf.where(tf.equal(padded_mask, 1), padded_degenerate, orig_image)
+
     # Blend the final result.
     blended = blend(result, orig_image, factor)
     return tf.cast(blended, image_dtype)
 
 
-def sharpness(image: TensorLike, factor: Number) -> tf.Tensor:
+@tf.function
+def sharpness(
+    image: TensorLike, factor: Number, name: Optional[str] = None
+) -> tf.Tensor:
     """Change sharpness of image(s).
 
     Args:
@@ -119,11 +124,12 @@ def sharpness(image: TensorLike, factor: Number) -> tf.Tensor:
           `(num_images, num_rows, num_columns, num_channels)` (NHWC), or
           `(num_rows, num_columns, num_channels)` (HWC)
       factor: A floating point value or Tensor above 0.0.
+      name: The name of the op.
     Returns:
       Image(s) with the same type and shape as `images`, sharper.
     """
-    image = tf.convert_to_tensor(image)
-    image_dims = tf.rank(image)
-    image = to_4D_image(image)
-    image = sharpness_image(image, factor=factor)
-    return from_4D_image(image, image_dims)
+    with tf.name_scope(name or "sharpness"):
+        image_dims = tf.rank(image)
+        image = to_4D_image(image)
+        image = _sharpness_image(image, factor=factor)
+        return from_4D_image(image, image_dims)
