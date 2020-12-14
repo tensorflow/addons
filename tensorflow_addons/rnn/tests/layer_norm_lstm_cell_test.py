@@ -125,7 +125,10 @@ def test_config_layer_norm():
 
 def test_build():
     cell = LayerNormLSTMCell(10, name="layer_norm_lstm_cell")
-    cell.build([10, 20])
+    cell(
+        inputs=tf.ones((12, 20)),
+        states=cell.get_initial_state(batch_size=12, dtype=tf.float32),
+    )
     assert len(cell.weights) == 9
     assert cell.weights[0].name == "layer_norm_lstm_cell/kernel:0"
     assert cell.weights[1].name == "layer_norm_lstm_cell/recurrent_kernel:0"
