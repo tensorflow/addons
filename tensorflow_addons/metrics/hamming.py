@@ -156,7 +156,7 @@ class HammingLoss(MeanMetricWrapper):
         name: str = "hamming_loss",
         threshold: Optional[FloatTensorLike] = None,
         dtype: AcceptableDTypes = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             hamming_loss_fn, name=name, dtype=dtype, mode=mode, threshold=threshold

@@ -90,6 +90,8 @@
 /tensorflow_addons/layers/tests/stochastic_depth_test.py @mhstadler @windqaq
 /tensorflow_addons/layers/noisy_dense.py @leonshams
 /tensorflow_addons/layers/tests/noisy_dense_test.py @leonshams
+/tensorflow_addons/layers/max_unpooling_2d.py @thaink
+/tensorflow_addons/layers/tests/max_unpooling_2d_test.py @thaink
 
 /tensorflow_addons/losses/contrastive.py @windqaq
 /tensorflow_addons/losses/tests/contrastive_test.py @windqaq

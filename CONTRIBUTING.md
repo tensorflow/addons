@@ -426,7 +426,7 @@ your tests as well as helper functions. Those can be found in
 #### maybe_run_functions_eagerly
 
 Will run your test function twice, once normally and once with 
-`tf.config.experimental_run_functions_eagerly(True)`. To use it:
+`tf.config.run_functions_eagerly(True)`. To use it:
 
 ```python
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")

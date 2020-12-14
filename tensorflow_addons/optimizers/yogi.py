@@ -69,7 +69,7 @@ class Yogi(tf.keras.optimizers.Optimizer):
         initial_accumulator_value: FloatTensorLike = 1e-6,
         activation: str = "sign",
         name: str = "Yogi",
-        **kwargs
+        **kwargs,
     ):
         """Construct a new Yogi optimizer.
 

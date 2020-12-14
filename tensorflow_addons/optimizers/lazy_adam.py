@@ -55,7 +55,7 @@ class LazyAdam(tf.keras.optimizers.Adam):
         epsilon: FloatTensorLike = 1e-7,
         amsgrad: bool = False,
         name: str = "LazyAdam",
-        **kwargs
+        **kwargs,
     ):
         """Constructs a new LazyAdam optimizer.
 
@@ -119,7 +119,26 @@ class LazyAdam(tf.keras.optimizers.Adam):
         v_update_op = self._resource_scatter_update(v, indices, v_t_slice)
 
         # \\(variable += -learning_rate * m_t / (epsilon_t + sqrt(v_t))\\)
-        var_slice = -lr * m_t_slice / (tf.math.sqrt(v_t_slice) + epsilon_t)
-        var_update_op = self._resource_scatter_add(var, indices, var_slice)
+        var_slice = lr * m_t_slice / (tf.math.sqrt(v_t_slice) + epsilon_t)
+        var_update_op = self._resource_scatter_sub(var, indices, var_slice)
 
         return tf.group(*[var_update_op, m_update_op, v_update_op])
+
+    def _resource_scatter_update(self, resource, indices, update):
+        return self._resource_scatter_operate(
+            resource, indices, update, tf.raw_ops.ResourceScatterUpdate
+        )
+
+    def _resource_scatter_sub(self, resource, indices, update):
+        return self._resource_scatter_operate(
+            resource, indices, update, tf.raw_ops.ResourceScatterSub
+        )
+
+    def _resource_scatter_operate(self, resource, indices, update, resource_scatter_op):
+        resource_update_kwargs = {
+            "resource": resource.handle,
+            "indices": indices,
+            "updates": update,
+        }
+
+        return resource_scatter_op(**resource_update_kwargs)

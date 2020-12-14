@@ -42,7 +42,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
     >>> y.shape
     TensorShape([1, 10, 10, 10])
 
-    Arguments:
+    Args:
       layer: A `tf.keras.layers.Layer` instance that
         has either `kernel` or `embeddings` attribute.
       power_iterations: `int`, the number of iterations during normalization.

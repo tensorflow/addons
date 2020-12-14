@@ -47,7 +47,7 @@ class Lookahead(tf.keras.optimizers.Optimizer):
         sync_period: int = 6,
         slow_step_size: types.FloatTensorLike = 0.5,
         name: str = "Lookahead",
-        **kwargs
+        **kwargs,
     ):
         r"""Wrap optimizer with the lookahead mechanism.
 

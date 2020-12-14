@@ -44,7 +44,7 @@ class ESNCell(keras.layers.AbstractRNNCell):
     >>> memory_state.shape
     TensorShape([30, 4])
 
-    Arguments:
+    Args:
         units: Positive integer, dimensionality in the reservoir.
         connectivity: Float between 0 and 1.
             Connection probability between two reservoir units.
@@ -91,7 +91,7 @@ class ESNCell(keras.layers.AbstractRNNCell):
         kernel_initializer: Initializer = "glorot_uniform",
         recurrent_initializer: Initializer = "glorot_uniform",
         bias_initializer: Initializer = "zeros",
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.units = units

@@ -46,13 +46,13 @@ class CRF(tf.keras.layers.Layer):
     >>> chain_kernel.shape
     TensorShape([4, 4])
 
-    Arguments:
+    Args:
         units: Positive integer, dimensionality of the reservoir.
         chain_initializer: Orthogonal matrix. Default to `orthogonal`.
         use_boundary: `Boolean`, whether the layer uses a boundary vector. Default to `True`.
         boundary_initializer: Tensors initialized to 0. Default to `zeros`.
         use_kernel: `Boolean`, whether the layer uses a kernel weights. Default to `True`.
-    Call Arguments:
+    Call Args:
         inputs: Positive integer, dimensionality of the output space.
         mask: A boolean `Tensor` of shape `[batch_size, sequence_length]`
             or `None`. Default to `None`.
@@ -69,7 +69,7 @@ class CRF(tf.keras.layers.Layer):
         use_boundary: bool = True,
         boundary_initializer: types.Initializer = "zeros",
         use_kernel: bool = True,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
 

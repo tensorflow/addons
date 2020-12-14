@@ -78,7 +78,7 @@ class SWA(AveragedOptimizerWrapper):
         start_averaging: int = 0,
         average_period: int = 10,
         name: str = "SWA",
-        **kwargs
+        **kwargs,
     ):
         r"""Wrap optimizer with the Stochastic Weight Averaging mechanism.
 

@@ -50,7 +50,7 @@ class MovingAverage(AveragedOptimizerWrapper):
         start_step: int = 0,
         dynamic_decay: bool = False,
         name: str = "MovingAverage",
-        **kwargs
+        **kwargs,
     ):
         r"""Construct a new MovingAverage optimizer.
 
