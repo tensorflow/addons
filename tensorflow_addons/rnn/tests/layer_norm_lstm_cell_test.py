@@ -127,12 +127,12 @@ def test_build():
     cell = LayerNormLSTMCell(10, name="layer_norm_lstm_cell")
     cell.build([10, 20])
     assert len(cell.weights) == 9
-    assert cell.weights[0].name == 'layer_norm_lstm_cell/kernel:0'
-    assert cell.weights[1].name == 'layer_norm_lstm_cell/recurrent_kernel:0'
-    assert cell.weights[2].name == 'layer_norm_lstm_cell/bias:0'
-    assert cell.weights[3].name == 'layer_norm_lstm_cell/kernel_norm/gamma:0'
-    assert cell.weights[4].name == 'layer_norm_lstm_cell/kernel_norm/beta:0'
-    assert cell.weights[5].name == 'layer_norm_lstm_cell/recurrent_norm/gamma:0'
-    assert cell.weights[6].name == 'layer_norm_lstm_cell/recurrent_norm/beta:0'
-    assert cell.weights[7].name == 'layer_norm_lstm_cell/state_norm/gamma:0'
-    assert cell.weights[8].name == 'layer_norm_lstm_cell/state_norm/beta:0'
+    assert cell.weights[0].name == "layer_norm_lstm_cell/kernel:0"
+    assert cell.weights[1].name == "layer_norm_lstm_cell/recurrent_kernel:0"
+    assert cell.weights[2].name == "layer_norm_lstm_cell/bias:0"
+    assert cell.weights[3].name == "layer_norm_lstm_cell/kernel_norm/gamma:0"
+    assert cell.weights[4].name == "layer_norm_lstm_cell/kernel_norm/beta:0"
+    assert cell.weights[5].name == "layer_norm_lstm_cell/recurrent_norm/gamma:0"
+    assert cell.weights[6].name == "layer_norm_lstm_cell/recurrent_norm/beta:0"
+    assert cell.weights[7].name == "layer_norm_lstm_cell/state_norm/gamma:0"
+    assert cell.weights[8].name == "layer_norm_lstm_cell/state_norm/beta:0"

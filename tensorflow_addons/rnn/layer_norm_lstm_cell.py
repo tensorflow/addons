@@ -154,7 +154,7 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
 
     def build(self, input_shape):
         super().build(input_shape)
-        
+
         def maybe_build_sublayer(sublayer, build_shape):
             if not sublayer.built:
                 with tf.keras.backend.name_scope(sublayer.name):
