@@ -58,7 +58,7 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
     >>> tfa.activations.gelu(x, approximate=False)
     <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.15865529,  0.        ,  0.8413447 ], dtype=float32)>
     >>> tfa.activations.gelu(x, approximate=True)
-    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.158808,  0.      ,  0.841192], dtype=float32)>
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.15880796,  0.        ,  0.841192  ], dtype=float32)>
 
     Args:
         x: A `Tensor`. Must be one of the following types:
