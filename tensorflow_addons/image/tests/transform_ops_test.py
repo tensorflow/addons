@@ -154,7 +154,7 @@ def test_transform_nearest_fill_mode(dtype):
         dtype=dtype.as_numpy_dtype,
     )
     # Translate right by 2 (the transformation matrix is always inverted,
-    # hence the -1).
+    # hence the -2).
     translation = tf.constant([1, 0, -2, 0, 1, 0, 0, 0], dtype=tf.float32)
     image_transformed = transform_ops.transform(image, translation, fill_mode="nearest")
     np.testing.assert_equal(image_transformed.numpy(), expected)
