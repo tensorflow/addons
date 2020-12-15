@@ -76,6 +76,7 @@ def translate(
     translations: TensorLike,
     interpolation: str = "NEAREST",
     fill_mode: str = "CONSTANT",
+    fill_value: TensorLike = 0.0,
     name: Optional[str] = None,
 ) -> tf.Tensor:
     """Translate image(s) by the passed vectors(s).
@@ -92,7 +93,7 @@ def translate(
       interpolation: Interpolation mode. Supported values: "NEAREST",
         "BILINEAR".
       fill_mode: Points outside the boundaries of the input are filled according
-        to the given mode (one of `{'constant', 'reflect', 'wrap'}`).
+        to the given mode (one of `{'constant', 'reflect', 'wrap', 'nearest'}`).
         - *reflect*: `(d c b a | a b c d | d c b a)`
           The input is extended by reflecting about the edge of the last pixel.
         - *constant*: `(k k k k | a b c d | k k k k)`
@@ -100,6 +101,10 @@ def translate(
           same constant value k = 0.
         - *wrap*: `(a b c d | a b c d | a b c d)`
           The input is extended by wrapping around to the opposite edge.
+        - *nearest*: `(a a a a | a b c d | d d d d)`
+          The input is extended by the nearest pixel.
+      fill_value: a float represents the value to be filled outside the
+        boundaries when `fill_mode` is "constant".
       name: The name of the op.
     Returns:
       Image(s) with the same type and shape as `images`, translated by the
@@ -114,6 +119,7 @@ def translate(
             translations_to_projective_transforms(translations),
             interpolation=interpolation,
             fill_mode=fill_mode,
+            fill_value=fill_value,
         )
 
 
