@@ -497,6 +497,10 @@ def test_tf_function():
     crf_decode(potentials, transition_params, sequence_length)
 
 
+@pytest.mark.skipif(
+    tf.__version__[:3] == "2.4",
+    reason="CRF Decode doesn't work in TF2.4, the issue was fixed in TF core, but didn't make the release",
+)
 def test_crf_decode_save_load(tmpdir):
     tf.keras.backend.clear_session()
     input_tensor = tf.keras.Input(shape=(10, 3), dtype=tf.float32, name="input_tensor")

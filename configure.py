@@ -107,6 +107,11 @@ def create_build_configuration():
     write("build --strategy=Genrule=standalone")
     write("build -c opt")
 
+    if is_windows():
+        write("build --config=windows")
+        write("build:windows --copt=/experimental:preprocessor")
+        write("build:windows --host_copt=/experimental:preprocessor")
+
     if os.getenv("TF_NEED_CUDA", "0") == "1":
         print("> Building GPU & CPU ops")
         configure_cuda()
@@ -127,8 +132,8 @@ def configure_cuda():
         "CUDNN_INSTALL_PATH",
         os.getenv("CUDNN_INSTALL_PATH", "/usr/lib/x86_64-linux-gnu"),
     )
-    write_action_env("TF_CUDA_VERSION", os.getenv("TF_CUDA_VERSION", "10.1"))
-    write_action_env("TF_CUDNN_VERSION", os.getenv("TF_CUDNN_VERSION", "7"))
+    write_action_env("TF_CUDA_VERSION", os.getenv("TF_CUDA_VERSION", "11"))
+    write_action_env("TF_CUDNN_VERSION", os.getenv("TF_CUDNN_VERSION", "8"))
 
     write("test --config=cuda")
     write("build --config=cuda")
