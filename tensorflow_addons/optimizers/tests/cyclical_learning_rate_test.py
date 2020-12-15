@@ -54,6 +54,35 @@ def test_triangular_cyclical_learning_rate(serialize):
 
 
 @pytest.mark.parametrize("serialize", [True, False])
+def test_1cycle_cyclical_learning_rate(serialize):
+    initial_learning_rate = 0.1
+    max_learning_rate = 1
+    step_size = 40
+    cyclical_lr = cyclical_learning_rate.CyclicalLearningRate(
+        initial_learning_rate=initial_learning_rate,
+        maximal_learning_rate=max_learning_rate,
+        step_size=step_size,
+        scale_fn=lambda x: 1,
+        is_1cycle=True,
+    )
+    cyclical_lr = _maybe_serialized(cyclical_lr, serialize)
+
+    expected = np.concatenate(
+        [
+            np.linspace(initial_learning_rate, max_learning_rate, num=step_size + 1),
+            np.linspace(max_learning_rate, initial_learning_rate, num=step_size + 1)[
+                1:
+            ][: step_size - 1],
+            np.full(2 * step_size, initial_learning_rate / 1e3),
+        ]
+    )
+
+    for step, expected_value in enumerate(expected):
+        print("expected: {}, clr: {}".format(expected_value, cyclical_lr(step)))
+        np.testing.assert_allclose(cyclical_lr(step), expected_value, 1e-6)
+
+
+@pytest.mark.parametrize("serialize", [True, False])
 def test_triangular2_cyclical_learning_rate(serialize):
     initial_lr = 0.1
     maximal_lr = 1

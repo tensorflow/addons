@@ -33,6 +33,7 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
         step_size: FloatTensorLike,
         scale_fn: Callable,
         scale_mode: str = "cycle",
+        is_1cycle: bool = False,
         name: str = "CyclicalLearningRate",
     ):
         """Applies cyclical schedule to the learning rate.
@@ -82,6 +83,7 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
         self.scale_fn = scale_fn
         self.scale_mode = scale_mode
         self.name = name
+        self.is_1cycle = is_1cycle
 
     def __call__(self, step):
         with tf.name_scope(self.name or "CyclicalLearningRate"):
@@ -97,9 +99,18 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
 
             mode_step = cycle if self.scale_mode == "cycle" else step
 
-            return initial_learning_rate + (
-                maximal_learning_rate - initial_learning_rate
-            ) * tf.maximum(tf.cast(0, dtype), (1 - x)) * self.scale_fn(mode_step)
+            def lr():
+                return initial_learning_rate + (
+                    maximal_learning_rate - initial_learning_rate
+                ) * tf.maximum(tf.cast(0, dtype), (1 - x)) * self.scale_fn(mode_step)
+
+            def decayed_lr():
+                return initial_learning_rate / 1e3
+
+            is_not_cycled = tf.logical_not(
+                tf.logical_and(tf.cast(self.is_1cycle, tf.bool), tf.greater(cycle, 1))
+            )
+            return tf.cond(is_not_cycled, lr, decayed_lr)
 
     def get_config(self):
         return {
@@ -108,6 +119,7 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
             "scale_fn": self.scale_fn,
             "step_size": self.step_size,
             "scale_mode": self.scale_mode,
+            "is_1cycle": self.is_1cycle,
         }
 
 
@@ -120,6 +132,7 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
         maximal_learning_rate: Union[FloatTensorLike, Callable],
         step_size: FloatTensorLike,
         scale_mode: str = "cycle",
+        is_1cycle: bool = False,
         name: str = "TriangularCyclicalLearningRate",
     ):
         """Applies triangular cyclical schedule to the learning rate.
@@ -168,6 +181,7 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
             step_size=step_size,
             scale_fn=lambda x: 1.0,
             scale_mode=scale_mode,
+            is_1cycle=is_1cycle,
             name=name,
         )
 
@@ -177,6 +191,7 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
             "maximal_learning_rate": self.maximal_learning_rate,
             "step_size": self.step_size,
             "scale_mode": self.scale_mode,
+            "is_1cycle": self.is_1cycle,
         }
 
 
@@ -189,6 +204,7 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
         maximal_learning_rate: Union[FloatTensorLike, Callable],
         step_size: FloatTensorLike,
         scale_mode: str = "cycle",
+        is_1cycle: bool = False,
         name: str = "Triangular2CyclicalLearningRate",
     ):
         """Applies triangular2 cyclical schedule to the learning rate.
@@ -237,6 +253,7 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
             step_size=step_size,
             scale_fn=lambda x: 1 / (2.0 ** (x - 1)),
             scale_mode=scale_mode,
+            is_1cycle=is_1cycle,
             name=name,
         )
 
@@ -246,6 +263,7 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
             "maximal_learning_rate": self.maximal_learning_rate,
             "step_size": self.step_size,
             "scale_mode": self.scale_mode,
+            "is_1cycle": self.is_1cycle,
         }
 
 
@@ -259,6 +277,7 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
         step_size: FloatTensorLike,
         scale_mode: str = "iterations",
         gamma: FloatTensorLike = 1.0,
+        is_1cycle: bool = False,
         name: str = "ExponentialCyclicalLearningRate",
     ):
         """Applies exponential cyclical schedule to the learning rate.
@@ -311,6 +330,7 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
             step_size=step_size,
             scale_fn=lambda x: gamma ** x,
             scale_mode=scale_mode,
+            is_1cycle=is_1cycle,
             name=name,
         )
 
@@ -321,4 +341,5 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
             "step_size": self.step_size,
             "scale_mode": self.scale_mode,
             "gamma": self.gamma,
+            "is_1cycle": self.is_1cycle,
         }
