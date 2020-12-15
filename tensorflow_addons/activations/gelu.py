@@ -18,6 +18,7 @@ import math
 import warnings
 
 from tensorflow_addons.utils import types
+from distutils.version import LooseVersion
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -47,6 +48,9 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
     See [Gaussian Error Linear Units (GELUs)](https://arxiv.org/abs/1606.08415)
     and [BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding](https://arxiv.org/abs/1810.04805).
 
+    Note that `approximate` will default to `False` from TensorFlow version 2.4 onwards.
+    Consider using `tf.nn.gelu` instead.
+
     Usage:
 
     >>> tfa.options.TF_ADDONS_PY_OPS = True
@@ -54,7 +58,7 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
     >>> tfa.activations.gelu(x, approximate=False)
     <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.15865529,  0.        ,  0.8413447 ], dtype=float32)>
     >>> tfa.activations.gelu(x, approximate=True)
-    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.158808,  0.      ,  0.841192], dtype=float32)>
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.15880796,  0.        ,  0.841192  ], dtype=float32)>
 
     Args:
         x: A `Tensor`. Must be one of the following types:
@@ -71,7 +75,15 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
 
     x = tf.convert_to_tensor(x)
 
-    return _gelu_py(x, approximate)
+    if LooseVersion(tf.__version__) >= "2.4":
+        gelu_op = tf.nn.gelu
+        warnings.warn(
+            "Default value of `approximate` is changed from `True` to `False`"
+        )
+    else:
+        gelu_op = _gelu_py
+
+    return gelu_op(x, approximate)
 
 
 def _gelu_py(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
