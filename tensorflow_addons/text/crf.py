@@ -537,7 +537,7 @@ def crf_decode(
     """
     if tf.__version__[:3] == "2.4":
         warnings.warn(
-            "CRF Cecoding does may work in TF2.4. The bug has since been fixed in tensorflow/tensorflow##45534"
+            "CRF Decoding does not work with KerasTensors in TF2.4. The bug has since been fixed in tensorflow/tensorflow##45534"
         )
     sequence_length = tf.cast(sequence_length, dtype=tf.int32)
 
