@@ -39,6 +39,8 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
         """Applies cyclical schedule to the learning rate.
 
         See Cyclical Learning Rates for Training Neural Networks. https://arxiv.org/abs/1506.01186
+        See Super-Convergence: Very Fast Training of Neural Networks Using Large Learning Rates. https://arxiv.org/abs/1708.07120
+        See A disciplined approach to neural network hyper-parameters: Part 1 -- learning rate, batch size, momentum, and weight decay. https://arxiv.org/abs/1803.09820
 
 
         ```python
@@ -48,6 +50,7 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
             step_size=2000,
             scale_fn=lambda x: 1.,
             scale_mode="cycle",
+            is_1cycle=False,
             name="MyCyclicScheduler")
 
         model.compile(optimizer=tf.keras.optimizers.SGD(
@@ -71,6 +74,8 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
             scale_fn: A function. Scheduling function applied in cycle
             scale_mode: ['cycle', 'iterations']. Mode to apply during cyclic
                 schedule
+            is_1cycle: A scalar `bool` or a Python boolean. Flag for 1cycle
+                learning rate schedule.
             name: (Optional) Name for the operation.
 
         Returns:
@@ -99,18 +104,14 @@ class CyclicalLearningRate(tf.keras.optimizers.schedules.LearningRateSchedule):
 
             mode_step = cycle if self.scale_mode == "cycle" else step
 
-            def lr():
-                return initial_learning_rate + (
-                    maximal_learning_rate - initial_learning_rate
-                ) * tf.maximum(tf.cast(0, dtype), (1 - x)) * self.scale_fn(mode_step)
+            lr = initial_learning_rate + (
+                maximal_learning_rate - initial_learning_rate
+            ) * tf.maximum(tf.cast(0, dtype), (1 - x)) * self.scale_fn(mode_step)
 
-            def decayed_lr():
-                return initial_learning_rate / 1e3
+            if self.is_1cycle and 1 < cycle:
+                lr = initial_learning_rate / 1e3
 
-            is_not_cycled = tf.logical_not(
-                tf.logical_and(tf.cast(self.is_1cycle, tf.bool), tf.greater(cycle, 1))
-            )
-            return tf.cond(is_not_cycled, lr, decayed_lr)
+            return lr
 
     def get_config(self):
         return {
