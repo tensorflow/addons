@@ -27,58 +27,44 @@ from typing import Optional
 from functools import partial
 
 
-def equalize_image(image: TensorLike) -> tf.Tensor:
+def _scale_channel(image: TensorLike, channel: int) -> tf.Tensor:
+    """Scale the data in the channel to implement equalize."""
+    image_dtype = image.dtype
+    image = tf.cast(image[:, :, channel], tf.int32)
+
+    # Compute the histogram of the image channel.
+    histo = tf.histogram_fixed_width(image, [0, 255], nbins=256)
+
+    # For the purposes of computing the step, filter out the nonzeros.
+    nonzero_histo = tf.boolean_mask(histo, histo != 0)
+    step = (tf.reduce_sum(nonzero_histo) - nonzero_histo[-1]) // 255
+
+    # If step is zero, return the original image.  Otherwise, build
+    # lut from the full histogram and step and then index from it.
+    if step == 0:
+        result = image
+    else:
+        lut_values = (tf.cumsum(histo, exclusive=True) + (step // 2)) // step
+        lut_values = tf.clip_by_value(lut_values, 0, 255)
+        result = tf.gather(lut_values, image)
+
+    return tf.cast(result, image_dtype)
+
+
+def _equalize_image(image: TensorLike) -> tf.Tensor:
     """Implements Equalize function from PIL using TF ops."""
-
-    @tf.function
-    def scale_channel(image, channel):
-        """Scale the data in the channel to implement equalize."""
-        image_dtype = image.dtype
-        image = tf.cast(image[:, :, channel], tf.int32)
-
-        # Compute the histogram of the image channel.
-        histo = tf.histogram_fixed_width(image, [0, 255], nbins=256)
-
-        # For the purposes of computing the step, filter out the nonzeros.
-        nonzero = tf.where(tf.not_equal(histo, 0))
-        nonzero_histo = tf.reshape(tf.gather(histo, nonzero), [-1])
-        step = (tf.reduce_sum(nonzero_histo) - nonzero_histo[-1]) // 255
-
-        def build_lut(histo, step):
-            # Compute the cumulative sum, shifting by step // 2
-            # and then normalization by step.
-            lut = (tf.cumsum(histo) + (step // 2)) // step
-            # Shift lut, prepending with 0.
-            lut = tf.concat([[0], lut[:-1]], 0)
-            # Clip the counts to be in range.  This is done
-            # in the C code for image.point.
-            return tf.clip_by_value(lut, 0, 255)
-
-        # If step is zero, return the original image.  Otherwise, build
-        # lut from the full histogram and step and then index from it.
-
-        if step == 0:
-            result = image
-        else:
-            result = tf.gather(build_lut(histo, step), image)
-
-        return tf.cast(result, image_dtype)
-
-    idx = 2  # Channels last format
-    image = tf.stack([scale_channel(image, c) for c in range(image.shape[idx])], idx)
-
+    image = tf.stack([_scale_channel(image, c) for c in range(image.shape[-1])], -1)
     return image
 
 
+@tf.function
 def equalize(image: TensorLike, name: Optional[str] = None) -> tf.Tensor:
     """Equalize image(s)
 
     Args:
       images: A tensor of shape
           `(num_images, num_rows, num_columns, num_channels)` (NHWC), or
-          `(num_images, num_channels, num_rows, num_columns)` (NCHW), or
           `(num_rows, num_columns, num_channels)` (HWC), or
-          `(num_channels, num_rows, num_columns)` (CHW), or
           `(num_rows, num_columns)` (HW). The rank must be statically known (the
           shape is not `TensorShape(None)`).
       name: The name of the op.
@@ -88,7 +74,7 @@ def equalize(image: TensorLike, name: Optional[str] = None) -> tf.Tensor:
     with tf.name_scope(name or "equalize"):
         image_dims = tf.rank(image)
         image = to_4D_image(image)
-        fn = partial(equalize_image)
+        fn = partial(_equalize_image)
         image = tf.map_fn(fn, image)
         return from_4D_image(image, image_dims)
 

@@ -80,7 +80,7 @@ what it was tested against.
 #### Python Op Compatibility Matrix
 | TensorFlow Addons | TensorFlow | Python  |
 |:----------------------- |:---|:---------- |
-| tfa-nightly | 2.3 | 3.6, 3.7, 3.8 | 
+| tfa-nightly | 2.3, 2.4 | 3.6, 3.7, 3.8 | 
 | tensorflow-addons-0.11.2 | 2.2, 2.3 |3.5, 3.6, 3.7, 3.8 |
 | tensorflow-addons-0.10.0 | 2.2 |3.5, 3.6, 3.7, 3.8 |
 | tensorflow-addons-0.9.1 | 2.1, 2.2 |3.5, 3.6, 3.7 |
@@ -106,7 +106,7 @@ is compiled differently. A typical example of this would be `conda`-installed Te
 #### C++ Custom Op Compatibility Matrix
 | TensorFlow Addons | TensorFlow | Compiler  | cuDNN | CUDA | 
 |:----------------------- |:---- |:---------|:---------|:---------|
-| tfa-nightly | 2.3 | GCC 7.3.1 | 7.6 | 10.1 |
+| tfa-nightly | 2.4 | GCC 7.3.1 | 8.0 | 11.0 |
 | tensorflow-addons-0.11.2 | 2.3  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.10.0 | 2.2  | GCC 7.3.1 | 7.6 | 10.1 |
 | tensorflow-addons-0.9.1 | 2.1  | GCC 7.3.1 | 7.6 | 10.1 |

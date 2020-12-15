@@ -295,7 +295,6 @@ def test_swap_weights(device):
 
 @pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_model_mixed_precision():
-    tf.keras.mixed_precision.experimental.set_policy("mixed_float16")
     x = np.random.standard_normal((10000, 3))
     w = np.random.standard_normal((3, 1))
     y = np.dot(x, w) + np.random.standard_normal((10000, 1)) * 1e-4
@@ -303,3 +302,35 @@ def test_model_mixed_precision():
     model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
     model.compile(MovingAverage("sgd"), loss="mse")
     model.fit(x, y, epochs=3)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_no_average_slot():
+    max_features = 5000
+    max_len = 4
+    embedding_dims = 2
+
+    # Some preprocessing layers have TrackableWeightHandler.
+    # They are returned when using model.variables
+    # but it's unable to assign average slot to them.
+    vectorize_layer = tf.keras.layers.experimental.preprocessing.TextVectorization(
+        max_tokens=max_features, output_mode="int", output_sequence_length=max_len
+    )
+
+    vectorize_layer.adapt(["foo", "bar", "baz"])
+
+    model = tf.keras.models.Sequential(
+        [
+            tf.keras.Input(shape=(1,), dtype=tf.string),
+            vectorize_layer,
+            tf.keras.layers.Embedding(max_features + 1, embedding_dims),
+            tf.keras.layers.Dense(1),
+        ]
+    )
+
+    optimizer = MovingAverage("sgd")
+
+    model.compile(optimizer, loss="mse")
+    model.fit(x=["foo", "bar", "baz"], y=[0.0, 1.0, 2.0], epochs=1)
+
+    optimizer.assign_average_vars(model.variables)

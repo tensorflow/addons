@@ -44,7 +44,7 @@ class ESNCell(keras.layers.AbstractRNNCell):
     >>> memory_state.shape
     TensorShape([30, 4])
 
-    Arguments:
+    Args:
         units: Positive integer, dimensionality in the reservoir.
         connectivity: Float between 0 and 1.
             Connection probability between two reservoir units.

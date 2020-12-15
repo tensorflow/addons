@@ -279,6 +279,7 @@ def test_save_load_model():
     assert model.layers[1].get_config() == new_model.layers[1].get_config()
 
 
+@pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_fit_predict_eval():
 
     num_heads = 8

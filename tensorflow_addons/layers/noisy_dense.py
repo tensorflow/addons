@@ -66,7 +66,7 @@ class NoisyDense(tf.keras.layers.Dense):
     >>> model.output_shape
     (None, 32)
 
-    Arguments:
+    Args:
       units: Positive integer, dimensionality of the output space.
       sigma: A float between 0-1 used as a standard deviation figure and is
         applied to the gaussian noise layer (`sigma_kernel` and `sigma_bias`).

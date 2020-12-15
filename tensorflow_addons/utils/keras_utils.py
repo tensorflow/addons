@@ -85,7 +85,7 @@ def normalize_tuple(value, n, name):
 
     A copy of tensorflow.python.keras.util.
 
-    Arguments:
+    Args:
       value: The value to validate and convert. Could an int, or any iterable
         of ints.
       n: The size of the tuple to be returned.

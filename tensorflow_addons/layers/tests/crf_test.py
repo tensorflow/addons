@@ -284,7 +284,7 @@ def test_numerical_accuracy():
     base_model = tf.keras.Model(x_input, crf_outputs)
     model = ModelWithCRFLoss(base_model)
 
-    model.compile()
+    model.compile(optimizer="Adam")
     log_likelihood = model.train_on_batch(logits, tags, return_dict=True)["crf_loss"]
 
     # The manually computed log likelihood should

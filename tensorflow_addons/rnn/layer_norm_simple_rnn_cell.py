@@ -48,7 +48,7 @@ class LayerNormSimpleRNNCell(keras.layers.SimpleRNNCell):
     >>> memory_state.shape
     TensorShape([30, 4])
 
-    Arguments:
+    Args:
       units: Positive integer, dimensionality of the output space.
       activation: Activation function to use.
         Default: hyperbolic tangent (`tanh`).

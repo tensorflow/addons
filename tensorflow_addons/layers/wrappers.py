@@ -46,7 +46,7 @@ class WeightNormalization(tf.keras.layers.Wrapper):
     >>> y.shape
     TensorShape([1, 10, 10, 10])
 
-    Arguments:
+    Args:
       layer: A `tf.keras.layers.Layer` instance.
       data_init: If `True` use data dependent variable initialization.
     Raises:
