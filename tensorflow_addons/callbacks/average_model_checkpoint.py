@@ -64,7 +64,7 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
     def _get_optimizer(self):
         optimizer = self.model.optimizer
         # TODO(fsx950223): change _optimizer to inner_optimizer after tf2.3 is not support
-        if type(optimizer).__name__ == "LossScaleOptimizer":
+        if type(optimizer).__name__ in ["LossScaleOptimizer", "LossScaleOptimizerV1"]:
             optimizer = optimizer._optimizer
 
         return optimizer
