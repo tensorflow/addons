@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+import warnings
 
 import numpy as np
 import tensorflow as tf
@@ -534,6 +535,10 @@ def crf_decode(
                   Contains the highest scoring tag indices.
       best_score: A [batch_size] vector, containing the score of `decode_tags`.
     """
+    if tf.__version__[:3] == "2.4":
+        warnings.warn(
+            "CRF Decoding does not work with KerasTensors in TF2.4. The bug has since been fixed in tensorflow/tensorflow##45534"
+        )
     sequence_length = tf.cast(sequence_length, dtype=tf.int32)
 
     # If max_seq_len is 1, we skip the algorithm and simply return the
