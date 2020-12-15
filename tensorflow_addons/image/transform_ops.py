@@ -144,7 +144,7 @@ def transform(
                 )
             if fill_mode == "NEAREST":
                 raise ValueError(
-                    "NEAREST fill mode is not supported for TensorFlow < 2.4.0."
+                    "NEAREST fill_mode is not supported for TensorFlow < 2.4.0."
                 )
             output = tf.raw_ops.ImageProjectiveTransformV2(
                 images=images,
