@@ -22,8 +22,6 @@ import numpy as np
 import pytest
 import tensorflow as tf
 
-from distutils.version import LooseVersion
-
 from tensorflow_addons import options
 from tensorflow_addons.utils import resource_loader
 
@@ -111,8 +109,6 @@ def run_custom_and_py_ops(request):
 
 @pytest.fixture(scope="function", params=["float32", "mixed_float16"])
 def run_with_mixed_precision_policy(request):
-    if is_gpu_available() and LooseVersion(tf.__version__) <= "2.2.0":
-        pytest.xfail("See https://github.com/tensorflow/tensorflow/issues/39775")
     tf.keras.mixed_precision.experimental.set_policy(request.param)
     yield
     tf.keras.mixed_precision.experimental.set_policy("float32")
