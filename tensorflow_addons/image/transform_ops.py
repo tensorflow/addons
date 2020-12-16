@@ -38,8 +38,8 @@ _IMAGE_DTYPES = {
 def transform(
     images: TensorLike,
     transforms: TensorLike,
-    interpolation: str = "NEAREST",
-    fill_mode: str = "CONSTANT",
+    interpolation: str = "nearest",
+    fill_mode: str = "constant",
     output_shape: Optional[list] = None,
     name: Optional[str] = None,
     fill_value: TensorLike = 0.0,
@@ -59,7 +59,7 @@ def transform(
         the transform mapping input points to output points. Note that
         gradients are not backpropagated into transformation parameters.
       interpolation: Interpolation mode.
-        Supported values: "NEAREST", "BILINEAR".
+        Supported values: "nearest", "bilinear".
       fill_mode: Points outside the boundaries of the input are filled according
         to the given mode (one of `{'constant', 'reflect', 'wrap', 'nearest'}`).
         - *reflect*: `(d c b a | a b c d | d c b a)`
@@ -309,8 +309,8 @@ def angles_to_projective_transforms(
 def rotate(
     images: TensorLike,
     angles: TensorLike,
-    interpolation: str = "NEAREST",
-    fill_mode: str = "CONSTANT",
+    interpolation: str = "nearest",
+    fill_mode: str = "constant",
     name: Optional[str] = None,
     fill_value: TensorLike = 0.0,
 ) -> tf.Tensor:
@@ -324,8 +324,8 @@ def rotate(
       angles: A scalar angle to rotate all images by, or (if `images` has rank 4)
         a vector of length num_images, with an angle for each image in the
         batch.
-      interpolation: Interpolation mode. Supported values: "NEAREST",
-        "BILINEAR".
+      interpolation: Interpolation mode. Supported values: "nearest",
+        "constant".
       fill_mode: Points outside the boundaries of the input are filled according
         to the given mode (one of `{'constant', 'reflect', 'wrap', 'nearest'}`).
         - *reflect*: `(d c b a | a b c d | d c b a)`

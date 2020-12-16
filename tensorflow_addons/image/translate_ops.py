@@ -74,8 +74,8 @@ def translations_to_projective_transforms(
 def translate(
     images: TensorLike,
     translations: TensorLike,
-    interpolation: str = "NEAREST",
-    fill_mode: str = "CONSTANT",
+    interpolation: str = "nearest",
+    fill_mode: str = "constant",
     name: Optional[str] = None,
     fill_value: TensorLike = 0.0,
 ) -> tf.Tensor:
@@ -90,8 +90,8 @@ def translate(
       translations: A vector representing `[dx, dy]` or (if `images` has rank 4)
         a matrix of length num_images, with a `[dx, dy]` vector for each image
         in the batch.
-      interpolation: Interpolation mode. Supported values: "NEAREST",
-        "BILINEAR".
+      interpolation: Interpolation mode. Supported values: "nearest",
+        "bilinear".
       fill_mode: Points outside the boundaries of the input are filled according
         to the given mode (one of `{'constant', 'reflect', 'wrap', 'nearest'}`).
         - *reflect*: `(d c b a | a b c d | d c b a)`
