@@ -76,8 +76,8 @@ def translate(
     translations: TensorLike,
     interpolation: str = "NEAREST",
     fill_mode: str = "CONSTANT",
-    fill_value: TensorLike = 0.0,
     name: Optional[str] = None,
+    fill_value: TensorLike = 0.0,
 ) -> tf.Tensor:
     """Translate image(s) by the passed vectors(s).
 

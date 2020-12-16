@@ -40,9 +40,9 @@ def transform(
     transforms: TensorLike,
     interpolation: str = "NEAREST",
     fill_mode: str = "CONSTANT",
-    fill_value: TensorLike = 0.0,
     output_shape: Optional[list] = None,
     name: Optional[str] = None,
+    fill_value: TensorLike = 0.0,
 ) -> tf.Tensor:
     """Applies the given transform(s) to the image(s).
 
@@ -311,8 +311,8 @@ def rotate(
     angles: TensorLike,
     interpolation: str = "NEAREST",
     fill_mode: str = "CONSTANT",
-    fill_value: TensorLike = 0.0,
     name: Optional[str] = None,
+    fill_value: TensorLike = 0.0,
 ) -> tf.Tensor:
     """Rotate image(s) counterclockwise by the passed angle(s) in radians.
 
