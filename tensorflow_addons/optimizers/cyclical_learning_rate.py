@@ -154,7 +154,7 @@ class TriangularCyclicalLearningRate(CyclicalLearningRate):
             maximal_learning_rate: A scalar `float32` or `float64` `Tensor` or
                 a Python number.  The maximum learning rate.
             step_size: A scalar `float32` or `float64` `Tensor` or a
-                Python number. Step size.
+                Python number. Step size denotes the number of training iterations it takes to get to maximal_learning_rate
             scale_mode: ['cycle', 'iterations']. Mode to apply during cyclic
                 schedule
             name: (Optional) Name for the operation.
@@ -223,7 +223,7 @@ class Triangular2CyclicalLearningRate(CyclicalLearningRate):
             maximal_learning_rate: A scalar `float32` or `float64` `Tensor` or
                 a Python number.  The maximum learning rate.
             step_size: A scalar `float32` or `float64` `Tensor` or a
-                Python number. Step size.
+                Python number. Step size denotes the number of training iterations it takes to get to maximal_learning_rate
             scale_mode: ['cycle', 'iterations']. Mode to apply during cyclic
                 schedule
             name: (Optional) Name for the operation.
@@ -294,7 +294,7 @@ class ExponentialCyclicalLearningRate(CyclicalLearningRate):
             maximal_learning_rate: A scalar `float32` or `float64` `Tensor` or
                 a Python number.  The maximum learning rate.
             step_size: A scalar `float32` or `float64` `Tensor` or a
-                Python number. Step size.
+                Python number. Step size denotes the number of training iterations it takes to get to maximal_learning_rate
             scale_mode: ['cycle', 'iterations']. Mode to apply during cyclic
                 schedule
             gamma: A scalar `float32` or `float64` `Tensor` or a
