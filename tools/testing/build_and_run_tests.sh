@@ -18,8 +18,6 @@
 
 set -x -e
 
-export CC_OPT_FLAGS='-mavx'
-
 python -m pip install -r tools/install_deps/pytest.txt -e ./
 python ./configure.py
 bash tools/install_so_files.sh

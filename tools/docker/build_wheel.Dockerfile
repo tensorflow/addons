@@ -24,6 +24,8 @@ RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
 COPY tools/install_deps/ /install_deps
 RUN python -m pip install -r /install_deps/pytest.txt
 
+COPY configure.py .
+
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
 
@@ -38,9 +40,11 @@ CMD ["bash", "tools/testing/build_and_run_tests.sh"]
 FROM base_install as make_wheel
 ARG NIGHTLY_FLAG
 ARG NIGHTLY_TIME
+
+RUN python configure.py
+
 RUN bash tools/testing/build_and_run_tests.sh && \
     bazel build \
-        -c opt \
         --noshow_progress \
         --noshow_loading_progress \
         --verbose_failures \
