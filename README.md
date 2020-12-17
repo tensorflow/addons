@@ -139,7 +139,7 @@ cd addons
 # This script links project with TensorFlow dependency
 python3 ./configure.py
 
-bazel build --enable_runfiles build_pip_pkg
+bazel build build_pip_pkg
 bazel-bin/build_pip_pkg artifacts
 
 pip install artifacts/tensorflow_addons-*.whl
@@ -161,7 +161,7 @@ export CUDNN_INSTALL_PATH="/usr/lib/x86_64-linux-gnu"
 # This script links project with TensorFlow dependency
 python3 ./configure.py
 
-bazel build --enable_runfiles build_pip_pkg
+bazel build build_pip_pkg
 bazel-bin/build_pip_pkg artifacts
 
 pip install artifacts/tensorflow_addons-*.whl
