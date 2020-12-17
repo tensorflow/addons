@@ -147,8 +147,8 @@ def cutout(
 
         cutout_shape = tf.transpose(
             [
-                image_width - (left_pads + right_pads),
                 image_height - (lower_pads + upper_pads),
+                image_width - (left_pads + right_pads),
             ],
             [1, 0],
         )
