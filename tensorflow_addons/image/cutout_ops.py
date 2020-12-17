@@ -15,17 +15,7 @@
 """Cutout op"""
 
 import tensorflow as tf
-from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils.types import TensorLike, Number
-
-
-def _get_image_wh(images, data_format):
-    if data_format == "channels_last":
-        image_height, image_width = tf.shape(images)[1], tf.shape(images)[2]
-    else:
-        image_height, image_width = tf.shape(images)[2], tf.shape(images)[3]
-
-    return image_height, image_width
 
 
 def _norm_params(images, mask_size):
@@ -38,11 +28,8 @@ def _norm_params(images, mask_size):
         )
     if tf.rank(mask_size) == 0:
         mask_size = tf.stack([mask_size, mask_size])
-    data_format = keras_utils.normalize_data_format(
-        "channels_last"
-    )  # As of Addons 0.12 only channels last is supported.
-    image_height, image_width = _get_image_wh(images, data_format)
-    return mask_size, data_format, image_height, image_width
+    images_shape = tf.shape(images)
+    return mask_size, images_shape[1], images_shape[2]
 
 
 def random_cutout(
@@ -55,7 +42,7 @@ def random_cutout(
 
     This operation applies a `(mask_height x mask_width)` mask of zeros to
     a random location within `images`. The pixel values filled in will be of
-    the value `replace`. The located where the mask will be applied is
+    the value `constant_values`. The located where the mask will be applied is
     randomly chosen uniformly over the whole images.
 
     Args:
@@ -74,8 +61,9 @@ def random_cutout(
     Raises:
       InvalidArgumentError: if `mask_size` can't be divisible by 2.
     """
+    images = tf.convert_to_tensor(images)
     batch_size = tf.shape(images)[0]
-    mask_size, data_format, image_height, image_width = _norm_params(images, mask_size)
+    mask_size, image_height, image_width = _norm_params(images, mask_size)
 
     half_mask_height = mask_size[0] // 2
     half_mask_width = mask_size[1] // 2
@@ -109,7 +97,7 @@ def cutout(
 
     This operation applies a `(mask_height x mask_width)` mask of zeros to
     a location within `images` specified by the offset.
-    The pixel values filled in will be of the value `replace`.
+    The pixel values filled in will be of the value `constant_values`.
     The located where the mask will be applied is randomly
     chosen uniformly over the whole images.
 
@@ -128,11 +116,10 @@ def cutout(
       InvalidArgumentError: if `mask_size` can't be divisible by 2.
     """
     with tf.name_scope("cutout"):
+        images = tf.convert_to_tensor(images)
         origin_shape = images.shape
         offset = tf.convert_to_tensor(offset)
-        mask_size, data_format, image_height, image_width = _norm_params(
-            images, mask_size
-        )
+        mask_size, image_height, image_width = _norm_params(images, mask_size)
         mask_size = mask_size // 2
 
         if tf.rank(offset) == 1:
