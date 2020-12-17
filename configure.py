@@ -44,6 +44,10 @@ def is_windows():
     return platform.system() == "Windows"
 
 
+def is_linux():
+    return platform.system() == "Linux"
+
+
 def is_raspi_arm():
     return os.uname()[4] == "armv7l"
 
@@ -111,6 +115,10 @@ def create_build_configuration():
         write("build --config=windows")
         write("build:windows --copt=/experimental:preprocessor")
         write("build:windows --host_copt=/experimental:preprocessor")
+        write("build:windows --copt=/arch=AVX2")
+
+    if is_macos() or is_linux():
+        write("build --copt=-mavx2")
 
     if os.getenv("TF_NEED_CUDA", "0") == "1":
         print("> Building GPU & CPU ops")
