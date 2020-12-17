@@ -9,7 +9,6 @@ bash ./tools/testing/build_and_run_tests.sh
 python configure.py
 
 bazel.exe build \
-  --enable_runfiles \
   --noshow_progress \
   --noshow_loading_progress \
   --verbose_failures \
