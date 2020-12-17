@@ -113,6 +113,7 @@ def create_build_configuration():
 
     if is_windows():
         write("build --config=windows")
+        write("build:windows --enable_runfiles")
         write("build:windows --copt=/experimental:preprocessor")
         write("build:windows --host_copt=/experimental:preprocessor")
         write("build:windows --copt=/arch=AVX2")
