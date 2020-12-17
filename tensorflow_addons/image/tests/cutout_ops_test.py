@@ -33,7 +33,7 @@ def test_different_dtypes(dtype):
 
 
 def test_different_channels():
-    for channel in [0, 1, 3, 4]:
+    for channel in [1, 2, 3, 4]:
         test_image = tf.ones([1, 40, 40, channel], dtype=np.uint8)
         cutout_area = tf.zeros([4, 4], dtype=np.uint8)
         cutout_area = tf.pad(cutout_area, ((0, 36), (0, 36)), constant_values=1)
@@ -69,3 +69,11 @@ def test_mask_applied():
     np.testing.assert_equal(
         np.sum(result_image) + total_expected_masked_count, np.sum(test_image)
     )
+
+
+def test_keras_layer():
+    inputs = tf.keras.Input(shape=(40, 40, 1), dtype=tf.uint8)
+    outputs = tf.keras.layers.Lambda(lambda x: cutout(x, 4, [2, 2]))(inputs)
+    model = tf.keras.Model(inputs=inputs, outputs=outputs)
+    x = tf.ones([10, 40, 40, 1], dtype=np.uint8)
+    np.testing.assert_equal(cutout(x, 4, [2, 2]).numpy(), model(x))

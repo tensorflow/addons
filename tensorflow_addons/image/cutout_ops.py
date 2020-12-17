@@ -18,8 +18,8 @@ import tensorflow as tf
 from tensorflow_addons.utils.types import TensorLike, Number
 
 
-def _norm_params(images, mask_size):
-    mask_size = tf.convert_to_tensor(mask_size)
+@tf.function
+def _norm_params(mask_size, offset=None):
     if tf.executing_eagerly():
         tf.assert_equal(
             tf.reduce_any(mask_size % 2 != 0),
@@ -28,8 +28,9 @@ def _norm_params(images, mask_size):
         )
     if tf.rank(mask_size) == 0:
         mask_size = tf.stack([mask_size, mask_size])
-    images_shape = tf.shape(images)
-    return mask_size, images_shape[1], images_shape[2]
+    if offset is not None and tf.rank(offset) == 1:
+        offset = tf.expand_dims(offset, 0)
+    return mask_size, offset
 
 
 def random_cutout(
@@ -38,7 +39,7 @@ def random_cutout(
     constant_values: Number = 0,
     seed: Number = None,
 ) -> tf.Tensor:
-    """Apply cutout (https://arxiv.org/abs/1708.04552) to images.
+    """Apply [cutout](https://arxiv.org/abs/1708.04552) to images with random offset.
 
     This operation applies a `(mask_height x mask_width)` mask of zeros to
     a random location within `images`. The pixel values filled in will be of
@@ -46,9 +47,7 @@ def random_cutout(
     randomly chosen uniformly over the whole images.
 
     Args:
-      images: A tensor of shape
-        `(batch_size, height, width, channels)`
-        (NHWC), `(batch_size, channels, height, width)` (NCHW).
+      images: A tensor of shape `(batch_size, height, width, channels)` (NHWC).
       mask_size: Specifies how big the zero mask that will be generated is that
         is applied to the images. The mask will be of size
         `(mask_height x mask_width)`. Note: mask_size should be divisible by 2.
@@ -57,13 +56,21 @@ def random_cutout(
       seed: A Python integer. Used in combination with `tf.random.set_seed` to
         create a reproducible sequence of tensors across multiple calls.
     Returns:
-      An image `Tensor`.
+      A `Tensor` of the same shape and dtype as `images`.
     Raises:
       InvalidArgumentError: if `mask_size` can't be divisible by 2.
     """
     images = tf.convert_to_tensor(images)
-    batch_size = tf.shape(images)[0]
-    mask_size, image_height, image_width = _norm_params(images, mask_size)
+    mask_size = tf.convert_to_tensor(mask_size)
+
+    image_dynamic_shape = tf.shape(images)
+    batch_size, image_height, image_width = (
+        image_dynamic_shape[0],
+        image_dynamic_shape[1],
+        image_dynamic_shape[2],
+    )
+
+    mask_size, _ = _norm_params(mask_size, offset=None)
 
     half_mask_height = mask_size[0] // 2
     half_mask_width = mask_size[1] // 2
@@ -93,7 +100,7 @@ def cutout(
     offset: TensorLike = (0, 0),
     constant_values: Number = 0,
 ) -> tf.Tensor:
-    """Apply cutout (https://arxiv.org/abs/1708.04552) to images.
+    """Apply [cutout](https://arxiv.org/abs/1708.04552) to images.
 
     This operation applies a `(mask_height x mask_width)` mask of zeros to
     a location within `images` specified by the offset.
@@ -102,8 +109,7 @@ def cutout(
     chosen uniformly over the whole images.
 
     Args:
-      images: A tensor of shape `(batch_size, height, width, channels)`
-        (NHWC), `(batch_size, channels, height, width)` (NCHW).
+      images: A tensor of shape `(batch_size, height, width, channels)` (NHWC).
       mask_size: Specifies how big the zero mask that will be generated is that
         is applied to the images. The mask will be of size
         `(mask_height x mask_width)`. Note: mask_size should be divisible by 2.
@@ -111,19 +117,26 @@ def cutout(
       constant_values: What pixel value to fill in the images in the area that has
         the cutout mask applied to it.
     Returns:
-      An image Tensor.
+      A `Tensor` of the same shape and dtype as `images`.
     Raises:
       InvalidArgumentError: if `mask_size` can't be divisible by 2.
     """
     with tf.name_scope("cutout"):
         images = tf.convert_to_tensor(images)
-        origin_shape = images.shape
+        mask_size = tf.convert_to_tensor(mask_size)
         offset = tf.convert_to_tensor(offset)
-        mask_size, image_height, image_width = _norm_params(images, mask_size)
+
+        image_static_shape = images.shape
+        image_dynamic_shape = tf.shape(images)
+        image_height, image_width, channels = (
+            image_dynamic_shape[1],
+            image_dynamic_shape[2],
+            image_dynamic_shape[3],
+        )
+
+        mask_size, offset = _norm_params(mask_size, offset)
         mask_size = mask_size // 2
 
-        if tf.rank(offset) == 1:
-            offset = tf.expand_dims(offset, 0)
         cutout_center_heights = offset[:, 0]
         cutout_center_widths = offset[:, 1]
 
@@ -134,31 +147,38 @@ def cutout(
 
         cutout_shape = tf.transpose(
             [
-                image_height - (lower_pads + upper_pads),
                 image_width - (left_pads + right_pads),
+                image_height - (lower_pads + upper_pads),
             ],
             [1, 0],
         )
-        masks = tf.TensorArray(images.dtype, 0, dynamic_size=True)
-        for i in tf.range(tf.shape(cutout_shape)[0]):
+
+        def fn(i):
             padding_dims = [
                 [lower_pads[i], upper_pads[i]],
                 [left_pads[i], right_pads[i]],
             ]
             mask = tf.pad(
-                tf.zeros(cutout_shape[i], dtype=images.dtype),
+                tf.zeros(cutout_shape[i], dtype=tf.bool),
                 padding_dims,
-                constant_values=1,
+                constant_values=True,
             )
-            masks = masks.write(i, mask)
+            return mask
 
-        mask_4d = tf.expand_dims(masks.stack(), -1)
-        mask = tf.tile(mask_4d, [1, 1, 1, tf.shape(images)[-1]])
+        mask = tf.map_fn(
+            fn,
+            tf.range(tf.shape(cutout_shape)[0]),
+            fn_output_signature=tf.TensorSpec(
+                shape=image_static_shape[1:-1], dtype=tf.bool
+            ),
+        )
+        mask = tf.expand_dims(mask, -1)
+        mask = tf.tile(mask, [1, 1, 1, channels])
 
         images = tf.where(
-            tf.equal(mask, 0),
-            tf.ones_like(images, dtype=images.dtype) * constant_values,
+            mask,
             images,
+            tf.cast(constant_values, dtype=images.dtype),
         )
-        images.set_shape(origin_shape)
+        images.set_shape(image_static_shape)
         return images
