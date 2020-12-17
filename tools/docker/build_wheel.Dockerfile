@@ -24,8 +24,6 @@ RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
 COPY tools/install_deps/ /install_deps
 RUN python -m pip install -r /install_deps/pytest.txt
 
-COPY configure.py .
-
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
 
