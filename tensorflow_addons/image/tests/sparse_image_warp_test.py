@@ -14,6 +14,8 @@
 # ==============================================================================
 """Tests for sparse_image_warp."""
 
+from collections import namedtuple
+
 import numpy as np
 import pytest
 import tensorflow as tf
@@ -247,61 +249,53 @@ def test_that_backprop_runs():
     assert np.sum(np.abs(gradients)) != 0
 
 
+ShapeConfig = namedtuple(
+    "ShapeConfig",
+    [
+        "image",
+        "source_control_point_locations",
+        "dest_control_point_locations",
+        "input",
+    ],
+)
+
+
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.parametrize("shape", [(9, 12), (9, 12, 3), (1, 9, 12, 3)])
+@pytest.mark.parametrize(
+    "shape",
+    [
+        ShapeConfig(None, None, None, (1, 9, 12, 3)),
+        ShapeConfig(None, [1, 1, 2], [1, 1, 2], (9, 12)),
+        ShapeConfig(None, [1, 1, 2], [1, 1, 2], (9, 12, 3)),
+        ShapeConfig(None, [1, 1, 2], [1, 1, 2], (1, 9, 12, 3)),
+        ShapeConfig([None, 9, 12, 3], [None, 1, 2], [None, 1, 2], (1, 9, 12, 3)),
+        ShapeConfig([None, None, None, 3], [None, 1, 2], [None, 1, 2], (1, 9, 12, 3)),
+        ShapeConfig(
+            [None, None, None, None], [None, 1, 2], [None, 1, 2], (1, 9, 12, 3)
+        ),
+    ],
+)
 @pytest.mark.parametrize("interpolation_order", [1, 2, 3])
 @pytest.mark.parametrize("num_boundary_points", [1, 2, 3])
-def test_unknown_shape(shape, interpolation_order, num_boundary_points):
+def test_partially_or_fully_unknown_shape(
+    shape, interpolation_order, num_boundary_points
+):
     control_point_locations = np.asarray([3.0, 3.0]).reshape(1, 1, 2).astype(np.float32)
     control_point_displacements = (
         np.asarray([0.25, -0.5]).reshape(1, 1, 2).astype(np.float32)
     )
     fn = tf.function(sparse_image_warp).get_concrete_function(
-        image=tf.TensorSpec(shape=None, dtype=tf.float32),
-        source_control_point_locations=tf.TensorSpec(shape=[1, 1, 2], dtype=tf.float32),
-        dest_control_point_locations=tf.TensorSpec(shape=[1, 1, 2], dtype=tf.float32),
-        interpolation_order=interpolation_order,
-        num_boundary_points=num_boundary_points,
-    )
-    image = tf.ones(shape=shape, dtype=tf.float32)
-    expected_output = sparse_image_warp(
-        image,
-        control_point_locations,
-        control_point_locations + control_point_displacements,
-        interpolation_order=interpolation_order,
-        num_boundary_points=num_boundary_points,
-    )
-    output = fn(
-        image,
-        control_point_locations,
-        control_point_locations + control_point_displacements,
-        interpolation_order=interpolation_order,
-        num_boundary_points=num_boundary_points,
-    )
-    np.testing.assert_equal(output[0].numpy(), expected_output[0].numpy())
-    np.testing.assert_equal(output[1].numpy(), expected_output[1].numpy())
-
-
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.parametrize("interpolation_order", [1, 2, 3])
-@pytest.mark.parametrize("num_boundary_points", [1, 2, 3])
-def test_unknown_batch_size(interpolation_order, num_boundary_points):
-    control_point_locations = np.asarray([3.0, 3.0]).reshape(1, 1, 2).astype(np.float32)
-    control_point_displacements = (
-        np.asarray([0.25, -0.5]).reshape(1, 1, 2).astype(np.float32)
-    )
-    fn = tf.function(sparse_image_warp).get_concrete_function(
-        image=tf.TensorSpec(shape=tf.TensorShape([None, 9, 12, 3]), dtype=tf.float32),
+        image=tf.TensorSpec(shape=shape.image, dtype=tf.float32),
         source_control_point_locations=tf.TensorSpec(
-            shape=[None, 1, 2], dtype=tf.float32
+            shape=shape.source_control_point_locations, dtype=tf.float32
         ),
         dest_control_point_locations=tf.TensorSpec(
-            shape=[None, 1, 2], dtype=tf.float32
+            shape=shape.dest_control_point_locations, dtype=tf.float32
         ),
         interpolation_order=interpolation_order,
         num_boundary_points=num_boundary_points,
     )
-    image = tf.ones(shape=[10, 9, 12, 3], dtype=tf.float32)
+    image = tf.ones(shape=shape.input, dtype=tf.float32)
     expected_output = sparse_image_warp(
         image,
         control_point_locations,
