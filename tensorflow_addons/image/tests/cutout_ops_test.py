@@ -33,7 +33,7 @@ def test_different_dtypes(dtype):
 
 
 def test_different_channels():
-    for channel in [1, 2, 3, 4]:
+    for channel in [0, 1, 3, 4]:
         test_image = tf.ones([1, 40, 40, channel], dtype=np.uint8)
         cutout_area = tf.zeros([4, 4], dtype=np.uint8)
         cutout_area = tf.pad(cutout_area, ((0, 36), (0, 36)), constant_values=1)
