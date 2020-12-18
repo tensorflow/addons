@@ -47,4 +47,4 @@ class HarmonicMean(tf.keras.metrics.Mean):
         super().update_state(tf.math.reciprocal(values), sample_weight)
 
     def result(self) -> tf.Tensor:
-        return tf.math.reciprocal_no_nan(super().result()).numpy()
+        return tf.math.reciprocal_no_nan(super().result())
