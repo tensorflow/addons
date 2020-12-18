@@ -20,12 +20,11 @@ from tensorflow_addons.utils.types import TensorLike, Number
 
 @tf.function
 def _norm_params(mask_size, offset=None):
-    if tf.executing_eagerly():
-        tf.assert_equal(
-            tf.reduce_any(mask_size % 2 != 0),
-            False,
-            "mask_size should be divisible by 2",
-        )
+    tf.assert_equal(
+        tf.reduce_any(mask_size % 2 != 0),
+        False,
+        "mask_size should be divisible by 2",
+    )
     if tf.rank(mask_size) == 0:
         mask_size = tf.stack([mask_size, mask_size])
     if offset is not None and tf.rank(offset) == 1:

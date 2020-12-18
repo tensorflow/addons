@@ -77,3 +77,9 @@ def test_keras_layer():
     model = tf.keras.Model(inputs=inputs, outputs=outputs)
     x = tf.ones([10, 40, 40, 1], dtype=np.uint8)
     np.testing.assert_equal(cutout(x, 4, [2, 2]).numpy(), model(x))
+
+
+def test_invalid_mask_size():
+    with pytest.raises(tf.errors.InvalidArgumentError, match="mask_size should be"):
+        x = tf.ones([10, 40, 40, 1], dtype=np.uint8)
+        cutout(x, 3, [2, 2]).numpy()
