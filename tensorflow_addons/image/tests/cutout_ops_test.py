@@ -69,3 +69,17 @@ def test_mask_applied():
     np.testing.assert_equal(
         np.sum(result_image) + total_expected_masked_count, np.sum(test_image)
     )
+
+
+def test_keras_layer():
+    inputs = tf.keras.Input(shape=(40, 40, 1), dtype=tf.uint8)
+    outputs = tf.keras.layers.Lambda(lambda x: cutout(x, 4, [2, 2]))(inputs)
+    model = tf.keras.Model(inputs=inputs, outputs=outputs)
+    x = tf.ones([10, 40, 40, 1], dtype=np.uint8)
+    np.testing.assert_equal(cutout(x, 4, [2, 2]).numpy(), model(x))
+
+
+def test_invalid_mask_size():
+    with pytest.raises(tf.errors.InvalidArgumentError, match="mask_size should be"):
+        x = tf.ones([10, 40, 40, 1], dtype=np.uint8)
+        cutout(x, 3, [2, 2]).numpy()
