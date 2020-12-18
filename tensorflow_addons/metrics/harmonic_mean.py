@@ -18,7 +18,6 @@ import tensorflow as tf
 
 from typeguard import typechecked
 from tensorflow_addons.utils.types import AcceptableDTypes
-from tensorflow_addons.metrics.utils import sample_weight_shape_match
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -45,12 +44,7 @@ class HarmonicMean(tf.keras.metrics.Mean):
 
     def update_state(self, values, sample_weight=None) -> None:
         values = tf.cast(values, dtype=self.dtype)
-        sample_weight = sample_weight_shape_match(values, sample_weight)
-        sample_weight = tf.cast(sample_weight, dtype=self.dtype)
         super().update_state(tf.math.reciprocal(values), sample_weight)
 
     def result(self) -> tf.Tensor:
-        ret = tf.math.reciprocal(super().result()).numpy()
-        if tf.math.is_inf(ret):
-            return tf.constant(0, dtype=self.dtype)
-        return ret
+        return tf.math.reciprocal_no_nan(super().result()).numpy()

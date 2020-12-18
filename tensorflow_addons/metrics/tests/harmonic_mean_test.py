@@ -45,38 +45,6 @@ def check_result(obj, expected_result, expected_count):
     np.testing.assert_equal(expected_count, count)
 
 
-def test_config_hmean():
-    def _check_config(obj, name):
-        assert obj.name == name
-        assert obj.dtype == tf.float32
-        assert obj.stateful
-        assert len(obj.variables) == 2
-
-    name = "my_hmean"
-    obj1 = HarmonicMean(name=name)
-    _check_config(obj1, name)
-
-    obj2 = HarmonicMean.from_config(obj1.get_config())
-    _check_config(obj2, name)
-
-
-def test_init_states_hmean():
-    obj = HarmonicMean()
-    assert obj.total.numpy() == 0.0
-    assert obj.count.numpy() == 0.0
-    assert obj.total.dtype == tf.float32
-    assert obj.count.dtype == tf.float32
-
-
-@pytest.mark.parametrize("values, expected", get_test_data())
-def test_scalar_update_state_hmean(values, expected):
-    obj = HarmonicMean()
-    values = tf.constant(values, tf.float32)
-    for v in values:
-        obj.update_state(v)
-    check_result(obj, expected, len(values))
-
-
 @pytest.mark.parametrize("values, expected", get_test_data())
 def test_vector_update_state_hmean(values, expected):
     obj = HarmonicMean()
@@ -92,14 +60,6 @@ def test_call_hmean(values, expected):
     count = obj.count.numpy()
     assert_result(expected, result)
     np.testing.assert_equal(len(values), count)
-
-
-def test_reset_states():
-    obj = HarmonicMean()
-    obj.update_state([1, 2, 3, 4, 5])
-    obj.reset_states()
-    assert obj.total.numpy() == 0.0
-    assert obj.count.numpy() == 0.0
 
 
 @pytest.mark.parametrize(
