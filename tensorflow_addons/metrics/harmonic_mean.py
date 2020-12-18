@@ -15,8 +15,6 @@
 """Implements HarmonicMean."""
 
 import tensorflow as tf
-from tensorflow.keras import backend as K
-from tensorflow.keras.metrics import Metric
 
 from typeguard import typechecked
 from tensorflow_addons.utils.types import AcceptableDTypes
@@ -24,7 +22,7 @@ from tensorflow_addons.metrics.utils import sample_weight_shape_match
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-class HarmonicMean(Metric):
+class HarmonicMean(tf.keras.metrics.Mean):
     """Compute Harmonic Mean
     The harmonic mean is a kind of mean. It can be expressed as the reciprocal of
     the arithmetic mean of the reciprocals of the given set of numbers.
@@ -44,30 +42,15 @@ class HarmonicMean(Metric):
         self, name: str = "harmonic_mean", dtype: AcceptableDTypes = None, **kwargs
     ):
         super().__init__(name=name, dtype=dtype, **kwargs)
-        self.total = self.add_weight(
-            "total", shape=None, initializer="zeros", dtype=dtype
-        )
-        self.count = self.add_weight(
-            "count", shape=None, initializer="zeros", dtype=dtype
-        )
 
     def update_state(self, values, sample_weight=None) -> None:
         values = tf.cast(values, dtype=self.dtype)
         sample_weight = sample_weight_shape_match(values, sample_weight)
         sample_weight = tf.cast(sample_weight, dtype=self.dtype)
-
-        self.count.assign_add(tf.reduce_sum(sample_weight))
-        if not tf.math.is_inf(self.total):
-            inv_v = tf.math.reciprocal(values)
-            inv_v = tf.math.multiply(sample_weight, inv_v)
-            inv_v = tf.reduce_sum(inv_v)
-            self.total.assign_add(inv_v)
+        super().update_state(tf.math.reciprocal(values), sample_weight)
 
     def result(self) -> tf.Tensor:
-        if tf.math.is_inf(self.total) or self.total == 0:
+        ret = tf.math.reciprocal(super().result()).numpy()
+        if tf.math.is_inf(ret):
             return tf.constant(0, dtype=self.dtype)
-        ret = self.count / self.total
-        return tf.cast(ret, dtype=self.dtype)
-
-    def reset_states(self) -> None:
-        K.batch_set_value([(v, 0) for v in self.variables])
+        return ret
