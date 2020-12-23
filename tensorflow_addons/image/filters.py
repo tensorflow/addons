@@ -209,12 +209,6 @@ def _get_gaussian_kernel(sigma, filter_shape):
     return x
 
 
-def _get_gaussian_kernel_2d(gaussian_filter_x, gaussian_filter_y):
-    """Compute 2D Gaussian kernel given 1D kernels."""
-    gaussian_kernel = tf.matmul(gaussian_filter_x, gaussian_filter_y)
-    return gaussian_kernel
-
-
 @tf.function
 def gaussian_filter2d(
     image: TensorLike,
@@ -279,22 +273,24 @@ def gaussian_filter2d(
 
         sigma = tf.cast(sigma, image.dtype)
         gaussian_kernel_x = _get_gaussian_kernel(sigma[1], filter_shape[1])
-        gaussian_kernel_x = gaussian_kernel_x[tf.newaxis, :]
+        gaussian_kernel_x = gaussian_kernel_x[tf.newaxis, :, tf.newaxis, tf.newaxis]
+        gaussian_kernel_x = tf.tile(gaussian_kernel_x, [1, 1, channels, 1])
 
         gaussian_kernel_y = _get_gaussian_kernel(sigma[0], filter_shape[0])
-        gaussian_kernel_y = gaussian_kernel_y[:, tf.newaxis]
-
-        gaussian_kernel_2d = _get_gaussian_kernel_2d(
-            gaussian_kernel_y, gaussian_kernel_x
-        )
-        gaussian_kernel_2d = gaussian_kernel_2d[:, :, tf.newaxis, tf.newaxis]
-        gaussian_kernel_2d = tf.tile(gaussian_kernel_2d, [1, 1, channels, 1])
+        gaussian_kernel_y = gaussian_kernel_y[:, tf.newaxis, tf.newaxis, tf.newaxis]
+        gaussian_kernel_y = tf.tile(gaussian_kernel_y, [1, 1, channels, 1])
 
         image = _pad(image, filter_shape, mode=padding, constant_values=constant_values)
 
         output = tf.nn.depthwise_conv2d(
             input=image,
-            filter=gaussian_kernel_2d,
+            filter=gaussian_kernel_x,
+            strides=(1, 1, 1, 1),
+            padding="VALID",
+        )
+        output = tf.nn.depthwise_conv2d(
+            input=output,
+            filter=gaussian_kernel_y,
             strides=(1, 1, 1, 1),
             padding="VALID",
         )
