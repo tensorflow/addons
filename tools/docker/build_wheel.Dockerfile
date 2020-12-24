@@ -28,7 +28,6 @@ RUN bash /install_deps/install_bazelisk.sh ./
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
 
-
 COPY ./ /addons
 WORKDIR /addons
 
