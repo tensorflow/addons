@@ -14,7 +14,6 @@
 # ==============================================================================
 """Image warping using per-pixel flow vectors."""
 
-import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.utils import types
@@ -64,28 +63,6 @@ def interpolate_bilinear(
                 raise ValueError("Grid height must be at least 2.")
             if grid_static_shape[2] is not None and grid_static_shape[2] < 2:
                 raise ValueError("Grid width must be at least 2.")
-        else:
-            with tf.control_dependencies(
-                [
-                    tf.debugging.assert_greater_equal(
-                        grid_shape[1], 2, message="Grid height must be at least 2."
-                    ),
-                    tf.debugging.assert_greater_equal(
-                        grid_shape[2], 2, message="Grid width must be at least 2."
-                    ),
-                    tf.debugging.assert_less_equal(
-                        tf.cast(
-                            grid_shape[0] * grid_shape[1] * grid_shape[2],
-                            dtype=tf.dtypes.float32,
-                        ),
-                        np.iinfo(np.int32).max / 8.0,
-                        message="The image size or batch size is sufficiently "
-                        "large that the linearized addresses used by "
-                        "tf.gather may exceed the int32 limit.",
-                    ),
-                ]
-            ):
-                pass
 
         # query_points shape checks
         query_static_shape = query_points.shape
@@ -96,17 +73,6 @@ def interpolate_bilinear(
             query_hw = query_static_shape[2]
             if query_hw is not None and query_hw != 2:
                 raise ValueError("Query points last dimension must be 2.")
-        else:
-            with tf.control_dependencies(
-                [
-                    tf.debugging.assert_equal(
-                        query_shape[2],
-                        2,
-                        message="Query points last dimension must be 2.",
-                    )
-                ]
-            ):
-                pass
 
         batch_size, height, width, channels = (
             grid_shape[0],

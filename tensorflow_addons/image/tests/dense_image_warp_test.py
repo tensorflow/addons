@@ -239,10 +239,8 @@ def test_interpolation():
 def test_size_exception():
     """Make sure it throws an exception for images that are too small."""
     shape = [1, 2, 1, 1]
-    errors = (ValueError, tf.errors.InvalidArgumentError)
-    with pytest.raises(errors) as exception_raised:
+    with pytest.raises(ValueError, match="Grid width must be at least 2."):
         _check_interpolation_correctness(shape, "float32", "float32")
-    assert "Grid width must be at least 2." in str(exception_raised.value)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
