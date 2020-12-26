@@ -53,16 +53,62 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
         super().__init__(**kwargs)
 
     def call(self, inputs, *args):
-        bins = self.output_size[0]
         if self.data_format == "channels_last":
-            splits = tf.split(inputs, bins, axis=1)
-            splits = tf.stack(splits, axis=1)
-            out_vect = self.reduce_function(splits, axis=2)
+            start_points = tf.cast(
+                (
+                    tf.range(self.output_size[0], dtype=tf.float32)
+                    * (inputs.shape[1] / self.output_size[0])
+                ),
+                tf.int32,
+            )
+            end_points = tf.cast(
+                tf.math.ceil(
+                    (
+                        (tf.range(self.output_size[0], dtype=tf.float32) + 1)
+                        * (inputs.shape[1] / self.output_size[0])
+                    )
+                ),
+                tf.int32,
+            )
+            pooled = []
+            for idx in range(self.output_size[0]):
+                pooled.append(
+                    self.reduce_function(
+                        inputs[:, start_points[idx] : end_points[idx], :],
+                        axis=1,
+                        keepdims=True,
+                    )
+                )
+            pooled = tf.concat(pooled, axis=1)
         else:
-            splits = tf.split(inputs, bins, axis=2)
-            splits = tf.stack(splits, axis=2)
-            out_vect = self.reduce_function(splits, axis=3)
-        return out_vect
+            start_points = tf.cast(
+                (
+                    tf.range(self.output_size, dtype=tf.float32)
+                    * (inputs.shape[2] / self.output_size[0])
+                ),
+                tf.int32,
+            )
+            end_points = tf.cast(
+                tf.math.ceil(
+                    (
+                        (tf.range(self.output_size, dtype=tf.float32) + 1)
+                        * (inputs.shape[2] / self.output_size[0])
+                    )
+                ),
+                tf.int32,
+            )
+            pooled = []
+            for idx in range(self.output_size[0]):
+                pooled.append(
+                    self.reduce_function(
+                        inputs[:, :, start_points[idx] : end_points[idx]],
+                        axis=2,
+                        keepdims=True,
+                    )
+                )
+            pooled = tf.concat(pooled, axis=2)
+
+        return pooled
 
     def compute_output_shape(self, input_shape):
         input_shape = tf.TensorShape(input_shape).as_list()
@@ -183,24 +229,123 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
         self.data_format = conv_utils.normalize_data_format(data_format)
         self.reduce_function = reduce_function
         self.output_size = conv_utils.normalize_tuple(output_size, 2, "output_size")
+        self.output_size_x, self.output_size_y = self.output_size
         super().__init__(**kwargs)
 
     def call(self, inputs, *args):
-        h_bins = self.output_size[0]
-        w_bins = self.output_size[1]
         if self.data_format == "channels_last":
-            split_cols = tf.split(inputs, h_bins, axis=1)
-            split_cols = tf.stack(split_cols, axis=1)
-            split_rows = tf.split(split_cols, w_bins, axis=3)
-            split_rows = tf.stack(split_rows, axis=3)
-            out_vect = self.reduce_function(split_rows, axis=[2, 4])
+            start_points_x = tf.cast(
+                (
+                    tf.range(self.output_size_x, dtype=tf.float32)
+                    * (inputs.shape[1] / self.output_size_x)
+                ),
+                tf.int32,
+            )
+            end_points_x = tf.cast(
+                tf.math.ceil(
+                    (
+                        (tf.range(self.output_size_x, dtype=tf.float32) + 1)
+                        * (inputs.shape[1] / self.output_size_x)
+                    )
+                ),
+                tf.int32,
+            )
+
+            start_points_y = tf.cast(
+                (
+                    tf.range(self.output_size_y, dtype=tf.float32)
+                    * (inputs.shape[2] / self.output_size_y)
+                ),
+                tf.int32,
+            )
+            end_points_y = tf.cast(
+                tf.math.ceil(
+                    (
+                        (tf.range(self.output_size_y, dtype=tf.float32) + 1)
+                        * (inputs.shape[2] / self.output_size_y)
+                    )
+                ),
+                tf.int32,
+            )
+            pooled = []
+            for idx in range(self.output_size_x):
+                pooled.append(
+                    self.reduce_function(
+                        inputs[:, start_points_x[idx] : end_points_x[idx], :, :],
+                        axis=1,
+                        keepdims=True,
+                    )
+                )
+            x_pooled = tf.concat(pooled, axis=1)
+
+            pooled = []
+            for idx in range(self.output_size_y):
+                pooled.append(
+                    self.reduce_function(
+                        x_pooled[:, :, start_points_y[idx] : end_points_y[idx], :],
+                        axis=2,
+                        keepdims=True,
+                    )
+                )
+            y_pooled = tf.concat(pooled, axis=2)
+
         else:
-            split_cols = tf.split(inputs, h_bins, axis=2)
-            split_cols = tf.stack(split_cols, axis=2)
-            split_rows = tf.split(split_cols, w_bins, axis=4)
-            split_rows = tf.stack(split_rows, axis=4)
-            out_vect = self.reduce_function(split_rows, axis=[3, 5])
-        return out_vect
+            start_points_x = tf.cast(
+                (
+                    tf.range(self.output_size_x, dtype=tf.float32)
+                    * (inputs.shape[2] / self.output_size_x)
+                ),
+                tf.int32,
+            )
+            end_points_x = tf.cast(
+                tf.math.ceil(
+                    (
+                        (tf.range(self.output_size_x, dtype=tf.float32) + 1)
+                        * (inputs.shape[2] / self.output_size_x)
+                    )
+                ),
+                tf.int32,
+            )
+
+            start_points_y = tf.cast(
+                (
+                    tf.range(self.output_size_y, dtype=tf.float32)
+                    * (inputs.shape[3] / self.output_size_y)
+                ),
+                tf.int32,
+            )
+            end_points_y = tf.cast(
+                tf.math.ceil(
+                    (
+                        (tf.range(self.output_size_y, dtype=tf.float32) + 1)
+                        * (inputs.shape[3] / self.output_size_y)
+                    )
+                ),
+                tf.int32,
+            )
+            pooled = []
+            for idx in range(self.output_size_x):
+                pooled.append(
+                    self.reduce_function(
+                        inputs[:, :, start_points_x[idx] : end_points_x[idx], :],
+                        axis=2,
+                        keepdims=True,
+                    )
+                )
+            x_pooled = tf.concat(pooled, axis=2)
+
+            pooled = []
+            for idx in range(self.output_size_y):
+                pooled.append(
+                    self.reduce_function(
+                        x_pooled[:, :, :, start_points_y[idx] : end_points_y[idx]],
+                        axis=3,
+                        keepdims=True,
+                    )
+                )
+            y_pooled = tf.concat(pooled, axis=3)
+
+        return y_pooled
 
     def compute_output_shape(self, input_shape):
         input_shape = tf.TensorShape(input_shape).as_list()
@@ -331,29 +476,181 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
         self.data_format = conv_utils.normalize_data_format(data_format)
         self.reduce_function = reduce_function
         self.output_size = conv_utils.normalize_tuple(output_size, 3, "output_size")
+        self.output_size_x, self.output_size_y, self.output_size_z = self.output_size
         super().__init__(**kwargs)
 
     def call(self, inputs, *args):
-        h_bins = self.output_size[0]
-        w_bins = self.output_size[1]
-        d_bins = self.output_size[2]
         if self.data_format == "channels_last":
-            split_cols = tf.split(inputs, h_bins, axis=1)
-            split_cols = tf.stack(split_cols, axis=1)
-            split_rows = tf.split(split_cols, w_bins, axis=3)
-            split_rows = tf.stack(split_rows, axis=3)
-            split_depth = tf.split(split_rows, d_bins, axis=5)
-            split_depth = tf.stack(split_depth, axis=5)
-            out_vect = self.reduce_function(split_depth, axis=[2, 4, 6])
+            start_points_x = tf.cast(
+                (
+                    tf.range(self.output_size_x, dtype=tf.float32)
+                    * (inputs.shape[1] / self.output_size_x)
+                ),
+                tf.int32,
+            )
+            end_points_x = tf.cast(
+                tf.math.ceil(
+                    (
+                        (tf.range(self.output_size_x, dtype=tf.float32) + 1)
+                        * (inputs.shape[1] / self.output_size_x)
+                    )
+                ),
+                tf.int32,
+            )
+
+            start_points_y = tf.cast(
+                (
+                    tf.range(self.output_size_y, dtype=tf.float32)
+                    * (inputs.shape[2] / self.output_size_y)
+                ),
+                tf.int32,
+            )
+            end_points_y = tf.cast(
+                tf.math.ceil(
+                    (
+                        (tf.range(self.output_size_y, dtype=tf.float32) + 1)
+                        * (inputs.shape[2] / self.output_size_y)
+                    )
+                ),
+                tf.int32,
+            )
+
+            start_points_z = tf.cast(
+                (
+                    tf.range(self.output_size_z, dtype=tf.float32)
+                    * (inputs.shape[3] / self.output_size_z)
+                ),
+                tf.int32,
+            )
+            end_points_z = tf.cast(
+                tf.math.ceil(
+                    (
+                        (tf.range(self.output_size_z, dtype=tf.float32) + 1)
+                        * (inputs.shape[3] / self.output_size_z)
+                    )
+                ),
+                tf.int32,
+            )
+
+            pooled = []
+            for idx in range(self.output_size_x):
+                pooled.append(
+                    self.reduce_function(
+                        inputs[:, start_points_x[idx] : end_points_x[idx], :, :, :],
+                        axis=1,
+                        keepdims=True,
+                    )
+                )
+            x_pooled = tf.concat(pooled, axis=1)
+
+            pooled = []
+            for idx in range(self.output_size_y):
+                pooled.append(
+                    self.reduce_function(
+                        x_pooled[:, :, start_points_y[idx] : end_points_y[idx], :, :],
+                        axis=2,
+                        keepdims=True,
+                    )
+                )
+            y_pooled = tf.concat(pooled, axis=2)
+
+            pooled = []
+            for idx in range(self.output_size_z):
+                pooled.append(
+                    self.reduce_function(
+                        y_pooled[:, :, :, start_points_z[idx] : end_points_z[idx], :],
+                        axis=3,
+                        keepdims=True,
+                    )
+                )
+            z_pooled = tf.concat(pooled, axis=3)
+
         else:
-            split_cols = tf.split(inputs, h_bins, axis=2)
-            split_cols = tf.stack(split_cols, axis=2)
-            split_rows = tf.split(split_cols, w_bins, axis=4)
-            split_rows = tf.stack(split_rows, axis=4)
-            split_depth = tf.split(split_rows, d_bins, axis=6)
-            split_depth = tf.stack(split_depth, axis=6)
-            out_vect = self.reduce_function(split_depth, axis=[3, 5, 7])
-        return out_vect
+            start_points_x = tf.cast(
+                (
+                    tf.range(self.output_size_x, dtype=tf.float32)
+                    * (inputs.shape[2] / self.output_size_x)
+                ),
+                tf.int32,
+            )
+            end_points_x = tf.cast(
+                tf.math.ceil(
+                    (
+                        (tf.range(self.output_size_x, dtype=tf.float32) + 1)
+                        * (inputs.shape[2] / self.output_size_x)
+                    )
+                ),
+                tf.int32,
+            )
+
+            start_points_y = tf.cast(
+                (
+                    tf.range(self.output_size_y, dtype=tf.float32)
+                    * (inputs.shape[3] / self.output_size_y)
+                ),
+                tf.int32,
+            )
+            end_points_y = tf.cast(
+                tf.math.ceil(
+                    (
+                        (tf.range(self.output_size_y, dtype=tf.float32) + 1)
+                        * (inputs.shape[3] / self.output_size_y)
+                    )
+                ),
+                tf.int32,
+            )
+
+            start_points_z = tf.cast(
+                (
+                    tf.range(self.output_size_z, dtype=tf.float32)
+                    * (inputs.shape[4] / self.output_size_z)
+                ),
+                tf.int32,
+            )
+            end_points_z = tf.cast(
+                tf.math.ceil(
+                    (
+                        (tf.range(self.output_size_z, dtype=tf.float32) + 1)
+                        * (inputs.shape[4] / self.output_size_z)
+                    )
+                ),
+                tf.int32,
+            )
+
+            pooled = []
+            for idx in range(self.output_size_x):
+                pooled.append(
+                    self.reduce_function(
+                        inputs[:, :, start_points_x[idx] : end_points_x[idx], :, :],
+                        axis=2,
+                        keepdims=True,
+                    )
+                )
+            x_pooled = tf.concat(pooled, axis=2)
+
+            pooled = []
+            for idx in range(self.output_size_y):
+                pooled.append(
+                    self.reduce_function(
+                        x_pooled[:, :, :, start_points_y[idx] : end_points_y[idx], :],
+                        axis=3,
+                        keepdims=True,
+                    )
+                )
+            y_pooled = tf.concat(pooled, axis=3)
+
+            pooled = []
+            for idx in range(self.output_size_z):
+                pooled.append(
+                    self.reduce_function(
+                        y_pooled[:, :, :, :, start_points_z[idx] : end_points_z[idx]],
+                        axis=4,
+                        keepdims=True,
+                    )
+                )
+            z_pooled = tf.concat(pooled, axis=4)
+
+        return z_pooled
 
     def compute_output_shape(self, input_shape):
         input_shape = tf.TensorShape(input_shape).as_list()
