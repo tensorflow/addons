@@ -83,7 +83,7 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
         else:
             start_points = tf.cast(
                 (
-                    tf.range(self.output_size, dtype=tf.float32)
+                    tf.range(self.output_size[0], dtype=tf.float32)
                     * (inputs.shape[2] / self.output_size[0])
                 ),
                 tf.int32,
@@ -91,7 +91,7 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
             end_points = tf.cast(
                 tf.math.ceil(
                     (
-                        (tf.range(self.output_size, dtype=tf.float32) + 1)
+                        (tf.range(self.output_size[0], dtype=tf.float32) + 1)
                         * (inputs.shape[2] / self.output_size[0])
                     )
                 ),
