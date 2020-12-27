@@ -57,7 +57,7 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
             start_points = tf.cast(
                 (
                     tf.range(self.output_size[0], dtype=tf.float32)
-                    * (inputs.shape[1] / self.output_size[0])
+                    * tf.cast((tf.shape(inputs)[1] / self.output_size[0]), tf.float32)
                 ),
                 tf.int32,
             )
@@ -65,7 +65,9 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
                 tf.math.ceil(
                     (
                         (tf.range(self.output_size[0], dtype=tf.float32) + 1)
-                        * (inputs.shape[1] / self.output_size[0])
+                        * tf.cast(
+                            (tf.shape(inputs)[1] / self.output_size[0]), tf.float32
+                        )
                     )
                 ),
                 tf.int32,
@@ -84,7 +86,7 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
             start_points = tf.cast(
                 (
                     tf.range(self.output_size[0], dtype=tf.float32)
-                    * (inputs.shape[2] / self.output_size[0])
+                    * tf.cast((tf.shape(inputs)[2] / self.output_size[0]), tf.float32)
                 ),
                 tf.int32,
             )
@@ -92,7 +94,9 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
                 tf.math.ceil(
                     (
                         (tf.range(self.output_size[0], dtype=tf.float32) + 1)
-                        * (inputs.shape[2] / self.output_size[0])
+                        * tf.cast(
+                            (tf.shape(inputs)[2] / self.output_size[0]), tf.float32
+                        )
                     )
                 ),
                 tf.int32,
@@ -230,6 +234,7 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
         self.reduce_function = reduce_function
         self.output_size = conv_utils.normalize_tuple(output_size, 2, "output_size")
         self.output_size_x, self.output_size_y = self.output_size
+
         super().__init__(**kwargs)
 
     def call(self, inputs, *args):
@@ -237,7 +242,7 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
             start_points_x = tf.cast(
                 (
                     tf.range(self.output_size_x, dtype=tf.float32)
-                    * (inputs.shape[1] / self.output_size_x)
+                    * tf.cast((tf.shape(inputs)[1] / self.output_size_x), tf.float32)
                 ),
                 tf.int32,
             )
@@ -245,7 +250,9 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
                 tf.math.ceil(
                     (
                         (tf.range(self.output_size_x, dtype=tf.float32) + 1)
-                        * (inputs.shape[1] / self.output_size_x)
+                        * tf.cast(
+                            (tf.shape(inputs)[1] / self.output_size_x), tf.float32
+                        )
                     )
                 ),
                 tf.int32,
@@ -254,7 +261,7 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
             start_points_y = tf.cast(
                 (
                     tf.range(self.output_size_y, dtype=tf.float32)
-                    * (inputs.shape[2] / self.output_size_y)
+                    * tf.cast((tf.shape(inputs)[2] / self.output_size_y), tf.float32)
                 ),
                 tf.int32,
             )
@@ -262,7 +269,9 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
                 tf.math.ceil(
                     (
                         (tf.range(self.output_size_y, dtype=tf.float32) + 1)
-                        * (inputs.shape[2] / self.output_size_y)
+                        * tf.cast(
+                            (tf.shape(inputs)[2] / self.output_size_y), tf.float32
+                        )
                     )
                 ),
                 tf.int32,
@@ -293,7 +302,7 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
             start_points_x = tf.cast(
                 (
                     tf.range(self.output_size_x, dtype=tf.float32)
-                    * (inputs.shape[2] / self.output_size_x)
+                    * tf.cast((tf.shape(inputs)[2] / self.output_size_x), tf.float32)
                 ),
                 tf.int32,
             )
@@ -301,7 +310,9 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
                 tf.math.ceil(
                     (
                         (tf.range(self.output_size_x, dtype=tf.float32) + 1)
-                        * (inputs.shape[2] / self.output_size_x)
+                        * tf.cast(
+                            (tf.shape(inputs)[2] / self.output_size_x), tf.float32
+                        )
                     )
                 ),
                 tf.int32,
@@ -310,7 +321,7 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
             start_points_y = tf.cast(
                 (
                     tf.range(self.output_size_y, dtype=tf.float32)
-                    * (inputs.shape[3] / self.output_size_y)
+                    * tf.cast((tf.shape(inputs)[3] / self.output_size_y), tf.float32)
                 ),
                 tf.int32,
             )
@@ -318,7 +329,9 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
                 tf.math.ceil(
                     (
                         (tf.range(self.output_size_y, dtype=tf.float32) + 1)
-                        * (inputs.shape[3] / self.output_size_y)
+                        * tf.cast(
+                            (tf.shape(inputs)[3] / self.output_size_y), tf.float32
+                        )
                     )
                 ),
                 tf.int32,
@@ -484,7 +497,7 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
             start_points_x = tf.cast(
                 (
                     tf.range(self.output_size_x, dtype=tf.float32)
-                    * (inputs.shape[1] / self.output_size_x)
+                    * tf.cast((tf.shape(inputs)[1] / self.output_size_x), tf.float32)
                 ),
                 tf.int32,
             )
@@ -492,7 +505,9 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
                 tf.math.ceil(
                     (
                         (tf.range(self.output_size_x, dtype=tf.float32) + 1)
-                        * (inputs.shape[1] / self.output_size_x)
+                        * tf.cast(
+                            (tf.shape(inputs)[1] / self.output_size_x), tf.float32
+                        )
                     )
                 ),
                 tf.int32,
@@ -501,7 +516,7 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
             start_points_y = tf.cast(
                 (
                     tf.range(self.output_size_y, dtype=tf.float32)
-                    * (inputs.shape[2] / self.output_size_y)
+                    * tf.cast((tf.shape(inputs)[2] / self.output_size_y), tf.float32)
                 ),
                 tf.int32,
             )
@@ -509,7 +524,9 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
                 tf.math.ceil(
                     (
                         (tf.range(self.output_size_y, dtype=tf.float32) + 1)
-                        * (inputs.shape[2] / self.output_size_y)
+                        * tf.cast(
+                            (tf.shape(inputs)[2] / self.output_size_y), tf.float32
+                        )
                     )
                 ),
                 tf.int32,
@@ -518,7 +535,7 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
             start_points_z = tf.cast(
                 (
                     tf.range(self.output_size_z, dtype=tf.float32)
-                    * (inputs.shape[3] / self.output_size_z)
+                    * tf.cast((tf.shape(inputs)[3] / self.output_size_z), tf.float32)
                 ),
                 tf.int32,
             )
@@ -526,7 +543,9 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
                 tf.math.ceil(
                     (
                         (tf.range(self.output_size_z, dtype=tf.float32) + 1)
-                        * (inputs.shape[3] / self.output_size_z)
+                        * tf.cast(
+                            (tf.shape(inputs)[3] / self.output_size_z), tf.float32
+                        )
                     )
                 ),
                 tf.int32,
@@ -569,7 +588,7 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
             start_points_x = tf.cast(
                 (
                     tf.range(self.output_size_x, dtype=tf.float32)
-                    * (inputs.shape[2] / self.output_size_x)
+                    * tf.cast((tf.shape(inputs)[2] / self.output_size_x), tf.float32)
                 ),
                 tf.int32,
             )
@@ -577,7 +596,9 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
                 tf.math.ceil(
                     (
                         (tf.range(self.output_size_x, dtype=tf.float32) + 1)
-                        * (inputs.shape[2] / self.output_size_x)
+                        * tf.cast(
+                            (tf.shape(inputs)[2] / self.output_size_x), tf.float32
+                        )
                     )
                 ),
                 tf.int32,
@@ -586,7 +607,7 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
             start_points_y = tf.cast(
                 (
                     tf.range(self.output_size_y, dtype=tf.float32)
-                    * (inputs.shape[3] / self.output_size_y)
+                    * tf.cast((tf.shape(inputs)[3] / self.output_size_y), tf.float32)
                 ),
                 tf.int32,
             )
@@ -594,7 +615,9 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
                 tf.math.ceil(
                     (
                         (tf.range(self.output_size_y, dtype=tf.float32) + 1)
-                        * (inputs.shape[3] / self.output_size_y)
+                        * tf.cast(
+                            (tf.shape(inputs)[3] / self.output_size_y), tf.float32
+                        )
                     )
                 ),
                 tf.int32,
@@ -603,7 +626,7 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
             start_points_z = tf.cast(
                 (
                     tf.range(self.output_size_z, dtype=tf.float32)
-                    * (inputs.shape[4] / self.output_size_z)
+                    * tf.cast((tf.shape(inputs)[4] / self.output_size_z), tf.float32)
                 ),
                 tf.int32,
             )
@@ -611,7 +634,9 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
                 tf.math.ceil(
                     (
                         (tf.range(self.output_size_z, dtype=tf.float32) + 1)
-                        * (inputs.shape[4] / self.output_size_z)
+                        * tf.cast(
+                            (tf.shape(inputs)[4] / self.output_size_z), tf.float32
+                        )
                     )
                 ),
                 tf.int32,
