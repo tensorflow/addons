@@ -238,3 +238,15 @@ def test_padding_valid_complex():
 
     output = MaxUnpooling2D(pool_size=(2, 3), padding="VALID")(updates, indices).numpy()
     np.testing.assert_array_equal(expected_output, output)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_symbolic_tensor_shape():
+    valid_input = tf.keras.layers.Input((None, None, 1))
+    updates, indices = tf.nn.max_pool_with_argmax(
+        valid_input, ksize=[2, 2], strides=[2, 2], padding="SAME"
+    )
+    output = MaxUnpooling2D(pool_size=(2, 2), strides=(2, 2), padding="SAME")(
+        updates, indices
+    )
+    np.testing.assert_array_equal(valid_input.shape.as_list(), output.shape.as_list())
