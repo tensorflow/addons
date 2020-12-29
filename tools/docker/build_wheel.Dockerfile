@@ -23,12 +23,12 @@ RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
 
 COPY tools/install_deps/ /install_deps
 RUN python -m pip install -r /install_deps/pytest.txt
-RUN bash /install_deps/install_bazelisk.sh ./
 
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
 
 COPY ./ /addons
+RUN rm /addons/.bazelversion
 WORKDIR /addons
 
 # -------------------------------------------------------------------
