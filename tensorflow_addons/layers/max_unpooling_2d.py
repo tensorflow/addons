@@ -59,6 +59,7 @@ def _max_unpooling_2d(updates, mask, pool_size=(2, 2), strides=(2, 2), padding="
     def func(updates, mask):
         mask = tf.cast(mask, "int32")
         input_shape = tf.shape(updates, out_type="int32")
+        input_shape = [updates.shape[i] or input_shape[i] for i in range(4)]
         output_shape = _calculate_output_shape(input_shape, pool_size, strides, padding)
 
         # Calculates indices for batch, height, width and feature maps.
