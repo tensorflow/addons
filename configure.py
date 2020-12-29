@@ -117,9 +117,13 @@ def create_build_configuration():
         write("build:windows --copt=/experimental:preprocessor")
         write("build:windows --host_copt=/experimental:preprocessor")
         write("build:windows --copt=/arch=AVX2")
+        write("build:windows --cxxopt=/std:c++14")
+        write("build:windows --host_cxxopt=/std:c++14")
 
     if is_macos() or is_linux():
         write("build --copt=-mavx2")
+        write("build --cxxopt=-std=c++14")
+        write("build --host_cxxopt=-std=c++14")
 
     if os.getenv("TF_NEED_CUDA", "0") == "1":
         print("> Building GPU & CPU ops")
