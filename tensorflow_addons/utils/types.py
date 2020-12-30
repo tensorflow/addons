@@ -40,8 +40,8 @@ Number = Union[
 ]
 
 Initializer = Union[None, dict, str, Callable, tf.keras.initializers.Initializer]
-Regularizer = Union[None, dict, str, Callable, tf.keras.initializers.Regularizer]
-Constraint = Union[None, dict, str, Callable, tf.keras.initializers.Constraint]
+Regularizer = Union[None, dict, str, Callable, tf.keras.regularizers.Regularizer]
+Constraint = Union[None, dict, str, Callable, tf.keras.constraints.Constraint]
 Activation = Union[None, str, Callable]
 Optimizer = Union[tf.keras.optimizers.Optimizer, str]
 
