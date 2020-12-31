@@ -20,8 +20,8 @@ import warnings
 
 import tensorflow as tf
 
-MIN_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.4.0"
-MAX_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.5.0"
+INCLUSIVE_MIN_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.4.0"
+EXCLUSIVE_MAX_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.5.0"
 abi_warning_already_raised = False
 SKIP_CUSTOM_OPS = False
 
@@ -96,9 +96,9 @@ class LazySO:
             "".format(
                 tf.__version__,
                 self.relative_path,
-                MIN_TF_VERSION_FOR_ABI_COMPATIBILITY,
-                MIN_TF_VERSION_FOR_ABI_COMPATIBILITY,
-                MAX_TF_VERSION_FOR_ABI_COMPATIBILITY,
+                INCLUSIVE_MIN_TF_VERSION_FOR_ABI_COMPATIBILITY,
+                INCLUSIVE_MIN_TF_VERSION_FOR_ABI_COMPATIBILITY,
+                EXCLUSIVE_MAX_TF_VERSION_FOR_ABI_COMPATIBILITY,
             ),
             UserWarning,
         )
@@ -110,6 +110,6 @@ def abi_is_compatible():
         # tf-nightly
         return False
 
-    min_version = LooseVersion(MIN_TF_VERSION_FOR_ABI_COMPATIBILITY)
-    max_version = LooseVersion(MAX_TF_VERSION_FOR_ABI_COMPATIBILITY)
+    min_version = LooseVersion(INCLUSIVE_MIN_TF_VERSION_FOR_ABI_COMPATIBILITY)
+    max_version = LooseVersion(EXCLUSIVE_MAX_TF_VERSION_FOR_ABI_COMPATIBILITY)
     return min_version <= LooseVersion(tf.__version__) < max_version
