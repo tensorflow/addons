@@ -39,9 +39,9 @@ Number = Union[
     np.uint64,
 ]
 
-Initializer = Union[None, dict, str, Callable]
-Regularizer = Union[None, dict, str, Callable]
-Constraint = Union[None, dict, str, Callable]
+Initializer = Union[None, dict, str, Callable, tf.keras.initializers.Initializer]
+Regularizer = Union[None, dict, str, Callable, tf.keras.regularizers.Regularizer]
+Constraint = Union[None, dict, str, Callable, tf.keras.constraints.Constraint]
 Activation = Union[None, str, Callable]
 Optimizer = Union[tf.keras.optimizers.Optimizer, str]
 
