@@ -440,7 +440,7 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         super().build(input_shape)
 
     def call(self, inputs):
-        epsilon = tf.math.abs(tf.cast(self.epsilon, dtype=inputs.dtype))
+        epsilon = tf.math.abs(tf.cast(self.epsilon, dtype=self.dtype))
         if self.use_eps_learned:
             epsilon += tf.math.abs(self.eps_learned)
         nu2 = tf.reduce_mean(tf.square(inputs), axis=self.axis, keepdims=True)
