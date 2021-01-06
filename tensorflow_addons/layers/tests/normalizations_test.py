@@ -463,10 +463,11 @@ def test_eps_gards(dtype):
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
-def test_filter_response_normalization_save_h5(dtype, tmpdir):
+def test_filter_response_normalization_save(tmpdir):
     input_layer = tf.keras.layers.Input(shape=(32, 32, 3))
     frn = FilterResponseNormalization()(input_layer)
     model = tf.keras.Model(input_layer, frn)
     filepath = str(tmpdir / "test.h5")
-    model.save(filepath)
+    model.save(filepath, save_format="h5")
+    filepath = str(tmpdir / "test")
+    model.save(filepath, save_format="tf")
