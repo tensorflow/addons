@@ -70,7 +70,7 @@ class NoisyDense(tf.keras.layers.Dense):
         1. Independent Gaussian noise                                    
         2. Factorised Gaussian noise.
     We can choose between that by 'use_factorised' parameter.
-  
+
     Args:
       units: Positive integer, dimensionality of the output space.
       sigma: A float between 0-1 used as a standard deviation figure and is
@@ -156,10 +156,10 @@ class NoisyDense(tf.keras.layers.Dense):
         # use factorising Gaussian variables
         if self.use_factorised:
             sigma_init = self.sigma / sqrt_dim
-        # use independent Gaussian variables  
+        # use independent Gaussian variables
         else:
             sigma_init = 0.017
-    
+
         sigma_init = initializers.Constant(value=sigma_init)
         mu_init = initializers.RandomUniform(minval=-1 / sqrt_dim, maxval=1 / sqrt_dim)
 
@@ -243,12 +243,8 @@ class NoisyDense(tf.keras.layers.Dense):
             self.eps_bias = _scale_noise(eps_j)
         else:
             # generate independent variables
-            self.eps_kernel = tf.random.normal(shape=self.eps_kernel.shape,
-                               dtype=dtype
-            )
-            self.eps_bias = tf.random.normal(shape=self.eps_bias.shape,
-                               dtype=dtype
-            )
+            self.eps_kernel = tf.random.normal(shape=self.eps_kernel.shape, dtype=dtype)
+            self.eps_bias = tf.random.normal(shape=self.eps_bias.shape, dtype=dtype)
         
     def _remove_noise(self):
         """Remove the factorised Gaussian noise."""
