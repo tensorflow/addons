@@ -154,13 +154,15 @@ class NoisyDense(tf.keras.layers.Dense):
 
         # use factorising Gaussian variables
         if self.use_factorised:
+            mu_init = 1.0 / sqrt_dim
             sigma_init = self.sigma / sqrt_dim
         # use independent Gaussian variables
         else:
+            mu_init = (3.0 / self.last_dim) ** (1 / 2)
             sigma_init = 0.017
 
         sigma_init = initializers.Constant(value=sigma_init)
-        mu_init = initializers.RandomUniform(minval=-1 / sqrt_dim, maxval=1 / sqrt_dim)
+        mu_init = initializers.RandomUniform(minval=-mu_init, maxval=mu_init)
 
         # Learnable parameters
         self.sigma_kernel = self.add_weight(
