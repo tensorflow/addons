@@ -243,10 +243,10 @@ class NoisyDense(tf.keras.layers.Dense):
             self.eps_bias = _scale_noise(eps_j)
         else:
             # generate independent variables
-            w_eps = tf.random.normal(shape=self.eps_kernel.shape,
+            self.eps_kernel = tf.random.normal(shape=self.eps_kernel.shape,
                                dtype=dtype
             )
-            b_eps = tf.random.normal(shape=self.eps_bias.shape,
+            self.eps_bias = tf.random.normal(shape=self.eps_bias.shape,
                                dtype=dtype
             )
         
