@@ -26,9 +26,11 @@ from typeguard import typechecked
 
 from tensorflow_addons.utils import types
 
+
 def _scaled_noise(size, dtype):
     x = tf.random.normal(shape=size, dtype=dtype)
     return tf.sign(x) * tf.sqrt(tf.abs(x))
+
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class NoisyDense(tf.keras.layers.Dense):
