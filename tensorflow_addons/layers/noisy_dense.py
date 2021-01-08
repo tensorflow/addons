@@ -66,8 +66,8 @@ class NoisyDense(tf.keras.layers.Dense):
     >>> model.output_shape
     (None, 32)
 
-    There are implemented both variants: 
-        1. Independent Gaussian noise                                    
+    There are implemented both variants:
+        1. Independent Gaussian noise
         2. Factorised Gaussian noise.
     We can choose between that by 'use_factorised' parameter.
 
@@ -245,7 +245,7 @@ class NoisyDense(tf.keras.layers.Dense):
             # generate independent variables
             self.eps_kernel = tf.random.normal(shape=self.eps_kernel.shape, dtype=dtype)
             self.eps_bias = tf.random.normal(shape=self.eps_bias.shape, dtype=dtype)
-        
+
     def _remove_noise(self):
         """Remove the factorised Gaussian noise."""
 
