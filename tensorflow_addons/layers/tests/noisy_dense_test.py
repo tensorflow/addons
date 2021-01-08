@@ -136,6 +136,7 @@ def test_noisy_dense_automatic_reset_noise_independent():
         new_eps_bias,
     )
 
+    
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_noisy_dense_remove_noise():
     inputs = tf.convert_to_tensor(np.random.randint(low=0, high=7, size=(2, 2)))
