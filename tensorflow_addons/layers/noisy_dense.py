@@ -241,8 +241,15 @@ class NoisyDense(tf.keras.layers.Dense):
             self.eps_bias = out_eps[0]
         else:
             # generate independent variables
-            self.eps_kernel = tf.random.normal(shape=[self.last_dim, self.units], dtype=dtype)
-            self.eps_bias = tf.random.normal(shape=[self.units,], dtype=dtype)
+            self.eps_kernel = tf.random.normal(
+                shape=[self.last_dim, self.units], dtype=dtype
+            )
+            self.eps_bias = tf.random.normal(
+                shape=[
+                    self.units,
+                ],
+                dtype=dtype,
+            )
 
     def _remove_noise(self):
         """Remove the factorised Gaussian noise."""
@@ -268,7 +275,7 @@ class NoisyDense(tf.keras.layers.Dense):
             {
                 "units": self.units,
                 "sigma": self.sigma,
-                'use_factorised': self.use_factorised,
+                "use_factorised": self.use_factorised,
                 "activation": activations.serialize(self.activation),
                 "use_bias": self.use_bias,
                 "kernel_regularizer": regularizers.serialize(self.kernel_regularizer),

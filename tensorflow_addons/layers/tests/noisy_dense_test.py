@@ -116,7 +116,9 @@ def test_noisy_dense_automatic_reset_noise():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_noisy_dense_automatic_reset_noise_independent():
     inputs = tf.convert_to_tensor(np.random.randint(low=0, high=7, size=(2, 2)))
-    layer = NoisyDense(5, use_factorised=False, name="noise_dense_auto_reset_noise_independent")
+    layer = NoisyDense(
+        5, use_factorised=False, name="noise_dense_auto_reset_noise_independent"
+    )
     layer(inputs)
     initial_eps_kernel = layer.eps_kernel
     initial_eps_bias = layer.eps_bias
