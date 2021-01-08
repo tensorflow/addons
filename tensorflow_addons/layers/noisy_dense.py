@@ -26,6 +26,9 @@ from typeguard import typechecked
 
 from tensorflow_addons.utils import types
 
+def _scaled_noise(size, dtype):
+    x = tf.random.normal(shape=size, dtype=dtype)
+    return tf.sign(x) * tf.sqrt(tf.abs(x))
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class NoisyDense(tf.keras.layers.Dense):
@@ -219,10 +222,6 @@ class NoisyDense(tf.keras.layers.Dense):
         if self.use_bias:
             return self.mu_bias + (self.sigma_bias * self.eps_bias)
 
-    def _scaled_noise(self, size, dtype):
-        x = tf.random.normal(shape=size, dtype=dtype)
-        return tf.sign(x) * tf.sqrt(tf.abs(x))
-
     def _reset_noise(self):
         """Create the factorised Gaussian noise."""
 
@@ -230,8 +229,8 @@ class NoisyDense(tf.keras.layers.Dense):
 
         if self.use_factorised:
             # Generate random noise
-            in_eps = self._scaled_noise([self.last_dim, 1], dtype=dtype)
-            out_eps = self._scaled_noise([1, self.units], dtype=dtype)
+            in_eps = _scaled_noise([self.last_dim, 1], dtype=dtype)
+            out_eps = _scaled_noise([1, self.units], dtype=dtype)
 
             # Scale the random noise
             self.eps_kernel = tf.matmul(in_eps, out_eps)
