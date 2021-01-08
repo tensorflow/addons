@@ -230,8 +230,8 @@ class NoisyDense(tf.keras.layers.Dense):
 
         if self.use_factorised:
             # Generate random noise
-            in_eps = self._scale_noise([self.last_dim, 1], dtype=dtype)
-            out_eps = self._scale_noise([1, self.units], dtype=dtype)
+            in_eps = self._scaled_noise([self.last_dim, 1], dtype=dtype)
+            out_eps = self._scaled_noise([1, self.units], dtype=dtype)
 
             # Scale the random noise
             self.eps_kernel = tf.matmul(in_eps, out_eps)
