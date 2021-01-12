@@ -39,7 +39,7 @@ def test_basic_mixed_precision():
         kwargs={"layer": tf.keras.layers.Conv2D(5, (2, 2))},
         input_shape=(2, 4, 4, 3),
         input_dtype="float16",
-        expected_output_dtype="float16"
+        expected_output_dtype="float16",
     )
     tf.keras.mixed_precision.experimental.set_policy("float32")
 
