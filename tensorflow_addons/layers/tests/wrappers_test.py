@@ -32,6 +32,18 @@ def test_basic():
     )
 
 
+def test_basic_mixed_precision():
+    tf.keras.mixed_precision.experimental.set_policy("mixed_float16")
+    test_utils.layer_test(
+        wrappers.WeightNormalization,
+        kwargs={"layer": tf.keras.layers.Conv2D(5, (2, 2))},
+        input_shape=(2, 4, 4, 3),
+        input_dtype="float16",
+        expected_output_dtype="float16"
+    )
+    tf.keras.mixed_precision.experimental.set_policy("float32")
+
+
 def test_no_bias():
     test_utils.layer_test(
         wrappers.WeightNormalization,
