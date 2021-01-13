@@ -107,9 +107,16 @@ class MovingAverage(AveragedOptimizerWrapper):
         else:
             return average_decay
 
-    def average_op(self, var, average_var):
-        decay = self._get_decay(self._optimizer.iterations)
-        return tf.keras.backend.moving_average_update(average_var, var, decay)
+    def _prepare_local(self, var_device, var_dtype, apply_state):
+        super()._prepare_local(var_device, var_dtype, apply_state)
+        apply_state[(var_device, var_dtype)]["tfa_ma_decay"] = self._get_decay(
+            self._optimizer.iterations
+        )
+
+    def average_op(self, var, average_var, local_apply_state):
+        return tf.keras.backend.moving_average_update(
+            average_var, var, local_apply_state["tfa_ma_decay"]
+        )
 
     def get_config(self):
         config = {
