@@ -158,7 +158,7 @@ def _get_dim(x, idx):
     return x.shape[idx] or tf.shape(x)[idx]
 
 
-@tf.function
+@tf.function(experimental_implements="addons:DenseImageWarp")
 def dense_image_warp(
     image: types.TensorLike, flow: types.TensorLike, name: Optional[str] = None
 ) -> tf.Tensor:
