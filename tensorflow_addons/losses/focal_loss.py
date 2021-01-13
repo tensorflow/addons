@@ -111,7 +111,7 @@ def sigmoid_focal_crossentropy(
         Weighted loss float `Tensor`. If `reduction` is `NONE`,this has the
         same shape as `y_true`; otherwise, it is scalar.
     """
-    if gamma < 0:
+    if gamma and gamma < 0:
         raise ValueError("Value of gamma should be greater than or equal to zero.")
 
     y_pred = tf.convert_to_tensor(y_pred)
