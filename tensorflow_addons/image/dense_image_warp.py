@@ -158,7 +158,7 @@ def _get_dim(x, idx):
     return x.shape[idx] or tf.shape(x)[idx]
 
 
-@tf.function(experimental_implements="addons:DenseImageWarp")
+@tf.function
 def dense_image_warp(
     image: types.TensorLike, flow: types.TensorLike, name: Optional[str] = None
 ) -> tf.Tensor:
@@ -222,3 +222,18 @@ def dense_image_warp(
         interpolated = interpolate_bilinear(image, query_points_flattened)
         interpolated = tf.reshape(interpolated, [batch_size, height, width, channels])
         return interpolated
+
+
+@tf.function(experimental_implements="addons:DenseImageWarp")
+def dense_image_warp_annotated(
+    image: types.TensorLike, flow: types.TensorLike, name: Optional[str] = None
+) -> tf.Tensor:
+    """Similar to dense_image_warp but annotated with experimental_implements.
+
+    This annotation make the serialized function detectable by the TFLite MLIR
+    converter and allow the converter to convert it to corresponding TFLite op.
+
+    However, with the annotation, this function cannot be used with backprop
+    under `tf.GradientTape` objects.
+    """
+    return dense_image_warp(image, flow, name)
