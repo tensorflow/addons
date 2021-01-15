@@ -32,6 +32,20 @@ def _norm_params(mask_size, offset=None):
     return mask_size, offset
 
 
+@tf.function
+def _random_center(mask_dim_length, image_dim_length, batch_size, seed):
+    if mask_dim_length >= image_dim_length:
+        return tf.tile([image_dim_length // 2], [batch_size])
+    half_mask_dim_length = mask_dim_length // 2
+    return tf.random.uniform(
+        shape=[batch_size],
+        minval=half_mask_dim_length,
+        maxval=image_dim_length - half_mask_dim_length,
+        dtype=tf.int32,
+        seed=seed,
+    )
+
+
 def random_cutout(
     images: TensorLike,
     mask_size: TensorLike,
@@ -71,23 +85,8 @@ def random_cutout(
 
     mask_size, _ = _norm_params(mask_size, offset=None)
 
-    half_mask_height = mask_size[0] // 2
-    half_mask_width = mask_size[1] // 2
-
-    cutout_center_height = tf.random.uniform(
-        shape=[batch_size],
-        minval=half_mask_height,
-        maxval=image_height - half_mask_height,
-        dtype=tf.int32,
-        seed=seed,
-    )
-    cutout_center_width = tf.random.uniform(
-        shape=[batch_size],
-        minval=half_mask_width,
-        maxval=image_width - half_mask_width,
-        dtype=tf.int32,
-        seed=seed,
-    )
+    cutout_center_height = _random_center(mask_size[0], image_height, batch_size, seed)
+    cutout_center_width = _random_center(mask_size[1], image_width, batch_size, seed)
 
     offset = tf.transpose([cutout_center_height, cutout_center_width], [1, 0])
     return cutout(images, mask_size, offset, constant_values)
