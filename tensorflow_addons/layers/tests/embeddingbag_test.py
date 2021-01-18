@@ -14,6 +14,9 @@
 # ==============================================================================
 """Tests for EmbeddingBag layer."""
 
+# TODO Add a test for the layer separate from the op
+# TODO Test gradients as well
+# TODO Test a few shapes with weird dimensions to make sure the op handles them correctly
 
 import pytest
 import numpy as np
