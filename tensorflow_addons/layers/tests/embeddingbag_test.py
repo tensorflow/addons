@@ -32,7 +32,7 @@ def manual_embeddingbag(indices, values, weights):
 def test_simple(dtype):
     indices = np.random.randint(low=0, high=1024, size=(16, 32)).astype(dtype)
     values = np.random.random(size=(1024, 16)).astype(np.float32)
-    weights = np.random.random(size=indices.size).astype(np.float32)
+    weights = np.random.random(size=indices.shape).astype(np.float32)
     manual_output = manual_embeddingbag(indices, values, weights)
     fused_output = embeddingbag(indices, values, weights)
     test_utils.assert_allclose_according_to_type(

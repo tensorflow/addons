@@ -35,6 +35,7 @@ def embeddingbag(
       A `Tensor` of the format specified by `data_format`.
     """
 
+    # TODO Assert weights have same shape as indices, if present
     with tf.name_scope(name or "embedding_bag"):
         op_call = _embeddingbag_so.ops.addons_embedding_bag
 
