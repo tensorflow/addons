@@ -19,3 +19,23 @@ custom_op_library(
         "cc/kernels/correlation_cost_op_gpu.cu.cc",
     ],
 )
+
+custom_op_library(
+    name = "_embeddingbag_ops.so",
+    srcs = [
+        "cc/kernels/embeddingbag.h",
+        "cc/kernels/embeddingbag_backward.h",
+        "cc/kernels/embeddingbag_kernels.cc",
+        "cc/kernels/embeddingbag_backward_kernels.cc",
+        "cc/ops/embeddingbag_ops.cc",
+    ],
+    cuda_deps = [
+        "@cub_archive//:cub",
+    ],
+    cuda_srcs = [
+        "cc/kernels/embeddingbag.h", 
+        "cc/kernels/embeddingbag_kernels.cu.cc", 
+        "cc/kernels/embeddingbag_backward.h", 
+        "cc/kernels/embeddingbag_backward_kernels.cu.cc"
+    ],
+)
