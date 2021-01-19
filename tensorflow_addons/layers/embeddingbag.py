@@ -80,7 +80,7 @@ class EmbeddingBag(tf.keras.layers.Layer):
         indices.shape[:-1], values.shape[-1]
     """
 
-    def __init__(self, num_embeddings, embedding_dim, embeddings_initializer=None,
+    def __init__(self, num_embeddings, embedding_dim, embeddings_initializer='uniform',
                  embeddings_regularizer=None, embeddings_constraint=None, mask_zero=False,
                  **kwargs):
         super(EmbeddingBag, self).__init__(**kwargs)
@@ -90,8 +90,6 @@ class EmbeddingBag(tf.keras.layers.Layer):
                 num_embeddings, embedding_dim))
         self.num_embeddings = num_embeddings
         self.embedding_dim = embedding_dim
-        if embeddings_initializer is None:
-            self.embeddings_initializer = initializers.normal(mean=0, stddev=embedding_dim ** (-0.5))
         self.embeddings_initializer = initializers.get(embeddings_initializer)
         self.embeddings_regularizer = regularizers.get(embeddings_regularizer)
         self.embeddings_constraint = constraints.get(embeddings_constraint)
