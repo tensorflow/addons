@@ -80,16 +80,16 @@ class EmbeddingBag(tf.keras.layers.Layer):
         indices.shape[:-1], values.shape[-1]
     """
 
-    def __init__(self, num_embeddings, embedding_dim, embeddings_initializer='uniform',
+    def __init__(self, input_dim, output_dim, embeddings_initializer='uniform',
                  embeddings_regularizer=None, embeddings_constraint=None, mask_zero=False,
                  **kwargs):
         super(EmbeddingBag, self).__init__(**kwargs)
-        if num_embeddings <= 0 or embedding_dim <= 0:
-            raise ValueError('Both `num_embeddings` and `embedding_dim` should be positive, '
-                             'found num_embeddings {} and embedding_dim {}'.format(
-                num_embeddings, embedding_dim))
-        self.num_embeddings = num_embeddings
-        self.embedding_dim = embedding_dim
+        if input_dim <= 0 or output_dim <= 0:
+            raise ValueError('Both `input_dim` and `output_dim` should be positive, '
+                             'found input_dim {} and output_dim {}'.format(
+                input_dim, output_dim))
+        self.num_embeddings = input_dim
+        self.embedding_dim = output_dim
         self.embeddings_initializer = initializers.get(embeddings_initializer)
         self.embeddings_regularizer = regularizers.get(embeddings_regularizer)
         self.embeddings_constraint = constraints.get(embeddings_constraint)
