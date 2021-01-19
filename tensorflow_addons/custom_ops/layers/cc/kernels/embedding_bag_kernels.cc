@@ -73,7 +73,11 @@ struct EmbeddingBagFunctor<CPUDevice, T, Tindices> {
 template <typename Device, typename T, typename Tindices>
 class EmbeddingBagOp : public OpKernel {
  public:
-  explicit EmbeddingBagOp(OpKernelConstruction* context) : OpKernel(context) {}
+  explicit EmbeddingBagOp(OpKernelConstruction* context) : OpKernel(context) {
+    OP_REQUIRES_OK(context, context->GetAttr("combiner", &combiner_));
+    OP_REQUIRES(context, combiner_ == "SUM",
+                errors::InvalidArgument("Only support 'SUM' combiner."));
+  }
 
   void Compute(OpKernelContext* context) override {
     const Tensor& indices = context->input(0);
@@ -109,6 +113,9 @@ class EmbeddingBagOp : public OpKernel {
         indices.flat<Tindices>().data(), values.flat<T>().data(),
         weights.flat<T>().data(), output_tensor->flat<T>().data());
   }
+
+ private:
+  std::string combiner_;
 };
 
 // Register the CPU kernels.

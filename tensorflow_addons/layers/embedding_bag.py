@@ -9,7 +9,8 @@ _embedding_bag_so = LazySO("custom_ops/layers/_embedding_bag_ops.so")
 def _embedding_bag(
     indices,
     values,
-    weights,
+    weights=None,
+    combiner="sum",
     name=None,
 ):
     """EmbeddingBag computation.
@@ -32,16 +33,12 @@ def _embedding_bag(
     Returns:
       A `Tensor` of the format specified by `data_format`.
     """
+    if weights is None:
+        weights = tf.ones_like(indices, dtype=tf.float32)
 
-    # TODO Assert weights have same shape as indices, if present
-    with tf.name_scope(name or "embedding_bag"):
-        op_call = _embedding_bag_so.ops.addons_embedding_bag
-
-        if weights is None:
-            weights = tf.ones_like(indices, dtype=tf.float32)
-
-        ret = op_call(indices, values, weights)
-        return ret
+    return _embedding_bag_so.ops.addons_embedding_bag(
+        indices, values, weights, combiner=combiner.upper(), name=name
+    )
 
 
 @tf.RegisterGradient("Addons>EmbeddingBag")
@@ -84,6 +81,7 @@ class EmbeddingBag(tf.keras.layers.Layer):
         embeddings_regularizer=None,
         embeddings_constraint=None,
         mask_zero=False,
+        combiner="sum",
         **kwargs,
     ):
         super(EmbeddingBag, self).__init__(**kwargs)
@@ -99,6 +97,7 @@ class EmbeddingBag(tf.keras.layers.Layer):
         self.embeddings_constraint = tf.keras.constraints.get(embeddings_constraint)
         self.mask_zero = mask_zero
         self.supports_masking = mask_zero
+        self.combiner = combiner
 
     def build(self, input_shape):
         self.embeddings = self.add_weight(
@@ -111,7 +110,7 @@ class EmbeddingBag(tf.keras.layers.Layer):
         self.built = True
 
     def call(self, indices, weights=None):
-        return _embedding_bag(indices, self.embeddings, weights)
+        return _embedding_bag(indices, self.embeddings, weights, combiner=self.combiner)
 
     def get_config(self):
         config = {
@@ -128,6 +127,7 @@ class EmbeddingBag(tf.keras.layers.Layer):
             ),
             "mask_zero": self.mask_zero,
             "input_length": self.input_length,
+            "combiner": self.combiner,
         }
         base_config = super(EmbeddingBag, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
