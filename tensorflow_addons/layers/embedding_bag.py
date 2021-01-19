@@ -1,6 +1,7 @@
 import tensorflow as tf
 from typeguard import typechecked
 
+from tensorflow_addons.utils.types import Constraint, Initializer, Regularizer
 from tensorflow_addons.utils.resource_loader import LazySO
 
 _embedding_bag_so = LazySO("custom_ops/layers/_embedding_bag_ops.so")
@@ -73,15 +74,16 @@ class EmbeddingBag(tf.keras.layers.Layer):
         indices.shape[:-1], values.shape[-1]
     """
 
+    @typechecked
     def __init__(
         self,
-        input_dim,
-        output_dim,
-        embeddings_initializer="uniform",
-        embeddings_regularizer=None,
-        embeddings_constraint=None,
-        mask_zero=False,
-        combiner="sum",
+        input_dim: int,
+        output_dim: int,
+        embeddings_initializer: Initializer = "uniform",
+        embeddings_regularizer: Regularizer = None,
+        embeddings_constraint: Constraint = None,
+        mask_zero: bool = False,
+        combiner: str = "sum",
         **kwargs,
     ):
         super(EmbeddingBag, self).__init__(**kwargs)
