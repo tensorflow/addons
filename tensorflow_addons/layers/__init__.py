@@ -23,7 +23,7 @@ from tensorflow_addons.layers.adaptive_pooling import (
     AdaptiveMaxPooling3D,
 )
 
-from tensorflow_addons.layers.embeddingbag import embeddingbag, EmbeddingBag
+from tensorflow_addons.layers.embedding_bag import EmbeddingBag
 from tensorflow_addons.layers.gelu import GELU
 from tensorflow_addons.layers.max_unpooling_2d import MaxUnpooling2D
 from tensorflow_addons.layers.maxout import Maxout

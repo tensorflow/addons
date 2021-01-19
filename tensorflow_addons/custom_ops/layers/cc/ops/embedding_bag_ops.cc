@@ -19,16 +19,18 @@ limitations under the License.
 namespace tensorflow {
 namespace addons {
 
+using ::tensorflow::shape_inference::DimensionHandle;
 using ::tensorflow::shape_inference::InferenceContext;
 using ::tensorflow::shape_inference::ShapeHandle;
-using ::tensorflow::shape_inference::DimensionHandle;
 
 REGISTER_OP("Addons>EmbeddingBag")
-    .Attr("T_indices: {int32, int64}")
-    .Input("indices: T_indices")
-    .Input("values: float")
-    .Input("weights: float")
-    .Output("out: float")
+    .Input("indices: Tindices")
+    .Input("values: T")
+    .Input("weights: T")
+    .Output("output: T")
+    .Attr("T: {half, float, double}")
+    .Attr("Tindices: {int32, int64}")
+    .Attr("combiner: string = 'sum'")
     .SetShapeFn([](InferenceContext* c) {
       ShapeHandle indices_shape;
       TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(0), 2, &indices_shape));
@@ -41,10 +43,11 @@ REGISTER_OP("Addons>EmbeddingBag")
       // TODO Confirm that indices and weights have the same shape
 
       DimensionHandle valuesDim = c->Dim(values_shape, 1);
-      ShapeHandle out;
-      c->ReplaceDim(indices_shape, c->Rank(indices_shape) - 1, valuesDim, &out);
+      ShapeHandle output;
+      TF_RETURN_IF_ERROR(c->ReplaceDim(
+          indices_shape, c->Rank(indices_shape) - 1, valuesDim, &output));
 
-      c->set_output(0, out);
+      c->set_output(0, output);
       return Status::OK();
     });
 
@@ -78,5 +81,5 @@ REGISTER_OP("Addons>EmbeddingBagGrad")
       return Status::OK();
     });
 
-}
-}
+}  // namespace addons
+}  // namespace tensorflow

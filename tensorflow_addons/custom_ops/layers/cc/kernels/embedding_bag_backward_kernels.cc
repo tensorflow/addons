@@ -1,4 +1,4 @@
-/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,25 +17,32 @@ limitations under the License.
 #define EIGEN_USE_GPU
 #endif  // GOOGLE_CUDA
 
-#include "embeddingbag_backward.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/tensor_shape.h"
+#include "tensorflow_addons/custom_ops/layers/cc/kernels/embedding_bag_backward.h"
 
 namespace tensorflow {
+namespace addons {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
 
-
 namespace functor {
 // CPU specialization of actual computation.
 // template <typename T_indices>
-//struct EmbeddingBagBackwardFunctor<CPUDevice, T_indices> {
+// struct EmbeddingBagBackwardFunctor<CPUDevice, T_indices> {
 template <typename T_indices>
 struct EmbeddingBagBackwardFunctor<CPUDevice, T_indices> {
-  void operator()(const CPUDevice& d, const int value_dim, const int bag_dim, const int indices_size, const int values_size, const T_indices* indices, const float* values, const float* weights, const float* dloss, float* values_grad, float* weights_grad, T_indices* sortedIndices, T_indices* sortedIndicesCounter) {
+  void operator()(const CPUDevice& d, const int value_dim, const int bag_dim,
+                  const int indices_size, const int values_size,
+                  const T_indices* indices, const float* values,
+                  const float* weights, const float* dloss, float* values_grad,
+                  float* weights_grad, T_indices* sortedIndices,
+                  T_indices* sortedIndicesCounter) {
     for (int i = 0; i < values_size; ++i) {
-      values_grad[i] = 0;  // Zero out the values array before we begin - not every value is written to and I don't know if it's guaranteed to be zero-initialized
+      values_grad[i] = 0;  // Zero out the values array before we begin - not
+                           // every value is written to and I don't know if it's
+                           // guaranteed to be zero-initialized
     }
     for (int bag = 0; bag < indices_size / bag_dim; ++bag) {
       int dloss_base = dloss[value_dim * bag];
@@ -46,7 +53,8 @@ struct EmbeddingBagBackwardFunctor<CPUDevice, T_indices> {
         int value_base = value_dim * indices[current_idx];
         for (int feature = 0; feature < value_dim; ++feature) {
           accum += values[value_base + feature] * dloss[dloss_base + feature];
-          values_grad[value_base + feature] += dloss[dloss_base + feature] * weight;
+          values_grad[value_base + feature] +=
+              dloss[dloss_base + feature] * weight;
         }
         weights_grad[current_idx] = accum;
       }
@@ -60,7 +68,8 @@ struct EmbeddingBagBackwardFunctor<CPUDevice, T_indices> {
 template <typename Device, typename T_indices>
 class EmbeddingBagBackwardOp : public OpKernel {
  public:
-  explicit EmbeddingBagBackwardOp(OpKernelConstruction* context) : OpKernel(context) {}
+  explicit EmbeddingBagBackwardOp(OpKernelConstruction* context)
+      : OpKernel(context) {}
 
   void Compute(OpKernelContext* context) override {
     // Grab the input tensor
@@ -74,19 +83,20 @@ class EmbeddingBagBackwardOp : public OpKernel {
 
     // Create an output tensor
     Tensor* values_grad = NULL;
-    OP_REQUIRES_OK(context, context->allocate_output(0, values.shape(),
-                                                     &values_grad));
+    OP_REQUIRES_OK(context,
+                   context->allocate_output(0, values.shape(), &values_grad));
 
     Tensor* weights_grad = NULL;
-    OP_REQUIRES_OK(context, context->allocate_output(1, weights.shape(),
-                                                     &weights_grad));
+    OP_REQUIRES_OK(context,
+                   context->allocate_output(1, weights.shape(), &weights_grad));
 
     Tensor* sortedIndicesTemp = NULL;
-    OP_REQUIRES_OK(context, context->allocate_output(2, indices.shape(), &sortedIndicesTemp));
+    OP_REQUIRES_OK(context, context->allocate_output(2, indices.shape(),
+                                                     &sortedIndicesTemp));
 
     Tensor* sortedIndicesCounterTemp = NULL;
-    OP_REQUIRES_OK(context, context->allocate_output(3, indices.shape(), &sortedIndicesCounterTemp));
-
+    OP_REQUIRES_OK(context, context->allocate_output(
+                                3, indices.shape(), &sortedIndicesCounterTemp));
 
     OP_REQUIRES(context, indices.NumElements() <= tensorflow::kint32max,
                 errors::InvalidArgument("Too many elements in tensor"));
@@ -95,41 +105,38 @@ class EmbeddingBagBackwardOp : public OpKernel {
                 errors::InvalidArgument("Too many elements in tensor"));
 
     EmbeddingBagBackwardFunctor<Device, T_indices>()(
-        context->eigen_device<Device>(),
-        valuesDim,
-        bagDim,
+        context->eigen_device<Device>(), valuesDim, bagDim,
         static_cast<int>(indices.NumElements()),
         static_cast<int>(values.NumElements()),
-        indices.flat<T_indices>().data(),
-        values.flat<float>().data(),
-        weights.flat<float>().data(),
-        grad.flat<float>().data(),
-        values_grad->flat<float>().data(),
-        weights_grad->flat<float>().data(),
+        indices.flat<T_indices>().data(), values.flat<float>().data(),
+        weights.flat<float>().data(), grad.flat<float>().data(),
+        values_grad->flat<float>().data(), weights_grad->flat<float>().data(),
         sortedIndicesTemp->flat<T_indices>().data(),
         sortedIndicesCounterTemp->flat<T_indices>().data());
   }
 };
 
 // Register the CPU kernels.
-#define REGISTER_CPU(T_indices)                                          \
-  REGISTER_KERNEL_BUILDER(                                       \
-  Name("Addons>EmbeddingBagGrad").Device(DEVICE_CPU).TypeConstraint<T_indices>("T_indices"), \
-       EmbeddingBagBackwardOp<CPUDevice, T_indices>);
+#define REGISTER_CPU(T_indices)                                        \
+  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBagGrad")              \
+                              .Device(DEVICE_CPU)                      \
+                              .TypeConstraint<T_indices>("T_indices"), \
+                          EmbeddingBagBackwardOp<CPUDevice, T_indices>);
 REGISTER_CPU(int32);
 REGISTER_CPU(int64);
 
-
 // Register the GPU kernels.
 #ifdef GOOGLE_CUDA
-#define REGISTER_GPU(T_indices)                                          \
-  extern template struct EmbeddingBagBackwardFunctor<GPUDevice, T_indices>;           \
-  REGISTER_KERNEL_BUILDER(                                       \
-      Name("Addons>EmbeddingBagGrad").Device(DEVICE_GPU).TypeConstraint<T_indices>("T_indices"), \
-      EmbeddingBagBackwardOp<GPUDevice, T_indices>);
+#define REGISTER_GPU(T_indices)                                             \
+  extern template struct EmbeddingBagBackwardFunctor<GPUDevice, T_indices>; \
+  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBagGrad")                   \
+                              .Device(DEVICE_GPU)                           \
+                              .TypeConstraint<T_indices>("T_indices"),      \
+                          EmbeddingBagBackwardOp<GPUDevice, T_indices>);
 
 REGISTER_GPU(int32);
 REGISTER_GPU(int64);
 #endif  // GOOGLE_CUDA
-}
+}  // namespace functor
+}  // namespace addons
 }  // namespace tensorflow
