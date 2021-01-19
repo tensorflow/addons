@@ -16,6 +16,10 @@ limitations under the License.
 #ifndef TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_H_
 #define TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_H_
 
+#if PLATFORM_WINDOWS
+#define __restrict__ __restrict
+#endif
+
 namespace tensorflow {
 namespace addons {
 namespace functor {
