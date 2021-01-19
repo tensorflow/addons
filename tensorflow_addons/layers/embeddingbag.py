@@ -111,14 +111,12 @@ class EmbeddingBag(tf.keras.layers.Layer):
 
     def get_config(self):
         config = {
-            'num_embeddings': self.num_embeddings,
-            'embeddings_dim': self.embeddings_dim,
+            'input_dim': self.num_embeddings,
+            'output_dim': self.embeddings_dim,
             'embeddings_initializer':
                 initializers.serialize(self.embeddings_initializer),
             'embeddings_regularizer':
                 regularizers.serialize(self.embeddings_regularizer),
-            'activity_regularizer':
-                regularizers.serialize(self.activity_regularizer),
             'embeddings_constraint':
                 constraints.serialize(self.embeddings_constraint),
             'mask_zero': self.mask_zero,
