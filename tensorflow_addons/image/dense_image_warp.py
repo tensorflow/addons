@@ -229,6 +229,9 @@ def dense_image_warp_annotated(
     image: types.TensorLike, flow: types.TensorLike, name: Optional[str] = None
 ) -> tf.Tensor:
     """Similar to dense_image_warp but annotated with experimental_implements.
+    
+    IMPORTANT: This is a temporary function and will be removed after TensorFlow's
+    next release.
 
     This annotation make the serialized function detectable by the TFLite MLIR
     converter and allow the converter to convert it to corresponding TFLite op.
