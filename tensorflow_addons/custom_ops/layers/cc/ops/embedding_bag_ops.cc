@@ -30,7 +30,7 @@ REGISTER_OP("Addons>EmbeddingBag")
     .Output("output: T")
     .Attr("T: {half, float, double}")
     .Attr("Tindices: {int32, int64}")
-    .Attr("combiner: string = 'sum'")
+    .Attr("combiner: string = 'SUM'")
     .SetShapeFn([](InferenceContext* c) {
       ShapeHandle indices_shape;
       TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(0), 2, &indices_shape));
