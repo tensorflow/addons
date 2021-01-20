@@ -16,22 +16,17 @@ limitations under the License.
 #ifndef TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_H_
 #define TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_H_
 
-#if PLATFORM_WINDOWS
-#define __restrict__ __restrict
-#endif
-
 namespace tensorflow {
 namespace addons {
 namespace functor {
 
 template <typename Device, typename T, typename Tindices>
 struct EmbeddingBagFunctor {
-  void operator()(const Device& d, const Eigen::Index value_dim,
-                  const Eigen::Index sequence_length,
-                  const Eigen::Index num_bags,
-                  const Tindices* __restrict__ indices,
-                  const T* __restrict__ values, const T* __restrict__ weights,
-                  T* __restrict__ output);
+  void operator()(const Device& device,
+                  typename TTypes<Tindices, 2>::ConstTensor indices,
+                  typename TTypes<T, 2>::ConstTensor values,
+                  typename TTypes<T, 2>::ConstTensor weights,
+                  typename TTypes<T, 2>::Tensor output);
 };
 
 }  // namespace functor

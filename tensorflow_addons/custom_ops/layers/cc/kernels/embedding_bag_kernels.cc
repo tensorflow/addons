@@ -37,22 +37,23 @@ struct EmbeddingBagFunctor<CPUDevice, T, Tindices> {
   using VectorMap = Eigen::Map<Eigen::Vector<T, Eigen::Dynamic>>;
   using ConstVectorMap = Eigen::Map<const Eigen::Vector<T, Eigen::Dynamic>>;
 
-  void operator()(const CPUDevice& d, const Eigen::Index value_dim,
-                  const Eigen::Index sequence_length,
-                  const Eigen::Index num_bags,
-                  const Tindices* __restrict__ indices,
-                  const T* __restrict__ values, const T* __restrict__ weights,
-                  T* __restrict__ output) {
+  void operator()(const CPUDevice& device,
+                  typename TTypes<Tindices, 2>::ConstTensor indices,
+                  typename TTypes<T, 2>::ConstTensor values,
+                  typename TTypes<T, 2>::ConstTensor weights,
+                  typename TTypes<T, 2>::Tensor output) {
+    const Eigen::Index bags = indices.dimension(0);
+    const Eigen::Index sequence_length = indices.dimension(1);
+    const Eigen::Index output_dim = values.dimension(1);
+
     const auto work = [&](Eigen::Index start, Eigen::Index end) {
       for (Eigen::Index bag = start; bag < end; ++bag) {
-        VectorMap output_slice(output + bag * value_dim, value_dim);
+        VectorMap output_slice(&output(bag, 0), output_dim);
         output_slice.setZero();
-        for (Eigen::Index indices_offset = bag * sequence_length;
-             indices_offset < (bag + 1) * sequence_length; ++indices_offset) {
-          const T* values_ptr = values + value_dim * indices[indices_offset];
-          T weight = weights[indices_offset];
-          const ConstVectorMap values_slice(values_ptr, value_dim);
-          output_slice += values_slice * weight;
+        for (Eigen::Index seq = 0; seq < sequence_length; ++seq) {
+          const ConstVectorMap values_slice(&values(indices(bag, seq), 0),
+                                            output_dim);
+          output_slice += values_slice * weights(bag, seq);
         }
       }
     };
@@ -66,7 +67,7 @@ struct EmbeddingBagFunctor<CPUDevice, T, Tindices> {
     const Eigen::TensorOpCost cost(bytes_loaded, bytes_stored, compute_cycles,
                                    /*vectorized=*/true,
                                    /*packet_size=*/kPacketSize);
-    d.parallelFor(num_bags, cost, std::move(work));
+    device.parallelFor(bags, cost, std::move(work));
   }
 };
 
@@ -98,20 +99,19 @@ class EmbeddingBagOp : public OpKernel {
                 errors::InvalidArgument("values shape should be 2-D."));
 
     TensorShape output_shape = indices_shape;
-    Eigen::Index value_dim = values.shape().dim_size(1);
-    Eigen::Index sequence_length =
-        output_shape.dim_size(output_shape.dims() - 1);
-    Eigen::Index num_bags = indices.NumElements() / sequence_length;
-    output_shape.set_dim(output_shape.dims() - 1, value_dim);
+    Eigen::Index output_dim = values.shape().dim_size(1);
+    output_shape.set_dim(output_shape.dims() - 1, output_dim);
 
-    Tensor* output_tensor = nullptr;
-    OP_REQUIRES_OK(context,
-                   context->allocate_output(0, output_shape, &output_tensor));
+    Tensor* output = nullptr;
+    OP_REQUIRES_OK(context, context->allocate_output(0, output_shape, &output));
+
+    auto flat_indices = indices.flat_inner_dims<Tindices, 2>();
+    auto flat_weights = weights.flat_inner_dims<T, 2>();
+    auto flat_output = output->flat_inner_dims<T, 2>();
 
     EmbeddingBagFunctor<Device, T, Tindices>()(
-        context->eigen_device<Device>(), value_dim, sequence_length, num_bags,
-        indices.flat<Tindices>().data(), values.flat<T>().data(),
-        weights.flat<T>().data(), output_tensor->flat<T>().data());
+        context->eigen_device<Device>(), flat_indices, values.tensor<T, 2>(),
+        flat_weights, flat_output);
   }
 
  private:
