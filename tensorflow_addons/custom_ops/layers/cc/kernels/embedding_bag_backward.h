@@ -20,14 +20,15 @@ namespace tensorflow {
 namespace addons {
 namespace functor {
 
-// template <typename Device, typename T_indices>
-template <typename Device, typename T_indices>
+template <typename Device, typename T, typename Tindices>
 struct EmbeddingBagBackwardFunctor {
-  void operator()(const Device& d, const int value_dim, const int bag_dim,
-                  const int indices_size, const int values_size,
-                  const T_indices* indices, const float* values,
-                  const float* weights, const float* dloss, float* values_grad,
-                  float* weights_grad, T_indices* dummy1, T_indices* dummy2);
+  void operator()(const Device& device,
+                  typename TTypes<Tindices, 2>::ConstTensor indices,
+                  typename TTypes<T, 2>::ConstTensor values,
+                  typename TTypes<T, 2>::ConstTensor weights,
+                  typename TTypes<T, 2>::ConstTensor grads,
+                  typename TTypes<Tindices, 1>::Tensor value_grads,
+                  typename TTypes<T, 2>::Tensor weight_grads);
 };
 
 }  // namespace functor

@@ -1,3 +1,18 @@
+# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
 import tensorflow as tf
 from typeguard import typechecked
 
@@ -43,13 +58,13 @@ def _embedding_bag(
 
 
 @tf.RegisterGradient("Addons>EmbeddingBag")
-def _embedding_bag_grad(op, grad):
+def _embedding_bag_grad(op, grads):
     indices, values, weights = op.inputs[:3]
-    op_call = _embedding_bag_so.ops.addons_embedding_bag_grad
-    values_grad, weights_grad = op_call(indices, values, weights, grad)[
-        :2
-    ]  # Drop the dummy outputs
-    return [None, values_grad, weights_grad]
+    combiner = op.get_attr("combiner")
+    value_grads, weight_grads = _embedding_bag_so.ops.addons_embedding_bag_grad(
+        indices, values, weights, grads, combiner=combiner
+    )
+    return [None, value_grads, weight_grads]
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")

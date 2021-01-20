@@ -1,4 +1,4 @@
-/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -52,32 +52,30 @@ REGISTER_OP("Addons>EmbeddingBag")
     });
 
 REGISTER_OP("Addons>EmbeddingBagGrad")
-    .Attr("T_indices: {int32, int64}")
-    .Input("indices: T_indices")
-    .Input("values: float")
-    .Input("weights: float")
-    .Input("dloss: float")
-    .Output("values_grad: float")
-    .Output("weights_grad: float")
-    .Output("dummy1: T_indices")
-    .Output("dummy2: T_indices")
-    .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
-      ::tensorflow::shape_inference::ShapeHandle indices_shape;
+    .Input("indices: Tindices")
+    .Input("values: T")
+    .Input("weights: T")
+    .Input("grads: T")
+    .Output("value_grads: T")
+    .Output("weight_grads: T")
+    .Attr("T: {half, float, double}")
+    .Attr("Tindices: {int32, int64}")
+    .Attr("combiner: string = 'SUM'")
+    .SetShapeFn([](InferenceContext* c) {
+      ShapeHandle indices_shape;
       TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(0), 2, &indices_shape));
 
-      ::tensorflow::shape_inference::ShapeHandle values_shape;
+      ShapeHandle values_shape;
       TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &values_shape));
 
-      ::tensorflow::shape_inference::ShapeHandle weights_shape;
+      ShapeHandle weights_shape;
       TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(2), 2, &weights_shape));
 
-      ::tensorflow::shape_inference::ShapeHandle dloss_shape;
-      TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(3), 2, &dloss_shape));
+      ShapeHandle grads_shape;
+      TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(3), 2, &grads_shape));
 
-      c->set_output(0, values_shape);
+      c->set_output(0, indices_shape);
       c->set_output(1, weights_shape);
-      c->set_output(2, indices_shape);
-      c->set_output(3, indices_shape);
       return Status::OK();
     });
 

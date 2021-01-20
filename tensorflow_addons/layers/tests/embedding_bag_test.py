@@ -1,4 +1,4 @@
-# Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,8 @@
 import pytest
 import numpy as np
 import tensorflow as tf
-from tensorflow_addons.layers.embedding_bag import EmbeddingBag
+
+from tensorflow_addons.layers.embedding_bag import EmbeddingBag, _embedding_bag
 from tensorflow_addons.utils import test_utils
 
 
@@ -31,15 +32,55 @@ def manual_embedding_bag(indices, values, weights):
     return tf.reduce_sum(gathered, -2, keepdims=False)  # (batch_dims, key_dim)
 
 
+@pytest.mark.parametrize("input_dim", [3, 512, 1024])
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 @pytest.mark.parametrize("indices_dtype", [np.int32, np.int64])
-def test_simple(dtype, indices_dtype):
-    indices = np.random.randint(low=0, high=1024, size=(16, 32)).astype(indices_dtype)
-    values = np.random.random(size=(1024, 16)).astype(dtype)
+def test_foward(input_dim, dtype, indices_dtype):
+    indices = np.random.randint(low=0, high=input_dim, size=(16, 32)).astype(
+        indices_dtype
+    )
+    values = np.random.random(size=(input_dim, 16)).astype(dtype)
     weights = np.random.random(size=indices.shape).astype(dtype)
-    manual_output = manual_embedding_bag(indices, values, weights)
-    fused_embedding_bag = EmbeddingBag(1024, 16, dtype=dtype)
-    fused_embedding_bag.build(indices.shape)
-    fused_embedding_bag.set_weights([values])
-    fused_output = fused_embedding_bag(indices, weights)
-    test_utils.assert_allclose_according_to_type(manual_output, fused_output)
+    expected = manual_embedding_bag(indices, values, weights)
+    embedding_bag = EmbeddingBag(input_dim, 16, dtype=dtype)
+    embedding_bag.build(indices.shape)
+    embedding_bag.set_weights([values])
+    output = embedding_bag(indices, weights)
+    test_utils.assert_allclose_according_to_type(expected, output)
+
+
+@pytest.mark.parametrize("input_dim", [3, 512, 1024])
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+@pytest.mark.parametrize("indices_dtype", [np.int32, np.int64])
+def test_backward(input_dim, dtype, indices_dtype):
+    indices = np.random.randint(low=0, high=input_dim, size=(16, 32)).astype(
+        indices_dtype
+    )
+    values = np.random.random(size=(input_dim, 16)).astype(dtype)
+    weights = np.random.random(size=indices.shape).astype(dtype)
+
+    indices = tf.convert_to_tensor(indices)
+    values = tf.convert_to_tensor(values)
+    weights = tf.convert_to_tensor(weights)
+
+    with tf.GradientTape(persistent=True) as tape:
+        tape.watch(values)
+        tape.watch(weights)
+        output = _embedding_bag(indices, values, weights)
+        expected = manual_embedding_bag(indices, values, weights)
+
+    grads = tape.gradient(output, [values, weights])
+    expected_grads = tape.gradient(expected, [values, weights])
+    # Gather returns sparse IndexedSlices so we have to sum them together.
+    test_utils.assert_allclose_according_to_type(
+        tf.math.unsorted_segment_sum(
+            expected_grads[0].values,
+            expected_grads[0].indices,
+            expected_grads[0].dense_shape[0],
+        ),
+        grads[0],
+    )
+    test_utils.assert_allclose_according_to_type(
+        expected_grads[1],
+        grads[1],
+    )
