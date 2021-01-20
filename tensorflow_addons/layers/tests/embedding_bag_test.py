@@ -64,8 +64,7 @@ def test_backward(input_dim, dtype, indices_dtype):
     weights = tf.convert_to_tensor(weights)
 
     with tf.GradientTape(persistent=True) as tape:
-        tape.watch(values)
-        tape.watch(weights)
+        tape.watch([values, weights])
         output = _embedding_bag(indices, values, weights)
         expected = manual_embedding_bag(indices, values, weights)
 
