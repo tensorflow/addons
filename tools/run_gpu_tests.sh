@@ -9,4 +9,4 @@ docker build \
        --build-arg TF_VERSION=2.4.0 \
        --build-arg PY_VERSION=3.6 \
        -t tfa_gpu_tests ./
-docker run --rm -t -v cache_bazel:/root/.cache/bazel --gpus=all tfa_gpu_tests
+docker run --rm -t --gpus=all tfa_gpu_tests
