@@ -86,7 +86,7 @@ class EmbeddingBagOp : public OpKernel {
     const Tensor& weights = context->input(2);
 
     const TensorShape& indices_shape = indices.shape();
-    const TensorShape& values_shape = weights.shape();
+    const TensorShape& values_shape = values.shape();
     const TensorShape& weights_shape = weights.shape();
 
     OP_REQUIRES(

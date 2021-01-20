@@ -32,11 +32,12 @@ def manual_embedding_bag(indices, values, weights):
     return tf.reduce_sum(gathered, -2, keepdims=False)  # (batch_dims, key_dim)
 
 
+@pytest.mark.parametrize("input_shape", [(16, 32), (16, 8, 32)])
 @pytest.mark.parametrize("input_dim", [3, 512, 1024])
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 @pytest.mark.parametrize("indices_dtype", [np.int32, np.int64])
-def test_foward(input_dim, dtype, indices_dtype):
-    indices = np.random.randint(low=0, high=input_dim, size=(16, 32)).astype(
+def test_foward(input_shape, input_dim, dtype, indices_dtype):
+    indices = np.random.randint(low=0, high=input_dim, size=input_shape).astype(
         indices_dtype
     )
     values = np.random.random(size=(input_dim, 16)).astype(dtype)
@@ -49,11 +50,12 @@ def test_foward(input_dim, dtype, indices_dtype):
     test_utils.assert_allclose_according_to_type(expected, output)
 
 
+@pytest.mark.parametrize("input_shape", [(16, 32), (16, 8, 32)])
 @pytest.mark.parametrize("input_dim", [3, 512, 1024])
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 @pytest.mark.parametrize("indices_dtype", [np.int32, np.int64])
-def test_backward(input_dim, dtype, indices_dtype):
-    indices = np.random.randint(low=0, high=input_dim, size=(16, 32)).astype(
+def test_backward(input_shape, input_dim, dtype, indices_dtype):
+    indices = np.random.randint(low=0, high=input_dim, size=input_shape).astype(
         indices_dtype
     )
     values = np.random.random(size=(input_dim, 16)).astype(dtype)
