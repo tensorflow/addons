@@ -60,7 +60,7 @@ struct EmbeddingBagBackwardFunctor<CPUDevice, T, Tindices> {
       index_vec[index_map[index]].second.push_back(i);
     }
 
-    auto compute_value_grads = [&](Eigen::Index start, Eigen::Index end) {
+    const auto compute_value_grads = [&](Eigen::Index start, Eigen::Index end) {
       for (Eigen::Index i = start; i < end; ++i) {
         VectorMap value_grads_slice(&value_grads(index_vec[i].first, 0),
                                     output_dim);
@@ -85,7 +85,7 @@ struct EmbeddingBagBackwardFunctor<CPUDevice, T, Tindices> {
     value_grads.setZero();
     device.parallelFor(num_unique_values, cost, std::move(compute_value_grads));
 
-    auto compute_weight_grads =
+    const auto compute_weight_grads =
         [&](const Eigen::array<Eigen::Index, 2>& coords) -> T {
       const Eigen::Index bag = coords[0];
       const Eigen::Index seq = coords[1];
