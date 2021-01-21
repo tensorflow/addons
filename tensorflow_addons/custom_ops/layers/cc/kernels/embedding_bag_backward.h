@@ -27,7 +27,7 @@ struct EmbeddingBagBackwardFunctor {
                   typename TTypes<T, 2>::ConstTensor values,
                   typename TTypes<T, 2>::ConstTensor weights,
                   typename TTypes<T, 2>::ConstTensor grads,
-                  typename TTypes<T, 1>::Tensor value_grads,
+                  typename TTypes<T, 2>::Tensor value_grads,
                   typename TTypes<T, 2>::Tensor weight_grads);
 };
 
