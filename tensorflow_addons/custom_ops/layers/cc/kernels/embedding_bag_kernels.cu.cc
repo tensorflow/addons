@@ -75,7 +75,8 @@ struct EmbeddingBagFunctor<GPUDevice, T, Tindices> {
     const Eigen::Index sequence_length = indices.dimension(1);
     const Eigen::Index output_dim = values.dimension(1);
 
-    const int blocks_per_value_vec = Eigen::divup(output_dim, kThreadsPerBlock);
+    const int blocks_per_value_vec =
+        Eigen::divup(output_dim, static_cast<Eigen::Index>(kThreadsPerBlock));
     const dim3 grids = dim3(bags, blocks_per_value_vec);
 
     TF_CHECK_OK(GpuLaunchKernel(
