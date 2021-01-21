@@ -149,15 +149,15 @@ REGISTER_CPU(double);
 
 // Register the GPU kernels.
 #ifdef GOOGLE_CUDA
-#define REGISTER_GPU(Tindices)                                             \
-  extern template struct EmbeddingBagBackwardFunctor<GPUDevice, Tindices>; \
-  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBagGrad")                  \
-                              .Device(DEVICE_GPU)                          \
-                              .TypeConstraint<Tindices>("Tindices"),       \
-                          EmbeddingBagBackwardOp<GPUDevice, Tindices>);
+// #define REGISTER_GPU(Tindices)                                             \
+//   extern template struct EmbeddingBagBackwardFunctor<GPUDevice, Tindices>; \
+//   REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBagGrad")                  \
+//                               .Device(DEVICE_GPU)                          \
+//                               .TypeConstraint<Tindices>("Tindices"),       \
+//                           EmbeddingBagBackwardOp<GPUDevice, Tindices>);
 
-REGISTER_GPU(int32);
-REGISTER_GPU(int64);
+// REGISTER_GPU(int32);
+// REGISTER_GPU(int64);
 #endif  // GOOGLE_CUDA
 }  // namespace functor
 }  // namespace addons
