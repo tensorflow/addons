@@ -31,7 +31,7 @@ template <typename T, typename Tindices, const int kThreadsPerBlock>
 __global__ void EmbeddingBagGPUKernel(const Tindices* __restrict__ indices,
                                       const T* __restrict__ values,
                                       const T* __restrict__ weights,
-                                      T* __restrict__ out,
+                                      T* __restrict__ output,
                                       const Eigen::Index output_dim,
                                       const Eigen::Index sequence_length) {
   // blockIdx.x indicates which row of the output we are writing to. It also
