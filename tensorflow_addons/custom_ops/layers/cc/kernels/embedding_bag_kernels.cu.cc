@@ -63,7 +63,7 @@ __global__ void EmbeddingBagGPUKernel(const Tindices* __restrict__ indices,
 namespace functor {
 // Define the GPU implementation that launches the CUDA kernel.
 template <typename T, typename Tindices>
-struct EmbeddingBagFunctor<GPUDevice T, Tindices> {
+struct EmbeddingBagFunctor<GPUDevice, T, Tindices> {
   static constexpr int kThreadsPerBlock = 32;
 
   void operator()(const GPUDevice& device,
