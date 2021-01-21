@@ -119,7 +119,7 @@ class EmbeddingBagOp : public OpKernel {
 };
 
 // Register the CPU kernels.
-#define REGISTER_CPU(T)                                           \
+#define REGISTER_CPU_KERNEL(T)                                    \
   REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBag")             \
                               .Device(DEVICE_CPU)                 \
                               .TypeConstraint<T>("T")             \
@@ -130,20 +130,28 @@ class EmbeddingBagOp : public OpKernel {
                               .TypeConstraint<T>("T")             \
                               .TypeConstraint<int64>("Tindices"), \
                           EmbeddingBagOp<CPUDevice, T, int64>);
-REGISTER_CPU(Eigen::half);
-REGISTER_CPU(float);
-REGISTER_CPU(double);
+REGISTER_CPU_KERNEL(Eigen::half);
+REGISTER_CPU_KERNEL(float);
+REGISTER_CPU_KERNEL(double);
+#undef REGISTER_CPU_KERNEL
 
 // Register the GPU kernels.
 #ifdef GOOGLE_CUDA
-#define REGISTER_GPU(Tindices)                                       \
-  extern template struct EmbeddingBagFunctor<GPUDevice, Tindices>;   \
-  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBag")                \
-                              .Device(DEVICE_GPU)                    \
-                              .TypeConstraint<Tindices>("Tindices"), \
-                          EmbeddingBagOp<GPUDevice, Tindices>);
-REGISTER_GPU(int32);
-REGISTER_GPU(int64);
+#define REGISTER_GPU_KERNEL(T)                                    \
+  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBag")             \
+                              .Device(DEVICE_GPU)                 \
+                              .TypeConstraint<T>("T")             \
+                              .TypeConstraint<int32>("Tindices"), \
+                          EmbeddingBagOp<GPUDevice, T, int32>);   \
+  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBag")             \
+                              .Device(DEVICE_GPU)                 \
+                              .TypeConstraint<T>("T")             \
+                              .TypeConstraint<int64>("Tindices"), \
+                          EmbeddingBagOp<GPUDevice, T, int64>);
+REGISTER_GPU_KERNEL(Eigen::half);
+REGISTER_GPU_KERNEL(float);
+REGISTER_GPU_KERNEL(double);
+#undef REGISTER_GPU_KERNEL
 #endif  // GOOGLE_CUDA
 }  // namespace functor
 }  // namespace addons

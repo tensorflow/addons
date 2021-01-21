@@ -20,76 +20,80 @@ limitations under the License.
 #include "tensorflow/core/util/gpu_kernel_helper.h"
 #include "tensorflow_addons/custom_ops/layers/cc/kernels/embedding_bag.h"
 
-constexpr int MAX_THREADS_PER_BLOCK = 1024;
-
 namespace tensorflow {
 namespace addons {
-namespace functor {
 
 typedef Eigen::GpuDevice GPUDevice;
 
-// Define the CUDA kernel.
-template <typename T_indices>
-__global__ void EmbeddingBagCudaKernel(const int value_dim, const int bag_dim,
-                                       const int indices_size,
-                                       const T_indices* __restrict__ indices,
-                                       const float* __restrict__ values,
-                                       const float* __restrict__ weights,
-                                       float* __restrict__ out) {
-  // blockIdx.x indicates which row of the output we are writing to
-  //            It also indicates which 'bag' we're reading from
-  // blockIdx.y indicates which chunk of that row we are writing to
-  // threadIdx.x indicates which element of that chunk we are writing to
+namespace {
+// Define the GPU kernel.
+template <typename T, typename Tindices, const int kThreadsPerBlock>
+__global__ void EmbeddingBagGPUKernel(const Tindices* __restrict__ indices,
+                                      const T* __restrict__ values,
+                                      const T* __restrict__ weights,
+                                      T* __restrict__ out,
+                                      const Eigen::Index output_dim,
+                                      const Eigen::Index sequence_length) {
+  // blockIdx.x indicates which row of the output we are writing to. It also
+  // indicates which `bag` we're reading from.
+  // blockIdx.y indicates which chunk of that row we are writing to.
+  // threadIdx.x indicates which element of that chunk we are writing to.
 
   // feature_idx is the position in the final dimension of the output that we
-  // are writing to
-  const int feature_idx = blockIdx.y * blockDim.x + threadIdx.x;
-  if (feature_idx < value_dim)  // necessary in case value_dim is not evenly
-                                // divided by blockDim.x
-  {
-    // out_idx is the offset of the output we are writing to
-    const int out_idx = blockIdx.x * value_dim + feature_idx;
-    // bag_start_offset is the offset in indices corresponding to the first
-    // index of the 'bag' that we will be summing over
-    const int bag_start_offset = blockIdx.x * bag_dim;
-    float accum = 0.0f;
-    for (int idx_offset = bag_start_offset;
-         idx_offset < bag_start_offset + bag_dim; ++idx_offset) {
-      accum += values[indices[idx_offset] * value_dim + feature_idx] *
+  // are writing to.
+  const Eigen::Index feature_idx = blockIdx.y * kThreadsPerBlock + threadIdx.x;
+  // It's necessary in case output_dim is not evenly divided by blockDim.x.
+  if (feature_idx < output_dim) {
+    // output_idx is the offset of the output we are writing to.
+    const Eigen::Index output_idx = blockIdx.x * output_dim + feature_idx;
+    // bag_offset is the offset in indices corresponding to the first
+    // index of the `bag` that we will be summing over.
+    const Eigen::Index bag_offset = blockIdx.x * sequence_length;
+    T accum = static_cast<T>(0);
+    for (Eigen::Index idx_offset = bag_offset;
+         idx_offset < bag_offset + sequence_length; ++idx_offset) {
+      accum += values[indices[idx_offset] * output_dim + feature_idx] *
                weights[idx_offset];
     }
-    out[out_idx] = accum;
+    output[output_idx] = accum;
   }
 }
+}  // namespace
 
+namespace functor {
 // Define the GPU implementation that launches the CUDA kernel.
-template <typename T_indices>
-struct EmbeddingBagFunctor<GPUDevice, T_indices> {
-  void operator()(const GPUDevice& d, const int value_dim, const int bag_dim,
-                  const int indices_size, const T_indices* indices,
-                  const float* values, const float* weights, float* out) {
-    // Launch the cuda kernel.
-    //
-    // See core/util/cuda_kernel_helper.h for example of computing
-    // block count and thread_per_block count.
-    int threadsPerBlock = 32;
-    int blocksPerValueVec = (value_dim + threadsPerBlock - 1) /
-                            threadsPerBlock;  // ceiling division
+template <typename T, typename Tindices>
+struct EmbeddingBagFunctor<GPUDevice T, Tindices> {
+  static constexpr int kThreadsPerBlock = 32;
 
-    int block_x = indices_size / bag_dim;
-    dim3 gridShape = dim3(block_x, blocksPerValueVec, 1);
-    // gridDim.X indicates which row of the output we are writing to
-    // gridDim.Y indicates which 'chunk' of that row we are writing to
-    // blockDim.X indicates where we are within that chunk
-    EmbeddingBagCudaKernel<T_indices>
-        <<<gridShape, threadsPerBlock, 0, d.stream()>>>(
-            value_dim, bag_dim, indices_size, indices, values, weights, out);
+  void operator()(const GPUDevice& device,
+                  typename TTypes<Tindices, 2>::ConstTensor indices,
+                  typename TTypes<T, 2>::ConstTensor values,
+                  typename TTypes<T, 2>::ConstTensor weights,
+                  typename TTypes<T, 2>::Tensor output) {
+    const Eigen::Index bags = indices.dimension(0);
+    const Eigen::Index sequence_length = indices.dimension(1);
+    const Eigen::Index output_dim = values.dimension(1);
+
+    const int blocks_per_value_vec = Eigen::divup(value_dim, kThreadsPerBlock);
+    const dim3 grids = dim3(bags, blocks_per_value_vec);
+
+    TF_CHECK_OK(GpuLaunchKernel(
+        EmbeddingBagGPUKernel<T, Tindices, kThreadsPerBlock>, grids,
+        kThreadsPerBlock, 0, device.stream(), indices.data(), values.data(),
+        weights.data(), output.data(), output_dim, sequence_length));
   }
 };
 
 // Explicitly instantiate functors for the types of OpKernels registered.
-template struct EmbeddingBagFunctor<GPUDevice, int32>;
-template struct EmbeddingBagFunctor<GPUDevice, int64>;
+#define DECLARE_GPU_FUNCTOR(T)                              \
+  template struct EmbeddingBagFunctor<GPUDevice, T, int32>; \
+  template struct EmbeddingBagFunctor<GPUDevice, T, int64>;
+
+DECLARE_GPU_FUNCTOR(Eigen::half);
+DECLARE_GPU_FUNCTOR(float);
+DECLARE_GPU_FUNCTOR(double);
+#undef DECLARE_GPU_FUNCTOR
 }  // namespace functor
 }  // namespace addons
 }  // namespace tensorflow

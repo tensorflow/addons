@@ -32,6 +32,7 @@ def manual_embedding_bag(indices, values, weights):
     return tf.reduce_sum(gathered, -2, keepdims=False)  # (batch_dims, key_dim)
 
 
+@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("input_shape", [(16, 32), (16, 8, 32)])
 @pytest.mark.parametrize("input_dim", [3, 512, 1024])
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
