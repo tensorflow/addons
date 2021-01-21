@@ -33,14 +33,13 @@ REGISTER_OP("Addons>EmbeddingBag")
     .Attr("combiner: string = 'SUM'")
     .SetShapeFn([](InferenceContext* c) {
       ShapeHandle indices_shape;
-      TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(0), 2, &indices_shape));
+      TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 2, &indices_shape));
 
       ShapeHandle values_shape;
       TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &values_shape));
 
       ShapeHandle weights_shape;
-      TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(2), 2, &weights_shape));
-      // TODO Confirm that indices and weights have the same shape
+      TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 2, &weights_shape));
 
       DimensionHandle valuesDim = c->Dim(values_shape, 1);
       ShapeHandle output;
