@@ -187,18 +187,16 @@ class EmbeddingBagOp : public OpKernel {
     const TensorShape& values_shape = values.shape();
     const TensorShape& weights_shape = weights.shape();
 
-    OP_REQUIRES(
-        context, TensorShapeUtils::IsMatrix(indices_shape),
-        errors::InvalidArgument("indices shape should be at least 2-D."));
+    OP_REQUIRES(context, TensorShapeUtils::IsMatrix(indices_shape),
+                errors::InvalidArgument("indices shape should be 2-D."));
     OP_REQUIRES(context, indices_shape == weights_shape,
                 errors::InvalidArgument(
                     "Shape of indices and weights should be equal."));
     OP_REQUIRES(context, TensorShapeUtils::IsMatrix(values_shape),
                 errors::InvalidArgument("values shape should be 2-D."));
 
-    TensorShape output_shape = indices_shape;
-    Eigen::Index output_dim = values.shape().dim_size(1);
-    output_shape.set_dim(output_shape.dims() - 1, output_dim);
+    TensorShape output_shape = {indices_shape.dim_size(0),
+                                values_shape.dim_size(1)};
 
     Tensor* output = nullptr;
     OP_REQUIRES_OK(context, context->allocate_output(0, output_shape, &output));
