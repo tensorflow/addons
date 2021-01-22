@@ -63,8 +63,9 @@ struct EmbeddingBagFunctor<CPUDevice, T, Tindices> {
     };
 
     const double bytes_loaded =
-        (sequence_length * output_dim) * (sizeof(Tindices) + 2 * sizeof(T));
-    const double bytes_stored = (sequence_length * output_dim) * sizeof(T);
+        sequence_length * (sizeof(Tindices) + sizeof(T)) +
+        (sequence_length * output_dim) * sizeof(T);
+    const double bytes_stored = output_dim * sizeof(T);
     const double compute_cycles =
         (sequence_length * output_dim) *
         (Eigen::TensorOpCost::AddCost<T>() + Eigen::TensorOpCost::MulCost<T>());
@@ -123,11 +124,11 @@ struct EmbeddingBagBackwardFunctor<CPUDevice, T, Tindices> {
     };
 
     const Eigen::Index num_unique_values = index_vec.size();
-    const double bytes_loaded =
-        100 * (output_dim) * (sizeof(Tindices) + sizeof(T));
+    const double bytes_loaded = 100 * output_dim * sizeof(T);
     const double bytes_stored = output_dim * sizeof(T);
-    const double compute_cycles = 100 * (Eigen::TensorOpCost::AddCost<T>() +
-                                         Eigen::TensorOpCost::MulCost<T>());
+    const double compute_cycles =
+        100 * output_dim *
+        (Eigen::TensorOpCost::AddCost<T>() + Eigen::TensorOpCost::MulCost<T>());
     const Eigen::TensorOpCost cost(bytes_loaded, bytes_stored, compute_cycles,
                                    /*vectorized=*/true,
                                    /*packet_size=*/kPacketSize);
