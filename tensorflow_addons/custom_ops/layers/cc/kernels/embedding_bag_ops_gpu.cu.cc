@@ -18,7 +18,7 @@ limitations under the License.
 #define EIGEN_USE_GPU
 
 #include "tensorflow/core/util/gpu_kernel_helper.h"
-#include "tensorflow_addons/custom_ops/layers/cc/kernels/embedding_bag.h"
+#include "tensorflow_addons/custom_ops/layers/cc/kernels/embedding_bag_ops.h"
 
 namespace tensorflow {
 namespace addons {
@@ -68,8 +68,6 @@ namespace functor {
 // Define the GPU implementation that launches the CUDA kernel.
 template <typename T, typename Tindices>
 struct EmbeddingBagFunctor<GPUDevice, T, Tindices> {
-  static constexpr int kThreadsPerBlock = 32;
-
   void operator()(const GPUDevice& device,
                   typename TTypes<Tindices, 2>::ConstTensor indices,
                   typename TTypes<T, 2>::ConstTensor values,
@@ -79,6 +77,7 @@ struct EmbeddingBagFunctor<GPUDevice, T, Tindices> {
     const Eigen::Index sequence_length = indices.dimension(1);
     const Eigen::Index output_dim = values.dimension(1);
 
+    constexpr int kThreadsPerBlock = 32;
     const int blocks_per_value_vec =
         Eigen::divup(output_dim, static_cast<Eigen::Index>(kThreadsPerBlock));
     const dim3 grids = dim3(bags, blocks_per_value_vec);
@@ -89,7 +88,6 @@ struct EmbeddingBagFunctor<GPUDevice, T, Tindices> {
         weights.data(), output.data(), output_dim, sequence_length, combiner));
   }
 };
-}  // namespace functor
 
 // Explicitly instantiate functors for the types of OpKernels registered.
 #define DECLARE_GPU_FUNCTOR(T)                              \
@@ -100,6 +98,8 @@ DECLARE_GPU_FUNCTOR(Eigen::half);
 DECLARE_GPU_FUNCTOR(float);
 DECLARE_GPU_FUNCTOR(double);
 #undef DECLARE_GPU_FUNCTOR
+
+}  // namespace functor
 }  // namespace addons
 }  // namespace tensorflow
 
