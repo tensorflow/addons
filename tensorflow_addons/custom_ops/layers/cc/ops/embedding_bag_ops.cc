@@ -85,7 +85,7 @@ REGISTER_OP("Addons>EmbeddingBagGrad")
         }
       }
 
-      c->set_output(0, indices);
+      c->set_output(0, values);
       c->set_output(1, weights);
       return Status::OK();
     });
