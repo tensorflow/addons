@@ -17,8 +17,6 @@ limitations under the License.
 #define TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_OPS_H_
 
 #include "tensorflow/core/framework/tensor_types.h"
-#include "tensorflow/core/platform/errors.h"
-#include "tensorflow/core/platform/status.h"
 
 namespace tensorflow {
 namespace addons {
@@ -28,16 +26,15 @@ enum class Combiner {
   kMean,
 };
 
-Status ValidateCombiner(const std::string& combiner_string,
-                        Combiner* combiner) {
+bool ValidateCombiner(const std::string& combiner_string, Combiner* combiner) {
   if (combiner_string == "SUM") {
     *combiner = Combiner::kSum;
   } else if (combiner_string == "MEAN") {
     *combiner = Combiner::kMean;
   } else {
-    return errors::InvalidArgument("Only support 'SUM' and 'MEAN' combiner.");
+    return false;
   }
-  return Status::OK();
+  return true;
 }
 
 namespace functor {

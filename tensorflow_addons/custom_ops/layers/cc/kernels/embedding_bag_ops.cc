@@ -160,7 +160,9 @@ class EmbeddingBagOp : public OpKernel {
   explicit EmbeddingBagOp(OpKernelConstruction* context) : OpKernel(context) {
     std::string combiner_string;
     OP_REQUIRES_OK(context, context->GetAttr("combiner", &combiner_string));
-    OP_REQUIRES_OK(context, ValidateCombiner(combiner_string, &combiner_));
+    OP_REQUIRES(
+        context, ValidateCombiner(combiner_string, &combiner_),
+        errors::InvalidArgument("Only support 'SUM' and 'MEAN' combiner."));
   }
 
   void Compute(OpKernelContext* context) override {
@@ -205,7 +207,9 @@ class EmbeddingBagBackwardOp : public OpKernel {
       : OpKernel(context) {
     std::string combiner_string;
     OP_REQUIRES_OK(context, context->GetAttr("combiner", &combiner_string));
-    OP_REQUIRES_OK(context, ValidateCombiner(combiner_string, &combiner_));
+    OP_REQUIRES(
+        context, ValidateCombiner(combiner_string, &combiner_),
+        errors::InvalidArgument("Only support 'SUM' and 'MEAN' combiner."));
   }
 
   void Compute(OpKernelContext* context) override {
