@@ -68,6 +68,8 @@ namespace functor {
 // Define the GPU implementation that launches the CUDA kernel.
 template <typename T, typename Tindices>
 struct EmbeddingBagFunctor<GPUDevice, T, Tindices> {
+  static constexpr int kThreadsPerBlock = 32;
+
   void operator()(const GPUDevice& device,
                   typename TTypes<Tindices, 2>::ConstTensor indices,
                   typename TTypes<T, 2>::ConstTensor values,
@@ -77,7 +79,6 @@ struct EmbeddingBagFunctor<GPUDevice, T, Tindices> {
     const Eigen::Index sequence_length = indices.dimension(1);
     const Eigen::Index output_dim = values.dimension(1);
 
-    constexpr int kThreadsPerBlock = 32;
     const int blocks_per_value_vec =
         Eigen::divup(output_dim, static_cast<Eigen::Index>(kThreadsPerBlock));
     const dim3 grids = dim3(bags, blocks_per_value_vec);
@@ -89,15 +90,15 @@ struct EmbeddingBagFunctor<GPUDevice, T, Tindices> {
   }
 };
 
-// Explicitly instantiate functors for the types of OpKernels registered.
-#define DECLARE_GPU_FUNCTOR(T)                              \
+// Explicit instantiation of the GPU functor.
+#define DECLARE_GPU_SPECS(T)                                \
   template struct EmbeddingBagFunctor<GPUDevice, T, int32>; \
   template struct EmbeddingBagFunctor<GPUDevice, T, int64>;
 
-DECLARE_GPU_FUNCTOR(Eigen::half);
-DECLARE_GPU_FUNCTOR(float);
-DECLARE_GPU_FUNCTOR(double);
-#undef DECLARE_GPU_FUNCTOR
+DECLARE_GPU_SPECS(Eigen::half);
+DECLARE_GPU_SPECS(float);
+DECLARE_GPU_SPECS(double);
+#undef DECLARE_GPU_SPECS
 
 }  // namespace functor
 }  // namespace addons

@@ -23,8 +23,7 @@ limitations under the License.
 namespace tensorflow {
 namespace addons {
 
-namespace {
-enum Combiner {
+enum class Combiner {
   kSum,
   kMean,
 };
@@ -40,7 +39,6 @@ Status ValidateCombiner(const std::string& combiner_string,
   }
   return Status::OK();
 }
-}  // namespace
 
 namespace functor {
 

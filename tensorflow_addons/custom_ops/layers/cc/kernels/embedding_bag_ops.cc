@@ -258,8 +258,29 @@ REGISTER_CPU_KERNEL(float);
 REGISTER_CPU_KERNEL(double);
 #undef REGISTER_CPU_KERNEL
 
-// Register the GPU kernels.
 #if GOOGLE_CUDA
+namespace functor {
+// Forward declarations of the functor specializations for GPU.
+#define DECLARE_GPU_SPEC(T, Tindices)                                         \
+  template <>                                                                 \
+  void EmbeddingBagFunctor<GPUDevice, T, Tindices>::operator()(               \
+      const GPUDevice&, typename TTypes<Tindices, 2>::ConstTensor,            \
+      typename TTypes<T, 2>::ConstTensor, typename TTypes<T, 2>::ConstTensor, \
+      typename TTypes<T, 2>::Tensor, Combiner);                               \
+  extern template struct EmbeddingBagFunctor<GPUDevice, T, Tindices>;
+
+#define DECLARE_GPU_SPECS(T)  \
+  DECLARE_GPU_SPEC(T, int32); \
+  DECLARE_GPU_SPEC(T, int64);
+
+DECLARE_GPU_SPECS(Eigen::half);
+DECLARE_GPU_SPECS(float);
+DECLARE_GPU_SPECS(double);
+#undef DECLARE_GPU_SPEC
+#undef DECLARE_GPU_SPECS
+}  // namespace functor
+
+// Register the GPU kernels.
 #define REGISTER_GPU_KERNEL(T)                                    \
   REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBag")             \
                               .Device(DEVICE_GPU)                 \
