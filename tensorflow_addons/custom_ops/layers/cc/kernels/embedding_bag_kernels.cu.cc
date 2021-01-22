@@ -33,7 +33,8 @@ __global__ void EmbeddingBagGPUKernel(const Tindices* __restrict__ indices,
                                       const T* __restrict__ weights,
                                       T* __restrict__ output,
                                       const Eigen::Index output_dim,
-                                      const Eigen::Index sequence_length) {
+                                      const Eigen::Index sequence_length,
+                                      Combiner combiner) {
   // blockIdx.x indicates which row of the output we are writing to. It also
   // indicates which `bag` we're reading from.
   // blockIdx.y indicates which chunk of that row we are writing to.
@@ -55,6 +56,9 @@ __global__ void EmbeddingBagGPUKernel(const Tindices* __restrict__ indices,
       accum += values[indices[idx_offset] * output_dim + feature_idx] *
                weights[idx_offset];
     }
+    if (combiner == Combiner::kMean) {
+      accum /= static_cast<T>(sequence_length);
+    }
     output[output_idx] = accum;
   }
 }
@@ -70,7 +74,7 @@ struct EmbeddingBagFunctor<GPUDevice, T, Tindices> {
                   typename TTypes<Tindices, 2>::ConstTensor indices,
                   typename TTypes<T, 2>::ConstTensor values,
                   typename TTypes<T, 2>::ConstTensor weights,
-                  typename TTypes<T, 2>::Tensor output) {
+                  typename TTypes<T, 2>::Tensor output, Combiner combiner) {
     const Eigen::Index bags = indices.dimension(0);
     const Eigen::Index sequence_length = indices.dimension(1);
     const Eigen::Index output_dim = values.dimension(1);
@@ -82,7 +86,7 @@ struct EmbeddingBagFunctor<GPUDevice, T, Tindices> {
     TF_CHECK_OK(GpuLaunchKernel(
         EmbeddingBagGPUKernel<T, Tindices, kThreadsPerBlock>, grids,
         kThreadsPerBlock, 0, device.stream(), indices.data(), values.data(),
-        weights.data(), output.data(), output_dim, sequence_length));
+        weights.data(), output.data(), output_dim, sequence_length, combiner));
   }
 };
 

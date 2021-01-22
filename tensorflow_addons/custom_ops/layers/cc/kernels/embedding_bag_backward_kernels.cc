@@ -21,6 +21,7 @@ limitations under the License.
 
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/tensor_shape.h"
+#include "tensorflow_addons/custom_ops/layers/cc/kernels/embedding_bag.h"
 #include "tensorflow_addons/custom_ops/layers/cc/kernels/embedding_bag_backward.h"
 
 namespace tensorflow {
@@ -43,7 +44,8 @@ struct EmbeddingBagBackwardFunctor<CPUDevice, T, Tindices> {
                   typename TTypes<T, 2>::ConstTensor weights,
                   typename TTypes<T, 2>::ConstTensor grads,
                   typename TTypes<T, 2>::Tensor value_grads,
-                  typename TTypes<T, 2>::Tensor weight_grads) {
+                  typename TTypes<T, 2>::Tensor weight_grads,
+                  Combiner combiner) {
     const Eigen::Index sequence_length = indices.dimension(1);
     const Eigen::Index output_dim = values.dimension(1);
 
@@ -70,6 +72,9 @@ struct EmbeddingBagBackwardFunctor<CPUDevice, T, Tindices> {
           const ConstVectorMap grads_slice(&grads(bag, 0), output_dim);
           value_grads_slice += grads_slice * weights(bag, seq);
         }
+        if (combiner == Combiner::kMean) {
+          value_grads_slice /= static_cast<T>(sequence_length);
+        }
       }
     };
 
@@ -92,7 +97,11 @@ struct EmbeddingBagBackwardFunctor<CPUDevice, T, Tindices> {
       const ConstVectorMap grads_slice(&grads(bag, 0), output_dim);
       const ConstVectorMap values_slice(&values(indices(bag, seq), 0),
                                         output_dim);
-      return values_slice.dot(grads_slice);
+      T output = values_slice.dot(grads_slice);
+      if (combiner == Combiner::kMean) {
+        output /= static_cast<T>(sequence_length);
+      }
+      return output;
     };
 
     weight_grads.device(device) =
@@ -104,7 +113,11 @@ template <typename Device, typename T, typename Tindices>
 class EmbeddingBagBackwardOp : public OpKernel {
  public:
   explicit EmbeddingBagBackwardOp(OpKernelConstruction* context)
-      : OpKernel(context) {}
+      : OpKernel(context) {
+    std::string combiner_string;
+    OP_REQUIRES_OK(context, context->GetAttr("combiner", &combiner_string));
+    OP_REQUIRES_OK(context, ValidateCombiner(combiner_string, &combiner_));
+  }
 
   void Compute(OpKernelContext* context) override {
     const Tensor& indices = context->input(0);
@@ -122,8 +135,11 @@ class EmbeddingBagBackwardOp : public OpKernel {
     EmbeddingBagBackwardFunctor<Device, T, Tindices>()(
         context->eigen_device<Device>(), indices.tensor<Tindices, 2>(),
         values.tensor<T, 2>(), weights.tensor<T, 2>(), grads.tensor<T, 2>(),
-        value_grads->tensor<T, 2>(), weight_grads->tensor<T, 2>());
+        value_grads->tensor<T, 2>(), weight_grads->tensor<T, 2>(), combiner_);
   }
+
+ private:
+  Combiner combiner_;
 };
 
 // Register the CPU kernels.

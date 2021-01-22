@@ -41,7 +41,7 @@ struct EmbeddingBagFunctor<CPUDevice, T, Tindices> {
                   typename TTypes<Tindices, 2>::ConstTensor indices,
                   typename TTypes<T, 2>::ConstTensor values,
                   typename TTypes<T, 2>::ConstTensor weights,
-                  typename TTypes<T, 2>::Tensor output) {
+                  typename TTypes<T, 2>::Tensor output, Combiner combiner) {
     const Eigen::Index bags = indices.dimension(0);
     const Eigen::Index sequence_length = indices.dimension(1);
     const Eigen::Index output_dim = values.dimension(1);
@@ -54,6 +54,9 @@ struct EmbeddingBagFunctor<CPUDevice, T, Tindices> {
           const ConstVectorMap values_slice(&values(indices(bag, seq), 0),
                                             output_dim);
           output_slice += values_slice * weights(bag, seq);
+        }
+        if (combiner == Combiner::kMean) {
+          output_slice /= static_cast<T>(sequence_length);
         }
       }
     };
@@ -75,9 +78,9 @@ template <typename Device, typename T, typename Tindices>
 class EmbeddingBagOp : public OpKernel {
  public:
   explicit EmbeddingBagOp(OpKernelConstruction* context) : OpKernel(context) {
-    OP_REQUIRES_OK(context, context->GetAttr("combiner", &combiner_));
-    OP_REQUIRES(context, combiner_ == "SUM",
-                errors::InvalidArgument("Only support 'SUM' combiner."));
+    std::string combiner_string;
+    OP_REQUIRES_OK(context, context->GetAttr("combiner", &combiner_string));
+    OP_REQUIRES_OK(context, ValidateCombiner(combiner_string, &combiner_));
   }
 
   void Compute(OpKernelContext* context) override {
@@ -107,11 +110,12 @@ class EmbeddingBagOp : public OpKernel {
 
     EmbeddingBagFunctor<Device, T, Tindices>()(
         context->eigen_device<Device>(), indices.tensor<Tindices, 2>(),
-        values.tensor<T, 2>(), weights.tensor<T, 2>(), output->tensor<T, 2>());
+        values.tensor<T, 2>(), weights.tensor<T, 2>(), output->tensor<T, 2>(),
+        combiner_);
   }
 
  private:
-  std::string combiner_;
+  Combiner combiner_;
 };
 
 // Register the CPU kernels.

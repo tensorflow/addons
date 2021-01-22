@@ -30,7 +30,7 @@ REGISTER_OP("Addons>EmbeddingBag")
     .Output("output: T")
     .Attr("T: {half, float, double}")
     .Attr("Tindices: {int32, int64}")
-    .Attr("combiner: string = 'SUM'")
+    .Attr("combiner: {'SUM', 'MEAN'} = 'MEAN'")
     .SetShapeFn([](InferenceContext* c) {
       ShapeHandle indices;
       TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 2, &indices));
@@ -65,7 +65,7 @@ REGISTER_OP("Addons>EmbeddingBagGrad")
     .Output("weight_grads: T")
     .Attr("T: {half, float, double}")
     .Attr("Tindices: {int32, int64}")
-    .Attr("combiner: string = 'SUM'")
+    .Attr("combiner: {'SUM', 'MEAN'} = 'MEAN'")
     .SetShapeFn([](InferenceContext* c) {
       ShapeHandle indices;
       TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 2, &indices));

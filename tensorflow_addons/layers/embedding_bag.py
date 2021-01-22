@@ -26,14 +26,14 @@ def _embedding_bag(
     indices,
     values,
     weights=None,
-    combiner="sum",
+    combiner="mean",
     name=None,
 ):
     """EmbeddingBag computation.
 
     See [PyTorch op](https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html).
 
-    Equivalent to tf.gather() followed by tf.reduce_sum() across the last dimension, with optional
+    Equivalent to tf.gather() followed by tf.reduce_{sum,mean}() across the last dimension, with optional
     weights. Fusing these into a single op has massive benefits for execution speed and particularly
     memory usage, as the intermediate output of the gather never needs to be materialized.
 
@@ -98,7 +98,7 @@ class EmbeddingBag(tf.keras.layers.Layer):
         embeddings_regularizer: Regularizer = None,
         embeddings_constraint: Constraint = None,
         mask_zero: bool = False,
-        combiner: str = "sum",
+        combiner: str = "mean",
         **kwargs,
     ):
         super(EmbeddingBag, self).__init__(**kwargs)

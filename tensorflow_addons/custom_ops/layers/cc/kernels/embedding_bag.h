@@ -18,6 +18,26 @@ limitations under the License.
 
 namespace tensorflow {
 namespace addons {
+
+namespace {
+enum Combiner {
+  kSum,
+  kMean,
+};
+
+Status ValidateCombiner(const std::string& combiner_string,
+                        Combiner* combiner) {
+  if (combiner_string == "SUM") {
+    *combiner = Combiner::kSum;
+  } else if (combiner_string == "MEAN") {
+    *combiner = Combiner::kMean;
+  } else {
+    return errors::InvalidArgument("Only support 'SUM' and 'MEAN' combiner.");
+  }
+  return Status::OK();
+}
+}  // namespace
+
 namespace functor {
 
 template <typename Device, typename T, typename Tindices>
@@ -26,7 +46,7 @@ struct EmbeddingBagFunctor {
                   typename TTypes<Tindices, 2>::ConstTensor indices,
                   typename TTypes<T, 2>::ConstTensor values,
                   typename TTypes<T, 2>::ConstTensor weights,
-                  typename TTypes<T, 2>::Tensor output);
+                  typename TTypes<T, 2>::Tensor output, Combiner combiner);
 };
 
 }  // namespace functor

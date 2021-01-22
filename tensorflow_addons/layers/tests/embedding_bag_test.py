@@ -26,10 +26,12 @@ from tensorflow_addons.layers.embedding_bag import EmbeddingBag, _embedding_bag
 from tensorflow_addons.utils import test_utils
 
 
-def manual_embedding_bag(indices, values, weights):
-    gathered = tf.gather(values, indices)  # (batch_dims, bag_size, value_dim)
-    gathered *= tf.expand_dims(weights, -1)  # (batch_dims, bag_size, value_dim)
-    return tf.reduce_sum(gathered, -2, keepdims=False)  # (batch_dims, key_dim)
+def manual_embedding_bag(indices, values, weights, combiner="mean"):
+    gathered = tf.gather(values, indices)
+    gathered *= tf.expand_dims(weights, -1)
+    if combiner == "sum":
+        return tf.reduce_sum(gathered, -2, keepdims=False)
+    return tf.reduce_mean(gathered, -2, keepdims=False)
 
 
 @pytest.mark.with_device(["cpu", "gpu"])
@@ -37,17 +39,21 @@ def manual_embedding_bag(indices, values, weights):
 @pytest.mark.parametrize("input_dim", [3, 512, 1024])
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 @pytest.mark.parametrize("indices_dtype", [np.int32, np.int64])
-def test_foward(input_shape, input_dim, dtype, indices_dtype):
+@pytest.mark.parametrize("combiner", ["sum", "mean"])
+def test_foward(input_shape, input_dim, dtype, indices_dtype, combiner):
     indices = np.random.randint(low=0, high=input_dim, size=input_shape).astype(
         indices_dtype
     )
     values = np.random.random(size=(input_dim, 16)).astype(dtype)
     weights = np.random.random(size=indices.shape).astype(dtype)
-    expected = manual_embedding_bag(indices, values, weights)
-    embedding_bag = EmbeddingBag(input_dim, 16, dtype=dtype)
+    expected = manual_embedding_bag(indices, values, weights, combiner=combiner)
+    embedding_bag = EmbeddingBag(input_dim, 16, combiner=combiner, dtype=dtype)
     embedding_bag.build(indices.shape)
     embedding_bag.set_weights([values])
-    output = embedding_bag(indices, weights)
+    output = embedding_bag(
+        indices,
+        weights,
+    )
     test_utils.assert_allclose_according_to_type(expected, output)
 
 
@@ -55,7 +61,8 @@ def test_foward(input_shape, input_dim, dtype, indices_dtype):
 @pytest.mark.parametrize("input_dim", [3, 512, 1024])
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 @pytest.mark.parametrize("indices_dtype", [np.int32, np.int64])
-def test_backward(input_shape, input_dim, dtype, indices_dtype):
+@pytest.mark.parametrize("combiner", ["sum", "mean"])
+def test_backward(input_shape, input_dim, dtype, indices_dtype, combiner):
     indices = np.random.randint(low=0, high=input_dim, size=input_shape).astype(
         indices_dtype
     )
@@ -68,8 +75,8 @@ def test_backward(input_shape, input_dim, dtype, indices_dtype):
 
     with tf.GradientTape(persistent=True) as tape:
         tape.watch([values, weights])
-        output = _embedding_bag(indices, values, weights)
-        expected = manual_embedding_bag(indices, values, weights)
+        output = _embedding_bag(indices, values, weights, combiner=combiner)
+        expected = manual_embedding_bag(indices, values, weights, combiner=combiner)
 
     grads = tape.gradient(output, [values, weights])
     expected_grads = tape.gradient(expected, [values, weights])
