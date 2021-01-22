@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_H_
-#define TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_H_
+#ifndef TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_OPS_H_
+#define TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_OPS_H_
 
 #include "tensorflow/core/framework/tensor_types.h"
 #include "tensorflow/core/platform/errors.h"
@@ -69,4 +69,4 @@ struct EmbeddingBagBackwardFunctor {
 }  // namespace addons
 }  // namespace tensorflow
 
-#endif  // TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_H_
+#endif  // TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_OPS_H_
