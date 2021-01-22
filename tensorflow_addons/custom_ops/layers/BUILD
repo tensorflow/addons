@@ -31,6 +31,7 @@ custom_op_library(
     ],
     cuda_srcs = [
         "cc/kernels/embedding_bag.h",
+        "cc/kernels/embedding_bag_backward.h",
         "cc/kernels/embedding_bag_kernels.cu.cc",
     ],
 )

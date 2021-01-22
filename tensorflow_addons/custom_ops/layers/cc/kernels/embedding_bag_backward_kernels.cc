@@ -159,7 +159,7 @@ REGISTER_CPU(float);
 REGISTER_CPU(double);
 
 // Register the GPU kernels.
-#ifdef GOOGLE_CUDA
+#if GOOGLE_CUDA
 // #define REGISTER_GPU(Tindices)                                             \
 //   extern template struct EmbeddingBagBackwardFunctor<GPUDevice, Tindices>; \
 //   REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBagGrad")                  \

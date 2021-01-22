@@ -136,7 +136,7 @@ REGISTER_CPU_KERNEL(double);
 #undef REGISTER_CPU_KERNEL
 
 // Register the GPU kernels.
-#ifdef GOOGLE_CUDA
+#if GOOGLE_CUDA
 #define REGISTER_GPU_KERNEL(T)                                    \
   REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBag")             \
                               .Device(DEVICE_GPU)                 \
