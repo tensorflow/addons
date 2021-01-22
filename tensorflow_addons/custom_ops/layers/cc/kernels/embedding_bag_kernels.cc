@@ -105,13 +105,9 @@ class EmbeddingBagOp : public OpKernel {
     Tensor* output = nullptr;
     OP_REQUIRES_OK(context, context->allocate_output(0, output_shape, &output));
 
-    auto flat_indices = indices.flat_inner_dims<Tindices, 2>();
-    auto flat_weights = weights.flat_inner_dims<T, 2>();
-    auto flat_output = output->flat_inner_dims<T, 2>();
-
     EmbeddingBagFunctor<Device, T, Tindices>()(
-        context->eigen_device<Device>(), flat_indices, values.tensor<T, 2>(),
-        flat_weights, flat_output);
+        context->eigen_device<Device>(), indices.tensor<Tindices, 2>(),
+        values.tensor<T, 2>(), weights.tensor<T, 2>(), output->tensor<T, 2>());
   }
 
  private:

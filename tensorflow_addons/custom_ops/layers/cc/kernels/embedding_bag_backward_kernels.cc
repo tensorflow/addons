@@ -119,15 +119,10 @@ class EmbeddingBagBackwardOp : public OpKernel {
     OP_REQUIRES_OK(context,
                    context->allocate_output(1, weights.shape(), &weight_grads));
 
-    auto flat_indices = indices.flat_inner_dims<Tindices, 2>();
-    auto flat_weights = weights.flat_inner_dims<T, 2>();
-    auto flat_grads = grads.flat_inner_dims<T, 2>();
-    auto flat_weight_grads = weight_grads->flat_inner_dims<T, 2>();
-
     EmbeddingBagBackwardFunctor<Device, T, Tindices>()(
-        context->eigen_device<Device>(), flat_indices, values.tensor<T, 2>(),
-        flat_weights, flat_grads, value_grads->tensor<T, 2>(),
-        flat_weight_grads);
+        context->eigen_device<Device>(), indices.tensor<Tindices, 2>(),
+        values.tensor<T, 2>(), weights.tensor<T, 2>(), grads.tensor<T, 2>(),
+        value_grads->tensor<T, 2>(), weight_grads->tensor<T, 2>());
   }
 };
 

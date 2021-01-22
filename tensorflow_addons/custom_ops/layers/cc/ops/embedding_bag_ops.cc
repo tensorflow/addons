@@ -32,19 +32,25 @@ REGISTER_OP("Addons>EmbeddingBag")
     .Attr("Tindices: {int32, int64}")
     .Attr("combiner: string = 'SUM'")
     .SetShapeFn([](InferenceContext* c) {
-      ShapeHandle indices_shape;
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 2, &indices_shape));
-
-      ShapeHandle values_shape;
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &values_shape));
-
-      ShapeHandle weights_shape;
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 2, &weights_shape));
-
-      DimensionHandle valuesDim = c->Dim(values_shape, 1);
+      ShapeHandle indices;
+      TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 2, &indices));
+      ShapeHandle values;
+      TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &values));
+      ShapeHandle weights;
+      TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 2, &weights));
+      DimensionHandle output_dim = c->Dim(values, 1);
       ShapeHandle output;
-      TF_RETURN_IF_ERROR(c->ReplaceDim(
-          indices_shape, c->Rank(indices_shape) - 1, valuesDim, &output));
+      TF_RETURN_IF_ERROR(
+          c->ReplaceDim(indices, c->Rank(indices) - 1, output_dim, &output));
+
+      // Validate if indices and weights have same shape.
+      if (c->RankKnown(indices) && c->RankKnown(weights)) {
+        DimensionHandle unused;
+        for (int32 i = 0; i < 2; ++i) {
+          TF_RETURN_IF_ERROR(
+              c->Merge(c->Dim(indices, i), c->Dim(weights, i), &unused));
+        }
+      }
 
       c->set_output(0, output);
       return Status::OK();
@@ -61,20 +67,26 @@ REGISTER_OP("Addons>EmbeddingBagGrad")
     .Attr("Tindices: {int32, int64}")
     .Attr("combiner: string = 'SUM'")
     .SetShapeFn([](InferenceContext* c) {
-      ShapeHandle indices_shape;
-      TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(0), 2, &indices_shape));
+      ShapeHandle indices;
+      TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 2, &indices));
+      ShapeHandle values;
+      TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &values));
+      ShapeHandle weights;
+      TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 2, &weights));
+      ShapeHandle grads;
+      TF_RETURN_IF_ERROR(c->WithRank(c->input(3), 2, &grads));
 
-      ShapeHandle values_shape;
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &values_shape));
+      // Validate if indices and weights have same shape.
+      if (c->RankKnown(indices) && c->RankKnown(weights)) {
+        DimensionHandle unused;
+        for (int32 i = 0; i < 2; ++i) {
+          TF_RETURN_IF_ERROR(
+              c->Merge(c->Dim(indices, i), c->Dim(weights, i), &unused));
+        }
+      }
 
-      ShapeHandle weights_shape;
-      TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(2), 2, &weights_shape));
-
-      ShapeHandle grads_shape;
-      TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(3), 2, &grads_shape));
-
-      c->set_output(0, indices_shape);
-      c->set_output(1, weights_shape);
+      c->set_output(0, indices);
+      c->set_output(1, weights);
       return Status::OK();
     });
 
