@@ -22,6 +22,7 @@ limitations under the License.
 #include <thrust/sort.h>
 
 #include "tensorflow/core/util/gpu_kernel_helper.h"
+#include "tensorflow_addons/custom_ops/layers/cc/kernels/embedding_bag.h"
 #include "tensorflow_addons/custom_ops/layers/cc/kernels/embedding_bag_backward.h"
 
 constexpr int MAX_THREADS_PER_BLOCK = 1024;

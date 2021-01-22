@@ -16,6 +16,8 @@ limitations under the License.
 #ifndef TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BACKWARD_H_
 #define TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BACKWARD_H_
 
+#include "tensorflow_addons/custom_ops/layers/cc/kernels/embedding_bag.h"
+
 namespace tensorflow {
 namespace addons {
 namespace functor {
