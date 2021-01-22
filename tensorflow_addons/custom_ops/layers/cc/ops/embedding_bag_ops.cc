@@ -32,26 +32,14 @@ REGISTER_OP("Addons>EmbeddingBag")
     .Attr("Tindices: {int32, int64}")
     .Attr("combiner: {'SUM', 'MEAN'} = 'MEAN'")
     .SetShapeFn([](InferenceContext* c) {
-      ShapeHandle indices;
+      ShapeHandle indices, values, weights, unused, output;
       TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 2, &indices));
-      ShapeHandle values;
       TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &values));
-      ShapeHandle weights;
       TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 2, &weights));
       DimensionHandle output_dim = c->Dim(values, 1);
-      ShapeHandle output;
       TF_RETURN_IF_ERROR(
           c->ReplaceDim(indices, c->Rank(indices) - 1, output_dim, &output));
-
-      // Validate if indices and weights have same shape.
-      if (c->RankKnown(indices) && c->RankKnown(weights)) {
-        DimensionHandle unused;
-        for (int32 i = 0; i < 2; ++i) {
-          TF_RETURN_IF_ERROR(
-              c->Merge(c->Dim(indices, i), c->Dim(weights, i), &unused));
-        }
-      }
-
+      TF_RETURN_IF_ERROR(c->Merge(indices, weights, &unused));
       c->set_output(0, output);
       return Status::OK();
     });
@@ -67,26 +55,14 @@ REGISTER_OP("Addons>EmbeddingBagGrad")
     .Attr("Tindices: {int32, int64}")
     .Attr("combiner: {'SUM', 'MEAN'} = 'MEAN'")
     .SetShapeFn([](InferenceContext* c) {
-      ShapeHandle indices;
+      ShapeHandle indices, values, weights, unused;
       TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 2, &indices));
-      ShapeHandle values;
       TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &values));
-      ShapeHandle weights;
       TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 2, &weights));
-      ShapeHandle grads;
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(3), 2, &grads));
-
-      // Validate if indices and weights have same shape.
-      if (c->RankKnown(indices) && c->RankKnown(weights)) {
-        DimensionHandle unused;
-        for (int32 i = 0; i < 2; ++i) {
-          TF_RETURN_IF_ERROR(
-              c->Merge(c->Dim(indices, i), c->Dim(weights, i), &unused));
-        }
-      }
-
-      c->set_output(0, values);
-      c->set_output(1, weights);
+      TF_RETURN_IF_ERROR(c->WithRank(c->input(3), 2, &unused));
+      TF_RETURN_IF_ERROR(c->Merge(indices, values, &unused));
+      c->set_output(0, c->input(1));
+      c->set_output(1, c->input(2));
       return Status::OK();
     });
 
