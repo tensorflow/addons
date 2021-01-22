@@ -93,7 +93,7 @@ class EmbeddingBagOp : public OpKernel {
     const TensorShape& weights_shape = weights.shape();
 
     OP_REQUIRES(
-        context, TensorShapeUtils::IsMatrixOrHigher(indices_shape),
+        context, TensorShapeUtils::IsMatrix(indices_shape),
         errors::InvalidArgument("indices shape should be at least 2-D."));
     OP_REQUIRES(context, indices_shape == weights_shape,
                 errors::InvalidArgument(
