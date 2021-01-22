@@ -108,6 +108,7 @@ struct EmbeddingBagBackwardFunctor<CPUDevice, T, Tindices> {
         weight_grads.generate(std::move(compute_weight_grads));
   }
 };
+}  // namespace functor
 
 template <typename Device, typename T, typename Tindices>
 class EmbeddingBagBackwardOp : public OpKernel {
@@ -132,7 +133,7 @@ class EmbeddingBagBackwardOp : public OpKernel {
     OP_REQUIRES_OK(context,
                    context->allocate_output(1, weights.shape(), &weight_grads));
 
-    EmbeddingBagBackwardFunctor<Device, T, Tindices>()(
+    functor::EmbeddingBagBackwardFunctor<Device, T, Tindices>()(
         context->eigen_device<Device>(), indices.tensor<Tindices, 2>(),
         values.tensor<T, 2>(), weights.tensor<T, 2>(), grads.tensor<T, 2>(),
         value_grads->tensor<T, 2>(), weight_grads->tensor<T, 2>(), combiner_);
@@ -170,6 +171,5 @@ REGISTER_CPU(double);
 // REGISTER_GPU(int32);
 // REGISTER_GPU(int64);
 #endif  // GOOGLE_CUDA
-}  // namespace functor
 }  // namespace addons
 }  // namespace tensorflow

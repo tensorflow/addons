@@ -89,6 +89,7 @@ struct EmbeddingBagFunctor<GPUDevice, T, Tindices> {
         weights.data(), output.data(), output_dim, sequence_length, combiner));
   }
 };
+}  // namespace functor
 
 // Explicitly instantiate functors for the types of OpKernels registered.
 #define DECLARE_GPU_FUNCTOR(T)                              \
@@ -99,7 +100,6 @@ DECLARE_GPU_FUNCTOR(Eigen::half);
 DECLARE_GPU_FUNCTOR(float);
 DECLARE_GPU_FUNCTOR(double);
 #undef DECLARE_GPU_FUNCTOR
-}  // namespace functor
 }  // namespace addons
 }  // namespace tensorflow
 

@@ -73,6 +73,7 @@ struct EmbeddingBagFunctor<CPUDevice, T, Tindices> {
     device.parallelFor(bags, cost, std::move(work));
   }
 };
+}  // namespace functor
 
 template <typename Device, typename T, typename Tindices>
 class EmbeddingBagOp : public OpKernel {
@@ -108,7 +109,7 @@ class EmbeddingBagOp : public OpKernel {
     Tensor* output = nullptr;
     OP_REQUIRES_OK(context, context->allocate_output(0, output_shape, &output));
 
-    EmbeddingBagFunctor<Device, T, Tindices>()(
+    functor::EmbeddingBagFunctor<Device, T, Tindices>()(
         context->eigen_device<Device>(), indices.tensor<Tindices, 2>(),
         values.tensor<T, 2>(), weights.tensor<T, 2>(), output->tensor<T, 2>(),
         combiner_);
@@ -153,6 +154,5 @@ REGISTER_GPU_KERNEL(float);
 REGISTER_GPU_KERNEL(double);
 #undef REGISTER_GPU_KERNEL
 #endif  // GOOGLE_CUDA
-}  // namespace functor
 }  // namespace addons
 }  // namespace tensorflow
