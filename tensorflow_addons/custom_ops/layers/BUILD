@@ -23,15 +23,12 @@ custom_op_library(
 custom_op_library(
     name = "_embedding_bag_ops.so",
     srcs = [
-        "cc/kernels/embedding_bag.h",
-        "cc/kernels/embedding_bag_backward.h",
-        "cc/kernels/embedding_bag_backward_kernels.cc",
-        "cc/kernels/embedding_bag_kernels.cc",
+        "cc/kernels/embedding_bag_ops.cc",
+        "cc/kernels/embedding_bag_ops.h",
         "cc/ops/embedding_bag_ops.cc",
     ],
     cuda_srcs = [
-        "cc/kernels/embedding_bag.h",
-        "cc/kernels/embedding_bag_backward.h",
-        "cc/kernels/embedding_bag_kernels.cu.cc",
+        "cc/kernels/embedding_bag_ops.h",
+        "cc/kernels/embedding_bag_ops_gpu.cu.cc",
     ],
 )

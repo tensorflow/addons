@@ -13,14 +13,45 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BACKWARD_H_
-#define TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BACKWARD_H_
+#ifndef TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_H_
+#define TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_H_
 
-#include "tensorflow_addons/custom_ops/layers/cc/kernels/embedding_bag.h"
+#include "tensorflow/core/framework/tensor_types.h"
+#include "tensorflow/core/platform/errors.h"
+#include "tensorflow/core/platform/status.h"
 
 namespace tensorflow {
 namespace addons {
+
+namespace {
+enum Combiner {
+  kSum,
+  kMean,
+};
+
+Status ValidateCombiner(const std::string& combiner_string,
+                        Combiner* combiner) {
+  if (combiner_string == "SUM") {
+    *combiner = Combiner::kSum;
+  } else if (combiner_string == "MEAN") {
+    *combiner = Combiner::kMean;
+  } else {
+    return errors::InvalidArgument("Only support 'SUM' and 'MEAN' combiner.");
+  }
+  return Status::OK();
+}
+}  // namespace
+
 namespace functor {
+
+template <typename Device, typename T, typename Tindices>
+struct EmbeddingBagFunctor {
+  void operator()(const Device& device,
+                  typename TTypes<Tindices, 2>::ConstTensor indices,
+                  typename TTypes<T, 2>::ConstTensor values,
+                  typename TTypes<T, 2>::ConstTensor weights,
+                  typename TTypes<T, 2>::Tensor output, Combiner combiner);
+};
 
 template <typename Device, typename T, typename Tindices>
 struct EmbeddingBagBackwardFunctor {
@@ -38,4 +69,4 @@ struct EmbeddingBagBackwardFunctor {
 }  // namespace addons
 }  // namespace tensorflow
 
-#endif  // TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BACKWARD_H_
+#endif  // TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_H_
