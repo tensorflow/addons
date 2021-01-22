@@ -154,6 +154,19 @@ struct EmbeddingBagBackwardFunctor<CPUDevice, T, Tindices> {
 };
 }  // namespace functor
 
+namespace {
+bool ValidateCombiner(const std::string& combiner_string, Combiner* combiner) {
+  if (combiner_string == "SUM") {
+    *combiner = Combiner::kSum;
+  } else if (combiner_string == "MEAN") {
+    *combiner = Combiner::kMean;
+  } else {
+    return false;
+  }
+  return true;
+}
+}  // namespace
+
 template <typename Device, typename T, typename Tindices>
 class EmbeddingBagOp : public OpKernel {
  public:
