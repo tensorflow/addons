@@ -15,6 +15,7 @@
 """Rectified Adam (RAdam) optimizer."""
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
+from tensorflow_addons.utils.types import TensorLike
 
 from typing import Union, Callable, Dict
 from typeguard import typechecked
@@ -78,7 +79,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         weight_decay: Union[FloatTensorLike, Callable, Dict] = 0.0,
         amsgrad: bool = False,
         sma_threshold: FloatTensorLike = 5.0,
-        total_steps: int = 0,
+        total_steps: TensorLike = 0.0,
         warmup_proportion: FloatTensorLike = 0.1,
         min_lr: FloatTensorLike = 0.0,
         name: str = "RectifiedAdam",
@@ -103,7 +104,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
                 beyond".
             sma_threshold. A float value.
                 The threshold for simple mean average.
-            total_steps: An integer. Total number of training steps.
+            total_steps: Total number of training steps.
                 Enable warmup by setting a positive value.
             warmup_proportion: A floating point value.
                 The proportion of increasing steps.
@@ -131,7 +132,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         self._set_hyper("decay", self._initial_decay)
         self._set_hyper("weight_decay", weight_decay)
         self._set_hyper("sma_threshold", sma_threshold)
-        self._set_hyper("total_steps", int(total_steps))
+        self._set_hyper("total_steps", total_steps)
         self._set_hyper("warmup_proportion", warmup_proportion)
         self._set_hyper("min_lr", min_lr)
         self.epsilon = epsilon or tf.keras.backend.epsilon()
