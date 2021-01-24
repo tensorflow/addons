@@ -50,7 +50,7 @@ def _embedding_bag(
       A `Tensor` of the format specified by `data_format`.
     """
     if weights is None:
-        weights = tf.ones_like(indices, dtype=tf.float32)
+        weights = tf.ones_like(indices, dtype=params.dtype)
 
     return _embedding_bag_so.ops.addons_embedding_bag(
         indices, params, weights, combiner=combiner.upper(), name=name
