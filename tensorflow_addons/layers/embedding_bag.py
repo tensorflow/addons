@@ -64,7 +64,18 @@ def _embedding_bag_grad(op, grads):
     value_grads, weight_grads = _embedding_bag_so.ops.addons_embedding_bag_grad(
         indices, params, weights, grads, combiner=combiner
     )
-    return [None, value_grads, weight_grads]
+    # Because value grads are sparse, returning IndexedSlices can be faster for optimizer.
+    unique_indices = tf.unique(tf.reshape(indices, -1))[0]
+    sorted_unique_indices = tf.sort(unique_indices)
+    return [
+        None,
+        tf.IndexedSlices(
+            indices=sorted_unique_indices,
+            values=tf.gather(value_grads, sorted_unique_indices),
+            dense_shape=tf.shape(params),
+        ),
+        weight_grads,
+    ]
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
