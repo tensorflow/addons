@@ -64,6 +64,8 @@ class RSquare(Metric):
             Should be one of `["raw_values", "uniform_average", "variance_weighted"]`.
         name: (Optional) string name of the metric instance.
         dtype: (Optional) data type of the metric result.
+        penalize: (Optional) Penalize based on number of predictors (Adjusted R2).
+        num_preds: (Optional) Number of predictors used (Adjusted R2).
 
     Usage:
 
@@ -83,6 +85,8 @@ class RSquare(Metric):
         dtype: AcceptableDTypes = None,
         y_shape: Tuple[int, ...] = (),
         multioutput: str = "uniform_average",
+        penalize: bool = False,
+        num_preds: int = 0,
         **kwargs,
     ):
         super().__init__(name=name, dtype=dtype, **kwargs)
@@ -95,6 +99,8 @@ class RSquare(Metric):
                 )
             )
         self.multioutput = multioutput
+        self.penalize = penalize
+        self.num_preds = tf.cast(num_preds, dtype=tf.float32)
         self.squared_sum = self.add_weight(
             name="squared_sum", shape=y_shape, initializer="zeros", dtype=dtype
         )
@@ -107,6 +113,7 @@ class RSquare(Metric):
         self.count = self.add_weight(
             name="count", shape=y_shape, initializer="zeros", dtype=dtype
         )
+        self.num_examples = self.add_weight(name="num_examples", dtype=dtype)
 
     def update_state(self, y_true, y_pred, sample_weight=None) -> None:
         y_true = tf.cast(y_true, dtype=self._dtype)
@@ -125,18 +132,25 @@ class RSquare(Metric):
             tf.reduce_sum((y_true - y_pred) ** 2 * sample_weight, axis=0)
         )
         self.count.assign_add(tf.reduce_sum(sample_weight, axis=0))
+        self.num_examples.assign_add(tf.size(y_true))
 
     def result(self) -> tf.Tensor:
         mean = self.sum / self.count
         total = self.squared_sum - self.sum * mean
         raw_scores = 1 - (self.res / total)
+        n = tf.cast(self.num_examples, dtype=tf.float32)
+
+        num = tf.multiply(tf.subtract(1.0, raw_scores), tf.subtract(n, 1.0))
+        den = tf.subtract(tf.subtract(n, self.num_preds), 1.0)
+
+        scores = tf.subtract(1.0, tf.divide(num, den)) if self.penalize else raw_scores
 
         if self.multioutput == "raw_values":
-            return raw_scores
+            return scores
         if self.multioutput == "uniform_average":
-            return tf.reduce_mean(raw_scores)
+            return tf.reduce_mean(scores)
         if self.multioutput == "variance_weighted":
-            return _reduce_average(raw_scores, weights=total)
+            return _reduce_average(scores, weights=total)
         raise RuntimeError(
             "The multioutput attribute must be one of {}, but was: {}".format(
                 VALID_MULTIOUTPUT, self.multioutput
