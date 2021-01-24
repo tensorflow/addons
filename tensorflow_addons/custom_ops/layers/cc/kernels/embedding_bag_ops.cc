@@ -86,7 +86,7 @@ struct EmbeddingBagBackwardFunctor<CPUDevice, T, Tindices> {
   void operator()(const CPUDevice& device,
                   typename TTypes<Tindices, 2>::ConstTensor indices,
                   typename TTypes<T, 2>::ConstTensor params,
-                  typename TTypes<T, 2>::ConstTensor weightss,
+                  typename TTypes<T, 2>::ConstTensor weights,
                   typename TTypes<T, 2>::ConstTensor grads,
                   typename TTypes<T, 2>::Tensor params_grads,
                   typename TTypes<T, 2>::Tensor weights_grads,
@@ -116,7 +116,7 @@ struct EmbeddingBagBackwardFunctor<CPUDevice, T, Tindices> {
           const Eigen::Index bag = index / sequence_length;
           const Eigen::Index seq = index % sequence_length;
           const ConstVectorMap grads_slice(&grads(bag, 0), output_dim);
-          params_grads_slice += grads_slice * weightss(bag, seq);
+          params_grads_slice += grads_slice * weights(bag, seq);
         }
         if (combiner == Combiner::kMean) {
           params_grads_slice /= static_cast<T>(sequence_length);
@@ -184,17 +184,17 @@ class EmbeddingBagOp : public OpKernel {
   void Compute(OpKernelContext* context) override {
     const Tensor& indices = context->input(0);
     const Tensor& params = context->input(1);
-    const Tensor& weightss = context->input(2);
+    const Tensor& weights = context->input(2);
 
     const TensorShape& indices_shape = indices.shape();
     const TensorShape& params_shape = params.shape();
-    const TensorShape& weightss_shape = weightss.shape();
+    const TensorShape& weights_shape = weights.shape();
 
     OP_REQUIRES(context, TensorShapeUtils::IsMatrix(indices_shape),
                 errors::InvalidArgument("indices shape should be 2-D."));
-    OP_REQUIRES(context, indices_shape == weightss_shape,
+    OP_REQUIRES(context, indices_shape == weights_shape,
                 errors::InvalidArgument(
-                    "Shape of indices and weightss should be equal."));
+                    "Shape of indices and weights should be equal."));
     OP_REQUIRES(context, TensorShapeUtils::IsMatrix(params_shape),
                 errors::InvalidArgument("params shape should be 2-D."));
 
@@ -206,7 +206,7 @@ class EmbeddingBagOp : public OpKernel {
 
     functor::EmbeddingBagFunctor<Device, T, Tindices>()(
         context->eigen_device<Device>(), indices.tensor<Tindices, 2>(),
-        params.tensor<T, 2>(), weightss.tensor<T, 2>(), output->tensor<T, 2>(),
+        params.tensor<T, 2>(), weights.tensor<T, 2>(), output->tensor<T, 2>(),
         combiner_);
   }
 
@@ -229,7 +229,7 @@ class EmbeddingBagBackwardOp : public OpKernel {
   void Compute(OpKernelContext* context) override {
     const Tensor& indices = context->input(0);
     const Tensor& params = context->input(1);
-    const Tensor& weightss = context->input(2);
+    const Tensor& weights = context->input(2);
     const Tensor& grads = context->input(3);
 
     Tensor* params_grads = nullptr;
@@ -237,11 +237,11 @@ class EmbeddingBagBackwardOp : public OpKernel {
                    context->allocate_output(0, params.shape(), &params_grads));
     Tensor* weights_grads = nullptr;
     OP_REQUIRES_OK(
-        context, context->allocate_output(1, weightss.shape(), &weights_grads));
+        context, context->allocate_output(1, weights.shape(), &weights_grads));
 
     functor::EmbeddingBagBackwardFunctor<Device, T, Tindices>()(
         context->eigen_device<Device>(), indices.tensor<Tindices, 2>(),
-        params.tensor<T, 2>(), weightss.tensor<T, 2>(), grads.tensor<T, 2>(),
+        params.tensor<T, 2>(), weights.tensor<T, 2>(), grads.tensor<T, 2>(),
         params_grads->tensor<T, 2>(), weights_grads->tensor<T, 2>(), combiner_);
   }
 
