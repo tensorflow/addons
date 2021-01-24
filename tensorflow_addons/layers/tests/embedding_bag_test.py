@@ -26,8 +26,8 @@ from tensorflow_addons.layers.embedding_bag import EmbeddingBag, _embedding_bag
 from tensorflow_addons.utils import test_utils
 
 
-def manual_embedding_bag(indices, values, weights, combiner="mean"):
-    gathered = tf.gather(values, indices)
+def manual_embedding_bag(indices, params, weights, combiner="mean"):
+    gathered = tf.gather(params, indices)
     gathered *= tf.expand_dims(weights, -1)
     if combiner == "sum":
         return tf.reduce_sum(gathered, -2, keepdims=False)
@@ -44,12 +44,12 @@ def test_foward(input_shape, input_dim, dtype, indices_dtype, combiner):
     indices = np.random.randint(low=0, high=input_dim, size=input_shape).astype(
         indices_dtype
     )
-    values = np.random.random(size=(input_dim, 16)).astype(dtype)
+    params = np.random.random(size=(input_dim, 16)).astype(dtype)
     weights = np.random.random(size=indices.shape).astype(dtype)
-    expected = manual_embedding_bag(indices, values, weights, combiner=combiner)
+    expected = manual_embedding_bag(indices, params, weights, combiner=combiner)
     embedding_bag = EmbeddingBag(input_dim, 16, combiner=combiner, dtype=dtype)
     embedding_bag.build(indices.shape)
-    embedding_bag.set_weights([values])
+    embedding_bag.set_weights([params])
     output = embedding_bag(
         indices,
         weights,
@@ -66,20 +66,20 @@ def test_backward(input_shape, input_dim, dtype, indices_dtype, combiner):
     indices = np.random.randint(low=0, high=input_dim, size=input_shape).astype(
         indices_dtype
     )
-    values = np.random.random(size=(input_dim, 16)).astype(dtype)
+    params = np.random.random(size=(input_dim, 16)).astype(dtype)
     weights = np.random.random(size=indices.shape).astype(dtype)
 
     indices = tf.convert_to_tensor(indices)
-    values = tf.convert_to_tensor(values)
+    params = tf.convert_to_tensor(params)
     weights = tf.convert_to_tensor(weights)
 
     with tf.GradientTape(persistent=True) as tape:
-        tape.watch([values, weights])
-        output = _embedding_bag(indices, values, weights, combiner=combiner)
-        expected = manual_embedding_bag(indices, values, weights, combiner=combiner)
+        tape.watch([params, weights])
+        output = _embedding_bag(indices, params, weights, combiner=combiner)
+        expected = manual_embedding_bag(indices, params, weights, combiner=combiner)
 
-    grads = tape.gradient(output, [values, weights])
-    expected_grads = tape.gradient(expected, [values, weights])
+    grads = tape.gradient(output, [params, weights])
+    expected_grads = tape.gradient(expected, [params, weights])
     # Gather returns sparse IndexedSlices so we have to sum them together.
     test_utils.assert_allclose_according_to_type(
         tf.math.unsorted_segment_sum(

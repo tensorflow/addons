@@ -29,7 +29,7 @@ namespace {
 // Define the GPU kernel.
 template <typename T, typename Tindices, const int kThreadsPerBlock>
 __global__ void EmbeddingBagGPUKernel(const Tindices* __restrict__ indices,
-                                      const T* __restrict__ values,
+                                      const T* __restrict__ params,
                                       const T* __restrict__ weights,
                                       T* __restrict__ output,
                                       const Eigen::Index output_dim,
@@ -53,7 +53,7 @@ __global__ void EmbeddingBagGPUKernel(const Tindices* __restrict__ indices,
     T accum = static_cast<T>(0);
     for (Eigen::Index idx_offset = bag_offset;
          idx_offset < bag_offset + sequence_length; ++idx_offset) {
-      accum += values[indices[idx_offset] * output_dim + feature_idx] *
+      accum += params[indices[idx_offset] * output_dim + feature_idx] *
                weights[idx_offset];
     }
     if (combiner == Combiner::kMean) {
@@ -72,12 +72,12 @@ struct EmbeddingBagFunctor<GPUDevice, T, Tindices> {
 
   void operator()(const GPUDevice& device,
                   typename TTypes<Tindices, 2>::ConstTensor indices,
-                  typename TTypes<T, 2>::ConstTensor values,
+                  typename TTypes<T, 2>::ConstTensor params,
                   typename TTypes<T, 2>::ConstTensor weights,
                   typename TTypes<T, 2>::Tensor output, Combiner combiner) {
     const Eigen::Index bags = indices.dimension(0);
     const Eigen::Index sequence_length = indices.dimension(1);
-    const Eigen::Index output_dim = values.dimension(1);
+    const Eigen::Index output_dim = params.dimension(1);
 
     const int blocks_per_value_vec =
         Eigen::divup(output_dim, static_cast<Eigen::Index>(kThreadsPerBlock));
@@ -85,7 +85,7 @@ struct EmbeddingBagFunctor<GPUDevice, T, Tindices> {
 
     TF_CHECK_OK(GpuLaunchKernel(
         EmbeddingBagGPUKernel<T, Tindices, kThreadsPerBlock>, grids,
-        kThreadsPerBlock, 0, device.stream(), indices.data(), values.data(),
+        kThreadsPerBlock, 0, device.stream(), indices.data(), params.data(),
         weights.data(), output.data(), output_dim, sequence_length, combiner));
   }
 };

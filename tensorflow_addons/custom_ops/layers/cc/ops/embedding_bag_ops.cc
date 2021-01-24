@@ -25,18 +25,18 @@ using ::tensorflow::shape_inference::ShapeHandle;
 
 REGISTER_OP("Addons>EmbeddingBag")
     .Input("indices: Tindices")
-    .Input("values: T")
+    .Input("params: T")
     .Input("weights: T")
     .Output("output: T")
     .Attr("T: {half, float, double}")
     .Attr("Tindices: {int32, int64}")
     .Attr("combiner: {'SUM', 'MEAN'} = 'MEAN'")
     .SetShapeFn([](InferenceContext* c) {
-      ShapeHandle indices, values, weights, unused, output;
+      ShapeHandle indices, params, weights, unused, output;
       TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 2, &indices));
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &values));
+      TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &params));
       TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 2, &weights));
-      DimensionHandle output_dim = c->Dim(values, 1);
+      DimensionHandle output_dim = c->Dim(params, 1);
       TF_RETURN_IF_ERROR(
           c->ReplaceDim(indices, c->Rank(indices) - 1, output_dim, &output));
       TF_RETURN_IF_ERROR(c->Merge(indices, weights, &unused));
@@ -46,21 +46,21 @@ REGISTER_OP("Addons>EmbeddingBag")
 
 REGISTER_OP("Addons>EmbeddingBagGrad")
     .Input("indices: Tindices")
-    .Input("values: T")
+    .Input("params: T")
     .Input("weights: T")
     .Input("grads: T")
-    .Output("value_grads: T")
-    .Output("weight_grads: T")
+    .Output("params_grads: T")
+    .Output("weights_grads: T")
     .Attr("T: {half, float, double}")
     .Attr("Tindices: {int32, int64}")
     .Attr("combiner: {'SUM', 'MEAN'} = 'MEAN'")
     .SetShapeFn([](InferenceContext* c) {
-      ShapeHandle indices, values, weights, unused;
+      ShapeHandle indices, params, weights, unused;
       TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 2, &indices));
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &values));
+      TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &params));
       TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 2, &weights));
       TF_RETURN_IF_ERROR(c->WithRank(c->input(3), 2, &unused));
-      TF_RETURN_IF_ERROR(c->Merge(indices, values, &unused));
+      TF_RETURN_IF_ERROR(c->Merge(indices, params, &unused));
       c->set_output(0, c->input(1));
       c->set_output(1, c->input(2));
       return Status::OK();

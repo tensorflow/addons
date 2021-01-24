@@ -32,7 +32,7 @@ template <typename Device, typename T, typename Tindices>
 struct EmbeddingBagFunctor {
   void operator()(const Device& device,
                   typename TTypes<Tindices, 2>::ConstTensor indices,
-                  typename TTypes<T, 2>::ConstTensor values,
+                  typename TTypes<T, 2>::ConstTensor params,
                   typename TTypes<T, 2>::ConstTensor weights,
                   typename TTypes<T, 2>::Tensor output, Combiner combiner);
 };
@@ -41,11 +41,11 @@ template <typename Device, typename T, typename Tindices>
 struct EmbeddingBagBackwardFunctor {
   void operator()(const Device& device,
                   typename TTypes<Tindices, 2>::ConstTensor indices,
-                  typename TTypes<T, 2>::ConstTensor values,
+                  typename TTypes<T, 2>::ConstTensor params,
                   typename TTypes<T, 2>::ConstTensor weights,
                   typename TTypes<T, 2>::ConstTensor grads,
-                  typename TTypes<T, 2>::Tensor value_grads,
-                  typename TTypes<T, 2>::Tensor weight_grads,
+                  typename TTypes<T, 2>::Tensor params_grads,
+                  typename TTypes<T, 2>::Tensor weights_grads,
                   Combiner combiner);
 };
 

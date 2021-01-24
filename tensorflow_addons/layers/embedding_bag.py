@@ -24,7 +24,7 @@ _embedding_bag_so = LazySO("custom_ops/layers/_embedding_bag_ops.so")
 
 def _embedding_bag(
     indices,
-    values,
+    params,
     weights=None,
     combiner="mean",
     name=None,
@@ -39,9 +39,9 @@ def _embedding_bag(
 
     Args:
       indices: An int32 or int64 `Tensor` of the indices to gather from
-          `values`. Must be at least 2-dimensional, as the last dimension
-          will be summed out. Maximum value must be less than values.shape[0].
-      values: A float32 `Tensor` from which to gather values. Must be rank 2.
+          `params`. Must be at least 2-dimensional, as the last dimension
+          will be summed out. Maximum value must be less than params.shape[0].
+      params: A float32 `Tensor` from which to gather params. Must be rank 2.
       weights: A float32 `Tensor` of weights which will be applied to each of
           the gathered embedding vectors before the sum step.
       name: A name for the operation (optional).
@@ -53,16 +53,16 @@ def _embedding_bag(
         weights = tf.ones_like(indices, dtype=tf.float32)
 
     return _embedding_bag_so.ops.addons_embedding_bag(
-        indices, values, weights, combiner=combiner.upper(), name=name
+        indices, params, weights, combiner=combiner.upper(), name=name
     )
 
 
 @tf.RegisterGradient("Addons>EmbeddingBag")
 def _embedding_bag_grad(op, grads):
-    indices, values, weights = op.inputs[:3]
+    indices, params, weights = op.inputs[:3]
     combiner = op.get_attr("combiner")
     value_grads, weight_grads = _embedding_bag_so.ops.addons_embedding_bag_grad(
-        indices, values, weights, grads, combiner=combiner
+        indices, params, weights, grads, combiner=combiner
     )
     return [None, value_grads, weight_grads]
 
@@ -79,14 +79,14 @@ class EmbeddingBag(tf.keras.layers.Layer):
 
     Input Shapes:
       indices: An int32 or int64 `Tensor` of the indices to gather from
-          `values`. Must be at least 2-dimensional, as the last dimension
-          will be summed out. Maximum value must be less than values.shape[0].
-      values: A float32 `Tensor` from which to gather values. Must be rank 2.
+          `params`. Must be at least 2-dimensional, as the last dimension
+          will be summed out. Maximum value must be less than params.shape[0].
+      params: A float32 `Tensor` from which to gather params. Must be rank 2.
       weights: A float32 `Tensor` of weights which will be applied to each of
           the gathered embedding vectors before the sum step.
 
     Output shape:
-        indices.shape[:-1], values.shape[-1]
+        indices.shape[:-1], params.shape[-1]
     """
 
     @typechecked
