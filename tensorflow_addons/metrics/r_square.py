@@ -86,7 +86,7 @@ class RSquare(Metric):
         y_shape: Tuple[int, ...] = (),
         multioutput: str = "uniform_average",
         penalize: bool = False,
-        num_preds: int = 0,
+        num_preds: tf.int32 = 0,
         **kwargs,
     ):
         super().__init__(name=name, dtype=dtype, **kwargs)
@@ -113,7 +113,7 @@ class RSquare(Metric):
         self.count = self.add_weight(
             name="count", shape=y_shape, initializer="zeros", dtype=dtype
         )
-        self.num_examples = self.add_weight(name="num_examples", dtype=dtype)
+        self.num_examples = self.add_weight(name="num_examples", dtype=tf.int32)
 
     def update_state(self, y_true, y_pred, sample_weight=None) -> None:
         y_true = tf.cast(y_true, dtype=self._dtype)
