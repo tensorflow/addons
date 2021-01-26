@@ -116,10 +116,10 @@ def create_build_configuration():
         write("build:windows --enable_runfiles")
         write("build:windows --copt=/experimental:preprocessor")
         write("build:windows --host_copt=/experimental:preprocessor")
-        write("build:windows --copt=/arch=AVX2")
+        write("build:windows --copt=/arch=AVX")
 
     if is_macos() or is_linux():
-        write("build --copt=-mavx2")
+        write("build --copt=-mavx")
 
     if os.getenv("TF_NEED_CUDA", "0") == "1":
         print("> Building GPU & CPU ops")
