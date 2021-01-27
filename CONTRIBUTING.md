@@ -43,11 +43,15 @@ fitting the following criteria:
  * Lastly, the functionality conforms to the contribution guidelines of
  its subpackage.
 
+Guidelines for new feature requests:
+
+* The feature contains an official refrence implementation.
+* The academic paper exceeds 50 citations.
+
 **Note: New contributions often require team-members to read a research
 paper and understand how it fits into the TensorFlow community. This
 process can take longer than typical commit reviews so please bare with
 us**
-
 ## Tools needed for developement
 
 #### Linux
