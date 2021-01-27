@@ -52,6 +52,7 @@ Guidelines for new feature requests:
 paper and understand how it fits into the TensorFlow community. This
 process can take longer than typical commit reviews so please bare with
 us**
+
 ## Tools needed for developement
 
 #### Linux
