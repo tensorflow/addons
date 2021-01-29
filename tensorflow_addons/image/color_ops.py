@@ -167,10 +167,25 @@ def _clahe(
     )
 
     # Compute per-tile histogram
-    hists = tf.math.reduce_sum(
-        tf.one_hot(all_tiles, depth=256, on_value=1, off_value=0, axis=0), axis=1
+    single_dimension_tiles = tf.reshape(
+        all_tiles,
+        (
+            tile_shape[0] * tile_shape[1],
+            tile_grid_size[0] * tile_grid_size[1] * tf.shape(image)[-1],
+        ),
     )
 
+    single_dimension_tiles = tf.transpose(single_dimension_tiles)
+    hists = tf.math.bincount(
+        single_dimension_tiles, minlength=256, maxlength=256, axis=-1
+    )
+
+    hists = tf.transpose(hists)
+    hists = tf.reshape(
+        hists, (256, tile_grid_size[0], tile_grid_size[1], tf.shape(image)[-1])
+    )
+
+    # Clip histograms, if necessary
     if clip_limit > 0:
         clip_limit_actual = tf.cast(
             clip_limit * ((tile_shape[0] * tile_shape[1]) / 256), tf.int32
