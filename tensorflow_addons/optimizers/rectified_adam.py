@@ -103,7 +103,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
                 beyond".
             sma_threshold. A float value.
                 The threshold for simple mean average.
-            total_steps: Total number of training steps.
+            total_steps: An integer value. Total number of training steps.
                 Enable warmup by setting a positive value.
             warmup_proportion: A floating point value.
                 The proportion of increasing steps.
