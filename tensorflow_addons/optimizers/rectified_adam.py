@@ -79,7 +79,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         weight_decay: Union[FloatTensorLike, Callable, Dict] = 0.0,
         amsgrad: bool = False,
         sma_threshold: FloatTensorLike = 5.0,
-        total_steps: TensorLike = 0.0,
+        total_steps: int = 0,
         warmup_proportion: FloatTensorLike = 0.1,
         min_lr: FloatTensorLike = 0.0,
         name: str = "RectifiedAdam",
@@ -132,7 +132,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         self._set_hyper("decay", self._initial_decay)
         self._set_hyper("weight_decay", weight_decay)
         self._set_hyper("sma_threshold", sma_threshold)
-        self._set_hyper("total_steps", total_steps)
+        self._set_hyper("total_steps", float(total_steps))
         self._set_hyper("warmup_proportion", warmup_proportion)
         self._set_hyper("min_lr", min_lr)
         self.epsilon = epsilon or tf.keras.backend.epsilon()
@@ -317,7 +317,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
                 "sma_threshold": self._serialize_hyperparameter("sma_threshold"),
                 "epsilon": self.epsilon,
                 "amsgrad": self.amsgrad,
-                "total_steps": self._serialize_hyperparameter("total_steps"),
+                "total_steps": int(self._serialize_hyperparameter("total_steps")),
                 "warmup_proportion": self._serialize_hyperparameter(
                     "warmup_proportion"
                 ),
