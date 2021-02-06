@@ -43,9 +43,11 @@ fitting the following criteria:
  * Lastly, the functionality conforms to the contribution guidelines of
  its subpackage.
 
-Guidelines for new feature requests:
+Suggested guidelines for new feature requests:
 
 * The feature contains an official refrence implementation.
+* Should be able to reproduce the same results in a published paper.
+* Should provide out-of-box performance.
 * The academic paper exceeds 50 citations.
 
 **Note: New contributions often require team-members to read a research
