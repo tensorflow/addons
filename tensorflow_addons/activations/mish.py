@@ -34,7 +34,7 @@ def mish(x: types.TensorLike) -> tf.Tensor:
 
     >>> x = tf.constant([1.0, 0.0, 1.0])
     >>> tfa.activations.mish(x)
-    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([0.8650984, 0.       , 0.8650984], dtype=float32)>
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([0.865098..., 0.       , 0.865098...], dtype=float32)>
 
     Args:
         x: A `Tensor`. Must be one of the following types:
