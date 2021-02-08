@@ -31,7 +31,7 @@ class FBetaScore(tf.keras.metrics.Metric):
     both multi-class and multi-label classification.
 
     $$
-    F_{\beta} = (1 + \beta^2) * \frac{\textrm{precision} * \textrm{precision}}{(\beta^2 \cdot \textrm{precision}) + \textrm{recall}}
+    F_{\beta} = (1 + \beta^2) * \frac{\textrm{precision} * \textrm{recall}}{(\beta^2 \cdot \textrm{precision}) + \textrm{recall}}
     $$
 
     Args:
