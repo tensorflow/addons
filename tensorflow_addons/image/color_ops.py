@@ -42,7 +42,7 @@ def _scale_channel(
     if (bins - 1) == 0:
         step = tf.reduce_sum(nonzero_histo) - nonzero_histo[-1]
     else:
-        step = (tf.reduce_sum(nonzero_histo) - nonzero_histo[-1]) // bins - 1
+        step = (tf.reduce_sum(nonzero_histo) - nonzero_histo[-1]) // (bins - 1)
 
     # If step is zero, return the original image.  Otherwise, build
     # lut from the full histogram and step and then index from it.
