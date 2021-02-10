@@ -31,7 +31,6 @@ def _scale_channel(
     image: TensorLike, channel: int, bins: Optional[int] = 256
 ) -> tf.Tensor:
     """Scale the data in the channel to implement equalize."""
-    assert bins >= 256, "Number of histogram bins should be at least 256"
     image_dtype = image.dtype
     image = tf.cast(image[:, :, channel], tf.int32)
 
