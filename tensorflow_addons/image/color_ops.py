@@ -31,6 +31,7 @@ def _scale_channel(
     image: TensorLike, channel: int, bins: Optional[int] = 256
 ) -> tf.Tensor:
     """Scale the data in the channel to implement equalize."""
+    assert bins >= 256, "Number of histogram bins should be at least 256"
     image_dtype = image.dtype
     image = tf.cast(image[:, :, channel], tf.int32)
 
@@ -39,10 +40,7 @@ def _scale_channel(
 
     # For the purposes of computing the step, filter out the nonzeros.
     nonzero_histo = tf.boolean_mask(histo, histo != 0)
-    if (bins - 1) == 0:
-        step = tf.reduce_sum(nonzero_histo) - nonzero_histo[-1]
-    else:
-        step = (tf.reduce_sum(nonzero_histo) - nonzero_histo[-1]) // (bins - 1)
+    step = (tf.reduce_sum(nonzero_histo) - nonzero_histo[-1]) // (bins - 1)
 
     # If step is zero, return the original image.  Otherwise, build
     # lut from the full histogram and step and then index from it.
