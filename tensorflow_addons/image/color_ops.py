@@ -136,7 +136,10 @@ def sharpness(
 
 
 def _clahe(
-    image: TensorLike, clip_limit: Number, tile_grid_size: Union[List[int], Tuple[int]]
+    image: TensorLike,
+    clip_limit: Number,
+    tile_grid_size: Union[List[int], Tuple[int]],
+    gpu_optimized: bool,
 ) -> tf.Tensor:
     """Implements CLAHE as tf ops"""
     original_2d_shape = (tf.shape(image)[0], tf.shape(image)[1])
@@ -167,23 +170,28 @@ def _clahe(
     )
 
     # Compute per-tile histogram
-    single_dimension_tiles = tf.reshape(
-        all_tiles,
-        (
-            tile_shape[0] * tile_shape[1],
-            tile_grid_size[0] * tile_grid_size[1] * tf.shape(image)[-1],
-        ),
-    )
+    if gpu_optimized:
+        hists = tf.math.reduce_sum(
+            tf.one_hot(all_tiles, depth=256, on_value=1, off_value=0, axis=0), axis=1
+        )
+    else:
+        single_dimension_tiles = tf.reshape(
+            all_tiles,
+            (
+                tile_shape[0] * tile_shape[1],
+                tile_grid_size[0] * tile_grid_size[1] * tf.shape(image)[-1],
+            ),
+        )
 
-    single_dimension_tiles = tf.transpose(single_dimension_tiles)
-    hists = tf.math.bincount(
-        single_dimension_tiles, minlength=256, maxlength=256, axis=-1
-    )
+        single_dimension_tiles = tf.transpose(single_dimension_tiles)
+        hists = tf.math.bincount(
+            single_dimension_tiles, minlength=256, maxlength=256, axis=-1
+        )
 
-    hists = tf.transpose(hists)
-    hists = tf.reshape(
-        hists, (256, tile_grid_size[0], tile_grid_size[1], tf.shape(image)[-1])
-    )
+        hists = tf.transpose(hists)
+        hists = tf.reshape(
+            hists, (256, tile_grid_size[0], tile_grid_size[1], tf.shape(image)[-1])
+        )
 
     # Clip histograms, if necessary
     if clip_limit > 0:
@@ -278,6 +286,7 @@ def clahe(
     clip_limit: Number = 4.0,
     tile_grid_size: Union[List[int], Tuple[int]] = (8, 8),
     name: Optional[str] = None,
+    gpu_optimized: bool = True,
 ) -> tf.Tensor:
     """
     Args:
@@ -293,12 +302,14 @@ def clahe(
             Specifies how many tiles to break the image into.
             Default (8x8).
         name: (Optional) The name of the op. Default `None`.
+        gpu_optimized: Whether or not to use functions that perform
+        better when XLA-compiled on the GPU, but worse on the CPU
     Returns:
         Contrast-limited, adaptive-histogram-equalized image
     """
     with tf.name_scope(name or "clahe"):
         image_dims = tf.rank(image)
         image = to_4D_image(image)
-        fn = partial(lambda x: _clahe(x, clip_limit, tile_grid_size))
+        fn = partial(lambda x: _clahe(x, clip_limit, tile_grid_size, gpu_optimized))
         image = tf.map_fn(fn, image)
         return from_4D_image(image, image_dims)
