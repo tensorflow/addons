@@ -131,7 +131,7 @@ class RSquare(Metric):
         total = self.squared_sum - self.sum * mean
         raw_scores = 1 - (self.res / total)
         raw_scores = tf.where(
-            tf.equal(raw_scores, float("-inf")), tf.zeros_like(raw_scores), raw_scores
+            tf.math.is_inf(raw_scores), tf.zeros_like(raw_scores), raw_scores
         )
 
         if self.multioutput == "raw_values":
