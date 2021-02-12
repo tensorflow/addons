@@ -27,9 +27,7 @@ from typing import Optional
 from functools import partial
 
 
-def _scale_channel(
-    image: TensorLike, channel: int, bins: int = 256
-) -> tf.Tensor:
+def _scale_channel(image: TensorLike, channel: int, bins: int = 256) -> tf.Tensor:
     """Scale the data in the channel to implement equalize."""
     image_dtype = image.dtype
     image = tf.cast(image[:, :, channel], tf.int32)
