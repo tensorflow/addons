@@ -70,6 +70,19 @@ def test_r2_worst_score():
     check_results(r2_obj, -0.073607)
 
 
+def test_r2_score_replace_inf_with_zero():
+    actuals = tf.constant([0, 0], dtype=tf.float32)
+    preds = tf.constant([1e-3, 1e-3], dtype=tf.float32)
+    actuals = tf.cast(actuals, dtype=tf.float32)
+    preds = tf.cast(preds, dtype=tf.float32)
+    # Initialize
+    r2_obj = initialize_vars()
+    # Update
+    update_obj_states(r2_obj, actuals, preds)
+    # Check results
+    check_results(r2_obj, 0)
+
+
 def test_r2_random_score():
     actuals = tf.constant([10, 600, 3, 9.77], dtype=tf.float32)
     preds = tf.constant([1, 340, 40, 5.7], dtype=tf.float32)
