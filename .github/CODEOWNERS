@@ -169,6 +169,8 @@
 
 /tensorflow_addons/seq2seq/ @qlzh727 @guillaumekln
 
+/tensorflow_addons/sparse/ @tabakg
+
 /tensorflow_addons/text/crf.py @squadrick
 /tensorflow_addons/text/tests/crf_test.py @squadrick
 /tensorflow_addons/text/parse_time_op.py @helinwang

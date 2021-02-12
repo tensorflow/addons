@@ -37,6 +37,7 @@ developments that cannot be integrated into core TensorFlow
 * [tfa.optimizers](https://www.tensorflow.org/addons/api_docs/python/tfa/optimizers) 
 * [tfa.rnn](https://www.tensorflow.org/addons/api_docs/python/tfa/rnn) 
 * [tfa.seq2seq](https://www.tensorflow.org/addons/api_docs/python/tfa/seq2seq) 
+* [tfa.sparse](https://www.tensorflow.org/addons/api_docs/python/tfa/sparse) 
 * [tfa.text](https://www.tensorflow.org/addons/api_docs/python/tfa/text) 
 
 ## Maintainership
