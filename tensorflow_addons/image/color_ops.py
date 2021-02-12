@@ -28,7 +28,7 @@ from functools import partial
 
 
 def _scale_channel(
-    image: TensorLike, channel: int, bins: Optional[int] = 256
+    image: TensorLike, channel: int, bins: int = 256
 ) -> tf.Tensor:
     """Scale the data in the channel to implement equalize."""
     image_dtype = image.dtype
@@ -53,7 +53,7 @@ def _scale_channel(
     return tf.cast(result, image_dtype)
 
 
-def _equalize_image(image: TensorLike, bins: Optional[int] = 256) -> tf.Tensor:
+def _equalize_image(image: TensorLike, bins: int = 256) -> tf.Tensor:
     """Implements Equalize function from PIL using TF ops."""
     image = tf.stack(
         [_scale_channel(image, c, bins) for c in range(image.shape[-1])], -1
@@ -63,7 +63,7 @@ def _equalize_image(image: TensorLike, bins: Optional[int] = 256) -> tf.Tensor:
 
 @tf.function
 def equalize(
-    image: TensorLike, bins: Optional[int] = 256, name: Optional[str] = None
+    image: TensorLike, bins: int = 256, name: Optional[str] = None
 ) -> tf.Tensor:
     """Equalize image(s)
 
