@@ -23,7 +23,7 @@ from tensorflow_addons.metrics import RSquare
 from tensorflow_addons.metrics.r_square import _VALID_MULTIOUTPUT
 
 
-@pytest.mark.parametrize("multioutput", _VALID_MULTIOUTPUT)
+@pytest.mark.parametrize("multioutput", sorted(_VALID_MULTIOUTPUT))
 @pytest.mark.parametrize("y_shape", [(), (1,)])
 def test_config(multioutput, y_shape):
     r2_obj = RSquare(multioutput=multioutput, y_shape=y_shape, name="r_square")
@@ -103,7 +103,7 @@ def test_r2_random_score():
     check_results(r2_obj, 0.7376327)
 
 
-@pytest.mark.parametrize("multioutput", _VALID_MULTIOUTPUT)
+@pytest.mark.parametrize("multioutput", sorted(_VALID_MULTIOUTPUT))
 def test_r2_sklearn_comparison(multioutput):
     """Test against sklearn's implementation on random inputs."""
     for _ in range(10):
