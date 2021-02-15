@@ -15,11 +15,11 @@
 
 import tensorflow as tf
 
-from tensorflow_addons.utils import types
+from tensorflow_addons.utils.types import TensorLike
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def lisht(x: types.TensorLike) -> tf.Tensor:
+def lisht(x: TensorLike) -> tf.Tensor:
     r"""LiSHT: Non-Parameteric Linearly Scaled Hyperbolic Tangent Activation Function.
 
     Computes linearly scaled hyperbolic tangent (LiSHT):
@@ -38,14 +38,9 @@ def lisht(x: types.TensorLike) -> tf.Tensor:
 
     Args:
         x: A `Tensor`. Must be one of the following types:
-            `float16`, `float32`, `float64`.
+            `bfloat16`, `float16`, `float32`, `float64`.
     Returns:
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
-
-    return _lisht_py(x)
-
-
-def _lisht_py(x):
     return x * tf.math.tanh(x)
