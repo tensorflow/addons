@@ -33,16 +33,3 @@ def test_gelu(dtype):
         [-0.04550028, -0.15865526, 0.0, 0.8413447, 1.9544997], dtype=dtype
     )
     test_utils.assert_allclose_according_to_type(gelu(x, False), expected_result)
-
-
-@pytest.mark.parametrize("dtype", [np.float32, np.float64])
-@pytest.mark.parametrize("approximate", [True, False])
-def test_theoretical_gradients(dtype, approximate):
-    # Only test theoretical gradients for float32 and float64
-    # because of the instability of float16 while computing jacobian
-    x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
-
-    theoretical, numerical = tf.test.compute_gradient(
-        lambda x: gelu(x, approximate=approximate), [x]
-    )
-    test_utils.assert_allclose_according_to_type(theoretical, numerical, atol=1e-4)
