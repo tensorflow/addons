@@ -17,7 +17,7 @@
 import tensorflow as tf
 
 from typeguard import typechecked
-from typing import Union
+from typing import Union, Iterable
 
 from tensorflow_addons.utils.keras_utils import normalize_tuple
 
@@ -110,8 +110,8 @@ class MaxUnpooling2D(tf.keras.layers.Layer):
     @typechecked
     def __init__(
         self,
-        pool_size: Union[list, tuple, int] = (2, 2),
-        strides: Union[list, tuple, int] = (2, 2),
+        pool_size: Union[int, Iterable[int]] = (2, 2),
+        strides: Union[int, Iterable[int]] = (2, 2),
         padding: str = "SAME",
         **kwargs,
     ):

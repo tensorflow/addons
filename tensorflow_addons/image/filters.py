@@ -18,7 +18,7 @@ from tensorflow_addons.image import utils as img_utils
 from tensorflow_addons.utils import keras_utils
 from tensorflow_addons.utils.types import TensorLike
 
-from typing import Optional, Union, List, Tuple
+from typing import Optional, Union, List, Tuple, Iterable
 
 
 def _pad(
@@ -62,7 +62,7 @@ def _pad(
 @tf.function
 def mean_filter2d(
     image: TensorLike,
-    filter_shape: Union[List[int], Tuple[int], int] = [3, 3],
+    filter_shape: Union[int, Iterable[int]] = (3, 3),
     padding: str = "REFLECT",
     constant_values: TensorLike = 0,
     name: Optional[str] = None,
@@ -125,7 +125,7 @@ def mean_filter2d(
 @tf.function
 def median_filter2d(
     image: TensorLike,
-    filter_shape: Union[List[int], Tuple[int], int] = [3, 3],
+    filter_shape: Union[int, Iterable[int]] = (3, 3),
     padding: str = "REFLECT",
     constant_values: TensorLike = 0,
     name: Optional[str] = None,
@@ -218,7 +218,7 @@ def _get_gaussian_kernel_2d(gaussian_filter_x, gaussian_filter_y):
 @tf.function
 def gaussian_filter2d(
     image: TensorLike,
-    filter_shape: Union[List[int], Tuple[int], int] = [3, 3],
+    filter_shape: Union[int, Iterable[int]] = (3, 3),
     sigma: Union[List[float], Tuple[float], float] = 1.0,
     padding: str = "REFLECT",
     constant_values: TensorLike = 0,
