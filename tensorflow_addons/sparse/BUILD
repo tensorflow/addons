@@ -7,6 +7,7 @@ py_library(
     srcs = glob(["*.py"]),
     data = [
         "//tensorflow_addons/custom_ops/sparse:_sparse_ops.so",
+        "//tensorflow_addons/utils",
     ],
 )
 
