@@ -4,13 +4,12 @@ import warnings
 import traceback
 
 try:
-    TF_ADDONS_PY_OPS = bool(int(os.environ["TF_ADDONS_PY_OPS"]))
+    _TF_ADDONS_PY_OPS = bool(int(os.environ["TF_ADDONS_PY_OPS"]))
 except KeyError:
     if platform.system() == "Linux":
-        TF_ADDONS_PY_OPS = False
+        _TF_ADDONS_PY_OPS = False
     else:
-        TF_ADDONS_PY_OPS = True
-
+        _TF_ADDONS_PY_OPS = True
 
 FALLBACK_WARNING_TEMPLATE = """{}
 
@@ -37,7 +36,7 @@ import tensorflow_addons as tfa
 import ...
 import ...
 
-tfa.options.TF_ADDONS_PY_OPS = True
+tfa.options.disable_custom_kernel()
 ```
 """
 
@@ -45,5 +44,26 @@ tfa.options.TF_ADDONS_PY_OPS = True
 def warn_fallback(op_name):
     warning_msg = FALLBACK_WARNING_TEMPLATE.format(traceback.format_exc(), op_name)
     warnings.warn(warning_msg, RuntimeWarning)
-    global TF_ADDONS_PY_OPS
-    TF_ADDONS_PY_OPS = True
+    global _TF_ADDONS_PY_OPS
+    _TF_ADDONS_PY_OPS = True
+
+
+def enable_custom_kernel():
+    """Enable using custom CUDA/C++ Kernel instead of pure python kernel. Use this instead of
+    directly accessing the global variable."""
+    global _TF_ADDONS_PY_OPS
+    _TF_ADDONS_PY_OPS = False
+    pass
+
+
+def disable_custom_kernel():
+    """Disable using custom CUDA/C++ Kernel instead of pure python kernel. Use this instead of
+    directly accessing the global variable."""
+    global _TF_ADDONS_PY_OPS
+    _TF_ADDONS_PY_OPS = True
+    pass
+
+
+def py_enabled():
+    """Returns whether pure python kernel is preferred or not."""
+    return _TF_ADDONS_PY_OPS
