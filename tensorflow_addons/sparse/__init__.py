@@ -15,4 +15,3 @@
 """Additional sparse operations."""
 
 from tensorflow_addons.sparse.solvers import bicgstab_solver
-
