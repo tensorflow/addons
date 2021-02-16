@@ -18,6 +18,7 @@ limitations under the License.
 #define EIGEN_USE_GPU
 
 #include "tensorflow/core/util/gpu_kernel_helper.h"
+#include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow_addons/custom_ops/layers/cc/kernels/embedding_bag_ops.h"
 
 namespace tensorflow {

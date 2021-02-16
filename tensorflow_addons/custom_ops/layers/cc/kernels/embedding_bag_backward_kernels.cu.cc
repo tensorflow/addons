@@ -22,6 +22,7 @@ limitations under the License.
 #include <thrust/sort.h>
 
 #include "tensorflow/core/util/gpu_kernel_helper.h"
+#include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow_addons/custom_ops/layers/cc/kernels/embedding_bag_ops.h"
 
 constexpr int MAX_THREADS_PER_BLOCK = 1024;
@@ -32,12 +33,12 @@ namespace functor {
 
 typedef Eigen::GpuDevice GPUDevice;
 
-template <typename T_indices>
-__global__ void PrepTempArraysKernel(const T_indices* indices,
-                                     T_indices* sortedIndices,
-                                     T_indices* sortedIndicesCounter,
+template <typename Tindices, const int kThreadsPerBlock>
+__global__ void PrepTempArraysKernel(const Tindices* __restrict__ indices,
+                                     Tindices* __restrict__ sortedIndices,
+                                     Tindices* __restrict__ sortedIndicesCounter,
                                      const int indices_size) {
-  const int arrayIdx = (blockIdx.x * blockDim.x) + threadIdx.x;
+  const int arrayIdx = (blockIdx.x * kThreadsPerBlock) + threadIdx.x;
   if (arrayIdx <
       indices_size) {  // Make sure we don't run off the end of the actual array
     sortedIndices[arrayIdx] = indices[arrayIdx];
@@ -46,51 +47,59 @@ __global__ void PrepTempArraysKernel(const T_indices* indices,
 }
 
 // Define the CUDA kernel.
-template <typename T_indices>
+template <typename T, typename Tindices, const int kThreadsPerBlock>
 __global__ void EmbeddingBagWeightsGradKernel(const int value_dim,
-                                              const T_indices* indices,
-                                              const float* values,
-                                              const float* dloss,
-                                              float* weights_grad) {
+                                              const Tindices* __restrict__ indices,
+                                              const T* __restrict__ values,
+                                              const T* __restrict__ dloss,
+                                              T* __restrict__ weights_grad) {
   const int sample_idx = blockIdx.x;
   const int bag_idx = blockIdx.y;
   const int bag_dim = gridDim.y;
-  const int valueBaseIdx =
-      indices[(sample_idx * bag_dim) + bag_idx] * value_dim;
+  const int valueBaseIdx = indices[(sample_idx * bag_dim) + bag_idx] * value_dim;
   const int dlossBaseIdx = sample_idx * value_dim;
-  // Let's just start with the weights/scores grad
-  // It has the same shape as indices, i.e. (batch_dims, bag_dim)
-  // To compute one element of this, we need to dot product the corresponding
-  // value slice and loss grad slice
+  // Use a full-precision accumulator even for half-precision inputs
   float partialDotProduct = 0.0f;
   for (int i = threadIdx.x; i < value_dim;
        i += blockDim.x)  // Note that some threads may stop one iteration
                          // earlier if the block straddles the end of the array
   {
-    partialDotProduct += values[valueBaseIdx + i] * dloss[dlossBaseIdx + i];
+    partialDotProduct += static_cast<float>(values[valueBaseIdx + i] * dloss[dlossBaseIdx + i]);
   }
   unsigned activeMask = 0xffffffff;
-  for (int offset = blockDim.x / 2; offset > 0; offset /= 2) {
+  #pragma unroll
+  for (int offset = kThreadsPerBlock / 2; offset > 0; offset /= 2) {
     partialDotProduct +=
         __shfl_down_sync(activeMask, partialDotProduct, offset);
   }
   // Thread 0 now has the full dot product
   if (threadIdx.x == 0) {
-    weights_grad[(sample_idx * bag_dim) + bag_idx] = partialDotProduct;
+    weights_grad[(sample_idx * bag_dim) + bag_idx] = static_cast<T>(partialDotProduct);
   }
 }
 
-template <typename T_indices>
+template <typename T, typename Tindices>
 __global__ void EmbeddingBagValuesGradKernel(
     const int value_dim, const int bag_dim,
-    const T_indices* __restrict__ sortedIndices,
-    const T_indices* __restrict__ counter, const float* __restrict__ values,
-    const float* __restrict__ weights, const float* __restrict__ dloss,
-    float* __restrict__ values_grad) {
+    const Tindices* __restrict__ sortedIndices,
+    const Tindices* __restrict__ counter, const T* __restrict__ values,
+    const T* __restrict__ weights, const T* __restrict__ dloss,
+    T* __restrict__ values_grad) {
   const int startIdx = blockIdx.x;
   const int chunk = blockIdx.y;
-  const int threadsPerChunk = blockDim.x;
-  const int featureIdx = threadIdx.x + (chunk * threadsPerChunk);
+  const int kThreadsPerBlock = blockDim.x;
+  const int featureIdx = threadIdx.x + (chunk * kThreadsPerBlock);
+  // The core problem here is that we want to avoid parallel writes to the
+  // same element of the grads. We avoid that by pre-sorting a copy of the
+  // indices tensor, and also co-sorting a 'counter' array so that we still know which
+  // element of the incoming gradient tensor corresponds to each.
+  // Then, we take the slightly lazy approach of spinning up a warp for each
+  // element of the indices array, but having each warp check the previous element
+  // before it starts. If the two elements are the same, then the warp immediately
+  // returns without doing anything. If not, then the warp iterates forward and accumulates
+  // gradient until it hits a different index element, at which point it writes
+  // the accumulated value and returns. This ensures that each row of the values
+  // grad tensor is handled by one and exactly one warp.
   const int valuesIdx = ldg(sortedIndices + startIdx);
   if (startIdx > 0) {
     const int prevIdx = ldg(sortedIndices + startIdx - 1);
@@ -112,74 +121,112 @@ __global__ void EmbeddingBagValuesGradKernel(
   if (featureIdx < value_dim)  // Don't run off the end of the row
   {
     const int outputOffset = (valuesIdx * value_dim) + featureIdx;
-    float accum = 0.0f;
+    float accum = 0.0f; // Full precision even if the inputs aren't
 
     for (int currentIdx = startIdx; currentIdx <= endIdx; ++currentIdx) {
       int originalIdxPosition = ldg(counter + currentIdx);
-      float weight = weights[originalIdxPosition];
+      T weight = weights[originalIdxPosition];
       // The floor division on this line is correct and intentional
-      float featureDloss =
+      T featureDloss =
           ldg(dloss + (originalIdxPosition / bag_dim) + featureIdx);
-      accum += weight * featureDloss;
+      accum += static_cast<float>(weight * featureDloss);
     }
-    values_grad[outputOffset] = accum;
+    values_grad[outputOffset] = static_cast<T>(accum);
   }
 }
 
 // Define the GPU implementation that launches the CUDA kernel.
-template <typename T_indices>
-struct EmbeddingBagBackwardFunctor<GPUDevice, T_indices> {
+template <typename T, typename Tindices>
+struct EmbeddingBagBackwardFunctor<GPUDevice, T, Tindices> {
   // indices should remain unchanged, but thrust complains if it's a const
   // pointer
-  void operator()(const GPUDevice& d, const int value_dim, const int bag_dim,
-                  const int indices_size, const int values_size,
-                  const T_indices* indices, const float* values,
-                  const float* weights, const float* dloss, float* values_grad,
-                  float* weights_grad, T_indices* sortedIndices,
-                  T_indices* sortedIndicesCounter) {
-    // Launch the cuda kernel.
-    //
-    // See core/util/cuda_kernel_helper.h for example of computing
-    // block count and thread_per_block count.
+  void operator()(const GPUDevice& d, typename TTypes<Tindices, 2>::ConstTensor indices,
+                  typename TTypes<T, 2>::ConstTensor params,
+                  typename TTypes<T, 2>::ConstTensor weights,
+                  typename TTypes<T, 2>::ConstTensor grads,
+                  typename TTypes<T, 2>::Tensor params_grads,
+                  typename TTypes<T, 2>::Tensor weights_grads,
+                  Combiner combiner, OpKernelContext* context) {
+    // I copy-pasted this bit from histogram_op_gpu.cu.cc and I sure hope it works
+    tensorflow::AllocatorAttributes gpu_allocator;
+    gpu_allocator.set_on_host(false);
+    gpu_allocator.set_gpu_compatible(true);
+
+    Tensor sortedIndicesTensor;
+    Tensor sortedIndicesCounterTensor;
+    OP_REQUIRES_OK(context, context->allocate_temp(
+                          DataTypeToEnum<Tindices>::value, TensorShape({indices.size()}),
+                          &sortedIndicesTensor, gpu_allocator));
+    OP_REQUIRES_OK(context, context->allocate_temp(
+                          DataTypeToEnum<Tindices>::value, TensorShape({indices.size()}),
+                          &sortedIndicesCounterTensor, gpu_allocator));
+    auto sortedIndices = sortedIndicesTensor.flat<Tindices>();
+    auto sortedIndicesCounter = sortedIndicesCounterTensor.flat<Tindices>();
     // Note: I tried splitting the two kernels into different streams but
     // performance was barely affected.
-    int threadsPerBlock = 32;
-    dim3 gridShape = dim3(indices_size / bag_dim, bag_dim, 1);
-    EmbeddingBagWeightsGradKernel<T_indices>
-        <<<gridShape, threadsPerBlock, 0, d.stream()>>>(
-            value_dim, indices, values, dloss, weights_grad);
+    const Eigen::Index batch_dim = indices.dimension(0);
+    const Eigen::Index bag_dim = indices.dimension(1);
+    const Eigen::Index output_dim = params.dimension(1);
+    const auto params_size = params.size();
+    const int kThreadsPerBlock = 32;
+    dim3 gridShape = dim3(batch_dim, bag_dim, 1);
+    TF_CHECK_OK(GpuLaunchKernel(
+        EmbeddingBagWeightsGradKernel<T, Tindices, kThreadsPerBlock>,
+        gridShape, kThreadsPerBlock, 0, d.stream(),
+        output_dim, indices.data(), params.data(), grads.data(), weights_grads.data()));
 
-    gridShape = dim3((indices_size + threadsPerBlock - 1) / threadsPerBlock, 1,
-                     1);  // Ceiling division
-    PrepTempArraysKernel<T_indices>
-        <<<gridShape, threadsPerBlock, 0, d.stream()>>>(
-            indices, sortedIndices, sortedIndicesCounter, indices_size);
+    const int indices_size = indices.size();
+    const int values_size = params.size();
+    const int total_blocks = Eigen::divup(indices_size, kThreadsPerBlock);
+    gridShape = dim3(total_blocks, 1, 1);
 
-    thrust::device_ptr<T_indices> sortedIndicesCounterDevicePtr(
-        sortedIndicesCounter);
-    thrust::device_ptr<T_indices> sortedIndicesDevicePtr(sortedIndices);
-    thrust::device_ptr<float> valuesGradDevicePtr(values_grad);
-    thrust::fill(valuesGradDevicePtr, valuesGradDevicePtr + values_size, 0.0f);
+    TF_CHECK_OK(GpuLaunchKernel(
+        PrepTempArraysKernel<Tindices, kThreadsPerBlock>,
+        gridShape, kThreadsPerBlock, 0, d.stream(), indices.data(),
+        sortedIndices.data(), sortedIndicesCounter.data(), indices_size));
+
+    thrust::device_ptr<Tindices> sortedIndicesCounterDevicePtr(
+        sortedIndicesCounter.data());
+    thrust::device_ptr<Tindices> sortedIndicesDevicePtr(sortedIndices.data());
+    thrust::device_ptr<T> paramsGradDevicePtr(params_grads.data());
+    thrust::fill(paramsGradDevicePtr, paramsGradDevicePtr + static_cast<int>(params_size), static_cast<T>(0.0f));
     thrust::sort_by_key(sortedIndicesDevicePtr,
                         sortedIndicesDevicePtr + indices_size,
                         sortedIndicesCounterDevicePtr);
-    threadsPerBlock = value_dim;
-    int blocksPerRow = 1;
-    while (threadsPerBlock > MAX_THREADS_PER_BLOCK) {
-      threadsPerBlock = (threadsPerBlock + 1) / 2;  // Ceiling division
-      blocksPerRow *= 2;
+    // Handle each row with as few thread blocks as possible
+    int threadsPerBlock;
+    int blocksPerRow;
+    if (output_dim <= MAX_THREADS_PER_BLOCK)
+    {
+        blocksPerRow = 1;
+        threadsPerBlock = output_dim;
     }
+    else
+    {
+        blocksPerRow = Eigen::divup(static_cast<int>(output_dim), MAX_THREADS_PER_BLOCK);
+        threadsPerBlock = Eigen::divup(static_cast<int>(output_dim), blocksPerRow);
+    }
+    // int blocksPerRow = 1;
+    // while (threadsPerBlock > MAX_THREADS_PER_BLOCK) {
+    //   threadsPerBlock = (threadsPerBlock + 1) / 2;  // Ceiling division
+    //   blocksPerRow *= 2;
+    // }
     gridShape = dim3(indices_size, blocksPerRow, 1);
-    EmbeddingBagValuesGradKernel<T_indices>
-        <<<gridShape, threadsPerBlock, 0, d.stream()>>>(
-            value_dim, bag_dim, sortedIndices, sortedIndicesCounter, values,
-            weights, dloss, values_grad);
+    TF_CHECK_OK(GpuLaunchKernel(
+        EmbeddingBagValuesGradKernel<T, Tindices>,
+        gridShape, threadsPerBlock, 0, d.stream(),
+        output_dim, bag_dim, sortedIndices.data(), sortedIndicesCounter.data(),
+        params.data(), weights.data(), grads.data(), params_grads.data()));
   }
 };
 
 // Explicitly instantiate functors for the types of OpKernels registered.
-template struct EmbeddingBagBackwardFunctor<GPUDevice, int32>;
-template struct EmbeddingBagBackwardFunctor<GPUDevice, int64>;
+template struct EmbeddingBagBackwardFunctor<GPUDevice, double, int32>;
+template struct EmbeddingBagBackwardFunctor<GPUDevice, float, int32>;
+template struct EmbeddingBagBackwardFunctor<GPUDevice, Eigen::half, int32>;
+template struct EmbeddingBagBackwardFunctor<GPUDevice, double, int64>;
+template struct EmbeddingBagBackwardFunctor<GPUDevice, float, int64>;
+template struct EmbeddingBagBackwardFunctor<GPUDevice, Eigen::half, int64>;
 }  // namespace functor
 }  // namespace addons
 }  // namespace tensorflow

@@ -90,7 +90,7 @@ struct EmbeddingBagBackwardFunctor<CPUDevice, T, Tindices> {
                   typename TTypes<T, 2>::ConstTensor grads,
                   typename TTypes<T, 2>::Tensor params_grads,
                   typename TTypes<T, 2>::Tensor weights_grads,
-                  Combiner combiner) {
+                  Combiner combiner, OpKernelContext* context) {
     const Eigen::Index sequence_length = indices.dimension(1);
     const Eigen::Index output_dim = params.dimension(1);
 
@@ -242,7 +242,8 @@ class EmbeddingBagBackwardOp : public OpKernel {
     functor::EmbeddingBagBackwardFunctor<Device, T, Tindices>()(
         context->eigen_device<Device>(), indices.tensor<Tindices, 2>(),
         params.tensor<T, 2>(), weights.tensor<T, 2>(), grads.tensor<T, 2>(),
-        params_grads->tensor<T, 2>(), weights_grads->tensor<T, 2>(), combiner_);
+        params_grads->tensor<T, 2>(), weights_grads->tensor<T, 2>(), combiner_,
+        context);  // Pass the context so the GPU op can allocate the temporary arrays it needs
   }
 
  private:
@@ -309,7 +310,17 @@ DECLARE_GPU_SPECS(double);
                               .Device(DEVICE_GPU)                 \
                               .TypeConstraint<T>("T")             \
                               .TypeConstraint<int64>("Tindices"), \
-                          EmbeddingBagOp<GPUDevice, T, int64>);
+                          EmbeddingBagOp<GPUDevice, T, int64>);   \
+  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBagGrad")               \
+                              .Device(DEVICE_GPU)                       \
+                              .TypeConstraint<T>("T")                   \
+                              .TypeConstraint<int32>("Tindices"),       \
+                          EmbeddingBagBackwardOp<CPUDevice, T, int32>); \
+  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBagGrad")               \
+                              .Device(DEVICE_GPU)                       \
+                              .TypeConstraint<T>("T")                   \
+                              .TypeConstraint<int64>("Tindices"),       \
+                          EmbeddingBagBackwardOp<CPUDevice, T, int64>);
 REGISTER_GPU_KERNEL(Eigen::half);
 REGISTER_GPU_KERNEL(float);
 REGISTER_GPU_KERNEL(double);
