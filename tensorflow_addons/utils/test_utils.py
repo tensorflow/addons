@@ -95,14 +95,14 @@ def only_run_functions_eagerly(request):
 
 @pytest.fixture(scope="function", params=["custom_ops", "py_ops"])
 def run_custom_and_py_ops(request):
-    previous_py_ops_value = options.TF_ADDONS_PY_OPS
+    previous_py_ops_value = options.py_enabled()
     if request.param == "custom_ops":
-        options.TF_ADDONS_PY_OPS = False
+        options.enable_custom_kernel()
     elif request.param == "py_ops":
-        options.TF_ADDONS_PY_OPS = True
+        options.disable_custom_kernel()
 
     def _restore_py_ops_value():
-        options.TF_ADDONS_PY_OPS = previous_py_ops_value
+        options._TF_ADDONS_PY_OPS = previous_py_ops_value
 
     request.addfinalizer(_restore_py_ops_value)
 
