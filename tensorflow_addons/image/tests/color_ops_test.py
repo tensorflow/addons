@@ -52,10 +52,10 @@ def test_equalize_with_PIL():
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_equalize_with_skimage():
+@pytest.mark.parametrize("bins", [256, 65536])
+def test_equalize_with_skimage(bins):
     np.random.seed(0)
     image = np.random.randint(low=0, high=256, size=(5, 5, 3, 3), dtype=np.uint8)
-    bins = np.random.randint(low=256, dtype=np.int32)
     equalized = tf.cast(color_ops.equalize(tf.constant(image), bins), np.float16)
     equalized = tf.math.divide(equalized, 255)
     skiequalized = equalize_hist(image, bins)
