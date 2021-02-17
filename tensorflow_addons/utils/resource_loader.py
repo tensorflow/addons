@@ -80,7 +80,7 @@ class LazySO:
             "on Github. This is a known limitation."
             "\n\n"
             "It might help you to fallback to pure Python "
-            "ops with TF_ADDONS_PY_OPS . To do that, see "
+            "ops with _TF_ADDONS_PY_OPS . To do that, see "
             "https://github.com/tensorflow/addons#gpucpu-custom-ops "
             "\n\n"
             "You can also change the TensorFlow version installed on your system. "
