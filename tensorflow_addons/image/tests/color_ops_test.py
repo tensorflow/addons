@@ -64,7 +64,12 @@ def test_equalize_with_skimage(bins):
             tf.math.abs(tf.reshape(tf.math.subtract(equalized, skiequalized), [-1]))
         )
         <= 0.015
-    ), "Greater than 1.5% difference in arrays"
+    ), "Greater than 0.015 mean absolute difference in arrays"
+    # Test asserts a tolerance of at least 0.015 mean difference between the two
+    # arrays due to the difference in implementation between PIL and skimage.
+    # PIL's and skimage's equalized arrays can have a mean difference ranging
+    # from 0.006-0.036 according showcase done in
+    # https://github.com/tensorflow/addons/pull/2381
 
 
 @pytest.mark.parametrize("dtype", _DTYPES)
