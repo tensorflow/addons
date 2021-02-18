@@ -40,6 +40,17 @@ def _reduce_average(
     return average
 
 
+def _calculate_adjr2(
+    raw_scores: tf.Tensor, num_examples: tf.int32, num_preds: tf.Tensor
+) -> tf.Tensor:
+    """Calculate the Adjusted R2 value."""
+    n = tf.cast(num_examples, dtype=tf.float32)
+
+    num = tf.multiply(tf.subtract(1.0, raw_scores), tf.subtract(n, 1.0))
+    den = tf.subtract(tf.subtract(n, num_preds), 1.0)
+    return tf.subtract(1.0, tf.divide(num, den))
+
+
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class RSquare(Metric):
     """Compute R^2 score.
@@ -138,12 +149,12 @@ class RSquare(Metric):
         mean = self.sum / self.count
         total = self.squared_sum - self.sum * mean
         raw_scores = 1 - (self.res / total)
-        n = tf.cast(self.num_examples, dtype=tf.float32)
 
-        num = tf.multiply(tf.subtract(1.0, raw_scores), tf.subtract(n, 1.0))
-        den = tf.subtract(tf.subtract(n, self.num_preds), 1.0)
-
-        scores = tf.subtract(1.0, tf.divide(num, den)) if self.penalize else raw_scores
+        scores = (
+            _calculate_adjr2(raw_scores, self.num_examples, self.num_preds)
+            if self.penalize
+            else raw_scores
+        )
 
         if self.multioutput == "raw_values":
             return scores
