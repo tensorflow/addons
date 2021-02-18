@@ -95,7 +95,7 @@ def only_run_functions_eagerly(request):
 
 @pytest.fixture(scope="function", params=["custom_ops", "py_ops"])
 def run_custom_and_py_ops(request):
-    previous_py_ops_value = options.custom_kernel_disabled()
+    previous_py_ops_value = options.is_custom_disabled()
     if request.param == "custom_ops":
         options.enable_custom_kernel()
     elif request.param == "py_ops":
