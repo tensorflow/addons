@@ -24,7 +24,7 @@ from typeguard import typechecked
 from tensorflow_addons.utils.types import AcceptableDTypes
 
 
-VALID_MULTIOUTPUT = {"raw_values", "uniform_average", "variance_weighted"}
+_VALID_MULTIOUTPUT = {"raw_values", "uniform_average", "variance_weighted"}
 
 
 def _reduce_average(
@@ -103,10 +103,10 @@ class RSquare(Metric):
         super().__init__(name=name, dtype=dtype, **kwargs)
         self.y_shape = y_shape
 
-        if multioutput not in VALID_MULTIOUTPUT:
+        if multioutput not in _VALID_MULTIOUTPUT:
             raise ValueError(
                 "The multioutput argument must be one of {}, but was: {}".format(
-                    VALID_MULTIOUTPUT, multioutput
+                    _VALID_MULTIOUTPUT, multioutput
                 )
             )
         self.multioutput = multioutput
@@ -149,6 +149,7 @@ class RSquare(Metric):
         mean = self.sum / self.count
         total = self.squared_sum - self.sum * mean
         raw_scores = 1 - (self.res / total)
+        raw_scores = tf.where(tf.math.is_inf(raw_scores), 0.0, raw_scores)
 
         scores = (
             _calculate_adjr2(raw_scores, self.num_examples, self.num_preds)
@@ -171,3 +172,11 @@ class RSquare(Metric):
     def reset_states(self) -> None:
         # The state of the metric will be reset at the start of each epoch.
         K.batch_set_value([(v, tf.zeros_like(v)) for v in self.variables])
+
+    def get_config(self):
+        config = {
+            "y_shape": self.y_shape,
+            "multioutput": self.multioutput,
+        }
+        base_config = super().get_config()
+        return {**base_config, **config}

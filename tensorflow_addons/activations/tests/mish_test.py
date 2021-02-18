@@ -28,13 +28,3 @@ def test_mish(dtype):
         [-0.2525015, -0.30340144, 0.0, 0.86509836, 1.943959], dtype=dtype
     )
     test_utils.assert_allclose_according_to_type(mish(x), expected_result)
-
-
-@pytest.mark.parametrize("dtype", [np.float32, np.float64])
-def test_theoretical_gradients(dtype):
-    # Only test theoretical gradients for float32 and float64
-    # because of the instability of float16 while computing jacobian
-    x = tf.constant([-2.0, -1.0, 0.0, 1.0, 2.0], dtype=dtype)
-
-    theoretical, numerical = tf.test.compute_gradient(mish, [x])
-    test_utils.assert_allclose_according_to_type(theoretical, numerical, atol=1e-4)
