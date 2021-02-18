@@ -165,7 +165,7 @@ class RSquare(Metric):
             return _reduce_average(scores, weights=total)
         raise RuntimeError(
             "The multioutput attribute must be one of {}, but was: {}".format(
-                VALID_MULTIOUTPUT, self.multioutput
+                _VALID_MULTIOUTPUT, self.multioutput
             )
         )
 
