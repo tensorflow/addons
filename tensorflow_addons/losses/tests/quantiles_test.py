@@ -20,7 +20,6 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.losses import quantiles
-from distutils.version import LooseVersion
 
 
 def test_config():
@@ -85,12 +84,8 @@ def test_invalid_sample_weight():
     y_true = tf.constant([1, 9, 2, -5, -2, 6], shape=(2, 3, 1))
     y_pred = tf.constant([4, 8, 12, 8, 1, 3], shape=(2, 3, 1))
     sample_weight = tf.constant([3, 6, 5, 0], shape=(2, 2))
-    if LooseVersion(tf.__version__) >= "2.2":
-        with pytest.raises(tf.errors.InvalidArgumentError, match="Incompatible shapes"):
-            pin_obj(y_true, y_pred, sample_weight=sample_weight)
-    else:
-        with pytest.raises(ValueError, match="weights can not be broadcast to values"):
-            pin_obj(y_true, y_pred, sample_weight=sample_weight)
+    with pytest.raises(tf.errors.InvalidArgumentError, match="Incompatible shapes"):
+        pin_obj(y_true, y_pred, sample_weight=sample_weight)
 
 
 def test_unweighted_quantile_0pc():

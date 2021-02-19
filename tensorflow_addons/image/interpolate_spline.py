@@ -23,14 +23,15 @@ EPSILON = 0.0000000001
 def _cross_squared_distance_matrix(x: TensorLike, y: TensorLike) -> tf.Tensor:
     """Pairwise squared distance between two (batch) matrices' rows (2nd dim).
 
-    Computes the pairwise distances between rows of x and rows of y
+    Computes the pairwise distances between rows of x and rows of y.
+
     Args:
-      x: [batch_size, n, d] float `Tensor`
-      y: [batch_size, m, d] float `Tensor`
+      x: `[batch_size, n, d]` float `Tensor`.
+      y: `[batch_size, m, d]` float `Tensor`.
 
     Returns:
-      squared_dists: [batch_size, n, m] float `Tensor`, where
-      squared_dists[b,i,j] = ||x[b,i,:] - y[b,j,:]||^2
+      squared_dists: `[batch_size, n, m]` float `Tensor`, where
+      `squared_dists[b,i,j] = ||x[b,i,:] - y[b,j,:]||^2`.
     """
     x_norm_squared = tf.reduce_sum(tf.square(x), 2)
     y_norm_squared = tf.reduce_sum(tf.square(y), 2)
@@ -52,14 +53,14 @@ def _pairwise_squared_distance_matrix(x: TensorLike) -> tf.Tensor:
     """Pairwise squared distance among a (batch) matrix's rows (2nd dim).
 
     This saves a bit of computation vs. using
-    _cross_squared_distance_matrix(x,x)
+    `_cross_squared_distance_matrix(x, x)`
 
     Args:
-      x: `[batch_size, n, d]` float `Tensor`
+      x: `[batch_size, n, d]` float `Tensor`.
 
     Returns:
       squared_dists: `[batch_size, n, n]` float `Tensor`, where
-      squared_dists[b,i,j] = ||x[b,i,:] - x[b,j,:]||^2
+      `squared_dists[b,i,j] = ||x[b,i,:] - x[b,j,:]||^2`.
     """
 
     x_x_transpose = tf.matmul(x, x, adjoint_b=True)
@@ -83,17 +84,17 @@ def _solve_interpolation(
     order: int,
     regularization_weight: FloatTensorLike,
 ) -> TensorLike:
-    """Solve for interpolation coefficients.
+    r"""Solve for interpolation coefficients.
 
     Computes the coefficients of the polyharmonic interpolant for the
-    'training' data defined by (train_points, train_values) using the kernel
-    phi.
+    'training' data defined by `(train_points, train_values)` using the kernel
+    $\phi$.
 
     Args:
-      train_points: `[b, n, d]` interpolation centers
-      train_values: `[b, n, k]` function values
-      order: order of the interpolation
-      regularization_weight: weight to place on smoothness regularization term
+      train_points: `[b, n, d]` interpolation centers.
+      train_values: `[b, n, k]` function values.
+      order: order of the interpolation.
+      regularization_weight: weight to place on smoothness regularization term.
 
     Returns:
       w: `[b, n, k]` weights on each interpolation center
@@ -173,15 +174,15 @@ def _apply_interpolation(
     interpolated function values at query_points.
 
     Args:
-      query_points: `[b, m, d]` x values to evaluate the interpolation at
+      query_points: `[b, m, d]` x values to evaluate the interpolation at.
       train_points: `[b, n, d]` x values that act as the interpolation centers
-                      ( the c variables in the wikipedia article)
-      w: `[b, n, k]` weights on each interpolation center
-      v: `[b, d, k]` weights on each input dimension
-      order: order of the interpolation
+          (the c variables in the wikipedia article).
+      w: `[b, n, k]` weights on each interpolation center.
+      v: `[b, d, k]` weights on each input dimension.
+      order: order of the interpolation.
 
     Returns:
-      Polyharmonic interpolation evaluated at points defined in query_points.
+      Polyharmonic interpolation evaluated at points defined in `query_points`.
     """
 
     # First, compute the contribution from the rbf term.
@@ -207,11 +208,11 @@ def _phi(r: FloatTensorLike, order: int) -> FloatTensorLike:
     See https://en.wikipedia.org/wiki/Polyharmonic_spline for the definition.
 
     Args:
-      r: input op
-      order: interpolation order
+      r: input op.
+      order: interpolation order.
 
     Returns:
-      phi_k evaluated coordinate-wise on r, for k = r
+      `phi_k` evaluated coordinate-wise on `r`, for `k = r`.
     """
 
     # using EPSILON prevents log(0), sqrt0), etc.
@@ -295,7 +296,7 @@ def interpolate_spline(
       train_values to perform polyharmonic interpolation. The query values are
       the values of the interpolant evaluated at the locations specified in
       query_points.
-  """
+    """
     with tf.name_scope(name or "interpolate_spline"):
         train_points = tf.convert_to_tensor(train_points)
         train_values = tf.convert_to_tensor(train_values)

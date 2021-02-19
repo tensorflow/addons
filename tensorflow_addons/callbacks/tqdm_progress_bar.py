@@ -40,10 +40,10 @@ class TQDMProgressBar(Callback):
             training. Defaults to 10.
         metrics_format: Custom format for how metrics are formatted.
             See https://github.com/tqdm/tqdm#parameters for more detail.
-        leave_epoch_progress: True to leave epoch progress bars.
-        leave_overall_progress: True to leave overall progress bar.
-        show_epoch_progress: False to hide epoch progress bars.
-        show_overall_progress: False to hide overall progress bar.
+        leave_epoch_progress: `True` to leave epoch progress bars.
+        leave_overall_progress: `True` to leave overall progress bar.
+        show_epoch_progress: `False` to hide epoch progress bars.
+        show_overall_progress: `False` to hide overall progress bar.
     """
 
     @typechecked
@@ -223,7 +223,7 @@ class TQDMProgressBar(Callback):
     def format_metrics(self, logs={}, factor=1):
         """Format metrics in logs into a string.
 
-        Arguments:
+        Args:
             logs: dictionary of metrics and their values. Defaults to
                 empty dictionary.
             factor (int): The factor we want to divide the metrics in logs

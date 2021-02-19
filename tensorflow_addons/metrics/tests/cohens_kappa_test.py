@@ -13,7 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 """Tests for Cohen's Kappa Metric."""
-
 import pytest
 import numpy as np
 import tensorflow as tf
@@ -190,7 +189,7 @@ def test_keras_multiclass_reg_model():
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_keras_binary_clasasification_model():
+def test_keras_binary_classification_model():
     kp = CohenKappa(num_classes=2)
     inputs = tf.keras.layers.Input(shape=(10,))
     outputs = tf.keras.layers.Dense(1, activation="sigmoid")(inputs)
@@ -237,3 +236,13 @@ def test_cohen_kappa_serialization():
 
     ck = CohenKappa(num_classes=5, sparse_labels=True, weightage="quadratic")
     check_metric_serialization(ck, actuals, preds, weights)
+
+
+def test_cohen_kappa_single_batch():
+    # Test for issue #1962
+    obj = CohenKappa(5, regression=True, sparse_labels=True)
+
+    # Test single batch update
+    obj.update_state(tf.ones(1), tf.zeros(1))
+
+    np.testing.assert_allclose(0, obj.result().numpy())

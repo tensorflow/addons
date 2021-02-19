@@ -13,12 +13,10 @@
 # limitations under the License.
 # ==============================================================================
 """Rectified Adam (RAdam) optimizer."""
-import warnings
-
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
-from typing import Union, Callable
+from typing import Union, Callable, Dict
 from typeguard import typechecked
 
 
@@ -73,40 +71,39 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
     @typechecked
     def __init__(
         self,
-        learning_rate: Union[FloatTensorLike, Callable] = 0.001,
+        learning_rate: Union[FloatTensorLike, Callable, Dict] = 0.001,
         beta_1: FloatTensorLike = 0.9,
         beta_2: FloatTensorLike = 0.999,
         epsilon: FloatTensorLike = 1e-7,
-        weight_decay: FloatTensorLike = 0.0,
+        weight_decay: Union[FloatTensorLike, Callable, Dict] = 0.0,
         amsgrad: bool = False,
         sma_threshold: FloatTensorLike = 5.0,
-        # float for total_steps is here to be able to load models created before
-        # https://github.com/tensorflow/addons/pull/1375 was merged. It should be
-        # removed for Addons 0.11.
-        total_steps: Union[int, float] = 0,
+        total_steps: int = 0,
         warmup_proportion: FloatTensorLike = 0.1,
         min_lr: FloatTensorLike = 0.0,
         name: str = "RectifiedAdam",
-        **kwargs
+        **kwargs,
     ):
         r"""Construct a new RAdam optimizer.
 
         Args:
-            learning_rate: A `Tensor` or a floating point value. or a schedule
-                that is a `tf.keras.optimizers.schedules.LearningRateSchedule`
+            learning_rate: A `Tensor` or a floating point value, or a schedule
+                that is a `tf.keras.optimizers.schedules.LearningRateSchedule`.
                 The learning rate.
             beta_1: A float value or a constant float tensor.
                 The exponential decay rate for the 1st moment estimates.
             beta_2: A float value or a constant float tensor.
                 The exponential decay rate for the 2nd moment estimates.
             epsilon: A small constant for numerical stability.
-            weight_decay: A floating point value. Weight decay for each param.
+            weight_decay: A `Tensor` or a floating point value, or a schedule
+                that is a `tf.keras.optimizers.schedules.LearningRateSchedule`.
+                Weight decay for each parameter.
             amsgrad: boolean. Whether to apply AMSGrad variant of this
                 algorithm from the paper "On the Convergence of Adam and
                 beyond".
             sma_threshold. A float value.
                 The threshold for simple mean average.
-            total_steps: An integer. Total number of training steps.
+            total_steps: An integer value. Total number of training steps.
                 Enable warmup by setting a positive value.
             warmup_proportion: A floating point value.
                 The proportion of increasing steps.
@@ -121,27 +118,25 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
                 compatibility, recommended to use `learning_rate` instead.
         """
         super().__init__(name, **kwargs)
+
+        if isinstance(learning_rate, Dict):
+            learning_rate = tf.keras.optimizers.schedules.deserialize(learning_rate)
+
+        if isinstance(weight_decay, Dict):
+            weight_decay = tf.keras.optimizers.schedules.deserialize(weight_decay)
+
         self._set_hyper("learning_rate", kwargs.get("lr", learning_rate))
         self._set_hyper("beta_1", beta_1)
         self._set_hyper("beta_2", beta_2)
         self._set_hyper("decay", self._initial_decay)
         self._set_hyper("weight_decay", weight_decay)
         self._set_hyper("sma_threshold", sma_threshold)
-        if isinstance(total_steps, float):
-            warnings.warn(
-                "The parameter `total_steps` passed to the __init__ of RectifiedAdam "
-                "is a float. This behavior is deprecated and in Addons 0.11, this "
-                "will raise an error. Use an int instead. If you get this message "
-                "when loading a model, save it again and the `total_steps` parameter "
-                "will automatically be converted to a int.",
-                DeprecationWarning,
-            )
-        self._set_hyper("total_steps", int(total_steps))
+        self._set_hyper("total_steps", float(total_steps))
         self._set_hyper("warmup_proportion", warmup_proportion)
         self._set_hyper("min_lr", min_lr)
         self.epsilon = epsilon or tf.keras.backend.epsilon()
         self.amsgrad = amsgrad
-        self._initial_weight_decay = weight_decay
+        self._has_weight_decay = weight_decay != 0.0
         self._initial_total_steps = total_steps
 
     def _create_slots(self, var_list):
@@ -160,9 +155,16 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
             weights = weights[: len(params)]
         super().set_weights(weights)
 
+    def _decayed_wd(self, var_dtype):
+        wd_t = self._get_hyper("weight_decay", var_dtype)
+        if isinstance(wd_t, tf.keras.optimizers.schedules.LearningRateSchedule):
+            wd_t = tf.cast(wd_t(self.iterations), var_dtype)
+        return wd_t
+
     def _resource_apply_dense(self, grad, var):
         var_dtype = var.dtype.base_dtype
         lr_t = self._decayed_lr(var_dtype)
+        wd_t = self._decayed_wd(var_dtype)
         m = self.get_slot(var, "m")
         v = self.get_slot(var, "v")
         beta_1_t = self._get_hyper("beta_1", var_dtype)
@@ -218,8 +220,8 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
             sma_t >= sma_threshold, r_t * m_corr_t / (v_corr_t + epsilon_t), m_corr_t
         )
 
-        if self._initial_weight_decay > 0.0:
-            var_t += self._get_hyper("weight_decay", var_dtype) * var
+        if self._has_weight_decay:
+            var_t += wd_t * var
 
         var_update = var.assign_sub(lr_t * var_t, use_locking=self._use_locking)
 
@@ -231,6 +233,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
     def _resource_apply_sparse(self, grad, var, indices):
         var_dtype = var.dtype.base_dtype
         lr_t = self._decayed_lr(var_dtype)
+        wd_t = self._decayed_wd(var_dtype)
         beta_1_t = self._get_hyper("beta_1", var_dtype)
         beta_2_t = self._get_hyper("beta_2", var_dtype)
         epsilon_t = tf.convert_to_tensor(self.epsilon, var_dtype)
@@ -288,8 +291,8 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
             sma_t >= sma_threshold, r_t * m_corr_t / (v_corr_t + epsilon_t), m_corr_t
         )
 
-        if self._initial_weight_decay > 0.0:
-            var_t += self._get_hyper("weight_decay", var_dtype) * var
+        if self._has_weight_decay:
+            var_t += wd_t * var
 
         with tf.control_dependencies([var_t]):
             var_update = self._resource_scatter_add(
@@ -313,7 +316,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
                 "sma_threshold": self._serialize_hyperparameter("sma_threshold"),
                 "epsilon": self.epsilon,
                 "amsgrad": self.amsgrad,
-                "total_steps": self._serialize_hyperparameter("total_steps"),
+                "total_steps": int(self._serialize_hyperparameter("total_steps")),
                 "warmup_proportion": self._serialize_hyperparameter(
                     "warmup_proportion"
                 ),

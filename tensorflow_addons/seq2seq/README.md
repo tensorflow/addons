@@ -16,7 +16,7 @@ In order to conform with the current API standard, all objects must:
  * To run your `tf.functions` in eager mode and graph mode in the tests, 
    you can use the `@pytest.mark.usefixtures("maybe_run_functions_eagerly")` 
    decorator. This will run the tests twice, once normally, and once
-   with `tf.config.experimental_run_functions_eagerly(True)`.
+   with `tf.config.run_functions_eagerly(True)`.
 
 ## Sample code and Migration guide from TF 1.X
 The code was originally written in tensorflow.contrib.seq2seq, and has been updated to work with
@@ -25,33 +25,44 @@ scope to create variable, etc), and also meet the 2.0 API sytle (more object-ori
 layers). With that, the user side code need to be slightly updated to use the new API. Please see
 examples below:
 
-### Basic Decoder
+### Decoder with attention
+
 ``` python
 # TF 1.x, old style
 
-# Build RNN cell
-encoder_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units)
-
-# Run Dynamic RNN
-#   encoder_outputs: [max_time, batch_size, num_units]
-#   encoder_state: [batch_size, num_units]
+# Encoder
+encoder_cell = tf.nn.rnn_cell.LSTMCell(num_units)
 encoder_outputs, encoder_state = tf.nn.dynamic_rnn(
-    encoder_cell, encoder_emb_inp,
-    sequence_length=source_sequence_length)
+    encoder_cell,
+    encoder_inputs,
+    sequence_length=encoder_lengths,
+    dtype=encoder_inputs.dtype,
+)
 
-# Build RNN cell
-decoder_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units)
+# Decoder RNN cell with attention
+attention_mechanism = tf.contrib.seq2seq.LuongAttention(
+    num_units, encoder_outputs, memory_sequence_length=encoder_lengths
+)
+decoder_cell = tf.nn.rnn_cell.LSTMCell(num_units)
+decoder_cell = tf.contrib.seq2seq.AttentionWrapper(
+    decoder_cell,
+    attention_mechanism,
+    attention_layer_size=num_units,
+    initial_cell_state=encoder_state,
+)
 
 # Helper
-helper = tf.contrib.seq2seq.TrainingHelper(
-    decoder_emb_inp, decoder_lengths)
+helper = tf.contrib.seq2seq.TrainingHelper(decoder_inputs, decoder_lengths)
+
 # Decoder
-projection_layer = tf.keras.layers.Dense(num_outputs)
+projection_layer = tf.layers.Dense(num_outputs)
+decoder_initial_state = decoder_cell.get_initial_state(inputs=decoder_inputs)
 decoder = tf.contrib.seq2seq.BasicDecoder(
-    decoder_cell, helper, encoder_state,
-    output_layer=projection_layer)
+    decoder_cell, helper, decoder_initial_state, output_layer=projection_layer
+)
+
 # Dynamic decoding
-outputs, _ = tf.contrib.seq2seq.dynamic_decode(decoder, ...)
+outputs, _, _ = tf.contrib.seq2seq.dynamic_decode(decoder)
 logits = outputs.rnn_output
 ```
 
@@ -60,26 +71,38 @@ import tensorflow_addons as tfa
 
 # TF 2.0, new style
 
-# Build RNN
-#   encoder_outputs: [max_time, batch_size, num_units]
-#   encoder_state: [batch_size, num_units]
-encoder = tf.keras.layers.LSTM(num_units, return_state=True)
-encoder_outputs, state_h, state_c = encoder(encoder_emb_inp)
-encoder_state = [state_h, state_c]
+# Encoder
+encoder = tf.keras.layers.LSTM(num_units, return_sequences=True, return_state=True)
+encoder_outputs, state_h, state_c = encoder(
+    encoder_inputs, mask=tf.sequence_mask(encoder_lengths), training=True
+)
+encoder_state = (state_h, state_c)
+
+# Decoder RNN cell with attention
+attention_mechanism = tfa.seq2seq.LuongAttention(num_units, encoder_outputs)
+decoder_cell = tf.keras.layers.LSTMCell(num_units)
+decoder_cell = tfa.seq2seq.AttentionWrapper(
+    decoder_cell,
+    attention_mechanism,
+    attention_layer_size=num_units,
+    initial_cell_state=encoder_state,
+)
 
 # Sampler
 sampler = tfa.seq2seq.sampler.TrainingSampler()
 
 # Decoder
-decoder_cell = tf.keras.layers.LSTMCell(num_units)
 projection_layer = tf.keras.layers.Dense(num_outputs)
-decoder = tfa.seq2seq.BasicDecoder(
-    decoder_cell, sampler, output_layer=projection_layer)
+decoder = tfa.seq2seq.BasicDecoder(decoder_cell, sampler, output_layer=projection_layer)
 
+# Dynamic decoding
+decoder_initial_state = decoder_cell.get_initial_state(inputs=decoder_inputs)
 outputs, _, _ = decoder(
-    decoder_emb_inp,
-    initial_state=encoder_state,
-    sequence_length=decoder_lengths)
+    decoder_inputs,
+    initial_state=decoder_initial_state,
+    sequence_length=decoder_lengths,
+    training=True,
+)
 logits = outputs.rnn_output
 ```
 
@@ -93,36 +116,8 @@ Note that the major difference here are:
 1. Helper has been renamed to Sampler since this better describes its behavior/usage. There is a
    one-to-one mapping between existing Helper and new Sampler. Sampler is also a Keras layer, which
    takes input tensors at `call()` instead of `__init__()`.
-
-
-### Attention
-``` python
-# TF 1.x, old style
-attention_mechanism = tf.contrib.seq2seq.LuongAttention(
-    num_units,
-    encoder_state,
-    memory_sequence_length=encoder_sequence_length)
-
-decoder_cell = tf.contrib.seq2seq.AttentionWrapper(
-    decoder_cell, attention_mechanism,
-    attention_layer_size=num_units)
-```
-
-``` python
-import tensorflow_addons as tfa
-# TF 2.0, new style
-attention_mechanism = tfa.seq2seq.LuongAttention(
-    num_units,
-    encoder_state,
-    memory_sequence_length=encoder_sequence_length)
-
-decoder_cell = tfa.seq2seq.AttentionWrapper(
-    decoder_cell, attention_mechanism,
-    attention_layer_size=num_units)
-```
-
-1. The `attention_mechanism` here is also a Keras `layer`, we customized it so that it will take
-   the memory (encoder_state) during `__init__()`, since the memory of the attention shouldn't be
+1. The `attention_mechanism` here is also a Keras layer, we customized it so that it will take
+   the memory (encoder_outputs) during `__init__()`, since the memory of the attention shouldn't be
    changed.
 
 ### Beam Search

@@ -34,9 +34,10 @@ def euclidean_dist_transform(
     """Applies euclidean distance transform(s) to the image(s).
 
     Args:
-      images: A tensor of shape (num_images, num_rows, num_columns, 1) (NHWC),
-        or (num_rows, num_columns, 1) (HWC) or (num_rows, num_columns) (HW).
-      dtype: DType of the output tensor.
+      images: A tensor of shape `(num_images, num_rows, num_columns, 1)`
+        (NHWC), or `(num_rows, num_columns, 1)` (HWC) or
+        `(num_rows, num_columns)` (HW).
+      dtype: `tf.dtypes.DType` of the output tensor.
       name: The name of the op.
 
     Returns:

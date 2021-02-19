@@ -59,9 +59,8 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
         lambda_: Union[FloatTensorLike, Callable] = 0.01,
         epsilon: FloatTensorLike = 1e-7,
         ord: str = "fro",
-        use_locking: bool = False,
         name: str = "ConditionalGradient",
-        **kwargs
+        **kwargs,
     ):
         """Construct a new conditional gradient optimizer.
 
@@ -75,7 +74,6 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
                 gradient to be zero.
             ord: Order of the norm. Supported values are `'fro'`
                 and `'nuclear'`. Default is `'fro'`, which is frobenius norm.
-            use_locking: If `True`, use locks for update operations.
             name: Optional name prefix for the operations created when
                 applying gradients. Defaults to 'ConditionalGradient'.
             **kwargs: keyword arguments. Allowed to be {`clipnorm`,
@@ -96,7 +94,6 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
                 % (supported_norms, ord)
             )
         self.ord = ord
-        self._set_hyper("use_locking", use_locking)
 
     def get_config(self):
         config = {
@@ -104,7 +101,6 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
             "lambda_": self._serialize_hyperparameter("lambda_"),
             "epsilon": self.epsilon,
             "ord": self.ord,
-            "use_locking": self._serialize_hyperparameter("use_locking"),
         }
         base_config = super().get_config()
         return {**base_config, **config}
@@ -182,13 +178,8 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
             )
             s = top_singular_vector
 
-        var_update_tensor = tf.math.multiply(var, lr) - (1 - lr) * lambda_ * s
-        var_update_kwargs = {
-            "resource": var.handle,
-            "value": var_update_tensor,
-        }
-        var_update_op = tf.raw_ops.AssignVariableOp(**var_update_kwargs)
-        return tf.group(var_update_op)
+        var_update = tf.math.multiply(var, lr) - (1 - lr) * lambda_ * s
+        return var.assign(var_update, use_locking=self._use_locking)
 
     def _resource_apply_sparse(self, grad, var, indices, apply_state=None):
         var_device, var_dtype = var.device, var.dtype.base_dtype
@@ -213,10 +204,5 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
             s = top_singular_vector
 
         var_update_value = tf.math.multiply(var_slice, lr) - (1 - lr) * lambda_ * s
-        var_update_kwargs = {
-            "resource": var.handle,
-            "indices": indices,
-            "updates": var_update_value,
-        }
-        var_update_op = tf.raw_ops.ResourceScatterUpdate(**var_update_kwargs)
-        return tf.group(var_update_op)
+        var_update_op = self._resource_scatter_update(var, indices, var_update_value)
+        return var_update_op

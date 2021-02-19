@@ -101,7 +101,7 @@ def test_invalid_rank_hsv():
     x_np = np.random.rand(2, 3) * 255.0
     delta_h = np.random.rand() * 2.0 - 1.0
     with pytest.raises(
-        tf.errors.InvalidArgumentError, match="input must be at least 3-D"
+        (tf.errors.InvalidArgumentError, ValueError), match="input must be at least 3-D"
     ):
         _adjust_hue_in_yiq_tf(x_np, delta_h)
 
@@ -111,7 +111,7 @@ def test_invalid_channels_hsv():
     x_np = np.random.rand(4, 2, 4) * 255.0
     delta_h = np.random.rand() * 2.0 - 1.0
     with pytest.raises(
-        tf.errors.InvalidArgumentError,
+        (tf.errors.InvalidArgumentError, ValueError),
         match="input must have 3 channels but instead has 4",
     ):
         _adjust_hue_in_yiq_tf(x_np, delta_h)
@@ -125,7 +125,7 @@ def test_adjust_hsv_in_yiq_unknown_shape():
         image_np = np.random.rand(*shape) * 255.0
         image_tf = tf.constant(image_np)
         np.testing.assert_allclose(
-            _adjust_hue_in_yiq_np(image_np, 0), fn(image_tf), rtol=2e-4, atol=1e-4,
+            _adjust_hue_in_yiq_np(image_np, 0), fn(image_tf), rtol=2e-4, atol=1e-4
         )
 
 
@@ -190,7 +190,8 @@ def test_invalid_rank_value():
     scale = np.random.rand() * 2.0 - 1.0
     if tf.executing_eagerly():
         with pytest.raises(
-            tf.errors.InvalidArgumentError, match="input must be at least 3-D"
+            (tf.errors.InvalidArgumentError, ValueError),
+            match="input must be at least 3-D",
         ):
             _adjust_value_in_yiq_tf(x_np, scale)
     else:
@@ -205,7 +206,7 @@ def test_invalid_channels_value():
     scale = np.random.rand() * 2.0 - 1.0
     if tf.executing_eagerly():
         with pytest.raises(
-            tf.errors.InvalidArgumentError,
+            (tf.errors.InvalidArgumentError, ValueError),
             match="input must have 3 channels but instead has 4",
         ):
             _adjust_value_in_yiq_tf(x_np, scale)
@@ -270,13 +271,13 @@ def test_invalid_rank():
     scale = np.random.rand() * 2.0 - 1.0
 
     msg = "input must be at least 3-D"
-    with pytest.raises(tf.errors.InvalidArgumentError, match=msg):
+    with pytest.raises((tf.errors.InvalidArgumentError, ValueError), match=msg):
         _adjust_saturation_in_yiq_tf(x_np, scale).numpy()
 
 
 def test_invalid_channels():
     x_np = np.random.rand(4, 2, 4) * 255.0
     scale = np.random.rand() * 2.0 - 1.0
-    msg = "input must have 3 channels but instead has 4 "
-    with pytest.raises(tf.errors.InvalidArgumentError, match=msg):
+    msg = "input must have 3 channels but instead has 4"
+    with pytest.raises((tf.errors.InvalidArgumentError, ValueError), match=msg):
         _adjust_saturation_in_yiq_tf(x_np, scale).numpy()

@@ -15,23 +15,12 @@ limitations under the License.
 
 #define EIGEN_USE_GPU
 
-#include "tensorflow/core/platform/stream_executor.h"
 #include "tensorflow/core/util/gpu_kernel_helper.h"
+#include "tensorflow/core/util/stream_executor_util.h"
 #include "tensorflow_addons/custom_ops/image/cc/kernels/adjust_hsv_in_yiq_op.h"
 
 namespace tensorflow {
 namespace addons {
-
-namespace {
-
-template <typename T>
-inline se::DeviceMemory<T> AsDeviceMemory(const T* cuda_memory, uint64 size) {
-  se::DeviceMemoryBase wrapped(const_cast<T*>(cuda_memory), size * sizeof(T));
-  se::DeviceMemory<T> typed(wrapped);
-  return typed;
-}
-}  // namespace
-
 namespace internal {
 
 __global__ void compute_transformation_matrix_cuda(const float* const delta_h,
@@ -71,12 +60,9 @@ void AdjustHsvInYiqGPU::operator()(OpKernelContext* ctx, int channel_count,
                                transformation_matrix.flat<float>().size()));
   // Call cuBlas C = A * B directly.
   auto no_transpose = se::blas::Transpose::kNoTranspose;
-  auto a_ptr =
-      AsDeviceMemory(input->flat<float>().data(), input->flat<float>().size());
-  auto b_ptr = AsDeviceMemory(transformation_matrix.flat<float>().data(),
-                              transformation_matrix.flat<float>().size());
-  auto c_ptr = AsDeviceMemory(output->flat<float>().data(),
-                              output->flat<float>().size());
+  auto a_ptr = StreamExecutorUtil::AsDeviceMemory<float>(*input);
+  auto b_ptr = StreamExecutorUtil::AsDeviceMemory<float>(transformation_matrix);
+  auto c_ptr = StreamExecutorUtil::AsDeviceMemory<float>(*output);
   auto* stream = ctx->op_device_context()->stream();
   OP_REQUIRES(ctx, stream, errors::Internal("No GPU stream available."));
   // TODO(huangyp): share/use autotune cublas algorithms in Matmul.op.

@@ -18,18 +18,25 @@ import numpy as np
 import pytest
 import tensorflow as tf
 from sklearn.metrics import r2_score as sklearn_r2_score
+
 from tensorflow_addons.metrics import RSquare
-from tensorflow_addons.metrics.r_square import VALID_MULTIOUTPUT
+from tensorflow_addons.metrics.r_square import _VALID_MULTIOUTPUT
 
 
-def test_config():
-    r2_obj = RSquare(name="r_square")
+@pytest.mark.parametrize("multioutput", sorted(_VALID_MULTIOUTPUT))
+@pytest.mark.parametrize("y_shape", [(), (1,)])
+def test_config(multioutput, y_shape):
+    r2_obj = RSquare(multioutput=multioutput, y_shape=y_shape, name="r_square")
     assert r2_obj.name == "r_square"
     assert r2_obj.dtype == tf.float32
+    assert r2_obj.multioutput == multioutput
+    assert r2_obj.y_shape == y_shape
     # Check save and restore config
     r2_obj2 = RSquare.from_config(r2_obj.get_config())
     assert r2_obj2.name == "r_square"
     assert r2_obj2.dtype == tf.float32
+    assert r2_obj2.multioutput == multioutput
+    assert r2_obj2.y_shape == y_shape
 
 
 def initialize_vars(y_shape=(), multioutput: str = "uniform_average"):
@@ -70,6 +77,19 @@ def test_r2_worst_score():
     check_results(r2_obj, -0.073607)
 
 
+def test_r2_score_replace_inf_with_zero():
+    actuals = tf.constant([0, 0], dtype=tf.float32)
+    preds = tf.constant([1e-3, 1e-3], dtype=tf.float32)
+    actuals = tf.cast(actuals, dtype=tf.float32)
+    preds = tf.cast(preds, dtype=tf.float32)
+    # Initialize
+    r2_obj = initialize_vars()
+    # Update
+    update_obj_states(r2_obj, actuals, preds)
+    # Check results
+    check_results(r2_obj, 0)
+
+
 def test_r2_random_score():
     actuals = tf.constant([10, 600, 3, 9.77], dtype=tf.float32)
     preds = tf.constant([1, 340, 40, 5.7], dtype=tf.float32)
@@ -83,37 +103,45 @@ def test_r2_random_score():
     check_results(r2_obj, 0.7376327)
 
 
-def test_r2_sklearn_comparison():
-    """Test that RSquare behaves similarly to the scikit-learn
-    implementation of the same metric, given random input.
-    """
-    for multioutput in VALID_MULTIOUTPUT:
-        for i in range(10):
-            actuals = np.random.rand(64, 3)
-            preds = np.random.rand(64, 3)
-            sample_weight = np.random.rand(64, 1)
-            tensor_actuals = tf.constant(actuals, dtype=tf.float32)
-            tensor_preds = tf.constant(preds, dtype=tf.float32)
-            tensor_sample_weight = tf.constant(sample_weight, dtype=tf.float32)
-            tensor_actuals = tf.cast(tensor_actuals, dtype=tf.float32)
-            tensor_preds = tf.cast(tensor_preds, dtype=tf.float32)
-            tensor_sample_weight = tf.cast(tensor_sample_weight, dtype=tf.float32)
-            # Initialize
-            r2_obj = initialize_vars(y_shape=(3,), multioutput=multioutput)
-            # Update
-            update_obj_states(
-                r2_obj,
-                tensor_actuals,
-                tensor_preds,
-                sample_weight=tensor_sample_weight,
-            )
-            # Check results by comparing to results of scikit-learn r2 implementation
-            sklearn_result = sklearn_r2_score(
-                actuals, preds, sample_weight=sample_weight, multioutput=multioutput
-            )
-            check_results(r2_obj, sklearn_result)
+@pytest.mark.parametrize("multioutput", sorted(_VALID_MULTIOUTPUT))
+def test_r2_sklearn_comparison(multioutput):
+    """Test against sklearn's implementation on random inputs."""
+    for _ in range(10):
+        actuals = np.random.rand(64, 3)
+        preds = np.random.rand(64, 3)
+        sample_weight = np.random.rand(64, 1)
+        tensor_actuals = tf.constant(actuals, dtype=tf.float32)
+        tensor_preds = tf.constant(preds, dtype=tf.float32)
+        tensor_sample_weight = tf.constant(sample_weight, dtype=tf.float32)
+        tensor_actuals = tf.cast(tensor_actuals, dtype=tf.float32)
+        tensor_preds = tf.cast(tensor_preds, dtype=tf.float32)
+        tensor_sample_weight = tf.cast(tensor_sample_weight, dtype=tf.float32)
+        # Initialize
+        r2_obj = initialize_vars(y_shape=(3,), multioutput=multioutput)
+        # Update
+        update_obj_states(
+            r2_obj,
+            tensor_actuals,
+            tensor_preds,
+            sample_weight=tensor_sample_weight,
+        )
+        # Check results by comparing to results of scikit-learn r2 implementation
+        sklearn_result = sklearn_r2_score(
+            actuals, preds, sample_weight=sample_weight, multioutput=multioutput
+        )
+        check_results(r2_obj, sklearn_result)
 
 
 def test_unrecognized_multioutput():
     with pytest.raises(ValueError):
         initialize_vars(multioutput="meadian")
+
+
+def test_keras_fit():
+    model = tf.keras.Sequential([tf.keras.layers.Dense(1)])
+    model.compile(loss="mse", metrics=[RSquare(y_shape=(1,))])
+    data = tf.data.Dataset.from_tensor_slices(
+        (tf.random.normal(shape=(100, 1)), tf.random.normal(shape=(100, 1)))
+    )
+    data = data.batch(10)
+    model.fit(x=data, validation_data=data)

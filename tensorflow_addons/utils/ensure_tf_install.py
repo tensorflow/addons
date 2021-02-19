@@ -23,8 +23,7 @@ import warnings
 
 import tensorflow as tf
 
-MIN_TF_VERSION = "2.2.0"
-MAX_TF_VERSION = "2.3.0"
+from tensorflow_addons.version import INCLUSIVE_MIN_TF_VERSION, EXCLUSIVE_MAX_TF_VERSION
 
 
 def _check_tf_version():
@@ -45,8 +44,8 @@ def _check_tf_version():
         )
         return
 
-    min_version = LooseVersion(MIN_TF_VERSION)
-    max_version = LooseVersion(MAX_TF_VERSION)
+    min_version = LooseVersion(INCLUSIVE_MIN_TF_VERSION)
+    max_version = LooseVersion(EXCLUSIVE_MAX_TF_VERSION)
 
     if min_version <= LooseVersion(tf.__version__) < max_version:
         return
@@ -63,7 +62,7 @@ def _check_tf_version():
         "either change the TensorFlow version or the TensorFlow Addons's version. \n"
         "You can find the compatibility matrix in TensorFlow Addon's readme:\n"
         "https://github.com/tensorflow/addons".format(
-            MIN_TF_VERSION, MAX_TF_VERSION, tf.__version__
+            INCLUSIVE_MIN_TF_VERSION, EXCLUSIVE_MAX_TF_VERSION, tf.__version__
         ),
         UserWarning,
     )

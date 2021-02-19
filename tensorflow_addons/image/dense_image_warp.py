@@ -14,7 +14,6 @@
 # ==============================================================================
 """Image warping using per-pixel flow vectors."""
 
-import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.utils import types
@@ -64,28 +63,6 @@ def interpolate_bilinear(
                 raise ValueError("Grid height must be at least 2.")
             if grid_static_shape[2] is not None and grid_static_shape[2] < 2:
                 raise ValueError("Grid width must be at least 2.")
-        else:
-            with tf.control_dependencies(
-                [
-                    tf.debugging.assert_greater_equal(
-                        grid_shape[1], 2, message="Grid height must be at least 2."
-                    ),
-                    tf.debugging.assert_greater_equal(
-                        grid_shape[2], 2, message="Grid width must be at least 2."
-                    ),
-                    tf.debugging.assert_less_equal(
-                        tf.cast(
-                            grid_shape[0] * grid_shape[1] * grid_shape[2],
-                            dtype=tf.dtypes.float32,
-                        ),
-                        np.iinfo(np.int32).max / 8.0,
-                        message="The image size or batch size is sufficiently "
-                        "large that the linearized addresses used by "
-                        "tf.gather may exceed the int32 limit.",
-                    ),
-                ]
-            ):
-                pass
 
         # query_points shape checks
         query_static_shape = query_points.shape
@@ -96,17 +73,6 @@ def interpolate_bilinear(
             query_hw = query_static_shape[2]
             if query_hw is not None and query_hw != 2:
                 raise ValueError("Query points last dimension must be 2.")
-        else:
-            with tf.control_dependencies(
-                [
-                    tf.debugging.assert_equal(
-                        query_shape[2],
-                        2,
-                        message="Query points last dimension must be 2.",
-                    )
-                ]
-            ):
-                pass
 
         batch_size, height, width, channels = (
             grid_shape[0],
@@ -186,6 +152,12 @@ def interpolate_bilinear(
         return interp
 
 
+def _get_dim(x, idx):
+    if x.shape.ndims is None:
+        return tf.shape(x)[idx]
+    return x.shape[idx] or tf.shape(x)[idx]
+
+
 @tf.function
 def dense_image_warp(
     image: types.TensorLike, flow: types.TensorLike, name: Optional[str] = None
@@ -195,39 +167,45 @@ def dense_image_warp(
     Apply a non-linear warp to the image, where the warp is specified by a
     dense flow field of offset vectors that define the correspondences of
     pixel values in the output image back to locations in the source image.
-    Specifically, the pixel value at output[b, j, i, c] is
-    images[b, j - flow[b, j, i, 0], i - flow[b, j, i, 1], c].
+    Specifically, the pixel value at `output[b, j, i, c]` is
+    `images[b, j - flow[b, j, i, 0], i - flow[b, j, i, 1], c]`.
 
     The locations specified by this formula do not necessarily map to an int
     index. Therefore, the pixel value is obtained by bilinear
     interpolation of the 4 nearest pixels around
-    (b, j - flow[b, j, i, 0], i - flow[b, j, i, 1]). For locations outside
+    `(b, j - flow[b, j, i, 0], i - flow[b, j, i, 1])`. For locations outside
     of the image, we use the nearest pixel values at the image boundary.
+
+    NOTE: The definition of the flow field above is different from that
+    of optical flow. This function expects the negative forward flow from
+    output image to source image. Given two images `I_1` and `I_2` and the
+    optical flow `F_12` from `I_1` to `I_2`, the image `I_1` can be
+    reconstructed by `I_1_rec = dense_image_warp(I_2, -F_12)`.
 
     Args:
       image: 4-D float `Tensor` with shape `[batch, height, width, channels]`.
       flow: A 4-D float `Tensor` with shape `[batch, height, width, 2]`.
       name: A name for the operation (optional).
 
-      Note that image and flow can be of type tf.half, tf.float32, or
-      tf.float64, and do not necessarily have to be the same type.
+      Note that image and flow can be of type `tf.half`, `tf.float32`, or
+      `tf.float64`, and do not necessarily have to be the same type.
 
     Returns:
       A 4-D float `Tensor` with shape`[batch, height, width, channels]`
         and same type as input image.
 
     Raises:
-      ValueError: if height < 2 or width < 2 or the inputs have the wrong
+      ValueError: if `height < 2` or `width < 2` or the inputs have the wrong
         number of dimensions.
     """
     with tf.name_scope(name or "dense_image_warp"):
         image = tf.convert_to_tensor(image)
         flow = tf.convert_to_tensor(flow)
         batch_size, height, width, channels = (
-            tf.shape(image)[0],
-            tf.shape(image)[1],
-            tf.shape(image)[2],
-            tf.shape(image)[3],
+            _get_dim(image, 0),
+            _get_dim(image, 1),
+            _get_dim(image, 2),
+            _get_dim(image, 3),
         )
 
         # The flow is defined on the image grid. Turn the flow into a list of query
@@ -244,3 +222,21 @@ def dense_image_warp(
         interpolated = interpolate_bilinear(image, query_points_flattened)
         interpolated = tf.reshape(interpolated, [batch_size, height, width, channels])
         return interpolated
+
+
+@tf.function(experimental_implements="addons:DenseImageWarp")
+def dense_image_warp_annotated(
+    image: types.TensorLike, flow: types.TensorLike, name: Optional[str] = None
+) -> tf.Tensor:
+    """Similar to dense_image_warp but annotated with experimental_implements.
+
+    IMPORTANT: This is a temporary function and will be removed after TensorFlow's
+    next release.
+
+    This annotation make the serialized function detectable by the TFLite MLIR
+    converter and allow the converter to convert it to corresponding TFLite op.
+
+    However, with the annotation, this function cannot be used with backprop
+    under `tf.GradientTape` objects.
+    """
+    return dense_image_warp(image, flow, name)

@@ -28,7 +28,7 @@ from typing import Optional
 class CohenKappa(Metric):
     """Computes Kappa score between two raters.
 
-    The score lies in the range [-1, 1]. A score of -1 represents
+    The score lies in the range `[-1, 1]`. A score of -1 represents
     complete disagreement between two raters whereas a score of 1
     represents complete agreement between the two raters.
     A score of 0 means agreement by chance.
@@ -36,30 +36,61 @@ class CohenKappa(Metric):
     Note: As of now, this implementation considers all labels
     while calculating the Cohen's Kappa score.
 
+    Args:
+        num_classes: Number of unique classes in your dataset.
+        weightage: (optional) Weighting to be considered for calculating
+            kappa statistics. A valid value is one of
+            [None, 'linear', 'quadratic']. Defaults to `None`
+        sparse_labels: (bool) Valid only for multi-class scenario.
+            If True, ground truth labels are expected to be integers
+            and not one-hot encoded.
+        regression: (bool) If set, that means the problem is being treated
+            as a regression problem where you are regressing the predictions.
+            **Note:** If you are regressing for the values, the the output layer
+            should contain a single unit.
+        name: (optional) String name of the metric instance
+        dtype: (optional) Data type of the metric result. Defaults to `None`.
+
+    Raises:
+        ValueError: If the value passed for `weightage` is invalid
+        i.e. not any one of [None, 'linear', 'quadratic'].
+
     Usage:
 
-    ```python
-    actuals = np.array([4, 4, 3, 4, 2, 4, 1, 1], dtype=np.int32)
-    preds = np.array([4, 4, 3, 4, 4, 2, 1, 1], dtype=np.int32)
-    weights = np.array([1, 1, 2, 5, 10, 2, 3, 3], dtype=np.int32)
+    >>> y_true = np.array([4, 4, 3, 4, 2, 4, 1, 1], dtype=np.int32)
+    >>> y_pred = np.array([4, 4, 3, 4, 4, 2, 1, 1], dtype=np.int32)
+    >>> weights = np.array([1, 1, 2, 5, 10, 2, 3, 3], dtype=np.int32)
+    >>> metric = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
+    >>> metric.update_state(y_true , y_pred)
+    <tf.Tensor: shape=(5, 5), dtype=float32, numpy=
+     array([[0., 0., 0., 0., 0.],
+            [0., 2., 0., 0., 0.],
+            [0., 0., 0., 0., 1.],
+            [0., 0., 0., 1., 0.],
+            [0., 0., 1., 0., 3.]], dtype=float32)>
+    >>> result = metric.result()
+    >>> result.numpy()
+    0.61904764
+    >>> # To use this with weights, sample_weight argument can be used.
+    >>> metric = tfa.metrics.CohenKappa(num_classes=5, sparse_labels=True)
+    >>> metric.update_state(y_true , y_pred , sample_weight=weights)
+    <tf.Tensor: shape=(5, 5), dtype=float32, numpy=
+     array([[ 0.,  0.,  0.,  0.,  0.],
+            [ 0.,  6.,  0.,  0.,  0.],
+            [ 0.,  0.,  0.,  0., 10.],
+            [ 0.,  0.,  0.,  2.,  0.],
+            [ 0.,  0.,  2.,  0.,  7.]], dtype=float32)>
+    >>> result = metric.result()
+    >>> result.numpy()
+     0.37209308
 
-    m = tfa.metrics.CohenKappa(num_classes=5)
-    m.update_state(actuals, preds)
-    print('Final result: ', m.result().numpy()) # Result: 0.61904764
+    Usage with `tf.keras` API:
 
-    # To use this with weights, sample_weight argument can be used.
-    m = tfa.metrics.CohenKappa(num_classes=5)
-    m.update_state(actuals, preds, sample_weight=weights)
-    print('Final result: ', m.result().numpy()) # Result: 0.37209308
-    ```
-
-    Usage with tf.keras API:
-
-    ```python
-    model = tf.keras.models.Model(inputs, outputs)
-    model.add_metric(tfa.metrics.CohenKappa(num_classes=5)(outputs))
-    model.compile('sgd', loss='mse')
-    ```
+    >>> inputs = tf.keras.Input(shape=(10,))
+    >>> x = tf.keras.layers.Dense(10)(inputs)
+    >>> outputs = tf.keras.layers.Dense(1)(x)
+    >>> model = tf.keras.models.Model(inputs=inputs, outputs=outputs)
+    >>> model.compile('sgd', loss='mse', metrics=[tfa.metrics.CohenKappa(num_classes=3, sparse_labels=True)])
     """
 
     @typechecked
@@ -72,27 +103,7 @@ class CohenKappa(Metric):
         regression: bool = False,
         dtype: AcceptableDTypes = None,
     ):
-        """Creates a `CohenKappa` instance.
-
-        Args:
-          num_classes: Number of unique classes in your dataset.
-          weightage: (optional) Weighting to be considered for calculating
-            kappa statistics. A valid value is one of
-            [None, 'linear', 'quadratic']. Defaults to `None`
-          sparse_lables: (bool) Valid only for multi-class scenario.
-            If True, ground truth labels are expected tp be integers
-            and not one-hot encoded
-          regression: (bool) If set, that means the problem is being treated
-            as a regression problem where you are regressing the predictions.
-            **Note:** If you are regressing for the values, the the output layer
-            should contain a single unit.
-          name: (optional) String name of the metric instance
-          dtype: (optional) Data type of the metric result. Defaults to `None`
-
-        Raises:
-          ValueError: If the value passed for `weightage` is invalid
-            i.e. not any one of [None, 'linear', 'quadratic']
-        """
+        """Creates a `CohenKappa` instance."""
         super().__init__(name=name, dtype=dtype)
 
         if weightage not in (None, "linear", "quadratic"):
@@ -144,11 +155,10 @@ class CohenKappa(Metric):
         y_pred = tf.cast(y_pred > 0.5, dtype=tf.int64)
         return self._update_confusion_matrix(y_true, y_pred, sample_weight)
 
+    @tf.function
     def _update_multi_class_model(self, y_true, y_pred, sample_weight=None):
-        if not self.sparse_labels:
-            y_true = tf.cast(tf.argmax(y_true, axis=-1), dtype=tf.int64)
-        else:
-            y_true = tf.cast(y_true, dtype=tf.int64)
+        v = tf.argmax(y_true, axis=1) if not self.sparse_labels else y_true
+        y_true = tf.cast(v, dtype=tf.int64)
 
         y_pred = self._cast_ypred(y_pred)
 
@@ -166,9 +176,19 @@ class CohenKappa(Metric):
             y_pred = tf.cast(y_pred, dtype=tf.int64)
         return y_pred
 
+    @tf.function
+    def _safe_squeeze(self, y):
+        y = tf.squeeze(y)
+
+        # Check for scalar result
+        if tf.rank(y) == 0:
+            y = tf.expand_dims(y, 0)
+
+        return y
+
     def _update_confusion_matrix(self, y_true, y_pred, sample_weight):
-        y_true = tf.squeeze(y_true)
-        y_pred = tf.squeeze(y_pred)
+        y_true = self._safe_squeeze(y_true)
+        y_pred = self._safe_squeeze(y_pred)
 
         new_conf_mtx = tf.math.confusion_matrix(
             labels=y_true,

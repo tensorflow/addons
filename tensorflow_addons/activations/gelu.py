@@ -15,25 +15,49 @@
 
 import tensorflow as tf
 import math
+import warnings
 
-from tensorflow_addons.utils import types
-from tensorflow_addons.utils.resource_loader import LazySO
-from tensorflow_addons import options
-
-_activation_so = LazySO("custom_ops/activations/_activation_ops.so")
+from tensorflow_addons.utils.types import TensorLike
+from distutils.version import LooseVersion
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
-    """Gaussian Error Linear Unit.
+def gelu(x: TensorLike, approximate: bool = True) -> tf.Tensor:
+    r"""Gaussian Error Linear Unit.
 
     Computes gaussian error linear:
-    `0.5 * x * (1 + tanh(sqrt(2 / pi) * (x + 0.044715 * x^3)))` or
-    `x * P(X <= x) = 0.5 * x * (1 + erf(x / sqrt(2)))`, where P(X) ~ N(0, 1),
-    depending on whether approximation is enabled.
+
+    $$
+    \mathrm{gelu}(x) = x \Phi(x),
+    $$
+
+    where
+
+    $$
+    \Phi(x) = \frac{1}{2} \left[ 1 + \mathrm{erf}(\frac{x}{\sqrt{2}}) \right]$
+    $$
+
+    when `approximate` is `False`; or
+
+    $$
+    \Phi(x) = \frac{x}{2} \left[ 1 + \tanh(\sqrt{\frac{2}{\pi}} \cdot (x + 0.044715 \cdot x^3)) \right]
+    $$
+
+    when `approximate` is `True`.
 
     See [Gaussian Error Linear Units (GELUs)](https://arxiv.org/abs/1606.08415)
     and [BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding](https://arxiv.org/abs/1810.04805).
+
+    Note that `approximate` will default to `False` from TensorFlow version 2.4 onwards.
+    Consider using `tf.nn.gelu` instead.
+
+    Usage:
+
+    >>> x = tf.constant([-1.0, 0.0, 1.0])
+    >>> tfa.activations.gelu(x, approximate=False)
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.15865529,  0.        ,  0.8413447 ], dtype=float32)>
+    >>> tfa.activations.gelu(x, approximate=True)
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.15880796,  0.        ,  0.841192  ], dtype=float32)>
 
     Args:
         x: A `Tensor`. Must be one of the following types:
@@ -42,29 +66,26 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
     Returns:
         A `Tensor`. Has the same type as `x`.
     """
-    x = tf.convert_to_tensor(x)
-
-    if not options.TF_ADDONS_PY_OPS:
-        try:
-            return _gelu_custom_op(x, approximate)
-        except tf.errors.NotFoundError:
-            options.warn_fallback("gelu")
-
-    return _gelu_py(x, approximate)
-
-
-def _gelu_custom_op(x, approximate):
-    return _activation_so.ops.addons_gelu(x, approximate)
-
-
-@tf.RegisterGradient("Addons>Gelu")
-def _gelu_grad(op, grad):
-    return _activation_so.ops.addons_gelu_grad(
-        grad, op.inputs[0], op.get_attr("approximate")
+    warnings.warn(
+        "gelu activation has been migrated to core TensorFlow, "
+        "and will be deprecated in Addons 0.13.",
+        DeprecationWarning,
     )
 
+    x = tf.convert_to_tensor(x)
 
-def _gelu_py(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
+    if LooseVersion(tf.__version__) >= "2.4":
+        gelu_op = tf.nn.gelu
+        warnings.warn(
+            "Default value of `approximate` is changed from `True` to `False`"
+        )
+    else:
+        gelu_op = _gelu_py
+
+    return gelu_op(x, approximate)
+
+
+def _gelu_py(x: TensorLike, approximate: bool = True) -> tf.Tensor:
     x = tf.convert_to_tensor(x)
     if approximate:
         pi = tf.cast(math.pi, x.dtype)

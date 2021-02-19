@@ -16,9 +16,9 @@
 import tensorflow as tf
 from tensorflow_addons.image import utils as img_utils
 from tensorflow_addons.utils import keras_utils
-from tensorflow_addons.utils.types import TensorLike, FloatTensorLike
+from tensorflow_addons.utils.types import TensorLike
 
-from typing import Optional, Union, List, Tuple
+from typing import Optional, Union, List, Tuple, Iterable
 
 
 def _pad(
@@ -45,7 +45,11 @@ def _pad(
       constant_values: A `scalar`, the pad value to use in "CONSTANT"
         padding mode.
     """
-    assert mode in ["CONSTANT", "REFLECT", "SYMMETRIC"]
+    if mode.upper() not in {"REFLECT", "CONSTANT", "SYMMETRIC"}:
+        raise ValueError(
+            'padding should be one of "REFLECT", "CONSTANT", or "SYMMETRIC".'
+        )
+    constant_values = tf.convert_to_tensor(constant_values, image.dtype)
     filter_height, filter_width = filter_shape
     pad_top = (filter_height - 1) // 2
     pad_bottom = filter_height - 1 - pad_top
@@ -58,7 +62,7 @@ def _pad(
 @tf.function
 def mean_filter2d(
     image: TensorLike,
-    filter_shape: Union[List[int], Tuple[int]] = [3, 3],
+    filter_shape: Union[int, Iterable[int]] = (3, 3),
     padding: str = "REFLECT",
     constant_values: TensorLike = 0,
     name: Optional[str] = None,
@@ -91,11 +95,6 @@ def mean_filter2d(
         original_ndims = img_utils.get_ndims(image)
         image = img_utils.to_4D_image(image)
 
-        if padding not in ["REFLECT", "CONSTANT", "SYMMETRIC"]:
-            raise ValueError(
-                'padding should be one of "REFLECT", "CONSTANT", or "SYMMETRIC".'
-            )
-
         filter_shape = keras_utils.normalize_tuple(filter_shape, 2, "filter_shape")
 
         # Keep the precision if it's float;
@@ -126,9 +125,9 @@ def mean_filter2d(
 @tf.function
 def median_filter2d(
     image: TensorLike,
-    filter_shape: Union[List[int], Tuple[int]] = [3, 3],
+    filter_shape: Union[int, Iterable[int]] = (3, 3),
     padding: str = "REFLECT",
-    constant_values: FloatTensorLike = 0,
+    constant_values: TensorLike = 0,
     name: Optional[str] = None,
 ) -> tf.Tensor:
     """Perform median filtering on image(s).
@@ -158,11 +157,6 @@ def median_filter2d(
         image = tf.convert_to_tensor(image, name="image")
         original_ndims = img_utils.get_ndims(image)
         image = img_utils.to_4D_image(image)
-
-        if padding not in ["REFLECT", "CONSTANT", "SYMMETRIC"]:
-            raise ValueError(
-                'padding should be one of "REFLECT", "CONSTANT", or "SYMMETRIC".'
-            )
 
         filter_shape = keras_utils.normalize_tuple(filter_shape, 2, "filter_shape")
 
@@ -211,8 +205,7 @@ def _get_gaussian_kernel(sigma, filter_shape):
     sigma = tf.convert_to_tensor(sigma)
     x = tf.range(-filter_shape // 2 + 1, filter_shape // 2 + 1)
     x = tf.cast(x ** 2, sigma.dtype)
-    x = tf.exp(-x / (2.0 * (sigma ** 2)))
-    x = x / tf.math.reduce_sum(x)
+    x = tf.nn.softmax(-x / (2.0 * (sigma ** 2)))
     return x
 
 
@@ -224,13 +217,13 @@ def _get_gaussian_kernel_2d(gaussian_filter_x, gaussian_filter_y):
 
 @tf.function
 def gaussian_filter2d(
-    image: FloatTensorLike,
-    filter_shape: Union[List[int], Tuple[int]] = [3, 3],
-    sigma: Union[List[float], Tuple[float]] = 1.0,
+    image: TensorLike,
+    filter_shape: Union[int, Iterable[int]] = (3, 3),
+    sigma: Union[List[float], Tuple[float], float] = 1.0,
     padding: str = "REFLECT",
     constant_values: TensorLike = 0,
     name: Optional[str] = None,
-) -> FloatTensorLike:
+) -> TensorLike:
     """Perform Gaussian blur on image(s).
 
     Args:
@@ -269,11 +262,6 @@ def gaussian_filter2d(
         if any(s < 0 for s in sigma):
             raise ValueError("sigma should be greater than or equal to 0.")
 
-        if padding not in ["REFLECT", "CONSTANT", "SYMMETRIC"]:
-            raise ValueError(
-                'padding should be one of "REFLECT", "CONSTANT", or "SYMMETRIC".'
-            )
-
         image = tf.convert_to_tensor(image, name="image")
         sigma = tf.convert_to_tensor(sigma, name="sigma")
 
@@ -291,22 +279,18 @@ def gaussian_filter2d(
 
         sigma = tf.cast(sigma, image.dtype)
         gaussian_kernel_x = _get_gaussian_kernel(sigma[1], filter_shape[1])
-        gaussian_kernel_x = tf.reshape(gaussian_kernel_x, [1, filter_shape[1]])
+        gaussian_kernel_x = gaussian_kernel_x[tf.newaxis, :]
 
         gaussian_kernel_y = _get_gaussian_kernel(sigma[0], filter_shape[0])
-        gaussian_kernel_y = tf.reshape(gaussian_kernel_y, [filter_shape[0], 1])
+        gaussian_kernel_y = gaussian_kernel_y[:, tf.newaxis]
 
         gaussian_kernel_2d = _get_gaussian_kernel_2d(
             gaussian_kernel_y, gaussian_kernel_x
         )
-        gaussian_kernel_2d = tf.repeat(gaussian_kernel_2d, channels)
-        gaussian_kernel_2d = tf.reshape(
-            gaussian_kernel_2d, [filter_shape[0], filter_shape[1], channels, 1]
-        )
+        gaussian_kernel_2d = gaussian_kernel_2d[:, :, tf.newaxis, tf.newaxis]
+        gaussian_kernel_2d = tf.tile(gaussian_kernel_2d, [1, 1, channels, 1])
 
-        image = _pad(
-            image, filter_shape, mode=padding, constant_values=constant_values,
-        )
+        image = _pad(image, filter_shape, mode=padding, constant_values=constant_values)
 
         output = tf.nn.depthwise_conv2d(
             input=image,

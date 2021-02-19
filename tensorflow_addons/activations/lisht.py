@@ -15,46 +15,32 @@
 
 import tensorflow as tf
 
-from tensorflow_addons.utils import types
-from tensorflow_addons.utils.resource_loader import LazySO
-from tensorflow_addons import options
-
-_activation_so = LazySO("custom_ops/activations/_activation_ops.so")
+from tensorflow_addons.utils.types import TensorLike
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def lisht(x: types.TensorLike) -> tf.Tensor:
-    """LiSHT: Non-Parameteric Linearly Scaled Hyperbolic Tangent Activation Function.
+def lisht(x: TensorLike) -> tf.Tensor:
+    r"""LiSHT: Non-Parameteric Linearly Scaled Hyperbolic Tangent Activation Function.
 
-    Computes linearly scaled hyperbolic tangent (LiSHT): `x * tanh(x)`
+    Computes linearly scaled hyperbolic tangent (LiSHT):
+
+    $$
+    \mathrm{lisht}(x) = x * \tanh(x).
+    $$
 
     See [LiSHT: Non-Parameteric Linearly Scaled Hyperbolic Tangent Activation Function for Neural Networks](https://arxiv.org/abs/1901.05894).
 
+    Usage:
+
+    >>> x = tf.constant([1.0, 0.0, 1.0])
+    >>> tfa.activations.lisht(x)
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([0.7615942, 0.       , 0.7615942], dtype=float32)>
+
     Args:
         x: A `Tensor`. Must be one of the following types:
-            `float16`, `float32`, `float64`.
+            `bfloat16`, `float16`, `float32`, `float64`.
     Returns:
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
-
-    if not options.TF_ADDONS_PY_OPS:
-        try:
-            return _lisht_custom_op(x)
-        except tf.errors.NotFoundError:
-            options.warn_fallback("lisht")
-
-    return _lisht_py(x)
-
-
-def _lisht_custom_op(x):
-    return _activation_so.ops.addons_lisht(x)
-
-
-@tf.RegisterGradient("Addons>Lisht")
-def _lisht_grad(op, grad):
-    return _activation_so.ops.addons_lisht_grad(grad, op.inputs[0])
-
-
-def _lisht_py(x):
     return x * tf.math.tanh(x)
