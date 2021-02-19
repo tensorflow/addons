@@ -68,6 +68,6 @@ def disable_custom_kernel():
     pass
 
 
-def is_custom_disabled():
+def is_custom_kernel_disabled():
     """Returns whether pure python kernel is preferred or not."""
     return _TF_ADDONS_PY_OPS
