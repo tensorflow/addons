@@ -40,17 +40,6 @@ def _reduce_average(
     return average
 
 
-def _calculate_adjr2(
-    raw_scores: tf.Tensor, num_examples: tf.int32, num_preds: tf.Tensor
-) -> tf.Tensor:
-    """Calculate the Adjusted R2 value."""
-    n = tf.cast(num_examples, dtype=tf.float32)
-
-    num = tf.multiply(tf.subtract(1.0, raw_scores), tf.subtract(n, 1.0))
-    den = tf.subtract(tf.subtract(n, num_preds), 1.0)
-    return tf.subtract(1.0, tf.divide(num, den))
-
-
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class RSquare(Metric):
     """Compute R^2 score.
@@ -70,13 +59,14 @@ class RSquare(Metric):
     ](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.r2_score.html)
     of the same metric.
 
+    Can also calculate the Adjusted R2 Score.
+
     Args:
         multioutput: `string`, the reduce method for scores.
             Should be one of `["raw_values", "uniform_average", "variance_weighted"]`.
         name: (Optional) string name of the metric instance.
         dtype: (Optional) data type of the metric result.
-        penalize: (Optional) Penalize based on number of predictors (Adjusted R2).
-        num_preds: (Optional) Number of predictors used (Adjusted R2).
+        num_preds: (Optional) Number of predictors used (Adjusted R2). Defaults to zero(standard R2 score)
 
     Usage:
 
@@ -96,7 +86,6 @@ class RSquare(Metric):
         dtype: AcceptableDTypes = None,
         y_shape: Tuple[int, ...] = (),
         multioutput: str = "uniform_average",
-        penalize: bool = False,
         num_preds: tf.int32 = 0,
         **kwargs,
     ):
@@ -110,7 +99,6 @@ class RSquare(Metric):
                 )
             )
         self.multioutput = multioutput
-        self.penalize = penalize
         self.num_preds = tf.cast(num_preds, dtype=tf.float32)
         self.squared_sum = self.add_weight(
             name="squared_sum", shape=y_shape, initializer="zeros", dtype=dtype
@@ -151,23 +139,42 @@ class RSquare(Metric):
         raw_scores = 1 - (self.res / total)
         raw_scores = tf.where(tf.math.is_inf(raw_scores), 0.0, raw_scores)
 
-        scores = (
-            _calculate_adjr2(raw_scores, self.num_examples, self.num_preds)
-            if self.penalize
-            else raw_scores
-        )
-
         if self.multioutput == "raw_values":
-            return scores
-        if self.multioutput == "uniform_average":
-            return tf.reduce_mean(scores)
-        if self.multioutput == "variance_weighted":
-            return _reduce_average(scores, weights=total)
-        raise RuntimeError(
-            "The multioutput attribute must be one of {}, but was: {}".format(
-                _VALID_MULTIOUTPUT, self.multioutput
+            r2_score = raw_scores
+        elif self.multioutput == "uniform_average":
+            r2_score = tf.reduce_mean(raw_scores)
+        elif self.multioutput == "variance_weighted":
+            r2_score = _reduce_average(raw_scores, weights=total)
+        else:
+            raise RuntimeError(
+                "The multioutput attribute must be one of {}, but was: {}".format(
+                    _VALID_MULTIOUTPUT, self.multioutput
+                )
             )
-        )
+
+        n = tf.cast(self.num_examples, dtype=tf.float32)
+
+        if self.num_preds < 0:
+            raise ValueError(
+                "num_preds parameter should be greater than or equal to zero"
+            )
+
+        if self.num_preds != 0:
+            if self.num_preds > n - 1:
+                UserWarning(
+                    "More independent regressions than datapoints in adjusted r2 score. Falls back to standard r2 "
+                    "score."
+                )
+            elif self.num_preds == n - 1:
+                UserWarning(
+                    "Division by zero in adjusted r2 score. Falls back to standard r2 score."
+                )
+            else:
+                num = tf.multiply(tf.subtract(1.0, r2_score), tf.subtract(n, 1.0))
+                den = tf.subtract(tf.subtract(n, self.num_preds), 1.0)
+                r2_score = tf.subtract(1.0, tf.divide(num, den))
+
+        return r2_score
 
     def reset_states(self) -> None:
         # The state of the metric will be reset at the start of each epoch.
