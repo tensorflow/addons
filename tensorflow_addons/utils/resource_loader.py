@@ -31,7 +31,7 @@ def get_project_root():
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def get_path_to_datafile(path):
+def get_path_to_datafile(path, is_so=False):
     """Get the path to the specified file in the data dependencies.
 
     The path is relative to tensorflow_addons/
@@ -42,6 +42,10 @@ def get_path_to_datafile(path):
       The path to the specified data file
     """
     root_dir = get_project_root()
+    if is_so:
+        bazel_bin_dir = os.path.join(os.path.dirname(root_dir), "bazel-bin")
+        if os.path.isdir(bazel_bin_dir):
+            root_dir = os.path.join(bazel_bin_dir, "tensorflow_addons")
     return os.path.join(root_dir, path.replace("/", os.sep))
 
 
@@ -61,7 +65,9 @@ class LazySO:
             )
         if self._ops is None:
             self.display_warning_if_incompatible()
-            self._ops = tf.load_op_library(get_path_to_datafile(self.relative_path))
+            self._ops = tf.load_op_library(
+                get_path_to_datafile(self.relative_path, is_so=True)
+            )
         return self._ops
 
     def display_warning_if_incompatible(self):

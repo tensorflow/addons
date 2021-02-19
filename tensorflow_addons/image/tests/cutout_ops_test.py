@@ -71,6 +71,12 @@ def test_mask_applied():
     )
 
 
+def test_mask_larger_than_image():
+    test_image = tf.ones([10, 40, 40, 1], dtype=np.uint8)
+    result_image = random_cutout(test_image, 60, seed=1234)
+    np.testing.assert_equal(np.sum(result_image), 0)
+
+
 def test_keras_layer():
     inputs = tf.keras.Input(shape=(40, 40, 1), dtype=tf.uint8)
     outputs = tf.keras.layers.Lambda(lambda x: cutout(x, 4, [2, 2]))(inputs)

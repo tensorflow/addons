@@ -27,17 +27,17 @@ from typing import Optional
 from functools import partial
 
 
-def _scale_channel(image: TensorLike, channel: int) -> tf.Tensor:
+def _scale_channel(image: TensorLike, channel: int, bins: int = 256) -> tf.Tensor:
     """Scale the data in the channel to implement equalize."""
     image_dtype = image.dtype
     image = tf.cast(image[:, :, channel], tf.int32)
 
     # Compute the histogram of the image channel.
-    histo = tf.histogram_fixed_width(image, [0, 255], nbins=256)
+    histo = tf.histogram_fixed_width(image, [0, bins - 1], nbins=bins)
 
     # For the purposes of computing the step, filter out the nonzeros.
     nonzero_histo = tf.boolean_mask(histo, histo != 0)
-    step = (tf.reduce_sum(nonzero_histo) - nonzero_histo[-1]) // 255
+    step = (tf.reduce_sum(nonzero_histo) - nonzero_histo[-1]) // (bins - 1)
 
     # If step is zero, return the original image.  Otherwise, build
     # lut from the full histogram and step and then index from it.
@@ -45,20 +45,24 @@ def _scale_channel(image: TensorLike, channel: int) -> tf.Tensor:
         result = image
     else:
         lut_values = (tf.cumsum(histo, exclusive=True) + (step // 2)) // step
-        lut_values = tf.clip_by_value(lut_values, 0, 255)
+        lut_values = tf.clip_by_value(lut_values, 0, bins - 1)
         result = tf.gather(lut_values, image)
 
     return tf.cast(result, image_dtype)
 
 
-def _equalize_image(image: TensorLike) -> tf.Tensor:
+def _equalize_image(image: TensorLike, bins: int = 256) -> tf.Tensor:
     """Implements Equalize function from PIL using TF ops."""
-    image = tf.stack([_scale_channel(image, c) for c in range(image.shape[-1])], -1)
+    image = tf.stack(
+        [_scale_channel(image, c, bins) for c in range(image.shape[-1])], -1
+    )
     return image
 
 
 @tf.function
-def equalize(image: TensorLike, name: Optional[str] = None) -> tf.Tensor:
+def equalize(
+    image: TensorLike, bins: int = 256, name: Optional[str] = None
+) -> tf.Tensor:
     """Equalize image(s)
 
     Args:
@@ -67,6 +71,7 @@ def equalize(image: TensorLike, name: Optional[str] = None) -> tf.Tensor:
           `(num_rows, num_columns, num_channels)` (HWC), or
           `(num_rows, num_columns)` (HW). The rank must be statically known (the
           shape is not `TensorShape(None)`).
+      bins: The number of bins in the histogram.
       name: The name of the op.
     Returns:
       Image(s) with the same type and shape as `images`, equalized.
@@ -75,7 +80,7 @@ def equalize(image: TensorLike, name: Optional[str] = None) -> tf.Tensor:
         image_dims = tf.rank(image)
         image = to_4D_image(image)
         fn = partial(_equalize_image)
-        image = tf.map_fn(fn, image)
+        image = tf.map_fn(lambda x: fn(x, bins), image)
         return from_4D_image(image, image_dims)
 
 

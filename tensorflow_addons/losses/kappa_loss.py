@@ -14,7 +14,6 @@
 # ==============================================================================
 """Implements Weighted kappa loss."""
 
-import warnings
 from typing import Optional
 
 import tensorflow as tf
@@ -64,7 +63,6 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
         weightage: Optional[str] = "quadratic",
         name: Optional[str] = "cohen_kappa_loss",
         epsilon: Optional[Number] = 1e-6,
-        dtype: Optional[tf.DType] = tf.float32,
         reduction: str = tf.keras.losses.Reduction.NONE,
     ):
         r"""Creates a `WeightedKappaLoss` instance.
@@ -78,21 +76,12 @@ class WeightedKappaLoss(tf.keras.losses.Loss):
           epsilon: (Optional) increment to avoid log zero,
             so the loss will be $ \log(1 - k + \epsilon) $, where $ k $ lies
             in $ [-1, 1] $. Defaults to 1e-6.
-          dtype: (Optional) Data type of the metric result.
-            Defaults to `tf.float32`.
         Raises:
           ValueError: If the value passed for `weightage` is invalid
             i.e. not any one of ['linear', 'quadratic']
         """
 
         super().__init__(name=name, reduction=reduction)
-
-        warnings.warn(
-            "The data type for `WeightedKappaLoss` defaults to "
-            "`tf.keras.backend.floatx()`."
-            "The argument `dtype` will be removed in Addons `0.12`.",
-            DeprecationWarning,
-        )
 
         if weightage not in ("linear", "quadratic"):
             raise ValueError("Unknown kappa weighting type.")

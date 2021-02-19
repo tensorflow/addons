@@ -14,15 +14,11 @@
 # ==============================================================================
 
 import tensorflow as tf
-from tensorflow_addons.utils.types import Number
-
-from tensorflow_addons.utils import types
+from tensorflow_addons.utils.types import Number, TensorLike
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def softshrink(
-    x: types.TensorLike, lower: Number = -0.5, upper: Number = 0.5
-) -> tf.Tensor:
+def softshrink(x: TensorLike, lower: Number = -0.5, upper: Number = 0.5) -> tf.Tensor:
     r"""Soft shrink function.
 
     Computes soft shrink function:
@@ -44,24 +40,19 @@ def softshrink(
 
     Args:
         x: A `Tensor`. Must be one of the following types:
-            `float16`, `float32`, `float64`.
+            `bfloat16`, `float16`, `float32`, `float64`.
         lower: `float`, lower bound for setting values to zeros.
         upper: `float`, upper bound for setting values to zeros.
     Returns:
         A `Tensor`. Has the same type as `x`.
     """
-    x = tf.convert_to_tensor(x)
-
-    return _softshrink_py(x, lower, upper)
-
-
-def _softshrink_py(x, lower, upper):
     if lower > upper:
         raise ValueError(
             "The value of lower is {} and should"
             " not be higher than the value "
             "variable upper, which is {} .".format(lower, upper)
         )
+    x = tf.convert_to_tensor(x)
     values_below_lower = tf.where(x < lower, x - lower, 0)
     values_above_upper = tf.where(upper < x, x - upper, 0)
     return values_below_lower + values_above_upper

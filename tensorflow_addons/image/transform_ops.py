@@ -325,7 +325,7 @@ def rotate(
         a vector of length num_images, with an angle for each image in the
         batch.
       interpolation: Interpolation mode. Supported values: "nearest",
-        "constant".
+        "bilinear".
       fill_mode: Points outside the boundaries of the input are filled according
         to the given mode (one of `{'constant', 'reflect', 'wrap', 'nearest'}`).
         - *reflect*: `(d c b a | a b c d | d c b a)`

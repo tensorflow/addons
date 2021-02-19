@@ -15,11 +15,11 @@
 
 import tensorflow as tf
 
-from tensorflow_addons.utils import types
+from tensorflow_addons.utils.types import TensorLike
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def mish(x: types.TensorLike) -> tf.Tensor:
+def mish(x: TensorLike) -> tf.Tensor:
     r"""Mish: A Self Regularized Non-Monotonic Neural Activation Function.
 
     Computes mish activation:
@@ -34,18 +34,13 @@ def mish(x: types.TensorLike) -> tf.Tensor:
 
     >>> x = tf.constant([1.0, 0.0, 1.0])
     >>> tfa.activations.mish(x)
-    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([0.8650984, 0.       , 0.8650984], dtype=float32)>
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([0.865098..., 0.       , 0.865098...], dtype=float32)>
 
     Args:
         x: A `Tensor`. Must be one of the following types:
-            `float16`, `float32`, `float64`.
+            `bfloat16`, `float16`, `float32`, `float64`.
     Returns:
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
-
-    return _mish_py(x)
-
-
-def _mish_py(x):
     return x * tf.math.tanh(tf.math.softplus(x))

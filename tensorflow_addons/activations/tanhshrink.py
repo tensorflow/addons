@@ -15,11 +15,11 @@
 
 import tensorflow as tf
 
-from tensorflow_addons.utils import types
+from tensorflow_addons.utils.types import TensorLike
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def tanhshrink(x: types.TensorLike) -> tf.Tensor:
+def tanhshrink(x: TensorLike) -> tf.Tensor:
     r"""Tanh shrink function.
 
     Applies the element-wise function:
@@ -36,14 +36,9 @@ def tanhshrink(x: types.TensorLike) -> tf.Tensor:
 
     Args:
         x: A `Tensor`. Must be one of the following types:
-            `float16`, `float32`, `float64`.
+            `bfloat16`, `float16`, `float32`, `float64`.
     Returns:
         A `Tensor`. Has the same type as `x`.
     """
     x = tf.convert_to_tensor(x)
-
-    return _tanhshrink_py(x)
-
-
-def _tanhshrink_py(x):
     return x - tf.math.tanh(x)

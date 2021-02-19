@@ -1575,7 +1575,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
     >>>
     >>> attention_mechanism = tfa.seq2seq.LuongAttention(hidden_size)
     >>> attention_mechanism.setup_memory(memory, memory_sequence_length)
-
+    >>>
     >>> cell = tf.keras.layers.LSTMCell(hidden_size)
     >>> cell = tfa.seq2seq.AttentionWrapper(
     ...     cell, attention_mechanism, attention_layer_size=hidden_size)

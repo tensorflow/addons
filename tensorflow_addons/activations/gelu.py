@@ -17,12 +17,12 @@ import tensorflow as tf
 import math
 import warnings
 
-from tensorflow_addons.utils import types
+from tensorflow_addons.utils.types import TensorLike
 from distutils.version import LooseVersion
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
+def gelu(x: TensorLike, approximate: bool = True) -> tf.Tensor:
     r"""Gaussian Error Linear Unit.
 
     Computes gaussian error linear:
@@ -86,7 +86,7 @@ def gelu(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
     return gelu_op(x, approximate)
 
 
-def _gelu_py(x: types.TensorLike, approximate: bool = True) -> tf.Tensor:
+def _gelu_py(x: TensorLike, approximate: bool = True) -> tf.Tensor:
     x = tf.convert_to_tensor(x)
     if approximate:
         pi = tf.cast(math.pi, x.dtype)
