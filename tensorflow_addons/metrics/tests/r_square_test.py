@@ -40,9 +40,9 @@ def test_config(multioutput, y_shape):
 
 
 def initialize_vars(
-        y_shape=(),
-        multioutput: str = "uniform_average",
-        num_preds: tf.int32 = 0,
+    y_shape=(),
+    multioutput: str = "uniform_average",
+    num_preds: tf.int32 = 0,
 ):
     return RSquare(y_shape=y_shape, multioutput=multioutput, num_preds=num_preds)
 
