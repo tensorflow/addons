@@ -354,7 +354,7 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         (tuple of integers, does not include the samples axis)
         when using this layer as the first layer in a model. This layer supports
         arbitrary tensors with the following assumptions:
-            -   Expected input tensor to be at least 2D.
+            -   Expected input tensor to be at least 3D.
             -   0th index in tensor shape is expected to be the batch dimension.
 
     Output shape
@@ -384,7 +384,7 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
     ):
         super().__init__(name=name, **kwargs)
         self.channel_idx = channel_idx
-        self.epsilon = tf.math.abs(tf.cast(epsilon, dtype=self.dtype))
+        self.epsilon = epsilon
         self.beta_initializer = tf.keras.initializers.get(beta_initializer)
         self.gamma_initializer = tf.keras.initializers.get(gamma_initializer)
         self.beta_regularizer = tf.keras.regularizers.get(beta_regularizer)
@@ -421,7 +421,7 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         super().build(input_shape)
 
     def call(self, inputs):
-        epsilon = self.epsilon
+        epsilon = tf.math.abs(tf.cast(self.epsilon, dtype=self.dtype))
         if self.use_eps_learned:
             epsilon += tf.math.abs(self.eps_learned)
         nu2 = tf.reduce_mean(tf.square(inputs), axis=self.axis, keepdims=True)
@@ -484,11 +484,6 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
             self.axis = axis
 
         elif isinstance(axis, int):
-            if abs(axis) != 1 or abs(self.channel_idx) != 1:
-                raise ValueError(
-                    "Expected index for 2D is -1/1 but got {}".format(axis)
-                )
-
             self.axis = [axis]
 
         else:
@@ -500,8 +495,12 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
             raise ValueError("Duplicate axis: %s" % self.axis)
 
     def _check_if_input_shape_is_none(self, input_shape):
-        dim1, dim2 = input_shape[self.axis[0]], input_shape[self.axis[1]]
-        if dim1 is None or dim2 is None:
+        dims = [input_shape[i] for i in self.axis]
+
+        if len(input_shape) < 3:
+            raise ValueError("Expected input tensor to be at least 3D.")
+
+        if None in dims:
             raise ValueError(
                 """Axis {} of input tensor should have a defined dimension but
                 the layer received an input with shape {}.""".format(

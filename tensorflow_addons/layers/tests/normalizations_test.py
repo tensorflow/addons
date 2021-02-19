@@ -368,25 +368,22 @@ def set_random_seed():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
-def test_with_beta(dtype):
+@pytest.mark.parametrize("r_dim", [3, 4, 5, 6, 7])
+def test_with_beta(dtype, r_dim):
     set_random_seed()
 
-    shape = np.random.choice(range(1, 30), np.random.randint(2, 7), replace=True)
+    shape = np.random.choice(range(1, 30), int(r_dim), replace=True)
+    # shape = np.random.choice(range(1, 30), np.random.randint(2, 7), replace=True)
     inputs = np.random.random_sample(shape).astype(dtype)
+    print(shape)
 
-    if len(shape) == 2:
-        axis = channel_idx = 1
-
-    else:
-        axis = list(
-            np.random.choice(
-                range(1, len(shape) - 1),
-                np.random.randint(2, len(shape) - 1),
-                replace=False,
-            )
+    axis = list(
+        np.random.choice(
+            range(1, len(shape)), np.random.randint(1, len(shape) - 1), replace=False
         )
-        channel_idx = list(set(range(len(shape))) - set(axis) - set([0]))
-        channel_idx = int(np.random.choice(channel_idx, 1))
+    )
+    channel_idx = list(set(range(len(shape))) - set(axis) - set([0]))
+    channel_idx = int(np.random.choice(channel_idx, 1))
 
     frn = FilterResponseNormalization(
         beta_initializer="ones",
@@ -406,25 +403,20 @@ def test_with_beta(dtype):
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
-def test_with_gamma(dtype):
+@pytest.mark.parametrize("r_dim", [3, 4, 5, 6, 7])
+def test_with_gamma(dtype, r_dim):
     set_random_seed()
 
-    shape = np.random.choice(range(1, 30), np.random.randint(2, 7), replace=True)
+    shape = np.random.choice(range(1, 30), r_dim, replace=True)
     inputs = np.random.random_sample(shape).astype(dtype)
 
-    if len(shape) == 2:
-        axis = channel_idx = 1
-
-    else:
-        axis = list(
-            np.random.choice(
-                range(1, len(shape) - 1),
-                np.random.randint(2, len(shape) - 1),
-                replace=False,
-            )
+    axis = list(
+        np.random.choice(
+            range(1, len(shape)), np.random.randint(1, len(shape) - 1), replace=False
         )
-        channel_idx = list(set(range(len(shape))) - set(axis) - set([0]))
-        channel_idx = int(np.random.choice(channel_idx, 1))
+    )
+    channel_idx = list(set(range(len(shape))) - set(axis) - set([0]))
+    channel_idx = int(np.random.choice(channel_idx, 1))
 
     frn = FilterResponseNormalization(
         beta_initializer="zeros",
@@ -444,25 +436,20 @@ def test_with_gamma(dtype):
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
-def test_with_epsilon(dtype):
+@pytest.mark.parametrize("r_dim", [3, 4, 5, 6, 7])
+def test_with_epsilon(dtype, r_dim):
     set_random_seed()
 
-    shape = np.random.choice(range(1, 30), np.random.randint(2, 7), replace=True)
+    shape = np.random.choice(range(1, 30), r_dim, replace=True)
     inputs = np.random.random_sample(shape).astype(dtype)
 
-    if len(shape) == 2:
-        axis = channel_idx = 1
-
-    else:
-        axis = list(
-            np.random.choice(
-                range(1, len(shape) - 1),
-                np.random.randint(2, len(shape) - 1),
-                replace=False,
-            )
+    axis = list(
+        np.random.choice(
+            range(1, len(shape)), np.random.randint(1, len(shape) - 1), replace=False
         )
-        channel_idx = list(set(range(len(shape))) - set(axis) - set([0]))
-        channel_idx = int(np.random.choice(channel_idx, 1))
+    )
+    channel_idx = list(set(range(len(shape))) - set(axis) - set([0]))
+    channel_idx = int(np.random.choice(channel_idx, 1))
 
     frn = FilterResponseNormalization(
         beta_initializer=tf.keras.initializers.Constant(0.5),
@@ -489,27 +476,22 @@ def test_with_epsilon(dtype):
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
-def test_keras_model(dtype):
+@pytest.mark.parametrize("r_dim", [3, 4, 5, 6, 7])
+def test_keras_model(dtype, r_dim):
     set_random_seed()
 
-    shape = np.random.choice(range(1, 30), np.random.randint(2, 7), replace=True)
+    shape = np.random.choice(range(1, 30), r_dim, replace=True)
     random_inputs = np.random.random_sample(shape).astype(dtype)
     random_labels = np.random.randint(2, size=(shape[0],)).astype(dtype)
     input_layer = tf.keras.layers.Input(shape=tuple(shape[1:]))
 
-    if len(shape) == 2:
-        axis = channel_idx = 1
-
-    else:
-        axis = list(
-            np.random.choice(
-                range(1, len(shape) - 1),
-                np.random.randint(2, len(shape) - 1),
-                replace=False,
-            )
+    axis = list(
+        np.random.choice(
+            range(1, len(shape)), np.random.randint(1, len(shape) - 1), replace=False
         )
-        channel_idx = list(set(range(len(shape))) - set(axis) - set([0]))
-        channel_idx = int(np.random.choice(channel_idx, 1))
+    )
+    channel_idx = list(set(range(len(shape))) - set(axis) - set([0]))
+    channel_idx = int(np.random.choice(channel_idx, 1))
 
     frn = FilterResponseNormalization(
         beta_initializer="ones",
@@ -539,27 +521,22 @@ def test_serialization(dtype):
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
-def test_eps_grads(dtype):
+@pytest.mark.parametrize("r_dim", [3, 4, 5, 6, 7])
+def test_eps_grads(dtype, r_dim):
     set_random_seed()
 
-    shape = np.random.choice(range(1, 30), np.random.randint(2, 7), replace=True)
+    shape = np.random.choice(range(1, 30), r_dim, replace=True)
     random_inputs = np.random.random_sample(shape).astype(dtype)
     random_labels = np.random.randint(2, size=(shape[0],)).astype(dtype)
     input_layer = tf.keras.layers.Input(shape=tuple(shape[1:]))
 
-    if len(shape) == 2:
-        axis = channel_idx = 1
-
-    else:
-        axis = list(
-            np.random.choice(
-                range(1, len(shape) - 1),
-                np.random.randint(2, len(shape) - 1),
-                replace=False,
-            )
+    axis = list(
+        np.random.choice(
+            range(1, len(shape)), np.random.randint(1, len(shape) - 1), replace=False
         )
-        channel_idx = list(set(range(len(shape))) - set(axis) - set([0]))
-        channel_idx = int(np.random.choice(channel_idx, 1))
+    )
+    channel_idx = list(set(range(len(shape))) - set(axis) - set([0]))
+    channel_idx = int(np.random.choice(channel_idx, 1))
 
     frn = FilterResponseNormalization(
         beta_initializer="ones",
