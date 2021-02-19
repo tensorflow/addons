@@ -20,6 +20,7 @@ import numpy as np
 
 from tensorflow_addons.image import color_ops
 from PIL import Image, ImageOps, ImageEnhance
+from skimage.exposure import equalize_hist
 
 _DTYPES = {
     np.uint8,
@@ -48,6 +49,27 @@ def test_equalize_with_PIL():
     image = np.random.randint(low=0, high=255, size=(4, 3, 3, 3), dtype=np.uint8)
     equalized = np.stack([ImageOps.equalize(Image.fromarray(i)) for i in image])
     np.testing.assert_equal(color_ops.equalize(tf.constant(image)).numpy(), equalized)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("bins", [256, 65536])
+def test_equalize_with_skimage(bins):
+    np.random.seed(0)
+    image = np.random.randint(low=0, high=256, size=(5, 5, 3, 3), dtype=np.uint8)
+    equalized = tf.cast(color_ops.equalize(tf.constant(image), bins), np.float16)
+    equalized = tf.math.divide(equalized, 255)
+    skiequalized = equalize_hist(image, bins)
+    assert (
+        tf.reduce_mean(
+            tf.math.abs(tf.reshape(tf.math.subtract(equalized, skiequalized), [-1]))
+        )
+        <= 0.015
+    ), "Greater than 0.015 mean absolute difference in arrays"
+    # Test asserts a tolerance of at least 0.015 mean difference between the two
+    # arrays due to the difference in implementation between PIL and skimage.
+    # PIL's and skimage's equalized arrays can have a mean difference ranging
+    # from 0.006-0.036 according showcase done in
+    # https://github.com/tensorflow/addons/pull/2381
 
 
 @pytest.mark.parametrize("dtype", _DTYPES)
