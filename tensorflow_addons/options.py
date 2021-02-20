@@ -49,19 +49,21 @@ def warn_fallback(op_name):
 
 
 def enable_custom_kernel():
-    """Prefer custom kernel over pure python kernel.
+    """Prefer custom C++/CUDA kernel to pure python kernel.
 
-    Enable using custom CUDA/C++ Kernel instead of pure python kernel. Use this instead of
-    directly accessing the global variable."""
+    Enable using custom C++/CUDA kernel instead of pure python operations.
+    It has the same effect as setting environment variable `TF_ADDONS_PY_OPS=0`.
+    """
     global _TF_ADDONS_PY_OPS
     _TF_ADDONS_PY_OPS = False
 
 
 def disable_custom_kernel():
-    """Prefer python kernel over custom kernel.
+    """Prefer python operations to custom C++/CUDA kernel.
 
-    Disable using custom CUDA/C++ Kernel instead of pure python kernel. Use this instead of
-    directly accessing the global variable."""
+    Disable using custom C++/CUDA kernel instead of pure python operations.
+    It has the same effect as setting environment variable `TF_ADDONS_PY_OPS=1`.
+    """
     global _TF_ADDONS_PY_OPS
     _TF_ADDONS_PY_OPS = True
 
