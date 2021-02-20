@@ -182,7 +182,7 @@ def adjust_hsv_in_yiq(
         orig_dtype = image.dtype
         image = tf.image.convert_image_dtype(image, tf.float32)
 
-        if not options.TF_ADDONS_PY_OPS:
+        if not options.is_custom_kernel_disabled():
             warnings.warn(
                 "C++/CUDA kernel of `adjust_hsv_in_yiq` will be removed in Addons `0.13`.",
                 DeprecationWarning,
