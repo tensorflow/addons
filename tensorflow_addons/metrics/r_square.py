@@ -112,7 +112,7 @@ class RSquare(Metric):
         self.count = self.add_weight(
             name="count", shape=y_shape, initializer="zeros", dtype=dtype
         )
-        self.num_examples = self.add_weight(name="num_examples", dtype=tf.int32)
+        self.num_samples = self.add_weight(name="num_samples", dtype=tf.int32)
 
     def update_state(self, y_true, y_pred, sample_weight=None) -> None:
         y_true = tf.cast(y_true, dtype=self._dtype)
@@ -131,7 +131,7 @@ class RSquare(Metric):
             tf.reduce_sum((y_true - y_pred) ** 2 * sample_weight, axis=0)
         )
         self.count.assign_add(tf.reduce_sum(sample_weight, axis=0))
-        self.num_examples.assign_add(tf.size(y_true))
+        self.num_samples.assign_add(tf.size(y_true))
 
     def result(self) -> tf.Tensor:
         mean = self.sum / self.count
@@ -152,27 +152,27 @@ class RSquare(Metric):
                 )
             )
 
-        n = tf.cast(self.num_examples, dtype=tf.float32)
-
         if self.num_preds < 0:
             raise ValueError(
                 "num_preds parameter should be greater than or equal to zero"
             )
 
         if self.num_preds != 0:
-            if self.num_preds > n - 1:
+            if self.num_preds > self.num_samples - 1:
                 UserWarning(
                     "More independent regressions than datapoints in adjusted r2 score. Falls back to standard r2 "
                     "score."
                 )
-            elif self.num_preds == n - 1:
+            elif self.num_preds == self.num_samples - 1:
                 UserWarning(
                     "Division by zero in adjusted r2 score. Falls back to standard r2 score."
                 )
             else:
-                self.num_preds = tf.cast(self.num_preds, dtype=tf.float32)
+                n = tf.cast(self.num_samples, dtype=tf.float32)
+                p = tf.cast(self.num_preds, dtype=tf.float32)
+
                 num = tf.multiply(tf.subtract(1.0, r2_score), tf.subtract(n, 1.0))
-                den = tf.subtract(tf.subtract(n, self.num_preds), 1.0)
+                den = tf.subtract(tf.subtract(n, p), 1.0)
                 r2_score = tf.subtract(1.0, tf.divide(num, den))
 
         return r2_score
