@@ -69,5 +69,5 @@ def disable_custom_kernel():
 
 
 def is_custom_kernel_disabled():
-    """Returns whether pure python kernel is preferred or not."""
+    """Return whether custom C++/CUDA kernel is disabled."""
     return _TF_ADDONS_PY_OPS
