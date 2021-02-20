@@ -53,7 +53,6 @@ def gelu(x: TensorLike, approximate: bool = True) -> tf.Tensor:
 
     Usage:
 
-    >>> tfa.options.disable_custom_kernel()
     >>> x = tf.constant([-1.0, 0.0, 1.0])
     >>> tfa.activations.gelu(x, approximate=False)
     <tf.Tensor: shape=(3,), dtype=float32, numpy=array([-0.15865529,  0.        ,  0.8413447 ], dtype=float32)>
