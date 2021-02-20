@@ -99,7 +99,7 @@ class RSquare(Metric):
                 )
             )
         self.multioutput = multioutput
-        self.num_preds = tf.cast(num_preds, dtype=tf.float32)
+        self.num_preds = num_preds
         self.squared_sum = self.add_weight(
             name="squared_sum", shape=y_shape, initializer="zeros", dtype=dtype
         )
@@ -170,6 +170,7 @@ class RSquare(Metric):
                     "Division by zero in adjusted r2 score. Falls back to standard r2 score."
                 )
             else:
+                self.num_preds = tf.cast(self.num_preds, dtype=tf.float32)
                 num = tf.multiply(tf.subtract(1.0, r2_score), tf.subtract(n, 1.0))
                 den = tf.subtract(tf.subtract(n, self.num_preds), 1.0)
                 r2_score = tf.subtract(1.0, tf.divide(num, den))
