@@ -55,7 +55,6 @@ def enable_custom_kernel():
     directly accessing the global variable."""
     global _TF_ADDONS_PY_OPS
     _TF_ADDONS_PY_OPS = False
-    pass
 
 
 def disable_custom_kernel():
@@ -65,7 +64,6 @@ def disable_custom_kernel():
     directly accessing the global variable."""
     global _TF_ADDONS_PY_OPS
     _TF_ADDONS_PY_OPS = True
-    pass
 
 
 def is_custom_kernel_disabled():
