@@ -118,7 +118,7 @@ def _adjust_hsv_in_yiq(
     # https://beesbuzz.biz/code/hsv_color_transforms.php
     yiq = tf.constant(
         [[0.299, 0.596, 0.211], [0.587, -0.274, -0.523], [0.114, -0.322, 0.312]],
-        dtype=tf.float32,
+        dtype=image.dtype,
     )
     yiq_inverse = tf.constant(
         [
@@ -126,12 +126,12 @@ def _adjust_hsv_in_yiq(
             [0.95617069, -0.2726886, -1.103744],
             [0.62143257, -0.64681324, 1.70062309],
         ],
-        dtype=tf.float32,
+        dtype=image.dtype,
     )
     vsu = scale_value * scale_saturation * tf.math.cos(delta_hue)
     vsw = scale_value * scale_saturation * tf.math.sin(delta_hue)
     hsv_transform = tf.convert_to_tensor(
-        [[scale_value, 0, 0], [0, vsu, vsw], [0, -vsw, vsu]], dtype=tf.float32
+        [[scale_value, 0, 0], [0, vsu, vsw], [0, -vsw, vsu]], dtype=image.dtype
     )
     transform_matrix = yiq @ hsv_transform @ yiq_inverse
 
@@ -172,15 +172,16 @@ def adjust_hsv_in_yiq(
     """
     with tf.name_scope(name or "adjust_hsv_in_yiq"):
         image = tf.convert_to_tensor(image, name="image")
-        delta_hue = tf.cast(delta_hue, dtype=tf.float32, name="delta_hue")
-        scale_saturation = tf.cast(
-            scale_saturation, dtype=tf.float32, name="scale_saturation"
-        )
-        scale_value = tf.cast(scale_value, dtype=tf.float32, name="scale_value")
-
         # Remember original dtype to so we can convert back if needed
         orig_dtype = image.dtype
-        image = tf.image.convert_image_dtype(image, tf.float32)
+        if not image.dtype.is_floating:
+            image = tf.image.convert_image_dtype(image, tf.float32)
+
+        delta_hue = tf.cast(delta_hue, dtype=image.dtype, name="delta_hue")
+        scale_saturation = tf.cast(
+            scale_saturation, dtype=image.dtype, name="scale_saturation"
+        )
+        scale_value = tf.cast(scale_value, dtype=image.dtype, name="scale_value")
 
         if not options.TF_ADDONS_PY_OPS:
             warnings.warn(
