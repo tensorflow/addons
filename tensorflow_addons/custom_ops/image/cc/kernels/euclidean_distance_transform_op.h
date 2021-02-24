@@ -138,7 +138,7 @@ struct EuclideanDistanceTransformFunctor {
 
     auto thread_pool = ctx->device()->tensorflow_cpu_worker_threads()->workers;
     thread_pool->ParallelFor(
-        images.dimension(0), images.dimension(1) * images.dimension(2),
+        images.dimension(0), images.dimension(1) * images.dimension(2) * 1000,
         [&edt_generator, &output](int64 start_batch, int64 end_batch) {
           edt_generator(*output, start_batch, end_batch);
         });
