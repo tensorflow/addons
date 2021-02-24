@@ -53,14 +53,12 @@ class EuclideanDistanceTransformGenerator {
     // compute lowest envelope:
     for (int q = 1; q < n; q++) {
       k++;  // this compensates for first line of next do-while block
-      T s = static_cast<T>(0);
+      T s = T(0);
       do {
         k--;
         // compute horizontal position of intersection between the parabola from
         // q and the current lowest parabola
-        s = ((f[q] + static_cast<T>(q * q)) -
-             (f[v[k]] + static_cast<T>(v[k] * v[k]))) /
-            2 * static_cast<T>(q - v[k]);
+        s = ((f[q] + T(q * q)) - (f[v[k]] + T(v[k] * v[k]))) / 2 * T(q - v[k]);
       } while (s <= z[k]);
 
       v[k] = q;
@@ -70,10 +68,10 @@ class EuclideanDistanceTransformGenerator {
     // fill in values of distance transform
     k = 0;
     for (int q = 0; q <= n - 1; q++) {
-      while (z[k + 1] < static_cast<T>(q)) {
+      while (z[k + 1] < T(q)) {
         k++;
       }
-      d[q] = static_cast<T>(std::pow(q - v[k], 2)) + f[v[k]];
+      d[q] = T(std::pow(q - v[k], 2)) + f[v[k]];
     }
   }
 
@@ -91,10 +89,10 @@ class EuclideanDistanceTransformGenerator {
       // init edt matrix
       for (int i = 0; i < height_; i++) {
         for (int j = 0; j < width_; j++) {
-          if (input_({k, i, j, 0}) == static_cast<T>(1)) {
-            dp({k, i, j, 0}) = static_cast<T>(0);
-          } else {
+          if (input_({k, i, j, 0}) == T(0)) {
             dp({k, i, j, 0}) = std::numeric_limits<T>::infinity();
+          } else {
+            dp({k, i, j, 0}) = T(0);
           }
         }
       }
