@@ -18,7 +18,6 @@ limitations under the License.
 
 #define EIGEN_USE_THREADS
 
-#include <limits>
 #include <vector>
 
 #include "tensorflow/core/framework/op_kernel.h"
@@ -38,14 +37,14 @@ class EuclideanDistanceTransformGenerator {
   typename TTypes<T, 4>::ConstTensor input_;
   int64 height_, width_;
 
-  void distance(std::vector<T>& f, std::vector<T>& d) {
+  void distance(const std::vector<T>& f, std::vector<T>& d) {
     int n = d.size();
     std::vector<int> v(n);    // locations of parabolas in lower envelope
     std::vector<T> z(n + 1);  // locations of boundaries between parabolas
     int k = 0;                // index of rightmost parabola in lower envelope
     v[0] = 0;
-    z[0] = -std::numeric_limits<T>::max();
-    z[1] = std::numeric_limits<T>::max();
+    z[0] = -Eigen::NumTraits<T>::highest();
+    z[1] = Eigen::NumTraits<T>::highest();
     // compute lowest envelope:
     for (int q = 1; q <= n - 1; q++) {
       T s = T(0);
@@ -60,7 +59,7 @@ class EuclideanDistanceTransformGenerator {
       k++;
       v[k] = q;
       z[k] = s;
-      z[k + 1] = std::numeric_limits<T>::max();
+      z[k + 1] = Eigen::NumTraits<T>::highest();
     }
     // fill in values of distance transform
     k = 0;
@@ -89,7 +88,7 @@ class EuclideanDistanceTransformGenerator {
           if (input_({k, i, j, 0}) == T(0)) {
             dp({k, i, j, 0}) = T(0);
           } else {
-            dp({k, i, j, 0}) = std::numeric_limits<T>::max();
+            dp({k, i, j, 0}) = Eigen::NumTraits<T>::highest();
           }
         }
       }
@@ -111,7 +110,7 @@ class EuclideanDistanceTransformGenerator {
         }
         distance(f, d);
         for (int i = 0; i < height_; i++) {
-          dp({k, i, j, 0}) = d[i];
+          dp({k, i, j, 0}) = Eigen::numext::sqrt(d[i]);
         }
       }
     }
@@ -142,7 +141,6 @@ struct EuclideanDistanceTransformFunctor {
         [&edt_generator, &output](int64 start_batch, int64 end_batch) {
           edt_generator(*output, start_batch, end_batch);
         });
-    output->device(ctx->eigen_device<Device>()) = output->sqrt();
   }
 };
 
