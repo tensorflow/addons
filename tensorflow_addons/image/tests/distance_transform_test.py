@@ -121,4 +121,3 @@ def test_all_zeros():
     for output_dtype in [tf.float16, tf.float32, tf.float64]:
         output = dist_ops.euclidean_dist_transform(image, dtype=output_dtype)
         np.testing.assert_allclose(output, expected_output)
-
