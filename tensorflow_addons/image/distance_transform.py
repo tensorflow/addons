@@ -32,7 +32,9 @@ def euclidean_dist_transform(
     name: Optional[str] = None,
 ) -> tf.Tensor:
     """Applies euclidean distance transform(s) to the image(s).
-
+    Based on [Distance Transforms of Sampled Functions]
+    (http://www.theoryofcomputing.org/articles/v008a019/v008a019.pdf).
+    
     Args:
       images: A tensor of shape `(num_images, num_rows, num_columns, 1)`
         (NHWC), or `(num_rows, num_columns, 1)` (HWC) or
