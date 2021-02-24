@@ -63,7 +63,6 @@ class EuclideanDistanceTransform : public OpKernel {
 
     auto output = output_t->tensor<T, 4>();
     auto images = images_t.tensor<T, 4>();
-
     functor_(ctx, &output, images);
   }
 };

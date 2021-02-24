@@ -32,10 +32,6 @@ namespace addons {
 
 namespace generator {
 
-using Eigen::array;
-using Eigen::DenseIndex;
-using Eigen::numext::sqrt;
-
 template <typename Device, typename T>
 class EuclideanDistanceTransformGenerator {
  private:
@@ -48,22 +44,23 @@ class EuclideanDistanceTransformGenerator {
     std::vector<T> z(n + 1);  // locations of boundaries between parabolas
     int k = 0;                // index of rightmost parabola in lower envelope
     v[0] = 0;
-    z[0] = -std::numeric_limits<T>::infinity();
-    z[1] = std::numeric_limits<T>::infinity();
+    z[0] = -T('inf');
+    z[1] = T('inf');
     // compute lowest envelope:
-    for (int q = 1; q < n; q++) {
-      k++;  // this compensates for first line of next do-while block
+    for (int q = 1; q <= n - 1; q++) {
       T s = T(0);
+      k++;  // this compensates for first line of next do-while block
       do {
         k--;
         // compute horizontal position of intersection between the parabola from
         // q and the current lowest parabola
-        s = ((f[q] + T(q * q)) - (f[v[k]] + T(v[k] * v[k]))) / 2 * T(q - v[k]);
+        s = ((f[q] + T(q * q)) - (f[v[k]] + T(v[k] * v[k]))) /
+            T(2 * (q - v[k]));
       } while (s <= z[k]);
-
+      k++;
       v[k] = q;
       z[k] = s;
-      z[k + 1] = std::numeric_limits<T>::infinity();
+      z[k + 1] = T('inf');
     }
     // fill in values of distance transform
     k = 0;
@@ -90,9 +87,9 @@ class EuclideanDistanceTransformGenerator {
       for (int i = 0; i < height_; i++) {
         for (int j = 0; j < width_; j++) {
           if (input_({k, i, j, 0}) == T(0)) {
-            dp({k, i, j, 0}) = std::numeric_limits<T>::infinity();
-          } else {
             dp({k, i, j, 0}) = T(0);
+          } else {
+            dp({k, i, j, 0}) = T('inf');
           }
         }
       }
@@ -141,8 +138,7 @@ struct EuclideanDistanceTransformFunctor {
 
     auto thread_pool = ctx->device()->tensorflow_cpu_worker_threads()->workers;
     thread_pool->ParallelFor(
-        images.dimension(0),
-        images.dimension(1) * images.dimension(2) * images.dimension(3),
+        images.dimension(0), images.dimension(1) * images.dimension(2),
         [&edt_generator, &output](int64 start_batch, int64 end_batch) {
           edt_generator(*output, start_batch, end_batch);
         });
