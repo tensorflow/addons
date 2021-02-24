@@ -80,8 +80,8 @@ class EuclideanDistanceTransformGenerator {
     width_ = input.dimension(2);
   }
 
-  void operator()(typename TTypes<T, 4>::Tensor& dp, int64 start_batch,
-                  int64 end_batch) {
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void operator()(
+      typename TTypes<T, 4>::Tensor& dp, int64 start_batch, int64 end_batch) {
     for (int k = start_batch; k < end_batch; k++) {
       // init edt matrix
       for (int i = 0; i < height_; i++) {
