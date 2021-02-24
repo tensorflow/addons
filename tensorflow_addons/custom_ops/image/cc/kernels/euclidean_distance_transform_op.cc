@@ -21,7 +21,6 @@ limitations under the License.
 
 #include "tensorflow_addons/custom_ops/image/cc/kernels/euclidean_distance_transform_op.h"
 
-#include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/register_types.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/platform/types.h"
@@ -46,6 +45,8 @@ using generator::EuclideanDistanceTransformGenerator;
 
 template <typename Device, typename T>
 class EuclideanDistanceTransform : public OpKernel {
+ private:
+  EuclideanDistanceTransformFunctor<Device, T> functor_;
  public:
   explicit EuclideanDistanceTransform(OpKernelConstruction *ctx)
       : OpKernel(ctx) {}
@@ -61,9 +62,8 @@ class EuclideanDistanceTransform : public OpKernel {
 
     auto output = output_t->tensor<T, 4>();
     auto images = images_t.tensor<T, 4>();
-
-    EuclideanDistanceTransformFunctor<Device, T> functor;
-    functor(ctx->eigen_device<Device>(), &output, images);
+    
+    functor_(ctx, &output, images);
   }
 };
 
