@@ -44,8 +44,8 @@ class EuclideanDistanceTransformGenerator {
     std::vector<T> z(n + 1);  // locations of boundaries between parabolas
     int k = 0;                // index of rightmost parabola in lower envelope
     v[0] = 0;
-    z[0] = -T('inf');
-    z[1] = T('inf');
+    z[0] = -std::numeric_limits<T>::max();
+    z[1] = std::numeric_limits<T>::max();
     // compute lowest envelope:
     for (int q = 1; q <= n - 1; q++) {
       T s = T(0);
@@ -60,7 +60,7 @@ class EuclideanDistanceTransformGenerator {
       k++;
       v[k] = q;
       z[k] = s;
-      z[k + 1] = T('inf');
+      z[k + 1] = std::numeric_limits<T>::max();
     }
     // fill in values of distance transform
     k = 0;
@@ -89,7 +89,7 @@ class EuclideanDistanceTransformGenerator {
           if (input_({k, i, j, 0}) == T(0)) {
             dp({k, i, j, 0}) = T(0);
           } else {
-            dp({k, i, j, 0}) = T('inf');
+            dp({k, i, j, 0}) = std::numeric_limits<T>::max();
           }
         }
       }
