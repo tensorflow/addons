@@ -59,11 +59,15 @@ class RSquare(Metric):
     ](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.r2_score.html)
     of the same metric.
 
+    Can also calculate the Adjusted R2 Score.
+
     Args:
         multioutput: `string`, the reduce method for scores.
             Should be one of `["raw_values", "uniform_average", "variance_weighted"]`.
         name: (Optional) string name of the metric instance.
         dtype: (Optional) data type of the metric result.
+        num_regressors: (Optional) Number of indepedent regressors used (Adjusted R2).
+            Defaults to zero(standard R2 score).
 
     Usage:
 
@@ -83,6 +87,7 @@ class RSquare(Metric):
         dtype: AcceptableDTypes = None,
         y_shape: Tuple[int, ...] = (),
         multioutput: str = "uniform_average",
+        num_regressors: tf.int32 = 0,
         **kwargs,
     ):
         super().__init__(name=name, dtype=dtype, **kwargs)
@@ -95,6 +100,7 @@ class RSquare(Metric):
                 )
             )
         self.multioutput = multioutput
+        self.num_regressors = num_regressors
         self.squared_sum = self.add_weight(
             name="squared_sum", shape=y_shape, initializer="zeros", dtype=dtype
         )
@@ -107,6 +113,7 @@ class RSquare(Metric):
         self.count = self.add_weight(
             name="count", shape=y_shape, initializer="zeros", dtype=dtype
         )
+        self.num_samples = self.add_weight(name="num_samples", dtype=tf.int32)
 
     def update_state(self, y_true, y_pred, sample_weight=None) -> None:
         y_true = tf.cast(y_true, dtype=self._dtype)
@@ -125,6 +132,7 @@ class RSquare(Metric):
             tf.reduce_sum((y_true - y_pred) ** 2 * sample_weight, axis=0)
         )
         self.count.assign_add(tf.reduce_sum(sample_weight, axis=0))
+        self.num_samples.assign_add(tf.size(y_true))
 
     def result(self) -> tf.Tensor:
         mean = self.sum / self.count
@@ -133,11 +141,42 @@ class RSquare(Metric):
         raw_scores = tf.where(tf.math.is_inf(raw_scores), 0.0, raw_scores)
 
         if self.multioutput == "raw_values":
-            return raw_scores
-        if self.multioutput == "uniform_average":
-            return tf.reduce_mean(raw_scores)
-        if self.multioutput == "variance_weighted":
-            return _reduce_average(raw_scores, weights=total)
+            r2_score = raw_scores
+        elif self.multioutput == "uniform_average":
+            r2_score = tf.reduce_mean(raw_scores)
+        elif self.multioutput == "variance_weighted":
+            r2_score = _reduce_average(raw_scores, weights=total)
+        else:
+            raise RuntimeError(
+                "The multioutput attribute must be one of {}, but was: {}".format(
+                    _VALID_MULTIOUTPUT, self.multioutput
+                )
+            )
+
+        if self.num_regressors < 0:
+            raise ValueError(
+                "num_regressors parameter should be greater than or equal to zero"
+            )
+
+        if self.num_regressors != 0:
+            if self.num_regressors > self.num_samples - 1:
+                UserWarning(
+                    "More independent predictors than datapoints in adjusted r2 score. Falls back to standard r2 "
+                    "score."
+                )
+            elif self.num_regressors == self.num_samples - 1:
+                UserWarning(
+                    "Division by zero in adjusted r2 score. Falls back to standard r2 score."
+                )
+            else:
+                n = tf.cast(self.num_samples, dtype=tf.float32)
+                p = tf.cast(self.num_regressors, dtype=tf.float32)
+
+                num = tf.multiply(tf.subtract(1.0, r2_score), tf.subtract(n, 1.0))
+                den = tf.subtract(tf.subtract(n, p), 1.0)
+                r2_score = tf.subtract(1.0, tf.divide(num, den))
+
+        return r2_score
 
     def reset_states(self) -> None:
         # The state of the metric will be reset at the start of each epoch.
