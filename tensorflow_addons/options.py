@@ -45,7 +45,6 @@ def warn_fallback(op_name):
     warning_msg = FALLBACK_WARNING_TEMPLATE.format(traceback.format_exc(), op_name)
     warnings.warn(warning_msg, RuntimeWarning)
     diable_custom_kernel()
-    _TF_ADDONS_PY_OPS = True
 
 
 def enable_custom_kernel():
