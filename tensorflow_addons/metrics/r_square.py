@@ -66,7 +66,8 @@ class RSquare(Metric):
             Should be one of `["raw_values", "uniform_average", "variance_weighted"]`.
         name: (Optional) string name of the metric instance.
         dtype: (Optional) data type of the metric result.
-        num_preds: (Optional) Number of predictors used (Adjusted R2). Defaults to zero(standard R2 score)
+        num_regressors: (Optional) Number of indepedent regressors used (Adjusted R2).
+            Defaults to zero(standard R2 score).
 
     Usage:
 
@@ -86,7 +87,7 @@ class RSquare(Metric):
         dtype: AcceptableDTypes = None,
         y_shape: Tuple[int, ...] = (),
         multioutput: str = "uniform_average",
-        num_preds: tf.int32 = 0,
+        num_regressors: tf.int32 = 0,
         **kwargs,
     ):
         super().__init__(name=name, dtype=dtype, **kwargs)
@@ -99,7 +100,7 @@ class RSquare(Metric):
                 )
             )
         self.multioutput = multioutput
-        self.num_preds = num_preds
+        self.num_regressors = num_regressors
         self.squared_sum = self.add_weight(
             name="squared_sum", shape=y_shape, initializer="zeros", dtype=dtype
         )
@@ -152,24 +153,24 @@ class RSquare(Metric):
                 )
             )
 
-        if self.num_preds < 0:
+        if self.num_regressors < 0:
             raise ValueError(
-                "num_preds parameter should be greater than or equal to zero"
+                "num_regressors parameter should be greater than or equal to zero"
             )
 
-        if self.num_preds != 0:
-            if self.num_preds > self.num_samples - 1:
+        if self.num_regressors != 0:
+            if self.num_regressors > self.num_samples - 1:
                 UserWarning(
-                    "More independent regressions than datapoints in adjusted r2 score. Falls back to standard r2 "
+                    "More independent predictors than datapoints in adjusted r2 score. Falls back to standard r2 "
                     "score."
                 )
-            elif self.num_preds == self.num_samples - 1:
+            elif self.num_regressors == self.num_samples - 1:
                 UserWarning(
                     "Division by zero in adjusted r2 score. Falls back to standard r2 score."
                 )
             else:
                 n = tf.cast(self.num_samples, dtype=tf.float32)
-                p = tf.cast(self.num_preds, dtype=tf.float32)
+                p = tf.cast(self.num_regressors, dtype=tf.float32)
 
                 num = tf.multiply(tf.subtract(1.0, r2_score), tf.subtract(n, 1.0))
                 den = tf.subtract(tf.subtract(n, p), 1.0)

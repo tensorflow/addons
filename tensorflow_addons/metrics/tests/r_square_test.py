@@ -42,9 +42,9 @@ def test_config(multioutput, y_shape):
 def initialize_vars(
     y_shape=(),
     multioutput: str = "uniform_average",
-    num_preds: tf.int32 = 0,
+    num_regressors: tf.int32 = 0,
 ):
-    return RSquare(y_shape=y_shape, multioutput=multioutput, num_preds=num_preds)
+    return RSquare(y_shape=y_shape, multioutput=multioutput, num_regressors=num_regressors)
 
 
 def update_obj_states(obj, actuals, preds, sample_weight=None):
@@ -157,7 +157,7 @@ def test_adjr2():
     actuals = tf.cast(actuals, dtype=tf.float32)
     preds = tf.cast(preds, dtype=tf.float32)
     # Initialize
-    adjr2_obj = initialize_vars(num_preds=2)
+    adjr2_obj = initialize_vars(num_regressors=2)
     update_obj_states(adjr2_obj, actuals, preds)
     # Check result
     check_results(adjr2_obj, 0.2128982)
@@ -169,7 +169,7 @@ def test_adjr2_negative_num_preds():
     actuals = tf.cast(actuals, dtype=tf.float32)
     preds = tf.cast(preds, dtype=tf.float32)
     # Initialize
-    adjr2_obj = initialize_vars(num_preds=-3)
+    adjr2_obj = initialize_vars(num_regressors=-3)
     update_obj_states(adjr2_obj, actuals, preds)
     # Expect runtime error
     pytest.raises(ValueError)
@@ -181,7 +181,7 @@ def test_adjr2_zero_division():
     actuals = tf.cast(actuals, dtype=tf.float32)
     preds = tf.cast(preds, dtype=tf.float32)
     # Initialize
-    adjr2_obj = initialize_vars(num_preds=3)
+    adjr2_obj = initialize_vars(num_regressors=3)
     update_obj_states(adjr2_obj, actuals, preds)
     # Expect warning
     pytest.raises(UserWarning)
@@ -195,7 +195,7 @@ def test_adjr2_excess_num_preds():
     actuals = tf.cast(actuals, dtype=tf.float32)
     preds = tf.cast(preds, dtype=tf.float32)
     # Initialize
-    adjr2_obj = initialize_vars(num_preds=5)
+    adjr2_obj = initialize_vars(num_regressors=5)
     update_obj_states(adjr2_obj, actuals, preds)
     # Expect warning
     pytest.raises(UserWarning)
