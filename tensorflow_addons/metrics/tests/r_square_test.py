@@ -44,7 +44,9 @@ def initialize_vars(
     multioutput: str = "uniform_average",
     num_regressors: tf.int32 = 0,
 ):
-    return RSquare(y_shape=y_shape, multioutput=multioutput, num_regressors=num_regressors)
+    return RSquare(
+        y_shape=y_shape, multioutput=multioutput, num_regressors=num_regressors
+    )
 
 
 def update_obj_states(obj, actuals, preds, sample_weight=None):
