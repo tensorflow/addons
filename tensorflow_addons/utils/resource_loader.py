@@ -86,7 +86,7 @@ class LazySO:
             "on Github. This is a known limitation."
             "\n\n"
             "It might help you to fallback to pure Python "
-            "ops by setting environment variable TF_ADDONS_PY_OPS=1 or using tfa.options.disable_custom_kernel(). "
+            "ops by setting environment variable `TF_ADDONS_PY_OPS=1` or using `tfa.options.disable_custom_kernel()` in your code. "
             "To do that, see "
             "https://github.com/tensorflow/addons#gpucpu-custom-ops "
             "\n\n"
