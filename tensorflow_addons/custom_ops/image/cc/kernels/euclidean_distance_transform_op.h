@@ -141,7 +141,7 @@ class EuclideanDistanceTransformGeneratorGPU {
 
     if (input_(coords) == T(0)) return T(0);
 
-    T minDistance = Eigen::NumTraits<T>::highest();
+    T minDistance = Eigen::numext::sqrt(Eigen::NumTraits<T>::highest());
 
     for (int h = 0; h < height_; ++h) {
       for (int w = 0; w < width_; ++w) {
