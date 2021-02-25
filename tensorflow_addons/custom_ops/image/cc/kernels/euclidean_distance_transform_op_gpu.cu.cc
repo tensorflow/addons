@@ -36,7 +36,7 @@ struct EuclideanDistanceTransformFunctor<GPUDevice, T> {
     output->device(ctx->eigen_device<GPUDevice>()) =
         output->generate(EuclideanDistanceTransformGeneratorGPU<T>(images));
   }
-}
+};
 
 template struct EuclideanDistanceTransformFunctor<GPUDevice, Eigen::half>;
 template struct EuclideanDistanceTransformFunctor<GPUDevice, float>;
