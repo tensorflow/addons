@@ -102,7 +102,10 @@ def run_custom_and_py_ops(request):
         options.disable_custom_kernel()
 
     def _restore_py_ops_value():
-        options._TF_ADDONS_PY_OPS = previous_is_custom_kernel_disabled
+        if previous_is_custom_kernel_disabled:
+            options.disable_custom_kernel()
+        else:
+            options.enable_custom_kernel() 
 
     request.addfinalizer(_restore_py_ops_value)
 
