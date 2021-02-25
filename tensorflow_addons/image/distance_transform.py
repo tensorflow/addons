@@ -36,8 +36,8 @@ def euclidean_dist_transform(
     (http://www.theoryofcomputing.org/articles/v008a019/v008a019.pdf).
 
     Args:
-      images: A tensor of shape `(num_images, num_rows, num_columns, 1)`
-        (NHWC), or `(num_rows, num_columns, 1)` (HWC) or
+      images: A tensor of shape `(num_images, num_rows, num_columns, num_channels)`
+        (NHWC), or `(num_rows, num_columns, num_channels)` (HWC) or
         `(num_rows, num_columns)` (HW).
       dtype: `tf.dtypes.DType` of the output tensor.
       name: The name of the op.
@@ -49,8 +49,6 @@ def euclidean_dist_transform(
 
     Raises:
       TypeError: If `image` is not tf.uint8, or `dtype` is not floating point.
-      ValueError: If `image` more than one channel, or `image` is not of
-        rank between 2 and 4.
     """
 
     with tf.name_scope(name or "euclidean_distance_transform"):
