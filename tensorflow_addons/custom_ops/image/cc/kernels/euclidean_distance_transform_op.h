@@ -29,10 +29,13 @@ limitations under the License.
 namespace tensorflow {
 namespace addons {
 
+typedef Eigen::ThreadPoolDevice CPUDevice;
+typedef Eigen::GpuDevice GPUDevice;
+
 namespace generator {
 
-template <typename Device, typename T>
-class EuclideanDistanceTransformGenerator {
+template <typename T>
+class EuclideanDistanceTransformGeneratorCPU {
  private:
   typename TTypes<T, 4>::ConstTensor input_;
   int64 height_, width_;
@@ -72,7 +75,7 @@ class EuclideanDistanceTransformGenerator {
   }
 
  public:
-  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE EuclideanDistanceTransformGenerator(
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE EuclideanDistanceTransformGeneratorCPU(
       const typename TTypes<T, 4>::ConstTensor& input)
       : input_(input) {
     height_ = input.dimension(1);
@@ -117,34 +120,56 @@ class EuclideanDistanceTransformGenerator {
   }
 };
 
+template <typename T>
+class EuclideanDistanceTransformGeneratorGPU {
+ private:
+  typename TTypes<T, 4>::ConstTensor input_;
+  int64 height_, width_;
+
+ public:
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE EuclideanDistanceTransformGeneratorGPU(
+      const typename TTypes<T, 4>::ConstTensor& input)
+      : input_(input) {
+    height_ = input.dimension(1);
+    width_ = input.dimension(2);
+  }
+
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE T
+  operator()(const Eigen::array<Eigen::DenseIndex, 4>& coords) const {
+    const int64 x = coords[1];
+    const int64 y = coords[2];
+
+    if (input_(coords) == T(0)) return T(0);
+
+    T minDistance = Eigen::NumTraits<T>::highest();
+
+    for (int h = 0; h < height_; ++h) {
+      for (int w = 0; w < width_; ++w) {
+        if (input_({coords[0], h, w, coords[3]}) == T(0)) {
+          T dist =
+              Eigen::numext::sqrt(T((x - h) * (x - h) + (y - w) * (y - w)));
+          minDistance = Eigen::numext::mini(minDistance, dist);
+        }
+      }
+    }
+    return minDistance;
+  }
+};
+
 }  // end namespace generator
 
 namespace functor {
-
-using generator::EuclideanDistanceTransformGenerator;
+using generator::EuclideanDistanceTransformGeneratorCPU;
+using generator::EuclideanDistanceTransformGeneratorGPU;
 
 template <typename Device, typename T>
 struct EuclideanDistanceTransformFunctor {
   typedef typename TTypes<T, 4>::ConstTensor InputType;
   typedef typename TTypes<T, 4>::Tensor OutputType;
-
-  EuclideanDistanceTransformFunctor() {}
-
-  EIGEN_ALWAYS_INLINE
   void operator()(OpKernelContext* ctx, OutputType* output,
-                  const InputType& images) const {
-    auto edt_generator = EuclideanDistanceTransformGenerator<Device, T>(images);
-
-    auto thread_pool = ctx->device()->tensorflow_cpu_worker_threads()->workers;
-    thread_pool->ParallelFor(
-        images.dimension(0), images.dimension(1) * images.dimension(2) * 1000,
-        [&edt_generator, &output](int64 start_batch, int64 end_batch) {
-          edt_generator(*output, start_batch, end_batch);
-        });
-  }
+                  const InputType& images) const;
 };
-
-}  // end namespace functor
+}  // namespace functor
 
 }  // end namespace addons
 }  // end namespace tensorflow

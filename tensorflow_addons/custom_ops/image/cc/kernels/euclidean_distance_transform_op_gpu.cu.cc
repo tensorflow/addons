@@ -27,8 +27,16 @@ namespace addons {
 
 namespace functor {
 
-// Explicit instantiation of the GPU functor.
-typedef Eigen::GpuDevice GPUDevice;
+template <typename T>
+struct EuclideanDistanceTransformFunctor<GPUDevice, T> {
+  typedef typename TTypes<T, 4>::ConstTensor InputType;
+  typedef typename TTypes<T, 4>::Tensor OutputType;
+  void operator()(OpKernelContext *ctx, OutputType *output,
+                  const InputType &images) {
+    output->device(ctx->eigen_device<GPUDevice>()) =
+        output->generate(EuclideanDistanceTransformGeneratorGPU<T>(images));
+  }
+}
 
 template struct EuclideanDistanceTransformFunctor<GPUDevice, Eigen::half>;
 template struct EuclideanDistanceTransformFunctor<GPUDevice, float>;
