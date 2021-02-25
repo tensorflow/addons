@@ -25,7 +25,7 @@ shared object file was displayed above.
 If you want this warning to disappear, either make sure the TensorFlow installed
 is compatible with this version of Addons, or tell TensorFlow Addons to
 prefer using Python implementations and not custom C++/CUDA ones. You can do that
-by changing the _TF_ADDONS_PY_OPS flag
+by changing the `TF_ADDONS_PY_OPS` flag
 either with the environment variable:
 ```bash
 TF_ADDONS_PY_OPS=1 python my_script.py
