@@ -62,9 +62,6 @@ def euclidean_dist_transform(
         images = img_utils.to_4D_image(image_or_images)
         original_ndims = img_utils.get_ndims(image_or_images)
 
-        if images.get_shape()[3] != 1 and images.get_shape()[3] is not None:
-            raise ValueError("`images` must have only one channel")
-
         if dtype not in [tf.float16, tf.float32, tf.float64]:
             raise TypeError("`dtype` must be float16, float32 or float64")
 

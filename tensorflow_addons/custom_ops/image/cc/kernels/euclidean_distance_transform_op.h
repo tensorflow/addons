@@ -38,10 +38,9 @@ template <typename T>
 class EuclideanDistanceTransformGeneratorCPU {
  private:
   typename TTypes<T, 4>::ConstTensor input_;
-  int64 height_, width_;
+  int64 height_, width_, channel_, max_;
 
-  void distance(const std::vector<T>& f, std::vector<T>& d) {
-    int n = d.size();
+  void distance(const std::vector<T>& f, std::vector<T>& d, int n) {
     std::vector<int> v(n);    // locations of parabolas in lower envelope
     std::vector<T> z(n + 1);  // locations of boundaries between parabolas
     int k = 0;                // index of rightmost parabola in lower envelope
@@ -80,6 +79,8 @@ class EuclideanDistanceTransformGeneratorCPU {
       : input_(input) {
     height_ = input.dimension(1);
     width_ = input.dimension(2);
+    channel_ = input.dimension(3);
+    max_ = std::max(height_, width_);
   }
 
   EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void operator()(
@@ -88,32 +89,35 @@ class EuclideanDistanceTransformGeneratorCPU {
       // init edt matrix
       for (int i = 0; i < height_; i++) {
         for (int j = 0; j < width_; j++) {
-          if (input_({k, i, j, 0}) == T(0)) {
-            dp({k, i, j, 0}) = T(0);
-          } else {
-            dp({k, i, j, 0}) = Eigen::NumTraits<T>::highest();
+          for (int c = 0; c < channel_; c++) {
+            if (input_({k, i, j, c}) == T(0)) {
+              dp({k, i, j, c}) = T(0);
+            } else {
+              dp({k, i, j, c}) = Eigen::NumTraits<T>::highest();
+            }
           }
         }
       }
-      std::vector<T> f(std::max(height_, width_));
-      std::vector<T> d(width_);
-      for (int i = 0; i < height_; i++) {
-        for (int j = 0; j < width_; j++) {
-          f[j] = dp({k, i, j, 0});
-        }
-        distance(f, d);
-        for (int j = 0; j < width_; j++) {
-          dp({k, i, j, 0}) = d[j];
-        }
-      }
-      d.resize(height_);
-      for (int j = 0; j < width_; j++) {
+      std::vector<T> f(max_);
+      std::vector<T> d(max_);
+      for (int c = 0; c < channel_; c++) {
         for (int i = 0; i < height_; i++) {
-          f[i] = dp({k, i, j, 0});
+          for (int j = 0; j < width_; j++) {
+            f[j] = dp({k, i, j, c});
+          }
+          distance(f, d, width_);
+          for (int j = 0; j < width_; j++) {
+            dp({k, i, j, c}) = d[j];
+          }
         }
-        distance(f, d);
-        for (int i = 0; i < height_; i++) {
-          dp({k, i, j, 0}) = Eigen::numext::sqrt(d[i]);
+        for (int j = 0; j < width_; j++) {
+          for (int i = 0; i < height_; i++) {
+            f[i] = dp({k, i, j, c});
+          }
+          distance(f, d, height_);
+          for (int i = 0; i < height_; i++) {
+            dp({k, i, j, c}) = Eigen::numext::sqrt(d[i]);
+          }
         }
       }
     }
