@@ -169,7 +169,7 @@ struct EuclideanDistanceTransformFunctor {
   void operator()(OpKernelContext* ctx, OutputType* output,
                   const InputType& images) const;
 };
-}  // namespace functor
+}  // end namespace functor
 
 }  // end namespace addons
 }  // end namespace tensorflow
