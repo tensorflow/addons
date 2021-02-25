@@ -22,6 +22,7 @@ from tensorflow_addons.image import distance_transform as dist_ops
 from tensorflow_addons.utils import test_utils
 
 
+@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
 def test_single_binary_image(dtype):
     image = [
@@ -70,6 +71,7 @@ def test_single_binary_image(dtype):
     test_utils.assert_allclose_according_to_type(output_flat, expected_output)
 
 
+@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
 def test_batch_binary_images(dtype):
     batch_size = 3
@@ -93,6 +95,7 @@ def test_batch_binary_images(dtype):
     test_utils.assert_allclose_according_to_type(output_flat, expected_output)
 
 
+@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.uint8, tf.int32, tf.int64])
 def test_image_with_invalid_dtype(dtype):
     image = [
@@ -108,12 +111,14 @@ def test_image_with_invalid_dtype(dtype):
         _ = dist_ops.euclidean_dist_transform(image, dtype=dtype)
 
 
+@pytest.mark.with_device(["cpu", "gpu"])
 def test_image_with_invalid_shape():
     image = tf.zeros([2, 4, 3], tf.uint8)
     with pytest.raises(ValueError, match="`images` must have only one channel"):
         _ = dist_ops.euclidean_dist_transform(image)
 
 
+@pytest.mark.with_device(["cpu", "gpu"])
 def test_all_zeros():
     image = tf.zeros([10, 10], tf.uint8)
     expected_output = np.zeros([10, 10])
@@ -123,6 +128,7 @@ def test_all_zeros():
         np.testing.assert_allclose(output, expected_output)
 
 
+@pytest.mark.with_device(["cpu", "gpu"])
 def test_all_ones():
     image = tf.ones([10, 10, 1], tf.uint8)
     output = dist_ops.euclidean_dist_transform(image)
