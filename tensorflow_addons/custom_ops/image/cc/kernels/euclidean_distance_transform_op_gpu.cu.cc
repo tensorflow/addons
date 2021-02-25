@@ -32,7 +32,7 @@ struct EuclideanDistanceTransformFunctor<GPUDevice, T> {
   typedef typename TTypes<T, 4>::ConstTensor InputType;
   typedef typename TTypes<T, 4>::Tensor OutputType;
   void operator()(OpKernelContext *ctx, OutputType *output,
-                  const InputType &images) {
+                  const InputType &images) const {
     output->device(ctx->eigen_device<GPUDevice>()) =
         output->generate(EuclideanDistanceTransformGeneratorGPU<T>(images));
   }
