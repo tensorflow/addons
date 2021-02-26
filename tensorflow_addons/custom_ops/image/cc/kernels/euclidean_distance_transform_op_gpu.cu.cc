@@ -30,12 +30,14 @@ namespace addons {
 namespace functor {
 
 template <typename T>
-__global__ void EuclideanDistanceTransformGPUKernel(T *input_ptr,
-                                                    const int input_size,
-                                                    T *output_ptr,
-                                                    const int output_size) {
-  const typename TTypes<T, 4>::ConstTensor images(input_ptr);
-  typename TTypes<T, 4>::Tensor output(output_ptr);
+__global__ void EuclideanDistanceTransformGPUKernel(
+    const batch_size, T *input_ptr, const int input_height,
+    const int input_width, const int input_channel, T *output_ptr,
+    const int output_height, const int output_width, const int output_channel) {
+  const typename TTypes<T, 4>::ConstTensor images(
+      input_ptr, batch_size, input_height, input_width, input_channel);
+  typename TTypes<T, 4>::Tensor output(output_ptr, batch_size, output_height,
+                                       output_width, output_channel);
   auto edt_generator =
       EuclideanDistanceTransformGenerator<GPUDevice, T>(images);
   for (int k : GpuGridRangeX<int>(images.dimension(0))) {
@@ -54,9 +56,10 @@ struct EuclideanDistanceTransformFunctor<GPUDevice, T> {
     GpuLaunchConfig config = GetGpuLaunchConfig(images.size(), d);
     TF_CHECK_OK(GpuLaunchKernel(
         EuclideanDistanceTransformGPUKernel<T>, config.block_count,
-        config.thread_per_block, 0, d.stream(), images.flat<T>().data(),
-        images.flat<T>().size(), output->flat<T>().data(),
-        output->flat<T>().size()));
+        config.thread_per_block, 0, d.stream(), images.dimension(0),
+        images.data(), images.dimension(1), images.dimension(2),
+        images.dimension(3), output->data(), output->dimension(1),
+        output->dimension(2), output->dimension(3)));
   }
 };
 
