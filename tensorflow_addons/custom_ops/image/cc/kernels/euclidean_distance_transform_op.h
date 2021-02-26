@@ -85,7 +85,7 @@ class EuclideanDistanceTransformGenerator {
     height_ = input.dimension(1);
     width_ = input.dimension(2);
     channel_ = input.dimension(3);
-    max_ = std::max(height_, width_);
+    max_ = Eigen::numext::maxi(height_, width_);
   }
 
   EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void operator()(
