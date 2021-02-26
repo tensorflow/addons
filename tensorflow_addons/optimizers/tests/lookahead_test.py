@@ -165,6 +165,50 @@ def test_model_dynamic_lr():
     np.testing.assert_allclose(opt.lr.read_value(), 1e-4)
 
 
+def test_mixed_precision_lr_scheduler():
+    def scheduler(epoch, lr):
+        if epoch < 10:
+            return lr
+        else:
+            return lr * tf.math.exp(-0.1)
+
+    tf.keras.mixed_precision.set_global_policy("mixed_float16")
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Dense(10))
+
+    test_ones = tf.ones([1, 20])
+    inner_optimizer = tf.keras.optimizers.get("adam")
+    optimizer = Lookahead(inner_optimizer)
+    model.compile(
+        optimizer=optimizer,
+        loss="binary_crossentropy",
+        metrics=["accuracy"],
+        run_eagerly=False,
+    )
+
+    callback = tf.keras.callbacks.LearningRateScheduler(scheduler)
+    hist = model.fit(test_ones, tf.constant([0]), 8, epochs=100, callbacks=[callback])
+    assert hist is not None
+
+
+def test_mixed_precision_reduce_lr_on_plateau():
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Dense(10))
+
+    test_ones = tf.ones([1, 20])
+    inner_optimizer = tf.keras.optimizers.get("adam")
+    optimizer = Lookahead(inner_optimizer)
+    model.compile(
+        optimizer=optimizer,
+        loss="binary_crossentropy",
+        metrics=["accuracy"],
+        run_eagerly=False,
+    )
+    callback = tf.keras.callbacks.ReduceLROnPlateau(monitor="accuracy")
+    hist = model.fit(test_ones, tf.constant([0]), 8, epochs=100, callbacks=[callback])
+    assert hist is not None
+
+
 def test_get_config():
     opt = Lookahead("adam", sync_period=10, slow_step_size=0.4)
     opt = tf.keras.optimizers.deserialize(tf.keras.optimizers.serialize(opt))
