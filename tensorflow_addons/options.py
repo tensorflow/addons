@@ -25,12 +25,11 @@ shared object file was displayed above.
 If you want this warning to disappear, either make sure the TensorFlow installed
 is compatible with this version of Addons, or tell TensorFlow Addons to
 prefer using Python implementations and not custom C++/CUDA ones. You can do that
-by changing the `TF_ADDONS_PY_OPS` flag
-either with the environment variable:
+by setting the enviornment variable `TF_ADDONS_PY_OPS=1`:
 ```bash
 TF_ADDONS_PY_OPS=1 python my_script.py
 ```
-or in your code, after your imports:
+or run `tfa.options.disable_custom_kernel()` in your code, after your imports:
 ```python
 import tensorflow_addons as tfa
 import ...
