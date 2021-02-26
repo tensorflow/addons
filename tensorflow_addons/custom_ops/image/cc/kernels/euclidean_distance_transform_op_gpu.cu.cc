@@ -26,18 +26,27 @@ namespace tensorflow {
 namespace addons {
 
 namespace functor {
+typedef typename TTypes<T, 4>::ConstTensor InputType;
+typedef typename TTypes<T, 4>::Tensor OutputType;
+
+template <typename T>
+__global__ void EuclideanDistanceTransformGPUKernel(const InputType &images) {
+  auto edt_generator =
+      EuclideanDistanceTransformGenerator<GPUDevice, T>(images);
+  for (int k : GpuGridRangeX<int>(images.dimension(0))) {
+    edt_generator(*output, k);
+  }
+}
 
 template <typename T>
 struct EuclideanDistanceTransformFunctor<GPUDevice, T> {
-  typedef typename TTypes<T, 4>::ConstTensor InputType;
-  typedef typename TTypes<T, 4>::Tensor OutputType;
   void operator()(OpKernelContext *ctx, OutputType *output,
                   const InputType &images) const {
-    auto edt_generator =
-        EuclideanDistanceTransformGenerator<GPUDevice, T>(images);
-    for (int k : GpuGridRangeX<int>(images.dimension(0))) {
-      edt_generator(*output, k);
-    }
+    auto d = ctx->eigen_device<GPUDevice>();
+    GpuLaunchConfig config = GetGpuLaunchConfig(images.size(), d);
+    TF_CHECK_OK(GpuLaunchKernel(EuclideanDistanceTransformGPUKernel<T>,
+                                config.block_count, config.thread_per_block, 0,
+                                d.stream(), images));
   }
 };
 
