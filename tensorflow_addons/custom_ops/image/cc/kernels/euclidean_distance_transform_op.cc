@@ -36,13 +36,16 @@ struct EuclideanDistanceTransformFunctor<CPUDevice, T> {
   typedef typename TTypes<T, 4>::Tensor OutputType;
   void operator()(OpKernelContext *ctx, OutputType *output,
                   const InputType &images) const {
-    auto edt_generator = EuclideanDistanceTransformGeneratorCPU<T>(images);
+    auto edt_generator =
+        EuclideanDistanceTransformGenerator<CPUDevice, T>(images);
 
     auto thread_pool = ctx->device()->tensorflow_cpu_worker_threads()->workers;
     thread_pool->ParallelFor(
         images.dimension(0), images.dimension(1) * images.dimension(2) * 1000,
         [&edt_generator, &output](int64 start_batch, int64 end_batch) {
-          edt_generator(*output, start_batch, end_batch);
+          for (int k = start_batch; k < end_batch; k++) {
+            edt_generator(*output, k);
+          }
         });
   }
 };

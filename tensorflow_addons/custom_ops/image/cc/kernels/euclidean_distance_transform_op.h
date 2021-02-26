@@ -34,19 +34,22 @@ typedef Eigen::GpuDevice GPUDevice;
 
 namespace generator {
 
-template <typename T>
-class EuclideanDistanceTransformGeneratorCPU {
+template <typename Device, typename T>
+class EuclideanDistanceTransformGenerator {
  private:
   typename TTypes<T, 4>::ConstTensor input_;
   int64 height_, width_, channel_, max_;
 
-  void distance(const std::vector<T>& f, std::vector<T>& d, int n) {
-    std::vector<int> v(n);    // locations of parabolas in lower envelope
-    std::vector<T> z(n + 1);  // locations of boundaries between parabolas
-    int k = 0;                // index of rightmost parabola in lower envelope
-    v[0] = 0;
-    z[0] = -Eigen::NumTraits<T>::highest();
-    z[1] = Eigen::NumTraits<T>::highest();
+  void distance(const Eigen::Array<T, Eigen::Dynamic, 1>& f,
+                Eigen::Array<T, Eigen::Dynamic, 1>& d, int n) {
+    Eigen::Array<int, Eigen::Dynamic, 1> v(
+        n);  // locations of parabolas in lower envelope
+    Eigen::Array<T, Eigen::Dynamic, 1> z(
+        n + 1);  // locations of boundaries between parabolas
+    int k = 0;   // index of rightmost parabola in lower envelope
+    v(0) = 0;
+    z(0) = -Eigen::NumTraits<T>::highest();
+    z(1) = Eigen::NumTraits<T>::highest();
     // compute lowest envelope:
     for (int q = 1; q <= n - 1; q++) {
       T s = T(0);
@@ -55,26 +58,26 @@ class EuclideanDistanceTransformGeneratorCPU {
         k--;
         // compute horizontal position of intersection between the parabola from
         // q and the current lowest parabola
-        s = ((f[q] + T(q * q)) - (f[v[k]] + T(v[k] * v[k]))) /
-            T(2 * (q - v[k]));
-      } while (s <= z[k]);
+        s = ((f(q) + T(q * q)) - (f(v(k)) + T(v(k) * v(k)))) /
+            T(2 * (q - v(k)));
+      } while (s <= z(k));
       k++;
-      v[k] = q;
-      z[k] = s;
-      z[k + 1] = Eigen::NumTraits<T>::highest();
+      v(k) = q;
+      z(k) = s;
+      z(k + 1) = Eigen::NumTraits<T>::highest();
     }
     // fill in values of distance transform
     k = 0;
     for (int q = 0; q <= n - 1; q++) {
-      while (z[k + 1] < T(q)) {
+      while (z(k + 1) < T(q)) {
         k++;
       }
-      d[q] = T(std::pow(q - v[k], 2)) + f[v[k]];
+      d(q) = T(Eigen::numext::pow(q - v(k), 2)) + f(v(k));
     }
   }
 
  public:
-  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE EuclideanDistanceTransformGeneratorCPU(
+  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE EuclideanDistanceTransformGenerator(
       const typename TTypes<T, 4>::ConstTensor& input)
       : input_(input) {
     height_ = input.dimension(1);
@@ -84,88 +87,48 @@ class EuclideanDistanceTransformGeneratorCPU {
   }
 
   EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void operator()(
-      typename TTypes<T, 4>::Tensor& dp, int64 start_batch, int64 end_batch) {
-    for (int k = start_batch; k < end_batch; k++) {
-      // init edt matrix
+      typename TTypes<T, 4>::Tensor& dp, int k) {
+    // init edt matrix
+    for (int i = 0; i < height_; i++) {
+      for (int j = 0; j < width_; j++) {
+        for (int c = 0; c < channel_; c++) {
+          if (input_({k, i, j, c}) == T(0)) {
+            dp({k, i, j, c}) = T(0);
+          } else {
+            dp({k, i, j, c}) = Eigen::NumTraits<T>::highest();
+          }
+        }
+      }
+    }
+    Eigen::Array<T, Eigen::Dynamic, 1> f(max_);
+    Eigen::Array<T, Eigen::Dynamic, 1> d(max_);
+    for (int c = 0; c < channel_; c++) {
       for (int i = 0; i < height_; i++) {
         for (int j = 0; j < width_; j++) {
-          for (int c = 0; c < channel_; c++) {
-            if (input_({k, i, j, c}) == T(0)) {
-              dp({k, i, j, c}) = T(0);
-            } else {
-              dp({k, i, j, c}) = Eigen::NumTraits<T>::highest();
-            }
-          }
+          f(j) = dp({k, i, j, c});
         }
-      }
-      std::vector<T> f(max_);
-      std::vector<T> d(max_);
-      for (int c = 0; c < channel_; c++) {
-        for (int i = 0; i < height_; i++) {
-          for (int j = 0; j < width_; j++) {
-            f[j] = dp({k, i, j, c});
-          }
-          distance(f, d, width_);
-          for (int j = 0; j < width_; j++) {
-            dp({k, i, j, c}) = d[j];
-          }
-        }
+        distance(f, d, width_);
         for (int j = 0; j < width_; j++) {
-          for (int i = 0; i < height_; i++) {
-            f[i] = dp({k, i, j, c});
-          }
-          distance(f, d, height_);
-          for (int i = 0; i < height_; i++) {
-            dp({k, i, j, c}) = Eigen::numext::sqrt(d[i]);
-          }
+          dp({k, i, j, c}) = d(j);
+        }
+      }
+      for (int j = 0; j < width_; j++) {
+        for (int i = 0; i < height_; i++) {
+          f(i) = dp({k, i, j, c});
+        }
+        distance(f, d, height_);
+        for (int i = 0; i < height_; i++) {
+          dp({k, i, j, c}) = Eigen::numext::sqrt(d(i));
         }
       }
     }
-  }
-};
-
-template <typename T>
-class EuclideanDistanceTransformGeneratorGPU {
- private:
-  typename TTypes<T, 4>::ConstTensor input_;
-  int64 height_, width_;
-
- public:
-  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE EuclideanDistanceTransformGeneratorGPU(
-      const typename TTypes<T, 4>::ConstTensor& input)
-      : input_(input) {
-    height_ = input.dimension(1);
-    width_ = input.dimension(2);
-  }
-
-  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE T
-  operator()(const Eigen::array<Eigen::DenseIndex, 4>& coords) const {
-    const int64 x = coords[1];
-    const int64 y = coords[2];
-
-    if (input_(coords) == T(0)) return T(0);
-
-    T minDistance = Eigen::numext::sqrt(Eigen::NumTraits<T>::highest());
-
-    for (int h = 0; h < height_; ++h) {
-      for (int w = 0; w < width_; ++w) {
-        if (input_({coords[0], h, w, coords[3]}) == T(0)) {
-          T dist =
-              Eigen::numext::sqrt(T((x - h) * (x - h) + (y - w) * (y - w)));
-          minDistance = Eigen::numext::mini(minDistance, dist);
-        }
-      }
-    }
-    return minDistance;
   }
 };
 
 }  // end namespace generator
 
 namespace functor {
-using generator::EuclideanDistanceTransformGeneratorCPU;
-using generator::EuclideanDistanceTransformGeneratorGPU;
-
+using generator::EuclideanDistanceTransformGenerator;
 template <typename Device, typename T>
 struct EuclideanDistanceTransformFunctor {
   typedef typename TTypes<T, 4>::ConstTensor InputType;
