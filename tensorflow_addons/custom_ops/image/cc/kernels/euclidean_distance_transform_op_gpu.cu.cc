@@ -28,11 +28,9 @@ namespace tensorflow {
 namespace addons {
 
 namespace functor {
-typedef typename TTypes<T, 4>::ConstTensor InputType;
-typedef typename TTypes<T, 4>::Tensor OutputType;
 
 template <typename T>
-__global__ void EuclideanDistanceTransformGPUKernel(const InputType &images) {
+__global__ void EuclideanDistanceTransformGPUKernel(const typename TTypes<T, 4>::ConstTensor &images) {
   auto edt_generator =
       EuclideanDistanceTransformGenerator<GPUDevice, T>(images);
   for (int k : GpuGridRangeX<int>(images.dimension(0))) {
@@ -42,6 +40,9 @@ __global__ void EuclideanDistanceTransformGPUKernel(const InputType &images) {
 
 template <typename T>
 struct EuclideanDistanceTransformFunctor<GPUDevice, T> {
+  typedef typename TTypes<T, 4>::ConstTensor InputType;
+  typedef typename TTypes<T, 4>::Tensor OutputType;
+
   void operator()(OpKernelContext *ctx, OutputType *output,
                   const InputType &images) const {
     auto d = ctx->eigen_device<GPUDevice>();
