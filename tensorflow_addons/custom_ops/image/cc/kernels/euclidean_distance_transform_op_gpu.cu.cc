@@ -54,7 +54,7 @@ struct EuclideanDistanceTransformFunctor<GPUDevice, T> {
   void operator()(OpKernelContext *ctx, OutputType *output,
                   const InputType &images) const {
     auto d = ctx->eigen_device<GPUDevice>();
-    GpuLaunchConfig config = GetGpuLaunchConfig(images.dimension(0), d);
+    GpuLaunchConfig config = GetGpuLaunchConfig(output->size(), d);
     TF_CHECK_OK(GpuLaunchKernel(
         EuclideanDistanceTransformGPUKernel<T>, config.block_count,
         config.thread_per_block, 0, d.stream(), int(images.dimension(0)),
