@@ -34,8 +34,8 @@ __global__ void EuclideanDistanceTransformGPUKernel(
     const int batch_size, T *input_ptr, const int input_height,
     const int input_width, const int input_channel, T *output_ptr,
     const int output_height, const int output_width, const int output_channel) {
-  typename TTypes<T, 4>::ConstTensor images(
-      input_ptr, batch_size, input_height, input_width, input_channel);
+  typename TTypes<T, 4>::ConstTensor images(input_ptr, batch_size, input_height,
+                                            input_width, input_channel);
   typename TTypes<T, 4>::Tensor output(output_ptr, batch_size, output_height,
                                        output_width, output_channel);
   auto edt_generator =
@@ -56,10 +56,10 @@ struct EuclideanDistanceTransformFunctor<GPUDevice, T> {
     GpuLaunchConfig config = GetGpuLaunchConfig(images.size(), d);
     TF_CHECK_OK(GpuLaunchKernel(
         EuclideanDistanceTransformGPUKernel<T>, config.block_count,
-        config.thread_per_block, 0, d.stream(), images.dimension(0),
-        images.data(), images.dimension(1), images.dimension(2),
-        images.dimension(3), output->data(), output->dimension(1),
-        output->dimension(2), output->dimension(3)));
+        config.thread_per_block, 0, d.stream(), int(images.dimension(0)),
+        images.data(), int(images.dimension(1)), int(images.dimension(2)),
+        int(images.dimension(3)), output->data(), int(output->dimension(1)),
+        int(output->dimension(2)), int(output->dimension(3))));
   }
 };
 
