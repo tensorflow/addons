@@ -15,6 +15,7 @@
 
 import tensorflow as tf
 from tensorflow_addons.utils import types
+from tensorflow_addons.utils.types import FloatTensorLike
 
 from typeguard import typechecked
 
@@ -45,6 +46,7 @@ class Lookahead(tf.keras.optimizers.Optimizer):
         self,
         optimizer: types.Optimizer,
         sync_period: int = 6,
+        learning_rate: FloatTensorLike = 0.001,
         slow_step_size: types.FloatTensorLike = 0.5,
         name: str = "Lookahead",
         **kwargs,
@@ -56,6 +58,8 @@ class Lookahead(tf.keras.optimizers.Optimizer):
                 and apply the gradients.
             sync_period: An integer. The synchronization period of lookahead.
                 Enable lookahead mechanism by setting it with a positive value.
+            learning_rate: A `Tensor` or a floating point value.
+                The learning rate.
             slow_step_size: A floating point value.
                 The ratio for updating the slow weights.
             name: Optional name for the operations created when applying
@@ -79,6 +83,7 @@ class Lookahead(tf.keras.optimizers.Optimizer):
         self._optimizer = optimizer
         self._set_hyper("sync_period", sync_period)
         self._set_hyper("slow_step_size", slow_step_size)
+        self._set_hyper("learning_rate", tf.Variable(learning_rate, dtype=tf.float32))
         self._initialized = False
         self._track_trackable(self._optimizer, "lh_base_optimizer")
 
