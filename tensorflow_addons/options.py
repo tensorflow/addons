@@ -11,7 +11,7 @@ except KeyError:
     else:
         _TF_ADDONS_PY_OPS = True
 
-FALLBACK_WARNING_TEMPLATE = """{}
+_FALLBACK_WARNING_TEMPLATE = """{}
 
 The {} C++/CUDA custom op could not be loaded.
 For this reason, Addons will fallback to an implementation written
@@ -42,7 +42,7 @@ tfa.options.disable_custom_kernel()
 
 
 def warn_fallback(op_name):
-    warning_msg = FALLBACK_WARNING_TEMPLATE.format(traceback.format_exc(), op_name)
+    warning_msg = _FALLBACK_WARNING_TEMPLATE.format(traceback.format_exc(), op_name)
     warnings.warn(warning_msg, RuntimeWarning)
     disable_custom_kernel()
 
