@@ -31,14 +31,13 @@ namespace functor {
 
 template <typename T>
 __global__ void EuclideanDistanceTransformGPUKernel(
-    const int batch_size, const T *__restrict__ input_ptr,
-    const int input_height, const int input_width, const int input_channel,
-    T *__restrict__ output_ptr, const int output_height, const int output_width,
-    const int output_channel) {
-  typename TTypes<T, 4>::ConstTensor images(input_ptr, batch_size, input_height,
-                                            input_width, input_channel);
-  typename TTypes<T, 4>::Tensor output(output_ptr, batch_size, output_height,
-                                       output_width, output_channel);
+    const T *__restrict__ input_ptr, T *__restrict__ output_ptr,
+    const int batch_size, const int height, const int width,
+    const int channel) {
+  typename TTypes<T, 4>::ConstTensor images(input_ptr, batch_size, height,
+                                            width, channel);
+  typename TTypes<T, 4>::Tensor output(output_ptr, batch_size, height, width,
+                                       channel);
   auto edt_generator =
       EuclideanDistanceTransformGenerator<GPUDevice, T>(images);
   for (int k : GpuGridRangeX<int>(images.dimension(0))) {
@@ -55,12 +54,13 @@ struct EuclideanDistanceTransformFunctor<GPUDevice, T> {
                   const InputType &images) const {
     auto d = ctx->eigen_device<GPUDevice>();
     GpuLaunchConfig config = GetGpuLaunchConfig(output->size(), d);
-    TF_CHECK_OK(GpuLaunchKernel(
-        EuclideanDistanceTransformGPUKernel<T>, config.block_count,
-        config.thread_per_block, 0, d.stream(), int(images.dimension(0)),
-        images.data(), int(images.dimension(1)), int(images.dimension(2)),
-        int(images.dimension(3)), output->data(), int(output->dimension(1)),
-        int(output->dimension(2)), int(output->dimension(3))));
+    TF_CHECK_OK(GpuLaunchKernel(EuclideanDistanceTransformGPUKernel<T>,
+                                config.block_count, config.thread_per_block, 0,
+                                d.stream(), images.data(), output->data(),
+                                static_cast<int>(images.dimension(0)),
+                                static_cast<int>(images.dimension(1)),
+                                static_cast<int>(images.dimension(2)),
+                                static_cast<int>(images.dimension(3))));
   }
 };
 
