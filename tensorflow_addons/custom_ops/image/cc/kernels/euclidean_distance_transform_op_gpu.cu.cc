@@ -31,10 +31,10 @@ namespace functor {
 
 template <typename T>
 __global__ void EuclideanDistanceTransformGPUKernel(
-    const batch_size, T *input_ptr, const int input_height,
+    const int batch_size, T *input_ptr, const int input_height,
     const int input_width, const int input_channel, T *output_ptr,
     const int output_height, const int output_width, const int output_channel) {
-  const typename TTypes<T, 4>::ConstTensor images(
+  typename TTypes<T, 4>::ConstTensor images(
       input_ptr, batch_size, input_height, input_width, input_channel);
   typename TTypes<T, 4>::Tensor output(output_ptr, batch_size, output_height,
                                        output_width, output_channel);
