@@ -31,9 +31,10 @@ namespace functor {
 
 template <typename T>
 __global__ void EuclideanDistanceTransformGPUKernel(
-    const int batch_size, const T *input_ptr, const int input_height,
-    const int input_width, const int input_channel, T *output_ptr,
-    const int output_height, const int output_width, const int output_channel) {
+    const int batch_size, const T __restrict__ *input_ptr,
+    const int input_height, const int input_width, const int input_channel,
+    T __restrict__ *output_ptr, const int output_height, const int output_width,
+    const int output_channel) {
   typename TTypes<T, 4>::ConstTensor images(input_ptr, batch_size, input_height,
                                             input_width, input_channel);
   typename TTypes<T, 4>::Tensor output(output_ptr, batch_size, output_height,
@@ -53,7 +54,7 @@ struct EuclideanDistanceTransformFunctor<GPUDevice, T> {
   void operator()(OpKernelContext *ctx, OutputType *output,
                   const InputType &images) const {
     auto d = ctx->eigen_device<GPUDevice>();
-    GpuLaunchConfig config = GetGpuLaunchConfig(images.size(), d);
+    GpuLaunchConfig config = GetGpuLaunchConfig(images.dimension(0), d);
     TF_CHECK_OK(GpuLaunchKernel(
         EuclideanDistanceTransformGPUKernel<T>, config.block_count,
         config.thread_per_block, 0, d.stream(), int(images.dimension(0)),

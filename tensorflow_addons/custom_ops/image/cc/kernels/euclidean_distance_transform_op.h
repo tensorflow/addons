@@ -40,8 +40,9 @@ class EuclideanDistanceTransformGenerator {
   typename TTypes<T, 4>::ConstTensor input_;
   int64 height_, width_, channel_, max_;
 
-  void distance(const Eigen::Array<T, Eigen::Dynamic, 1>& f,
-                Eigen::Array<T, Eigen::Dynamic, 1>& d, int n) {
+  EIGEN_DEVICE_FUNC void distance(const Eigen::Array<T, Eigen::Dynamic, 1>& f,
+                                  Eigen::Array<T, Eigen::Dynamic, 1>& d,
+                                  int n) {
     Eigen::Array<int, Eigen::Dynamic, 1> v(
         n);  // locations of parabolas in lower envelope
     Eigen::Array<T, Eigen::Dynamic, 1> z(
