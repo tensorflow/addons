@@ -59,7 +59,8 @@ class EuclideanDistanceTransformGenerator {
         k--;
         // compute horizontal position of intersection between the parabola from
         // q and the current lowest parabola
-        s = ((f(q) + static_cast<T>(q * q)) - (f(v(k)) + static_cast<T>(v(k) * v(k)))) /
+        s = ((f(q) + static_cast<T>(q * q)) -
+             (f(v(k)) + static_cast<T>(v(k) * v(k)))) /
             static_cast<T>(2 * (q - v(k)));
       } while (s <= z(k));
       k++;
