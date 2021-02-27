@@ -36,11 +36,7 @@ typedef Eigen::GpuDevice GPUDevice;
   (k * height * width * channels + i * width * channels + j * channels + c)
 
 template <typename T>
-EIGEN_DEVICE_FUNC void distance(const T* f, T* d, int n) {
-  // locations of parabolas in lower envelope
-  int* v = new int[n];
-  // locations of boundaries between parabolas
-  T* z = new T[n + 1];
+EIGEN_DEVICE_FUNC void distance(const T* f, T* d, int* v, T* z, int n) {
   // index of rightmost parabola in lower envelope
   int k = 0;
   v[0] = 0;
@@ -71,8 +67,6 @@ EIGEN_DEVICE_FUNC void distance(const T* f, T* d, int n) {
     }
     d[q] = static_cast<T>(Eigen::numext::pow(q - v[k], 2)) + f[v[k]];
   }
-  delete v;
-  delete z;
 }
 
 template <typename T>
@@ -92,12 +86,18 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void edt_sample(const T* input, T* output,
   int max = Eigen::numext::maxi(height, width);
   T* f = new T[max];
   T* d = new T[max];
+  // locations of parabolas in lower envelope
+  int* vw = new int[width];
+  int* vh = new int[height];
+  // locations of boundaries between parabolas
+  T* zw = new T[width + 1];
+  T* zh = new T[height + 1];
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
       auto index = GETINDEX(i, j, k, c, height, width, channels);
       f[j] = output[index];
     }
-    distance<T>(f, d, width);
+    distance<T>(f, d, vw, zw, width);
     for (int j = 0; j < width; j++) {
       auto index = GETINDEX(i, j, k, c, height, width, channels);
       output[index] = d[j];
@@ -108,7 +108,7 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void edt_sample(const T* input, T* output,
       auto index = GETINDEX(i, j, k, c, height, width, channels);
       f[i] = output[index];
     }
-    distance<T>(f, d, height);
+    distance<T>(f, d, vh, zh, height);
     for (int i = 0; i < height; i++) {
       auto index = GETINDEX(i, j, k, c, height, width, channels);
       output[index] = Eigen::numext::sqrt(d[i]);
@@ -116,6 +116,10 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void edt_sample(const T* input, T* output,
   }
   delete f;
   delete d;
+  delete vh;
+  delete vw;
+  delete zh;
+  delete zw;
 }
 
 namespace functor {
