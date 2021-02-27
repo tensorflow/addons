@@ -45,7 +45,7 @@ fitting the following criteria:
 
 Suggested guidelines for new feature requests:
 
-* The feature contains an official refrence implementation.
+* The feature contains an official reference implementation.
 * Should be able to reproduce the same results in a published paper.
 * Should provide out-of-box performance.
 * The academic paper exceeds 50 citations.
