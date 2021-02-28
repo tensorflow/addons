@@ -186,7 +186,7 @@ class Lookahead(tf.keras.optimizers.Optimizer):
         # Backwards compatibility with Keras optimizers.
         if name == "lr":
             name = "learning_rate"
-            self._optimizer._set_hyper(name, value)
+            self._optimizer._set_hyper(name, value)  # Delegate to internal optimizer
         if hasattr(self, "_hyper") and name in self._hyper:
             self._set_hyper(name, value)
         else:
