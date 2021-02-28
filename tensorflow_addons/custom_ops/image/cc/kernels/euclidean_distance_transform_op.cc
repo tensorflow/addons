@@ -121,9 +121,9 @@ TF_CALL_double(DECLARE_FUNCTOR);
                               .TypeConstraint<TYPE>("dtype"),       \
                           EuclideanDistanceTransform<GPUDevice, TYPE>)
 
-TF_CALL_half(REGISTER);
+// TF_CALL_half(REGISTER);
 TF_CALL_float(REGISTER);
-TF_CALL_double(REGISTER);
+// TF_CALL_double(REGISTER);
 
 #undef REGISTER
 
