@@ -32,11 +32,12 @@ namespace addons {
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
 
-#define GETINDEX(i, j, k, c, height, width, channels) \
+#define GETINDEX(i, j, k, c) \
   (k * height * width * channels + i * width * channels + j * channels + c)
 
 template <typename T>
-EIGEN_DEVICE_FUNC void distance(const T* f, T* d, int* v, T* z, int n) {
+EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void distance(const T* f, T* d, int* v,
+                                                    T* z, int n) {
   // index of rightmost parabola in lower envelope
   int k = 0;
   v[0] = 0;
@@ -70,13 +71,14 @@ EIGEN_DEVICE_FUNC void distance(const T* f, T* d, int* v, T* z, int n) {
 }
 
 template <typename T>
-EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void edt_sample(const T* input, T* output,
-                                                      int k, int c, int height,
-                                                      int width, int channels) {
+EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void edt_sample(const uint8* input,
+                                                      T* output, int k, int c,
+                                                      int height, int width,
+                                                      int channels) {
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      auto index = GETINDEX(i, j, k, c, height, width, channels);
-      if (input[index] == static_cast<T>(0)) {
+      int index = GETINDEX(i, j, k, c);
+      if (input[index] == 0) {
         output[index] = static_cast<T>(0);
       } else {
         output[index] = Eigen::NumTraits<T>::highest();
@@ -94,23 +96,23 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void edt_sample(const T* input, T* output,
   T* zh = new T[height + 1];
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      auto index = GETINDEX(i, j, k, c, height, width, channels);
+      int index = GETINDEX(i, j, k, c);
       f[j] = output[index];
     }
     distance<T>(f, d, vw, zw, width);
     for (int j = 0; j < width; j++) {
-      auto index = GETINDEX(i, j, k, c, height, width, channels);
+      int index = GETINDEX(i, j, k, c);
       output[index] = d[j];
     }
   }
   for (int j = 0; j < width; j++) {
     for (int i = 0; i < height; i++) {
-      auto index = GETINDEX(i, j, k, c, height, width, channels);
+      int index = GETINDEX(i, j, k, c);
       f[i] = output[index];
     }
     distance<T>(f, d, vh, zh, height);
     for (int i = 0; i < height; i++) {
-      auto index = GETINDEX(i, j, k, c, height, width, channels);
+      int index = GETINDEX(i, j, k, c);
       output[index] = Eigen::numext::sqrt(d[i]);
     }
   }
@@ -125,7 +127,7 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void edt_sample(const T* input, T* output,
 namespace functor {
 template <typename Device, typename T>
 struct EuclideanDistanceTransformFunctor {
-  typedef typename TTypes<T, 4>::ConstTensor InputType;
+  typedef typename TTypes<uint8, 4>::ConstTensor InputType;
   typedef typename TTypes<T, 4>::Tensor OutputType;
   void operator()(OpKernelContext* ctx, OutputType* output,
                   const InputType& images) const;

@@ -31,7 +31,7 @@ namespace functor {
 
 template <typename T>
 __global__ void EuclideanDistanceTransformGPUKernel(
-    const T *__restrict__ input_ptr, T *__restrict__ output_ptr,
+    const uint8 *__restrict__ input_ptr, T *__restrict__ output_ptr,
     const int batch_size, const int height, const int width,
     const int channels) {
   for (int index : GpuGridRangeX<int>(batch_size * channels)) {
@@ -44,7 +44,7 @@ __global__ void EuclideanDistanceTransformGPUKernel(
 
 template <typename T>
 struct EuclideanDistanceTransformFunctor<GPUDevice, T> {
-  typedef typename TTypes<T, 4>::ConstTensor InputType;
+  typedef typename TTypes<uint8, 4>::ConstTensor InputType;
   typedef typename TTypes<T, 4>::Tensor OutputType;
 
   void operator()(OpKernelContext *ctx, OutputType *output,

@@ -32,7 +32,7 @@ namespace functor {
 
 template <typename T>
 struct EuclideanDistanceTransformFunctor<CPUDevice, T> {
-  typedef typename TTypes<T, 4>::ConstTensor InputType;
+  typedef typename TTypes<uint8, 4>::ConstTensor InputType;
   typedef typename TTypes<T, 4>::Tensor OutputType;
   void operator()(OpKernelContext *ctx, OutputType *output,
                   const InputType &images) const {
@@ -79,7 +79,7 @@ class EuclideanDistanceTransform : public OpKernel {
     OP_REQUIRES_OK(ctx, ctx->allocate_output(0, images_t.shape(), &output_t));
 
     auto output = output_t->tensor<T, 4>();
-    auto images = images_t.tensor<T, 4>();
+    auto images = images_t.tensor<uint8, 4>();
     functor_(ctx, &output, images);
   }
 };

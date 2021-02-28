@@ -64,7 +64,6 @@ def euclidean_dist_transform(
         if dtype not in [tf.float16, tf.float32, tf.float64]:
             raise TypeError("`dtype` must be float16, float32 or float64")
 
-        images = tf.cast(images, dtype)
-        output = _image_so.ops.addons_euclidean_distance_transform(images)
+        output = _image_so.ops.addons_euclidean_distance_transform(images, dtype)
 
         return img_utils.from_4D_image(output, original_ndims)
