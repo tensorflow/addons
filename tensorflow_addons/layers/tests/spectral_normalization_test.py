@@ -110,20 +110,22 @@ def test_model_build(base_layer_fn, input_shape):
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_compute_with_mixed_precision():
-  tf.keras.mixed_precision.set_global_policy(tf.keras.mixed_precision.Policy('mixed_float16'))
-  inputs = tf.keras.layers.Input(shape=[2, 2, 1])
-
-  base_layer = tf.keras.layers.Conv2D(
-    1, (2, 2), kernel_initializer=tf.constant_initializer(value=2)
-  )
-  sn_layer = spectral_normalization.SpectralNormalization(base_layer)
-  model = tf.keras.models.Sequential(layers=[inputs, sn_layer])
-
-  for training in [False, True]:
-    _ = model(
-      tf.constant(np.ones((1, 2, 2, 1), dtype=np.float32)), training=training
+    tf.keras.mixed_precision.set_global_policy(
+        tf.keras.mixed_precision.Policy("mixed_float16")
     )
-    assert model.layers[0].u.dtype == tf.float16
+    inputs = tf.keras.layers.Input(shape=[2, 2, 1])
+
+    base_layer = tf.keras.layers.Conv2D(
+        1, (2, 2), kernel_initializer=tf.constant_initializer(value=2)
+    )
+    sn_layer = spectral_normalization.SpectralNormalization(base_layer)
+    model = tf.keras.models.Sequential(layers=[inputs, sn_layer])
+
+    for training in [False, True]:
+        _ = model(
+            tf.constant(np.ones((1, 2, 2, 1), dtype=np.float32)), training=training
+        )
+        assert model.layers[0].u.dtype == tf.float16
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
