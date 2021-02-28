@@ -180,3 +180,14 @@ class Lookahead(tf.keras.optimizers.Optimizer):
             config.pop("optimizer"), custom_objects=custom_objects
         )
         return cls(optimizer, **config)
+
+    def __setattr__(self, name, value):
+        """Override setattr to support dynamic hyperparameter setting."""
+        # Backwards compatibility with Keras optimizers.
+        if name == "lr":
+            name = "learning_rate"
+            self._optimizer._set_hyper(name, value)
+        if hasattr(self, "_hyper") and name in self._hyper:
+            self._set_hyper(name, value)
+        else:
+            super(Lookahead, self).__setattr__(name, value)
