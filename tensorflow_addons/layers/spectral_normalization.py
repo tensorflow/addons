@@ -62,7 +62,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
                 "`power_iterations={}`".format(power_iterations)
             )
         self.power_iterations = power_iterations
-        self.layer_compute_dtype = layer.compute_dtype
+        self._layer_compute_dtype = layer.compute_dtype
         self._initialized = False
 
     def build(self, input_shape):
@@ -88,7 +88,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
             initializer=tf.initializers.TruncatedNormal(stddev=0.02),
             trainable=False,
             name="sn_u",
-            dtype=self.layer_compute_dtype,
+            dtype=self._layer_compute_dtype,
         )
 
     def call(self, inputs, training=None):
