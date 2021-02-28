@@ -14,6 +14,7 @@
 # =============================================================================
 
 import tensorflow as tf
+from tensorflow.python.keras.mixed_precision import autocast_variable
 from typeguard import typechecked
 
 
@@ -61,6 +62,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
                 "`power_iterations={}`".format(power_iterations)
             )
         self.power_iterations = power_iterations
+        self.layer_compute_dtype = layer.compute_dtype
         self._initialized = False
 
     def build(self, input_shape):
@@ -86,7 +88,7 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
             initializer=tf.initializers.TruncatedNormal(stddev=0.02),
             trainable=False,
             name="sn_u",
-            dtype=self.w.dtype,
+            dtype=self.layer_compute_dtype,
         )
 
     def call(self, inputs, training=None):
@@ -121,7 +123,9 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
 
             sigma = tf.matmul(tf.matmul(v, w), u, transpose_b=True)
 
-            self.w.assign(self.w / sigma)
+            with autocast_variable.enable_auto_cast_variables(None):
+              sigma = tf.cast(sigma, self.w.dtype)
+              self.w.assign(self.w / sigma)
             self.u.assign(u)
 
     def get_config(self):
