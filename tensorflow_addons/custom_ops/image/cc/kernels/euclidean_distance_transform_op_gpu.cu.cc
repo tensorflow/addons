@@ -37,8 +37,8 @@ __global__ void EuclideanDistanceTransformGPUKernel(
   for (int index : GpuGridRangeX<int>(batch_size * channels)) {
     int batch_id = index / channels;
     int channel = index % channels;
-    EuclideanDistanceTransform<T>(input_ptr, output_ptr, batch_id, channel,
-                                  height, width, channels);
+    EuclideanDistanceTransformSample<T>(input_ptr, output_ptr, batch_id,
+                                        channel, height, width, channels);
   }
 }
 

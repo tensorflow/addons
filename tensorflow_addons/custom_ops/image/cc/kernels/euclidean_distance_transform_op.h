@@ -71,7 +71,7 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void Distance(const T* f, T* d, int* v,
 }
 
 template <typename T>
-EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransform(
+EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransformSample(
     const uint8* input, T* output, int k, int c, int height, int width,
     int channels) {
   for (int i = 0; i < height; i++) {
