@@ -70,26 +70,20 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
         """Creates a Matthews Correlation Coefficient instance."""
         super().__init__(name=name, dtype=dtype)
         self.num_classes = num_classes
-        self.true_positives = self.add_weight(
-            "true_positives",
+        self.true_sum = self.add_weight(
+            "true_sum", shape=[self.num_classes], initializer="zeros", dtype=self.dtype
+        )
+        self.pred_sum = self.add_weight(
+            "pred_sum", shape=[self.num_classes], initializer="zeros", dtype=self.dtype
+        )
+        self.num_correct = self.add_weight(
+            "num_correct",
             shape=[self.num_classes],
             initializer="zeros",
             dtype=self.dtype,
         )
-        self.false_positives = self.add_weight(
-            "false_positives",
-            shape=[self.num_classes],
-            initializer="zeros",
-            dtype=self.dtype,
-        )
-        self.false_negatives = self.add_weight(
-            "false_negatives",
-            shape=[self.num_classes],
-            initializer="zeros",
-            dtype=self.dtype,
-        )
-        self.true_negatives = self.add_weight(
-            "true_negatives",
+        self.num_samples = self.add_weight(
+            "num_samples",
             shape=[self.num_classes],
             initializer="zeros",
             dtype=self.dtype,
@@ -100,43 +94,39 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
         y_true = tf.cast(y_true, dtype=self.dtype)
         y_pred = tf.cast(y_pred, dtype=self.dtype)
 
-        true_positive = tf.math.count_nonzero(y_true * y_pred, 0)
-        # true_negative
-        y_true_negative = tf.math.not_equal(y_true, 1.0)
-        y_pred_negative = tf.math.not_equal(y_pred, 1.0)
-        true_negative = tf.math.count_nonzero(
-            tf.math.logical_and(y_true_negative, y_pred_negative), axis=0
+        cov_matrix = tf.math.confusion_matrix(
+            labels=tf.argmax(y_true, 1),
+            predictions=tf.argmax(y_pred, 1),
+            num_classes=self.num_classes,
+            weights=sample_weight,
+            dtype=self.dtype,
         )
-        # predicted sum
-        pred_sum = tf.math.count_nonzero(y_pred, 0)
-        # Ground truth label sum
-        true_sum = tf.math.count_nonzero(y_true, 0)
-        false_positive = pred_sum - true_positive
-        false_negative = true_sum - true_positive
 
-        # true positive state_update
-        self.true_positives.assign_add(tf.cast(true_positive, self.dtype))
-        # false positive state_update
-        self.false_positives.assign_add(tf.cast(false_positive, self.dtype))
-        # false negative state_update
-        self.false_negatives.assign_add(tf.cast(false_negative, self.dtype))
-        # true negative state_update
-        self.true_negatives.assign_add(tf.cast(true_negative, self.dtype))
+        self.true_sum.assign_add(tf.reduce_sum(cov_matrix, axis=1))
+        self.pred_sum = tf.reduce_sum(cov_matrix, axis=0)
+
+        self.num_correct = tf.linalg.trace(cov_matrix)
+        self.num_samples = tf.reduce_sum(self.pred_sum)
 
     def result(self):
-        # numerator
-        numerator1 = self.true_positives * self.true_negatives
-        numerator2 = self.false_positives * self.false_negatives
-        numerator = numerator1 - numerator2
-        # denominator
-        denominator1 = self.true_positives + self.false_positives
-        denominator2 = self.true_positives + self.false_negatives
-        denominator3 = self.true_negatives + self.false_positives
-        denominator4 = self.true_negatives + self.false_negatives
-        denominator = tf.math.sqrt(
-            denominator1 * denominator2 * denominator3 * denominator4
+        # covariance true-pred
+        cov_ytyp = self.num_correct * self.num_samples - tf.tensordot(
+            self.true_sum, self.pred_sum, axes=1
         )
-        mcc = tf.math.divide_no_nan(numerator, denominator)
+        # covariance pred-pred
+        cov_ypyp = self.num_samples ** 2 - tf.tensordot(
+            self.pred_sum, self.pred_sum, axes=1
+        )
+        # covariance true-true
+        cov_ytyt = self.num_samples ** 2 - tf.tensordot(
+            self.true_sum, self.true_sum, axes=1
+        )
+
+        mcc = cov_ytyp / tf.math.sqrt(cov_ytyt * cov_ypyp)
+
+        if tf.math.is_nan(mcc):
+            mcc = tf.constant(0, dtype=self.dtype)
+
         return mcc
 
     def get_config(self):

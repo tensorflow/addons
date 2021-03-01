@@ -36,30 +36,50 @@ def check_results(obj, value):
 
 
 def test_binary_classes():
-    gt_label = tf.constant([[1.0], [1.0], [1.0], [0.0]], dtype=tf.float32)
-    preds = tf.constant([[1.0], [0.0], [1.0], [1.0]], dtype=tf.float32)
+    gt_label = tf.constant([[0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [1.0, 0.0]], dtype=tf.float32)
+    preds = tf.constant([[0.0, 1.0], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]], dtype=tf.float32)
     # Initialize
-    mcc = MatthewsCorrelationCoefficient(1)
+    mcc = MatthewsCorrelationCoefficient(2)
     # Update
     mcc.update_state(gt_label, preds)
     # Check results
     check_results(mcc, [-0.33333334])
 
 
+# See issue #2339
 def test_multiple_classes():
     gt_label = tf.constant(
-        [[1.0, 0.0, 0.0], [1.0, 0.0, 0.0], [1.0, 0.0, 1.0], [0.0, 1.0, 1.0]],
-        dtype=tf.float32,
+        [
+            [1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0],
+            [0.0, 1.0, 0.0],
+        ]
     )
     preds = tf.constant(
-        [[1.0, 0.0, 0.0], [0.0, 0.0, 0.0], [1.0, 0.0, 1.0], [1.0, 1.0, 0.0]],
-        dtype=tf.float32,
+        [
+            [0.0, 0.0, 1.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0],
+            [0.0, 0.0, 1.0],
+            [0.0, 0.0, 1.0],
+            [0.0, 0.0, 1.0],
+            [0.0, 0.0, 1.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0],
+            [0.0, 0.0, 1.0],
+        ]
     )
-    # Initialize
     mcc = MatthewsCorrelationCoefficient(3)
     mcc.update_state(gt_label, preds)
-    # Check results
-    check_results(mcc, [-0.33333334, 1.0, 0.57735026])
+
+    check_results(mcc, -0.04351941398892446)
 
 
 # Keras model API check
@@ -80,15 +100,12 @@ def test_keras_model():
 
 
 def test_reset_states_graph():
-    gt_label = tf.constant([[1.0], [1.0], [1.0], [0.0]], dtype=tf.float32)
-    preds = tf.constant([[1.0], [0.0], [1.0], [1.0]], dtype=tf.float32)
-    mcc = MatthewsCorrelationCoefficient(1)
+    gt_label = tf.constant([[0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [1.0, 0.0]], dtype=tf.float32)
+    preds = tf.constant([[0.0, 1.0], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]], dtype=tf.float32)
+    mcc = MatthewsCorrelationCoefficient(2)
     mcc.update_state(gt_label, preds)
 
-    @tf.function
-    def reset_states():
-        mcc.reset_states()
+    mcc.reset_states()
 
-    reset_states()
     # Check results
     check_results(mcc, [0])
