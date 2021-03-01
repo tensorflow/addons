@@ -72,7 +72,7 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransformSample(
     int channels) {
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      int64 index = GET_INDEX(i, j, k, c);
+      int index = GET_INDEX(i, j, k, c);
       if (input[index] == 0) {
         output[index] = static_cast<T>(0);
       } else {
@@ -91,23 +91,23 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransformSample(
   T* zh = new T[height + 1];
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      int64 index = GET_INDEX(i, j, k, c);
+      int index = GET_INDEX(i, j, k, c);
       f[j] = output[index];
     }
     Distance<T>(f, d, vw, zw, width);
     for (int j = 0; j < width; j++) {
-      int64 index = GET_INDEX(i, j, k, c);
+      int index = GET_INDEX(i, j, k, c);
       output[index] = d[j];
     }
   }
   for (int j = 0; j < width; j++) {
     for (int i = 0; i < height; i++) {
-      int64 index = GET_INDEX(i, j, k, c);
+      int index = GET_INDEX(i, j, k, c);
       f[i] = output[index];
     }
     Distance<T>(f, d, vh, zh, height);
     for (int i = 0; i < height; i++) {
-      int64 index = GET_INDEX(i, j, k, c);
+      int index = GET_INDEX(i, j, k, c);
       output[index] = Eigen::numext::sqrt(d[i]);
     }
   }

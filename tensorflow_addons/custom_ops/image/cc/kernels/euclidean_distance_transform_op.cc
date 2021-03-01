@@ -76,6 +76,9 @@ class EuclideanDistanceTransform : public OpKernel {
     OP_REQUIRES(ctx, images_t.shape().dims() == 4,
                 errors::InvalidArgument("Input images must have rank 4"));
 
+    OP_REQUIRES(ctx, images_t.NumElements() <= Eigen::NumTraits<int>::highest(),
+                errors::InvalidArgument("Input images' size exceeds 2^31-1"))
+
     Tensor *output_t;
     OP_REQUIRES_OK(ctx, ctx->allocate_output(0, images_t.shape(), &output_t));
 
