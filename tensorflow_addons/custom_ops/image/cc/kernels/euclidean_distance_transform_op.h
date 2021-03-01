@@ -32,7 +32,7 @@ namespace addons {
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
 
-#define GETINDEX(i, j, k, c) \
+#define GET_INDEX(i, j, k, c) \
   (k * height * width * channels + i * width * channels + j * channels + c)
 
 template <typename T>
@@ -76,7 +76,7 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransform(
     int channels) {
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      int index = GETINDEX(i, j, k, c);
+      int64 index = GET_INDEX(i, j, k, c);
       if (input[index] == 0) {
         output[index] = static_cast<T>(0);
       } else {
@@ -95,23 +95,23 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransform(
   T* zh = new T[height + 1];
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-      int index = GETINDEX(i, j, k, c);
+      int64 index = GET_INDEX(i, j, k, c);
       f[j] = output[index];
     }
     Distance<T>(f, d, vw, zw, width);
     for (int j = 0; j < width; j++) {
-      int index = GETINDEX(i, j, k, c);
+      int64 index = GET_INDEX(i, j, k, c);
       output[index] = d[j];
     }
   }
   for (int j = 0; j < width; j++) {
     for (int i = 0; i < height; i++) {
-      int index = GETINDEX(i, j, k, c);
+      int64 index = GET_INDEX(i, j, k, c);
       f[i] = output[index];
     }
     Distance<T>(f, d, vh, zh, height);
     for (int i = 0; i < height; i++) {
-      int index = GETINDEX(i, j, k, c);
+      int64 index = GET_INDEX(i, j, k, c);
       output[index] = Eigen::numext::sqrt(d[i]);
     }
   }
