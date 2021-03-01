@@ -44,9 +44,9 @@ struct EuclideanDistanceTransformFunctor<CPUDevice, T> {
           for (int index = start_index; index < end_index; index++) {
             int batch_id = index / images.dimension(3);
             int channel = index % images.dimension(3);
-            edt_sample<T>(images.data(), output->data(), batch_id, channel,
-                          images.dimension(1), images.dimension(2),
-                          images.dimension(3));
+            EuclideanDistanceTransform<T>(
+                images.data(), output->data(), batch_id, channel,
+                images.dimension(1), images.dimension(2), images.dimension(3));
           }
         });
   }

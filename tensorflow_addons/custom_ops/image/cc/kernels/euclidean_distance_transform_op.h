@@ -36,16 +36,16 @@ typedef Eigen::GpuDevice GPUDevice;
   (k * height * width * channels + i * width * channels + j * channels + c)
 
 template <typename T>
-EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void distance(const T* f, T* d, int* v,
+EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void Distance(const T* f, T* d, int* v,
                                                     T* z, int n) {
   // index of rightmost parabola in lower envelope
   int k = 0;
   v[0] = 0;
-  z[0] = -Eigen::NumTraits<T>::highest();
+  z[0] = Eigen::NumTraits<T>::lowest();
   z[1] = Eigen::NumTraits<T>::highest();
   // compute lowest envelope:
   for (int q = 1; q <= n - 1; q++) {
-    T s = static_cast<T>(0);
+    T s(0);
     k++;  // this compensates for first line of next do-while block
     do {
       k--;
@@ -71,10 +71,9 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void distance(const T* f, T* d, int* v,
 }
 
 template <typename T>
-EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void edt_sample(const uint8* input,
-                                                      T* output, int k, int c,
-                                                      int height, int width,
-                                                      int channels) {
+EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransform(
+    const uint8* input, T* output, int k, int c, int height, int width,
+    int channels) {
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
       int index = GETINDEX(i, j, k, c);
@@ -99,7 +98,7 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void edt_sample(const uint8* input,
       int index = GETINDEX(i, j, k, c);
       f[j] = output[index];
     }
-    distance<T>(f, d, vw, zw, width);
+    Distance<T>(f, d, vw, zw, width);
     for (int j = 0; j < width; j++) {
       int index = GETINDEX(i, j, k, c);
       output[index] = d[j];
@@ -110,7 +109,7 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void edt_sample(const uint8* input,
       int index = GETINDEX(i, j, k, c);
       f[i] = output[index];
     }
-    distance<T>(f, d, vh, zh, height);
+    Distance<T>(f, d, vh, zh, height);
     for (int i = 0; i < height; i++) {
       int index = GETINDEX(i, j, k, c);
       output[index] = Eigen::numext::sqrt(d[i]);
