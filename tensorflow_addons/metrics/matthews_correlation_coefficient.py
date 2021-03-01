@@ -50,9 +50,9 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
 
     Usage:
 
-    >>> y_true = np.array([[1.0], [1.0], [1.0], [0.0]], dtype=np.float32)
-    >>> y_pred = np.array([[1.0], [0.0], [1.0], [1.0]], dtype=np.float32)
-    >>> metric = tfa.metrics.MatthewsCorrelationCoefficient(num_classes=1)
+    >>> y_true = np.array([[0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [1.0, 0.0]]], dtype=np.float32)
+    >>> y_pred = np.array([0.0, 1.0], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]], dtype=np.float32)
+    >>> metric = tfa.metrics.MatthewsCorrelationCoefficient(num_classes=2)
     >>> metric.update_state(y_true, y_pred)
     >>> result = metric.result()
     >>> result.numpy()
@@ -70,23 +70,11 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
         """Creates a Matthews Correlation Coefficient instance."""
         super().__init__(name=name, dtype=dtype)
         self.num_classes = num_classes
-        self.true_sum = self.add_weight(
-            "true_sum", shape=[self.num_classes], initializer="zeros", dtype=self.dtype
-        )
-        self.pred_sum = self.add_weight(
-            "pred_sum", shape=[self.num_classes], initializer="zeros", dtype=self.dtype
-        )
-        self.num_correct = self.add_weight(
-            "num_correct",
-            shape=[self.num_classes],
-            initializer="zeros",
-            dtype=self.dtype,
-        )
-        self.num_samples = self.add_weight(
-            "num_samples",
-            shape=[self.num_classes],
-            initializer="zeros",
-            dtype=self.dtype,
+        self.conf_mtx = self.add_weight(
+            "conf_mtx",
+            shape=(self.num_classes, self.num_classes),
+            initializer=tf.keras.initializers.zeros,
+            dtype=tf.float32,
         )
 
     # TODO: sample_weights
@@ -94,7 +82,7 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
         y_true = tf.cast(y_true, dtype=self.dtype)
         y_pred = tf.cast(y_pred, dtype=self.dtype)
 
-        cov_matrix = tf.math.confusion_matrix(
+        new_conf_mtx = tf.math.confusion_matrix(
             labels=tf.argmax(y_true, 1),
             predictions=tf.argmax(y_pred, 1),
             num_classes=self.num_classes,
@@ -102,25 +90,21 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
             dtype=self.dtype,
         )
 
-        self.true_sum.assign_add(tf.reduce_sum(cov_matrix, axis=1))
-        self.pred_sum = tf.reduce_sum(cov_matrix, axis=0)
-
-        self.num_correct = tf.linalg.trace(cov_matrix)
-        self.num_samples = tf.reduce_sum(self.pred_sum)
+        self.conf_mtx.assign_add(new_conf_mtx)
 
     def result(self):
+
+        true_sum = tf.reduce_sum(self.conf_mtx, axis=1)
+        pred_sum = tf.reduce_sum(self.conf_mtx, axis=0)
+        num_correct = tf.linalg.trace(self.conf_mtx)
+        num_samples = tf.reduce_sum(pred_sum)
+
         # covariance true-pred
-        cov_ytyp = self.num_correct * self.num_samples - tf.tensordot(
-            self.true_sum, self.pred_sum, axes=1
-        )
+        cov_ytyp = num_correct * num_samples - tf.tensordot(true_sum, pred_sum, axes=1)
         # covariance pred-pred
-        cov_ypyp = self.num_samples ** 2 - tf.tensordot(
-            self.pred_sum, self.pred_sum, axes=1
-        )
+        cov_ypyp = num_samples ** 2 - tf.tensordot(pred_sum, pred_sum, axes=1)
         # covariance true-true
-        cov_ytyt = self.num_samples ** 2 - tf.tensordot(
-            self.true_sum, self.true_sum, axes=1
-        )
+        cov_ytyt = num_samples ** 2 - tf.tensordot(true_sum, true_sum, axes=1)
 
         mcc = cov_ytyp / tf.math.sqrt(cov_ytyt * cov_ypyp)
 
@@ -140,5 +124,9 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
 
     def reset_states(self):
         """Resets all of the metric state variables."""
-        reset_value = np.zeros(self.num_classes, dtype=self.dtype)
-        K.batch_set_value([(v, reset_value) for v in self.variables])
+
+        for v in self.variables:
+            K.set_value(
+                v,
+                np.zeros((self.num_classes, self.num_classes), v.dtype.as_numpy_dtype),
+            )
