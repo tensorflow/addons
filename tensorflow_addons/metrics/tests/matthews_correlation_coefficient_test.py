@@ -113,7 +113,10 @@ def test_reset_states_graph():
     mcc = MatthewsCorrelationCoefficient(2)
     mcc.update_state(gt_label, preds)
 
-    mcc.reset_states()
+    @tf.function
+    def reset_states():
+        mcc.reset_states()
 
+    reset_states()
     # Check results
     check_results(mcc, [0])
