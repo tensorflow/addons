@@ -194,9 +194,9 @@ The order of priority on Linux is:
 2) C++ implementation
 3) Pure TensorFlow + Python implementation (works on CPU and GPU)
 
-If you want to change the default priority, "C++ and CUDA" VS "pure TensorFlow Python", 
-you can set the variable `TF_ADDONS_PY_OPS` either from the command line or in 
-your code.
+If you want to change the default priority, "C++ and CUDA" VS "pure TensorFlow Python",
+you can set the environment variable `TF_ADDONS_PY_OPS=1` from the command line or
+run `tfa.options.disable_custom_kernel()` in your code.
 
 For example, if you are on Linux and you have compatibility problems with the compiled ops,
 you can give priority to the Python implementations:
@@ -210,7 +210,7 @@ or in your code:
 
 ```python
 import tensorflow_addons as tfa
-tfa.options.TF_ADDONS_PY_OPS = True
+tfa.options.disable_custom_kernel()
 ```
 
 This variable defaults to `True` on Windows and macOS, and `False` on Linux.

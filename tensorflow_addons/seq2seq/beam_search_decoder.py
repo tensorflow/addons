@@ -234,7 +234,7 @@ def gather_tree(
     Raises:
       InvalidArgumentError: if `parent_ids` contains an invalid index.
     """
-    if not options.TF_ADDONS_PY_OPS:
+    if not options.is_custom_kernel_disabled():
         try:
             return _beam_search_so.ops.addons_gather_tree(
                 step_ids, parent_ids, max_sequence_lengths, end_token
