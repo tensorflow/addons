@@ -48,9 +48,8 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void Distance(const T* f, T* d, int* v,
       k--;
       // compute horizontal position of intersection between the parabola from
       // q and the current lowest parabola
-      s = ((f[q] + static_cast<T>(q * q)) -
-           (f[v[k]] + static_cast<T>(v[k] * v[k]))) /
-          static_cast<T>(2 * (q - v[k]));
+      s = (f[q] - f[v[k]]) / static_cast<T>(2 * (q - v[k])) +
+          static_cast<T>((q + v[k]) / 2);
     } while (s <= z[k]);
     k++;
     v[k] = q;
