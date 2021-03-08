@@ -29,9 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 ENV LANG=C.UTF-8 ADDONS_DEV_CONTAINER=1
 
-# Temporary until custom-op container is updated
-RUN ln -sf $(which python3) /usr/bin/python
-RUN ln -sf $(which pip3) /usr/local/bin/pip
+RUN ln -sf $(which python3) /usr/bin/python && ln -sf $(which pip3) /usr/local/bin/pip
 
 COPY tools/install_deps /install_deps
 COPY requirements.txt /tmp/requirements.txt

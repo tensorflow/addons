@@ -55,9 +55,7 @@ RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/lib
     && echo "/usr/local/cuda/lib64/stubs" > /etc/ld.so.conf.d/z-cuda-stubs.conf \
     && ldconfig
 
-# Temporary until custom-op container is updated
-RUN ln -sf $(which python3) /usr/bin/python
-RUN ln -sf $(which pip3) /usr/local/bin/pip
+RUN ln -sf $(which python3) /usr/bin/python && ln -sf $(which pip3) /usr/local/bin/pip
 
 COPY tools/install_deps /install_deps
 COPY requirements.txt /tmp/requirements.txt
