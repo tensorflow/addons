@@ -1,3 +1,4 @@
+#syntax=docker/dockerfile:1.1.5-experimental
 ARG UBUNTU_VERSION=18.04
 
 ARG ARCH=
@@ -71,7 +72,7 @@ RUN pip --no-cache-dir install -r /install_deps/black.txt \
     -r /install_deps/typedapi.txt \
     -r /tmp/requirements.txt
 
-RUN pip install --no-cache-dir --default-timeout=1000 $TF_PACKAGE==$TF_VERSION
+RUN pip --no-cache-dir install --default-timeout=1000 $TF_PACKAGE==$TF_VERSION
 
 RUN bash /install_deps/buildifier.sh
 RUN bash /install_deps/clang-format.sh
