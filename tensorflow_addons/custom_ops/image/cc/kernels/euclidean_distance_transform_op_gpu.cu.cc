@@ -53,8 +53,8 @@ struct EuclideanDistanceTransformFunctor<GPUDevice, T> {
     GpuLaunchConfig config =
         GetGpuLaunchConfig(images.dimension(0) * images.dimension(3), d);
     TF_CHECK_OK(GpuLaunchKernel(
-        EuclideanDistanceTransformGPUKernel<T>, config.block_count,
-        std::min(256, config.thread_per_block), 0, d.stream(), images.data(),
+        EuclideanDistanceTransformGPUKernel<T>, config.block_count * 4,
+        config.thread_per_block / 4, 0, d.stream(), images.data(),
         output->data(), images.dimension(0), images.dimension(1),
         images.dimension(2), images.dimension(3)));
   }

@@ -132,6 +132,7 @@ def test_all_ones():
 @pytest.mark.with_device(["cpu", "gpu"])
 def test_multi_channels():
     channels = 3
+    batch_size = 2048
     image = [
         [[0], [0], [0], [0], [0]],
         [[0], [1], [1], [1], [0]],
@@ -172,13 +173,12 @@ def test_multi_channels():
             ),
             axis=-1,
         ),
-        [1, 3],
+        [batch_size, 3],
     )
     image = np.tile(image, [1, 1, channels])
-    images = tf.constant([image], dtype=tf.uint8)
+    images = tf.constant([image] * batch_size, dtype=tf.uint8)
 
     output = dist_ops.euclidean_dist_transform(images, dtype=tf.float32)
     output_flat = tf.reshape(output, [-1, 3])
-
-    assert output.shape == [1, 5, 5, channels]
+    assert output.shape == [batch_size, 5, 5, channels]
     test_utils.assert_allclose_according_to_type(output_flat, expected_output)
