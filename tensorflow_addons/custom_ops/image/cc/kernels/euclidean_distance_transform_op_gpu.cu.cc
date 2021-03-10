@@ -51,14 +51,13 @@ struct EuclideanDistanceTransformFunctor<GPUDevice, T> {
                   const InputType &images) const {
     auto d = ctx->eigen_device<GPUDevice>();
     GpuLaunchConfig config =
-        GetGpuLaunchConfig(images.dimension(0) * images.dimension(3), d);
+        GetGpuLaunchConfig(images.dimension(0) * images.dimension(3), d,
+                           EuclideanDistanceTransformGPUKernel<T>, 0, 256);
     TF_CHECK_OK(GpuLaunchKernel(EuclideanDistanceTransformGPUKernel<T>,
                                 config.block_count, config.thread_per_block, 0,
                                 d.stream(), images.data(), output->data(),
-                                static_cast<int>(images.dimension(0)),
-                                static_cast<int>(images.dimension(1)),
-                                static_cast<int>(images.dimension(2)),
-                                static_cast<int>(images.dimension(3))));
+                                images.dimension(0), images.dimension(1),
+                                images.dimension(2), images.dimension(3)));
   }
 };
 

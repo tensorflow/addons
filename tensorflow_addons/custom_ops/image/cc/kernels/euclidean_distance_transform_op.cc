@@ -125,9 +125,9 @@ TF_CALL_double(DECLARE_FUNCTOR);
                               .TypeConstraint<TYPE>("dtype"),       \
                           EuclideanDistanceTransform<GPUDevice, TYPE>)
 
-// TF_CALL_half(REGISTER);  // float16 kernel crashs on GPU
+TF_CALL_half(REGISTER);
 TF_CALL_float(REGISTER);
-// TF_CALL_double(REGISTER);  // float64 kernel crashs on GPU
+TF_CALL_double(REGISTER);
 
 #undef REGISTER
 
