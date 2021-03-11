@@ -10,6 +10,7 @@ about: Use this template for raising a feature request
 - Are you willing to contribute it (yes/no):
 - Are you willing to maintain it going forward? (yes/no):
 - Is there a relevant academic paper? (if so, where):
+- Does the relavent academic paper exceed 50 citations? (yes/no):
 - Is there already an implementation in another framework? (if so, where):
 - Was it part of tf.contrib? (if so, where):
 
