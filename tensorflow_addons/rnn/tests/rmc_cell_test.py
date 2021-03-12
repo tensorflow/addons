@@ -14,6 +14,7 @@
 # ==============================================================================
 """Tests for RMC Cell."""
 
+import pytest
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -21,6 +22,10 @@ import tensorflow.keras as keras
 from tensorflow_addons.rnn import RMCCell
 
 
+@pytest.mark.skipif(
+    tf.__version__[:3] == "2.3",
+    reason="RMC will not work on Windows- and Linux-based distributions as it requires tf.keras.layers.MultiHeadAttention.",
+)
 def test_base_rmc():
     batch_size = 3
     units = 16
@@ -191,6 +196,10 @@ def test_base_rmc():
     np.testing.assert_allclose(h, expected_state, rtol=1e-6, atol=1e-6)
 
 
+@pytest.mark.skipif(
+    tf.__version__[:3] == "2.3",
+    reason="RMC will not work on Windows- and Linux-based distributions as it requires tf.keras.layers.MultiHeadAttention.",
+)
 def test_attend_over_memory_rmc():
     batch_size = 3
     n_slots = 2
@@ -282,6 +291,10 @@ def test_attend_over_memory_rmc():
     np.testing.assert_allclose(att_memory, expected_att_memory, rtol=1e-6, atol=1e-6)
 
 
+@pytest.mark.skipif(
+    tf.__version__[:3] == "2.3",
+    reason="RMC will not work on Windows- and Linux-based distributions as it requires tf.keras.layers.MultiHeadAttention.",
+)
 def test_keras_rnn():
     cell = RMCCell(2, 4, 2)
     seq_input = tf.convert_to_tensor(
@@ -292,6 +305,10 @@ def test_keras_rnn():
     assert rnn_outputs.shape == (2, 16)
 
 
+@pytest.mark.skipif(
+    tf.__version__[:3] == "2.3",
+    reason="RMC will not work on Windows- and Linux-based distributions as it requires tf.keras.layers.MultiHeadAttention.",
+)
 def test_config_rmc():
     cell = RMCCell(
         n_slots=2,
