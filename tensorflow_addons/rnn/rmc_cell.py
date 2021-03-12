@@ -21,10 +21,9 @@ from tensorflow_addons.utils.types import (
     Activation,
     Initializer,
     Regularizer,
-    Constraint
+    Constraint,
 )
 
-from nalp.models.layers import MultiHeadAttention
 from typeguard import typechecked
 
 
@@ -35,7 +34,7 @@ class RMCCell(keras.layers.AbstractRNNCell):
     This implements the recurrent cell from the paper:
 
         https://papers.nips.cc/paper/2018/file/e2eabaf96372e20a9e3d4b5f83723a61-Paper.pdf
-    
+
     A. Santoro, et al.
     "Relational recurrent neural networks".
     Advances in neural information processing systems, 2018.
@@ -73,7 +72,8 @@ class RMCCell(keras.layers.AbstractRNNCell):
         kernel_constraint: Constraint = None,
         recurrent_constraint: Constraint = None,
         bias_constraint: Constraint = None,
-        **kwargs):
+        **kwargs,
+    ):
         """Initializes the parameters for a RMC cell.
 
         Args:
@@ -106,27 +106,30 @@ class RMCCell(keras.layers.AbstractRNNCell):
         self.units = self.slot_size * n_slots
         self.n_gates = 2 * self.slot_size
 
-        self.activation = activation
-        self.recurrent_activation = recurrent_activation
+        self.activation = tf.keras.activations.get(activation)
+        self.recurrent_activation = tf.keras.activations.get(recurrent_activation)
         self.forget_bias = forget_bias
 
-        self.kernel_initializer = kernel_initializer
-        self.recurrent_initializer = recurrent_initializer
-        self.bias_initializer = bias_initializer
+        self.kernel_initializer = tf.keras.initializers.get(kernel_initializer)
+        self.recurrent_initializer = tf.keras.initializers.get(recurrent_initializer)
+        self.bias_initializer = tf.keras.initializers.get(bias_initializer)
 
-        self.kernel_regularizer = kernel_regularizer
-        self.recurrent_regularizer = recurrent_regularizer
-        self.bias_regularizer = bias_regularizer
-        
-        self.kernel_constraint = kernel_constraint
-        self.recurrent_constraint = recurrent_constraint
-        self.bias_constraint = bias_constraint
+        self.kernel_regularizer = tf.keras.regularizers.get(kernel_regularizer)
+        self.recurrent_regularizer = tf.keras.regularizers.get(recurrent_regularizer)
+        self.bias_regularizer = tf.keras.regularizers.get(bias_regularizer)
+
+        self.kernel_constraint = tf.keras.constraints.get(kernel_constraint)
+        self.recurrent_constraint = tf.keras.constraints.get(recurrent_constraint)
+        self.bias_constraint = tf.keras.constraints.get(bias_constraint)
 
         self.projector = keras.layers.Dense(self.slot_size)
         self.before_norm = keras.layers.LayerNormalization()
-        self.linear = [keras.layers.Dense(self.slot_size, activation="relu") for _ in range(n_layers)]
+        self.linear = [
+            keras.layers.Dense(self.slot_size, activation="relu")
+            for _ in range(n_layers)
+        ]
         self.after_norm = keras.layers.LayerNormalization()
-        self.attn = MultiHeadAttention(self.slot_size, self.n_heads)
+        self.attn = keras.layers.MultiHeadAttention(self.slot_size, self.n_heads)
 
     @property
     def state_size(self):
@@ -145,21 +148,21 @@ class RMCCell(keras.layers.AbstractRNNCell):
             name="kernel",
             initializer=self.kernel_initializer,
             regularizer=self.kernel_regularizer,
-            constraint=self.kernel_constraint
+            constraint=self.kernel_constraint,
         )
         self.recurrent_kernel = self.add_weight(
             shape=(self.slot_size, self.n_gates),
             name="recurrent_kernel",
             initializer=self.recurrent_initializer,
             regularizer=self.recurrent_regularizer,
-            constraint=self.recurrent_constraint
+            constraint=self.recurrent_constraint,
         )
         self.bias = self.add_weight(
             shape=(self.n_gates,),
             name="bias",
             initializer=self.bias_initializer,
             regularizer=self.bias_regularizer,
-            constraint=self.bias_constraint
+            constraint=self.bias_constraint,
         )
 
         self.built = True
@@ -214,7 +217,9 @@ class RMCCell(keras.layers.AbstractRNNCell):
         # Calculates the attention mechanism over the previous memory
         # Also calculates current memory and hidden states
         att_m = self._attend_over_memory(inputs, m_prev)
-        m = self.recurrent_activation(x_f + self.forget_bias) * m_prev + self.recurrent_activation(x_i) * self.activation(att_m)
+        m = self.recurrent_activation(
+            x_f + self.forget_bias
+        ) * m_prev + self.recurrent_activation(x_i) * self.activation(att_m)
         h = self.activation(m)
 
         # Reshapes both current hidden and memory states to their correct output size
@@ -223,8 +228,8 @@ class RMCCell(keras.layers.AbstractRNNCell):
 
         return h, [h, m]
 
-    def get_initial_state(self, batch_size):
-        states = tf.eye(self.n_slots, batch_shape=[batch_size])
+    def get_initial_state(self, inputs=None, batch_size=None, dtype=None):
+        states = tf.eye(self.n_slots, batch_shape=[batch_size], dtype=dtype)
 
         if self.slot_size > self.n_slots:
             diff = self.slot_size - self.n_slots
@@ -232,7 +237,7 @@ class RMCCell(keras.layers.AbstractRNNCell):
             states = tf.concat([states, padding], -1)
 
         elif self.slot_size < self.n_slots:
-            states = states[:, :, :self.slot_size]
+            states = states[:, :, : self.slot_size]
 
         states = tf.reshape(states, (states.shape[0], -1))
 
@@ -241,24 +246,33 @@ class RMCCell(keras.layers.AbstractRNNCell):
     def get_config(self):
         config = {
             "n_slots": self.n_slots,
-            "slot_size": self.slot_size,
             "n_heads": self.n_heads,
             "head_size": self.head_size,
             "n_blocks": self.n_blocks,
             "n_layers": self.n_layers,
-            "units": self.units,
-            "n_gates": self.n_gates,
             "activation": tf.keras.activations.serialize(self.activation),
-            "recurrent_activation": tf.keras.activations.serialize(self.recurrent_activation),
+            "recurrent_activation": tf.keras.activations.serialize(
+                self.recurrent_activation
+            ),
             "forget_bias": self.forget_bias,
-            "kernel_initializer": tf.keras.initializers.serialize(self.kernel_initializer),
-            "recurrent_initializer": tf.keras.initializers.serialize(self.recurrent_initializer),
+            "kernel_initializer": tf.keras.initializers.serialize(
+                self.kernel_initializer
+            ),
+            "recurrent_initializer": tf.keras.initializers.serialize(
+                self.recurrent_initializer
+            ),
             "bias_initializer": tf.keras.initializers.serialize(self.bias_initializer),
-            "kernel_regularizer": tf.keras.regularizers.serialize(self.kernel_regularizer),
-            "recurrent_regularizer": tf.keras.regularizers.serialize(self.recurrent_regularizer),
+            "kernel_regularizer": tf.keras.regularizers.serialize(
+                self.kernel_regularizer
+            ),
+            "recurrent_regularizer": tf.keras.regularizers.serialize(
+                self.recurrent_regularizer
+            ),
             "bias_regularizer": tf.keras.regularizers.serialize(self.bias_regularizer),
             "kernel_constraint": tf.keras.constraints.serialize(self.kernel_constraint),
-            "recurrent_constraint": tf.keras.constraints.serialize(self.recurrent_constraint),
+            "recurrent_constraint": tf.keras.constraints.serialize(
+                self.recurrent_constraint
+            ),
             "bias_constraint": tf.keras.constraints.serialize(self.bias_constraint),
         }
         base_config = super().get_config()
