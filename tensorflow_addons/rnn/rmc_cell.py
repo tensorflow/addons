@@ -170,7 +170,7 @@ class RMCCell(keras.layers.AbstractRNNCell):
     def _attend_over_memory(self, inputs, memory):
         for _ in range(self.n_blocks):
             concat_memory = tf.concat([inputs, memory], 1)
-            att_memory, _ = self.attn(memory, concat_memory, concat_memory)
+            att_memory = self.attn(memory, concat_memory, concat_memory)
             norm_memory = self.before_norm(att_memory + memory)
             linear_memory = norm_memory
 
