@@ -296,12 +296,19 @@ def test_attend_over_memory_rmc():
     reason="RMC will not work on Windows- and Linux-based distributions as it requires tf.keras.layers.MultiHeadAttention.",
 )
 def test_keras_rnn():
+    batch_size = 2
     cell = RMCCell(2, 4, 2)
+
     seq_input = tf.convert_to_tensor(
-        np.random.rand(2, 3, 5), name="seq_input", dtype=tf.float32
+        np.random.rand(batch_size, 3, 5), name="seq_input", dtype=tf.float32
     )
+
     rnn_layer = keras.layers.RNN(cell=cell)
-    rnn_outputs = rnn_layer(seq_input)
+    rnn_outputs = rnn_layer(
+        seq_input,
+        initial_state=cell.get_initial_state(seq_input, batch_size, dtype=tf.float32),
+    )
+
     assert rnn_outputs.shape == (2, 16)
 
 
