@@ -191,8 +191,98 @@ def test_base_rmc():
     np.testing.assert_allclose(h, expected_state, rtol=1e-6, atol=1e-6)
 
 
+def test_attend_over_memory_rmc():
+    batch_size = 3
+    n_slots = 2
+    slot_size = 8
+
+    cell = RMCCell(n_slots, 4, 2)
+
+    seq_input = tf.convert_to_tensor(
+        np.random.rand(batch_size, n_slots, slot_size), dtype=tf.float32
+    )
+    memory_value = tf.constant(
+        np.ones((batch_size, n_slots, slot_size), dtype=np.float32), dtype=tf.float32
+    )
+    expected_att_memory = np.array(
+        [
+            [
+                [
+                    -0.6603111,
+                    -0.4110478,
+                    0.5193146,
+                    1.2311147,
+                    -1.0648061,
+                    0.5235050,
+                    1.3777641,
+                    -1.5155334,
+                ],
+                [
+                    -0.6603111,
+                    -0.4110478,
+                    0.5193146,
+                    1.2311147,
+                    -1.0648061,
+                    0.52350503,
+                    1.3777641,
+                    -1.5155334,
+                ],
+            ],
+            [
+                [
+                    -0.67101234,
+                    -0.5338758,
+                    0.65634435,
+                    1.0622097,
+                    -1.3630745,
+                    0.6724906,
+                    1.3870882,
+                    -1.2101701,
+                ],
+                [
+                    -0.67101234,
+                    -0.5338758,
+                    0.65634435,
+                    1.0622097,
+                    -1.3630745,
+                    0.6724906,
+                    1.3870882,
+                    -1.2101701,
+                ],
+            ],
+            [
+                [
+                    -0.72084284,
+                    -0.47108832,
+                    0.6819248,
+                    1.0832782,
+                    -1.162886,
+                    0.5546384,
+                    1.4232899,
+                    -1.3883144,
+                ],
+                [
+                    -0.72084284,
+                    -0.47108832,
+                    0.6819248,
+                    1.0832782,
+                    -1.162886,
+                    0.5546384,
+                    1.4232899,
+                    -1.3883144,
+                ],
+            ],
+        ],
+        dtype=np.float32,
+    )
+
+    att_memory = cell._attend_over_memory(seq_input, memory_value)
+
+    assert att_memory.shape == (batch_size, n_slots, slot_size)
+    np.testing.assert_allclose(att_memory, expected_att_memory, rtol=1e-6, atol=1e-6)
+
+
 def test_keras_rnn():
-    """Tests that RMCCell works with keras RNN layer."""
     cell = RMCCell(2, 4, 2)
     seq_input = tf.convert_to_tensor(
         np.random.rand(2, 3, 5), name="seq_input", dtype=tf.float32

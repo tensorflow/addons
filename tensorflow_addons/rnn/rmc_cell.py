@@ -41,14 +41,16 @@ class RMCCell(keras.layers.AbstractRNNCell):
 
     Example:
 
-    >>> inputs = np.random.random([30,23,9]).astype(np.float32)
-    >>> RMCCell = tfa.rnn.RMCCell(2, 2, 1)
+    >>> inputs = np.random.random([2, 3, 5]).astype(np.float32)
+    >>> RMCCell = tfa.rnn.RMCCell(2, 4, 2)
     >>> rnn = tf.keras.layers.RNN(RMCCell, return_sequences=True, return_state=True)
-    >>> outputs, memory_state = rnn(inputs, initial_state=RMCCell.get_initial_state(30))
+    >>> outputs, [hidden_state, memory_state] = rnn(inputs, initial_state=RMCCell.get_initial_state(2))
     >>> outputs.shape
-    TensorShape([30, 23, 4])
+    TensorShape([2, 3, 16])
+    >>> hidden_state.shape
+    TensorShape([2, 16])
     >>> memory_state.shape
-    TensorShape([30, 4])
+    TensorShape([2, 16])
 
     """
 
