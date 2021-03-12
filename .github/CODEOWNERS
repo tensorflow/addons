@@ -166,6 +166,8 @@
 /tensorflow_addons/rnn/tests/nas_cell_test.py @qlzh727
 /tensorflow_addons/rnn/peephole_lstm_cell.py @qlzh727
 /tensorflow_addons/rnn/tests/peephole_lstm_cell_test.py @qlzh727
+/tensorflow_addons/rnn/rmc_cell.py @gugarosa
+/tensorflow_addons/rnn/tests/rmc_cell_test.py @gugarosa
 
 /tensorflow_addons/seq2seq/ @qlzh727 @guillaumekln
 
