@@ -154,12 +154,13 @@ struct EmbeddingBagBackwardFunctor<GPUDevice, T, Tindices> {
 
     Tensor sortedIndicesTensor;
     Tensor sortedIndicesCounterTensor;
+
     OP_REQUIRES_OK(context, context->allocate_temp(
-                          DataTypeToEnum<Tindices>::value, TensorShape({indices.size()}),
-                          &sortedIndicesTensor, gpu_allocator));
+                            DataTypeToEnum<Tindices>::value, TensorShape({indices.size()}),
+                            &sortedIndicesTensor, gpu_allocator));
     OP_REQUIRES_OK(context, context->allocate_temp(
-                          DataTypeToEnum<Tindices>::value, TensorShape({indices.size()}),
-                          &sortedIndicesCounterTensor, gpu_allocator));
+                            DataTypeToEnum<Tindices>::value, TensorShape({indices.size()}),
+                            &sortedIndicesCounterTensor, gpu_allocator));
     auto sortedIndices = sortedIndicesTensor.flat<Tindices>();
     auto sortedIndicesCounter = sortedIndicesCounterTensor.flat<Tindices>();
     // Note: I tried splitting the two kernels into different streams but

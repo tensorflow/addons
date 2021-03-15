@@ -238,7 +238,6 @@ class EmbeddingBagBackwardOp : public OpKernel {
     Tensor* weights_grads = nullptr;
     OP_REQUIRES_OK(
         context, context->allocate_output(1, weights.shape(), &weights_grads));
-
     functor::EmbeddingBagBackwardFunctor<Device, T, Tindices>()(
         context->eigen_device<Device>(), indices.tensor<Tindices, 2>(),
         params.tensor<T, 2>(), weights.tensor<T, 2>(), grads.tensor<T, 2>(),
@@ -315,12 +314,12 @@ DECLARE_GPU_SPECS(double);
                               .Device(DEVICE_GPU)                       \
                               .TypeConstraint<T>("T")                   \
                               .TypeConstraint<int32>("Tindices"),       \
-                          EmbeddingBagBackwardOp<CPUDevice, T, int32>); \
+                          EmbeddingBagBackwardOp<GPUDevice, T, int32>); \
   REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBagGrad")               \
                               .Device(DEVICE_GPU)                       \
                               .TypeConstraint<T>("T")                   \
                               .TypeConstraint<int64>("Tindices"),       \
-                          EmbeddingBagBackwardOp<CPUDevice, T, int64>);
+                          EmbeddingBagBackwardOp<GPUDevice, T, int64>);
 REGISTER_GPU_KERNEL(Eigen::half);
 REGISTER_GPU_KERNEL(float);
 REGISTER_GPU_KERNEL(double);

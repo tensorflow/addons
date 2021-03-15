@@ -31,5 +31,5 @@ custom_op_library(
         "cc/kernels/embedding_bag_ops.h",
         "cc/kernels/embedding_bag_ops_gpu.cu.cc",
         "cc/kernels/embedding_bag_backward_kernels.cu.cc"
-    ],
+    ]
 )

@@ -17,6 +17,7 @@ limitations under the License.
 #define TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_OPS_H_
 
 #include "tensorflow/core/framework/tensor_types.h"
+#include "tensorflow/core/framework/op_kernel.h"
 
 namespace tensorflow {
 namespace addons {
@@ -46,7 +47,7 @@ struct EmbeddingBagBackwardFunctor {
                   typename TTypes<T, 2>::ConstTensor grads,
                   typename TTypes<T, 2>::Tensor params_grads,
                   typename TTypes<T, 2>::Tensor weights_grads,
-                  Combiner combiner);
+                  Combiner combiner, OpKernelContext* context);
 };
 
 }  // namespace functor
