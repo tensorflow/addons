@@ -16,8 +16,8 @@ limitations under the License.
 #ifndef TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_OPS_H_
 #define TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_OPS_H_
 
-#include "tensorflow/core/framework/tensor_types.h"
 #include "tensorflow/core/framework/op_kernel.h"
+#include "tensorflow/core/framework/tensor_types.h"
 
 namespace tensorflow {
 namespace addons {
@@ -31,7 +31,7 @@ namespace functor {
 
 template <typename Device, typename T, typename Tindices>
 struct EmbeddingBagFunctor {
-  void operator()(const Device& device,
+  void operator()(const Device &device,
                   typename TTypes<Tindices, 2>::ConstTensor indices,
                   typename TTypes<T, 2>::ConstTensor params,
                   typename TTypes<T, 2>::ConstTensor weights,
@@ -40,18 +40,18 @@ struct EmbeddingBagFunctor {
 
 template <typename Device, typename T, typename Tindices>
 struct EmbeddingBagBackwardFunctor {
-  void operator()(const Device& device,
+  void operator()(const Device &device,
                   typename TTypes<Tindices, 2>::ConstTensor indices,
                   typename TTypes<T, 2>::ConstTensor params,
                   typename TTypes<T, 2>::ConstTensor weights,
                   typename TTypes<T, 2>::ConstTensor grads,
                   typename TTypes<T, 2>::Tensor params_grads,
                   typename TTypes<T, 2>::Tensor weights_grads,
-                  Combiner combiner, OpKernelContext* context);
+                  Combiner combiner, OpKernelContext *context);
 };
 
-}  // namespace functor
-}  // namespace addons
-}  // namespace tensorflow
+} // namespace functor
+} // namespace addons
+} // namespace tensorflow
 
-#endif  // TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_OPS_H_
+#endif // TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_OPS_H_

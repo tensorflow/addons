@@ -17,8 +17,8 @@ limitations under the License.
 
 #define EIGEN_USE_GPU
 
-#include "tensorflow/core/util/gpu_kernel_helper.h"
 #include "tensorflow/core/framework/op_kernel.h"
+#include "tensorflow/core/util/gpu_kernel_helper.h"
 #include "tensorflow_addons/custom_ops/layers/cc/kernels/embedding_bag_ops.h"
 
 namespace tensorflow {
@@ -29,13 +29,12 @@ typedef Eigen::GpuDevice GPUDevice;
 namespace {
 // Define the GPU kernel.
 template <typename T, typename Tindices, const int kThreadsPerBlock>
-__global__ void EmbeddingBagGPUKernel(const Tindices* __restrict__ indices,
-                                      const T* __restrict__ params,
-                                      const T* __restrict__ weights,
-                                      T* __restrict__ output,
-                                      const Eigen::Index output_dim,
-                                      const Eigen::Index sequence_length,
-                                      Combiner combiner) {
+__global__ void
+EmbeddingBagGPUKernel(const Tindices *__restrict__ indices,
+                      const T *__restrict__ params,
+                      const T *__restrict__ weights, T *__restrict__ output,
+                      const Eigen::Index output_dim,
+                      const Eigen::Index sequence_length, Combiner combiner) {
   // blockIdx.x indicates which row of the output we are writing to. It also
   // indicates which `bag` we're reading from.
   // blockIdx.y indicates which chunk of that row we are writing to.
@@ -63,7 +62,7 @@ __global__ void EmbeddingBagGPUKernel(const Tindices* __restrict__ indices,
     output[output_idx] = accum;
   }
 }
-}  // namespace
+} // namespace
 
 namespace functor {
 // Define the GPU implementation that launches the CUDA kernel.
@@ -71,7 +70,7 @@ template <typename T, typename Tindices>
 struct EmbeddingBagFunctor<GPUDevice, T, Tindices> {
   static constexpr int kThreadsPerBlock = 32;
 
-  void operator()(const GPUDevice& device,
+  void operator()(const GPUDevice &device,
                   typename TTypes<Tindices, 2>::ConstTensor indices,
                   typename TTypes<T, 2>::ConstTensor params,
                   typename TTypes<T, 2>::ConstTensor weights,
@@ -92,8 +91,8 @@ struct EmbeddingBagFunctor<GPUDevice, T, Tindices> {
 };
 
 // Explicit instantiation of the GPU functor.
-#define DECLARE_GPU_SPECS(T)                                \
-  template struct EmbeddingBagFunctor<GPUDevice, T, int32>; \
+#define DECLARE_GPU_SPECS(T)                                                   \
+  template struct EmbeddingBagFunctor<GPUDevice, T, int32>;                    \
   template struct EmbeddingBagFunctor<GPUDevice, T, int64>;
 
 DECLARE_GPU_SPECS(Eigen::half);
@@ -101,8 +100,8 @@ DECLARE_GPU_SPECS(float);
 DECLARE_GPU_SPECS(double);
 #undef DECLARE_GPU_SPECS
 
-}  // namespace functor
-}  // namespace addons
-}  // namespace tensorflow
+} // namespace functor
+} // namespace addons
+} // namespace tensorflow
 
-#endif  // GOOGLE_CUDA
+#endif // GOOGLE_CUDA
