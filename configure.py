@@ -51,11 +51,14 @@ def is_linux():
 def is_raspi_arm():
     return os.uname()[4] == "armv7l"
 
+
 def is_aarch64():
     return os.uname()[4] == "aarch64"  
 
+
 def is_nano():
     return os.uname()[1] == "nano" 
+
 
 def get_tf_header_dir():
     import tensorflow as tf
