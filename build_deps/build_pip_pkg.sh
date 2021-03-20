@@ -82,9 +82,9 @@ function main() {
 
   if [[ -z ${NIGHTLY_FLAG} ]]; then
     # Windows has issues with locking library files for deletion so do not fail here
-    python ${BUILD_CMD} || true
+    python3 ${BUILD_CMD} || true
   else
-    python ${BUILD_CMD} ${NIGHTLY_FLAG} || true
+    python3 ${BUILD_CMD} ${NIGHTLY_FLAG} || true
   fi
 
   cp dist/*.whl "${DEST}"
