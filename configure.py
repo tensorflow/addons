@@ -53,11 +53,11 @@ def is_raspi_arm():
 
 
 def is_aarch64():
-    return os.uname()[4] == "aarch64"  
+    return os.uname()[4] == "aarch64"
 
 
 def is_nano():
-    return os.uname()[1] == "nano" 
+    return os.uname()[1] == "nano"
 
 
 def get_tf_header_dir():
