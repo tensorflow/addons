@@ -16,10 +16,9 @@
 
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
-from tensorflow_addons.utils.types import AcceptableDTypes, FloatTensorLike
+from tensorflow_addons.utils.types import AcceptableDTypes
 
 from typeguard import typechecked
-from typing import Optional
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")

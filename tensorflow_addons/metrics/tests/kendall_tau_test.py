@@ -29,11 +29,11 @@ def test_config():
     assert kp_obj.actual_max == 1.0
 
     # Check save and restore config
-    kb_obj2 = KendallsTau.from_config(kp_obj.get_config())
-    assert kp_obj.name == "kendalls_tau"
-    assert kp_obj.dtype == tf.float32
-    assert kp_obj.actual_min == 0.0
-    assert kp_obj.actual_max == 1.0
+    kp_obj2 = KendallsTau.from_config(kp_obj.get_config())
+    assert kp_obj2.name == "kendalls_tau"
+    assert kp_obj2.dtype == tf.float32
+    assert kp_obj2.actual_min == 0.0
+    assert kp_obj2.actual_max == 1.0
 
 
 def test_scoring_with_ties():
