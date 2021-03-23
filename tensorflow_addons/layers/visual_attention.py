@@ -16,8 +16,9 @@
 """
 
 import tensorflow as tf
-from tensorflow.keras.layers import Conv2D, AveragePooling2D
+from tensorflow.keras.layers import Conv2D, GlobalAveragePooling2D
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class ChannelAttention2D(tf.keras.layers.Layer):
   """Implements Channel Attention ( Sanghyun Woo et al) for convolutional networks in tensorflow
   Inputs need to be Conv2D feature maps.
@@ -28,7 +29,7 @@ class ChannelAttention2D(tf.keras.layers.Layer):
 
   Args:
       * nf [int]: number of filters or channels
-      * name : Name of layer
+      * Sdims : Spacial dimensions of input
   Call Arguments:
       * Feature maps : Conv2D feature maps of the shape `[batch,W,H,C]`.
   Output;
@@ -40,21 +41,23 @@ class ChannelAttention2D(tf.keras.layers.Layer):
   cnn_layer = Conv2D(32,3,,activation='relu', padding='same')(inp)
 
   # Using the .shape[-1] to simplify network modifications. Can directly input number of channels as well
-  attention_cnn = ChannelAttention2D(cnn_layer.shape[-1])(cnn_layer)
+  attention_cnn = ChannelAttention2D(cnn_layer.shape[-1],cnn_layer.shape[1:-1])(cnn_layer)
 
   #ADD DNN layers .....
   ```
   """
-  def __init__(self,nf,name = None,r=4):
-    super().__init__(name=name)
-    self._name = name
+  def __init__(self,nf,r=4,**kwargs):
+    super().__init__(**kwargs)
     self.nf = nf
     self.conv1 = Conv2D(filters=nf/r ,kernel_size=1,use_bias=True)
     self.conv2 = Conv2D(filters=nf ,kernel_size=1,use_bias=True)
-
+    self.pool = GlobalAveragePooling2D()
+    
   @tf.function
   def call(self,x):
-    y = AveragePooling2D(x.shape[1:-1])(x)
+    y = self.pool(x)
+    y = tf.expand_dims(y,1)
+    y = tf.expand_dims(y,1)
     y = self.conv1(y)
     y = tf.nn.relu(y)
     y = self.conv2(y)
@@ -67,6 +70,7 @@ class ChannelAttention2D(tf.keras.layers.Layer):
     config.update({"Att_filters":self.nf})
     return config
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class PixelAttention2D(tf.keras.layers.Layer):
   """Implements Pixel Attention ( Hengyuan Zhao et al) for convolutional networks in tensorflow
   Inputs need to be Conv2D feature maps.
@@ -95,9 +99,8 @@ class PixelAttention2D(tf.keras.layers.Layer):
   #ADD DNN layers .....
   ```
   """
-  def __init__(self, nf,name =None):
-    super().__init__(name=name)
-    self._name = name
+  def __init__(self, nf,**kwargs):
+    super().__init__(**kwargs)
     self.nf = nf
     self.conv1 = Conv2D(filters=nf,kernel_size=1)
 
