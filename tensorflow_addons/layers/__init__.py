@@ -25,6 +25,8 @@ from tensorflow_addons.layers.adaptive_pooling import (
 from tensorflow_addons.layers.gelu import GELU
 from tensorflow_addons.layers.max_unpooling_2d import MaxUnpooling2D
 from tensorflow_addons.layers.maxout import Maxout
+from tensorflow_addons.layers.visual_attention import PixelAttention2D
+from tensorflow_addons.layers.visual_attention import ChannelAttention2D
 from tensorflow_addons.layers.multihead_attention import MultiHeadAttention
 from tensorflow_addons.layers.normalizations import FilterResponseNormalization
 from tensorflow_addons.layers.normalizations import GroupNormalization
