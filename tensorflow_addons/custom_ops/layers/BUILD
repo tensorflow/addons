@@ -30,6 +30,6 @@ custom_op_library(
     cuda_srcs = [
         "cc/kernels/embedding_bag_ops.h",
         "cc/kernels/embedding_bag_ops_gpu.cu.cc",
-        "cc/kernels/embedding_bag_backward_kernels.cu.cc"
-    ]
+        "cc/kernels/embedding_bag_backward_kernels.cu.cc",
+    ],
 )
