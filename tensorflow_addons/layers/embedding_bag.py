@@ -26,7 +26,7 @@ def _embedding_bag(
     indices,
     params,
     weights=None,
-    combiner="mean",
+    combiner="sum",
     name=None,
 ):
     """EmbeddingBag computation.
@@ -51,6 +51,8 @@ def _embedding_bag(
     """
     if weights is None:
         weights = tf.ones_like(indices, dtype=params.dtype)
+    elif combiner != 'sum':
+        raise RuntimeError("Combiner mode must be 'sum' when weights are supplied to EmbeddingBag!")
 
     return _embedding_bag_so.ops.addons_embedding_bag(
         indices, params, weights, combiner=combiner.upper(), name=name
