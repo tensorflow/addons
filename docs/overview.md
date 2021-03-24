@@ -51,7 +51,7 @@ cd addons
 
 # If building GPU Ops (Requires CUDA 10.0 and CuDNN 7)
 export TF_NEED_CUDA=1
-export CUDA_HOME="/path/to/cuda10" (default: /usr/local/cuda)
+export CUDA_TOOLKIT_PATH="/path/to/cuda10" (default: /usr/local/cuda)
 export CUDNN_INSTALL_PATH="/path/to/cudnn" (default: /usr/lib/x86_64-linux-gnu)
 
 # This script links project with TensorFlow dependency
