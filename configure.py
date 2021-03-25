@@ -52,6 +52,14 @@ def is_raspi_arm():
     return os.uname()[4] == "armv7l"
 
 
+def is_aarch64():
+    return os.uname()[4] == "aarch64"
+
+
+def is_nano():
+    return os.uname()[1] == "nano"
+
+
 def get_tf_header_dir():
     import tensorflow as tf
 
@@ -68,7 +76,7 @@ def get_tf_shared_lib_dir():
     if is_windows():
         tf_shared_lib_dir = tf.sysconfig.get_compile_flags()[0][2:-7] + "python"
         return tf_shared_lib_dir.replace("\\", "/")
-    elif is_raspi_arm():
+    elif is_raspi_arm() or is_aarch64():
         return tf.sysconfig.get_compile_flags()[0][2:-7] + "python"
     else:
         return tf.sysconfig.get_link_flags()[0][2:]
@@ -85,7 +93,7 @@ def get_shared_lib_name():
     elif is_windows():
         # Windows
         return "_pywrap_tensorflow_internal.lib"
-    elif is_raspi_arm():
+    elif is_raspi_arm() or is_aarch64():
         # The below command for linux would return an empty list
         return "_pywrap_tensorflow_internal.so"
     else:
@@ -120,7 +128,10 @@ def create_build_configuration():
         write("build:windows --cxxopt=/std:c++14")
         write("build:windows --host_cxxopt=/std:c++14")
 
-    if is_macos() or is_linux():
+    if is_raspi_arm() or is_aarch64():
+        write("build --cxxopt=-std=c++14")
+        write("build --host_cxxopt=-std=c++14")
+    elif is_macos() or is_linux():
         write("build --copt=-mavx")
         write("build --cxxopt=-std=c++14")
         write("build --host_cxxopt=-std=c++14")
@@ -128,6 +139,17 @@ def create_build_configuration():
     if os.getenv("TF_NEED_CUDA", "0") == "1":
         print("> Building GPU & CPU ops")
         configure_cuda()
+    elif is_nano():
+        print("> Building GPU & CPU ops")
+        write_action_env("TF_NEED_CUDA", "1")
+        write_action_env("CUDA_TOOLKIT_PATH", "/usr/local/cuda")
+        write_action_env("CUDNN_INSTALL_PATH", "/usr/lib/aarch64-linux-gnu"),
+        write_action_env("TF_CUDA_VERSION", "10")
+        write_action_env("TF_CUDNN_VERSION", "8")
+        write("test --config=cuda")
+        write("build --config=cuda")
+        write("build:cuda --define=using_cuda=true --define=using_cuda_nvcc=true")
+        write("build:cuda --crosstool_top=@local_config_cuda//crosstool:toolchain")
     else:
         print("> Building only CPU ops")
 
