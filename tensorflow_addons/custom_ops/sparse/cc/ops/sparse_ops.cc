@@ -56,10 +56,10 @@ Status ValidateSquareMatrixShape(InferenceContext* c,
 
 REGISTER_OP("Addons>SparseMatrixBiCGSTABSolver")
     .Input("a: variant")
-    .Input("b: T")
-    .Attr("T: type")
+    .Input("b: Type")
+    .Attr("Type: type")
     .Attr("adjoint_a: bool = false")
-    .Output("output: T")
+    .Output("output: Type")
     .SetShapeFn([](InferenceContext* c) {
       ShapeAndType sparse_matrix_shape_and_type;
       TF_RETURN_IF_ERROR(GetVariantInput(c, 0, &sparse_matrix_shape_and_type));

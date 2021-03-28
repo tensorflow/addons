@@ -30,6 +30,7 @@ limitations under the License.
 // clang-format on
 
 namespace tensorflow {
+namespace addons {
 
 // Op to compute the sparse inverse using the BiCGSTAB method.
 //
@@ -46,14 +47,16 @@ namespace tensorflow {
 // a * x = b. Returns the (possibly batched) solution as a Tensor with the same
 // shape as `b`.
 //
+// Supported types are float, double, complex64, and complex128.
+//
 // TODO(tabakg): Consider adding optional arguments (max iterations, tolerance)
 // and option for initial guess. Also consider a GPU implementation.
 
-template <typename T>
+template <typename Type>
 class BiCGSTABSolverCPUOp : public OpKernel {
-  using SparseMatrix = Eigen::SparseMatrix<T, Eigen::RowMajor>;
+  using SparseMatrix = Eigen::SparseMatrix<Type, Eigen::RowMajor>;
   using Matrix =
-      Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+      Eigen::Matrix<Type, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
   using MatrixMap = Eigen::Map<Matrix>;
   using ConstMatrixMap = Eigen::Map<const Matrix>;
   using ConstSparseMatrixMap = Eigen::Map<const SparseMatrix>;
@@ -90,13 +93,17 @@ class BiCGSTABSolverCPUOp : public OpKernel {
             for (int64 batch_index = batch_begin; batch_index < batch_end;
                  ++batch_index) {
               ConstSparseMatrixMap sparse_matrix(
-                  num_rows, num_rows, input_matrix->nnz(batch_index),
-                  input_matrix->row_pointers_vec(batch_index).data(),
-                  input_matrix->col_indices_vec(batch_index).data(),
-                  input_matrix->values_vec<T>(batch_index).data());
+                  num_rows, num_rows,
+                  input_matrix->nnz(static_cast<int>(batch_index)),
+                  input_matrix->row_pointers_vec(static_cast<int>(batch_index))
+                      .data(),
+                  input_matrix->col_indices_vec(static_cast<int>(batch_index))
+                      .data(),
+                  input_matrix->values_vec<Type>(static_cast<int>(batch_index))
+                      .data());
 
               // Map the corresponding rows of the rhs.
-              ConstMatrixMap rhs_map(input_right_hand_side.flat<T>().data() +
+              ConstMatrixMap rhs_map(input_right_hand_side.flat<Type>().data() +
                                          batch_index * num_rows * num_rhs_cols,
                                      num_rows, num_rhs_cols);
 
@@ -107,7 +114,7 @@ class BiCGSTABSolverCPUOp : public OpKernel {
                 solver.compute(sparse_matrix);
               }
 
-              MatrixMap output_map(output->flat<T>().data() +
+              MatrixMap output_map(output->flat<Type>().data() +
                                        batch_index * num_rows * num_rhs_cols,
                                    num_rows, num_rhs_cols);
               output_map.noalias() = solver.solve(rhs_map);
@@ -127,7 +134,7 @@ class BiCGSTABSolverCPUOp : public OpKernel {
                     DataTypeString(right_hand_side.dtype())));
 
     const Tensor& dense_shape = sparse_matrix.dense_shape();
-    const int rank = dense_shape.dim_size(0);
+    const int rank = static_cast<int>(dense_shape.dim_size(0));
     OP_REQUIRES(ctx, rank == 2 || rank == 3,
                 errors::InvalidArgument("sparse matrix must have rank 2 or 3; ",
                                         "but dense_shape has size ", rank));
@@ -168,11 +175,11 @@ class BiCGSTABSolverCPUOp : public OpKernel {
   bool adjoint_a_;
 };
 
-#define REGISTER_CPU(T)                                             \
+#define REGISTER_CPU(Type)                                          \
   REGISTER_KERNEL_BUILDER(Name("Addons>SparseMatrixBiCGSTABSolver") \
                               .Device(DEVICE_CPU)                   \
-                              .TypeConstraint<T>("T"),              \
-                          BiCGSTABSolverCPUOp<T>);
+                              .TypeConstraint<Type>("Type"),        \
+                          BiCGSTABSolverCPUOp<Type>);
 
 REGISTER_CPU(float);
 REGISTER_CPU(double);
@@ -180,4 +187,5 @@ REGISTER_CPU(complex64);
 REGISTER_CPU(complex128);
 
 #undef REGISTER_CPU
+}  // namespace addons
 }  // namespace tensorflow
