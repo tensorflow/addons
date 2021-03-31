@@ -74,7 +74,7 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
             "conf_mtx",
             shape=(self.num_classes, self.num_classes),
             initializer=tf.keras.initializers.zeros,
-            dtype=tf.float32,
+            dtype=self.dtype,
         )
 
     # TODO: sample_weights
