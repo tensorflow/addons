@@ -25,7 +25,7 @@ from tensorflow_addons.utils import test_utils
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def testLARSGradientOneStep():
+def test_lars_gradient_one_step():
     for dtype in [tf.float32, tf.float64]:
         shape = [3, 3]
         var_np = np.ones(shape)
@@ -44,7 +44,8 @@ def testLARSGradientOneStep():
             momentum=m_np,
             weight_decay=wd_np,
             eeta=eeta,
-            epsilon=ep_np)
+            epsilon=ep_np,
+        )
 
         test_utils.assert_allclose_according_to_type(var_np, var)
 
@@ -60,11 +61,13 @@ def testLARSGradientOneStep():
         var_np -= vel_np
 
         test_utils.assert_allclose_according_to_type(var_np, var)
-        test_utils.assert_allclose_according_to_type(vel_np, opt.get_slot(var, 'momentum'))
+        test_utils.assert_allclose_according_to_type(
+            vel_np, opt.get_slot(var, "momentum")
+        )
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def testLARSGradientMultiStep():
+def test_lars_gradient_multi_step():
     for dtype in [tf.float32, tf.float64]:
         shape = [3, 3]
         var_np = np.ones(shape)
@@ -83,7 +86,8 @@ def testLARSGradientMultiStep():
             momentum=m_np,
             eeta=eeta,
             weight_decay=wd_np,
-            epsilon=ep_np)
+            epsilon=ep_np,
+        )
 
         test_utils.assert_allclose_according_to_type(var_np, var)
 
@@ -100,7 +104,9 @@ def testLARSGradientMultiStep():
             var_np -= vel_np
 
             test_utils.assert_allclose_according_to_type(var_np, var)
-            test_utils.assert_allclose_according_to_type(vel_np, opt.get_slot(var, 'momentum'))
+            test_utils.assert_allclose_according_to_type(
+                vel_np, opt.get_slot(var, "momentum")
+            )
 
 
 def test_serialization():

@@ -47,16 +47,18 @@ class LARS(tf.keras.optimizers.Optimizer):
     """
 
     @typechecked
-    def __init__(self,
-                 learning_rate: Union[FloatTensorLike, Callable] = 0.001,
-                 momentum: FloatTensorLike = 0.9,
-                 weight_decay: FloatTensorLike = 0.0001,
-                 eeta: FloatTensorLike = 0.001,
-                 epsilon: FloatTensorLike = 0.0,
-                 nesterov: bool = False,
-                 skip_list: List[str] = None,
-                 name: str = "LARS",
-                 **kwargs):
+    def __init__(
+        self,
+        learning_rate: Union[FloatTensorLike, Callable] = 0.001,
+        momentum: FloatTensorLike = 0.9,
+        weight_decay: FloatTensorLike = 0.0001,
+        eeta: FloatTensorLike = 0.001,
+        epsilon: FloatTensorLike = 0.0,
+        nesterov: bool = False,
+        skip_list: List[str] = None,
+        name: str = "LARS",
+        **kwargs,
+    ):
 
         if momentum < 0.0:
             raise ValueError("momentum should be positive: %s" % momentum)
@@ -77,17 +79,26 @@ class LARS(tf.keras.optimizers.Optimizer):
 
     def _compute_lr(self, grad, var, coefficients):
         scaled_lr = coefficients["lr_t"]
-        if self._skip_list is None or not any(v in var.name
-                                              for v in self._skip_list):
+        if self._skip_list is None or not any(v in var.name for v in self._skip_list):
             w_norm = tf.linalg.norm(var, ord=2)
             g_norm = tf.linalg.norm(grad, ord=2)
             trust_ratio = tf.where(
                 w_norm > 0,
                 tf.where(
                     g_norm > 0,
-                    (coefficients["eeta_t"] * w_norm /
-                    (g_norm + coefficients["weight_decay_t"] * w_norm + self._epsilon)), 1.0),
-                1.0)
+                    (
+                        coefficients["eeta_t"]
+                        * w_norm
+                        / (
+                            g_norm
+                            + coefficients["weight_decay_t"] * w_norm
+                            + self._epsilon
+                        )
+                    ),
+                    1.0,
+                ),
+                1.0,
+            )
             scaled_lr = coefficients["lr_t"] * trust_ratio
             # Add the weight regularization gradient
             grad = grad + coefficients["weight_decay_t"] * var
@@ -97,15 +108,11 @@ class LARS(tf.keras.optimizers.Optimizer):
         super()._prepare_local(var_device, var_dtype, apply_state)
         apply_state[(var_device, var_dtype)].update(
             {
-                "momentum_t": tf.identity(
-                    self._get_hyper("momentum", var_dtype)
-                ),
+                "momentum_t": tf.identity(self._get_hyper("momentum", var_dtype)),
                 "weight_decay_t": tf.identity(
                     self._get_hyper("weight_decay", var_dtype)
                 ),
-                "eeta_t": tf.identity(
-                    self._get_hyper("eeta", var_dtype)
-                ),
+                "eeta_t": tf.identity(self._get_hyper("eeta", var_dtype)),
             }
         )
 
@@ -117,13 +124,14 @@ class LARS(tf.keras.optimizers.Optimizer):
         scaled_lr, grad = self._compute_lr(grad, var, coefficients)
         mom = self.get_slot(var, "momentum")
         return tf.raw_ops.ResourceApplyMomentum(
-                var=var.handle,
-                accum=mom.handle,
-                lr=tf.cast(1.0, var.dtype),
-                grad=grad * scaled_lr,
-                momentum=coefficients["momentum_t"],
-                use_locking=self._use_locking,
-                use_nesterov=self._nesterov)
+            var=var.handle,
+            accum=mom.handle,
+            lr=tf.cast(1.0, var.dtype),
+            grad=grad * scaled_lr,
+            momentum=coefficients["momentum_t"],
+            use_locking=self._use_locking,
+            use_nesterov=self._nesterov,
+        )
 
     def _resource_apply_sparse(self, grad, var, indices, apply_state):
         var_device, var_dtype = var.device, var.dtype
@@ -132,22 +140,27 @@ class LARS(tf.keras.optimizers.Optimizer):
         ) or self._fallback_apply_state(var_device, var_dtype)
         mom = self.get_slot(var, "momentum")
         return tf.raw_ops.ResourceSparseApplyMomentum(
-                var=var.handle,
-                accum=mom.handle,
-                lr=tf.cast(coefficients["lr_t"], grad.dtype),
-                grad=grad,
-                indices=indices,
-                momentum=tf.cast(coefficients["momentum_t"], grad.dtype),
-                use_locking=self._use_locking,
-                use_nesterov=self._nesterov)
+            var=var.handle,
+            accum=mom.handle,
+            lr=tf.cast(coefficients["lr_t"], grad.dtype),
+            grad=grad,
+            indices=indices,
+            momentum=tf.cast(coefficients["momentum_t"], grad.dtype),
+            use_locking=self._use_locking,
+            use_nesterov=self._nesterov,
+        )
 
     def get_config(self):
         config = super().get_config()
-        config.update({"learning_rate": self._serialize_hyperparameter("learning_rate"),
-                       "momentum": self._serialize_hyperparameter("momentum"),
-                       "weight_decay": self._serialize_hyperparameter("weight_decay"),
-                       "epsilon": self._epsilon,
-                       "eeta": self._serialize_hyperparameter("eeta"),
-                       "nesterov": self._nesterov,
-                       "skip_list": self._skip_list})
+        config.update(
+            {
+                "learning_rate": self._serialize_hyperparameter("learning_rate"),
+                "momentum": self._serialize_hyperparameter("momentum"),
+                "weight_decay": self._serialize_hyperparameter("weight_decay"),
+                "epsilon": self._epsilon,
+                "eeta": self._serialize_hyperparameter("eeta"),
+                "nesterov": self._nesterov,
+                "skip_list": self._skip_list,
+            }
+        )
         return config
