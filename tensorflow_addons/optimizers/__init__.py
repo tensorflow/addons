@@ -30,6 +30,7 @@ from tensorflow_addons.optimizers.discriminative_layer_training import (
     MultiOptimizer,
 )
 from tensorflow_addons.optimizers.lamb import LAMB
+from tensorflow_addons.optimizers.lars import LARS
 from tensorflow_addons.optimizers.lazy_adam import LazyAdam
 from tensorflow_addons.optimizers.lookahead import Lookahead
 from tensorflow_addons.optimizers.moving_average import MovingAverage
