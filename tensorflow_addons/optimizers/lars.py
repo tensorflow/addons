@@ -104,6 +104,37 @@ class LARS(tf.keras.optimizers.Optimizer):
             grad = grad + coefficients["weight_decay_t"] * var
         return scaled_lr, grad
 
+    def _compute_lr_sparse(self, grad, var, indices, coefficients):
+        scaled_lr = coefficients["lr_t"]
+        if self._skip_list is None or not any(v in var.name for v in self._skip_list):
+            w_norm = tf.linalg.norm(var, ord=2)
+            g_norm = tf.linalg.norm(grad, ord=2)
+            trust_ratio = tf.where(
+                w_norm > 0,
+                tf.where(
+                    g_norm > 0,
+                    (
+                        coefficients["eeta_t"]
+                        * w_norm
+                        / (
+                            g_norm
+                            + coefficients["weight_decay_t"] * w_norm
+                            + self._epsilon
+                        )
+                    ),
+                    1.0,
+                ),
+                1.0,
+            )
+            scaled_lr = coefficients["lr_t"] * trust_ratio
+            # Add the weight regularization gradient
+            var_t = var.assign(
+                coefficients["weight_decay_t"] * var, use_locking=self._use_locking
+            )
+            with tf.control_dependencies([var_t]):
+                grad = self._resource_scatter_add(var, indices, grad)
+        return scaled_lr, grad
+
     def _prepare_local(self, var_device, var_dtype, apply_state):
         super()._prepare_local(var_device, var_dtype, apply_state)
         apply_state[(var_device, var_dtype)].update(
@@ -138,14 +169,16 @@ class LARS(tf.keras.optimizers.Optimizer):
         coefficients = (apply_state or {}).get(
             (var_device, var_dtype)
         ) or self._fallback_apply_state(var_device, var_dtype)
+        scaled_lr, grad = self._compute_lr_sparse(grad, var, indices, coefficients)
+        grad = tf.IndexedSlices(tf.gather(grad, indices), indices, grad.shape)
         mom = self.get_slot(var, "momentum")
         return tf.raw_ops.ResourceSparseApplyMomentum(
             var=var.handle,
             accum=mom.handle,
-            lr=tf.cast(coefficients["lr_t"], grad.dtype),
-            grad=grad,
+            lr=tf.cast(1.0, var.dtype),
+            grad=grad * scaled_lr,
             indices=indices,
-            momentum=tf.cast(coefficients["momentum_t"], grad.dtype),
+            momentum=coefficients["momentum_t"],
             use_locking=self._use_locking,
             use_nesterov=self._nesterov,
         )

@@ -25,11 +25,47 @@ from tensorflow_addons.utils import test_utils
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_sparse():
+    for dtype in [tf.float32, tf.float64]:
+        shape = [3]
+        var_np = np.array([1.0, 1.0, 2.0], dtype=dtype.as_numpy_dtype)
+        grad_np = np.array([0.1, 0.0, 0.1], dtype=dtype.as_numpy_dtype)
+        indices = np.array([0, 2], dtype=np.int32)
+        lr_np = 0.1
+        m_np = 0.9
+        wd_np = 0.1
+        ep_np = 1e-5
+        eeta = 0.1
+        vel_np = np.zeros(shape)
+        var_np = np.expand_dims(var_np, axis=0)
+        var = tf.Variable(var_np, dtype=dtype)
+        grad = tf.IndexedSlices(
+            tf.constant(grad_np[indices]), tf.constant(indices), tf.constant([3])
+        )
+        grad = tf.expand_dims(grad, axis=0)
+        opt = lars.LARS(
+            learning_rate=lr_np,
+            momentum=m_np,
+            weight_decay=wd_np,
+            eeta=eeta,
+            epsilon=ep_np,
+        )
+        opt.apply_gradients([(grad, var)])
+        test_utils.assert_allclose_according_to_type(
+            [[0.98732084, 0.99366039, 1.98098123]], var.numpy()
+        )
+        test_utils.assert_allclose_according_to_type(
+            [[0.01267916, 0.00633958, 0.01901875]],
+            opt.get_slot(var, "momentum").numpy(),
+        )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_lars_gradient_one_step():
     for dtype in [tf.float32, tf.float64]:
         shape = [3, 3]
-        var_np = np.ones(shape)
-        grad_np = np.ones(shape)
+        var_np = np.ones(shape, dtype=dtype.as_numpy_dtype)
+        grad_np = np.ones(shape, dtype=dtype.as_numpy_dtype)
         lr_np = 0.1
         m_np = 0.9
         wd_np = 0.1
@@ -91,7 +127,7 @@ def test_lars_gradient_multi_step():
 
         test_utils.assert_allclose_according_to_type(var_np, var.numpy())
 
-        for _ in range(10):
+        for _ in range(3):
             opt.apply_gradients([(grad, var)])
 
             w_norm = np.linalg.norm(var_np.flatten(), ord=2)
