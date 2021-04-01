@@ -47,7 +47,7 @@ def test_lars_gradient_one_step():
             epsilon=ep_np,
         )
 
-        test_utils.assert_allclose_according_to_type(var_np, var)
+        test_utils.assert_allclose_according_to_type(var_np, var.numpy())
 
         opt.apply_gradients([(grad, var)])
 
@@ -60,9 +60,9 @@ def test_lars_gradient_one_step():
         vel_np = m_np * vel_np + scaled_lr * grad_np
         var_np -= vel_np
 
-        test_utils.assert_allclose_according_to_type(var_np, var)
+        test_utils.assert_allclose_according_to_type(var_np, var.numpy())
         test_utils.assert_allclose_according_to_type(
-            vel_np, opt.get_slot(var, "momentum")
+            vel_np, opt.get_slot(var, "momentum").numpy()
         )
 
 
@@ -89,7 +89,7 @@ def test_lars_gradient_multi_step():
             epsilon=ep_np,
         )
 
-        test_utils.assert_allclose_according_to_type(var_np, var)
+        test_utils.assert_allclose_according_to_type(var_np, var.numpy())
 
         for _ in range(10):
             opt.apply_gradients([(grad, var)])
@@ -103,9 +103,9 @@ def test_lars_gradient_multi_step():
             vel_np = m_np * vel_np + scaled_lr * grad_np
             var_np -= vel_np
 
-            test_utils.assert_allclose_according_to_type(var_np, var)
+            test_utils.assert_allclose_according_to_type(var_np, var.numpy())
             test_utils.assert_allclose_according_to_type(
-                vel_np, opt.get_slot(var, "momentum")
+                vel_np, opt.get_slot(var, "momentum").numpy()
             )
 
 
