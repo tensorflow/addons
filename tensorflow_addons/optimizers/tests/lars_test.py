@@ -36,7 +36,6 @@ def test_sparse():
         wd_np = 0.1
         ep_np = 1e-5
         eeta = 0.1
-        vel_np = np.zeros(shape)
         var_np = np.expand_dims(var_np, axis=0)
         var = tf.Variable(var_np, dtype=dtype)
         grad = tf.IndexedSlices(
