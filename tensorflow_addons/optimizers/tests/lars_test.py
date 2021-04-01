@@ -27,7 +27,6 @@ from tensorflow_addons.utils import test_utils
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_sparse():
     for dtype in [tf.float32, tf.float64]:
-        shape = [3]
         var_np = np.array([1.0, 1.0, 2.0], dtype=dtype.as_numpy_dtype)
         grad_np = np.array([0.1, 0.0, 0.1], dtype=dtype.as_numpy_dtype)
         indices = np.array([0, 2], dtype=np.int32)
