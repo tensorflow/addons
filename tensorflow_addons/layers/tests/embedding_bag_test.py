@@ -14,10 +14,6 @@
 # ==============================================================================
 """Tests for EmbeddingBag layer."""
 
-# TODO Add a test for the layer separate from the op
-# TODO Test gradients as well
-# TODO Test a few shapes with weird dimensions to make sure the op handles them correctly
-
 import pytest
 import numpy as np
 import tensorflow as tf
@@ -28,7 +24,8 @@ from tensorflow_addons.utils import test_utils
 
 def manual_embedding_bag(indices, params, weights=None, combiner="mean"):
     gathered = tf.gather(params, indices)
-    gathered *= tf.expand_dims(weights, -1)
+    if weights is not None:
+        gathered *= tf.expand_dims(weights, -1)
     if combiner == "sum":
         return tf.reduce_sum(gathered, -2, keepdims=False)
     else:
@@ -39,7 +36,7 @@ def manual_embedding_bag(indices, params, weights=None, combiner="mean"):
 
 @pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("input_shape", [(16, 32)])
-@pytest.mark.parametrize("input_dim", [3, 63, 512, 1024])
+@pytest.mark.parametrize("input_dim", [63, 64])
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 @pytest.mark.parametrize("indices_dtype", [np.int32, np.int64])
 @pytest.mark.parametrize("combiner", ["sum", "mean"])
@@ -56,6 +53,9 @@ def test_forward(input_shape, input_dim, dtype, indices_dtype, combiner):
     embedding_bag = EmbeddingBag(input_dim, 16, combiner=combiner, dtype=dtype)
     embedding_bag.build(indices.shape)
     embedding_bag.set_weights([params])
+    indices = tf.convert_to_tensor(indices)
+    if weights is not None:
+        weights = tf.convert_to_tensor(weights)
     output = embedding_bag(
         indices,
         weights,
@@ -65,7 +65,7 @@ def test_forward(input_shape, input_dim, dtype, indices_dtype, combiner):
 
 @pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("input_shape", [(16, 32)])
-@pytest.mark.parametrize("input_dim", [3, 63, 512, 1024])
+@pytest.mark.parametrize("input_dim", [63, 64])
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 @pytest.mark.parametrize("indices_dtype", [np.int32, np.int64])
 @pytest.mark.parametrize("combiner", ["sum", "mean"])
@@ -81,7 +81,8 @@ def test_backward(input_shape, input_dim, dtype, indices_dtype, combiner):
 
     indices = tf.convert_to_tensor(indices)
     params = tf.convert_to_tensor(params)
-    weights = tf.convert_to_tensor(weights)
+    if weights is not None:
+        weights = tf.convert_to_tensor(weights)
 
     if combiner == 'sum':
         with tf.GradientTape(persistent=True) as tape:
