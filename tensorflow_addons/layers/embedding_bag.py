@@ -113,7 +113,7 @@ class EmbeddingBag(tf.keras.layers.Layer):
         embeddings_regularizer: Regularizer = None,
         embeddings_constraint: Constraint = None,
         mask_zero: bool = False,
-        combiner: str = "mean",
+        combiner: str = "sum",
         **kwargs,
     ):
         super(EmbeddingBag, self).__init__(**kwargs)
