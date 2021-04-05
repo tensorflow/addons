@@ -39,7 +39,7 @@ __global__ void PrepTempArraysKernel(
     Tindices *__restrict__ sortedIndicesCounter, const int indices_size) {
   const int arrayIdx = (blockIdx.x * kThreadsPerBlock) + threadIdx.x;
   if (arrayIdx <
-      indices_size) { // Make sure we don't run off the end of the actual array
+      indices_size) {  // Make sure we don't run off the end of the actual array
     sortedIndices[arrayIdx] = indices[arrayIdx];
     sortedIndicesCounter[arrayIdx] = arrayIdx;
   }
@@ -60,8 +60,8 @@ __global__ void EmbeddingBagWeightsGradKernel(
   // Use a full-precision accumulator even for half-precision inputs
   float partialDotProduct = 0.0f;
   for (int i = threadIdx.x; i < value_dim;
-       i += blockDim.x) // Note that some threads may stop one iteration
-                        // earlier if the block straddles the end of the array
+       i += blockDim.x)  // Note that some threads may stop one iteration
+                         // earlier if the block straddles the end of the array
   {
     partialDotProduct +=
         static_cast<float>(values[valueBaseIdx + i] * dloss[dlossBaseIdx + i]);
@@ -105,11 +105,11 @@ __global__ void EmbeddingBagValuesGradKernel(
   if (startIdx > 0) {
     const int prevIdx = ldg(sortedIndices + startIdx - 1);
     if (prevIdx == valuesIdx) {
-      return; // Another block is handling this index, exit
+      return;  // Another block is handling this index, exit
     }
   }
   int endIdx = startIdx;
-  while (endIdx < gridDim.x - 1) // Don't run off the end of the array
+  while (endIdx < gridDim.x - 1)  // Don't run off the end of the array
   {
     int nextIdx = endIdx + 1;
     int nextValuesIdx = ldg(sortedIndices + nextIdx);
@@ -119,10 +119,10 @@ __global__ void EmbeddingBagValuesGradKernel(
       break;
     }
   }
-  if (featureIdx < value_dim) // Don't run off the end of the row
+  if (featureIdx < value_dim)  // Don't run off the end of the row
   {
     const int outputOffset = (valuesIdx * value_dim) + featureIdx;
-    float accum = 0.0f; // Full precision even if the inputs aren't
+    float accum = 0.0f;  // Full precision even if the inputs aren't
 
     for (int currentIdx = startIdx; currentIdx <= endIdx; ++currentIdx) {
       int originalIdxPosition = ldg(counter + currentIdx);
@@ -234,8 +234,8 @@ template struct EmbeddingBagBackwardFunctor<GPUDevice, Eigen::half, int32>;
 template struct EmbeddingBagBackwardFunctor<GPUDevice, double, int64>;
 template struct EmbeddingBagBackwardFunctor<GPUDevice, float, int64>;
 template struct EmbeddingBagBackwardFunctor<GPUDevice, Eigen::half, int64>;
-} // namespace functor
-} // namespace addons
-} // namespace tensorflow
+}  // namespace functor
+}  // namespace addons
+}  // namespace tensorflow
 
-#endif // GOOGLE_CUDA
+#endif  // GOOGLE_CUDA

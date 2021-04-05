@@ -50,8 +50,8 @@ struct EmbeddingBagBackwardFunctor {
                   Combiner combiner, OpKernelContext *context);
 };
 
-} // namespace functor
-} // namespace addons
-} // namespace tensorflow
+}  // namespace functor
+}  // namespace addons
+}  // namespace tensorflow
 
-#endif // TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_OPS_H_
+#endif  // TENSORFLOW_ADDONS_LAYERS_KERNELS_EMBEDDING_BAG_OPS_H_

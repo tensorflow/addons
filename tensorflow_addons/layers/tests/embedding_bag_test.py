@@ -29,7 +29,7 @@ def manual_embedding_bag(indices, params, weights=None, combiner="mean"):
     if combiner == "sum":
         return tf.reduce_sum(gathered, -2, keepdims=False)
     else:
-        assert combiner == 'mean'
+        assert combiner == "mean"
         assert weights is None
         return tf.reduce_mean(gathered, -2, keepdims=False)
 
@@ -45,7 +45,7 @@ def test_forward(input_shape, input_dim, dtype, indices_dtype, combiner):
         indices_dtype
     )
     params = np.random.random(size=(input_dim, 16)).astype(dtype)
-    if combiner == 'sum':
+    if combiner == "sum":
         weights = np.random.random(size=indices.shape).astype(dtype)
     else:
         weights = None
@@ -74,7 +74,7 @@ def test_backward(input_shape, input_dim, dtype, indices_dtype, combiner):
         indices_dtype
     )
     params = np.random.random(size=(input_dim, 16)).astype(dtype)
-    if combiner == 'sum':
+    if combiner == "sum":
         weights = np.random.random(size=indices.shape).astype(dtype)
     else:
         weights = None
@@ -84,11 +84,11 @@ def test_backward(input_shape, input_dim, dtype, indices_dtype, combiner):
     if weights is not None:
         weights = tf.convert_to_tensor(weights)
 
-    if combiner == 'sum':
+    if combiner == "sum":
         with tf.GradientTape(persistent=True) as tape:
             tape.watch([params, weights])
-            output = _embedding_bag(indices, params, weights, combiner='sum')
-            expected = manual_embedding_bag(indices, params, weights, combiner='sum')
+            output = _embedding_bag(indices, params, weights, combiner="sum")
+            expected = manual_embedding_bag(indices, params, weights, combiner="sum")
 
         grads = tape.gradient(output, [params, weights])
         expected_grads = tape.gradient(expected, [params, weights])

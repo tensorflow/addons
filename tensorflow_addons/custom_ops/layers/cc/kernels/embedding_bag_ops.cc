@@ -17,7 +17,7 @@ limitations under the License.
 
 #if GOOGLE_CUDA
 #define EIGEN_USE_GPU
-#endif // GOOGLE_CUDA
+#endif  // GOOGLE_CUDA
 
 #include "tensorflow_addons/custom_ops/layers/cc/kernels/embedding_bag_ops.h"
 
@@ -155,7 +155,7 @@ struct EmbeddingBagBackwardFunctor<CPUDevice, T, Tindices> {
         weights_grads.generate(std::move(compute_weights_grads));
   }
 };
-} // namespace functor
+}  // namespace functor
 
 namespace {
 bool ValidateCombiner(const std::string &combiner_string, Combiner *combiner) {
@@ -168,11 +168,11 @@ bool ValidateCombiner(const std::string &combiner_string, Combiner *combiner) {
   }
   return true;
 }
-} // namespace
+}  // namespace
 
 template <typename Device, typename T, typename Tindices>
 class EmbeddingBagOp : public OpKernel {
-public:
+ public:
   explicit EmbeddingBagOp(OpKernelConstruction *context) : OpKernel(context) {
     std::string combiner_string;
     OP_REQUIRES_OK(context, context->GetAttr("combiner", &combiner_string));
@@ -210,13 +210,13 @@ public:
         combiner_);
   }
 
-private:
+ private:
   Combiner combiner_;
 };
 
 template <typename Device, typename T, typename Tindices>
 class EmbeddingBagBackwardOp : public OpKernel {
-public:
+ public:
   explicit EmbeddingBagBackwardOp(OpKernelConstruction *context)
       : OpKernel(context) {
     std::string combiner_string;
@@ -242,35 +242,35 @@ public:
         context->eigen_device<Device>(), indices.tensor<Tindices, 2>(),
         params.tensor<T, 2>(), weights.tensor<T, 2>(), grads.tensor<T, 2>(),
         params_grads->tensor<T, 2>(), weights_grads->tensor<T, 2>(), combiner_,
-        context); // Pass the context so the GPU op can allocate the temporary
-                  // arrays it needs
+        context);  // Pass the context so the GPU op can allocate the temporary
+                   // arrays it needs
   }
 
-private:
+ private:
   Combiner combiner_;
 };
 
 // Register the CPU kernels.
-#define REGISTER_CPU_KERNEL(T)                                                 \
-  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBag")                          \
-                              .Device(DEVICE_CPU)                              \
-                              .TypeConstraint<T>("T")                          \
-                              .TypeConstraint<int32>("Tindices"),              \
-                          EmbeddingBagOp<CPUDevice, T, int32>);                \
-  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBag")                          \
-                              .Device(DEVICE_CPU)                              \
-                              .TypeConstraint<T>("T")                          \
-                              .TypeConstraint<int64>("Tindices"),              \
-                          EmbeddingBagOp<CPUDevice, T, int64>);                \
-  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBagGrad")                      \
-                              .Device(DEVICE_CPU)                              \
-                              .TypeConstraint<T>("T")                          \
-                              .TypeConstraint<int32>("Tindices"),              \
-                          EmbeddingBagBackwardOp<CPUDevice, T, int32>);        \
-  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBagGrad")                      \
-                              .Device(DEVICE_CPU)                              \
-                              .TypeConstraint<T>("T")                          \
-                              .TypeConstraint<int64>("Tindices"),              \
+#define REGISTER_CPU_KERNEL(T)                                          \
+  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBag")                   \
+                              .Device(DEVICE_CPU)                       \
+                              .TypeConstraint<T>("T")                   \
+                              .TypeConstraint<int32>("Tindices"),       \
+                          EmbeddingBagOp<CPUDevice, T, int32>);         \
+  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBag")                   \
+                              .Device(DEVICE_CPU)                       \
+                              .TypeConstraint<T>("T")                   \
+                              .TypeConstraint<int64>("Tindices"),       \
+                          EmbeddingBagOp<CPUDevice, T, int64>);         \
+  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBagGrad")               \
+                              .Device(DEVICE_CPU)                       \
+                              .TypeConstraint<T>("T")                   \
+                              .TypeConstraint<int32>("Tindices"),       \
+                          EmbeddingBagBackwardOp<CPUDevice, T, int32>); \
+  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBagGrad")               \
+                              .Device(DEVICE_CPU)                       \
+                              .TypeConstraint<T>("T")                   \
+                              .TypeConstraint<int64>("Tindices"),       \
                           EmbeddingBagBackwardOp<CPUDevice, T, int64>);
 REGISTER_CPU_KERNEL(Eigen::half);
 REGISTER_CPU_KERNEL(float);
@@ -280,16 +280,16 @@ REGISTER_CPU_KERNEL(double);
 #if GOOGLE_CUDA
 namespace functor {
 // Forward declarations of the functor specializations for GPU.
-#define DECLARE_GPU_SPEC(T, Tindices)                                          \
-  template <>                                                                  \
-  void EmbeddingBagFunctor<GPUDevice, T, Tindices>::operator()(                \
-      const GPUDevice &, typename TTypes<Tindices, 2>::ConstTensor,            \
-      typename TTypes<T, 2>::ConstTensor, typename TTypes<T, 2>::ConstTensor,  \
-      typename TTypes<T, 2>::Tensor, Combiner);                                \
+#define DECLARE_GPU_SPEC(T, Tindices)                                         \
+  template <>                                                                 \
+  void EmbeddingBagFunctor<GPUDevice, T, Tindices>::operator()(               \
+      const GPUDevice &, typename TTypes<Tindices, 2>::ConstTensor,           \
+      typename TTypes<T, 2>::ConstTensor, typename TTypes<T, 2>::ConstTensor, \
+      typename TTypes<T, 2>::Tensor, Combiner);                               \
   extern template struct EmbeddingBagFunctor<GPUDevice, T, Tindices>;
 
-#define DECLARE_GPU_SPECS(T)                                                   \
-  DECLARE_GPU_SPEC(T, int32);                                                  \
+#define DECLARE_GPU_SPECS(T)  \
+  DECLARE_GPU_SPEC(T, int32); \
   DECLARE_GPU_SPEC(T, int64);
 
 DECLARE_GPU_SPECS(Eigen::half);
@@ -297,34 +297,34 @@ DECLARE_GPU_SPECS(float);
 DECLARE_GPU_SPECS(double);
 #undef DECLARE_GPU_SPEC
 #undef DECLARE_GPU_SPECS
-} // namespace functor
+}  // namespace functor
 
 // Register the GPU kernels.
-#define REGISTER_GPU_KERNEL(T)                                                 \
-  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBag")                          \
-                              .Device(DEVICE_GPU)                              \
-                              .TypeConstraint<T>("T")                          \
-                              .TypeConstraint<int32>("Tindices"),              \
-                          EmbeddingBagOp<GPUDevice, T, int32>);                \
-  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBag")                          \
-                              .Device(DEVICE_GPU)                              \
-                              .TypeConstraint<T>("T")                          \
-                              .TypeConstraint<int64>("Tindices"),              \
-                          EmbeddingBagOp<GPUDevice, T, int64>);                \
-  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBagGrad")                      \
-                              .Device(DEVICE_GPU)                              \
-                              .TypeConstraint<T>("T")                          \
-                              .TypeConstraint<int32>("Tindices"),              \
-                          EmbeddingBagBackwardOp<GPUDevice, T, int32>);        \
-  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBagGrad")                      \
-                              .Device(DEVICE_GPU)                              \
-                              .TypeConstraint<T>("T")                          \
-                              .TypeConstraint<int64>("Tindices"),              \
+#define REGISTER_GPU_KERNEL(T)                                          \
+  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBag")                   \
+                              .Device(DEVICE_GPU)                       \
+                              .TypeConstraint<T>("T")                   \
+                              .TypeConstraint<int32>("Tindices"),       \
+                          EmbeddingBagOp<GPUDevice, T, int32>);         \
+  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBag")                   \
+                              .Device(DEVICE_GPU)                       \
+                              .TypeConstraint<T>("T")                   \
+                              .TypeConstraint<int64>("Tindices"),       \
+                          EmbeddingBagOp<GPUDevice, T, int64>);         \
+  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBagGrad")               \
+                              .Device(DEVICE_GPU)                       \
+                              .TypeConstraint<T>("T")                   \
+                              .TypeConstraint<int32>("Tindices"),       \
+                          EmbeddingBagBackwardOp<GPUDevice, T, int32>); \
+  REGISTER_KERNEL_BUILDER(Name("Addons>EmbeddingBagGrad")               \
+                              .Device(DEVICE_GPU)                       \
+                              .TypeConstraint<T>("T")                   \
+                              .TypeConstraint<int64>("Tindices"),       \
                           EmbeddingBagBackwardOp<GPUDevice, T, int64>);
 REGISTER_GPU_KERNEL(Eigen::half);
 REGISTER_GPU_KERNEL(float);
 REGISTER_GPU_KERNEL(double);
 #undef REGISTER_GPU_KERNEL
-#endif // GOOGLE_CUDA
-} // namespace addons
-} // namespace tensorflow
+#endif  // GOOGLE_CUDA
+}  // namespace addons
+}  // namespace tensorflow
