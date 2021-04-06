@@ -16,7 +16,7 @@ on:
 
 env:
   MIN_PY_VERSION: '3.6'
-  MAX_PY_VERSION: '3.8'
+  MAX_PY_VERSION: '3.9'
 
 jobs:
   test-with-bazel:
@@ -39,8 +39,8 @@ jobs:
     strategy:
       matrix:
         os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
-        py-version: ['3.6', '3.7', '3.8']
-        tf-version: ['2.3.0', '2.4.1']
+        py-version: ['3.6', '3.7', '3.8', '3.9']
+        tf-version: ['2.3.0', '2.5.0rc0']
       fail-fast: false
     steps:
       - uses: actions/github-script@0.3.0
@@ -80,8 +80,8 @@ jobs:
     strategy:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
-        py-version: ['3.6', '3.7', '3.8']
-        tf-version: ['2.4.1']
+        py-version: ['3.6', '3.7', '3.8', '3.9']
+        tf-version: ['2.5.0rc0']
       fail-fast: false
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
     steps:
