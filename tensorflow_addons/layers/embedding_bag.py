@@ -69,7 +69,7 @@ def _embedding_bag_grad(op, grads):
         indices, params, weights, grads, combiner=combiner
     )
     # Because value grads are sparse, returning IndexedSlices can be faster for optimizer.
-    unique_indices = tf.unique(tf.reshape(indices, -1))[0]
+    unique_indices = tf.unique(tf.reshape(indices, (-1,)))[0]
     sorted_unique_indices = tf.sort(unique_indices)
     return [
         None,

@@ -60,7 +60,7 @@ REGISTER_OP("Addons>EmbeddingBagGrad")
       TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &params));
       TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 2, &weights));
       TF_RETURN_IF_ERROR(c->WithRank(c->input(3), 2, &unused));
-      TF_RETURN_IF_ERROR(c->Merge(indices, params, &unused));
+      TF_RETURN_IF_ERROR(c->Merge(indices, weights, &unused));
       c->set_output(0, c->input(1));
       c->set_output(1, c->input(2));
       return Status::OK();
