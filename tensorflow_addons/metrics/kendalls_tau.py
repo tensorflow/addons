@@ -25,7 +25,7 @@ from typeguard import typechecked
 class KendallsTau(Metric):
     """Computes Kendall's Tau-b Rank Correlation Coefficient.
 
-    A measure of ordinal similarity between equa length sequences
+    A measure of ordinal similarity between equal length sequences
     of values, with allowances for ties.
 
     Based on the algorithm of Wei Xiao https://arxiv.org/abs/1712.01521.
@@ -90,8 +90,6 @@ class KendallsTau(Metric):
           Update op.
         """
         if y_true.shape and y_true.shape[0]:
-            print("update_state %s %s" % (y_true, y_pred))
-            print("update_shape %s" % (y_true.shape[0]))
             i = tf.searchsorted(
                 self.actual_cuts,
                 tf.cast(tf.reshape(y_true, -1), self.actual_cuts.dtype),
@@ -163,7 +161,6 @@ class KendallsTau(Metric):
         # Number of discordant pairs.
         n = tf.cast(self.n, tf.float32)
         q = (n - 1.0) * n / 2.0 - p - t - u - b
-        print("%s %s %s %s %s" % (p, q, t, u, b))
         return (p - q) / tf.math.sqrt((p + q + t) * (p + q + u))
 
     def get_config(self):
