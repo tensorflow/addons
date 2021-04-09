@@ -38,9 +38,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
+        os: ['macos-latest', 'windows-latest', 'ubuntu-20.04']
         py-version: ['3.6', '3.7', '3.8', '3.9']
-        tf-version: ['2.3.0', '2.5.0rc0']
+        tf-version: ['2.5.0rc0']
       fail-fast: false
     steps:
       - uses: actions/github-script@0.3.0
