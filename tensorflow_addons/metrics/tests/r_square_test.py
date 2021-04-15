@@ -53,8 +53,18 @@ def update_obj_states(obj, actuals, preds, sample_weight=None):
     obj.update_state(actuals, preds, sample_weight=sample_weight)
 
 
+@tf.function
+def reset_obj_states(obj):
+    obj.reset_states()
+
+
 def check_results(obj, value):
     np.testing.assert_allclose(value, obj.result(), atol=1e-5)
+
+
+def check_variables(obj, value):
+    for v in obj.variables:
+        np.testing.assert_allclose(value, v.value().numpy(), atol=1e-5)
 
 
 def test_r2_perfect_score():
@@ -107,6 +117,22 @@ def test_r2_random_score():
     update_obj_states(r2_obj, actuals, preds)
     # Check results
     check_results(r2_obj, 0.7376327)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_r2_reset_states():
+    actuals = tf.constant([100, 700, 40, 5.7], dtype=tf.float32)
+    preds = tf.constant([100, 700, 40, 5.7], dtype=tf.float32)
+    actuals = tf.cast(actuals, dtype=tf.float32)
+    preds = tf.cast(preds, dtype=tf.float32)
+    # Initialize
+    r2_obj = initialize_vars()
+    # Update
+    update_obj_states(r2_obj, actuals, preds)
+    # Reset
+    reset_obj_states(r2_obj)
+    # Check variables
+    check_variables(r2_obj, 0.0)
 
 
 @pytest.mark.parametrize("multioutput", sorted(_VALID_MULTIOUTPUT))
