@@ -47,7 +47,9 @@ def test_with_mixed_precision_policy():
     residual = np.asarray([[0.2, 0.4, 0.5]])
 
     output = StochasticDepth()([shortcut, residual])
-
+    assert output.dtype == policy.compute_dtype
+    
+    output = StochasticDepth()([shortcut, residual], training=True)
     assert output.dtype == policy.compute_dtype
 
 
