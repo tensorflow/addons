@@ -65,7 +65,9 @@ class StochasticDepth(tf.keras.layers.Layer):
         shortcut, residual = x
 
         # Random bernoulli variable indicating whether the branch should be kept or not or not
-        b_l = tf.keras.backend.random_bernoulli([], p=self.survival_probability, dtype=self.compute_dtype)
+        b_l = tf.keras.backend.random_bernoulli(
+            [], p=self.survival_probability, dtype=self.compute_dtype
+        )
 
         def _call_train():
             return shortcut + b_l * residual
