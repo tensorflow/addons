@@ -137,6 +137,8 @@
 /tensorflow_addons/optimizers/tests/cyclical_learning_rate_test.py @raphaelmeudec
 /tensorflow_addons/optimizers/discriminative_layer_training.py @hyang0129
 /tensorflow_addons/optimizers/tests/discriminative_layer_training_test.py @hyang0129
+/tensorflow_addons/optimizers/madgrad.py @darshandeshpande
+/tensorflow_addons/optimizers/tests/madgrad_test.py @darshandeshpande
 /tensorflow_addons/optimizers/lamb.py @junjiek
 /tensorflow_addons/optimizers/tests/lamb_test.py @junjiek
 /tensorflow_addons/optimizers/lazy_adam.py @ssaishruthi
