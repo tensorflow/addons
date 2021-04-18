@@ -614,7 +614,7 @@ def _bahdanau_score(
 ):
     """Implements Bahdanau-style (additive) scoring function.
 
-    This attention has two forms.  The first is Bhandanau attention,
+    This attention has two forms.  The first is Bahdanau attention,
     as described in:
 
     Dzmitry Bahdanau, Kyunghyun Cho, Yoshua Bengio.
@@ -1017,7 +1017,7 @@ class _BaseMonotonicAttentionMechanism(AttentionMechanism):
 
 
 class BahdanauMonotonicAttention(_BaseMonotonicAttentionMechanism):
-    """Monotonic attention mechanism with Bahadanau-style energy function.
+    """Monotonic attention mechanism with Bahdanau-style energy function.
 
     This type of attention enforces a monotonic constraint on the attention
     distributions; that is once the model attends to a given point in the
@@ -1657,7 +1657,7 @@ class AttentionWrapper(tf.keras.layers.AbstractRNNCell):
             each time step is the attention value.  This is the behavior of
             Luong-style attention mechanisms.  If `False`, the output at each
             time step is the output of `cell`.  This is the behavior of
-            Bhadanau-style attention mechanisms.  In both cases, the
+            Bahdanau-style attention mechanisms.  In both cases, the
             `attention` tensor is propagated to the next time step via the
             state and is used there. This flag only controls whether the
             attention mechanism is propagated up to the next cell in an RNN
