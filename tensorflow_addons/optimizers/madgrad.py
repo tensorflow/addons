@@ -21,11 +21,10 @@ from tensorflow.python.keras.optimizer_v2 import optimizer_v2
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import state_ops
-from tensorflow.python.ops import cond_v2
-from tensorflow.python.util.tf_export import keras_export
+import tensorflow as tf
 
 
-@keras_export("keras.optimizers.MadGrad")
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class MadGrad(optimizer_v2.OptimizerV2):
     r"""Optimizer that implements the MADGRAD algorithm.
 
@@ -64,7 +63,7 @@ class MadGrad(optimizer_v2.OptimizerV2):
         weight_decay=0,
         epsilon=1e-6,
         name="Madgrad",
-        **kwargs
+        **kwargs,
     ):
         learning_rate = kwargs.get("lr", learning_rate)
         super(MadGrad, self).__init__(name, **kwargs)
@@ -106,7 +105,7 @@ class MadGrad(optimizer_v2.OptimizerV2):
         decay = math_ops.cast(self._get_hyper("weight_decay"), var_dtype)
         lr_t = self._decayed_lr(var_dtype)
 
-        grad = cond_v2.cond_v2(
+        grad = tf.cond(
             math_ops.greater(decay, 0),
             lambda: grad + decay * var,
             lambda: grad,
@@ -123,8 +122,11 @@ class MadGrad(optimizer_v2.OptimizerV2):
             vk, lamb * (grad * grad), use_locking=self._use_locking
         )
 
-        z_k_plus_1 = (x_0 - (1 / (math_ops.pow(vk_plus_1, (1.0 / 3.0))
-                                  + coefficients["epsilon"])) * sk_plus_1)
+        z_k_plus_1 = (
+            x_0
+            - (1 / (math_ops.pow(vk_plus_1, (1.0 / 3.0)) + coefficients["epsilon"]))
+            * sk_plus_1
+        )
 
         var_t = (1 - coefficients["momentum"]) * var + (
             coefficients["momentum"] * z_k_plus_1
@@ -145,7 +147,7 @@ class MadGrad(optimizer_v2.OptimizerV2):
         decay = math_ops.cast(self._get_hyper("weight_decay"), var_dtype)
         lr_t = self._decayed_lr(var_dtype)
 
-        grad = cond_v2.cond_v2(
+        grad = tf.cond(
             math_ops.greater(decay, 0),
             lambda: grad + decay * array_ops.gather(var, indices),
             lambda: grad,
@@ -161,8 +163,11 @@ class MadGrad(optimizer_v2.OptimizerV2):
         sk_plus_1 = self._resource_scatter_add(sk, indices, lamb * grad)
         vk_plus_1 = self._resource_scatter_add(vk, indices, lamb * (grad * grad))
 
-        z_k_plus_1 = (x_0 - (1 / (math_ops.pow(vk_plus_1, (1.0 / 3.0))
-                                  + coefficients["epsilon"])) * sk_plus_1)
+        z_k_plus_1 = (
+            x_0
+            - (1 / (math_ops.pow(vk_plus_1, (1.0 / 3.0)) + coefficients["epsilon"]))
+            * sk_plus_1
+        )
 
         var_t = (1 - coefficients["momentum"]) * var + (
             coefficients["momentum"] * z_k_plus_1

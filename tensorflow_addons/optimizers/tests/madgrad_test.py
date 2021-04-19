@@ -43,12 +43,8 @@ def run_sparse_sample(iterations, expected, optimizer):
     var_0 = tf.Variable([1.0, 2.0])
     var_1 = tf.Variable([3.0, 4.0])
 
-    grad_0 = tf.IndexedSlices(
-        tf.constant([0.1]), tf.constant([0]), tf.constant([2])
-    )
-    grad_1 = tf.IndexedSlices(
-        tf.constant([0.4]), tf.constant([1]), tf.constant([2])
-    )
+    grad_0 = tf.IndexedSlices(tf.constant([0.1]), tf.constant([0]), tf.constant([2]))
+    grad_1 = tf.IndexedSlices(tf.constant([0.4]), tf.constant([1]), tf.constant([2]))
 
     grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
@@ -101,9 +97,7 @@ def test_fit_simple_linear_model():
 
 def test_fit_sparse_linear_model():
     x = tf.keras.Input(shape=(4,), sparse=True)
-    y = tf.keras.layers.Dense(
-        1, kernel_initializer=tf.keras.initializers.Zeros()
-    )(x)
+    y = tf.keras.layers.Dense(1, kernel_initializer=tf.keras.initializers.Zeros())(x)
     model = tf.keras.Model(x, y)
 
     sparse_data = tf.SparseTensor(
