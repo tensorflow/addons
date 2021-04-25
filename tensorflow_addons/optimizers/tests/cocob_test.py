@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""
-Tests for COntinuos COin Betting (COCOB) Backprop optimizer
-"""
+"""Tests for COntinuos COin Betting (COCOB) Backprop optimizer"""
 
 import numpy as np
 import tensorflow as tf
