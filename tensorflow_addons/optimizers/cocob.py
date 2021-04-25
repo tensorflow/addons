@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""
-COntinuos COin Betting (COCOB) Backprop optimizer
-"""
+"""COntinuos COin Betting (COCOB) Backprop optimizer"""
 
 from typeguard import typechecked
 from tensorflow.python.ops import state_ops
@@ -24,8 +22,7 @@ import tensorflow as tf
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class COCOB(tf.keras.optimizers.Optimizer):
-    """
-    Optimizer that implements COntinuos COin Betting (COCOB) Backprop Algorithm
+    """Optimizer that implements COntinuos COin Betting (COCOB) Backprop Algorithm
 
     Reference:
         - [Training Deep Networks without Learning Rates Through Coin Betting
@@ -40,8 +37,7 @@ class COCOB(tf.keras.optimizers.Optimizer):
         name: str = "COCOB",
         **kwargs
     ):
-        """
-        Constructs a new COCOB-Backprop optimizer
+        """Constructs a new COCOB-Backprop optimizer
 
         Arguments:
             `aplha`: Default value is set to 100 as per paper.
