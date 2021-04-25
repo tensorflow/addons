@@ -1,7 +1,7 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 ARG TF_VERSION
 ARG PY_VERSION
-FROM gcr.io/tensorflow-testing/nosla-cuda11.0-cudnn8-ubuntu18.04-manylinux2010-multipython as base_install
+FROM gcr.io/tensorflow-testing/nosla-cuda11.2-cudnn8.1-ubuntu18.04-manylinux2010-multipython as base_install
 ENV TF_NEED_CUDA="1"
 
 # Required for setuptools v50.0.0
