@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v2
         with:
           python-version: ${{ env.MIN_PY_VERSION }}
       - name: Build wheels
@@ -40,7 +40,7 @@ jobs:
       matrix:
         os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
         py-version: ['3.6', '3.7', '3.8', '3.9']
-        tf-version: ['2.3.0', '2.5.0rc0']
+        tf-version: ['2.3.0', '2.5.0rc1']
       fail-fast: false
     steps:
       - uses: actions/github-script@0.3.0
@@ -54,7 +54,7 @@ jobs:
         shell: bash
         run: echo "NIGHTLY_FLAG=--nightly" >> $GITHUB_ENV
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.py-version }}
       - name: Setup Bazel
@@ -81,7 +81,7 @@ jobs:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
         py-version: ['3.6', '3.7', '3.8', '3.9']
-        tf-version: ['2.5.0rc0']
+        tf-version: ['2.5.0rc1']
       fail-fast: false
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
     steps:
