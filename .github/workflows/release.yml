@@ -57,11 +57,12 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.py-version }}
-      - name: Setup Bazel
+      - if: ${{ matrix.os }} != 'ubuntu-18.04'
+        name: Setup Bazel
         # Ubuntu bazel is run inside of the docker image
-        if: matrix.os != 'ubuntu-18.04'
         run: bash tools/install_deps/install_bazelisk.sh ./
-      - name: Build wheels
+      - if: ${{ matrix.py-version }} != '3.9' || ${{ matrix.tf-version }} != '2.3.0'
+        name: Build wheels
         env:
           OS: ${{ runner.os }}
           PY_VERSION: ${{ matrix.py-version }}
@@ -69,7 +70,8 @@ jobs:
           NIGHTLY_TIME: ${{ steps.author-date.outputs.result }}
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}.sh
-      - uses: actions/upload-artifact@v1
+      - if: ${{ matrix.py-version }} != '3.9' || ${{ matrix.tf-version }} != '2.3.0'
+        uses: actions/upload-artifact@v1
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
           path: wheelhouse
