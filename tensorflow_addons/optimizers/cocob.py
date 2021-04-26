@@ -24,9 +24,9 @@ import tensorflow as tf
 class COCOB(tf.keras.optimizers.Optimizer):
     """Optimizer that implements COntinuos COin Betting (COCOB) Backprop Algorithm
 
-    Reference:
-        - [Training Deep Networks without Learning Rates Through Coin Betting
-](http://papers.nips.cc/paper/6811-training-deep-networks-without-learning-rates-through-coin-betting)
+        Reference:
+            - [Training Deep Networks without Learning Rates Through Coin Betting
+    ](http://papers.nips.cc/paper/6811-training-deep-networks-without-learning-rates-through-coin-betting)
     """
 
     @typechecked
@@ -77,11 +77,11 @@ class COCOB(tf.keras.optimizers.Optimizer):
         gradients_sum_update = gradients_sum + grad
         grad_norm_sum_update = grad_norm_sum + tf.abs(grad)
         reward_update = tf.maximum(reward - grad * tilde_w, 0)
-        
+
         grad_max = tf.maximum(grad_norm_sum_update + lr_update, self._alpha * lr_update)
         rewards_lr_sum = reward_update + lr_update
-        new_w = ( -gradients_sum_update( lr_update * (grad_max) ) * rewards_lr_sum )
-        
+        new_w = -gradients_sum_update / (lr_update * (grad_max)) * rewards_lr_sum
+
         var_update = handle - tilde_w + new_w
         tilde_w_update = new_w
 
