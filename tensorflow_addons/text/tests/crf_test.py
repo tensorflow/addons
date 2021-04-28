@@ -498,7 +498,7 @@ def test_tf_function():
 
 
 @pytest.mark.skipif(
-    tf.__version__[:3] == "2.4",
+    tf.__version__[:3] == "2.4" or tf.__version__[:3] == "2.5",
     reason="CRF Decode doesn't work in TF2.4, the issue was fixed in TF core, but didn't make the release",
 )
 def test_crf_decode_save_load(tmpdir):
