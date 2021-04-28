@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 import warnings
+from distutils.version import LooseVersion
 
 import numpy as np
 import tensorflow as tf
@@ -538,6 +539,12 @@ def crf_decode(
     if tf.__version__[:3] == "2.4":
         warnings.warn(
             "CRF Decoding does not work with KerasTensors in TF2.4. The bug has since been fixed in tensorflow/tensorflow##45534"
+        )
+
+    # TODO: Include issue #
+    if LooseVersion(tf.__version__) >= LooseVersion("2.5.0"):
+        warnings.warn(
+            "CRF decoding models have serialization issues in TF >=2.5 . Please see isse #"
         )
     sequence_length = tf.cast(sequence_length, dtype=tf.int32)
 

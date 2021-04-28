@@ -498,7 +498,7 @@ def test_tf_function():
 
 
 @pytest.mark.skipif(
-    tf.__version__[:3] == "2.4" or tf.__version__[:3] == "2.5",
+    tf.__version__[:3] == "2.4",
     reason="CRF Decode doesn't work in TF2.4, the issue was fixed in TF core, but didn't make the release",
 )
 def test_crf_decode_save_load(tmpdir):
@@ -519,7 +519,7 @@ def test_crf_decode_save_load(tmpdir):
         "input_tensor": np.random.random_sample((5, 10, 3)).astype(dtype=np.float32),
         "seq_len": np.array([10] * 5, dtype=np.int32),
     }
-    y_data = {"tf_op_layer_Mul": np.random.randint(0, 3, (5, 10))}
+    y_data = {"tf.math.multiply": np.random.randint(0, 3, (5, 10))}
 
     model.fit(x_data, y_data)
     model.predict(
