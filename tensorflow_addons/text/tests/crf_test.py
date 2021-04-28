@@ -501,6 +501,10 @@ def test_tf_function():
     tf.__version__[:3] == "2.4",
     reason="CRF Decode doesn't work in TF2.4, the issue was fixed in TF core, but didn't make the release",
 )
+@pytest.mark.skipif(
+    tf.__version__[:3] == "2.5",
+    reason="CRF decoding models have serialization issues in TF >=2.5 . Please see isse #",
+)
 def test_crf_decode_save_load(tmpdir):
     tf.keras.backend.clear_session()
     input_tensor = tf.keras.Input(shape=(10, 3), dtype=tf.float32, name="input_tensor")
