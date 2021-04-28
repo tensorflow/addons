@@ -290,7 +290,7 @@ docker run --gpus all --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-te
 
 Configure:
 ```bash
-python3 -m pip install tensorflow==2.4.1
+python3 -m pip install tensorflow==2.5.0rc2
 python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 
