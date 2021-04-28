@@ -59,7 +59,8 @@ class FBetaScore(tf.keras.metrics.Metric):
         to 0.
 
     `average` parameter behavior:
-        None: Scores for each class are returned
+
+        None: Scores for each class are returned.
 
         micro: True positivies, false positives and
             false negatives are computed globally.
