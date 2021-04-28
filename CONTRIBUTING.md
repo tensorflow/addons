@@ -173,8 +173,8 @@ conda activate my_dev_environement
 Just run from the root:
 
 ```bash
-pip install tensorflow==2.4.1
-# you can use "pip install tensorflow-cpu==2.4.1" too if you're not testing on gpu.
+pip install tensorflow==2.5.0rc2
+# you can use "pip install tensorflow-cpu==2.5.0rc2" too if you're not testing on gpu.
 pip install -e ./
 ```
 
@@ -262,7 +262,7 @@ If you need a custom C++/Cuda op for your test, compile your ops with
 
 ```bash
 python configure.py
-pip install tensorflow==2.4.1 -e ./ -r tools/install_deps/pytest.txt
+pip install tensorflow==2.5.0rc2 -e ./ -r tools/install_deps/pytest.txt
 bash tools/install_so_files.sh  # Linux/macos/WSL2
 sh tools/install_so_files.sh    # PowerShell
 ```
@@ -329,7 +329,7 @@ quickly, as Bazel has great support for caching and distributed testing.
 To test with Bazel:
 
 ```bash
-python3 -m pip install tensorflow==2.4.1
+python3 -m pip install tensorflow==2.5.0rc2
 python3 configure.py
 python3 -m pip install -r tools/install_deps/pytest.txt
 bazel test -c opt -k \
