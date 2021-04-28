@@ -15,6 +15,9 @@ RUN echo "#! /usr/bin/python2.7" >> /usr/bin/lsb_release2
 RUN cat /usr/bin/lsb_release >> /usr/bin/lsb_release2
 RUN mv /usr/bin/lsb_release2 /usr/bin/lsb_release
 
+# TEMPORARY, PLEASE REMOVE AFTER https://github.com/tensorflow/tensorflow/pull/48793
+RUN bash tools/install_deps/build_and_install_python.sh "3.9.4"
+
 ARG PY_VERSION
 RUN ln -sf /usr/local/bin/python$PY_VERSION /usr/bin/python
 
