@@ -15,18 +15,13 @@ RUN echo "#! /usr/bin/python2.7" >> /usr/bin/lsb_release2
 RUN cat /usr/bin/lsb_release >> /usr/bin/lsb_release2
 RUN mv /usr/bin/lsb_release2 /usr/bin/lsb_release
 
-COPY tools/install_deps/ /install_deps
-
-# TEMPORARY, PLEASE REMOVE AFTER https://github.com/tensorflow/tensorflow/pull/48793
-RUN bash /install_deps/build_and_install_python.sh "3.9.4"
-RUN pip3.9 install auditwheel
-
 ARG PY_VERSION
 RUN ln -sf /usr/local/bin/python$PY_VERSION /usr/bin/python
 
 ARG TF_VERSION
 RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
 
+COPY tools/install_deps/ /install_deps
 RUN python -m pip install -r /install_deps/pytest.txt
 
 COPY requirements.txt .
