@@ -44,7 +44,7 @@ def test_dense_sample(dtype):
         iterations=1,
         expected=[[0.9552786425, 1.9105572849], [2.9400000012, 3.9200000016]],
         optimizer=NovoGrad(lr=0.1, epsilon=1e-8),
-        dtype=dtype
+        dtype=dtype,
     )
 
 
@@ -55,7 +55,7 @@ def test_dense_sample_with_weight_decay(dtype):
         iterations=1,
         expected=[[0.945278642, 1.8905572849], [2.9100000012, 3.8800000016]],
         optimizer=NovoGrad(lr=0.1, weight_decay=0.1, epsilon=1e-8),
-        dtype=dtype
+        dtype=dtype,
     )
 
 
@@ -66,7 +66,7 @@ def test_dense_sample_with_grad_averaging(dtype):
         iterations=2,
         expected=[[0.9105572849, 1.8211145698], [2.8800000024, 3.8400000032]],
         optimizer=NovoGrad(lr=0.1, grad_averaging=True, epsilon=1e-8),
-        dtype=dtype
+        dtype=dtype,
     )
 
 
@@ -74,8 +74,12 @@ def run_sparse_sample(iterations, expected, optimizer, dtype):
     var_0 = tf.Variable([1.0, 2.0], dtype=dtype)
     var_1 = tf.Variable([3.0, 4.0], dtype=dtype)
 
-    grad_0 = tf.IndexedSlices(tf.constant([0.1], dtype=dtype), tf.constant([0]), tf.constant([2]))
-    grad_1 = tf.IndexedSlices(tf.constant([0.4], dtype=dtype), tf.constant([1]), tf.constant([2]))
+    grad_0 = tf.IndexedSlices(
+        tf.constant([0.1], dtype=dtype), tf.constant([0]), tf.constant([2])
+    )
+    grad_1 = tf.IndexedSlices(
+        tf.constant([0.4], dtype=dtype), tf.constant([1]), tf.constant([2])
+    )
 
     grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
@@ -93,7 +97,7 @@ def test_sparse_sample(dtype):
         iterations=2,
         expected=[[0.71, 2.0], [3.0, 3.71]],
         optimizer=NovoGrad(lr=0.1, epsilon=1e-8),
-        dtype=dtype
+        dtype=dtype,
     )
 
 
@@ -104,7 +108,7 @@ def test_sparse_sample_with_weight_decay(dtype):
         iterations=2,
         expected=[[0.6821, 2.0], [3.0, 3.5954]],
         optimizer=NovoGrad(lr=0.1, weight_decay=0.1, epsilon=1e-8),
-        dtype=dtype
+        dtype=dtype,
     )
 
 
@@ -115,7 +119,7 @@ def test_sparse_sample_with_grad_averaging(dtype):
         iterations=2,
         expected=[[0.8, 2.0], [3.0, 3.8]],
         optimizer=NovoGrad(lr=0.1, grad_averaging=True, epsilon=1e-8),
-        dtype=dtype
+        dtype=dtype,
     )
 
 
