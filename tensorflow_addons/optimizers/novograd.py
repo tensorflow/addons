@@ -155,11 +155,11 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
         coefficients = (apply_state or {}).get(
             (var_device, var_dtype)
         ) or self._fallback_apply_state(var_device, var_dtype)
-        weight_decay = self._get_hyper("weight_decay")
+        weight_decay = self._get_hyper("weight_decay", var_dtype)
         grad_averaging = self._get_hyper("grad_averaging")
 
         v = self.get_slot(var, "v")
-        g_2 = tf.reduce_sum(tf.square(tf.cast(grad, tf.float32)))
+        g_2 = tf.reduce_sum(tf.square(grad))
         v_t = tf.cond(
             tf.equal(self.iterations, 0),
             lambda: g_2,
@@ -198,11 +198,11 @@ class NovoGrad(tf.keras.optimizers.Optimizer):
         coefficients = (apply_state or {}).get(
             (var_device, var_dtype)
         ) or self._fallback_apply_state(var_device, var_dtype)
-        weight_decay = self._get_hyper("weight_decay")
+        weight_decay = self._get_hyper("weight_decay", var_dtype)
         grad_averaging = self._get_hyper("grad_averaging")
 
         v = self.get_slot(var, "v")
-        g_2 = tf.reduce_sum(tf.square(tf.cast(grad, tf.float32)))
+        g_2 = tf.reduce_sum(tf.square(grad))
         # v is just a scalar and does not need to involve sparse tensors.
         v_t = tf.cond(
             tf.equal(self.iterations, 0),
