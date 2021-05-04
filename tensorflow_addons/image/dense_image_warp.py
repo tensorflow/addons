@@ -178,9 +178,7 @@ def dense_image_warp(
 
     NOTE: The definition of the flow field above is different from that
     of optical flow. This function expects the negative forward flow from
-    output image to source image. Given two images `I_1` and `I_2` and the
-    optical flow `F_12` from `I_1` to `I_2`, the image `I_1` can be
-    reconstructed by `I_1_rec = dense_image_warp(I_2, -F_12)`.
+    output image to source image.
 
     Args:
       image: 4-D float `Tensor` with shape `[batch, height, width, channels]`.
