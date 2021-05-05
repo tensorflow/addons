@@ -19,7 +19,7 @@ import tensorflow as tf
 
 from tensorflow_addons.utils.types import TensorLike
 from typeguard import typechecked
-from typing import Optional
+from typing import Optional, Tuple
 
 # TODO: Wrap functions in @tf.function once
 # https://github.com/tensorflow/tensorflow/issues/29075 is resolved
@@ -206,7 +206,7 @@ def crf_log_likelihood(
     tag_indices: TensorLike,
     sequence_lengths: TensorLike,
     transition_params: Optional[TensorLike] = None,
-) -> tf.Tensor:
+) -> Tuple[tf.Tensor, tf.Tensor]:
     """Computes the log-likelihood of tag sequences in a CRF.
 
     Args:
