@@ -100,16 +100,7 @@ def test_backward(input_shape, input_dim, dtype, indices_dtype, combiner, graph_
         expected_grads = tape.gradient(expected, [params, weights])
         # Gather returns sparse IndexedSlices so we have to sum them together.
         test_utils.assert_allclose_according_to_type(
-            tf.math.unsorted_segment_sum(
-                expected_grads[0].values,
-                expected_grads[0].indices,
-                expected_grads[0].dense_shape[0],
-            ),
-            tf.math.unsorted_segment_sum(
-                grads[0].values,
-                grads[0].indices,
-                grads[0].dense_shape[0],
-            ),
+            tf.convert_to_tensor(expected_grads[0]), tf.convert_to_tensor(grads[0]),
         )
         test_utils.assert_allclose_according_to_type(
             expected_grads[1],
@@ -125,14 +116,4 @@ def test_backward(input_shape, input_dim, dtype, indices_dtype, combiner, graph_
         expected_grads = tape.gradient(expected, [params])
         # Gather returns sparse IndexedSlices so we have to sum them together.
         test_utils.assert_allclose_according_to_type(
-            tf.math.unsorted_segment_sum(
-                expected_grads[0].values,
-                expected_grads[0].indices,
-                expected_grads[0].dense_shape[0],
-            ),
-            tf.math.unsorted_segment_sum(
-                grads[0].values,
-                grads[0].indices,
-                grads[0].dense_shape[0],
-            ),
-        )
+            tf.convert_to_tensor(expected_grads[0]), tf.convert_to_tensor(grads[0]))
