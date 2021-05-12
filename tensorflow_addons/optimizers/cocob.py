@@ -15,8 +15,6 @@
 """COntinuos COin Betting (COCOB) Backprop optimizer"""
 
 from typeguard import typechecked
-from tensorflow.python.ops import state_ops
-from tensorflow.python.ops import control_flow_ops
 import tensorflow as tf
 
 
@@ -85,14 +83,14 @@ class COCOB(tf.keras.optimizers.Optimizer):
         var_update = handle - tilde_w + new_w
         tilde_w_update = new_w
 
-        gradients_sum_update_op = state_ops.assign(gradients_sum, gradients_sum_update)
-        grad_norm_sum_update_op = state_ops.assign(grad_norm_sum, grad_norm_sum_update)
-        var_update_op = state_ops.assign(handle, var_update)
-        tilde_w_update_op = state_ops.assign(tilde_w, tilde_w_update)
-        lr_update_op = state_ops.assign(lr, lr_update)
-        reward_update_op = state_ops.assign(reward, reward_update)
+        gradients_sum_update_op = gradients_sum.assign(gradients_sum_update)
+        grad_norm_sum_update_op = grad_norm_sum.assign(grad_norm_sum_update)
+        var_update_op = handle.assign(var_update)
+        tilde_w_update_op = tilde_w.assign(tilde_w_update)
+        lr_update_op = lr.assign(lr_update)
+        reward_update_op = reward.assign(reward_update)
 
-        return control_flow_ops.group(
+        return tf.group(
             *[
                 gradients_sum_update_op,
                 var_update_op,
