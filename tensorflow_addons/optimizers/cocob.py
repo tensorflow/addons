@@ -22,11 +22,11 @@ import tensorflow as tf
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class COCOB(tf.keras.optimizers.Optimizer):
-    """Optimizer that implements COntinuos COin Betting (COCOB) Backprop Algorithm
+    """Optimizer that implements COCOB Backprop Algorithm
 
         Reference:
-            - [Training Deep Networks without Learning Rates Through Coin Betting
-    ](http://papers.nips.cc/paper/6811-training-deep-networks-without-learning-rates-through-coin-betting)
+            - [COntinuos COin Betting (COCOB) Backprop optimizer
+    ](https://arxiv.org/abs/1705.07795)
     """
 
     @typechecked
@@ -78,19 +78,15 @@ class COCOB(tf.keras.optimizers.Optimizer):
         grad_norm_sum_update = grad_norm_sum + tf.abs(grad)
         reward_update = tf.maximum(reward - grad * tilde_w, 0)
 
-        grad_max = tf.maximum(grad_norm_sum_update +
-                              lr_update, self._alpha * lr_update)
+        grad_max = tf.maximum(grad_norm_sum_update + lr_update, self._alpha * lr_update)
         rewards_lr_sum = reward_update + lr_update
-        new_w = -gradients_sum_update / \
-            (lr_update * (grad_max)) * rewards_lr_sum
+        new_w = -gradients_sum_update / (lr_update * (grad_max)) * rewards_lr_sum
 
         var_update = handle - tilde_w + new_w
         tilde_w_update = new_w
 
-        gradients_sum_update_op = state_ops.assign(
-            gradients_sum, gradients_sum_update)
-        grad_norm_sum_update_op = state_ops.assign(
-            grad_norm_sum, grad_norm_sum_update)
+        gradients_sum_update_op = state_ops.assign(gradients_sum, gradients_sum_update)
+        grad_norm_sum_update_op = state_ops.assign(grad_norm_sum, grad_norm_sum_update)
         var_update_op = state_ops.assign(handle, var_update)
         tilde_w_update_op = state_ops.assign(tilde_w, tilde_w_update)
         lr_update_op = state_ops.assign(lr, lr_update)
