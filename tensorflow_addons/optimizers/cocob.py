@@ -33,7 +33,7 @@ class COCOB(tf.keras.optimizers.Optimizer):
         alpha: float = 100,
         use_locking: bool = False,
         name: str = "COCOB",
-        **kwargs
+        **kwargs,
     ):
         """Constructs a new COCOB-Backprop optimizer
 
