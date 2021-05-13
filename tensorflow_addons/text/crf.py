@@ -541,10 +541,9 @@ def crf_decode(
             "CRF Decoding does not work with KerasTensors in TF2.4. The bug has since been fixed in tensorflow/tensorflow##45534"
         )
 
-    # TODO: Include issue #
     if LooseVersion(tf.__version__) >= LooseVersion("2.5.0"):
         warnings.warn(
-            "CRF decoding models have serialization issues in TF >=2.5 . Please see isse #"
+            "CRF decoding models have serialization issues in TF >=2.5 . Please see isse #2476"
         )
     sequence_length = tf.cast(sequence_length, dtype=tf.int32)
 

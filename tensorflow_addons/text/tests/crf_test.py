@@ -504,7 +504,7 @@ def test_tf_function():
 )
 @pytest.mark.skipif(
     tf.__version__[:3] == "2.5",
-    reason="CRF decoding models have serialization issues in TF >=2.5 . Please see isse #",
+    reason="CRF decoding models have serialization issues in TF >=2.5 . Please see isse #2476",
 )
 def test_crf_decode_save_load(tmpdir):
     tf.keras.backend.clear_session()
