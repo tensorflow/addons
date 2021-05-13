@@ -289,7 +289,7 @@ Do you want to contribute but are not sure of what? Here are a few suggestions:
   you can imagine how hard it is to review. It takes very long to read the paper,
   understand it and check the math in the pull request. If you're specialized, look at 
   the [list of pull requests](https://github.com/tensorflow/addons/pulls). 
-  If there is something from a paper you now, please comment on the pull request to
+  If there is something from a paper you know, please comment on the pull request to
   check the math is ok. If you see that everything is good, say it! It will help 
   the maintainers to sleep better at night knowing that he/she wasn't the only
   person to approve the pull request.

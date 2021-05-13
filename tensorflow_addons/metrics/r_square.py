@@ -15,6 +15,7 @@
 """Implements R^2 scores."""
 from typing import Tuple
 
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras import backend as K
 from tensorflow.keras.metrics import Metric
@@ -180,7 +181,7 @@ class RSquare(Metric):
 
     def reset_states(self) -> None:
         # The state of the metric will be reset at the start of each epoch.
-        K.batch_set_value([(v, tf.zeros_like(v)) for v in self.variables])
+        K.batch_set_value([(v, np.zeros(v.shape)) for v in self.variables])
 
     def get_config(self):
         config = {
