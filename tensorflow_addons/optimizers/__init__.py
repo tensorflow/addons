@@ -46,3 +46,4 @@ from tensorflow_addons.optimizers.weight_decay_optimizers import (
     DecoupledWeightDecayExtension,
 )
 from tensorflow_addons.optimizers.yogi import Yogi
+from tensorflow_addons.optimizers.cocob import COCOB
