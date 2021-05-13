@@ -19,12 +19,16 @@ from tensorflow_addons.optimizers.average_wrapper import AveragedOptimizerWrappe
 
 
 class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
-    r"""The callback that should be used with optimizers that extend
-    AverageWrapper, i.e., MovingAverage and StochasticAverage optimizers.
+    r"""The callback that saves average model weights.
+
+    The callback that should be used with optimizers that extend
+    `tfa.optimizers.AveragedOptimizerWrapper`, i.e.,
+    `tfa.optimizers.MovingAverage` and
+    `tfa.optimizers.StochasticAverage` optimizers.
     It saves and, optionally, assigns the averaged weights.
 
     Args:
-        update_weights: If True, assign the moving average weights
+        update_weights: If `True`, assign the moving average weights
             to the model, and save them. If False, keep the old
             non-averaged weights, but the saved model uses the
             average weights.
@@ -43,7 +47,7 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
         save_weights_only: bool = False,
         mode: str = "auto",
         save_freq: str = "epoch",
-        **kwargs
+        **kwargs,
     ):
         self.update_weights = update_weights
         super().__init__(
@@ -57,25 +61,35 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
             **kwargs,
         )
 
+    def _get_optimizer(self):
+        optimizer = self.model.optimizer
+        # TODO(fsx950223): change _optimizer to inner_optimizer after tf2.3 is not support
+        if type(optimizer).__name__ in ["LossScaleOptimizer", "LossScaleOptimizerV1"]:
+            optimizer = optimizer._optimizer
+
+        return optimizer
+
     def set_model(self, model):
-        if not isinstance(model.optimizer, AveragedOptimizerWrapper):
+        super().set_model(model)
+        optimizer = self._get_optimizer()
+        if not isinstance(optimizer, AveragedOptimizerWrapper):
             raise TypeError(
                 "AverageModelCheckpoint is only used when training"
                 "with MovingAverage or StochasticAverage"
             )
-        return super().set_model(model)
 
     def _save_model(self, epoch, logs):
-        assert isinstance(self.model.optimizer, AveragedOptimizerWrapper)
+        optimizer = self._get_optimizer()
+        assert isinstance(optimizer, AveragedOptimizerWrapper)
 
         if self.update_weights:
-            self.model.optimizer.assign_average_vars(self.model.variables)
+            optimizer.assign_average_vars(self.model.variables)
             return super()._save_model(epoch, logs)
         else:
             # Note: `model.get_weights()` gives us the weights (non-ref)
             # whereas `model.variables` returns references to the variables.
             non_avg_weights = self.model.get_weights()
-            self.model.optimizer.assign_average_vars(self.model.variables)
+            optimizer.assign_average_vars(self.model.variables)
             # result is currently None, since `super._save_model` doesn't
             # return anything, but this may change in the future.
             result = super()._save_model(epoch, logs)

@@ -24,15 +24,11 @@ custom_op_library(
         "cc/kernels/connected_components.h",
         "cc/kernels/euclidean_distance_transform_op.cc",
         "cc/kernels/euclidean_distance_transform_op.h",
-        "cc/kernels/image_projective_transform_op.cc",
-        "cc/kernels/image_projective_transform_op.h",
         "cc/ops/image_ops.cc",
     ],
     cuda_srcs = [
         "cc/kernels/euclidean_distance_transform_op.h",
         "cc/kernels/euclidean_distance_transform_op_gpu.cu.cc",
-        "cc/kernels/image_projective_transform_op.h",
-        "cc/kernels/image_projective_transform_op_gpu.cu.cc",
     ],
 )
 

@@ -14,11 +14,14 @@
 # ==============================================================================
 """Python layer for distort_image_ops."""
 
+from typing import Optional
+import warnings
+
 import tensorflow as tf
+
+from tensorflow_addons import options
 from tensorflow_addons.utils.resource_loader import LazySO
 from tensorflow_addons.utils.types import Number, TensorLike
-
-from typing import Optional
 
 _distort_image_so = LazySO("custom_ops/image/_distort_image_ops.so")
 
@@ -33,8 +36,7 @@ def random_hsv_in_yiq(
     seed: Optional[int] = None,
     name: Optional[str] = None,
 ) -> tf.Tensor:
-    """Adjust hue, saturation, value of an RGB image randomly in YIQ color
-    space.
+    """Adjust hue, saturation, value of an RGB image randomly in YIQ color space.
 
     Equivalent to `adjust_yiq_hsv()` but uses a `delta_h` randomly
     picked in the interval `[-max_delta_hue, max_delta_hue]`, a
@@ -44,12 +46,12 @@ def random_hsv_in_yiq(
 
     Args:
       image: RGB image or images. Size of the last dimension must be 3.
-      max_delta_hue: float. Maximum value for the random delta_hue. Passing 0
+      max_delta_hue: `float`. Maximum value for the random delta_hue. Passing 0
         disables adjusting hue.
-      lower_saturation: float. Lower bound for the random scale_saturation.
-      upper_saturation: float. Upper bound for the random scale_saturation.
-      lower_value: float. Lower bound for the random scale_value.
-      upper_value: float. Upper bound for the random scale_value.
+      lower_saturation: `float`. Lower bound for the random scale_saturation.
+      upper_saturation: `float`. Upper bound for the random scale_saturation.
+      lower_value: `float`. Lower bound for the random scale_value.
+      upper_value: `float`. Upper bound for the random scale_value.
       seed: An operation-specific seed. It will be used in conjunction
         with the graph-level seed to determine the real seeds that will be
         used in this operation. Please see the documentation of
@@ -57,7 +59,7 @@ def random_hsv_in_yiq(
       name: A name for this operation (optional).
 
     Returns:
-      3-D float tensor of shape `[height, width, channels]`.
+      3-D float `Tensor` of shape `[height, width, channels]`.
 
     Raises:
       ValueError: if `max_delta`, `lower_saturation`, `upper_saturation`,
@@ -100,6 +102,43 @@ def random_hsv_in_yiq(
         )
 
 
+def _adjust_hsv_in_yiq(
+    image,
+    delta_hue,
+    scale_saturation,
+    scale_value,
+):
+    if image.shape.rank is not None and image.shape.rank < 3:
+        raise ValueError("input must be at least 3-D.")
+    if image.shape[-1] is not None and image.shape[-1] != 3:
+        raise ValueError(
+            "input must have 3 channels but instead has {}.".format(image.shape[-1])
+        )
+    # Construct hsv linear transformation matrix in YIQ space.
+    # https://beesbuzz.biz/code/hsv_color_transforms.php
+    yiq = tf.constant(
+        [[0.299, 0.596, 0.211], [0.587, -0.274, -0.523], [0.114, -0.322, 0.312]],
+        dtype=image.dtype,
+    )
+    yiq_inverse = tf.constant(
+        [
+            [1.0, 1.0, 1.0],
+            [0.95617069, -0.2726886, -1.103744],
+            [0.62143257, -0.64681324, 1.70062309],
+        ],
+        dtype=image.dtype,
+    )
+    vsu = scale_value * scale_saturation * tf.math.cos(delta_hue)
+    vsw = scale_value * scale_saturation * tf.math.sin(delta_hue)
+    hsv_transform = tf.convert_to_tensor(
+        [[scale_value, 0, 0], [0, vsu, vsw], [0, -vsw, vsu]], dtype=image.dtype
+    )
+    transform_matrix = yiq @ hsv_transform @ yiq_inverse
+
+    image = image @ transform_matrix
+    return image
+
+
 def adjust_hsv_in_yiq(
     image: TensorLike,
     delta_hue: Number = 0,
@@ -123,9 +162,9 @@ def adjust_hsv_in_yiq(
 
     Args:
       image: RGB image or images. Size of the last dimension must be 3.
-      delta_hue: float, the hue rotation amount, in radians.
-      scale_saturation: float, factor to multiply the saturation by.
-      scale_value: float, factor to multiply the value by.
+      delta_hue: `float`, the hue rotation amount, in radians.
+      scale_saturation: `float`, factor to multiply the saturation by.
+      scale_value: `float`, factor to multiply the value by.
       name: A name for this operation (optional).
 
     Returns:
@@ -133,13 +172,32 @@ def adjust_hsv_in_yiq(
     """
     with tf.name_scope(name or "adjust_hsv_in_yiq"):
         image = tf.convert_to_tensor(image, name="image")
-
         # Remember original dtype to so we can convert back if needed
         orig_dtype = image.dtype
-        flt_image = tf.image.convert_image_dtype(image, tf.dtypes.float32)
+        if not image.dtype.is_floating:
+            image = tf.image.convert_image_dtype(image, tf.float32)
 
-        rgb_altered = _distort_image_so.ops.addons_adjust_hsv_in_yiq(
-            flt_image, delta_hue, scale_saturation, scale_value
+        delta_hue = tf.cast(delta_hue, dtype=image.dtype, name="delta_hue")
+        scale_saturation = tf.cast(
+            scale_saturation, dtype=image.dtype, name="scale_saturation"
         )
+        scale_value = tf.cast(scale_value, dtype=image.dtype, name="scale_value")
 
-        return tf.image.convert_image_dtype(rgb_altered, orig_dtype)
+        if not options.is_custom_kernel_disabled():
+            warnings.warn(
+                "C++/CUDA kernel of `adjust_hsv_in_yiq` will be removed in Addons `0.13`.",
+                DeprecationWarning,
+            )
+            try:
+                image = _distort_image_so.ops.addons_adjust_hsv_in_yiq(
+                    image, delta_hue, scale_saturation, scale_value
+                )
+            except tf.errors.NotFoundError:
+                options.warn_fallback("adjust_hsv_in_yiq")
+                image = _adjust_hsv_in_yiq(
+                    image, delta_hue, scale_saturation, scale_value
+                )
+        else:
+            image = _adjust_hsv_in_yiq(image, delta_hue, scale_saturation, scale_value)
+
+        return tf.image.convert_image_dtype(image, orig_dtype)

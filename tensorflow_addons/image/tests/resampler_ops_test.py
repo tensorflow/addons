@@ -92,7 +92,7 @@ def _make_warp(batch_size, warp_height, warp_width, dtype):
     return warp.astype(dtype)
 
 
-@pytest.mark.usefixtures("cpu_and_gpu")
+@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 def test_op_forward_pass(dtype):
     np.random.seed(0)
@@ -182,7 +182,7 @@ def test_op_errors():
         resampler_ops.resampler(data, warp)
 
 
-@pytest.mark.usefixtures("cpu_and_gpu")
+@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 def test_op_backward_pass(dtype):
     np.random.seed(13)
@@ -211,3 +211,28 @@ def test_op_backward_pass(dtype):
         test_utils.assert_allclose_according_to_type(
             t, n, float_rtol=5e-5, float_atol=5e-5
         )
+
+
+@pytest.mark.with_device(["cpu", "gpu"])
+def test_op_empty_batch():
+    np.random.seed(13)
+    data_width = 5
+    data_height = 4
+    data_channels = 3
+    warp_width = 2
+    warp_height = 6
+    batch_size = 0
+    dtype = np.float32
+
+    warp = _make_warp(batch_size, warp_height, warp_width, dtype)
+    data_shape = (batch_size, data_height, data_width, data_channels)
+    data = np.zeros(data_shape).astype(dtype)
+    data_tensor = tf.constant(data)
+    warp_tensor = tf.constant(warp)
+    with tf.GradientTape() as tape:
+        tape.watch(data_tensor)
+        tape.watch(warp_tensor)
+        outputs = resampler_ops.resampler(data=data_tensor, warp=warp_tensor)
+    data_grad, warp_grad = tape.gradient(outputs, (data_tensor, warp_tensor))
+    assert data_grad.shape == data.shape
+    assert warp_grad.shape == warp.shape

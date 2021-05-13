@@ -20,5 +20,6 @@ from tensorflow_addons.activations.lisht import lisht
 from tensorflow_addons.activations.mish import mish
 from tensorflow_addons.activations.softshrink import softshrink
 from tensorflow_addons.activations.rrelu import rrelu
+from tensorflow_addons.activations.snake import snake
 from tensorflow_addons.activations.sparsemax import sparsemax
 from tensorflow_addons.activations.tanhshrink import tanhshrink

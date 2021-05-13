@@ -112,7 +112,7 @@ def test_sparsemax_against_numpy_high_rank(dtype):
 def test_sparsemax_of_nan(dtype):
     """check sparsemax transfers nan."""
     z_nan = np.asarray(
-        [[0, np.nan, 0], [0, np.nan, np.nan], [np.nan, np.nan, np.nan],]
+        [[0, np.nan, 0], [0, np.nan, np.nan], [np.nan, np.nan, np.nan]]
     ).astype(dtype)
 
     tf_sparsemax_nan = sparsemax(z_nan)
@@ -132,7 +132,7 @@ def test_sparsemax_of_nan(dtype):
 def test_sparsemax_of_inf(dtype):
     """check sparsemax is infinity safe."""
     z_neg = np.asarray(
-        [[0, -np.inf, 0], [0, -np.inf, -np.inf], [-np.inf, -np.inf, -np.inf],]
+        [[0, -np.inf, 0], [0, -np.inf, -np.inf], [-np.inf, -np.inf, -np.inf]]
     ).astype(dtype)
     z_pos = np.asarray(
         [[0, np.inf, 0], [0, np.inf, np.inf], [np.inf, np.inf, np.inf]]

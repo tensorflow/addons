@@ -1,5 +1,5 @@
 #syntax=docker/dockerfile:1.1.5-experimental
-FROM python:3.5-alpine as flake8-test
+FROM python:3.6-alpine as flake8-test
 
 COPY tools/install_deps/flake8.txt ./
 RUN pip install -r flake8.txt
@@ -23,6 +23,7 @@ FROM python:3.6 as source_code_test
 COPY tools/install_deps /install_deps
 RUN --mount=type=cache,id=cache_pip,target=/root/.cache/pip \
     cd /install_deps && pip install \
+    --default-timeout=1000 \
     -r tensorflow-cpu.txt \
     -r typedapi.txt \
     -r pytest.txt
@@ -33,14 +34,14 @@ RUN pytest -v /addons/tools/testing/
 RUN touch /ok.txt
 
 # -------------------------------
-FROM python:3.5 as valid_build_files
+FROM python:3.6 as valid_build_files
 
 COPY tools/install_deps/tensorflow-cpu.txt ./
-RUN pip install -r tensorflow-cpu.txt
+RUN pip install --default-timeout=1000 -r tensorflow-cpu.txt
 
 RUN apt-get update && apt-get install sudo
-COPY tools/install_deps/bazel_linux.sh ./
-RUN bash bazel_linux.sh
+COPY tools/install_deps/install_bazelisk.sh .bazelversion ./
+RUN bash install_bazelisk.sh
 
 COPY ./ /addons
 WORKDIR /addons
@@ -81,7 +82,7 @@ RUN touch /ok.txt
 FROM python:3.6 as docs_tests
 
 COPY tools/install_deps/tensorflow-cpu.txt ./
-RUN pip install -r tensorflow-cpu.txt
+RUN pip install --default-timeout=1000 -r tensorflow-cpu.txt
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
@@ -93,7 +94,7 @@ RUN apt-get update && apt-get install -y rsync
 COPY ./ /addons
 WORKDIR /addons
 RUN pip install --no-deps -e .
-RUN python docs/build_docs.py
+RUN python tools/docs/build_docs.py
 RUN touch /ok.txt
 
 # -------------------------------
@@ -101,15 +102,15 @@ RUN touch /ok.txt
 FROM python:3.6 as test_editable_mode
 
 COPY tools/install_deps/tensorflow-cpu.txt ./
-RUN pip install -r tensorflow-cpu.txt
+RUN pip install --default-timeout=1000 -r tensorflow-cpu.txt
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 COPY tools/install_deps/pytest.txt ./
 RUN pip install -r pytest.txt
 
 RUN apt-get update && apt-get install -y sudo rsync
-COPY tools/install_deps/bazel_linux.sh ./
-RUN bash bazel_linux.sh
+COPY tools/install_deps/install_bazelisk.sh .bazelversion ./
+RUN bash install_bazelisk.sh
 
 COPY ./ /addons
 WORKDIR /addons

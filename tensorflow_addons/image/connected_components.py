@@ -44,7 +44,7 @@ def connected_components(
     (which is the connectivity used here).
 
     Args:
-      images: A 2D (H, W) or 3D (N, H, W) Tensor of image (integer,
+      images: A 2D (H, W) or 3D (N, H, W) `Tensor` of image (integer,
       floating point and boolean types are supported).
       name: The name of the op.
 

@@ -72,7 +72,8 @@ def _create_test_data(data_format):
     return val_a, val_b
 
 
-@pytest.mark.usefixtures("cpu_and_gpu", "maybe_run_functions_eagerly")
+@pytest.mark.with_device(["cpu", "gpu"])
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_forward_simple(data_format):
     # We are just testing where the output has vanishing values.
     val_a, val_b = _create_test_data(data_format)
@@ -104,17 +105,22 @@ def test_forward_simple(data_format):
         actual = tf.transpose(actual, [0, 3, 1, 2])
 
     # We can test fixed ids, as output is independent from data_format
-    expected_ids = np.concatenate([np.zeros(464,), np.ones(464,)])
+    expected_ids = np.concatenate(
+        [
+            np.zeros(464),
+            np.ones(464),
+        ]
+    )
     np.testing.assert_allclose(tf.where(actual == 0)[:, 0].numpy(), expected_ids)
 
     counts = [54, 52, 54, 50, 44, 50, 54, 52, 54]
-    expected_ids = np.concatenate([k * np.ones(v,) for k, v in enumerate(counts)])
+    expected_ids = np.concatenate([k * np.ones(v) for k, v in enumerate(counts)])
     expected_ids = np.concatenate([expected_ids, expected_ids])
     np.testing.assert_allclose(tf.where(actual == 0)[:, 1], expected_ids)
     assert actual.shape == (2, 9, 7, 8)
 
 
-@pytest.mark.usefixtures("cpu_and_gpu")
+@pytest.mark.with_device(["cpu", "gpu"])
 def test_gradients(data_format):
     batch, channels, height, width = 2, 3, 5, 6
     input_a = np.random.randn(batch, channels, height, width).astype(np.float32)
@@ -150,7 +156,7 @@ def test_gradients(data_format):
     np.testing.assert_allclose(theoretical[0], numerical[0], atol=1e-3)
 
 
-@pytest.mark.usefixtures("cpu_and_gpu")
+@pytest.mark.with_device(["cpu", "gpu"])
 def test_keras(data_format):
     # Unable to use `layer_test` as this layer has multiple inputs.
     val_a, val_b = _create_test_data(data_format)

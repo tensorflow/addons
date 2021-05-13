@@ -80,7 +80,7 @@ def test_reshape():
     run_reshape_test(1, 2, input_shape, expected_shape)
 
     input_shape = (10, 10, 10)
-    expected_shape = [10, 10, 1, 10]
+    expected_shape = [10, 10, 10]
     run_reshape_test(1, -1, input_shape, expected_shape)
 
     input_shape = (10, 10, 10)
@@ -122,17 +122,26 @@ def _test_specific_layer(inputs, axis, groups, center, scale):
     outputs = model.predict(inputs, steps=1)
     assert not np.isnan(outputs).any()
 
+    is_instance_norm = False
     # Create shapes
     if groups == -1:
         groups = input_shape[axis]
+    if (input_shape[axis] // groups) == 1:
+        is_instance_norm = True
     np_inputs = inputs
     reshaped_dims = list(np_inputs.shape)
-    reshaped_dims[axis] = reshaped_dims[axis] // groups
-    reshaped_dims.insert(axis, groups)
-    reshaped_inputs = np.reshape(np_inputs, tuple(reshaped_dims))
+    if not is_instance_norm:
+        reshaped_dims[axis] = reshaped_dims[axis] // groups
+        reshaped_dims.insert(axis, groups)
+        reshaped_inputs = np.reshape(np_inputs, tuple(reshaped_dims))
+    else:
+        reshaped_inputs = np_inputs
 
     group_reduction_axes = list(range(1, len(reshaped_dims)))
-    axis = -2 if axis == -1 else axis - 1
+    if not is_instance_norm:
+        axis = -2 if axis == -1 else axis - 1
+    else:
+        axis = -1 if axis == -1 else axis - 1
     group_reduction_axes.pop(axis)
 
     # Calculate mean and variance
@@ -242,7 +251,9 @@ def test_regularizations():
     layer.build((None, 4, 4))
     assert len(layer.losses) == 2
     max_norm = tf.keras.constraints.max_norm
-    layer = GroupNormalization(gamma_constraint=max_norm, beta_constraint=max_norm)
+    layer = GroupNormalization(
+        groups=2, gamma_constraint=max_norm, beta_constraint=max_norm
+    )
     layer.build((None, 3, 4))
     assert layer.gamma.constraint == max_norm
     assert layer.beta.constraint == max_norm
@@ -449,3 +460,14 @@ def test_eps_gards(dtype):
     model.fit(random_inputs, random_labels, epochs=1)
     final_eps_value = frn.eps_learned.numpy()[0]
     assert initial_eps_value != final_eps_value
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_filter_response_normalization_save(tmpdir):
+    input_layer = tf.keras.layers.Input(shape=(32, 32, 3))
+    frn = FilterResponseNormalization()(input_layer)
+    model = tf.keras.Model(input_layer, frn)
+    filepath = str(tmpdir / "test.h5")
+    model.save(filepath, save_format="h5")
+    filepath = str(tmpdir / "test")
+    model.save(filepath, save_format="tf")

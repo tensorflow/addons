@@ -18,18 +18,19 @@
 
 set -x -e
 
-export CC_OPT_FLAGS='-mavx'
-
 python -m pip install -r tools/install_deps/pytest.txt -e ./
 python ./configure.py
 bash tools/install_so_files.sh
 python -c "import tensorflow as tf; print(tf.config.list_physical_devices())"
 
-# If there are no gpus, we can use multiple workers
-# Multiple workers will be supported with gpus later.
+# use 10 workers if a gpu is available, otherwise,
+# one worker per cpu core. Kokoro has 38 cores, that'd be too much
+# for the gpu memory, until we change the device placement to
+# use multiple gpus when they are available.
+EXTRA_ARGS="-n 10"
 if ! [ -x "$(command -v nvidia-smi)" ]; then
   EXTRA_ARGS="-n auto"
 fi
 
-
+bazel clean
 python -m pytest -v --functions-durations=20 --modules-durations=5 $EXTRA_ARGS ./tensorflow_addons

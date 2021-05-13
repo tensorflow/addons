@@ -10,9 +10,6 @@ on:
       - master
       - r*
 
-env:
-  BAZEL_VERSION: 1.1.0
-
 jobs:
   flake8-test:
     name: Flake8
@@ -70,21 +67,15 @@ jobs:
       - uses: actions/checkout@v2
       - name: Building the docs
         run: bash tools/run_build.sh docs_tests
-  test_editable_mode:
-    name: Check that we can fully work in editable mode
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: bash tools/run_build.sh test_editable_mode
   test_python_code_only:
     name: Fast build to run python-only tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-python@v1
         with:
-          python-version: 3.5
+          python-version: 3.6
       - uses: actions/checkout@v2
-      - run: pip install -r tools/install_deps/tensorflow-cpu.txt -r tools/install_deps/pytest.txt
+      - run: pip install --default-timeout=1000 -r tools/install_deps/tensorflow-cpu.txt -r tools/install_deps/pytest.txt
       - run: pip install -e ./
       - run: pytest -v -n auto --skip-custom-ops ./tensorflow_addons
   test_cpu_in_small_docker_image:
@@ -93,19 +84,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: bash tools/run_cpu_tests.sh
-  test_tf220rc3_cpu_in_small_docker_image:
-    name: Run the tf 2.2.0rc3 cpu tests in a small python docker image
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - env:
-          DOCKER_BUILDKIT: 1
-        run: |
-          docker build \
-              --build-arg TF_VERSION=2.2.0rc3 \
-              -f tools/docker/cpu_tests.Dockerfile \
-              --target=build_wheel \
-              ./
   valid-codeowners:
     name: Check that the CODEOWNERS is valid
     runs-on: ubuntu-latest
@@ -113,7 +91,36 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.6
       - run: pip install pygithub click
       - name: Check that the CODEOWNERS is valid
         run: python .github/workflows/notify_codeowners.py .github/CODEOWNERS
+  nbfmt:
+    name: Notebook format
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-python@v1
+    - uses: actions/checkout@v2
+    - name: Install tensorflow-docs
+      run: python3 -m pip install -U git+https://github.com/tensorflow/docs
+    - name: Check notebook formatting
+      run: |
+        # Run on all notebooks to prevent upstream change.
+        echo "Check formatting with nbfmt:"
+        python3 -m tensorflow_docs.tools.nbfmt --test \
+            $(find docs/tutorials/ -type f -name *.ipynb)
+  nblint:
+    name: Notebook lint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-python@v1
+    - uses: actions/checkout@v2
+    - name: Install tensorflow-docs
+      run: python3 -m pip install -U git+https://github.com/tensorflow/docs
+    - name: Lint notebooks
+      run: |
+        # Run on all notebooks to prevent upstream change.
+        echo "Lint check with nblint:"
+        python3 -m tensorflow_docs.tools.nblint \
+            --arg=repo:tensorflow/addons \
+            $(find docs/tutorials/ -type f -name *.ipynb ! -path "docs/tutorials/_template.ipynb")

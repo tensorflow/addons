@@ -25,6 +25,13 @@ All submissions, including submissions by project members, require
 review.
 
 ## Requirements for New Contributions to the Repository
+
+**All new components/features to Addons need to first be submitted as a feature 
+request issue. This will allow the team to check with our counterparts in the TF
+ecosystem and ensure it is not roadmapped internally for Keras or TF core. These 
+feature requests will be labeled with `ecosystem-review` while we determine if it 
+should be included in Addons.**
+
 The tensorflow/addons repository contains additional functionality
 fitting the following criteria:
 
@@ -35,6 +42,12 @@ fitting the following criteria:
  in widely cited paper)
  * Lastly, the functionality conforms to the contribution guidelines of
  its subpackage.
+
+Suggested guidelines for new feature requests:
+
+* The feature contains an official reference implementation.
+* Should be able to reproduce the same results in a published paper.
+* The academic paper exceeds 50 citations.
 
 **Note: New contributions often require team-members to read a research
 paper and understand how it fits into the TensorFlow community. This
@@ -101,7 +114,7 @@ If you're running Powershell on Windows, use `sh` instead of `bash` when typing 
 We provide a pre-commit hook to format your code automatically before each
 commit, so that you don't have to read our style guide. Install it on Linux/MacOS with
 
-```
+```bash
 cd .git/hooks && ln -s -f ../../tools/pre-commit.sh pre-commit
 ```
 
@@ -109,7 +122,7 @@ and you're good to go.
 
 On Windows, in powershell, do:
 
-```
+```bash
 cd .git/hooks
 cmd /c mklink pre-commit ..\..\tools\pre-commit.sh
 ```
@@ -140,7 +153,7 @@ And you don't need to compile anything.
 If you want to work in 
 a [virtualenv](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/):
 
-```
+```bash
 pip install virtualenv
 venv my_dev_environement
 source my_dev_environement/bin/activate  # Linux/macos/WSL2
@@ -149,7 +162,7 @@ source my_dev_environement/bin/activate  # Linux/macos/WSL2
 
 If you want to work in 
 a [conda environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html):
-```
+```bash
 conda create --name my_dev_environement
 conda activate my_dev_environement
 ```
@@ -159,9 +172,9 @@ conda activate my_dev_environement
 
 Just run from the root:
 
-```
-pip install tensorflow==2.2.0rc3
-# you can use "pip install tensorflow-cpu==2.2.0rc3" too if you're not testing on gpu.
+```bash
+pip install tensorflow==2.4.1
+# you can use "pip install tensorflow-cpu==2.4.1" too if you're not testing on gpu.
 pip install -e ./
 ```
 
@@ -176,7 +189,7 @@ going to import the code in this git repository.
 To undo this operation, for example, you want to later on 
 install TensorFlow Addons from PyPI, the release version, do:
 
-```
+```bash
 pip uninstall tensorflow-addons
 ```
 
@@ -186,7 +199,7 @@ If TensorFlow Addons is installed in editable mode, you can then just run your t
 running Pytest. For example:
 ```bash
 pip install -r tools/install_deps/pytest.txt
-python -m pytest tensorflow_addons/rnn/cell_test.py
+python -m pytest tensorflow_addons/rnn/tests/cell_test.py
 # or even
 python -m pytest tensorflow_addons/rnn/
 # or even 
@@ -249,7 +262,7 @@ If you need a custom C++/Cuda op for your test, compile your ops with
 
 ```bash
 python configure.py
-pip install tensorflow==2.2.0rc3 -e ./ -r tools/install_deps/pytest.txt
+pip install tensorflow==2.4.1 -e ./ -r tools/install_deps/pytest.txt
 bash tools/install_so_files.sh  # Linux/macos/WSL2
 sh tools/install_so_files.sh    # PowerShell
 ```
@@ -266,29 +279,30 @@ Running tests interactively in Docker gives you good flexibility and doesn't req
 to install any additional tools.
 
 CPU Docker: 
-```
-docker run --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-ubuntu16
+```bash
+docker run --rm -it -v ${PWD}:/addons -w /addons tfaddons/dev_container:latest-cpu
 ```
 
 GPU Docker: 
-```
-docker run --runtime=nvidia --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16
+```bash
+docker run --gpus all --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda11.0-cudnn8-ubuntu18.04-manylinux2010-multipython
 ```
 
 Configure:
-```
-python3 -m pip install tensorflow==2.2.0rc3
+```bash
+python3 -m pip install tensorflow==2.4.1
 python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 
 Install in editable mode
-```
+```bash
 python3 -m pip install -e .
 python3 -m pip install -r tools/install_deps/pytest.txt
 ```
 
 Compile the custom ops
-```
+```bash
+export TF_NEED_CUDA=1 # If GPU is to be used
 bash tools/install_so_files.sh
 ```
 
@@ -296,6 +310,10 @@ Run selected tests:
 ```bash
 python3 -m pytest path/to/file/or/directory/to/test
 ```
+
+Run the gpu only tests with `pytest -m needs_gpu ./tensorflow_addons`.
+Run the cpu only tests with `pytest -m 'not needs_gpu' ./tensorflow_addons`.
+
 
 #### Testing with Bazel
 
@@ -310,8 +328,8 @@ quickly, as Bazel has great support for caching and distributed testing.
 
 To test with Bazel:
 
-```
-python3 -m pip install tensorflow==2.2.0rc3
+```bash
+python3 -m pip install tensorflow==2.4.1
 python3 configure.py
 python3 -m pip install -r tools/install_deps/pytest.txt
 bazel test -c opt -k \
@@ -320,6 +338,24 @@ bazel test -c opt -k \
 --run_under=$(readlink -f tools/testing/parallel_gpu_execute.sh) \
 //tensorflow_addons/...
 ```
+
+#### Testing docstrings
+
+We use [DocTest](https://docs.python.org/3/library/doctest.html) to test code snippets
+in Python docstrings. The snippet must be executable Python code.
+To enable testing, prepend the line with `>>>` (three left-angle brackets).
+Available namespace include `np` for numpy, `tf` for TensorFlow, and `tfa` for TensorFlow Addons.
+See [docs_ref](https://www.tensorflow.org/community/contribute/docs_ref) for more details.
+
+To test docstrings locally, run either
+```bash
+bash tools/run_cpu_tests.sh
+```
+on all files, or
+```bash
+pytest -v -n auto --durations=25 --doctest-modules /path/to/pyfile
+```
+on specific files.
 
 ## About type hints
 
@@ -396,7 +432,7 @@ your tests as well as helper functions. Those can be found in
 #### maybe_run_functions_eagerly
 
 Will run your test function twice, once normally and once with 
-`tf.config.experimental_run_functions_eagerly(True)`. To use it:
+`tf.config.run_functions_eagerly(True)`. To use it:
 
 ```python
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -411,22 +447,95 @@ on Tensors, `if` or `for` for example. Or with `TensorArray`. In short, when the
  conversion to graph is not trivial. No need to use it on all
 your tests. Having fast tests is important.
 
-#### cpu_and_gpu
+#### Selecting the devices to run the test
 
-Will run your test function twice, once with `with tf.device("/device:CPU:0")` and 
-once with `with tf.device("/device:GPU:0")`. If a GPU is not present on the system, 
-the second test is skipped. To use it:
+By default, each test is wrapped behind the scenes with a 
+```python
+with tf.device("CPU:0"):
+    ...
+```
+
+This is automatic. But it's also possible to ask the test runner to run 
+the test twice, on CPU and on GPU, or only on GPU. Here is how to do it.
 
 ```python
-@pytest.mark.usefixtures("cpu_and_gpu")
+import pytest
+import tensorflow as tf
+from tensorflow_addons.utils import test_utils
+
+@pytest.mark.with_device(["cpu", "gpu"])
 def test_something():
-    assert ...== ...
+    # the code here will run twice, once on gpu, once on cpu.
+    ...
+
+
+@pytest.mark.with_device(["cpu", "gpu"])
+def test_something2(device):
+    # the code here will run twice, once on gpu, once on cpu.
+    # device will be "cpu:0" or "gpu:0" or "gpu:1" or "gpu:2" ...   
+    if "cpu" in device:
+        print("do something.")
+    if "gpu" in device:
+        print("do something else.")
+
+
+
+@pytest.mark.with_device(["cpu", "gpu", tf.distribute.MirroredStrategy])
+def test_something3(device):
+    # the code here will run three times, once on gpu, once on cpu and once with 
+    # a mirror distributed strategy.
+    # device will be "cpu:0" or "gpu:0" or the strategy.
+    # with the MirroredStrategy, it's equivalent to:
+    # strategy = tf.distribute.MirroredStrategy(...)
+    # with strategy.scope():
+    #     test_function(strategy)
+    if "cpu" in device:
+        print("do something.")
+    if "gpu" in device:
+        print("do something else.")
+    if isinstance(device, tf.distribute.Strategy):
+        device.run(...)
+
+
+@pytest.mark.with_device(["gpu"])
+def test_something_else():
+    # This test will be only run on gpu.
+    # The test runner will call with tf.device("GPU:0") behind the scenes.  
+    ...
+
+@pytest.mark.with_device(["cpu"])
+def test_something_more():
+    # Don't do that, this is the default behavior. 
+    ...
+
+
+@pytest.mark.with_device(["no_device"])
+@pytest.mark.needs_gpu
+def test_something_more2():
+    # When running the function, there will be no `with tf.device` wrapper.
+    # You are free to do whatever you wish with the devices in there.
+    # Make sure to use only the cpu, or only gpus available to the current process with
+    # test_utils.gpu_for_testing() , otherwise, it might not play nice with 
+    # pytest's multiprocessing.
+    # If you use a gpu, mark the test with @pytest.mark.needs_gpu , otherwise the 
+    # test will fail if no gpu is available on the system.
+    # for example
+    ...
+    strategy = tf.distribute.MirroredStrategy(test_utils.gpus_for_testing())
+    with strategy.scope():
+        print("I'm doing whatever I want.") 
+    ...
 ```
+
+Note that if a gpu is not detected on the system, the test will be 
+skipped and not marked as failed. Only the first gpu of the system is used,
+even when running pytest in multiprocessing mode. (`-n` argument). 
+Beware of the out of cuda memory errors if the number of pytest workers is too high.
 
 ##### When to use it?
 
-When you test custom CUDA code. We can expect existing TensorFlow ops to behave the same 
-on CPU and GPU.
+When you test custom CUDA code or float16 ops.
+We can expect other existing TensorFlow ops to behave the same on CPU and GPU.
 
 #### data_format
 
@@ -449,7 +558,7 @@ function behaves correctly with both data format.
 Is the same as [tf.test.TestCase.assertAllCloseAccordingToType](https://www.tensorflow.org/api_docs/python/tf/test/TestCase#assertAllCloseAccordingToType)
 but doesn't require any subclassing to be done. Can be used as a plain function. To use it:
 
-```
+```python
 from tensorflow_addons.utils import test_utils
 
 def test_something():

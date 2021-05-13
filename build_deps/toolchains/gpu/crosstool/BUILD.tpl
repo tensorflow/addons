@@ -25,6 +25,7 @@ cc_toolchain_suite(
         "local|compiler": ":cc-compiler-local",
         "k8": ":cc-compiler-local",
         "ppc": ":cc-compiler-local",
+        "aarch64": ":cc-compiler-local",
     },
 )
 

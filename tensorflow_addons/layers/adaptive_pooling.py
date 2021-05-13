@@ -26,7 +26,7 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
 
     This class only exists for code reuse. It will never be an exposed API.
 
-    Arguments:
+    Args:
       reduce_function: The reduction method to apply, e.g. `tf.reduce_max`.
       output_size: An integer or tuple/list of a single integer, specifying pooled_features.
         The new size of output channels.
@@ -45,7 +45,7 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
         reduce_function: Callable,
         output_size: Union[int, Iterable[int]],
         data_format=None,
-        **kwargs
+        **kwargs,
     ):
         self.data_format = conv_utils.normalize_data_format(data_format)
         self.reduce_function = reduce_function
@@ -90,7 +90,7 @@ class AdaptivePooling1D(tf.keras.layers.Layer):
 class AdaptiveAveragePooling1D(AdaptivePooling1D):
     """Average Pooling with adaptive kernel size.
 
-    Arguments:
+    Args:
       output_size: An integer or tuple/list of a single integer, specifying pooled_features.
         The new size of output channels.
       data_format: A string,
@@ -124,7 +124,7 @@ class AdaptiveAveragePooling1D(AdaptivePooling1D):
 class AdaptiveMaxPooling1D(AdaptivePooling1D):
     """Max Pooling with adaptive kernel size.
 
-    Arguments:
+    Args:
       output_size: An integer or tuple/list of a single integer, specifying pooled_features.
         The new size of output channels.
       data_format: A string,
@@ -159,7 +159,7 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
 
     This class only exists for code reuse. It will never be an exposed API.
 
-    Arguments:
+    Args:
       reduce_function: The reduction method to apply, e.g. `tf.reduce_max`.
       output_size: An integer or tuple/list of 2 integers specifying (pooled_rows, pooled_cols).
         The new size of output channels.
@@ -178,7 +178,7 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
         reduce_function: Callable,
         output_size: Union[int, Iterable[int]],
         data_format=None,
-        **kwargs
+        **kwargs,
     ):
         self.data_format = conv_utils.normalize_data_format(data_format)
         self.reduce_function = reduce_function
@@ -238,7 +238,7 @@ class AdaptivePooling2D(tf.keras.layers.Layer):
 class AdaptiveAveragePooling2D(AdaptivePooling2D):
     """Average Pooling with adaptive kernel size.
 
-    Arguments:
+    Args:
       output_size: Tuple of integers specifying (pooled_rows, pooled_cols).
         The new size of output channels.
       data_format: A string,
@@ -272,7 +272,7 @@ class AdaptiveAveragePooling2D(AdaptivePooling2D):
 class AdaptiveMaxPooling2D(AdaptivePooling2D):
     """Max Pooling with adaptive kernel size.
 
-    Arguments:
+    Args:
       output_size: Tuple of integers specifying (pooled_rows, pooled_cols).
         The new size of output channels.
       data_format: A string,
@@ -307,7 +307,7 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
 
     This class only exists for code reuse. It will never be an exposed API.
 
-    Arguments:
+    Args:
       reduce_function: The reduction method to apply, e.g. `tf.reduce_max`.
       output_size: An integer or tuple/list of 3 integers specifying (pooled_dim1, pooled_dim2, pooled_dim3).
         The new size of output channels.
@@ -326,7 +326,7 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
         reduce_function: Callable,
         output_size: Union[int, Iterable[int]],
         data_format=None,
-        **kwargs
+        **kwargs,
     ):
         self.data_format = conv_utils.normalize_data_format(data_format)
         self.reduce_function = reduce_function
@@ -393,7 +393,7 @@ class AdaptivePooling3D(tf.keras.layers.Layer):
 class AdaptiveAveragePooling3D(AdaptivePooling3D):
     """Average Pooling with adaptive kernel size.
 
-    Arguments:
+    Args:
       output_size: An integer or tuple/list of 3 integers specifying (pooled_depth, pooled_height, pooled_width).
         The new size of output channels.
       data_format: A string,
@@ -427,7 +427,7 @@ class AdaptiveAveragePooling3D(AdaptivePooling3D):
 class AdaptiveMaxPooling3D(AdaptivePooling3D):
     """Max Pooling with adaptive kernel size.
 
-    Arguments:
+    Args:
       output_size: An integer or tuple/list of 3 integers specifying (pooled_depth, pooled_height, pooled_width).
         The new size of output channels.
       data_format: A string,
