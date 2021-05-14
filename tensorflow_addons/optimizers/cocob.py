@@ -1,4 +1,4 @@
-# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,7 +46,6 @@ class COCOB(tf.keras.optimizers.Optimizer):
         Rasies:
             `ValueError`: If the value of `alpha` is less than 1.
             `NotImplementedError`: If the data is in sparse format.
-
         """
 
         if alpha < 1:
@@ -58,7 +57,7 @@ class COCOB(tf.keras.optimizers.Optimizer):
 
     def _create_slots(self, var_list):
         for v in var_list:
-            self.add_slot(v, "L")
+            self.add_slot(v, "lr", initializer=tf.keras.initializers.Constant(1e-8))
             self.add_slot(v, "grad_norm_sum")
             self.add_slot(v, "gradients_sum")
             self.add_slot(v, "tilde_w")
@@ -68,7 +67,7 @@ class COCOB(tf.keras.optimizers.Optimizer):
         gradients_sum = self.get_slot(handle, "gradients_sum")
         grad_norm_sum = self.get_slot(handle, "grad_norm_sum")
         tilde_w = self.get_slot(handle, "tilde_w")
-        lr = self.get_slot(handle, "L")
+        lr = self.get_slot(handle, "lr")
         reward = self.get_slot(handle, "reward")
 
         lr_update = tf.maximum(lr, tf.abs(grad))
