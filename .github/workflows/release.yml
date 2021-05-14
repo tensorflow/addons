@@ -16,7 +16,7 @@ on:
 
 env:
   MIN_PY_VERSION: '3.6'
-  MAX_PY_VERSION: '3.8'
+  MAX_PY_VERSION: '3.9'
 
 jobs:
   test-with-bazel:
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v2
         with:
           python-version: ${{ env.MIN_PY_VERSION }}
       - name: Build wheels
@@ -39,8 +39,8 @@ jobs:
     strategy:
       matrix:
         os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
-        py-version: ['3.6', '3.7', '3.8']
-        tf-version: ['2.3.0', '2.4.1']
+        py-version: ['3.6', '3.7', '3.8', '3.9']
+        tf-version: ['2.3.0', '2.5.0']
       fail-fast: false
     steps:
       - uses: actions/github-script@0.3.0
@@ -54,14 +54,15 @@ jobs:
         shell: bash
         run: echo "NIGHTLY_FLAG=--nightly" >> $GITHUB_ENV
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.py-version }}
-      - name: Setup Bazel
+      - if: matrix.os != 'ubuntu-18.04'
+        name: Setup Bazel
         # Ubuntu bazel is run inside of the docker image
-        if: matrix.os != 'ubuntu-18.04'
         run: bash tools/install_deps/install_bazelisk.sh ./
-      - name: Build wheels
+      - if: matrix.py-version != '3.9' || matrix.tf-version != '2.3.0'
+        name: Build wheels
         env:
           OS: ${{ runner.os }}
           PY_VERSION: ${{ matrix.py-version }}
@@ -69,7 +70,8 @@ jobs:
           NIGHTLY_TIME: ${{ steps.author-date.outputs.result }}
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}.sh
-      - uses: actions/upload-artifact@v1
+      - if: matrix.py-version != '3.9' || matrix.tf-version != '2.3.0'
+        uses: actions/upload-artifact@v1
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
           path: wheelhouse
@@ -80,8 +82,8 @@ jobs:
     strategy:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
-        py-version: ['3.6', '3.7', '3.8']
-        tf-version: ['2.4.1']
+        py-version: ['3.6', '3.7', '3.8', '3.9']
+        tf-version: ['2.5.0']
       fail-fast: false
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'release'
     steps:
