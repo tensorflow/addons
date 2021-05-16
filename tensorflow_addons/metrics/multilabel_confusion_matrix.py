@@ -17,6 +17,7 @@
 import warnings
 
 import tensorflow as tf
+from tensorflow.keras import backend as K
 from tensorflow.keras.metrics import Metric
 import numpy as np
 
@@ -36,39 +37,53 @@ class MultiLabelConfusionMatrix(Metric):
     Consider classification problem with two classes
     (i.e num_classes=2).
 
-    Resultant matrix `M` will be in the shape of (num_classes, 2, 2).
+    Resultant matrix `M` will be in the shape of `(num_classes, 2, 2)`.
 
-    Every class `i` has a dedicated 2*2 matrix that contains:
+    Every class `i` has a dedicated matrix of shape `(2, 2)` that contains:
 
-    - true negatives for class i in M(0,0)
-    - false positives for class i in M(0,1)
-    - false negatives for class i in M(1,0)
-    - true positives for class i in M(1,1)
+    - true negatives for class `i` in `M(0,0)`
+    - false positives for class `i` in `M(0,1)`
+    - false negatives for class `i` in `M(1,0)`
+    - true positives for class `i` in `M(1,1)`
 
-    ```python
-    # multilabel confusion matrix
-    y_true = tf.constant([[1, 0, 1], [0, 1, 0]],
-             dtype=tf.int32)
-    y_pred = tf.constant([[1, 0, 0],[0, 1, 1]],
-             dtype=tf.int32)
-    output = MultiLabelConfusionMatrix(num_classes=3)
-    output.update_state(y_true, y_pred)
-    print('Confusion matrix:', output.result().numpy())
+    Args:
+        num_classes: `int`, the number of labels the prediction task can have.
+        name: (Optional) string name of the metric instance.
+        dtype: (Optional) data type of the metric result.
 
-    # Confusion matrix: [[[1 0] [0 1]] [[1 0] [0 1]]
-                      [[0 1] [1 0]]]
+    Usage:
 
-    # if multiclass input is provided
-    y_true = tf.constant([[1, 0, 0], [0, 1, 0]],
-             dtype=tf.int32)
-    y_pred = tf.constant([[1, 0, 0],[0, 0, 1]],
-             dtype=tf.int32)
-    output = MultiLabelConfusionMatrix(num_classes=3)
-    output.update_state(y_true, y_pred)
-    print('Confusion matrix:', output.result().numpy())
+    >>> # multilabel confusion matrix
+    >>> y_true = np.array([[1, 0, 1], [0, 1, 0]], dtype=np.int32)
+    >>> y_pred = np.array([[1, 0, 0], [0, 1, 1]], dtype=np.int32)
+    >>> metric = tfa.metrics.MultiLabelConfusionMatrix(num_classes=3)
+    >>> metric.update_state(y_true, y_pred)
+    >>> result = metric.result()
+    >>> result.numpy()  #doctest: -DONT_ACCEPT_BLANKLINE
+    array([[[1., 0.],
+            [0., 1.]],
+    <BLANKLINE>
+           [[1., 0.],
+            [0., 1.]],
+    <BLANKLINE>
+           [[0., 1.],
+            [1., 0.]]], dtype=float32)
+    >>> # if multiclass input is provided
+    >>> y_true = np.array([[1, 0, 0], [0, 1, 0]], dtype=np.int32)
+    >>> y_pred = np.array([[1, 0, 0], [0, 0, 1]], dtype=np.int32)
+    >>> metric = tfa.metrics.MultiLabelConfusionMatrix(num_classes=3)
+    >>> metric.update_state(y_true, y_pred)
+    >>> result = metric.result()
+    >>> result.numpy() #doctest: -DONT_ACCEPT_BLANKLINE
+    array([[[1., 0.],
+            [0., 1.]],
+    <BLANKLINE>
+           [[1., 0.],
+            [1., 0.]],
+    <BLANKLINE>
+           [[1., 1.],
+            [0., 0.]]], dtype=float32)
 
-    # Confusion matrix: [[[1 0] [0 1]] [[1 0] [1 0]] [[1 1] [0 0]]]
-    ```
     """
 
     @typechecked
@@ -77,7 +92,7 @@ class MultiLabelConfusionMatrix(Metric):
         num_classes: FloatTensorLike,
         name: str = "Multilabel_confusion_matrix",
         dtype: AcceptableDTypes = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(name=name, dtype=dtype)
         self.num_classes = num_classes
@@ -163,7 +178,5 @@ class MultiLabelConfusionMatrix(Metric):
         return {**base_config, **config}
 
     def reset_states(self):
-        self.true_positives.assign(np.zeros(self.num_classes), np.int32)
-        self.false_positives.assign(np.zeros(self.num_classes), np.int32)
-        self.false_negatives.assign(np.zeros(self.num_classes), np.int32)
-        self.true_negatives.assign(np.zeros(self.num_classes), np.int32)
+        reset_value = np.zeros(self.num_classes, dtype=np.int32)
+        K.batch_set_value([(v, reset_value) for v in self.variables])

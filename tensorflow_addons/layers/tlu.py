@@ -22,7 +22,9 @@ from tensorflow_addons.utils import types
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class TLU(tf.keras.layers.Layer):
-    """Thresholded Linear Unit. An activation function which is similar to ReLU
+    r"""Thresholded Linear Unit.
+
+    An activation function which is similar to ReLU
     but with a learned threshold that benefits models using FRN(Filter Response
     Normalization). Original paper: https://arxiv.org/pdf/1911.09737.
 
@@ -34,9 +36,9 @@ class TLU(tf.keras.layers.Layer):
     Output shape:
         Same shape as the input.
 
-    Arguments:
-        affine: bool. Whether to make it TLU-Affine or not
-        which has the form `max(x, alpha*x + tau)`
+    Args:
+        affine: `bool`. Whether to make it TLU-Affine or not
+            which has the form $\max(x, \alpha*x + \tau)$`
     """
 
     @typechecked
@@ -49,7 +51,7 @@ class TLU(tf.keras.layers.Layer):
         alpha_initializer: types.Initializer = "zeros",
         alpha_regularizer: types.Regularizer = None,
         alpha_constraint: types.Constraint = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.supports_masking = True
@@ -89,10 +91,8 @@ class TLU(tf.keras.layers.Layer):
         self.built = True
 
     def call(self, inputs):
-        if self.affine:
-            return tf.maximum(inputs, self.alpha * inputs + self.tau)
-        else:
-            return tf.maximum(inputs, self.tau)
+        v = self.alpha * inputs if self.affine else 0
+        return tf.maximum(inputs, self.tau + v)
 
     def get_config(self):
         config = {

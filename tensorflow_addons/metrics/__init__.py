@@ -16,7 +16,11 @@
 
 from tensorflow_addons.metrics.cohens_kappa import CohenKappa
 from tensorflow_addons.metrics.f_scores import F1Score, FBetaScore
-from tensorflow_addons.metrics.hamming import HammingLoss, hamming_distance
+from tensorflow_addons.metrics.hamming import (
+    HammingLoss,
+    hamming_distance,
+    hamming_loss_fn,
+)
 from tensorflow_addons.metrics.utils import MeanMetricWrapper
 from tensorflow_addons.metrics.matthews_correlation_coefficient import (
     MatthewsCorrelationCoefficient,
@@ -25,3 +29,6 @@ from tensorflow_addons.metrics.multilabel_confusion_matrix import (
     MultiLabelConfusionMatrix,
 )
 from tensorflow_addons.metrics.r_square import RSquare
+from tensorflow_addons.metrics.geometric_mean import GeometricMean
+from tensorflow_addons.metrics.harmonic_mean import HarmonicMean
+from tensorflow_addons.metrics.kendalls_tau import KendallsTau

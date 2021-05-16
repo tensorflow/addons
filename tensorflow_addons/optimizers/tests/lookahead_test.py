@@ -53,10 +53,10 @@ def run_sparse_sample(iterations, optimizer, seed=0x2019):
     var_1 = tf.Variable(val_1, dtype=tf.dtypes.float32)
 
     grad_0 = tf.IndexedSlices(
-        tf.constant([np.random.standard_normal()]), tf.constant([0]), tf.constant([2]),
+        tf.constant([np.random.standard_normal()]), tf.constant([0]), tf.constant([2])
     )
     grad_1 = tf.IndexedSlices(
-        tf.constant([np.random.standard_normal()]), tf.constant([1]), tf.constant([2]),
+        tf.constant([np.random.standard_normal()]), tf.constant([1]), tf.constant([2])
     )
 
     grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
@@ -120,6 +120,28 @@ def test_fit_simple_linear_model():
     assert max_abs_diff < 1e-3
 
 
+@pytest.mark.usefixtures("run_with_mixed_precision_policy")
+def test_fit_simple_linear_model_mixed_precision():
+    np.random.seed(0x2019)
+    tf.random.set_seed(0x2019)
+
+    x = np.random.standard_normal((10000, 3))
+    w = np.random.standard_normal((3, 1))
+    y = np.dot(x, w) + np.random.standard_normal((10000, 1)) * 1e-4
+
+    model = tf.keras.models.Sequential()
+    model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
+    model.compile(Lookahead("sgd"), loss="mse")
+    model.fit(x, y, epochs=3)
+
+    x = np.random.standard_normal((100, 3))
+    y = np.dot(x, w)
+    predicted = model.predict(x)
+
+    max_abs_diff = np.max(np.abs(predicted - y))
+    assert max_abs_diff < 2.3e-3
+
+
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_model_dynamic_lr():
     grad = tf.Variable([[0.1]])
@@ -149,3 +171,10 @@ def test_get_config():
     config = opt.get_config()
     assert config["sync_period"] == 10
     assert config["slow_step_size"] == 0.4
+
+
+def test_serialization():
+    optimizer = Lookahead("adam", sync_period=10, slow_step_size=0.4)
+    config = tf.keras.optimizers.serialize(optimizer)
+    new_optimizer = tf.keras.optimizers.deserialize(config)
+    assert new_optimizer.get_config() == optimizer.get_config()

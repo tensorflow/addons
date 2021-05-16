@@ -17,3 +17,4 @@
 
 wget -O /usr/local/bin/clang-format-9 https://github.com/DoozyX/clang-format-lint-action/raw/master/clang-format/clang-format9
 chmod +x /usr/local/bin/clang-format-9
+ln -s /usr/local/bin/clang-format-9 /usr/local/bin/clang-format

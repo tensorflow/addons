@@ -101,7 +101,7 @@ def test_mc_5_classes():
 def test_ml_4_classes():
     actuals = tf.constant([[1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 0, 1]], dtype=tf.float32)
     predictions = tf.constant(
-        [[0.97, 0.56, 0.83, 0.77], [0.34, 0.95, 0.7, 0.89], [0.95, 0.45, 0.23, 0.56],],
+        [[0.97, 0.56, 0.83, 0.77], [0.34, 0.95, 0.7, 0.89], [0.95, 0.45, 0.23, 0.56]],
         dtype=tf.float32,
     )
     # Initialize

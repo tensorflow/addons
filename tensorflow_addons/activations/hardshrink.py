@@ -14,64 +14,45 @@
 # ==============================================================================
 
 import tensorflow as tf
-from tensorflow_addons.utils.types import Number
-
-from tensorflow_addons.utils import types
-from tensorflow_addons.utils.resource_loader import LazySO
-from tensorflow_addons import options
-
-_activation_so = LazySO("custom_ops/activations/_activation_ops.so")
+from tensorflow_addons.utils.types import Number, TensorLike
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
-def hardshrink(
-    x: types.TensorLike, lower: Number = -0.5, upper: Number = 0.5
-) -> tf.Tensor:
-    """Hard shrink function.
+def hardshrink(x: TensorLike, lower: Number = -0.5, upper: Number = 0.5) -> tf.Tensor:
+    r"""Hard shrink function.
 
     Computes hard shrink function:
-    `x if x < lower or x > upper else 0`.
+
+    $$
+    \mathrm{hardshrink}(x) =
+    \begin{cases}
+        x & \text{if } x < \text{lower} \\
+        x & \text{if } x > \text{upper} \\
+        0 & \text{otherwise}
+    \end{cases}.
+    $$
+
+    Usage:
+
+    >>> x = tf.constant([1.0, 0.0, 1.0])
+    >>> tfa.activations.hardshrink(x)
+    <tf.Tensor: shape=(3,), dtype=float32, numpy=array([1., 0., 1.], dtype=float32)>
 
     Args:
         x: A `Tensor`. Must be one of the following types:
-            `float16`, `float32`, `float64`.
+            `bfloat16`, float16`, `float32`, `float64`.
         lower: `float`, lower bound for setting values to zeros.
         upper: `float`, upper bound for setting values to zeros.
     Returns:
         A `Tensor`. Has the same type as `x`.
     """
-    x = tf.convert_to_tensor(x)
-
-    if not options.TF_ADDONS_PY_OPS:
-        try:
-            return _hardshrink_custom_op(x, lower, upper)
-        except tf.errors.NotFoundError:
-            options.warn_fallback("hardshrink")
-
-    return _hardshrink_py(x, lower, upper)
-
-
-def _hardshrink_custom_op(x, lower=-0.5, upper=0.5):
-    """Alias with lazy loading of the .so file"""
-    return _activation_so.ops.addons_hardshrink(x, lower, upper)
-
-
-@tf.RegisterGradient("Addons>Hardshrink")
-def _hardshrink_grad(op, grad):
-    return _activation_so.ops.addons_hardshrink_grad(
-        grad, op.inputs[0], op.get_attr("lower"), op.get_attr("upper")
-    )
-
-
-def _hardshrink_py(
-    x: types.TensorLike, lower: Number = -0.5, upper: Number = 0.5
-) -> tf.Tensor:
     if lower > upper:
         raise ValueError(
             "The value of lower is {} and should"
             " not be higher than the value "
             "variable upper, which is {} .".format(lower, upper)
         )
+    x = tf.convert_to_tensor(x)
     mask_lower = x < lower
     mask_upper = upper < x
     mask = tf.logical_or(mask_lower, mask_upper)

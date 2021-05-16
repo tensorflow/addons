@@ -7,7 +7,7 @@ py_library(
     srcs = glob(["*.py"]),
     data = [
         "//tensorflow_addons:options.py",
-        "//tensorflow_addons/custom_ops/activations:_activation_ops.so",
+        "//tensorflow_addons/testing",
         "//tensorflow_addons/utils",
     ],
 )

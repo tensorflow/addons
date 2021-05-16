@@ -18,8 +18,7 @@ limitations under the License.
 
 #define EIGEN_USE_THREADS
 
-#include <limits>
-
+#include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/tensor_types.h"
 #include "tensorflow/core/platform/types.h"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
@@ -27,69 +26,107 @@ limitations under the License.
 namespace tensorflow {
 namespace addons {
 
-namespace generator {
+typedef Eigen::ThreadPoolDevice CPUDevice;
+typedef Eigen::GpuDevice GPUDevice;
 
-using Eigen::array;
-using Eigen::DenseIndex;
-using Eigen::numext::mini;
-using Eigen::numext::sqrt;
+#define GET_INDEX(i, j, k, c) \
+  (k * height * width * channels + i * width * channels + j * channels + c)
 
-template <typename Device, typename T>
-class EuclideanDistanceTransformGenerator {
- private:
-  typename TTypes<T, 4>::ConstTensor input_;
-  int64 height_, width_;
-
- public:
-  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
-  EuclideanDistanceTransformGenerator(typename TTypes<T, 4>::ConstTensor input)
-      : input_(input) {
-    height_ = input_.dimension(1);
-    width_ = input_.dimension(2);
+template <typename T>
+EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void Distance(const T* f, T* d, int* v,
+                                                    T* z, int n) {
+  // index of rightmost parabola in lower envelope
+  int k = 0;
+  v[0] = 0;
+  z[0] = Eigen::NumTraits<T>::lowest();
+  z[1] = Eigen::NumTraits<T>::highest();
+  // compute lowest envelope:
+  for (int q = 1; q <= n - 1; q++) {
+    T s(0);
+    k++;  // this compensates for first line of next do-while block
+    do {
+      k--;
+      // compute horizontal position of intersection between the parabola from
+      // q and the current lowest parabola
+      s = (f[q] - f[v[k]]) / static_cast<T>(2 * (q - v[k])) +
+          static_cast<T>((q + v[k]) / 2);
+    } while (s <= z[k]);
+    k++;
+    v[k] = q;
+    z[k] = s;
+    z[k + 1] = Eigen::NumTraits<T>::highest();
   }
+  // fill in values of distance transform
+  k = 0;
+  for (int q = 0; q <= n - 1; q++) {
+    while (z[k + 1] < static_cast<T>(q)) {
+      k++;
+    }
+    d[q] = static_cast<T>(Eigen::numext::pow(q - v[k], 2)) + f[v[k]];
+  }
+}
 
-  EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE T
-  operator()(const array<DenseIndex, 4> &coords) const {
-    const int64 x = coords[1];
-    const int64 y = coords[2];
-
-    if (input_(coords) == T(0)) return T(0);
-
-    T minDistance = Eigen::NumTraits<T>::highest();
-
-    for (int h = 0; h < height_; ++h) {
-      for (int w = 0; w < width_; ++w) {
-        if (input_({coords[0], h, w, coords[3]}) == T(0)) {
-          T dist = sqrt(T((x - h) * (x - h) + (y - w) * (y - w)));
-          minDistance = mini(minDistance, dist);
-        }
+template <typename T>
+EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransformSample(
+    const uint8* input, T* output, int k, int c, int height, int width,
+    int channels) {
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      int index = GET_INDEX(i, j, k, c);
+      if (input[index] == 0) {
+        output[index] = static_cast<T>(0);
+      } else {
+        output[index] = Eigen::NumTraits<T>::highest();
       }
     }
-    return minDistance;
   }
-};
-
-}  // end namespace generator
+  int max = Eigen::numext::maxi(height, width);
+  T* f = new T[max];
+  T* d = new T[max];
+  // locations of parabolas in lower envelope
+  int* vw = new int[width];
+  int* vh = new int[height];
+  // locations of boundaries between parabolas
+  T* zw = new T[width + 1];
+  T* zh = new T[height + 1];
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      int index = GET_INDEX(i, j, k, c);
+      f[j] = output[index];
+    }
+    Distance<T>(f, d, vw, zw, width);
+    for (int j = 0; j < width; j++) {
+      int index = GET_INDEX(i, j, k, c);
+      output[index] = d[j];
+    }
+  }
+  for (int j = 0; j < width; j++) {
+    for (int i = 0; i < height; i++) {
+      int index = GET_INDEX(i, j, k, c);
+      f[i] = output[index];
+    }
+    Distance<T>(f, d, vh, zh, height);
+    for (int i = 0; i < height; i++) {
+      int index = GET_INDEX(i, j, k, c);
+      output[index] = Eigen::numext::sqrt(d[i]);
+    }
+  }
+  delete f;
+  delete d;
+  delete vh;
+  delete vw;
+  delete zh;
+  delete zw;
+}
 
 namespace functor {
-
-using generator::EuclideanDistanceTransformGenerator;
-
 template <typename Device, typename T>
 struct EuclideanDistanceTransformFunctor {
-  typedef typename TTypes<T, 4>::ConstTensor InputType;
+  typedef typename TTypes<uint8, 4>::ConstTensor InputType;
   typedef typename TTypes<T, 4>::Tensor OutputType;
-
-  EuclideanDistanceTransformFunctor() {}
-
-  EIGEN_ALWAYS_INLINE
-  void operator()(const Device &device, OutputType *output,
-                  const InputType &images) const {
-    output->device(device) = output->generate(
-        EuclideanDistanceTransformGenerator<Device, T>(images));
-  }
+  void operator()(OpKernelContext* ctx, OutputType* output,
+                  const InputType& images) const;
 };
-
 }  // end namespace functor
 
 }  // end namespace addons

@@ -70,9 +70,9 @@ def lifted_struct_loss_np(labels, embedding, margin):
                 for k in range(num_data):
                     if not adjacency[i][k]:
                         negs.append(margin - pdist_matrix[i][k])
-                for l in range(num_data):
-                    if not adjacency[j][l]:
-                        negs.append(margin - pdist_matrix[j][l])
+                for m in range(num_data):
+                    if not adjacency[j][m]:
+                        negs.append(margin - pdist_matrix[j][m])
 
                 negs = np.array(negs)
                 max_elem = np.max(negs)
@@ -112,7 +112,7 @@ def test_lifted_struct(dtype):
 
 def test_keras_model_compile():
     model = tf.keras.models.Sequential(
-        [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10),]
+        [tf.keras.layers.Input(shape=(784,)), tf.keras.layers.Dense(10)]
     )
     model.compile(loss="Addons>lifted_struct_loss", optimizer="adam")
 

@@ -1,12 +1,12 @@
 #syntax=docker/dockerfile:1.1.5-experimental
-FROM python:3.5 as build_wheel
+FROM python:3.6 as build_wheel
 
-ARG TF_VERSION=2.1.0
-RUN pip install tensorflow-cpu==$TF_VERSION
+ARG TF_VERSION=2.5.0
+RUN pip install --default-timeout=1000 tensorflow-cpu==$TF_VERSION
 
 RUN apt-get update && apt-get install -y sudo rsync
-COPY tools/install_deps/bazel_linux.sh ./
-RUN bash bazel_linux.sh
+COPY tools/install_deps/install_bazelisk.sh .bazelversion ./
+RUN bash install_bazelisk.sh
 
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
@@ -20,16 +20,17 @@ RUN python configure.py
 RUN pip install -e ./
 RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
     bash tools/install_so_files.sh
-RUN pytest -v -n auto --durations=25 --cov=tensorflow_addons ./tensorflow_addons/
+RUN pytest -v -n auto --durations=25 --doctest-modules ./tensorflow_addons \
+    --cov=tensorflow_addons ./tensorflow_addons/
 
 RUN bazel build --enable_runfiles build_pip_pkg
 RUN bazel-bin/build_pip_pkg artifacts
 
 
-FROM python:3.5
+FROM python:3.6
 
 COPY tools/install_deps/tensorflow-cpu.txt ./
-RUN pip install -r tensorflow-cpu.txt
+RUN pip install --default-timeout=1000 -r tensorflow-cpu.txt
 
 COPY --from=0 /addons/artifacts /artifacts
 

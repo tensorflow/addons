@@ -104,9 +104,6 @@ def test_tqdm_progress_bar_show(capsys, show_epoch_progress, show_overall_progre
     assert ("epochs/s" in fit_stderr) is show_overall_progress
 
     if show_epoch_progress and not show_overall_progress:
-        # in 2.1.0, they are present in the logs
-        # in 2.2.0+, they're not
-        # in any case, they shouldn't appear.
         assert "size" not in fit_stderr
         assert "batch" not in fit_stderr
 

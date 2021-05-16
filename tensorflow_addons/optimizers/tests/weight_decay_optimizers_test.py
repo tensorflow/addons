@@ -30,7 +30,7 @@ def do_test(
     update_fn,
     do_sparse=False,
     do_decay_var_list=False,
-    **optimizer_kwargs
+    **optimizer_kwargs,
 ):
     """The major test function.
 
@@ -53,7 +53,7 @@ def do_test(
             the optimizer_params in the update_fn.
     """
     # TODO: Fix #347 issue
-    if do_sparse and tf.test.is_gpu_available():
+    if do_sparse and test_utils.is_gpu_available():
         pytest.skip("Wait #347 to be fixed")
 
     # Initialize variables for numpy implementation.
@@ -68,11 +68,11 @@ def do_test(
     if do_sparse:
         grads0_np_indices = np.array([0, 1], dtype=np.int32)
         grads0 = tf.IndexedSlices(
-            tf.constant(grads0_np), tf.constant(grads0_np_indices), tf.constant([2]),
+            tf.constant(grads0_np), tf.constant(grads0_np_indices), tf.constant([2])
         )
         grads1_np_indices = np.array([0, 1], dtype=np.int32)
         grads1 = tf.IndexedSlices(
-            tf.constant(grads1_np), tf.constant(grads1_np_indices), tf.constant([2]),
+            tf.constant(grads1_np), tf.constant(grads1_np_indices), tf.constant([2])
         )
     else:
         grads0 = tf.constant(grads0_np)
@@ -83,7 +83,7 @@ def do_test(
     for _ in range(3):
         if do_decay_var_list:
             opt.apply_gradients(
-                zip([grads0, grads1], [var0, var1]), decay_var_list=[var0, var1],
+                zip([grads0, grads1], [var0, var1]), decay_var_list=[var0, var1]
             )
         else:
             opt.apply_gradients(zip([grads0, grads1], [var0, var1]))
@@ -112,7 +112,7 @@ def do_test_sparse_repeated_indices(dtype, optimizer, **optimizer_kwargs):
             the optimizer_params in the update_fn.
     """
     # TODO: Fix #347 issue
-    if tf.test.is_gpu_available():
+    if test_utils.is_gpu_available():
         pytest.skip("Wait #347 to be fixed")
 
     repeated_index_update_var = tf.Variable([[1.0], [2.0]], dtype=dtype)
@@ -251,6 +251,34 @@ def test_keras_fit():
     model.fit(x, y, epochs=1)
 
 
+def test_keras_fit_with_schedule():
+    """Check if calling model.fit works with wd schedule."""
+    model = tf.keras.models.Sequential([tf.keras.layers.Dense(2)])
+    loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+    wd_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
+        WEIGHT_DECAY, decay_steps=10, decay_rate=0.9
+    )
+    optimizer = weight_decay_optimizers.AdamW(
+        learning_rate=1e-4, weight_decay=wd_schedule
+    )
+    model.compile(optimizer=optimizer, loss=loss, metrics=["accuracy"])
+    x, y = np.random.uniform(size=(2, 4, 1))
+    model.fit(x, y, epochs=1)
+
+
+@pytest.mark.with_device(["cpu", "gpu"])
+def test_weight_decay_with_piecewise_constant_decay_schedule():
+    model = tf.keras.models.Sequential([tf.keras.layers.Dense(2)])
+    loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+    wd_schedule = tf.optimizers.schedules.PiecewiseConstantDecay([2], [1e-4, 1e-5])
+    optimizer = weight_decay_optimizers.SGDW(
+        learning_rate=1e-2, weight_decay=wd_schedule
+    )
+    model.compile(optimizer=optimizer, loss=loss, metrics=["accuracy"])
+    x, y = np.random.uniform(size=(2, 4, 1))
+    model.fit(x, y, batch_size=1, epochs=1)
+
+
 @pytest.mark.parametrize("dtype", [(tf.half, 0), (tf.float32, 1), (tf.float64, 2)])
 def test_sparse_sgdw(dtype):
     do_test(
@@ -346,5 +374,24 @@ def test_optimizer_basic(dtype, optimizer):
 @pytest.mark.parametrize("dtype", [tf.half, tf.float32, tf.float64])
 def test_optimizer_sparse(dtype, optimizer):
     do_test_sparse_repeated_indices(
-        dtype, optimizer, learning_rate=0.001, momentum=0.9, weight_decay=WEIGHT_DECAY,
+        dtype, optimizer, learning_rate=0.001, momentum=0.9, weight_decay=WEIGHT_DECAY
     )
+
+
+def test_serialization():
+    optimizer = weight_decay_optimizers.AdamW(learning_rate=1e-4, weight_decay=1e-4)
+    config = tf.keras.optimizers.serialize(optimizer)
+    new_optimizer = tf.keras.optimizers.deserialize(config)
+    assert new_optimizer.get_config() == optimizer.get_config()
+
+
+def test_serialization_with_wd_schedule():
+    wd_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
+        WEIGHT_DECAY, decay_steps=10, decay_rate=0.9
+    )
+    optimizer = weight_decay_optimizers.AdamW(
+        learning_rate=1e-4, weight_decay=wd_schedule
+    )
+    config = tf.keras.optimizers.serialize(optimizer)
+    new_optimizer = tf.keras.optimizers.deserialize(config)
+    assert new_optimizer.get_config() == optimizer.get_config()

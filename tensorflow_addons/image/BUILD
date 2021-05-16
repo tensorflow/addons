@@ -10,6 +10,7 @@ py_library(
         "//tensorflow_addons/custom_ops/image:_distort_image_ops.so",
         "//tensorflow_addons/custom_ops/image:_image_ops.so",
         "//tensorflow_addons/custom_ops/image:_resampler_ops.so",
+        "//tensorflow_addons/testing",
         "//tensorflow_addons/utils",
     ],
 )

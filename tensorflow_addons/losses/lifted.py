@@ -17,7 +17,7 @@
 import tensorflow as tf
 from tensorflow_addons.losses import metric_learning
 
-from tensorflow.python.keras.losses import LossFunctionWrapper
+from tensorflow_addons.utils.keras_utils import LossFunctionWrapper
 from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
 from typeguard import typechecked
 from typing import Optional
@@ -31,7 +31,7 @@ def lifted_struct_loss(
     """Computes the lifted structured loss.
 
     Args:
-      labels: 1-D tf.int32 `Tensor` with shape [batch_size] of
+      labels: 1-D tf.int32 `Tensor` with shape `[batch_size]` of
         multiclass integer labels.
       embeddings: 2-D float `Tensor` of embedding vectors. Embeddings should
         not be l2 normalized.

@@ -19,6 +19,7 @@ import numpy as np
 
 import tensorflow as tf
 from tensorflow_addons.image import distort_image_ops
+from tensorflow_addons.utils import test_utils
 
 
 def _adjust_hue_in_yiq_np(x_np, delta_h):
@@ -36,20 +37,28 @@ def _adjust_hue_in_yiq_np(x_np, delta_h):
     """
     assert x_np.shape[-1] == 3
     x_v = x_np.reshape([-1, 3])
-    y_v = np.ndarray(x_v.shape, dtype=x_v.dtype)
     u = np.cos(delta_h)
     w = np.sin(delta_h)
     # Projection matrix from RGB to YIQ. Numbers from wikipedia
     # https://en.wikipedia.org/wiki/YIQ
     tyiq = np.array(
         [[0.299, 0.587, 0.114], [0.596, -0.274, -0.322], [0.211, -0.523, 0.312]]
-    )
-    y_v = np.dot(x_v, tyiq.T)
+    ).astype(x_v.dtype)
+    inverse_tyiq = np.array(
+        [
+            [1.0, 0.95617069, 0.62143257],
+            [1.0, -0.2726886, -0.64681324],
+            [1.0, -1.103744, 1.70062309],
+        ]
+    ).astype(x_v.dtype)
+    y_v = np.dot(x_v, tyiq.T).astype(x_v.dtype)
     # Hue rotation matrix in YIQ space.
-    hue_rotation = np.array([[1.0, 0.0, 0.0], [0.0, u, -w], [0.0, w, u]])
+    hue_rotation = np.array([[1.0, 0.0, 0.0], [0.0, u, -w], [0.0, w, u]]).astype(
+        x_v.dtype
+    )
     y_v = np.dot(y_v, hue_rotation.T)
     # Projecting back to RGB space.
-    y_v = np.dot(y_v, np.linalg.inv(tyiq).T)
+    y_v = np.dot(y_v, inverse_tyiq.T)
     return y_v.reshape(x_np.shape)
 
 
@@ -59,41 +68,34 @@ def _adjust_hue_in_yiq_tf(x_np, delta_h):
     return y
 
 
-def test_adjust_random_hue_in_yiq():
-    x_shapes = [
-        [2, 2, 3],
-        [4, 2, 3],
-        [2, 4, 3],
-        [2, 5, 3],
-        [1000, 1, 3],
-    ]
-    test_styles = [
-        "all_random",
-        "rg_same",
-        "rb_same",
-        "gb_same",
-        "rgb_same",
-    ]
-    for x_shape in x_shapes:
-        for test_style in test_styles:
-            x_np = np.random.rand(*x_shape) * 255.0
-            delta_h = (np.random.rand() * 2.0 - 1.0) * np.pi
-            if test_style == "all_random":
-                pass
-            elif test_style == "rg_same":
-                x_np[..., 1] = x_np[..., 0]
-            elif test_style == "rb_same":
-                x_np[..., 2] = x_np[..., 0]
-            elif test_style == "gb_same":
-                x_np[..., 2] = x_np[..., 1]
-            elif test_style == "rgb_same":
-                x_np[..., 1] = x_np[..., 0]
-                x_np[..., 2] = x_np[..., 0]
-            else:
-                raise AssertionError("Invalid test style: %s" % (test_style))
-            y_np = _adjust_hue_in_yiq_np(x_np, delta_h)
-            y_tf = _adjust_hue_in_yiq_tf(x_np, delta_h)
-            np.testing.assert_allclose(y_tf, y_np, rtol=2e-4, atol=1e-4)
+@pytest.mark.parametrize(
+    "shape", ([2, 2, 3], [4, 2, 3], [2, 4, 3], [2, 5, 3], [1000, 1, 3])
+)
+@pytest.mark.parametrize(
+    "style", ("all_random", "rg_same", "rb_same", "gb_same", "rgb_same")
+)
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_adjust_random_hue_in_yiq(shape, style, dtype):
+    x_np = (np.random.rand(*shape) * 255.0).astype(dtype)
+    delta_h = (np.random.rand() * 2.0 - 1.0) * np.pi
+    if style == "all_random":
+        pass
+    elif style == "rg_same":
+        x_np[..., 1] = x_np[..., 0]
+    elif style == "rb_same":
+        x_np[..., 2] = x_np[..., 0]
+    elif style == "gb_same":
+        x_np[..., 2] = x_np[..., 1]
+    elif style == "rgb_same":
+        x_np[..., 1] = x_np[..., 0]
+        x_np[..., 2] = x_np[..., 0]
+    else:
+        raise AssertionError("Invalid test style: %s" % (style))
+    y_np = _adjust_hue_in_yiq_np(x_np, delta_h)
+    y_tf = _adjust_hue_in_yiq_tf(x_np, delta_h)
+    test_utils.assert_allclose_according_to_type(
+        y_tf, y_np, atol=1e-4, rtol=2e-4, half_rtol=0.8
+    )
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -101,7 +103,7 @@ def test_invalid_rank_hsv():
     x_np = np.random.rand(2, 3) * 255.0
     delta_h = np.random.rand() * 2.0 - 1.0
     with pytest.raises(
-        tf.errors.InvalidArgumentError, match="input must be at least 3-D"
+        (tf.errors.InvalidArgumentError, ValueError), match="input must be at least 3-D"
     ):
         _adjust_hue_in_yiq_tf(x_np, delta_h)
 
@@ -111,7 +113,7 @@ def test_invalid_channels_hsv():
     x_np = np.random.rand(4, 2, 4) * 255.0
     delta_h = np.random.rand() * 2.0 - 1.0
     with pytest.raises(
-        tf.errors.InvalidArgumentError,
+        (tf.errors.InvalidArgumentError, ValueError),
         match="input must have 3 channels but instead has 4",
     ):
         _adjust_hue_in_yiq_tf(x_np, delta_h)
@@ -125,7 +127,7 @@ def test_adjust_hsv_in_yiq_unknown_shape():
         image_np = np.random.rand(*shape) * 255.0
         image_tf = tf.constant(image_np)
         np.testing.assert_allclose(
-            _adjust_hue_in_yiq_np(image_np, 0), fn(image_tf), rtol=2e-4, atol=1e-4,
+            _adjust_hue_in_yiq_np(image_np, 0), fn(image_tf), rtol=2e-4, atol=1e-4
         )
 
 
@@ -190,7 +192,8 @@ def test_invalid_rank_value():
     scale = np.random.rand() * 2.0 - 1.0
     if tf.executing_eagerly():
         with pytest.raises(
-            tf.errors.InvalidArgumentError, match="input must be at least 3-D"
+            (tf.errors.InvalidArgumentError, ValueError),
+            match="input must be at least 3-D",
         ):
             _adjust_value_in_yiq_tf(x_np, scale)
     else:
@@ -205,7 +208,7 @@ def test_invalid_channels_value():
     scale = np.random.rand() * 2.0 - 1.0
     if tf.executing_eagerly():
         with pytest.raises(
-            tf.errors.InvalidArgumentError,
+            (tf.errors.InvalidArgumentError, ValueError),
             match="input must have 3 channels but instead has 4",
         ):
             _adjust_value_in_yiq_tf(x_np, scale)
@@ -228,41 +231,34 @@ def _adjust_saturation_in_yiq_np(x_np, scale):
     return y_v
 
 
-def test_adjust_random_saturation_in_yiq():
-    x_shapes = [
-        [2, 2, 3],
-        [4, 2, 3],
-        [2, 4, 3],
-        [2, 5, 3],
-        [1000, 1, 3],
-    ]
-    test_styles = [
-        "all_random",
-        "rg_same",
-        "rb_same",
-        "gb_same",
-        "rgb_same",
-    ]
-    for x_shape in x_shapes:
-        for test_style in test_styles:
-            x_np = np.random.rand(*x_shape) * 255.0
-            scale = np.random.rand() * 2.0 - 1.0
-            if test_style == "all_random":
-                pass
-            elif test_style == "rg_same":
-                x_np[..., 1] = x_np[..., 0]
-            elif test_style == "rb_same":
-                x_np[..., 2] = x_np[..., 0]
-            elif test_style == "gb_same":
-                x_np[..., 2] = x_np[..., 1]
-            elif test_style == "rgb_same":
-                x_np[..., 1] = x_np[..., 0]
-                x_np[..., 2] = x_np[..., 0]
-            else:
-                raise AssertionError("Invalid test style: %s" % (test_style))
-            y_baseline = _adjust_saturation_in_yiq_np(x_np, scale)
-            y_tf = _adjust_saturation_in_yiq_tf(x_np, scale)
-            np.testing.assert_allclose(y_tf, y_baseline, rtol=2e-4, atol=1e-4)
+@pytest.mark.parametrize(
+    "shape", ([2, 2, 3], [4, 2, 3], [2, 4, 3], [2, 5, 3], [1000, 1, 3])
+)
+@pytest.mark.parametrize(
+    "style", ("all_random", "rg_same", "rb_same", "gb_same", "rgb_same")
+)
+@pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
+def test_adjust_random_saturation_in_yiq(shape, style, dtype):
+    x_np = (np.random.rand(*shape) * 255.0).astype(dtype)
+    scale = np.random.rand() * 2.0 - 1.0
+    if style == "all_random":
+        pass
+    elif style == "rg_same":
+        x_np[..., 1] = x_np[..., 0]
+    elif style == "rb_same":
+        x_np[..., 2] = x_np[..., 0]
+    elif style == "gb_same":
+        x_np[..., 2] = x_np[..., 1]
+    elif style == "rgb_same":
+        x_np[..., 1] = x_np[..., 0]
+        x_np[..., 2] = x_np[..., 0]
+    else:
+        raise AssertionError("Invalid test style: %s" % (style))
+    y_baseline = _adjust_saturation_in_yiq_np(x_np, scale)
+    y_tf = _adjust_saturation_in_yiq_tf(x_np, scale)
+    test_utils.assert_allclose_according_to_type(
+        y_tf, y_baseline, atol=1e-4, rtol=2e-4, half_rtol=0.8
+    )
 
 
 def test_invalid_rank():
@@ -270,13 +266,13 @@ def test_invalid_rank():
     scale = np.random.rand() * 2.0 - 1.0
 
     msg = "input must be at least 3-D"
-    with pytest.raises(tf.errors.InvalidArgumentError, match=msg):
+    with pytest.raises((tf.errors.InvalidArgumentError, ValueError), match=msg):
         _adjust_saturation_in_yiq_tf(x_np, scale).numpy()
 
 
 def test_invalid_channels():
     x_np = np.random.rand(4, 2, 4) * 255.0
     scale = np.random.rand() * 2.0 - 1.0
-    msg = "input must have 3 channels but instead has 4 "
-    with pytest.raises(tf.errors.InvalidArgumentError, match=msg):
+    msg = "input must have 3 channels but instead has 4"
+    with pytest.raises((tf.errors.InvalidArgumentError, ValueError), match=msg):
         _adjust_saturation_in_yiq_tf(x_np, scale).numpy()

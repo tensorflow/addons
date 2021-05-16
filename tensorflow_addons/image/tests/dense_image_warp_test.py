@@ -30,7 +30,7 @@ def test_interpolate_small_grid_ij():
         shape=[1, 4, 3, 1],
     )
     query_points = tf.constant(
-        [[0.0, 0.0], [1.0, 0.0], [2.0, 0.5], [1.5, 1.5], [3.0, 2.0]], shape=[1, 5, 2],
+        [[0.0, 0.0], [1.0, 0.0], [2.0, 0.5], [1.5, 1.5], [3.0, 2.0]], shape=[1, 5, 2]
     )
     expected_results = np.reshape(np.array([0.0, 3.0, 6.5, 6.0, 11.0]), [1, 5, 1])
 
@@ -45,7 +45,7 @@ def test_interpolate_small_grid_xy():
         shape=[1, 4, 3, 1],
     )
     query_points = tf.constant(
-        [[0.0, 0.0], [0.0, 1.0], [0.5, 2.0], [1.5, 1.5], [2.0, 3.0]], shape=[1, 5, 2],
+        [[0.0, 0.0], [0.0, 1.0], [0.5, 2.0], [1.5, 1.5], [2.0, 3.0]], shape=[1, 5, 2]
     )
     expected_results = np.reshape(np.array([0.0, 3.0, 6.5, 6.0, 11.0]), [1, 5, 1])
 
@@ -91,7 +91,8 @@ def _check_zero_flow_correctness(shape, image_type, flow_type):
     rand_flows *= 0
 
     interp = dense_image_warp(
-        image=tf.convert_to_tensor(rand_image), flow=tf.convert_to_tensor(rand_flows),
+        image=tf.convert_to_tensor(rand_image),
+        flow=tf.convert_to_tensor(rand_flows),
     )
 
     np.testing.assert_allclose(rand_image, interp, rtol=1e-6, atol=1e-6)
@@ -238,10 +239,8 @@ def test_interpolation():
 def test_size_exception():
     """Make sure it throws an exception for images that are too small."""
     shape = [1, 2, 1, 1]
-    errors = (ValueError, tf.errors.InvalidArgumentError)
-    with pytest.raises(errors) as exception_raised:
+    with pytest.raises(ValueError, match="Grid width must be at least 2."):
         _check_interpolation_correctness(shape, "float32", "float32")
-    assert "Grid width must be at least 2." in str(exception_raised.value)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -251,3 +250,11 @@ def test_unknown_shapes():
     shapes_to_try = [[3, 4, 5, 6], [1, 2, 2, 1]]
     for shape in shapes_to_try:
         _check_interpolation_correctness(shape, "float32", "float32", True)
+
+
+@pytest.mark.usefixtures("only_run_functions_eagerly")
+def test_symbolic_tensor_shape():
+    image = tf.keras.layers.Input(shape=(7, 7, 192))
+    flow = tf.ones((1, 7, 7, 2))
+    interp = dense_image_warp(image, flow)
+    np.testing.assert_array_equal(interp.shape.as_list(), [None, 7, 7, 192])

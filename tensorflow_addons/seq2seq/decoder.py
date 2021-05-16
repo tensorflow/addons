@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Seq2seq layer operations for use in neural networks."""
+"""Base classes and functions for dynamic decoding."""
 
 import abc
 
 import tensorflow as tf
-from tensorflow_addons.utils.types import Number
+from tensorflow_addons.utils.types import TensorLike
 from typeguard import typechecked
 from typing import Any, Optional, Tuple, Union
 
@@ -30,14 +30,14 @@ class Decoder(metaclass=abc.ABCMeta):
 
     Concepts used by this interface:
     - `inputs`: (structure of) tensors and TensorArrays that is passed as input
-      to the RNNCell composing the decoder, at each time step.
+      to the RNN cell composing the decoder, at each time step.
     - `state`: (structure of) tensors and TensorArrays that is passed to the
-      RNNCell instance as the state.
+      RNN cell instance as the state.
     - `finished`: boolean tensor telling whether each sequence in the batch is
       finished.
     - `training`: boolean whether it should behave in training mode or in
       inference mode.
-    - `outputs`: Instance of BasicDecoderOutput. Result of the decoding, at
+    - `outputs`: instance of `tfa.seq2seq.BasicDecoderOutput`. Result of the decoding, at
       each time step.
     """
 
@@ -78,9 +78,9 @@ class Decoder(metaclass=abc.ABCMeta):
 
         Args:
           time: Scalar `int32` tensor. Current step number.
-          inputs: RNNCell input (possibly nested tuple of) tensor[s] for this
+          inputs: RNN cell input (possibly nested tuple of) tensor[s] for this
             time step.
-          state: RNNCell state (possibly nested tuple of) tensor[s] from
+          state: RNN cell state (possibly nested tuple of) tensor[s] from
             previous time step.
           training: Python boolean. Indicates whether the layer should behave
             in training  mode or in inference mode. Only relevant
@@ -105,12 +105,12 @@ class Decoder(metaclass=abc.ABCMeta):
         """Describes whether the Decoder keeps track of finished states.
 
         Most decoders will emit a true/false `finished` value independently
-        at each time step.  In this case, the `dynamic_decode` function keeps
+        at each time step.  In this case, the `tfa.seq2seq.dynamic_decode` function keeps
         track of which batch entries are already finished, and performs a
         logical OR to insert new batches to the finished set.
 
         Some decoders, however, shuffle batches / beams between time steps and
-        `dynamic_decode` will mix up the finished state across these entries
+        `tfa.seq2seq.dynamic_decode` will mix up the finished state across these entries
         because it does not track the reshuffle across time steps. In this
         case, it is up to the decoder to declare that it will keep track of its
         own finished state by setting this property to `True`.
@@ -125,17 +125,17 @@ class BaseDecoder(tf.keras.layers.Layer):
     """An RNN Decoder that is based on a Keras layer.
 
     Concepts used by this interface:
-    - `inputs`: (structure of) tensors and TensorArrays that is passed as input
-      to the RNNCell composing the decoder, at each time step.
-    - `state`: (structure of) tensors and TensorArrays that is passed to the
-      RNNCell instance as the state.
-    - `memory`: (sturecute of) tensors that is usually the full output of the
-      encoder, which will be used for the attention wrapper for the RNNCell.
+    - `inputs`: (structure of) Tensors and TensorArrays that is passed as input
+      to the RNN cell composing the decoder, at each time step.
+    - `state`: (structure of) Tensors and TensorArrays that is passed to the
+      RNN cell instance as the state.
+    - `memory`: tensor that is usually the full output of the encoder, which
+      will be used for the attention wrapper for the RNN cell.
     - `finished`: boolean tensor telling whether each sequence in the batch is
       finished.
     - `training`: boolean whether it should behave in training mode or in
       inference mode.
-    - `outputs`: Instance of BasicDecoderOutput. Result of the decoding, at
+    - `outputs`: instance of `tfa.seq2seq.BasicDecoderOutput`. Result of the decoding, at
       each time step.
     """
 
@@ -144,10 +144,10 @@ class BaseDecoder(tf.keras.layers.Layer):
         self,
         output_time_major: bool = False,
         impute_finished: bool = False,
-        maximum_iterations: Optional[Number] = None,
+        maximum_iterations: Optional[TensorLike] = None,
         parallel_iterations: int = 32,
         swap_memory: bool = False,
-        **kwargs
+        **kwargs,
     ):
         self.output_time_major = output_time_major
         self.impute_finished = impute_finished
@@ -197,9 +197,9 @@ class BaseDecoder(tf.keras.layers.Layer):
             decoder. In the normal case, it's a tensor with shape
             [batch, timestep, embedding].
           initial_state: (structure of) tensors that contains the initial state
-            for the RNNCell.
+            for the RNN cell.
           **kwargs: Other arguments that are passed in from layer.call()
-            method. It could contains item like input sequence_length, or
+            method. It could contains item like input `sequence_length`, or
             masking for input.
 
         Returns:
@@ -213,9 +213,9 @@ class BaseDecoder(tf.keras.layers.Layer):
 
         Args:
           time: Scalar `int32` tensor. Current step number.
-          inputs: RNNCell input (possibly nested tuple of) tensor[s] for this
+          inputs: RNN cell input (possibly nested tuple of) tensor[s] for this
             time step.
-          state: RNNCell state (possibly nested tuple of) tensor[s] from
+          state: RNN cell state (possibly nested tuple of) tensor[s] from
             previous time step.
           training: Python boolean. Indicates whether the layer should
             behave in training mode or in inference mode.
@@ -238,12 +238,12 @@ class BaseDecoder(tf.keras.layers.Layer):
         """Describes whether the Decoder keeps track of finished states.
 
         Most decoders will emit a true/false `finished` value independently
-        at each time step.  In this case, the `dynamic_decode` function keeps
+        at each time step.  In this case, the `tfa.seq2seq.dynamic_decode` function keeps
         track of which batch entries are already finished, and performs a
         logical OR to insert new batches to the finished set.
 
         Some decoders, however, shuffle batches / beams between time steps and
-        `dynamic_decode` will mix up the finished state across these entries
+        `tfa.seq2seq.dynamic_decode` will mix up the finished state across these entries
         because it does not track the reshuffle across time steps. In this
         case, it is up to the decoder to declare that it will keep track of its
         own finished state by setting this property to `True`.
@@ -256,23 +256,25 @@ class BaseDecoder(tf.keras.layers.Layer):
     # TODO(scottzhu): Add build/get_config/from_config and other layer methods.
 
 
+@typechecked
 def dynamic_decode(
     decoder: Union[Decoder, BaseDecoder],
     output_time_major: bool = False,
     impute_finished: bool = False,
-    maximum_iterations: Optional[Number] = None,
+    maximum_iterations: Optional[TensorLike] = None,
     parallel_iterations: int = 32,
     swap_memory: bool = False,
     training: Optional[bool] = None,
     scope: Optional[str] = None,
-    **kwargs
+    enable_tflite_convertible: bool = False,
+    **kwargs,
 ) -> Tuple[Any, Any, Any]:
-    """Perform dynamic decoding with `decoder`.
+    """Runs dynamic decoding with a decoder.
 
-    Calls initialize() once and step() repeatedly on the Decoder object.
+    Calls `initialize()` once and `step()` repeatedly on the decoder object.
 
     Args:
-      decoder: A `Decoder` instance.
+      decoder: A `tfa.seq2seq.Decoder` or `tfa.seq2seq.BaseDecoder` instance.
       output_time_major: Python boolean.  Default: `False` (batch major). If
         `True`, outputs are returned as time major tensors (this mode is
         faster). Otherwise, outputs are returned as batch major tensors (this
@@ -283,14 +285,18 @@ def dynamic_decode(
         each time step, but ensures that the final state and outputs have
         the correct values and that backprop ignores time steps that were
         marked as finished.
-      maximum_iterations: `int32` scalar, maximum allowed number of decoding
-         steps.  Default is `None` (decode until the decoder is fully done).
+      maximum_iterations: A strictly positive `int32` scalar, the maximum
+         allowed number of decoding steps. Default is `None` (decode until the
+         decoder is fully done).
       parallel_iterations: Argument passed to `tf.while_loop`.
       swap_memory: Argument passed to `tf.while_loop`.
       training: Python boolean. Indicates whether the layer should behave
           in training  mode or in inference mode. Only relevant
           when `dropout` or `recurrent_dropout` is used.
-      scope: Optional variable scope to use.
+      scope: Optional name scope to use.
+      enable_tflite_convertible: Python boolean. If `True`, then the variables
+        of `TensorArray` become of 1-D static shape. Also zero pads in the
+        output tensor will be discarded. Default: `False`.
       **kwargs: dict, other keyword arguments for dynamic_decode. It might
         contain arguments for `BaseDecoder` to initialize, which takes all
         tensor inputs during call().
@@ -299,34 +305,29 @@ def dynamic_decode(
       `(final_outputs, final_state, final_sequence_lengths)`.
 
     Raises:
-      TypeError: if `decoder` is not an instance of `Decoder`.
       ValueError: if `maximum_iterations` is provided but is not a scalar.
     """
-    if not isinstance(decoder, (Decoder, BaseDecoder)):
-        raise TypeError(
-            "Expected decoder to be type Decoder, but saw: %s" % type(decoder)
+    with tf.name_scope(scope or "decoder"):
+        is_xla = (
+            not tf.executing_eagerly()
+            and control_flow_util.GraphOrParentsInXlaContext(
+                tf.compat.v1.get_default_graph()
+            )
         )
-
-    with tf.compat.v1.variable_scope(scope, "decoder") as varscope:
-        # Determine context types.
-        ctxt = tf.compat.v1.get_default_graph()._get_control_flow_context()
-        is_xla = control_flow_util.GetContainingXLAContext(ctxt) is not None
-        in_while_loop = control_flow_util.GetContainingWhileContext(ctxt) is not None
-        # Properly cache variable values inside the while_loop.
-        # Don't set a caching device when running in a loop, since it is
-        # possible that train steps could be wrapped in a tf.while_loop. In that
-        # scenario caching prevents forward computations in loop iterations from
-        # re-reading the updated weights.
-        if not tf.executing_eagerly() and not in_while_loop:
-            if varscope.caching_device is None:
-                varscope.set_caching_device(lambda op: op.device)
 
         if maximum_iterations is not None:
             maximum_iterations = tf.convert_to_tensor(
                 maximum_iterations, dtype=tf.int32, name="maximum_iterations"
             )
-            if maximum_iterations.get_shape().ndims != 0:
+            if maximum_iterations.shape.ndims != 0:
                 raise ValueError("maximum_iterations must be a scalar")
+            tf.debugging.assert_greater(
+                maximum_iterations,
+                0,
+                message="maximum_iterations should be greater than 0",
+            )
+        elif is_xla:
+            raise ValueError("maximum_iterations is required for XLA compilation.")
 
         if isinstance(decoder, Decoder):
             initial_finished, initial_inputs, initial_state = decoder.initialize()
@@ -338,16 +339,31 @@ def dynamic_decode(
                 decoder_init_input, **decoder_init_kwargs
             )
 
-        zero_outputs = tf.nest.map_structure(
-            lambda shape, dtype: tf.zeros(
-                _prepend_batch(decoder.batch_size, shape), dtype=dtype
-            ),
-            decoder.output_size,
-            decoder.output_dtype,
-        )
+        if enable_tflite_convertible:
+            # Assume the batch_size = 1 for inference.
+            # So we can change 2-D TensorArray into 1-D by reshaping it.
+            tf.debugging.assert_equal(
+                decoder.batch_size,
+                1,
+                message="TFLite conversion requires a batch size of 1",
+            )
+            zero_outputs = tf.nest.map_structure(
+                lambda shape, dtype: tf.reshape(
+                    tf.zeros(_prepend_batch(decoder.batch_size, shape), dtype=dtype),
+                    [-1],
+                ),
+                decoder.output_size,
+                decoder.output_dtype,
+            )
+        else:
+            zero_outputs = tf.nest.map_structure(
+                lambda shape, dtype: tf.zeros(
+                    _prepend_batch(decoder.batch_size, shape), dtype=dtype
+                ),
+                decoder.output_size,
+                decoder.output_dtype,
+            )
 
-        if is_xla and maximum_iterations is None:
-            raise ValueError("maximum_iterations is required for XLA compilation.")
         if maximum_iterations is not None:
             initial_finished = tf.logical_or(initial_finished, 0 >= maximum_iterations)
         initial_sequence_lengths = tf.zeros_like(initial_finished, dtype=tf.int32)
@@ -363,13 +379,22 @@ def dynamic_decode(
                 return tf.TensorShape([batch_size]).concatenate(from_shape)
 
         dynamic_size = maximum_iterations is None or not is_xla
+        # The dynamic shape `TensorArray` is not allowed in TFLite yet.
+        dynamic_size = dynamic_size and (not enable_tflite_convertible)
 
         def _create_ta(s, d):
+            if enable_tflite_convertible:
+                # TFLite requires 1D element_shape.
+                if isinstance(s, tf.TensorShape) and s.ndims == 0:
+                    s = (1,)
+                element_shape = s
+            else:
+                element_shape = _shape(decoder.batch_size, s)
             return tf.TensorArray(
                 dtype=d,
                 size=0 if dynamic_size else maximum_iterations,
                 dynamic_size=dynamic_size,
-                element_shape=_shape(decoder.batch_size, s),
+                element_shape=element_shape,
             )
 
         initial_outputs_ta = tf.nest.map_structure(
@@ -473,6 +498,10 @@ def dynamic_decode(
             else:
                 next_state = decoder_state
 
+            if enable_tflite_convertible:
+                # Reshape to 1-D.
+                emit = tf.nest.map_structure(lambda x: tf.reshape(x, [-1]), emit)
+
             outputs_ta = tf.nest.map_structure(
                 lambda ta, out: ta.write(time, out), outputs_ta, emit
             )
@@ -515,6 +544,13 @@ def dynamic_decode(
             pass
 
         if not output_time_major:
+            if enable_tflite_convertible:
+                # Reshape the output to the original shape.
+                def _restore_batch(x):
+                    return tf.expand_dims(x, [1])
+
+                final_outputs = tf.nest.map_structure(_restore_batch, final_outputs)
+
             final_outputs = tf.nest.map_structure(_transpose_batch_time, final_outputs)
 
     return final_outputs, final_state, final_sequence_lengths

@@ -108,7 +108,7 @@ def test_skip_gram_sample_skips_0():
         input_tensor, min_skips=0, max_skips=0, emit_self_as_target=True
     )
     expected_tokens, expected_labels = _split_tokens_labels(
-        [(b"the", b"the"), (b"quick", b"quick"), (b"brown", b"brown"),]
+        [(b"the", b"the"), (b"quick", b"quick"), (b"brown", b"brown")]
     )
     np.testing.assert_equal(np.asanyarray(expected_tokens), tokens.numpy())
     np.testing.assert_equal(np.asanyarray(expected_labels), labels.numpy())
@@ -172,7 +172,7 @@ def test_skip_gram_sample_random_skips():
     """Tests skip-gram with min_skips != max_skips, with random output."""
     # The number of outputs is non-deterministic in this case, so set random
     # seed to help ensure the outputs remain constant for this test case.
-    tf.compat.v1.set_random_seed(42)
+    tf.random.set_seed(42)
 
     input_tensor = tf.constant([b"the", b"quick", b"brown", b"fox", b"jumps", b"over"])
     tokens, labels = text.skip_gram_sample(
@@ -211,7 +211,7 @@ def test_skip_gram_sample_random_skips_default_seed():
     # provide a seed to us. This results in random_seed.get_seed() returning
     # None for both seeds, forcing the C++ kernel to execute its default
     # seed logic.
-    tf.compat.v1.set_random_seed(None)
+    tf.random.set_seed(None)
 
     # Uses an input tensor with 10 words, with possible skip ranges in
     # [1, 5]. Thus, the probability that two random samplings would result
@@ -234,7 +234,7 @@ def test_skip_gram_sample_non_string_input():
     input_tensor = tf.constant([1, 2, 3], dtype=tf.dtypes.int16)
     tokens, labels = text.skip_gram_sample(input_tensor, min_skips=1, max_skips=1)
     expected_tokens, expected_labels = _split_tokens_labels(
-        [(1, 2), (2, 1), (2, 3), (3, 2),]
+        [(1, 2), (2, 1), (2, 3), (3, 2)]
     )
     np.testing.assert_equal(np.asanyarray(expected_tokens), tokens.numpy())
     np.testing.assert_equal(np.asanyarray(expected_labels), labels.numpy())
@@ -283,7 +283,7 @@ def test_skip_gram_sample_errors():
         text.skip_gram_sample(dummy_input, vocab_freq_table=None, corpus_size=100)
     with pytest.raises(ValueError):
         text.skip_gram_sample(
-            dummy_input, vocab_freq_table=None, vocab_subsampling=1e-5, corpus_size=100,
+            dummy_input, vocab_freq_table=None, vocab_subsampling=1e-5, corpus_size=100
         )
 
     # vocab_subsampling and corpus_size must both be present or absent.
@@ -362,7 +362,7 @@ def test_filter_input_subsample_vocab():
     """Tests input filtering based on vocab subsampling."""
     # The outputs are non-deterministic, so set random seed to help ensure
     # that the outputs remain constant for testing.
-    tf.compat.v1.set_random_seed(42)
+    tf.random.set_seed(42)
 
     input_tensor = tf.constant(
         [
@@ -442,7 +442,7 @@ def _text_vocab_subsample_vocab_helper(
 ):
     # The outputs are non-deterministic, so set random seed to help ensure
     # that the outputs remain constant for testing.
-    tf.compat.v1.set_random_seed(42)
+    tf.random.set_seed(42)
 
     input_tensor = tf.constant(
         [
@@ -477,7 +477,7 @@ def _text_vocab_subsample_vocab_helper(
     )
 
     expected_tokens, expected_labels = _split_tokens_labels(
-        [(b"the", b"to"), (b"to", b"the"), (b"to", b"life"), (b"life", b"to"),]
+        [(b"the", b"to"), (b"to", b"the"), (b"to", b"life"), (b"life", b"to")]
     )
     np.testing.assert_equal(np.asanyarray(expected_tokens), tokens.numpy())
     np.testing.assert_equal(np.asanyarray(expected_labels), labels.numpy())
@@ -601,7 +601,7 @@ def _make_text_vocab_freq_file(tmp_dir):
     with open(filepath, "w") as f:
         writer = csv.writer(f)
         writer.writerows(
-            [["and", 40], ["life", 8], ["the", 30], ["to", 20], ["universe", 2],]
+            [["and", 40], ["life", 8], ["the", 30], ["to", 20], ["universe", 2]]
         )
     return filepath
 

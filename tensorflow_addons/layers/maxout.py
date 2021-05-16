@@ -28,7 +28,7 @@ class Maxout(tf.keras.layers.Layer):
     Usually the operation is performed in the filter/channel dimension. This
     can also be used after Dense layers to reduce number of features.
 
-    Arguments:
+    Args:
       num_units: Specifies how many features will remain after maxout
         in the `axis` dimension (usually channel).
         This must be a factor of number of features.

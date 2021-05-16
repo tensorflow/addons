@@ -7,6 +7,7 @@ py_library(
     srcs = glob(["*.py"]),
     data = [
         "//tensorflow_addons:conftest.py",
+        "//tensorflow_addons:options.py",
     ],
 )
 

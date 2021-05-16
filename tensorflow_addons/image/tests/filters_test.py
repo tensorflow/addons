@@ -18,6 +18,9 @@ import numpy as np
 import tensorflow as tf
 from tensorflow_addons.image import mean_filter2d
 from tensorflow_addons.image import median_filter2d
+from tensorflow_addons.image import gaussian_filter2d
+from tensorflow_addons.utils import test_utils
+from scipy.ndimage.filters import gaussian_filter
 
 _dtypes_to_test = {
     tf.dtypes.uint8,
@@ -59,7 +62,7 @@ def setup_values(
     assert 3 <= len(image_shape) <= 4
     height, width = image_shape[-3], image_shape[-2]
     plane = tf.constant(
-        [x for x in range(1, height * width + 1)], shape=(height, width), dtype=dtype,
+        [x for x in range(1, height * width + 1)], shape=(height, width), dtype=dtype
     )
     image = tile_image(plane, image_shape=image_shape)
 
@@ -169,7 +172,13 @@ def test_reflect_padding_with_3x3_filter_mean(image_shape):
 
 @pytest.mark.parametrize("image_shape", _image_shapes_to_test)
 def test_reflect_padding_with_4x4_filter_mean(image_shape):
-    expected_plane = tf.constant([[5.0, 5.0, 5.0], [5.0, 5.0, 5.0], [5.0, 5.0, 5.0],])
+    expected_plane = tf.constant(
+        [
+            [5.0, 5.0, 5.0],
+            [5.0, 5.0, 5.0],
+            [5.0, 5.0, 5.0],
+        ]
+    )
 
     verify_values(
         mean_filter2d,
@@ -358,4 +367,41 @@ def test_symmetric_padding_with_3x3_filter_median(image_shape):
         padding="SYMMETRIC",
         constant_values=0,
         expected_plane=expected_plane,
+    )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("shape", [[10, 10], [10, 10, 3], [2, 10, 10, 3]])
+@pytest.mark.parametrize("padding", ["SYMMETRIC", "CONSTANT", "REFLECT"])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_gaussian_filter2d(shape, padding, dtype):
+    modes = {
+        "SYMMETRIC": "reflect",
+        "CONSTANT": "constant",
+        "REFLECT": "mirror",
+    }
+
+    image = np.arange(np.prod(shape)).reshape(*shape).astype(dtype)
+
+    ndims = len(shape)
+    sigma = [1.0, 1.0]
+    if ndims == 3:
+        sigma = [1.0, 1.0, 0.0]
+    elif ndims == 4:
+        sigma = [0.0, 1.0, 1.0, 0.0]
+
+    test_utils.assert_allclose_according_to_type(
+        gaussian_filter2d(image, 9, 1, padding=padding).numpy(),
+        gaussian_filter(image, sigma, mode=modes[padding]),
+    )
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_gaussian_filter2d_different_sigma():
+    image = np.arange(40 * 40).reshape(40, 40).astype(np.float32)
+    sigma = [1.0, 2.0]
+
+    test_utils.assert_allclose_according_to_type(
+        gaussian_filter2d(image, [9, 17], sigma).numpy(),
+        gaussian_filter(image, sigma, mode="mirror"),
     )

@@ -163,12 +163,12 @@ class ResamplerOp : public OpKernel {
     const int data_channels = data_shape.dim_size(3);
     TensorShape output_shape = warp.shape();
     output_shape.set_dim(output_shape.dims() - 1, data_channels);
-    const int num_sampling_points = warp.NumElements() / batch_size / 2;
     Tensor* output = nullptr;
     OP_REQUIRES_OK(ctx, ctx->allocate_output(0, output_shape, &output));
 
     // Execute kernel only for nonempty output; otherwise Eigen crashes on GPU.
-    if (num_sampling_points > 0) {
+    if (data.NumElements() > 0 && warp.NumElements() > 0) {
+      const int num_sampling_points = warp.NumElements() / batch_size / 2;
       functor::Resampler2DFunctor<Device, T>()(
           ctx, ctx->eigen_device<Device>(), data.flat<T>().data(),
           warp.flat<T>().data(), output->flat<T>().data(), batch_size,
@@ -195,6 +195,8 @@ TF_CALL_double(REGISTER);
   REGISTER_KERNEL_BUILDER(                                                   \
       Name("Addons>Resampler").Device(DEVICE_GPU).TypeConstraint<TYPE>("T"), \
       ResamplerOp<GPUDevice, TYPE>)
+
+TF_CALL_half(REGISTER);
 TF_CALL_float(REGISTER);
 TF_CALL_double(REGISTER);
 #undef REGISTER
@@ -370,13 +372,13 @@ class ResamplerGradOp : public OpKernel {
                     "shapes; it should be ",
                     resampler_output_shape.DebugString(), " but is ",
                     grad_output_shape.DebugString()));
-    const int num_sampling_points = warp.NumElements() / batch_size / 2;
     Tensor* grad_data = nullptr;
     Tensor* grad_warp = nullptr;
     OP_REQUIRES_OK(ctx, ctx->allocate_output(0, data.shape(), &grad_data));
     OP_REQUIRES_OK(ctx, ctx->allocate_output(1, warp.shape(), &grad_warp));
     // Execute kernel only for nonempty output; otherwise Eigen crashes on GPU.
-    if (num_sampling_points > 0) {
+    if (data.NumElements() > 0 && warp.NumElements() > 0) {
+      const int num_sampling_points = warp.NumElements() / batch_size / 2;
       functor::ResamplerGrad2DFunctor<Device, T>()(
           ctx, ctx->eigen_device<Device>(), data.flat<T>().data(),
           warp.flat<T>().data(), grad_output.flat<T>().data(),
@@ -406,11 +408,10 @@ TF_CALL_double(REGISTER);
                               .Device(DEVICE_GPU)         \
                               .TypeConstraint<TYPE>("T"), \
                           ResamplerGradOp<GPUDevice, TYPE>)
-// Disable half and double precision since atomicAdds are not supported
-// TF_CALL_half(REGISTER);
-// TF_CALL_double(REGISTER);
-TF_CALL_float(REGISTER);
 
+TF_CALL_half(REGISTER);
+TF_CALL_double(REGISTER);
+TF_CALL_float(REGISTER);
 #undef REGISTER
 #endif  // GOOGLE_CUDA
 

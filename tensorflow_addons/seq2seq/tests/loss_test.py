@@ -296,7 +296,7 @@ def test_keras_compatibility():
 
     inp = tf.keras.layers.Input(shape=(sequence_length,))
     out = tf.keras.layers.Lambda(
-        return_logits, output_shape=(sequence_length, number_of_classes),
+        return_logits, output_shape=(sequence_length, number_of_classes)
     )(inp)
     model = tf.keras.models.Model(inp, out)
 
@@ -307,7 +307,7 @@ def test_keras_compatibility():
     x = tf.ones(shape=(batch_size, sequence_length))
 
     h = model.fit(
-        x, targets, sample_weight=weights, batch_size=batch_size, steps_per_epoch=1,
+        x, targets, sample_weight=weights, batch_size=batch_size, steps_per_epoch=1
     )
 
     calculated_loss = h.history["loss"][0]

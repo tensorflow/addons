@@ -49,7 +49,7 @@ def test_parse_time():
     ]
     for time_string, time_format, output_unit, expected in items:
         result = text.parse_time(
-            time_string=time_string, time_format=time_format, output_unit=output_unit,
+            time_string=time_string, time_format=time_format, output_unit=output_unit
         )
         np.testing.assert_equal(expected, result.numpy())
 

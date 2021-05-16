@@ -14,6 +14,8 @@
 # ==============================================================================
 """Additional RNN cells that corform to Keras API."""
 
-from tensorflow_addons.rnn.cell import LayerNormLSTMCell
-from tensorflow_addons.rnn.cell import NASCell
-from tensorflow_addons.rnn.cell import LayerNormSimpleRNNCell
+from tensorflow_addons.rnn.nas_cell import NASCell
+from tensorflow_addons.rnn.layer_norm_lstm_cell import LayerNormLSTMCell
+from tensorflow_addons.rnn.layer_norm_simple_rnn_cell import LayerNormSimpleRNNCell
+from tensorflow_addons.rnn.esn_cell import ESNCell
+from tensorflow_addons.rnn.peephole_lstm_cell import PeepholeLSTMCell
