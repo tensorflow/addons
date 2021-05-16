@@ -94,13 +94,9 @@ def layer_test(
     actual_output = layer(input_data).numpy()
     layer_config= tf.keras.layers.serialize(layer)
     recovered_layer = tf.keras.layers.deserialize(layer)
-
     output_tensor = layer(input_data).numpy()
-    # model = tf.keras.Sequential()
-    # model.add(tf.keras.Input(shape=input_shape[1:], dtype=input_dtype))
-    # model.add(layer)
-    # actual_output = model.predict(input_data)
-    return output_tensor
+    assert actual_output == output_tensor
+    return actual_output
 
 
 NUMBER_OF_WORKERS = int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", "1"))
