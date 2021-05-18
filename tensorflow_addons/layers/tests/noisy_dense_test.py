@@ -121,8 +121,8 @@ def test_noisy_dense_automatic_reset_noise_independent():
         5, use_factorised=False, name="noise_dense_auto_reset_noise_independent"
     )
     layer(inputs)
-    initial_eps_kernel = layer.eps_kernel
-    initial_eps_bias = layer.eps_bias
+    initial_eps_kernel = tf.identity(layer.eps_kernel)
+    initial_eps_bias = tf.identity(layer.eps_bias)
     layer.reset_noise()
     layer(inputs)
     new_eps_kernel = layer.eps_kernel
@@ -146,8 +146,8 @@ def test_noisy_dense_remove_noise():
     inputs = tf.convert_to_tensor(np.random.randint(low=0, high=7, size=(2, 2)))
     layer = NoisyDense(5, name="noise_dense_manual_reset_noise")
     layer(inputs)
-    initial_eps_kernel = layer.eps_kernel
-    initial_eps_bias = layer.eps_bias
+    initial_eps_kernel = tf.identity(layer.eps_kernel)
+    initial_eps_bias = tf.identity(layer.eps_bias)
     layer.remove_noise()
     layer(inputs)
     new_eps_kernel = layer.eps_kernel
