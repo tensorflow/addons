@@ -96,6 +96,7 @@ def test_noisy_dense_automatic_reset_noise():
     layer(inputs)
     initial_eps_kernel = layer.eps_kernel
     initial_eps_bias = layer.eps_bias
+    layer.reset_noise()
     layer(inputs)
     new_eps_kernel = layer.eps_kernel
     new_eps_bias = layer.eps_bias
@@ -122,6 +123,7 @@ def test_noisy_dense_automatic_reset_noise_independent():
     layer(inputs)
     initial_eps_kernel = layer.eps_kernel
     initial_eps_bias = layer.eps_bias
+    layer.reset_noise()
     layer(inputs)
     new_eps_kernel = layer.eps_kernel
     new_eps_bias = layer.eps_bias
@@ -146,7 +148,8 @@ def test_noisy_dense_remove_noise():
     layer(inputs)
     initial_eps_kernel = layer.eps_kernel
     initial_eps_bias = layer.eps_bias
-    layer(inputs, reset_noise=False, remove_noise=True)
+    layer.remove_noise()
+    layer(inputs)
     new_eps_kernel = layer.eps_kernel
     new_eps_bias = layer.eps_bias
     kernel_zeros = tf.zeros(initial_eps_kernel.shape, dtype=initial_eps_kernel.dtype)
