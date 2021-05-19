@@ -90,7 +90,7 @@ def test_noisy_dense_constraints():
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_noisy_dense_automatic_reset_noise():
+def test_noisy_dense_reset_noise():
     inputs = tf.convert_to_tensor(np.random.randint(low=0, high=7, size=(2, 2)))
     layer = NoisyDense(5, name="noise_dense_auto_reset_noise")
     layer(inputs)
@@ -115,7 +115,7 @@ def test_noisy_dense_automatic_reset_noise():
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_noisy_dense_automatic_reset_noise_independent():
+def test_noisy_dense_reset_noise_independent():
     inputs = tf.convert_to_tensor(np.random.randint(low=0, high=7, size=(2, 2)))
     layer = NoisyDense(
         5, use_factorised=False, name="noise_dense_auto_reset_noise_independent"
