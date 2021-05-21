@@ -1,0 +1,60 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "GIoU Loss Overview",
+  "steps": [
+    {
+      "file": "giou_loss.py",
+      "description": "GIoU loss is < explanations >.\r\n\r\n![](https://static01.nyt.com/images/2020/04/22/science/22VIRUS-PETCATS1/22VIRUS-PETCATS1-videoSixteenByNineJumbo1600.jpg)",
+      "line": 95,
+      "title": "What is GIoU loss?"
+    },
+    {
+      "file": "giou_loss.py",
+      "description": "Define the bounding boxes: one for a prediction, one for ground truth.",
+      "line": 108,
+      "title": "Define the bounding boxes."
+    },
+    {
+      "file": "giou_loss.py",
+      "description": "Calculate the area of the two bounding boxes.",
+      "line": 114,
+      "title": "Calculate the area of the two bounding boxes."
+    },
+    {
+      "file": "giou_loss.py",
+      "description": "Calculate the intersection between the two bounding boxes.",
+      "line": 117,
+      "title": "Calculate the intersection between the two bounding boxes."
+    },
+    {
+      "file": "giou_loss.py",
+      "description": "Find the coordinates of the smallest enclosing bounding box, $B^c$",
+      "line": 125,
+      "title": "Find the coordinates of the smallest enclosing bounding box."
+    },
+    {
+      "file": "giou_loss.py",
+      "description": "Calculate the IoU.",
+      "line": 126,
+      "title": "Calculate the IoU."
+    },
+    {
+      "file": "giou_loss.py",
+      "description": "Calculate the area of the smallest enclosing bounding box.",
+      "line": 130,
+      "title": "Calculate the area of the smallest enclosing bounding box."
+    },
+    {
+      "file": "giou_loss.py",
+      "description": "Calculate the GIoU.",
+      "line": 137,
+      "title": "Calculate the GIoU."
+    },
+    {
+      "file": "giou_loss.py",
+      "description": "Return the GIoU loss for the input boxes.",
+      "line": 92,
+      "title": "Return the GIoU loss for the input boxes."
+    }
+  ]
+}
