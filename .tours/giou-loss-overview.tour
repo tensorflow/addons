@@ -4,7 +4,7 @@
   "steps": [
     {
       "file": "giou_loss.py",
-      "description": "GIoU loss is < explanations >.\r\n\r\n![](https://static01.nyt.com/images/2020/04/22/science/22VIRUS-PETCATS1/22VIRUS-PETCATS1-videoSixteenByNineJumbo1600.jpg)",
+      "description": "GIoU loss, or generalized intersection over union, is a metric and a loss for bounding box regression. It is the most popular evaluation metric for tasks such as segmentation, object detection, and tracking. Object detection consists of two sub-tasks: localization, which is determining the location of an object in an image; and classification, which is assigning a class to that object. The goal of localization in object detection is to draw a 2D bounding box around the objects in the scene.",
       "line": 95,
       "title": "What is GIoU loss?"
     },
