@@ -8,6 +8,7 @@ py_library(
     srcs = glob(["*.py"]),
     data = [
         "//tensorflow_addons/custom_ops/layers:_correlation_cost_ops.so",
+        "//tensorflow_addons/custom_ops/layers:_embedding_bag_ops.so",
     ],
     deps = [
         "//tensorflow_addons/activations",
