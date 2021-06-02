@@ -69,7 +69,7 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
     ):
         """Creates a Matthews Correlation Coefficient instance."""
         super().__init__(name=name, dtype=dtype)
-        self.num_classes = num_classes
+        self.num_classes = max(2, num_classes)
         self.conf_mtx = self.add_weight(
             "conf_mtx",
             shape=(self.num_classes, self.num_classes),
@@ -82,9 +82,19 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
         y_true = tf.cast(y_true, dtype=self.dtype)
         y_pred = tf.cast(y_pred, dtype=self.dtype)
 
+        if y_true.shape[-1] == 1:
+            labels = tf.squeeze(tf.round(y_true), axis=-1)
+        else:
+            labels = tf.argmax(y_true, 1)
+
+        if y_pred.shape[-1] == 1:
+            predictions = tf.squeeze(tf.round(y_pred), axis=-1)
+        else:
+            predictions = tf.argmax(y_pred, 1)
+
         new_conf_mtx = tf.math.confusion_matrix(
-            labels=tf.argmax(y_true, 1),
-            predictions=tf.argmax(y_pred, 1),
+            labels=labels,
+            predictions=predictions,
             num_classes=self.num_classes,
             weights=sample_weight,
             dtype=self.dtype,
@@ -126,7 +136,4 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
         """Resets all of the metric state variables."""
 
         for v in self.variables:
-            K.set_value(
-                v,
-                np.zeros((self.num_classes, self.num_classes), v.dtype.as_numpy_dtype),
-            )
+            K.set_value(v, np.zeros(v.shape, v.dtype.as_numpy_dtype))

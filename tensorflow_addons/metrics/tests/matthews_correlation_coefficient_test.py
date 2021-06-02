@@ -23,17 +23,28 @@ from sklearn.metrics import matthews_corrcoef as sklearn_matthew
 
 def test_config():
     # mcc object
-    mcc1 = MatthewsCorrelationCoefficient(num_classes=1)
-    assert mcc1.num_classes == 1
+    mcc1 = MatthewsCorrelationCoefficient(num_classes=2)
+    assert mcc1.num_classes == 2
     assert mcc1.dtype == tf.float32
     # check configure
     mcc2 = MatthewsCorrelationCoefficient.from_config(mcc1.get_config())
-    assert mcc2.num_classes == 1
+    assert mcc2.num_classes == 2
     assert mcc2.dtype == tf.float32
 
 
 def check_results(obj, value):
     np.testing.assert_allclose(value, obj.result().numpy(), atol=1e-6)
+
+
+def test_binary_classes_sparse():
+    gt_label = tf.constant([[1.0], [1.0], [1.0], [0.0]], dtype=tf.float32)
+    preds = tf.constant([[1.0], [0.0], [1.0], [1.0]], dtype=tf.float32)
+    # Initialize
+    mcc = MatthewsCorrelationCoefficient(1)
+    # Update
+    mcc.update_state(gt_label, preds)
+    # Check results
+    check_results(mcc, [-0.33333334])
 
 
 def test_binary_classes():
@@ -89,6 +100,16 @@ def test_multiple_classes():
     mcc.update_state(tensor_gt_label, tensor_preds)
     # Check results by comparing to results of scikit-learn matthew implementation.
     sklearn_result = sklearn_matthew(gt_label.argmax(axis=1), preds.argmax(axis=1))
+    check_results(mcc, sklearn_result)
+
+    gt_label_sparse = tf.constant(
+        [[0.0], [2.0], [0.0], [2.0], [1.0], [1.0], [0.0], [0.0], [2.0], [1.0]]
+    )
+    preds_sparse = tf.constant(
+        [[2.0], [0.0], [2.0], [2.0], [2.0], [2.0], [2.0], [0.0], [2.0], [2.0]]
+    )
+    mcc = MatthewsCorrelationCoefficient(3)
+    mcc.update_state(gt_label_sparse, preds_sparse)
     check_results(mcc, sklearn_result)
 
 
