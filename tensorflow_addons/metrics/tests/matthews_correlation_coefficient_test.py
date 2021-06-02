@@ -37,14 +37,10 @@ def check_results(obj, value):
 
 
 def test_binary_classes():
-    gt_label = tf.constant(
-        [[0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [1.0, 0.0]], dtype=tf.float32
-    )
-    preds = tf.constant(
-        [[0.0, 1.0], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]], dtype=tf.float32
-    )
+    gt_label = tf.constant([[1.0], [1.0], [1.0], [0.0]], dtype=tf.float32)
+    preds = tf.constant([[1.0], [0.0], [1.0], [1.0]], dtype=tf.float32)
     # Initialize
-    mcc = MatthewsCorrelationCoefficient(2)
+    mcc = MatthewsCorrelationCoefficient(1)
     # Update
     mcc.update_state(gt_label, preds)
     # Check results
@@ -110,13 +106,9 @@ def test_keras_model():
 
 
 def test_reset_states_graph():
-    gt_label = tf.constant(
-        [[0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [1.0, 0.0]], dtype=tf.float32
-    )
-    preds = tf.constant(
-        [[0.0, 1.0], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]], dtype=tf.float32
-    )
-    mcc = MatthewsCorrelationCoefficient(2)
+    gt_label = tf.constant([[1.0], [1.0], [1.0], [0.0]], dtype=tf.float32)
+    preds = tf.constant([[1.0], [0.0], [1.0], [1.0]], dtype=tf.float32)
+    mcc = MatthewsCorrelationCoefficient(1)
     mcc.update_state(gt_label, preds)
 
     @tf.function

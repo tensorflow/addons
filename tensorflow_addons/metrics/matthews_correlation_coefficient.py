@@ -50,9 +50,9 @@ class MatthewsCorrelationCoefficient(tf.keras.metrics.Metric):
 
     Usage:
 
-    >>> y_true = np.array([[0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [1.0, 0.0]], dtype=np.float32)
-    >>> y_pred = np.array([[0.0, 1.0], [1.0, 0.0], [0.0, 1.0], [0.0, 1.0]], dtype=np.float32)
-    >>> metric = tfa.metrics.MatthewsCorrelationCoefficient(num_classes=2)
+    >>> y_true = np.array([[1.0], [1.0], [1.0], [0.0]], dtype=np.float32)
+    >>> y_pred = np.array([[1.0], [0.0], [1.0], [1.0]], dtype=np.float32)
+    >>> metric = tfa.metrics.MatthewsCorrelationCoefficient(num_classes=1)
     >>> metric.update_state(y_true, y_pred)
     >>> result = metric.result()
     >>> result.numpy()
