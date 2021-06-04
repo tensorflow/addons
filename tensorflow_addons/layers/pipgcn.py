@@ -1,4 +1,4 @@
-# Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 import tensorflow as tf
 from typeguard import typechecked
-
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class PIPGCN(tf.keras.layers.Layer):
@@ -98,16 +97,22 @@ class PIPGCN(tf.keras.layers.Layer):
     def call(self, inputs):
 
         if(self.graph_mode == 0):
-            node = inputs['node']
+            node = inputs[0]
+        else:
+            try: node, edge, hood = inputs
+            except:
+                node = inputs[0]
+                dim0 = node.get_shape().as_list()[0]
+                edge = tf.zeros([dim0, self.edge_in_o, self.edge_in_f])
+                hood = tf.zeros([dim0, self.edge_in_o, 1], tf.int32)
 
+        if(self.graph_mode == 0):
             """ -=-=-= Term 1: node aggregation =-=-=- """
             term1 = tf.linalg.matmul(node, self.w_node_c)
 
             y = term1
         elif(self.graph_mode == 1):
-            node = inputs['node']
-            edge = inputs['edge']
-            hood = tf.squeeze(inputs['hood'], axis=2)
+            hood = tf.squeeze(hood, axis=2)
             hood_in = tf.expand_dims(tf.math.count_nonzero(hood + 1, axis=1, dtype=tf.float32), -1)
 
             """ -=-=-= Term 1: node aggregation =-=-=- """
@@ -125,9 +130,7 @@ class PIPGCN(tf.keras.layers.Layer):
 
             y = term1 + term2
         elif(self.graph_mode == 2):
-            node = inputs['node']
-            edge = inputs['edge']
-            hood = tf.squeeze(inputs['hood'], axis=2)
+            hood = tf.squeeze(hood, axis=2)
             hood_in = tf.expand_dims(tf.math.count_nonzero(hood + 1, axis=1, dtype=tf.float32), -1)
 
             """ -=-=-= Term 1: node aggregation =-=-=- """
@@ -155,6 +158,10 @@ class PIPGCN(tf.keras.layers.Layer):
 
     def get_config(self):
 
-        config = {"num_outputs": self.num_outputs}
+        config = {
+            "graph_mode": self.graph_mode,
+            "node_in": self.node_in, "edge_in_f": self.edge_in_f, "edge_in_o": self.edge_in_o,
+            "num_outputs": self.num_outputs
+        }
         base_config = super().get_config()
         return dict(list(base_config.items()) + list(config.items()))
