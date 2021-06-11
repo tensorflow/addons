@@ -17,7 +17,8 @@
 #define TENSORFLOW_ADDONS_LAYERS_KERNELS_DEFORMABLECONV2D_OP_H_
 
 #include "tensorflow/core/framework/op_kernel.h"
-#include "tensorflow/core/kernels/batch_matmul_op_impl.h"
+#include "tensorflow/core/kernels/matmul_op_impl.h"
+#include "tensorflow/core/util/matmul_bcast.h"
 #include "tensorflow/core/util/tensor_format.h"
 
 namespace tensorflow {
