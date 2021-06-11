@@ -223,7 +223,7 @@ class TQDMProgressBar(Callback):
     def format_metrics(self, logs={}, factor=1):
         """Format metrics in logs into a string.
 
-        Arguments:
+        Args:
             logs: dictionary of metrics and their values. Defaults to
                 empty dictionary.
             factor (int): The factor we want to divide the metrics in logs

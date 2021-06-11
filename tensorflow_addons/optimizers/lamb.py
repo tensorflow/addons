@@ -45,7 +45,7 @@ class LAMB(tf.keras.optimizers.Optimizer):
         exclude_from_weight_decay: Optional[List[str]] = None,
         exclude_from_layer_adaptation: Optional[List[str]] = None,
         name: str = "LAMB",
-        **kwargs
+        **kwargs,
     ):
         """Construct a new LAMB optimizer.
 

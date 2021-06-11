@@ -363,7 +363,7 @@ class SGDW(DecoupledWeightDecayExtension, tf.keras.optimizers.SGD):
         momentum: Union[FloatTensorLike, Callable] = 0.0,
         nesterov: bool = False,
         name: str = "SGDW",
-        **kwargs
+        **kwargs,
     ):
         """Construct a new SGDW optimizer.
 
@@ -443,7 +443,7 @@ class AdamW(DecoupledWeightDecayExtension, tf.keras.optimizers.Adam):
         epsilon: FloatTensorLike = 1e-07,
         amsgrad: bool = False,
         name: str = "AdamW",
-        **kwargs
+        **kwargs,
     ):
         """Construct a new AdamW optimizer.
 

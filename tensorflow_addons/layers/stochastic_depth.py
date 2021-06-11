@@ -42,10 +42,10 @@ class StochasticDepth(tf.keras.layers.Layer):
     x[0] + p_l * x[1]
     $$
 
-    Arguments:
+    Args:
         survival_probability: float, the probability of the residual branch being kept.
 
-    Call Arguments:
+    Call Args:
         inputs:  List of `[shortcut, residual]` where `shortcut`, and `residual` are tensors of equal shape.
 
     Output shape:

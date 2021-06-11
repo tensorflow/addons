@@ -14,23 +14,18 @@
 # ==============================================================================
 
 import abc
+import warnings
 
 import tensorflow as tf
 from tensorflow_addons.utils import types
 
-import warnings
 from typeguard import typechecked
-from typing import Optional
 
 
 class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCMeta):
     @typechecked
     def __init__(
-        self,
-        optimizer: types.Optimizer,
-        sequential_update: Optional[bool] = None,
-        name: str = "AverageOptimizer",
-        **kwargs
+        self, optimizer: types.Optimizer, name: str = "AverageOptimizer", **kwargs
     ):
         super().__init__(name, **kwargs)
 
@@ -42,18 +37,8 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
                 "optimizer is not an object of tf.keras.optimizers.Optimizer"
             )
 
-        if not isinstance(sequential_update, bool):
-            raise TypeError("sequential_update must be of bool type")
-
         self._optimizer = optimizer
         self._track_trackable(self._optimizer, "awg_optimizer")
-
-        if sequential_update is not None:
-            warnings.warn(
-                "The parameter `sequential_update` is redundant due to AutoGraph. "
-                "This behavior is deprecated and in Addons 0.12, this will raise an error. ",
-                DeprecationWarning,
-            )
 
     def _create_slots(self, var_list):
         self._optimizer._create_slots(var_list=var_list)
@@ -63,36 +48,59 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
     def _create_hypers(self):
         self._optimizer._create_hypers()
 
-    def _prepare(self, var_list):
-        return self._optimizer._prepare(var_list=var_list)
+    def _prepare_local(self, var_device, var_dtype, apply_state):
+        return self._optimizer._prepare_local(var_device, var_dtype, apply_state)
 
     def apply_gradients(self, grads_and_vars, name=None, **kwargs):
         self._optimizer._iterations = self.iterations
         return super().apply_gradients(grads_and_vars, name, **kwargs)
 
     @abc.abstractmethod
-    def average_op(self, var, average_var):
+    def average_op(self, var, average_var, local_apply_state):
         raise NotImplementedError
 
-    def _apply_average_op(self, train_op, var):
+    def _apply_average_op(self, train_op, var, apply_state):
+        apply_state = apply_state or {}
+        local_apply_state = apply_state.get((var.device, var.dtype.base_dtype))
+        if local_apply_state is None:
+            local_apply_state = self._fallback_apply_state(
+                var.device, var.dtype.base_dtype
+            )
         average_var = self.get_slot(var, "average")
-        return self.average_op(var, average_var)
+        return self.average_op(var, average_var, local_apply_state)
 
-    def _resource_apply_dense(self, grad, var):
-        train_op = self._optimizer._resource_apply_dense(grad, var)
-        average_op = self._apply_average_op(train_op, var)
+    def _resource_apply_dense(self, grad, var, apply_state=None):
+        if "apply_state" in self._optimizer._dense_apply_args:
+            train_op = self._optimizer._resource_apply_dense(
+                grad, var, apply_state=apply_state
+            )
+        else:
+            train_op = self._optimizer._resource_apply_dense(grad, var)
+        average_op = self._apply_average_op(train_op, var, apply_state)
         return tf.group(train_op, average_op)
 
-    def _resource_apply_sparse(self, grad, var, indices):
-        train_op = self._optimizer._resource_apply_sparse(grad, var, indices)
-        average_op = self._apply_average_op(train_op, var)
+    def _resource_apply_sparse(self, grad, var, indices, apply_state=None):
+        if "apply_state" in self._optimizer._sparse_apply_args:
+            train_op = self._optimizer._resource_apply_sparse(
+                grad, var, indices, apply_state=apply_state
+            )
+        else:
+            train_op = self._optimizer._resource_apply_sparse(grad, var, indices)
+        average_op = self._apply_average_op(train_op, var, apply_state)
         return tf.group(train_op, average_op)
 
-    def _resource_apply_sparse_duplicate_indices(self, grad, var, indices):
-        train_op = self._optimizer._resource_apply_sparse_duplicate_indices(
-            grad, var, indices
-        )
-        average_op = self._apply_average_op(train_op, var)
+    def _resource_apply_sparse_duplicate_indices(
+        self, grad, var, indices, apply_state=None
+    ):
+        if "apply_state" in self._optimizer._sparse_apply_args:
+            train_op = self._optimizer._resource_apply_sparse_duplicate_indices(
+                grad, var, indices, apply_state=apply_state
+            )
+        else:
+            train_op = self._optimizer._resource_apply_sparse_duplicate_indices(
+                grad, var, indices
+            )
+        average_op = self._apply_average_op(train_op, var, apply_state)
         return tf.group(train_op, average_op)
 
     def assign_average_vars(self, var_list):
@@ -119,14 +127,17 @@ class AveragedOptimizerWrapper(tf.keras.optimizers.Optimizer, metaclass=abc.ABCM
         model.save('model.h5')
         ```
         """
-        assign_op = tf.group(
-            [
-                var.assign(self.get_slot(var, "average"), use_locking=self._use_locking)
-                for var in var_list
-                if var.trainable
-            ]
-        )
-        return assign_op
+        assign_ops = []
+        for var in var_list:
+            try:
+                assign_ops.append(
+                    var.assign(
+                        self.get_slot(var, "average"), use_locking=self._use_locking
+                    )
+                )
+            except Exception as e:
+                warnings.warn("Unable to assign average slot to {} : {}".format(var, e))
+        return tf.group(assign_ops)
 
     def get_config(self):
         config = {

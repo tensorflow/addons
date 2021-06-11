@@ -66,7 +66,7 @@ class NASCell(keras.layers.AbstractRNNCell):
         recurrent_initializer: Initializer = "glorot_uniform",
         projection_initializer: Initializer = "glorot_uniform",
         bias_initializer: Initializer = "zeros",
-        **kwargs
+        **kwargs,
     ):
         """Initialize the parameters for a NAS cell.
 

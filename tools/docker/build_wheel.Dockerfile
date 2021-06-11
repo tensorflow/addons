@@ -1,23 +1,13 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 ARG TF_VERSION
 ARG PY_VERSION
-FROM tfaddons/tensorflow:2.1.0-custom-op-gpu-ubuntu16-minimal as base_install
+FROM gcr.io/tensorflow-testing/nosla-cuda11.2-cudnn8.1-ubuntu18.04-manylinux2010-multipython as base_install
 ENV TF_NEED_CUDA="1"
-
-# is needed because when we sqashed the image, we lost all environment variables.
-ENV NVIDIA_REQUIRE_CUDA=cuda>=10.1 brand=tesla,driver>=384,driver<385 brand=tesla,driver>=396,driver<397 brand=tesla,driver>=410,driver<411
-ENV LIBRARY_PATH=/usr/local/cuda/lib64/stubs
-ENV NVIDIA_VISIBLE_DEVICES=all
-ENV LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64
-ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
-ENV PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Required for setuptools v50.0.0
 # https://setuptools.readthedocs.io/en/latest/history.html#v50-0-0
 # https://github.com/pypa/setuptools/issues/2352
 ENV SETUPTOOLS_USE_DISTUTILS=stdlib
-
-RUN apt-get update && apt-get install patchelf
 
 # Fix presented in
 # https://stackoverflow.com/questions/44967202/pip-is-showing-error-lsb-release-a-returned-non-zero-exit-status-1/44967506
@@ -26,11 +16,7 @@ RUN cat /usr/bin/lsb_release >> /usr/bin/lsb_release2
 RUN mv /usr/bin/lsb_release2 /usr/bin/lsb_release
 
 ARG PY_VERSION
-RUN ln -sf $(which python$PY_VERSION) /usr/bin/python
-
-RUN python -m pip install setuptools
-
-RUN python -m pip install --upgrade pip==19.0 auditwheel==2.0.0
+RUN ln -sf /usr/local/bin/python$PY_VERSION /usr/bin/python
 
 ARG TF_VERSION
 RUN python -m pip install --default-timeout=1000 tensorflow==$TF_VERSION
@@ -42,6 +28,7 @@ COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
 
 COPY ./ /addons
+RUN rm /addons/.bazelversion
 WORKDIR /addons
 
 # -------------------------------------------------------------------
@@ -52,21 +39,22 @@ CMD ["bash", "tools/testing/build_and_run_tests.sh"]
 FROM base_install as make_wheel
 ARG NIGHTLY_FLAG
 ARG NIGHTLY_TIME
-RUN --mount=type=cache,id=cache_bazel,target=/root/.cache/bazel \
-    bash tools/testing/build_and_run_tests.sh && \
+
+RUN python configure.py
+
+RUN bash tools/testing/build_and_run_tests.sh && \
     bazel build \
-        -c opt \
         --noshow_progress \
         --noshow_loading_progress \
         --verbose_failures \
         --test_output=errors \
-        --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda10.1:toolchain \
+        --crosstool_top=//build_deps/toolchains/gcc7_manylinux2010-nvcc-cuda11:toolchain \
         build_pip_pkg && \
     # Package Whl
     bazel-bin/build_pip_pkg artifacts $NIGHTLY_FLAG
 
 RUN bash tools/releases/tf_auditwheel_patch.sh
-RUN auditwheel repair --plat manylinux2010_x86_64 artifacts/*.whl
+RUN python -m auditwheel repair --plat manylinux2010_x86_64 artifacts/*.whl
 RUN ls -al wheelhouse/
 
 # -------------------------------------------------------------------

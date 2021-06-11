@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Seq2seq loss operations for use in sequence models."""
+"""Loss functions for sequence models."""
 
 import tensorflow as tf
 from tensorflow_addons.utils.types import TensorLike
@@ -32,7 +32,7 @@ def sequence_loss(
     softmax_loss_function: Optional[Callable] = None,
     name: Optional[str] = None,
 ) -> tf.Tensor:
-    """Weighted cross-entropy loss for a sequence of logits.
+    """Computes the weighted cross-entropy loss for a sequence of logits.
 
     Depending on the values of `average_across_timesteps` /
     `sum_over_timesteps` and `average_across_batch` / `sum_over_batch`, the

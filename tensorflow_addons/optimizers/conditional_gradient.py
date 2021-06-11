@@ -60,7 +60,7 @@ class ConditionalGradient(tf.keras.optimizers.Optimizer):
         epsilon: FloatTensorLike = 1e-7,
         ord: str = "fro",
         name: str = "ConditionalGradient",
-        **kwargs
+        **kwargs,
     ):
         """Construct a new conditional gradient optimizer.
 

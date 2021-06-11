@@ -51,19 +51,6 @@ def test_batch_size():
     np.testing.assert_allclose(len(set(means)), 10)
 
 
-def test_channel_first():
-    test_image = tf.ones([10, 1, 40, 40], dtype=np.uint8)
-    cutout_area = tf.zeros([4, 4], dtype=np.uint8)
-    cutout_area = tf.pad(cutout_area, ((0, 36), (0, 36)), constant_values=1)
-    expect_image = tf.expand_dims(cutout_area, 0)
-    expect_image = tf.expand_dims(expect_image, 0)
-    expect_image = tf.tile(expect_image, [10, 1, 1, 1])
-    result_image = random_cutout(
-        test_image, 20, seed=1234, data_format="channels_first"
-    )
-    np.testing.assert_allclose(tf.shape(result_image), tf.shape(expect_image))
-
-
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_with_tf_function():
     test_image = tf.ones([1, 40, 40, 1], dtype=tf.uint8)
@@ -72,3 +59,33 @@ def test_with_tf_function():
     cutout_area = tf.pad(cutout_area, ((0, 36), (0, 36)), constant_values=1)
     expect_image = to_4D_image(cutout_area)
     np.testing.assert_equal(result_image.shape, expect_image.shape)
+
+
+def test_mask_applied():
+    test_image = tf.ones([10, 40, 40, 1], dtype=np.uint8)
+    result_image = random_cutout(test_image, 20, seed=1234)
+    total_expected_masked_count = 20 * 20 * test_image.shape[0]
+
+    np.testing.assert_equal(
+        np.sum(result_image) + total_expected_masked_count, np.sum(test_image)
+    )
+
+
+def test_mask_larger_than_image():
+    test_image = tf.ones([10, 40, 40, 1], dtype=np.uint8)
+    result_image = random_cutout(test_image, 60, seed=1234)
+    np.testing.assert_equal(np.sum(result_image), 0)
+
+
+def test_keras_layer():
+    inputs = tf.keras.Input(shape=(40, 40, 1), dtype=tf.uint8)
+    outputs = tf.keras.layers.Lambda(lambda x: cutout(x, 4, [2, 2]))(inputs)
+    model = tf.keras.Model(inputs=inputs, outputs=outputs)
+    x = tf.ones([10, 40, 40, 1], dtype=np.uint8)
+    np.testing.assert_equal(cutout(x, 4, [2, 2]).numpy(), model(x))
+
+
+def test_invalid_mask_size():
+    with pytest.raises(tf.errors.InvalidArgumentError, match="mask_size should be"):
+        x = tf.ones([10, 40, 40, 1], dtype=np.uint8)
+        cutout(x, 3, [2, 2]).numpy()

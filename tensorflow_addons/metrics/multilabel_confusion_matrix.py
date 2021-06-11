@@ -92,7 +92,7 @@ class MultiLabelConfusionMatrix(Metric):
         num_classes: FloatTensorLike,
         name: str = "Multilabel_confusion_matrix",
         dtype: AcceptableDTypes = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(name=name, dtype=dtype)
         self.num_classes = num_classes

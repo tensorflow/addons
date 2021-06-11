@@ -15,6 +15,7 @@
 """Tests for CRF."""
 
 import itertools
+from distutils.version import LooseVersion
 
 import pytest
 import numpy as np
@@ -497,6 +498,14 @@ def test_tf_function():
     crf_decode(potentials, transition_params, sequence_length)
 
 
+@pytest.mark.skipif(
+    tf.__version__[:3] == "2.4",
+    reason="CRF Decode doesn't work in TF2.4, the issue was fixed in TF core, but didn't make the release",
+)
+@pytest.mark.skipif(
+    tf.__version__[:3] == "2.5",
+    reason="CRF decoding models have serialization issues in TF >=2.5 . Please see isse #2476",
+)
 def test_crf_decode_save_load(tmpdir):
     tf.keras.backend.clear_session()
     input_tensor = tf.keras.Input(shape=(10, 3), dtype=tf.float32, name="input_tensor")
@@ -515,7 +524,13 @@ def test_crf_decode_save_load(tmpdir):
         "input_tensor": np.random.random_sample((5, 10, 3)).astype(dtype=np.float32),
         "seq_len": np.array([10] * 5, dtype=np.int32),
     }
-    y_data = {"tf_op_layer_Mul": np.random.randint(0, 3, (5, 10))}
+
+    tensor_name = (
+        "tf.math.multiply"
+        if LooseVersion(tf.__version__) >= "2.5.0"
+        else "tf_op_layer_Mul"
+    )
+    y_data = {tensor_name: np.random.randint(0, 3, (5, 10))}
 
     model.fit(x_data, y_data)
     model.predict(

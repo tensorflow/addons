@@ -36,7 +36,7 @@ class TLU(tf.keras.layers.Layer):
     Output shape:
         Same shape as the input.
 
-    Arguments:
+    Args:
         affine: `bool`. Whether to make it TLU-Affine or not
             which has the form $\max(x, \alpha*x + \tau)$`
     """
@@ -51,7 +51,7 @@ class TLU(tf.keras.layers.Layer):
         alpha_initializer: types.Initializer = "zeros",
         alpha_regularizer: types.Regularizer = None,
         alpha_constraint: types.Constraint = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.supports_masking = True

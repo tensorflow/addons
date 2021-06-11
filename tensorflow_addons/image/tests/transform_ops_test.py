@@ -14,6 +14,8 @@
 # ==============================================================================
 """Tests for transform ops."""
 
+from distutils.version import LooseVersion
+
 import pytest
 import numpy as np
 import tensorflow as tf
@@ -71,19 +73,31 @@ def test_extreme_projective_transform(dtype):
 @pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", _DTYPES)
-def test_transform_constant_fill_mode(dtype):
+@pytest.mark.parametrize("fill_value", [0.0, 1.0])
+def test_transform_constant_fill_mode(dtype, fill_value):
+    if fill_value != 0.0 and LooseVersion(tf.__version__) < LooseVersion("2.4.0"):
+        pytest.skip("Nonzero fill_value is not supported for TensorFlow < 2.4.0.")
+
     image = tf.constant(
         [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]], dtype=dtype
     )
     expected = np.asarray(
-        [[0, 0, 1, 2], [0, 4, 5, 6], [0, 8, 9, 10], [0, 12, 13, 14]],
+        [
+            [fill_value, 0, 1, 2],
+            [fill_value, 4, 5, 6],
+            [fill_value, 8, 9, 10],
+            [fill_value, 12, 13, 14],
+        ],
         dtype=dtype.as_numpy_dtype,
     )
     # Translate right by 1 (the transformation matrix is always inverted,
     # hence the -1).
     translation = tf.constant([1, 0, -1, 0, 1, 0, 0, 0], dtype=tf.float32)
     image_transformed = transform_ops.transform(
-        image, translation, fill_mode="constant"
+        image,
+        translation,
+        fill_mode="constant",
+        fill_value=fill_value,
     )
     np.testing.assert_equal(image_transformed.numpy(), expected)
 
@@ -124,6 +138,28 @@ def test_transform_wrap_fill_mode(dtype):
     np.testing.assert_equal(image_transformed.numpy(), expected)
 
 
+@pytest.mark.skipif(
+    LooseVersion(tf.__version__) < LooseVersion("2.4.0"),
+    reason="NEAREST fill mode is not supported for TensorFlow < 2.4.0.",
+)
+@pytest.mark.with_device(["cpu", "gpu"])
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.parametrize("dtype", _DTYPES)
+def test_transform_nearest_fill_mode(dtype):
+    image = tf.constant(
+        [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]], dtype=dtype
+    )
+    expected = np.asarray(
+        [[0, 0, 0, 1], [4, 4, 4, 5], [8, 8, 8, 9], [12, 12, 12, 13]],
+        dtype=dtype.as_numpy_dtype,
+    )
+    # Translate right by 2 (the transformation matrix is always inverted,
+    # hence the -2).
+    translation = tf.constant([1, 0, -2, 0, 1, 0, 0, 0], dtype=tf.float32)
+    image_transformed = transform_ops.transform(image, translation, fill_mode="nearest")
+    np.testing.assert_equal(image_transformed.numpy(), expected)
+
+
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_transform_static_output_shape():
     image = tf.constant([[1.0, 2.0], [3.0, 4.0]])
@@ -160,7 +196,7 @@ def _test_grad(input_shape, output_shape=None):
 
     theoretical, numerical = tf.test.compute_gradient(transform_fn, [test_image])
 
-    np.testing.assert_almost_equal(theoretical[0], numerical[0])
+    np.testing.assert_almost_equal(theoretical[0], numerical[0], decimal=6)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")

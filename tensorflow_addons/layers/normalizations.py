@@ -26,6 +26,9 @@ from tensorflow_addons.utils import types
 class GroupNormalization(tf.keras.layers.Layer):
     """Group normalization layer.
 
+    Source: "Group Normalization" (Yuxin Wu & Kaiming He, 2018)
+    https://arxiv.org/abs/1803.08494
+
     Group Normalization divides the channels into groups and computes
     within each group the mean and variance for normalization.
     Empirically, its accuracy is more stable than batch norm in a wide
@@ -42,10 +45,11 @@ class GroupNormalization(tf.keras.layers.Layer):
     to number of channels), then this operation becomes
     identical to Instance Normalization.
 
-    Arguments:
+    Args:
         groups: Integer, the number of groups for Group Normalization.
             Can be in the range [1, N] where N is the input dimension.
             The input dimension must be divisible by the number of groups.
+            Defaults to 32.
         axis: Integer, the axis that should be normalized.
         epsilon: Small float added to variance to avoid dividing by zero.
         center: If True, add offset of `beta` to normalized tensor.
@@ -66,15 +70,12 @@ class GroupNormalization(tf.keras.layers.Layer):
 
     Output shape:
         Same shape as input.
-
-    References:
-        - [Group Normalization](https://arxiv.org/abs/1803.08494)
     """
 
     @typechecked
     def __init__(
         self,
-        groups: int = 2,
+        groups: int = 32,
         axis: int = -1,
         epsilon: float = 1e-3,
         center: bool = True,
@@ -85,7 +86,7 @@ class GroupNormalization(tf.keras.layers.Layer):
         gamma_regularizer: types.Regularizer = None,
         beta_constraint: types.Constraint = None,
         gamma_constraint: types.Constraint = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
         self.supports_masking = True
@@ -394,10 +395,10 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         learned_epsilon: bool = False,
         learned_epsilon_constraint: types.Constraint = None,
         name: str = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(name=name, **kwargs)
-        self.epsilon = tf.math.abs(tf.cast(epsilon, dtype=self.dtype))
+        self.epsilon = epsilon
         self.beta_initializer = tf.keras.initializers.get(beta_initializer)
         self.gamma_initializer = tf.keras.initializers.get(gamma_initializer)
         self.beta_regularizer = tf.keras.regularizers.get(beta_regularizer)
@@ -439,7 +440,7 @@ class FilterResponseNormalization(tf.keras.layers.Layer):
         super().build(input_shape)
 
     def call(self, inputs):
-        epsilon = self.epsilon
+        epsilon = tf.math.abs(tf.cast(self.epsilon, dtype=self.dtype))
         if self.use_eps_learned:
             epsilon += tf.math.abs(self.eps_learned)
         nu2 = tf.reduce_mean(tf.square(inputs), axis=self.axis, keepdims=True)

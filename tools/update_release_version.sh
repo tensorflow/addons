@@ -15,13 +15,32 @@
 # limitations under the License.
 # ==============================================================================
 
-# usage: bash tools/update_release_version.sh <release_number>
+# Usage
+if [ $# -lt 1 ]; then
+	echo "Usage: bash tools/update_release_version.sh <list_of_release_numbers>"
+	echo "e.g. bash tools/update_release_version.sh 2.3.0 2.3.1"
+	exit 1
+fi
 
-sed -ri "s/(TF_VERSION=|tensorflow(-cpu)*(~|=)=|tf-version: \[')[0-9]+[a-zA-Z0-9_.-]+/\1$1/g" \
-	.github/workflows/release.yml \
+last_version=${BASH_ARGV[0]}
+tf_version=''
+for ver in $@
+do
+    if [ -z $tf_version ]; then
+		tf_version="'$ver'"
+	else 
+	    tf_version="$tf_version, '$ver'"    
+	fi
+done
+echo $tf_version
+echo $last_version
+sed -ri "s/(tf-version: \[)'.+'/\1$tf_version/g" \
+	.github/workflows/release.yml
+sed -ri "s/(tensorflow(-cpu)*(~|=)=)[0-9]+[a-zA-Z0-9_.-]+/\1$1/g" \
 	CONTRIBUTING.md \
-	tools/docker/cpu_tests.Dockerfile \
 	tools/install_deps/tensorflow-cpu.txt \
-	tools/install_deps/tensorflow.txt \
+	tools/install_deps/tensorflow.txt
+sed -ri "s/(TF_VERSION=)\S+/\1$last_version/g" \
+	tools/docker/cpu_tests.Dockerfile \
 	tools/run_gpu_tests.sh \
 	tools/build_dev_container.sh

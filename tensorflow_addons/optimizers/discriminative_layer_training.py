@@ -79,7 +79,7 @@ class MultiOptimizer(tf.keras.optimizers.Optimizer):
         optimizers_and_layers: Union[list, None] = None,
         optimizer_specs: Union[list, None] = None,
         name: str = "MultiOptimizer",
-        **kwargs
+        **kwargs,
     ):
 
         super(MultiOptimizer, self).__init__(name, **kwargs)

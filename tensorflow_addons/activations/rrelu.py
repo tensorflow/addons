@@ -14,7 +14,7 @@
 # ==============================================================================
 
 import tensorflow as tf
-from tensorflow_addons.utils.types import TensorLike, Number
+from tensorflow_addons.utils.types import Number, TensorLike
 from typing import Optional
 
 
@@ -68,7 +68,7 @@ def rrelu(
 
     Args:
         x: A `Tensor`. Must be one of the following types:
-            `float16`, `float32`, `float64`.
+            `bfloat16`, `float16`, `float32`, `float64`.
         lower: `float`, lower bound for random alpha.
         upper: `float`, upper bound for random alpha.
         training: `bool`, indicating whether the `call`

@@ -76,8 +76,8 @@ class BinaryDistribution(Distribution):
 
 
 project_name, version = get_project_name_version()
-min_tf_version = version["MIN_TF_VERSION"]
-max_tf_version = version["MAX_TF_VERSION"]
+inclusive_min_tf_version = version["INCLUSIVE_MIN_TF_VERSION"]
+exclusive_max_tf_version = version["EXCLUSIVE_MAX_TF_VERSION"]
 setup(
     name=project_name,
     version=version["__version__"],
@@ -89,12 +89,20 @@ setup(
     ext_modules=get_ext_modules(),
     install_requires=Path("requirements.txt").read_text().splitlines(),
     extras_require={
-        "tensorflow": ["tensorflow>={},<{}".format(min_tf_version, max_tf_version)],
+        "tensorflow": [
+            "tensorflow>={},<{}".format(
+                inclusive_min_tf_version, exclusive_max_tf_version
+            )
+        ],
         "tensorflow-gpu": [
-            "tensorflow-gpu>={},<{}".format(min_tf_version, max_tf_version)
+            "tensorflow-gpu>={},<{}".format(
+                inclusive_min_tf_version, exclusive_max_tf_version
+            )
         ],
         "tensorflow-cpu": [
-            "tensorflow-cpu>={},<{}".format(min_tf_version, max_tf_version)
+            "tensorflow-cpu>={},<{}".format(
+                inclusive_min_tf_version, exclusive_max_tf_version
+            )
         ],
     },
     include_package_data=True,
@@ -107,10 +115,10 @@ setup(
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Scientific/Engineering :: Mathematics",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Software Development :: Libraries",

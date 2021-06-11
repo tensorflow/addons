@@ -83,7 +83,7 @@ def test_bad_parent_values_on_gpu():
     expected_result = _transpose_batch_time(
         [[[2, -1, 2], [6, 5, 6], [7, 8, 9], [10, 10, 10]]]
     )
-    if options.TF_ADDONS_PY_OPS:
+    if options.is_custom_kernel_disabled():
         # The Python version has the same behavior on CPU and GPU.
         with pytest.raises(tf.errors.InvalidArgumentError, match="parent id"):
             _ = gather_tree(

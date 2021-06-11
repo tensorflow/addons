@@ -34,6 +34,9 @@ from tensorflow_addons.image.transform_ops import rotate
 from tensorflow_addons.image.transform_ops import shear_x
 from tensorflow_addons.image.transform_ops import shear_y
 from tensorflow_addons.image.sparse_image_warp import sparse_image_warp
+from tensorflow_addons.image.transform_ops import compose_transforms
+from tensorflow_addons.image.transform_ops import angles_to_projective_transforms
 from tensorflow_addons.image.transform_ops import transform
 from tensorflow_addons.image.translate_ops import translate
 from tensorflow_addons.image.translate_ops import translate_xy
+from tensorflow_addons.image.translate_ops import translations_to_projective_transforms

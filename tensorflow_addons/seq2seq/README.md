@@ -16,7 +16,7 @@ In order to conform with the current API standard, all objects must:
  * To run your `tf.functions` in eager mode and graph mode in the tests, 
    you can use the `@pytest.mark.usefixtures("maybe_run_functions_eagerly")` 
    decorator. This will run the tests twice, once normally, and once
-   with `tf.config.experimental_run_functions_eagerly(True)`.
+   with `tf.config.run_functions_eagerly(True)`.
 
 ## Sample code and Migration guide from TF 1.X
 The code was originally written in tensorflow.contrib.seq2seq, and has been updated to work with

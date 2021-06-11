@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A library of sampler for use with SamplingDecoders."""
+"""Objects sampling from the decoder output distribution and producing the next input."""
 
 import abc
 
@@ -29,25 +29,34 @@ _transpose_batch_time = decoder._transpose_batch_time
 class Sampler(metaclass=abc.ABCMeta):
     """Interface for implementing sampling in seq2seq decoders.
 
-    Sampler instances are used by `BasicDecoder`. The normal usage of a sampler
-    is like below:
+    Sampler classes implement the logic of sampling from the decoder output distribution
+    and producing the inputs for the next decoding step. In most cases, they should not be
+    used directly but passed to a `tfa.seq2seq.BasicDecoder` instance that will manage the
+    sampling.
 
-    ```python
-    sampler = Sampler(init_args)
-    (initial_finished, initial_inputs) = sampler.initialize(input_tensors)
-    cell_input = initial_inputs
-    cell_state = cell.get_initial_state(...)
-    for time_step in tf.range(max_output_length):
-        cell_output, cell_state = cell(cell_input, cell_state)
-        sample_ids = sampler.sample(time_step, cell_output, cell_state)
-        (finished, cell_input, cell_state) = sampler.next_inputs(
-            time_step, cell_output, cell_state, sample_ids)
-        if tf.reduce_all(finished):
-            break
-    ```
+    Here is an example using a training sampler directly to implement a custom decoding
+    loop:
 
-    Note that the input_tensors should not be fed to the Sampler as __init__()
-    parameters. Instead, they should be fed by decoders via initialize().
+    >>> batch_size = 4
+    >>> max_time = 7
+    >>> hidden_size = 16
+    >>>
+    >>> sampler = tfa.seq2seq.TrainingSampler()
+    >>> cell = tf.keras.layers.LSTMCell(hidden_size)
+    >>>
+    >>> input_tensors = tf.random.uniform([batch_size, max_time, hidden_size])
+    >>> initial_finished, initial_inputs = sampler.initialize(input_tensors)
+    >>>
+    >>> cell_input = initial_inputs
+    >>> cell_state = cell.get_initial_state(initial_inputs)
+    >>>
+    >>> for time_step in tf.range(max_time):
+    ...     cell_output, cell_state = cell(cell_input, cell_state)
+    ...     sample_ids = sampler.sample(time_step, cell_output, cell_state)
+    ...     finished, cell_input, cell_state = sampler.next_inputs(
+    ...         time_step, cell_output, cell_state, sample_ids)
+    ...     if tf.reduce_all(finished):
+    ...         break
     """
 
     @abc.abstractmethod
@@ -172,9 +181,7 @@ class CustomSampler(Sampler):
 
 
 class TrainingSampler(Sampler):
-    """A Sampler for use during training.
-
-    Only reads inputs.
+    """A training sampler that simply reads its inputs.
 
     Returned sample_ids are the argmax of the RNN output logits.
     """
@@ -550,7 +557,7 @@ class ScheduledOutputTrainingSampler(TrainingSampler):
 
 
 class GreedyEmbeddingSampler(Sampler):
-    """A sampler for use during inference.
+    """A inference sampler that takes the maximum from the output distribution.
 
     Uses the argmax of the output (treated as logits) and passes the
     result through an embedding layer to get the next input.
@@ -587,8 +594,8 @@ class GreedyEmbeddingSampler(Sampler):
 
         Args:
           embedding: tensor that contains embedding states matrix. It will be
-            used to generate generate outputs with start_tokens and end_tokens.
-            The embedding will be ignored if the embedding_fn has been provided
+            used to generate generate outputs with `start_tokens` and `end_token`.
+            The embedding will be ignored if the `embedding_fn` has been provided
             at __init__().
           start_tokens: `int32` vector shaped `[batch_size]`, the start tokens.
           end_token: `int32` scalar, the token that marks end of decoding.
@@ -644,7 +651,7 @@ class GreedyEmbeddingSampler(Sampler):
 
 
 class SampleEmbeddingSampler(GreedyEmbeddingSampler):
-    """A sampler for use during inference.
+    """An inference sampler that randomly samples from the output distribution.
 
     Uses sampling (from a distribution) instead of argmax and passes the
     result through an embedding layer to get the next input.
@@ -695,7 +702,7 @@ class SampleEmbeddingSampler(GreedyEmbeddingSampler):
 
 
 class InferenceSampler(Sampler):
-    """A helper to use during inference with a custom sampling function."""
+    """An inference sampler that uses a custom sampling function."""
 
     @typechecked
     def __init__(

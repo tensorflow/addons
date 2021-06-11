@@ -10,7 +10,7 @@ jobs:
   update_release_draft:
     runs-on: ubuntu-latest
     steps:
-      - uses: release-drafter/release-drafter@74e7c42 # Version 5.7.0
+      - uses: release-drafter/release-drafter@74e7c423dafbb406c9c18b1638334f67a7c891c3 # Version 5.7.0
         with:
           config-name: release-template.yml
         env:

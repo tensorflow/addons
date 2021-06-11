@@ -88,8 +88,12 @@
 /tensorflow_addons/layers/tests/snake_test.py @failure-to-thrive
 /tensorflow_addons/layers/stochastic_depth.py @mhstadler @windqaq
 /tensorflow_addons/layers/tests/stochastic_depth_test.py @mhstadler @windqaq
-/tensorflow_addons/layers/noisy_dense.py @leonshams
-/tensorflow_addons/layers/tests/noisy_dense_test.py @leonshams
+/tensorflow_addons/layers/noisy_dense.py @leonshams @markub3327
+/tensorflow_addons/layers/tests/noisy_dense_test.py @leonshams @markub3327
+/tensorflow_addons/layers/max_unpooling_2d.py @thaink
+/tensorflow_addons/layers/tests/max_unpooling_2d_test.py @thaink
+/tensorflow_addons/layers/embedding_bag.py @rocketknight1
+/tensorflow_addons/layers/tests/embedding_bag_test.py @rocketknight1
 
 /tensorflow_addons/losses/contrastive.py @windqaq
 /tensorflow_addons/losses/tests/contrastive_test.py @windqaq
@@ -125,6 +129,8 @@
 /tensorflow_addons/metrics/tests/r_square_test.py @ssaishruthi @marload
 /tensorflow_addons/metrics/geometric_mean.py @marload
 /tensorflow_addons/metrics/tests/geometric_mean_test.py @marload
+/tensorflow_addons/metrics/kendalls_tau.py @sorensenjs
+/tensorflow_addons/metrics/tests/kendalls_tau_test.py @sorensenjs
 
 /tensorflow_addons/optimizers/average_wrapper.py @squadrick
 /tensorflow_addons/optimizers/conditional_gradient.py @pkan2 @lokhande-vishnu
@@ -153,6 +159,8 @@
 /tensorflow_addons/optimizers/tests/weight_decay_optimizers_test.py @philjd
 /tensorflow_addons/optimizers/yogi.py @manzilz
 /tensorflow_addons/optimizers/tests/yogi_test.py @manzilz
+/tensorflow_addons/optimizers/cocob.py @rehanguha
+/tensorflow_addons/optimizers/tests/cocob_test.py @rehanguha
 
 /tensorflow_addons/rnn/esn_cell.py @pedrolarben
 /tensorflow_addons/rnn/tests/esn_cell_test.py @pedrolarben

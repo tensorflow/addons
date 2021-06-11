@@ -82,7 +82,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         warmup_proportion: FloatTensorLike = 0.1,
         min_lr: FloatTensorLike = 0.0,
         name: str = "RectifiedAdam",
-        **kwargs
+        **kwargs,
     ):
         r"""Construct a new RAdam optimizer.
 
@@ -103,7 +103,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
                 beyond".
             sma_threshold. A float value.
                 The threshold for simple mean average.
-            total_steps: An integer. Total number of training steps.
+            total_steps: An integer value. Total number of training steps.
                 Enable warmup by setting a positive value.
             warmup_proportion: A floating point value.
                 The proportion of increasing steps.
@@ -131,7 +131,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
         self._set_hyper("decay", self._initial_decay)
         self._set_hyper("weight_decay", weight_decay)
         self._set_hyper("sma_threshold", sma_threshold)
-        self._set_hyper("total_steps", int(total_steps))
+        self._set_hyper("total_steps", float(total_steps))
         self._set_hyper("warmup_proportion", warmup_proportion)
         self._set_hyper("min_lr", min_lr)
         self.epsilon = epsilon or tf.keras.backend.epsilon()
@@ -316,7 +316,7 @@ class RectifiedAdam(tf.keras.optimizers.Optimizer):
                 "sma_threshold": self._serialize_hyperparameter("sma_threshold"),
                 "epsilon": self.epsilon,
                 "amsgrad": self.amsgrad,
-                "total_steps": self._serialize_hyperparameter("total_steps"),
+                "total_steps": int(self._serialize_hyperparameter("total_steps")),
                 "warmup_proportion": self._serialize_hyperparameter(
                     "warmup_proportion"
                 ),

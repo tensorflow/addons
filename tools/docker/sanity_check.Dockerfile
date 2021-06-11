@@ -1,5 +1,5 @@
 #syntax=docker/dockerfile:1.1.5-experimental
-FROM python:3.5-alpine as flake8-test
+FROM python:3.6-alpine as flake8-test
 
 COPY tools/install_deps/flake8.txt ./
 RUN pip install -r flake8.txt
@@ -34,7 +34,7 @@ RUN pytest -v /addons/tools/testing/
 RUN touch /ok.txt
 
 # -------------------------------
-FROM python:3.5 as valid_build_files
+FROM python:3.6 as valid_build_files
 
 COPY tools/install_deps/tensorflow-cpu.txt ./
 RUN pip install --default-timeout=1000 -r tensorflow-cpu.txt

@@ -28,7 +28,7 @@ class Snake(tf.keras.layers.Layer):
 
     See [Neural Networks Fail to Learn Periodic Functions and How to Fix It](https://arxiv.org/abs/2006.08195).
 
-    Arguments:
+    Args:
         frequency_initializer: Initializer for the `frequency` scalar.
     """
 

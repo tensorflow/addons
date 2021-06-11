@@ -16,12 +16,11 @@
 
 import os
 import random
+import inspect
 
 import numpy as np
 import pytest
 import tensorflow as tf
-
-from distutils.version import LooseVersion
 
 from tensorflow_addons import options
 from tensorflow_addons.utils import resource_loader
@@ -66,7 +65,7 @@ if is_gpu_available():
 
 
 def finalizer():
-    tf.config.experimental_run_functions_eagerly(False)
+    tf.config.run_functions_eagerly(False)
 
 
 def pytest_make_parametrize_id(config, val, argname):
@@ -81,37 +80,38 @@ def pytest_make_parametrize_id(config, val, argname):
 @pytest.fixture(scope="function", params=["eager_mode", "tf_function"])
 def maybe_run_functions_eagerly(request):
     if request.param == "eager_mode":
-        tf.config.experimental_run_functions_eagerly(True)
+        tf.config.run_functions_eagerly(True)
     elif request.param == "tf_function":
-        tf.config.experimental_run_functions_eagerly(False)
+        tf.config.run_functions_eagerly(False)
 
     request.addfinalizer(finalizer)
 
 
 @pytest.fixture(scope="function")
 def only_run_functions_eagerly(request):
-    tf.config.experimental_run_functions_eagerly(True)
+    tf.config.run_functions_eagerly(True)
     request.addfinalizer(finalizer)
 
 
 @pytest.fixture(scope="function", params=["custom_ops", "py_ops"])
 def run_custom_and_py_ops(request):
-    previous_py_ops_value = options.TF_ADDONS_PY_OPS
+    previous_is_custom_kernel_disabled = options.is_custom_kernel_disabled()
     if request.param == "custom_ops":
-        options.TF_ADDONS_PY_OPS = False
+        options.enable_custom_kernel()
     elif request.param == "py_ops":
-        options.TF_ADDONS_PY_OPS = True
+        options.disable_custom_kernel()
 
     def _restore_py_ops_value():
-        options.TF_ADDONS_PY_OPS = previous_py_ops_value
+        if previous_is_custom_kernel_disabled:
+            options.disable_custom_kernel()
+        else:
+            options.enable_custom_kernel()
 
     request.addfinalizer(_restore_py_ops_value)
 
 
 @pytest.fixture(scope="function", params=["float32", "mixed_float16"])
 def run_with_mixed_precision_policy(request):
-    if is_gpu_available() and LooseVersion(tf.__version__) <= "2.2.0":
-        pytest.xfail("See https://github.com/tensorflow/tensorflow/issues/39775")
     tf.keras.mixed_precision.experimental.set_policy(request.param)
     yield
     tf.keras.mixed_precision.experimental.set_policy("float32")
@@ -271,3 +271,23 @@ def assert_allclose_according_to_type(
         atol = max(atol, bfloat16_atol)
 
     np.testing.assert_allclose(a, b, rtol=rtol, atol=atol)
+
+
+def discover_classes(module, parent, class_exceptions):
+    """
+    Args:
+        module: a module in which to search for classes that inherit from the parent class
+        parent: the parent class that identifies classes in the module that should be tested
+        class_exceptions: a list of specific classes that should be excluded when discovering classes in a module
+
+    Returns:
+        a list of classes for testing using pytest for parameterized tests
+    """
+
+    classes = [
+        class_info[1]
+        for class_info in inspect.getmembers(module, inspect.isclass)
+        if issubclass(class_info[1], parent) and not class_info[0] in class_exceptions
+    ]
+
+    return classes

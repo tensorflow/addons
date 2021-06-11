@@ -27,7 +27,8 @@ from typeguard import typechecked
 from tensorflow_addons.utils import types
 
 
-def _scale_noise(x):
+def _scaled_noise(size, dtype):
+    x = tf.random.normal(shape=size, dtype=dtype)
     return tf.sign(x) * tf.sqrt(tf.abs(x))
 
 
@@ -66,10 +67,16 @@ class NoisyDense(tf.keras.layers.Dense):
     >>> model.output_shape
     (None, 32)
 
-    Arguments:
+    There are implemented both variants:
+        1. Independent Gaussian noise
+        2. Factorised Gaussian noise.
+    We can choose between that by 'use_factorised' parameter.
+
+    Args:
       units: Positive integer, dimensionality of the output space.
       sigma: A float between 0-1 used as a standard deviation figure and is
-        applied to the gaussian noise layer (`sigma_kernel` and `sigma_bias`).
+        applied to the gaussian noise layer (`sigma_kernel` and `sigma_bias`). (uses only if use_factorised=True)
+      use_factorised: Boolean, whether the layer uses independent or factorised Gaussian noise
       activation: Activation function to use.
         If you don't specify anything, no activation is applied
         (ie. "linear" activation: `a(x) = x`).
@@ -102,6 +109,7 @@ class NoisyDense(tf.keras.layers.Dense):
         self,
         units: int,
         sigma: float = 0.5,
+        use_factorised: bool = True,
         activation: types.Activation = None,
         use_bias: bool = True,
         kernel_regularizer: types.Regularizer = None,
@@ -109,7 +117,7 @@ class NoisyDense(tf.keras.layers.Dense):
         activity_regularizer: types.Regularizer = None,
         kernel_constraint: types.Constraint = None,
         bias_constraint: types.Constraint = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             units=units,
@@ -125,6 +133,7 @@ class NoisyDense(tf.keras.layers.Dense):
         delattr(self, "kernel_initializer")
         delattr(self, "bias_initializer")
         self.sigma = sigma
+        self.use_factorised = use_factorised
 
     def build(self, input_shape):
         # Make sure dtype is correct
@@ -145,8 +154,17 @@ class NoisyDense(tf.keras.layers.Dense):
             )
         self.input_spec = InputSpec(min_ndim=2, axes={-1: self.last_dim})
 
-        sigma_init = initializers.Constant(value=self.sigma / sqrt_dim)
-        mu_init = initializers.RandomUniform(minval=-1 / sqrt_dim, maxval=1 / sqrt_dim)
+        # use factorising Gaussian variables
+        if self.use_factorised:
+            mu_init = 1.0 / sqrt_dim
+            sigma_init = self.sigma / sqrt_dim
+        # use independent Gaussian variables
+        else:
+            mu_init = (3.0 / self.last_dim) ** (1 / 2)
+            sigma_init = 0.017
+
+        sigma_init = initializers.Constant(value=sigma_init)
+        mu_init = initializers.RandomUniform(minval=-mu_init, maxval=mu_init)
 
         # Learnable parameters
         self.sigma_kernel = self.add_weight(
@@ -213,18 +231,25 @@ class NoisyDense(tf.keras.layers.Dense):
 
         dtype = self._compute_dtype_object
 
-        # Generate random noise
-        eps_i = tf.random.normal([self.last_dim, self.units], dtype=dtype)
-        eps_j = tf.random.normal(
-            [
-                self.units,
-            ],
-            dtype=dtype,
-        )
+        if self.use_factorised:
+            # Generate random noise
+            in_eps = _scaled_noise([self.last_dim, 1], dtype=dtype)
+            out_eps = _scaled_noise([1, self.units], dtype=dtype)
 
-        # Scale the random noise
-        self.eps_kernel = _scale_noise(eps_i) * _scale_noise(eps_j)
-        self.eps_bias = _scale_noise(eps_j)
+            # Scale the random noise
+            self.eps_kernel = tf.matmul(in_eps, out_eps)
+            self.eps_bias = out_eps[0]
+        else:
+            # generate independent variables
+            self.eps_kernel = tf.random.normal(
+                shape=[self.last_dim, self.units], dtype=dtype
+            )
+            self.eps_bias = tf.random.normal(
+                shape=[
+                    self.units,
+                ],
+                dtype=dtype,
+            )
 
     def _remove_noise(self):
         """Remove the factorised Gaussian noise."""
@@ -250,6 +275,7 @@ class NoisyDense(tf.keras.layers.Dense):
             {
                 "units": self.units,
                 "sigma": self.sigma,
+                "use_factorised": self.use_factorised,
                 "activation": activations.serialize(self.activation),
                 "use_bias": self.use_bias,
                 "kernel_regularizer": regularizers.serialize(self.kernel_regularizer),

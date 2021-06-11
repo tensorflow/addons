@@ -31,7 +31,7 @@ class FBetaScore(tf.keras.metrics.Metric):
     both multi-class and multi-label classification.
 
     $$
-    F_{\beta} = (1 + \beta^2) * \frac{\textrm{precision} * \textrm{precision}}{(\beta^2 \cdot \textrm{precision}) + \textrm{recall}}
+    F_{\beta} = (1 + \beta^2) * \frac{\textrm{precision} * \textrm{recall}}{(\beta^2 \cdot \textrm{precision}) + \textrm{recall}}
     $$
 
     Args:
@@ -59,7 +59,8 @@ class FBetaScore(tf.keras.metrics.Metric):
         to 0.
 
     `average` parameter behavior:
-        None: Scores for each class are returned
+
+        None: Scores for each class are returned.
 
         micro: True positivies, false positives and
             false negatives are computed globally.
@@ -96,7 +97,7 @@ class FBetaScore(tf.keras.metrics.Metric):
         threshold: Optional[FloatTensorLike] = None,
         name: str = "fbeta_score",
         dtype: AcceptableDTypes = None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(name=name, dtype=dtype)
 

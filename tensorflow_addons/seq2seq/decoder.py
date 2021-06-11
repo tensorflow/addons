@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Seq2seq layer operations for use in neural networks."""
+"""Base classes and functions for dynamic decoding."""
 
 import abc
 
@@ -37,7 +37,7 @@ class Decoder(metaclass=abc.ABCMeta):
       finished.
     - `training`: boolean whether it should behave in training mode or in
       inference mode.
-    - `outputs`: Instance of BasicDecoderOutput. Result of the decoding, at
+    - `outputs`: instance of `tfa.seq2seq.BasicDecoderOutput`. Result of the decoding, at
       each time step.
     """
 
@@ -105,12 +105,12 @@ class Decoder(metaclass=abc.ABCMeta):
         """Describes whether the Decoder keeps track of finished states.
 
         Most decoders will emit a true/false `finished` value independently
-        at each time step.  In this case, the `dynamic_decode` function keeps
+        at each time step.  In this case, the `tfa.seq2seq.dynamic_decode` function keeps
         track of which batch entries are already finished, and performs a
         logical OR to insert new batches to the finished set.
 
         Some decoders, however, shuffle batches / beams between time steps and
-        `dynamic_decode` will mix up the finished state across these entries
+        `tfa.seq2seq.dynamic_decode` will mix up the finished state across these entries
         because it does not track the reshuffle across time steps. In this
         case, it is up to the decoder to declare that it will keep track of its
         own finished state by setting this property to `True`.
@@ -125,17 +125,17 @@ class BaseDecoder(tf.keras.layers.Layer):
     """An RNN Decoder that is based on a Keras layer.
 
     Concepts used by this interface:
-    - `inputs`: (structure of) tensors and TensorArrays that is passed as input
+    - `inputs`: (structure of) Tensors and TensorArrays that is passed as input
       to the RNN cell composing the decoder, at each time step.
-    - `state`: (structure of) tensors and TensorArrays that is passed to the
+    - `state`: (structure of) Tensors and TensorArrays that is passed to the
       RNN cell instance as the state.
-    - `memory`: (sturecute of) tensors that is usually the full output of the
-      encoder, which will be used for the attention wrapper for the RNN cell.
+    - `memory`: tensor that is usually the full output of the encoder, which
+      will be used for the attention wrapper for the RNN cell.
     - `finished`: boolean tensor telling whether each sequence in the batch is
       finished.
     - `training`: boolean whether it should behave in training mode or in
       inference mode.
-    - `outputs`: Instance of BasicDecoderOutput. Result of the decoding, at
+    - `outputs`: instance of `tfa.seq2seq.BasicDecoderOutput`. Result of the decoding, at
       each time step.
     """
 
@@ -147,7 +147,7 @@ class BaseDecoder(tf.keras.layers.Layer):
         maximum_iterations: Optional[TensorLike] = None,
         parallel_iterations: int = 32,
         swap_memory: bool = False,
-        **kwargs
+        **kwargs,
     ):
         self.output_time_major = output_time_major
         self.impute_finished = impute_finished
@@ -199,7 +199,7 @@ class BaseDecoder(tf.keras.layers.Layer):
           initial_state: (structure of) tensors that contains the initial state
             for the RNN cell.
           **kwargs: Other arguments that are passed in from layer.call()
-            method. It could contains item like input sequence_length, or
+            method. It could contains item like input `sequence_length`, or
             masking for input.
 
         Returns:
@@ -238,12 +238,12 @@ class BaseDecoder(tf.keras.layers.Layer):
         """Describes whether the Decoder keeps track of finished states.
 
         Most decoders will emit a true/false `finished` value independently
-        at each time step.  In this case, the `dynamic_decode` function keeps
+        at each time step.  In this case, the `tfa.seq2seq.dynamic_decode` function keeps
         track of which batch entries are already finished, and performs a
         logical OR to insert new batches to the finished set.
 
         Some decoders, however, shuffle batches / beams between time steps and
-        `dynamic_decode` will mix up the finished state across these entries
+        `tfa.seq2seq.dynamic_decode` will mix up the finished state across these entries
         because it does not track the reshuffle across time steps. In this
         case, it is up to the decoder to declare that it will keep track of its
         own finished state by setting this property to `True`.
@@ -267,14 +267,14 @@ def dynamic_decode(
     training: Optional[bool] = None,
     scope: Optional[str] = None,
     enable_tflite_convertible: bool = False,
-    **kwargs
+    **kwargs,
 ) -> Tuple[Any, Any, Any]:
-    """Perform dynamic decoding with `decoder`.
+    """Runs dynamic decoding with a decoder.
 
-    Calls initialize() once and step() repeatedly on the Decoder object.
+    Calls `initialize()` once and `step()` repeatedly on the decoder object.
 
     Args:
-      decoder: A `Decoder` instance.
+      decoder: A `tfa.seq2seq.Decoder` or `tfa.seq2seq.BaseDecoder` instance.
       output_time_major: Python boolean.  Default: `False` (batch major). If
         `True`, outputs are returned as time major tensors (this mode is
         faster). Otherwise, outputs are returned as batch major tensors (this

@@ -22,6 +22,7 @@ from tensorflow_addons.image import distance_transform as dist_ops
 from tensorflow_addons.utils import test_utils
 
 
+@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
 def test_single_binary_image(dtype):
     image = [
@@ -70,6 +71,7 @@ def test_single_binary_image(dtype):
     test_utils.assert_allclose_according_to_type(output_flat, expected_output)
 
 
+@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.float16, tf.float32, tf.float64])
 def test_batch_binary_images(dtype):
     batch_size = 3
@@ -93,6 +95,7 @@ def test_batch_binary_images(dtype):
     test_utils.assert_allclose_according_to_type(output_flat, expected_output)
 
 
+@pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.parametrize("dtype", [tf.uint8, tf.int32, tf.int64])
 def test_image_with_invalid_dtype(dtype):
     image = [
@@ -108,12 +111,7 @@ def test_image_with_invalid_dtype(dtype):
         _ = dist_ops.euclidean_dist_transform(image, dtype=dtype)
 
 
-def test_image_with_invalid_shape():
-    image = tf.zeros([2, 4, 3], tf.uint8)
-    with pytest.raises(ValueError, match="`images` must have only one channel"):
-        _ = dist_ops.euclidean_dist_transform(image)
-
-
+@pytest.mark.with_device(["cpu", "gpu"])
 def test_all_zeros():
     image = tf.zeros([10, 10], tf.uint8)
     expected_output = np.zeros([10, 10])
@@ -123,8 +121,64 @@ def test_all_zeros():
         np.testing.assert_allclose(output, expected_output)
 
 
+@pytest.mark.with_device(["cpu", "gpu"])
 def test_all_ones():
     image = tf.ones([10, 10, 1], tf.uint8)
     output = dist_ops.euclidean_dist_transform(image)
-    expected_output = np.full([10, 10, 1], tf.float32.max)
+    expected_output = np.full([10, 10, 1], tf.math.sqrt(tf.float32.max))
     np.testing.assert_allclose(output, expected_output)
+
+
+@pytest.mark.with_device(["cpu", "gpu"])
+def test_multi_channels():
+    channels = 3
+    batch_size = 2048
+    image = [
+        [[0], [0], [0], [0], [0]],
+        [[0], [1], [1], [1], [0]],
+        [[0], [1], [1], [1], [0]],
+        [[0], [1], [1], [1], [0]],
+        [[0], [0], [0], [0], [0]],
+    ]
+    expected_output = np.tile(
+        np.expand_dims(
+            np.array(
+                [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    1,
+                    1,
+                    0,
+                    0,
+                    1,
+                    2,
+                    1,
+                    0,
+                    0,
+                    1,
+                    1,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                ]
+            ),
+            axis=-1,
+        ),
+        [batch_size, 3],
+    )
+    image = np.tile(image, [1, 1, channels])
+    images = tf.constant([image] * batch_size, dtype=tf.uint8)
+
+    output = dist_ops.euclidean_dist_transform(images, dtype=tf.float32)
+    output_flat = tf.reshape(output, [-1, 3])
+    assert output.shape == [batch_size, 5, 5, channels]
+    test_utils.assert_allclose_according_to_type(output_flat, expected_output)

@@ -12,13 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+import warnings
+from distutils.version import LooseVersion
 
 import numpy as np
 import tensorflow as tf
 
 from tensorflow_addons.utils.types import TensorLike
 from typeguard import typechecked
-from typing import Optional
+from typing import Optional, Tuple
 
 # TODO: Wrap functions in @tf.function once
 # https://github.com/tensorflow/tensorflow/issues/29075 is resolved
@@ -205,7 +207,7 @@ def crf_log_likelihood(
     tag_indices: TensorLike,
     sequence_lengths: TensorLike,
     transition_params: Optional[TensorLike] = None,
-) -> tf.Tensor:
+) -> Tuple[tf.Tensor, tf.Tensor]:
     """Computes the log-likelihood of tag sequences in a CRF.
 
     Args:
@@ -443,8 +445,10 @@ class CrfDecodeForwardRnnCell(tf.keras.layers.AbstractRNNCell):
           new_state: A [batch_size, num_tags] matrix of new score values.
         """
         state = tf.expand_dims(state[0], 2)
-        transition_scores = state + tf.cast(self._transition_params, state.dtype)
-        new_state = tf.cast(inputs, state.dtype) + tf.reduce_max(transition_scores, [1])
+        transition_scores = state + tf.cast(
+            self._transition_params, self._compute_dtype
+        )
+        new_state = inputs + tf.reduce_max(transition_scores, [1])
         backpointers = tf.argmax(transition_scores, 1)
         backpointers = tf.cast(backpointers, dtype=tf.int32)
         return backpointers, new_state
@@ -485,9 +489,9 @@ def crf_decode_forward(
     """
     sequence_lengths = tf.cast(sequence_lengths, dtype=tf.int32)
     mask = tf.sequence_mask(sequence_lengths, tf.shape(inputs)[1])
-    crf_fwd_cell = CrfDecodeForwardRnnCell(transition_params)
+    crf_fwd_cell = CrfDecodeForwardRnnCell(transition_params, dtype=inputs.dtype)
     crf_fwd_layer = tf.keras.layers.RNN(
-        crf_fwd_cell, return_sequences=True, return_state=True
+        crf_fwd_cell, return_sequences=True, return_state=True, dtype=inputs.dtype
     )
     return crf_fwd_layer(inputs, state, mask=mask)
 
@@ -532,6 +536,15 @@ def crf_decode(
                   Contains the highest scoring tag indices.
       best_score: A [batch_size] vector, containing the score of `decode_tags`.
     """
+    if tf.__version__[:3] == "2.4":
+        warnings.warn(
+            "CRF Decoding does not work with KerasTensors in TF2.4. The bug has since been fixed in tensorflow/tensorflow##45534"
+        )
+
+    if LooseVersion(tf.__version__) >= LooseVersion("2.5.0"):
+        warnings.warn(
+            "CRF decoding models have serialization issues in TF >=2.5 . Please see isse #2476"
+        )
     sequence_length = tf.cast(sequence_length, dtype=tf.int32)
 
     # If max_seq_len is 1, we skip the algorithm and simply return the

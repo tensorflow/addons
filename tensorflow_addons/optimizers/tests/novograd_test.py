@@ -21,12 +21,12 @@ import tensorflow as tf
 from tensorflow_addons.optimizers import NovoGrad
 
 
-def run_dense_sample(iterations, expected, optimizer):
-    var_0 = tf.Variable([1.0, 2.0], dtype=tf.dtypes.float32)
-    var_1 = tf.Variable([3.0, 4.0], dtype=tf.dtypes.float32)
+def run_dense_sample(iterations, expected, optimizer, dtype):
+    var_0 = tf.Variable([1.0, 2.0], dtype=dtype)
+    var_1 = tf.Variable([3.0, 4.0], dtype=dtype)
 
-    grad_0 = tf.constant([0.1, 0.2], dtype=tf.dtypes.float32)
-    grad_1 = tf.constant([0.3, 0.4], dtype=tf.dtypes.float32)
+    grad_0 = tf.constant([0.1, 0.2], dtype=dtype)
+    grad_1 = tf.constant([0.3, 0.4], dtype=dtype)
 
     grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
@@ -38,38 +38,48 @@ def run_dense_sample(iterations, expected, optimizer):
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_dense_sample():
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_dense_sample(dtype):
     run_dense_sample(
         iterations=1,
         expected=[[0.9552786425, 1.9105572849], [2.9400000012, 3.9200000016]],
         optimizer=NovoGrad(lr=0.1, epsilon=1e-8),
+        dtype=dtype,
     )
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_dense_sample_with_weight_decay():
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_dense_sample_with_weight_decay(dtype):
     run_dense_sample(
         iterations=1,
         expected=[[0.945278642, 1.8905572849], [2.9100000012, 3.8800000016]],
         optimizer=NovoGrad(lr=0.1, weight_decay=0.1, epsilon=1e-8),
+        dtype=dtype,
     )
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_dense_sample_with_grad_averaging():
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_dense_sample_with_grad_averaging(dtype):
     run_dense_sample(
         iterations=2,
         expected=[[0.9105572849, 1.8211145698], [2.8800000024, 3.8400000032]],
         optimizer=NovoGrad(lr=0.1, grad_averaging=True, epsilon=1e-8),
+        dtype=dtype,
     )
 
 
-def run_sparse_sample(iterations, expected, optimizer):
-    var_0 = tf.Variable([1.0, 2.0])
-    var_1 = tf.Variable([3.0, 4.0])
+def run_sparse_sample(iterations, expected, optimizer, dtype):
+    var_0 = tf.Variable([1.0, 2.0], dtype=dtype)
+    var_1 = tf.Variable([3.0, 4.0], dtype=dtype)
 
-    grad_0 = tf.IndexedSlices(tf.constant([0.1]), tf.constant([0]), tf.constant([2]))
-    grad_1 = tf.IndexedSlices(tf.constant([0.4]), tf.constant([1]), tf.constant([2]))
+    grad_0 = tf.IndexedSlices(
+        tf.constant([0.1], dtype=dtype), tf.constant([0]), tf.constant([2])
+    )
+    grad_1 = tf.IndexedSlices(
+        tf.constant([0.4], dtype=dtype), tf.constant([1]), tf.constant([2])
+    )
 
     grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
@@ -81,29 +91,35 @@ def run_sparse_sample(iterations, expected, optimizer):
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_sparse_sample():
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_sparse_sample(dtype):
     run_sparse_sample(
         iterations=2,
         expected=[[0.71, 2.0], [3.0, 3.71]],
         optimizer=NovoGrad(lr=0.1, epsilon=1e-8),
+        dtype=dtype,
     )
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_sparse_sample_with_weight_decay():
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_sparse_sample_with_weight_decay(dtype):
     run_sparse_sample(
         iterations=2,
         expected=[[0.6821, 2.0], [3.0, 3.5954]],
         optimizer=NovoGrad(lr=0.1, weight_decay=0.1, epsilon=1e-8),
+        dtype=dtype,
     )
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_sparse_sample_with_grad_averaging():
+@pytest.mark.parametrize("dtype", ["float32", "float64"])
+def test_sparse_sample_with_grad_averaging(dtype):
     run_sparse_sample(
         iterations=2,
         expected=[[0.8, 2.0], [3.0, 3.8]],
         optimizer=NovoGrad(lr=0.1, grad_averaging=True, epsilon=1e-8),
+        dtype=dtype,
     )
 
 

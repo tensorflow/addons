@@ -43,6 +43,12 @@ fitting the following criteria:
  * Lastly, the functionality conforms to the contribution guidelines of
  its subpackage.
 
+Suggested guidelines for new feature requests:
+
+* The feature contains an official reference implementation.
+* Should be able to reproduce the same results in a published paper.
+* The academic paper exceeds 50 citations.
+
 **Note: New contributions often require team-members to read a research
 paper and understand how it fits into the TensorFlow community. This
 process can take longer than typical commit reviews so please bare with
@@ -167,8 +173,8 @@ conda activate my_dev_environement
 Just run from the root:
 
 ```bash
-pip install tensorflow==2.3.0
-# you can use "pip install tensorflow-cpu==2.3.0" too if you're not testing on gpu.
+pip install tensorflow==2.5.0
+# you can use "pip install tensorflow-cpu==2.5.0" too if you're not testing on gpu.
 pip install -e ./
 ```
 
@@ -256,7 +262,7 @@ If you need a custom C++/Cuda op for your test, compile your ops with
 
 ```bash
 python configure.py
-pip install tensorflow==2.3.0 -e ./ -r tools/install_deps/pytest.txt
+pip install tensorflow==2.5.0 -e ./ -r tools/install_deps/pytest.txt
 bash tools/install_so_files.sh  # Linux/macos/WSL2
 sh tools/install_so_files.sh    # PowerShell
 ```
@@ -279,12 +285,12 @@ docker run --rm -it -v ${PWD}:/addons -w /addons tfaddons/dev_container:latest-c
 
 GPU Docker: 
 ```bash
-docker run --gpus all --rm -it -v ${PWD}:/addons -w /addons tensorflow/tensorflow:2.1.0-custom-op-gpu-ubuntu16
+docker run --gpus all --rm -it -v ${PWD}:/addons -w /addons gcr.io/tensorflow-testing/nosla-cuda11.2-cudnn8.1-ubuntu18.04-manylinux2010-multipython
 ```
 
 Configure:
 ```bash
-python3 -m pip install tensorflow==2.3.0
+python3 -m pip install tensorflow==2.5.0
 python3 ./configure.py  # Links project with TensorFlow dependency
 ```
 
@@ -323,7 +329,7 @@ quickly, as Bazel has great support for caching and distributed testing.
 To test with Bazel:
 
 ```bash
-python3 -m pip install tensorflow==2.3.0
+python3 -m pip install tensorflow==2.5.0
 python3 configure.py
 python3 -m pip install -r tools/install_deps/pytest.txt
 bazel test -c opt -k \
@@ -426,7 +432,7 @@ your tests as well as helper functions. Those can be found in
 #### maybe_run_functions_eagerly
 
 Will run your test function twice, once normally and once with 
-`tf.config.experimental_run_functions_eagerly(True)`. To use it:
+`tf.config.run_functions_eagerly(True)`. To use it:
 
 ```python
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")

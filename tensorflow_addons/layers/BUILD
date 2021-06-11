@@ -1,12 +1,14 @@
-licenses(["notice"])  # Apache 2.0
-
-package(default_visibility = ["//visibility:public"])
+package(
+    default_visibility = ["//visibility:public"],
+    licenses = ["notice"],  # Apache 2.0
+)
 
 py_library(
     name = "layers",
     srcs = glob(["*.py"]),
     data = [
         "//tensorflow_addons/custom_ops/layers:_correlation_cost_ops.so",
+        "//tensorflow_addons/custom_ops/layers:_embedding_bag_ops.so",
         "//tensorflow_addons/custom_ops/layers:_deformable_conv2d_ops.so",
     ],
     deps = [
@@ -20,7 +22,7 @@ py_library(
 
 py_test(
     name = "layers_test",
-    size = "small",
+    size = "large",
     srcs = glob(["tests/*"]),
     main = "tests/run_all_test.py",
     deps = [

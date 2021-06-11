@@ -166,7 +166,7 @@ class CorrelationCost(tf.keras.layers.Layer):
         stride_2: int,
         pad: int,
         data_format: str,
-        **kwargs
+        **kwargs,
     ):
         self.kernel_size = kernel_size
         self.max_displacement = max_displacement

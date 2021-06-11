@@ -15,6 +15,8 @@
 """Additional text-processing ops."""
 
 # Conditional Random Field
+from tensorflow_addons.text import crf
+from tensorflow_addons.text.crf import CrfDecodeForwardRnnCell
 from tensorflow_addons.text.crf import crf_binary_score
 from tensorflow_addons.text.crf import crf_constrained_decode
 from tensorflow_addons.text.crf import crf_decode

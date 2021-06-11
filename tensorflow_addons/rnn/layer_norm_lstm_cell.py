@@ -83,7 +83,7 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
         norm_gamma_initializer: Initializer = "ones",
         norm_beta_initializer: Initializer = "zeros",
         norm_epsilon: FloatTensorLike = 1e-3,
-        **kwargs
+        **kwargs,
     ):
         """Initializes the LSTM cell.
 
@@ -154,9 +154,16 @@ class LayerNormLSTMCell(keras.layers.LSTMCell):
 
     def build(self, input_shape):
         super().build(input_shape)
-        self.kernel_norm.build([input_shape[0], self.units * 4])
-        self.recurrent_norm.build([input_shape[0], self.units * 4])
-        self.state_norm.build([input_shape[0], self.units])
+
+        def maybe_build_sublayer(sublayer, build_shape):
+            if not sublayer.built:
+                with tf.keras.backend.name_scope(sublayer.name):
+                    sublayer.build(build_shape)
+                    sublayer.built = True
+
+        maybe_build_sublayer(self.kernel_norm, [input_shape[0], self.units * 4])
+        maybe_build_sublayer(self.recurrent_norm, [input_shape[0], self.units * 4])
+        maybe_build_sublayer(self.state_norm, [input_shape[0], self.units])
 
     def call(self, inputs, states, training=None):
         h_tm1 = states[0]  # previous memory state

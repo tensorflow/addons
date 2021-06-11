@@ -30,7 +30,7 @@ def do_test(
     update_fn,
     do_sparse=False,
     do_decay_var_list=False,
-    **optimizer_kwargs
+    **optimizer_kwargs,
 ):
     """The major test function.
 

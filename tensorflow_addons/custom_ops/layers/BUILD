@@ -21,6 +21,20 @@ custom_op_library(
 )
 
 custom_op_library(
+    name = "_embedding_bag_ops.so",
+    srcs = [
+        "cc/kernels/embedding_bag_ops.cc",
+        "cc/kernels/embedding_bag_ops.h",
+        "cc/ops/embedding_bag_ops.cc",
+    ],
+    cuda_srcs = [
+        "cc/kernels/embedding_bag_ops.h",
+        "cc/kernels/embedding_bag_ops_gpu.cu.cc",
+        "cc/kernels/embedding_bag_backward_kernels.cu.cc",
+    ],
+)
+
+custom_op_library(
     name = "_deformable_conv2d_ops.so",
     srcs = [
         "cc/kernels/deformable_conv2d_op.cc",
