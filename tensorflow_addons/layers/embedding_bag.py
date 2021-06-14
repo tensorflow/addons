@@ -152,3 +152,4 @@ class EmbeddingBag(tf.keras.layers.Layer):
         }
         base_config = super(EmbeddingBag, self).get_config()
         return dict(list(base_config.items()) + list(config.items()))
+    
