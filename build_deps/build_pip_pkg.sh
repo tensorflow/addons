@@ -77,14 +77,18 @@ function main() {
 
   BUILD_CMD="setup.py bdist_wheel --platlib-patch"
   if is_macos; then
-    BUILD_CMD="${BUILD_CMD} --plat-name macosx_10_13_x86_64"
+    if [[ x$(arch) == x"arm64" ]]; then
+	BUILD_CMD="${BUILD_CMD} --plat-name macosx_11_0_arm64"
+    else
+	BUILD_CMD="${BUILD_CMD} --plat-name macosx_10_13_x86_64"
+    fi
   fi
 
   if [[ -z ${NIGHTLY_FLAG} ]]; then
     # Windows has issues with locking library files for deletion so do not fail here
-    python ${BUILD_CMD} || true
+    python3 ${BUILD_CMD} || true
   else
-    python ${BUILD_CMD} ${NIGHTLY_FLAG} || true
+    python3 ${BUILD_CMD} ${NIGHTLY_FLAG} || true
   fi
 
   cp dist/*.whl "${DEST}"
