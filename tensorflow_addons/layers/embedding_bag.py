@@ -49,8 +49,11 @@ def _embedding_bag(
     Returns:
       A `Tensor` of the format specified by `data_format`.
     """
-    if weights is None:
+    if weights is None and combiner == 'sum':
         weights = tf.ones_like(indices, dtype=params.dtype)
+    elif weights is None and combiner == 'mean':
+        weights = tf.ones_like(indices, dtype=params.dtype) / tf.cast(tf.shape(indices)[1], params.dtype)
+        combiner = 'sum'
     elif combiner != "sum":
         raise RuntimeError(
             "Combiner mode must be 'sum' when weights are supplied to EmbeddingBag!"
@@ -68,10 +71,6 @@ def _embedding_bag_grad(op, grads):
     value_grads, weight_grads = _embedding_bag_so.ops.addons_embedding_bag_grad(
         indices, params, weights, grads, combiner=combiner
     )
-    if combiner.lower() == b"mean":
-        value_grads /= indices.shape[
-            1
-        ]  # We should maybe do this inside the kernel but here is fine for now
     return [None, value_grads, weight_grads]
 
 
