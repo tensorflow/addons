@@ -69,7 +69,9 @@ def _embedding_bag_grad(op, grads):
         indices, params, weights, grads, combiner=combiner
     )
     if combiner.lower() == b"mean":
-        value_grads /= indices.shape[1]  # We should maybe do this inside the kernel but here is fine for now
+        value_grads /= indices.shape[
+            1
+        ]  # We should maybe do this inside the kernel but here is fine for now
     return [None, value_grads, weight_grads]
 
 
