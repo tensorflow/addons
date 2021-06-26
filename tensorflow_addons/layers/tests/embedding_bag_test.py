@@ -71,8 +71,8 @@ def test_forward(input_shape, input_dim, dtype, indices_dtype, combiner):
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 @pytest.mark.parametrize("indices_dtype", [np.int32, np.int64])
 @pytest.mark.parametrize("combiner", ["sum", "mean"])
-@pytest.mark.parametrize("graph_mode", [True, False])
-def test_backward(input_shape, input_dim, dtype, indices_dtype, combiner, graph_mode):
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_backward(input_shape, input_dim, dtype, indices_dtype, combiner):
     indices = np.random.randint(low=0, high=input_dim, size=input_shape).astype(
         indices_dtype
     )
@@ -87,10 +87,7 @@ def test_backward(input_shape, input_dim, dtype, indices_dtype, combiner, graph_
     if weights is not None:
         weights = tf.convert_to_tensor(weights)
 
-    if graph_mode:
-        embedding_bag_fn = tf.function(_embedding_bag)
-    else:
-        embedding_bag_fn = _embedding_bag
+    embedding_bag_fn = tf.function(_embedding_bag)
 
     if combiner == "sum":
         with tf.GradientTape(persistent=True) as tape:
