@@ -50,7 +50,7 @@ template <typename T, typename Tindices, const int kThreadsPerBlock>
 __global__ void EmbeddingBagWeightsGradKernel(
     const int value_dim, const Tindices *__restrict__ indices,
     const T *__restrict__ values, const T *__restrict__ dloss,
-    T *__restrict__ weights_grad) {
+    T *__restrict__ weights_grad, Combiner combiner) {
   const int sample_idx = blockIdx.x;
   const int bag_idx = blockIdx.y;
   const int bag_dim = gridDim.y;
@@ -72,6 +72,9 @@ __global__ void EmbeddingBagWeightsGradKernel(
     partialDotProduct +=
         __shfl_down_sync(activeMask, partialDotProduct, offset);
   }
+  if (combiner == Combiner::kMean) {
+    partialDotProduct /= static_cast<float>(bag_dim);
+  }
   // Thread 0 now has the full dot product
   if (threadIdx.x == 0) {
     weights_grad[(sample_idx * bag_dim) + bag_idx] =
@@ -85,7 +88,7 @@ __global__ void EmbeddingBagValuesGradKernel(
     const Tindices *__restrict__ sortedIndices,
     const Tindices *__restrict__ counter, const T *__restrict__ values,
     const T *__restrict__ weights, const T *__restrict__ dloss,
-    T *__restrict__ values_grad) {
+    T *__restrict__ values_grad, Combiner combiner) {
   const int startIdx = blockIdx.x;
   const int chunk = blockIdx.y;
   const int kThreadsPerBlock = blockDim.x;
@@ -131,6 +134,9 @@ __global__ void EmbeddingBagValuesGradKernel(
       T featureDloss =
           ldg(dloss + (originalIdxPosition / bag_dim) + featureIdx);
       accum += static_cast<float>(weight * featureDloss);
+    }
+    if (combiner == Combiner::kMean) {
+      accum /= static_cast<float>(bag_dim);
     }
     values_grad[outputOffset] = static_cast<T>(accum);
   }
@@ -179,7 +185,7 @@ struct EmbeddingBagBackwardFunctor<GPUDevice, T, Tindices> {
     TF_CHECK_OK(GpuLaunchKernel(
         EmbeddingBagWeightsGradKernel<T, Tindices, kThreadsPerBlock>, gridShape,
         kThreadsPerBlock, 0, d.stream(), output_dim, indices.data(),
-        params.data(), grads.data(), weights_grads.data()));
+        params.data(), grads.data(), weights_grads.data(), combiner));
 
     const int indices_size = indices.size();
     const int values_size = params.size();
@@ -223,7 +229,7 @@ struct EmbeddingBagBackwardFunctor<GPUDevice, T, Tindices> {
         EmbeddingBagValuesGradKernel<T, Tindices>, gridShape, threadsPerBlock,
         0, d.stream(), output_dim, bag_dim, sortedIndices.data(),
         sortedIndicesCounter.data(), params.data(), weights.data(),
-        grads.data(), params_grads.data()));
+        grads.data(), params_grads.data(), combiner));
   }
 };
 
