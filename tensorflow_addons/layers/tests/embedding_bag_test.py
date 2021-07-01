@@ -60,7 +60,9 @@ def test_forward(input_shape, input_dim, dtype, indices_dtype, combiner):
         indices,
         weights,
     )
-    test_utils.assert_allclose_according_to_type(expected, output)
+    test_utils.assert_allclose_according_to_type(
+        expected, output, half_rtol=1e-2, half_atol=1e-2
+    )
 
 
 @pytest.mark.with_device(["cpu", "gpu"])
@@ -69,8 +71,8 @@ def test_forward(input_shape, input_dim, dtype, indices_dtype, combiner):
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 @pytest.mark.parametrize("indices_dtype", [np.int32, np.int64])
 @pytest.mark.parametrize("combiner", ["sum", "mean"])
-@pytest.mark.parametrize("graph_mode", [True, False])
-def test_backward(input_shape, input_dim, dtype, indices_dtype, combiner, graph_mode):
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_backward(input_shape, input_dim, dtype, indices_dtype, combiner):
     indices = np.random.randint(low=0, high=input_dim, size=input_shape).astype(
         indices_dtype
     )
@@ -85,10 +87,7 @@ def test_backward(input_shape, input_dim, dtype, indices_dtype, combiner, graph_
     if weights is not None:
         weights = tf.convert_to_tensor(weights)
 
-    if graph_mode:
-        embedding_bag_fn = tf.function(_embedding_bag)
-    else:
-        embedding_bag_fn = _embedding_bag
+    embedding_bag_fn = tf.function(_embedding_bag)
 
     if combiner == "sum":
         with tf.GradientTape(persistent=True) as tape:
@@ -102,10 +101,11 @@ def test_backward(input_shape, input_dim, dtype, indices_dtype, combiner, graph_
         test_utils.assert_allclose_according_to_type(
             tf.convert_to_tensor(expected_grads[0]),
             tf.convert_to_tensor(grads[0]),
+            half_rtol=1e-2,
+            half_atol=1e-2,
         )
         test_utils.assert_allclose_according_to_type(
-            expected_grads[1],
-            grads[1],
+            expected_grads[1], grads[1], half_rtol=1e-2, half_atol=1e-2
         )
     else:
         with tf.GradientTape(persistent=True) as tape:
@@ -117,5 +117,8 @@ def test_backward(input_shape, input_dim, dtype, indices_dtype, combiner, graph_
         expected_grads = tape.gradient(expected, [params])
         # Gather returns sparse IndexedSlices so we have to sum them together.
         test_utils.assert_allclose_according_to_type(
-            tf.convert_to_tensor(expected_grads[0]), tf.convert_to_tensor(grads[0])
+            tf.convert_to_tensor(expected_grads[0]),
+            tf.convert_to_tensor(grads[0]),
+            half_rtol=1e-2,
+            half_atol=1e-2,
         )
