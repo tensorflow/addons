@@ -20,7 +20,7 @@ import numpy as np
 import tensorflow as tf
 
 # TODO: Remove once https://github.com/tensorflow/tensorflow/issues/44613 is resolved
-from tensorflow.python.keras.engine import keras_tensor
+from keras.engine import keras_tensor
 
 
 Number = Union[
