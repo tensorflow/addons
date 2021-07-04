@@ -70,7 +70,7 @@ jobs:
           NIGHTLY_TIME: ${{ steps.author-date.outputs.result }}
         shell: bash
         run: bash .github/workflows/make_wheel_${OS}.sh
-      - if: matrix.py-version != '3.9' || matrix.tf-version != '2.3.0'
+      - if: matrix.py-version != '3.9' || matrix.tf-version != '2.4.2'
         uses: actions/upload-artifact@v1
         with:
           name: ${{ runner.os }}-${{ matrix.py-version }}-tf${{ matrix.tf-version }}-wheel
