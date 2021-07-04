@@ -49,13 +49,8 @@ def _embedding_bag(
     Returns:
       A `Tensor` of the format specified by `data_format`.
     """
-    if weights is None and combiner == "sum":
+    if weights is None:
         weights = tf.ones_like(indices, dtype=params.dtype)
-    elif weights is None and combiner == "mean":
-        weights = tf.ones_like(indices, dtype=params.dtype) / tf.cast(
-            tf.shape(indices)[1], params.dtype
-        )
-        combiner = "sum"
     elif combiner != "sum":
         raise RuntimeError(
             "Combiner mode must be 'sum' when weights are supplied to EmbeddingBag!"
