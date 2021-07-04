@@ -20,7 +20,7 @@ import numpy as np
 import tensorflow as tf
 
 # TODO: Remove once https://github.com/tensorflow/tensorflow/issues/44613 is resolved
-if tf.__version__[:3] >= "2.5":
+if tf.__version__[:3] > "2.5":
     from keras.engine import keras_tensor
 else:
     from tf.python.keras.engine import keras_tensor
