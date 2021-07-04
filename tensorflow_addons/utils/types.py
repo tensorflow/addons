@@ -23,7 +23,7 @@ import tensorflow as tf
 if tf.__version__[:3] > "2.5":
     from keras.engine import keras_tensor
 else:
-    from tf.python.keras.engine import keras_tensor
+    from tensorflow.python.keras.engine import keras_tensor
 
 
 Number = Union[
