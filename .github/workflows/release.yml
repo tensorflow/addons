@@ -61,7 +61,7 @@ jobs:
         name: Setup Bazel
         # Ubuntu bazel is run inside of the docker image
         run: bash tools/install_deps/install_bazelisk.sh ./
-      - if: matrix.py-version != '3.9' || matrix.tf-version != '2.3.0'
+      - if: matrix.py-version != '3.9' || matrix.tf-version != '2.4.2'
         name: Build wheels
         env:
           OS: ${{ runner.os }}
