@@ -29,7 +29,7 @@ from tensorflow_addons.utils import resource_loader
 if tf.__version__[:3] > "2.5":
     from keras.testing_utils import layer_test  # noqa: F401
 else:
-    from tensorlfow.python.keras.testing_utils import layer_test  # noqa: F401
+    from tensorflow.python.keras.testing_utils import layer_test  # noqa: F401
 
 NUMBER_OF_WORKERS = int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", "1"))
 WORKER_ID = int(os.environ.get("PYTEST_XDIST_WORKER", "gw0")[2])
