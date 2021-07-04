@@ -78,13 +78,13 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
                 "with MovingAverage or StochasticAverage"
             )
 
-    def _save_model(self, batch, epoch, logs):
+    def _save_model(self, **kwargs):
         optimizer = self._get_optimizer()
         assert isinstance(optimizer, AveragedOptimizerWrapper)
 
         if self.update_weights:
             optimizer.assign_average_vars(self.model.variables)
-            return super()._save_model(epoch, batch, logs=logs)
+            return super()._save_model(**kwargs)
         else:
             # Note: `model.get_weights()` gives us the weights (non-ref)
             # whereas `model.variables` returns references to the variables.
@@ -92,6 +92,6 @@ class AverageModelCheckpoint(tf.keras.callbacks.ModelCheckpoint):
             optimizer.assign_average_vars(self.model.variables)
             # result is currently None, since `super._save_model` doesn't
             # return anything, but this may change in the future.
-            result = super()._save_model(epoch, batch, logs)
+            result = super()._save_model(**kwargs)
             self.model.set_weights(non_avg_weights)
             return result
