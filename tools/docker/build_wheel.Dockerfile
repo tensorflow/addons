@@ -1,7 +1,7 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 ARG TF_VERSION
 ARG PY_VERSION
-FROM angersson/tensorflow-build:latest-python3.7 as base_install
+FROM angersson/tensorflow-build:latest-python$PY_VERSION as base_install
 ENV TF_NEED_CUDA="1"
 
 # Required for setuptools v50.0.0
@@ -11,7 +11,7 @@ ENV SETUPTOOLS_USE_DISTUTILS=stdlib
 
 # Fix presented in
 # https://stackoverflow.com/questions/44967202/pip-is-showing-error-lsb-release-a-returned-non-zero-exit-status-1/44967506
-RUN echo "#! /usr/bin/python2.7" >> /usr/bin/lsb_release2
+RUN echo "#! /usr/bin/python$PY_VERSION" >> /usr/bin/lsb_release2
 RUN cat /usr/bin/lsb_release >> /usr/bin/lsb_release2
 RUN mv /usr/bin/lsb_release2 /usr/bin/lsb_release
 
