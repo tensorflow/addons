@@ -32,7 +32,7 @@ def sparsemax_loss(
 
     Computes the generalized multi-label classification loss for the sparsemax
     function. The implementation is a reformulation of the original loss
-    function such that it uses the sparsemax properbility output instead of the
+    function such that it uses the sparsemax probability output instead of the
     internal $ \tau $ variable. However, the output is identical to the original
     loss function.
 
