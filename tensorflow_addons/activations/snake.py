@@ -45,4 +45,4 @@ def snake(x: types.TensorLike, frequency: types.Number = 1) -> tf.Tensor:
     x = tf.convert_to_tensor(x)
     frequency = tf.cast(frequency, x.dtype)
 
-    return x + (1 - tf.cos(2 * frequency * x)) / (2 * frequency)
+    return (x + (1 - tf.cos(2 * frequency * x))) / (2 * frequency)
