@@ -44,21 +44,25 @@ def test_run():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_sparse():
-    var0 = tf.Variable([1.0, 2.0])
-    var1 = tf.Variable([3.0, 4.0])
+    var0 = tf.Variable([[1.0, 2.0, 0.0]])
+    var1 = tf.Variable([[3.0, 4.0, 0.0]])
 
-    grads0 = tf.constant([0.1, 0.1])
-    grads1 = tf.constant([0.01, 0.01])
-    grads0_np_indices = tf.constant([0, 1], dtype=tf.int32)
-    grads0 = tf.IndexedSlices(grads0, grads0_np_indices, tf.constant([2]))
-    grads1_np_indices = tf.constant([0, 1], dtype=tf.int32)
-    grads1 = tf.IndexedSlices(grads1, grads1_np_indices, tf.constant([2]))
+    grads0 = tf.IndexedSlices(
+        tf.constant([[0.1, 0.1, 0.0]]),
+        tf.constant([0]),
+        tf.constant([1, 3]),
+    )
+    grads1 = tf.IndexedSlices(
+        tf.constant([[0.01, 0.01, 0.0]]),
+        tf.constant([0]),
+        tf.constant([1, 3]),
+    )
 
     grads_and_vars = list(zip([grads0, grads1], [var0, var1]))
     opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=1.0, momentum=0.1))
     opt.apply_gradients(grads_and_vars)
-    np.testing.assert_allclose(var0.read_value(), [0.9, 1.9])
-    np.testing.assert_allclose(var1.read_value(), [2.99, 3.99])
+    np.testing.assert_allclose(var0.read_value(), [[0.9, 1.9, 0.0]])
+    np.testing.assert_allclose(var1.read_value(), [[2.99, 3.99, 0.0]])
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
