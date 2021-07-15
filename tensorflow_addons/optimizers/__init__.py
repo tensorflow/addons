@@ -32,6 +32,7 @@ from tensorflow_addons.optimizers.discriminative_layer_training import (
 from tensorflow_addons.optimizers.lamb import LAMB
 from tensorflow_addons.optimizers.lazy_adam import LazyAdam
 from tensorflow_addons.optimizers.lookahead import Lookahead
+from tensorflow_addons.optimizers.gradient_accumulator import GradientAccumulator
 from tensorflow_addons.optimizers.moving_average import MovingAverage
 from tensorflow_addons.optimizers.novograd import NovoGrad
 from tensorflow_addons.optimizers.proximal_adagrad import ProximalAdagrad
