@@ -34,18 +34,11 @@ def test_run():
 
     opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=1.0), accum_steps)
 
-    for _ in range(accum_steps):
+    for _ in range(accum_steps + 1):
         opt.apply_gradients(grads_and_vars)
 
-    np.testing.assert_allclose(var0.read_value(), [0.6, 1.6])
-    np.testing.assert_allclose(var1.read_value(), [2.96, 3.96])
-
-
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
-def test_opt_failure():
-    base_opt = None
-    with pytest.raises(TypeError):
-        GradientAccumulator(base_opt, 0.5)
+    np.testing.assert_allclose(var0.read_value(), [0.5, 1.5])
+    np.testing.assert_allclose(var1.read_value(), [2.95, 3.95])
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -64,7 +57,7 @@ def test_model_weights_not_update():
 
     opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=2.0), accum_steps=2)
     _ = opt.apply_gradients(list(zip([grad], model.variables)))
-    np.testing.assert_allclose(model.variables[0].read_value(), [[1.0]])
+    np.testing.assert_allclose(model.variables[0].read_value(), [[0.8]])
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
