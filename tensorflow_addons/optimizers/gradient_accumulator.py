@@ -105,16 +105,13 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
 
         def _apply():
             if "apply_state" in self._optimizer._sparse_apply_args:
-                train_op = self._optimizer._resource_apply_sparse(
+                train_op = self._optimizer._resource_apply_dense(
                     accum_gradient,
                     var,
-                    indices,
                     apply_state=apply_state,
                 )
             else:
-                train_op = self._optimizer._resource_apply_sparse(
-                    accum_gradient, var, indices
-                )
+                train_op = self._optimizer._resource_apply_dense(accum_gradient, var)
             reset_op = accum_gradient.assign(
                 tf.zeros_like(accum_gradient),
                 use_locking=self._use_locking,
