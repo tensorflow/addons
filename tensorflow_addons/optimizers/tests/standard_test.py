@@ -29,6 +29,7 @@ class_exceptions = [
     "ConditionalGradient",  # is wrapper
     "Lookahead",  # is wrapper
     "MovingAverage",  # is wrapper
+    "GradientAccumulator",  # is wrapper
 ]
 
 
