@@ -79,32 +79,18 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
                 grad, use_locking=self._use_locking, read_value=False
             )
 
-        def _apply():
-            if "apply_state" in self._optimizer._dense_apply_args:
-                train_op = self._optimizer._resource_apply_dense(
-                    accum_gradient, var, apply_state=apply_state
-                )
-            else:
-                train_op = self._optimizer._resource_apply_dense(accum_gradient, var)
-            reset_op = accum_gradient.assign(
-                tf.zeros_like(accum_gradient),
-                use_locking=self._use_locking,
-                read_value=False,
-            )
-            return tf.group(train_op, reset_op)
-
-        apply_op = tf.cond(
-            self.iterations % self._accum_steps == 0, _apply, lambda: tf.no_op()
-        )
-        return apply_op
+        return self._apply_grad(accum_gradient, var, apply_state)
 
     def _resource_apply_sparse(self, grad: types.TensorLike, var, indices, apply_state):
         accum_gradient = self.get_slot(var, "ga")
         if accum_gradient is not None and grad is not None:
             self._resource_scatter_add(accum_gradient, indices, grad)
 
+        return self._apply_grad(accum_gradient, var, apply_state)
+
+    def _apply_grad(self, accum_gradient, var, apply_state):
         def _apply():
-            if "apply_state" in self._optimizer._sparse_apply_args:
+            if "apply_state" in self._optimizer._dense_apply_args:
                 train_op = self._optimizer._resource_apply_dense(
                     accum_gradient,
                     var,
