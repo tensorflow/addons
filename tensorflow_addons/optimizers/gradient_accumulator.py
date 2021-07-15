@@ -96,7 +96,7 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
             return tf.group(train_op, reset_op)
 
         apply_op = tf.cond(
-            (self.iterations + 1) % self._accum_steps == 0, _apply, lambda: tf.no_op()
+            self.iterations % self._accum_steps == 0, _apply, lambda: tf.no_op()
         )
         return apply_op
 
@@ -125,7 +125,7 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
             return tf.group(train_op, reset_op)
 
         apply_op = tf.cond(
-            (self.iterations + 1) % self._accum_steps == 0, _apply, lambda: tf.no_op()
+            self.iterations % self._accum_steps == 0, _apply, lambda: tf.no_op()
         )
         return apply_op
 
