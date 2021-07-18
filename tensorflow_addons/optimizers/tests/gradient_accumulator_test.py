@@ -38,8 +38,8 @@ def test_run():
     for _ in range(accum_steps + 1):
         opt.apply_gradients(grads_and_vars)
 
-    np.testing.assert_allclose(var0.read_value(), [0.5, 1.5])
-    np.testing.assert_allclose(var1.read_value(), [2.95, 3.95])
+    np.testing.assert_allclose(var0.read_value(), [0.6, 1.6])
+    np.testing.assert_allclose(var1.read_value(), [2.96, 3.96])
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -61,8 +61,8 @@ def test_sparse():
     grads_and_vars = list(zip([grads0, grads1], [var0, var1]))
     opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=1.0, momentum=0.1))
     opt.apply_gradients(grads_and_vars)
-    np.testing.assert_allclose(var0.read_value(), [[0.9, 1.9, 0.0]])
-    np.testing.assert_allclose(var1.read_value(), [[2.99, 3.99, 0.0]])
+    np.testing.assert_allclose(var0.read_value(), [[1.0, 2.0, 0.0]])
+    np.testing.assert_allclose(var1.read_value(), [[3.0, 4.0, 0.0]])
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -87,8 +87,8 @@ def test_sparse_multi_gpus():
         grads_and_vars = list(zip([grads0, grads1], [var0, var1]))
         opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=1.0, momentum=0.1))
         strategy.run(opt.apply_gradients, [grads_and_vars])
-        np.testing.assert_allclose(var0.read_value(), [[0.9, 1.9, 0.0]])
-        np.testing.assert_allclose(var1.read_value(), [[2.99, 3.99, 0.0]])
+        np.testing.assert_allclose(var0.read_value(), [[1.0, 2.0, 0.0]])
+        np.testing.assert_allclose(var1.read_value(), [[3.0, 4.0, 0.0]])
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -107,7 +107,7 @@ def test_dense():
 
     opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=2.0), accum_steps=2)
     _ = opt.apply_gradients(list(zip([grad], model.variables)))
-    np.testing.assert_allclose(model.variables[0].read_value(), [[0.8]])
+    np.testing.assert_allclose(model.variables[0].read_value(), [[1.0]])
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -168,6 +168,7 @@ def test_serialization():
     assert new_optimizer.get_config() == optimizer.get_config()
 
 
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.usefixtures("run_with_mixed_precision_policy")
 def test_model_mixed_precision():
     x = np.random.standard_normal((10000, 3))

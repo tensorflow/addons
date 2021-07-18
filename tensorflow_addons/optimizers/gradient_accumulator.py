@@ -69,8 +69,15 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
         )
 
     def apply_gradients(self, grads_and_vars, name=None, **kwargs):
-        self._optimizer._iterations = self.iterations
-        return super().apply_gradients(grads_and_vars, name, **kwargs)
+        train_op = super().apply_gradients(grads_and_vars, name, **kwargs)
+        with tf.control_dependencies([train_op]):
+            assign_op = self._optimizer.iterations.assign_add(
+                tf.cast(
+                    tf.where(self.iterations % self._accum_steps == 0, 1, 0), tf.int64
+                ),
+                read_value=False,
+            )
+        return assign_op
 
     def _resource_apply_dense(self, grad, var, apply_state=None):
         accum_gradient = self.get_slot(var, "ga")
@@ -89,26 +96,29 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
         return self._apply_grad(accum_gradient, var, apply_state)
 
     def _apply_grad(self, accum_gradient, var, apply_state):
-        def _apply():
-            if "apply_state" in self._optimizer._dense_apply_args:
-                train_op = self._optimizer._resource_apply_dense(
-                    accum_gradient,
-                    var,
-                    apply_state=apply_state,
-                )
-            else:
-                train_op = self._optimizer._resource_apply_dense(accum_gradient, var)
-            reset_op = accum_gradient.assign(
-                tf.zeros_like(accum_gradient),
-                use_locking=self._use_locking,
-                read_value=False,
-            )
-            return tf.group(train_op, reset_op)
-
-        apply_op = tf.cond(
-            self.iterations % self._accum_steps == 0, _apply, lambda: tf.no_op()
+        grad = tf.where(
+            (self.iterations + 1) % self._accum_steps == 0,
+            accum_gradient,
+            tf.zeros_like(var),
         )
-        return apply_op
+        if "apply_state" in self._optimizer._dense_apply_args:
+            train_op = self._optimizer._resource_apply_dense(
+                grad,
+                var,
+                apply_state=apply_state,
+            )
+        else:
+            train_op = self._optimizer._resource_apply_dense(grad, var)
+        reset_val = tf.where(
+            grad == accum_gradient, tf.zeros_like(accum_gradient), accum_gradient
+        )
+        reset_op = accum_gradient.assign(
+            reset_val,
+            use_locking=self._use_locking,
+            read_value=False,
+        )
+
+        return tf.group(train_op, reset_op)
 
     def reset(self):
         """Resets the accumulated gradients on the current replica."""
