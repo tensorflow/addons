@@ -88,7 +88,7 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
                     return new_grad
 
                 new_grad = tf.cond(
-                    (self.iterations + 1) % self._accum_steps == 0,
+                    (self.step + 1) % self._accum_steps == 0,
                     _get_grad,
                     lambda: fake_grad,
                 )
