@@ -46,17 +46,60 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
         """
         super().__init__(name, **kwargs)
         self._optimizer = tf.keras.optimizers.get(inner_optimizer)
-        self._gradients = []
-        self._accum_steps = accum_steps
         self._step = None
+        self._gradients = {}
+        self._accum_steps = accum_steps
+
+        def _accum_grad(grads_and_vars):
+            with tf.init_scope():
+                if not self._gradients:
+                    for grad, var in grads_and_vars:
+                        if tf.distribute.has_strategy():
+                            for v in var.values:
+                                self._gradients[v.ref()] = tf.Variable(
+                                    tf.zeros_like(v), trainable=False
+                                )
+                        else:
+                            self._gradients[var.ref()] = tf.Variable(
+                                tf.zeros_like(var), trainable=False
+                            )
+            new_grads_and_vars = []
+            for grad, var in grads_and_vars:
+                if tf.distribute.has_strategy():
+                    replica_id = tf.get_static_value(
+                        tf.distribute.get_replica_context().replica_id_in_sync_group
+                    )
+                    handle = self._gradients[var.values[replica_id].ref()]
+                else:
+                    handle = self._gradients[var.ref()]
+
+                if isinstance(grad, tf.IndexedSlices):
+                    handle.scatter_add(grad)
+                    fake_grad = tf.IndexedSlices(
+                        tf.zeros_like(grad.values), grad.indices, grad.dense_shape
+                    )
+                else:
+                    handle.assign_add(grad)
+                    fake_grad = tf.zeros_like(var)
+
+                def _get_grad():
+                    new_grad = handle.read_value()
+                    handle.assign(tf.zeros_like(handle), use_locking=self._use_locking)
+                    return new_grad
+
+                new_grad = tf.cond(
+                    (self.iterations + 1) % self._accum_steps == 0,
+                    _get_grad,
+                    lambda: fake_grad,
+                )
+                new_grads_and_vars.append((new_grad, var))
+            return new_grads_and_vars
+
+        self.gradient_transformers.append(_accum_grad)
         self._iterations = self._optimizer.iterations
 
     def _create_slots(self, var_list):
         self._optimizer._create_slots(var_list=var_list)
-        for var in var_list:
-            self.add_slot(var, "ga")
-
-        self._gradients = [self.get_slot(var, "ga") for var in var_list]
 
     @property
     def step(self):
@@ -93,7 +136,7 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
             )
         return list(
             gradient.read_value() if gradient is not None else gradient
-            for gradient in self._gradients
+            for _, gradient in self._gradients
         )
 
     def apply_gradients(self, grads_and_vars, name=None, **kwargs):
@@ -112,27 +155,6 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
                 return self.step.assign_add(1, read_value=False)
 
     def _resource_apply_dense(self, grad, var, apply_state=None):
-        accum_gradient = self.get_slot(var, "ga")
-        if accum_gradient is not None and grad is not None:
-            accum_gradient.assign_add(
-                grad, use_locking=self._use_locking, read_value=False
-            )
-
-        return self._apply_grad(accum_gradient, var, apply_state)
-
-    def _resource_apply_sparse(self, grad: types.TensorLike, var, indices, apply_state):
-        accum_gradient = self.get_slot(var, "ga")
-        if accum_gradient is not None and grad is not None:
-            self._resource_scatter_add(accum_gradient, indices, grad)
-
-        return self._apply_grad(accum_gradient, var, apply_state)
-
-    def _apply_grad(self, accum_gradient, var, apply_state):
-        grad = tf.where(
-            self.step % self._accum_steps == 0,
-            accum_gradient,
-            tf.zeros_like(var),
-        )
         if "apply_state" in self._optimizer._dense_apply_args:
             train_op = self._optimizer._resource_apply_dense(
                 grad,
@@ -141,16 +163,16 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
             )
         else:
             train_op = self._optimizer._resource_apply_dense(grad, var)
-        reset_val = tf.where(
-            grad == accum_gradient, tf.zeros_like(accum_gradient), accum_gradient
-        )
-        reset_op = accum_gradient.assign(
-            reset_val,
-            use_locking=self._use_locking,
-            read_value=False,
-        )
+        return train_op
 
-        return tf.group(train_op, reset_op)
+    def _resource_apply_sparse(self, grad: types.TensorLike, var, indices, apply_state):
+        if "apply_state" in self._optimizer._sparse_apply_args:
+            train_op = self._optimizer._resource_apply_sparse(
+                grad, var, indices, apply_state=apply_state
+            )
+        else:
+            train_op = self._optimizer._resource_apply_sparse(grad, var, indices)
+        return train_op
 
     def reset(self):
         """Resets the accumulated gradients on the current replica."""
@@ -158,7 +180,7 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
         if not self._gradients:
             return assign_ops
 
-        for gradient in self._gradients:
+        for _, gradient in self._gradients:
             if gradient is not None:
                 assign_ops.append(
                     gradient.assign(
