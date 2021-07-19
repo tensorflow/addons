@@ -75,33 +75,36 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
 
                 if isinstance(grad, tf.IndexedSlices):
                     handle.scatter_add(grad)
-                    fake_grad = tf.IndexedSlices(
-                        tf.zeros_like(grad.values), grad.indices, grad.dense_shape
-                    )
 
                     def _get_grad():
                         new_grad = handle.read_value()
-                        indices = tf.nest.flatten(
+                        indices = tf.squeeze(
                             tf.where(
                                 tf.reduce_sum(
                                     new_grad, axis=list(range(len(new_grad.shape))[1:])
                                 )
                                 != 0
-                            )
+                            ),
+                            axis=-1,
                         )
+
                         values = tf.gather(new_grad, indices)
-                        dense_shape = new_grad.shape
-                        new_grad = tf.IndexedSlices(values, indices, dense_shape)
+                        dense_shape = tf.constant(new_grad.shape.as_list())
                         handle.assign(
                             tf.zeros_like(handle), use_locking=self._use_locking
                         )
-                        return new_grad
+                        return values, tf.cast(indices, tf.int32), dense_shape
 
-                    new_grad = tf.cond(
+                    values, indices, dense_shape = tf.cond(
                         self.step % self._accum_steps == 0,
                         _get_grad,
-                        lambda: fake_grad,
+                        lambda: (
+                            tf.zeros_like(grad.values),
+                            grad.indices,
+                            grad.dense_shape,
+                        ),
                     )
+                    new_grad = tf.IndexedSlices(values, indices, dense_shape)
                     new_grads_and_vars.append((new_grad, var))
                 else:
                     handle.assign_add(grad)
