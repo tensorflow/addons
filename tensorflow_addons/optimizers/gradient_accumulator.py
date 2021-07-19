@@ -24,7 +24,7 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
     @typechecked
     def __init__(
         self,
-        optimizer: types.Optimizer,
+        inner_optimizer: types.Optimizer,
         accum_steps: types.TensorLike = 4,
         name: str = "GradientAccumulator",
         **kwargs,
@@ -32,7 +32,7 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
         r"""Construct a new GradientAccumulator optimizer.
 
         Args:
-            optimizer: str or `tf.keras.optimizers.Optimizer` that will be
+            inner_optimizer: str or `tf.keras.optimizers.Optimizer` that will be
                 used to compute and apply gradients.
             accum_steps: int > 0. Update gradient in every accumulation steps.
             name: Optional name for the operations created when applying
@@ -44,10 +44,12 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
                 decay of learning rate. `lr` is included for backward
                 compatibility, recommended to use `learning_rate` instead.
         """
-        super().__init__(name, **kwargs)
-        self._optimizer = tf.keras.optimizers.get(optimizer)
+        self._optimizer = tf.keras.optimizers.get(inner_optimizer)
         self._gradients = []
         self._accum_steps = accum_steps
+        self._step = None
+        self._iteraions = self._optimizer.iterations
+        super().__init__(name, **kwargs)
 
     def _create_slots(self, var_list):
         self._optimizer._create_slots(var_list=var_list)
@@ -55,6 +57,32 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
             self.add_slot(var, "ga")
 
         self._gradients = [self.get_slot(var, "ga") for var in var_list]
+
+    @property
+    def step(self):
+        """Variable. The number of training steps this Optimizer has run."""
+        if self._step is None:
+            with self._distribution_strategy_scope():
+                self._step = self.add_weight(
+                    "iter",
+                    shape=[],
+                    initializer="ones",
+                    dtype=tf.int64,
+                    trainable=False,
+                    aggregation=tf.VariableAggregation.ONLY_FIRST_REPLICA,
+                )
+            self._weights.append(self._step)
+        return self._step
+
+    @step.setter
+    def step(self, variable):
+        if self._step is not None:
+            raise RuntimeError(
+                "Cannot set `step` to a new Variable after "
+                "the Optimizer weights have been created"
+            )
+        self._step = variable
+        self._weights.append(self._step)
 
     @property
     def gradients(self):
@@ -71,13 +99,17 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
     def apply_gradients(self, grads_and_vars, name=None, **kwargs):
         train_op = super().apply_gradients(grads_and_vars, name, **kwargs)
         with tf.control_dependencies([train_op]):
-            assign_op = self._optimizer.iterations.assign_add(
-                tf.cast(
-                    tf.where(self.iterations % self._accum_steps == 0, 1, 0), tf.int64
-                ),
-                read_value=False,
-            )
-        return assign_op
+            with tf.control_dependencies(
+                [
+                    self._optimizer.iterations.assign_add(
+                        tf.cast(
+                            tf.where(self.step % self._accum_steps == 0, 1, 0), tf.int64
+                        ),
+                        read_value=False,
+                    )
+                ]
+            ):
+                return self.step.assign_add(1, read_value=False)
 
     def _resource_apply_dense(self, grad, var, apply_state=None):
         accum_gradient = self.get_slot(var, "ga")
@@ -97,7 +129,7 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
 
     def _apply_grad(self, accum_gradient, var, apply_state):
         grad = tf.where(
-            (self.iterations + 1) % self._accum_steps == 0,
+            self.step % self._accum_steps == 0,
             accum_gradient,
             tf.zeros_like(var),
         )
@@ -137,6 +169,19 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
                 )
 
         return tf.group(assign_ops)
+
+    @property
+    def inner_optimizer(self):
+        """The optimizer that this LossScaleOptimizer is wrapping."""
+        return self._optimizer
+
+    @property
+    def iterations(self):
+        return self._optimizer.iterations
+
+    @iterations.setter
+    def iterations(self, variable):
+        self._optimizer.iterations = variable
 
     @property
     def lr(self):
