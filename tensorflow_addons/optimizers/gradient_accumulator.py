@@ -87,7 +87,7 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
                                     new_grad, axis=list(range(len(new_grad.shape))[1:])
                                 )
                                 != 0
-                            )[0]
+                            )
                         )
                         values = tf.gather(new_grad, indices)
                         dense_shape = new_grad.shape
