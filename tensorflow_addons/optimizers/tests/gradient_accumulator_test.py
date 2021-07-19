@@ -44,12 +44,12 @@ def test_run():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_sparse():
-    var0 = tf.Variable([[1.0, 2.0, 0.0]])
+    var0 = tf.Variable([[1.0, 2.0, 0.0], [1.0, 2.0, 0.0]])
     var1 = tf.Variable([[3.0, 4.0, 0.0]])
 
     grads0 = tf.IndexedSlices(
         tf.constant([[0.1, 0.1, 0.0]]),
-        tf.constant([0]),
+        tf.constant([1]),
         tf.constant([1, 3]),
     )
     grads1 = tf.IndexedSlices(
@@ -59,10 +59,11 @@ def test_sparse():
     )
 
     grads_and_vars = list(zip([grads0, grads1], [var0, var1]))
-    opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=1.0, momentum=0.1))
-    opt.apply_gradients(grads_and_vars)
-    np.testing.assert_allclose(var0.read_value(), [[1.0, 2.0, 0.0]])
-    np.testing.assert_allclose(var1.read_value(), [[3.0, 4.0, 0.0]])
+    opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=1.0))
+    for _ in range(8):
+        opt.apply_gradients(grads_and_vars)
+    np.testing.assert_allclose(var0.read_value(), [[1.0, 2.0, 0.0], [0.2, 1.2, 0.0]])
+    np.testing.assert_allclose(var1.read_value(), [[2.92, 3.92, 0.0]])
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -85,7 +86,7 @@ def test_sparse_multi_gpus():
         )
 
         grads_and_vars = list(zip([grads0, grads1], [var0, var1]))
-        opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=1.0, momentum=0.1))
+        opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=1.0))
         strategy.run(opt.apply_gradients, [grads_and_vars])
         np.testing.assert_allclose(var0.read_value(), [[1.0, 2.0, 0.0]])
         np.testing.assert_allclose(var1.read_value(), [[3.0, 4.0, 0.0]])

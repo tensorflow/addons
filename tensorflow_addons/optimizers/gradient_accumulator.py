@@ -78,21 +78,48 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
                     fake_grad = tf.IndexedSlices(
                         tf.zeros_like(grad.values), grad.indices, grad.dense_shape
                     )
+
+                    def _get_grad():
+                        new_grad = handle.read_value()
+                        indices = tf.nest.flatten(
+                            tf.where(
+                                tf.reduce_sum(
+                                    new_grad, axis=list(range(len(new_grad.shape))[1:])
+                                )
+                                != 0
+                            )[0]
+                        )
+                        values = tf.gather(new_grad, indices)
+                        dense_shape = new_grad.shape
+                        new_grad = tf.IndexedSlices(values, indices, dense_shape)
+                        handle.assign(
+                            tf.zeros_like(handle), use_locking=self._use_locking
+                        )
+                        return new_grad
+
+                    new_grad = tf.cond(
+                        self.step % self._accum_steps == 0,
+                        _get_grad,
+                        lambda: fake_grad,
+                    )
+                    new_grads_and_vars.append((new_grad, var))
                 else:
                     handle.assign_add(grad)
                     fake_grad = tf.zeros_like(var)
 
-                def _get_grad():
-                    new_grad = handle.read_value()
-                    handle.assign(tf.zeros_like(handle), use_locking=self._use_locking)
-                    return new_grad
+                    def _get_grad():
+                        new_grad = handle.read_value()
+                        handle.assign(
+                            tf.zeros_like(handle), use_locking=self._use_locking
+                        )
+                        return new_grad
 
-                new_grad = tf.cond(
-                    self.step % self._accum_steps == 0,
-                    _get_grad,
-                    lambda: fake_grad,
-                )
-                new_grads_and_vars.append((new_grad, var))
+                    new_grad = tf.cond(
+                        self.step % self._accum_steps == 0,
+                        _get_grad,
+                        lambda: fake_grad,
+                    )
+                    new_grads_and_vars.append((new_grad, var))
             return new_grads_and_vars
 
         self._optimizer.gradient_transformers.append(_accum_grad)
