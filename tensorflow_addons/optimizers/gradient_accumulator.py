@@ -95,7 +95,7 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
                 new_grads_and_vars.append((new_grad, var))
             return new_grads_and_vars
 
-        self.gradient_transformers.append(_accum_grad)
+        self._optimizer.gradient_transformers.append(_accum_grad)
         self._iterations = self._optimizer.iterations
 
     def _create_slots(self, var_list):
@@ -140,7 +140,7 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
         )
 
     def apply_gradients(self, grads_and_vars, name=None, **kwargs):
-        train_op = super().apply_gradients(grads_and_vars, name, **kwargs)
+        train_op = self._optimizer.apply_gradients(grads_and_vars, name, **kwargs)
         with tf.control_dependencies([train_op]):
             with tf.control_dependencies(
                 [
@@ -153,26 +153,6 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
                 ]
             ):
                 return self.step.assign_add(1, read_value=False)
-
-    def _resource_apply_dense(self, grad, var, apply_state=None):
-        if "apply_state" in self._optimizer._dense_apply_args:
-            train_op = self._optimizer._resource_apply_dense(
-                grad,
-                var,
-                apply_state=apply_state,
-            )
-        else:
-            train_op = self._optimizer._resource_apply_dense(grad, var)
-        return train_op
-
-    def _resource_apply_sparse(self, grad: types.TensorLike, var, indices, apply_state):
-        if "apply_state" in self._optimizer._sparse_apply_args:
-            train_op = self._optimizer._resource_apply_sparse(
-                grad, var, indices, apply_state=apply_state
-            )
-        else:
-            train_op = self._optimizer._resource_apply_sparse(grad, var, indices)
-        return train_op
 
     def reset(self):
         """Resets the accumulated gradients on the current replica."""
