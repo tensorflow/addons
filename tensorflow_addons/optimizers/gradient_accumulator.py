@@ -44,12 +44,12 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
                 decay of learning rate. `lr` is included for backward
                 compatibility, recommended to use `learning_rate` instead.
         """
+        super().__init__(name, **kwargs)
         self._optimizer = tf.keras.optimizers.get(inner_optimizer)
         self._gradients = []
         self._accum_steps = accum_steps
         self._step = None
-        self._iteraions = self._optimizer.iterations
-        super().__init__(name, **kwargs)
+        self._iterations = self._optimizer.iterations
 
     def _create_slots(self, var_list):
         self._optimizer._create_slots(var_list=var_list)
