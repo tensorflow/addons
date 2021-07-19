@@ -175,9 +175,7 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
             with tf.control_dependencies(
                 [
                     self._optimizer.iterations.assign_add(
-                        tf.cast(
-                            tf.where(self.step % self._accum_steps == 0, 1, 0), tf.int64
-                        ),
+                        tf.cast(self.step % self._accum_steps == 0, tf.int64),
                         read_value=False,
                     )
                 ]
