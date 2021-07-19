@@ -26,6 +26,7 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
         self,
         inner_optimizer: types.Optimizer,
         accum_steps: types.TensorLike = 4,
+        reduction: str = "SUM",
         name: str = "GradientAccumulator",
         **kwargs,
     ):
@@ -35,6 +36,7 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
             inner_optimizer: str or `tf.keras.optimizers.Optimizer` that will be
                 used to compute and apply gradients.
             accum_steps: int > 0. Update gradient in every accumulation steps.
+            reduction: str, Reduction method ['SUM', 'MEAN']
             name: Optional name for the operations created when applying
                 gradients. Defaults to "GradientAccumulator".
             **kwargs: keyword arguments. Allowed to be {`clipnorm`,
@@ -49,6 +51,7 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
         self._step = None
         self._gradients = {}
         self._accum_steps = accum_steps
+        self._reduction = reduction
 
         def _accum_grad(grads_and_vars):
             with tf.init_scope():
@@ -78,6 +81,8 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
 
                     def _get_grad():
                         new_grad = handle.read_value()
+                        if self._reduction == "MEAN":
+                            new_grad /= tf.cast(self._accum_steps, new_grad.dtype)
                         indices = tf.squeeze(
                             tf.where(
                                 tf.reduce_sum(
@@ -108,10 +113,11 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
                     new_grads_and_vars.append((new_grad, var))
                 else:
                     handle.assign_add(grad)
-                    fake_grad = tf.zeros_like(var)
 
                     def _get_grad():
                         new_grad = handle.read_value()
+                        if self._reduction == "MEAN":
+                            new_grad /= tf.cast(self._accum_steps, new_grad.dtype)
                         handle.assign(
                             tf.zeros_like(handle), use_locking=self._use_locking
                         )
@@ -120,7 +126,7 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
                     new_grad = tf.cond(
                         self.step % self._accum_steps == 0,
                         _get_grad,
-                        lambda: fake_grad,
+                        lambda: tf.zeros_like(grad),
                     )
                     new_grads_and_vars.append((new_grad, var))
             return new_grads_and_vars
