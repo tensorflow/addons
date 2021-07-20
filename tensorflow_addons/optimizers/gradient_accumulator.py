@@ -57,24 +57,12 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
             with tf.init_scope():
                 if not self._gradients:
                     for grad, var in grads_and_vars:
-                        if tf.distribute.has_strategy():
-                            for v in var.values:
-                                self._gradients[v.ref()] = tf.Variable(
-                                    tf.zeros_like(v), trainable=False
-                                )
-                        else:
-                            self._gradients[var.ref()] = tf.Variable(
-                                tf.zeros_like(var), trainable=False
-                            )
+                        self._gradients[var.ref()] = tf.Variable(
+                            tf.zeros_like(var), trainable=False
+                        )
             new_grads_and_vars = []
             for grad, var in grads_and_vars:
-                if tf.distribute.has_strategy():
-                    replica_id = tf.get_static_value(
-                        tf.distribute.get_replica_context().replica_id_in_sync_group
-                    )
-                    handle = self._gradients[var.values[replica_id].ref()]
-                else:
-                    handle = self._gradients[var.ref()]
+                handle = self._gradients[var.ref()]
 
                 if isinstance(grad, tf.IndexedSlices):
                     handle.scatter_add(grad)
