@@ -35,7 +35,9 @@ def test_run():
 
     variables = [var for _, var in grads_and_vars]
 
-    opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=1.0), accum_steps, trainable_variables=variables)
+    opt = GradientAccumulator(
+        tf.keras.optimizers.SGD(lr=1.0), accum_steps, trainable_variables=variables
+    )
 
     for _ in range(accum_steps + 1):
         opt.apply_gradients(grads_and_vars)
@@ -63,10 +65,16 @@ def test_sparse():
     grads_and_vars = list(zip([grads0, grads1], [var0, var1]))
     variables = [var for _, var in grads_and_vars]
     accu_steps = 2
-    opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=1.0), accu_steps=accu_steps, trainable_variables=variables)
+    opt = GradientAccumulator(
+        tf.keras.optimizers.SGD(lr=1.0),
+        accu_steps=accu_steps,
+        trainable_variables=variables,
+    )
     for _ in range(accu_steps * 4):
         opt.apply_gradients(grads_and_vars)
-    np.testing.assert_allclose(var0.read_value(), [[1.0, 2.0, 0.0], [0.2, 1.2, 0.0]], rtol=1e-5)
+    np.testing.assert_allclose(
+        var0.read_value(), [[1.0, 2.0, 0.0], [0.2, 1.2, 0.0]], rtol=1e-5
+    )
     np.testing.assert_allclose(var1.read_value(), [[2.92, 3.92, 0.0]])
 
 
@@ -91,7 +99,9 @@ def test_sparse_multi_gpus():
 
         grads_and_vars = list(zip([grads0, grads1], [var0, var1]))
         variables = [var for _, var in grads_and_vars]
-        opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=1.0), trainable_variables=variables)
+        opt = GradientAccumulator(
+            tf.keras.optimizers.SGD(lr=1.0), trainable_variables=variables
+        )
         strategy.run(opt.apply_gradients, [grads_and_vars])
         np.testing.assert_allclose(var0.read_value(), [[1.0, 2.0, 0.0]])
         np.testing.assert_allclose(var1.read_value(), [[3.0, 4.0, 0.0]])
@@ -112,7 +122,9 @@ def test_dense():
     model.build(input_shape=[1, 1])
 
     variables = model.trainable_variables
-    opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=1.0), accu_steps=2, trainable_variables=variables)
+    opt = GradientAccumulator(
+        tf.keras.optimizers.SGD(lr=1.0), accu_steps=2, trainable_variables=variables
+    )
     _ = opt.apply_gradients(list(zip([grad], model.variables)))
     np.testing.assert_allclose(model.variables[0].read_value(), [[1.0]])
 
