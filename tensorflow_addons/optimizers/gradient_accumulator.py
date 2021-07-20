@@ -59,9 +59,11 @@ class AccumulationGradientTransformer:
             grad_accum = accu_gradients[var.ref()] * accumulate
 
             if isinstance(grad, tf.IndexedSlices):
+                # Not sure why e.g. the Embedding layer requires an additional dimension here
+                grad_indices = grad.indices[..., None] if len(grad.indices.shape) < 2 else grad.indices
                 added = tf.IndexedSlices(
                     values=grad.values
-                    + tf.gather_nd(grad_accum, grad.indices[..., None]),
+                    + tf.gather_nd(grad_accum, grad_indices),
                     indices=grad.indices,
                     dense_shape=grad.dense_shape,
                 )

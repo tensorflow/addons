@@ -17,9 +17,10 @@
 import numpy as np
 import pytest
 import tensorflow as tf
+from tensorflow.python.data.experimental import AutoShardPolicy
+
 from tensorflow_addons.utils import test_utils
 from tensorflow.keras import layers
-from tensorflow import keras
 from tensorflow_addons.optimizers import GradientAccumulator
 
 
@@ -211,11 +212,15 @@ def test_embedding():
             y = np.asarray([np.random.rand()])
             yield x, y
 
-        return tf.data.Dataset.from_generator(
+        dataset = tf.data.Dataset.from_generator(
             generator=_generator_fn,
             output_types=(tf.int32, tf.float32),
             output_shapes=((None,), (1,)),
         ).padded_batch(batch_size)
+        options = tf.data.Options()
+        options.experimental_distribute.auto_shard_policy = AutoShardPolicy.DATA
+        dataset.with_options(options)
+        return dataset
 
     strategy = tf.distribute.MirroredStrategy(test_utils.gpus_for_testing())
 
@@ -225,6 +230,48 @@ def test_embedding():
         inputs = layers.Input(shape=(None,), dtype=tf.int32)
         x = inputs
         x = layers.Embedding(input_dim=vocab_size, output_dim=8)(x)
+        x = layers.Dense(1)(x)
+        model = tf.keras.models.Model(inputs=inputs, outputs=x)
+
+        optimizer = GradientAccumulator(
+            optimizer="adam", trainable_variables=model.trainable_variables
+        )
+
+    model.compile(optimizer=optimizer, loss="mse")
+
+    data = _get_dataset(vocab_size).repeat()
+
+    model.fit(data, epochs=1, steps_per_epoch=5)
+
+
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
+def test_lstm():
+    def _get_dataset(vocab_size: int, batch_size: int = 10):
+        def _generator_fn():
+            size = np.random.randint(5, 10)
+            x = np.random.randint(low=0, high=vocab_size, size=size)
+            y = np.asarray([np.random.rand()])
+            yield x, y
+
+        dataset = tf.data.Dataset.from_generator(
+            generator=_generator_fn,
+            output_types=(tf.int32, tf.float32),
+            output_shapes=((None,), (1,)),
+        ).padded_batch(batch_size)
+        options = tf.data.Options()
+        options.experimental_distribute.auto_shard_policy = AutoShardPolicy.DATA
+        dataset.with_options(options)
+        return dataset
+
+    strategy = tf.distribute.MirroredStrategy(test_utils.gpus_for_testing())
+
+    vocab_size = 10
+
+    with strategy.scope():
+        inputs = layers.Input(shape=(None,), dtype=tf.int32)
+        x = inputs
+        x = layers.Embedding(input_dim=vocab_size, output_dim=8)(x)
+        x = layers.LSTM(4)(x)
         x = layers.Dense(1)(x)
         model = tf.keras.models.Model(inputs=inputs, outputs=x)
 
