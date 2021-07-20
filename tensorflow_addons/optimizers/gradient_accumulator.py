@@ -60,7 +60,8 @@ class AccumulationGradientTransformer:
 
             if isinstance(grad, tf.IndexedSlices):
                 added = tf.IndexedSlices(
-                    values=grad.values + tf.gather_nd(grad_accum, grad.indices),
+                    values=grad.values
+                    + tf.gather_nd(grad_accum, grad.indices[..., None]),
                     indices=grad.indices,
                     dense_shape=grad.dense_shape,
                 )
