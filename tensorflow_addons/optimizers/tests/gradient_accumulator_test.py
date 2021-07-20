@@ -38,7 +38,7 @@ def test_run():
     variables = [var for _, var in grads_and_vars]
 
     opt = GradientAccumulator(
-        tf.keras.optimizers.SGD(lr=1.0), accum_steps, trainable_variables=variables
+        tf.keras.optimizers.SGD(lr=1.0), variables, accu_steps=accum_steps,
     )
 
     for _ in range(accum_steps + 1):
@@ -69,13 +69,13 @@ def test_sparse():
     accu_steps = 2
     opt = GradientAccumulator(
         tf.keras.optimizers.SGD(lr=1.0),
-        accu_steps=accu_steps,
         trainable_variables=variables,
+        accu_steps=accu_steps,
     )
     for _ in range(accu_steps * 4):
         opt.apply_gradients(grads_and_vars)
     np.testing.assert_allclose(
-        var0.read_value(), [[1.0, 2.0, 0.0], [0.2, 1.2, 0.0]], rtol=1e-5
+        var0.read_value(), [[1.0, 2.0, 0.0], [0.2, 1.2, 0.0]], rtol=1e-6
     )
     np.testing.assert_allclose(var1.read_value(), [[2.92, 3.92, 0.0]])
 
@@ -125,7 +125,7 @@ def test_dense():
 
     variables = model.trainable_variables
     opt = GradientAccumulator(
-        tf.keras.optimizers.SGD(lr=1.0), accu_steps=2, trainable_variables=variables
+        tf.keras.optimizers.SGD(lr=1.0), trainable_variables=variables, accu_steps=2,
     )
     _ = opt.apply_gradients(list(zip([grad], model.variables)))
     np.testing.assert_allclose(model.variables[0].read_value(), [[1.0]])
@@ -133,16 +133,17 @@ def test_dense():
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_optimizer_string():
-    _ = GradientAccumulator("adam")
+    _ = GradientAccumulator("adam", trainable_variables=[])
 
 
 # def test_config():
 #     sgd_opt = tf.keras.optimizers.SGD(lr=2.0, nesterov=True, momentum=0.3, decay=0.1)
 #     accum_steps = 4
-#     opt = GradientAccumulator(sgd_opt, accum_steps=accum_steps)
+#     opt = GradientAccumulator(sgd_opt, trainable_variables=[], accu_steps=accum_steps)
+#     print(str(opt))
 #     config = opt.get_config()
 #
-#     assert config["accum_steps"] == accum_steps
+#     assert config["accu_steps"] == accum_steps
 #
 #     new_opt = GradientAccumulator.from_config(config)
 #     old_sgd_config = opt._optimizer.get_config()
@@ -183,7 +184,7 @@ def test_fit_simple_linear_model():
 
 def test_serialization():
     sgd_opt = tf.keras.optimizers.SGD(lr=2.0, nesterov=True, momentum=0.3, decay=0.1)
-    optimizer = GradientAccumulator(sgd_opt)
+    optimizer = GradientAccumulator(sgd_opt, trainable_variables=[])
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)
     assert new_optimizer.get_config() == optimizer.get_config()
