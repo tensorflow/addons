@@ -1,17 +1,3 @@
-# Copyright 2021 The TensorFlow Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
 from typing import Union, Dict, Hashable, List
 
 import tensorflow as tf
@@ -83,6 +69,77 @@ class AccumulationGradientTransformer:
         with tf.control_dependencies(accum_ops + [iter_dec_op]):
             gradients = [accu_gradients[var.ref()] * can_apply for var in variables]
             return list(zip(gradients, variables))
+
+
+# class _Override:
+#
+#     def __init__(self, fn):
+#         self.fn = fn
+#
+#     def __call__(self, *args, **kwargs):
+#         return self.fn(*args, **kwargs)
+#
+#
+# def override(fn):
+#     return _Override(fn)
+#
+#
+# class OptimizerWrapper(tf.keras.optimizers.Optimizer, abc.ABC):
+#     inner_optimizer: types.Optimizer = None
+#
+#     def __init__(self, optimizer: types.Optimizer, name, **kwargs):
+#         if isinstance(optimizer, str):
+#             self.inner_optimizer = tf.keras.optimizers.get(optimizer)
+#         else:
+#             self.inner_optimizer = optimizer
+#         super().__init__(name, **kwargs)
+#
+#     def __getattribute__(self, item):
+#
+#         try:
+#             self_item = super(tf.keras.optimizers.Optimizer, self).__getattribute__(item)
+#             if item == "inner_optimizer":
+#                 return self_item
+#             if isinstance(self_item, _Override):
+#                 return self_item(self)
+#         except AttributeError:
+#             pass
+#
+#         inner_optimizer = super(tf.keras.optimizers.Optimizer, self).__getattribute__("inner_optimizer")
+#         return getattr(inner_optimizer, item)
+#
+#     def __getitem__(self, item):
+#         return self
+#
+#
+# class GradientAccumulator(OptimizerWrapper):
+#
+#     def __init__(
+#         self,
+#         optimizer: types.Optimizer,
+#         trainable_variables,
+#         accu_steps: types.TensorLike = 2,
+#         name: str = "GradientAccumulator",
+#         **kwargs
+#     ):
+#         super().__init__(optimizer, name, **kwargs)
+#         self.gradient_transformers.append(
+#             AccumulationGradientTransformer(
+#                 optimizer=self.inner_optimizer,
+#                 accu_steps=accu_steps,
+#                 trainable_variables=trainable_variables,
+#             )
+#         )
+#         self.accu_steps = accu_steps
+#
+#     @override
+#     def get_config(self):
+#         config = {
+#             "accu_steps": self.accu_steps,
+#             "optimizer": tf.keras.optimizers.serialize(self.inner_optimizer),
+#         }
+#         base_config = self.inner_optimizer.get_config()
+#         return {**base_config, **config}
 
 
 def GradientAccumulator(
