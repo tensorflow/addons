@@ -263,7 +263,7 @@ def test_lstm():
         dataset.with_options(options)
         return dataset
 
-    strategy = tf.distribute.MirroredStrategy(test_utils.gpus_for_testing())
+    strategy = tf.distribute.get_strategy()
 
     vocab_size = 10
 
