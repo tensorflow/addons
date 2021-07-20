@@ -57,8 +57,8 @@ class GradientAccumulator(tf.keras.optimizers.Optimizer):
             with tf.init_scope():
                 if not self._gradients:
                     for grad, var in grads_and_vars:
-                        self._gradients[var.ref()] = tf.Variable(
-                            tf.zeros_like(var), trainable=False
+                        self._gradients[var.ref()] = self.add_weight(
+                            "ga", shape=var.shape, dtype=var.dtype, trainable=False
                         )
             new_grads_and_vars = []
             for grad, var in grads_and_vars:
