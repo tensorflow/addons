@@ -17,12 +17,12 @@
 import numpy as np
 import pytest
 import tensorflow as tf
-from tensorflow_addons.utils import test_utils
 
 from tensorflow_addons.optimizers import GradientAccumulator
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.with_device(["cpu", "gpu", tf.distribute.MirroredStrategy])
 def test_run():
     var0 = tf.Variable([1.0, 2.0])
     var1 = tf.Variable([3.0, 4.0])
@@ -35,14 +35,18 @@ def test_run():
 
     opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=1.0), accum_steps)
 
+    strategy = tf.distribute.get_strategy()
     for _ in range(accum_steps + 1):
-        opt.apply_gradients(grads_and_vars)
+        strategy.run(opt.apply_gradients, [grads_and_vars])
 
     np.testing.assert_allclose(var0.read_value(), [0.6, 1.6])
     np.testing.assert_allclose(var1.read_value(), [2.96, 3.96])
+    np.testing.assert_allclose(opt.iterations.read_value(), 1)
+    np.testing.assert_allclose(opt.step.read_value(), accum_steps + 1)
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
+@pytest.mark.with_device(["cpu", "gpu", tf.distribute.MirroredStrategy])
 def test_sparse():
     var0 = tf.Variable([[1.0, 2.0, 0.0], [1.0, 2.0, 0.0]])
     var1 = tf.Variable([[3.0, 4.0, 0.0]])
@@ -60,36 +64,11 @@ def test_sparse():
 
     grads_and_vars = list(zip([grads0, grads1], [var0, var1]))
     opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=1.0))
+    strategy = tf.distribute.get_strategy()
     for _ in range(8):
-        opt.apply_gradients(grads_and_vars)
+        strategy.run(opt.apply_gradients, [grads_and_vars])
     np.testing.assert_allclose(var0.read_value(), [[1.0, 2.0, 0.0], [0.2, 1.2, 0.0]])
     np.testing.assert_allclose(var1.read_value(), [[2.92, 3.92, 0.0]])
-
-
-@pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.needs_gpu
-def test_sparse_multi_gpus():
-    strategy = tf.distribute.MirroredStrategy(test_utils.gpus_for_testing())
-    with strategy.scope():
-        var0 = tf.Variable([[1.0, 2.0, 0.0]])
-        var1 = tf.Variable([[3.0, 4.0, 0.0]])
-
-        grads0 = tf.IndexedSlices(
-            tf.constant([[0.1, 0.1, 0.0]]),
-            tf.constant([0]),
-            tf.constant([1, 3]),
-        )
-        grads1 = tf.IndexedSlices(
-            tf.constant([[0.01, 0.01, 0.0]]),
-            tf.constant([0]),
-            tf.constant([1, 3]),
-        )
-
-        grads_and_vars = list(zip([grads0, grads1], [var0, var1]))
-        opt = GradientAccumulator(tf.keras.optimizers.SGD(lr=1.0))
-        strategy.run(opt.apply_gradients, [grads_and_vars])
-        np.testing.assert_allclose(var0.read_value(), [[1.0, 2.0, 0.0]])
-        np.testing.assert_allclose(var1.read_value(), [[3.0, 4.0, 0.0]])
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
@@ -133,7 +112,7 @@ def test_config():
 
 
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
-@pytest.mark.needs_gpu
+@pytest.mark.with_device([tf.distribute.MirroredStrategy])
 def test_fit_simple_linear_model():
     seed = 0x2019
     np.random.seed(seed)
@@ -142,13 +121,12 @@ def test_fit_simple_linear_model():
     x = np.random.standard_normal((num_examples, 3))
     w = np.random.standard_normal((3, 1))
     y = np.dot(x, w) + np.random.standard_normal((num_examples, 1)) * 1e-4
-    strategy = tf.distribute.MirroredStrategy(test_utils.gpus_for_testing())
-    with strategy.scope():
-        model = tf.keras.models.Sequential()
-        model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
 
-        opt = GradientAccumulator("sgd")
-        model.compile(opt, loss="mse")
+    model = tf.keras.models.Sequential()
+    model.add(tf.keras.layers.Dense(input_shape=(3,), units=1))
+
+    opt = GradientAccumulator("sgd")
+    model.compile(opt, loss="mse")
 
     model.fit(x, y, epochs=5)
 
