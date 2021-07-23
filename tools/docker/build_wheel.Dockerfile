@@ -1,7 +1,7 @@
 #syntax=docker/dockerfile:1.1.5-experimental
 ARG TF_VERSION
 ARG PY_VERSION
-FROM angersson/tensorflow-build:latest-python$PY_VERSION as base_install
+FROM tensorflow/build:latest-python$PY_VERSION as base_install
 ENV TF_NEED_CUDA="1"
 
 # Required for setuptools v50.0.0
