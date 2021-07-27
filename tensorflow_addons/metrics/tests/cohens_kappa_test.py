@@ -48,9 +48,9 @@ def update_obj_states(obj1, obj2, obj3, actuals, preds, weights):
 
 
 def reset_obj_states(obj1, obj2, obj3):
-    obj1.reset_states()
-    obj2.reset_states()
-    obj3.reset_states()
+    obj1.reset_state()
+    obj2.reset_state()
+    obj3.reset_state()
 
 
 def check_results(objs, values):
@@ -128,7 +128,7 @@ def test_kappa_with_sample_weights():
     check_results([kp_obj1, kp_obj2, kp_obj3], [-0.25473321, -0.38992332, -0.60695344])
 
 
-def test_kappa_reset_states():
+def test_kappa_reset_state():
     # Initialize
     kp_obj1, kp_obj2, kp_obj3 = initialize_vars()
 

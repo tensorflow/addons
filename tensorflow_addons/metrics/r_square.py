@@ -179,7 +179,7 @@ class RSquare(Metric):
 
         return r2_score
 
-    def reset_states(self) -> None:
+    def reset_state(self) -> None:
         # The state of the metric will be reset at the start of each epoch.
         K.batch_set_value([(v, np.zeros(v.shape)) for v in self.variables])
 

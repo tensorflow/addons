@@ -92,10 +92,10 @@ def test_call_gmean(values, expected):
     np.testing.assert_equal(len(values), count)
 
 
-def test_reset_states():
+def test_reset_state():
     obj = GeometricMean()
     obj.update_state([1, 2, 3, 4, 5])
-    obj.reset_states()
+    obj.reset_state()
     assert obj.total.numpy() == 0.0
     assert obj.count.numpy() == 0.0
 
