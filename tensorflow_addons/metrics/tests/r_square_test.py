@@ -130,7 +130,7 @@ def test_r2_reset_state():
     # Update
     update_obj_states(r2_obj, actuals, preds)
     # Reset
-    reset_obj_states(r2_obj)
+    reset_obj_state(r2_obj)
     # Check variables
     check_variables(r2_obj, 0.0)
 
