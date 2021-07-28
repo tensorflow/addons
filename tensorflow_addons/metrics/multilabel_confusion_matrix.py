@@ -180,3 +180,8 @@ class MultiLabelConfusionMatrix(Metric):
     def reset_state(self):
         reset_value = np.zeros(self.num_classes, dtype=np.int32)
         K.batch_set_value([(v, reset_value) for v in self.variables])
+
+    def reset_states(self):
+        # Backwards compatibility alias of `reset_state`. New classes should
+        # only implement `reset_state`.
+        return self.reset_state()

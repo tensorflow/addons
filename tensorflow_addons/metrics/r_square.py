@@ -183,6 +183,11 @@ class RSquare(Metric):
         # The state of the metric will be reset at the start of each epoch.
         K.batch_set_value([(v, np.zeros(v.shape)) for v in self.variables])
 
+    def reset_states(self):
+        # Backwards compatibility alias of `reset_state`. New classes should
+        # only implement `reset_state`.
+        return self.reset_state()
+
     def get_config(self):
         config = {
             "y_shape": self.y_shape,

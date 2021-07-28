@@ -201,3 +201,9 @@ class KendallsTau(Metric):
             tf.zeros((0, 1), dtype=tf.int64), [], [self.preds_cutpoints]
         )
         self.n = 0
+
+    def reset_states(self):
+        # Backwards compatibility alias of `reset_state`. New classes should
+        # only implement `reset_state`.
+        return self.reset_state()
+

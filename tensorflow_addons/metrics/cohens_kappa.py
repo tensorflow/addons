@@ -262,3 +262,8 @@ class CohenKappa(Metric):
                 v,
                 np.zeros((self.num_classes, self.num_classes), v.dtype.as_numpy_dtype),
             )
+
+    def reset_states(self):
+        # Backwards compatibility alias of `reset_state`. New classes should
+        # only implement `reset_state`.
+        return self.reset_state()

@@ -207,6 +207,11 @@ class FBetaScore(tf.keras.metrics.Metric):
         reset_value = tf.zeros(self.init_shape, dtype=self.dtype)
         K.batch_set_value([(v, reset_value) for v in self.variables])
 
+    def reset_states(self):
+        # Backwards compatibility alias of `reset_state`. New classes should
+        # only implement `reset_state`.
+        return self.reset_state()
+
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class F1Score(FBetaScore):
