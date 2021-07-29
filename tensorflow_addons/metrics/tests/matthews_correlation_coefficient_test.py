@@ -109,7 +109,7 @@ def test_keras_model():
     model.fit(data, labels, epochs=1, batch_size=32, verbose=0)
 
 
-def test_reset_states_graph():
+def test_reset_state_graph():
     gt_label = tf.constant(
         [[0.0, 1.0], [0.0, 1.0], [0.0, 1.0], [1.0, 0.0]], dtype=tf.float32
     )
@@ -120,9 +120,9 @@ def test_reset_states_graph():
     mcc.update_state(gt_label, preds)
 
     @tf.function
-    def reset_states():
-        mcc.reset_states()
+    def reset_state():
+        mcc.reset_state()
 
-    reset_states()
+    reset_state()
     # Check results
     check_results(mcc, [0])

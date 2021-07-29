@@ -177,6 +177,12 @@ class MultiLabelConfusionMatrix(Metric):
         base_config = super().get_config()
         return {**base_config, **config}
 
-    def reset_states(self):
+    def reset_state(self):
         reset_value = np.zeros(self.num_classes, dtype=np.int32)
         K.batch_set_value([(v, reset_value) for v in self.variables])
+
+    def reset_states(self):
+        # Backwards compatibility alias of `reset_state`. New classes should
+        # only implement `reset_state`.
+        # Required in Tensorflow < 2.5.0
+        return self.reset_state()

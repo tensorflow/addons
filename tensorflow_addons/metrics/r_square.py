@@ -179,9 +179,15 @@ class RSquare(Metric):
 
         return r2_score
 
-    def reset_states(self) -> None:
+    def reset_state(self) -> None:
         # The state of the metric will be reset at the start of each epoch.
         K.batch_set_value([(v, np.zeros(v.shape)) for v in self.variables])
+
+    def reset_states(self):
+        # Backwards compatibility alias of `reset_state`. New classes should
+        # only implement `reset_state`.
+        # Required in Tensorflow < 2.5.0
+        return self.reset_state()
 
     def get_config(self):
         config = {
