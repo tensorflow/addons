@@ -266,4 +266,5 @@ class CohenKappa(Metric):
     def reset_states(self):
         # Backwards compatibility alias of `reset_state`. New classes should
         # only implement `reset_state`.
+        # Required in Tensorflow < 2.5.0
         return self.reset_state()
