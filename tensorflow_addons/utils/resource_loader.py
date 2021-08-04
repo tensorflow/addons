@@ -20,7 +20,7 @@ import warnings
 
 import tensorflow as tf
 
-INCLUSIVE_MIN_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.6.0rc1"
+INCLUSIVE_MIN_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.6.0rc2"
 EXCLUSIVE_MAX_TF_VERSION_FOR_ABI_COMPATIBILITY = "2.7.0"
 abi_warning_already_raised = False
 SKIP_CUSTOM_OPS = False

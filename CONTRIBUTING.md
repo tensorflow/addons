@@ -173,7 +173,7 @@ conda activate my_dev_environement
 Just run from the root:
 
 ```bash
-pip install tensorflow==2.6.0rc1
+pip install tensorflow==2.6.0rc2
 # you can use "pip install tensorflow-cpu==2.6.0rc1" too if you're not testing on gpu.
 pip install -e ./
 ```
