@@ -503,7 +503,7 @@ def test_tf_function():
     reason="CRF Decode doesn't work in TF2.4, the issue was fixed in TF core, but didn't make the release",
 )
 @pytest.mark.skipif(
-    tf.__version__[:3] == "2.5",
+    tf.__version__[:3] >= "2.5",
     reason="CRF decoding models have serialization issues in TF >=2.5 . Please see isse #2476",
 )
 def test_crf_decode_save_load(tmpdir):
