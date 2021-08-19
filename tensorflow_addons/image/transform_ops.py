@@ -14,9 +14,6 @@
 # ==============================================================================
 """Image transform ops."""
 
-import warnings
-from distutils.version import LooseVersion
-
 import tensorflow as tf
 from tensorflow_addons.image import utils as img_utils
 from tensorflow_addons.utils.types import TensorLike
@@ -123,36 +120,17 @@ def transform(
                 % len(transforms.get_shape())
             )
 
-        if LooseVersion(tf.__version__) >= LooseVersion("2.4.0"):
-            fill_value = tf.convert_to_tensor(
-                fill_value, dtype=tf.float32, name="fill_value"
-            )
-            output = tf.raw_ops.ImageProjectiveTransformV3(
-                images=images,
-                transforms=transforms,
-                output_shape=output_shape,
-                interpolation=interpolation.upper(),
-                fill_mode=fill_mode.upper(),
-                fill_value=fill_value,
-            )
-        else:
-            fill_mode = fill_mode.upper()
-            # TODO(WindQAQ): Get rid of the check once we drop TensorFlow < 2.4 support.
-            if fill_mode == "CONSTANT":
-                warnings.warn(
-                    "fill_value is not supported and is always 0 for TensorFlow < 2.4.0."
-                )
-            if fill_mode == "NEAREST":
-                raise ValueError(
-                    "NEAREST fill_mode is not supported for TensorFlow < 2.4.0."
-                )
-            output = tf.raw_ops.ImageProjectiveTransformV2(
-                images=images,
-                transforms=transforms,
-                output_shape=output_shape,
-                interpolation=interpolation.upper(),
-                fill_mode=fill_mode,
-            )
+        fill_value = tf.convert_to_tensor(
+            fill_value, dtype=tf.float32, name="fill_value"
+        )
+        output = tf.raw_ops.ImageProjectiveTransformV3(
+            images=images,
+            transforms=transforms,
+            output_shape=output_shape,
+            interpolation=interpolation.upper(),
+            fill_mode=fill_mode.upper(),
+            fill_value=fill_value,
+        )
         return img_utils.from_4D_image(output, original_ndims)
 
 

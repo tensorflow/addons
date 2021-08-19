@@ -14,8 +14,6 @@
 # ==============================================================================
 """Tests for transform ops."""
 
-from distutils.version import LooseVersion
-
 import pytest
 import numpy as np
 import tensorflow as tf
@@ -75,9 +73,6 @@ def test_extreme_projective_transform(dtype):
 @pytest.mark.parametrize("dtype", _DTYPES)
 @pytest.mark.parametrize("fill_value", [0.0, 1.0])
 def test_transform_constant_fill_mode(dtype, fill_value):
-    if fill_value != 0.0 and LooseVersion(tf.__version__) < LooseVersion("2.4.0"):
-        pytest.skip("Nonzero fill_value is not supported for TensorFlow < 2.4.0.")
-
     image = tf.constant(
         [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]], dtype=dtype
     )
@@ -138,10 +133,6 @@ def test_transform_wrap_fill_mode(dtype):
     np.testing.assert_equal(image_transformed.numpy(), expected)
 
 
-@pytest.mark.skipif(
-    LooseVersion(tf.__version__) < LooseVersion("2.4.0"),
-    reason="NEAREST fill mode is not supported for TensorFlow < 2.4.0.",
-)
 @pytest.mark.with_device(["cpu", "gpu"])
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", _DTYPES)
