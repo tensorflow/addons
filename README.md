@@ -110,7 +110,7 @@ is compiled differently. A typical example of this would be `conda`-installed Te
 | TensorFlow Addons | TensorFlow | Compiler  | cuDNN | CUDA | 
 |:----------------------- |:---- |:---------|:---------|:---------|
 | tfa-nightly | 2.6 | GCC 7.3.1 | 8.1 | 11.2 |
-| tensorflow-addons-0.13.0 | 2.6  | GCC 7.3.1 | 8.1 | 11.2 |
+| tensorflow-addons-0.14.0 | 2.6  | GCC 7.3.1 | 8.1 | 11.2 |
 | tensorflow-addons-0.13.0 | 2.5  | GCC 7.3.1 | 8.1 | 11.2 |
 | tensorflow-addons-0.12.1 | 2.4  | GCC 7.3.1 | 8.0 | 11.0 |
 | tensorflow-addons-0.11.2 | 2.3  | GCC 7.3.1 | 7.6 | 10.1 |
