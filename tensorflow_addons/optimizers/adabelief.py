@@ -27,13 +27,13 @@ from typing import Union, Callable, Dict
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class AdaBelief(tf.keras.optimizers.Optimizer):
-  """Variant of the Adam optimizer that achieves fast convergence,
+    """Variant of the Adam optimizer that achieves fast convergence,
 
-  generalisation, and stability. It adapts the step size depending
-  on its "belief" in the gradient direction — the optimiser adaptively scales
-  step size by the difference between the predicted and observed gradients.
-  AdaBelief is a modified version of Adam and contains the same number of
-  parameters.
+    generalisation, and stability. It adapts the step size depending
+    on its "belief" in the gradient direction — the optimiser adaptively scales
+    step size by the difference between the predicted and observed gradients.
+    AdaBelief is a modified version of Adam and contains the same number of
+    parameters.
 
     It implements the AdaBelief proposed by
     Juntang Zhuang et al. in [AdaBelief Optimizer: Adapting stepsizes by the
@@ -75,85 +75,85 @@ class AdaBelief(tf.keras.optimizers.Optimizer):
     The mechanism can be enabled by using the lookahead wrapper. For example:
 
     ```python
-    radam = tfa.optimizers.AdaBelief()
-    ranger = tfa.optimizers.Lookahead(radam, sync_period=6, slow_step_size=0.5)
+    adabelief = tfa.optimizers.AdaBelief()
+    ranger = tfa.optimizers.Lookahead(adabelief, sync_period=6, slow_step_size=0.5)
     ```
     """
 
-  def __init__(
-      self,
-      learning_rate: Union[FloatTensorLike, Callable, Dict] = 0.001,
-      beta_1: FloatTensorLike = 0.9,
-      beta_2: FloatTensorLike = 0.999,
-      epsilon: FloatTensorLike = 1e-14,
-      weight_decay: Union[FloatTensorLike, Callable, Dict] = 0.0,
-      amsgrad: bool = False,
-      rectify: bool = True,
-      sma_threshold: FloatTensorLike = 5.0,
-      total_steps: int = 0,
-      warmup_proportion: FloatTensorLike = 0.1,
-      min_lr: FloatTensorLike = 0.0,
-      name: str = "AdaBelief",
-      **kwargs,
-  ):
-    r"""Construct a new RAdam optimizer.
+    def __init__(
+        self,
+        learning_rate: Union[FloatTensorLike, Callable, Dict] = 0.001,
+        beta_1: FloatTensorLike = 0.9,
+        beta_2: FloatTensorLike = 0.999,
+        epsilon: FloatTensorLike = 1e-14,
+        weight_decay: Union[FloatTensorLike, Callable, Dict] = 0.0,
+        amsgrad: bool = False,
+        rectify: bool = True,
+        sma_threshold: FloatTensorLike = 5.0,
+        total_steps: int = 0,
+        warmup_proportion: FloatTensorLike = 0.1,
+        min_lr: FloatTensorLike = 0.0,
+        name: str = "AdaBelief",
+        **kwargs,
+    ):
+        r"""Construct a new RAdam optimizer.
 
         Args:
             learning_rate: A `Tensor` or a floating point value, or a schedule
-              that is a `tf.keras.optimizers.schedules.LearningRateSchedule`.
-              The learning rate.
+                that is a `tf.keras.optimizers.schedules.LearningRateSchedule`.
+                The learning rate.
             beta_1: A float value or a constant float tensor. The exponential
-              decay rate for the 1st moment estimates.
+                decay rate for the 1st moment estimates.
             beta_2: A float value or a constant float tensor. The exponential
-              decay rate for the 2nd moment estimates.
+                decay rate for the 2nd moment estimates.
             epsilon: A small constant for numerical stability. Default=1e-14.
-              Note that AdaBelief uses epsilon within sqrt (default=1e-14),
-              while Adam uses epsilon outside sqrt (default=1e-7).
+                Note that AdaBelief uses epsilon within sqrt (default=1e-14),
+                while Adam uses epsilon outside sqrt (default=1e-7).
             weight_decay: A `Tensor` or a floating point value, or a schedule
-              that is a `tf.keras.optimizers.schedules.LearningRateSchedule`.
-              Weight decay for each parameter.
+                that is a `tf.keras.optimizers.schedules.LearningRateSchedule`.
+                Weight decay for each parameter.
             amsgrad: boolean. Whether to apply AMSGrad variant of this algorithm
-              from the paper "On the Convergence of Adam and beyond".
-              sma_threshold. A float value. The threshold for simple mean
-              average.
+                from the paper "On the Convergence of Adam and beyond".
+                sma_threshold. A float value. The threshold for simple mean
+                average.
             rectify: boolean. Whether to apply learning rate rectification as
-              from RAdam.
+                from RAdam.
             total_steps: An integer. Total number of training steps. Enable
-              warmup by setting a positive value.
+                warmup by setting a positive value.
             warmup_proportion: A floating point value. The proportion of
-              increasing steps.
+                increasing steps.
             min_lr: A floating point value. Minimum learning rate after warmup.
             name: Optional name for the operations created when applying
-              gradients. Defaults to "RectifiedAdam".
+                gradients. Defaults to "RectifiedAdam".
             **kwargs: keyword arguments. Allowed to be {`clipnorm`, `clipvalue`,
-              `lr`, `decay`}. `clipnorm` is clip gradients by norm; `clipvalue`
-              is clip gradients by value, `decay` is included for backward
-              compatibility to allow time inverse decay of learning rate. `lr`
-              is included for backward compatibility, recommended to use
-              `learning_rate` instead.
-    """
-    super().__init__(name, **kwargs)
+                `lr`, `decay`}. `clipnorm` is clip gradients by norm; `clipvalue`
+                is clip gradients by value, `decay` is included for backward
+                compatibility to allow time inverse decay of learning rate. `lr`
+                is included for backward compatibility, recommended to use
+                `learning_rate` instead.
+        """
+        super().__init__(name, **kwargs)
 
-    if isinstance(learning_rate, Dict):
-      learning_rate = tf.keras.optimizers.schedules.deserialize(learning_rate)
+        if isinstance(learning_rate, Dict):
+            learning_rate = tf.keras.optimizers.schedules.deserialize(learning_rate)
 
-    if isinstance(weight_decay, Dict):
-      weight_decay = tf.keras.optimizers.schedules.deserialize(weight_decay)
+        if isinstance(weight_decay, Dict):
+            weight_decay = tf.keras.optimizers.schedules.deserialize(weight_decay)
 
-    self._set_hyper("learning_rate", kwargs.get("lr", learning_rate))
-    self._set_hyper("beta_1", beta_1)
-    self._set_hyper("beta_2", beta_2)
-    self._set_hyper("decay", self._initial_decay)
-    self._set_hyper("weight_decay", weight_decay)
-    self._set_hyper("sma_threshold", sma_threshold)
-    self._set_hyper("total_steps", int(total_steps))
-    self._set_hyper("warmup_proportion", warmup_proportion)
-    self._set_hyper("min_lr", min_lr)
-    self.epsilon = epsilon or tf.keras.backend.epsilon()
-    self.amsgrad = amsgrad
-    self.rectify = rectify
-    self._has_weight_decay = weight_decay != 0.0
-    self._initial_total_steps = total_steps
+        self._set_hyper("learning_rate", kwargs.get("lr", learning_rate))
+        self._set_hyper("beta_1", beta_1)
+        self._set_hyper("beta_2", beta_2)
+        self._set_hyper("decay", self._initial_decay)
+        self._set_hyper("weight_decay", weight_decay)
+        self._set_hyper("sma_threshold", sma_threshold)
+        self._set_hyper("total_steps", int(total_steps))
+        self._set_hyper("warmup_proportion", warmup_proportion)
+        self._set_hyper("min_lr", min_lr)
+        self.epsilon = epsilon or tf.keras.backend.epsilon()
+        self.amsgrad = amsgrad
+        self.rectify = rectify
+        self._has_weight_decay = weight_decay != 0.0
+        self._initial_total_steps = total_steps
 
   def _create_slots(self, var_list):
     for var in var_list:
