@@ -154,7 +154,7 @@ def test_sparse_sample_with_warmup():
 def test_dense_sample_with_rectify():
     run_sparse_sample(
         iterations=200,
-        expected=[[0.7836679, 2.0], [3.0, 3.7839665]],
+        expected=[[0.7836679, 2.0], [3.0, 3.7836679]],
         optimizer=AdaBelief(lr=1e-3, rectify=True),
     )
 
@@ -163,7 +163,7 @@ def test_dense_sample_with_rectify():
 def test_sparse_sample_with_rectify():
     run_sparse_sample(
         iterations=200,
-        expected=[[0.982629, 2.0], [3.0, 3.982674]],
+        expected=[[0.7836679, 2.0], [3.0, 3.7836679]],
         optimizer=AdaBelief(lr=1e-3, rectify=True),
     )
 
