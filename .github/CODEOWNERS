@@ -161,6 +161,8 @@
 /tensorflow_addons/optimizers/tests/yogi_test.py @manzilz
 /tensorflow_addons/optimizers/cocob.py @rehanguha
 /tensorflow_addons/optimizers/tests/cocob_test.py @rehanguha
+/tensorflow_addons/optimizers/adabelief.py @juntang-zhuang
+/tensorflow_addons/optimizers/tests/adabelief_test.py @juntang-zhuang
 
 /tensorflow_addons/rnn/esn_cell.py @pedrolarben
 /tensorflow_addons/rnn/tests/esn_cell_test.py @pedrolarben
