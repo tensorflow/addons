@@ -217,14 +217,9 @@ class AdaBelief(tf.keras.optimizers.Optimizer):
             v_corr_t = tf.sqrt(v_t / (1.0 - beta_2_power))
 
         if self.rectify:
-            r_t = tf.sqrt(
-                (sma_t - 4.0)
-                / (sma_inf - 4.0)
-                * (sma_t - 2.0)
-                / (sma_inf - 2.0)
-                * sma_inf
-                / sma_t
-            )
+            r_t_numerator = (sma_t - 4.0) * (sma_t - 2.0) * sma_inf
+            r_t_denominator = (sma_inf - 4.0) * (sma_inf - 2.0) * sma_t
+            r_t = tf.sqrt(r_t_numerator / r_t_denominator)
             sma_threshold = self._get_hyper("sma_threshold", var_dtype)
             var_t = tf.where(
                 sma_t >= sma_threshold,
@@ -295,14 +290,9 @@ class AdaBelief(tf.keras.optimizers.Optimizer):
             v_corr_t = tf.sqrt(v_t / (1.0 - beta_2_power))
 
         if self.rectify:
-            r_t = tf.sqrt(
-                (sma_t - 4.0)
-                / (sma_inf - 4.0)
-                * (sma_t - 2.0)
-                / (sma_inf - 2.0)
-                * sma_inf
-                / sma_t
-            )
+            r_t_numerator = (sma_t - 4.0) * (sma_t - 2.0) * sma_inf
+            r_t_denominator = (sma_inf - 4.0) * (sma_inf - 2.0) * sma_t
+            r_t = tf.sqrt(r_t_numerator / r_t_denominator)
             sma_threshold = self._get_hyper("sma_threshold", var_dtype)
             var_t = tf.where(
                 sma_t >= sma_threshold,
