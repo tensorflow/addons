@@ -14,9 +14,6 @@
 # ==============================================================================
 """AdaBelief optimizer."""
 
-from __future__ import division
-from __future__ import print_function
-
 import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
@@ -25,13 +22,12 @@ from typing import Union, Callable, Dict
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
 class AdaBelief(tf.keras.optimizers.Optimizer):
-    """Variant of the Adam optimizer that achieves fast convergence,
+    """Variant of the Adam optimizer.
 
-    generalisation, and stability. It adapts the step size depending
-    on its "belief" in the gradient direction — the optimiser adaptively scales
-    step size by the difference between the predicted and observed gradients.
-    AdaBelief is a modified version of Adam and contains the same number of
-    parameters.
+    It achieves fast convergence as Adam and generalization comparable to SGD. 
+    It adapts the step size depending on its "belief" in the gradient direction 
+    — the optimizer adaptively scales step size by the difference between the 
+    predicted and observed gradients.
 
     It implements the AdaBelief proposed by
     Juntang Zhuang et al. in [AdaBelief Optimizer: Adapting stepsizes by the
@@ -220,16 +216,15 @@ class AdaBelief(tf.keras.optimizers.Optimizer):
             vhat_t = None
             v_corr_t = tf.sqrt(v_t / (1.0 - beta_2_power))
 
-        r_t = tf.sqrt(
-            (sma_t - 4.0)
-            / (sma_inf - 4.0)
-            * (sma_t - 2.0)
-            / (sma_inf - 2.0)
-            * sma_inf
-            / sma_t
-        )
-
         if self.rectify:
+            r_t = tf.sqrt(
+                (sma_t - 4.0)
+                / (sma_inf - 4.0)
+                * (sma_t - 2.0)
+                / (sma_inf - 2.0)
+                * sma_inf
+                / sma_t
+            )
             sma_threshold = self._get_hyper("sma_threshold", var_dtype)
             var_t = tf.where(
                 sma_t >= sma_threshold,
@@ -299,16 +294,15 @@ class AdaBelief(tf.keras.optimizers.Optimizer):
             vhat_t = None
             v_corr_t = tf.sqrt(v_t / (1.0 - beta_2_power))
 
-        r_t = tf.sqrt(
-            (sma_t - 4.0)
-            / (sma_inf - 4.0)
-            * (sma_t - 2.0)
-            / (sma_inf - 2.0)
-            * sma_inf
-            / sma_t
-        )
-
         if self.rectify:
+            r_t = tf.sqrt(
+                (sma_t - 4.0)
+                / (sma_inf - 4.0)
+                * (sma_t - 2.0)
+                / (sma_inf - 2.0)
+                * sma_inf
+                / sma_t
+            )
             sma_threshold = self._get_hyper("sma_threshold", var_dtype)
             var_t = tf.where(
                 sma_t >= sma_threshold,
@@ -317,6 +311,7 @@ class AdaBelief(tf.keras.optimizers.Optimizer):
             )
         else:
             var_t = m_corr_t / (v_corr_t + epsilon_t)
+            
         if self._has_weight_decay:
             var_t += wd_t * var
 
