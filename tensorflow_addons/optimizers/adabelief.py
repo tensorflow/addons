@@ -311,7 +311,7 @@ class AdaBelief(tf.keras.optimizers.Optimizer):
             )
         else:
             var_t = m_corr_t / (v_corr_t + epsilon_t)
-            
+
         if self._has_weight_decay:
             var_t += wd_t * var
 

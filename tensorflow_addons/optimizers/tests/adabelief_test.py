@@ -45,10 +45,8 @@ def run_sparse_sample(iterations, expected, optimizer):
     var_0 = tf.Variable([1.0, 2.0])
     var_1 = tf.Variable([3.0, 4.0])
 
-    grad_0 = tf.IndexedSlices(
-        tf.constant([0.1]), tf.constant([0]), tf.constant([2]))
-    grad_1 = tf.IndexedSlices(
-        tf.constant([0.04]), tf.constant([1]), tf.constant([2]))
+    grad_0 = tf.IndexedSlices(tf.constant([0.1]), tf.constant([0]), tf.constant([2]))
+    grad_1 = tf.IndexedSlices(tf.constant([0.04]), tf.constant([1]), tf.constant([2]))
 
     grads_and_vars = list(zip([grad_0, grad_1], [var_0, var_1]))
 
@@ -124,14 +122,11 @@ def test_sparse_sample_with_weight_decay():
 @pytest.mark.usefixtures("maybe_run_functions_eagerly")
 def test_dense_sample_with_warmup():
     run_dense_sample(
-          iterations=100,
-          expected=[[0.85635465, 1.8563547], [2.8563545, 3.8563545]],
-          optimizer=AdaBelief(
-              lr=1e-3,
-              total_steps=100,
-              warmup_proportion=0.1,
-              min_lr=1e-5,
-              rectify=False),
+        iterations=100,
+        expected=[[0.85635465, 1.8563547], [2.8563545, 3.8563545]],
+        optimizer=AdaBelief(
+            lr=1e-3, total_steps=100, warmup_proportion=0.1, min_lr=1e-5, rectify=False
+        ),
     )
 
 
@@ -139,14 +134,11 @@ def test_dense_sample_with_warmup():
 def test_sparse_sample_with_warmup():
     # Expected values are obtained from the previous implementation
     run_sparse_sample(
-          iterations=200,
-          expected=[[0.8502214, 2.0], [3.0, 3.85022]],
-          optimizer=AdaBelief(
-              lr=1e-3,
-              total_steps=100,
-              warmup_proportion=0.1,
-              min_lr=1e-5,
-              rectify=False),
+        iterations=200,
+        expected=[[0.8502214, 2.0], [3.0, 3.85022]],
+        optimizer=AdaBelief(
+            lr=1e-3, total_steps=100, warmup_proportion=0.1, min_lr=1e-5, rectify=False
+        ),
     )
 
 
@@ -178,7 +170,8 @@ def test_dense_sample_with_lookahead():
         optimizer=Lookahead(
             AdaBelief(lr=1e-3, beta_1=0.95, rectify=False),
             sync_period=6,
-            slow_step_size=0.45),
+            slow_step_size=0.45,
+        ),
     )
 
 
@@ -192,7 +185,8 @@ def test_sparse_sample_with_lookahead():
         optimizer=Lookahead(
             AdaBelief(lr=1e-3, beta_1=0.95, rectify=False),
             sync_period=6,
-            slow_step_size=0.45),
+            slow_step_size=0.45,
+        ),
     )
 
 
@@ -205,11 +199,8 @@ def test_get_config():
 
 def test_serialization():
     optimizer = AdaBelief(
-        lr=1e-3,
-        total_steps=10000,
-        warmup_proportion=0.1,
-        min_lr=1e-5,
-        rectify=False)
+        lr=1e-3, total_steps=10000, warmup_proportion=0.1, min_lr=1e-5, rectify=False
+    )
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)
     assert new_optimizer.get_config() == optimizer.get_config()
@@ -224,7 +215,8 @@ def test_schedulers():
         iterations=100,
         expected=[[0.84216374, 1.8420818], [2.8420012, 3.841918]],
         optimizer=AdaBelief(
-            learning_rate=lr_scheduler, weight_decay=wd_scheduler, rectify=False),
+            learning_rate=lr_scheduler, weight_decay=wd_scheduler, rectify=False
+        ),
     )
 
 
@@ -233,7 +225,8 @@ def test_scheduler_serialization():
     wd_scheduler = tf.keras.optimizers.schedules.InverseTimeDecay(2e-3, 25, 0.25)
 
     optimizer = AdaBelief(
-        learning_rate=lr_scheduler, weight_decay=wd_scheduler, rectify=False)
+        learning_rate=lr_scheduler, weight_decay=wd_scheduler, rectify=False
+    )
     config = tf.keras.optimizers.serialize(optimizer)
     new_optimizer = tf.keras.optimizers.deserialize(config)
     assert new_optimizer.get_config() == optimizer.get_config()
