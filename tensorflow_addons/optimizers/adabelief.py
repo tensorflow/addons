@@ -14,11 +14,10 @@
 # ==============================================================================
 """AdaBelief optimizer."""
 
-from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow.compat.v2 as tf
+import tensorflow as tf
 from tensorflow_addons.utils.types import FloatTensorLike
 
 from typing import Union, Callable, Dict
