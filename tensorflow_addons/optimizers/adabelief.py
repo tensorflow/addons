@@ -24,9 +24,9 @@ from typing import Union, Callable, Dict
 class AdaBelief(tf.keras.optimizers.Optimizer):
     """Variant of the Adam optimizer.
 
-    It achieves fast convergence as Adam and generalization comparable to SGD. 
-    It adapts the step size depending on its "belief" in the gradient direction 
-    — the optimizer adaptively scales step size by the difference between the 
+    It achieves fast convergence as Adam and generalization comparable to SGD.
+    It adapts the step size depending on its "belief" in the gradient direction
+    — the optimizer adaptively scales step size by the difference between the
     predicted and observed gradients.
 
     It implements the AdaBelief proposed by
