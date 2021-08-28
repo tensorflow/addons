@@ -10,6 +10,8 @@ toc:
   path: /addons/tutorials/layers_normalizations
 - title: Weight normalization layer
   path: /addons/tutorials/layers_weightnormalization
+- title: CRF (Conditional Random Field) layer
+  path: /addons/tutorials/layers_crf
 - title: LazyAdam optimizer
   path: /addons/tutorials/optimizers_lazyadam
 - title: ConditionalGradient Optimizer
