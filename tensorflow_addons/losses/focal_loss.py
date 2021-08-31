@@ -30,7 +30,7 @@ class SigmoidFocalCrossEntropy(LossFunctionWrapper):
     (https://arxiv.org/pdf/1708.02002.pdf). Focal loss is extremely useful for
     classification when you have highly imbalanced classes. It down-weights
     well-classified examples and focuses on hard examples. The loss value is
-    much high for a sample which is misclassified by the classifier as compared
+    much higher for a sample which is misclassified by the classifier as compared
     to the loss value corresponding to a well-classified example. One of the
     best use-cases of focal loss is its usage in object detection where the
     imbalance between the background class and other classes is extremely high.
@@ -96,7 +96,7 @@ def sigmoid_focal_crossentropy(
     (https://arxiv.org/pdf/1708.02002.pdf). Focal loss is extremely useful for
     classification when you have highly imbalanced classes. It down-weights
     well-classified examples and focuses on hard examples. The loss value is
-    much high for a sample which is misclassified by the classifier as compared
+    much higher for a sample which is misclassified by the classifier as compared
     to the loss value corresponding to a well-classified example. One of the
     best use-cases of focal loss is its usage in object detection where the
     imbalance between the background class and other classes is extremely high.
