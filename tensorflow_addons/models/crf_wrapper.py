@@ -3,10 +3,11 @@ from tensorflow_addons import layers
 from tensorflow_addons import text
 
 
+@tf.keras.utils.register_keras_serializable(package="Addons")
 class CRFModelWrapper(tf.keras.Model):
     def __init__(
         self,
-        model: tf.keras.Model,
+        base_model: tf.keras.Model,
         units: int,
         chain_initializer="orthogonal",
         use_boundary: bool = True,
@@ -25,7 +26,7 @@ class CRFModelWrapper(tf.keras.Model):
             **kwargs,
         )
 
-        self.base_model = model
+        self.base_model = base_model
 
     def unpack_training_data(self, data):
         # override me, if this is not suit for your task
@@ -92,9 +93,9 @@ class CRFModelWrapper(tf.keras.Model):
         # Update metrics (includes the metric that tracks the loss)
         self.compiled_metrics.update_state(y, decoded_sequence)
         # Return a dict mapping metric names to current value
-        results = {m.name: m.result() for m in self.metrics}
-        results.update({"loss": loss, "crf_loss": crf_loss})  # append loss
-        return results
+        orig_results = {m.name: m.result() for m in self.metrics}
+        crf_results = {"loss": loss, "crf_loss": crf_loss}
+        return {**orig_results, **crf_results}
 
     def test_step(self, data):
         x, y, sample_weight = self.unpack_training_data(data)
@@ -111,3 +112,16 @@ class CRFModelWrapper(tf.keras.Model):
         results = {m.name: m.result() for m in self.metrics}
         results.update({"loss": loss, "crf_loss": crf_loss})  # append loss
         return results
+
+    def get_config(self):
+        base_model_config = self.base_model.get_config()
+        crf_config = self.crf_layer.get_config()
+
+        return {**{"base_model": base_model_config}, **crf_config}
+
+    @classmethod
+    def from_config(cls, config):
+        base_model_config = config.pop("base_model")
+        base_model = tf.keras.Model.from_config(base_model_config)
+
+        return cls(base_model=base_model, **config)
