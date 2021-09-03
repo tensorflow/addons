@@ -179,8 +179,8 @@
 
 /tensorflow_addons/seq2seq/ @qlzh727 @guillaumekln
 
-/tensorflow_addons/text/crf.py @squadrick @howl-anderson
-/tensorflow_addons/text/tests/crf_test.py @squadrick @howl-anderson
+/tensorflow_addons/text/crf.py @howl-anderson
+/tensorflow_addons/text/tests/crf_test.py @howl-anderson
 /tensorflow_addons/text/parse_time_op.py @helinwang
 /tensorflow_addons/text/tests/parse_time_op_test.py @helinwang
 /tensorflow_addons/text/skip_gram_ops.py @rahulunair
