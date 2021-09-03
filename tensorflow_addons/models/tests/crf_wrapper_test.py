@@ -64,6 +64,7 @@ def get_some_model(x_np, y_np, sanity_check=True):
     model.predict(x_np)
     return model
 
+
 def clone(model: CRFModelWrapper):
     with tempfile.TemporaryDirectory() as tmpdir:
         file_path = os.path.join(tmpdir, "model")
