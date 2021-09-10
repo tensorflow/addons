@@ -97,11 +97,11 @@ jobs:
         tf-version: ['2.5.0']
         cpu: ['x86']
         include:
-          - os: 'macos-11'
+          - os: 'macOS'
             cpu: 'arm64'
             tf-version: '2.5.0'
             py-version: '3.8'
-          - os: 'macos-11'
+          - os: 'macOS'
             cpu: 'arm64'
             tf-version: '2.5.0'
             py-version: '3.9'
