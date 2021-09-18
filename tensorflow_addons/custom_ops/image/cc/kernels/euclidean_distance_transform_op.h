@@ -97,6 +97,9 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransformSample(
     Distance<T>(f, d, vw, zw, width);
     for (int j = 0; j < width; j++) {
       int index = GET_INDEX(i, j, k, c);
+      if (Eigen::numext::isinf(d[j])) {
+        d[j] = Eigen::NumTraits<T>::highest();
+      }
       output[index] = d[j];
     }
   }
@@ -108,6 +111,9 @@ EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE void EuclideanDistanceTransformSample(
     Distance<T>(f, d, vh, zh, height);
     for (int i = 0; i < height; i++) {
       int index = GET_INDEX(i, j, k, c);
+      if (Eigen::numext::isinf(d[i])) {
+        d[i] = Eigen::NumTraits<T>::highest();
+      }
       output[index] = Eigen::numext::sqrt(d[i]);
     }
   }
