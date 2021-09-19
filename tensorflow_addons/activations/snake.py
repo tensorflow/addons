@@ -25,7 +25,7 @@ def snake(x: types.TensorLike, frequency: types.Number = 1) -> tf.Tensor:
     Computes snake activation:
 
     $$
-    \mathrm{snake}(x) = \frac{x + (1 - \cos(2 \cdot \mathrm{frequency} \cdot x))}{2 \cdot \mathrm{frequency}}.
+    \mathrm{snake}(x) = \mathrm{x} + \frac{1 - \cos(2 \cdot \mathrm{frequency} \cdot x)}{2 \cdot \mathrm{frequency}}.
     $$
 
     See [Neural Networks Fail to Learn Periodic Functions and How to Fix It](https://arxiv.org/abs/2006.08195).
