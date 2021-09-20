@@ -153,8 +153,8 @@
 /tensorflow_addons/optimizers/tests/novograd_test.py @shreyashpatodia
 /tensorflow_addons/optimizers/proximal_adagrad.py @WindQAQ
 /tensorflow_addons/optimizers/tests/proximal_adagrad_test.py @WindQAQ
-/tensorflow_addons/optimizers/rectified_adam.py @cyberzhg
-/tensorflow_addons/optimizers/tests/rectified_adam_test.py @cyberzhg
+/tensorflow_addons/optimizers/rectified_adam.py @szutenberg
+/tensorflow_addons/optimizers/tests/rectified_adam_test.py @szutenberg
 /tensorflow_addons/optimizers/stochastic_weight_averaging.py @shreyashpatodia
 /tensorflow_addons/optimizers/tests/stochastic_weight_averaging_test.py @shreyashpatodia
 /tensorflow_addons/optimizers/weight_decay_optimizers.py @philjd
