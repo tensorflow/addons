@@ -103,7 +103,6 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
     def compute_output_shape(self, input_shape):
         return tf.TensorShape(self.layer.compute_output_shape(input_shape).as_list())
 
-    @tf.function
     def normalize_weights(self):
         """Generate spectral normalized weights.
 
