@@ -118,11 +118,13 @@ class SpectralNormalization(tf.keras.layers.Wrapper):
             for _ in range(self.power_iterations):
                 v = tf.math.l2_normalize(tf.matmul(u, w, transpose_b=True))
                 u = tf.math.l2_normalize(tf.matmul(v, w))
-
+            u = tf.stop_gradient(u)
+            v = tf.stop_gradient(v)
             sigma = tf.matmul(tf.matmul(v, w), u, transpose_b=True)
-
-            self.w.assign(self.w / sigma)
-            self.u.assign(u)
+            self.u.assign(tf.cast(u, self.u.dtype))
+            self.w.assign(
+                tf.cast(tf.reshape(self.w / sigma, self.w_shape), self.w.dtype)
+            )
 
     def get_config(self):
         config = {"power_iterations": self.power_iterations}
