@@ -74,10 +74,6 @@ def skip_gram_sample(
     down-sampled. See Eq. 5 in http://arxiv.org/abs/1310.4546 for more details
     about subsampling.
 
-    Due to the random window sizes used for each token, the lengths of the
-    outputs are non-deterministic, unless `batch_size` is specified to batch
-    the outputs to always return `Tensors` of length `batch_size`.
-
     Args:
       input_tensor: A rank-1 `Tensor` from which to generate skip-gram
         candidates.
@@ -125,10 +121,7 @@ def skip_gram_sample(
 
     Returns:
       A `tuple` containing (token, label) `Tensors`. Each output `Tensor` is of
-      rank-1 and has the same type as `input_tensor`. The `Tensors` will be of
-      length `batch_size`; if `batch_size` is not specified, they will be of
-      random length, though they will be in sync with each other as long as
-      they are evaluated together.
+      rank-1 and has the same type as `input_tensor`.
 
     Raises:
       ValueError: If `vocab_freq_table` is not provided, but `vocab_min_count`,
@@ -286,10 +279,7 @@ def skip_gram_sample_with_text_vocab(
 
     Returns:
       A `tuple` containing (token, label) `Tensors`. Each output `Tensor` is of
-      rank-1 and has the same type as `input_tensor`. The `Tensors` will be of
-      length `batch_size`; if `batch_size` is not specified, they will be of
-      random length, though they will be in sync with each other as long as
-      they are evaluated together.
+      rank-1 and has the same type as `input_tensor`.
 
     Raises:
       ValueError: If `vocab_token_index` or `vocab_freq_index` is less than 0
