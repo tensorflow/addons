@@ -38,8 +38,6 @@ def skip_gram_sample(
     vocab_min_count: Optional[FloatTensorLike] = None,
     vocab_subsampling: Optional[FloatTensorLike] = None,
     corpus_size: Optional[FloatTensorLike] = None,
-    batch_size: Optional[FloatTensorLike] = None,
-    batch_capacity: Optional[FloatTensorLike] = None,
     seed: Optional[FloatTensorLike] = None,
     name: Optional[str] = None,
 ) -> tf.Tensor:
@@ -75,10 +73,6 @@ def skip_gram_sample(
     proportions in the corpus exceed `vocab_subsampling` may be randomly
     down-sampled. See Eq. 5 in http://arxiv.org/abs/1310.4546 for more details
     about subsampling.
-
-    Due to the random window sizes used for each token, the lengths of the
-    outputs are non-deterministic, unless `batch_size` is specified to batch
-    the outputs to always return `Tensors` of length `batch_size`.
 
     Args:
       input_tensor: A rank-1 `Tensor` from which to generate skip-gram
@@ -121,20 +115,13 @@ def skip_gram_sample(
         counts of `vocab_freq_table`). Used with `vocab_subsampling` for
         down-sampling frequently occurring tokens. If this is specified,
         `vocab_freq_table` and `vocab_subsampling` must also be specified.
-      batch_size: (Optional) `int` specifying batch size of returned `Tensors`.
-      batch_capacity: (Optional) `int` specifying batch capacity for the queue
-        used for batching returned `Tensors`. Only has an effect if
-        `batch_size` > 0. Defaults to 100 * `batch_size` if not specified.
       seed: (Optional) `int` used to create a random seed for window size and
         subsampling. See `set_random_seed` docs for behavior.
       name: (Optional) A `string` name or a name scope for the operations.
 
     Returns:
       A `tuple` containing (token, label) `Tensors`. Each output `Tensor` is of
-      rank-1 and has the same type as `input_tensor`. The `Tensors` will be of
-      length `batch_size`; if `batch_size` is not specified, they will be of
-      random length, though they will be in sync with each other as long as
-      they are evaluated together.
+      rank-1 and has the same type as `input_tensor`.
 
     Raises:
       ValueError: If `vocab_freq_table` is not provided, but `vocab_min_count`,
@@ -193,18 +180,6 @@ def skip_gram_sample(
         # figures out sentence boundaries, then calls
         # skip_gram_generate_candidates() on each sentence.
 
-        # Batches the (tokens, labels) outputs so that they will be of deterministic
-        # batch_size, to facilitate feeding them into the rest of the network.
-        if batch_size is not None and batch_size > 0:
-            batch_capacity = (
-                batch_capacity
-                if (batch_capacity is not None and batch_capacity > 0)
-                else 100 * batch_size
-            )
-            return tf.train.batch(
-                [tokens, labels], batch_size, capacity=batch_capacity, enqueue_many=True
-            )
-
         return tokens, labels
 
 
@@ -224,8 +199,6 @@ def skip_gram_sample_with_text_vocab(
     start: FloatTensorLike = 0,
     limit: FloatTensorLike = -1,
     emit_self_as_target: bool = False,
-    batch_size: Optional[FloatTensorLike] = None,
-    batch_capacity: Optional[FloatTensorLike] = None,
     seed: Optional[FloatTensorLike] = None,
     name: Optional[str] = None,
 ) -> tf.Tensor:
@@ -298,10 +271,6 @@ def skip_gram_sample_with_text_vocab(
         to use the rest of the `Tensor` after `start`.
       emit_self_as_target: `bool` or scalar `Tensor` specifying whether to emit
         each token as a label for itself.
-      batch_size: (Optional) `int` specifying batch size of returned `Tensors`.
-      batch_capacity: (Optional) `int` specifying batch capacity for the queue
-        used for batching returned `Tensors`. Only has an effect if
-        `batch_size` > 0. Defaults to 100 * `batch_size` if not specified.
       seed: (Optional) `int` used to create a random seed for window size and
         subsampling. See
         [`set_random_seed`](../../g3doc/python/constant_op.md#set_random_seed)
@@ -310,10 +279,7 @@ def skip_gram_sample_with_text_vocab(
 
     Returns:
       A `tuple` containing (token, label) `Tensors`. Each output `Tensor` is of
-      rank-1 and has the same type as `input_tensor`. The `Tensors` will be of
-      length `batch_size`; if `batch_size` is not specified, they will be of
-      random length, though they will be in sync with each other as long as
-      they are evaluated together.
+      rank-1 and has the same type as `input_tensor`.
 
     Raises:
       ValueError: If `vocab_token_index` or `vocab_freq_index` is less than 0
@@ -397,8 +363,6 @@ def skip_gram_sample_with_text_vocab(
         vocab_subsampling=vocab_subsampling,
         # corpus_size is not used unless vocab_subsampling is specified.
         corpus_size=None if vocab_subsampling is None else corpus_size,
-        batch_size=batch_size,
-        batch_capacity=batch_capacity,
         seed=seed,
         name=name,
     )
