@@ -15,7 +15,7 @@
 """Implements Hamming distance and loss."""
 
 import tensorflow as tf
-from tensorflow_addons.metrics.utils import MeanMetricWrapper
+from tensorflow.keras.metrics import MeanMetricWrapper
 from tensorflow_addons.utils.types import FloatTensorLike, TensorLike, AcceptableDTypes
 
 from typeguard import typechecked
