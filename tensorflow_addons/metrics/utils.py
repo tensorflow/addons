@@ -16,10 +16,6 @@
 
 import numpy as np
 import tensorflow as tf
-from tensorflow_addons.utils.types import AcceptableDTypes
-
-from typeguard import typechecked
-from typing import Optional, Callable
 
 
 def _get_model(metric, num_output):

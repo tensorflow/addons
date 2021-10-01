@@ -16,6 +16,7 @@
 
 import tensorflow as tf
 from tensorflow.keras.metrics import MeanMetricWrapper
+from tensorflow_addons.utils.types import FloatTensorLike, TensorLike, AcceptableDTypes
 
 from typeguard import typechecked
 from typing import Union, Optional
