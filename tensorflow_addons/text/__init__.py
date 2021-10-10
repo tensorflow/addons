@@ -30,6 +30,7 @@ from tensorflow_addons.text.crf import crf_multitag_sequence_score
 from tensorflow_addons.text.crf import crf_sequence_score
 from tensorflow_addons.text.crf import crf_unary_score
 from tensorflow_addons.text.crf import viterbi_decode
+from tensorflow_addons.text.crf_wrapper import CRFModelWrapper
 from tensorflow_addons.text.parse_time_op import parse_time
 
 # Skip Gram Sampling
