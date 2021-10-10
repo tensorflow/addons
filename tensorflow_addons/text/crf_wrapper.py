@@ -1,6 +1,6 @@
 import tensorflow as tf
-from tensorflow_addons import layers
-from tensorflow_addons import text
+from tensorflow_addons.layers import CRF
+from tensorflow_addons.text import crf_log_likelihood
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -17,7 +17,7 @@ class CRFModelWrapper(tf.keras.Model):
     ):
         super().__init__()
 
-        self.crf_layer = layers.CRF(
+        self.crf_layer = CRF(
             units=units,
             chain_initializer=chain_initializer,
             use_boundary=use_boundary,
@@ -66,9 +66,7 @@ class CRFModelWrapper(tf.keras.Model):
     def compute_crf_loss(
         self, potentials, sequence_length, kernel, y, sample_weight=None
     ):
-        crf_likelihood, _ = text.crf_log_likelihood(
-            potentials, y, sequence_length, kernel
-        )
+        crf_likelihood, _ = crf_log_likelihood(potentials, y, sequence_length, kernel)
         # convert likelihood to loss
         flat_crf_loss = -1 * crf_likelihood
         if sample_weight is not None:
