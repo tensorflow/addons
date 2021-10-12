@@ -27,6 +27,7 @@ def test_config():
     assert sl_obj.reduction == tf.keras.losses.Reduction.NONE
 
 @pytest.mark.parametrize("from_logits", [True, False])
+@pytest.mark.usefixtures("maybe_run_functions_eagerly")
 @pytest.mark.parametrize("dtype", [np.float16, np.float32, np.float64])
 def test_soft_f1(dtype, from_logits):
     y_true = tf.constant([[1, 1, 1],
