@@ -38,3 +38,6 @@ from tensorflow_addons.losses.npairs import (
     NpairsMultilabelLoss,
 )
 from tensorflow_addons.losses.kappa_loss import WeightedKappaLoss
+
+from tensorflow_addons.losses.sigmoidf1_loss import sigmoidf1_loss, SigmoidF1Loss
+from tensorflow_addons.losses.softf1_loss import softf1_loss, SoftF1Loss
