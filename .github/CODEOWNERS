@@ -90,8 +90,8 @@
 /tensorflow_addons/layers/tests/snake_test.py @failure-to-thrive
 /tensorflow_addons/layers/stochastic_depth.py @mhstadler @windqaq
 /tensorflow_addons/layers/tests/stochastic_depth_test.py @mhstadler @windqaq
-/tensorflow_addons/layers/noisy_dense.py @leonshams @markub3327
-/tensorflow_addons/layers/tests/noisy_dense_test.py @leonshams @markub3327
+/tensorflow_addons/layers/noisy_dense.py @markub3327
+/tensorflow_addons/layers/tests/noisy_dense_test.py @markub3327
 /tensorflow_addons/layers/max_unpooling_2d.py @thaink
 /tensorflow_addons/layers/tests/max_unpooling_2d_test.py @thaink
 /tensorflow_addons/layers/embedding_bag.py @rocketknight1
