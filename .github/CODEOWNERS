@@ -181,6 +181,8 @@
 
 /tensorflow_addons/text/crf.py @howl-anderson
 /tensorflow_addons/text/tests/crf_test.py @howl-anderson
+/tensorflow_addons/text/crf_wrapper.py @howl-anderson
+/tensorflow_addons/text/tests/crf_wrapper_test.py @howl-anderson
 /tensorflow_addons/text/parse_time_op.py @helinwang
 /tensorflow_addons/text/tests/parse_time_op_test.py @helinwang
 /tensorflow_addons/text/skip_gram_ops.py @rahulunair
