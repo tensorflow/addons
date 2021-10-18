@@ -29,5 +29,6 @@ py_test(
     main = "tests/run_all_test.py",
     deps = [
         ":text",
+        "//tensorflow_addons/layers",
     ],
 )
