@@ -20,7 +20,7 @@ import tempfile
 import numpy as np
 import pytest
 import tensorflow as tf
-from tensorflow_addons.models.crf_wrapper import CRFModelWrapper
+from tensorflow_addons.text.crf_wrapper import CRFModelWrapper
 
 
 def get_test_data():
