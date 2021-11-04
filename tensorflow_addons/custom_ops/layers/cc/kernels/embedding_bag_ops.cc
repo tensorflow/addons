@@ -98,6 +98,7 @@ struct EmbeddingBagBackwardFunctor<CPUDevice, T, Tindices> {
     // The pair (x, {y_i}) in index_vec means
     // index y_i in `indices` contributes to bag `x`.
     std::vector<std::pair<Tindices, std::vector<Eigen::Index>>> index_vec;
+    index_vec[index_map[index]].second.reserve(indices.size());
     for (Eigen::Index i = 0; i < indices.size(); ++i) {
       Tindices index = indices.data()[i];
       if (index_map.find(index) == index_map.end()) {
