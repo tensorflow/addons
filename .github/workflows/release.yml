@@ -40,7 +40,7 @@ jobs:
       matrix:
         os: ['macos-latest', 'windows-latest', 'ubuntu-18.04']
         py-version: ['3.7', '3.8', '3.9']
-        tf-version: ['2.5.1', '2.7.0rc0']
+        tf-version: ['2.5.1', '2.7.0']
         cpu: ['x86']
         include:
           - os: 'macos-11'
@@ -94,7 +94,7 @@ jobs:
       matrix:
         os: ['macOS', 'Windows', 'Linux']
         py-version: ['3.7', '3.8', '3.9']
-        tf-version: ['2.7.0rc0']
+        tf-version: ['2.7.0']
         cpu: ['x86']
         include:
           - os: 'macOS'
