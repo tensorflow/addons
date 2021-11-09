@@ -5,8 +5,7 @@ ARG TF_VERSION
 
 # Temporary until custom-op container is updated
 RUN ln -sf /usr/local/bin/python3.8 /usr/bin/python
-RUN ln -sf /usr/local/bin/pip3.8 /usr/local/bin/pip
-RUN pip install --default-timeout=1000 $TF_PACKAGE==$TF_VERSION
+RUN pip3.8 install --default-timeout=1000 $TF_PACKAGE==$TF_VERSION
 
 COPY tools/install_deps /install_deps
 COPY requirements.txt /tmp/requirements.txt
