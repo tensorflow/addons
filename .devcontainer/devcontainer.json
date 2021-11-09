@@ -1,0 +1,59 @@
+{
+	"name": "Tensorflow Addons SIG Dev Container",
+	
+	// Uncomment this for GPU image
+	// "build": { 
+	// 		"args": { 
+	//			"IMAGE_TYPE": "latest"
+	//		} 
+	//	},
+	
+	"dockerFile": "Dockerfile",
+
+	// Set *default* container specific settings.json values on container create.
+	"settings": {
+		"terminal.integrated.shell.linux": null,
+		"python.formatting.provider": "black",
+		"python.linting.flake8Enabled": true,
+		   "python.testing.pytestEnabled": true,
+		   "python.testing.pytestArgs": [ 
+			   "./tensorflow_addons"
+		],
+		"C_Cpp.clang_format_style": "{BasedOnStyle: Google}",
+		"C_Cpp.default.includePath": [
+			"${workspaceFolder}/**",
+            "/usr/local/lib/python3.6/dist-packages/tensorflow/include/"
+        ],
+	},
+	"remoteEnv": {
+		"TF_CPP_MIN_LOG_LEVEL": "1",
+		"TF_NEED_CUDA":"0"
+
+	},
+	// Add the IDs of extensions you want installed when the container is created.
+	"extensions": [
+		"ms-python.python",
+		"ms-vscode.cpptools",
+		"mine.cpplint"
+	],
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "uname -a",
+
+	// Uncomment to use Docker from inside the container. See https://aka.ms/vscode-remote/samples/docker-in-docker.
+	// "mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],
+
+	// Uncomment when using a ptrace-based debugger like C++, Go, and Rust
+	"runArgs": [ 
+		"--cap-add=SYS_PTRACE",
+		// Uncomment this to enable Nvidia support
+		//"--runtime=nvidia",
+		"--security-opt",
+		"seccomp=unconfined" ],
+
+	// Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/pytest ./tensorflow_addons/layerscontainers/non-root.
+	"remoteUser": "vscode"
+}
