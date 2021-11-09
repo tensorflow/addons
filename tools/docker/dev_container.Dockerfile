@@ -5,12 +5,12 @@ ARG TF_VERSION
 
 # Temporary until custom-op container is updated
 RUN ln -sf /usr/local/bin/python3.8 /usr/bin/python
-RUN ln -sf /usr/local/bin/pip3.8 /usr/local/bin/pip
-RUN pip install --default-timeout=1000 $TF_PACKAGE==$TF_VERSION
+# RUN ln -sf /usr/local/bin/pip3.8 /usr/local/bin/pip
+RUN /usr/local/bin/pip3.8 install --default-timeout=1000 $TF_PACKAGE==$TF_VERSION
 
 COPY tools/install_deps /install_deps
 COPY requirements.txt /tmp/requirements.txt
-RUN pip install -r /install_deps/black.txt \
+RUN /usr/local/bin/pip3.8 install -r /install_deps/black.txt \
     -r /install_deps/flake8.txt \
     -r /install_deps/pytest.txt \
     -r /install_deps/typedapi.txt \
