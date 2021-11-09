@@ -2,7 +2,7 @@
 
 set -x -e
 
-DOCKER_BUILDKIT=1 docker build \
+docker build \
     -f tools/docker/dev_container.Dockerfile \
     --build-arg TF_VERSION=2.7.0 \
     --build-arg TF_PACKAGE=tensorflow-cpu \
