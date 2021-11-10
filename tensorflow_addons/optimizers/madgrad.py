@@ -16,7 +16,6 @@
 # pylint: disable=g-classes-have-attributes
 
 import tensorflow as tf
-from tensorflow.python.keras import backend_config
 
 
 @tf.keras.utils.register_keras_serializable(package="Addons")
@@ -66,7 +65,7 @@ class MadGrad(tf.keras.optimizers.Optimizer):
         self._set_hyper("decay", self._initial_decay)
         self._set_hyper("momentum", momentum)
         self._set_hyper("weight_decay", weight_decay)
-        self.epsilon = epsilon or backend_config.epsilon()
+        self.epsilon = epsilon or tf.keras.backend.epsilon()
         self._first_step = True
 
     def _create_slots(self, var_list):
