@@ -3,14 +3,14 @@ FROM gcr.io/tensorflow-testing/nosla-cuda11.2-cudnn8.1-ubuntu18.04-manylinux2010
 ARG TF_PACKAGE
 ARG TF_VERSION
 
-RUN ln -sf /usr/local/bin/python3.8 /usr/bin/python
-# RUN ln -sf /usr/local/bin/pip3.8 /usr/local/bin/pip
+RUN ln -sf /usr/local/bin/python3.9 /usr/bin/python
+RUN ln -sf /usr/local/bin/pip3.9 /usr/local/bin/pip
 
-RUN python -m pip install --default-timeout=1000 $TF_PACKAGE==$TF_VERSION
+RUN pip install --default-timeout=1000 $TF_PACKAGE==$TF_VERSION
 
 COPY tools/install_deps /install_deps
 COPY requirements.txt /tmp/requirements.txt
-RUN python -m pip install -r /install_deps/black.txt \
+RUN pip install -r /install_deps/black.txt \
     -r /install_deps/flake8.txt \
     -r /install_deps/pytest.txt \
     -r /install_deps/typedapi.txt \
